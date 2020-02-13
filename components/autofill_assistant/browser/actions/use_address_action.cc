@@ -39,8 +39,7 @@ UseAddressAction::UseAddressAction(ActionDelegate* delegate,
     RequiredField& required_field = required_fields.back();
     required_field.value_expression = required_field_proto.value_expression();
     required_field.selector = Selector(required_field_proto.element());
-    required_field.simulate_key_presses =
-        required_field_proto.simulate_key_presses();
+    required_field.fill_strategy = required_field_proto.fill_strategy();
     required_field.delay_in_millisecond =
         required_field_proto.delay_in_millisecond();
     required_field.forced = required_field_proto.forced();

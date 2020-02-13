@@ -399,7 +399,6 @@ class GTestTest(RemoteTest):
       # //testing/buildbot/filters/.
       re.compile(r'.*testing/(?!buildbot/filters).*'),
       re.compile(r'.*third_party/chromite.*'),
-      re.compile(r'.*tools/swarming_client.*'),
   ]
 
   def __init__(self, args, unknown_args):

@@ -31,6 +31,7 @@
 
 #include <memory>
 #include <utility>
+
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
@@ -82,6 +83,7 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -672,6 +674,8 @@ void DocumentLoader::BodyLoadingFinished(
 }
 
 void DocumentLoader::LoadFailed(const ResourceError& error) {
+  TRACE_EVENT1("navigation,rail", "DocumentLoader::LoadFailed", "error",
+               error.ErrorCode());
   body_loader_.reset();
   virtual_time_pauser_.UnpauseVirtualTime();
 
@@ -739,7 +743,7 @@ void DocumentLoader::FinishedLoading(base::TimeTicks finish_time) {
 void DocumentLoader::FinalizeMHTMLArchiveLoad() {
   if (!frame_->IsMainFrame()) {
     // Only the top-frame can load MHTML.
-    frame_->Console().AddMessage(ConsoleMessage::Create(
+    frame_->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kError,
         "Attempted to load a multipart archive into an subframe: " +
@@ -750,7 +754,7 @@ void DocumentLoader::FinalizeMHTMLArchiveLoad() {
     if (archive_load_result_ != mojom::MHTMLLoadResult::kSuccess) {
       archive_.Clear();
       // Log if attempting to load an invalid archive resource.
-      frame_->Console().AddMessage(ConsoleMessage::Create(
+      frame_->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kJavaScript,
           mojom::ConsoleMessageLevel::kError,
           "Malformed multipart archive: " + url_.GetString()));
@@ -797,7 +801,7 @@ bool DocumentLoader::ShouldReportTimingInfoToParent() {
 }
 
 void DocumentLoader::ConsoleError(const String& message) {
-  ConsoleMessage* console_message = ConsoleMessage::CreateForRequest(
+  auto* console_message = MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kSecurity,
       mojom::ConsoleMessageLevel::kError, message,
       response_.CurrentRequestUrl(), this, MainResourceIdentifier());

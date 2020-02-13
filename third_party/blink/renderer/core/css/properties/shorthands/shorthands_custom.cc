@@ -1096,7 +1096,7 @@ bool ConsumeFont(bool important,
     }
     if (!font_style &&
         (id == CSSValueID::kItalic || id == CSSValueID::kOblique)) {
-      font_style = css_parsing_utils::ConsumeFontStyle(range, context.Mode());
+      font_style = css_parsing_utils::ConsumeFontStyle(range, context);
       if (!font_style)
         return false;
       continue;
@@ -1920,26 +1920,6 @@ const CSSValue* InsetInline::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValuesForInlineBlockShorthand(
       insetInlineShorthand(), style, layout_object, allow_visited_style);
-}
-
-bool ContainIntrinsicSize::ParseShorthand(
-    bool important,
-    CSSParserTokenRange& range,
-    const CSSParserContext& context,
-    const CSSParserLocalContext&,
-    HeapVector<CSSPropertyValue, 256>& properties) const {
-  return css_property_parser_helpers::ConsumeShorthandVia2Longhands(
-      containIntrinsicSizeShorthand(), important, context, range, properties);
-}
-
-const CSSValue* ContainIntrinsicSize::CSSValueFromComputedStyleInternal(
-    const ComputedStyle& style,
-    const SVGComputedStyle&,
-    const LayoutObject* layout_object,
-    bool allow_visited_style) const {
-  return ComputedStyleUtils::ValuesForIntrinsicSizeShorthand(
-      containIntrinsicSizeShorthand(), style, layout_object,
-      allow_visited_style);
 }
 
 bool ListStyle::ParseShorthand(

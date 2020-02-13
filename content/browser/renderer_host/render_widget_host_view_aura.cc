@@ -648,24 +648,15 @@ void RenderWidgetHostViewAura::WasUnOccluded() {
         base::Optional<bool>() /* destination_is_loaded */,
         base::Optional<bool>() /* destination_is_frozen */,
         false /* show_reason_tab_switching */,
-        true /* show_reason_unoccluded */,
-        false /* show_reason_bfcache_restore */);
+        true /* show_reason_unoccluded */);
   }
 
   auto tab_switch_start_state = TakeRecordContentToVisibleTimeRequest();
   bool has_saved_frame =
       delegated_frame_host_ ? delegated_frame_host_->HasSavedFrame() : false;
 
-  bool show_reason_bfcache_restore =
-      tab_switch_start_state
-          ? tab_switch_start_state->show_reason_bfcache_restore
-          : false;
+  host()->WasShown(has_saved_frame ? base::nullopt : tab_switch_start_state);
 
-  // No need to check for saved frames for the case of bfcache restore.
-  if (show_reason_bfcache_restore)
-    host()->WasShown(tab_switch_start_state);
-  else
-    host()->WasShown(has_saved_frame ? base::nullopt : tab_switch_start_state);
   aura::Window* root = window_->GetRootWindow();
   if (root) {
     aura::client::CursorClient* cursor_client =

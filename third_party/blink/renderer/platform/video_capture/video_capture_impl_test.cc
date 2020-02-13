@@ -200,7 +200,7 @@ class VideoCaptureImplTest : public ::testing::Test {
     info->timestamp = now - base::TimeTicks();
     info->pixel_format = pixel_format;
     info->coded_size = size;
-    info->visible_rect = WebRect(gfx::Rect(size));
+    info->visible_rect = gfx::Rect(size);
     info->color_space = gfx::ColorSpace();
 
     video_capture_impl_->OnBufferReady(buffer_id, std::move(info));

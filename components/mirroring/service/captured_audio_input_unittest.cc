@@ -60,7 +60,7 @@ class CapturedAudioInputTest : public ::testing::Test {
       mojo::PendingRemote<mojom::AudioStreamCreatorClient> client,
       const media::AudioParameters& params,
       uint32_t total_segments) {
-    EXPECT_EQ(base::SyncSocket::kInvalidHandle, socket_.handle());
+    EXPECT_FALSE(socket_.IsValid());
     EXPECT_FALSE(stream_);
     mojo::PendingRemote<media::mojom::AudioInputStream> pending_stream;
     auto input_stream = std::make_unique<MockStream>();

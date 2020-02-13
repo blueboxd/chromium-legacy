@@ -10,7 +10,6 @@ import com.google.android.gms.gcm.TaskParams;
 
 import org.junit.Assert;
 
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
@@ -86,11 +85,9 @@ public class ServicificationBackgroundService extends ChromeBackgroundService {
         // {@link mFullBrowserStartupDone} has been set to true.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertTrue("Native has not been started.",
-                    BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                            .isNativeStarted());
+                    BrowserStartupController.getInstance().isNativeStarted());
             Assert.assertFalse("The full browser is started instead of ServiceManager only.",
-                    BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                            .isFullBrowserStarted());
+                    BrowserStartupController.getInstance().isFullBrowserStarted());
         });
     }
 
@@ -102,8 +99,7 @@ public class ServicificationBackgroundService extends ChromeBackgroundService {
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> Assert.assertTrue("The full browser has not been started",
-                                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                                        .isFullBrowserStarted()));
+                                BrowserStartupController.getInstance().isFullBrowserStarted()));
     }
 
     public void assertPersistentHistogramsOnDiskSystemProfile() {

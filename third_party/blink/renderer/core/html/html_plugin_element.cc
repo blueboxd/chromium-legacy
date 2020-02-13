@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/page/plugin_data.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_from_url.h"
@@ -722,13 +723,13 @@ bool HTMLPlugInElement::AllowedToLoadObject(const KURL& url,
 bool HTMLPlugInElement::AllowedToLoadPlugin(const KURL& url,
                                             const String& mime_type) {
   if (GetDocument().IsSandboxed(WebSandboxFlags::kPlugins)) {
-    GetDocument().AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
-                               mojom::ConsoleMessageLevel::kError,
-                               "Failed to load '" + url.ElidedString() +
-                                   "' as a plugin, because the "
-                                   "frame into which the plugin "
-                                   "is loading is sandboxed."));
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError,
+        "Failed to load '" + url.ElidedString() +
+            "' as a plugin, because the "
+            "frame into which the plugin "
+            "is loading is sandboxed."));
     return false;
   }
   return true;

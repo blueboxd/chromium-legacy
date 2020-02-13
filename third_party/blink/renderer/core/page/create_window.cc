@@ -48,6 +48,7 @@
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/number_parsing_options.h"
@@ -255,10 +256,11 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
   }
 
   if (!opener_frame.GetDocument()->GetSecurityOrigin()->CanDisplay(url)) {
-    opener_frame.GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
-        "Not allowed to load local resource: " + url.ElidedString()));
+    opener_frame.GetDocument()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kSecurity,
+            mojom::ConsoleMessageLevel::kError,
+            "Not allowed to load local resource: " + url.ElidedString()));
     return nullptr;
   }
 
@@ -271,12 +273,13 @@ Frame* CreateNewWindow(LocalFrame& opener_frame,
   if (opener_frame.GetDocument()->IsSandboxed(WebSandboxFlags::kPopups)) {
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-    opener_frame.GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
-        "Blocked opening '" + url.ElidedString() +
-            "' in a new window because the request was made in a sandboxed "
-            "frame whose 'allow-popups' permission is not set."));
+    opener_frame.GetDocument()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kSecurity,
+            mojom::ConsoleMessageLevel::kError,
+            "Blocked opening '" + url.ElidedString() +
+                "' in a new window because the request was made in a sandboxed "
+                "frame whose 'allow-popups' permission is not set."));
     return nullptr;
   }
 

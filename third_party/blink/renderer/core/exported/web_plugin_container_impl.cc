@@ -308,7 +308,7 @@ void WebPluginContainerImpl::ReportFindInPageSelection(int identifier,
   if (!frame)
     return;
   frame->GetFindInPage()->ReportFindInPageSelection(
-      identifier, index, blink::WebRect(), false /* final_update */);
+      identifier, index, gfx::Rect(), false /* final_update */);
 }
 
 float WebPluginContainerImpl::DeviceScaleFactor() {

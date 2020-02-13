@@ -107,20 +107,20 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
         final ValueCallback<Boolean> loadedCallback = (ValueCallback<Boolean>) ObjectWrapper.unwrap(
                 loadedCallbackWrapper, ValueCallback.class);
-        BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
-                .startBrowserProcessesAsync(/* startGpu */ false,
-                        /* startServiceManagerOnly */ false,
-                        new BrowserStartupController.StartupCallback() {
-                            @Override
-                            public void onSuccess() {
-                                onNativeLoaded(appContextWrapper);
-                                loadedCallback.onReceiveValue(true);
-                            }
-                            @Override
-                            public void onFailure() {
-                                loadedCallback.onReceiveValue(false);
-                            }
-                        });
+        BrowserStartupController.getInstance().startBrowserProcessesAsync(
+                LibraryProcessType.PROCESS_WEBLAYER,
+                /* startGpu */ false, /* startServiceManagerOnly */ false,
+                new BrowserStartupController.StartupCallback() {
+                    @Override
+                    public void onSuccess() {
+                        onNativeLoaded(appContextWrapper);
+                        loadedCallback.onReceiveValue(true);
+                    }
+                    @Override
+                    public void onFailure() {
+                        loadedCallback.onReceiveValue(false);
+                    }
+                });
     }
 
     @Override
@@ -133,9 +133,9 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         StrictModeWorkaround.apply();
         init(appContextWrapper, remoteContextWrapper);
 
-        BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
-                .startBrowserProcessesSync(
-                        /* singleProcess*/ false);
+        BrowserStartupController.getInstance().startBrowserProcessesSync(
+                LibraryProcessType.PROCESS_WEBLAYER,
+                /* singleProcess*/ false);
 
         onNativeLoaded(appContextWrapper);
     }

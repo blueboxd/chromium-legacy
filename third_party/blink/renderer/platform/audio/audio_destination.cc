@@ -32,13 +32,13 @@
 #include <memory>
 #include <utility>
 
+#include "base/metrics/histogram_functions.h"
 #include "media/base/audio_bus.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
 #include "third_party/blink/renderer/platform/audio/audio_utilities.h"
 #include "third_party/blink/renderer/platform/audio/push_pull_fifo.h"
 #include "third_party/blink/renderer/platform/audio/vector_math.h"
-#include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -126,29 +126,23 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
     context_sample_rate_ = web_audio_device_->SampleRate();
   }
 
-  DEFINE_STATIC_LOCAL(SparseHistogram, sample_rate_histogram,
-                      ("WebAudio.AudioContext.HardwareSampleRate"));
-
-  sample_rate_histogram.Sample(web_audio_device_->SampleRate());
-
-  // The actual supplied |sampleRate| is probably a small set including 44100,
-  // 48000, 22050, and 2400 Hz.  Other valid values range from 3000 to 384000
-  // Hz, but are not expected to be used much.
-  DEFINE_STATIC_LOCAL(SparseHistogram, selected_sample_rate_histogram,
-                      ("WebAudio.AudioContextOptions.sampleRate"));
-
-  // From the expected values above and the common HW sample rates, we expect
-  // the most common ratios to be the set 0.5, 44100/48000, and 48000/44100.
-  // Other values are possible but seem unlikely.
-  DEFINE_STATIC_LOCAL(SparseHistogram, sample_rate_ratio_histogram,
-                      ("WebAudio.AudioContextOptions.sampleRateRatio"));
+  base::UmaHistogramSparse("WebAudio.AudioContext.HardwareSampleRate",
+                           web_audio_device_->SampleRate());
 
   // Record the selected sample rate and ratio if the sampleRate was given.  The
   // ratio is recorded as a percentage, rounded to the nearest percent.
   if (context_sample_rate.has_value()) {
-    selected_sample_rate_histogram.Sample(context_sample_rate.value());
-    sample_rate_ratio_histogram.Sample(
-        static_cast<int32_t>(100 * scale_factor + 0.5));
+    // The actual supplied |sampleRate| is probably a small set including 44100,
+    // 48000, 22050, and 2400 Hz.  Other valid values range from 3000 to 384000
+    // Hz, but are not expected to be used much.
+    base::UmaHistogramSparse("WebAudio.AudioContextOptions.sampleRate",
+                             context_sample_rate.value());
+    // From the expected values above and the common HW sample rates, we expect
+    // the most common ratios to be the set 0.5, 44100/48000, and 48000/44100.
+    // Other values are possible but seem unlikely.
+    base::UmaHistogramSparse("WebAudio.AudioContextOptions.sampleRateRatio",
+
+                             static_cast<int32_t>(100 * scale_factor + 0.5));
   }
 }
 
@@ -336,19 +330,16 @@ uint32_t AudioDestination::MaxChannelCount() {
 }
 
 bool AudioDestination::CheckBufferSize() {
+  // Record the sizes if we successfully created an output device.
   // Histogram for audioHardwareBufferSize
-  DEFINE_STATIC_LOCAL(SparseHistogram, hardware_buffer_size_histogram,
-                      ("WebAudio.AudioDestination.HardwareBufferSize"));
+  base::UmaHistogramSparse("WebAudio.AudioDestination.HardwareBufferSize",
+                           HardwareBufferSize());
 
   // Histogram for the actual callback size used.  Typically, this is the same
   // as audioHardwareBufferSize, but can be adjusted depending on some
   // heuristics below.
-  DEFINE_STATIC_LOCAL(SparseHistogram, callback_buffer_size_histogram,
-                      ("WebAudio.AudioDestination.CallbackBufferSize"));
-
-  // Record the sizes if we successfully created an output device.
-  hardware_buffer_size_histogram.Sample(HardwareBufferSize());
-  callback_buffer_size_histogram.Sample(callback_buffer_size_);
+  base::UmaHistogramSparse("WebAudio.AudioDestination.CallbackBufferSize",
+                           callback_buffer_size_);
 
   // Check if the requested buffer size is too large.
   bool is_buffer_size_valid =

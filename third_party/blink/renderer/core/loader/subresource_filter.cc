@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -120,10 +121,11 @@ void SubresourceFilter::ReportLoad(
       // TODO: Consider logging this as a kIntervention for showing
       // warning in Lighthouse.
       if (subresource_filter_->ShouldLogToConsole()) {
-        execution_context_->AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kOther,
-            mojom::ConsoleMessageLevel::kError,
-            GetErrorStringForDisallowedLoad(resource_url)));
+        execution_context_->AddConsoleMessage(
+            MakeGarbageCollected<ConsoleMessage>(
+                mojom::ConsoleMessageSource::kOther,
+                mojom::ConsoleMessageLevel::kError,
+                GetErrorStringForDisallowedLoad(resource_url)));
       }
       FALLTHROUGH;
     case WebDocumentSubresourceFilter::kWouldDisallow:

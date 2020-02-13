@@ -10,8 +10,6 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -44,10 +42,6 @@ class WebTestMessageFilter : public BrowserMessageFilter {
 
   void OnClearAllDatabases();
   void OnSetDatabaseQuota(int quota);
-  void OnSimulateWebNotificationClick(
-      const std::string& title,
-      const base::Optional<int>& action_index,
-      const base::Optional<base::string16>& reply);
   void OnInitiateCaptureDump(bool capture_navigation_history,
                              bool capture_pixels);
   void OnSetFilePathForMockFileDialog(const base::FilePath& path);

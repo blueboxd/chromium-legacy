@@ -477,7 +477,7 @@ void EnqueueAutofocus(Element& element) {
   // 4. If target's active sandboxing flag set has the sandboxed automatic
   // features browsing context flag, then return.
   if (doc.IsSandboxed(WebSandboxFlags::kAutomaticFeatures)) {
-    doc.AddConsoleMessage(ConsoleMessage::Create(
+    doc.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,
         "Blocked autofocusing on a form control because the form's frame is "
@@ -491,7 +491,7 @@ void EnqueueAutofocus(Element& element) {
   // then return.
   if (!doc.IsInMainFrame() &&
       !doc.TopFrameOrigin()->CanAccess(doc.GetSecurityOrigin())) {
-    doc.AddConsoleMessage(ConsoleMessage::Create(
+    doc.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,
         "Blocked autofocusing on a form control in a cross-origin subframe."));

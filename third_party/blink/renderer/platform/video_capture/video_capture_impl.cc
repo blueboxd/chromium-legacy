@@ -562,8 +562,7 @@ void VideoCaptureImpl::OnBufferReady(
                       info->strides->stride_by_plane[1]);
         frame = media::VideoFrame::WrapExternalYuvData(
             info->pixel_format, gfx::Size(info->coded_size),
-            gfx::Rect(info->visible_rect),
-            gfx::Size(info->visible_rect.width, info->visible_rect.height),
+            gfx::Rect(info->visible_rect), info->visible_rect.size(),
             info->strides->stride_by_plane[0],
             info->strides->stride_by_plane[1],
             info->strides->stride_by_plane[2], y_data, u_data, v_data,
@@ -571,8 +570,7 @@ void VideoCaptureImpl::OnBufferReady(
       } else {
         frame = media::VideoFrame::WrapExternalData(
             info->pixel_format, gfx::Size(info->coded_size),
-            gfx::Rect(info->visible_rect),
-            gfx::Size(info->visible_rect.width, info->visible_rect.height),
+            gfx::Rect(info->visible_rect), info->visible_rect.size(),
             const_cast<uint8_t*>(buffer_context->data()),
             buffer_context->data_size(), info->timestamp);
       }
@@ -582,8 +580,7 @@ void VideoCaptureImpl::OnBufferReady(
       // the data without attaching the shared region to the frame.
       frame = media::VideoFrame::WrapExternalData(
           info->pixel_format, gfx::Size(info->coded_size),
-          gfx::Rect(info->visible_rect),
-          gfx::Size(info->visible_rect.width, info->visible_rect.height),
+          gfx::Rect(info->visible_rect), info->visible_rect.size(),
           const_cast<uint8_t*>(buffer_context->data()),
           buffer_context->data_size(), info->timestamp);
       break;
@@ -600,8 +597,7 @@ void VideoCaptureImpl::OnBufferReady(
       frame = media::VideoFrame::WrapNativeTextures(
           info->pixel_format, mailbox_holder_array,
           media::VideoFrame::ReleaseMailboxCB(), gfx::Size(info->coded_size),
-          gfx::Rect(info->visible_rect),
-          gfx::Size(info->visible_rect.width, info->visible_rect.height),
+          gfx::Rect(info->visible_rect), info->visible_rect.size(),
           info->timestamp);
       break;
     }

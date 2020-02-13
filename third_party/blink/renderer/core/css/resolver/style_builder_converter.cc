@@ -58,7 +58,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
-#include "third_party/blink/renderer/core/style/intrinsic_length.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
@@ -1861,15 +1860,16 @@ StyleBuilderConverter::CssToLengthConversionData(StyleResolverState& state) {
   return state.CssToLengthConversionData();
 }
 
-IntrinsicLength StyleBuilderConverter::ConvertIntrinsicLength(
+LengthSize StyleBuilderConverter::ConvertIntrinsicSize(
     StyleResolverState& state,
     const CSSValue& value) {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
-  if (identifier_value) {
-    if (identifier_value->GetValueID() == CSSValueID::kAuto)
-      return IntrinsicLength::MakeAuto();
-  }
-  return IntrinsicLength::Make(ConvertLength(state, value));
+  if (identifier_value && identifier_value->GetValueID() == CSSValueID::kAuto)
+    return LengthSize(Length::Auto(), Length::Auto());
+  const CSSValuePair& pair = To<CSSValuePair>(value);
+  Length width = ConvertLength(state, pair.First());
+  Length height = ConvertLength(state, pair.Second());
+  return LengthSize(width, height);
 }
 
 bool StyleBuilderConverter::ConvertInternalEmptyLineHeight(

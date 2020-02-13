@@ -3739,18 +3739,16 @@ void WebMediaPlayerImpl::UpdateSmoothnessHelper() {
 
   // Create or restart the smoothness helper with |features|.
   smoothness_helper_ = SmoothnessHelper::Create(
-      GetLearningTaskController(
-          learning::MediaLearningTasks::Id::kConsecutiveBadWindows),
-      GetLearningTaskController(
-          learning::MediaLearningTasks::Id::kConsecutiveNNRs),
+      GetLearningTaskController(learning::tasknames::kConsecutiveBadWindows),
+      GetLearningTaskController(learning::tasknames::kConsecutiveNNRs),
       features, this);
 }
 
 std::unique_ptr<learning::LearningTaskController>
-WebMediaPlayerImpl::GetLearningTaskController(
-    learning::MediaLearningTasks::Id task_id) {
+WebMediaPlayerImpl::GetLearningTaskController(const char* task_name) {
   // Get the LearningTaskController for |task_id|.
-  learning::LearningTask task = learning::MediaLearningTasks::Get(task_id);
+  learning::LearningTask task = learning::MediaLearningTasks::Get(task_name);
+  DCHECK_EQ(task.name, task_name);
 
   mojo::Remote<media::learning::mojom::LearningTaskController> remote_ltc;
   media_metrics_provider_->AcquireLearningTaskController(

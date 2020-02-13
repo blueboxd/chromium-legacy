@@ -135,8 +135,8 @@ public final class AwBrowserProcess {
 
                 try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
                              "AwBrowserProcess.startBrowserProcessesSync")) {
-                    BrowserStartupController.get(LibraryProcessType.PROCESS_WEBVIEW)
-                            .startBrowserProcessesSync(!multiProcess);
+                    BrowserStartupController.getInstance().startBrowserProcessesSync(
+                            LibraryProcessType.PROCESS_WEBVIEW, !multiProcess);
                 }
             });
         }

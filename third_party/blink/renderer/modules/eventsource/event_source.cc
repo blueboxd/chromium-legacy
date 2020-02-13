@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/modules/eventsource/event_source.h"
 
 #include <memory>
+
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_controller.h"
@@ -49,6 +50,7 @@
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
@@ -242,9 +244,10 @@ void EventSource::DidReceiveResponse(uint64_t identifier,
       message.Append(charset);
       message.Append("\") that is not UTF-8. Aborting the connection.");
       // FIXME: We are missing the source line.
-      GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kJavaScript,
-          mojom::ConsoleMessageLevel::kError, message.ToString()));
+      GetExecutionContext()->AddConsoleMessage(
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::ConsoleMessageSource::kJavaScript,
+              mojom::ConsoleMessageLevel::kError, message.ToString()));
     }
   } else {
     // To keep the signal-to-noise ratio low, we only log 200-response with an
@@ -256,9 +259,10 @@ void EventSource::DidReceiveResponse(uint64_t identifier,
       message.Append(
           "\") that is not \"text/event-stream\". Aborting the connection.");
       // FIXME: We are missing the source line.
-      GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kJavaScript,
-          mojom::ConsoleMessageLevel::kError, message.ToString()));
+      GetExecutionContext()->AddConsoleMessage(
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::ConsoleMessageSource::kJavaScript,
+              mojom::ConsoleMessageLevel::kError, message.ToString()));
     }
   }
 

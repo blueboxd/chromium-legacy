@@ -24,7 +24,7 @@ void FakeRemoteFrameHost::DidFocusFrame() {}
 void FakeRemoteFrameHost::CheckCompleted() {}
 
 void FakeRemoteFrameHost::CapturePaintPreviewOfCrossProcessSubframe(
-    const blink::WebRect& clip_rect,
+    const gfx::Rect& clip_rect,
     const base::UnguessableToken& guid) {}
 
 void FakeRemoteFrameHost::SetIsInert(bool inert) {}

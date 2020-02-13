@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/script/classic_pending_script.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/core/script/xml_parser_script_runner_host.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -79,11 +80,11 @@ void XMLParserScriptRunner::ProcessScriptElement(
   if (script_loader->GetScriptType() != mojom::ScriptType::kClassic) {
     // XMLDocumentParser does not support a module script, and thus ignores it.
     success = false;
-    document.AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kError,
-                               "Module scripts in XML documents are currently "
-                               "not supported. See crbug.com/717643"));
+    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kError,
+        "Module scripts in XML documents are currently "
+        "not supported. See crbug.com/717643"));
   }
 
   if (!success)

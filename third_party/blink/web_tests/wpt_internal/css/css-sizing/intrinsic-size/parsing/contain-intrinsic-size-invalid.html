@@ -13,11 +13,13 @@
 <body>
 <script>
 test_invalid_value("contain-intrinsic-size", "legacy");
+test_invalid_value("contain-intrinsic-size", "auto auto");
 test_invalid_value("contain-intrinsic-size", "auto legacy");
 test_invalid_value("contain-intrinsic-size", "auto legacy auto");
 test_invalid_value("contain-intrinsic-size", "10%");
 test_invalid_value("contain-intrinsic-size", "2em 3px 5px");
 test_invalid_value("contain-intrinsic-size", "1px 1%");
+test_invalid_value("contain-intrinsic-size", "1px auto");
 test_invalid_value("contain-intrinsic-size", "1px auto auto");
 test_invalid_value("contain-intrinsic-size", "-1px");
 </script>

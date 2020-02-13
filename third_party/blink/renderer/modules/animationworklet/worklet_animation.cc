@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/modules/animationworklet/css_animation_worklet.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -420,10 +421,11 @@ void WorkletAnimation::setPlaybackRate(ScriptState* script_state,
   if (!playback_rate) {
     if (document_->GetFrame() && ExecutionContext::From(script_state)) {
       document_->GetFrame()->Console().AddMessage(
-          ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                                 mojom::ConsoleMessageLevel::kWarning,
-                                 "WorkletAnimation currently does not support "
-                                 "playback rate of Zero."));
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::ConsoleMessageSource::kJavaScript,
+              mojom::ConsoleMessageLevel::kWarning,
+              "WorkletAnimation currently does not support "
+              "playback rate of Zero."));
     }
     return;
   }

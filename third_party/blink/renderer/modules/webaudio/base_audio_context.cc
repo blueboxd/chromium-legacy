@@ -220,17 +220,17 @@ void BaseAudioContext::WarnIfContextClosed(const AudioHandler* handler) const {
   DCHECK(handler);
 
   if (IsContextClosed() && GetDocument()) {
-    GetDocument()->AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kOther,
-                               mojom::ConsoleMessageLevel::kWarning,
-                               "Construction of " + handler->NodeTypeName() +
-                                   " is not useful when context is closed."));
+    GetDocument()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kOther,
+        mojom::ConsoleMessageLevel::kWarning,
+        "Construction of " + handler->NodeTypeName() +
+            " is not useful when context is closed."));
   }
 }
 
 void BaseAudioContext::WarnForConnectionIfContextClosed() const {
   if (IsContextClosed() && GetDocument()) {
-    GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
+    GetDocument()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kOther,
         mojom::ConsoleMessageLevel::kWarning,
         "Connecting nodes after the context has been closed is not useful."));

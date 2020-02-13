@@ -137,7 +137,8 @@ Polymer({
     isTimezoneVisible_: {
       type: Boolean,
       readonly: true,
-      value: () => loadTimeData.getValue('currentTimezoneId') != '',
+      value: () =>
+          /** @type {boolean} */ (loadTimeData.getValue('showTimezone')),
     },
 
     /**
@@ -255,9 +256,11 @@ Polymer({
    * @private
    */
   setTimezone_(timezoneId) {
-    const timezoneSelect = this.$$('#timezoneSelect');
-    assert(timezoneSelect.childElementCount > 0);
-    timezoneSelect.value = timezoneId;
+    if (this.isTimezoneVisible_) {
+      const timezoneSelect = this.$$('#timezoneSelect');
+      assert(timezoneSelect.childElementCount > 0);
+      timezoneSelect.value = timezoneId;
+    }
 
     const now = this.getInputTime_();
     const timezoneDelta = getTimezoneDelta(timezoneId, this.selectedTimezone_);

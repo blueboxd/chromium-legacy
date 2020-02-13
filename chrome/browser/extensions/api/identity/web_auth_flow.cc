@@ -221,8 +221,13 @@ void WebAuthFlow::DidRedirectNavigation(
 
 void WebAuthFlow::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  bool failed = false;
+  // Websites may create and remove <iframe> during the auth flow. In
+  // particular, to integrate CAPTCHA tests. Chrome shouldn't abort the auth
+  // flow if a navigation failed in a sub-frame. https://crbug.com/1049565.
+  if (!navigation_handle->IsInMainFrame())
+    return;
 
+  bool failed = false;
   if (navigation_handle->GetNetErrorCode() != net::OK) {
     if (navigation_handle->GetURL().spec() == url::kAboutBlankURL) {
       // As part of the OAUth 2.0 protocol with GAIA, at the end of the web
@@ -248,8 +253,7 @@ void WebAuthFlow::DidFinishNavigation(
           "identity", "DidFinishNavigationFailure", this, "error_code",
           navigation_handle->GetNetErrorCode());
     }
-  } else if (navigation_handle->IsInMainFrame() &&
-             navigation_handle->GetResponseHeaders() &&
+  } else if (navigation_handle->GetResponseHeaders() &&
              navigation_handle->GetResponseHeaders()->response_code() >= 400) {
     failed = true;
     TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(

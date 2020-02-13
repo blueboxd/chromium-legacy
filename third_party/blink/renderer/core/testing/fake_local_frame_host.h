@@ -43,6 +43,8 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void VisibilityChanged(mojom::blink::FrameVisibility visibility) override;
   void DidChangeThemeColor(
       const base::Optional<::SkColor>& theme_color) override;
+  void DidFailLoadWithError(const ::blink::KURL& url,
+                            int32_t error_code) override;
   void DidFocusFrame() override;
   void EnforceInsecureRequestPolicy(uint8_t policy_bitmap) override;
   void EnforceInsecureNavigationsSet(const WTF::Vector<uint32_t>& set) override;
@@ -52,7 +54,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
       blink::mojom::SuddenTerminationDisablerType disabler_type) override;
   void HadStickyUserActivationBeforeNavigationChanged(bool value) override;
   void ScrollRectToVisibleInParentFrame(
-      const WebRect& rect_to_scroll,
+      const gfx::Rect& rect_to_scroll,
       blink::mojom::blink::ScrollIntoViewParamsPtr params) override;
   void BubbleLogicalScrollInParentFrame(
       blink::mojom::blink::ScrollDirection direction,

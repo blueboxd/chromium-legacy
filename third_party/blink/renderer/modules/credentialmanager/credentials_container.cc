@@ -523,7 +523,8 @@ ScriptPromise CredentialsContainer::get(
     }
 
     if (!options->publicKey()->hasUserVerification()) {
-      resolver->GetFrame()->Console().AddMessage(ConsoleMessage::Create(
+      resolver->GetFrame()->Console().AddMessage(MakeGarbageCollected<
+                                                 ConsoleMessage>(
           mojom::ConsoleMessageSource::kJavaScript,
           mojom::ConsoleMessageLevel::kWarning,
           "publicKey.userVerification was not set to any value in Web "
@@ -741,7 +742,8 @@ ScriptPromise CredentialsContainer::create(
         !options->publicKey()
              ->authenticatorSelection()
              ->hasUserVerification()) {
-      resolver->GetFrame()->Console().AddMessage(ConsoleMessage::Create(
+      resolver->GetFrame()->Console().AddMessage(MakeGarbageCollected<
+                                                 ConsoleMessage>(
           mojom::ConsoleMessageSource::kJavaScript,
           mojom::ConsoleMessageLevel::kWarning,
           "publicKey.authenticatorSelection.userVerification was not set to "

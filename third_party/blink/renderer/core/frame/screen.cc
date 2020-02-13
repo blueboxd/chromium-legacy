@@ -51,7 +51,7 @@ Screen::Screen(LocalFrame* frame) : DOMWindowClient(frame) {}
 int Screen::height() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::ScreenEnumerationEnabled());
-    return display_->bounds.height;
+    return display_->bounds.height();
   }
   LocalFrame* frame = GetFrame();
   if (!frame)
@@ -68,7 +68,7 @@ int Screen::height() const {
 int Screen::width() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::ScreenEnumerationEnabled());
-    return display_->bounds.width;
+    return display_->bounds.width();
   }
   LocalFrame* frame = GetFrame();
   if (!frame)
@@ -100,7 +100,7 @@ unsigned Screen::pixelDepth() const {
 int Screen::availLeft() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::ScreenEnumerationEnabled());
-    return display_->work_area.x;
+    return display_->work_area.x();
   }
   LocalFrame* frame = GetFrame();
   if (!frame)
@@ -117,7 +117,7 @@ int Screen::availLeft() const {
 int Screen::availTop() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::ScreenEnumerationEnabled());
-    return display_->work_area.y;
+    return display_->work_area.y();
   }
   LocalFrame* frame = GetFrame();
   if (!frame)
@@ -134,7 +134,7 @@ int Screen::availTop() const {
 int Screen::availHeight() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::ScreenEnumerationEnabled());
-    return display_->work_area.height;
+    return display_->work_area.height();
   }
   LocalFrame* frame = GetFrame();
   if (!frame)
@@ -151,7 +151,7 @@ int Screen::availHeight() const {
 int Screen::availWidth() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::ScreenEnumerationEnabled());
-    return display_->work_area.width;
+    return display_->work_area.width();
   }
   LocalFrame* frame = GetFrame();
   if (!frame)
@@ -182,7 +182,7 @@ Screen::Screen(display::mojom::blink::DisplayPtr display,
 int Screen::left() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::ScreenEnumerationEnabled());
-    return display_->bounds.x;
+    return display_->bounds.x();
   }
   LocalFrame* frame = GetFrame();
   if (!frame)
@@ -199,7 +199,7 @@ int Screen::left() const {
 int Screen::top() const {
   if (display_) {
     DCHECK(RuntimeEnabledFeatures::ScreenEnumerationEnabled());
-    return display_->bounds.y;
+    return display_->bounds.y();
   }
   LocalFrame* frame = GetFrame();
   if (!frame)

@@ -14,7 +14,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -186,9 +185,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
      */
     public void syncUsageAndCrashReportingPrefs() {
         // Skip if native browser process is not yet fully initialized.
-        if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER).isNativeStarted()) {
-            return;
-        }
+        if (!BrowserStartupController.getInstance().isNativeStarted()) return;
 
         setMetricsReportingEnabled(isUsageAndCrashReportingPermittedByUser());
     }

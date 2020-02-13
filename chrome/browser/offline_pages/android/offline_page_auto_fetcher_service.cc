@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/android/auto_fetch_notifier.h"
 #include "chrome/browser/offline_pages/request_coordinator_factory.h"
+#include "chrome/common/offline_page_auto_fetcher.mojom.h"
 #include "components/offline_pages/core/auto_fetch.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/save_page_request.h"

@@ -6,6 +6,7 @@ module content.mojom;
 
 import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/values.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "third_party/blink/public/mojom/permissions/permission_status.mojom";
 import "url/mojom/url.mojom";
 
@@ -17,14 +18,21 @@ interface WebTestClient {
   // Sent by secondary test window to notify the test has finished.
   TestFinishedInSecondaryRenderer();
 
-  // Simulates a user deleting a content index entry.
-  SimulateWebContentIndexDelete(string id);
+  // Simulates a click on the notification.
+  //   - |title|: the title of the notification.
+  //   - |action_index|: indicates which action was clicked.
+  //   - |reply|: indicates the user reply.
+  SimulateWebNotificationClick(
+      string title, int32 action_index, mojo_base.mojom.String16? reply);
 
   // Simulates closing a titled web notification depending on the user
   // click.
   //   - |title|: the title of the notification.
   //   - |by_user|: whether the user clicks the notification.
   SimulateWebNotificationClose(string title, bool by_user);
+
+  // Simulates a user deleting a content index entry.
+  SimulateWebContentIndexDelete(string id);
 
   // Sets the cookie policy to:
   // - allow all cookies when |block| is false
@@ -62,4 +70,8 @@ interface WebTestClient {
   RegisterIsolatedFileSystem(
       array<mojo_base.mojom.FilePath> absolute_filenames)
           => (string filesystem_id);
+
+  // For the duration of the current test this causes all file choosers to
+  // return the passed in |path|.
+  SetFilePathForMockFileDialog(mojo_base.mojom.FilePath path);
 };

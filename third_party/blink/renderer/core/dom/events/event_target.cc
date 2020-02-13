@@ -398,7 +398,7 @@ void EventTarget::SetDefaultAddEventListenerOptions(
                           WebFeature::kSmoothScrollJSInterventionActivated);
 
         executing_window->GetFrame()->Console().AddMessage(
-            ConsoleMessage::Create(
+            MakeGarbageCollected<ConsoleMessage>(
                 mojom::ConsoleMessageSource::kIntervention,
                 mojom::ConsoleMessageLevel::kWarning,
                 "Registering mousewheel event as passive due to "

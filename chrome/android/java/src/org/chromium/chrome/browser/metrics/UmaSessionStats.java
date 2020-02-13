@@ -13,7 +13,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
@@ -228,8 +227,7 @@ public class UmaSessionStats {
      * be used in full-browser mode and as such you must check this before calling them.
      */
     public static boolean isMetricsServiceAvailable() {
-        return BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                .isFullBrowserStarted();
+        return BrowserStartupController.getInstance().isFullBrowserStarted();
     }
 
     /**

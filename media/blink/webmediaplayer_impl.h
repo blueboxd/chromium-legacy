@@ -644,9 +644,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // smoothness right now.
   void UpdateSmoothnessHelper();
 
-  // Get the LearningTaskController for |task_id|.
+  // Get the LearningTaskController for |task_name|.
   std::unique_ptr<learning::LearningTaskController> GetLearningTaskController(
-      learning::MediaLearningTasks::Id task_id);
+      const char* task_name);
 
   blink::WebLocalFrame* const frame_;
 

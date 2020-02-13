@@ -169,11 +169,11 @@ TEST_P(HomeScreenControllerTest, DraggingHistograms) {
   generator->PressTouch();
   generator->MoveTouch(gfx::Point(200, 20));
   compositor->ScheduleFullRedraw();
-  WaitForNextFrameToBePresented(compositor);
+  EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
   tester.ExpectTotalCount(kHomescreenDragHistogram, drag_enabled ? 1 : 0);
   generator->MoveTouch(gfx::Point(200, 60));
   compositor->ScheduleFullRedraw();
-  WaitForNextFrameToBePresented(compositor);
+  EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
   generator->ReleaseTouch();
 
   tester.ExpectTotalCount(kHomescreenAnimationHistogram, 0);

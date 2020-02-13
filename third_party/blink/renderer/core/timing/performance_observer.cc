@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -123,9 +124,10 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
       if (entry_type == PerformanceEntry::kInvalid) {
         String message = "The entry type '" + entry_type_string +
                          "' does not exist or isn't supported.";
-        GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning, message));
+        GetExecutionContext()->AddConsoleMessage(
+            MakeGarbageCollected<ConsoleMessage>(
+                mojom::ConsoleMessageSource::kJavaScript,
+                mojom::ConsoleMessageLevel::kWarning, message));
       }
       entry_types |= entry_type;
     }
@@ -136,9 +138,10 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
       String message =
           "The PerformanceObserver does not support buffered flag with "
           "the entryTypes argument.";
-      GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kJavaScript,
-          mojom::ConsoleMessageLevel::kWarning, message));
+      GetExecutionContext()->AddConsoleMessage(
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::ConsoleMessageSource::kJavaScript,
+              mojom::ConsoleMessageLevel::kWarning, message));
     }
     filter_options_ = entry_types;
   } else {
@@ -161,9 +164,10 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
     if (entry_type == PerformanceEntry::kInvalid) {
       String message = "The entry type '" + observer_init->type() +
                        "' does not exist or isn't supported.";
-      GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kJavaScript,
-          mojom::ConsoleMessageLevel::kWarning, message));
+      GetExecutionContext()->AddConsoleMessage(
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::ConsoleMessageSource::kJavaScript,
+              mojom::ConsoleMessageLevel::kWarning, message));
       return;
     }
     if (filter_options_ & entry_type) {
@@ -171,9 +175,10 @@ void PerformanceObserver::observe(const PerformanceObserverInit* observer_init,
           "The PerformanceObserver has already been called with the entry type "
           "'" +
           observer_init->type() + "'.";
-      GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kJavaScript,
-          mojom::ConsoleMessageLevel::kWarning, message));
+      GetExecutionContext()->AddConsoleMessage(
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::ConsoleMessageSource::kJavaScript,
+              mojom::ConsoleMessageLevel::kWarning, message));
       return;
     }
     if (observer_init->buffered()) {

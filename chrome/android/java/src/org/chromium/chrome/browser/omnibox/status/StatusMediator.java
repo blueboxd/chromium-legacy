@@ -17,7 +17,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.MathUtils;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
@@ -40,8 +39,7 @@ class StatusMediator {
         boolean isUrlValid(String partialUrl) {
             if (TextUtils.isEmpty(partialUrl)) return false;
 
-            return BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                           .isFullBrowserStarted()
+            return BrowserStartupController.getInstance().isFullBrowserStarted()
                     && AutocompleteCoordinatorFactory.qualifyPartialURLQuery(partialUrl) != null;
         }
 

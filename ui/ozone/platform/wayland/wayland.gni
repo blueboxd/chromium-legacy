@@ -9,4 +9,7 @@ declare_args() {
   # Checks if Wayland must be compiled with dmabuf/gbm feature, which allows a
   # multi-process hardware accelerated mode.
   use_wayland_gbm = true
+
+  # Checks if Weston must be compiled
+  use_bundled_weston = false
 }

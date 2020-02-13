@@ -404,12 +404,12 @@ void ScriptExecutor::GetFieldValue(
 void ScriptExecutor::SetFieldValue(
     const Selector& selector,
     const std::string& value,
-    bool simulate_key_presses,
+    KeyboardValueFillStrategy fill_strategy,
     int key_press_delay_in_millisecond,
     base::OnceCallback<void(const ClientStatus&)> callback) {
-  delegate_->GetWebController()->SetFieldValue(
-      selector, value, simulate_key_presses, key_press_delay_in_millisecond,
-      std::move(callback));
+  delegate_->GetWebController()->SetFieldValue(selector, value, fill_strategy,
+                                               key_press_delay_in_millisecond,
+                                               std::move(callback));
 }
 
 void ScriptExecutor::SetAttribute(

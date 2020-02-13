@@ -2564,24 +2564,4 @@ ComputedStyleUtils::CrossThreadStyleValueFromCSSStyleValue(
   }
 }
 
-CSSValuePair* ComputedStyleUtils::ValuesForIntrinsicSizeShorthand(
-    const StylePropertyShorthand& shorthand,
-    const ComputedStyle& style,
-    const LayoutObject* layout_object,
-    bool allow_visited_style) {
-  const CSSValue* start_value =
-      shorthand.properties()[0]->CSSValueFromComputedStyle(style, layout_object,
-                                                           allow_visited_style);
-  if (!start_value)
-    return nullptr;
-
-  const CSSValue* end_value =
-      shorthand.properties()[1]->CSSValueFromComputedStyle(style, layout_object,
-                                                           allow_visited_style);
-  if (!end_value)
-    end_value = start_value;
-  return MakeGarbageCollected<CSSValuePair>(start_value, end_value,
-                                            CSSValuePair::kDropIdenticalValues);
-}
-
 }  // namespace blink

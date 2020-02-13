@@ -3590,8 +3590,8 @@ void LocalFrameView::ScrollRectToVisibleInRemoteParent(
          safe_to_propagate_scroll_to_parent_);
   PhysicalRect new_rect = ConvertToRootFrame(rect_to_scroll);
   frame_->GetLocalFrameHostRemote().ScrollRectToVisibleInParentFrame(
-      WebRect(new_rect.X().ToInt(), new_rect.Y().ToInt(),
-              new_rect.Width().ToInt(), new_rect.Height().ToInt()),
+      gfx::Rect(new_rect.X().ToInt(), new_rect.Y().ToInt(),
+                new_rect.Width().ToInt(), new_rect.Height().ToInt()),
       std::move(params));
 }
 

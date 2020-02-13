@@ -75,22 +75,22 @@ public class ContentShellActivity extends Activity {
         }
 
         if (CommandLine.getInstance().hasSwitch(RUN_WEB_TESTS_SWITCH)) {
-            BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                    .startBrowserProcessesSync(false);
+            BrowserStartupController.getInstance().startBrowserProcessesSync(
+                    LibraryProcessType.PROCESS_BROWSER, false);
         } else {
-            BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                    .startBrowserProcessesAsync(
-                            true, false, new BrowserStartupController.StartupCallback() {
-                                @Override
-                                public void onSuccess() {
-                                    finishInitialization(savedInstanceState);
-                                }
+            BrowserStartupController.getInstance().startBrowserProcessesAsync(
+                    LibraryProcessType.PROCESS_BROWSER, true, false,
+                    new BrowserStartupController.StartupCallback() {
+                        @Override
+                        public void onSuccess() {
+                            finishInitialization(savedInstanceState);
+                        }
 
-                                @Override
-                                public void onFailure() {
-                                    initializationFailed();
-                                }
-                            });
+                        @Override
+                        public void onFailure() {
+                            initializationFailed();
+                        }
+                    });
         }
     }
 

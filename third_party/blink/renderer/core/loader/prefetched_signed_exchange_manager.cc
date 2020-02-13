@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/alternate_signed_exchange_resource_info.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/link_header.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -283,8 +284,9 @@ void PrefetchedSignedExchangeManager::TriggerLoad() {
         "Requesting the all original resources ignoreing all alternative signed"
         " exchange responses.";
     frame_->GetDocument()->AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kNetwork,
-                               mojom::ConsoleMessageLevel::kError, message));
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kNetwork,
+            mojom::ConsoleMessageLevel::kError, message));
     for (auto loader : loaders_) {
       if (!loader)
         continue;

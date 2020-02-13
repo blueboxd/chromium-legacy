@@ -33,6 +33,10 @@ class PasswordSaveUpdateWithAccountStoreView
                                          views::View* anchor_view,
                                          DisplayReason reason);
 
+  views::Combobox* DestinationDropdownForTesting() {
+    return destination_dropdown_;
+  }
+
  private:
   ~PasswordSaveUpdateWithAccountStoreView() override;
 

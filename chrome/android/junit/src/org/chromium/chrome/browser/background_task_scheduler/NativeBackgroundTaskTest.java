@@ -32,6 +32,7 @@ import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.LoaderErrors;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -75,11 +76,13 @@ public class NativeBackgroundTaskTest {
         private int mCallCount;
 
         @Override
-        public void startBrowserProcessesAsync(boolean startGpuProcess,
-                boolean startServiceManagerOnly, final StartupCallback callback) {}
+        public void startBrowserProcessesAsync(@LibraryProcessType int libraryProcessType,
+                boolean startGpuProcess, boolean startServiceManagerOnly,
+                final StartupCallback callback) {}
 
         @Override
-        public void startBrowserProcessesSync(boolean singleProcess) {}
+        public void startBrowserProcessesSync(
+                @LibraryProcessType int libraryProcessType, boolean singleProcess) {}
 
         @Override
         public boolean isFullBrowserStarted() {

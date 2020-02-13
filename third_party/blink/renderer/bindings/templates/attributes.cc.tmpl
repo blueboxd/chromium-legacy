@@ -440,9 +440,10 @@ static void {{attribute.camel_case_name}}AttributeSetter{{world_suffix}}(
     if (!IsValidEnum(cpp_value, kValidValues, base::size(kValidValues),
                      "{{attribute.enum_type}}", dummy_exception_state)) {
       ExecutionContext::ForCurrentRealm(info)->AddConsoleMessage(
-          ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                                 mojom::ConsoleMessageLevel::kWarning,
-                                 dummy_exception_state.Message()));
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::ConsoleMessageSource::kJavaScript,
+              mojom::ConsoleMessageLevel::kWarning,
+              dummy_exception_state.Message()));
       return;
     }
   }

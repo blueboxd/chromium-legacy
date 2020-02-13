@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -48,7 +49,7 @@ bool NavigationRateLimiter::CanProceed() {
   if (!error_message_sent_) {
     error_message_sent_ = true;
     if (auto* local_frame = DynamicTo<LocalFrame>(frame_.Get())) {
-      local_frame->Console().AddMessage(ConsoleMessage::Create(
+      local_frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kJavaScript,
           mojom::ConsoleMessageLevel::kWarning,
           "Throttling navigation to prevent the browser from hanging. See "

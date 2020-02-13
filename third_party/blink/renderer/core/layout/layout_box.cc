@@ -785,43 +785,36 @@ bool LayoutBox::HasOverrideIntrinsicContentWidth() const {
   if (!ShouldApplySizeContainment())
     return false;
 
-  const auto& style = StyleRef();
-  const IntrinsicLength& intrinsic_length = style.ContainIntrinsicWidth();
-  if (intrinsic_length.IsAuto())
-    return false;
-
-  return true;
+  const Length& intrinsic_length = StyleRef().ContainIntrinsicSize().Width();
+  return !intrinsic_length.IsAuto();
 }
 
 bool LayoutBox::HasOverrideIntrinsicContentHeight() const {
   if (!ShouldApplySizeContainment())
     return false;
 
-  const auto& style = StyleRef();
-  const IntrinsicLength& intrinsic_length = style.ContainIntrinsicHeight();
-  if (intrinsic_length.IsAuto())
-    return false;
-  return true;
+  const Length& intrinsic_length = StyleRef().ContainIntrinsicSize().Height();
+  return !intrinsic_length.IsAuto();
 }
 
 LayoutUnit LayoutBox::OverrideIntrinsicContentWidth() const {
   DCHECK(HasOverrideIntrinsicContentWidth());
   const auto& style = StyleRef();
-  const IntrinsicLength& intrinsic_length = style.ContainIntrinsicWidth();
+  const Length& intrinsic_length = style.ContainIntrinsicSize().Width();
   DCHECK(!intrinsic_length.IsAuto());
-  DCHECK(intrinsic_length.GetLength().IsFixed());
-  DCHECK_GE(intrinsic_length.GetLength().Value(), 0.f);
-  return LayoutUnit(intrinsic_length.GetLength().Value());
+  DCHECK(intrinsic_length.IsFixed());
+  DCHECK_GE(intrinsic_length.Value(), 0.f);
+  return LayoutUnit(intrinsic_length.Value());
 }
 
 LayoutUnit LayoutBox::OverrideIntrinsicContentHeight() const {
   DCHECK(HasOverrideIntrinsicContentHeight());
   const auto& style = StyleRef();
-  const IntrinsicLength& intrinsic_length = style.ContainIntrinsicHeight();
+  const Length& intrinsic_length = style.ContainIntrinsicSize().Height();
   DCHECK(!intrinsic_length.IsAuto());
-  DCHECK(intrinsic_length.GetLength().IsFixed());
-  DCHECK_GE(intrinsic_length.GetLength().Value(), 0.f);
-  return LayoutUnit(intrinsic_length.GetLength().Value());
+  DCHECK(intrinsic_length.IsFixed());
+  DCHECK_GE(intrinsic_length.Value(), 0.f);
+  return LayoutUnit(intrinsic_length.Value());
 }
 
 LayoutUnit LayoutBox::LogicalHeightWithVisibleOverflow() const {

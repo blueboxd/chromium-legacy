@@ -336,7 +336,11 @@ inline hb_script_t ICUScriptToHBScript(UScriptCode script) {
 // Whether |segment| corresponds to the newline character.
 bool IsNewlineSegment(const base::string16& text,
                       const internal::LineSegment& segment) {
-  return text[segment.char_range.start()] == '\n';
+  const size_t offset = segment.char_range.start();
+  const size_t length = segment.char_range.length();
+  DCHECK_LT(segment.char_range.start() + length - 1, text.length());
+  return (length == 1 && (text[offset] == '\r' || text[offset] == '\n')) ||
+         (length == 2 && text[offset] == '\r' && text[offset + 1] == '\n');
 }
 
 // Returns the line index considering the newline character. Line index is
@@ -1942,7 +1946,10 @@ void RenderTextHarfBuzz::ShapeRuns(
   // font fallbacks before reporting a missing glyph (see http://crbug/972090).
   std::vector<internal::TextRunHarfBuzz*> need_shaping_runs;
   for (internal::TextRunHarfBuzz*& run : runs) {
-    if (run->range.length() == 1 && text[run->range.start()] == '\n') {
+    if ((run->range.length() == 1 && (text[run->range.start()] == '\r' ||
+                                      text[run->range.start()] == '\n')) ||
+        (run->range.length() == 2 && text[run->range.start()] == '\r' &&
+         text[run->range.start() + 1] == '\n')) {
       // Newline runs can't be shaped. Shape this run as if the glyph is
       // missing.
       run->font_params = font_params;

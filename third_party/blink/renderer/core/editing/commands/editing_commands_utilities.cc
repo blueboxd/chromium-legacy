@@ -534,7 +534,7 @@ void TidyUpHTMLStructure(Document& document) {
   // documentElement as rootEditableElement is problematic.  So we move
   // non-<html> root elements under <body>, and the <body> works as
   // rootEditableElement.
-  document.AddConsoleMessage(ConsoleMessage::Create(
+  document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kJavaScript,
       mojom::ConsoleMessageLevel::kWarning,
       "document.execCommand() doesn't work with an invalid HTML structure. It "

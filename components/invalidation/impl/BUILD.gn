@@ -40,6 +40,7 @@ static_library("impl") {
     "invalidator_registrar_with_memory.h",
     "mock_ack_handler.cc",
     "mock_ack_handler.h",
+    "network_channel.h",
     "per_user_topic_subscription_manager.cc",
     "per_user_topic_subscription_manager.h",
     "per_user_topic_subscription_request.cc",
@@ -73,20 +74,11 @@ static_library("impl") {
     # metrics" bit should be part of a Topic.
     "//components/sync/base",
     "//google_apis",
-    "//jingle:notifier",
     "//net:net",
     "//services/data_decoder/public/cpp",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
   ]
-
-  if (!is_android) {
-    sources += [
-      "network_channel.h",
-      "notifier_reason_util.cc",
-      "notifier_reason_util.h",
-    ]
-  }
 }
 
 source_set("unit_tests") {
@@ -152,14 +144,12 @@ static_library("test_support") {
 
   public_deps = [
     ":impl",
-    "//jingle:notifier_test_util",
     "//third_party/cacheinvalidation",
   ]
   deps = [
     "//base",
     "//components/gcm_driver:test_support",
     "//components/keyed_service/core",
-    "//jingle:notifier",
     "//net",
     "//testing/gmock",
     "//testing/gtest",

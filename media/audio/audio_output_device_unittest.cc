@@ -199,17 +199,13 @@ void AudioOutputDeviceTest::CallOnStreamCreated() {
   // Create duplicates of the handles we pass to AudioOutputDevice since
   // ownership will be transferred and AudioOutputDevice is responsible for
   // freeing.
-  SyncSocket::TransitDescriptor audio_device_socket_descriptor;
-  ASSERT_TRUE(renderer_socket_.PrepareTransitDescriptor(
-      base::GetCurrentProcessHandle(), &audio_device_socket_descriptor));
   base::UnsafeSharedMemoryRegion duplicated_memory_region =
       shared_memory_region_.Duplicate();
   ASSERT_TRUE(duplicated_memory_region.IsValid());
 
-  audio_device_->OnStreamCreated(
-      std::move(duplicated_memory_region),
-      SyncSocket::UnwrapHandle(audio_device_socket_descriptor),
-      /*playing_automatically*/ false);
+  audio_device_->OnStreamCreated(std::move(duplicated_memory_region),
+                                 renderer_socket_.Release(),
+                                 /*playing_automatically*/ false);
   task_env_.FastForwardBy(base::TimeDelta());
 }
 

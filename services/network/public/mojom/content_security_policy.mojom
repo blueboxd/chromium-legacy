@@ -72,6 +72,8 @@ struct CSPSourceList {
 };
 
 enum CSPDirectiveName {
+  Unknown,
+
   DefaultSrc,
   ChildSrc,
   FrameSrc,
@@ -79,17 +81,10 @@ enum CSPDirectiveName {
   UpgradeInsecureRequests,
   NavigateTo,
   FrameAncestors,
-
-  Unknown,
-};
-
-struct CSPDirective {
-  CSPDirectiveName name;
-  CSPSourceList source_list;
 };
 
 struct ContentSecurityPolicy {
-  array<CSPDirective> directives;
+  map<CSPDirectiveName, CSPSourceList> directives;
 
   ContentSecurityPolicyHeader header;
 

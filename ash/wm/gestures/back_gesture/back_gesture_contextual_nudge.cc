@@ -7,6 +7,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "base/timer/timer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/paint_recorder.h"
@@ -46,16 +47,24 @@ constexpr SkColor kLabelColor = gfx::kGoogleGrey200;
 constexpr int kLabelWidth = 80;
 constexpr int kLabelHeight = 80;
 
-// Duration for the animation to show/hide the nudge.
-constexpr base::TimeDelta kNudgeAnimationDuration =
+// Duration of the pause before sliding in to show the nudge.
+constexpr base::TimeDelta kPauseBeforeShowAnimationDuration =
+    base::TimeDelta::FromSeconds(2);
+
+// Duration for the animation to show the nudge.
+constexpr base::TimeDelta kNudgeShowAnimationDuration =
     base::TimeDelta::FromMilliseconds(600);
 
-// Duration for the animation of the suggestion part of the nudge.
-constexpr base::TimeDelta kSuggestionAnimationDuration =
-    base::TimeDelta::FromMilliseconds(250);
+// Duration for the animation to hide the nudge.
+constexpr base::TimeDelta kNudgeHideAnimationDuration =
+    base::TimeDelta::FromMilliseconds(400);
 
-// Repeat times of the suggestion animation.
-constexpr int kSuggestionAnimationRepeatTimes = 5;
+// Duration for the animation of the suggestion part of the nudge.
+constexpr base::TimeDelta kSuggestionBounceAnimationDuration =
+    base::TimeDelta::FromMilliseconds(600);
+
+// Repeat bouncing times of the suggestion animation.
+constexpr int kSuggestionAnimationRepeatTimes = 4;
 
 std::unique_ptr<views::Widget> CreateWidget() {
   auto widget = std::make_unique<views::Widget>();
@@ -127,14 +136,16 @@ class ContextualNudgeView : public views::View,
 
     AddChildView(suggestion_view_);
 
-    ScheduleOffScreenToStartPositionAnimation();
+    show_timer_.Start(
+        FROM_HERE, kPauseBeforeShowAnimationDuration, this,
+        &ContextualNudgeView::ScheduleOffScreenToStartPositionAnimation);
   }
 
   ~ContextualNudgeView() override { StopObservingImplicitAnimations(); }
 
  private:
   // Used to show the suggestion information of the nudge, which includes the
-  // affrodance and a label.
+  // affordance and a label.
   class SuggestionView : public views::View,
                          public ui::ImplicitAnimationObserver {
    public:
@@ -157,18 +168,18 @@ class ContextualNudgeView : public views::View,
     void ScheduleBounceAnimation() {
       gfx::Transform transform;
       const int x_offset = kCircleRadius - kCircleInsideScreenWidth;
-      transform.Translate(x_offset, 0);
+      transform.Translate(-x_offset, 0);
       ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
       animation.AddObserver(this);
-      animation.SetTransitionDuration(kSuggestionAnimationDuration);
-      animation.SetTweenType(gfx::Tween::EASE_IN);
+      animation.SetTransitionDuration(kSuggestionBounceAnimationDuration);
+      animation.SetTweenType(gfx::Tween::EASE_IN_OUT_2);
       animation.SetPreemptionStrategy(
           ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
       layer()->SetTransform(transform);
 
-      transform.Translate(-x_offset, 0);
-      animation.SetTransitionDuration(kSuggestionAnimationDuration);
-      animation.SetTweenType(gfx::Tween::EASE_OUT);
+      transform.Translate(x_offset, 0);
+      animation.SetTransitionDuration(kSuggestionBounceAnimationDuration);
+      animation.SetTweenType(gfx::Tween::EASE_IN_OUT_2);
       animation.SetPreemptionStrategy(ui::LayerAnimator::ENQUEUE_NEW_ANIMATION);
       layer()->SetTransform(transform);
     }
@@ -221,8 +232,8 @@ class ContextualNudgeView : public views::View,
     transform.Translate(kBackgroundWidth, 0);
     ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
     animation.AddObserver(this);
-    animation.SetTransitionDuration(kNudgeAnimationDuration);
-    animation.SetTweenType(gfx::Tween::EASE_IN);
+    animation.SetTransitionDuration(kNudgeShowAnimationDuration);
+    animation.SetTweenType(gfx::Tween::LINEAR_OUT_SLOW_IN);
     layer()->SetTransform(transform);
   }
 
@@ -231,8 +242,8 @@ class ContextualNudgeView : public views::View,
     gfx::Transform transform;
     transform.Translate(-kBackgroundWidth, 0);
     ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
-    animation.SetTransitionDuration(kNudgeAnimationDuration);
-    animation.SetTweenType(gfx::Tween::EASE_OUT);
+    animation.SetTransitionDuration(kNudgeHideAnimationDuration);
+    animation.SetTweenType(gfx::Tween::EASE_OUT_2);
     layer()->SetTransform(transform);
   }
 
@@ -243,7 +254,7 @@ class ContextualNudgeView : public views::View,
 
     gfx::Rect rect(bounds);
     rect.ClampToCenteredSize(gfx::Size(kBackgroundWidth, kBackgroundWidth));
-    rect.set_x(-2 * kCircleRadius + kCircleInsideScreenWidth);
+    rect.set_x(-kCircleRadius);
     suggestion_view_->SetBoundsRect(rect);
   }
 
@@ -262,6 +273,9 @@ class ContextualNudgeView : public views::View,
 
   // Created by ContextualNudgeView. Owned by views hierarchy.
   SuggestionView* suggestion_view_ = nullptr;
+
+  // Timer to start show the sliding in animation.
+  base::OneShotTimer show_timer_;
 
   ContextualNudgeView(const ContextualNudgeView&) = delete;
   ContextualNudgeView& operator=(const ContextualNudgeView&) = delete;

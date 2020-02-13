@@ -822,16 +822,11 @@ void SplitViewController::OnOverviewButtonTrayLongPressed(
   if (!ShouldAllowSplitView())
     return;
 
-  // Depending on the state of the windows and split view, a long press has many
-  // different results.
-  // 1. Already in split view - exit split view. The active snapped window
-  // becomes maximized. If overview was seen alongside a snapped window, then
-  // overview mode ends.
-  // 2. Not in overview mode - enter split view iff there is an active window
-  // and it is snappable.
-  // 3. In overview mode - enter split view iff there are at least two windows
-  // in the overview grid for the display where the overview button was long
-  // pressed, and the first window in that overview grid is snappable.
+  // If in split view: The active snapped window becomes maximized. If overview
+  // was seen alongside a snapped window, then overview mode ends.
+  //
+  // Otherwise: Enter split view iff the cycle list has at least one window, and
+  // the first one is snappable.
 
   MruWindowTracker::WindowList mru_window_list =
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
@@ -862,21 +857,8 @@ void SplitViewController::OnOverviewButtonTrayLongPressed(
   }
 
   // Start overview mode if we aren't already in it.
-  if (!overview_controller->InOverviewSession()) {
-    // If we are not in overview mode, enter overview mode and then find the
-    // window item to snap.
-    overview_controller->StartOverview(
-        OverviewSession::EnterExitOverviewType::kImmediateEnter);
-  } else {
-    // If we are already in overview, do nothing if there is one window or less.
-    OverviewSession* overview_session = overview_controller->overview_session();
-    DCHECK(overview_session);
-    OverviewGrid* grid = overview_session->GetGridWithRootWindow(
-        window_util::GetRootWindowAt(event_location));
-    DCHECK(grid);
-    if (grid->window_list().size() < 2)
-      return;
-  }
+  overview_controller->StartOverview(
+      OverviewSession::EnterExitOverviewType::kImmediateEnter);
 
   SnapWindow(target_window, SplitViewController::LEFT);
   wm::ActivateWindow(target_window);

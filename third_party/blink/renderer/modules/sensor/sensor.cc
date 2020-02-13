@@ -68,7 +68,7 @@ Sensor::Sensor(ExecutionContext* execution_context,
       String message = String::Format(
           "Maximum allowed frequency value for this sensor type is %.0f Hz.",
           max_allowed_frequency);
-      ConsoleMessage* console_message = ConsoleMessage::Create(
+      auto* console_message = MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kJavaScript,
           mojom::ConsoleMessageLevel::kInfo, std::move(message));
       execution_context->AddConsoleMessage(console_message);

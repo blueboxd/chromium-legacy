@@ -47,7 +47,6 @@ class Range;
 class WebLocalFrameImpl;
 class WebString;
 struct WebFloatRect;
-struct WebRect;
 
 class CORE_EXPORT TextFinder final : public GarbageCollected<TextFinder> {
  public:
@@ -63,10 +62,10 @@ class CORE_EXPORT TextFinder final : public GarbageCollected<TextFinder> {
   int FindMatchMarkersVersion() const { return find_match_markers_version_; }
   WebFloatRect ActiveFindMatchRect();
   Vector<WebFloatRect> FindMatchRects();
-  int SelectNearestFindMatch(const gfx::PointF&, WebRect* selection_rect);
+  int SelectNearestFindMatch(const gfx::PointF&, gfx::Rect* selection_rect);
 
   // Starts brand new scoping request: resets the scoping state and
-  // asyncronously calls scopeStringMatches().
+  // asynchronously calls scopeStringMatches().
   void StartScopingStringMatches(int identifier,
                                  const WebString& search_text,
                                  const mojom::blink::FindOptions& options);
@@ -140,7 +139,7 @@ class CORE_EXPORT TextFinder final : public GarbageCollected<TextFinder> {
 
  private:
   // Notifies the delegate about a new selection rect.
-  void ReportFindInPageSelection(const WebRect& selection_rect,
+  void ReportFindInPageSelection(const gfx::Rect& selection_rect,
                                  int active_match_ordinal,
                                  int identifier);
 
@@ -155,7 +154,7 @@ class CORE_EXPORT TextFinder final : public GarbageCollected<TextFinder> {
   // match index returned by nearestFindMatch. Returns the ordinal of the new
   // selected match or -1 in case of error. Also provides the bounding box of
   // the marker in window coordinates if selectionRect is not null.
-  int SelectFindMatch(unsigned index, WebRect* selection_rect);
+  int SelectFindMatch(unsigned index, gfx::Rect* selection_rect);
 
   // Compute and cache the rects for FindMatches if required.
   // Rects are automatically invalidated in case of content size changes.

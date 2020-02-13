@@ -219,6 +219,15 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
       0x05ac, 0x026c, 0x0111);
   fake_udev->AddFakeDevice(external_apple_kbd.name,
                            external_apple_kbd.sys_path.value(), {}, {});
+  // Chrome OS external USB keyboard.
+  const ui::InputDevice external_chromeos_kbd(
+      4, ui::INPUT_DEVICE_USB, "LG USB Keyboard", "",
+      base::FilePath("/devices/pci0000:00/0000:00:14.0/usb1/1-1/1-1:1.0/"
+                     "0003:04CA:0082.000B/input/input4"),
+      0x04ca, 0x0082, 0x0111);
+  fake_udev->AddFakeDevice(external_chromeos_kbd.name,
+                           external_chromeos_kbd.sys_path.value(), {},
+                           {{"CROS_KEYBOARD_TOP_ROW_LAYOUT", "1"}});
 
   // An internal keyboard shouldn't change the defaults.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -238,6 +247,16 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
   EXPECT_TRUE(HasInternalSearchKey());
   EXPECT_TRUE(HasCapsLock());
   EXPECT_TRUE(HasExternalMetaKey());
+  EXPECT_FALSE(HasAppleCommandKey());
+  EXPECT_FALSE(HasAssistantKey());
+
+  // However when connecting external ChromeOS-branded keyboard, we should not
+  // see neither CapsLock not meta keys.
+  device_data_manager_test_api_.SetKeyboardDevices(
+      std::vector<ui::InputDevice>{internal_kbd, external_chromeos_kbd});
+  EXPECT_TRUE(HasInternalSearchKey());
+  EXPECT_FALSE(HasCapsLock());
+  EXPECT_FALSE(HasExternalMetaKey());
   EXPECT_FALSE(HasAppleCommandKey());
   EXPECT_FALSE(HasAssistantKey());
 
@@ -266,7 +285,7 @@ TEST_F(KeyboardHandlerTest, ExternalKeyboard) {
   // should show the capslock and external meta remapping.
   // https://crbug.com/834594.
   device_data_manager_test_api_.SetKeyboardDevices(std::vector<ui::InputDevice>{
-      {4, ui::INPUT_DEVICE_USB, "Topre Corporation Realforce 87", "",
+      {5, ui::INPUT_DEVICE_USB, "Topre Corporation Realforce 87", "",
        external_generic_kbd.sys_path, 0x046d, 0xc31c, 0x0111}});
   EXPECT_FALSE(HasInternalSearchKey());
   EXPECT_TRUE(HasCapsLock());

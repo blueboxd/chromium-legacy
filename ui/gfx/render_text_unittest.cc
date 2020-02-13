@@ -1185,6 +1185,20 @@ TEST_F(RenderTextTest, ObscuredTextMultiline) {
   EXPECT_EQ(display_text[4], '\n');
 }
 
+TEST_F(RenderTextTest, ObscuredTextMultilineNewline) {
+  const base::string16 test = UTF8ToUTF16("\r\r\n");
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(test);
+  render_text->SetObscured(true);
+  render_text->SetMultiline(true);
+
+  // Newlines should be kept in multiline mode.
+  base::string16 display_text = render_text->GetDisplayText();
+  EXPECT_EQ(display_text[0], '\r');
+  EXPECT_EQ(display_text[1], '\r');
+  EXPECT_EQ(display_text[2], '\n');
+}
+
 TEST_F(RenderTextTest, RevealObscuredText) {
   const base::string16 seuss = UTF8ToUTF16("hop on pop");
   const base::string16 no_seuss = GetObscuredString(seuss.length());
@@ -1421,6 +1435,7 @@ struct RunListCase {
   const char* test_name;
   const wchar_t* text;
   const char* expected;
+  const bool multiline = false;
 };
 
 class RenderTextTestWithRunListCase
@@ -1436,6 +1451,7 @@ class RenderTextTestWithRunListCase
 TEST_P(RenderTextTestWithRunListCase, ItemizeTextToRuns) {
   RunListCase param = GetParam();
   RenderTextHarfBuzz* render_text = GetRenderText();
+  render_text->SetMultiline(param.multiline);
   render_text->SetText(WideToUTF16(param.text));
   EXPECT_EQ(param.expected, GetRunListStructureString());
 }
@@ -1463,6 +1479,12 @@ const RunListCase kBasicsRunListCases[] = {
      "[0][1][2][3][4]"},  // http://crbug.com/396776
     {"jap_paren2", L"國哲(c)1",
      "[0->1][2][3][4][5]"},  // http://crbug.com/125792
+    {"newline1", L"\n\n", "[0->1]"},
+    {"newline2", L"\r\n\r\n", "[0->3]"},
+    {"newline3", L"\r\r\n", "[0->2]"},
+    {"multiline_newline1", L"\n\n", "[0][1]", true},
+    {"multiline_newline2", L"\r\n\r\n", "[0->1][2->3]", true},
+    {"multiline_newline3", L"\r\r\n", "[0][1->2]", true},
 };
 
 INSTANTIATE_TEST_SUITE_P(ItemizeTextToRunsBasics,
@@ -5403,7 +5425,7 @@ TEST_F(RenderTextTest, ControlCharacterReplacement) {
 
   // Setting multiline, the newline character will be back to the original text.
   render_text->SetMultiline(true);
-  EXPECT_EQ(WideToUTF16(L"␈␍␇␉\n␋␌"), render_text->GetDisplayText());
+  EXPECT_EQ(WideToUTF16(L"␈\r␇␉\n␋␌"), render_text->GetDisplayText());
 
   // The generic control characters should have been replaced by the replacement
   // codepoints.

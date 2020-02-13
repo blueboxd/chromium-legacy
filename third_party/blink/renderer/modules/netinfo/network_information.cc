@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -312,7 +313,7 @@ void NetworkInformation::MaybeShowWebHoldbackConsoleMsg() {
   web_holdback_console_message_shown_ = true;
   if (!GetNetworkStateNotifier().GetWebHoldbackEffectiveType())
     return;
-  GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+  GetExecutionContext()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kWarning,
       GetConsoleLogStringForWebHoldback()));
 }

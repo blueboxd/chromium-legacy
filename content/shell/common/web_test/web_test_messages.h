@@ -8,8 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/optional.h"
-#include "base/strings/string16.h"
 #include "content/public/common/common_param_traits_macros.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
@@ -21,16 +19,9 @@
 
 IPC_MESSAGE_ROUTED0(WebTestHostMsg_ClearAllDatabases)
 IPC_MESSAGE_ROUTED1(WebTestHostMsg_SetDatabaseQuota, int /* quota */)
-IPC_MESSAGE_ROUTED3(WebTestHostMsg_SimulateWebNotificationClick,
-                    std::string /* title */,
-                    base::Optional<int> /* action_index */,
-                    base::Optional<base::string16> /* reply */)
 IPC_MESSAGE_ROUTED2(WebTestHostMsg_InitiateCaptureDump,
                     bool /* should dump navigation history */,
                     bool /* should dump pixels */)
-
-IPC_MESSAGE_ROUTED1(WebTestHostMsg_SetFilePathForMockFileDialog,
-                    base::FilePath /* local_path */)
 
 // Used send flag changes to renderers - either when
 // 1) broadcasting change happening in one renderer to all other renderers, or

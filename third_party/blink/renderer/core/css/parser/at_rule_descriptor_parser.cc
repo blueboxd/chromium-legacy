@@ -73,7 +73,7 @@ CSSValueList* ConsumeFontFaceUnicodeRange(CSSParserTokenRange& range) {
 CSSValue* ConsumeFontFaceSrcURI(CSSParserTokenRange& range,
                                 const CSSParserContext& context) {
   String url =
-      css_property_parser_helpers::ConsumeUrlAsStringView(range, &context)
+      css_property_parser_helpers::ConsumeUrlAsStringView(range, context)
           .ToString();
   if (url.IsNull())
     return nullptr;
@@ -171,10 +171,12 @@ CSSValue* AtRuleDescriptorParser::ParseFontFaceDescriptor(
       parsed_value = css_parsing_utils::ConsumeFontStretch(range, context);
       break;
     }
-    case AtRuleDescriptorID::FontStyle:
-      parsed_value =
-          css_parsing_utils::ConsumeFontStyle(range, kCSSFontFaceRuleMode);
+    case AtRuleDescriptorID::FontStyle: {
+      CSSParserContext::ParserModeOverridingScope scope(context,
+                                                        kCSSFontFaceRuleMode);
+      parsed_value = css_parsing_utils::ConsumeFontStyle(range, context);
       break;
+    }
     case AtRuleDescriptorID::FontVariant:
       parsed_value = ConsumeFontVariantList(range);
       break;

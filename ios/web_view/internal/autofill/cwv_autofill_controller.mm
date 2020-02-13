@@ -118,7 +118,8 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 - (instancetype)initWithWebState:(web::WebState*)webState
                    autofillAgent:(AutofillAgent*)autofillAgent
                JSAutofillManager:(JsAutofillManager*)JSAutofillManager
-             JSSuggestionManager:(JsSuggestionManager*)JSSuggestionManager {
+             JSSuggestionManager:(JsSuggestionManager*)JSSuggestionManager
+              passwordController:(CWVPasswordController*)passwordController {
   self = [super init];
   if (self) {
     DCHECK(webState);
@@ -161,9 +162,8 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 
     _JSSuggestionManager = JSSuggestionManager;
 
-    _passwordController =
-        [[CWVPasswordController alloc] initWithWebState:webState
-                                            andDelegate:self];
+    _passwordController = passwordController;
+    _passwordController.delegate = self;
   }
   return self;
 }

@@ -257,7 +257,7 @@ void ValidateShippingOptionOrPaymentItem(const T* item,
   }
 
   if (item->label().IsEmpty()) {
-    execution_context.AddConsoleMessage(ConsoleMessage::Create(
+    execution_context.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kError,
         "Empty " + item_name + " label may be confusing the user"));
@@ -316,7 +316,7 @@ void ValidateAndConvertShippingOptions(
     }
 
     if (option->id().IsEmpty()) {
-      execution_context.AddConsoleMessage(ConsoleMessage::Create(
+      execution_context.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kJavaScript,
           mojom::ConsoleMessageLevel::kWarning,
           "Empty shipping option ID may be hard to debug"));
@@ -653,9 +653,9 @@ void WarnIgnoringQueryQuotaForCanMakePayment(
       "reject the promise, but allowing continued usage on localhost and "
       "file:// scheme origins.",
       method_name);
-  execution_context.AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                             mojom::ConsoleMessageLevel::kWarning, error));
+  execution_context.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kWarning, error));
 }
 
 }  // namespace
@@ -862,36 +862,40 @@ ScriptPromise PaymentRequest::Retry(ScriptState* script_state,
   if (!options_->requestPayerName() && errors->hasPayer() &&
       errors->payer()->hasName()) {
     GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kWarning,
-                               "The payer.name passed to retry() may not be "
-                               "shown because requestPayerName is false"));
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
+            "The payer.name passed to retry() may not be "
+            "shown because requestPayerName is false"));
   }
 
   if (!options_->requestPayerEmail() && errors->hasPayer() &&
       errors->payer()->hasEmail()) {
     GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kWarning,
-                               "The payer.email passed to retry() may not be "
-                               "shown because requestPayerEmail is false"));
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
+            "The payer.email passed to retry() may not be "
+            "shown because requestPayerEmail is false"));
   }
 
   if (!options_->requestPayerPhone() && errors->hasPayer() &&
       errors->payer()->hasPhone()) {
     GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kWarning,
-                               "The payer.phone passed to retry() may not be "
-                               "shown because requestPayerPhone is false"));
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
+            "The payer.phone passed to retry() may not be "
+            "shown because requestPayerPhone is false"));
   }
 
   if (!options_->requestShipping() && errors->hasShippingAddress()) {
     GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kWarning,
-                               "The shippingAddress passed to retry() may not "
-                               "be shown because requestShipping is false"));
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
+            "The shippingAddress passed to retry() may not "
+            "be shown because requestShipping is false"));
   }
 
   complete_timer_.Stop();
@@ -1458,15 +1462,15 @@ void PaymentRequest::OnHasEnrolledInstrument(
 }
 
 void PaymentRequest::WarnNoFavicon() {
-  GetExecutionContext()->AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                             mojom::ConsoleMessageLevel::kWarning,
-                             "Favicon not found for PaymentRequest UI. User "
-                             "may not recognize the website."));
+  GetExecutionContext()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kWarning,
+      "Favicon not found for PaymentRequest UI. User "
+      "may not recognize the website."));
 }
 
 void PaymentRequest::OnCompleteTimeout(TimerBase*) {
-  GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+  GetExecutionContext()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kJavaScript,
       mojom::ConsoleMessageLevel::kError,
       "Timed out waiting for a PaymentResponse.complete() call."));
@@ -1521,8 +1525,9 @@ void PaymentRequest::DispatchPaymentRequestUpdateEvent(
         "line items and total.",
         event->type().Ascii().c_str());
     GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kWarning, message));
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning, message));
     payment_provider_->OnPaymentDetailsNotUpdated();
     // Make sure that updateWith() is only allowed to be called within the same
     // event loop as the event dispatch. See

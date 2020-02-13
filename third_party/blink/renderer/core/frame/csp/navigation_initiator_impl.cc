@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -25,7 +26,7 @@ void NavigationInitiatorImpl::SendViolationReport(
       violation->source_location->url, violation->source_location->line,
       violation->source_location->column, nullptr);
 
-  document_->AddConsoleMessage(ConsoleMessage::Create(
+  document_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kSecurity,
       mojom::ConsoleMessageLevel::kError, violation->console_message));
 

@@ -7,6 +7,7 @@
 #include "base/cancelable_callback.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/timer/timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/geometry/rect.h"
@@ -49,16 +50,28 @@ void CheckApproximatelyEqual(const gfx::RoundedCornersF& lhs,
   EXPECT_FLOAT_EQ(lhs.lower_right(), rhs.lower_right());
 }
 
-void WaitForNextFrameToBePresented(ui::Compositor* compositor) {
+bool WaitForNextFrameToBePresented(ui::Compositor* compositor,
+                                   base::Optional<base::TimeDelta> timeout) {
+  bool frames_presented = false;
   base::RunLoop runloop;
   base::CancelableOnceCallback<void(const gfx::PresentationFeedback&)>
       cancelable_callback(base::BindLambdaForTesting(
-          [&runloop](const gfx::PresentationFeedback& feedback) {
+          [&](const gfx::PresentationFeedback& feedback) {
+            frames_presented = true;
             runloop.Quit();
           }));
   compositor->RequestPresentationTimeForNextFrame(
       cancelable_callback.callback());
+
+  base::Optional<base::OneShotTimer> timer;
+  if (timeout.has_value()) {
+    timer.emplace();
+    timer->Start(FROM_HERE, timeout.value(), runloop.QuitClosure());
+  }
+
   runloop.Run();
+
+  return frames_presented;
 }
 
 }  // namespace ui

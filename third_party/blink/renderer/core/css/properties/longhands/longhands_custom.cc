@@ -490,7 +490,7 @@ const CSSValue* BackgroundImage::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return css_property_parser_helpers::ConsumeCommaSeparatedList(
-      css_property_parser_helpers::ConsumeImageOrNone, range, &context);
+      css_property_parser_helpers::ConsumeImageOrNone, range, context);
 }
 
 const CSSValue* BackgroundImage::CSSValueFromComputedStyleInternal(
@@ -860,7 +860,7 @@ const CSSValue* BorderImageSource::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return css_property_parser_helpers::ConsumeImageOrNone(range, &context);
+  return css_property_parser_helpers::ConsumeImageOrNone(range, context);
 }
 
 const CSSValue* BorderImageSource::CSSValueFromComputedStyleInternal(
@@ -1344,7 +1344,7 @@ const CSSValue* ClipPath::ParseSingleValue(CSSParserTokenRange& range,
   if (range.Peek().Id() == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
   if (cssvalue::CSSURIValue* url =
-          css_property_parser_helpers::ConsumeUrl(range, &context))
+          css_property_parser_helpers::ConsumeUrl(range, context))
     return url;
   return css_parsing_utils::ConsumeBasicShape(range, context);
 }
@@ -1758,56 +1758,40 @@ const CSSValue* Contain::CSSValueFromComputedStyleInternal(
   return list;
 }
 
-const CSSValue* ContainIntrinsicBlockSize::ParseSingleValue(
+const CSSValue* ContainIntrinsicSize::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return css_parsing_utils::ConsumeIntrinsicLength(range, context);
+  if (range.Peek().Id() == CSSValueID::kAuto)
+    return css_property_parser_helpers::ConsumeIdent(range);
+  CSSValue* width = css_property_parser_helpers::ConsumeLength(
+      range, context, kValueRangeNonNegative);
+  if (!width)
+    return nullptr;
+  CSSValue* height = css_property_parser_helpers::ConsumeLength(
+      range, context, kValueRangeNonNegative);
+  if (!height)
+    height = width;
+  return MakeGarbageCollected<CSSValuePair>(width, height,
+                                            CSSValuePair::kDropIdenticalValues);
 }
 
-const CSSValue* ContainIntrinsicInlineSize::ParseSingleValue(
-    CSSParserTokenRange& range,
-    const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
-  return css_parsing_utils::ConsumeIntrinsicLength(range, context);
-}
-
-const CSSValue* ContainIntrinsicWidth::ParseSingleValue(
-    CSSParserTokenRange& range,
-    const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
-  return css_parsing_utils::ConsumeIntrinsicLength(range, context);
-}
-
-const CSSValue* ContainIntrinsicWidth::CSSValueFromComputedStyleInternal(
+const CSSValue* ContainIntrinsicSize::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  auto& width = style.ContainIntrinsicWidth();
-  if (width.IsAuto())
+  auto& size = style.ContainIntrinsicSize();
+  if (size.Width().IsAuto()) {
+    DCHECK(size.Height().IsAuto());
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
-  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(width.GetLength(),
-                                                             style);
-}
-
-const CSSValue* ContainIntrinsicHeight::ParseSingleValue(
-    CSSParserTokenRange& range,
-    const CSSParserContext& context,
-    const CSSParserLocalContext&) const {
-  return css_parsing_utils::ConsumeIntrinsicLength(range, context);
-}
-
-const CSSValue* ContainIntrinsicHeight::CSSValueFromComputedStyleInternal(
-    const ComputedStyle& style,
-    const SVGComputedStyle&,
-    const LayoutObject* layout_object,
-    bool allow_visited_style) const {
-  auto& height = style.ContainIntrinsicHeight();
-  if (height.IsAuto())
-    return CSSIdentifierValue::Create(CSSValueID::kAuto);
-  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(height.GetLength(),
-                                                             style);
+  }
+  return MakeGarbageCollected<CSSValuePair>(
+      ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+          style.ContainIntrinsicSize().Width(), style),
+      ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+          style.ContainIntrinsicSize().Height(), style),
+      CSSValuePair::kDropIdenticalValues);
 }
 
 namespace {
@@ -1882,7 +1866,7 @@ const CSSValue* Content::ParseSingleValue(CSSParserTokenRange& range,
   bool alt_text_present = false;
   do {
     CSSValue* parsed_value =
-        css_property_parser_helpers::ConsumeImage(range, &context);
+        css_property_parser_helpers::ConsumeImage(range, context);
     if (!parsed_value) {
       parsed_value = css_property_parser_helpers::ConsumeIdent<
           CSSValueID::kOpenQuote, CSSValueID::kCloseQuote,
@@ -2081,7 +2065,7 @@ const CSSValue* Cursor::ParseSingleValue(CSSParserTokenRange& range,
   CSSValueList* list = nullptr;
   while (
       CSSValue* image = css_property_parser_helpers::ConsumeImage(
-          range, &context,
+          range, context,
           css_property_parser_helpers::ConsumeGeneratedImagePolicy::kForbid)) {
     double num;
     IntPoint hot_spot(-1, -1);
@@ -2634,7 +2618,7 @@ const CSSValue* FontStyle::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return css_parsing_utils::ConsumeFontStyle(range, context.Mode());
+  return css_parsing_utils::ConsumeFontStyle(range, context);
 }
 
 const CSSValue* FontStyle::CSSValueFromComputedStyleInternal(
@@ -3749,7 +3733,7 @@ const CSSValue* ListStyleImage::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return css_property_parser_helpers::ConsumeImageOrNone(range, &context);
+  return css_property_parser_helpers::ConsumeImageOrNone(range, context);
 }
 
 const CSSValue* ListStyleImage::CSSValueFromComputedStyleInternal(
@@ -4006,7 +3990,7 @@ const CSSValue* MarkerEnd::ParseSingleValue(
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
-  return css_property_parser_helpers::ConsumeUrl(range, &context);
+  return css_property_parser_helpers::ConsumeUrl(range, context);
 }
 
 const CSSValue* MarkerEnd::CSSValueFromComputedStyleInternal(
@@ -4023,7 +4007,7 @@ const CSSValue* MarkerMid::ParseSingleValue(
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
-  return css_property_parser_helpers::ConsumeUrl(range, &context);
+  return css_property_parser_helpers::ConsumeUrl(range, context);
 }
 
 const CSSValue* MarkerMid::CSSValueFromComputedStyleInternal(
@@ -4040,7 +4024,7 @@ const CSSValue* MarkerStart::ParseSingleValue(
     const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
-  return css_property_parser_helpers::ConsumeUrl(range, &context);
+  return css_property_parser_helpers::ConsumeUrl(range, context);
 }
 
 const CSSValue* MarkerStart::CSSValueFromComputedStyleInternal(
@@ -4057,7 +4041,7 @@ const CSSValue* Mask::ParseSingleValue(CSSParserTokenRange& range,
                                        const CSSParserLocalContext&) const {
   if (range.Peek().Id() == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
-  return css_property_parser_helpers::ConsumeUrl(range, &context);
+  return css_property_parser_helpers::ConsumeUrl(range, context);
 }
 
 const CSSValue* Mask::CSSValueFromComputedStyleInternal(
@@ -5075,7 +5059,7 @@ const CSSValue* Rotate::ParseSingleValue(CSSParserTokenRange& range,
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
 
   CSSValue* rotation = css_property_parser_helpers::ConsumeAngle(
-      range, &context, base::Optional<WebFeature>());
+      range, context, base::Optional<WebFeature>());
 
   CSSValue* axis = css_property_parser_helpers::ConsumeAxis(range, context);
   if (axis)
@@ -5085,7 +5069,7 @@ const CSSValue* Rotate::ParseSingleValue(CSSParserTokenRange& range,
 
   if (!rotation) {
     rotation = css_property_parser_helpers::ConsumeAngle(
-        range, &context, base::Optional<WebFeature>());
+        range, context, base::Optional<WebFeature>());
     if (!rotation)
       return nullptr;
   }
@@ -5588,7 +5572,7 @@ const CSSValue* ShapeOutside::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   if (CSSValue* image_value =
-          css_property_parser_helpers::ConsumeImageOrNone(range, &context))
+          css_property_parser_helpers::ConsumeImageOrNone(range, context))
     return image_value;
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   CSSValue* box_value = css_property_parser_helpers::ConsumeShapeBox(range);
@@ -7162,7 +7146,7 @@ const CSSValue* WebkitMaskBoxImageSource::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return css_property_parser_helpers::ConsumeImageOrNone(range, &context);
+  return css_property_parser_helpers::ConsumeImageOrNone(range, context);
 }
 
 const CSSValue* WebkitMaskBoxImageSource::CSSValueFromComputedStyleInternal(
@@ -7247,7 +7231,7 @@ const CSSValue* WebkitMaskImage::ParseSingleValue(
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return css_property_parser_helpers::ConsumeCommaSeparatedList(
-      css_property_parser_helpers::ConsumeImageOrNone, range, &context);
+      css_property_parser_helpers::ConsumeImageOrNone, range, context);
 }
 
 const CSSValue* WebkitMaskImage::CSSValueFromComputedStyleInternal(

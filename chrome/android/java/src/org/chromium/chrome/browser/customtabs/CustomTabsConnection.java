@@ -44,7 +44,6 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
@@ -432,10 +431,7 @@ public class CustomTabsConnection {
                 // Temporary fix for https://crbug.com/797832.
                 // TODO(lizeb): Properly fix instead of papering over the bug, this code should
                 // not be scheduled unless startup is done. See https://crbug.com/797832.
-                if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                                .isFullBrowserStarted()) {
-                    return;
-                }
+                if (!BrowserStartupController.getInstance().isFullBrowserStarted()) return;
                 try (TraceEvent e = TraceEvent.scoped("CreateSpareWebContents")) {
                     createSpareWebContents();
                 }
@@ -585,8 +581,7 @@ public class CustomTabsConnection {
             // may not have run, which causes Profile.getLastUsedProfile() to throw an
             // exception. But the tasks have been posted by then, so reschedule ourselves, only
             // once.
-            if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                            .isFullBrowserStarted()) {
+            if (!BrowserStartupController.getInstance().isFullBrowserStarted()) {
                 if (retryIfNotLoaded) {
                     PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
                         doMayLaunchUrlOnUiThread(lowConfidence, session, uid, urlString, extras,

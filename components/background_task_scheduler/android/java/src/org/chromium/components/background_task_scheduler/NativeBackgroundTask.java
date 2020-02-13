@@ -10,7 +10,6 @@ import androidx.annotation.IntDef;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.task.PostTask;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -239,7 +238,7 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
 
     @VisibleForTesting
     protected BrowserStartupController getBrowserStartupController() {
-        return BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER);
+        return BrowserStartupController.getInstance();
     }
 
     private void recordTaskFinishedMetric() {

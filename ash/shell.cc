@@ -416,6 +416,10 @@ void Shell::OnDictationEnded() {
     observer.OnDictationEnded();
 }
 
+bool Shell::IsInTabletMode() const {
+  return tablet_mode_controller()->InTabletMode();
+}
+
 bool Shell::ShouldSaveDisplaySettings() {
   return !(
       screen_orientation_controller_->ignore_display_configuration_updates() ||

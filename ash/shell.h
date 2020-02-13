@@ -284,7 +284,12 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Called when dictation is ended.
   void OnDictationEnded();
 
-  // Test if TabletModeWindowManager is not enabled, and if
+  // Returns whether the device is currently in tablet mode. If the tablet
+  // mode controller isn't available, we assume the device is not in
+  // tablet mode.
+  bool IsInTabletMode() const;
+
+  // Tests if TabletModeWindowManager is not enabled, and if
   // TabletModeController is not currently setting a display rotation. Or if
   // the |resolution_notification_controller_| is not showing its confirmation
   // dialog. If true then changes to display settings can be saved.
@@ -470,7 +475,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   SystemTrayNotifier* system_tray_notifier() {
     return system_tray_notifier_.get();
   }
-  TabletModeController* tablet_mode_controller() {
+  TabletModeController* tablet_mode_controller() const {
     return tablet_mode_controller_.get();
   }
   ToastManagerImpl* toast_manager() { return toast_manager_.get(); }

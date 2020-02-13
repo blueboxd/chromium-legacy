@@ -80,7 +80,7 @@ void HTMLLinkElement::ParseAttribute(
         // be silent.
         if (LocalDOMWindow* window = GetDocument().ExecutingWindow()) {
           if (LocalFrame* frame = window->GetFrame()) {
-            frame->Console().AddMessage(ConsoleMessage::Create(
+            frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
                 mojom::ConsoleMessageSource::kRendering,
                 mojom::ConsoleMessageLevel::kWarning,
                 "HTML Imports is deprecated and has now been removed as of "
@@ -262,9 +262,9 @@ Node::InsertionNotificationRequest HTMLLinkElement::InsertedInto(
 
   if (!ShouldLoadLink() && IsInShadowTree()) {
     String message = "HTML element <link> is ignored in shadow tree.";
-    GetDocument().AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kWarning, message));
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning, message));
     return kInsertionDone;
   }
 

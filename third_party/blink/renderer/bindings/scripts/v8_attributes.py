@@ -79,6 +79,7 @@ def attribute_context(interface, attribute, interfaces, component_info):
     idl_type.add_includes_for_type(extended_attributes)
     if idl_type.enum_values:
         includes.add('core/inspector/console_message.h')
+        includes.add('platform/heap/heap.h')
 
     # [CheckSecurity]
     is_cross_origin = 'CrossOrigin' in extended_attributes

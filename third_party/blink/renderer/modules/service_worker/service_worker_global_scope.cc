@@ -656,7 +656,7 @@ void ServiceWorkerGlobalScope::OnNavigationPreloadError(
                                        ? error->message
                                        : error->unsanitized_message;
   if (!error_message.IsEmpty()) {
-    AddConsoleMessage(ConsoleMessage::Create(
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kWorker,
         mojom::ConsoleMessageLevel::kError, error_message));
   }
@@ -705,9 +705,9 @@ bool ServiceWorkerGlobalScope::AddEventListenerInternal(
         "Event handler of '%s' event must be added on the initial evaluation "
         "of worker script.",
         event_type.Utf8().c_str());
-    AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kWarning, message));
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning, message));
   }
   return WorkerGlobalScope::AddEventListenerInternal(event_type, listener,
                                                      options);
@@ -2301,7 +2301,7 @@ void ServiceWorkerGlobalScope::SetIdleDelay(base::TimeDelta delay) {
 void ServiceWorkerGlobalScope::AddMessageToConsole(
     mojom::blink::ConsoleMessageLevel level,
     const String& message) {
-  AddConsoleMessage(ConsoleMessage::Create(
+  AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kOther, level, message,
       SourceLocation::Capture(/* url= */ "", /* line_number= */ 0,
                               /* column_number= */ 0)));

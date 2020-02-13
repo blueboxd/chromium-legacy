@@ -132,13 +132,12 @@ class WebController {
           callback);
 
   // Set the |value| of field |selector| and return the result through
-  // |callback|. If |simulate_key_presses| is true, the value will be set by
-  // clicking the field and then simulating key presses, otherwise the `value`
-  // attribute will be set directly.
+  // |callback|. The strategy used to fill the value is defined by
+  // |fill_strategy|, see the proto for further explanation.
   virtual void SetFieldValue(
       const Selector& selector,
       const std::string& value,
-      bool simulate_key_presses,
+      KeyboardValueFillStrategy fill_strategy,
       int key_press_delay_in_millisecond,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
@@ -371,22 +370,33 @@ class WebController {
           callback,
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
-  void InternalSetFieldValue(
-      const Selector& selector,
-      const std::string& value,
-      base::OnceCallback<void(const ClientStatus&)> callback);
   void OnClearFieldForSendKeyboardInput(
       const Selector& selector,
       const std::vector<UChar32>& codepoints,
       int key_press_delay_in_millisecond,
       base::OnceCallback<void(const ClientStatus&)> callback,
-      const ClientStatus& status);
-  void OnClickElementForSendKeyboardInput(
-      const std::string& node_frame_id,
+      const ClientStatus& clear_status);
+  void SelectFieldValueForReplace(
+      const Selector& selector,
+      base::OnceCallback<void(std::unique_ptr<ElementFinder::Result>,
+                              const ClientStatus&)> callback);
+  void OnFindElementForSelectValue(
+      base::OnceCallback<void(std::unique_ptr<ElementFinder::Result>,
+                              const ClientStatus&)> callback,
+      const ClientStatus& element_status,
+      std::unique_ptr<ElementFinder::Result> element_result);
+  void OnSelectFieldValueForDispatchKeys(
+      std::unique_ptr<ElementFinder::Result> element_result,
+      base::OnceCallback<void(std::unique_ptr<ElementFinder::Result>,
+                              const ClientStatus&)> callback,
+      const DevtoolsClient::ReplyStatus& reply_status,
+      std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnFieldValueSelectedForDispatchKeys(
       const std::vector<UChar32>& codepoints,
-      int delay_in_milli,
+      int key_press_delay_in_millisecond,
       base::OnceCallback<void(const ClientStatus&)> callback,
-      const ClientStatus& click_status);
+      std::unique_ptr<ElementFinder::Result> element_result,
+      const ClientStatus& select_status);
   void DispatchKeyboardTextDownEvent(
       const std::string& node_frame_id,
       const std::vector<UChar32>& codepoints,
@@ -400,6 +410,19 @@ class WebController {
       size_t index,
       int delay_in_milli,
       base::OnceCallback<void(const ClientStatus&)> callback);
+  void InternalSetFieldValue(
+      const Selector& selector,
+      const std::string& value,
+      base::OnceCallback<void(const ClientStatus&)> callback);
+  void OnFindElementForSetFieldValue(
+      const std::string& value,
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const ClientStatus& status,
+      std::unique_ptr<ElementFinder::Result> element_result);
+  void OnSetValueAttribute(
+      base::OnceCallback<void(const ClientStatus&)> callback,
+      const DevtoolsClient::ReplyStatus& reply_status,
+      std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForSetAttribute(
       const std::vector<std::string>& attribute,
       const std::string& value,
@@ -416,15 +439,12 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status,
       std::unique_ptr<ElementFinder::Result> element_result);
-  void OnFindElementForSetFieldValue(
-      const std::string& value,
+  void OnClickElementForSendKeyboardInput(
+      const std::string& node_frame_id,
+      const std::vector<UChar32>& codepoints,
+      int delay_in_milli,
       base::OnceCallback<void(const ClientStatus&)> callback,
-      const ClientStatus& status,
-      std::unique_ptr<ElementFinder::Result> element_result);
-  void OnSetValueAttribute(
-      base::OnceCallback<void(const ClientStatus&)> callback,
-      const DevtoolsClient::ReplyStatus& reply_status,
-      std::unique_ptr<runtime::CallFunctionOnResult> result);
+      const ClientStatus& click_status);
   void OnFindElementForGetOuterHtml(
       base::OnceCallback<void(const ClientStatus&, const std::string&)>
           callback,

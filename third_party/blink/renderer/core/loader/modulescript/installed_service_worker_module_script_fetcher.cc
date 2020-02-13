@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/workers/installed_scripts_manager.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
@@ -38,7 +39,7 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
 
   if (!script_data) {
     HeapVector<Member<ConsoleMessage>> error_messages;
-    error_messages.push_back(ConsoleMessage::CreateForRequest(
+    error_messages.push_back(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kError,
         "Failed to load the script unexpectedly",
@@ -91,7 +92,7 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
     // If we reach here, we know we received an incompatible mime type from the
     // network
     HeapVector<Member<ConsoleMessage>> error_messages;
-    error_messages.push_back(ConsoleMessage::CreateForRequest(
+    error_messages.push_back(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kError,
         "Failed to load the script unexpectedly",

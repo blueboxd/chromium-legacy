@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/frame/report.h"
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -25,9 +26,9 @@ void Intervention::GenerateReport(const LocalFrame* frame,
 
   // Send the message to the console.
   Document* document = frame->GetDocument();
-  document->AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kIntervention,
-                             mojom::ConsoleMessageLevel::kError, message));
+  document->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::ConsoleMessageSource::kIntervention,
+      mojom::ConsoleMessageLevel::kError, message));
 
   if (!frame->Client())
     return;

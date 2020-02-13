@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/network/content_security_policy_response_headers.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
@@ -80,7 +81,7 @@ void WorkerModuleScriptFetcher::NotifyFinished(Resource* resource) {
     if (request_url != response_url &&
         !global_scope_->GetSecurityOrigin()->IsSameOriginWith(
             SecurityOrigin::Create(response_url).get())) {
-      error_messages.push_back(ConsoleMessage::Create(
+      error_messages.push_back(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kSecurity,
           mojom::ConsoleMessageLevel::kError,
           "Refused to cross-origin redirects of the top-level worker script."));

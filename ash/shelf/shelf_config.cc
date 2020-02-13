@@ -27,12 +27,6 @@ namespace {
 // dense shelf will be active.
 const int kDenseShelfScreenSizeThreshold = 600;
 
-// Returns whether tablet mode is currently active.
-bool IsTabletMode() {
-  return Shell::Get()->tablet_mode_controller() &&
-         Shell::Get()->tablet_mode_controller()->InTabletMode();
-}
-
 // Whether the the shelf control buttons must be shown for accessibility
 // reasons.
 bool ShelfControlsForcedShownForAccessibility() {
@@ -185,7 +179,8 @@ int ShelfConfig::system_shelf_size() const {
 }
 
 int ShelfConfig::hotseat_size() const {
-  if (!chromeos::switches::ShouldShowShelfHotseat() || !IsTabletMode()) {
+  if (!chromeos::switches::ShouldShowShelfHotseat() ||
+      !Shell::Get()->IsInTabletMode()) {
     return shelf_size();
   }
   return is_dense_ ? 48 : 56;
@@ -211,7 +206,7 @@ int ShelfConfig::control_size() const {
   if (!chromeos::switches::ShouldShowShelfHotseat())
     return 40;
 
-  if (!IsTabletMode())
+  if (!Shell::Get()->IsInTabletMode())
     return 36;
 
   return is_dense_ ? 36 : 40;
@@ -219,7 +214,7 @@ int ShelfConfig::control_size() const {
 
 int ShelfConfig::control_border_radius() const {
   return (chromeos::switches::ShouldShowShelfHotseat() && is_in_app() &&
-          IsTabletMode())
+          Shell::Get()->IsInTabletMode())
              ? control_size() / 2 - in_app_control_button_height_inset_
              : control_size() / 2;
 }
@@ -230,7 +225,7 @@ int ShelfConfig::overflow_button_margin() const {
 
 int ShelfConfig::control_button_edge_spacing(bool is_primary_axis_edge) const {
   if (is_primary_axis_edge)
-    return IsTabletMode() ? 8 : 6;
+    return Shell::Get()->IsInTabletMode() ? 8 : 6;
 
   return (shelf_size() - control_size()) / 2;
 }
@@ -265,7 +260,7 @@ void ShelfConfig::UpdateConfig(bool app_list_visible) {
   const gfx::Rect screen_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
 
-  const bool in_tablet_mode = IsTabletMode();
+  const bool in_tablet_mode = Shell::Get()->IsInTabletMode();
   const bool new_is_dense =
       chromeos::switches::ShouldShowShelfHotseat() &&
       (!in_tablet_mode ||
@@ -297,7 +292,7 @@ int ShelfConfig::GetShelfSize(bool ignore_in_app_state) const {
     return 56;
 
   // In clamshell mode, the shelf always has the same size.
-  if (!IsTabletMode())
+  if (!Shell::Get()->IsInTabletMode())
     return 48;
 
   if (!ignore_in_app_state && is_in_app())
@@ -310,7 +305,8 @@ SkColor ShelfConfig::GetShelfControlButtonColor() const {
   const session_manager::SessionState session_state =
       Shell::Get()->session_controller()->GetSessionState();
 
-  if (chromeos::switches::ShouldShowShelfHotseat() && IsTabletMode() &&
+  if (chromeos::switches::ShouldShowShelfHotseat() &&
+      Shell::Get()->IsInTabletMode() &&
       session_state == session_manager::SessionState::ACTIVE) {
     return is_in_app() ? SK_ColorTRANSPARENT : GetDefaultShelfColor();
   } else if (session_state == session_manager::SessionState::OOBE) {
@@ -359,10 +355,10 @@ SkColor ShelfConfig::GetDefaultShelfColor() const {
 
   AshColorProvider::BaseLayerType layer_type;
   if (!chromeos::switches::ShouldShowShelfHotseat()) {
-    layer_type = IsTabletMode()
+    layer_type = Shell::Get()->IsInTabletMode()
                      ? AshColorProvider::BaseLayerType::kTransparent60
                      : AshColorProvider::BaseLayerType::kTransparent80;
-  } else if (IsTabletMode()) {
+  } else if (Shell::Get()->IsInTabletMode()) {
     layer_type = is_in_app() ? AshColorProvider::BaseLayerType::kTransparent90
                              : AshColorProvider::BaseLayerType::kTransparent60;
   } else {
@@ -377,15 +373,16 @@ SkColor ShelfConfig::GetDefaultShelfColor() const {
 
 int ShelfConfig::GetShelfControlButtonBlurRadius() const {
   if (features::IsBackgroundBlurEnabled() &&
-      chromeos::switches::ShouldShowShelfHotseat() && IsTabletMode() &&
-      !is_in_app()) {
+      chromeos::switches::ShouldShowShelfHotseat() &&
+      Shell::Get()->IsInTabletMode() && !is_in_app()) {
     return shelf_blur_radius_;
   }
   return 0;
 }
 
 int ShelfConfig::GetAppIconEndPadding() const {
-  return (chromeos::switches::ShouldShowShelfHotseat() && IsTabletMode())
+  return (chromeos::switches::ShouldShowShelfHotseat() &&
+          Shell::Get()->IsInTabletMode())
              ? app_icon_end_padding_
              : 0;
 }

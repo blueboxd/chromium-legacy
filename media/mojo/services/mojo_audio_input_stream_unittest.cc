@@ -48,7 +48,7 @@ class TestCancelableSyncSocket : public base::CancelableSyncSocket {
     // closes it. We have to make sure we do not also retain the handle in the
     // sync socket, as the sync socket closes the handle on destruction.
     if (expect_ownership_transfer_)
-      EXPECT_EQ(handle(), kInvalidHandle);
+      EXPECT_FALSE(IsValid());
   }
 
  private:

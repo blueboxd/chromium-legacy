@@ -389,6 +389,9 @@ _CONFIG = [
             # nested in the blink namespace.
             'internal::.+',
 
+            # HTTP structured headers
+            'net::structured_headers::.+',
+
             # Network service.
             'network::.+',
 

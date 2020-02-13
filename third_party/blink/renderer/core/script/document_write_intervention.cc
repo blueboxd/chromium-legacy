@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/script_fetch_options.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
@@ -31,9 +32,9 @@ void EmitWarningMayBeBlocked(const String& url, Document& document) {
       "confirmed in a subsequent console message. "
       "See https://www.chromestatus.com/feature/5718547946799104 "
       "for more details.";
-  document.AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                             mojom::ConsoleMessageLevel::kWarning, message));
+  document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kWarning, message));
   DVLOG(1) << message.Utf8();
 }
 
@@ -43,9 +44,9 @@ void EmitWarningNotBlocked(const String& url, Document& document) {
       ", invoked via document.write was NOT BLOCKED on this page load, but MAY "
       "be blocked by the browser in future page loads with poor network "
       "connectivity.";
-  document.AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                             mojom::ConsoleMessageLevel::kWarning, message));
+  document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kWarning, message));
 }
 
 void EmitErrorBlocked(const String& url, Document& document) {
@@ -55,9 +56,9 @@ void EmitErrorBlocked(const String& url, Document& document) {
       url +
       ", invoked via document.write was BLOCKED by the browser due to poor "
       "network connectivity. ";
-  document.AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kIntervention,
-                             mojom::ConsoleMessageLevel::kError, message));
+  document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::ConsoleMessageSource::kIntervention,
+      mojom::ConsoleMessageLevel::kError, message));
 }
 
 void AddWarningHeader(FetchParameters* params) {

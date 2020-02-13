@@ -23,8 +23,6 @@ class CompositorTimingHistory::UMAReporter {
 
   // Throughput measurements
   virtual void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) = 0;
-  virtual void AddBeginMainFrameIntervalNotCritical(
-      base::TimeDelta interval) = 0;
   virtual void AddCommitInterval(base::TimeDelta interval) = 0;
   virtual void AddDrawInterval(base::TimeDelta interval) = 0;
 
@@ -301,11 +299,6 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
         "Scheduling.Renderer.BeginMainFrameIntervalCritical", interval);
   }
 
-  void AddBeginMainFrameIntervalNotCritical(base::TimeDelta interval) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
-        "Scheduling.Renderer.BeginMainFrameIntervalNotCritical", interval);
-  }
-
   void AddCommitInterval(base::TimeDelta interval) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
         "Scheduling.Renderer.CommitInterval", interval);
@@ -409,9 +402,6 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
   // side because browser rendering fps is not at 60.
   void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) override {}
 
-  void AddBeginMainFrameIntervalNotCritical(base::TimeDelta interval) override {
-  }
-
   // CommitInterval is not meaningful to measure on browser side because
   // browser rendering fps is not at 60.
   void AddCommitInterval(base::TimeDelta interval) override {}
@@ -487,8 +477,6 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
  public:
   ~NullUMAReporter() override = default;
   void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) override {}
-  void AddBeginMainFrameIntervalNotCritical(base::TimeDelta interval) override {
-  }
   void AddCommitInterval(base::TimeDelta interval) override {}
   void AddDrawInterval(base::TimeDelta interval) override {}
   void AddDrawIntervalWithCompositedAnimations(
@@ -822,8 +810,6 @@ void CompositorTimingHistory::DidBeginMainFrame(
           begin_main_frame_end_time - begin_main_frame_end_time_prev_;
       if (begin_main_frame_on_critical_path_)
         uma_reporter_->AddBeginMainFrameIntervalCritical(commit_interval);
-      else
-        uma_reporter_->AddBeginMainFrameIntervalNotCritical(commit_interval);
     }
     begin_main_frame_end_time_prev_ = begin_main_frame_end_time;
   }

@@ -4,17 +4,17 @@
 
 #include "third_party/blink/renderer/core/feature_policy/document_policy_parser.h"
 
-#include "third_party/blink/public/common/http/structured_header.h"
+#include "net/http/structured_headers.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom-blink-forward.h"
 
 namespace blink {
 
 base::Optional<PolicyValue> ItemToPolicyValue(
-    const ::blink::http_structured_header::Item& item) {
+    const net::structured_headers::Item& item) {
   switch (item.Type()) {
-    case ::blink::http_structured_header::Item::ItemType::kIntegerType:
+    case net::structured_headers::Item::ItemType::kIntegerType:
       return PolicyValue(static_cast<double>(item.GetInteger()));
-    case ::blink::http_structured_header::Item::ItemType::kFloatType:
+    case net::structured_headers::Item::ItemType::kFloatType:
       return PolicyValue(item.GetFloat());
     default:
       return base::nullopt;
@@ -36,18 +36,18 @@ DocumentPolicyParser::ParseInternal(
     const DocumentPolicyNameFeatureMap& name_feature_map,
     const DocumentPolicyFeatureInfoMap& feature_info_map,
     const FeatureSet& available_features) {
-  auto root = ::blink::http_structured_header::ParseList(policy_string.Ascii());
+  auto root = net::structured_headers::ParseList(policy_string.Ascii());
   if (!root)
     return base::nullopt;
 
   DocumentPolicy::FeatureState policy;
-  for (const ::blink::http_structured_header::ParameterizedMember& directive :
+  for (const net::structured_headers::ParameterizedMember& directive :
        root.value()) {
     // Each directive is allowed exactly 1 member.
     if (directive.member.size() != 1)
       return base::nullopt;
 
-    const ::blink::http_structured_header::Item& feature_token =
+    const net::structured_headers::Item& feature_token =
         directive.member.front();
     // The item in directive should be token type.
     if (!feature_token.is_token())

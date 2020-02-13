@@ -421,13 +421,14 @@ void HTMLMediaElementEncryptedMedia::Encrypted(
     // so don't return the initData. However, they still get an event.
     event = CreateEncryptedEvent(media::EmeInitDataType::UNKNOWN, nullptr, 0);
     media_element_->GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kWarning,
-                               "Media element must be CORS-same-origin with "
-                               "the embedding page. If cross-origin, you "
-                               "should use the `crossorigin` attribute and "
-                               "make sure CORS headers on the media data "
-                               "response are CORS-same-origin."));
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
+            "Media element must be CORS-same-origin with "
+            "the embedding page. If cross-origin, you "
+            "should use the `crossorigin` attribute and "
+            "make sure CORS headers on the media data "
+            "response are CORS-same-origin."));
   }
 
   event->SetTarget(media_element_);

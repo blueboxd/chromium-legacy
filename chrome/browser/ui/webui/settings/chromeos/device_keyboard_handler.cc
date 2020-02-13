@@ -20,25 +20,33 @@ namespace {
 
 struct KeyboardsStateResult {
   bool has_internal_keyboard = false;
-  bool has_external_non_apple_keyboard = false;
-  bool has_apple_keyboard = false;
+  bool has_external_apple_keyboard = false;
+  bool has_external_chromeos_keyboard = false;
+  bool has_external_generic_keyboard = false;
 };
 
 KeyboardsStateResult GetKeyboardsState() {
   KeyboardsStateResult result;
   for (const ui::InputDevice& keyboard :
        ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
-    result.has_internal_keyboard |=
-        (keyboard.type == ui::INPUT_DEVICE_INTERNAL);
-
-    const ui::EventRewriterChromeOS::DeviceType type =
-        ui::EventRewriterChromeOS::GetDeviceType(keyboard);
-    if (type == ui::EventRewriterChromeOS::kDeviceAppleKeyboard) {
-      result.has_apple_keyboard = true;
-    } else if (type ==
-                   ui::EventRewriterChromeOS::kDeviceExternalNonAppleKeyboard ||
-               type == ui::EventRewriterChromeOS::kDeviceExternalUnknown) {
-      result.has_external_non_apple_keyboard = true;
+    switch (ui::EventRewriterChromeOS::GetDeviceType(keyboard)) {
+      case ui::EventRewriterChromeOS::kDeviceInternalKeyboard:
+        result.has_internal_keyboard = true;
+        break;
+      case ui::EventRewriterChromeOS::kDeviceExternalAppleKeyboard:
+        result.has_external_apple_keyboard = true;
+        break;
+      case ui::EventRewriterChromeOS::kDeviceExternalChromeOsKeyboard:
+        result.has_external_chromeos_keyboard = true;
+        break;
+      case ui::EventRewriterChromeOS::kDeviceExternalGenericKeyboard:
+      case ui::EventRewriterChromeOS::kDeviceExternalUnknown:
+        result.has_external_generic_keyboard = true;
+        break;
+      case ui::EventRewriterChromeOS::kDeviceHotrodRemote:
+      case ui::EventRewriterChromeOS::kDeviceVirtualCoreKeyboard:
+      case ui::EventRewriterChromeOS::kDeviceUnknown:
+        break;
     }
   }
 
@@ -130,8 +138,8 @@ void KeyboardHandler::UpdateShowKeys() {
   // kHasChromeOSKeyboard will be unset on Chromebooks that have standalone Caps
   // Lock keys.
   const KeyboardsStateResult keyboards_state = GetKeyboardsState();
-  const bool has_caps_lock = keyboards_state.has_apple_keyboard ||
-                             keyboards_state.has_external_non_apple_keyboard ||
+  const bool has_caps_lock = keyboards_state.has_external_apple_keyboard ||
+                             keyboards_state.has_external_generic_keyboard ||
                              !base::CommandLine::ForCurrentProcess()->HasSwitch(
                                  chromeos::switches::kHasChromeOSKeyboard);
 
@@ -139,9 +147,10 @@ void KeyboardHandler::UpdateShowKeys() {
   keyboard_params.SetKey("showCapsLock", base::Value(has_caps_lock));
   keyboard_params.SetKey(
       "showExternalMetaKey",
-      base::Value(keyboards_state.has_external_non_apple_keyboard));
-  keyboard_params.SetKey("showAppleCommandKey",
-                         base::Value(keyboards_state.has_apple_keyboard));
+      base::Value(keyboards_state.has_external_generic_keyboard));
+  keyboard_params.SetKey(
+      "showAppleCommandKey",
+      base::Value(keyboards_state.has_external_apple_keyboard));
   keyboard_params.SetKey("hasInternalKeyboard",
                          base::Value(keyboards_state.has_internal_keyboard));
 

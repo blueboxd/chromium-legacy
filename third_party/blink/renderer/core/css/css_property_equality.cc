@@ -383,10 +383,8 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kZIndex:
       return a.HasAutoZIndex() == b.HasAutoZIndex() &&
              (a.HasAutoZIndex() || a.ZIndex() == b.ZIndex());
-    case CSSPropertyID::kContainIntrinsicWidth:
-      return a.ContainIntrinsicWidth() == b.ContainIntrinsicWidth();
-    case CSSPropertyID::kContainIntrinsicHeight:
-      return a.ContainIntrinsicHeight() == b.ContainIntrinsicHeight();
+    case CSSPropertyID::kContainIntrinsicSize:
+      return a.ContainIntrinsicSize() == b.ContainIntrinsicSize();
     default:
       NOTREACHED();
       return true;

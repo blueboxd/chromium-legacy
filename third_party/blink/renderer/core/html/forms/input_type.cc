@@ -70,6 +70,7 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/text/text_break_iterator.h"
@@ -992,11 +993,12 @@ StepRange InputType::CreateStepRange(
 
 void InputType::AddWarningToConsole(const char* message_format,
                                     const String& value) const {
-  GetElement().GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-      mojom::ConsoleMessageSource::kRendering,
-      mojom::ConsoleMessageLevel::kWarning,
-      String::Format(message_format,
-                     JSONValue::QuoteString(value).Utf8().c_str())));
+  GetElement().GetDocument().AddConsoleMessage(
+      MakeGarbageCollected<ConsoleMessage>(
+          mojom::ConsoleMessageSource::kRendering,
+          mojom::ConsoleMessageLevel::kWarning,
+          String::Format(message_format,
+                         JSONValue::QuoteString(value).Utf8().c_str())));
 }
 
 }  // namespace blink

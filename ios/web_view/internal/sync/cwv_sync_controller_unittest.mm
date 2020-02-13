@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/test/bind_test_util.h"
+#import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/test_personal_data_manager.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -62,6 +63,9 @@ const char kTestFullName[] = "John Doe";
 const char kTestPassphrase[] = "dummy-passphrase";
 const char kTestScope1[] = "scope1.chromium.org";
 const char kTestScope2[] = "scope2.chromium.org";
+
+using base::test::ios::kWaitForActionTimeout;
+using base::test::ios::WaitUntilConditionOrTimeout;
 
 std::unique_ptr<KeyedService> BuildMockSyncService(web::BrowserState* context) {
   return std::make_unique<syncer::MockSyncService>();
@@ -198,12 +202,16 @@ TEST_F(CWVSyncControllerTest, DelegateCallbacks) {
         identity_manager(), identity_manager()->GetPrimaryAccountId(),
         auth_error);
 
-    // TODO(crbug.com/1048231): Re-enable after updating mocks.
-    //    [[delegate expect] syncControllerDidStopSync:sync_controller_];
-    //    identity_manager()->GetPrimaryAccountMutator()->ClearPrimaryAccount(
-    //        signin::PrimaryAccountMutator::ClearAccountsAction::kDefault,
-    //        signin_metrics::ProfileSignout::USER_CLICKED_SIGNOUT_SETTINGS,
-    //        signin_metrics::SignoutDelete::IGNORE_METRIC);
+    [[delegate expect] syncControllerDidStopSync:sync_controller_];
+    EXPECT_CALL(*mock_sync_service(), StopAndClear());
+    EXPECT_CALL(*password_store_, RemoveLoginsCreatedBetweenImpl);
+    EXPECT_CALL(*password_store_, BeginTransaction);
+    EXPECT_CALL(*password_store_, NotifyLoginsChanged);
+    EXPECT_CALL(*password_store_, CommitTransaction);
+    [sync_controller_ stopSyncAndClearIdentity];
+
+    // Ensures that |password_store_| has a chance to run its deletion task.
+    base::RunLoop().RunUntilIdle();
 
     [delegate verify];
   }
@@ -230,6 +238,10 @@ TEST_F(CWVSyncControllerTest, CurrentIdentity) {
   EXPECT_CALL(*password_store_, NotifyLoginsChanged);
   EXPECT_CALL(*password_store_, CommitTransaction);
   [sync_controller_ stopSyncAndClearIdentity];
+
+  // Ensures that |password_store_| has a chance to run its deletion task.
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_FALSE(sync_controller_.currentIdentity);
 }
 

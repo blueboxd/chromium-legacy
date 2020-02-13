@@ -53,10 +53,6 @@ window.onload = () => {
 
     // Since the horizontal scrolling is essentially the same codepath as vertical,
     // this need not be tested in the interest of making the test run faster.
-
-    // TODO(sahir.vellani): Performing mouse interactions beyond this point 
-    // without calling resetScrollOffset may lead to test failures on linux.
-    // (probably due to crbug.com/979408)
   }, "Test mouse drags in increments on non-custom composited root scrollbar thumb.");
 }
 </script>

@@ -5,8 +5,8 @@
 #include "third_party/blink/public/common/feature_policy/document_policy.h"
 
 #include "base/no_destructor.h"
+#include "net/http/structured_headers.h"
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
-#include "third_party/blink/public/common/http/structured_header.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.h"
 
 namespace blink {
@@ -21,16 +21,16 @@ std::unique_ptr<DocumentPolicy> DocumentPolicy::CreateWithHeaderPolicy(
 }
 
 namespace {
-http_structured_header::Item PolicyValueToItem(const PolicyValue& value) {
+net::structured_headers::Item PolicyValueToItem(const PolicyValue& value) {
   switch (value.Type()) {
     case mojom::PolicyValueType::kBool:
-      return http_structured_header::Item{value.BoolValue()};
+      return net::structured_headers::Item{value.BoolValue()};
     case mojom::PolicyValueType::kDecDouble:
-      return http_structured_header::Item{value.DoubleValue()};
+      return net::structured_headers::Item{value.DoubleValue()};
     default:
       NOTREACHED();
-      return http_structured_header::Item{
-          nullptr, http_structured_header::Item::ItemType::kNullType};
+      return net::structured_headers::Item{
+          nullptr, net::structured_headers::Item::ItemType::kNullType};
   }
 }
 
@@ -39,7 +39,7 @@ http_structured_header::Item PolicyValueToItem(const PolicyValue& value) {
 // static
 base::Optional<std::string> DocumentPolicy::Serialize(
     const FeatureState& policy) {
-  http_structured_header::List root;
+  net::structured_headers::List root;
   root.reserve(policy.size());
 
   std::vector<std::pair<mojom::FeaturePolicyFeature, PolicyValue>>
@@ -58,24 +58,24 @@ base::Optional<std::string> DocumentPolicy::Serialize(
 
     const PolicyValue& value = policy_entry.second;
     if (value.Type() == mojom::PolicyValueType::kBool) {
-      root.push_back(http_structured_header::ParameterizedMember(
-          http_structured_header::Item(
+      root.push_back(net::structured_headers::ParameterizedMember(
+          net::structured_headers::Item(
               (value.BoolValue() ? "" : "no-") + info.feature_name,
-              http_structured_header::Item::ItemType::kTokenType),
+              net::structured_headers::Item::ItemType::kTokenType),
           {}));
     } else {
-      http_structured_header::ParameterizedMember::Parameters params;
-      params.push_back(std::pair<std::string, http_structured_header::Item>{
+      net::structured_headers::ParameterizedMember::Parameters params;
+      params.push_back(std::pair<std::string, net::structured_headers::Item>{
           info.feature_param_name, PolicyValueToItem(value)});
-      root.push_back(http_structured_header::ParameterizedMember(
-          http_structured_header::Item(
+      root.push_back(net::structured_headers::ParameterizedMember(
+          net::structured_headers::Item(
               info.feature_name,
-              http_structured_header::Item::ItemType::kTokenType),
+              net::structured_headers::Item::ItemType::kTokenType),
           params));
     }
   }
 
-  return http_structured_header::SerializeList(root);
+  return net::structured_headers::SerializeList(root);
 }
 
 

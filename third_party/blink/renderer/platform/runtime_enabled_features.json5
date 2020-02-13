@@ -897,6 +897,11 @@
       status: "experimental",
     },
     {
+      // LayoutNG has been enabled in M76, but we still keep this flag for
+      // testing. See web_tests/FlagExpectations/disable-layout-ng for more
+      // details about running web tests with LayoutNG disabled. This flag also
+      // provides a convenient way for testing legacy layout code path in blink
+      // unit tests.
       name: "LayoutNG",
       implied_by: ["LayoutNGBlockFragmentation", "LayoutNGFieldset", "LayoutNGFlexBox", "LayoutNGFragmentItem", "LayoutNGLineCache", "EditingNG", "BidiCaretAffinity", "LayoutNGTable", "LayoutNGFragmentTraversal"],
       status: "stable",

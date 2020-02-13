@@ -34,7 +34,7 @@ constexpr base::TimeDelta kAssistantAnimationDelay =
 
 // Returns true if the button should appear activatable.
 bool CanActivate() {
-  return Shell::Get()->tablet_mode_controller()->InTabletMode() ||
+  return Shell::Get()->IsInTabletMode() ||
          !Shell::Get()->app_list_controller()->IsVisible();
 }
 
@@ -178,7 +178,7 @@ void HomeButtonController::StartAssistantAnimation() {
 void HomeButtonController::OnAppListShown() {
   // Do not show a highlight in tablet mode, since the home screen view is
   // always open in the background.
-  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
+  if (!Shell::Get()->IsInTabletMode())
     button_->AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
   is_showing_app_list_ = true;
   RootWindowController::ForWindow(button_->GetWidget()->GetNativeWindow())

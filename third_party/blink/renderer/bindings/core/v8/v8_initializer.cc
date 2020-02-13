@@ -70,6 +70,7 @@
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_context_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
@@ -160,7 +161,7 @@ void V8Initializer::MessageHandlerInMainThread(v8::Local<v8::Message> message,
       SourceLocation::FromMessage(isolate, message, context);
 
   if (message->ErrorLevel() != v8::Isolate::kMessageError) {
-    context->AddConsoleMessage(ConsoleMessage::Create(
+    context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         MessageLevelFromNonFatalErrorLevel(message->ErrorLevel()),
         ToCoreStringWithNullCheck(message->Get()), std::move(location)));
@@ -205,7 +206,7 @@ void V8Initializer::MessageHandlerInWorker(v8::Local<v8::Message> message,
       SourceLocation::FromMessage(isolate, message, context);
 
   if (message->ErrorLevel() != v8::Isolate::kMessageError) {
-    context->AddConsoleMessage(ConsoleMessage::Create(
+    context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         MessageLevelFromNonFatalErrorLevel(message->ErrorLevel()),
         ToCoreStringWithNullCheck(message->Get()), std::move(location)));

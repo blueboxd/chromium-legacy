@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -68,11 +69,12 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
       !response->hasDetails() || response->details().IsNull() ||
       !response->details().IsObject()) {
     GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kError,
-                               "'PaymentHandlerResponse.methodName' and "
-                               "'PaymentHandlerResponse.details' must not "
-                               "be empty in payment response."));
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kError,
+            "'PaymentHandlerResponse.methodName' and "
+            "'PaymentHandlerResponse.details' must not "
+            "be empty in payment response."));
   }
 
   if (!response->hasMethodName() || response->methodName().IsEmpty()) {
@@ -96,11 +98,12 @@ void PaymentRequestRespondWithObserver::OnResponseFulfilled(
   if (!v8::JSON::Stringify(script_state->GetContext(),
                            response->details().V8Value().As<v8::Object>())
            .ToLocal(&details_value)) {
-    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kJavaScript,
-        mojom::ConsoleMessageLevel::kError,
-        "Failed to stringify PaymentHandlerResponse.details in payment "
-        "response."));
+    GetExecutionContext()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kError,
+            "Failed to stringify PaymentHandlerResponse.details in payment "
+            "response."));
     BlankResponseWithError(
         PaymentEventResponseType::PAYMENT_DETAILS_STRINGIFY_ERROR);
     return;

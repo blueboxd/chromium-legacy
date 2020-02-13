@@ -443,6 +443,21 @@ message ActionsResponseProto {
   optional UpdateScriptListProto update_script_list = 5;
 }
 
+enum KeyboardValueFillStrategy {
+  UNSPECIFIED_KEYBAORD_STRATEGY = 0;
+
+  // Send a `node.value = "<value>"` JS command.
+  SET_VALUE = 1;
+
+  // Send a `node.value = ""` JS command to clear the field, then send single
+  // key strokes.
+  SIMULATE_KEY_PRESSES = 2;
+
+  // Send a `node.select()` JS command to select the current field value, then
+  // send single key strokes overwriting the current value.
+  SIMULATE_KEY_PRESSES_SELECT_VALUE = 3;
+}
+
 // An action could be performed.
 message ActionProto {
   // Wait these many milliseconds before executing the action, if set.
@@ -956,9 +971,8 @@ message UseAddressProto {
 
     optional ElementReferenceProto element = 2;
 
-    // Whether we should simulate actual key presses when filling |element| with
-    // its corresponding value.
-    optional bool simulate_key_presses = 3;
+    // The strategy used to execute filling the value.
+    optional KeyboardValueFillStrategy fill_strategy = 7;
 
     // Delay between two key presses when simlulating.
     optional int32 delay_in_millisecond = 4 [default = 20];
@@ -968,7 +982,7 @@ message UseAddressProto {
     // Usually used together with simulate_key_presses.
     optional bool forced = 5;
 
-    reserved 1;
+    reserved 1, 3;
   }
 
   // An optional name to allow to handle multiple addresses selection (for
@@ -1014,9 +1028,8 @@ message UseCreditCardProto {
 
     optional ElementReferenceProto element = 2;
 
-    // Whether we should simulate actual key presses when filling |element| with
-    // its corresponding value.
-    optional bool simulate_key_presses = 3;
+    // The strategy used to execute filling the value.
+    optional KeyboardValueFillStrategy fill_strategy = 7;
 
     // Delay between two key presses when simlulating.
     optional int32 delay_in_millisecond = 4 [default = 20];
@@ -1026,7 +1039,7 @@ message UseCreditCardProto {
     // Usually used together with simulate_key_presses.
     optional bool forced = 5;
 
-    reserved 1;
+    reserved 1, 3;
   }
 
   // An optional message to show to the user when asking to select a card.
@@ -1694,11 +1707,13 @@ message SetFormFieldValueProto {
   // The value to set.
   repeated KeyPress value = 2;
 
-  // Whether to send key press events when setting values to HTML fields.
-  optional bool simulate_key_presses = 5;
+  // The strategy used to execute filling the value.
+  optional KeyboardValueFillStrategy fill_strategy = 7;
 
   // Delay between two key presses when simlulating.
   optional int32 delay_in_millisecond = 6 [default = 20];
+
+  reserved 5;
 }
 
 // Set an element attribute to a specific value.

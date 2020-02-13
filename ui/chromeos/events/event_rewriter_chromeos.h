@@ -44,8 +44,10 @@ class EventRewriterChromeOS : public ui::EventRewriter {
  public:
   enum DeviceType {
     kDeviceUnknown = 0,
-    kDeviceAppleKeyboard,
-    kDeviceExternalNonAppleKeyboard,
+    kDeviceInternalKeyboard,
+    kDeviceExternalAppleKeyboard,
+    kDeviceExternalChromeOsKeyboard,
+    kDeviceExternalGenericKeyboard,
     kDeviceExternalUnknown,
     kDeviceHotrodRemote,
     kDeviceVirtualCoreKeyboard,  // X-server generated events.
@@ -122,14 +124,16 @@ class EventRewriterChromeOS : public ui::EventRewriter {
                         ui::EventRewriter* sticky_keys_controller);
   ~EventRewriterChromeOS() override;
 
-  static DeviceType GetDeviceType(const ui::InputDevice& keyboard_device);
-
   // Calls KeyboardDeviceAddedInternal.
   void KeyboardDeviceAddedForTesting(
       int device_id,
       const std::string& device_name,
-      KeyboardTopRowLayout layout = kKbdTopRowLayoutDefault,
-      InputDeviceType device_type = INPUT_DEVICE_UNKNOWN);
+      const std::string& layout_string = std::string(),
+      InputDeviceType device_type = INPUT_DEVICE_INTERNAL);
+
+  // Reset the internal rewriter state so that next set of tests can be ran on
+  // the same rewriter, if needed.
+  void ResetStateForTesting();
 
   // Calls RewriteMouseEvent().
   void RewriteMouseButtonEventForTesting(
@@ -162,17 +166,19 @@ class EventRewriterChromeOS : public ui::EventRewriter {
       const MutableKeyState& state,
       std::unique_ptr<ui::Event>* rewritten_event);
 
-  // Given the file path of a keyboard device, returns true if we get back
-  // the layout type of the top row keys without getting an error. Type
-  // value is stored in |out_layout|.
-  static bool GetKeyboardTopRowLayout(const base::FilePath& device_path,
-                                      KeyboardTopRowLayout* out_layout)
-      WARN_UNUSED_RESULT;
+  // Given a keyboard device, returns its type.
+  static DeviceType GetDeviceType(const ui::InputDevice& keyboard_device);
 
-  // Given the file path of a keyboard device, returns true if we get back
-  // the Assistant key property without getting an error. Property value
-  // is stored in |has_assistant_key|.
-  static bool HasAssistantKeyOnKeyboard(const base::FilePath& device_path,
+  // Given a keyboard device, returns its top row layout. Will return default
+  // kKbdTopRowLayoutDefault if the device is not tagged with a specific
+  // layout, or when failing to retrieve device layout from udev.
+  static KeyboardTopRowLayout GetKeyboardTopRowLayout(
+      const ui::InputDevice& keyboard_device);
+
+  // Given a keyboard device, returns true if we get back the Assistant key
+  // property without getting an error. Property value is stored in
+  // |has_assistant_key|.
+  static bool HasAssistantKeyOnKeyboard(const ui::InputDevice& keyboard_device,
                                         bool* has_assistant_key);
 
   // Part of rewrite phases below. This method is public only so that
@@ -194,8 +200,8 @@ class EventRewriterChromeOS : public ui::EventRewriter {
   bool ForceTopRowAsFunctionKeys() const;
 
   // Adds a device to |device_id_to_info_| only if no failure occurs in
-  // retrieving the top row layout from udev, and returns the device type of
-  // this keyboard even if it wasn't stored in |device_id_to_info_|.
+  // identifying the keyboard, and returns the device type of this keyboard
+  // even if it wasn't stored in |device_id_to_info_|.
   DeviceType KeyboardDeviceAdded(int device_id);
 
   // Inserts a new entry to |device_id_to_info_|.

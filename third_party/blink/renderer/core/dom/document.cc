@@ -1570,7 +1570,7 @@ Node* Document::adoptNode(Node* source, ExceptionState& exception_state) {
           return nullptr;
         // The above removeChild() can execute arbitrary JavaScript code.
         if (source->parentNode()) {
-          AddConsoleMessage(ConsoleMessage::Create(
+          AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
               mojom::ConsoleMessageSource::kJavaScript,
               mojom::ConsoleMessageLevel::kWarning,
               ExceptionMessages::FailedToExecute("adoptNode", "Document",
@@ -4267,7 +4267,7 @@ void Document::write(const String& text,
 
   if (!has_insertion_point) {
     if (ignore_destructive_write_count_) {
-      AddConsoleMessage(ConsoleMessage::Create(
+      AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kJavaScript,
           mojom::ConsoleMessageLevel::kWarning,
           ExceptionMessages::FailedToExecute(
@@ -4535,7 +4535,7 @@ void Document::ProcessBaseElement() {
     if (base_element_url.ProtocolIsData() ||
         base_element_url.ProtocolIsJavaScript()) {
       UseCounter::Count(*this, WebFeature::kBaseWithDataHref);
-      AddConsoleMessage(ConsoleMessage::Create(
+      AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kSecurity,
           mojom::ConsoleMessageLevel::kError,
           "'" + base_element_url.Protocol() +
@@ -4650,9 +4650,9 @@ void Document::MaybeHandleHttpRefresh(const String& content,
   if (refresh_url.ProtocolIsJavaScript()) {
     String message =
         "Refused to refresh " + url_.ElidedString() + " to a javascript: URL";
-    AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
-                               mojom::ConsoleMessageLevel::kError, message));
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError, message));
     return;
   }
 
@@ -4662,9 +4662,9 @@ void Document::MaybeHandleHttpRefresh(const String& content,
         "Refused to execute the redirect specified via '<meta "
         "http-equiv='refresh' content='...'>'. The document is sandboxed, and "
         "the 'allow-scripts' keyword is not set.";
-    AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
-                               mojom::ConsoleMessageLevel::kError, message));
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kSecurity,
+        mojom::ConsoleMessageLevel::kError, message));
     return;
   }
   if (http_refresh_type == kHttpRefreshFromHeader) {
@@ -6757,7 +6757,7 @@ void Document::ApplyReportOnlyFeaturePolicyFromHeader(
   // report-only policy is stored, in case a valid Origin Trial token is added
   // later. In that case, any subsequent violations will be correctly reported.
   if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled(this)) {
-    AddConsoleMessage(ConsoleMessage::Create(
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kWarning,
         "Feature-Policy-Report-Only header will have no effect unless Feature "
@@ -6771,7 +6771,7 @@ void Document::ApplyReportOnlyFeaturePolicyFromHeader(
       FeaturePolicyParser::ParseHeader(feature_policy_report_only_header,
                                        GetSecurityOrigin(), &messages, this);
   for (auto& message : messages) {
-    AddConsoleMessage(ConsoleMessage::Create(
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,
         "Error with Feature-Policy-Report-Only header: " + message));
@@ -6894,7 +6894,7 @@ bool Document::CanExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
     if (reason == kAboutToExecuteScript) {
-      AddConsoleMessage(ConsoleMessage::Create(
+      AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kSecurity,
           mojom::ConsoleMessageLevel::kError,
           "Blocked script execution in '" + Url().ElidedString() +
@@ -7057,8 +7057,8 @@ static void RunAddConsoleMessageTask(mojom::ConsoleMessageSource source,
                                      const String& message,
                                      Document* document,
                                      bool discard_duplicates) {
-  ConsoleMessage* console_message =
-      ConsoleMessage::Create(source, level, message);
+  auto* console_message =
+      MakeGarbageCollected<ConsoleMessage>(source, level, message);
   document->AddConsoleMessage(console_message, discard_duplicates);
 }
 
@@ -7091,7 +7091,7 @@ void Document::AddConsoleMessageImpl(ConsoleMessage* console_message,
         line_number = parser->LineNumber().OneBasedInt();
     }
     Vector<DOMNodeId> nodes(console_message->Nodes());
-    console_message = ConsoleMessage::Create(
+    console_message = MakeGarbageCollected<ConsoleMessage>(
         console_message->Source(), console_message->Level(),
         console_message->Message(),
         std::make_unique<SourceLocation>(Url().GetString(), line_number, 0,
@@ -7106,8 +7106,9 @@ void Document::AddConsoleMessageImpl(mojom::ConsoleMessageSource source,
                                      mojom::ConsoleMessageLevel level,
                                      const String& message,
                                      bool discard_duplicates) {
-  AddConsoleMessageImpl(ConsoleMessage::Create(source, level, message),
-                        discard_duplicates);
+  AddConsoleMessageImpl(
+      MakeGarbageCollected<ConsoleMessage>(source, level, message),
+      discard_duplicates);
 }
 
 void Document::AddInspectorIssue(InspectorIssue* issue) {
@@ -7632,22 +7633,22 @@ void Document::FlushAutofocusCandidates() {
   if (AdjustedFocusedElement()) {
     autofocus_candidates_.clear();
     autofocus_processed_flag_ = true;
-    AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
-                               mojom::ConsoleMessageLevel::kInfo,
-                               "Autofocus processing was blocked because a "
-                               "document already has a focused element."));
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kRendering,
+        mojom::ConsoleMessageLevel::kInfo,
+        "Autofocus processing was blocked because a "
+        "document already has a focused element."));
     return;
   }
   if (HasNonEmptyFragment()) {
     autofocus_candidates_.clear();
     autofocus_processed_flag_ = true;
-    AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
-                               mojom::ConsoleMessageLevel::kInfo,
-                               "Autofocus processing was blocked because a "
-                               "document's URL has a fragment '#" +
-                                   Url().FragmentIdentifier() + "'."));
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kRendering,
+        mojom::ConsoleMessageLevel::kInfo,
+        "Autofocus processing was blocked because a "
+        "document's URL has a fragment '#" +
+            Url().FragmentIdentifier() + "'."));
     return;
   }
 
@@ -7702,12 +7703,12 @@ void Document::FlushAutofocusCandidates() {
         doc = &frameOwner->GetDocument();
       }
       if (doc->HasNonEmptyFragment()) {
-        AddConsoleMessage(
-            ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
-                                   mojom::ConsoleMessageLevel::kInfo,
-                                   "Autofocus processing was blocked because a "
-                                   "document's URL has a fragment '#" +
-                                       doc->Url().FragmentIdentifier() + "'."));
+        AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kRendering,
+            mojom::ConsoleMessageLevel::kInfo,
+            "Autofocus processing was blocked because a "
+            "document's URL has a fragment '#" +
+                doc->Url().FragmentIdentifier() + "'."));
         continue;
       }
       DCHECK_EQ(doc, this);
@@ -8251,7 +8252,7 @@ void Document::ReportFeaturePolicyViolation(
 
   // TODO(iclelland): Report something different in report-only mode
   if (disposition == mojom::FeaturePolicyDisposition::kEnforce) {
-    frame->Console().AddMessage(ConsoleMessage::Create(
+    frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kViolation,
         mojom::ConsoleMessageLevel::kError,
         (message.IsEmpty() ? ("Feature policy violation: " + feature_name +

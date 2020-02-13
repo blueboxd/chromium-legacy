@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
@@ -22,7 +23,7 @@ void WebConsoleMessage::LogWebConsoleMessage(v8::Local<v8::Context> context,
   if (auto* document = Document::DynamicFrom(execution_context))
     frame = document->GetFrame();
   execution_context->AddConsoleMessage(
-      ConsoleMessage::CreateFromWebConsoleMessage(message, frame));
+      MakeGarbageCollected<ConsoleMessage>(message, frame));
 }
 
 }  // namespace blink

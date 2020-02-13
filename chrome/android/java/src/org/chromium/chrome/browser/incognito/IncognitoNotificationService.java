@@ -21,7 +21,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
@@ -74,8 +73,7 @@ public class IncognitoNotificationService extends IntentService {
             }
             IncognitoNotificationManager.dismissIncognitoNotification();
 
-            if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                            .isFullBrowserStarted()) {
+            if (BrowserStartupController.getInstance().isFullBrowserStarted()) {
                 if (Profile.getLastUsedProfile().hasOffTheRecordProfile()) {
                     Profile.getLastUsedRegularProfile()
                             .getOffTheRecordProfile()

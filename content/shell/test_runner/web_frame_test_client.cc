@@ -349,14 +349,6 @@ void WebFrameTestClient::DidChangeIcon(blink::WebIconURL::Type icon_type) {
   }
 }
 
-void WebFrameTestClient::DidFailLoad(const blink::WebURLError& error,
-                                     blink::WebHistoryCommitType commit_type) {
-  if (test_runner()->ShouldDumpFrameLoadCallbacks()) {
-    PrintFrameDescription(delegate_, web_frame_test_proxy_->GetWebFrame());
-    delegate_->PrintMessage(" - didFailLoadWithError\n");
-  }
-}
-
 void WebFrameTestClient::DidStartLoading() {
   test_runner()->AddLoadingFrame(web_frame_test_proxy_->GetWebFrame());
 }

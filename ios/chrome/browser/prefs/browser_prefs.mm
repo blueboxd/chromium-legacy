@@ -80,6 +80,11 @@ const char kGoogleServicesUserAccountId[] = "google.services.user_account_id";
 const char kGCMChannelStatus[] = "gcm.channel_status";
 const char kGCMChannelPollIntervalSeconds[] = "gcm.poll_interval";
 const char kGCMChannelLastCheckTime[] = "gcm.check_time";
+
+// Deprecated 2/2020
+const char kInvalidatorClientId[] = "invalidator.client_id";
+const char kInvalidatorInvalidationState[] = "invalidator.invalidation_state";
+const char kInvalidatorSavedInvalidations[] = "invalidator.saved_invalidations";
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -120,6 +125,10 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kGCMChannelStatus, true);
   registry->RegisterIntegerPref(kGCMChannelPollIntervalSeconds, 0);
   registry->RegisterInt64Pref(kGCMChannelLastCheckTime, 0);
+
+  registry->RegisterListPref(kInvalidatorSavedInvalidations);
+  registry->RegisterStringPref(kInvalidatorInvalidationState, std::string());
+  registry->RegisterStringPref(kInvalidatorClientId, std::string());
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -198,6 +207,10 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kGCMChannelStatus, true);
   registry->RegisterIntegerPref(kGCMChannelPollIntervalSeconds, 0);
   registry->RegisterInt64Pref(kGCMChannelLastCheckTime, 0);
+
+  registry->RegisterListPref(kInvalidatorSavedInvalidations);
+  registry->RegisterStringPref(kInvalidatorInvalidationState, std::string());
+  registry->RegisterStringPref(kInvalidatorClientId, std::string());
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -206,6 +219,11 @@ void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
   prefs->ClearPref(kGCMChannelStatus);
   prefs->ClearPref(kGCMChannelPollIntervalSeconds);
   prefs->ClearPref(kGCMChannelLastCheckTime);
+
+  // Added 2/2020.
+  prefs->ClearPref(kInvalidatorSavedInvalidations);
+  prefs->ClearPref(kInvalidatorInvalidationState);
+  prefs->ClearPref(kInvalidatorClientId);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -242,4 +260,9 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
   prefs->ClearPref(kGCMChannelStatus);
   prefs->ClearPref(kGCMChannelPollIntervalSeconds);
   prefs->ClearPref(kGCMChannelLastCheckTime);
+
+  // Added 2/2020.
+  prefs->ClearPref(kInvalidatorSavedInvalidations);
+  prefs->ClearPref(kInvalidatorInvalidationState);
+  prefs->ClearPref(kInvalidatorClientId);
 }

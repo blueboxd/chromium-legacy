@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <functional>
 #include <memory>
 #include <ostream>
 #include <string>
@@ -590,10 +591,11 @@ class AXPosition {
         // the start of a paragraph.
         // This will return a null position when an anchor movement would
         // cross a paragraph boundary, or the start of document was reached.
-        bool crossed_potential_boundary_token = false;
+        bool crossed_line_breaking_object_token = false;
         const AbortMovePredicate abort_move_predicate =
             base::BindRepeating(&AbortMoveAtParagraphBoundary,
-                                std::ref(crossed_potential_boundary_token));
+                                std::ref(crossed_line_breaking_object_token));
+
         AXPositionInstance previous_text_position = text_position->Clone();
         do {
           previous_text_position =
@@ -661,10 +663,10 @@ class AXPosition {
         // of a paragraph, or the end of document was reached.
         // There are some fringe cases related to whitespace collapse that
         // cannot be handled easily with only |AbortMoveAtParagraphBoundary|.
-        bool crossed_potential_boundary_token = false;
+        bool crossed_line_breaking_object_token = false;
         const AbortMovePredicate abort_move_predicate =
             base::BindRepeating(&AbortMoveAtParagraphBoundary,
-                                std::ref(crossed_potential_boundary_token));
+                                std::ref(crossed_line_breaking_object_token));
 
         AXPositionInstance next_text_position = text_position->Clone();
         do {
@@ -1716,11 +1718,26 @@ class AXPosition {
         base::BindRepeating(&DefaultAbortMovePredicate));
   }
 
-  // Creates a text position using the next text-only node as its anchor.
-  // Assumes that text-only nodes are leaf nodes.
-  AXPositionInstance CreateNextLeafTextPosition() const {
-    return CreateNextTextAnchorPosition(
-        base::BindRepeating(&DefaultAbortMovePredicate));
+  // Creates the next text position anchored at a leaf node of the AXTree.
+  //
+  // If a pointer |crossed_line_breaking_object| is provided, it'll be set to
+  // |true| if any line breaking object boundary was crossed by moving from this
+  // leaf text position to the next (if it exists), |false| otherwise.
+  AXPositionInstance CreateNextLeafTextPosition(
+      bool* crossed_line_breaking_object = nullptr) const {
+    if (crossed_line_breaking_object)
+      *crossed_line_breaking_object = false;
+
+    // If this is an ancestor text position, resolve to its leaf text position.
+    if (IsTextPosition() && AnchorChildCount())
+      return AsLeafTextPosition();
+
+    AbortMovePredicate abort_move_predicate =
+        crossed_line_breaking_object
+            ? base::BindRepeating(&UpdateCrossedLineBreakingObjectToken,
+                                  std::ref(*crossed_line_breaking_object))
+            : base::BindRepeating(&DefaultAbortMovePredicate);
+    return CreateNextLeafTreePosition(abort_move_predicate)->AsTextPosition();
   }
 
   // Creates a text position using the previous text-only node as its anchor.
@@ -3226,16 +3243,10 @@ class AXPosition {
            move_to.AsLeafTreePosition()->GetTextStyles();
   }
 
-  // AbortMovePredicate function used to detect paragraph boundaries.
-  static bool AbortMoveAtParagraphBoundary(
-      bool& crossed_potential_boundary_token,
-      const AXPosition& move_from,
-      const AXPosition& move_to,
-      const AXMoveType move_type,
-      const AXMoveDirection direction) {
-    if (move_from.IsNullPosition() || move_to.IsNullPosition())
-      return true;
-
+  static bool MoveCrossesLineBreakingObject(const AXPosition& move_from,
+                                            const AXPosition& move_to,
+                                            const AXMoveType move_type,
+                                            const AXMoveDirection direction) {
     const bool move_from_break = move_from.IsInLineBreakingObject();
     const bool move_to_break = move_to.IsInLineBreakingObject();
 
@@ -3244,29 +3255,61 @@ class AXPosition {
         // For Ancestor moves, only abort when exiting a block descendant.
         // We don't care if the ancestor is a block or not, since the
         // descendant is contained by it.
-        crossed_potential_boundary_token |= move_from_break;
-        break;
+        return move_from_break;
       case AXMoveType::kDescendant:
         // For Descendant moves, only abort when entering a block descendant.
         // We don't care if the ancestor is a block or not, since the
         // descendant is contained by it.
-        crossed_potential_boundary_token |= move_to_break;
-        break;
+        return move_to_break;
       case AXMoveType::kSibling:
         // For Sibling moves, abort if at least one of the siblings are a block,
         // because that would mean exiting and/or entering a block.
-        crossed_potential_boundary_token |= (move_from_break || move_to_break);
-        break;
+        return move_from_break || move_to_break;
+    }
+    NOTREACHED();
+    return false;
+  }
+
+  // AbortMovePredicate function used to detect paragraph boundaries.
+  // We don't want to abort immediately after crossing a line breaking object
+  // boundary if the anchor we're moving to is not a leaf, this is necessary to
+  // avoid aborting if the next leaf position is whitespace-only; update
+  // |crossed_line_breaking_object_token| and wait until a leaf anchor is
+  // reached in order to correctly determine paragraph boundaries.
+  static bool AbortMoveAtParagraphBoundary(
+      bool& crossed_line_breaking_object_token,
+      const AXPosition& move_from,
+      const AXPosition& move_to,
+      const AXMoveType move_type,
+      const AXMoveDirection direction) {
+    if (move_from.IsNullPosition() || move_to.IsNullPosition())
+      return true;
+
+    if (!crossed_line_breaking_object_token) {
+      crossed_line_breaking_object_token = MoveCrossesLineBreakingObject(
+          move_from, move_to, move_type, direction);
     }
 
-    if (crossed_potential_boundary_token && !move_to.AnchorChildCount()) {
+    if (crossed_line_breaking_object_token && !move_to.AnchorChildCount()) {
       // If there's a sequence of whitespace-only anchors, collapse so only the
       // last whitespace-only anchor is considered a paragraph boundary.
-      if (direction == AXMoveDirection::kNextInTree &&
-          move_to.IsInWhiteSpace()) {
-        return false;
-      }
-      return true;
+      return direction != AXMoveDirection::kNextInTree ||
+             !move_to.IsInWhiteSpace();
+    }
+    return false;
+  }
+
+  // This AbortMovePredicate never aborts, but detects whether a sequence of
+  // consecutive moves cross any line breaking object boundary.
+  static bool UpdateCrossedLineBreakingObjectToken(
+      bool& crossed_line_breaking_object_token,
+      const AXPosition& move_from,
+      const AXPosition& move_to,
+      const AXMoveType move_type,
+      const AXMoveDirection direction) {
+    if (!crossed_line_breaking_object_token) {
+      crossed_line_breaking_object_token = MoveCrossesLineBreakingObject(
+          move_from, move_to, move_type, direction);
     }
     return false;
   }

@@ -17,6 +17,7 @@
 #include "net/base/mime_util.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
+#include "net/http/structured_headers.h"
 #include "third_party/blink/public/common/web_package/signed_exchange_consts.h"
 
 namespace blink {
@@ -56,7 +57,7 @@ class ContentNegotiationAlgorithm {
       return items;
 
     // Value can start with '*', so it cannot be parsed by
-    // http_structured_header::ParseParameterisedList.
+    // net::structured_headers::ParseParameterisedList.
     net::HttpUtil::ValuesIterator values(request_header_value->begin(),
                                          request_header_value->end(), ',');
     while (values.GetNext()) {
@@ -279,8 +280,8 @@ ParseVariants(const base::StringPiece& str) {
   // specifies a Structured-Headers-Draft-13 dictionary for the Variants header.
   // Once the specs are updated, also parse the new Variants dictionary header
   // as well. The same data structure should be returned.
-  base::Optional<http_structured_header::ListOfLists> parsed =
-      http_structured_header::ParseListOfLists(str);
+  base::Optional<net::structured_headers::ListOfLists> parsed =
+      net::structured_headers::ParseListOfLists(str);
   if (!parsed)
     return base::nullopt;
   std::vector<std::pair<std::string, std::vector<std::string>>> variants;
@@ -327,8 +328,8 @@ base::Optional<std::vector<std::vector<std::string>>> ParseVariantKey(
   // both strings and tokens.
   // TODO(iclelland): Once the specs are updated, also parse the new
   // Variants-Key header as well. The same data structure should be returned.
-  base::Optional<http_structured_header::ListOfLists> parsed =
-      http_structured_header::ParseListOfLists(str);
+  base::Optional<net::structured_headers::ListOfLists> parsed =
+      net::structured_headers::ParseListOfLists(str);
   if (!parsed)
     return base::nullopt;
   std::vector<std::vector<std::string>> variant_keys;
@@ -343,7 +344,7 @@ base::Optional<std::vector<std::vector<std::string>>> ParseVariantKey(
     list_members.reserve(inner_list.size());
     if (inner_list.size() != num_variant_axes)
       return base::nullopt;
-    for (const http_structured_header::Item& item : inner_list) {
+    for (const net::structured_headers::Item& item : inner_list) {
       if (!item.is_string() && !item.is_token())
         return base::nullopt;
       list_members.push_back(item.GetString());

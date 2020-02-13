@@ -62,9 +62,6 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
 // Helper contains common password suggestion logic.
 @property(nonatomic, readonly) PasswordSuggestionHelper* suggestionHelper;
 
-// Delegate to receive password autofill suggestion callbacks.
-@property(nonatomic, weak, nullable) id<CWVPasswordControllerDelegate> delegate;
-
 // Informs the |_passwordManager| of the password forms (if any were present)
 // that have been found on the page.
 - (void)didFinishPasswordFormExtraction:(const std::vector<FormData>&)forms;
@@ -104,9 +101,7 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
 
 #pragma mark - Initialization
 
-- (instancetype)initWithWebState:(web::WebState*)webState
-                     andDelegate:
-                         (nullable id<CWVPasswordControllerDelegate>)delegate {
+- (instancetype)initWithWebState:(web::WebState*)webState {
   self = [super init];
   if (self) {
     DCHECK(webState);
@@ -124,8 +119,6 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
         _passwordManagerClient.get());
     _passwordManagerDriver =
         std::make_unique<WebViewPasswordManagerDriver>(self);
-
-    _delegate = delegate;
 
     // TODO(crbug.com/865114): Credential manager related logic
   }

@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/offline_pages/android/offline_page_auto_fetcher_service.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"

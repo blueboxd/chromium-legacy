@@ -207,8 +207,7 @@ typename BreakList<T>::const_iterator IncrementBreakListIteratorToPosition(
 
 // Replaces the unicode control characters, control characters and PUA (Private
 // Use Areas) codepoints.
-UChar32 ReplaceControlCharacter(bool multiline,
-                                UChar32 codepoint) {
+UChar32 ReplaceControlCharacter(UChar32 codepoint) {
   // 'REPLACEMENT CHARACTER' used to replace an unknown,
   // unrecognized or unrepresentable character.
   constexpr base::char16 kReplacementCodepoint = 0xFFFD;
@@ -217,17 +216,15 @@ UChar32 ReplaceControlCharacter(bool multiline,
   constexpr base::char16 kSymbolsCodepoint = 0x2400;
 
   if (codepoint >= 0 && codepoint <= 0x1F) {
-    // The newline character should be kept as-is when
-    // rendertext is multiline.
-    if (codepoint != '\n' || !multiline) {
-      // Replace codepoints with their visual symbols, which are
-      // at the same offset from kSymbolsCodepoint.
-      return kSymbolsCodepoint + codepoint;
-    }
-  } else if (codepoint == 0x7F) {
+    // Replace codepoints with their visual symbols, which are
+    // at the same offset from kSymbolsCodepoint.
+    return kSymbolsCodepoint + codepoint;
+  }
+  if (codepoint == 0x7F) {
     // Replace the 'del' codepoint by its symbol (u2421).
     return kSymbolsCodepoint + 0x21;
-  } else if (!U_IS_UNICODE_CHAR(codepoint)) {
+  }
+  if (!U_IS_UNICODE_CHAR(codepoint)) {
     // Unicode codepoint that can't be assigned a character.
     // This handles:
     // - single surrogate codepoints,
@@ -235,7 +232,8 @@ UChar32 ReplaceControlCharacter(bool multiline,
     // - invalid characters (e.g. u+fdd0..u+fdef)
     // - codepoints above u+10ffff
     return kReplacementCodepoint;
-  } else if (codepoint > 0x7F) {
+  }
+  if (codepoint > 0x7F) {
     // Private use codepoints are working with a pair of font
     // and codepoint, but they are not used in Chrome.
     const int8_t codepoint_category = u_charType(codepoint);
@@ -1285,8 +1283,11 @@ bool RenderText::IsNewlineSegment(const internal::LineSegment& segment) const {
 
 bool RenderText::IsNewlineSegment(const base::string16& text,
                                   const internal::LineSegment& segment) const {
-  DCHECK_LT(segment.char_range.start(), text.length());
-  return text[segment.char_range.start()] == '\n';
+  const size_t offset = segment.char_range.start();
+  const size_t length = segment.char_range.length();
+  DCHECK_LT(offset + length - 1, text.length());
+  return (length == 1 && (text[offset] == '\r' || text[offset] == '\n')) ||
+         (length == 2 && text[offset] == '\r' && text[offset + 1] == '\n');
 }
 
 Range RenderText::GetLineRange(const base::string16& text,
@@ -1501,12 +1502,18 @@ void RenderText::EnsureLayoutTextUpdated() const {
                                             layout_grapheme_start_position};
     text_to_display_indices_.push_back(mapping);
 
+    // Flag telling if the current grapheme is a newline control sequence.
+    const bool is_newline_grapheme =
+        (grapheme_codepoints.size() == 1 &&
+         (grapheme_codepoints[0] == '\r' || grapheme_codepoints[0] == '\n')) ||
+        (grapheme_codepoints.size() == 2 && grapheme_codepoints[0] == '\r' &&
+         grapheme_codepoints[1] == '\n');
+
     // Obscure the layout text by replacing the grapheme by a bullet.
     if (obscured_ &&
         (reveal_index < text_grapheme_start_position ||
          reveal_index >= text_grapheme_end_position) &&
-        (grapheme_codepoints.size() != 1 || grapheme_codepoints[0] != '\n' ||
-         !multiline_)) {
+        (!is_newline_grapheme || !multiline_)) {
       grapheme_codepoints.clear();
       grapheme_codepoints.push_back(RenderText::kPasswordReplacementChar);
     }
@@ -1514,8 +1521,10 @@ void RenderText::EnsureLayoutTextUpdated() const {
     // Rewrite each codepoint of the grapheme.
     for (uint32_t codepoint : grapheme_codepoints) {
       // Handle unicode control characters ISO 6429 (block C0). Range from 0 to
-      // 0x1F and 0x7F.
-      codepoint = ReplaceControlCharacter(multiline_, codepoint);
+      // 0x1F and 0x7F. The newline character should be kept as-is when
+      // rendertext is multiline.
+      if (!multiline_ || !is_newline_grapheme)
+        codepoint = ReplaceControlCharacter(codepoint);
 
       // Truncate the remaining codepoints if appending the codepoint to
       // |layout_text_| is making the text larger than |truncate_length_|.

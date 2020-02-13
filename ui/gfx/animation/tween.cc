@@ -39,11 +39,17 @@ double Tween::CalculateValue(Tween::Type type, double state) {
         return pow(state * 2, 2) / 2.0;
       return 1.0 - (pow((state - 1.0) * 2, 2) / 2.0);
 
+    case EASE_IN_OUT_2:
+      return gfx::CubicBezier(0.33, 0, 0.67, 1).Solve(state);
+
     case LINEAR:
       return state;
 
     case EASE_OUT:
       return 1.0 - pow(1.0 - state, 2);
+
+    case EASE_OUT_2:
+      return gfx::CubicBezier(0.4, 0, 0, 1).Solve(state);
 
     case SMOOTH_IN_OUT:
       return sin(state);

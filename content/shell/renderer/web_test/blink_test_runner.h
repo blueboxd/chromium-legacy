@@ -139,6 +139,7 @@ class BlinkTestRunner : public RenderViewObserver,
       const blink::WebPluginParams& params) override;
   void RunIdleTasks(base::OnceClosure callback) override;
   void ForceTextInputStateUpdate(blink::WebLocalFrame* frame) override;
+  void SetScreenOrientationChanged() override;
 
   // Resets a RenderView to a known state for web tests. It is used both when
   // a RenderView is created and when reusing an existing RenderView for the

@@ -300,6 +300,7 @@ jumbo_static_library("content_shell_lib") {
     "//content/public/common",
     "//content/public/common:service_names",
     "//content/shell/test_runner:test_runner",
+    "//content/test:blink_test_browser_support",
     "//content/test:content_test_mojo_bindings",
     "//content/test:mojo_web_test_bindings",
     "//content/test:test_support",

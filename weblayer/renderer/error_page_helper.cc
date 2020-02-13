@@ -63,6 +63,10 @@ void ErrorPageHelper::SendCommand(
     case security_interstitials::CMD_OPEN_HELP_CENTER:
       interface->OpenHelpCenter();
       break;
+    case security_interstitials::CMD_OPEN_DIAGNOSTIC:
+      // Used by safebrowsing interstials.
+      interface->OpenDiagnostic();
+      break;
     case security_interstitials::CMD_RELOAD:
       interface->Reload();
       break;
@@ -72,13 +76,16 @@ void ErrorPageHelper::SendCommand(
     case security_interstitials::CMD_OPEN_DATE_SETTINGS:
       interface->OpenDateSettings();
       break;
-    case security_interstitials::CMD_OPEN_DIAGNOSTIC:
+    case security_interstitials::CMD_REPORT_PHISHING_ERROR:
+      // Used by safebrowsing phishing interstitial.
+      interface->ReportPhishingError();
+      break;
     case security_interstitials::CMD_DO_REPORT:
     case security_interstitials::CMD_DONT_REPORT:
     case security_interstitials::CMD_OPEN_REPORTING_PRIVACY:
     case security_interstitials::CMD_OPEN_WHITEPAPER:
-    case security_interstitials::CMD_REPORT_PHISHING_ERROR:
-      // Commands not used by the generic SSL error page.
+      // Commands not used by the generic SSL error pages.
+      // Also not currently used by the safebrowsing error pages.
       NOTREACHED();
       break;
     case security_interstitials::CMD_ERROR:

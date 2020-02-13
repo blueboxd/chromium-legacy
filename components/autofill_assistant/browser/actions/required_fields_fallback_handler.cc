@@ -287,8 +287,7 @@ void RequiredFieldsFallbackHandler::OnGetFallbackFieldTag(
   } else {
     action_delegate_->SetFieldValue(
         required_field.selector, fallback_value.value(),
-        required_field.simulate_key_presses,
-        required_field.delay_in_millisecond,
+        required_field.fill_strategy, required_field.delay_in_millisecond,
         base::BindOnce(&RequiredFieldsFallbackHandler::OnSetFallbackFieldValue,
                        weak_ptr_factory_.GetWeakPtr(), required_fields_index,
                        std::move(fallback_data)));

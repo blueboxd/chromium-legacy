@@ -70,9 +70,35 @@ using signin_metrics::PromoAction;
   return self;
 }
 
+#pragma mark - SigninCoordinator
+
+- (void)interruptWithAction:(SigninCoordinatorInterruptAction)action
+                 completion:(ProceduralBlock)completion {
+  DCHECK(self.identityInteractionManager);
+  switch (action) {
+    case SigninCoordinatorInterruptActionNoDismiss:
+      // SSO doesn't support cancel without dismiss, so to make sure the cancel
+      // is properly done, -[ChromeIdentityInteractionManager
+      // cancelAndDismissAnimated:NO] has to be called.
+    case SigninCoordinatorInterruptActionDismissWithoutAnimation:
+      [self.identityInteractionManager cancelAndDismissAnimated:NO];
+      break;
+    case SigninCoordinatorInterruptActionDismissWithAnimation:
+      // TODO(crbug.com/1051340): SSO doesn't support dismiss completion block.
+      // To make sure |completion| is called after the SSO view is fully
+      // dismissed, we need to dismiss without animation.
+      [self.identityInteractionManager cancelAndDismissAnimated:NO];
+      break;
+  }
+  if (completion) {
+    completion();
+  }
+}
+
 #pragma mark - ChromeCoordinator
 
 - (void)start {
+  [super start];
   self.identityInteractionManager =
       ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
@@ -92,14 +118,13 @@ using signin_metrics::PromoAction;
 }
 
 - (void)stop {
-  [self.identityInteractionManager cancelAndDismissAnimated:NO];
-
-  [self.alertCoordinator executeCancelHandler];
-  [self.alertCoordinator stop];
-  self.alertCoordinator = nil;
-
-  [self.userSigninCoordinator stop];
-  self.userSigninCoordinator = nil;
+  [super stop];
+  // If one of those 4 DCHECK() fails, -[AddAccountSigninCoordinator
+  // runCompletionCallbackWithSigninResult] has not been called.
+  DCHECK(!self.signinCompletion);
+  DCHECK(!self.identityInteractionManager);
+  DCHECK(!self.alertCoordinator);
+  DCHECK(!self.userSigninCoordinator);
 }
 
 #pragma mark - ChromeIdentityInteractionManagerDelegate
@@ -155,11 +180,16 @@ using signin_metrics::PromoAction;
                                      identity:(ChromeIdentity*)identity {
   // Cleaning up and calling the |signinCompletion| should be done last.
   self.identityInteractionManager = nil;
-  self.alertCoordinator = nil;
+  DCHECK(!self.alertCoordinator);
+  DCHECK(!self.userSigninCoordinator);
 
   if (self.signinCompletion) {
-    self.signinCompletion(signinResult, identity);
+    SigninCoordinatorCompletionCallback signinCompletion =
+        self.signinCompletion;
     self.signinCompletion = nil;
+    // The owner should call the stop method, during the callback.
+    // |self.signinCompletion| needs to be set to nil before calling it.
+    signinCompletion(signinResult, identity);
   }
 }
 

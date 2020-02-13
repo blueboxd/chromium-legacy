@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 
 #include <memory>
+
 #include "base/auto_reset.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -39,6 +40,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
@@ -152,10 +154,10 @@ static bool CheckShapeImageOrigin(Document& document,
 
   const KURL& url = image_resource.Url();
   String url_string = url.IsNull() ? "''" : url.ElidedString();
-  document.AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
-                             mojom::ConsoleMessageLevel::kError,
-                             "Unsafe attempt to load URL " + url_string + "."));
+  document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::ConsoleMessageSource::kSecurity,
+      mojom::ConsoleMessageLevel::kError,
+      "Unsafe attempt to load URL " + url_string + "."));
 
   return false;
 }

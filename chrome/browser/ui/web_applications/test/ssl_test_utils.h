@@ -12,9 +12,6 @@ namespace web_app {
 // Checks that the active tab's authentication state indicates insecure content.
 void CheckMixedContentLoaded(Browser* browser);
 
-// Checks that the active tab's security state warns about insecure content.
-void CheckMixedContentLoadedWithWarning(Browser* browser);
-
 // Checks that the active tab's authentication state indicates only secure
 // content is shown.
 void CheckMixedContentFailedToLoad(Browser* browser);

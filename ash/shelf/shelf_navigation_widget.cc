@@ -33,11 +33,6 @@ namespace {
 constexpr base::TimeDelta kButtonOpacityAnimationDuration =
     base::TimeDelta::FromMilliseconds(50);
 
-bool IsTabletMode() {
-  return Shell::Get()->tablet_mode_controller() &&
-         Shell::Get()->tablet_mode_controller()->InTabletMode();
-}
-
 // Returns the bounds for the first button shown in this view (the back
 // button in tablet mode, the home button otherwise).
 gfx::Rect GetFirstButtonBounds(bool is_shelf_horizontal) {
@@ -68,8 +63,8 @@ bool IsBackButtonShown() {
   if (!ShelfConfig::Get()->shelf_controls_shown())
     return false;
   return chromeos::switches::ShouldShowShelfHotseat()
-             ? IsTabletMode() && ShelfConfig::Get()->is_in_app()
-             : IsTabletMode();
+             ? Shell::Get()->IsInTabletMode() && ShelfConfig::Get()->is_in_app()
+             : Shell::Get()->IsInTabletMode();
 }
 
 bool IsHomeButtonShown() {
@@ -185,8 +180,8 @@ void ShelfNavigationWidget::Delegate::UpdateOpaqueBackground() {
     return;
   }
 
-  if (chromeos::switches::ShouldShowShelfHotseat() && IsTabletMode() &&
-      ShelfConfig::Get()->is_in_app()) {
+  if (chromeos::switches::ShouldShowShelfHotseat() &&
+      Shell::Get()->IsInTabletMode() && ShelfConfig::Get()->is_in_app()) {
     opaque_background_.SetVisible(false);
     return;
   }
@@ -477,7 +472,8 @@ void ShelfNavigationWidget::UpdateTargetBoundsForGesture() {
   const gfx::Point shelf_origin =
       shelf_->shelf_widget()->GetTargetBounds().origin();
   if (shelf_->IsHorizontalAlignment()) {
-    if (!IsTabletMode() || !chromeos::switches::ShouldShowShelfHotseat()) {
+    if (!Shell::Get()->IsInTabletMode() ||
+        !chromeos::switches::ShouldShowShelfHotseat()) {
       target_bounds_.set_y(shelf_origin.y() +
                            ShelfConfig::Get()->button_spacing());
     }

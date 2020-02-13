@@ -61,17 +61,13 @@ constexpr int kScrollVelocityThreshold = 6;
 // this ratio.
 constexpr float kWidthRatio = 0.8f;
 
-bool IsTabletMode() {
-  return Shell::Get()->tablet_mode_controller()->InTabletMode();
-}
-
 // Checks if |window| can be hidden or shown with a gesture.
 bool CanProcessWindow(aura::Window* window,
                       HomeLauncherGestureHandler::Mode mode) {
   if (!window)
     return false;
 
-  if (!IsTabletMode())
+  if (!Shell::Get()->IsInTabletMode())
     return false;
 
   if (!window->IsVisible() &&
@@ -769,7 +765,7 @@ bool HomeLauncherGestureHandler::SetUpWindows(Mode mode, aura::Window* window) {
     return false;
   }
 
-  if (IsTabletMode() && overview_active_on_gesture_start_ &&
+  if (Shell::Get()->IsInTabletMode() && overview_active_on_gesture_start_ &&
       !split_view_active && mode == Mode::kSlideUpToShow) {
     active_window_.reset();
     return true;
@@ -936,7 +932,7 @@ bool HomeLauncherGestureHandler::OnDragEnded(const gfx::PointF& location,
   } else {
     // In clamshell mode, AppListView::SetIsInDrag is called explicitly so it
     // does not need the notification from HomeLauncherGestureHandler.
-    if (IsTabletMode()) {
+    if (Shell::Get()->IsInTabletMode()) {
       HomeScreenDelegate* home_screen_delegate = GetHomeScreenDelegate();
       DCHECK(home_screen_delegate);
       home_screen_delegate->OnHomeLauncherDragEnd();

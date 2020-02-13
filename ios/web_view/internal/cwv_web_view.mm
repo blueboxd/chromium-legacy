@@ -48,6 +48,7 @@
 #import "ios/web_view/internal/cwv_ssl_status_internal.h"
 #import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 #import "ios/web_view/internal/language/web_view_url_language_histogram_factory.h"
+#import "ios/web_view/internal/passwords/cwv_password_controller.h"
 #import "ios/web_view/internal/translate/cwv_translation_controller_internal.h"
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -650,10 +651,13 @@ BOOL gChromeLongPressAndForceTouchHandlingEnabled = YES;
           [_webState->GetJSInjectionReceiver()
               instanceOfClass:[JsSuggestionManager class]]);
   [JSSuggestionManager setWebFramesManager:_webState->GetWebFramesManager()];
+  CWVPasswordController* passwordController =
+      [[CWVPasswordController alloc] initWithWebState:_webState.get()];
   return [[CWVAutofillController alloc] initWithWebState:_webState.get()
                                            autofillAgent:autofillAgent
                                        JSAutofillManager:JSAutofillManager
-                                     JSSuggestionManager:JSSuggestionManager];
+                                     JSSuggestionManager:JSSuggestionManager
+                                      passwordController:passwordController];
 }
 
 #endif  // BUILDFLAG(IOS_WEB_VIEW_ENABLE_AUTOFILL)

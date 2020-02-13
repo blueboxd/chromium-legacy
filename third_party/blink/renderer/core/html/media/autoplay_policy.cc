@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -218,9 +219,10 @@ bool AutoplayPolicy::RequestAutoplayUnmute() {
   if (was_autoplaying_muted) {
     if (IsGestureNeededForPlayback()) {
       if (IsUsingDocumentUserActivationRequiredPolicy()) {
-        element_->GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning, kWarningUnmuteFailed));
+        element_->GetDocument().AddConsoleMessage(
+            MakeGarbageCollected<ConsoleMessage>(
+                mojom::ConsoleMessageSource::kJavaScript,
+                mojom::ConsoleMessageLevel::kWarning, kWarningUnmuteFailed));
       }
 
       autoplay_uma_helper_->RecordAutoplayUnmuteStatus(

@@ -104,10 +104,11 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
   const KURL& url = frame_request.GetResourceRequest().Url();
   if (!frame_request.CanDisplay(url)) {
     if (frame_request.OriginDocument()) {
-      frame_request.OriginDocument()->AddConsoleMessage(ConsoleMessage::Create(
-          mojom::ConsoleMessageSource::kSecurity,
-          mojom::ConsoleMessageLevel::kError,
-          "Not allowed to load local resource: " + url.ElidedString()));
+      frame_request.OriginDocument()->AddConsoleMessage(
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::ConsoleMessageSource::kSecurity,
+              mojom::ConsoleMessageLevel::kError,
+              "Not allowed to load local resource: " + url.ElidedString()));
     }
     return;
   }
@@ -463,7 +464,7 @@ void RemoteFrame::SetPageFocus(bool is_focused) {
 }
 
 void RemoteFrame::ScrollRectToVisible(
-    const WebRect& rect_to_scroll,
+    const gfx::Rect& rect_to_scroll,
     mojom::blink::ScrollIntoViewParamsPtr params) {
   Element* owner_element = DeprecatedLocalOwner();
   LayoutObject* owner_object = owner_element->GetLayoutObject();
@@ -476,9 +477,10 @@ void RemoteFrame::ScrollRectToVisible(
 
   // Schedule the scroll.
   PhysicalRect absolute_rect = owner_object->LocalToAncestorRect(
-      PhysicalRect(LayoutUnit(rect_to_scroll.x), LayoutUnit(rect_to_scroll.y),
-                   LayoutUnit(rect_to_scroll.width),
-                   LayoutUnit(rect_to_scroll.height)),
+      PhysicalRect(LayoutUnit(rect_to_scroll.x()),
+                   LayoutUnit(rect_to_scroll.y()),
+                   LayoutUnit(rect_to_scroll.width()),
+                   LayoutUnit(rect_to_scroll.height())),
       owner_object->View());
 
   if (!params->zoom_into_rect ||

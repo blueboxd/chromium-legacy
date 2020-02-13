@@ -172,7 +172,8 @@ TEST_F(DefaultWindowResizerTest, NoResizeHistogramOnMove) {
   resizer->Drag(gfx::PointF(50, 50), 0);
   EXPECT_EQ(gfx::Point(50, 50), window->bounds().origin());
   resizer->CompleteDrag();
-  ui::WaitForNextFrameToBePresented(window->GetHost()->compositor());
+  EXPECT_TRUE(
+      ui::WaitForNextFrameToBePresented(window->GetHost()->compositor()));
   histograms_.ExpectTotalCount("Ash.InteractiveWindowResize.TimeToPresent", 0);
 }
 
@@ -190,7 +191,8 @@ TEST_F(DefaultWindowResizerTest, ResizeHistogram) {
   resizer->Drag(gfx::PointF(50, 50), 0);
   EXPECT_NE(gfx::Size(50, 50), window->bounds().size());
   resizer->CompleteDrag();
-  ui::WaitForNextFrameToBePresented(window->GetHost()->compositor());
+  EXPECT_TRUE(
+      ui::WaitForNextFrameToBePresented(window->GetHost()->compositor()));
   histograms_.ExpectTotalCount("Ash.InteractiveWindowResize.TimeToPresent", 1);
 }
 

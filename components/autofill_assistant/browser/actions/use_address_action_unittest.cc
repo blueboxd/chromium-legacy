@@ -396,5 +396,38 @@ TEST_F(UseAddressActionTest, FallbackForPhoneSucceeds) {
             ProcessAction(action_proto));
 }
 
+TEST_F(UseAddressActionTest, ForcedFallbackWithKeystrokes) {
+  ON_CALL(mock_action_delegate_, GetElementTag(_, _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
+
+  ActionProto action_proto = CreateUseAddressAction();
+  auto* name_required = AddRequiredField(
+      &action_proto,
+      base::NumberToString(
+          static_cast<int>(autofill::ServerFieldType::NAME_FIRST)),
+      "#first_name");
+  name_required->set_forced(true);
+  name_required->set_fill_strategy(SIMULATE_KEY_PRESSES);
+  name_required->set_delay_in_millisecond(1000);
+
+  // Autofill succeeds.
+  EXPECT_CALL(mock_action_delegate_,
+              OnFillAddressForm(
+                  NotNull(), Eq(Selector({kFakeSelector}).MustBeVisible()), _))
+      .WillOnce(RunOnceCallback<2>(OkClientStatus()));
+
+  // The field is not empty.
+  ON_CALL(mock_web_controller_, OnGetFieldValue(_, _))
+      .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "not empty"));
+
+  // But we still want the first name filled, with simulated keypresses.
+  EXPECT_CALL(mock_action_delegate_, OnSetFieldValue(Selector({"#first_name"}),
+                                                     kFirstName, true, 1000, _))
+      .WillOnce(RunOnceCallback<4>(OkClientStatus()));
+
+  EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED,
+            ProcessAction(action_proto));
+}
+
 }  // namespace
 }  // namespace autofill_assistant

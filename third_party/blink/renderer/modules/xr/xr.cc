@@ -147,7 +147,8 @@ bool IsFeatureValidForMode(device::mojom::XRSessionFeature feature,
       if (mode != device::mojom::blink::XRSessionMode::kImmersiveAr)
         return false;
       if (!session_init->hasDomOverlay()) {
-        execution_context->AddConsoleMessage(ConsoleMessage::Create(
+        execution_context->AddConsoleMessage(MakeGarbageCollected<
+                                             ConsoleMessage>(
             mojom::ConsoleMessageSource::kJavaScript, error_level,
             "Must specify a valid domOverlay.root element in XRSessionInit"));
         return false;
@@ -920,31 +921,35 @@ XR::RequestedXRSessionFeatureSet XR::ParseRequestedFeatures(
       auto feature_enum = StringToXRSessionFeature(doc, feature_string);
 
       if (!feature_enum) {
-        GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript, error_level,
-            "Unrecognized feature requested: " + feature_string));
+        GetExecutionContext()->AddConsoleMessage(
+            MakeGarbageCollected<ConsoleMessage>(
+                mojom::ConsoleMessageSource::kJavaScript, error_level,
+                "Unrecognized feature requested: " + feature_string));
         result.invalid_features = true;
       } else if (!IsFeatureValidForMode(feature_enum.value(), session_mode,
                                         session_init, GetExecutionContext(),
                                         error_level)) {
-        GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript, error_level,
-            "Feature '" + feature_string + "' is not supported for mode: " +
-                SessionModeToString(session_mode)));
+        GetExecutionContext()->AddConsoleMessage(
+            MakeGarbageCollected<ConsoleMessage>(
+                mojom::ConsoleMessageSource::kJavaScript, error_level,
+                "Feature '" + feature_string + "' is not supported for mode: " +
+                    SessionModeToString(session_mode)));
         result.invalid_features = true;
       } else if (!HasRequiredFeaturePolicy(doc, feature_enum.value())) {
-        GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript, error_level,
-            "Feature '" + feature_string +
-                "' is not permitted by feature policy"));
+        GetExecutionContext()->AddConsoleMessage(
+            MakeGarbageCollected<ConsoleMessage>(
+                mojom::ConsoleMessageSource::kJavaScript, error_level,
+                "Feature '" + feature_string +
+                    "' is not permitted by feature policy"));
         result.invalid_features = true;
       } else {
         result.valid_features.insert(feature_enum.value());
       }
     } else {
       GetExecutionContext()->AddConsoleMessage(
-          ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                                 error_level, "Unrecognized feature value"));
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::ConsoleMessageSource::kJavaScript, error_level,
+              "Unrecognized feature value"));
       result.invalid_features = true;
     }
   }

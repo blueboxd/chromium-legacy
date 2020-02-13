@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
@@ -153,7 +154,7 @@ void PreloadHelper::DnsPrefetchIfNeeded(
         params.href.IsValid() && !params.href.IsEmpty()) {
       if (settings->GetLogDnsPrefetchAndPreconnect()) {
         SendMessageToConsoleForPossiblyNullDocument(
-            ConsoleMessage::Create(
+            MakeGarbageCollected<ConsoleMessage>(
                 mojom::ConsoleMessageSource::kOther,
                 mojom::ConsoleMessageLevel::kVerbose,
                 String("DNS prefetch triggered for " + params.href.Host())),
@@ -181,20 +182,21 @@ void PreloadHelper::PreconnectIfNeeded(
     Settings* settings = frame ? frame->GetSettings() : nullptr;
     if (settings && settings->GetLogDnsPrefetchAndPreconnect()) {
       SendMessageToConsoleForPossiblyNullDocument(
-          ConsoleMessage::Create(
+          MakeGarbageCollected<ConsoleMessage>(
               mojom::ConsoleMessageSource::kOther,
               mojom::ConsoleMessageLevel::kVerbose,
               String("Preconnect triggered for ") + params.href.GetString()),
           document, frame);
       if (params.cross_origin != kCrossOriginAttributeNotSet) {
         SendMessageToConsoleForPossiblyNullDocument(
-            ConsoleMessage::Create(mojom::ConsoleMessageSource::kOther,
-                                   mojom::ConsoleMessageLevel::kVerbose,
-                                   String("Preconnect CORS setting is ") +
-                                       String((params.cross_origin ==
-                                               kCrossOriginAttributeAnonymous)
-                                                  ? "anonymous"
-                                                  : "use-credentials")),
+            MakeGarbageCollected<ConsoleMessage>(
+                mojom::ConsoleMessageSource::kOther,
+                mojom::ConsoleMessageLevel::kVerbose,
+                String("Preconnect CORS setting is ") +
+                    String(
+                        (params.cross_origin == kCrossOriginAttributeAnonymous)
+                            ? "anonymous"
+                            : "use-credentials")),
             document, frame);
       }
     }
@@ -260,7 +262,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
 
   UseCounter::Count(document, WebFeature::kLinkRelPreload);
   if (!url.IsValid() || url.IsEmpty()) {
-    document.AddConsoleMessage(ConsoleMessage::Create(
+    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kOther,
         mojom::ConsoleMessageLevel::kWarning,
         String("<link rel=preload> has an invalid `href` value")));
@@ -284,13 +286,13 @@ Resource* PreloadHelper::PreloadIfNeeded(
     } else {
       message = String("<link rel=preload> must have a valid `as` value");
     }
-    document.AddConsoleMessage(ConsoleMessage::Create(
+    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::blink::ConsoleMessageSource::kOther,
         mojom::blink::ConsoleMessageLevel::kWarning, message));
     return nullptr;
   }
   if (!IsSupportedType(resource_type.value(), params.type)) {
-    document.AddConsoleMessage(ConsoleMessage::Create(
+    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kOther,
         mojom::ConsoleMessageLevel::kWarning,
         String("<link rel=preload> has an unsupported `type` value")));
@@ -337,7 +339,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
     }
   } else {
     if (!integrity_attr.IsEmpty()) {
-      document.AddConsoleMessage(ConsoleMessage::Create(
+      document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kOther,
           mojom::ConsoleMessageLevel::kWarning,
           String("The `integrity` attribute is currently ignored for preload "
@@ -349,7 +351,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
   link_fetch_params.SetContentSecurityPolicyNonce(params.nonce);
   Settings* settings = document.GetSettings();
   if (settings && settings->GetLogPreload()) {
-    document.AddConsoleMessage(ConsoleMessage::Create(
+    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kOther,
         mojom::ConsoleMessageLevel::kVerbose,
         String("Preload triggered for " + url.Host() + url.GetPath())));
@@ -373,10 +375,10 @@ void PreloadHelper::ModulePreloadIfNeeded(
   // Step 1. "If the href attribute's value is the empty string, then return."
   // [spec text]
   if (params.href.IsEmpty()) {
-    document.AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kOther,
-                               mojom::ConsoleMessageLevel::kWarning,
-                               "<link rel=modulepreload> has no `href` value"));
+    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kOther,
+        mojom::ConsoleMessageLevel::kWarning,
+        "<link rel=modulepreload> has no `href` value"));
     return;
   }
 
@@ -398,7 +400,7 @@ void PreloadHelper::ModulePreloadIfNeeded(
   // and return." [spec text]
   // Currently we only support as="script".
   if (!params.as.IsEmpty() && params.as != "script") {
-    document.AddConsoleMessage(ConsoleMessage::Create(
+    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kOther,
         mojom::ConsoleMessageLevel::kWarning,
         String("<link rel=modulepreload> has an invalid `as` value " +
@@ -421,7 +423,7 @@ void PreloadHelper::ModulePreloadIfNeeded(
   // the resulting URL record." [spec text]
   // |href| is already resolved in caller side.
   if (!params.href.IsValid()) {
-    document.AddConsoleMessage(ConsoleMessage::Create(
+    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kOther,
         mojom::ConsoleMessageLevel::kWarning,
         "<link rel=modulepreload> has an invalid `href` value " +
@@ -486,11 +488,11 @@ void PreloadHelper::ModulePreloadIfNeeded(
 
   Settings* settings = document.GetSettings();
   if (settings && settings->GetLogPreload()) {
-    document.AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kOther,
-                               mojom::ConsoleMessageLevel::kVerbose,
-                               "Module preload triggered for " +
-                                   params.href.Host() + params.href.GetPath()));
+    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kOther,
+        mojom::ConsoleMessageLevel::kVerbose,
+        "Module preload triggered for " + params.href.Host() +
+            params.href.GetPath()));
   }
 
   // Asynchronously continue processing after

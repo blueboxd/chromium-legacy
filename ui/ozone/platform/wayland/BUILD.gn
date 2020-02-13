@@ -182,6 +182,10 @@ source_set("wayland") {
     ]
   }
 
+  if (use_bundled_weston) {
+    data_deps = [ "//third_party/weston" ]
+  }
+
   configs += [
     ":wayland-egl",
     "//third_party/khronos:khronos_headers",

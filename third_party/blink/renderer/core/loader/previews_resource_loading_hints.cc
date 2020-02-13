@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -150,7 +151,7 @@ bool PreviewsResourceLoadingHints::AllowLoad(
 
 void PreviewsResourceLoadingHints::ReportBlockedLoading(
     const KURL& resource_url) const {
-  execution_context_->AddConsoleMessage(ConsoleMessage::Create(
+  execution_context_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kOther, mojom::ConsoleMessageLevel::kWarning,
       GetConsoleLogStringForBlockedLoad(resource_url)));
 }

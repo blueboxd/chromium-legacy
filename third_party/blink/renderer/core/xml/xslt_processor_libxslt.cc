@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/xml/xsl_style_sheet.h"
 #include "third_party/blink/renderer/core/xml/xslt_extensions.h"
 #include "third_party/blink/renderer/core/xml/xslt_unicode_sort.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/raw_resource.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
@@ -79,7 +80,7 @@ void XSLTProcessor::ParseErrorFunc(void* user_data, xmlError* error) {
       break;
   }
 
-  console->AddMessage(ConsoleMessage::Create(
+  console->AddMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kXml, level, error->message,
       std::make_unique<SourceLocation>(error->file, error->line, 0, nullptr)));
 }

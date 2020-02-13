@@ -127,6 +127,9 @@
 
 - (void)cancel {
   [self.controller cancel];
+  [self.coordinator
+      interruptWithAction:SigninCoordinatorInterruptActionNoDismiss
+               completion:nil];
   [self.coordinator stop];
   self.coordinator = nil;
   [self.advancedSigninSettingsCoordinator abortWithDismiss:NO
@@ -136,6 +139,9 @@
 
 - (void)cancelAndDismiss {
   [self.controller cancelAndDismiss];
+  [self.coordinator
+      interruptWithAction:SigninCoordinatorInterruptActionDismissWithAnimation
+               completion:nil];
   [self.coordinator stop];
   self.coordinator = nil;
   [self.advancedSigninSettingsCoordinator abortWithDismiss:YES

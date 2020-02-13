@@ -202,8 +202,9 @@ DOMWebSocket::~DOMWebSocket() {
 void DOMWebSocket::LogError(const String& message) {
   if (GetExecutionContext()) {
     GetExecutionContext()->AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kError, message));
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kError, message));
   }
 }
 

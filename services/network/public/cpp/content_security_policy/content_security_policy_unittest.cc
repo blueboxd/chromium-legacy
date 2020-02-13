@@ -47,7 +47,8 @@ static void TestFrameAncestorsCSPParser(const std::string& header,
   AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
                                       &policies);
 
-  auto& frame_ancestors = policies[0]->directives[0]->source_list;
+  auto& frame_ancestors =
+      policies[0]->directives[mojom::CSPDirectiveName::FrameAncestors];
   EXPECT_EQ(frame_ancestors->sources.size(),
             expected_result->parsed_sources.size());
   for (size_t i = 0; i < expected_result->parsed_sources.size(); i++) {
@@ -104,12 +105,12 @@ mojom::ContentSecurityPolicyPtr EmptyCSP() {
 // Build a new policy made of only one directive and no report endpoints.
 mojom::ContentSecurityPolicyPtr BuildPolicy(CSPDirectiveName directive_name,
                                             mojom::CSPSourcePtr source) {
-  auto directive = mojom::CSPDirective::New();
-  directive->name = directive_name;
-  directive->source_list = mojom::CSPSourceList::New();
-  directive->source_list->sources.push_back(std::move(source));
+  auto source_list = mojom::CSPSourceList::New();
+  source_list->sources.push_back(std::move(source));
+
   auto policy = EmptyCSP();
-  policy->directives.push_back(std::move(directive));
+  policy->directives[directive_name] = std::move(source_list);
+
   return policy;
 }
 
@@ -243,7 +244,8 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     std::vector<mojom::ContentSecurityPolicyPtr> policies;
     AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
                                         &policies);
-    auto& frame_ancestors = policies[0]->directives[0]->source_list;
+    auto& frame_ancestors =
+        policies[0]->directives[mojom::CSPDirectiveName::FrameAncestors];
     EXPECT_EQ(frame_ancestors->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors->sources[0]->host, "example.com");
@@ -264,7 +266,8 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     std::vector<mojom::ContentSecurityPolicyPtr> policies;
     AddContentSecurityPolicyFromHeaders(*headers, GURL("https://example.com/"),
                                         &policies);
-    auto& frame_ancestors = policies[0]->directives[0]->source_list;
+    auto& frame_ancestors =
+        policies[0]->directives[mojom::CSPDirectiveName::FrameAncestors];
     EXPECT_EQ(frame_ancestors->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors->sources[0]->host, "example.org");
@@ -288,8 +291,10 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
                                         &policies);
 
     EXPECT_EQ(2U, policies.size());
-    auto& frame_ancestors0 = policies[0]->directives[0]->source_list;
-    auto& frame_ancestors1 = policies[1]->directives[0]->source_list;
+    auto& frame_ancestors0 =
+        policies[0]->directives[mojom::CSPDirectiveName::FrameAncestors];
+    auto& frame_ancestors1 =
+        policies[1]->directives[mojom::CSPDirectiveName::FrameAncestors];
     EXPECT_EQ(frame_ancestors0->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors0->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors0->sources[0]->host, "example.com");
@@ -323,7 +328,8 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
                                         &policies);
 
     EXPECT_EQ(2U, policies.size());
-    auto& frame_ancestors1 = policies[1]->directives[0]->source_list;
+    auto& frame_ancestors1 =
+        policies[1]->directives[mojom::CSPDirectiveName::FrameAncestors];
     EXPECT_EQ(frame_ancestors1->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors1->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors1->sources[0]->host, "example.org");
@@ -348,8 +354,10 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
                                         &policies);
 
     EXPECT_EQ(2U, policies.size());
-    auto& frame_ancestors0 = policies[0]->directives[0]->source_list;
-    auto& frame_ancestors1 = policies[1]->directives[0]->source_list;
+    auto& frame_ancestors0 =
+        policies[0]->directives[mojom::CSPDirectiveName::FrameAncestors];
+    auto& frame_ancestors1 =
+        policies[1]->directives[mojom::CSPDirectiveName::FrameAncestors];
     EXPECT_EQ(frame_ancestors0->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors0->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors0->sources[0]->host, "example.com");
@@ -387,7 +395,8 @@ TEST(ContentSecurityPolicy, ParseMultipleDirectives) {
     EXPECT_EQ(report_endpoints[0], "http://example.com/report");
     EXPECT_TRUE(policies[0]->use_reporting_api);
 
-    auto& frame_ancestors = policies[0]->directives[0]->source_list;
+    auto& frame_ancestors =
+        policies[0]->directives[mojom::CSPDirectiveName::FrameAncestors];
     EXPECT_EQ(frame_ancestors->sources.size(), 1U);
     EXPECT_EQ(frame_ancestors->sources[0]->scheme, "");
     EXPECT_EQ(frame_ancestors->sources[0]->host, "example.com");
@@ -475,9 +484,7 @@ TEST(ContentSecurityPolicy, ShouldUpgradeInsecureRequest) {
   EXPECT_FALSE(ShouldUpgradeInsecureRequest(policies));
 
   policies.push_back(mojom::ContentSecurityPolicy::New());
-  policies[0]->directives.push_back(mojom::CSPDirective::New());
-  policies[0]->directives[0]->name =
-      mojom::CSPDirectiveName::UpgradeInsecureRequests;
+  policies[0]->directives[mojom::CSPDirectiveName::UpgradeInsecureRequests];
 
   EXPECT_TRUE(ShouldUpgradeInsecureRequest(policies));
 }
@@ -486,9 +493,7 @@ TEST(ContentSecurityPolicy, ShouldUpgradeInsecureRequest) {
 TEST(ContentSecurityPolicy, UpgradeInsecureRequests) {
   std::vector<mojom::ContentSecurityPolicyPtr> policies;
   policies.push_back(mojom::ContentSecurityPolicy::New());
-  policies[0]->directives.push_back(mojom::CSPDirective::New());
-  policies[0]->directives[0]->name =
-      mojom::CSPDirectiveName::UpgradeInsecureRequests;
+  policies[0]->directives[mojom::CSPDirectiveName::UpgradeInsecureRequests];
 
   struct {
     std::string input;
@@ -556,8 +561,7 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
   {
     CSPContextTest context;
     auto policy = EmptyCSP();
-    policy->directives.push_back(mojom::CSPDirective::New(
-        CSPDirectiveName::DefaultSrc, allow_host("a.com")));
+    policy->directives[CSPDirectiveName::DefaultSrc] = allow_host("a.com");
     EXPECT_FALSE(CheckContentSecurityPolicy(policy, CSPDirectiveName::FrameSrc,
                                             GURL("http://b.com"), false, false,
                                             &context, SourceLocation(), false));
@@ -575,8 +579,7 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
   {
     CSPContextTest context;
     auto policy = EmptyCSP();
-    policy->directives.push_back(mojom::CSPDirective::New(
-        CSPDirectiveName::ChildSrc, allow_host("a.com")));
+    policy->directives[CSPDirectiveName::ChildSrc] = allow_host("a.com");
     EXPECT_FALSE(CheckContentSecurityPolicy(policy, CSPDirectiveName::FrameSrc,
                                             GURL("http://b.com"), false, false,
                                             &context, SourceLocation(), false));
@@ -594,10 +597,8 @@ TEST(ContentSecurityPolicy, DirectiveFallback) {
   {
     CSPContextTest context;
     auto policy = EmptyCSP();
-    policy->directives.push_back(mojom::CSPDirective::New(
-        CSPDirectiveName::FrameSrc, allow_host("a.com")));
-    policy->directives.push_back(mojom::CSPDirective::New(
-        CSPDirectiveName::ChildSrc, allow_host("b.com")));
+    policy->directives[CSPDirectiveName::FrameSrc] = allow_host("a.com");
+    policy->directives[CSPDirectiveName::ChildSrc] = allow_host("b.com");
     EXPECT_TRUE(CheckContentSecurityPolicy(policy, CSPDirectiveName::FrameSrc,
                                            GURL("http://a.com"), false, false,
                                            &context, SourceLocation(), false));
@@ -764,12 +765,12 @@ TEST(ContentSecurityPolicy, NavigateToChecks) {
 
   for (auto& test : cases) {
     auto policy = EmptyCSP();
-    policy->directives.push_back(mojom::CSPDirective::New(
-        CSPDirectiveName::NavigateTo, std::move(test.navigate_to_list)));
+    policy->directives[CSPDirectiveName::NavigateTo] =
+        std::move(test.navigate_to_list);
 
     if (test.form_action_list) {
-      policy->directives.push_back(mojom::CSPDirective::New(
-          CSPDirectiveName::FormAction, std::move(test.form_action_list)));
+      policy->directives[CSPDirectiveName::FormAction] =
+          std::move(test.form_action_list);
     }
 
     EXPECT_EQ(test.expected, CheckContentSecurityPolicy(

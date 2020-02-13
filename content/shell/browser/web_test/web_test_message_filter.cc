@@ -35,18 +35,6 @@
 
 namespace content {
 
-namespace {
-
-MockPlatformNotificationService* GetMockPlatformNotificationService() {
-  auto* client = WebTestContentBrowserClient::Get();
-  auto* context = client->GetWebTestBrowserContext();
-  auto* service = client->GetPlatformNotificationService(context);
-
-  return static_cast<MockPlatformNotificationService*>(service);
-}
-
-}  // namespace
-
 WebTestMessageFilter::WebTestMessageFilter(
     int render_process_id,
     storage::DatabaseTracker* database_tracker,
@@ -70,9 +58,7 @@ WebTestMessageFilter::OverrideTaskRunnerForMessage(
   switch (message.type()) {
     case WebTestHostMsg_ClearAllDatabases::ID:
       return database_tracker_->task_runner();
-    case WebTestHostMsg_SimulateWebNotificationClick::ID:
     case WebTestHostMsg_InitiateCaptureDump::ID:
-    case WebTestHostMsg_SetFilePathForMockFileDialog::ID:
       return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
   }
   return nullptr;
@@ -83,12 +69,8 @@ bool WebTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(WebTestMessageFilter, message)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_ClearAllDatabases, OnClearAllDatabases)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SetDatabaseQuota, OnSetDatabaseQuota)
-    IPC_MESSAGE_HANDLER(WebTestHostMsg_SimulateWebNotificationClick,
-                        OnSimulateWebNotificationClick)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_InitiateCaptureDump,
                         OnInitiateCaptureDump)
-    IPC_MESSAGE_HANDLER(WebTestHostMsg_SetFilePathForMockFileDialog,
-                        OnSetFilePathForMockFileDialog)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -112,15 +94,6 @@ void WebTestMessageFilter::OnSetDatabaseQuota(int quota) {
   } else {
     quota_manager_->SetQuotaSettings(storage::GetHardCodedSettings(quota));
   }
-}
-
-void WebTestMessageFilter::OnSimulateWebNotificationClick(
-    const std::string& title,
-    const base::Optional<int>& action_index,
-    const base::Optional<base::string16>& reply) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  GetMockPlatformNotificationService()->SimulateClick(title, action_index,
-                                                      reply);
 }
 
 void WebTestMessageFilter::OnInitiateCaptureDump(

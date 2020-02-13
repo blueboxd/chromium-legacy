@@ -64,9 +64,6 @@ COMPONENT_EXPORT(NETWORK_CPP)
 mojom::CSPDirectiveName ToCSPDirectiveName(const std::string& name);
 
 COMPONENT_EXPORT(NETWORK_CPP)
-std::string ToString(const mojom::CSPDirectivePtr&);
-
-COMPONENT_EXPORT(NETWORK_CPP)
 std::string ToString(mojom::CSPDirectiveName name);
 
 }  // namespace network

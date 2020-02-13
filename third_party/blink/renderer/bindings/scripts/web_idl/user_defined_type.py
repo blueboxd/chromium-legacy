@@ -45,4 +45,4 @@ class UserDefinedType(WithIdentifier):
 class StubUserDefinedType(UserDefinedType, WithComponent):
     def __init__(self, identifier):
         UserDefinedType.__init__(self, identifier)
-        WithComponent.__init__(self, components=[])
+        WithComponent.__init__(self, [])

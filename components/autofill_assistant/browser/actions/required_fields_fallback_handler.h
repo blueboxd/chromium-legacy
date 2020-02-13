@@ -32,7 +32,7 @@ class RequiredFieldsFallbackHandler {
     RequiredField(const RequiredField& copy);
 
     Selector selector;
-    bool simulate_key_presses = false;
+    KeyboardValueFillStrategy fill_strategy;
     int delay_in_millisecond = 0;
     bool forced = false;
     FieldValueStatus status = UNKNOWN;

@@ -265,60 +265,100 @@ class AXRange {
 
   // Returns the concatenation of the accessible names of all text nodes
   // contained between this AXRange's endpoints.
-  // Pass -1 for max_count to retrieve all text.
+  // Pass a |max_count| of -1 to retrieve all text in the AXRange.
+  // Note that if this AXRange has its anchor or focus located at an ignored
+  // position, we shrink the range to the closest unignored positions.
   base::string16 GetText(AXTextConcatenationBehavior concatenation_behavior =
                              AXTextConcatenationBehavior::kAsTextContent,
                          int max_count = -1,
                          bool include_ignored = false,
                          size_t* appended_newlines_count = nullptr) const {
+    if (max_count == 0 || IsNull())
+      return base::string16();
+
+    base::Optional<int> endpoint_comparison =
+        CompareEndpoints(anchor(), focus());
+    if (!endpoint_comparison)
+      return base::string16();
+
+    AXPositionInstance start = (endpoint_comparison.value() < 0)
+                                   ? anchor_->AsLeafTextPosition()
+                                   : focus_->AsLeafTextPosition();
+    AXPositionInstance end = (endpoint_comparison.value() < 0)
+                                 ? focus_->AsLeafTextPosition()
+                                 : anchor_->AsLeafTextPosition();
+
     base::string16 range_text;
-    bool should_append_newline = false;
-    bool found_trailing_newline = false;
     size_t computed_newlines_count = 0;
-    for (const AXRange& leaf_text_range : *this) {
-      DCHECK(leaf_text_range.IsLeafTextRange());
-      AXPositionType* start = leaf_text_range.anchor();
-      AXPositionType* end = leaf_text_range.focus();
+    bool is_first_non_whitespace_leaf = true;
+    bool crossed_paragraph_boundary = false;
+    bool is_first_unignored_leaf = true;
+    bool found_trailing_newline = false;
 
+    while (!start->IsNullPosition()) {
+      DCHECK(start->IsLeafTextPosition());
       DCHECK_GE(start->text_offset(), 0);
-      DCHECK_LE(start->text_offset(), end->text_offset());
 
-      if (should_append_newline) {
-        range_text += base::ASCIIToUTF16("\n");
-        computed_newlines_count++;
-      }
+      if (include_ignored || !start->IsIgnored()) {
+        if (concatenation_behavior ==
+                AXTextConcatenationBehavior::kAsInnerText &&
+            !start->IsInWhiteSpace()) {
+          if (is_first_non_whitespace_leaf) {
+            // The first non-whitespace leaf in the range could be preceded by
+            // whitespace spanning even before the start of this range, we need
+            // to check such positions in order to correctly determine if this
+            // is a paragraph's start (see |AXPosition::AtStartOfParagraph|).
+            crossed_paragraph_boundary =
+                !is_first_unignored_leaf && start->AtStartOfParagraph();
+          }
 
-      base::string16 current_anchor_text = start->GetText();
-      int current_leaf_text_length = end->text_offset() - start->text_offset();
+          // When preserving layout line breaks, don't append `\n` next if the
+          // previous leaf position was a <br> (already ending with a newline).
+          if (crossed_paragraph_boundary && !found_trailing_newline) {
+            range_text += base::ASCIIToUTF16("\n");
+            computed_newlines_count++;
+          }
 
-      if (current_leaf_text_length > 0) {
-        int characters_to_append =
-            (max_count >= 0) ? std::min(max_count - int{range_text.length()},
-                                        current_leaf_text_length)
-                             : current_leaf_text_length;
-
-        // Collapse all whitespace following any line break.
-        found_trailing_newline =
-            start->IsInLineBreak() ||
-            (found_trailing_newline && start->IsInWhiteSpace());
-
-        if (!include_ignored && !start->IsIgnored()) {
-          range_text += current_anchor_text.substr(start->text_offset(),
-                                                   characters_to_append);
+          is_first_non_whitespace_leaf = false;
+          crossed_paragraph_boundary = false;
         }
+
+        int current_end_offset = (start->GetAnchor() != end->GetAnchor())
+                                     ? start->MaxTextOffset()
+                                     : end->text_offset();
+
+        if (current_end_offset > start->text_offset()) {
+          int characters_to_append =
+              (max_count > 0)
+                  ? std::min(max_count - int{range_text.length()},
+                             current_end_offset - start->text_offset())
+                  : current_end_offset - start->text_offset();
+
+          range_text += start->GetText().substr(start->text_offset(),
+                                                characters_to_append);
+
+          // Collapse all whitespace following any line break.
+          found_trailing_newline =
+              start->IsInLineBreak() ||
+              (found_trailing_newline && start->IsInWhiteSpace());
+        }
+
+        DCHECK(max_count < 0 || int{range_text.length()} <= max_count);
+        is_first_unignored_leaf = false;
       }
 
-      DCHECK(max_count < 0 || int{range_text.length()} <= max_count);
-      if (int{range_text.length()} == max_count)
+      if (start->GetAnchor() == end->GetAnchor() ||
+          int{range_text.length()} == max_count) {
         break;
-
-      // When preserving layout line breaks, don't append a newline next if the
-      // current leaf range is a <br> (already ending with a '\n' character) or
-      // its respective anchor is invisible to the text representation.
-      if (concatenation_behavior == AXTextConcatenationBehavior::kAsInnerText)
-        should_append_newline =
-            !found_trailing_newline && end->AtEndOfParagraph();
+      } else if (concatenation_behavior ==
+                     AXTextConcatenationBehavior::kAsInnerText &&
+                 !crossed_paragraph_boundary && !is_first_non_whitespace_leaf) {
+        start = start->CreateNextLeafTextPosition(&crossed_paragraph_boundary);
+      } else {
+        start = start->CreateNextLeafTextPosition();
+      }
     }
+
     if (appended_newlines_count)
       *appended_newlines_count = computed_newlines_count;
     return range_text;

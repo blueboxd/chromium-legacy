@@ -424,6 +424,7 @@ void StatusAreaWidget::OnShelfConfigUpdated() {
   for (TrayBackgroundView* tray_button : tray_buttons_)
     tray_button->UpdateAfterShelfChange();
   UpdateCollapseState();
+  status_area_widget_delegate_->UpdateLayout();
 }
 
 void StatusAreaWidget::UpdateAfterColorModeChange() {

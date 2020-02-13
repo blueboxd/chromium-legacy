@@ -124,8 +124,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
       base::Optional<bool> destination_is_loaded,
       base::Optional<bool> destination_is_frozen,
       bool show_reason_tab_switching,
-      bool show_reason_unoccluded,
-      bool show_reason_bfcache_restore) final;
+      bool show_reason_unoccluded) final;
 
   // This only needs to be overridden by RenderWidgetHostViewBase subclasses
   // that handle content embedded within other RenderWidgetHostViews.

@@ -392,8 +392,15 @@ V4L2ImageProcessorBackend::CreateWithOutputMode(
                                 base::Unretained(image_processor.get()),
                                 std::move(init_cb)));
   done.Wait();
-  if (!success)
+  if (!success) {
+    // This needs to be destroyed on |backend_task_runner|.
+    backend_task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            base::DoNothing::Once<std::unique_ptr<ImageProcessorBackend>>(),
+            std::move(image_processor)));
     return nullptr;
+  }
 
   return image_processor;
 }

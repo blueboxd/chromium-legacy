@@ -242,9 +242,9 @@ bool HTMLFormElement::ValidateInteractively() {
       String message(
           "An invalid form control with name='%name' is not focusable.");
       message.Replace("%name", unhandled->GetName());
-      GetDocument().AddConsoleMessage(
-          ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
-                                 mojom::ConsoleMessageLevel::kError, message));
+      GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::ConsoleMessageSource::kRendering,
+          mojom::ConsoleMessageLevel::kError, message));
     }
   }
   return false;
@@ -258,7 +258,7 @@ void HTMLFormElement::PrepareForSubmission(
     return;
 
   if (!isConnected()) {
-    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kWarning,
         "Form submission canceled because the form is not connected"));
@@ -266,7 +266,7 @@ void HTMLFormElement::PrepareForSubmission(
   }
 
   if (GetDocument().IsSandboxed(WebSandboxFlags::kForms)) {
-    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,
         "Blocked form submission to '" + attributes_.Action() +
@@ -283,7 +283,7 @@ void HTMLFormElement::PrepareForSubmission(
                         WebFeature::kFormSubmittedWithUnclosedFormControl);
       if (RuntimeEnabledFeatures::UnclosedFormControlIsInvalidEnabled()) {
         String tag_name = To<HTMLFormControlElement>(element)->tagName();
-        GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+        GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
             mojom::ConsoleMessageSource::kSecurity,
             mojom::ConsoleMessageLevel::kError,
             "Form submission failed, as the <" + tag_name +
@@ -389,7 +389,7 @@ void HTMLFormElement::ScheduleFormSubmission(
   // or its active sandboxing flag set has its sandboxed forms browsing
   // context flag set, then abort these steps without doing anything.
   if (!isConnected()) {
-    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kWarning,
         "Form submission canceled because the form is not connected"));
@@ -397,11 +397,11 @@ void HTMLFormElement::ScheduleFormSubmission(
   }
 
   if (is_constructing_entry_list_) {
-    GetDocument().AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kWarning,
-                               "Form submission canceled because the form is "
-                               "constructing entry list"));
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning,
+        "Form submission canceled because the form is "
+        "constructing entry list"));
     return;
   }
 
@@ -435,7 +435,7 @@ void HTMLFormElement::ScheduleFormSubmission(
 
   // 'formdata' event handlers might disconnect the form.
   if (!isConnected()) {
-    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kWarning,
         "Form submission canceled because the form is not connected"));
@@ -525,7 +525,7 @@ void HTMLFormElement::SubmitForm() {
   if (GetDocument().IsSandboxed(WebSandboxFlags::kForms)) {
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,
         "Blocked form submission to '" + submission->Action().ElidedString() +

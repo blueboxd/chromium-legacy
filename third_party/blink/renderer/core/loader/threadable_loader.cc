@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 
 #include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
@@ -56,6 +57,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors.h"
 #include "third_party/blink/renderer/platform/loader/cors/cors_error_string.h"
@@ -601,7 +603,7 @@ bool ThreadableLoader::RedirectReceived(
     if (redirect_limit_ <= 0) {
       ThreadableLoaderClient* client = client_;
       Clear();
-      ConsoleMessage* message = ConsoleMessage::Create(
+      auto* message = MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kNetwork,
           mojom::ConsoleMessageLevel::kError,
           "Failed to load resource: net::ERR_TOO_MANY_REDIRECTS",
@@ -989,7 +991,7 @@ void ThreadableLoader::DispatchDidFail(const ResourceError& error) {
         *error.CorsErrorStatus(), initial_request_url_, last_request_url_,
         *GetSecurityOrigin(), ResourceType::kRaw,
         resource_loader_options_.initiator_info.name);
-    execution_context_->AddConsoleMessage(ConsoleMessage::Create(
+    execution_context_->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kError, std::move(message)));
   }

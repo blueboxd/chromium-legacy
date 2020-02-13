@@ -109,8 +109,6 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     // of enqueued callbacks have been executed.
     private boolean mStartupSuccess;
 
-    private int mLibraryProcessType;
-
     // Tests may inject a method to be run instead of calling ContentMain() in order for them to
     // initialize the C++ system via another means.
     private Runnable mContentMainCallbackForTests;
@@ -132,10 +130,9 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
 
     private TracingControllerAndroidImpl mTracingController;
 
-    BrowserStartupControllerImpl(int libraryProcessType) {
+    BrowserStartupControllerImpl() {
         mAsyncStartupCallbacks = new ArrayList<>();
         mServiceManagerCallbacks = new ArrayList<>();
-        mLibraryProcessType = libraryProcessType;
         if (BuildInfo.isDebugAndroid()) {
             // Only set up the tracing broadcast receiver on debug builds of the OS. Normal tracing
             // should use the DevTools API.
@@ -164,22 +161,14 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     /**
      * Get BrowserStartupController instance, create a new one if no existing.
      *
-     * @param libraryProcessType the type of process the shared library is loaded. it must be
-     *                           LibraryProcessType.PROCESS_BROWSER,
-     *                           LibraryProcessType.PROCESS_WEBVIEW or
-     *                           LibraryProcessType.PROCESS_WEBLAYER.
      * @return BrowserStartupController instance.
      */
-    public static BrowserStartupController get(int libraryProcessType) {
+    public static BrowserStartupController getInstance() {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread.";
         ThreadUtils.assertOnUiThread();
         if (sInstance == null) {
-            assert LibraryProcessType.PROCESS_BROWSER == libraryProcessType
-                    || LibraryProcessType.PROCESS_WEBVIEW == libraryProcessType
-                    || LibraryProcessType.PROCESS_WEBLAYER == libraryProcessType;
-            sInstance = new BrowserStartupControllerImpl(libraryProcessType);
+            sInstance = new BrowserStartupControllerImpl();
         }
-        assert sInstance.mLibraryProcessType == libraryProcessType : "Wrong process type";
         return sInstance;
     }
 
@@ -189,8 +178,10 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     }
 
     @Override
-    public void startBrowserProcessesAsync(boolean startGpuProcess, boolean startServiceManagerOnly,
+    public void startBrowserProcessesAsync(@LibraryProcessType int libraryProcessType,
+            boolean startGpuProcess, boolean startServiceManagerOnly,
             final StartupCallback callback) {
+        assertProcessTypeSupported(libraryProcessType);
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread.";
         ServicificationStartupUma.getInstance().record(ServicificationStartupUma.getStartupMode(
                 mFullBrowserStartupDone, mServiceManagerStarted, startServiceManagerOnly));
@@ -243,7 +234,10 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     }
 
     @Override
-    public void startBrowserProcessesSync(boolean singleProcess) {
+    public void startBrowserProcessesSync(
+            @LibraryProcessType int libraryProcessType, boolean singleProcess) {
+        assertProcessTypeSupported(libraryProcessType);
+
         ServicificationStartupUma.getInstance().record(
                 ServicificationStartupUma.getStartupMode(mFullBrowserStartupDone,
                         mServiceManagerStarted, false /* startServiceManagerOnly */));
@@ -352,6 +346,20 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     public @ServicificationStartup int getStartupMode(boolean startServiceManagerOnly) {
         return ServicificationStartupUma.getStartupMode(
                 mFullBrowserStartupDone, mServiceManagerStarted, startServiceManagerOnly);
+    }
+
+    /**
+     * Asserts that library process type is one of the supported types.
+     * @param libraryProcessType the type of process the shared library is loaded. It must be
+     *                           LibraryProcessType.PROCESS_BROWSER,
+     *                           LibraryProcessType.PROCESS_WEBVIEW or
+     *                           LibraryProcessType.PROCESS_WEBLAYER.
+     */
+    private void assertProcessTypeSupported(@LibraryProcessType int libraryProcessType) {
+        assert LibraryProcessType.PROCESS_BROWSER == libraryProcessType
+                || LibraryProcessType.PROCESS_WEBVIEW == libraryProcessType
+                || LibraryProcessType.PROCESS_WEBLAYER == libraryProcessType;
+        LibraryLoader.getInstance().assertCompatibleProcessType(libraryProcessType);
     }
 
     /**

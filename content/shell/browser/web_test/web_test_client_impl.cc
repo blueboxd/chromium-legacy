@@ -89,6 +89,19 @@ void WebTestClientImpl::TestFinishedInSecondaryRenderer() {
     BlinkTestController::Get()->OnTestFinishedInSecondaryRenderer();
 }
 
+void WebTestClientImpl::SimulateWebNotificationClick(
+    const std::string& title,
+    int32_t action_index,
+    const base::Optional<base::string16>& reply) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GetMockPlatformNotificationService()->SimulateClick(
+      title,
+      action_index == std::numeric_limits<int32_t>::min()
+          ? base::Optional<int>()
+          : base::Optional<int>(action_index),
+      reply);
+}
+
 void WebTestClientImpl::SimulateWebNotificationClose(const std::string& title,
                                                      bool by_user) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -218,6 +231,13 @@ void WebTestClientImpl::RegisterIsolatedFileSystem(
       storage::IsolatedContext::GetInstance()->RegisterDraggedFileSystem(files);
   policy->GrantReadFileSystem(render_process_id_, filesystem_id);
   std::move(callback).Run(filesystem_id);
+}
+
+void WebTestClientImpl::SetFilePathForMockFileDialog(
+    const base::FilePath& path) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (BlinkTestController::Get())
+    BlinkTestController::Get()->SetFilePathForMockFileDialog(path);
 }
 
 }  // namespace content

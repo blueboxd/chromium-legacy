@@ -175,12 +175,6 @@ void WebFrameTestProxy::DidChangeIcon(blink::WebIconURL::Type icon_type) {
   RenderFrameImpl::DidChangeIcon(icon_type);
 }
 
-void WebFrameTestProxy::DidFailLoad(const blink::WebURLError& error,
-                                    blink::WebHistoryCommitType commit_type) {
-  test_client_->DidFailLoad(error, commit_type);
-  RenderFrameImpl::DidFailLoad(error, commit_type);
-}
-
 void WebFrameTestProxy::DidStartLoading() {
   test_client_->DidStartLoading();
   RenderFrameImpl::DidStartLoading();

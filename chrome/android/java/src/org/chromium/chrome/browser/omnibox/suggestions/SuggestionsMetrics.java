@@ -75,7 +75,7 @@ class SuggestionsMetrics {
     static final void recordSuggestionViewCreateTime(long startTimeNs, long endTimeNs) {
         final long duration = getDurationInHundredsOfMicroseconds(startTimeNs, endTimeNs);
         if (duration < 0) return;
-        RecordHistogram.recordCustomTimesHistogram("Android.Omnibox.SuggestionsView.CreateTime",
+        RecordHistogram.recordCustomTimesHistogram("Android.Omnibox.SuggestionView.CreateTime",
                 duration, MIN_HISTOGRAM_DURATION_US, MAX_HISTOGRAM_DURATION_US,
                 NUM_DURATION_BUCKETS);
     }

@@ -47,11 +47,11 @@ class WebState;
 // autofilling password forms.
 @interface CWVPasswordController : NSObject
 
-// Creates a new password controller with the given |webState|.
 // |delegate| is used to receive password autofill suggestion callbacks.
+@property(nonatomic, weak, nullable) id<CWVPasswordControllerDelegate> delegate;
+
+// Creates a new password controller with the given |webState|.
 - (instancetype)initWithWebState:(web::WebState*)webState
-                     andDelegate:
-                         (nullable id<CWVPasswordControllerDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)init NS_UNAVAILABLE;

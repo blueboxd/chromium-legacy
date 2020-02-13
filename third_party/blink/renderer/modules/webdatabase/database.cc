@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/modules/webdatabase/sqlite/sqlite_transaction.h"
 #include "third_party/blink/renderer/modules/webdatabase/storage_log.h"
 #include "third_party/blink/renderer/modules/webdatabase/web_database_host.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -746,9 +747,9 @@ void Database::ReportSqliteError(int sqlite_error_code) {
 }
 
 void Database::LogErrorMessage(const String& message) {
-  GetExecutionContext()->AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kStorage,
-                             mojom::ConsoleMessageLevel::kError, message));
+  GetExecutionContext()->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::ConsoleMessageSource::kStorage, mojom::ConsoleMessageLevel::kError,
+      message));
 }
 
 ExecutionContext* Database::GetExecutionContext() const {

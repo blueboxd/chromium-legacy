@@ -82,6 +82,7 @@
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -980,7 +981,7 @@ bool Page::IsOrdinary() const {
 
 void Page::ReportIntervention(const String& text) {
   if (LocalFrame* local_frame = DeprecatedLocalMainFrame()) {
-    ConsoleMessage* message = ConsoleMessage::Create(
+    auto* message = MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kOther,
         mojom::ConsoleMessageLevel::kWarning, text,
         std::make_unique<SourceLocation>(String(), 0, 0, nullptr));

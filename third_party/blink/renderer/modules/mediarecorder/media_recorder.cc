@@ -87,7 +87,7 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exception_state,
     // Limit audio bitrate values if set explicitly or calculated.
     if (options->hasAudioBitsPerSecond() || options->hasBitsPerSecond()) {
       if (audio_bps > kLargestAutoAllocatedOpusBitRate) {
-        context->AddConsoleMessage(ConsoleMessage::Create(
+        context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
             mojom::ConsoleMessageSource::kJavaScript,
             mojom::ConsoleMessageLevel::kWarning,
             "Clamping calculated audio bitrate (" + String::Number(audio_bps) +
@@ -97,7 +97,7 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exception_state,
       }
 
       if (audio_bps < kSmallestPossibleOpusBitRate) {
-        context->AddConsoleMessage(ConsoleMessage::Create(
+        context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
             mojom::ConsoleMessageSource::kJavaScript,
             mojom::ConsoleMessageLevel::kWarning,
             "Clamping calculated audio bitrate (" + String::Number(audio_bps) +
@@ -118,7 +118,7 @@ void AllocateVideoAndAudioBitrates(ExceptionState& exception_state,
     // explicitly.
     if (options->hasVideoBitsPerSecond() || options->hasBitsPerSecond()) {
       if (video_bps < kSmallestPossibleVpxBitRate) {
-        context->AddConsoleMessage(ConsoleMessage::Create(
+        context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
             mojom::ConsoleMessageSource::kJavaScript,
             mojom::ConsoleMessageLevel::kWarning,
             "Clamping calculated video bitrate (" + String::Number(video_bps) +

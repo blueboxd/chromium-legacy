@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_CONSOLE_MESSAGE_H_
 
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -23,39 +24,26 @@ struct WebConsoleMessage;
 class CORE_EXPORT ConsoleMessage final
     : public GarbageCollected<ConsoleMessage> {
  public:
-  // Location must be non-null.
-  static ConsoleMessage* Create(mojom::ConsoleMessageSource,
-                                mojom::ConsoleMessageLevel,
-                                const String& message,
-                                std::unique_ptr<SourceLocation>);
-
-  // Shortcut when location is unknown. Captures current location.
-  static ConsoleMessage* Create(mojom::ConsoleMessageSource,
-                                mojom::ConsoleMessageLevel,
-                                const String& message);
-
-  // This method captures current location if available.
-  static ConsoleMessage* CreateForRequest(mojom::ConsoleMessageSource,
-                                          mojom::ConsoleMessageLevel,
-                                          const String& message,
-                                          const String& url,
-                                          DocumentLoader*,
-                                          uint64_t request_identifier);
-
-  // This creates message from WorkerMessageSource.
-  static ConsoleMessage* CreateFromWorker(mojom::ConsoleMessageLevel,
-                                          const String& message,
-                                          std::unique_ptr<SourceLocation>,
-                                          WorkerThread*);
-
-  // Creates a ConsoleMessage from a similar WebConsoleMessage.
-  static ConsoleMessage* CreateFromWebConsoleMessage(const WebConsoleMessage&,
-                                                     LocalFrame*);
-
+  // This constructor captures current location if available.
   ConsoleMessage(mojom::ConsoleMessageSource,
                  mojom::ConsoleMessageLevel,
                  const String& message,
-                 std::unique_ptr<SourceLocation>);
+                 const String& url,
+                 DocumentLoader*,
+                 uint64_t request_identifier);
+  // Creates message from WorkerMessageSource.
+  ConsoleMessage(mojom::ConsoleMessageLevel,
+                 const String& message,
+                 std::unique_ptr<SourceLocation>,
+                 WorkerThread*);
+  // Creates a ConsoleMessage from a similar WebConsoleMessage.
+  ConsoleMessage(const WebConsoleMessage&, LocalFrame*);
+  // If provided, source_location must be non-null.
+  ConsoleMessage(mojom::ConsoleMessageSource,
+                 mojom::ConsoleMessageLevel,
+                 const String& message,
+                 std::unique_ptr<SourceLocation> source_location =
+                     SourceLocation::Capture());
   ~ConsoleMessage();
 
   SourceLocation* Location() const;

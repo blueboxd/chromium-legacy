@@ -84,8 +84,6 @@ StatusAreaWidgetDelegate::StatusAreaWidgetDelegate(Shelf* shelf)
   DCHECK(shelf_);
   set_owned_by_client();  // Deleted by DeleteDelegate().
 
-  ShelfConfig::Get()->AddObserver(this);
-
   // Allow the launcher to surrender the focus to another window upon
   // navigation completion by the user.
   set_allow_deactivate_on_esc(true);
@@ -93,9 +91,7 @@ StatusAreaWidgetDelegate::StatusAreaWidgetDelegate(Shelf* shelf)
   layer()->SetFillsBoundsOpaquely(false);
 }
 
-StatusAreaWidgetDelegate::~StatusAreaWidgetDelegate() {
-  ShelfConfig::Get()->RemoveObserver(this);
-}
+StatusAreaWidgetDelegate::~StatusAreaWidgetDelegate() = default;
 
 void StatusAreaWidgetDelegate::SetFocusCyclerForTesting(
     const FocusCycler* focus_cycler) {
@@ -171,10 +167,6 @@ bool StatusAreaWidgetDelegate::CanActivate() const {
 
 void StatusAreaWidgetDelegate::DeleteDelegate() {
   delete this;
-}
-
-void StatusAreaWidgetDelegate::OnShelfConfigUpdated() {
-  UpdateLayout();
 }
 
 void StatusAreaWidgetDelegate::UpdateLayout() {

@@ -4207,6 +4207,16 @@ class HeadlessChromeDriverTest(ChromeDriverBaseTestWithWebServer):
   def testNewTabDoesNotFocus(self):
     self._newWindowDoesNotFocus(window_type='tab')
 
+  def testWindowFullScreen(self):
+    old_rect_list = self._driver.GetWindowRect()
+    # Testing the resulting screensize doesn't work in headless, because there
+    # is no screen to give a size.
+    # We just want to ensure this command doesn't timeout or error.
+    self._driver.FullScreenWindow()
+    # Restore a known size so next tests won't fail
+    self._driver.SetWindowRect(*old_rect_list)
+
+
 class SupportIPv4AndIPv6(ChromeDriverBaseTest):
   def testSupportIPv4AndIPv6(self):
     has_ipv4 = False

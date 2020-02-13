@@ -52,6 +52,7 @@ suite('SetTimeDialog', function() {
   suiteSetup(function() {
     // Must use existing timezones in the test.
     loadTimeData.overrideValues({
+      showTimezone: true,
       currentTimezoneId: 'America/Sao_Paulo',
       timezoneList: [
         [
@@ -190,15 +191,12 @@ suite('SetTimeDialog', function() {
     expectEquals('America/Los_Angeles', newTimezone);
   });
 
-  suite('NullTimezone', () => {
+  suite('HideTimezone', () => {
     suiteSetup(() => {
-      loadTimeData.overrideValues({
-        currentTimezoneId: '',
-        timezoneList: [],
-      });
+      loadTimeData.overrideValues({showTimezone: false});
     });
 
-    test('SetDateNullTimezone', async () => {
+    test('SetDate', async () => {
       const dateInput = setTimeElement.$$('#dateInput');
       assertTrue(!!dateInput);
 
@@ -233,6 +231,13 @@ suite('SetTimeDialog', function() {
 
       // Verify the page didn't try to change the timezone.
       assertEquals(0, testBrowserProxy.getCallCount('setTimezone'));
+    });
+
+    test('TimezoneUpdate', () => {
+      assertEquals(null, setTimeElement.$$('#timezoneSelect'));
+      cr.webUIListenerCallback(
+          'system-timezone-changed', 'America/Los_Angeles');
+      // No crash.
     });
   });
 });

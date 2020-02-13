@@ -799,7 +799,7 @@ CSSValue* ConsumeBackgroundComponent(CSSPropertyID resolved_property,
       return ConsumeBackgroundBox(range);
     case CSSPropertyID::kBackgroundImage:
     case CSSPropertyID::kWebkitMaskImage:
-      return css_property_parser_helpers::ConsumeImageOrNone(range, &context);
+      return css_property_parser_helpers::ConsumeImageOrNone(range, context);
     case CSSPropertyID::kBackgroundPositionX:
     case CSSPropertyID::kWebkitMaskPositionX:
       return ConsumePositionLonghand<CSSValueID::kLeft, CSSValueID::kRight>(
@@ -1028,7 +1028,7 @@ bool ConsumeBorderImageComponents(CSSParserTokenRange& range,
                                   DefaultFill default_fill) {
   do {
     if (!source) {
-      source = css_property_parser_helpers::ConsumeImageOrNone(range, &context);
+      source = css_property_parser_helpers::ConsumeImageOrNone(range, context);
       if (source)
         continue;
     }
@@ -1432,7 +1432,7 @@ bool IsAngleWithinLimits(CSSPrimitiveValue* angle) {
 }
 
 CSSValue* ConsumeFontStyle(CSSParserTokenRange& range,
-                           const CSSParserMode& parser_mode) {
+                           const CSSParserContext& context) {
   if (range.Peek().Id() == CSSValueID::kNormal ||
       range.Peek().Id() == CSSValueID::kItalic)
     return css_property_parser_helpers::ConsumeIdent(range);
@@ -1444,13 +1444,13 @@ CSSValue* ConsumeFontStyle(CSSParserTokenRange& range,
       css_property_parser_helpers::ConsumeIdent<CSSValueID::kOblique>(range);
 
   CSSPrimitiveValue* start_angle = css_property_parser_helpers::ConsumeAngle(
-      range, nullptr, base::nullopt, MinObliqueValue(), MaxObliqueValue());
+      range, context, base::nullopt, MinObliqueValue(), MaxObliqueValue());
   if (!start_angle)
     return oblique_identifier;
   if (!IsAngleWithinLimits(start_angle))
     return nullptr;
 
-  if (parser_mode != kCSSFontFaceRuleMode || range.AtEnd()) {
+  if (context.Mode() != kCSSFontFaceRuleMode || range.AtEnd()) {
     CSSValueList* value_list = CSSValueList::CreateSpaceSeparated();
     value_list->Append(*start_angle);
     return MakeGarbageCollected<cssvalue::CSSFontStyleRangeValue>(
@@ -1458,7 +1458,7 @@ CSSValue* ConsumeFontStyle(CSSParserTokenRange& range,
   }
 
   CSSPrimitiveValue* end_angle = css_property_parser_helpers::ConsumeAngle(
-      range, nullptr, base::nullopt, MinObliqueValue(), MaxObliqueValue());
+      range, context, base::nullopt, MinObliqueValue(), MaxObliqueValue());
   if (!end_angle || !IsAngleWithinLimits(end_angle))
     return nullptr;
 
@@ -2256,7 +2256,7 @@ CSSValue* ConsumeRay(CSSParserTokenRange& range,
   while (!function_args.AtEnd()) {
     if (!angle) {
       angle = css_property_parser_helpers::ConsumeAngle(
-          function_args, &context, base::Optional<WebFeature>());
+          function_args, context, base::Optional<WebFeature>());
       if (angle)
         continue;
     }
@@ -2350,7 +2350,7 @@ CSSValue* ConsumePathOrNone(CSSParserTokenRange& range) {
 CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range,
                               const CSSParserContext& context) {
   CSSValue* angle = css_property_parser_helpers::ConsumeAngle(
-      range, &context, base::Optional<WebFeature>());
+      range, context, base::Optional<WebFeature>());
   CSSValue* keyword =
       css_property_parser_helpers::ConsumeIdent<CSSValueID::kAuto,
                                                 CSSValueID::kReverse>(range);
@@ -2359,7 +2359,7 @@ CSSValue* ConsumeOffsetRotate(CSSParserTokenRange& range,
 
   if (!angle) {
     angle = css_property_parser_helpers::ConsumeAngle(
-        range, &context, base::Optional<WebFeature>());
+        range, context, base::Optional<WebFeature>());
   }
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
@@ -2502,14 +2502,14 @@ CSSValue* ConsumeTransformValue(CSSParserTokenRange& range,
     case CSSValueID::kSkewY:
     case CSSValueID::kSkew:
       parsed_value = css_property_parser_helpers::ConsumeAngle(
-          args, &context, WebFeature::kUnitlessZeroAngleTransform);
+          args, context, WebFeature::kUnitlessZeroAngleTransform);
       if (!parsed_value)
         return nullptr;
       if (function_id == CSSValueID::kSkew &&
           css_property_parser_helpers::ConsumeCommaIncludingWhitespace(args)) {
         transform_value->Append(*parsed_value);
         parsed_value = css_property_parser_helpers::ConsumeAngle(
-            args, &context, WebFeature::kUnitlessZeroAngleTransform);
+            args, context, WebFeature::kUnitlessZeroAngleTransform);
         if (!parsed_value)
           return nullptr;
       }
@@ -2574,7 +2574,7 @@ CSSValue* ConsumeTransformValue(CSSParserTokenRange& range,
         return nullptr;
       }
       parsed_value = css_property_parser_helpers::ConsumeAngle(
-          args, &context, WebFeature::kUnitlessZeroAngleTransform);
+          args, context, WebFeature::kUnitlessZeroAngleTransform);
       if (!parsed_value)
         return nullptr;
       break;
@@ -2677,7 +2677,7 @@ CSSValue* ParsePaintStroke(CSSParserTokenRange& range,
   if (range.Peek().Id() == CSSValueID::kNone)
     return css_property_parser_helpers::ConsumeIdent(range);
   cssvalue::CSSURIValue* url =
-      css_property_parser_helpers::ConsumeUrl(range, &context);
+      css_property_parser_helpers::ConsumeUrl(range, context);
   if (url) {
     CSSValue* parsed_value = nullptr;
     if (range.Peek().Id() == CSSValueID::kNone) {
@@ -2701,16 +2701,6 @@ css_property_parser_helpers::UnitlessQuirk UnitlessUnlessShorthand(
   return local_context.CurrentShorthand() == CSSPropertyID::kInvalid
              ? css_property_parser_helpers::UnitlessQuirk::kAllow
              : css_property_parser_helpers::UnitlessQuirk::kForbid;
-}
-
-CSSValue* ConsumeIntrinsicLength(CSSParserTokenRange& range,
-                                 const CSSParserContext& context) {
-  if (css_property_parser_helpers::IdentMatches<CSSValueID::kAuto>(
-          range.Peek().Id())) {
-    return css_property_parser_helpers::ConsumeIdent(range);
-  }
-  return css_property_parser_helpers::ConsumeLength(range, context,
-                                                    kValueRangeNonNegative);
 }
 
 }  // namespace css_parsing_utils

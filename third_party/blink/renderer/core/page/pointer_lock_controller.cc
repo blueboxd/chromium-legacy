@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -63,11 +64,12 @@ void PointerLockController::RequestPointerLock(
   if (target->GetDocument().IsSandboxed(WebSandboxFlags::kPointerLock)) {
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
-    target->GetDocument().AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kSecurity,
-        mojom::ConsoleMessageLevel::kError,
-        "Blocked pointer lock on an element because the element's frame is "
-        "sandboxed and the 'allow-pointer-lock' permission is not set."));
+    target->GetDocument().AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kSecurity,
+            mojom::ConsoleMessageLevel::kError,
+            "Blocked pointer lock on an element because the element's frame is "
+            "sandboxed and the 'allow-pointer-lock' permission is not set."));
     EnqueueEvent(event_type_names::kPointerlockerror, target);
     return;
   }

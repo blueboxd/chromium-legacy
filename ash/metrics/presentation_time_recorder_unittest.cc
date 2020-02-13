@@ -8,7 +8,6 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/timer/timer.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
@@ -29,29 +28,12 @@ TEST_F(PresentationTimeRecorderTest, Histogram) {
   auto* compositor = CurrentContext()->layer()->GetCompositor();
   auto test_recorder = CreatePresentationTimeHistogramRecorder(
       compositor, kName, kMaxLatencyName);
-  bool timeout = false;
   // Flush pending draw callbask by waiting for presentation until it times out.
-  do {
-    base::RunLoop runloop;
-    base::OneShotTimer timer;
-    // We assume if the new frame wasn't generated for 100ms (6 frames worth
-    // time) there is no pending draw request.
-    timer.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(100),
-                base::BindLambdaForTesting([&runloop, &timeout]() {
-                  runloop.Quit();
-                  timeout = true;
-                }));
-    base::WeakPtrFactory<base::RunLoop> runloop_factory(&runloop);
-    compositor->RequestPresentationTimeForNextFrame(base::BindOnce(
-        [](base::WeakPtr<base::RunLoop> runloop,
-           const gfx::PresentationFeedback& feedback) {
-          if (runloop)
-            runloop->Quit();
-        },
-        runloop_factory.GetWeakPtr()));
-    runloop.Run();
-    timer.Stop();
-  } while (!timeout);
+  // We assume if the new frame wasn't generated for 100ms (6 frames worth
+  // time) there is no pending draw request.
+  while (ui::WaitForNextFrameToBePresented(
+      compositor, base::TimeDelta::FromMilliseconds(100)))
+    ;
 
   compositor->ScheduleFullRedraw();
   histogram_tester.ExpectTotalCount(kName, 0);
@@ -61,24 +43,24 @@ TEST_F(PresentationTimeRecorderTest, Histogram) {
   histogram_tester.ExpectTotalCount(kName, 0);
   histogram_tester.ExpectTotalCount(kMaxLatencyName, 0);
 
-  WaitForNextFrameToBePresented(compositor);
+  EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
   histogram_tester.ExpectTotalCount(kName, 1);
   histogram_tester.ExpectTotalCount(kMaxLatencyName, 0);
 
   compositor->ScheduleFullRedraw();
-  WaitForNextFrameToBePresented(compositor);
+  EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
   histogram_tester.ExpectTotalCount(kName, 1);
   histogram_tester.ExpectTotalCount(kMaxLatencyName, 0);
 
   test_recorder->RequestNext();
   compositor->ScheduleFullRedraw();
-  WaitForNextFrameToBePresented(compositor);
+  EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
   histogram_tester.ExpectTotalCount(kName, 2);
   histogram_tester.ExpectTotalCount(kMaxLatencyName, 0);
 
   // Drawing without RequestNext should not affect histogram.
   compositor->ScheduleFullRedraw();
-  WaitForNextFrameToBePresented(compositor);
+  EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
   histogram_tester.ExpectTotalCount(kName, 2);
   histogram_tester.ExpectTotalCount(kMaxLatencyName, 0);
 
@@ -121,7 +103,7 @@ TEST_F(PresentationTimeRecorderTest, DelayedHistogram) {
 
   // Draw next frame and make sure the histgoram is recorded.
   compositor->ScheduleFullRedraw();
-  WaitForNextFrameToBePresented(compositor);
+  EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
   histogram_tester.ExpectTotalCount(kName, 1);
   histogram_tester.ExpectTotalCount(kMaxLatencyName, 1);
 }

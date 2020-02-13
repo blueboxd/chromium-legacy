@@ -50,7 +50,7 @@ class CORE_EXPORT FindInPage final : public GarbageCollected<FindInPage>,
 
   void ReportFindInPageSelection(int request_id,
                                  int active_match_ordinal,
-                                 const blink::WebRect& selection_rect,
+                                 const gfx::Rect& selection_rect,
                                  bool final_update);
 
   // mojom::blink::FindInPage overrides

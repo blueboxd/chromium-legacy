@@ -118,7 +118,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void SetPageFocus(bool is_focused) override;
   void RenderFallbackContent() override;
   void ScrollRectToVisible(
-      const WebRect& rect_to_scroll,
+      const gfx::Rect& rect_to_scroll,
       mojom::blink::ScrollIntoViewParamsPtr params) override;
   void DidStartLoading() override;
   void DidStopLoading() override;

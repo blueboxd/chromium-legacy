@@ -473,11 +473,6 @@ interface FrameHost {
       int32 line_number,
       mojo_base.mojom.String16 source_id);
 
-  // Sent when the renderer fails to load with an error.
-  DidFailLoadWithError(
-      url.mojom.Url url,
-      int32 error_code);
-
   // Sent to the browser process to transfer the user activation state from the
   // source frame to the frame sending this IPC. The browser will update the
   // user activation state of the frames in the frame tree in the non-source and

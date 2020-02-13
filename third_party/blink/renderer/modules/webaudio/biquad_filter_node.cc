@@ -98,11 +98,13 @@ void BiquadFilterHandler::NotifyBadState() const {
   if (!Context() || !Context()->GetExecutionContext())
     return;
 
-  Context()->GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-      mojom::ConsoleMessageSource::kJavaScript,
-      mojom::ConsoleMessageLevel::kWarning,
-      NodeTypeName() + ": state is bad, probably due to unstable filter caused "
-                       "by fast parameter automation."));
+  Context()->GetExecutionContext()->AddConsoleMessage(
+      MakeGarbageCollected<ConsoleMessage>(
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning,
+          NodeTypeName() +
+              ": state is bad, probably due to unstable filter caused "
+              "by fast parameter automation."));
 }
 
 BiquadFilterNode::BiquadFilterNode(BaseAudioContext& context)

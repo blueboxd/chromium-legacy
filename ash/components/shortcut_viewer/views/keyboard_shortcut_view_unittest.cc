@@ -93,7 +93,7 @@ TEST_F(KeyboardShortcutViewTest, ShowAndClose) {
 
 TEST_F(KeyboardShortcutViewTest, StartupTimeHistogram) {
   views::Widget* widget = Toggle();
-  ui::WaitForNextFrameToBePresented(widget->GetCompositor());
+  EXPECT_TRUE(ui::WaitForNextFrameToBePresented(widget->GetCompositor()));
   histograms_.ExpectTotalCount("Keyboard.ShortcutViewer.StartupTime", 1);
   widget->CloseNow();
 }

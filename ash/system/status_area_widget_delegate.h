@@ -20,8 +20,7 @@ class Shelf;
 
 // The View for the status area widget.
 class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
-                                            public views::WidgetDelegate,
-                                            public ShelfConfig::Observer {
+                                            public views::WidgetDelegate {
  public:
   explicit StatusAreaWidgetDelegate(Shelf* shelf);
   ~StatusAreaWidgetDelegate() override;
@@ -53,9 +52,6 @@ class ASH_EXPORT StatusAreaWidgetDelegate : public views::AccessiblePaneView,
   // views::WidgetDelegate:
   bool CanActivate() const override;
   void DeleteDelegate() override;
-
-  // ShelfConfig::Observer:
-  void OnShelfConfigUpdated() override;
 
   void set_default_last_focusable_child(bool default_last_focusable_child) {
     default_last_focusable_child_ = default_last_focusable_child;

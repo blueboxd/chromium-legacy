@@ -529,7 +529,7 @@ cr.define('cr.ui.login', function() {
       // is back in DOM tree and has correct offsetHeight / offsetWidth.
       newStep.hidden = false;
 
-      if (newStep.getOobeUIInitialState) {0
+      if (newStep.getOobeUIInitialState) {
         this.setOobeUIState(newStep.getOobeUIInitialState());
       } else {
         this.setOobeUIState(OOBE_UI_STATE.HIDDEN);

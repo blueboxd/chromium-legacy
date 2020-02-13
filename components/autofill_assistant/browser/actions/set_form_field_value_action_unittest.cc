@@ -226,7 +226,7 @@ TEST_F(SetFormFieldValueActionTest, MultipleValuesAndSimulateKeypress) {
   value->set_text("SomeText");
   auto* enter = set_form_field_proto_->add_value();
   enter->set_keycode(13);
-  set_form_field_proto_->set_simulate_key_presses(true);
+  set_form_field_proto_->set_fill_strategy(SIMULATE_KEY_PRESSES);
 
   SetFormFieldValueAction action(&mock_action_delegate_, proto_);
   EXPECT_CALL(

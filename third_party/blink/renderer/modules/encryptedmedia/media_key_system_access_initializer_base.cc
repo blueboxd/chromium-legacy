@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/encrypted_media_utils.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/network/parsed_content_type.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 
@@ -206,12 +207,13 @@ void MediaKeySystemAccessInitializerBase::CheckVideoCapabilityRobustness()
     // TODO(xhwang): Write a best practice doc explaining details about risks of
     // using an empty robustness here, and provide the link to the doc in this
     // message. See http://crbug.com/720013
-    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kJavaScript,
-        mojom::ConsoleMessageLevel::kWarning,
-        "It is recommended that a robustness level be specified. Not "
-        "specifying the robustness level could result in unexpected "
-        "behavior."));
+    GetExecutionContext()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning,
+            "It is recommended that a robustness level be specified. Not "
+            "specifying the robustness level could result in unexpected "
+            "behavior."));
   }
 
   if (!IsExecutionContextValid())

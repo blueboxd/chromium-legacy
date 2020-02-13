@@ -1409,50 +1409,44 @@ TEST_P(SplitViewControllerTest, LongPressExitsSplitViewWithTransientChild) {
 }
 
 // Verify that split view mode get activated when long pressing on the overview
-// button while in overview mode iff we have more than two windows in the mru
-// list.
+// button while in overview mode iff we have at least one window.
 TEST_P(SplitViewControllerTest, LongPressInOverviewMode) {
-  const gfx::Rect bounds(0, 0, 400, 400);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  wm::ActivateWindow(window1.get());
-
   ToggleOverview();
   ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   ASSERT_FALSE(split_view_controller()->InSplitViewMode());
-  CheckOverviewEnterExitHistogram("EnterInTablet", {1, 0}, {0, 0});
+  CheckOverviewEnterExitHistogram("EnterInTablet", {0, 0}, {0, 0});
 
-  // Nothing happens if there is only one window.
+  // Nothing happens if there are no windows.
   LongPressOnOverivewButtonTray();
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+  EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
 
-  // Verify that with two windows, a long press on the overview button tray will
+  // Verify that with a window, a long press on the overview button tray will
   // enter splitview.
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  wm::ActivateWindow(window2.get());
-  CheckOverviewEnterExitHistogram("ExitByActivation", {1, 0}, {1, 0});
+  std::unique_ptr<aura::Window> window(CreateWindow(gfx::Rect(0, 0, 400, 400)));
+  wm::ActivateWindow(window.get());
+  CheckOverviewEnterExitHistogram("ExitByActivation", {0, 0}, {0, 0});
 
   ToggleOverview();
-  CheckOverviewEnterExitHistogram("EnterInTablet2", {2, 0}, {1, 0});
+  CheckOverviewEnterExitHistogram("EnterInTablet2", {1, 0}, {0, 0});
   ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   ASSERT_FALSE(split_view_controller()->InSplitViewMode());
 
   LongPressOnOverivewButtonTray();
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
-  EXPECT_EQ(window2.get(), split_view_controller()->left_window());
+  EXPECT_EQ(window.get(), split_view_controller()->left_window());
   // This scenario should not trigger animation.
-  CheckOverviewEnterExitHistogram("NoTransition", {2, 0}, {1, 0});
+  CheckOverviewEnterExitHistogram("NoTransition", {1, 0}, {0, 0});
 }
 
 TEST_P(SplitViewControllerTest, LongPressWithUnsnappableWindow) {
-  // Add one unsnappable window and two regular windows.
+  // Add an unsnappable window and a regular window.
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> unsnappable_window(
       CreateNonSnappableWindow(bounds));
   ASSERT_FALSE(split_view_controller()->InSplitViewMode());
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
-  wm::ActivateWindow(window2.get());
-  wm::ActivateWindow(window3.get());
+  std::unique_ptr<aura::Window> regular_window(CreateWindow(bounds));
+  wm::ActivateWindow(regular_window.get());
   wm::ActivateWindow(unsnappable_window.get());
   ASSERT_EQ(unsnappable_window.get(), window_util::GetActiveWindow());
 

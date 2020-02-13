@@ -78,4 +78,8 @@ void BlinkTestClientImpl::NavigateSecondaryWindow(const GURL& url) {
   BlinkTestController::Get()->OnNavigateSecondaryWindow(url);
 }
 
+void BlinkTestClientImpl::SetScreenOrientationChanged() {
+  BlinkTestController::Get()->OnSetScreenOrientationChanged();
+}
+
 }  // namespace content

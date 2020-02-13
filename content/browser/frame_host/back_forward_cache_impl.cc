@@ -17,7 +17,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/page_messages.h"
-#include "content/public/browser/visibility.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
 #include "third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h"
@@ -212,21 +211,6 @@ void RestoreBrowserControlsState(RenderFrameHostImpl* cached_rfh) {
   }
 }
 
-void RequestRecordTimeToVisible(RenderFrameHostImpl* rfh,
-                                base::TimeTicks navigation_start) {
-  // Make sure we record only when the frame is not in hidden state to avoid
-  // cases like page navigating back with window.history.back(), while being
-  // hidden.
-  if (rfh->delegate()->GetVisibility() != Visibility::HIDDEN) {
-    rfh->GetView()->SetRecordContentToVisibleTimeRequest(
-        navigation_start, base::Optional<bool>() /* destination_is_loaded */,
-        base::Optional<bool>() /* destination_is_frozen */,
-        false /* show_reason_tab_switching */,
-        false /* show_reason_unoccluded */,
-        true /* show_reason_bfcache_restore */);
-  }
-}
-
 }  // namespace
 
 BackForwardCacheImpl::Entry::Entry(
@@ -407,8 +391,7 @@ void BackForwardCacheImpl::StoreEntry(
 }
 
 std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
-    int navigation_entry_id,
-    base::TimeTicks navigation_start) {
+    int navigation_entry_id) {
   TRACE_EVENT0("navigation", "BackForwardCache::RestoreEntry");
   // Select the RenderFrameHostImpl matching the navigation entry.
   auto matching_entry = std::find_if(
@@ -426,12 +409,8 @@ std::unique_ptr<BackForwardCacheImpl::Entry> BackForwardCacheImpl::RestoreEntry(
           ->render_frame_host->is_evicted_from_back_forward_cache())
     return nullptr;
 
-  // Capture the navigation start timestamp to dispatch to the page when the
-  // entry is restored.
-  (*matching_entry)->restore_navigation_start = navigation_start;
   std::unique_ptr<Entry> entry = std::move(*matching_entry);
   entries_.erase(matching_entry);
-  RequestRecordTimeToVisible(entry->render_frame_host.get(), navigation_start);
   entry->render_frame_host->LeaveBackForwardCache();
 
   RestoreBrowserControlsState(entry->render_frame_host.get());

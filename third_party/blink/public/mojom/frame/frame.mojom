@@ -124,6 +124,10 @@ interface LocalFrameHost {
   // of a theme color meta tag  will generate a null value.
   DidChangeThemeColor(skia.mojom.SkColor? theme_color);
 
+  // Sent when the renderer fails to load with |error_code| which means a net
+  // error code.
+  DidFailLoadWithError(url.mojom.Url url, int32 error_code);
+
   // Sent by the renderer when the associated frame becomes focused.
   DidFocusFrame();
 

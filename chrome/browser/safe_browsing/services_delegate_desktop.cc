@@ -109,6 +109,9 @@ void ServicesDelegateDesktop::SetDatabaseManagerForTest(
 
 void ServicesDelegateDesktop::ShutdownServices() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  download_service_.reset();
+
   // The IO thread is going away, so make sure the ClientSideDetectionService
   // dtor executes now since it may call the dtor of URLFetcher which relies
   // on it.
@@ -121,9 +124,6 @@ void ServicesDelegateDesktop::ShutdownServices() {
   binary_upload_service_map_.clear();
 
   ServicesDelegate::ShutdownServices();
-
-  // Must shut down last.
-  download_service_.reset();
 }
 
 void ServicesDelegateDesktop::RefreshState(bool enable) {

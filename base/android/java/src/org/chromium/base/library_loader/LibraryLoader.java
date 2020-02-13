@@ -587,6 +587,15 @@ public class LibraryLoader {
         mCommandLineSwitched = true;
     }
 
+    /**
+     * Assert that library process type in the LibraryLoarder is compatible with provided type.
+     *
+     * @param libraryProcessType a library process type to assert.
+     */
+    public void assertCompatibleProcessType(@LibraryProcessType int libraryProcessType) {
+        assert libraryProcessType == mLibraryProcessType;
+    }
+
     // Invoke base::android::LibraryLoaded in library_loader_hooks.cc
     @GuardedBy("mLock")
     private void initializeAlreadyLocked() {

@@ -17,7 +17,6 @@ import androidx.annotation.IntDef;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PackageManagerUtils;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.BackgroundOnlyAsyncTask;
@@ -164,8 +163,7 @@ public final class DefaultBrowserInfo {
      * Log statistics about the current default browser to UMA.
      */
     public static void logDefaultBrowserStats() {
-        assert BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                .isFullBrowserStarted();
+        assert BrowserStartupController.getInstance().isFullBrowserStarted();
 
         try {
             new AsyncTask<DefaultInfo>() {

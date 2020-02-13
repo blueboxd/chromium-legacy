@@ -54,19 +54,19 @@ public class ChromiumLinkerTestActivity extends Activity {
 
         mShellManager.setStartupUrl("about:blank");
 
-        BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                .startBrowserProcessesAsync(
-                        true, false, new BrowserStartupController.StartupCallback() {
-                            @Override
-                            public void onSuccess() {
-                                finishInitialization(savedInstanceState);
-                            }
+        BrowserStartupController.getInstance().startBrowserProcessesAsync(
+                LibraryProcessType.PROCESS_BROWSER, true, false,
+                new BrowserStartupController.StartupCallback() {
+                    @Override
+                    public void onSuccess() {
+                        finishInitialization(savedInstanceState);
+                    }
 
-                            @Override
-                            public void onFailure() {
-                                initializationFailed();
-                            }
-                        });
+                    @Override
+                    public void onFailure() {
+                        initializationFailed();
+                    }
+                });
 
         // TODO(digit): Ensure that after the content view is initialized,
         // the program finishes().

@@ -286,7 +286,7 @@ TEST_F(UseCreditCardActionTest, FillCreditCardWithFallback) {
   EXPECT_EQ(ProcessedActionStatusProto::ACTION_APPLIED, ProcessAction(action));
 }
 
-TEST_F(UseCreditCardActionTest, ForcedFallback) {
+TEST_F(UseCreditCardActionTest, ForcedFallbackWithKeystrokes) {
   ON_CALL(mock_action_delegate_, GetElementTag(_, _))
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "INPUT"));
 
@@ -297,7 +297,7 @@ TEST_F(UseCreditCardActionTest, ForcedFallback) {
           UseCreditCardProto::RequiredField::CREDIT_CARD_VERIFICATION_CODE)),
       "#cvc");
   cvc_required->set_forced(true);
-  cvc_required->set_simulate_key_presses(true);
+  cvc_required->set_fill_strategy(SIMULATE_KEY_PRESSES);
   cvc_required->set_delay_in_millisecond(1000);
 
   // No field is ever empty
@@ -305,10 +305,9 @@ TEST_F(UseCreditCardActionTest, ForcedFallback) {
       .WillByDefault(RunOnceCallback<1>(OkClientStatus(), "not empty"));
 
   // But we still want the CVC filled, with simulated keypresses.
-  Expectation set_cvc =
-      EXPECT_CALL(mock_action_delegate_,
-                  OnSetFieldValue(Selector({"#cvc"}), "123", true, 1000, _))
-          .WillOnce(RunOnceCallback<4>(OkClientStatus()));
+  EXPECT_CALL(mock_action_delegate_,
+              OnSetFieldValue(Selector({"#cvc"}), "123", true, 1000, _))
+      .WillOnce(RunOnceCallback<4>(OkClientStatus()));
 
   autofill::CreditCard credit_card;
   user_data_.selected_card_ =

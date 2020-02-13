@@ -76,7 +76,6 @@ source_set("headers") {
     "frame/sandbox_flags.h",
     "frame/user_activation_state.h",
     "frame/user_activation_update_source.h",
-    "http/structured_header.h",
     "indexeddb/indexed_db_default_mojom_traits.h",
     "indexeddb/indexeddb_key.h",
     "indexeddb/indexeddb_key_path.h",

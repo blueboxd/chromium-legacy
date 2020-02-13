@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding_macros.h"
 #include "third_party/blink/renderer/platform/bindings/v8_object_constructor.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -133,11 +134,11 @@ bool CSSLayoutDefinition::Instance::Layout(
 
   v8::Local<v8::Value> v8_return_value = return_value.V8Value();
   if (v8_return_value.IsEmpty() || !v8_return_value->IsPromise()) {
-    execution_context->AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kInfo,
-                               "The layout function must be async or return a "
-                               "promise, falling back to block layout."));
+    execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kInfo,
+        "The layout function must be async or return a "
+        "promise, falling back to block layout."));
     return false;
   }
 
@@ -163,11 +164,11 @@ bool CSSLayoutDefinition::Instance::Layout(
       v8::Local<v8::Promise>::Cast(v8_return_value);
 
   if (v8_result_promise->State() != v8::Promise::kFulfilled) {
-    execution_context->AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kInfo,
-                               "The layout function promise must resolve, "
-                               "falling back to block layout."));
+    execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kInfo,
+        "The layout function promise must resolve, "
+        "falling back to block layout."));
     return false;
   }
   v8::Local<v8::Value> inner_value = v8_result_promise->Result();
@@ -179,11 +180,11 @@ bool CSSLayoutDefinition::Instance::Layout(
   if (exception_state.HadException()) {
     V8ScriptRunner::ReportException(isolate, exception_state.GetException());
     exception_state.ClearException();
-    execution_context->AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kInfo,
-                               "Unable to parse the layout function "
-                               "result, falling back to block layout."));
+    execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kInfo,
+        "Unable to parse the layout function "
+        "result, falling back to block layout."));
     return false;
   }
 
@@ -202,11 +203,11 @@ bool CSSLayoutDefinition::Instance::Layout(
   if (exception_state.HadException()) {
     V8ScriptRunner::ReportException(isolate, exception_state.GetException());
     exception_state.ClearException();
-    execution_context->AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kInfo,
-                               "Unable to serialize the data provided in the "
-                               "result, falling back to block layout."));
+    execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kInfo,
+        "Unable to serialize the data provided in the "
+        "result, falling back to block layout."));
     return false;
   }
 
@@ -258,7 +259,7 @@ bool CSSLayoutDefinition::Instance::IntrinsicSizes(
 
   v8::Local<v8::Value> v8_return_value = return_value.V8Value();
   if (v8_return_value.IsEmpty() || !v8_return_value->IsPromise()) {
-    execution_context->AddConsoleMessage(ConsoleMessage::Create(
+    execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kInfo,
         "The intrinsicSizes function must be async or return a "
@@ -288,7 +289,7 @@ bool CSSLayoutDefinition::Instance::IntrinsicSizes(
       v8::Local<v8::Promise>::Cast(v8_return_value);
 
   if (v8_result_promise->State() != v8::Promise::kFulfilled) {
-    execution_context->AddConsoleMessage(ConsoleMessage::Create(
+    execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kInfo,
         "The intrinsicSizes function promise must resolve, "
@@ -304,11 +305,11 @@ bool CSSLayoutDefinition::Instance::IntrinsicSizes(
   if (exception_state.HadException()) {
     V8ScriptRunner::ReportException(isolate, exception_state.GetException());
     exception_state.ClearException();
-    execution_context->AddConsoleMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kInfo,
-                               "Unable to parse the intrinsicSizes function "
-                               "result, falling back to block layout."));
+    execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kInfo,
+        "Unable to parse the intrinsicSizes function "
+        "result, falling back to block layout."));
     return false;
   }
 
@@ -325,7 +326,7 @@ void CSSLayoutDefinition::Instance::ReportException(
   // again (as the callbacks are invoked directly by the UA).
   V8ScriptRunner::ReportException(isolate, exception_state->GetException());
   exception_state->ClearException();
-  execution_context->AddConsoleMessage(ConsoleMessage::Create(
+  execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kJavaScript,
       mojom::ConsoleMessageLevel::kInfo,
       "The layout function failed, falling back to block layout."));

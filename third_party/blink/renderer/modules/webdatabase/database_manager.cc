@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/modules/webdatabase/database_tracker.h"
 #include "third_party/blink/renderer/modules/webdatabase/storage_log.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
@@ -199,9 +200,9 @@ String DatabaseManager::FullPathForDatabase(const SecurityOrigin* origin,
 
 void DatabaseManager::LogErrorMessage(ExecutionContext* context,
                                       const String& message) {
-  context->AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kStorage,
-                             mojom::ConsoleMessageLevel::kError, message));
+  context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::ConsoleMessageSource::kStorage, mojom::ConsoleMessageLevel::kError,
+      message));
 }
 
 }  // namespace blink

@@ -6,6 +6,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/pending_user_input.h"
 #include "third_party/blink/renderer/platform/scheduler/public/pending_user_input_type.h"
@@ -25,7 +26,7 @@ bool Scheduling::isInputPending(ScriptState* script_state,
     // can on the main thread, restrict the API to the case where all frames in
     // a process are part of the same site to avoid leaking cross-site inputs.
     ExecutionContext::From(script_state)
-        ->AddConsoleMessage(ConsoleMessage::Create(
+        ->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
             mojom::ConsoleMessageSource::kJavaScript,
             mojom::ConsoleMessageLevel::kWarning,
             "isInputPending requires site-per-process (crbug.com/910421)."));
@@ -50,7 +51,7 @@ bool Scheduling::isInputPending(ScriptState* script_state,
       message.Append(input_type_string);
       message.Append("\". Skipping.");
       ExecutionContext::From(script_state)
-          ->AddConsoleMessage(ConsoleMessage::Create(
+          ->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
               mojom::ConsoleMessageSource::kJavaScript,
               mojom::ConsoleMessageLevel::kWarning, message.ToString()));
     }

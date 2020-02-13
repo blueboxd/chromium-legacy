@@ -209,7 +209,7 @@ bool TextFinder::Find(int identifier,
       else if (active_match_index_ < 0)
         active_match_index_ = find_task_controller_->CurrentMatchCount() - 1;
     }
-    WebRect selection_rect = OwnerFrame().GetFrameView()->ConvertToRootFrame(
+    gfx::Rect selection_rect = OwnerFrame().GetFrameView()->ConvertToRootFrame(
         active_match_->BoundingBox());
     ReportFindInPageSelection(selection_rect, active_match_index_ + 1,
                               identifier);
@@ -483,7 +483,7 @@ void TextFinder::IncreaseMatchCount(int identifier, int count) {
       identifier, total_match_count_, !frame_scoping_);
 }
 
-void TextFinder::ReportFindInPageSelection(const WebRect& selection_rect,
+void TextFinder::ReportFindInPageSelection(const gfx::Rect& selection_rect,
                                            int active_match_ordinal,
                                            int identifier) {
   // Update the UI with the latest selection rect.
@@ -567,7 +567,7 @@ Vector<WebFloatRect> TextFinder::FindMatchRects() {
 }
 
 int TextFinder::SelectNearestFindMatch(const gfx::PointF& point,
-                                       WebRect* selection_rect) {
+                                       gfx::Rect* selection_rect) {
   int index = NearestFindMatch(FloatPoint(point), nullptr);
   if (index != -1)
     return SelectFindMatch(static_cast<unsigned>(index), selection_rect);
@@ -599,7 +599,7 @@ int TextFinder::NearestFindMatch(const FloatPoint& point,
   return nearest;
 }
 
-int TextFinder::SelectFindMatch(unsigned index, WebRect* selection_rect) {
+int TextFinder::SelectFindMatch(unsigned index, gfx::Rect* selection_rect) {
   SECURITY_DCHECK(index < find_matches_cache_.size());
 
   Range* range = find_matches_cache_[index].range_;

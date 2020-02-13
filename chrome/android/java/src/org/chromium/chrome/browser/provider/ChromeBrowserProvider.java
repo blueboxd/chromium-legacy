@@ -31,7 +31,6 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.IntentHandler;
@@ -252,8 +251,8 @@ public class ChromeBrowserProvider extends ContentProvider {
         // Work around for broken Android versions that break the Android contract and initialize
         // ContentProviders on non-UI threads.  crbug.com/705442
         PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
-            BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                    .addStartupCompletedObserver(new BrowserStartupController.StartupCallback() {
+            BrowserStartupController.getInstance().addStartupCompletedObserver(
+                    new BrowserStartupController.StartupCallback() {
                         @Override
                         public void onSuccess() {
                             ensureNativeSideInitialized();

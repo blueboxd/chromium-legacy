@@ -494,14 +494,14 @@ bool AudioContext::IsAllowedToStart() const {
     case AutoplayPolicy::Type::kUserGestureRequired:
       DCHECK(document->GetFrame());
       DCHECK(document->GetFrame()->IsCrossOriginToMainFrame());
-      document->AddConsoleMessage(ConsoleMessage::Create(
+      document->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kOther,
           mojom::ConsoleMessageLevel::kWarning,
           "The AudioContext was not allowed to start. It must be resumed (or "
           "created) from a user gesture event handler. https://goo.gl/7K7WLu"));
       break;
     case AutoplayPolicy::Type::kDocumentUserActivationRequired:
-      document->AddConsoleMessage(ConsoleMessage::Create(
+      document->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kOther,
           mojom::ConsoleMessageLevel::kWarning,
           "The AudioContext was not allowed to start. It must be resumed (or "

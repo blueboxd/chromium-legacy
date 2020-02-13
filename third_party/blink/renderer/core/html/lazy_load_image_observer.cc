@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 
@@ -188,7 +189,7 @@ void LazyLoadImageObserver::StartMonitoringNearViewport(
   if (deferral_message == DeferralMessage::kLoadEventsDeferred &&
       !is_load_event_deferred_intervention_shown_) {
     is_load_event_deferred_intervention_shown_ = true;
-    root_document->AddConsoleMessage(ConsoleMessage::Create(
+    root_document->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kIntervention,
         mojom::ConsoleMessageLevel::kInfo,
         "Images loaded lazily and replaced with placeholders. Load events are "
@@ -197,7 +198,7 @@ void LazyLoadImageObserver::StartMonitoringNearViewport(
   if (deferral_message == DeferralMessage::kMissingDimensionForLazy &&
       !is_missing_dimension_intervention_shown_) {
     is_missing_dimension_intervention_shown_ = true;
-    root_document->AddConsoleMessage(ConsoleMessage::Create(
+    root_document->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kIntervention,
         mojom::ConsoleMessageLevel::kInfo,
         "An <img> element was lazyloaded with loading=lazy, but had no "

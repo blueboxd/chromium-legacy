@@ -66,15 +66,14 @@ public abstract class ContentShellBrowserTestActivity extends NativeBrowserTestA
         wind.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED);
         wind.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 
-        BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                .setContentMainCallbackForTests(() -> {
-                    // This jumps into C++ to set up and run the test harness. The test harness runs
-                    // ContentMain()-equivalent code, and then waits for javaStartupTasksComplete()
-                    // to be called.
-                    runTests();
-                });
-        BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                .startBrowserProcessesAsync(false, false, new StartupCallback() {
+        BrowserStartupController.getInstance().setContentMainCallbackForTests(() -> {
+            // This jumps into C++ to set up and run the test harness. The test harness runs
+            // ContentMain()-equivalent code, and then waits for javaStartupTasksComplete()
+            // to be called.
+            runTests();
+        });
+        BrowserStartupController.getInstance().startBrowserProcessesAsync(
+                LibraryProcessType.PROCESS_BROWSER, false, false, new StartupCallback() {
                     @Override
                     public void onSuccess() {
                         // The C++ test harness is running thanks to runTests() above, but it

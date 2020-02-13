@@ -2416,7 +2416,7 @@
     },
 
     'ozone_linux': {
-      'gn_args': 'use_ozone=true ozone_platform="headless"',
+      'gn_args': 'use_ozone=true ozone_platform="headless" use_bundled_weston=true',
     },
 
     # Used to pass the list of files to instrument for coverage to the compile

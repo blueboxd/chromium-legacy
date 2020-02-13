@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/script/layered_api.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -70,7 +71,7 @@ bool DocumentModuleScriptFetcher::FetchIfLayeredAPI(
 
   if (source_text.IsNull()) {
     HeapVector<Member<ConsoleMessage>> error_messages;
-    error_messages.push_back(ConsoleMessage::CreateForRequest(
+    error_messages.push_back(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kError, "Unexpected data error",
         fetch_params.Url().GetString(), nullptr, 0));

@@ -312,7 +312,7 @@ void UIProxyConfigService::OnPreferenceChanged(const std::string& pref_name) {
     return;
   const NetworkState* network =
       network_state_handler_->GetNetworkStateFromGuid(current_ui_network_guid_);
-  if (!network)
+  if (network)
     network_state_handler_->SendUpdateNotificationForNetwork(network->path());
 }
 

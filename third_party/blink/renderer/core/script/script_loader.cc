@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
@@ -415,7 +416,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
   // This FeaturePolicy is still in the process of being added to the spec.
   if (ShouldBlockSyncScriptForFeaturePolicy(element_.Get(), GetScriptType(),
                                             parser_inserted_)) {
-    element_document.AddConsoleMessage(ConsoleMessage::Create(
+    element_document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kError,
         "Synchronous script execution is disabled by Feature Policy"));
@@ -509,7 +510,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     Modulator* modulator = Modulator::From(
         ToScriptStateForMainWorld(context_document->GetFrame()));
     if (!modulator->IsAcquiringImportMaps()) {
-      element_document.AddConsoleMessage(ConsoleMessage::Create(
+      element_document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kJavaScript,
           mojom::ConsoleMessageLevel::kError,
           "An import map is added after module script load was triggered."));
@@ -559,7 +560,7 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
     // <spec step="24.6">Switch on the script's type:</spec>
     if (is_import_map) {
       // TODO(crbug.com/922212): Implement external import maps.
-      element_document.AddConsoleMessage(ConsoleMessage::Create(
+      element_document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kJavaScript,
           mojom::ConsoleMessageLevel::kError,
           "External import maps are not yet supported."));

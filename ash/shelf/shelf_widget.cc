@@ -8,6 +8,7 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/animation/animation_change_type.h"
+#include "ash/app_list/app_list_controller_impl.h"
 #include "ash/focus_cycler.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/ash_features.h"
@@ -16,6 +17,7 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/root_window_controller.h"
+#include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/drag_handle.h"
 #include "ash/shelf/home_button.h"
@@ -33,6 +35,7 @@
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/command_line.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/compositor/layer.h"
@@ -74,9 +77,9 @@ views::View* FindFirstOrLastFocusableChild(views::View* root,
       &dummy_focus_traversable, &dummy_focus_traversable_view);
 }
 
-bool IsInTabletMode() {
-  return Shell::Get()->tablet_mode_controller() &&
-         Shell::Get()->tablet_mode_controller()->InTabletMode();
+bool IsHotseatEnabled() {
+  return Shell::Get()->IsInTabletMode() &&
+         chromeos::switches::ShouldShowShelfHotseat();
 }
 
 }  // namespace
@@ -304,7 +307,7 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
   const Shelf* shelf = shelf_widget_->shelf();
   const ShelfBackgroundType background_type =
       shelf_widget_->GetBackgroundType();
-  const bool tablet_mode = IsInTabletMode();
+  const bool tablet_mode = Shell::Get()->IsInTabletMode();
   const bool in_app = ShelfConfig::Get()->is_in_app();
 
   bool show_opaque_background =
@@ -350,7 +353,7 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
 }
 
 void ShelfWidget::DelegateView::UpdateDragHandle() {
-  if (!IsInTabletMode() || !ShelfConfig::Get()->is_in_app() ||
+  if (!Shell::Get()->IsInTabletMode() || !ShelfConfig::Get()->is_in_app() ||
       !chromeos::switches::ShouldShowShelfHotseat() ||
       hide_background_for_transitions_) {
     drag_handle_->SetVisible(false);
@@ -588,7 +591,7 @@ void ShelfWidget::RegisterHotseatWidget(HotseatWidget* hotseat_widget) {
 
 void ShelfWidget::OnTabletModeChanged() {
   // Resets |is_hotseat_forced_to_show| when leaving the tablet mode.
-  if (!IsInTabletMode())
+  if (!Shell::Get()->IsInTabletMode())
     is_hotseat_forced_to_show_ = false;
 }
 
@@ -683,8 +686,44 @@ void ShelfWidget::OnBackgroundTypeChanged(ShelfBackgroundType background_type,
 }
 
 void ShelfWidget::CalculateTargetBounds() {
-  // TODO(manucornet): Move target bounds calculations from the shelf layout
-  // manager.
+  const ShelfLayoutManager* layout_manager = shelf_->shelf_layout_manager();
+  const int shelf_size = ShelfConfig::Get()->shelf_size();
+
+  // By default, show the whole shelf on the screen.
+  int shelf_in_screen_portion = shelf_size;
+  const WorkAreaInsets* const work_area =
+      WorkAreaInsets::ForWindow(GetNativeWindow());
+
+  if (layout_manager->is_shelf_auto_hidden()) {
+    shelf_in_screen_portion =
+        Shell::Get()->app_list_controller()->home_launcher_transition_state() ==
+                AppListControllerImpl::HomeLauncherTransitionState::kMostlyShown
+            ? shelf_size
+            : ShelfConfig::Get()->hidden_shelf_in_screen_portion();
+  } else if (layout_manager->visibility_state() == SHELF_HIDDEN ||
+             work_area->IsKeyboardShown()) {
+    shelf_in_screen_portion = 0;
+  }
+
+  gfx::Rect available_bounds =
+      screen_util::GetDisplayBoundsWithShelf(GetNativeWindow());
+  available_bounds.Inset(work_area->GetAccessibilityInsets());
+
+  int shelf_width =
+      shelf_->PrimaryAxisValue(available_bounds.width(), shelf_size);
+  int shelf_height =
+      shelf_->PrimaryAxisValue(shelf_size, available_bounds.height());
+  const int shelf_primary_position = shelf_->SelectValueForShelfAlignment(
+      available_bounds.bottom() - shelf_in_screen_portion,
+      available_bounds.x() - shelf_size + shelf_in_screen_portion,
+      available_bounds.right() - shelf_in_screen_portion);
+  gfx::Point shelf_origin = shelf_->SelectValueForShelfAlignment(
+      gfx::Point(available_bounds.x(), shelf_primary_position),
+      gfx::Point(shelf_primary_position, available_bounds.y()),
+      gfx::Point(shelf_primary_position, available_bounds.y()));
+
+  target_bounds_ =
+      gfx::Rect(shelf_origin.x(), shelf_origin.y(), shelf_width, shelf_height);
 }
 
 void ShelfWidget::UpdateLayout(bool animate) {
@@ -692,10 +731,17 @@ void ShelfWidget::UpdateLayout(bool animate) {
   delegate_view_->UpdateOpaqueBackground();
 }
 
+void ShelfWidget::UpdateTargetBoundsForGesture(int new_position) {
+  if (shelf_->IsHorizontalAlignment()) {
+    if (!IsHotseatEnabled())
+      target_bounds_.set_y(new_position);
+  } else {
+    target_bounds_.set_x(new_position);
+  }
+}
+
 gfx::Rect ShelfWidget::GetTargetBounds() const {
-  // TODO(manucornet): Store these locally and do not depend on the layout
-  // manager.
-  return shelf_->shelf_layout_manager()->GetShelfBoundsInScreen();
+  return target_bounds_;
 }
 
 void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {

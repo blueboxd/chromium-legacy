@@ -19,7 +19,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer.UrlEmphasisSpan;
@@ -399,8 +398,7 @@ class UrlBarMediator
     }
 
     private void recordPasteMetrics(String text) {
-        boolean isUrl = BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                                .isFullBrowserStarted()
+        boolean isUrl = BrowserStartupController.getInstance().isFullBrowserStarted()
                 && AutocompleteCoordinatorFactory.qualifyPartialURLQuery(text) != null;
 
         long age = System.currentTimeMillis() - Clipboard.getInstance().getLastModifiedTimeMs();

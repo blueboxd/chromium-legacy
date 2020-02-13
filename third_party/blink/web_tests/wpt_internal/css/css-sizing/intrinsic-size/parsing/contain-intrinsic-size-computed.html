@@ -22,8 +22,6 @@ function length_ref(length) {
 
 test_computed_value("contain-intrinsic-size", "auto");
 test_computed_value("contain-intrinsic-size", "1px");
-test_computed_value("contain-intrinsic-size", "1px auto");
-test_computed_value("contain-intrinsic-size", "auto 1px");
 test_computed_value("contain-intrinsic-size", "2vw 3px", length_ref("2vw") + " 3px");
 test_computed_value("contain-intrinsic-size", "2px 3vh", "2px " + length_ref("3vh"));
 test_computed_value("contain-intrinsic-size", "5px 5px", "5px");

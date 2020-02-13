@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/html/html_script_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/loader/fetch/integrity_metadata.h"
@@ -1398,8 +1399,8 @@ void ContentSecurityPolicy::ReportMissingReportURI(const String& policy) {
 
 void ContentSecurityPolicy::LogToConsole(const String& message,
                                          mojom::ConsoleMessageLevel level) {
-  LogToConsole(ConsoleMessage::Create(mojom::ConsoleMessageSource::kSecurity,
-                                      level, message));
+  LogToConsole(MakeGarbageCollected<ConsoleMessage>(
+      mojom::ConsoleMessageSource::kSecurity, level, message));
 }
 
 void ContentSecurityPolicy::LogToConsole(ConsoleMessage* console_message,

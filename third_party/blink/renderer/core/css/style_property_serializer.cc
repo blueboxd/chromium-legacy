@@ -579,8 +579,6 @@ String StylePropertySerializer::SerializeShorthand(
       return PageBreakPropertyValue(pageBreakBeforeShorthand());
     case CSSPropertyID::kPageBreakInside:
       return PageBreakPropertyValue(pageBreakInsideShorthand());
-    case CSSPropertyID::kContainIntrinsicSize:
-      return Get2Values(containIntrinsicSizeShorthand());
     default:
       return String();
   }

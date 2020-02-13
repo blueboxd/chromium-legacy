@@ -13,7 +13,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.native_test.NativeBrowserTest;
@@ -39,13 +38,12 @@ public class WebLayerBrowserTestsActivity extends NativeBrowserTestActivity {
 
     @Override
     protected void initializeBrowserProcess() {
-        BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
-                .setContentMainCallbackForTests(() -> {
-                    // This jumps into C++ to set up and run the test harness. The test harness runs
-                    // ContentMain()-equivalent code, and then waits for javaStartupTasksComplete()
-                    // to be called.
-                    runTests();
-                });
+        BrowserStartupController.getInstance().setContentMainCallbackForTests(() -> {
+            // This jumps into C++ to set up and run the test harness. The test harness runs
+            // ContentMain()-equivalent code, and then waits for javaStartupTasksComplete()
+            // to be called.
+            runTests();
+        });
 
         try {
             WebLayer.loadAsync(getApplication(), webLayer -> {

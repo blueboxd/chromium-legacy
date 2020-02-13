@@ -3,6 +3,14 @@
 # tags: [ Release Debug ]
 # results: [ Timeout Crash Pass Failure Slow Skip ]
 
+# These expectations are used when LayoutNG is disabled. We test this
+# configuration on trybot linux_layout_tests_layout_ng_disabled.
+# Though LayoutNG has been enabled in M76, we still keep running web tests with
+# LayoutNG disabled because we still use legacy layout for editing, multicol,
+# etc. Though we have tests for editing and multicol, the tests don't fully
+# cover all layout code paths, so we need to run all web tests to ensure legacy
+# layout still fully works.
+
 # Tests that fail in legacy but pass in NG
 
 # accessibility/

@@ -162,12 +162,14 @@ class MockActionDelegate : public ActionDelegate {
 
   void SetFieldValue(const Selector& selector,
                      const std::string& value,
-                     bool simulate_key_presses,
-                     int delay_in_millisecond,
+                     KeyboardValueFillStrategy fill_strategy,
+                     int key_press_delay_in_millisecond,
                      base::OnceCallback<void(const ClientStatus&)> callback) {
     OnSetFieldValue(selector, value, callback);
-    OnSetFieldValue(selector, value, simulate_key_presses, delay_in_millisecond,
-                    callback);
+    OnSetFieldValue(selector, value,
+                    fill_strategy == SIMULATE_KEY_PRESSES ||
+                        fill_strategy == SIMULATE_KEY_PRESSES_SELECT_VALUE,
+                    key_press_delay_in_millisecond, callback);
   }
 
   MOCK_METHOD3(OnSetFieldValue,

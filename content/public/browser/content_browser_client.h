@@ -1795,6 +1795,11 @@ class CONTENT_EXPORT ContentBrowserClient {
       const std::string& data,
       IsClipboardPasteAllowedCallback callback);
 
+  // Allows the embedder to override normal user activation checks done when
+  // entering fullscreen. For example, it is used in layout tests to allow
+  // fullscreen when mock screen orientation changes.
+  virtual bool CanEnterFullscreenWithoutUserActivation();
+
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Returns true if |embedder_origin| is allowed to embed a plugin described by
   // |plugin_info|.  This method allows restricting some internal plugins (like

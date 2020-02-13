@@ -57,6 +57,7 @@ include_rules = [
     "+build",
     "+components/crash/core/common/crash_key.h",
     "+net/cookies",
+    "+net/http/structured_headers.h",
     "+services/network/public/mojom",
     "+testing/gmock/include/gmock",
     "+testing/gtest/include/gtest",

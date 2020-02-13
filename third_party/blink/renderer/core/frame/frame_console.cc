@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 
 #include <memory>
+
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -37,6 +38,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -106,7 +108,7 @@ void FrameConsole::ReportResourceResponseReceived(
       "Failed to load resource: the server responded with a status of " +
       String::Number(response.HttpStatusCode()) + " (" +
       response.HttpStatusText() + ')';
-  ConsoleMessage* console_message = ConsoleMessage::CreateForRequest(
+  auto* console_message = MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kNetwork, mojom::ConsoleMessageLevel::kError,
       message, response.CurrentRequestUrl().GetString(), loader,
       request_identifier);
@@ -124,7 +126,7 @@ void FrameConsole::DidFailLoading(DocumentLoader* loader,
     message.Append(": ");
     message.Append(error.LocalizedDescription());
   }
-  AddMessageToStorage(ConsoleMessage::CreateForRequest(
+  AddMessageToStorage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kNetwork, mojom::ConsoleMessageLevel::kError,
       message.ToString(), error.FailingURL(), loader, request_identifier));
 }

@@ -20,6 +20,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/time/time.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -1905,11 +1906,6 @@ TEST_F(WorkspaceWindowResizerTest, TouchResizeToEdge_BOTTOM) {
             touch_resize_window_->bounds().ToString());
 }
 
-#if defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)
-#define MAYBE_ResizeHistogram DISABLED_ResizeHistogram
-#else
-#define MAYBE_ResizeHistogram ResizeHistogram
-#endif
 TEST_F(WorkspaceWindowResizerTest, ResizeHistogram) {
   base::HistogramTester histograms;
   window_->SetBounds(gfx::Rect(20, 30, 400, 60));
@@ -1920,18 +1916,18 @@ TEST_F(WorkspaceWindowResizerTest, ResizeHistogram) {
 
   // A resize should generate a histogram.
   EXPECT_NE(gfx::Size(400, 60), window_->bounds().size());
-  ui::WaitForNextFrameToBePresented(window_->GetHost()->compositor());
+  EXPECT_TRUE(
+      ui::WaitForNextFrameToBePresented(window_->GetHost()->compositor()));
   histograms.ExpectTotalCount("Ash.InteractiveWindowResize.TimeToPresent", 1);
 
   // Completing the drag should not generate another histogram.
   resizer->CompleteDrag();
 
-  // Ensures a compositor frame will be generated. Otherwise,
-  // ui::WaitForNextFrameToBePresented below could time out.
-  // See https://crbug.com/1047657.
-  window_->GetHost()->compositor()->ScheduleRedrawRect(gfx::Rect(0, 0, 1, 1));
-
-  ui::WaitForNextFrameToBePresented(window_->GetHost()->compositor());
+  // Flush pending draws until there is no frame presented for 100ms (6 frames
+  // worth time) and check that histogram is not updated.
+  while (ui::WaitForNextFrameToBePresented(
+      window_->GetHost()->compositor(), base::TimeDelta::FromMilliseconds(100)))
+    ;
   histograms.ExpectTotalCount("Ash.InteractiveWindowResize.TimeToPresent", 1);
 }
 

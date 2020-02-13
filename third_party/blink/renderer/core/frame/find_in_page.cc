@@ -222,7 +222,7 @@ WebFloatRect FindInPage::ActiveFindMatchRect() {
 
 void FindInPage::ActivateNearestFindResult(int request_id,
                                            const gfx::PointF& point) {
-  WebRect active_match_rect;
+  gfx::Rect active_match_rect;
   const int ordinal =
       EnsureTextFinder().SelectNearestFindMatch(point, &active_match_rect);
   if (ordinal == -1) {
@@ -338,7 +338,7 @@ void FindInPage::ReportFindInPageMatchCount(int request_id,
 
 void FindInPage::ReportFindInPageSelection(int request_id,
                                            int active_match_ordinal,
-                                           const blink::WebRect& selection_rect,
+                                           const gfx::Rect& selection_rect,
                                            bool final_update) {
   // In tests, |client_| might not be set.
   if (!client_)

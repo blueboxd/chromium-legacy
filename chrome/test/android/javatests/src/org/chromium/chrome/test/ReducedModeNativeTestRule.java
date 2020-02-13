@@ -9,7 +9,6 @@ import org.junit.rules.TestRule;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -83,11 +82,9 @@ public class ReducedModeNativeTestRule implements TestRule {
     public void assertOnlyServiceManagerStarted() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             Assert.assertTrue("Native has not been started.",
-                    BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                            .isNativeStarted());
+                    BrowserStartupController.getInstance().isNativeStarted());
             Assert.assertFalse("The full browser is started instead of ServiceManager only.",
-                    BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                            .isFullBrowserStarted());
+                    BrowserStartupController.getInstance().isFullBrowserStarted());
         });
     }
 }

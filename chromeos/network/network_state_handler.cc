@@ -90,6 +90,13 @@ bool ShouldIncludeNetworkInList(const NetworkState* network_state,
   return true;
 }
 
+// ManagedState entries may not have |type| set when the network is initially
+// added to a list (i.e. before the initial properties are received). Use this
+// wrapper anyplace where |managed| might be uninitialized.
+bool TypeMatches(const ManagedState* managed, const NetworkTypePattern& type) {
+  return !managed->type().empty() && managed->Matches(type);
+}
+
 }  // namespace
 
 // Class for tracking properties that affect whether a NetworkState is active.
@@ -966,7 +973,7 @@ void NetworkStateHandler::EnsureTetherDeviceState() {
 }
 
 bool NetworkStateHandler::UpdateBlockedByPolicy(NetworkState* network) const {
-  if (network->type().empty() || !network->Matches(NetworkTypePattern::WiFi()))
+  if (!TypeMatches(network, NetworkTypePattern::WiFi()))
     return false;
 
   bool prev_blocked_by_policy = network->blocked_by_policy();
@@ -1270,11 +1277,11 @@ void NetworkStateHandler::UpdateManagedList(ManagedState::ManagedType type,
   // Remove associations Tether NetworkStates had with now removed Wi-Fi
   // NetworkStates.
   for (auto& iter : managed_map) {
-    if (!iter.second->Matches(NetworkTypePattern::WiFi()))
+    ManagedState* managed = iter.second.get();
+    if (!TypeMatches(managed, NetworkTypePattern::WiFi()))
       continue;
-
     NetworkState* tether_network = GetModifiableNetworkStateFromGuid(
-        iter.second->AsNetworkState()->tether_guid());
+        managed->AsNetworkState()->tether_guid());
     if (tether_network)
       tether_network->set_tether_guid(std::string());
   }
@@ -1814,9 +1821,7 @@ DeviceState* NetworkStateHandler::GetModifiableDeviceState(
 DeviceState* NetworkStateHandler::GetModifiableDeviceStateByType(
     const NetworkTypePattern& type) const {
   for (const auto& device : device_list_) {
-    if (device->type().empty())
-      continue;  // kTypeProperty not set yet, skip.
-    if (device->Matches(type))
+    if (TypeMatches(device.get(), type))
       return device->AsDeviceState();
   }
   return nullptr;

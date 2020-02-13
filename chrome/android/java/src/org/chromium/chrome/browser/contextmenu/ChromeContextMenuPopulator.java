@@ -16,7 +16,6 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
@@ -307,8 +306,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         // The context menu can be created without native library
         // being loaded. Only use native URL formatting methods
         // if the native libraries have been loaded.
-        if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isFullBrowserStarted()) {
+        if (BrowserStartupController.getInstance().isFullBrowserStarted()) {
             return UrlFormatter.formatUrlForDisplayOmitHTTPScheme(params.getLinkUrl());
         }
         return params.getLinkUrl();
@@ -495,8 +493,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         }
 
         if (!groupedItems.isEmpty()
-                && BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                           .isFullBrowserStarted()) {
+                && BrowserStartupController.getInstance().isFullBrowserStarted()) {
             if (!hasSaveImage) {
                 ContextMenuUma.recordSaveImageUma(params.isImage()
                                 ? ContextMenuUma.TypeSaveImage.DISABLED_AND_IS_IMAGE_PARAM
@@ -669,8 +666,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
      * @param isDownloadableScheme The image is downloadable.
      */
     private void recordSaveImageContextMenuResult(boolean isDownloadableScheme) {
-        if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isFullBrowserStarted()) {
+        if (!BrowserStartupController.getInstance().isFullBrowserStarted()) {
             return;
         }
 

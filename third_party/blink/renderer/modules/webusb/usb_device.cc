@@ -278,11 +278,12 @@ ScriptPromise USBDevice::claimInterface(ScriptState* script_state,
       resolver->Resolve();
     } else if (IsProtectedInterfaceClass(interface_index)) {
       GetExecutionContext()->AddConsoleMessage(
-          ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                                 mojom::ConsoleMessageLevel::kWarning,
-                                 "An attempt to claim a USB device interface "
-                                 "has been blocked because it "
-                                 "implements a protected interface class."));
+          MakeGarbageCollected<ConsoleMessage>(
+              mojom::ConsoleMessageSource::kJavaScript,
+              mojom::ConsoleMessageLevel::kWarning,
+              "An attempt to claim a USB device interface "
+              "has been blocked because it "
+              "implements a protected interface class."));
       resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kSecurityError,
           "The requested interface implements a protected class."));

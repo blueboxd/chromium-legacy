@@ -30,7 +30,6 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
@@ -1264,8 +1263,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
             }
         }
 
-        if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isFullBrowserStarted()) {
+        if (BrowserStartupController.getInstance().isFullBrowserStarted()) {
             Profile profile = info.isOffTheRecord()
                     ? Profile.getLastUsedRegularProfile().getOffTheRecordProfile()
                     : Profile.getLastUsedRegularProfile();

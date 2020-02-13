@@ -4631,17 +4631,6 @@ void RenderFrameImpl::DidHandleOnloadEvents() {
     observer.DidHandleOnloadEvents();
 }
 
-void RenderFrameImpl::DidFailLoad(const WebURLError& error,
-                                  blink::WebHistoryCommitType commit_type) {
-  TRACE_EVENT1("navigation,rail", "RenderFrameImpl::didFailLoad",
-               "id", routing_id_);
-  // TODO(nasko): Move implementation here. No state needed.
-  WebDocumentLoader* document_loader = frame_->GetDocumentLoader();
-  DCHECK(document_loader);
-  GetFrameHost()->DidFailLoadWithError(document_loader->GetUrl(),
-                                       error.reason());
-}
-
 void RenderFrameImpl::DidFinishLoad() {
   TRACE_EVENT1("navigation,benchmark,rail",
                "RenderFrameImpl::didFinishLoad", "id", routing_id_);

@@ -496,6 +496,7 @@ group("gn_all") {
       "//base:build_utf8_validator_tables",
       "//base:check_example",
       "//cc:cc_perftests",
+      "//chrome/test/chromedriver:chromedriver($host_toolchain)",
       "//components:components_perftests",
       "//device:device_unittests",
       "//gin:gin_shell",
@@ -514,7 +515,6 @@ group("gn_all") {
       deps += [
         "//chrome/test:load_library_perf_tests",
         "//chrome/test:sync_performance_tests",
-        "//chrome/test/chromedriver:chromedriver",
         "//courgette:courgette",
         "//courgette:courgette_fuzz",
         "//courgette:courgette_minimal_tool",

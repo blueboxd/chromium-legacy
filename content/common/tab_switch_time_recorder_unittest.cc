@@ -49,8 +49,6 @@ constexpr char kResultNoSavedFramesUnloadedHistogram[] =
     "Browser.Tabs.TabSwitchResult.NoSavedFrames_NotLoaded";
 constexpr char kWebContentsUnOccludedHistogram[] =
     "Aura.WebContentsWindowUnOccludedTime";
-constexpr char kBfcacheRestoreHistogram[] =
-    "BackForwardCache.Restore.NavigationToFirstPaint";
 
 constexpr base::TimeDelta kDuration = base::TimeDelta::FromMilliseconds(42);
 constexpr base::TimeDelta kOtherDuration =
@@ -123,8 +121,7 @@ TEST_F(ContentToVisibleTimeReporterTest, TimeIsRecordedWithSavedFrames) {
       true /* has_saved_frames */,
       {start, /* destination_is_loaded */ true,
        /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+       /* show_reason_unoccluded */ false},
       start);
   const auto end = start + kDuration;
   auto presentation_feedback = gfx::PresentationFeedback(
@@ -153,8 +150,7 @@ TEST_F(ContentToVisibleTimeReporterTest, TimeIsRecordedNoSavedFrameNotFrozen) {
       false /* has_saved_frames */,
       {start, /* destination_is_loaded */ true,
        /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+       /* show_reason_unoccluded */ false},
       start);
   const auto end = start + kDuration;
   auto presentation_feedback = gfx::PresentationFeedback(
@@ -190,8 +186,7 @@ TEST_F(ContentToVisibleTimeReporterTest, TimeIsRecordedNoSavedFrameFrozen) {
       false /* has_saved_frames */,
       {start, /* destination_is_loaded */ true,
        /* destination_is_frozen */ true, /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+       /* show_reason_unoccluded */ false},
       start);
   const auto end = start + kDuration;
   auto presentation_feedback = gfx::PresentationFeedback(
@@ -226,8 +221,7 @@ TEST_F(ContentToVisibleTimeReporterTest, TimeIsRecordedNoSavedFrameUnloaded) {
       false /* has_saved_frames */,
       {start, /* destination_is_loaded */ false,
        /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+       /* show_reason_unoccluded */ false},
       start);
   const auto end = start + kDuration;
   auto presentation_feedback = gfx::PresentationFeedback(
@@ -256,8 +250,7 @@ TEST_F(ContentToVisibleTimeReporterTest, PresentationFailureWithSavedFrames) {
       true /* has_saved_frames */,
       {start, /* destination_is_loaded */ true,
        /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+       /* show_reason_unoccluded */ false},
       start);
   std::move(callback).Run(gfx::PresentationFeedback::Failure());
 
@@ -278,8 +271,7 @@ TEST_F(ContentToVisibleTimeReporterTest, PresentationFailureNoSavedFrames) {
       false /* has_saved_frames */,
       {start, /* destination_is_loaded */ true,
        /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+       /* show_reason_unoccluded */ false},
       start);
   std::move(callback).Run(gfx::PresentationFeedback::Failure());
 
@@ -306,8 +298,7 @@ TEST_F(ContentToVisibleTimeReporterTest,
       true /* has_saved_frames */,
       {start1, /* destination_is_loaded */ true,
        /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+       /* show_reason_unoccluded */ false},
       start1);
 
   task_environment_.FastForwardBy(kDuration);
@@ -332,8 +323,7 @@ TEST_F(ContentToVisibleTimeReporterTest,
       true /* has_saved_frames */,
       {start2, /* destination_is_loaded */ true,
        /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+       /* show_reason_unoccluded */ false},
       start2);
   const auto end2 = start2 + kOtherDuration;
   auto presentation_feedback = gfx::PresentationFeedback(
@@ -367,8 +357,7 @@ TEST_F(ContentToVisibleTimeReporterTest, HideBeforePresentFrameNoSavedFrames) {
       false /* has_saved_frames */,
       {start1, /* destination_is_loaded */ true,
        /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+       /* show_reason_unoccluded */ false},
       start1);
 
   task_environment_.FastForwardBy(kDuration);
@@ -402,8 +391,7 @@ TEST_F(ContentToVisibleTimeReporterTest, HideBeforePresentFrameNoSavedFrames) {
       false /* has_saved_frames */,
       {start2, /* destination_is_loaded */ true,
        /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ false},
+       /* show_reason_unoccluded */ false},
       start2);
   const auto end2 = start2 + kOtherDuration;
 
@@ -457,8 +445,7 @@ TEST_F(ContentToVisibleTimeReporterTest, UnoccludedTimeIsRecorded) {
       {start, base::Optional<bool>() /* destination_is_loaded */,
        base::Optional<bool>() /* destination_is_frozen */,
        /* show_reason_tab_switching */ false,
-       /* show_reason_unoccluded */ true,
-       /* show_reason_bfcache_restore */ false},
+       /* show_reason_unoccluded */ true},
       start);
   const auto end = start + kDuration;
   auto presentation_feedback = gfx::PresentationFeedback(
@@ -481,8 +468,7 @@ TEST_F(ContentToVisibleTimeReporterTest,
       true /* has_saved_frames */,
       {start, /* destination_is_loaded */ true,
        /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
-       /* show_reason_unoccluded */ true,
-       /* show_reason_bfcache_restore */ false},
+       /* show_reason_unoccluded */ true},
       start);
   const auto end = start + kDuration;
   auto presentation_feedback = gfx::PresentationFeedback(
@@ -508,29 +494,6 @@ TEST_F(ContentToVisibleTimeReporterTest,
   ExpectTimeBucketCount(kWebContentsUnOccludedHistogram, kDuration, 1);
 }
 
-// Time is properly recorded to histogram when we have bfcache restore event.
-TEST_F(ContentToVisibleTimeReporterTest, BfcacheRestoreTimeIsRecorded) {
-  const auto start = base::TimeTicks::Now();
-  auto callback = tab_switch_time_recorder_.TabWasShown(
-      false /* has_saved_frames */,
-      {start, base::Optional<bool>() /* destination_is_loaded */,
-       base::Optional<bool>() /* destination_is_frozen */,
-       /* show_reason_tab_switching */ false,
-       /* show_reason_unoccluded */ false,
-       /* show_reason_bfcache_restore */ true},
-      start);
-  const auto end = start + kDuration;
-  auto presentation_feedback = gfx::PresentationFeedback(
-      end, end - start, gfx::PresentationFeedback::Flags::kHWCompletion);
-  std::move(callback).Run(presentation_feedback);
-
-  ExpectHistogramsEmptyExcept({kBfcacheRestoreHistogram});
-
-  // Bfcache restore.
-  ExpectTotalSamples(kBfcacheRestoreHistogram, 1);
-  ExpectTimeBucketCount(kBfcacheRestoreHistogram, kDuration, 1);
-}
-
 class RecordContentToVisibleTimeRequestTest : public testing::Test {
  protected:
   // event_start_times are random, so caller is expected to provide failure
@@ -543,8 +506,6 @@ class RecordContentToVisibleTimeRequestTest : public testing::Test {
     EXPECT_EQ(left.destination_is_frozen, right.destination_is_frozen);
     EXPECT_EQ(left.show_reason_tab_switching, right.show_reason_tab_switching);
     EXPECT_EQ(left.show_reason_unoccluded, right.show_reason_unoccluded);
-    EXPECT_EQ(left.show_reason_bfcache_restore,
-              right.show_reason_bfcache_restore);
   }
 };
 
@@ -555,19 +516,11 @@ TEST_F(RecordContentToVisibleTimeRequestTest, MergeEmpty) {
   ExpectEqual(request, RecordContentToVisibleTimeRequest(), std::string());
 }
 
-// Merge two requests. Tuple represents the parameters of the two requests.
+// Merge two requests
 class RecordContentToVisibleTimeRequest_MergeRequestTest
     : public RecordContentToVisibleTimeRequestTest,
-      public testing::WithParamInterface<std::tuple<bool,
-                                                    bool,
-                                                    bool,
-                                                    bool,
-                                                    bool,
-                                                    bool,
-                                                    bool,
-                                                    bool,
-                                                    bool,
-                                                    bool>> {
+      public testing::WithParamInterface<
+          std::tuple<bool, bool, bool, bool, bool, bool, bool, bool>> {
  protected:
   RecordContentToVisibleTimeRequest GetRequest1() const {
     const base::TimeTicks timestamp = RandomRequestTimeTicks();
@@ -580,23 +533,21 @@ class RecordContentToVisibleTimeRequest_MergeRequestTest
             ? base::Optional<bool>(true)
             : base::Optional<bool>() /* destination_is_frozen */,
         std::get<2>(GetParam()) /* show_reason_tab_switching */,
-        std::get<3>(GetParam()) /* show_reason_unoccluded */,
-        std::get<4>(GetParam()) /* show_reason_bfcache_restore */);
+        std::get<3>(GetParam()) /* show_reason_unoccluded*/);
   }
 
   RecordContentToVisibleTimeRequest GetRequest2() const {
     const base::TimeTicks timestamp = RandomRequestTimeTicks();
     return RecordContentToVisibleTimeRequest(
         timestamp,
-        std::get<5>(GetParam())
+        std::get<4>(GetParam())
             ? base::Optional<bool>(true)
             : base::Optional<bool>() /* destination_is_loaded */,
-        std::get<6>(GetParam())
+        std::get<5>(GetParam())
             ? base::Optional<bool>(true)
             : base::Optional<bool>() /* destination_is_frozen */,
-        std::get<7>(GetParam()) /* show_reason_tab_switching */,
-        std::get<8>(GetParam()) /* show_reason_unoccluded */,
-        std::get<9>(GetParam()) /* show_reason_bfcache_restore */);
+        std::get<6>(GetParam()) /* show_reason_tab_switching */,
+        std::get<7>(GetParam()) /* show_reason_unoccluded*/);
   }
 
   bool isOptionalBoolTrue(const base::Optional<bool>& data) {
@@ -639,9 +590,7 @@ TEST_P(RecordContentToVisibleTimeRequest_MergeRequestTest, DoMerge) {
                 isOptionalBoolTrue(request2.destination_is_frozen)
           : base::Optional<bool>(),
       request1.show_reason_tab_switching || request2.show_reason_tab_switching,
-      request1.show_reason_unoccluded || request2.show_reason_unoccluded,
-      request1.show_reason_bfcache_restore ||
-          request2.show_reason_bfcache_restore);
+      request1.show_reason_unoccluded || request2.show_reason_unoccluded);
 
   ExpectEqual(request1, expected, buf.str());
 }
@@ -649,8 +598,6 @@ TEST_P(RecordContentToVisibleTimeRequest_MergeRequestTest, DoMerge) {
 INSTANTIATE_TEST_SUITE_P(All,
                          RecordContentToVisibleTimeRequest_MergeRequestTest,
                          testing::Combine(testing::Bool(),
-                                          testing::Bool(),
-                                          testing::Bool(),
                                           testing::Bool(),
                                           testing::Bool(),
                                           testing::Bool(),

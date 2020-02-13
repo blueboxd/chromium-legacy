@@ -147,10 +147,7 @@ All changes to this list should go through Blink's feature review process: http:
     column-span
     column-width
     contain
-    contain-intrinsic-block-size
-    contain-intrinsic-height
-    contain-intrinsic-inline-size
-    contain-intrinsic-width
+    contain-intrinsic-size
     content
     counter-increment
     counter-reset
@@ -552,9 +549,6 @@ All changes to this list should go through Blink's feature review process: http:
     columns
         column-count
         column-width
-    contain-intrinsic-size
-        contain-intrinsic-height
-        contain-intrinsic-width
     flex
         flex-basis
         flex-grow

@@ -309,9 +309,14 @@ SharedWorkerHost* SharedWorkerServiceImpl::CreateWorker(
   // Cloning before std::move() so that the object can be used in two functions.
   auto cloned_outside_fetch_client_settings_object =
       outside_fetch_client_settings_object.Clone();
+  // TODO(mmenke): The site-for-cookies and NetworkIsolationKey arguments leak
+  // data across NetworkIsolationKeys and allow same-site cookies to be sent in
+  // cross-site contexts. Fix this.
   WorkerScriptFetchInitiator::Start(
       worker_process_host->GetID(), host->instance().url(),
-      creator_render_frame_host, host->instance().constructor_origin(),
+      creator_render_frame_host,
+      net::SiteForCookies::FromUrl(host->instance().url()),
+      host->instance().constructor_origin(),
       net::NetworkIsolationKey(origin, origin), credentials_mode,
       std::move(outside_fetch_client_settings_object),
       blink::mojom::ResourceType::kSharedWorker, service_worker_context_,

@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 
@@ -95,11 +96,11 @@ void HTMLFrameElementBase::OpenURL(bool replace_current_item) {
   if (!url.IsValid() && GetDocument().BaseURL().ProtocolIsData()) {
     if (LocalDOMWindow* window = GetDocument().ExecutingWindow()) {
       if (LocalFrame* frame = window->GetFrame()) {
-        frame->Console().AddMessage(
-            ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
-                                   mojom::ConsoleMessageLevel::kWarning,
-                                   "Invalid relative frame source URL (" +
-                                       url_ + ") within data URL."));
+        frame->Console().AddMessage(MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kRendering,
+            mojom::ConsoleMessageLevel::kWarning,
+            "Invalid relative frame source URL (" + url_ +
+                ") within data URL."));
       }
     }
   }

@@ -12,7 +12,6 @@ import android.support.v4.app.NotificationCompat;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadOpenSource;
@@ -182,8 +181,7 @@ public class PrefetchedPagesNotifier {
      * Does not itself load native.
      */
     private static void runWhenChromeLoadsNative(final Runnable r) {
-        BrowserStartupController browserStartup =
-                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER);
+        BrowserStartupController browserStartup = BrowserStartupController.getInstance();
         if (!browserStartup.isFullBrowserStarted()) {
             browserStartup.addStartupCompletedObserver(new StartupCallback() {
                 @Override

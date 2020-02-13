@@ -68,12 +68,12 @@ mojom::ContentSecurityPolicyPtr EmptyCSP() {
 // Build a new policy made of only one directive and no report endpoints.
 mojom::ContentSecurityPolicyPtr BuildPolicy(CSPDirectiveName directive_name,
                                             mojom::CSPSourcePtr source) {
-  auto directive = mojom::CSPDirective::New();
-  directive->name = directive_name;
-  directive->source_list = mojom::CSPSourceList::New();
-  directive->source_list->sources.push_back(std::move(source));
+  auto source_list = mojom::CSPSourceList::New();
+  source_list->sources.push_back(std::move(source));
+
   auto policy = EmptyCSP();
-  policy->directives.push_back(std::move(directive));
+  policy->directives[directive_name] = std::move(source_list);
+
   return policy;
 }
 
@@ -81,13 +81,13 @@ mojom::ContentSecurityPolicyPtr BuildPolicy(CSPDirectiveName directive_name,
 mojom::ContentSecurityPolicyPtr BuildPolicy(CSPDirectiveName directive_name,
                                             mojom::CSPSourcePtr source_1,
                                             mojom::CSPSourcePtr source_2) {
-  auto directive = mojom::CSPDirective::New();
-  directive->name = directive_name;
-  directive->source_list = mojom::CSPSourceList::New();
-  directive->source_list->sources.push_back(std::move(source_1));
-  directive->source_list->sources.push_back(std::move(source_2));
+  auto source_list = mojom::CSPSourceList::New();
+  source_list->sources.push_back(std::move(source_1));
+  source_list->sources.push_back(std::move(source_2));
+
   auto policy = EmptyCSP();
-  policy->directives.push_back(std::move(directive));
+  policy->directives[directive_name] = std::move(source_list);
+
   return policy;
 }
 

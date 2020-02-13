@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/web_test_support.h"
 
 namespace blink {
@@ -124,8 +125,9 @@ void ApplicationCacheHostForFrame::LogMessage(
   // TODO(michaeln): Make app cache host per-frame and correctly report to the
   // involved frame.
   auto* local_frame = DynamicTo<LocalFrame>(main_frame);
-  local_frame->GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-      mojom::ConsoleMessageSource::kOther, log_level, message));
+  local_frame->GetDocument()->AddConsoleMessage(
+      MakeGarbageCollected<ConsoleMessage>(mojom::ConsoleMessageSource::kOther,
+                                           log_level, message));
 }
 
 void ApplicationCacheHostForFrame::SetSubresourceFactory(

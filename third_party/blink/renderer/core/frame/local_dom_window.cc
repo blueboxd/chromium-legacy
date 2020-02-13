@@ -625,7 +625,7 @@ void LocalDOMWindow::DispatchMessageEventWithOriginCheck(
           "The target origin provided ('" + intended_target_origin->ToString() +
               "') does not match the recipient window's origin ('" +
               document()->GetSecurityOrigin()->ToString() + "').");
-      ConsoleMessage* console_message = ConsoleMessage::Create(
+      auto* console_message = MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kSecurity,
           mojom::ConsoleMessageLevel::kError, message, std::move(location));
       GetFrameConsole()->AddMessage(console_message);
@@ -733,7 +733,7 @@ void LocalDOMWindow::alert(ScriptState* script_state, const String& message) {
 
   if (document()->IsSandboxed(WebSandboxFlags::kModals)) {
     UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
-    GetFrameConsole()->AddMessage(ConsoleMessage::Create(
+    GetFrameConsole()->AddMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,
         "Ignored call to 'alert()'. The document is sandboxed, and the "
@@ -766,7 +766,7 @@ bool LocalDOMWindow::confirm(ScriptState* script_state, const String& message) {
 
   if (document()->IsSandboxed(WebSandboxFlags::kModals)) {
     UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
-    GetFrameConsole()->AddMessage(ConsoleMessage::Create(
+    GetFrameConsole()->AddMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,
         "Ignored call to 'confirm()'. The document is sandboxed, and the "
@@ -801,7 +801,7 @@ String LocalDOMWindow::prompt(ScriptState* script_state,
 
   if (document()->IsSandboxed(WebSandboxFlags::kModals)) {
     UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
-    GetFrameConsole()->AddMessage(ConsoleMessage::Create(
+    GetFrameConsole()->AddMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,
         "Ignored call to 'prompt()'. The document is sandboxed, and the "
@@ -1419,9 +1419,9 @@ void LocalDOMWindow::WarnUnusedPreloads(TimerBase* base) {
         "preload but not used within a few seconds from the window's load " +
         "event. Please make sure it has an appropriate `as` value and it is " +
         "preloaded intentionally.";
-    GetFrameConsole()->AddMessage(
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                               mojom::ConsoleMessageLevel::kWarning, message));
+    GetFrameConsole()->AddMessage(MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kJavaScript,
+        mojom::ConsoleMessageLevel::kWarning, message));
   }
 }
 
@@ -1513,9 +1513,9 @@ void LocalDOMWindow::PrintErrorMessage(const String& message) const {
   if (message.IsEmpty())
     return;
 
-  GetFrameConsole()->AddMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                             mojom::ConsoleMessageLevel::kError, message));
+  GetFrameConsole()->AddMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kError, message));
 }
 
 DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,

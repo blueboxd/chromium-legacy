@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/script/fetch_client_settings_object_impl.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/memory_cache.h"
@@ -111,8 +112,9 @@ void ExecutionContext::AddConsoleMessageImpl(mojom::ConsoleMessageSource source,
                                              mojom::ConsoleMessageLevel level,
                                              const String& message,
                                              bool discard_duplicates) {
-  AddConsoleMessage(ConsoleMessage::Create(source, level, message),
-                    discard_duplicates);
+  AddConsoleMessage(
+      MakeGarbageCollected<ConsoleMessage>(source, level, message),
+      discard_duplicates);
 }
 
 void ExecutionContext::DispatchErrorEvent(
@@ -246,7 +248,7 @@ void ExecutionContext::ParseAndSetReferrerPolicy(const String& policies,
           support_legacy_keywords ? kSupportReferrerPolicyLegacyKeywords
                                   : kDoNotSupportReferrerPolicyLegacyKeywords,
           &referrer_policy)) {
-    AddConsoleMessage(ConsoleMessage::Create(
+    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kRendering,
         mojom::ConsoleMessageLevel::kError,
         "Failed to set referrer policy: The value '" + policies +

@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_dom_agent.h"
 #include "third_party/blink/renderer/core/inspector/resolve_node.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 namespace blink {
 using protocol::Response;
@@ -253,7 +254,7 @@ void InspectorLogAgent::ReportLongLayout(base::TimeDelta duration) {
   String message_text = String::Format(
       "Forced reflow while executing JavaScript took %" PRId64 "ms",
       duration.InMilliseconds());
-  ConsoleMessage* message = ConsoleMessage::Create(
+  auto* message = MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kViolation,
       mojom::ConsoleMessageLevel::kVerbose, message_text);
   ConsoleMessageAdded(message);
@@ -263,7 +264,7 @@ void InspectorLogAgent::ReportGenericViolation(PerformanceMonitor::Violation,
                                                const String& text,
                                                base::TimeDelta time,
                                                SourceLocation* location) {
-  ConsoleMessage* message = ConsoleMessage::Create(
+  auto* message = MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kViolation,
       mojom::ConsoleMessageLevel::kVerbose, text, location->Clone());
   ConsoleMessageAdded(message);

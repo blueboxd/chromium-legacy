@@ -759,6 +759,28 @@ static_library("test_runner_support") {
   ]
 }
 
+static_library("blink_test_browser_support") {
+  testonly = true
+
+  # See comment at the top of //content/BUILD.gn for why this is disabled in
+  # component builds.
+  if (is_component_build) {
+    check_includes = false
+  }
+
+  sources = [
+    "../public/test/blink_test_browser_support.h",
+    "blink_test_browser_support.cc",
+  ]
+
+  deps = [
+    "//content/browser:for_content_tests",
+    "//content/public/browser",
+    "//content/public/common",
+    "//skia",
+  ]
+}
+
 if (is_android) {
   import("//build/config/android/rules.gni")
 

@@ -72,17 +72,14 @@ static void homogenousLimitAtZero(SkScalar a1,
                                   float* limit) {
   // This is the tolerance for detecting an eyepoint-aligned edge.
   static const float kStationaryPointEplison = 0.00001f;
-  // This needs to be big enough to not be the limit of clipping, but not so
-  // big that using it as a size destroys the offset in a rect.
-  static const float kInfiniteCoordinate = 1000000.0f;
 
   if (std::abs(a1 * w2 / w1 / a2 - 1.0f) > kStationaryPointEplison) {
     // We are going to explode towards an infity, but we choose the one that
     // corresponds to the one on the positive side of w.
     if (((1.0f - t) * a1 + t * a2) > 0) {
-      *limit = kInfiniteCoordinate;
+      *limit = HomogeneousCoordinate::kInfiniteCoordinate;
     } else {
-      *limit = -kInfiniteCoordinate;
+      *limit = -HomogeneousCoordinate::kInfiniteCoordinate;
     }
   } else {
     *limit = a1 / w1;  // (== a2 / w2) && == (1.0f - t) * a1 / w1 + t * a2 / w2

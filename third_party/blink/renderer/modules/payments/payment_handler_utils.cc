@@ -7,6 +7,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 
 using blink::mojom::ServiceWorkerResponseError;
 
@@ -53,7 +54,7 @@ void PaymentHandlerUtils::ReportResponseError(
   }
 
   DCHECK(execution_context);
-  execution_context->AddConsoleMessage(ConsoleMessage::Create(
+  execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kJavaScript,
       mojom::ConsoleMessageLevel::kWarning, error_message));
 }

@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_iframe.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
@@ -170,7 +171,7 @@ void HTMLIFrameElement::ParseAttribute(
     }
     SetSandboxFlags(sandbox_to_set);
     if (!invalid_tokens.IsNull()) {
-      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+      GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kOther,
           mojom::ConsoleMessageLevel::kError,
           "Error while parsing the 'sandbox' attribute: " + invalid_tokens));
@@ -180,7 +181,7 @@ void HTMLIFrameElement::ParseAttribute(
       UpdateContainerPolicy(&messages);
       if (!messages.IsEmpty()) {
         for (const String& message : messages) {
-          GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+          GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
               mojom::ConsoleMessageSource::kOther,
               mojom::ConsoleMessageLevel::kWarning, message));
         }
@@ -221,7 +222,7 @@ void HTMLIFrameElement::ParseAttribute(
     if (!ContentSecurityPolicy::IsValidCSPAttr(
             value.GetString(), GetDocument().RequiredCSP().GetString())) {
       required_csp_ = g_null_atom;
-      GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+      GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kOther,
           mojom::ConsoleMessageLevel::kError,
           "'csp' attribute is not a valid policy: " + value));
@@ -238,7 +239,7 @@ void HTMLIFrameElement::ParseAttribute(
       UpdateContainerPolicy(&messages);
       if (!messages.IsEmpty()) {
         for (const String& message : messages) {
-          GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+          GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
               mojom::ConsoleMessageSource::kOther,
               mojom::ConsoleMessageLevel::kWarning, message));
         }
@@ -270,12 +271,12 @@ void HTMLIFrameElement::ParseAttribute(
             WebFeature::kHTMLIFrameElementGestureMedia)) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kHTMLIFrameElementGestureMedia);
-      GetDocument().AddConsoleMessage(
-          ConsoleMessage::Create(mojom::ConsoleMessageSource::kOther,
-                                 mojom::ConsoleMessageLevel::kWarning,
-                                 "<iframe gesture=\"media\"> is not supported. "
-                                 "Use <iframe allow=\"autoplay\">, "
-                                 "https://goo.gl/ximf56"));
+      GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
+          mojom::ConsoleMessageSource::kOther,
+          mojom::ConsoleMessageLevel::kWarning,
+          "<iframe gesture=\"media\"> is not supported. "
+          "Use <iframe allow=\"autoplay\">, "
+          "https://goo.gl/ximf56"));
     }
 
     if (name == html_names::kSrcAttr)
@@ -376,7 +377,7 @@ Node::InsertionNotificationRequest HTMLIFrameElement::InsertedInto(
     if (!ContentSecurityPolicy::IsValidCSPAttr(
             required_csp_, GetDocument().RequiredCSP().GetString())) {
       if (!required_csp_.IsEmpty()) {
-        GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+        GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
             mojom::ConsoleMessageSource::kOther,
             mojom::ConsoleMessageLevel::kError,
             "'csp' attribute is not a valid policy: " + required_csp_));

@@ -148,6 +148,42 @@ TEST(MathUtilTest, EnclosingClippedRectUsesCorrectInitialBounds) {
       gfx::RectF(gfx::PointF(-100, -100), gfx::SizeF(90, 90)), result, 0.15f);
 }
 
+TEST(MathUtilTest, EnclosingClippedRectHandlesSmallPositiveW) {
+  // When all homogeneous coordinates have w > 0, no clipping against the w = 0
+  // plane is performed and the projected points are sent to gfx::QuadF's
+  // bounding box function. w can be made arbitrarily close to 0 on the positive
+  // side and cause precision problems later on unless it's handled properly.
+
+  // Coordinates inspired by a real test page. One edge maps to approximately
+  // negative infinity, and the other is at x~109.
+  HomogeneousCoordinate h1(-154.0f, -109.0f, 0.0f, 6e-8f);
+  HomogeneousCoordinate h2(152.0f, 44.0f, 0.0f, 1.4f);
+  HomogeneousCoordinate h3(152.0f, 261.0f, 0.0f, 1.4f);
+  HomogeneousCoordinate h4(-154.0f, 108.0f, 0.0f, 6e-8f);
+
+  // Confirm original behavior is problematic if we just divide by w.
+  gfx::QuadF naiveQuad = {{h1.x() / h1.w(), h1.y() / h1.w()},
+                          {h2.x() / h2.w(), h2.y() / h2.w()},
+                          {h3.x() / h3.w(), h3.y() / h3.w()},
+                          {h4.x() / h4.w(), h4.y() / h4.w()}};
+  // The calculated min and max coordinates differ by ~2^31, well outside a
+  // floats ability to represent onscreen pixel coordinates and in this case,
+  // the projected bounds fail to represent that one edge is still on screen.
+  gfx::RectF naiveBounds = naiveQuad.BoundingBox();
+  EXPECT_TRUE(naiveBounds.right() <= 0.0f);
+
+  // The bounds of the enclosing clipped rect should be neg. infinity to ~109
+  // for x, and neg. infinity to pos. infinity for y.
+  gfx::RectF goodBounds = MathUtil::ComputeEnclosingClippedRect(h1, h2, h3, h4);
+  EXPECT_FALSE(goodBounds.IsEmpty());
+  EXPECT_FLOAT_EQ(-HomogeneousCoordinate::kInfiniteCoordinate, goodBounds.y());
+  EXPECT_FLOAT_EQ(HomogeneousCoordinate::kInfiniteCoordinate,
+                  goodBounds.bottom());
+  EXPECT_FLOAT_EQ(-HomogeneousCoordinate::kInfiniteCoordinate, goodBounds.x());
+  // 0.01f was empirically determined.
+  EXPECT_NEAR(152.0f / 1.4f, goodBounds.right(), 0.01f);
+}
+
 TEST(MathUtilTest, EnclosingRectOfVerticesUsesCorrectInitialBounds) {
   gfx::PointF vertices[3];
   int num_vertices = 3;

@@ -109,9 +109,6 @@ TEST(AudioInputDeviceTest, CreateStream) {
 
   ASSERT_TRUE(
       CancelableSyncSocket::CreatePair(&browser_socket, &renderer_socket));
-  SyncSocket::TransitDescriptor audio_device_socket_descriptor;
-  ASSERT_TRUE(renderer_socket.PrepareTransitDescriptor(
-      base::GetCurrentProcessHandle(), &audio_device_socket_descriptor));
   base::ReadOnlySharedMemoryRegion duplicated_shared_memory_region =
       shared_memory.region.Duplicate();
   ASSERT_TRUE(duplicated_shared_memory_region.IsValid());
@@ -126,10 +123,8 @@ TEST(AudioInputDeviceTest, CreateStream) {
   EXPECT_CALL(*input_ipc, CreateStream(_, _, _, _))
       .WillOnce(InvokeWithoutArgs([&]() {
         static_cast<AudioInputIPCDelegate*>(device.get())
-            ->OnStreamCreated(
-                std::move(duplicated_shared_memory_region),
-                SyncSocket::UnwrapHandle(audio_device_socket_descriptor),
-                false);
+            ->OnStreamCreated(std::move(duplicated_shared_memory_region),
+                              renderer_socket.Release(), false);
       }));
   EXPECT_CALL(*input_ipc, RecordStream());
 

@@ -211,20 +211,16 @@ WebString ConvertToPublic(
 
 // TODO(arthursonzogni): Remove this when BeginNavigation will be sent directly
 // from blink.
-WebContentSecurityPolicyDirective ConvertToPublic(
-    network::mojom::blink::CSPDirectivePtr directive) {
-  return {ConvertToPublic(directive->name),
-          ConvertToPublic(std::move(directive->source_list))};
-}
-
-// TODO(arthursonzogni): Remove this when BeginNavigation will be sent directly
-// from blink.
 WebContentSecurityPolicy ConvertToPublic(
     network::mojom::blink::ContentSecurityPolicyPtr policy) {
   WebVector<WebContentSecurityPolicyDirective> directives(
       policy->directives.size());
-  for (size_t i = 0; i < directives.size(); ++i)
-    directives[i] = ConvertToPublic(std::move(policy->directives[i]));
+  size_t i = 0;
+  for (auto& directive : policy->directives) {
+    directives[i++] = {ConvertToPublic(directive.key),
+                       ConvertToPublic(std::move(directive.value))};
+  }
+
   return {policy->header->type,         policy->header->source,
           std::move(directives),        std::move(policy->report_endpoints),
           policy->header->header_value, policy->use_reporting_api};

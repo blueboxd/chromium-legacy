@@ -199,6 +199,7 @@ void DedicatedWorkerHost::StartScriptLoad(
 
   WorkerScriptFetchInitiator::Start(
       worker_process_host_->GetID(), script_url, creator_render_frame_host,
+      nearest_ancestor_render_frame_host->ComputeSiteForCookies(),
       request_initiator_origin, network_isolation_key_, credentials_mode,
       std::move(outside_fetch_client_settings_object),
       blink::mojom::ResourceType::kWorker,

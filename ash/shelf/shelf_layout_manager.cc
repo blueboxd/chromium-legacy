@@ -42,7 +42,6 @@
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/work_area_insets.h"
@@ -139,15 +138,9 @@ bool IsAppListWindow(const aura::Window* window) {
   return parent && parent->id() == kShellWindowId_AppListContainer;
 }
 
-bool IsTabletModeEnabled() {
-  // Shell could be destroying. Shell destroys TabletModeController before
-  // closing all windows.
-  return Shell::Get()->tablet_mode_controller() &&
-         Shell::Get()->tablet_mode_controller()->InTabletMode();
-}
-
 bool IsHotseatEnabled() {
-  return IsTabletModeEnabled() && chromeos::switches::ShouldShowShelfHotseat();
+  return Shell::Get()->IsInTabletMode() &&
+         chromeos::switches::ShouldShowShelfHotseat();
 }
 
 int GetOffset(int offset, bool from_touchpad) {
@@ -197,7 +190,7 @@ int GetShelfInset(ShelfVisibilityState visibility_state, int size) {
 // window.
 aura::Window* GetWindowForDragToHomeOrOverview(
     const gfx::Point& location_in_screen) {
-  if (!IsTabletModeEnabled())
+  if (!Shell::Get()->IsInTabletMode())
     return nullptr;
 
   auto mru_windows =
@@ -475,7 +468,8 @@ gfx::Rect ShelfLayoutManager::GetIdealBounds() const {
 }
 
 gfx::Rect ShelfLayoutManager::GetIdealBoundsForWorkAreaCalculation() const {
-  if (!IsTabletModeEnabled() || !chromeos::switches::ShouldShowShelfHotseat() ||
+  if (!Shell::Get()->IsInTabletMode() ||
+      !chromeos::switches::ShouldShowShelfHotseat() ||
       state_.session_state != session_manager::SessionState::ACTIVE) {
     return GetIdealBounds();
   }
@@ -787,7 +781,7 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   const bool in_overview =
       Shell::Get()->overview_controller() &&
       Shell::Get()->overview_controller()->InOverviewSession();
-  if (IsTabletModeEnabled()) {
+  if (Shell::Get()->IsInTabletMode()) {
     if (app_list_is_visible) {
       // If the home launcher is shown or mostly shown, show the home launcher
       // background. If it is mostly hidden, show the in-app or overview
@@ -819,7 +813,8 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
     // When a window is maximized, if the auto-hide shelf is enabled and we are
     // in clamshell mode, the shelf will keep the default transparent
     // background.
-    if (!IsTabletModeEnabled() && state_.visibility_state == SHELF_AUTO_HIDE)
+    if (!Shell::Get()->IsInTabletMode() &&
+        state_.visibility_state == SHELF_AUTO_HIDE)
       return ShelfBackgroundType::kDefaultBg;
 
     return ShelfBackgroundType::kMaximized;
@@ -1089,10 +1084,6 @@ void ShelfLayoutManager::OnDeskSwitchAnimationFinished() {
     UpdateVisibilityState();
 }
 
-gfx::Rect ShelfLayoutManager::GetShelfBoundsInScreen() const {
-  return target_bounds_.shelf_bounds;
-}
-
 float ShelfLayoutManager::GetOpacity() const {
   return target_bounds_.opacity;
 }
@@ -1123,10 +1114,12 @@ int ShelfLayoutManager::CalculateHotseatYInScreen(
           ShelfConfig::Get()->hotseat_bottom_padding() + hotseat_size;
       break;
   }
-  const int current_shelf_size = target_bounds_.shelf_bounds.size().height();
+  const int current_shelf_size =
+      shelf_->shelf_widget()->GetTargetBounds().size().height();
   const int hotseat_y_in_shelf =
       -(hotseat_distance_from_bottom_of_display - current_shelf_size);
-  return hotseat_y_in_shelf + target_bounds_.shelf_bounds.y();
+  const int shelf_y = shelf_->shelf_widget()->GetTargetBounds().y();
+  return hotseat_y_in_shelf + shelf_y;
 }
 
 void ShelfLayoutManager::OnShelfConfigUpdated() {
@@ -1493,9 +1486,10 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
 
     gfx::Transform shelf_widget_target_transform;
     shelf_widget_target_transform.Translate(
-        current_shelf_bounds.origin() - target_bounds_.shelf_bounds.origin());
+        current_shelf_bounds.origin() -
+        shelf_->shelf_widget()->GetTargetBounds().origin());
     shelf_widget_->GetLayer()->SetTransform(shelf_widget_target_transform);
-    shelf_widget_->SetBounds(target_bounds_.shelf_bounds);
+    shelf_widget_->SetBounds(shelf_->shelf_widget()->GetTargetBounds());
 
     ui::ScopedLayerAnimationSettings shelf_animation_setter(
         GetLayer(shelf_widget_)->GetAnimator());
@@ -1583,7 +1577,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
 bool ShelfLayoutManager::IsDraggingWindowFromTopOrCaptionArea() const {
   // Currently dragging maximized or fullscreen window from the top or the
   // caption area is only allowed in tablet mode.
-  if (!IsTabletModeEnabled())
+  if (!Shell::Get()->IsInTabletMode())
     return false;
 
   // TODO(minch): Check active window directly if removed search field
@@ -1610,45 +1604,7 @@ void ShelfLayoutManager::StopAnimating() {
 void ShelfLayoutManager::CalculateTargetBounds(
     const State& state,
     HotseatState hotseat_target_state) {
-  const int shelf_size = ShelfConfig::Get()->shelf_size();
-
-  // By default, show the whole shelf on the screen.
-  int shelf_in_screen_portion = shelf_size;
-  const WorkAreaInsets* const work_area =
-      WorkAreaInsets::ForWindow(shelf_widget_->GetNativeWindow());
-
-  if (state.IsShelfAutoHidden()) {
-    shelf_in_screen_portion =
-        Shell::Get()->app_list_controller()->home_launcher_transition_state() ==
-                AppListControllerImpl::HomeLauncherTransitionState::kMostlyShown
-            ? shelf_size
-            : ShelfConfig::Get()->hidden_shelf_in_screen_portion();
-  } else if (state.visibility_state == SHELF_HIDDEN ||
-             work_area->IsKeyboardShown()) {
-    shelf_in_screen_portion = 0;
-  }
-
-  gfx::Rect available_bounds =
-      screen_util::GetDisplayBoundsWithShelf(shelf_widget_->GetNativeWindow());
-  available_bounds.Inset(work_area->GetAccessibilityInsets());
-
-  int shelf_width =
-      shelf_->PrimaryAxisValue(available_bounds.width(), shelf_size);
-  int shelf_height =
-      shelf_->PrimaryAxisValue(shelf_size, available_bounds.height());
-  const int shelf_primary_position = shelf_->SelectValueForShelfAlignment(
-      available_bounds.bottom() - shelf_in_screen_portion,
-      available_bounds.x() - shelf_size + shelf_in_screen_portion,
-      available_bounds.right() - shelf_in_screen_portion);
-  gfx::Point shelf_origin = shelf_->SelectValueForShelfAlignment(
-      gfx::Point(available_bounds.x(), shelf_primary_position),
-      gfx::Point(shelf_primary_position, available_bounds.y()),
-      gfx::Point(shelf_primary_position, available_bounds.y()));
-
-  target_bounds_.shelf_bounds = screen_util::SnapBoundsToDisplayEdge(
-      gfx::Rect(shelf_origin.x(), shelf_origin.y(), shelf_width, shelf_height),
-      shelf_widget_->GetNativeWindow());
-
+  shelf_->shelf_widget()->CalculateTargetBounds();
   shelf_->status_area_widget()->CalculateTargetBounds();
   shelf_->navigation_widget()->CalculateTargetBounds();
   shelf_->hotseat_widget()->CalculateTargetBounds();
@@ -1658,22 +1614,31 @@ void ShelfLayoutManager::CalculateTargetBounds(
   if (drag_status_ == kDragInProgress)
     UpdateTargetBoundsForGesture(hotseat_target_state);
 
+  const gfx::Rect shelf_bounds = shelf_->shelf_widget()->GetTargetBounds();
+  gfx::Rect snapped_shelf_bounds(shelf_bounds);
+  screen_util::SnapBoundsToDisplayEdge(
+      snapped_shelf_bounds, shelf_->shelf_widget()->GetNativeWindow());
+  shelf_->shelf_widget()->set_target_bounds(snapped_shelf_bounds);
+
   target_bounds_.shelf_insets = shelf_->SelectValueForShelfAlignment(
       gfx::Insets(0, 0,
                   GetShelfInset(state.visibility_state,
                                 IsHotseatEnabled()
                                     ? ShelfConfig::Get()->in_app_shelf_size()
-                                    : shelf_height),
+                                    : shelf_bounds.height()),
                   0),
-      gfx::Insets(0, GetShelfInset(state.visibility_state, shelf_width), 0, 0),
-      gfx::Insets(0, 0, 0, GetShelfInset(state.visibility_state, shelf_width)));
+      gfx::Insets(
+          0, GetShelfInset(state.visibility_state, shelf_bounds.width()), 0, 0),
+      gfx::Insets(0, 0, 0,
+                  GetShelfInset(state.visibility_state, shelf_bounds.width())));
 }
 
 void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea() {
   HotseatState hotseat_target_state =
       CalculateHotseatState(visibility_state(), auto_hide_state());
   CalculateTargetBounds(state_, hotseat_target_state);
-  gfx::Rect shelf_bounds_for_workarea_calculation = target_bounds_.shelf_bounds;
+  gfx::Rect shelf_bounds_for_workarea_calculation =
+      shelf_->shelf_widget()->GetTargetBounds();
   // When the hotseat is enabled, only use the in-app shelf bounds when
   // calculating the work area. This prevents windows resizing unnecessarily.
   if (IsHotseatEnabled()) {
@@ -1741,7 +1706,8 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
 
   if (horizontal) {
     if (!IsHotseatEnabled()) {
-      target_bounds_.shelf_bounds.set_y(baseline + translate);
+      shelf_->shelf_widget()->UpdateTargetBoundsForGesture(baseline +
+                                                           translate);
       shelf_->navigation_widget()->UpdateTargetBoundsForGesture();
       gfx::Rect hotseat_bounds = shelf_->hotseat_widget()->GetTargetBounds();
       hotseat_bounds.set_y(baseline + translate);
@@ -1763,7 +1729,10 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
       // move the hotseat down.
       if (IsWindowDragInProgress())
         shelf_y = available_bounds.bottom() - shelf_size;
-      target_bounds_.shelf_bounds.set_y(shelf_y);
+      gfx::Rect updated_target_bounds =
+          shelf_->shelf_widget()->GetTargetBounds();
+      updated_target_bounds.set_y(shelf_y);
+      shelf_->shelf_widget()->set_target_bounds(updated_target_bounds);
     }
 
     int hotseat_y = 0;
@@ -1787,13 +1756,14 @@ void ShelfLayoutManager::UpdateTargetBoundsForGesture(
     // the hotseat down.
     if (IsWindowDragInProgress())
       hotseat_y = -hotseat_extended_y;
+    gfx::Rect shelf_bounds = shelf_->shelf_widget()->GetTargetBounds();
     gfx::Rect hotseat_bounds = shelf_->hotseat_widget()->GetTargetBounds();
-    hotseat_bounds.set_y(hotseat_y + target_bounds_.shelf_bounds.y());
+    hotseat_bounds.set_y(hotseat_y + shelf_bounds.y());
     shelf_->hotseat_widget()->set_target_bounds(hotseat_bounds);
     return;
   }
 
-  target_bounds_.shelf_bounds.set_x(baseline + translate);
+  shelf_->shelf_widget()->UpdateTargetBoundsForGesture(baseline + translate);
   shelf_->navigation_widget()->UpdateTargetBoundsForGesture();
   gfx::Rect hotseat_bounds = shelf_->hotseat_widget()->GetTargetBounds();
   hotseat_bounds.set_x(baseline + translate);
@@ -1865,7 +1835,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (shelf_->auto_hide_lock())
     return state_.auto_hide_state;
 
-  const bool in_tablet_mode = IsTabletModeEnabled();
+  const bool in_tablet_mode = Shell::Get()->IsInTabletMode();
   // Don't let the shelf auto-hide when in tablet mode and Chromevox is on.
   if (in_tablet_mode &&
       Shell::Get()->accessibility_controller()->spoken_feedback_enabled()) {
@@ -1937,7 +1907,7 @@ base::Optional<ShelfAutoHideState>
 ShelfLayoutManager::CalculateAutoHideStateBasedOnCursorLocation() const {
   // No mouse is available in tablet mode. So there is no point to calculate
   // the auto-hide state by the cursor location in this scenario.
-  const bool in_tablet_mode = IsTabletModeEnabled();
+  const bool in_tablet_mode = Shell::Get()->IsInTabletMode();
   if (in_tablet_mode)
     return base::nullopt;
 
@@ -2023,7 +1993,8 @@ void ShelfLayoutManager::UpdateShelfVisibilityAfterLoginUIChange() {
 float ShelfLayoutManager::ComputeTargetOpacity(const State& state) const {
   // The shelf should not become transparent during the animation to or from
   // HomeLauncher.
-  if (chromeos::switches::ShouldShowShelfHotseat() && IsTabletModeEnabled() &&
+  if (chromeos::switches::ShouldShowShelfHotseat() &&
+      Shell::Get()->IsInTabletMode() &&
       Shell::Get()->app_list_controller()->home_launcher_transition_state() !=
           AppListControllerImpl::HomeLauncherTransitionState::kFinished) {
     return 1.0f;
@@ -2054,7 +2025,7 @@ float ShelfLayoutManager::ComputeTargetOpacity(const State& state) const {
 bool ShelfLayoutManager::IsShelfHiddenForFullscreen() const {
   // If the non-fullscreen app list should be shown, the shelf should not be
   // hidden.
-  if (!IsTabletModeEnabled() &&
+  if (!Shell::Get()->IsInTabletMode() &&
       Shell::Get()->app_list_controller()->GetTargetVisibility()) {
     return false;
   }
@@ -2258,7 +2229,7 @@ bool ShelfLayoutManager::StartAppListDrag(
     float scroll_y_hint) {
   // If the home screen is available, gesture dragging is handled by
   // HomeLauncherGestureHandler.
-  if (IsTabletModeEnabled() && event_in_screen.IsGestureEvent())
+  if (Shell::Get()->IsInTabletMode() && event_in_screen.IsGestureEvent())
     return false;
 
   // Fullscreen app list can only be dragged from bottom alignment shelf.
@@ -2304,7 +2275,7 @@ bool ShelfLayoutManager::StartShelfDrag(const ui::LocatedEvent& event_in_screen,
                                         const gfx::Vector2dF& scroll_hint) {
   // Disable the shelf dragging if the fullscreen app list is opened.
   if (Shell::Get()->app_list_controller()->IsVisible() &&
-      !IsTabletModeEnabled())
+      !Shell::Get()->IsInTabletMode())
     return false;
 
   // Also disable shelf drags until the overflow shelf is closed.
@@ -2430,7 +2401,8 @@ void ShelfLayoutManager::CompleteDrag(const ui::LocatedEvent& event_in_screen) {
     window_drag_controller_->FinalizeDraggedWindow();
 
   // Hotseat gestures are meaningful only in tablet mode with hotseat enabled.
-  if (chromeos::switches::ShouldShowShelfHotseat() && IsTabletModeEnabled()) {
+  if (chromeos::switches::ShouldShowShelfHotseat() &&
+      Shell::Get()->IsInTabletMode()) {
     base::Optional<InAppShelfGestures> gesture_to_record =
         CalculateHotseatGestureToRecord(window_drag_result,
                                         transitioned_from_overview_to_home,
@@ -2643,7 +2615,7 @@ bool ShelfLayoutManager::MaybeStartDragWindowFromShelf(
     const gfx::Vector2dF& scroll) {
   if (!features::IsDragFromShelfToHomeOrOverviewEnabled())
     return false;
-  if (!IsTabletModeEnabled())
+  if (!Shell::Get()->IsInTabletMode())
     return false;
   if (drag_status_ != kDragInProgress)
     return false;

@@ -250,6 +250,8 @@ class ASH_EXPORT ShelfLayoutManager
     return state_.visibility_state;
   }
 
+  bool is_shelf_auto_hidden() const { return state_.IsShelfAutoHidden(); }
+
   void LockAutoHideState(bool lock_auto_hide_state) {
     is_auto_hide_state_locked_ = lock_auto_hide_state;
   }
@@ -265,7 +267,6 @@ class ASH_EXPORT ShelfLayoutManager
   void OnTabletModeStarted() override;
   void OnTabletModeEnded() override;
 
-  gfx::Rect GetShelfBoundsInScreen() const;
   float GetOpacity() const;
 
   bool updating_bounds() const { return updating_bounds_; }
@@ -303,7 +304,6 @@ class ASH_EXPORT ShelfLayoutManager
 
     float opacity;
 
-    gfx::Rect shelf_bounds;             // Bounds of the shelf within the screen
     gfx::Insets shelf_insets;           // Shelf insets within the screen
   };
 

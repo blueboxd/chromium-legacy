@@ -30,28 +30,23 @@ network::mojom::CSPSourceListPtr BuildCSPSourceList(
       source_list.allow_redirects);
 }
 
-network::mojom::CSPDirectivePtr BuildCSPDirective(
-    const blink::WebContentSecurityPolicyDirective& directive) {
-  return network::mojom::CSPDirective::New(
-      network::ToCSPDirectiveName(directive.name.Utf8()),
-      BuildCSPSourceList(directive.source_list));
-}
-
 network::mojom::ContentSecurityPolicyPtr BuildContentSecurityPolicy(
-    const blink::WebContentSecurityPolicy& policy) {
-  std::vector<network::mojom::CSPDirectivePtr> directives;
-  for (const auto& directive : policy.directives)
-    directives.push_back(BuildCSPDirective(directive));
+    const blink::WebContentSecurityPolicy& policy_in) {
+  auto policy = network::mojom::ContentSecurityPolicy::New();
 
-  std::vector<std::string> report_endpoints;
-  for (const blink::WebString& endpoint : policy.report_endpoints)
-    report_endpoints.push_back(endpoint.Utf8());
+  policy->header = network::mojom::ContentSecurityPolicyHeader::New(
+      policy_in.header.Utf8(), policy_in.disposition, policy_in.source);
+  policy->use_reporting_api = policy_in.use_reporting_api;
 
-  return network::mojom::ContentSecurityPolicy::New(
-      std::move(directives),
-      network::mojom::ContentSecurityPolicyHeader::New(
-          policy.header.Utf8(), policy.disposition, policy.source),
-      policy.use_reporting_api, std::move(report_endpoints));
+  for (const auto& directive : policy_in.directives) {
+    auto name = network::ToCSPDirectiveName(directive.name.Utf8());
+    policy->directives[name] = BuildCSPSourceList(directive.source_list);
+  }
+
+  for (const blink::WebString& endpoint : policy_in.report_endpoints)
+    policy->report_endpoints.push_back(endpoint.Utf8());
+
+  return policy;
 }
 
 }  // namespace content

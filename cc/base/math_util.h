@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/numerics/ranges.h"
 #include "build/build_config.h"
 #include "cc/base/base_export.h"
 #include "ui/gfx/geometry/box_f.h"
@@ -41,6 +42,14 @@ class Vector3dF;
 namespace cc {
 
 struct HomogeneousCoordinate {
+  // This needs to be big enough that it does not incorrectly clip the projected
+  // coordinate. For local to device projection, this must be bigger than the
+  // expected size of a display. For inverse projection, this is hopefully
+  // larger than the required local layer size of page content. If it is made
+  // too big then bounding box calculations based on projected coordinates can
+  // lose precision and lead to incorrect page rendering.
+  static constexpr float kInfiniteCoordinate = 1000000.0f;
+
   HomogeneousCoordinate(SkScalar x, SkScalar y, SkScalar z, SkScalar w) {
     vec[0] = x;
     vec[1] = y;
@@ -58,7 +67,12 @@ struct HomogeneousCoordinate {
     // never be called when w == 0, and we do not yet need to handle that case.
     DCHECK(w());
     SkScalar inv_w = SK_Scalar1 / w();
-    return gfx::PointF(x() * inv_w, y() * inv_w);
+    // However, w may be close to 0 and we lose precision on our geometry
+    // calculations if we allow scaling to extremely large values.
+    return gfx::PointF(base::ClampToRange(x() * inv_w, -kInfiniteCoordinate,
+                                          (float)kInfiniteCoordinate),
+                       base::ClampToRange(y() * inv_w, -kInfiniteCoordinate,
+                                          (float)kInfiniteCoordinate));
   }
 
   gfx::Point3F CartesianPoint3d() const {
@@ -69,7 +83,14 @@ struct HomogeneousCoordinate {
     // never be called when w == 0, and we do not yet need to handle that case.
     DCHECK(w());
     SkScalar inv_w = SK_Scalar1 / w();
-    return gfx::Point3F(x() * inv_w, y() * inv_w, z() * inv_w);
+    // However, w may be close to 0 and we lose precision on our geometry
+    // calculations if we allow scaling to extremely large values.
+    return gfx::Point3F(base::ClampToRange(x() * inv_w, -kInfiniteCoordinate,
+                                           (float)kInfiniteCoordinate),
+                        base::ClampToRange(y() * inv_w, -kInfiniteCoordinate,
+                                           (float)kInfiniteCoordinate),
+                        base::ClampToRange(z() * inv_w, -kInfiniteCoordinate,
+                                           (float)kInfiniteCoordinate));
   }
 
   SkScalar x() const { return vec[0]; }

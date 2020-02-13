@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/offline_pages/android/auto_fetch_page_load_watcher.h"
-#include "chrome/common/offline_page_auto_fetcher.mojom.h"
+#include "chrome/common/offline_page_auto_fetcher.mojom-forward.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_pages/core/background/request_coordinator.h"
 #include "components/offline_pages/core/background/request_queue_results.h"

@@ -410,7 +410,7 @@ void HTMLSelectElement::SetOption(unsigned index,
   // We should check |index >= maxListItems| first to avoid integer overflow.
   if (index >= kMaxListItems ||
       GetListItems().size() + diff + 1 > kMaxListItems) {
-    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kWarning,
         String::Format("Blocked to expand the option list and set an option at "
@@ -443,7 +443,7 @@ void HTMLSelectElement::setLength(unsigned new_len,
   // We should check |newLen > maxListItems| first to avoid integer overflow.
   if (new_len > kMaxListItems ||
       GetListItems().size() + new_len - length() > kMaxListItems) {
-    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kJavaScript,
         mojom::ConsoleMessageLevel::kWarning,
         String::Format("Blocked to expand the option list to %u items.  The "

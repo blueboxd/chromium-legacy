@@ -9,6 +9,8 @@ import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.net.Uri;
 import android.os.Build;
@@ -32,7 +34,6 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -113,6 +114,8 @@ public class DownloadUtils {
 
     private static final String EXTRA_IS_OFF_THE_RECORD =
             "org.chromium.chrome.browser.download.IS_OFF_THE_RECORD";
+    private static final String MIME_TYPE_ZIP = "application/zip";
+    private static final String DOCUMENTS_UI_PACKAGE_NAME = "com.android.documentsui";
     public static final String EXTRA_SHOW_PREFETCHED_CONTENT =
             "org.chromium.chrome.browser.download.SHOW_PREFETCHED_CONTENT";
 
@@ -205,8 +208,7 @@ public class DownloadUtils {
             }
         }
 
-        if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isFullBrowserStarted()) {
+        if (BrowserStartupController.getInstance().isFullBrowserStarted()) {
             Profile profile =
                     (tab == null ? Profile.getLastUsedProfile() : ((TabImpl) tab).getProfile());
             Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
@@ -454,14 +456,32 @@ public class DownloadUtils {
             service.updateLastAccessTime(downloadGuid, isOffTheRecord);
             return true;
         } catch (Exception e) {
-            // Can't launch the Intent.
-            if (source != DownloadOpenSource.DOWNLOAD_PROGRESS_INFO_BAR) {
-                Toast.makeText(context, context.getString(R.string.download_cant_open_file),
-                             Toast.LENGTH_SHORT)
-                        .show();
-            }
-            return false;
+            Log.e(TAG, "Cannot start activity to open file", e);
         }
+
+        // If this is a zip file, check if Android Files app exists.
+        if (MIME_TYPE_ZIP.equals(mimeType)) {
+            try {
+                PackageInfo packageInfo = context.getPackageManager().getPackageInfo(
+                        DOCUMENTS_UI_PACKAGE_NAME, PackageManager.GET_ACTIVITIES);
+                if (packageInfo != null) {
+                    Intent viewDownloadsIntent = new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS);
+                    viewDownloadsIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    viewDownloadsIntent.setPackage(DOCUMENTS_UI_PACKAGE_NAME);
+                    context.startActivity(viewDownloadsIntent);
+                    return true;
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Cannot find files app for openning zip files", e);
+            }
+        }
+        // Can't launch the Intent.
+        if (source != DownloadOpenSource.DOWNLOAD_PROGRESS_INFO_BAR) {
+            Toast.makeText(context, context.getString(R.string.download_cant_open_file),
+                         Toast.LENGTH_SHORT)
+                    .show();
+        }
+        return false;
     }
 
     @CalledByNative
@@ -716,8 +736,7 @@ public class DownloadUtils {
      * @return String representing the current download status.
      */
     public static String getFailStatusString(@FailState int failState) {
-        if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isFullBrowserStarted()) {
+        if (BrowserStartupController.getInstance().isFullBrowserStarted()) {
             return DownloadUtilsJni.get().getFailStateMessage(failState);
         }
         Context context = ContextUtils.getApplicationContext();
@@ -734,7 +753,7 @@ public class DownloadUtils {
         Context context = ContextUtils.getApplicationContext();
         // When foreground service restarts and there is no connection to native, use the default
         // pending status. The status will be replaced when connected to native.
-        if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER).isFullBrowserStarted()
+        if (BrowserStartupController.getInstance().isFullBrowserStarted()
                 && ChromeFeatureList.isEnabled(
                         ChromeFeatureList.OFFLINE_PAGES_DESCRIPTIVE_PENDING_STATUS)) {
             switch (pendingState) {

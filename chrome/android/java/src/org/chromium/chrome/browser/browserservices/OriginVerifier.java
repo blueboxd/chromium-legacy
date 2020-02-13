@@ -25,7 +25,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
@@ -263,11 +262,9 @@ public class OriginVerifier {
         }
 
         if (mNativeOriginVerifier != 0) cleanUp();
-        if (!BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isFullBrowserStarted()) {
-            // Early return for testing without native.
-            return;
-        }
+        // Early return for testing without native.
+        if (!BrowserStartupController.getInstance().isFullBrowserStarted()) return;
+
         if (mWebContents != null && mWebContents.isDestroyed()) mWebContents = null;
         mNativeOriginVerifier = OriginVerifierJni.get().init(
                 OriginVerifier.this, mWebContents, Profile.getLastUsedRegularProfile());

@@ -55,6 +55,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/blink_test_browser_support.h"
 #include "content/public/test/web_test_support.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -156,6 +157,24 @@ std::string DumpHistoryForWebContents(WebContents* web_contents) {
         web_contents->GetController().GetEntryAtIndex(i), i == current_index);
   }
   return result;
+}
+
+std::string DumpFailLoad(WebContents* web_contents,
+                         RenderFrameHost* render_frame_host) {
+  base::Optional<bool> result =
+      BlinkTestController::Get()
+          ->accumulated_web_test_runtime_flags_changes()
+          .FindBoolPath("dump_frame_load_callbacks");
+
+  if (!result.has_value())
+    return std::string();
+
+  std::string log = (web_contents->GetMainFrame() == render_frame_host)
+                        ? "main frame "
+                        : "frame ";
+  std::string name = GetFrameNameFromBrowserForWebTests(render_frame_host);
+  log += !name.empty() ? "\"" + name + "\"" : "(anonymous)";
+  return log + " - DidFailLoad";
 }
 
 }  // namespace
@@ -528,6 +547,7 @@ bool BlinkTestController::ResetAfterWebTest() {
   should_override_prefs_ = false;
   WebTestContentBrowserClient::Get()->SetPopupBlockingEnabled(false);
   WebTestContentBrowserClient::Get()->ResetMockClipboardHost();
+  WebTestContentBrowserClient::Get()->SetScreenOrientationChanged(false);
   navigation_history_dump_ = "";
   pixel_dump_.reset();
   actual_pixel_hash_ = "";
@@ -834,6 +854,17 @@ void BlinkTestController::DevToolsProcessCrashed() {
   if (devtools_window_)
     devtools_window_->Close();
   devtools_window_ = nullptr;
+}
+
+void BlinkTestController::DidFailLoad(RenderFrameHost* render_frame_host,
+                                      const GURL& validated_url,
+                                      int error_code) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  std::string log =
+      DumpFailLoad(main_window_->web_contents(), render_frame_host);
+  if (log.empty())
+    return;
+  printer_->AddMessage(log);
 }
 
 void BlinkTestController::WebContentsDestroyed() {
@@ -1240,6 +1271,10 @@ void BlinkTestController::OnNavigateSecondaryWindow(const GURL& url) {
 void BlinkTestController::OnInspectSecondaryWindow() {
   if (devtools_bindings_)
     devtools_bindings_->Attach();
+}
+
+void BlinkTestController::OnSetScreenOrientationChanged() {
+  WebTestContentBrowserClient::Get()->SetScreenOrientationChanged(true);
 }
 
 base::FilePath BlinkTestController::GetWritableDirectoryForTests() {

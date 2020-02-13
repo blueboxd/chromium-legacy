@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/modules/manifest/manifest_parser.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_type_converters.h"
 #include "third_party/blink/renderer/modules/manifest/manifest_uma_util.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 
 namespace blink {
@@ -194,11 +195,12 @@ void ManifestManager::OnManifestFetchComplete(const KURL& document_url,
     auto location = std::make_unique<SourceLocation>(
         ManifestURL().GetString(), error->line, error->column, nullptr, 0);
 
-    GetSupplementable()->Console().AddMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kOther,
-        error->critical ? mojom::ConsoleMessageLevel::kError
-                        : mojom::ConsoleMessageLevel::kWarning,
-        "Manifest: " + error->message, std::move(location)));
+    GetSupplementable()->Console().AddMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kOther,
+            error->critical ? mojom::ConsoleMessageLevel::kError
+                            : mojom::ConsoleMessageLevel::kWarning,
+            "Manifest: " + error->message, std::move(location)));
   }
 
   // Having errors while parsing the manifest doesn't mean the manifest parsing

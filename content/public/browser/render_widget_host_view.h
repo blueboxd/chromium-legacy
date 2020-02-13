@@ -251,9 +251,9 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // have anything to show.
   virtual void TakeFallbackContentFrom(RenderWidgetHostView* view) = 0;
 
-  // Set the last time a content to visible event starts to be processed for
-  // this RenderWidgetHostView. Will merge with the previous value if exists
-  // (which means that several events may happen at the same time and must be
+  // Set the last time a tab change starts to be processed for this
+  // RenderWidgetHostView. Will merge with the previous value if exists (which
+  // means that several events may happen at the same time and must be
   // induvidually reported).  |start_time| marks event start time to calculate
   // the duration later.
   //
@@ -267,15 +267,12 @@ class CONTENT_EXPORT RenderWidgetHostView {
   //   reported.
   // |show_reason_unoccluded| is true when "unoccluded" event should be
   //   reported.
-  // |show_reason_bfcache_restore| is true when page restored from bfcache event
-  // should be reported.
   virtual void SetRecordContentToVisibleTimeRequest(
       base::TimeTicks start_time,
       base::Optional<bool> destination_is_loaded,
       base::Optional<bool> destination_is_frozen,
       bool show_reason_tab_switching,
-      bool show_reason_unoccluded,
-      bool show_reason_bfcache_restore) = 0;
+      bool show_reason_unoccluded) = 0;
 };
 
 }  // namespace content

@@ -4814,7 +4814,7 @@ class TestFindInPageClient : public mojom::blink::FindInPageClient {
   }
 
   void SetActiveMatch(int request_id,
-                      const WebRect& active_match_rect,
+                      const gfx::Rect& active_match_rect,
                       int active_match_ordinal,
                       mojom::blink::FindMatchUpdateType final_update) final {
     active_index_ = active_match_ordinal;

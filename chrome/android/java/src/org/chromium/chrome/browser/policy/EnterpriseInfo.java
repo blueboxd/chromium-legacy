@@ -12,7 +12,6 @@ import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.content_public.browser.BrowserStartupController;
@@ -25,8 +24,7 @@ import java.util.concurrent.RejectedExecutionException;
  */
 public final class EnterpriseInfo {
     public static void logDeviceEnterpriseInfo() {
-        assert BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                .isFullBrowserStarted();
+        assert BrowserStartupController.getInstance().isFullBrowserStarted();
 
         try {
             new AsyncTask<Boolean>() {

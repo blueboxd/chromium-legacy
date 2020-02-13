@@ -42,6 +42,10 @@ class WebTestClientImpl : public mojom::WebTestClient {
   // WebTestClient implementation.
   void InspectSecondaryWindow() override;
   void TestFinishedInSecondaryRenderer() override;
+  void SimulateWebNotificationClick(
+      const std::string& title,
+      int32_t action_index,
+      const base::Optional<base::string16>& reply) override;
   void SimulateWebNotificationClose(const std::string& title,
                                     bool by_user) override;
   void SimulateWebContentIndexDelete(const std::string& id) override;
@@ -58,6 +62,7 @@ class WebTestClientImpl : public mojom::WebTestClient {
   void RegisterIsolatedFileSystem(
       const std::vector<base::FilePath>& absolute_filenames,
       RegisterIsolatedFileSystemCallback callback) override;
+  void SetFilePathForMockFileDialog(const base::FilePath& path) override;
 
   int render_process_id_;
 

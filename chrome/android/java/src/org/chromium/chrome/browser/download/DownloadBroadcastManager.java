@@ -32,7 +32,6 @@ import com.google.ipc.invalidation.util.Preconditions;
 
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaDownloadResumption;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
@@ -173,8 +172,7 @@ public class DownloadBroadcastManager extends Service {
     @VisibleForTesting
     void loadNativeAndPropagateInteraction(final Intent intent) {
         final boolean browserStarted =
-                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .isFullBrowserStarted();
+                BrowserStartupController.getInstance().isFullBrowserStarted();
         final ContentId id = getContentIdFromIntent(intent);
         final BrowserParts parts = new EmptyBrowserParts() {
             @Override
@@ -194,8 +192,7 @@ public class DownloadBroadcastManager extends Service {
                 }
 
                 DownloadStartupUtils.ensureDownloadSystemInitialized(
-                        BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                                .isFullBrowserStarted(),
+                        BrowserStartupController.getInstance().isFullBrowserStarted(),
                         IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OFF_THE_RECORD, false));
                 propagateInteraction(intent);
             }

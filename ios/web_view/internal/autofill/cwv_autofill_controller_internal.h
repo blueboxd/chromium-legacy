@@ -14,6 +14,7 @@ class WebState;
 }  // namespace web
 
 @class AutofillAgent;
+@class CWVPasswordController;
 @class JsAutofillManager;
 @class JsSuggestionManager;
 
@@ -23,6 +24,7 @@ class WebState;
                    autofillAgent:(AutofillAgent*)autofillAgent
                JSAutofillManager:(JsAutofillManager*)JSAutofillManager
              JSSuggestionManager:(JsSuggestionManager*)JSSuggestionManager
+              passwordController:(CWVPasswordController*)passwordController
     NS_DESIGNATED_INITIALIZER;
 
 @end

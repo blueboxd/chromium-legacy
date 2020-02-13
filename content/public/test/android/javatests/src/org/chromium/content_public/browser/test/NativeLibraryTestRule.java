@@ -55,8 +55,8 @@ public class NativeLibraryTestRule implements TestRule {
             resourceExtractor.startExtractingResources("en");
             resourceExtractor.waitForCompletion();
 
-            BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                    .startBrowserProcessesSync(false);
+            BrowserStartupController.getInstance().startBrowserProcessesSync(
+                    LibraryProcessType.PROCESS_BROWSER, false);
         } else {
             LibraryLoader.getInstance().ensureInitialized();
         }

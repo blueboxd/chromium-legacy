@@ -142,7 +142,7 @@ void PortalContents::Navigate(
     return;
 
   if (!url.ProtocolIsInHTTPFamily()) {
-    GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+    GetDocument().AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kRendering,
         mojom::ConsoleMessageLevel::kWarning,
         "Portals only allow navigation to protocols in the HTTP family."));

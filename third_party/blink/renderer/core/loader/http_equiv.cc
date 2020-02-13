@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/private/frame_client_hints_preferences_context.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
@@ -110,7 +111,7 @@ void HttpEquiv::Process(Document& document,
   } else if (EqualIgnoringASCIICase(equiv, "x-dns-prefetch-control")) {
     document.ParseDNSPrefetchControlHeader(content);
   } else if (EqualIgnoringASCIICase(equiv, "x-frame-options")) {
-    document.AddConsoleMessage(ConsoleMessage::Create(
+    document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
         mojom::ConsoleMessageLevel::kError,
         "X-Frame-Options may only be set via an HTTP header sent along with a "
@@ -206,7 +207,7 @@ void HttpEquiv::ProcessHttpEquivRefresh(Document& document,
 void HttpEquiv::ProcessHttpEquivSetCookie(Document& document,
                                           const AtomicString& content,
                                           Element* element) {
-  document.AddConsoleMessage(ConsoleMessage::Create(
+  document.AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kSecurity,
       mojom::ConsoleMessageLevel::kError,
       String::Format("Blocked setting the `%s` cookie from a `<meta>` tag.",

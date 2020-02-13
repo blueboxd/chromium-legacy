@@ -67,9 +67,9 @@ void GPUDevice::OnUncapturedError(ExecutionContext* execution_context,
   if (execution_context) {
     DCHECK_NE(errorType, WGPUErrorType_NoError);
     LOG(ERROR) << "GPUDevice: " << message;
-    ConsoleMessage* console_message =
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kRendering,
-                               mojom::ConsoleMessageLevel::kWarning, message);
+    auto* console_message = MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kRendering,
+        mojom::ConsoleMessageLevel::kWarning, message);
     execution_context->AddConsoleMessage(console_message);
   }
 

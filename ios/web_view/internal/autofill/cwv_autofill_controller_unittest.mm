@@ -28,6 +28,7 @@
 #include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
+#import "ios/web_view/internal/passwords/cwv_password_controller.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_autofill_controller_delegate.h"
 #include "ios/web_view/test/test_with_locale_and_resources.h"
@@ -77,11 +78,15 @@ class CWVAutofillControllerTest : public TestWithLocaleAndResources {
     fake_web_frames_manager_ = frames_manager.get();
     test_web_state_.SetWebFramesManager(std::move(frames_manager));
 
+    password_controller_ =
+        [[CWVPasswordController alloc] initWithWebState:&test_web_state_];
+
     autofill_controller_ =
         [[CWVAutofillController alloc] initWithWebState:&test_web_state_
                                           autofillAgent:autofill_agent_
                                       JSAutofillManager:js_autofill_manager_
-                                    JSSuggestionManager:js_suggestion_manager_];
+                                    JSSuggestionManager:js_suggestion_manager_
+                                     passwordController:password_controller_];
     test_form_activity_tab_helper_ =
         std::make_unique<autofill::TestFormActivityTabHelper>(&test_web_state_);
   }
@@ -100,6 +105,7 @@ class CWVAutofillControllerTest : public TestWithLocaleAndResources {
   CWVAutofillController* autofill_controller_;
   FakeAutofillAgent* autofill_agent_;
   FakeJSAutofillManager* js_autofill_manager_;
+  CWVPasswordController* password_controller_;
   std::unique_ptr<autofill::TestFormActivityTabHelper>
       test_form_activity_tab_helper_;
   id js_suggestion_manager_;

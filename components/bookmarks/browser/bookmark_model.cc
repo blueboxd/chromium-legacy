@@ -610,6 +610,8 @@ const BookmarkNode* BookmarkModel::AddFolder(
     base::Optional<std::string> guid) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded_);
+  DCHECK(parent);
+  DCHECK(parent->is_folder());
   DCHECK(!is_root_node(parent));
   DCHECK(IsValidIndex(parent, index, true));
 
@@ -640,6 +642,8 @@ const BookmarkNode* BookmarkModel::AddURL(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded_);
   DCHECK(url.is_valid());
+  DCHECK(parent);
+  DCHECK(parent->is_folder());
   DCHECK(!is_root_node(parent));
   DCHECK(IsValidIndex(parent, index, true));
 

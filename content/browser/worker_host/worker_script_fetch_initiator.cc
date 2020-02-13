@@ -60,6 +60,7 @@ void WorkerScriptFetchInitiator::Start(
     int worker_process_id,
     const GURL& script_url,
     RenderFrameHost* creator_render_frame_host,
+    const net::SiteForCookies& site_for_cookies,
     const url::Origin& request_initiator,
     const net::NetworkIsolationKey& trusted_network_isolation_key,
     network::mojom::CredentialsMode credentials_mode,
@@ -122,7 +123,7 @@ void WorkerScriptFetchInitiator::Start(
 
   resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = script_url;
-  resource_request->site_for_cookies = net::SiteForCookies::FromUrl(script_url);
+  resource_request->site_for_cookies = site_for_cookies;
   resource_request->request_initiator = request_initiator;
   resource_request->referrer = sanitized_referrer.url,
   resource_request->referrer_policy = Referrer::ReferrerPolicyForUrlRequest(

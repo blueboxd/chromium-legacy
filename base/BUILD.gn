@@ -552,6 +552,7 @@ jumbo_component("base") {
     "strings/utf_string_conversions.h",
     "supports_user_data.cc",
     "supports_user_data.h",
+    "sync_socket.cc",
     "sync_socket.h",
     "synchronization/atomic_flag.cc",
     "synchronization/atomic_flag.h",

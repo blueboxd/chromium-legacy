@@ -10,7 +10,7 @@ namespace learning {
 static const LearningTask& GetWillPlayTask() {
   static LearningTask task_;
   if (!task_.feature_descriptions.size()) {
-    task_.name = "MediaLearningWillPlay";
+    task_.name = tasknames::kWillPlay;
     // TODO(liberato): fill in the rest here, once we have the features picked.
   }
 
@@ -34,7 +34,7 @@ static void PushWMPIFeatures(LearningTask& task) {
 static const LearningTask& GetConsecutiveBadWindowsTask() {
   static LearningTask task_;
   if (!task_.feature_descriptions.size()) {
-    task_.name = "MediaLearningConsecutiveBadWindows";
+    task_.name = tasknames::kConsecutiveBadWindows;
     task_.model = LearningTask::Model::kExtraTrees;
 
     // Target is max number of consecutive bad windows.
@@ -57,7 +57,7 @@ static const LearningTask& GetConsecutiveBadWindowsTask() {
 static const LearningTask& GetConsecutiveNNRsTask() {
   static LearningTask task_;
   if (!task_.feature_descriptions.size()) {
-    task_.name = "MediaLearningConsecutiveNNRs";
+    task_.name = tasknames::kConsecutiveNNRs;
     task_.model = LearningTask::Model::kExtraTrees;
 
     // Target is max number of consecutive bad windows.
@@ -75,23 +75,25 @@ static const LearningTask& GetConsecutiveNNRsTask() {
 }
 
 // static
-const LearningTask& MediaLearningTasks::Get(Id id) {
-  switch (id) {
-    case Id::kWillPlay:
-      return GetWillPlayTask();
-    case Id::kConsecutiveBadWindows:
-      return GetConsecutiveBadWindowsTask();
-    case Id::kConsecutiveNNRs:
-      return GetConsecutiveNNRsTask();
-  }
+const LearningTask& MediaLearningTasks::Get(const char* task_name) {
+  if (strcmp(task_name, tasknames::kWillPlay) == 0)
+    return GetWillPlayTask();
+  if (strcmp(task_name, tasknames::kConsecutiveBadWindows) == 0)
+    return GetConsecutiveBadWindowsTask();
+  if (strcmp(task_name, tasknames::kConsecutiveNNRs) == 0)
+    return GetConsecutiveNNRsTask();
+
+  NOTREACHED() << " Unknown learning task:" << task_name;
+  static LearningTask empty_task;
+  return empty_task;
 }
 
 // static
 void MediaLearningTasks::Register(
     base::RepeatingCallback<void(const LearningTask&)> cb) {
-  cb.Run(Get(Id::kWillPlay));
-  cb.Run(Get(Id::kConsecutiveBadWindows));
-  cb.Run(Get(Id::kConsecutiveNNRs));
+  cb.Run(Get(tasknames::kWillPlay));
+  cb.Run(Get(tasknames::kConsecutiveBadWindows));
+  cb.Run(Get(tasknames::kConsecutiveNNRs));
 }
 
 }  // namespace learning

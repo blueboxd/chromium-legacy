@@ -436,9 +436,9 @@ void LocalFrame::PrintNavigationErrorMessage(const Frame& target_frame,
 }
 
 void LocalFrame::PrintNavigationWarning(const String& message) {
-  console_->AddMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kJavaScript,
-                             mojom::ConsoleMessageLevel::kWarning, message));
+  console_->AddMessage(MakeGarbageCollected<ConsoleMessage>(
+      mojom::ConsoleMessageSource::kJavaScript,
+      mojom::ConsoleMessageLevel::kWarning, message));
 }
 
 bool LocalFrame::ShouldClose() {
@@ -1960,8 +1960,8 @@ void LocalFrame::AddMessageToConsole(mojom::blink::ConsoleMessageLevel level,
                                      const WTF::String& message,
                                      bool discard_duplicates) {
   GetDocument()->AddConsoleMessage(
-      ConsoleMessage::Create(mojom::ConsoleMessageSource::kOther, level,
-                             message),
+      MakeGarbageCollected<ConsoleMessage>(mojom::ConsoleMessageSource::kOther,
+                                           level, message),
       discard_duplicates);
 }
 
@@ -2159,7 +2159,7 @@ void LocalFrame::ReportContentSecurityPolicyViolation(
       violation->source_location->url, violation->source_location->line,
       violation->source_location->column, nullptr);
 
-  console_->AddMessage(ConsoleMessage::Create(
+  console_->AddMessage(MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kSecurity,
       mojom::ConsoleMessageLevel::kError, violation->console_message,
       source_location->Clone()));

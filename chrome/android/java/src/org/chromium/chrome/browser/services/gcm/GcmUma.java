@@ -8,7 +8,6 @@ import android.content.Context;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
@@ -91,8 +90,8 @@ public class GcmUma {
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
             @Override
             public void run() {
-                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .addStartupCompletedObserver(new StartupCallback() {
+                BrowserStartupController.getInstance().addStartupCompletedObserver(
+                        new StartupCallback() {
                             @Override
                             public void onSuccess() {
                                 task.run();

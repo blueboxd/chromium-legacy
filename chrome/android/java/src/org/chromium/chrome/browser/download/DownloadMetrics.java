@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.download;
 
 import org.chromium.base.Log;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.content_public.browser.BrowserStartupController;
 
@@ -73,6 +72,6 @@ public class DownloadMetrics {
     }
 
     private static boolean isNativeLoaded() {
-        return BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER).isNativeStarted();
+        return BrowserStartupController.getInstance().isNativeStarted();
     }
 }

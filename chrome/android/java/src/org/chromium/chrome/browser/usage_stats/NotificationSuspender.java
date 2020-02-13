@@ -22,7 +22,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Promise;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.notifications.ChromeNotification;
 import org.chromium.chrome.browser.notifications.NotificationMetadata;
@@ -166,8 +165,7 @@ public class NotificationSuspender {
     }
 
     private static Promise<Void> waitForChromeStartup() {
-        BrowserStartupController browserStartup =
-                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER);
+        BrowserStartupController browserStartup = BrowserStartupController.getInstance();
         if (browserStartup.isFullBrowserStarted()) return Promise.fulfilled(null);
         Promise<Void> promise = new Promise<>();
         browserStartup.addStartupCompletedObserver(new StartupCallback() {

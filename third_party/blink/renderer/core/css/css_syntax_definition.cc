@@ -78,15 +78,15 @@ const CSSValue* ConsumeSingleType(const CSSSyntaxComponent& syntax,
       return css_property_parser_helpers::ConsumeColor(range, *context);
     }
     case CSSSyntaxType::kImage:
-      return css_property_parser_helpers::ConsumeImage(range, context);
+      return css_property_parser_helpers::ConsumeImage(range, *context);
     case CSSSyntaxType::kUrl:
-      return css_property_parser_helpers::ConsumeUrl(range, context);
+      return css_property_parser_helpers::ConsumeUrl(range, *context);
     case CSSSyntaxType::kInteger:
       return css_property_parser_helpers::ConsumeIntegerOrNumberCalc(range,
                                                                      *context);
     case CSSSyntaxType::kAngle:
       return css_property_parser_helpers::ConsumeAngle(
-          range, context, base::Optional<WebFeature>());
+          range, *context, base::Optional<WebFeature>());
     case CSSSyntaxType::kTime:
       return css_property_parser_helpers::ConsumeTime(
           range, *context, ValueRange::kValueRangeAll);

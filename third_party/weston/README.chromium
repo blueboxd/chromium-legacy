@@ -1,0 +1,36 @@
+Name: Weston - reference Wayland compositor
+Short Name: Weston
+URL: https://gitlab.freedesktop.org/wayland/weston
+Version: 6.0.91
+License: MIT "Expat"
+License File: LICENSE
+Security Critical: no
+Source: https://gitlab.freedesktop.org/wayland/weston
+
+--[ DESCRIPTION ] ------------------
+This contains the source to the reference Wayland compositor called Weston.
+The LICENSE file is copied from src/COPYING
+This code is only for running tests of Chromium for Wayland and is not compiled
+into Chrome
+
+--[ UPDATING ] -----------------
+To update, change the commit hash with the most recent hash as mentioned on
+the official repo inside the DEPS file.
+You need to have clang (//third_party/llvm-build/Release+Asserts/bin),
+and meson (https://github.com/mesonbuild/meson/releases) in your path.
+Then do gclient sync which will align your local Weston folder with the most
+recent one as mentioned in the hash. Then run the generate_configs.py script
+to generate and update necessary config files. To compile weston, pass the
+following GN arguments while generating build files, since gn gen is meant
+to generate ninja files not gn ones.
+use_ozone = true use_bundled_weston = true
+
+Finally, compile-test the Weston target.
+Steps to be followed:
+gclient sync
+python3 third_party/weston/generate_configs.py
+autoninja out/build_dir weston
+
+To update the weston to the version present upstream, change the commit hash
+inside url in the 'src/third_party/weston/src' field with the most recent one in
+DEPS file. Then follow the above steps to compile the updated weston.

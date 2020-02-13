@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/platform/fonts/font_description.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
@@ -131,12 +132,12 @@ void RemoteFontFaceSource::NotifyFinished(Resource* resource) {
   // FIXME: Provide more useful message such as OTS rejection reason.
   // See crbug.com/97467
   if (font->GetStatus() == ResourceStatus::kDecodeError) {
-    execution_context->AddConsoleMessage(ConsoleMessage::Create(
+    execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kOther,
         mojom::ConsoleMessageLevel::kWarning,
         "Failed to decode downloaded font: " + font->Url().ElidedString()));
     if (font->OtsParsingMessage().length() > 1) {
-      execution_context->AddConsoleMessage(ConsoleMessage::Create(
+      execution_context->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
           mojom::ConsoleMessageSource::kOther,
           mojom::ConsoleMessageLevel::kWarning,
           "OTS parsing error: " + font->OtsParsingMessage()));
@@ -286,7 +287,7 @@ void RemoteFontFaceSource::BeginLoadIfNeeded() {
   if (font->StillNeedsLoad()) {
     if (font->IsLowPriorityLoadingAllowedForRemoteFont()) {
       font_selector_->GetExecutionContext()->AddConsoleMessage(
-          ConsoleMessage::Create(
+          MakeGarbageCollected<ConsoleMessage>(
               mojom::ConsoleMessageSource::kIntervention,
               mojom::ConsoleMessageLevel::kInfo,
               "Slow network is detected. See "

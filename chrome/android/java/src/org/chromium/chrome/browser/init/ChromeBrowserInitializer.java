@@ -340,7 +340,8 @@ public class ChromeBrowserInitializer {
         try {
             TraceEvent.begin("ChromeBrowserInitializer.startChromeBrowserProcessesAsync");
             getBrowserStartupController().startBrowserProcessesAsync(
-                    startGpuProcess, startServiceManagerOnly, callback);
+                    LibraryProcessType.PROCESS_BROWSER, startGpuProcess, startServiceManagerOnly,
+                    callback);
         } finally {
             TraceEvent.end("ChromeBrowserInitializer.startChromeBrowserProcessesAsync");
         }
@@ -354,7 +355,8 @@ public class ChromeBrowserInitializer {
             LibraryLoader.getInstance().ensureInitialized();
             StrictMode.setThreadPolicy(oldPolicy);
             LibraryPrefetcher.asyncPrefetchLibrariesToMemory();
-            getBrowserStartupController().startBrowserProcessesSync(false);
+            getBrowserStartupController().startBrowserProcessesSync(
+                    LibraryProcessType.PROCESS_BROWSER, /*singleProcess=*/false);
             GoogleServicesManager.get();
         } finally {
             TraceEvent.end("ChromeBrowserInitializer.startChromeBrowserProcessesSync");
@@ -363,8 +365,7 @@ public class ChromeBrowserInitializer {
 
     private BrowserStartupController getBrowserStartupController() {
         if (sBrowserStartupController == null) {
-            sBrowserStartupController =
-                    BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER);
+            sBrowserStartupController = BrowserStartupController.getInstance();
         }
         return sBrowserStartupController;
     }

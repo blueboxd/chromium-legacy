@@ -366,7 +366,6 @@ external/wpt/html/browsers/history/the-history-interface/joint_session_history/0
 external/wpt/html/browsers/history/the-history-interface/traverse_the_history_1.html [ Skip ]
 external/wpt/html/browsers/history/the-history-interface/traverse_the_history_write_after_load_1.html [ Skip ]
 external/wpt/html/semantics/document-metadata/the-style-element/style-error-01.html [ Skip ]
-external/wpt/svg/linking/scripted [ Skip ]
 
 # Manual tests that fail as TIMEOUT or NOTRUN. Consider adding wpt_automation.
 external/wpt/FileAPI/BlobURL/test2-manual.html [ Skip ]

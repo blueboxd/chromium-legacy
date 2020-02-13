@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/modules/webaudio/base_audio_context.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
@@ -116,10 +117,11 @@ void IIRFilterHandler::NotifyBadState() const {
   if (!Context() || !Context()->GetExecutionContext())
     return;
 
-  Context()->GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-      mojom::ConsoleMessageSource::kJavaScript,
-      mojom::ConsoleMessageLevel::kWarning,
-      NodeTypeName() + ": state is bad, probably due to unstable filter."));
+  Context()->GetExecutionContext()->AddConsoleMessage(
+      MakeGarbageCollected<ConsoleMessage>(
+          mojom::ConsoleMessageSource::kJavaScript,
+          mojom::ConsoleMessageLevel::kWarning,
+          NodeTypeName() + ": state is bad, probably due to unstable filter."));
 }
 
 IIRFilterNode::IIRFilterNode(BaseAudioContext& context,
@@ -200,9 +202,10 @@ IIRFilterNode* IIRFilterNode::Create(BaseAudioContext& context,
     }
     message.Append(']');
 
-    context.GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
-        mojom::ConsoleMessageSource::kJavaScript,
-        mojom::ConsoleMessageLevel::kWarning, message.ToString()));
+    context.GetExecutionContext()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::ConsoleMessageSource::kJavaScript,
+            mojom::ConsoleMessageLevel::kWarning, message.ToString()));
   }
 
   return MakeGarbageCollected<IIRFilterNode>(context, feedforward_coef,

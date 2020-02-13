@@ -1765,8 +1765,7 @@ TabStripSelectionChange TabStripModel::SetSelection(
                 resource_coordinator::ResourceCoordinatorTabHelper::IsFrozen(
                     selection.new_contents),
                 /*show_reason_tab_switching=*/true,
-                /*show_reason_unoccluded=*/false,
-                /*show_reason_bfcache_restore=*/false);
+                /*show_reason_unoccluded=*/false);
       }
       tab_switch_event_latency_recorder_.OnWillChangeActiveTab(now);
     }

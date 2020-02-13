@@ -51,10 +51,10 @@ class DisplayLockTestFindInPageClient : public mojom::blink::FindInPageClient {
   }
 
   void SetActiveMatch(int request_id,
-                      const WebRect& active_match_rect,
+                      const gfx::Rect& active_match_rect,
                       int active_match_ordinal,
                       mojom::blink::FindMatchUpdateType final_update) final {
-    active_match_rect_ = active_match_rect;
+    active_match_rect_ = IntRect(active_match_rect);
     active_index_ = active_match_ordinal;
     find_results_are_ready_ =
         (final_update == mojom::blink::FindMatchUpdateType::kFinalUpdate);

@@ -12,7 +12,7 @@
 #include "base/time/tick_clock.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/network/public/mojom/host_resolver.mojom.h"
+#include "services/network/public/mojom/host_resolver.mojom-forward.h"
 
 class KeyedService;
 

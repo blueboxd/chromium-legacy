@@ -114,17 +114,6 @@ int GetGestureDragThreshold() {
   return ShelfConfig::Get()->button_size() / 2;
 }
 
-bool IsInTabletMode() {
-  TabletModeController* tablet_mode_controller =
-      Shell::Get()->tablet_mode_controller();
-
-  // TabletModeController is destructed before ScrollableShelfView.
-  if (!tablet_mode_controller || !tablet_mode_controller->InTabletMode())
-    return false;
-
-  return true;
-}
-
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -332,7 +321,7 @@ class ScrollableShelfAnimationMetricsReporter
   // ui::AnimationMetricsReporter:
   void Report(int value) override {
     base::UmaHistogramPercentage(kAnimationSmoothnessHistogram, value);
-    if (IsInTabletMode()) {
+    if (Shell::Get()->IsInTabletMode()) {
       if (Shell::Get()->app_list_controller()->IsVisible()) {
         base::UmaHistogramPercentage(
             kAnimationSmoothnessTabletLauncherVisibleHistogram, value);
@@ -550,12 +539,14 @@ void ScrollableShelfView::OnFocusRingActivationChanged(bool activated) {
   if (activated) {
     focus_ring_activated_ = true;
     SetPaneFocusAndFocusDefault();
-    if (IsInTabletMode() && chromeos::switches::ShouldShowShelfHotseat())
+    if (Shell::Get()->IsInTabletMode() &&
+        chromeos::switches::ShouldShowShelfHotseat())
       GetShelf()->shelf_widget()->ForceToShowHotseat();
   } else {
     // Shows the gradient shader when the focus ring is disabled.
     focus_ring_activated_ = false;
-    if (IsInTabletMode() && chromeos::switches::ShouldShowShelfHotseat())
+    if (Shell::Get()->IsInTabletMode() &&
+        chromeos::switches::ShouldShowShelfHotseat())
       GetShelf()->shelf_widget()->ForceToHideHotseat();
   }
 
@@ -1084,7 +1075,8 @@ void ScrollableShelfView::OnShelfButtonAboutToRequestFocusFromTabTraversal(
   ShelfWidget* shelf_widget = GetShelf()->shelf_widget();
   // In tablet mode, when the hotseat is not extended but one of the buttons
   // gets focused, it should update the visibility of the hotseat.
-  if (IsInTabletMode() && chromeos::switches::ShouldShowShelfHotseat() &&
+  if (Shell::Get()->IsInTabletMode() &&
+      chromeos::switches::ShouldShowShelfHotseat() &&
       !shelf_widget->hotseat_widget()->IsExtended()) {
     shelf_widget->shelf_layout_manager()->UpdateVisibilityState();
   }
@@ -1103,7 +1095,8 @@ void ScrollableShelfView::ButtonPressed(views::Button* sender,
 
 void ScrollableShelfView::HandleAccessibleActionScrollToMakeVisible(
     ShelfButton* button) {
-  if (IsInTabletMode() && chromeos::switches::ShouldShowShelfHotseat()) {
+  if (Shell::Get()->IsInTabletMode() &&
+      chromeos::switches::ShouldShowShelfHotseat()) {
     // Only in tablet mode with hotseat enabled, may scrollable shelf be hidden.
     GetShelf()->shelf_widget()->ForceToShowHotseat();
   }
@@ -1485,7 +1478,7 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
   // end.
   if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN) {
     DCHECK(!presentation_time_recorder_);
-    if (IsInTabletMode()) {
+    if (Shell::Get()->IsInTabletMode()) {
       if (Shell::Get()->app_list_controller()->IsVisible()) {
         presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
             GetWidget()->GetCompositor(),
@@ -2004,8 +1997,8 @@ void ScrollableShelfView::UpdateAvailableSpace() {
 
 gfx::Rect ScrollableShelfView::CalculateVisibleSpace(
     LayoutStrategy layout_strategy) const {
-  const bool in_hotseat_tablet =
-      chromeos::switches::ShouldShowShelfHotseat() && IsInTabletMode();
+  const bool in_hotseat_tablet = chromeos::switches::ShouldShowShelfHotseat() &&
+                                 Shell::Get()->IsInTabletMode();
   if (layout_strategy == kNotShowArrowButtons && !in_hotseat_tablet)
     return GetAvailableLocalBounds(/*use_target_bounds=*/false);
 
@@ -2040,8 +2033,8 @@ gfx::Rect ScrollableShelfView::CalculateVisibleSpace(
 
 gfx::Insets ScrollableShelfView::CalculateRipplePaddingInsets() const {
   // Indicates whether it is in tablet mode with hotseat enabled.
-  const bool in_hotseat_tablet =
-      chromeos::switches::ShouldShowShelfHotseat() && IsInTabletMode();
+  const bool in_hotseat_tablet = chromeos::switches::ShouldShowShelfHotseat() &&
+                                 Shell::Get()->IsInTabletMode();
 
   const int ripple_padding =
       ShelfConfig::Get()->scrollable_shelf_ripple_padding();
@@ -2060,7 +2053,8 @@ gfx::Insets ScrollableShelfView::CalculateRipplePaddingInsets() const {
 
 gfx::RoundedCornersF
 ScrollableShelfView::CalculateShelfContainerRoundedCorners() const {
-  if (!chromeos::switches::ShouldShowShelfHotseat() || !IsInTabletMode())
+  if (!chromeos::switches::ShouldShowShelfHotseat() ||
+      !Shell::Get()->IsInTabletMode())
     return gfx::RoundedCornersF();
 
   const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();

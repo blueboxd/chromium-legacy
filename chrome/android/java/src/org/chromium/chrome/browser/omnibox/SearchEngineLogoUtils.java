@@ -16,7 +16,6 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
-import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -78,8 +77,7 @@ public class SearchEngineLogoUtils {
             return !isOffTheRecord
                     && isSearchEngineLogoEnabled()
                     // Using the profile now, so we need to pay attention to browser initialization.
-                    && BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                               .isFullBrowserStarted();
+                    && BrowserStartupController.getInstance().isFullBrowserStarted();
         }
 
         /** @see SearchEngineLogoUtils#shouldShowRoundedSearchEngineLogo */

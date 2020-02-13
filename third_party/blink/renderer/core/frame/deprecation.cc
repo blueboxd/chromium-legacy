@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/workers/worker_or_worklet_global_scope.h"
+#include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 
@@ -561,9 +562,9 @@ void Deprecation::WarnOnDeprecatedProperties(
   String message = DeprecationMessage(unresolved_property);
   if (!message.IsEmpty()) {
     page->GetDeprecation().Suppress(unresolved_property);
-    ConsoleMessage* console_message =
-        ConsoleMessage::Create(mojom::ConsoleMessageSource::kDeprecation,
-                               mojom::ConsoleMessageLevel::kWarning, message);
+    auto* console_message = MakeGarbageCollected<ConsoleMessage>(
+        mojom::ConsoleMessageSource::kDeprecation,
+        mojom::ConsoleMessageLevel::kWarning, message);
     frame->Console().AddMessage(console_message);
   }
 }
@@ -631,7 +632,7 @@ void Deprecation::GenerateReport(const LocalFrame* frame, WebFeature feature) {
 
   // Send the deprecation message to the console as a warning.
   DCHECK(!info.message.IsEmpty());
-  ConsoleMessage* console_message = ConsoleMessage::Create(
+  auto* console_message = MakeGarbageCollected<ConsoleMessage>(
       mojom::ConsoleMessageSource::kDeprecation,
       mojom::ConsoleMessageLevel::kWarning, info.message);
   frame->Console().AddMessage(console_message);

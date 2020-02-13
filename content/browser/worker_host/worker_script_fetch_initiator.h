@@ -26,6 +26,10 @@ namespace blink {
 class PendingURLLoaderFactoryBundle;
 }  // namespace blink
 
+namespace net {
+class SiteForCookies;
+}  // namespace net
+
 namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
@@ -61,6 +65,7 @@ class WorkerScriptFetchInitiator {
       int worker_process_id,
       const GURL& script_url,
       RenderFrameHost* creator_render_frame_host,
+      const net::SiteForCookies& site_for_cookies,
       const url::Origin& request_initiator,
       const net::NetworkIsolationKey& trusted_network_isolation_key,
       network::mojom::CredentialsMode credentials_mode,

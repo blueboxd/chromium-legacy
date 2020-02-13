@@ -68,9 +68,12 @@ class FakeRemoteFrame : public blink::mojom::RemoteFrame {
       blink::mojom::ScrollIntoViewParamsPtr params) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
-
   void IntrinsicSizingInfoOfChildChanged(
       blink::mojom::IntrinsicSizingInfoPtr sizing_info) override;
+  void DidSetFramePolicyHeaders(
+      blink::WebSandboxFlags sandbox_flags,
+      const std::vector<blink::ParsedFeaturePolicyDeclaration>&
+          parsed_feature_policy) override {}
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

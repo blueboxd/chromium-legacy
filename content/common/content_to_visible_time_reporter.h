@@ -17,6 +17,12 @@ struct PresentationFeedback;
 
 namespace content {
 
+// Keeps track of parameters for recording metrics for content to visible time
+// duration for different events. Here event indicates the reason for which the
+// web contents are visible. These values are set on
+// RenderWidgetHostView::SetRecordContentToVisibleTimeRequest. Note that
+// |show_reason_tab_switching| and |show_reason_unoccluded| can both be true at
+// the same time.
 struct CONTENT_EXPORT RecordContentToVisibleTimeRequest {
   RecordContentToVisibleTimeRequest();
   ~RecordContentToVisibleTimeRequest();
@@ -27,7 +33,8 @@ struct CONTENT_EXPORT RecordContentToVisibleTimeRequest {
                                     base::Optional<bool> destination_is_loaded,
                                     base::Optional<bool> destination_is_frozen,
                                     bool show_reason_tab_switching,
-                                    bool show_reason_unoccluded);
+                                    bool show_reason_unoccluded,
+                                    bool show_reason_bfcache_restore);
 
   // Merges two requests to include all the flags set and minimum start time.
   void UpdateRequest(const RecordContentToVisibleTimeRequest& other);
@@ -44,6 +51,9 @@ struct CONTENT_EXPORT RecordContentToVisibleTimeRequest {
   // If |show_reason_unoccluded| is true, then web contents has become visible
   // because window un-occlusion has happened.
   bool show_reason_unoccluded = false;
+  // If |show_reason_bfcache_restore| is true, web contents has become visible
+  // because of restoring a page from bfcache.
+  bool show_reason_bfcache_restore = false;
 
   // Please update RecordContentToVisibleTimeRequestTest::ExpectEqual when
   // changing this object!!!
@@ -85,6 +95,7 @@ class CONTENT_EXPORT ContentToVisibleTimeReporter {
       bool is_incomplete,
       bool show_reason_tab_switching,
       bool show_reason_unoccluded,
+      bool show_reason_bfcache_restore,
       const gfx::PresentationFeedback& feedback);
 
   // Whether there was a saved frame for the last tab switch.

@@ -19,8 +19,6 @@ static_library("impl") {
   sources = [
     "channels_states.cc",
     "channels_states.h",
-    "deprecated_invalidator_registrar.cc",
-    "deprecated_invalidator_registrar.h",
     "fcm_invalidation_listener.cc",
     "fcm_invalidation_listener.h",
     "fcm_invalidation_service.cc",
@@ -80,9 +78,6 @@ static_library("impl") {
     "//services/data_decoder/public/cpp",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
-
-    # TODO(sync): Remove this (http://crbug.com/133352);
-    "//third_party/protobuf:protobuf_lite",
   ]
 
   if (!is_android) {
@@ -91,14 +86,6 @@ static_library("impl") {
       "notifier_reason_util.cc",
       "notifier_reason_util.h",
     ]
-  }
-
-  if (is_android) {
-    sources += [
-      "invalidation_service_android.cc",
-      "invalidation_service_android.h",
-    ]
-    deps += [ ":jni_headers" ]
   }
 }
 
@@ -134,10 +121,7 @@ source_set("unit_tests") {
     "//testing/gtest",
   ]
 
-  if (is_android) {
-    sources += [ "invalidation_service_android_unittest.cc" ]
-    deps += [ ":jni_headers" ]
-  } else {
+  if (!is_android) {
     # Non-Android tests.
     sources += [
       "object_id_invalidation_map_unittest.cc",
@@ -150,6 +134,8 @@ source_set("unit_tests") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "deprecated_invalidator_registrar.cc",
+    "deprecated_invalidator_registrar.h",
     "fake_invalidation_handler.cc",
     "fake_invalidation_handler.h",
     "fake_invalidation_service.cc",
@@ -177,80 +163,12 @@ static_library("test_support") {
     "//net",
     "//testing/gmock",
     "//testing/gtest",
-
-    # TODO(sync): Remove this (http://crbug.com/133352);
-    "//third_party/protobuf:protobuf_lite",
-
-    # "//third_party/cacheinvalidation/src/google/cacheinvalidation:cacheinvalidation_proto_cpp",
   ]
-
-  if (is_android) {
-    deps += [ ":jni_headers" ]
-  }
 }
 
 if (is_android) {
-  android_library("java") {
-    deps = [
-      ":proto_java",
-      "//base:base_java",
-      "//base:jni_java",
-      "//components/signin/core/browser/android:java",
-      "//components/signin/public/android:java",
-      "//components/sync/android:sync_java",
-      "//third_party/android_deps:com_google_protobuf_protobuf_lite_java",
-      "//third_party/cacheinvalidation:cacheinvalidation_javalib",
-      "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
-      "//third_party/jsr-305:jsr_305_javalib",
-    ]
-    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-    sources = [
-      "android/java/src/org/chromium/components/invalidation/InvalidationClientService.java",
-      "android/java/src/org/chromium/components/invalidation/InvalidationService.java",
-      "android/java/src/org/chromium/components/invalidation/PendingInvalidation.java",
-    ]
-  }
-  proto_java_library("proto_java") {
-    proto_path = "android/proto"
-    sources = [ "$proto_path/serialized_invalidation.proto" ]
-  }
-  android_resources("javatests__resources") {
-    testonly = true
-    resource_dirs = []
-    android_manifest = "android/javatests/AndroidManifest.xml"
-  }
-  android_library("javatests") {
-    testonly = true
-    deps = [
-      ":java",
-      ":javatests__resources",
-      "//base:base_java",
-      "//base:base_java_test_support",
-      "//components/signin/core/browser/android:java",
-      "//components/sync/android:sync_java",
-      "//third_party/android_deps:androidx_test_monitor_java",
-      "//third_party/android_sdk:android_test_base_java",
-      "//third_party/android_sdk:android_test_runner_java",
-      "//third_party/android_support_test_runner:runner_java",
-      "//third_party/cacheinvalidation:cacheinvalidation_javalib",
-      "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
-      "//third_party/junit",
-    ]
-    sources = [
-      "android/javatests/src/org/chromium/components/invalidation/InvalidationClientServiceTest.java",
-      "android/javatests/src/org/chromium/components/invalidation/TestableInvalidationClientService.java",
-    ]
-  }
+  # TODO(crbug.com/1029481): Remove this empty target (and references to it in
+  # various bot configs etc).
   junit_binary("components_invalidation_impl_junit_tests") {
-    sources = [ "android/junit/src/org/chromium/components/invalidation/PendingInvalidationTest.java" ]
-    deps = [
-      ":java",
-      "//base:base_java",
-      "//base:base_java_test_support",
-      "//base:base_junit_test_support",
-    ]
-  }
-  generate_jni("jni_headers") {
-    sources = [ "android/java/src/org/chromium/components/invalidation/InvalidationService.java" ]
   }
 }

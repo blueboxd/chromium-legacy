@@ -110,8 +110,11 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   Entry* GetEntry(int navigation_entry_id);
 
   // During a history navigation, moves an entry out of the BackForwardCache
-  // knowing its |navigation_entry_id|. Returns nullptr when none is found.
-  std::unique_ptr<Entry> RestoreEntry(int navigation_entry_id);
+  // knowing its |navigation_entry_id|. Here |navigation_start| refers to the
+  // start time of navigation to restored entry in cache. Returns nullptr when
+  // none is found.
+  std::unique_ptr<Entry> RestoreEntry(int navigation_entry_id,
+                                      base::TimeTicks navigation_start);
 
   // Evict all entries from the BackForwardCache.
   void Flush();

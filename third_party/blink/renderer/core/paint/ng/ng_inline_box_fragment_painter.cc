@@ -119,11 +119,22 @@ void NGInlineBoxFragmentPainterBase::PaintBackgroundBorderShadow(
   // TODO(eae): Switch to LayoutNG version of BackgroundImageGeometry.
   BackgroundImageGeometry geometry(*static_cast<const LayoutBoxModelObject*>(
       inline_box_fragment_.GetLayoutObject()));
-  // TODO(kojii): not applicable for line box
+  const NGBorderEdges& border_edges = BorderEdges();
+  if (inline_box_paint_fragment_) {
+    NGBoxFragmentPainter box_painter(
+        To<NGPhysicalBoxFragment>(inline_box_fragment_),
+        inline_box_paint_fragment_);
+    PaintBoxDecorationBackground(
+        box_painter, paint_info, paint_offset, adjusted_frame_rect, geometry,
+        object_has_multiple_boxes, border_edges.line_left,
+        border_edges.line_right);
+    return;
+  }
+  DCHECK(inline_box_cursor_);
+  NGInlineCursor descendants = inline_box_cursor_->CursorForDescendants();
   NGBoxFragmentPainter box_painter(
       To<NGPhysicalBoxFragment>(inline_box_fragment_),
-      inline_box_paint_fragment_, inline_box_item_);
-  const NGBorderEdges& border_edges = BorderEdges();
+      inline_box_paint_fragment_, inline_box_item_, &descendants);
   PaintBoxDecorationBackground(box_painter, paint_info, paint_offset,
                                adjusted_frame_rect, geometry,
                                object_has_multiple_boxes,
@@ -361,7 +372,7 @@ void NGInlineBoxFragmentPainter::PaintAllFragments(
     const NGPhysicalBoxFragment* box_fragment = item->BoxFragment();
     DCHECK(box_fragment);
     NGInlineCursor descendants = cursor.CursorForDescendants();
-    NGInlineBoxFragmentPainter(*item, *box_fragment, &descendants)
+    NGInlineBoxFragmentPainter(cursor, *item, *box_fragment, &descendants)
         .Paint(paint_info, paint_offset);
   }
 }

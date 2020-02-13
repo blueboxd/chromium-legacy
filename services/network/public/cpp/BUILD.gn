@@ -18,8 +18,14 @@ jumbo_component("cpp") {
 
   sources = [
     "constants.h",
-    "content_security_policy.cc",
-    "content_security_policy.h",
+    "content_security_policy/content_security_policy.cc",
+    "content_security_policy/content_security_policy.h",
+    "content_security_policy/csp_context.cc",
+    "content_security_policy/csp_context.h",
+    "content_security_policy/csp_source.cc",
+    "content_security_policy/csp_source.h",
+    "content_security_policy/csp_source_list.cc",
+    "content_security_policy/csp_source_list.h",
     "cors/cors.cc",
     "cors/cors.h",
     "cors/origin_access_entry.cc",
@@ -214,7 +220,9 @@ source_set("tests") {
   testonly = true
 
   sources = [
-    "content_security_policy_unittest.cc",
+    "content_security_policy/content_security_policy_unittest.cc",
+    "content_security_policy/csp_context_unittest.cc",
+    "content_security_policy/csp_source_list_unittest.cc",
     "cookie_manager_mojom_traits_unittest.cc",
     "cors/cors_unittest.cc",
     "cors/origin_access_entry_unittest.cc",

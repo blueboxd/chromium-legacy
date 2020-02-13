@@ -192,11 +192,11 @@ void LogRemoteCopyDecodeImageTime(base::TimeDelta time);
 // Logs to UMA the time to resize an image for Remote Copy.
 void LogRemoteCopyResizeImageTime(base::TimeDelta time);
 
-// Logs to UMA the time to write an image to the clipboard for Remote Copy.
-void LogRemoteCopyWriteImageTime(base::TimeDelta time);
+// Logs to UMA the duration of a clipboard write for Remote Copy.
+void LogRemoteCopyWriteTime(base::TimeDelta time, bool is_image);
 
-// Logs to UMA the time to write text to the clipboard for Remote Copy.
-void LogRemoteCopyWriteTextTime(base::TimeDelta time);
+// Logs to UMA the time to detect a clipboard write for Remote Copy.
+void LogRemoteCopyWriteDetectionTime(base::TimeDelta time, bool is_image);
 
 // Logs to UMA if the DeviceInfo for a guid was available locally.
 void LogSharingDeviceInfoAvailable(bool available);

@@ -234,34 +234,32 @@ void Camera3AController::OnResultMetadataAvailable(
                  base::TimeDelta::FromNanoseconds(sensor_timestamp[0]));
   }
 
-  if (af_mode_set_ && ae_mode_set_ && awb_mode_set_ &&
-      !on_3a_stabilized_callback_ && !on_af_trigger_cancelled_callback_) {
-    // Process the result metadata only when we need to check if 3A modes are
-    // synchronized, or when there's a pending 3A stabilization request.
-    return;
+  if (!af_mode_set_) {
+    cros::mojom::AndroidControlAfMode af_mode;
+    if (Get3AEntry(result_metadata,
+                   cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AF_MODE,
+                   &af_mode)) {
+      af_mode_set_ = (af_mode == af_mode_);
+    } else {
+      DVLOG(2) << "AF mode is not available in the metadata";
+    }
   }
 
-  cros::mojom::AndroidControlAfMode af_mode;
-  if (Get3AEntry(result_metadata,
-                 cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AF_MODE,
-                 &af_mode)) {
-    af_mode_set_ = (af_mode == af_mode_);
-  } else {
-    DVLOG(2) << "AF mode is not available in the metadata";
-  }
   if (!Get3AEntry(result_metadata,
                   cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AF_STATE,
                   &af_state_)) {
     DVLOG(2) << "AF state is not available in the metadata";
   }
 
-  cros::mojom::AndroidControlAeMode ae_mode;
-  if (Get3AEntry(result_metadata,
-                 cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AE_MODE,
-                 &ae_mode)) {
-    ae_mode_set_ = (ae_mode == ae_mode_);
-  } else {
-    DVLOG(2) << "AE mode is not available in the metadata";
+  if (!ae_mode_set_) {
+    cros::mojom::AndroidControlAeMode ae_mode;
+    if (Get3AEntry(result_metadata,
+                   cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AE_MODE,
+                   &ae_mode)) {
+      ae_mode_set_ = (ae_mode == ae_mode_);
+    } else {
+      DVLOG(2) << "AE mode is not available in the metadata";
+    }
   }
   if (!Get3AEntry(result_metadata,
                   cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AE_STATE,
@@ -269,13 +267,15 @@ void Camera3AController::OnResultMetadataAvailable(
     DVLOG(2) << "AE state is not available in the metadata";
   }
 
-  cros::mojom::AndroidControlAwbMode awb_mode;
-  if (Get3AEntry(result_metadata,
-                 cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AWB_MODE,
-                 &awb_mode)) {
-    awb_mode_set_ = (awb_mode == awb_mode_);
-  } else {
-    DVLOG(2) << "AWB mode is not available in the metadata";
+  if (!awb_mode_set_) {
+    cros::mojom::AndroidControlAwbMode awb_mode;
+    if (Get3AEntry(result_metadata,
+                   cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AWB_MODE,
+                   &awb_mode)) {
+      awb_mode_set_ = (awb_mode == awb_mode_);
+    } else {
+      DVLOG(2) << "AWB mode is not available in the metadata";
+    }
   }
   if (!Get3AEntry(result_metadata,
                   cros::mojom::CameraMetadataTag::ANDROID_CONTROL_AWB_STATE,

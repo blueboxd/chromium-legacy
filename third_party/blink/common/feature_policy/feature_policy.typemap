@@ -11,9 +11,6 @@ public_headers = [
 traits_headers = [
   "//third_party/blink/common/feature_policy/feature_policy_mojom_traits.h",
 ]
-sources = [
-  "//third_party/blink/common/feature_policy/feature_policy_mojom_traits.cc",
-]
 type_mappings = [
   "blink.mojom.ParsedFeaturePolicyDeclaration=::blink::ParsedFeaturePolicyDeclaration",
   "blink.mojom.WebSandboxFlags=::blink::WebSandboxFlags",

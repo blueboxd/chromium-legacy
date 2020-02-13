@@ -4,9 +4,10 @@
 
 module content.mojom;
 
+import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/values.mojom";
 import "third_party/blink/public/mojom/permissions/permission_status.mojom";
 import "url/mojom/url.mojom";
-import "mojo/public/mojom/base/values.mojom";
 
 // Web test messages sent from the renderer process to the browser.
 interface WebTestClient {
@@ -47,4 +48,18 @@ interface WebTestClient {
 
   // Delete all cookies created in this associated storage context.
   DeleteAllCookies();
+
+  // Returns the absolute path to a directory this test can write data in. This
+  // returns the path to a fresh empty directory for each test that calls this
+  // method, but repeatedly calling this from the same test will return the same
+  // directory.
+  [Sync]
+  GetWritableDirectory() => (mojo_base.mojom.FilePath path);
+
+  // Registers a new isolated filesystem with the given files, and returns the
+  // new filesystem id.
+  [Sync]
+  RegisterIsolatedFileSystem(
+      array<mojo_base.mojom.FilePath> absolute_filenames)
+          => (string filesystem_id);
 };

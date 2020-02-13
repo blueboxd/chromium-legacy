@@ -44,7 +44,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   // Construct for an inline box.
   NGBoxFragmentPainter(const NGPhysicalBoxFragment& box_fragment,
                        const NGPaintFragment* paint_fragment,
-                       const NGFragmentItem* box_item);
+                       const NGFragmentItem* box_item,
+                       NGInlineCursor* descendants);
   NGBoxFragmentPainter(const NGFragmentItem& item,
                        const NGPhysicalBoxFragment& fragment,
                        NGInlineCursor* descendants);
@@ -361,7 +362,8 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
 inline NGBoxFragmentPainter::NGBoxFragmentPainter(
     const NGPhysicalBoxFragment& fragment,
     const NGPaintFragment* paint_fragment,
-    const NGFragmentItem* box_item)
+    const NGFragmentItem* box_item,
+    NGInlineCursor* descendants)
     : NGBoxFragmentPainter(
           fragment,
           paint_fragment
@@ -369,7 +371,7 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
               : *static_cast<const DisplayItemClient*>(box_item),
           paint_fragment,
           box_item,
-          /* descendants */ nullptr) {}
+          descendants) {}
 
 inline NGBoxFragmentPainter::NGBoxFragmentPainter(
     const NGPaintFragment& paint_fragment)

@@ -95,15 +95,17 @@ class ExtendedCrashReportingTest : public testing::Test {
 };
 
 TEST_F(ExtendedCrashReportingTest, DisabledByDefault) {
-  EXPECT_EQ(nullptr, ExtendedCrashReporting::SetUpIfEnabled());
+  EXPECT_EQ(nullptr, ExtendedCrashReporting::SetUpIfEnabled(
+                         ExtendedCrashReporting::kBrowserProcess));
   EXPECT_EQ(nullptr, ExtendedCrashReporting::GetInstance());
 }
 
-TEST_F(ExtendedCrashReportingTest, SetupIsEnabledByFeatureFlag) {
+TEST_F(ExtendedCrashReportingTest, SetUpIsEnabledByFeatureFlag) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(kExtendedCrashReportingFeature);
 
-  ExtendedCrashReporting* reporting = ExtendedCrashReporting::SetUpIfEnabled();
+  ExtendedCrashReporting* reporting = ExtendedCrashReporting::SetUpIfEnabled(
+      ExtendedCrashReporting::kBrowserProcess);
   EXPECT_NE(nullptr, reporting);
   EXPECT_EQ(reporting, ExtendedCrashReporting::GetInstance());
 }

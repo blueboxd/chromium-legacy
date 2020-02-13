@@ -254,6 +254,23 @@ void DevToolsSession::DidCommitLoad(LocalFrame* frame, DocumentLoader*) {
     v8_session_->setSkipAllPauses(false);
 }
 
+void DevToolsSession::PaintTiming(Document* document,
+                                  const char* name,
+                                  double timestamp) {
+  if (v8_session_ &&
+      agent_->inspected_frames_->Root()->GetDocument() == document) {
+    v8_session_->triggerPreciseCoverageDeltaUpdate(
+        ToV8InspectorStringView(name));
+  }
+}
+
+void DevToolsSession::DomContentLoadedEventFired(LocalFrame* local_frame) {
+  if (v8_session_ && agent_->inspected_frames_->Root() == local_frame) {
+    v8_session_->triggerPreciseCoverageDeltaUpdate(
+        ToV8InspectorStringView("DomContentLoaded"));
+  }
+}
+
 void DevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {

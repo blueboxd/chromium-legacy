@@ -5,8 +5,6 @@
 #ifndef CONTENT_RENDERER_CONTENT_SECURITY_POLICY_UTIL_H_
 #define CONTENT_RENDERER_CONTENT_SECURITY_POLICY_UTIL_H_
 
-#include "content/common/content_security_policy/content_security_policy.h"
-#include "content/common/content_security_policy/csp_context.h"
 #include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 #include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 

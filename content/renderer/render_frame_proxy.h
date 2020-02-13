@@ -229,9 +229,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnUpdateOpener(int opener_routing_id);
   void OnViewChanged(const FrameMsg_ViewChanged_Params& params);
   void OnDidUpdateFramePolicy(const blink::FramePolicy& frame_policy);
-  void OnDidSetFramePolicyHeaders(
-      blink::WebSandboxFlags active_sandbox_flags,
-      blink::ParsedFeaturePolicy parsed_feature_policy);
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnSetFrameOwnerProperties(const FrameOwnerProperties& properties);

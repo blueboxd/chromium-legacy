@@ -78,6 +78,8 @@
 #include "chrome/child/v8_crashpad_support_win.h"
 #include "chrome/chrome_elf/chrome_elf_main.h"
 #include "chrome/common/child_process_logging.h"
+#include "chrome/install_static/install_util.h"
+#include "components/browser_watcher/extended_crash_reporting.h"
 #include "sandbox/win/src/sandbox.h"
 #include "ui/base/resource/resource_bundle_win.h"
 #endif
@@ -242,6 +244,31 @@ bool UseHooks() {
 #else  // NDEBUG
   return true;
 #endif
+}
+
+void SetUpExtendedCrashReporting(bool is_browser_process) {
+  browser_watcher::ExtendedCrashReporting* extended_crash_reporting =
+      browser_watcher::ExtendedCrashReporting::SetUpIfEnabled(
+          is_browser_process
+              ? browser_watcher::ExtendedCrashReporting::kBrowserProcess
+              : browser_watcher::ExtendedCrashReporting::kOther);
+
+  if (!extended_crash_reporting)
+    return;
+
+  // Record product, version, channel and special build strings.
+  wchar_t exe_file[MAX_PATH] = {};
+  CHECK(::GetModuleFileName(nullptr, exe_file, base::size(exe_file)));
+
+  base::string16 product_name;
+  base::string16 version_number;
+  base::string16 channel_name;
+  base::string16 special_build;
+  install_static::GetExecutableVersionDetails(
+      exe_file, &product_name, &version_number, &special_build, &channel_name);
+
+  extended_crash_reporting->SetProductStrings(product_name, version_number,
+                                              channel_name, special_build);
 }
 
 #endif  // defined(OS_WIN)
@@ -616,6 +643,7 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
   }
 
 #if defined(OS_WIN)
+  SetUpExtendedCrashReporting(is_browser_process);
   base::Time::ReadMinTimerIntervalLowResMs();
 #endif
 }

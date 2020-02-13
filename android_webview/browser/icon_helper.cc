@@ -11,6 +11,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/favicon_url.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -66,7 +67,7 @@ void IconHelper::DidUpdateFaviconURL(
       continue;
 
     switch(i->icon_type) {
-      case content::FaviconURL::IconType::kFavicon:
+      case blink::mojom::FaviconIconType::kFavicon:
         if ((listener_ && !listener_->ShouldDownloadFavicon(i->icon_url)) ||
             WasUnableToDownloadFavicon(i->icon_url)) {
           break;
@@ -80,15 +81,15 @@ void IconHelper::DidUpdateFaviconURL(
             base::BindOnce(&IconHelper::DownloadFaviconCallback,
                            base::Unretained(this)));
         break;
-      case content::FaviconURL::IconType::kTouchIcon:
+      case blink::mojom::FaviconIconType::kTouchIcon:
         if (listener_)
           listener_->OnReceivedTouchIconUrl(i->icon_url.spec(), false);
         break;
-      case content::FaviconURL::IconType::kTouchPrecomposedIcon:
+      case blink::mojom::FaviconIconType::kTouchPrecomposedIcon:
         if (listener_)
           listener_->OnReceivedTouchIconUrl(i->icon_url.spec(), true);
         break;
-      case content::FaviconURL::IconType::kInvalid:
+      case blink::mojom::FaviconIconType::kInvalid:
         // Silently ignore it. Only trigger a callback on valid icons.
         break;
       default:

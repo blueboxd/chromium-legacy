@@ -19,13 +19,6 @@
 
 #define IPC_MESSAGE_START WebTestMsgStart
 
-IPC_SYNC_MESSAGE_ROUTED1_1(WebTestHostMsg_ReadFileToString,
-                           base::FilePath /* local path */,
-                           std::string /* contents */)
-IPC_SYNC_MESSAGE_ROUTED1_1(WebTestHostMsg_RegisterIsolatedFileSystem,
-                           std::vector<base::FilePath> /* absolute_filenames */,
-                           std::string /* filesystem_id */)
-
 IPC_MESSAGE_ROUTED0(WebTestHostMsg_ClearAllDatabases)
 IPC_MESSAGE_ROUTED1(WebTestHostMsg_SetDatabaseQuota, int /* quota */)
 IPC_MESSAGE_ROUTED3(WebTestHostMsg_SimulateWebNotificationClick,
@@ -36,8 +29,6 @@ IPC_MESSAGE_ROUTED2(WebTestHostMsg_InitiateCaptureDump,
                     bool /* should dump navigation history */,
                     bool /* should dump pixels */)
 
-IPC_SYNC_MESSAGE_ROUTED0_1(WebTestHostMsg_GetWritableDirectory,
-                           base::FilePath /* local_path */)
 IPC_MESSAGE_ROUTED1(WebTestHostMsg_SetFilePathForMockFileDialog,
                     base::FilePath /* local_path */)
 

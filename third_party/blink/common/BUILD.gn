@@ -57,6 +57,7 @@ jumbo_source_set("common") {
     "experiments/memory_ablation_experiment.cc",
     "feature_policy/document_policy.cc",
     "feature_policy/feature_policy.cc",
+    "feature_policy/feature_policy_mojom_traits.cc",
     "feature_policy/policy_value.cc",
     "features.cc",
     "fetch/fetch_api_request_body_mojom_traits.cc",

@@ -47,6 +47,11 @@ constexpr size_t kMaxImageDownloadSize = 5 * 1024 * 1024;
 constexpr int kNotificationImageMaxWidthPx = 720;
 constexpr int kNotificationImageMaxHeightPx = 480;
 
+// The initial delay for the timer that detects clipboard writes. An exponential
+// backoff will double this value whenever the OneShotTimer reschedules.
+constexpr base::TimeDelta kInitialDetectionTimerDelay =
+    base::TimeDelta::FromMilliseconds(1);
+
 // This method should be called on a ThreadPool thread because it performs a
 // potentially slow operation.
 SkBitmap ResizeImage(const SkBitmap& image, int width, int height) {
@@ -113,6 +118,7 @@ void RemoteCopyMessageHandler::OnMessage(
   url_loader_.reset();
   ImageDecoder::Cancel(this);
   resize_callback_.Cancel();
+  write_detection_timer_.AbandonAndStop();
 
   device_name_ = message.sender_device_name();
 
@@ -142,13 +148,21 @@ void RemoteCopyMessageHandler::HandleText(const std::string& text) {
 
   LogRemoteCopyReceivedTextSize(text.size());
 
+  uint64_t old_sequence_number =
+      ui::Clipboard::GetForCurrentThread()->GetSequenceNumber(
+          ui::ClipboardBuffer::kCopyPaste);
   base::ElapsedTimer write_timer;
   {
     ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
         .WriteText(base::UTF8ToUTF16(text));
   }
-  LogRemoteCopyWriteTextTime(write_timer.Elapsed());
-
+  LogRemoteCopyWriteTime(write_timer.Elapsed(), /*is_image=*/false);
+  // Unretained(this) is safe here because |this| owns |write_detection_timer_|.
+  write_detection_timer_.Start(
+      FROM_HERE, kInitialDetectionTimerDelay,
+      base::BindOnce(&RemoteCopyMessageHandler::DetectWrite,
+                     base::Unretained(this), old_sequence_number,
+                     base::TimeTicks::Now(), /*is_image=*/false));
   ShowNotification(GetTextNotificationTitle(device_name_), SkBitmap());
   Finish(RemoteCopyHandleMessageResult::kSuccessHandledText);
 }
@@ -283,12 +297,21 @@ void RemoteCopyMessageHandler::WriteImageAndShowNotification(
   if (original_image.dimensions() != resized_image.dimensions())
     LogRemoteCopyResizeImageTime(timer_.Elapsed());
 
+  uint64_t old_sequence_number =
+      ui::Clipboard::GetForCurrentThread()->GetSequenceNumber(
+          ui::ClipboardBuffer::kCopyPaste);
   base::ElapsedTimer write_timer;
   {
     ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
         .WriteImage(original_image);
   }
-  LogRemoteCopyWriteImageTime(write_timer.Elapsed());
+  LogRemoteCopyWriteTime(write_timer.Elapsed(), /*is_image=*/true);
+  // Unretained(this) is safe here because |this| owns |write_detection_timer_|.
+  write_detection_timer_.Start(
+      FROM_HERE, kInitialDetectionTimerDelay,
+      base::BindOnce(&RemoteCopyMessageHandler::DetectWrite,
+                     base::Unretained(this), old_sequence_number,
+                     base::TimeTicks::Now(), /*is_image=*/true));
 
   ShowNotification(GetImageNotificationTitle(device_name_), resized_image);
   Finish(RemoteCopyHandleMessageResult::kSuccessHandledImage);
@@ -321,6 +344,32 @@ void RemoteCopyMessageHandler::ShowNotification(const base::string16& title,
 
   NotificationDisplayServiceFactory::GetForProfile(profile_)->Display(
       NotificationHandler::Type::SHARING, notification, /*metadata=*/nullptr);
+}
+
+void RemoteCopyMessageHandler::DetectWrite(uint64_t old_sequence_number,
+                                           base::TimeTicks start_ticks,
+                                           bool is_image) {
+  TRACE_EVENT0("sharing", "RemoteCopyMessageHandler::DetectWrite");
+
+  uint64_t current_sequence_number =
+      ui::Clipboard::GetForCurrentThread()->GetSequenceNumber(
+          ui::ClipboardBuffer::kCopyPaste);
+  base::TimeDelta elapsed = base::TimeTicks::Now() - start_ticks;
+  if (current_sequence_number != old_sequence_number) {
+    LogRemoteCopyWriteDetectionTime(elapsed, is_image);
+    return;
+  }
+
+  if (elapsed > base::TimeDelta::FromSeconds(10))
+    return;
+
+  // Unretained(this) is safe here because |this| owns |write_detection_timer_|.
+  base::TimeDelta backoff_delay = write_detection_timer_.GetCurrentDelay() * 2;
+  write_detection_timer_.Start(
+      FROM_HERE, backoff_delay,
+      base::BindOnce(&RemoteCopyMessageHandler::DetectWrite,
+                     base::Unretained(this), old_sequence_number, start_ticks,
+                     is_image));
 }
 
 void RemoteCopyMessageHandler::Finish(RemoteCopyHandleMessageResult result) {

@@ -24,7 +24,6 @@
 #include "content/common/buildflags.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
-#include "content/common/content_security_policy/csp_context.h"
 #include "content/common/frame_delete_intention.h"
 #include "content/common/frame_message_structs.h"
 #include "content/common/frame_owner_properties.h"
@@ -56,6 +55,7 @@
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
@@ -113,8 +113,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ScrollbarMode,
                           blink::mojom::ScrollbarMode::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(content::StopFindAction,
                           content::STOP_FIND_ACTION_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(content::FaviconURL::IconType,
-                          content::FaviconURL::IconType::kMax)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FaviconIconType,
+                          blink::mojom::FaviconIconType::kMaxValue)
 IPC_ENUM_TRAITS(blink::WebSandboxFlags)  // Bitmask.
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTreeScopeType,
                           blink::WebTreeScopeType::kMaxValue)
@@ -586,13 +586,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode, ui::AXMode)
 // Notifies the frame that its parent has changed the frame's sandbox flags or
 // container policy.
 IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateFramePolicy, blink::FramePolicy)
-
-// Sent to a frame proxy after navigation, when the active sandbox flags on its
-// real frame have been updated by a CSP header which sets sandbox flags, or
-// when the feature policy header has been set.
-IPC_MESSAGE_ROUTED2(FrameMsg_DidSetFramePolicyHeaders,
-                    blink::WebSandboxFlags,
-                    blink::ParsedFeaturePolicy)
 
 // Update a proxy's window.name property.  Used when the frame's name is
 // changed in another process.

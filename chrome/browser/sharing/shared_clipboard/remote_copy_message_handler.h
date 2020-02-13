@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
 #include "chrome/browser/sharing/shared_clipboard/remote_copy_handle_message_result.h"
 #include "chrome/browser/sharing/sharing_message_handler.h"
@@ -47,6 +48,9 @@ class RemoteCopyMessageHandler : public SharingMessageHandler,
   void WriteImageAndShowNotification(const SkBitmap& original_image,
                                      const SkBitmap& resized_image);
   void ShowNotification(const base::string16& title, const SkBitmap& image);
+  void DetectWrite(uint64_t old_sequence_number,
+                   base::TimeTicks start_ticks,
+                   bool is_image);
   void Finish(RemoteCopyHandleMessageResult result);
 
   Profile* profile_ = nullptr;
@@ -54,6 +58,7 @@ class RemoteCopyMessageHandler : public SharingMessageHandler,
   base::CancelableOnceCallback<void(const SkBitmap&)> resize_callback_;
   std::string device_name_;
   base::ElapsedTimer timer_;
+  base::OneShotTimer write_detection_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteCopyMessageHandler);
 };

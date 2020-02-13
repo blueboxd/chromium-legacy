@@ -502,7 +502,8 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
         return new CustomTabTabObserver() {
             @Override
             public void onDidFinishNavigation(Tab tab, NavigationHandle navigation) {
-                if (navigation.hasCommitted() && navigation.isInMainFrame()) {
+                if (navigation.hasCommitted() && navigation.isInMainFrame()
+                        && !navigation.isSameDocument()) {
                     // Notify the renderer to permanently hide the top controls since they do
                     // not apply to fullscreen content views.
                     TabBrowserControlsConstraintsHelper.update(

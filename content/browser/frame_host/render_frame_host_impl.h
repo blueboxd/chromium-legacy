@@ -45,7 +45,6 @@
 #include "content/common/ax_content_node_data.h"
 #include "content/common/buildflags.h"
 #include "content/common/content_export.h"
-#include "content/common/content_security_policy/csp_context.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_delete_intention.h"
 #include "content/common/frame_replication_state.h"
@@ -78,6 +77,7 @@
 #include "net/http/http_response_headers.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
+#include "services/network/public/cpp/content_security_policy/csp_context.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -229,7 +229,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public SiteInstanceImpl::Observer,
       public service_manager::mojom::InterfaceProvider,
       public blink::mojom::LocalFrameHost,
-      public CSPContext,
+      public network::CSPContext,
       public ui::AXActionHandler {
  public:
   using AXTreeSnapshotCallback =
@@ -400,7 +400,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void RenderProcessGone(SiteInstanceImpl* site_instance,
                          const ChildProcessTerminationInfo& info) override;
 
-  // CSPContext
+  // network::CSPContext
   void ReportContentSecurityPolicyViolation(
       network::mojom::CSPViolationPtr violation_params) override;
   bool SchemeShouldBypassCSP(const base::StringPiece& scheme) override;

@@ -24,8 +24,8 @@ class ModelTypeState;
 
 namespace syncer {
 
-class MetadataChangeList;
 class ModelTypeSyncBridge;
+class ProcessorEntityTracker;
 class ProcessorEntity;
 
 // A sync component that performs updates from sync server.
@@ -38,9 +38,8 @@ class ClientTagBasedRemoteUpdateHandler {
   ClientTagBasedRemoteUpdateHandler(
       ModelType type,
       ModelTypeSyncBridge* bridge,
-      sync_pb::ModelTypeState* model_type_state,
       std::map<std::string, ClientTagHash>* storage_key_to_tag_hash,
-      std::map<ClientTagHash, std::unique_ptr<ProcessorEntity>>* entities);
+      ProcessorEntityTracker* entities);
 
   // Processes incremental updates from the sync server.
   base::Optional<ModelError> ProcessIncrementalUpdate(
@@ -62,11 +61,6 @@ class ClientTagBasedRemoteUpdateHandler {
   ProcessorEntity* ProcessUpdate(UpdateResponseData update,
                                  EntityChangeList* entity_changes,
                                  std::string* storage_key_to_clear);
-
-  // Recommit all entities for encryption except those in |already_updated|.
-  void RecommitAllForEncryption(
-      const std::unordered_set<std::string>& already_updated,
-      MetadataChangeList* metadata_changes);
 
   // Resolve a conflict between |update| and the pending commit in |entity|.
   ConflictResolution ResolveConflict(UpdateResponseData update,
@@ -91,16 +85,13 @@ class ClientTagBasedRemoteUpdateHandler {
   // ModelTypeSyncBridge linked to associated processor.
   ModelTypeSyncBridge* const bridge_;
 
-  // The model type metadata (progress marker, initial sync done, etc).
-  sync_pb::ModelTypeState* const model_type_state_;
-
   // This mapping allows us to convert from storage key to client tag hash.
   // Should be replaced with new interface.
   std::map<std::string, ClientTagHash>* const storage_key_to_tag_hash_;
 
   // A map of client tag hash to sync entities known to the processor.
   // Should be replaced with new interface.
-  std::map<ClientTagHash, std::unique_ptr<ProcessorEntity>>* const entities_;
+  ProcessorEntityTracker* const entity_tracker_;
 };
 
 }  // namespace syncer

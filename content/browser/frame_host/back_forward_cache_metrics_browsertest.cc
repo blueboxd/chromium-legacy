@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/bind.h"
+#include "base/run_loop.h"
+#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -9,6 +12,7 @@
 #include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -78,6 +82,18 @@ class BackForwardCacheMetricsBrowserTest : public ContentBrowserTest,
 
   WebContentsImpl* web_contents() const {
     return static_cast<WebContentsImpl*>(shell()->web_contents());
+  }
+
+  void GiveItSomeTime() {
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(200));
+    run_loop.Run();
+  }
+
+  RenderFrameHostImpl* current_frame_host() {
+    return web_contents()->GetFrameTree()->root()->current_frame_host();
   }
 
   void DidStartNavigation(NavigationHandle* navigation_handle) override {
@@ -879,6 +895,50 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheEnabledMetricsBrowserTest,
               static_cast<int>(
                   ReloadsAfterHistoryNavigation::kServedFromBackForwardCache),
               2)));
+}
+
+IN_PROC_BROWSER_TEST_F(BackForwardCacheEnabledMetricsBrowserTest,
+                       RestoreNavigationToNextPaint) {
+  base::HistogramTester histogram_tester;
+  const char kRestoreNavigationToNextPaintTimeHistogram[] =
+      "BackForwardCache.Restore.NavigationToFirstPaint";
+
+  GURL url1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url2(embedded_test_server()->GetURL("b.com", "/title2.html"));
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  kRestoreNavigationToNextPaintTimeHistogram),
+              testing::IsEmpty());
+
+  // 1) Navigate to url1.
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  RenderFrameHostImpl* rfh_a = current_frame_host();
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
+
+  // 2) Navigate to url2.
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
+  EXPECT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->is_in_back_forward_cache());
+
+  // 3) Go back to url1 and check if the metrics are recorded. Make sure the
+  // page is restored from cache.
+  shell()->web_contents()->GetController().GoBack();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(rfh_a, current_frame_host());
+  EXPECT_EQ(shell()->web_contents()->GetVisibility(), Visibility::VISIBLE);
+
+  // Verify if the NavigationToFirstPaint metric was recorded on restore.
+  do {
+    FetchHistogramsFromChildProcesses();
+    GiveItSomeTime();
+  } while (
+      histogram_tester.GetAllSamples(kRestoreNavigationToNextPaintTimeHistogram)
+          .empty());
+
+  EXPECT_EQ(
+      histogram_tester.GetAllSamples(kRestoreNavigationToNextPaintTimeHistogram)
+          .size(),
+      1u);
 }
 
 }  // namespace content

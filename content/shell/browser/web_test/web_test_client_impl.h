@@ -5,6 +5,8 @@
 #ifndef CONTENT_SHELL_BROWSER_WEB_TEST_WEB_TEST_CLIENT_IMPL_H_
 #define CONTENT_SHELL_BROWSER_WEB_TEST_WEB_TEST_CLIENT_IMPL_H_
 
+#include <vector>
+
 #include "base/macros.h"
 #include "content/shell/common/web_test.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -52,6 +54,10 @@ class WebTestClientImpl : public mojom::WebTestClient {
   void WebTestRuntimeFlagsChanged(
       base::Value changed_web_test_runtime_flags) override;
   void DeleteAllCookies() override;
+  void GetWritableDirectory(GetWritableDirectoryCallback callback) override;
+  void RegisterIsolatedFileSystem(
+      const std::vector<base::FilePath>& absolute_filenames,
+      RegisterIsolatedFileSystemCallback callback) override;
 
   int render_process_id_;
 

@@ -5,7 +5,6 @@
 mojom = "//content/common/native_types.mojom"
 public_headers = [
   "//cc/input/touch_action.h",
-  "//content/common/content_security_policy/csp_context.h",
   "//content/common/cursors/webcursor.h",
   "//content/common/edit_command.h",
   "//content/common/frame_owner_properties.h",

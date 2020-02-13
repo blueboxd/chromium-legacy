@@ -164,6 +164,13 @@ void InfobarBadgeTabHelper::InfobarManagerObserver::OnInfoBarRemoved(
   }
 }
 
+void InfobarBadgeTabHelper::InfobarManagerObserver::OnInfoBarReplaced(
+    infobars::InfoBar* old_infobar,
+    infobars::InfoBar* new_infobar) {
+  OnInfoBarRemoved(old_infobar, /*animate=*/false);
+  OnInfoBarAdded(new_infobar);
+}
+
 void InfobarBadgeTabHelper::InfobarManagerObserver::OnManagerShuttingDown(
     infobars::InfoBarManager* manager) {
   scoped_observer_.Remove(manager);

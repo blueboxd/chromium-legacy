@@ -166,8 +166,11 @@ class WebsitePreference extends ChromeImageViewPreference implements FaviconImag
         if (!mFaviconFetched) {
             // Start the favicon fetching. Will respond in onFaviconAvailable.
             mFaviconHelper = new FaviconHelper();
+            // TODO(https://crbug.com/1048632): Use the current profile (i.e., regular profile or
+            // incognito profile) instead of always using regular profile. It works correctly now,
+            // but it is not safe.
             if (!mFaviconHelper.getLocalFaviconImageForURL(
-                        Profile.getLastUsedProfile(), faviconUrl(), mFaviconSizePx, this)) {
+                        Profile.getLastUsedRegularProfile(), faviconUrl(), mFaviconSizePx, this)) {
                 onFaviconAvailable(null, null);
             }
             mFaviconFetched = true;

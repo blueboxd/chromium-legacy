@@ -366,6 +366,7 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   // Clear the UKM Manager so that we do not try to report when the
   // UKM System has shut down.
   compositor_frame_reporting_controller_->SetUkmManager(nullptr);
+  frame_trackers_.SetUkmManager(nullptr);
 }
 
 void LayerTreeHostImpl::WillSendBeginMainFrame() {

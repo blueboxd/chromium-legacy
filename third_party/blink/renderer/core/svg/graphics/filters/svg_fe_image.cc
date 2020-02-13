@@ -143,7 +143,8 @@ WTF::TextStream& FEImage::ExternalRepresentation(WTF::TextStream& ts,
 
 sk_sp<PaintFilter> FEImage::CreateImageFilterForLayoutObject(
     const LayoutObject& layout_object) {
-  FloatRect dst_rect = FilterPrimitiveSubregion();
+  FloatRect dst_rect =
+      GetFilter()->MapLocalRectToAbsoluteRect(FilterPrimitiveSubregion());
 
   AffineTransform transform;
   auto* context_node = To<SVGElement>(layout_object.GetNode());
@@ -190,7 +191,8 @@ sk_sp<PaintFilter> FEImage::CreateImageFilter() {
   }
 
   FloatRect src_rect = FloatRect(FloatPoint(), FloatSize(image_->Size()));
-  FloatRect dst_rect = FilterPrimitiveSubregion();
+  FloatRect dst_rect =
+      GetFilter()->MapLocalRectToAbsoluteRect(FilterPrimitiveSubregion());
 
   preserve_aspect_ratio_->TransformRect(dst_rect, src_rect);
 

@@ -21,10 +21,12 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/oauth_multilogin_helper.h"
 #include "components/signin/internal/identity_manager/ubertoken_fetcher_impl.h"
+#include "components/signin/public/base/signin_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/set_accounts_in_cookie_result.h"
@@ -692,6 +694,9 @@ void GaiaCookieManagerService::OnCookieChange(
         base::BindOnce(&GaiaCookieManagerService::StartFetchingListAccounts,
                        weak_ptr_factory_.GetWeakPtr()));
   } else {
+// TODO(https://crbug.com/1051864): Re-enable this codepath for Dice, once the
+// reconcilor has a loop-prevention mechanism.
+#if !BUILDFLAG(ENABLE_DICE_SUPPORT)
     // Remove all /ListAccounts requests except the very first request because
     // it is currently executing.
     requests_.erase(std::remove_if(requests_.begin() + 1, requests_.end(),
@@ -702,6 +707,7 @@ void GaiaCookieManagerService::OnCookieChange(
                     requests_.end());
     // Add a new /ListAccounts request at the end.
     requests_.push_back(GaiaCookieRequest::CreateListAccountsRequest());
+#endif  // !BUILDFLAG(ENABLE_DICE_SUPPORT)
   }
 }
 

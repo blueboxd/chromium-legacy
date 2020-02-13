@@ -34,6 +34,7 @@
 #include "services/media_session/public/cpp/test/mock_media_session.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 
 using media_session::mojom::AudioFocusType;
 using media_session::mojom::MediaPlaybackState;
@@ -2493,21 +2494,24 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest, UpdateFaviconURL) {
 
   std::vector<FaviconURL> favicons;
   favicons.push_back(FaviconURL(GURL("https://www.example.org/favicon1.png"),
-                                FaviconURL::IconType::kInvalid, valid_sizes));
+                                blink::mojom::FaviconIconType::kInvalid,
+                                valid_sizes));
   favicons.push_back(
-      FaviconURL(GURL(), FaviconURL::IconType::kFavicon, valid_sizes));
+      FaviconURL(GURL(), blink::mojom::FaviconIconType::kFavicon, valid_sizes));
   favicons.push_back(FaviconURL(GURL("https://www.example.org/favicon2.png"),
-                                FaviconURL::IconType::kFavicon,
+                                blink::mojom::FaviconIconType::kFavicon,
                                 std::vector<gfx::Size>()));
   favicons.push_back(FaviconURL(GURL("https://www.example.org/favicon3.png"),
-                                FaviconURL::IconType::kFavicon, valid_sizes));
-  favicons.push_back(FaviconURL(GURL("https://www.example.org/favicon4.png"),
-                                FaviconURL::IconType::kTouchIcon, valid_sizes));
-  favicons.push_back(FaviconURL(GURL("https://www.example.org/favicon5.png"),
-                                FaviconURL::IconType::kTouchPrecomposedIcon,
+                                blink::mojom::FaviconIconType::kFavicon,
                                 valid_sizes));
+  favicons.push_back(FaviconURL(GURL("https://www.example.org/favicon4.png"),
+                                blink::mojom::FaviconIconType::kTouchIcon,
+                                valid_sizes));
+  favicons.push_back(FaviconURL(
+      GURL("https://www.example.org/favicon5.png"),
+      blink::mojom::FaviconIconType::kTouchPrecomposedIcon, valid_sizes));
   favicons.push_back(FaviconURL(GURL("https://www.example.org/favicon6.png"),
-                                FaviconURL::IconType::kTouchIcon,
+                                blink::mojom::FaviconIconType::kTouchIcon,
                                 std::vector<gfx::Size>()));
 
   media_session_->DidUpdateFaviconURL(favicons);
@@ -2548,7 +2552,7 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
                        UpdateFaviconURL_ClearOnNavigate) {
   std::vector<FaviconURL> favicons;
   favicons.push_back(FaviconURL(GURL("https://www.example.org/favicon1.png"),
-                                FaviconURL::IconType::kFavicon,
+                                blink::mojom::FaviconIconType::kFavicon,
                                 std::vector<gfx::Size>()));
 
   media_session_->DidUpdateFaviconURL(favicons);

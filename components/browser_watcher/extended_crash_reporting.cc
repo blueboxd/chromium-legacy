@@ -100,13 +100,14 @@ ExtendedCrashReporting::~ExtendedCrashReporting() {
     ::RemoveVectoredExceptionHandler(veh_handle_);
 }
 
-ExtendedCrashReporting* ExtendedCrashReporting::SetUpIfEnabled() {
+ExtendedCrashReporting* ExtendedCrashReporting::SetUpIfEnabled(
+    ProcessType process_type) {
   DCHECK_EQ(nullptr, g_instance);
   if (!base::FeatureList::IsEnabled(kExtendedCrashReportingFeature)) {
     return nullptr;
   }
 
-  return SetUpImpl();
+  return SetUpImpl(process_type);
 }
 
 ExtendedCrashReporting* ExtendedCrashReporting::GetInstance() {
@@ -165,7 +166,7 @@ void ExtendedCrashReporting::RegisterVEH() {
 }
 
 void ExtendedCrashReporting::SetUpForTesting() {
-  ExtendedCrashReporting::SetUpImpl();
+  ExtendedCrashReporting::SetUpImpl(kBrowserProcess);
 }
 
 void ExtendedCrashReporting::TearDownForTesting() {
@@ -179,7 +180,8 @@ void ExtendedCrashReporting::TearDownForTesting() {
   ActivityTrackerAnnotation::GetInstance()->Clear();
 }
 
-ExtendedCrashReporting* ExtendedCrashReporting::SetUpImpl() {
+ExtendedCrashReporting* ExtendedCrashReporting::SetUpImpl(
+    ProcessType process_type) {
   DCHECK_EQ(nullptr, g_instance);
 
   // TODO(https://crbug.com/1044707): Adjust these numbers once there is real
@@ -203,12 +205,12 @@ ExtendedCrashReporting* ExtendedCrashReporting::SetUpImpl() {
   // intentionally leaked.
   std::unique_ptr<ExtendedCrashReporting> new_instance =
       base::WrapUnique(new ExtendedCrashReporting(global_tracker));
-  new_instance->Initialize();
+  new_instance->Initialize(process_type);
   g_instance = new_instance.release();
   return g_instance;
 }
 
-void ExtendedCrashReporting::Initialize() {
+void ExtendedCrashReporting::Initialize(ProcessType process_type) {
   // Record the location and size of the tracker memory range in a Crashpad
   // annotation to allow the handler to retrieve it on crash.
   // Record the buffer size and location for the annotation beacon.
@@ -231,9 +233,8 @@ void ExtendedCrashReporting::Initialize() {
       kActivityStartTimestamp,
       base::Time::Now().ToDeltaSinceWindowsEpoch().InMicroseconds());
 
-  // TODO(https://crbug.com/1044707): This needs to be parametrized to support
-  //     all process types.
-  proc_data.SetInt(kActivityProcessType, ProcessState::BROWSER_PROCESS);
+  if (process_type == kBrowserProcess)
+    proc_data.SetInt(kActivityProcessType, ProcessState::BROWSER_PROCESS);
 
   RegisterVEH();
 }

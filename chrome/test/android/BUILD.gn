@@ -193,7 +193,6 @@ android_library("chrome_java_test_support") {
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/browser_ui/widget/android:java",
     "//components/embedder_support/android:web_contents_delegate_java",
-    "//components/invalidation/impl:java",
     "//components/location/android:location_java",
     "//components/omnibox/browser:browser_java",
     "//components/policy/android:policy_java",

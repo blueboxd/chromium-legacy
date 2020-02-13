@@ -539,6 +539,31 @@ void RemoteFrame::IntrinsicSizingInfoOfChildChanged(
   owner->IntrinsicSizingInfoChanged();
 }
 
+// Update the proxy's SecurityContext with new sandbox flags or feature policy
+// that were set during navigation. Unlike changes to the FrameOwner, which are
+// handled by RenderFrameProxy::OnDidUpdateFramePolicy, these changes should be
+// considered effective immediately.
+//
+// These flags / policy are needed on the remote frame's SecurityContext to
+// ensure that sandbox flags and feature policy are inherited properly if this
+// proxy ever parents a local frame.
+void RemoteFrame::DidSetFramePolicyHeaders(
+    WebSandboxFlags sandbox_flags,
+    const Vector<ParsedFeaturePolicyDeclaration>& parsed_feature_policy) {
+  SetReplicatedSandboxFlags(sandbox_flags);
+  // Convert from WTF::Vector<ParsedFeaturePolicyDeclaration>
+  // to std::vector<ParsedFeaturePolicyDeclaration>, since ParsedFeaturePolicy
+  // is an alias for the later.
+  //
+  // TODO(crbug.com/1047273): Remove this conversion by switching
+  // ParsedFeaturePolicy to operate over Vector
+  ParsedFeaturePolicy parsed_feature_policy_copy(parsed_feature_policy.size());
+  for (size_t i = 0; i < parsed_feature_policy.size(); ++i)
+    parsed_feature_policy_copy[i] = parsed_feature_policy[i];
+  SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
+      parsed_feature_policy_copy, FeaturePolicy::FeatureState());
+}
+
 void RemoteFrame::SetMainFrameViewportSize(
     const IntSize& main_frame_viewport_size) {
   DCHECK(IsMainFrame());

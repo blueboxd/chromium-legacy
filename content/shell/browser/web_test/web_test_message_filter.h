@@ -42,11 +42,6 @@ class WebTestMessageFilter : public BrowserMessageFilter {
       const IPC::Message& message) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  void OnReadFileToString(const base::FilePath& local_file,
-                          std::string* contents);
-  void OnRegisterIsolatedFileSystem(
-      const std::vector<base::FilePath>& absolute_filenames,
-      std::string* filesystem_id);
   void OnClearAllDatabases();
   void OnSetDatabaseQuota(int quota);
   void OnSimulateWebNotificationClick(
@@ -55,7 +50,6 @@ class WebTestMessageFilter : public BrowserMessageFilter {
       const base::Optional<base::string16>& reply);
   void OnInitiateCaptureDump(bool capture_navigation_history,
                              bool capture_pixels);
-  void OnGetWritableDirectory(base::FilePath* path);
   void OnSetFilePathForMockFileDialog(const base::FilePath& path);
 
   int render_process_id_;

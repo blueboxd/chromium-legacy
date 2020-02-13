@@ -27,6 +27,7 @@
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_change_processor.h"
 #include "components/sync/model/model_type_sync_bridge.h"
+#include "components/sync/model_impl/processor_entity_tracker.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -167,9 +168,6 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // Nudges worker if there are any local entities to be committed.
   void NudgeForCommitIfNeeded();
 
-  // Returns true if there are any local entities to be committed.
-  bool HasLocalChanges() const;
-
   // Looks up the client tag hash for the given |storage_key|, and regenerates
   // with |data| if the lookup finds nothing. Does not update the storage key to
   // client tag hash mapping.
@@ -181,11 +179,6 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   const ProcessorEntity* GetEntityForStorageKey(
       const std::string& storage_key) const;
 
-  // Gets the entity for the given tag hash, or null if there isn't one.
-  ProcessorEntity* GetEntityForTagHash(const ClientTagHash& tag_hash);
-  const ProcessorEntity* GetEntityForTagHash(
-      const ClientTagHash& tag_hash) const;
-
   // Create an entity in the entity map for |storage_key| and return a pointer
   // to it.
   // Requires that no entity for |storage_key| already exists in the map.
@@ -194,9 +187,6 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
 
   // Version of the above that generates a tag for |data|.
   ProcessorEntity* CreateEntity(const EntityData& data);
-
-  // Returns true if all processor entities have non-empty storage keys.
-  bool AllStorageKeysPopulated() const;
 
   // Removes metadata for all entries unless they are unsynced.
   // This is used to limit the amount of data stored in sync, and this does not
@@ -227,9 +217,6 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
 
   // The model type this object syncs.
   const ModelType type_;
-
-  // The model type metadata (progress marker, initial sync done, etc).
-  sync_pb::ModelTypeState model_type_state_;
 
   // ModelTypeSyncBridge linked to this processor. The bridge owns this
   // processor instance so the pointer should never become invalid.
@@ -271,10 +258,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // Entity state //
   //////////////////
 
-  // A map of client tag hash to sync entities known to this processor. This
-  // should contain entries and metadata for most everything, although the
-  // entities may not always contain model type data/specifics.
-  std::map<ClientTagHash, std::unique_ptr<ProcessorEntity>> entities_;
+  std::unique_ptr<ProcessorEntityTracker> entity_tracker_;
 
   // The bridge wants to communicate entirely via storage keys that it is free
   // to define and can understand more easily. All of the sync machinery wants

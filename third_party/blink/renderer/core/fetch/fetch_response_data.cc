@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/fetch/fetch_response_data.h"
 
-#include "services/network/public/cpp/content_security_policy.h"
+#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/content_security_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_response.mojom-blink.h"

@@ -236,6 +236,8 @@
         "DidStartProvisionalLoad",
         "DidFailProvisionalLoad",
         "DidCommitLoad",
+        "PaintTiming",
+        "DomContentLoadedEventFired",
       ]
     },
   }

@@ -4,7 +4,6 @@
 
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request.h"
-#include "content/common/content_security_policy/csp_context.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/test/navigation_simulator_impl.h"
 #include "content/test/test_render_frame_host.h"

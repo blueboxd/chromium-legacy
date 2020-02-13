@@ -121,7 +121,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "palette_tray_icon_laser_pointer.icon",
     "palette_tray_icon_magnify.icon",
     "palette_tray_icon_metalayer.icon",
-    "parent_access_lock.icon",
+    "pin_request_lock.icon",
     "send.icon",
     "settings.icon",
     "shelf_add_person_button.icon",

@@ -84,8 +84,8 @@ FormSubmissionThrottle::CheckContentSecurityPolicyFormAction(
   if (render_frame->IsAllowedByCsp(
           network::mojom::CSPDirectiveName::FormAction, url,
           was_server_redirect, false /* is_response_check */,
-          request->common_params().source_location, CSPContext::CHECK_ALL_CSP,
-          true /* is_form_submission */)) {
+          request->common_params().source_location,
+          network::CSPContext::CHECK_ALL_CSP, true /* is_form_submission */)) {
     return NavigationThrottle::PROCEED;
   }
 

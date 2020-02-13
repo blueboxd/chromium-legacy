@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_color_params.h"
 
+#include "build/build_config.h"
+
 namespace blink {
 
 SerializedColorParams::SerializedColorParams()
@@ -95,7 +97,11 @@ CanvasColorParams SerializedColorParams::GetCanvasColorParams() const {
   CanvasPixelFormat pixel_format = CanvasPixelFormat::kRGBA8;
   switch (pixel_format_) {
     case SerializedPixelFormat::kNative8_LegacyObsolete:
-      pixel_format = CanvasColorParams::GetNativeCanvasPixelFormat();
+#if defined(OS_ANDROID)
+      pixel_format = CanvasPixelFormat::kRGBA8;
+#else
+      pixel_format = CanvasPixelFormat::kBGRA8;
+#endif
       break;
     case SerializedPixelFormat::kRGBA8:
       pixel_format = CanvasPixelFormat::kRGBA8;

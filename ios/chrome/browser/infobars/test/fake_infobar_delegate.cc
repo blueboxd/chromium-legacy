@@ -4,7 +4,10 @@
 
 #include "ios/chrome/browser/infobars/test/fake_infobar_delegate.h"
 
-FakeInfobarDelegate::FakeInfobarDelegate() = default;
+#include "base/strings/utf_string_conversions.h"
+
+FakeInfobarDelegate::FakeInfobarDelegate(base::string16 message_text)
+    : message_text_(message_text) {}
 
 FakeInfobarDelegate::~FakeInfobarDelegate() = default;
 
@@ -13,7 +16,7 @@ FakeInfobarDelegate::GetIdentifier() const {
   return TEST_INFOBAR;
 }
 
-bool FakeInfobarDelegate::EqualsDelegate(
-    infobars::InfoBarDelegate* delegate) const {
-  return false;
+// Returns the message string to be displayed for the Infobar.
+base::string16 FakeInfobarDelegate::GetMessageText() const {
+  return message_text_;
 }

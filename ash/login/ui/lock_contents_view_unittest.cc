@@ -2152,7 +2152,7 @@ TEST_F(LockContentsViewUnitTest, ParentAccessDialog) {
       LoginAuthUserView::TestApi(primary_view->auth_user());
 
   EXPECT_TRUE(primary_view->auth_user());
-  EXPECT_FALSE(ParentAccessWidget::Get());
+  EXPECT_FALSE(PinRequestWidget::Get());
   EXPECT_TRUE(LoginPasswordView::TestApi(auth_user.password_view())
                   .textfield()
                   ->HasFocus());
@@ -2164,7 +2164,7 @@ TEST_F(LockContentsViewUnitTest, ParentAccessDialog) {
                    .textfield()
                    ->HasFocus());
 
-  ParentAccessWidget::Get()->Close(false /* validation success */);
+  PinRequestWidget::Get()->Close(false /* validation success */);
 
   EXPECT_TRUE(primary_view->auth_user());
   EXPECT_TRUE(LoginPasswordView::TestApi(auth_user.password_view())
@@ -2193,13 +2193,13 @@ TEST_F(LockContentsViewUnitTest, ParentAccessButton) {
   // Validation failed - show the button.
   contents->ShowParentAccessDialog();
   EXPECT_FALSE(LoginScreenTestApi::IsParentAccessButtonShown());
-  ParentAccessWidget::Get()->Close(false /* validation success */);
+  PinRequestWidget::Get()->Close(false /* validation success */);
   EXPECT_TRUE(LoginScreenTestApi::IsParentAccessButtonShown());
 
   // Validation succeeded - hide the button.
   contents->ShowParentAccessDialog();
   EXPECT_FALSE(LoginScreenTestApi::IsParentAccessButtonShown());
-  ParentAccessWidget::Get()->Close(true /* validation success */);
+  PinRequestWidget::Get()->Close(true /* validation success */);
   EXPECT_FALSE(LoginScreenTestApi::IsParentAccessButtonShown());
 
   // Validation failed but user auth got enabled - hide button.
@@ -2207,7 +2207,7 @@ TEST_F(LockContentsViewUnitTest, ParentAccessButton) {
   contents->ShowParentAccessDialog();
   EXPECT_FALSE(LoginScreenTestApi::IsParentAccessButtonShown());
   DataDispatcher()->EnableAuthForUser(child_id);
-  ParentAccessWidget::Get()->Close(false /* validation success */);
+  PinRequestWidget::Get()->Close(false /* validation success */);
   EXPECT_FALSE(LoginScreenTestApi::IsParentAccessButtonShown());
 }
 

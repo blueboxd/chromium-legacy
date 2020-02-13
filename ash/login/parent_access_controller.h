@@ -5,18 +5,16 @@
 #ifndef ASH_LOGIN_PARENT_ACCESS_CONTROLLER_H_
 #define ASH_LOGIN_PARENT_ACCESS_CONTROLLER_H_
 
-#include "ash/login/ui/parent_access_view.h"
-#include "ash/login/ui/parent_access_widget.h"
+#include "ash/login/ui/pin_request_view.h"
+#include "ash/login/ui/pin_request_widget.h"
 #include "ash/public/cpp/login_types.h"
 
 namespace ash {
 
-enum class ParentAccessRequestViewState;
-
 // ParentAccessController serves as a single point of access for PIN requests
 // regarding parent access. It takes care of showing and hiding the PIN UI, as
 // well as logging usage metrics.
-class ASH_EXPORT ParentAccessController : ParentAccessView::Delegate {
+class ASH_EXPORT ParentAccessController : PinRequestView::Delegate {
  public:
   // Actions that originated in parent access dialog. These values are persisted
   // to metrics. Entries should not be renumbered and numeric values should
@@ -53,13 +51,13 @@ class ASH_EXPORT ParentAccessController : ParentAccessView::Delegate {
   ParentAccessController& operator=(const ParentAccessController&) = delete;
   ~ParentAccessController() override;
 
-  // ParentAccessView::Delegate interface.
-  ParentAccessView::SubmissionResult OnPinSubmitted(
+  // PinRequestView::Delegate interface.
+  PinRequestView::SubmissionResult OnPinSubmitted(
       const std::string& pin) override;
   void OnBack() override;
   void OnHelp(gfx::NativeWindow parent_window) override;
 
-  // Shows a standalone ParentAccess dialog. If |child_account_id| is valid, it
+  // Shows a standalone parent access dialog. If |child_account_id| is valid, it
   // validates the parent access code for that child only, when it is empty it
   // validates the code for any child signed in the device.
   // |on_exit_callback| is invoked when the back button is clicked or the
@@ -78,7 +76,7 @@ class ASH_EXPORT ParentAccessController : ParentAccessView::Delegate {
   // Returns whether opening the dialog was successful. Will fail if another PIN
   // dialog is already opened.
   bool ShowWidget(const AccountId& child_account_id,
-                  ParentAccessRequest::OnParentAccessDone on_exit_callback,
+                  PinRequest::OnPinRequestDone on_exit_callback,
                   ParentAccessRequestReason reason,
                   bool extra_dimmer,
                   base::Time validation_time);

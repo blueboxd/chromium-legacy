@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
@@ -132,8 +133,6 @@ InstallResultCode PendingAppManagerInstall(
   return result_code;
 }
 
-// If |proceed_through_interstitial| is true, asserts that a security
-// interstitial is shown, and clicks through it, before returning.
 void NavigateToURLAndWait(Browser* browser,
                           const GURL& url,
                           bool proceed_through_interstitial) {
@@ -164,6 +163,17 @@ void NavigateToURLAndWait(Browser* browser,
     ASSERT_TRUE(content::ExecuteScript(web_contents, javascript));
     observer.Wait();
   }
+}
+
+// Performs a navigation and then checks that the toolbar visibility is as
+// expected.
+void NavigateAndCheckForToolbar(Browser* browser,
+                                const GURL& url,
+                                bool expected_visibility,
+                                bool proceed_through_interstitial) {
+  web_app::NavigateToURLAndWait(browser, url, proceed_through_interstitial);
+  EXPECT_EQ(expected_visibility,
+            browser->app_controller()->ShouldShowCustomTabBar());
 }
 
 AppMenuCommandState GetAppMenuCommandState(int command_id, Browser* browser) {

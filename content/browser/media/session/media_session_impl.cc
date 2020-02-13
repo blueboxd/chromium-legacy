@@ -32,6 +32,7 @@
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "services/media_session/public/cpp/media_image_manager.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "ui/gfx/favicon_size.h"
 
@@ -286,8 +287,8 @@ void MediaSessionImpl::DidUpdateFaviconURL(
     // We only want either favicons or the touch icons. There is another type of
     // touch icon which is "precomposed". This means it might have rounded
     // corners, etc. but it is not predictable so we cannot show them in the UI.
-    if (icon.icon_type != FaviconURL::IconType::kFavicon &&
-        icon.icon_type != FaviconURL::IconType::kTouchIcon) {
+    if (icon.icon_type != blink::mojom::FaviconIconType::kFavicon &&
+        icon.icon_type != blink::mojom::FaviconIconType::kTouchIcon) {
       continue;
     }
 
@@ -295,7 +296,8 @@ void MediaSessionImpl::DidUpdateFaviconURL(
 
     // If we are a favicon and we do not have a size then we should assume the
     // default size for favicons.
-    if (icon.icon_type == FaviconURL::IconType::kFavicon && sizes.empty())
+    if (icon.icon_type == blink::mojom::FaviconIconType::kFavicon &&
+        sizes.empty())
       sizes.push_back(gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize));
 
     if (sizes.empty() || !icon.icon_url.is_valid())

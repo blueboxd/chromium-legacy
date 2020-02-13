@@ -66,6 +66,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/url_constants.h"
@@ -3636,7 +3637,7 @@ TEST_F(WebContentsImplTest, Bluetooth) {
 
 TEST_F(WebContentsImplTest, FaviconURLsSet) {
   const FaviconURL kFavicon(GURL("https://example.com/favicon.ico"),
-                            FaviconURL::IconType::kFavicon, {});
+                            blink::mojom::FaviconIconType::kFavicon, {});
 
   contents()->NavigateAndCommit(GURL("https://example.com"));
   EXPECT_EQ(0u, contents()->GetFaviconURLs().size());
@@ -3654,7 +3655,7 @@ TEST_F(WebContentsImplTest, FaviconURLsSet) {
 
 TEST_F(WebContentsImplTest, FaviconURLsResetWithNavigation) {
   const FaviconURL kFavicon(GURL("https://example.com/favicon.ico"),
-                            FaviconURL::IconType::kFavicon, {});
+                            blink::mojom::FaviconIconType::kFavicon, {});
 
   contents()->NavigateAndCommit(GURL("https://example.com"));
   EXPECT_EQ(0u, contents()->GetFaviconURLs().size());

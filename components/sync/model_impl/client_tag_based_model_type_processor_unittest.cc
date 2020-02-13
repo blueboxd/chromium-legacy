@@ -348,7 +348,7 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
 
   // Return the number of entities the processor has metadata for.
   size_t ProcessorEntityCount() const {
-    return type_processor()->entities_.size();
+    return type_processor()->entity_tracker_->size();
   }
 
   // Expect to receive an error from the processor.

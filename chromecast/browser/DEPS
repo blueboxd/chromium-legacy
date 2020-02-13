@@ -89,6 +89,9 @@ include_rules = [
   # dependency on.
   "+chromecast/media/service/cast_renderer.h",
 
+  # For favicon url
+  "+third_party/blink/public/mojom/favicon",
+
   # No inclusion of WebKit from the browser, other than the ones in
   # WebKit/public/{mojom,common}, or the ones that are strictly enum/POD,
   # header-only types, and some selected common code.

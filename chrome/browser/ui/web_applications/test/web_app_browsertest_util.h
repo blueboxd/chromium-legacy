@@ -43,6 +43,13 @@ void NavigateToURLAndWait(Browser* browser,
                           const GURL& url,
                           bool proceed_through_interstitial = false);
 
+// Performs a navigation and then checks that the toolbar visibility is as
+// expected.
+void NavigateAndCheckForToolbar(Browser* browser,
+                                const GURL& url,
+                                bool expected_visibility,
+                                bool proceed_through_interstitial = false);
+
 enum AppMenuCommandState {
   kEnabled,
   kDisabled,

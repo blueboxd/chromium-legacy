@@ -13,15 +13,14 @@ namespace cc {
 TEST(FrameSequenceMetricsTest, MergeMetrics) {
   // Create a metric with only a small number of frames. It shouldn't report any
   // metrics.
-  FrameSequenceMetrics first(FrameSequenceTrackerType::kTouchScroll, nullptr,
-                             nullptr);
+  FrameSequenceMetrics first(FrameSequenceTrackerType::kTouchScroll, nullptr);
   first.impl_throughput().frames_expected = 20;
   first.impl_throughput().frames_produced = 10;
   EXPECT_FALSE(first.HasEnoughDataForReporting());
 
   // Create a second metric with too few frames to report any metrics.
   auto second = std::make_unique<FrameSequenceMetrics>(
-      FrameSequenceTrackerType::kTouchScroll, nullptr, nullptr);
+      FrameSequenceTrackerType::kTouchScroll, nullptr);
   second->impl_throughput().frames_expected = 90;
   second->impl_throughput().frames_produced = 60;
   EXPECT_FALSE(second->HasEnoughDataForReporting());
@@ -37,8 +36,7 @@ TEST(FrameSequenceMetricsTest, AllMetricsReported) {
 
   // Create a metric with enough frames on impl to be reported, but not enough
   // on main.
-  FrameSequenceMetrics first(FrameSequenceTrackerType::kTouchScroll, nullptr,
-                             nullptr);
+  FrameSequenceMetrics first(FrameSequenceTrackerType::kTouchScroll, nullptr);
   first.impl_throughput().frames_expected = 120;
   first.impl_throughput().frames_produced = 80;
   first.main_throughput().frames_expected = 20;
@@ -59,7 +57,7 @@ TEST(FrameSequenceMetricsTest, AllMetricsReported) {
   EXPECT_TRUE(first.HasDataLeftForReporting());
 
   auto second = std::make_unique<FrameSequenceMetrics>(
-      FrameSequenceTrackerType::kTouchScroll, nullptr, nullptr);
+      FrameSequenceTrackerType::kTouchScroll, nullptr);
   second->impl_throughput().frames_expected = 110;
   second->impl_throughput().frames_produced = 100;
   second->main_throughput().frames_expected = 90;
@@ -82,7 +80,7 @@ TEST(FrameSequenceMetricsTest, IrrelevantMetricsNotReported) {
   // Create a metric with enough frames on impl to be reported, but not enough
   // on main.
   FrameSequenceMetrics first(FrameSequenceTrackerType::kCompositorAnimation,
-                             nullptr, nullptr);
+                             nullptr);
   first.impl_throughput().frames_expected = 120;
   first.impl_throughput().frames_produced = 80;
   first.main_throughput().frames_expected = 120;
@@ -100,7 +98,7 @@ TEST(FrameSequenceMetricsTest, IrrelevantMetricsNotReported) {
   histograms.ExpectTotalCount(
       "Graphics.Smoothness.Throughput.SlowerThread.CompositorAnimation", 0u);
 
-  FrameSequenceMetrics second(FrameSequenceTrackerType::kRAF, nullptr, nullptr);
+  FrameSequenceMetrics second(FrameSequenceTrackerType::kRAF, nullptr);
   second.impl_throughput().frames_expected = 120;
   second.impl_throughput().frames_produced = 80;
   second.main_throughput().frames_expected = 120;

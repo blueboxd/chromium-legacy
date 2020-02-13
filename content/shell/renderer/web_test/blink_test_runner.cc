@@ -201,11 +201,10 @@ void BlinkTestRunner::PostDelayedTask(base::OnceClosure task,
 WebString BlinkTestRunner::RegisterIsolatedFileSystem(
     const blink::WebVector<blink::WebString>& absolute_filenames) {
   std::vector<base::FilePath> files;
-  for (size_t i = 0; i < absolute_filenames.size(); ++i)
-    files.push_back(blink::WebStringToFilePath(absolute_filenames[i]));
+  for (auto& filename : absolute_filenames)
+    files.push_back(blink::WebStringToFilePath(filename));
   std::string filesystem_id;
-  Send(new WebTestHostMsg_RegisterIsolatedFileSystem(routing_id(), files,
-                                                     &filesystem_id));
+  GetWebTestClientRemote().RegisterIsolatedFileSystem(files, &filesystem_id);
   return WebString::FromUTF8(filesystem_id);
 }
 
@@ -225,22 +224,6 @@ WebString BlinkTestRunner::GetAbsoluteWebStringFromUTF8Path(
     net::FileURLToFilePath(base_url.Resolve(utf8_path), &path);
   }
   return blink::FilePathToWebString(path);
-}
-
-WebURL BlinkTestRunner::LocalFileToDataURL(const WebURL& file_url) {
-  base::FilePath local_path;
-  if (!net::FileURLToFilePath(file_url, &local_path))
-    return WebURL();
-
-  std::string contents;
-  Send(
-      new WebTestHostMsg_ReadFileToString(routing_id(), local_path, &contents));
-
-  std::string contents_base64;
-  base::Base64Encode(contents, &contents_base64);
-
-  const char data_url_prefix[] = "data:text/css:charset=utf-8;base64,";
-  return WebURL(GURL(data_url_prefix + contents_base64));
 }
 
 WebURL BlinkTestRunner::RewriteWebTestsURL(const std::string& utf8_url,
@@ -410,7 +393,7 @@ void BlinkTestRunner::SetLocale(const std::string& locale) {
 
 base::FilePath BlinkTestRunner::GetWritableDirectory() {
   base::FilePath result;
-  Send(new WebTestHostMsg_GetWritableDirectory(routing_id(), &result));
+  GetWebTestClientRemote().GetWritableDirectory(&result);
   return result;
 }
 

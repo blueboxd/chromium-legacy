@@ -15,6 +15,7 @@
 #include "content/public/common/favicon_url.h"
 #include "content/public/test/navigation_simulator.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 using content::RenderViewHostTester;
@@ -115,7 +116,7 @@ TEST_F(WebAppIconDownloaderTest, SimpleDownload) {
 
   std::vector<content::FaviconURL> favicon_urls;
   favicon_urls.push_back(
-      content::FaviconURL(favicon_url, content::FaviconURL::IconType::kFavicon,
+      content::FaviconURL(favicon_url, blink::mojom::FaviconIconType::kFavicon,
                           std::vector<gfx::Size>()));
   downloader.set_initial_favicon_urls(favicon_urls);
   EXPECT_EQ(0u, downloader.pending_requests());
@@ -139,7 +140,7 @@ TEST_F(WebAppIconDownloaderTest, NoHTTPStatusCode) {
 
   std::vector<content::FaviconURL> favicon_urls;
   favicon_urls.push_back(
-      content::FaviconURL(favicon_url, content::FaviconURL::IconType::kFavicon,
+      content::FaviconURL(favicon_url, blink::mojom::FaviconIconType::kFavicon,
                           std::vector<gfx::Size>()));
   downloader.set_initial_favicon_urls(favicon_urls);
   EXPECT_EQ(0u, downloader.pending_requests());
@@ -165,7 +166,7 @@ TEST_F(WebAppIconDownloaderTest, DownloadWithUrlsFromWebContentsNotification) {
 
   std::vector<content::FaviconURL> favicon_urls;
   favicon_urls.push_back(
-      content::FaviconURL(favicon_url, content::FaviconURL::IconType::kFavicon,
+      content::FaviconURL(favicon_url, blink::mojom::FaviconIconType::kFavicon,
                           std::vector<gfx::Size>()));
   EXPECT_EQ(0u, downloader.pending_requests());
 
@@ -200,16 +201,16 @@ TEST_F(WebAppIconDownloaderTest, DownloadMultipleUrls) {
   TestWebAppIconDownloader downloader(web_contents(), extra_urls);
   std::vector<content::FaviconURL> favicon_urls;
   favicon_urls.push_back(content::FaviconURL(
-      favicon_url_1, content::FaviconURL::IconType::kFavicon,
+      favicon_url_1, blink::mojom::FaviconIconType::kFavicon,
       std::vector<gfx::Size>()));
   // This is duplicated in the favicon urls and should only be downloaded once.
   favicon_urls.push_back(content::FaviconURL(
-      empty_favicon, content::FaviconURL::IconType::kFavicon,
+      empty_favicon, blink::mojom::FaviconIconType::kFavicon,
       std::vector<gfx::Size>()));
   // Invalid icons shouldn't get put into the download queue.
   favicon_urls.push_back(content::FaviconURL(
       GURL("http://www.google.com/invalid.ico"),
-      content::FaviconURL::IconType::kInvalid, std::vector<gfx::Size>()));
+      blink::mojom::FaviconIconType::kInvalid, std::vector<gfx::Size>()));
   downloader.set_initial_favicon_urls(favicon_urls);
   downloader.Start();
   EXPECT_EQ(3u, downloader.pending_requests());
@@ -248,7 +249,7 @@ TEST_F(WebAppIconDownloaderTest, SkipPageFavicons) {
   // This favicon URL should be ignored.
   std::vector<content::FaviconURL> favicon_urls;
   favicon_urls.push_back(content::FaviconURL(
-      favicon_url_2, content::FaviconURL::IconType::kFavicon,
+      favicon_url_2, blink::mojom::FaviconIconType::kFavicon,
       std::vector<gfx::Size>()));
   downloader.set_initial_favicon_urls(favicon_urls);
   downloader.SkipPageFavicons();
@@ -277,7 +278,7 @@ TEST_F(WebAppIconDownloaderTest, PageNavigates) {
 
   downloader.set_initial_favicon_urls({content::FaviconURL(
       GURL("http://www.google.com/favicon.ico"),
-      content::FaviconURL::IconType::kFavicon, std::vector<gfx::Size>())});
+      blink::mojom::FaviconIconType::kFavicon, std::vector<gfx::Size>())});
   EXPECT_EQ(0u, downloader.pending_requests());
 
   downloader.Start();
@@ -300,7 +301,7 @@ TEST_F(WebAppIconDownloaderTest, PageNavigatesSameDocument) {
   TestWebAppIconDownloader downloader(web_contents(), std::vector<GURL>());
 
   downloader.set_initial_favicon_urls(
-      {content::FaviconURL(favicon_url, content::FaviconURL::IconType::kFavicon,
+      {content::FaviconURL(favicon_url, blink::mojom::FaviconIconType::kFavicon,
                            std::vector<gfx::Size>())});
   EXPECT_EQ(0u, downloader.pending_requests());
 

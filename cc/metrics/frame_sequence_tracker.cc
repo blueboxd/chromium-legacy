@@ -130,10 +130,8 @@ bool IsInteractionType(FrameSequenceTrackerType sequence_type) {
 // FrameSequenceMetrics
 
 FrameSequenceMetrics::FrameSequenceMetrics(FrameSequenceTrackerType type,
-                                           UkmManager* ukm_manager,
                                            ThroughputUkmReporter* ukm_reporter)
     : type_(type),
-      ukm_manager_(ukm_manager),
       throughput_ukm_reporter_(ukm_reporter) {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
       "cc,benchmark", "FrameSequenceTracker", TRACE_ID_LOCAL(this), "name",
@@ -212,10 +210,9 @@ void FrameSequenceMetrics::ReportMetrics() {
     }
 
     // slower_throughput has value indicates that we have reported UMA.
-    if (slower_throughput.has_value() && ukm_manager_ &&
-        throughput_ukm_reporter_) {
+    if (slower_throughput.has_value() && throughput_ukm_reporter_) {
       throughput_ukm_reporter_->ReportThroughputUkm(
-          ukm_manager_, slower_throughput_percent, impl_throughput_percent,
+          slower_throughput_percent, impl_throughput_percent,
           main_throughput_percent, type_);
     }
   }
@@ -248,8 +245,7 @@ FrameSequenceTrackerCollection::FrameSequenceTrackerCollection(
     CompositorFrameReportingController* compositor_frame_reporting_controller)
     : is_single_threaded_(is_single_threaded),
       compositor_frame_reporting_controller_(
-          compositor_frame_reporting_controller),
-      throughput_ukm_reporter_(std::make_unique<ThroughputUkmReporter>()) {}
+          compositor_frame_reporting_controller) {}
 
 FrameSequenceTrackerCollection::~FrameSequenceTrackerCollection() {
   frame_trackers_.clear();
@@ -262,8 +258,8 @@ void FrameSequenceTrackerCollection::StartSequence(
     return;
   if (frame_trackers_.contains(type))
     return;
-  auto tracker = base::WrapUnique(new FrameSequenceTracker(
-      type, ukm_manager_, throughput_ukm_reporter_.get()));
+  auto tracker = base::WrapUnique(
+      new FrameSequenceTracker(type, throughput_ukm_reporter_.get()));
   frame_trackers_[type] = std::move(tracker);
 
   if (compositor_frame_reporting_controller_)
@@ -442,7 +438,10 @@ FrameSequenceTracker* FrameSequenceTrackerCollection::GetTrackerForTesting(
 
 void FrameSequenceTrackerCollection::SetUkmManager(UkmManager* manager) {
   DCHECK(frame_trackers_.empty());
-  ukm_manager_ = manager;
+  if (manager)
+    throughput_ukm_reporter_ = std::make_unique<ThroughputUkmReporter>(manager);
+  else
+    throughput_ukm_reporter_ = nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -450,12 +449,10 @@ void FrameSequenceTrackerCollection::SetUkmManager(UkmManager* manager) {
 
 FrameSequenceTracker::FrameSequenceTracker(
     FrameSequenceTrackerType type,
-    UkmManager* manager,
     ThroughputUkmReporter* throughput_ukm_reporter)
     : type_(type),
       metrics_(
           std::make_unique<FrameSequenceMetrics>(type,
-                                                 manager,
                                                  throughput_ukm_reporter)) {
   DCHECK_LT(type_, FrameSequenceTrackerType::kMaxType);
 }

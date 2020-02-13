@@ -98,7 +98,7 @@ void RecordParentAccessUsage(ParentAccessRequestReason reason) {
   NOTREACHED() << "Unknown ParentAccessRequestReason";
 }
 
-ParentAccessView::SubmissionResult ParentAccessController::OnPinSubmitted(
+PinRequestView::SubmissionResult ParentAccessController::OnPinSubmitted(
     const std::string& pin) {
   bool pin_is_valid =
       Shell::Get()->login_screen_controller()->ValidateParentAccessCode(
@@ -108,16 +108,16 @@ ParentAccessView::SubmissionResult ParentAccessController::OnPinSubmitted(
     VLOG(1) << "Parent access code successfully validated";
     RecordParentAccessAction(
         ParentAccessController::UMAAction::kValidationSuccess);
-    return ParentAccessView::SubmissionResult::kPinAccepted;
+    return PinRequestView::SubmissionResult::kPinAccepted;
   }
 
   VLOG(1) << "Invalid parent access code entered";
   RecordParentAccessAction(ParentAccessController::UMAAction::kValidationError);
-  ParentAccessWidget::Get()->UpdateState(
-      ParentAccessRequestViewState::kError,
+  PinRequestWidget::Get()->UpdateState(
+      PinRequestViewState::kError,
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_TITLE_ERROR),
       GetDescription(reason_));
-  return ParentAccessView::SubmissionResult::kPinError;
+  return PinRequestView::SubmissionResult::kPinError;
 }
 
 void ParentAccessController::OnBack() {
@@ -140,18 +140,18 @@ void ParentAccessController::OnHelp(gfx::NativeWindow parent_window) {
 
 bool ParentAccessController::ShowWidget(
     const AccountId& child_account_id,
-    ParentAccessRequest::OnParentAccessDone on_exit_callback,
+    PinRequest::OnPinRequestDone on_exit_callback,
     ParentAccessRequestReason reason,
     bool extra_dimmer,
     base::Time validation_time) {
-  if (ParentAccessWidget::Get())
+  if (PinRequestWidget::Get())
     return false;
 
   account_id_ = child_account_id;
   reason_ = reason;
   validation_time_ = validation_time;
-  ParentAccessRequest request;
-  request.on_parent_access_done = std::move(on_exit_callback);
+  PinRequest request;
+  request.on_pin_request_done = std::move(on_exit_callback);
   request.help_button_enabled = true;
   request.extra_dimmer = extra_dimmer;
   request.pin_length = kParentAccessCodePinLength;
@@ -159,7 +159,7 @@ bool ParentAccessController::ShowWidget(
   request.title = GetTitle(reason);
   request.description = GetDescription(reason);
   request.accessible_title = GetAccessibleTitle();
-  ParentAccessWidget::Show(std::move(request), this);
+  PinRequestWidget::Show(std::move(request), this);
   RecordParentAccessUsage(reason);
   return true;
 }

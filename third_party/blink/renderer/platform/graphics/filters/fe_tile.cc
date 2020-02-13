@@ -34,18 +34,21 @@ FloatRect FETile::MapInputs(const FloatRect& rect) const {
   return AbsoluteBounds();
 }
 
+FloatRect FETile::GetSourceRect() const {
+  const FilterEffect* input = InputEffect(0);
+  if (input->GetFilterEffectType() == kFilterEffectTypeSourceInput)
+    return GetFilter()->FilterRegion();
+  return input->FilterPrimitiveSubregion();
+}
+
 sk_sp<PaintFilter> FETile::CreateImageFilter() {
   sk_sp<PaintFilter> input(paint_filter_builder::Build(
       InputEffect(0), OperatingInterpolationSpace()));
   if (!input)
     return nullptr;
-
-  FloatRect src_rect;
-  if (InputEffect(0)->GetFilterEffectType() == kFilterEffectTypeSourceInput)
-    src_rect = GetFilter()->FilterRegion();
-  else
-    src_rect = InputEffect(0)->FilterPrimitiveSubregion();
-  FloatRect dst_rect = FilterPrimitiveSubregion();
+  FloatRect src_rect = GetFilter()->MapLocalRectToAbsoluteRect(GetSourceRect());
+  FloatRect dst_rect =
+      GetFilter()->MapLocalRectToAbsoluteRect(FilterPrimitiveSubregion());
   return sk_make_sp<TilePaintFilter>(src_rect, dst_rect, std::move(input));
 }
 

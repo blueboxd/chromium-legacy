@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
 #include "base/unguessable_token.h"
@@ -29,7 +30,7 @@ void ClearMediaDrmLicensesBlocking(
         media::MediaDrmBridge::CreateWithoutSessionSupport(
             kWidevineKeySystem, origin_id.ToString(),
             media::MediaDrmBridge::SECURITY_LEVEL_DEFAULT,
-            media::CreateFetcherCB());
+            base::NullCallback());
 
     DCHECK(media_drm_bridge);
 

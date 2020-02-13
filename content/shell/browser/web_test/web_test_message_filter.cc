@@ -11,7 +11,6 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_index_context.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_type.h"
@@ -31,7 +30,6 @@
 #include "net/base/net_errors.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/browser/database/database_tracker.h"
-#include "storage/browser/file_system/isolated_context.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "url/origin.h"
 
@@ -74,7 +72,6 @@ WebTestMessageFilter::OverrideTaskRunnerForMessage(
       return database_tracker_->task_runner();
     case WebTestHostMsg_SimulateWebNotificationClick::ID:
     case WebTestHostMsg_InitiateCaptureDump::ID:
-    case WebTestHostMsg_GetWritableDirectory::ID:
     case WebTestHostMsg_SetFilePathForMockFileDialog::ID:
       return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
   }
@@ -84,45 +81,18 @@ WebTestMessageFilter::OverrideTaskRunnerForMessage(
 bool WebTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebTestMessageFilter, message)
-    IPC_MESSAGE_HANDLER(WebTestHostMsg_ReadFileToString, OnReadFileToString)
-    IPC_MESSAGE_HANDLER(WebTestHostMsg_RegisterIsolatedFileSystem,
-                        OnRegisterIsolatedFileSystem)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_ClearAllDatabases, OnClearAllDatabases)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SetDatabaseQuota, OnSetDatabaseQuota)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SimulateWebNotificationClick,
                         OnSimulateWebNotificationClick)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_InitiateCaptureDump,
                         OnInitiateCaptureDump)
-    IPC_MESSAGE_HANDLER(WebTestHostMsg_GetWritableDirectory,
-                        OnGetWritableDirectory)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SetFilePathForMockFileDialog,
                         OnSetFilePathForMockFileDialog)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
-}
-
-void WebTestMessageFilter::OnReadFileToString(const base::FilePath& local_file,
-                                              std::string* contents) {
-  base::ScopedAllowBlockingForTesting allow_blocking;
-  base::ReadFileToString(local_file, contents);
-}
-
-void WebTestMessageFilter::OnRegisterIsolatedFileSystem(
-    const std::vector<base::FilePath>& absolute_filenames,
-    std::string* filesystem_id) {
-  storage::IsolatedContext::FileInfoSet files;
-  ChildProcessSecurityPolicy* policy =
-      ChildProcessSecurityPolicy::GetInstance();
-  for (size_t i = 0; i < absolute_filenames.size(); ++i) {
-    files.AddPath(absolute_filenames[i], nullptr);
-    if (!policy->CanReadFile(render_process_id_, absolute_filenames[i]))
-      policy->GrantReadFile(render_process_id_, absolute_filenames[i]);
-  }
-  *filesystem_id =
-      storage::IsolatedContext::GetInstance()->RegisterDraggedFileSystem(files);
-  policy->GrantReadFileSystem(render_process_id_, *filesystem_id);
 }
 
 void WebTestMessageFilter::OnClearAllDatabases() {
@@ -163,11 +133,6 @@ void WebTestMessageFilter::OnInitiateCaptureDump(
   }
 }
 
-void WebTestMessageFilter::OnGetWritableDirectory(base::FilePath* path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (BlinkTestController::Get())
-    *path = BlinkTestController::Get()->GetWritableDirectoryForTests();
-}
 void WebTestMessageFilter::OnSetFilePathForMockFileDialog(
     const base::FilePath& path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

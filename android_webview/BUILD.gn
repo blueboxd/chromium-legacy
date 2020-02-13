@@ -41,6 +41,14 @@ if (public_android_sdk) {
     apk_name = "SystemWebView"
   }
 
+  # This version of the WebView APK doesn't include WebLayer java and resources.
+  # It's used to define the whitelist of resources to be pulled out of language
+  # splits. See |shared_resources_whitelist_target|.
+  standalone_system_webview_apk_tmpl("system_webview_no_weblayer_apk") {
+    exclude_weblayer_java = true
+    apk_name = "SystemWebViewNoWebLayer"
+  }
+
   if (enable_webview_bundles) {
     standalone_system_webview_apk_tmpl("system_webview_base_bundle_module") {
       target_type = "android_app_bundle_module"
@@ -261,11 +269,7 @@ if (defined(android_secondary_abi_toolchain)) {
   }
 }
 
-# Contains all Java dependencies used by WebView.
-# TODO(crbug.com/934152): Rename this to android_webview_java. It has a
-#                         temporary name because GN doesn't allow the direction
-#                         of existing dependencies to be reversed.
-java_group("android_webview_step1_java") {
+java_group("android_webview_no_weblayer_java") {
   deps = [
     ":browser_java",
 
@@ -277,6 +281,11 @@ java_group("android_webview_step1_java") {
     "//android_webview/nonembedded:nonembedded_java",
     "//android_webview/support_library:support_lib_glue_java",
   ]
+}
+
+# Contains all Java dependencies used by WebView.
+java_group("android_webview_java") {
+  deps = [ ":android_webview_no_weblayer_java" ]
 
   if (webview_includes_weblayer) {
     deps += [

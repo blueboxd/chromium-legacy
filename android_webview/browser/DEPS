@@ -102,6 +102,8 @@ include_rules = [
   "+third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h",
   # Interface required for in-process input event handling.
   "+third_party/blink/public/web/WebCompositorInputHandler.h",
+  # For favicon url
+  "+third_party/blink/public/mojom/favicon",
   # For find-in-page
   "+third_party/blink/public/mojom/frame",
   # Required for the Web Speech API.

@@ -124,6 +124,9 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void DidStopLoading() override;
   void IntrinsicSizingInfoOfChildChanged(
       mojom::blink::IntrinsicSizingInfoPtr sizing_info) override;
+  void DidSetFramePolicyHeaders(
+      WebSandboxFlags,
+      const WTF::Vector<ParsedFeaturePolicyDeclaration>&) override;
 
   void SetMainFrameViewportSize(const IntSize&) override;
   IntSize GetMainFrameViewportSize() const override;

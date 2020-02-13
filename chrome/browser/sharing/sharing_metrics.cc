@@ -479,12 +479,18 @@ void LogRemoteCopyResizeImageTime(base::TimeDelta time) {
   base::UmaHistogramMediumTimes("Sharing.RemoteCopyResizeImageTime", time);
 }
 
-void LogRemoteCopyWriteImageTime(base::TimeDelta time) {
-  base::UmaHistogramMediumTimes("Sharing.RemoteCopyWriteImageTime", time);
+void LogRemoteCopyWriteTime(base::TimeDelta time, bool is_image) {
+  if (is_image)
+    base::UmaHistogramMediumTimes("Sharing.RemoteCopyWriteImageTime", time);
+  else
+    base::UmaHistogramMediumTimes("Sharing.RemoteCopyWriteTextTime", time);
 }
 
-void LogRemoteCopyWriteTextTime(base::TimeDelta time) {
-  base::UmaHistogramMediumTimes("Sharing.RemoteCopyWriteTextTime", time);
+void LogRemoteCopyWriteDetectionTime(base::TimeDelta time, bool is_image) {
+  if (is_image)
+    base::UmaHistogramTimes("Sharing.RemoteCopyWriteImageDetectionTime", time);
+  else
+    base::UmaHistogramTimes("Sharing.RemoteCopyWriteTextDetectionTime", time);
 }
 
 void LogSharingDeviceInfoAvailable(bool available) {

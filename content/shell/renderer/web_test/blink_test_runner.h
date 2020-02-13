@@ -67,7 +67,6 @@ class BlinkTestRunner : public RenderViewObserver,
   long long GetCurrentTimeInMillisecond() override;
   blink::WebString GetAbsoluteWebStringFromUTF8Path(
       const std::string& utf8_path) override;
-  blink::WebURL LocalFileToDataURL(const blink::WebURL& file_url) override;
   blink::WebURL RewriteWebTestsURL(const std::string& utf8_url,
                                    bool is_wpt_mode) override;
   test_runner::TestPreferences* Preferences() override;

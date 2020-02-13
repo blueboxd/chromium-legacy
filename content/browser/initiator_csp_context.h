@@ -6,10 +6,10 @@
 #define CONTENT_BROWSER_INITIATOR_CSP_CONTEXT_H_
 
 #include "content/browser/frame_host/render_frame_host_impl.h"
-#include "content/common/content_security_policy/csp_context.h"
 #include "content/common/navigation_params.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 
 namespace content {
 
@@ -20,7 +20,7 @@ namespace content {
 // passed through the CommonNavigationParams. The
 // relevant CSP directives of the navigation initiator are currently
 // `navigate-to` and `form-action` (in the case of form submissions).
-class InitiatorCSPContext : public CSPContext {
+class InitiatorCSPContext : public network::CSPContext {
  public:
   InitiatorCSPContext(
       std::vector<network::mojom::ContentSecurityPolicyPtr> policies,

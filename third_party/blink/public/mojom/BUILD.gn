@@ -43,6 +43,7 @@ mojom("mojom_platform") {
     "devtools/devtools_agent.mojom",
     "devtools/devtools_frontend.mojom",
     "devtools/inspector_issue.mojom",
+    "favicon/favicon_url.mojom",
     "feature_observer/feature_observer.mojom",
     "feature_policy/feature_policy.mojom",
     "feature_policy/feature_policy_feature.mojom",

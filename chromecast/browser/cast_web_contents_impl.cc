@@ -41,6 +41,7 @@
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
@@ -898,11 +899,11 @@ void CastWebContentsImpl::DidUpdateFaviconURL(
   //  3) icon
   for (auto& favicon : candidates) {
     if (favicon.icon_type ==
-        content::FaviconURL::IconType::kTouchPrecomposedIcon) {
+        blink::mojom::FaviconIconType::kTouchPrecomposedIcon) {
       icon_url = favicon.icon_url;
       break;
     } else if ((favicon.icon_type ==
-                content::FaviconURL::IconType::kTouchIcon) &&
+                blink::mojom::FaviconIconType::kTouchIcon) &&
                !found_touch_icon) {
       found_touch_icon = true;
       icon_url = favicon.icon_url;

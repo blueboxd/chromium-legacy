@@ -12,9 +12,9 @@
 #error "This file requires ARC support."
 #endif
 
-FakeInfobarIOS::FakeInfobarIOS()
+FakeInfobarIOS::FakeInfobarIOS(base::string16 message_text)
     : InfoBarIOS([[FakeInfobarUIDelegate alloc] init],
-                 std::make_unique<FakeInfobarDelegate>()),
+                 std::make_unique<FakeInfobarDelegate>(message_text)),
       fake_ui_delegate_(
           static_cast<FakeInfobarUIDelegate*>(InfobarUIDelegate())),
       fake_delegate_(static_cast<FakeInfobarDelegate*>(delegate())) {
@@ -25,9 +25,12 @@ FakeInfobarIOS::FakeInfobarIOS()
 FakeInfobarIOS::~FakeInfobarIOS() = default;
 
 // static
-std::unique_ptr<FakeInfobarIOS> FakeInfobarIOS::Create(InfobarType type,
-                                                       bool has_badge) {
-  std::unique_ptr<FakeInfobarIOS> infobar = std::make_unique<FakeInfobarIOS>();
+std::unique_ptr<FakeInfobarIOS> FakeInfobarIOS::Create(
+    InfobarType type,
+    bool has_badge,
+    base::string16 message_text) {
+  std::unique_ptr<FakeInfobarIOS> infobar =
+      std::make_unique<FakeInfobarIOS>(message_text);
   infobar->fake_ui_delegate().infobarType = type;
   infobar->fake_ui_delegate().hasBadge = has_badge;
   return infobar;

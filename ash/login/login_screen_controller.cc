@@ -398,11 +398,11 @@ LoginScreenController::GetScopedGuestButtonBlocker() {
 
 void LoginScreenController::ShowParentAccessWidget(
     const AccountId& child_account_id,
-    ParentAccessRequest::OnParentAccessDone callback,
+    base::OnceCallback<void(bool success)> callback,
     ParentAccessRequestReason reason,
     bool extra_dimmer,
     base::Time validation_time) {
-  DCHECK(!ParentAccessWidget::Get());
+  DCHECK(!PinRequestWidget::Get());
   Shell::Get()->parent_access_controller()->ShowWidget(
       child_account_id, std::move(callback), reason, extra_dimmer,
       validation_time);

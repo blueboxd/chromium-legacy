@@ -735,8 +735,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
         // If manual save, skip showing banner.
         std::unique_ptr<InfoBarIOS> infobar = std::make_unique<InfoBarIOS>(
             coordinator, std::move(delegate), /*skip_banner=*/manual);
-        infoBarManager->AddInfoBar(std::move(infobar));
-      } else {
+        infoBarManager->AddInfoBar(std::move(infobar),
+                                   /*replace_existing=*/true);
+      } else if (!manual) {
         IOSPasswordInfoBarController* controller =
             [[IOSPasswordInfoBarController alloc]
                 initWithInfoBarDelegate:delegate.get()];
@@ -757,8 +758,9 @@ NSString* const kSuggestionSuffix = @" ••••••••";
         // If manual save, skip showing banner.
         std::unique_ptr<InfoBarIOS> infobar = std::make_unique<InfoBarIOS>(
             coordinator, std::move(delegate), /*skip_banner=*/manual);
-        infoBarManager->AddInfoBar(std::move(infobar));
-      } else {
+        infoBarManager->AddInfoBar(std::move(infobar),
+                                   /*replace_existing=*/true);
+      } else if (!manual) {
         IOSChromeUpdatePasswordInfoBarDelegate::Create(
             isSyncUser, infoBarManager, std::move(form),
             self.baseViewController, self.dispatcher);

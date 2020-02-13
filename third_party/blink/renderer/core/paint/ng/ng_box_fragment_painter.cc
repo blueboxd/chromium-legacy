@@ -1481,7 +1481,7 @@ void NGBoxFragmentPainter::PaintBoxItem(const NGFragmentItem& item,
       return;
     }
 
-    NGInlineBoxFragmentPainter(item, *child_fragment)
+    NGInlineBoxFragmentPainter(cursor, item, *child_fragment)
         .Paint(paint_info, paint_offset);
   }
 
@@ -1543,7 +1543,8 @@ void NGBoxFragmentPainter::PaintTextClipMask(GraphicsContext& context,
   NGInlineCursor cursor;
   cursor.MoveTo(*box_item_);
   NGInlineCursor descendants = cursor.CursorForDescendants();
-  NGInlineBoxFragmentPainter inline_box_painter(*box_item_, &descendants);
+  NGInlineBoxFragmentPainter inline_box_painter(cursor, *box_item_,
+                                                &descendants);
   PaintTextClipMask(paint_info,
                     paint_offset - box_item_->OffsetInContainerBlock(),
                     &inline_box_painter);

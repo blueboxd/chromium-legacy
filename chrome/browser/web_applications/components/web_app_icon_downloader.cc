@@ -11,6 +11,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/favicon_url.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -73,9 +74,9 @@ WebAppIconDownloader::GetFaviconURLsFromWebContents() {
 void WebAppIconDownloader::FetchIcons(
     const std::vector<content::FaviconURL>& favicon_urls) {
   std::vector<GURL> urls;
-  for (auto it = favicon_urls.begin(); it != favicon_urls.end(); ++it) {
-    if (it->icon_type != content::FaviconURL::IconType::kInvalid)
-      urls.push_back(it->icon_url);
+  for (const auto& favicon_url : favicon_urls) {
+    if (favicon_url.icon_type != blink::mojom::FaviconIconType::kInvalid)
+      urls.push_back(favicon_url.icon_url);
   }
   FetchIcons(urls);
 }

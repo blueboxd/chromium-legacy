@@ -8,8 +8,11 @@
 #include <string>
 #include <utility>
 
+#include "base/files/file_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_index_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/shell/browser/shell_content_browser_client.h"
@@ -23,6 +26,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "storage/browser/file_system/isolated_context.h"
 
 namespace content {
 
@@ -187,6 +191,33 @@ void WebTestClientImpl::DeleteAllCookies() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   cookie_manager_->DeleteCookies(network::mojom::CookieDeletionFilter::New(),
                                  base::BindOnce([](uint32_t) {}));
+}
+
+void WebTestClientImpl::GetWritableDirectory(
+    GetWritableDirectoryCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::FilePath path;
+  if (BlinkTestController::Get())
+    path = BlinkTestController::Get()->GetWritableDirectoryForTests();
+  std::move(callback).Run(path);
+}
+
+void WebTestClientImpl::RegisterIsolatedFileSystem(
+    const std::vector<base::FilePath>& absolute_filenames,
+    RegisterIsolatedFileSystemCallback callback) {
+  storage::IsolatedContext::FileInfoSet files;
+  std::string filesystem_id;
+  ChildProcessSecurityPolicy* policy =
+      ChildProcessSecurityPolicy::GetInstance();
+  for (auto& filename : absolute_filenames) {
+    files.AddPath(filename, nullptr);
+    if (!policy->CanReadFile(render_process_id_, filename))
+      policy->GrantReadFile(render_process_id_, filename);
+  }
+  filesystem_id =
+      storage::IsolatedContext::GetInstance()->RegisterDraggedFileSystem(files);
+  policy->GrantReadFileSystem(render_process_id_, filesystem_id);
+  std::move(callback).Run(filesystem_id);
 }
 
 }  // namespace content

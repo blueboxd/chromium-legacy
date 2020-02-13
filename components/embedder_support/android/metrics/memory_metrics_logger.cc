@@ -55,7 +55,9 @@ void RecordMemoryMetricsImpl(
         break;
       }
 
-      // WebView only supports the browser and possibly renderer process.
+      // Currently this class only records metrics for the browser and
+      // renderer process, as it originated from WebView, where there are no
+      // other processes.
       // TODO(weblayer-team): refactor to allow the embedder to record GPU
       // metrics.
       case memory_instrumentation::mojom::ProcessType::GPU:
@@ -67,7 +69,6 @@ void RecordMemoryMetricsImpl(
       case memory_instrumentation::mojom::ProcessType::PLUGIN:
         FALLTHROUGH;
       case memory_instrumentation::mojom::ProcessType::OTHER:
-        NOTREACHED();
         break;
     }
   }

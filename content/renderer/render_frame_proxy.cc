@@ -381,22 +381,6 @@ void RenderFrameProxy::OnDidUpdateFramePolicy(
   web_frame_->SetFrameOwnerPolicy(frame_policy);
 }
 
-// Update the proxy's SecurityContext with new sandbox flags or feature policy
-// that were set during navigation. Unlike changes to the FrameOwner, which are
-// handled by OnDidUpdateFramePolicy, these changes should be considered
-// effective immediately.
-//
-// These flags / policy are needed on the remote frame's SecurityContext to
-// ensure that sandbox flags and feature policy are inherited properly if this
-// proxy ever parents a local frame.
-void RenderFrameProxy::OnDidSetFramePolicyHeaders(
-    blink::WebSandboxFlags active_sandbox_flags,
-    blink::ParsedFeaturePolicy feature_policy_header) {
-  web_frame_->SetReplicatedSandboxFlags(active_sandbox_flags);
-  web_frame_->SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
-      feature_policy_header, blink::FeaturePolicy::FeatureState());
-}
-
 bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
   // Page IPCs are routed via the main frame (both local and remote) and then
   // forwarded to the RenderView. See comment in
@@ -414,8 +398,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_ViewChanged, OnViewChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateFramePolicy, OnDidUpdateFramePolicy)
-    IPC_MESSAGE_HANDLER(FrameMsg_DidSetFramePolicyHeaders,
-                        OnDidSetFramePolicyHeaders)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
     IPC_MESSAGE_HANDLER(FrameMsg_EnforceInsecureRequestPolicy,
                         OnEnforceInsecureRequestPolicy)

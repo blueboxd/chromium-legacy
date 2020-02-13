@@ -16,11 +16,13 @@ class UkmManager;
 // talk to UkmManager to report it.
 class CC_EXPORT ThroughputUkmReporter {
  public:
-  ThroughputUkmReporter() = default;
+  explicit ThroughputUkmReporter(UkmManager* ukm_manager);
   ~ThroughputUkmReporter() = default;
 
-  void ReportThroughputUkm(const UkmManager* ukm_manager,
-                           const base::Optional<int>& slower_throughput_percent,
+  ThroughputUkmReporter(const ThroughputUkmReporter&) = delete;
+  ThroughputUkmReporter& operator=(const ThroughputUkmReporter&) = delete;
+
+  void ReportThroughputUkm(const base::Optional<int>& slower_throughput_percent,
                            const base::Optional<int>& impl_throughput_percent,
                            const base::Optional<int>& main_throughput_percent,
                            FrameSequenceTrackerType type);
@@ -30,6 +32,13 @@ class CC_EXPORT ThroughputUkmReporter {
   // Currently, the same sampling rate is applied to all existing trackers. We
   // might want to iterate on this based on the collected data.
   uint32_t samples_to_next_event_ = 0;
+
+  // This is pointing to the LayerTreeHostImpl::ukm_manager_, which is
+  // initialized right after the LayerTreeHostImpl is created. So when this
+  // pointer is initialized, there should be no trackers yet. Moreover, the
+  // LayerTreeHostImpl::ukm_manager_ lives as long as the LayerTreeHostImpl, so
+  // this pointer should never be null as long as LayerTreeHostImpl is alive.
+  UkmManager* const ukm_manager_;
 };
 
 }  // namespace cc

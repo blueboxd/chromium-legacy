@@ -14,14 +14,27 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-shared.h"
+#include "url/mojom/origin_mojom_traits.h"
 
 namespace mojo {
+
+// This header is included by both blink and non-blink code.
+//
+// In the case of blink code, STATIC_ASSERT_ENUM is available by
+// including renderer/wtf/assertions.h.
+// In the case of non-blink code, STATIC_ASSERT_ENUM is underfined
+// and hence needs to be declared.
+//
+// In order to work for both cases, we undef the existing STATIC_ASSERT_ENUM
+// and then redefine it locally.
+#undef STATIC_ASSERT_ENUM
 
 #define STATIC_ASSERT_ENUM(a, b)                            \
   static_assert(static_cast<int>(a) == static_cast<int>(b), \
                 "mismatching enum : " #a)
 
-// TODO(crbug.com/789818) - Merge these 2 WebSandboxFlags enums.
+// TODO(crbug.com/789818) - Merge these 2 WebSandboxFlags enums, and remove both
+// directives above.
 STATIC_ASSERT_ENUM(::blink::WebSandboxFlags::kNone,
                    ::blink::mojom::WebSandboxFlags::kNone);
 STATIC_ASSERT_ENUM(::blink::WebSandboxFlags::kNavigation,

@@ -51,7 +51,6 @@
 #include "content/common/accessibility_messages.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/edit_command.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
@@ -767,19 +766,19 @@ class MHTMLHandleWriterDelegate {
   DISALLOW_COPY_AND_ASSIGN(MHTMLHandleWriterDelegate);
 };
 
-FaviconURL::IconType ToFaviconType(blink::WebIconURL::Type type) {
+blink::mojom::FaviconIconType ToFaviconType(blink::WebIconURL::Type type) {
   switch (type) {
     case blink::WebIconURL::kTypeFavicon:
-      return FaviconURL::IconType::kFavicon;
+      return blink::mojom::FaviconIconType::kFavicon;
     case blink::WebIconURL::kTypeTouch:
-      return FaviconURL::IconType::kTouchIcon;
+      return blink::mojom::FaviconIconType::kTouchIcon;
     case blink::WebIconURL::kTypeTouchPrecomposed:
-      return FaviconURL::IconType::kTouchPrecomposedIcon;
+      return blink::mojom::FaviconIconType::kTouchPrecomposedIcon;
     case blink::WebIconURL::kTypeInvalid:
-      return FaviconURL::IconType::kInvalid;
+      return blink::mojom::FaviconIconType::kInvalid;
   }
   NOTREACHED();
-  return FaviconURL::IconType::kInvalid;
+  return blink::mojom::FaviconIconType::kInvalid;
 }
 
 std::vector<gfx::Size> ConvertToFaviconSizes(

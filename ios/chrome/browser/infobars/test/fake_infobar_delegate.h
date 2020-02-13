@@ -5,18 +5,25 @@
 #ifndef IOS_CHROME_BROWSER_INFOBARS_TEST_FAKE_INFOBAR_DELEGATE_H_
 #define IOS_CHROME_BROWSER_INFOBARS_TEST_FAKE_INFOBAR_DELEGATE_H_
 
-#include "components/infobars/core/infobar_delegate.h"
+#include "components/infobars/core/confirm_infobar_delegate.h"
+
+#include "base/strings/utf_string_conversions.h"
 
 // Fake version of InfoBarDelegate.
-class FakeInfobarDelegate : public infobars::InfoBarDelegate {
+class FakeInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
-  FakeInfobarDelegate();
+  FakeInfobarDelegate(
+      base::string16 message_text = base::ASCIIToUTF16("FakeInfobarDelegate"));
   ~FakeInfobarDelegate() override;
 
   // Returns InfoBarIdentifier::TEST_INFOBAR.
   InfoBarIdentifier GetIdentifier() const override;
-  // Returns false by default.
-  bool EqualsDelegate(infobars::InfoBarDelegate* delegate) const override;
+
+  // Returns the message string to be displayed for the Infobar.
+  base::string16 GetMessageText() const override;
+
+ private:
+  base::string16 message_text_;
 };
 
 #endif  // IOS_CHROME_BROWSER_INFOBARS_TEST_FAKE_INFOBAR_DELEGATE_H_

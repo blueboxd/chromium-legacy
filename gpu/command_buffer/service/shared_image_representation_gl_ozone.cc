@@ -69,11 +69,11 @@ SharedImageRepresentationGLOzone::Create(
 
   GLenum gl_format = viz::GLDataFormat(format);
   GLenum gl_type = viz::GLDataType(format);
-  texture->SetLevelImage(GL_TEXTURE_2D, 0, image.get(), gles2::Texture::BOUND);
   texture->SetLevelInfo(GL_TEXTURE_2D, 0, internal_format,
                         pixmap->GetBufferSize().width(),
                         pixmap->GetBufferSize().height(), 1, 0, gl_format,
                         gl_type, backing->ClearedRect());
+  texture->SetLevelImage(GL_TEXTURE_2D, 0, image.get(), gles2::Texture::BOUND);
   texture->SetImmutable(true, true);
 
   return base::WrapUnique<SharedImageRepresentationGLOzone>(

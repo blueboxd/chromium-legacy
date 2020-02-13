@@ -13,8 +13,12 @@ namespace {
 constexpr unsigned kNumberOfSamplesToReport = 100u;
 }  // namespace
 
+ThroughputUkmReporter::ThroughputUkmReporter(UkmManager* ukm_manager)
+    : ukm_manager_(ukm_manager) {
+  DCHECK(ukm_manager_);
+}
+
 void ThroughputUkmReporter::ReportThroughputUkm(
-    const UkmManager* ukm_manager,
     const base::Optional<int>& slower_throughput_percent,
     const base::Optional<int>& impl_throughput_percent,
     const base::Optional<int>& main_throughput_percent,
@@ -26,18 +30,18 @@ void ThroughputUkmReporter::ReportThroughputUkm(
     // be tuned to not throttle the UKM system.
     samples_to_next_event_ = kNumberOfSamplesToReport;
     if (impl_throughput_percent) {
-      ukm_manager->RecordThroughputUKM(
+      ukm_manager_->RecordThroughputUKM(
           type, FrameSequenceMetrics::ThreadType::kCompositor,
           impl_throughput_percent.value());
     }
     if (main_throughput_percent) {
-      ukm_manager->RecordThroughputUKM(type,
-                                       FrameSequenceMetrics::ThreadType::kMain,
-                                       main_throughput_percent.value());
+      ukm_manager_->RecordThroughputUKM(type,
+                                        FrameSequenceMetrics::ThreadType::kMain,
+                                        main_throughput_percent.value());
     }
-    ukm_manager->RecordThroughputUKM(type,
-                                     FrameSequenceMetrics::ThreadType::kSlower,
-                                     slower_throughput_percent.value());
+    ukm_manager_->RecordThroughputUKM(type,
+                                      FrameSequenceMetrics::ThreadType::kSlower,
+                                      slower_throughput_percent.value());
   }
   DCHECK_GT(samples_to_next_event_, 0u);
   samples_to_next_event_--;

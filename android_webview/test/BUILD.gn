@@ -58,8 +58,8 @@ android_apk("webview_instrumentation_apk") {
     ":webview_instrumentation_apk_assets",
     ":webview_instrumentation_apk_resources",
     ":webview_instrumentation_test_utils_java",
+    "//android_webview:android_webview_java",
     "//android_webview:android_webview_product_config_java",
-    "//android_webview:android_webview_step1_java",
     "//android_webview:common_java",
     "//android_webview:locale_pak_assets",
     "//android_webview:platform_service_bridge_upstream_implementation_java",
@@ -165,7 +165,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
   min_sdk_version = 21
   deps = [
     ":webview_instrumentation_test_utils_java",
-    "//android_webview:android_webview_step1_java",
+    "//android_webview:android_webview_java",
     "//android_webview/test/embedded_test_server:aw_net_java_test_support",
     "//base:base_java",
     "//base:base_java_test_support",
@@ -426,7 +426,7 @@ android_assets("android_webview_unittests_assets") {
 android_library("android_webview_unittests_java") {
   testonly = true
   deps = [
-    "//android_webview:android_webview_step1_java",
+    "//android_webview:android_webview_java",
     "//base:base_java",
     "//content/public/test/android:content_java_test_support",
   ]
@@ -455,7 +455,7 @@ junit_binary("android_webview_junit_tests") {
   ]
 
   deps = [
-    "//android_webview:android_webview_step1_java",
+    "//android_webview:android_webview_java",
     "//base:base_java_test_support",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_support_test_runner:runner_java",

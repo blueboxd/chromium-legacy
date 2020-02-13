@@ -621,22 +621,24 @@ class CONTENT_EXPORT NavigationRequest
   // Checks if the specified CSP context's relevant CSP directive
   // allows the navigation. This is called to perform the frame-src
   // and navigate-to checks.
-  bool IsAllowedByCSPDirective(CSPContext* context,
-                               network::mojom::CSPDirectiveName directive,
-                               bool has_followed_redirect,
-                               bool url_upgraded_after_redirect,
-                               bool is_response_check,
-                               CSPContext::CheckCSPDisposition disposition);
+  bool IsAllowedByCSPDirective(
+      network::CSPContext* context,
+      network::mojom::CSPDirectiveName directive,
+      bool has_followed_redirect,
+      bool url_upgraded_after_redirect,
+      bool is_response_check,
+      network::CSPContext::CheckCSPDisposition disposition);
 
   // Checks if CSP allows the navigation. This will check the frame-src and
   // navigate-to directives.
   // Returns net::OK if the checks pass, and net::ERR_ABORTED or
   // net::ERR_BLOCKED_BY_CLIENT depending on which checks fail.
-  net::Error CheckCSPDirectives(RenderFrameHostImpl* parent,
-                                bool has_followed_redirect,
-                                bool url_upgraded_after_redirect,
-                                bool is_response_check,
-                                CSPContext::CheckCSPDisposition disposition);
+  net::Error CheckCSPDirectives(
+      RenderFrameHostImpl* parent,
+      bool has_followed_redirect,
+      bool url_upgraded_after_redirect,
+      bool is_response_check,
+      network::CSPContext::CheckCSPDisposition disposition);
 
   // Check whether a request should be allowed to continue or should be blocked
   // because it violates a CSP. This method can have two side effects:

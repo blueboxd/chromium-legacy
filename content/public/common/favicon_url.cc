@@ -6,10 +6,10 @@
 
 namespace content {
 
-FaviconURL::FaviconURL() : icon_type(IconType::kInvalid) {}
+FaviconURL::FaviconURL() : icon_type(blink::mojom::FaviconIconType::kInvalid) {}
 
 FaviconURL::FaviconURL(const GURL& url,
-                       IconType type,
+                       blink::mojom::FaviconIconType type,
                        const std::vector<gfx::Size>& sizes)
     : icon_url(url), icon_type(type), icon_sizes(sizes) {}
 

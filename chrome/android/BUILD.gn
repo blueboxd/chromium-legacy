@@ -296,7 +296,6 @@ android_library("chrome_java") {
     "//components/find_in_page/android:java",
     "//components/gcm_driver/android:gcm_driver_java",
     "//components/gcm_driver/instance_id/android:instance_id_driver_java",
-    "//components/invalidation/impl:java",
     "//components/javascript_dialogs/android:java",
     "//components/language/android:language_bridge_java",
     "//components/location/android:location_java",
@@ -662,7 +661,6 @@ junit_binary("chrome_junit_tests") {
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/browser_ui/util/android:junit",
     "//components/browser_ui/widget/android:junit",
-    "//components/invalidation/impl:java",
     "//components/minidump_uploader:minidump_uploader_java",
     "//components/module_installer/android:module_installer_java",
     "//components/offline_items_collection/core:core_java",
@@ -810,8 +808,6 @@ android_library("chrome_test_java") {
     "//components/gcm_driver/android:gcm_driver_java",
     "//components/gcm_driver/instance_id/android:instance_id_driver_java",
     "//components/gcm_driver/instance_id/android:instance_id_driver_test_support_java",
-    "//components/invalidation/impl:java",
-    "//components/invalidation/impl:javatests",
     "//components/javascript_dialogs/android:java",
     "//components/location/android:location_java",
     "//components/metrics:metrics_java",
@@ -1662,7 +1658,7 @@ chrome_public_apk_or_module_tmpl("chrome_modern_public_base_bundle_module") {
 
 android_library("monochrome_java") {
   deps = [
-    "//android_webview:android_webview_step1_java",
+    "//android_webview:android_webview_java",
     "//base:base_java",
     "//chrome/android:chrome_java",
     "//content/public/android:content_java",
@@ -1770,7 +1766,9 @@ template("monochrome_public_apk_or_module_tmpl") {
     if (public_android_sdk && !_is_trichrome) {
       # Resource whitelist used when generating R.java files and causes
       # only the webview subset of resources to be marked as non-final.
-      shared_resources_whitelist_target = "//android_webview:system_webview_apk"
+      # Strings in this target will also be kept in the base apk rather than placed in the language splits.
+      shared_resources_whitelist_target =
+          "//android_webview:system_webview_no_weblayer_apk"
 
       # Ensure the localized resources for all locales are used, even when
       # a smaller set is specified through aapt_locale_whitelist.

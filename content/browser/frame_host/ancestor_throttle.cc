@@ -14,13 +14,11 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/common/content_security_policy/csp_context.h"
-#include "content/common/content_security_policy/csp_source_list.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "net/http/http_response_headers.h"
-#include "services/network/public/cpp/content_security_policy.h"
+#include "services/network/public/cpp/content_security_policy/csp_context.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "url/origin.h"
@@ -96,7 +94,7 @@ bool HeadersContainFrameAncestorsCSP(const net::HttpResponseHeaders* headers) {
   return false;
 }
 
-class FrameAncestorCSPContext : public CSPContext {
+class FrameAncestorCSPContext : public network::CSPContext {
  public:
   FrameAncestorCSPContext(
       RenderFrameHostImpl* navigated_frame,
@@ -284,7 +282,7 @@ NavigationThrottle::ThrottleCheckResult AncestorThrottle::ProcessResponseImpl(
               parent->GetLastCommittedOrigin().GetURL(),
               navigation_handle()->WasServerRedirect(),
               true /* is_response_check */, empty_source_location,
-              CSPContext::CheckCSPDisposition::CHECK_ALL_CSP,
+              network::CSPContext::CheckCSPDisposition::CHECK_ALL_CSP,
               navigation_handle()->IsFormSubmission())) {
         return NavigationThrottle::BLOCK_RESPONSE;
       }

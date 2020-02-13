@@ -1929,10 +1929,10 @@ This file contains the strings for ash.
       <message name="IDS_ASH_LOGIN_PARENT_ACCESS_GENERIC_DESCRIPTION" desc="Description shown on the parent access input dialog. Explains what code should be used to unlock the device.">
         Enter Family Link parent access code.
       </message>
-      <message name="IDS_ASH_LOGIN_PARENT_ACCESS_HELP" desc="Label of a button shown on the parent access input dialog.">
+      <message name="IDS_ASH_LOGIN_PIN_REQUEST_HELP" desc="Label of a button shown on the pin request input dialog.">
         Need help?
       </message>
-      <message name="IDS_ASH_LOGIN_PARENT_ACCESS_NEXT_NUMBER_PROMPT" desc="Accessible prompt read when next access code input field has been focused. Asks user to enter next piece of the access code.">
+      <message name="IDS_ASH_LOGIN_PIN_REQUEST_NEXT_NUMBER_PROMPT" desc="Accessible prompt read when next access code input field has been focused. Asks user to enter next piece of the access code.">
         Next number
       </message>
       <message name="IDS_ASH_LOGIN_SIGN_IN_REQUIRED_MESSAGE" desc="Message shown in the login screen when online sign-in is required.">

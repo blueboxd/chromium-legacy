@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/run_loop.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/banners/test_app_banner_manager_desktop.h"
@@ -93,6 +94,36 @@ IN_PROC_BROWSER_TEST_P(CreateShortcutBrowserTest,
   EXPECT_EQ(GetAppMenuCommandState(IDC_INSTALL_PWA, new_browser), kNotPresent);
   EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, new_browser),
             kEnabled);
+}
+
+// Check that toolbar is not shown for shortcut apps within extensions pages.
+// This simulates a case where the user has manually navigated to a page hosted
+// within an extension, then added it as a shortcut app.
+// Regression test for https://crbug.com/828233.
+IN_PROC_BROWSER_TEST_P(CreateShortcutBrowserTest,
+                       ShouldShowCustomTabBarForExtensionPage) {
+  // This involves the creation of a regular (non-app) extension with a popup
+  // page, and the creation of a shortcut app created from the popup page URL
+  // (allowing the extension's popup page to be loaded in a window).
+
+  // Install the extension that has the popup page.
+  ASSERT_TRUE(LoadExtension(
+      test_data_dir_.AppendASCII("ui").AppendASCII("browser_action_popup")));
+  base::RunLoop().RunUntilIdle();  // Ensure the extension is fully loaded.
+
+  // Install the shortcut app that links to the extension's popup page.
+  const GURL popup_url("chrome-extension://" + last_loaded_extension_id() +
+                       "/popup.html");
+
+  NavigateToURLAndWait(browser(), popup_url);
+  const AppId app_id = InstallShortcutAppForCurrentUrl();
+  Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
+  CHECK(app_browser);
+  CHECK(app_browser != browser());
+
+  // Navigate to the app's launch page; the toolbar should not be visible,
+  // because extensions pages are secure.
+  NavigateAndCheckForToolbar(app_browser, popup_url, false);
 }
 
 INSTANTIATE_TEST_SUITE_P(

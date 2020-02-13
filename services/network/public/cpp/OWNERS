@@ -11,11 +11,6 @@ per-file manifest.cc=file://ipc/SECURITY_OWNERS
 per-file manifest.h=set noparent
 per-file manifest.h=file://ipc/SECURITY_OWNERS
 
-# Content Security Policy
-per-file content_security_policy*=lfg@chromium.org
-per-file content_security_policy*=nasko@chromium.org
-per-file content_security_policy*=arthursonzogni@chromium.org
-
 # Files and features related to component:Internals>Sandbox>SiteIsolation:
 per-file initiator_lock_compatibility*=creis@chromium.org
 per-file initiator_lock_compatibility*=lukasza@chromium.org

@@ -18,8 +18,8 @@
 #include "ash/login/ui/login_pin_view.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
-#include "ash/login/ui/parent_access_view.h"
 #include "ash/login/ui/pin_keyboard_animation.h"
+#include "ash/login/ui/pin_request_view.h"
 #include "ash/login/ui/system_label_button.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/login_constants.h"
@@ -664,7 +664,7 @@ class LoginAuthUserView::DisabledAuthMessageView : public views::View {
     cc::PaintFlags flags;
     flags.setStyle(cc::PaintFlags::kFill_Style);
     flags.setColor(
-        ParentAccessView::GetChildUserDialogColor(false /*using blur*/));
+        PinRequestView::GetChildUserDialogColor(false /*using blur*/));
     canvas->DrawRoundRect(GetContentsBounds(),
                           kDisabledAuthMessageRoundedCornerRadiusDp, flags);
   }

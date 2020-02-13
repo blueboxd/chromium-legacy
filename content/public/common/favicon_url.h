@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "content/common/content_export.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
@@ -15,19 +16,9 @@ namespace content {
 
 // The favicon url from the render.
 struct CONTENT_EXPORT FaviconURL {
-  // The icon type in a page. The definition must be same as
-  // favicon_base::IconType.
-  enum class IconType {
-    kInvalid,
-    kFavicon,
-    kTouchIcon,
-    kTouchPrecomposedIcon,
-    kMax = kTouchPrecomposedIcon,
-  };
-
   FaviconURL();
   FaviconURL(const GURL& url,
-             IconType type,
+             blink::mojom::FaviconIconType type,
              const std::vector<gfx::Size>& sizes);
   FaviconURL(const FaviconURL& other);
   ~FaviconURL();
@@ -36,7 +27,7 @@ struct CONTENT_EXPORT FaviconURL {
   GURL icon_url;
 
   // The type of the icon
-  IconType icon_type;
+  blink::mojom::FaviconIconType icon_type;
 
   // Icon's bitmaps' size
   std::vector<gfx::Size> icon_sizes;

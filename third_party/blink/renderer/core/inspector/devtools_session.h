@@ -26,6 +26,7 @@
 namespace blink {
 
 class DevToolsAgent;
+class Document;
 class DocumentLoader;
 class InspectorAgent;
 class LocalFrame;
@@ -59,6 +60,8 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
   void DidStartProvisionalLoad(LocalFrame*);
   void DidFailProvisionalLoad(LocalFrame*);
   void DidCommitLoad(LocalFrame*, DocumentLoader*);
+  void PaintTiming(Document* document, const char* name, double timestamp);
+  void DomContentLoadedEventFired(LocalFrame*);
 
  private:
   class IOSession;

@@ -56,6 +56,7 @@ class FakeInvalidationService : public InvalidationService {
 
  private:
   std::string client_id_;
+  // TODO(crbug.com/1029481): Migrate to a non-deprecated class.
   syncer::DeprecatedInvalidatorRegistrar invalidator_registrar_;
   syncer::MockAckHandler mock_ack_handler_;
 

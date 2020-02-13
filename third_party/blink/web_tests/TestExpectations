@@ -279,7 +279,6 @@ crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/filters-
 crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-all-on-background-hw.html [ Failure Pass ]
 crbug.com/968791 [ Win10 ] virtual/scalefactor200/css3/filters/effect-contrast-hw.html [ Failure ]
 crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-colorspace-hw.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-external-stylesheet.html [ Failure Pass ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-hw.html [ Failure Pass ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-image-hw.html [ Failure Pass ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion-hw.html [ Failure Pass ]
@@ -2222,7 +2221,6 @@ crbug.com/377696 printing/setPrinting.html [ Failure ]
 
 crbug.com/658305 [ Mac ] css3/filters/buffer-offset.html [ Failure Pass ]
 crbug.com/658305 [ Mac ] css3/filters/effect-reference-external.html [ Failure Pass ]
-crbug.com/658305 css3/filters/effect-reference-external-stylesheet.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-image.html [ Pass Failure ]
 crbug.com/658305 css3/filters/effect-reference-image-lazy-attach.html [ Pass Failure ]
 crbug.com/658305 [ Mac ] css3/filters/effect-reference-subregion-chained.html [ Failure Pass ]
@@ -6525,3 +6523,5 @@ crbug.com/1050559 [ Linux ] external/wpt/WebCryptoAPI/derive_bits_keys/hkdf.http
 crbug.com/webrtc/7061 external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]
 crbug.com/webrtc/7061 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]
 
+# DevTools roll
+crbug.com/1006759 http/tests/devtools/elements/styles-1/edit-value-url-with-color.js [ Skip ]

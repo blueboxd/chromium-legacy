@@ -19,12 +19,14 @@ namespace browser_watcher {
 
 class ExtendedCrashReporting {
  public:
+  enum ProcessType { kBrowserProcess, kOther };
+
   ~ExtendedCrashReporting();
 
   // Initializes extended crash reporting for this process if enabled.
   // Returns nullptr if extended crash reporting is disabled.
   // Should only be called once in any one process.
-  static ExtendedCrashReporting* SetUpIfEnabled();
+  static ExtendedCrashReporting* SetUpIfEnabled(ProcessType process_type);
 
   // Retrieves the extended crash reporting instance for this process if
   // it exists, or nullptr if it does not.
@@ -52,8 +54,8 @@ class ExtendedCrashReporting {
 
  private:
   explicit ExtendedCrashReporting(base::debug::GlobalActivityTracker* tracker);
-  static ExtendedCrashReporting* SetUpImpl();
-  void Initialize();
+  static ExtendedCrashReporting* SetUpImpl(ProcessType process_type);
+  void Initialize(ProcessType process_type);
 
   // Registers a vectored exception handler that stores exception details to the
   // activity report on exception - handled or not.

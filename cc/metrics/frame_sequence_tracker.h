@@ -55,7 +55,6 @@ typedef uint16_t ActiveFrameSequenceTrackers;
 class CC_EXPORT FrameSequenceMetrics {
  public:
   FrameSequenceMetrics(FrameSequenceTrackerType type,
-                       UkmManager* ukm_manager,
                        ThroughputUkmReporter* ukm_reporter);
   ~FrameSequenceMetrics();
 
@@ -123,10 +122,6 @@ class CC_EXPORT FrameSequenceMetrics {
 
  private:
   const FrameSequenceTrackerType type_;
-
-  // Please refer to the comments in FrameSequenceTrackerCollection's
-  // ukm_manager_.
-  UkmManager* const ukm_manager_;
 
   // Pointer to the reporter owned by the FrameSequenceTrackerCollection.
   ThroughputUkmReporter* const throughput_ukm_reporter_;
@@ -215,13 +210,6 @@ class CC_EXPORT FrameSequenceTrackerCollection {
   // The reporter takes throughput data and connect to UkmManager to report it.
   std::unique_ptr<ThroughputUkmReporter> throughput_ukm_reporter_;
 
-  // This is pointing to the LayerTreeHostImpl::ukm_manager_, which is
-  // initialized right after the LayerTreeHostImpl is created. So when this
-  // pointer is initialized, there should be no trackers yet. Moreover, the
-  // LayerTreeHostImpl::ukm_manager_ lives as long as the LayerTreeHostImpl, so
-  // this pointer should never be null as long as LayerTreeHostImpl is alive.
-  UkmManager* ukm_manager_ = nullptr;
-
   base::flat_map<FrameSequenceTrackerType,
                  std::unique_ptr<FrameSequenceMetrics>>
       accumulated_metrics_;
@@ -307,7 +295,6 @@ class CC_EXPORT FrameSequenceTracker {
   friend class FrameSequenceTrackerTest;
 
   FrameSequenceTracker(FrameSequenceTrackerType type,
-                       UkmManager* manager,
                        ThroughputUkmReporter* throughput_ukm_reporter);
 
   FrameSequenceMetrics::ThroughputData& impl_throughput() {

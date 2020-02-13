@@ -471,7 +471,7 @@ TEST(CallStackProfileBuilderTest, ProfileStartTime) {
   EXPECT_EQ(first_sample_time, profile_builder->test_profile_start_time());
 }
 
-// A basic test of the metadata functionality at the level of the
+// A basic test of RecordMetadata at the level of the
 // CallStackProfileBuilder. The underlying implementation in
 // CallStackProfileMetadata is tested independently.
 TEST(CallStackProfileBuilderTest, RecordMetadata) {
@@ -505,6 +505,122 @@ TEST(CallStackProfileBuilderTest, RecordMetadata) {
   EXPECT_EQ(0, sample.metadata(0).name_hash_index());
   EXPECT_FALSE(sample.metadata(0).has_key());
   EXPECT_EQ(10, sample.metadata(0).value());
+}
+
+// A basic test of ApplyMetadataRetrospectively at the level of the
+// CallStackProfileBuilder. The underlying implementation in
+// CallStackProfileMetadata is tested independently.
+TEST(CallStackProfileBuilderTest, ApplyMetadataRetrospectively_Basic) {
+  base::MetadataRecorder metadata_recorder;
+  auto profile_builder =
+      std::make_unique<TestingCallStackProfileBuilder>(kProfileParams, nullptr);
+
+  TestModule module;
+  base::Frame frame = {0x10, &module};
+  base::TimeTicks profile_start_time = base::TimeTicks::UnixEpoch();
+  base::TimeDelta sample_time_delta = base::TimeDelta::FromSeconds(1);
+
+  profile_builder->RecordMetadata(
+      metadata_recorder.CreateMetadataProvider().get());
+  profile_builder->OnSampleCompleted({frame}, profile_start_time);
+
+  profile_builder->RecordMetadata(
+      metadata_recorder.CreateMetadataProvider().get());
+  profile_builder->OnSampleCompleted({frame},
+                                     profile_start_time + sample_time_delta);
+
+  profile_builder->RecordMetadata(
+      metadata_recorder.CreateMetadataProvider().get());
+  profile_builder->OnSampleCompleted(
+      {frame}, profile_start_time + 2 * sample_time_delta);
+
+  profile_builder->RecordMetadata(
+      metadata_recorder.CreateMetadataProvider().get());
+  profile_builder->OnSampleCompleted(
+      {frame}, profile_start_time + 3 * sample_time_delta);
+
+  // Apply the metadata from the second through third samples.
+  profile_builder->ApplyMetadataRetrospectively(
+      profile_start_time + sample_time_delta,
+      profile_start_time + sample_time_delta * 2,
+      CallStackProfileBuilder::MetadataItem(3, 30, 300));
+
+  profile_builder->OnProfileCompleted(3 * sample_time_delta, sample_time_delta);
+
+  const SampledProfile& proto = profile_builder->test_sampled_profile();
+
+  ASSERT_TRUE(proto.has_call_stack_profile());
+  const CallStackProfile& profile = proto.call_stack_profile();
+
+  ASSERT_EQ(1, profile.metadata_name_hash_size());
+  EXPECT_EQ(3u, profile.metadata_name_hash(0));
+
+  EXPECT_EQ(4, profile.stack_sample_size());
+
+  EXPECT_EQ(0, profile.stack_sample(0).metadata_size());
+
+  ASSERT_EQ(1, profile.stack_sample(1).metadata_size());
+  EXPECT_EQ(0, profile.stack_sample(1).metadata(0).name_hash_index());
+  EXPECT_EQ(30, profile.stack_sample(1).metadata(0).key());
+  EXPECT_EQ(300, profile.stack_sample(1).metadata(0).value());
+
+  EXPECT_EQ(0, profile.stack_sample(2).metadata_size());
+
+  ASSERT_EQ(1, profile.stack_sample(3).metadata_size());
+  EXPECT_EQ(0, profile.stack_sample(3).metadata(0).name_hash_index());
+  EXPECT_EQ(30, profile.stack_sample(3).metadata(0).key());
+  EXPECT_FALSE(profile.stack_sample(3).metadata(0).has_value());
+}
+
+// Checks that ApplyMetadataRetrospectively doesn't apply metadata if the
+// requested start time is before the profile start time.
+TEST(CallStackProfileBuilderTest,
+     ApplyMetadataRetrospectively_BeforeStartTime) {
+  base::MetadataRecorder metadata_recorder;
+  auto profile_builder =
+      std::make_unique<TestingCallStackProfileBuilder>(kProfileParams, nullptr);
+
+  TestModule module;
+  base::Frame frame = {0x10, &module};
+  base::TimeTicks profile_start_time = base::TimeTicks::UnixEpoch();
+  base::TimeDelta sample_time_delta = base::TimeDelta::FromSeconds(1);
+
+  profile_builder->RecordMetadata(
+      metadata_recorder.CreateMetadataProvider().get());
+  profile_builder->OnSampleCompleted({frame}, profile_start_time);
+
+  profile_builder->RecordMetadata(
+      metadata_recorder.CreateMetadataProvider().get());
+  profile_builder->OnSampleCompleted({frame},
+                                     profile_start_time + sample_time_delta);
+
+  profile_builder->RecordMetadata(
+      metadata_recorder.CreateMetadataProvider().get());
+  profile_builder->OnSampleCompleted(
+      {frame}, profile_start_time + 2 * sample_time_delta);
+
+  profile_builder->RecordMetadata(
+      metadata_recorder.CreateMetadataProvider().get());
+  profile_builder->OnSampleCompleted(
+      {frame}, profile_start_time + 3 * sample_time_delta);
+
+  profile_builder->ApplyMetadataRetrospectively(
+      profile_start_time - base::TimeDelta::FromMicroseconds(1),
+      profile_start_time + sample_time_delta,
+      CallStackProfileBuilder::MetadataItem(3, 30, 300));
+
+  profile_builder->OnProfileCompleted(3 * sample_time_delta, sample_time_delta);
+
+  const SampledProfile& proto = profile_builder->test_sampled_profile();
+
+  ASSERT_TRUE(proto.has_call_stack_profile());
+  const CallStackProfile& profile = proto.call_stack_profile();
+
+  EXPECT_EQ(0, profile.metadata_name_hash_size());
+  EXPECT_EQ(4, profile.stack_sample_size());
+
+  for (const CallStackProfile::StackSample sample : profile.stack_sample())
+    EXPECT_EQ(0, sample.metadata_size());
 }
 
 }  // namespace metrics

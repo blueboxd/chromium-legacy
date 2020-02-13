@@ -65,6 +65,9 @@ public class VrBrowserNativeUiTest {
 
     private VrBrowserTestFramework mVrBrowserTestFramework;
 
+    private static final String TEST_PAGE_2D_URL =
+            VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
+
     @Before
     public void setUp() {
         mVrBrowserTestFramework = new VrBrowserTestFramework(mVrTestRule);
@@ -90,8 +93,7 @@ public class VrBrowserNativeUiTest {
     @Test
     @MediumTest
     public void testUrlOnNonNativeUi() throws IllegalArgumentException {
-        mVrTestRule.loadUrl(mVrBrowserTestFramework.getUrlForFile("test_navigation_2d_page"),
-                PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue("URL is not being show for non-native page",
                 TestVrShellDelegate.isDisplayingUrlForTesting());
     }
@@ -103,8 +105,10 @@ public class VrBrowserNativeUiTest {
     @Test
     @MediumTest
     public void testPaymentRequest() {
-        mVrBrowserTestFramework.loadFileAndAwaitInitialization(
-                "test_payment_request", PAGE_LOAD_TIMEOUT_S);
+        // We can't request payment on file:// URLs, so use a local server.
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                mVrBrowserTestFramework.getEmbeddedServerUrlForHtmlTestFile("test_payment_request"),
+                PAGE_LOAD_TIMEOUT_S);
         // Set up an observer so we'll know if the payment request is shown.
         AtomicBoolean requestShown = new AtomicBoolean(false);
         PaymentRequestObserverForTest observer = new PaymentRequestObserverForTest() {
@@ -360,8 +364,8 @@ public class VrBrowserNativeUiTest {
     @Feature({"Browser", "RenderTest"})
     public void testFileUrlEmphasis() throws InterruptedException, IOException {
         NativeUiUtils.enableMockedInput();
-        mVrTestRule.loadUrl(
-                mVrBrowserTestFramework.getUrlForFile("2d_permission_page"), PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("2d_permission_page"),
+                PAGE_LOAD_TIMEOUT_S);
         NativeUiUtils.waitForUiQuiescence();
         RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
                 "file_url_emphasis_browser_ui", mRenderTestRule);
@@ -377,7 +381,8 @@ public class VrBrowserNativeUiTest {
             throws InterruptedException, TimeoutException, IOException {
         // Use the mock keyboard so it doesn't show, reducing the chance of flakes due to AA.
         NativeUiUtils.enableMockedKeyboard();
-        mVrTestRule.loadUrl(mVrBrowserTestFramework.getUrlForFile("generic_text_entry_page"),
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("generic_text_entry_page"),
                 PAGE_LOAD_TIMEOUT_S);
         NativeUiUtils.clickContentNode(
                 "textfield", new PointF(), 1 /* numClicks */, mVrBrowserTestFramework);
@@ -590,8 +595,10 @@ public class VrBrowserNativeUiTest {
     @MediumTest
     @Feature({"Browser", "RenderTest"})
     public void testScrollResizing() throws InterruptedException, IOException {
-        mVrBrowserTestFramework.loadFileAndAwaitInitialization(
-                "test_content_resizing_does_not_affect_webpage", PAGE_LOAD_TIMEOUT_S);
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile(
+                        "test_content_resizing_does_not_affect_webpage"),
+                PAGE_LOAD_TIMEOUT_S);
         mVrBrowserTestFramework.executeStepAndWait("stepGetInitialDimensions()");
         resizeContentWindowToMinimum();
         RenderTestUtils.dumpAndCompare(
@@ -609,7 +616,8 @@ public class VrBrowserNativeUiTest {
     @Feature({"Browser", "RenderTest"})
     public void testOverflowAndKeyboardFollowContentQuad()
             throws InterruptedException, TimeoutException, IOException {
-        mVrTestRule.loadUrl(mVrBrowserTestFramework.getUrlForFile("generic_text_entry_page"),
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("generic_text_entry_page"),
                 PAGE_LOAD_TIMEOUT_S);
         // Drag the content quad up and to the left.
         NativeUiUtils.selectRepositionBar();
@@ -638,8 +646,10 @@ public class VrBrowserNativeUiTest {
     @MediumTest
     @CommandLineFlags.Add({"enable-features=WebXR"})
     public void testRAFsFireWhileRepositioning() {
-        mVrBrowserTestFramework.loadFileAndAwaitInitialization(
-                "test_rafs_fire_while_repositioning", PAGE_LOAD_TIMEOUT_S);
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile(
+                        "test_rafs_fire_while_repositioning"),
+                PAGE_LOAD_TIMEOUT_S);
         NativeUiUtils.selectRepositionBar();
         mVrBrowserTestFramework.executeStepAndWait("stepCheckForRafs()");
         mVrBrowserTestFramework.endTest();
@@ -653,8 +663,10 @@ public class VrBrowserNativeUiTest {
     @Feature({"Browser", "RenderTest"})
     public void testRepositionBarDoesNotAppearWithPermissionPromptVisible()
             throws InterruptedException, IOException {
-        mVrBrowserTestFramework.loadFileAndAwaitInitialization(
-                "2d_permission_page", PAGE_LOAD_TIMEOUT_S);
+        // We don't need to actually accept the prompt, so we don't need to use the local server.
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("2d_permission_page"),
+                PAGE_LOAD_TIMEOUT_S);
         NativeUiUtils.enableMockedInput();
         NativeUiUtils.waitForUiQuiescence();
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
@@ -740,8 +752,9 @@ public class VrBrowserNativeUiTest {
     @MediumTest
     public void testVoiceInputUnavailableIfSiteUsingMicrophone() throws InterruptedException {
         NativeUiUtils.enableMockedInput();
-        mVrBrowserTestFramework.loadFileAndAwaitInitialization(
-                "2d_permission_page", PAGE_LOAD_TIMEOUT_S);
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                mVrBrowserTestFramework.getEmbeddedServerUrlForHtmlTestFile("2d_permission_page"),
+                PAGE_LOAD_TIMEOUT_S);
         // Wait for any residual animations from navigating.
         NativeUiUtils.waitForUiQuiescence();
         // Display and accept the permission.
@@ -806,7 +819,8 @@ public class VrBrowserNativeUiTest {
     private void testSecurityTokenImpl(String identifier) throws InterruptedException, IOException {
         NativeUiUtils.enableMockedInput();
         mVrTestRule.loadUrl(
-                mVrBrowserTestFramework.getUrlForFile("2d_permission_page"), PAGE_LOAD_TIMEOUT_S);
+                mVrBrowserTestFramework.getEmbeddedServerUrlForHtmlTestFile("2d_permission_page"),
+                PAGE_LOAD_TIMEOUT_S);
         // Wait for any residual animations from loading to go away.
         NativeUiUtils.waitForUiQuiescence();
         RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,

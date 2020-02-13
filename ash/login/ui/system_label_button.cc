@@ -43,8 +43,6 @@ constexpr int kSystemButtonMaxLabelWidthDp =
     kSystemButtonIconSize - kSystemButtonImageLabelSpacing -
     2 * kSystemButtonBorderRadius;
 
-}  // namespace
-
 SkPath GetSystemButtonHighlightPath(const views::View* view) {
   gfx::Rect rect(view->GetLocalBounds());
   return SkPath().addRoundRect(gfx::RectToSkRect(rect),
@@ -52,20 +50,7 @@ SkPath GetSystemButtonHighlightPath(const views::View* view) {
                                kSystemButtonBorderRadius);
 }
 
-class SystemButtonHighlightPathGenerator
-    : public views::HighlightPathGenerator {
- public:
-  SystemButtonHighlightPathGenerator() = default;
-  SystemButtonHighlightPathGenerator(
-      const SystemButtonHighlightPathGenerator&) = delete;
-  SystemButtonHighlightPathGenerator& operator=(
-      const SystemButtonHighlightPathGenerator&) = delete;
-
-  // views::HighlightPathGenerator:
-  SkPath GetHighlightPath(const views::View* view) override {
-    return GetSystemButtonHighlightPath(view);
-  }
-};
+}  // namespace
 
 SystemLabelButton::SystemLabelButton(views::ButtonListener* listener,
                                      const base::string16& text,
@@ -90,12 +75,11 @@ SystemLabelButton::SystemLabelButton(views::ButtonListener* listener,
                   display_type == DisplayType::ALERT_NO_ICON;
   SetAlertMode(is_alert);
 
-  views::HighlightPathGenerator::Install(
-      this, std::make_unique<SystemButtonHighlightPathGenerator>());
-
   SetFocusBehavior(FocusBehavior::ALWAYS);
   SetInstallFocusRingOnFocus(true);
   focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
+  views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
+                                                kSystemButtonBorderRadius);
 }
 
 void SystemLabelButton::PaintButtonContents(gfx::Canvas* canvas) {

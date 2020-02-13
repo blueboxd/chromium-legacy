@@ -767,9 +767,13 @@ class AXPosition {
       return AXBoundaryType::kNone;
 
     // Iterate over anchors until a format boundary is found. This will return a
-    // null position upon crossing a boundary.
-    AXPositionInstance previous_position = CreatePreviousLeafTreePosition(
-        base::BindRepeating(&AbortMoveAtFormatBoundary));
+    // null position upon crossing a boundary. Make sure the previous position
+    // is not on an ignored node.
+    AXPositionInstance previous_position = Clone();
+    do {
+      previous_position = previous_position->CreatePreviousLeafTreePosition(
+          base::BindRepeating(&AbortMoveAtFormatBoundary));
+    } while (previous_position->IsIgnored());
 
     if (previous_position->IsNullPosition())
       return AXBoundaryType::kUnitBoundary;
@@ -796,9 +800,13 @@ class AXPosition {
       return AXBoundaryType::kNone;
 
     // Iterate over anchors until a format boundary is found. This will return a
-    // null position upon crossing a boundary.
-    AXPositionInstance next_position = CreateNextLeafTreePosition(
-        base::BindRepeating(&AbortMoveAtFormatBoundary));
+    // null position upon crossing a boundary. Make sure the next position is
+    // not on an ignored node.
+    AXPositionInstance next_position = Clone();
+    do {
+      next_position = next_position->CreateNextLeafTreePosition(
+          base::BindRepeating(&AbortMoveAtFormatBoundary));
+    } while (next_position->IsIgnored());
 
     if (next_position->IsNullPosition())
       return AXBoundaryType::kUnitBoundary;

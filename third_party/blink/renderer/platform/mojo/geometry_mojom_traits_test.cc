@@ -45,7 +45,7 @@ class GeometryStructTraitsTest
     std::move(callback).Run(p);
   }
 
-  void EchoSize(const WebSize& s, EchoSizeCallback callback) override {
+  void EchoSize(const gfx::Size& s, EchoSizeCallback callback) override {
     std::move(callback).Run(s);
   }
 
@@ -105,16 +105,6 @@ class GeometryStructTraitsTest
 
 }  // namespace
 
-TEST_F(GeometryStructTraitsTest, Size) {
-  const int32_t kWidth = 1234;
-  const int32_t kHeight = 5678;
-  WebSize input(kWidth, kHeight);
-  mojo::Remote<gfx::mojom::blink::GeometryTraitsTestService> proxy =
-      GetTraitsTestProxy();
-  WebSize output;
-  proxy->EchoSize(input, &output);
-  EXPECT_EQ(input, output);
-}
 
 TEST_F(GeometryStructTraitsTest, Rect) {
   const float kX = 1;

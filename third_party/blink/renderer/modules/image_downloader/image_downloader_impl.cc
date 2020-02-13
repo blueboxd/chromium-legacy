@@ -84,7 +84,7 @@ void FilterAndResizeImagesForMaximalSize(
     const WTF::Vector<SkBitmap>& unfiltered,
     uint32_t max_image_size,
     WTF::Vector<SkBitmap>* images,
-    WTF::Vector<blink::WebSize>* original_image_sizes) {
+    WTF::Vector<gfx::Size>* original_image_sizes) {
   images->clear();
   original_image_sizes->clear();
 
@@ -196,7 +196,7 @@ void ImageDownloaderImpl::DidDownloadImage(
     int32_t http_status_code,
     const WTF::Vector<SkBitmap>& images) {
   WTF::Vector<SkBitmap> result_images;
-  WTF::Vector<WebSize> result_original_image_sizes;
+  WTF::Vector<gfx::Size> result_original_image_sizes;
   FilterAndResizeImagesForMaximalSize(images, max_image_size, &result_images,
                                       &result_original_image_sizes);
 

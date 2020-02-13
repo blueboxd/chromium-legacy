@@ -12,6 +12,7 @@ mojom("mojom") {
     "origin_context.mojom",
     "partition.mojom",
     "service_worker_database.mojom",
+    "session_storage_control.mojom",
     "storage_service.mojom",
   ]
 

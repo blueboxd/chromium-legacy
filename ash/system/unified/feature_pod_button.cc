@@ -20,7 +20,6 @@
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
@@ -121,13 +120,6 @@ FeaturePodIconButton::CreateInkDropHighlight() const {
       UnifiedSystemTrayView::GetBackgroundColor());
 }
 
-std::unique_ptr<views::InkDropMask> FeaturePodIconButton::CreateInkDropMask()
-    const {
-  gfx::Rect rect(GetContentsBounds());
-  return std::make_unique<views::CircleInkDropMask>(size(), rect.CenterPoint(),
-                                                    rect.width() / 2);
-}
-
 void FeaturePodIconButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   ImageButton::GetAccessibleNodeData(node_data);
   node_data->SetName(GetTooltipText(gfx::Point()));
@@ -174,6 +166,8 @@ FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
   layer()->SetFillsBoundsOpaquely(false);
 
   focus_ring()->SetColor(UnifiedSystemTrayView::GetFocusRingColor());
+  views::InstallRoundRectHighlightPathGenerator(
+      this, gfx::Insets(), kUnifiedFeaturePodHoverCornerRadius);
 }
 
 FeaturePodLabelButton::~FeaturePodLabelButton() = default;
@@ -240,12 +234,6 @@ FeaturePodLabelButton::CreateInkDropHighlight() const {
   return TrayPopupUtils::CreateInkDropHighlight(
       TrayPopupInkDropStyle::FILL_BOUNDS, this,
       UnifiedSystemTrayView::GetBackgroundColor());
-}
-
-std::unique_ptr<views::InkDropMask> FeaturePodLabelButton::CreateInkDropMask()
-    const {
-  return std::make_unique<views::RoundRectInkDropMask>(
-      size(), gfx::Insets(), kUnifiedFeaturePodHoverRadius);
 }
 
 const char* FeaturePodLabelButton::GetClassName() const {

@@ -615,15 +615,15 @@ CancelCallback FakeDriveService::GetFileResource(
 }
 
 CancelCallback FakeDriveService::GetAboutResource(
-    const AboutResourceCallback& callback) {
+    AboutResourceCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(callback);
 
   if (offline_) {
     std::unique_ptr<AboutResource> null;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(callback, DRIVE_NO_CONNECTION, std::move(null)));
+        FROM_HERE, base::BindOnce(std::move(callback), DRIVE_NO_CONNECTION,
+                                  std::move(null)));
     return CancelCallback();
   }
 
@@ -631,8 +631,8 @@ CancelCallback FakeDriveService::GetAboutResource(
   std::unique_ptr<AboutResource> about_resource(
       new AboutResource(*about_resource_));
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(callback, HTTP_SUCCESS, std::move(about_resource)));
+      FROM_HERE, base::BindOnce(std::move(callback), HTTP_SUCCESS,
+                                std::move(about_resource)));
   return CancelCallback();
 }
 

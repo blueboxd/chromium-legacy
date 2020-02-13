@@ -520,15 +520,10 @@ TEST(ImageResourceTest, CancelOnRemoveObserver) {
   EXPECT_FALSE(GetMemoryCache()->ResourceForURL(test_url));
 }
 
-class MockFinishObserver : public GarbageCollected<MockFinishObserver>,
-                           public ResourceFinishObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(MockFinishObserver);
-
+class MockFinishObserver : public ResourceFinishObserver {
  public:
   static MockFinishObserver* Create() {
-    return
-
-        MakeGarbageCollected<testing::StrictMock<MockFinishObserver>>();
+    return MakeGarbageCollected<testing::StrictMock<MockFinishObserver>>();
   }
   MOCK_METHOD0(NotifyFinished, void());
   String DebugName() const override { return "MockFinishObserver"; }

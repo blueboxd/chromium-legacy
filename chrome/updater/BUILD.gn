@@ -54,6 +54,7 @@ if (is_win || is_mac) {
     deps = [
       ":version_header",
       "//base",
+      "//chrome/updater/server",
       "//components/crash/core/common:crash_key",
       "//components/crx_file",
       "//components/prefs",
@@ -66,10 +67,6 @@ if (is_win || is_mac) {
       "//third_party/zlib/google:zip",
       "//url",
     ]
-
-    if (is_win) {
-      deps += [ "//chrome/updater/win:com" ]
-    }
   }
 
   process_version("version_header") {
@@ -99,10 +96,7 @@ if (is_win || is_mac) {
     ]
 
     if (is_win) {
-      deps += [
-        "//chrome/updater/win:com",
-        "//chrome/updater/win:updater_tests",
-      ]
+      deps += [ "//chrome/updater/win:updater_tests" ]
 
       data_deps = [ "//chrome/updater/win:updater" ]
     }

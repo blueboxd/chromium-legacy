@@ -38,7 +38,7 @@ class VideoWakeLockPictureInPictureSession
 
   void Update(uint32_t player_id,
               const base::Optional<viz::SurfaceId>&,
-              const blink::WebSize&,
+              const gfx::Size&,
               bool show_play_pause_button) final {}
 
  private:
@@ -62,7 +62,7 @@ class VideoWakeLockPictureInPictureService
   void StartSession(
       uint32_t,
       const base::Optional<viz::SurfaceId>&,
-      const blink::WebSize&,
+      const gfx::Size&,
       bool,
       mojo::PendingRemote<mojom::blink::PictureInPictureSessionObserver>,
       StartSessionCallback callback) final {
@@ -70,7 +70,7 @@ class VideoWakeLockPictureInPictureService
     session_.reset(new VideoWakeLockPictureInPictureSession(
         session_remote.InitWithNewPipeAndPassReceiver()));
 
-    std::move(callback).Run(std::move(session_remote), WebSize());
+    std::move(callback).Run(std::move(session_remote), gfx::Size());
   }
 
  private:

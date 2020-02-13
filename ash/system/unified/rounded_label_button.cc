@@ -11,7 +11,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/highlight_path_generator.h"
@@ -31,7 +30,8 @@ RoundedLabelButton::RoundedLabelButton(views::ButtonListener* listener,
   label()->SetFontList(views::Label::GetDefaultFontList().Derive(
       1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
   TrayPopupUtils::ConfigureTrayPopupButton(this);
-  views::InstallPillHighlightPathGenerator(this);
+  views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
+                                                kTrayItemSize / 2.f);
 
   focus_ring()->SetColor(UnifiedSystemTrayView::GetFocusRingColor());
 }
@@ -48,14 +48,14 @@ int RoundedLabelButton::GetHeightForWidth(int width) const {
 }
 
 void RoundedLabelButton::PaintButtonContents(gfx::Canvas* canvas) {
-  gfx::Rect rect(GetContentsBounds());
+  gfx::RectF rect(GetContentsBounds());
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
   flags.setColor(AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
       AshColorProvider::ControlsLayerType::kInactiveControlBackground,
       kUnifiedMenuButtonColor));
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  canvas->DrawRoundRect(rect, kTrayItemSize / 2, flags);
+  canvas->DrawRoundRect(rect, kTrayItemCornerRadius, flags);
 
   views::LabelButton::PaintButtonContents(canvas);
 }
@@ -77,12 +77,6 @@ RoundedLabelButton::CreateInkDropHighlight() const {
   return TrayPopupUtils::CreateInkDropHighlight(
       TrayPopupInkDropStyle::FILL_BOUNDS, this,
       UnifiedSystemTrayView::GetBackgroundColor());
-}
-
-std::unique_ptr<views::InkDropMask> RoundedLabelButton::CreateInkDropMask()
-    const {
-  return std::make_unique<views::RoundRectInkDropMask>(size(), gfx::Insets(),
-                                                       kTrayItemSize / 2);
 }
 
 const char* RoundedLabelButton::GetClassName() const {

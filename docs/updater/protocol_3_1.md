@@ -771,14 +771,15 @@ A ping-back `app` additionally contains the following members:
 #### `event` Objects (Ping-Back Request)
 An event object represents a specific report about an operation the client
 attmpted as part of this update session. All events have the following members:
- *   `type`: The event type is a numeric value indicating the type of the event.
-     It must always be specified by the client. The following values are known:
+ *   `eventtype`: The event type is a numeric value indicating the type of the
+     event. It must always be specified by the client. The following values are
+     known:
      *   2: An install operation.
      *   3: An update operation.
      *   4: An uninstall operation.
      *   14: A download operation.
      *   42: An action operation.
- *   `result`: The outcome of the operation. Default: 0. Known values:
+ *   `eventresult`: The outcome of the operation. Default: 0. Known values:
      *   0: error
      *   1: success
      *   4: cancelled

@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/inspector/dev_tools_emulator.h"
+#include "third_party/blink/renderer/core/inspector/locale_controller.h"
 #include "third_party/blink/renderer/core/inspector/protocol/DOM.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -43,6 +44,7 @@ InspectorEmulationAgent::InspectorEmulationAgent(
       user_agent_override_(&agent_state_, /*default_value=*/WTF::String()),
       accept_language_override_(&agent_state_,
                                 /*default_value=*/WTF::String()),
+      locale_override_(&agent_state_, /*default_value=*/WTF::String()),
       virtual_time_budget_(&agent_state_, /*default_value*/ 0.0),
       virtual_time_budget_initial_offset_(&agent_state_, /*default_value=*/0.0),
       initial_virtual_time_(&agent_state_, /*default_value=*/0.0),
@@ -75,6 +77,8 @@ void InspectorEmulationAgent::Restore() {
   setUserAgentOverride(user_agent_override_.Get(),
                        accept_language_override_.Get(),
                        navigator_platform_override_.Get());
+  if (!locale_override_.Get().IsEmpty())
+    setLocaleOverride(locale_override_.Get());
   if (!web_local_frame_)
     return;
 
@@ -148,6 +152,8 @@ Response InspectorEmulationAgent::disable() {
   }
   setUserAgentOverride(String(), protocol::Maybe<String>(),
                        protocol::Maybe<String>());
+  if (!locale_override_.Get().IsEmpty())
+    setLocaleOverride(String());
   if (!web_local_frame_)
     return Response::OK();
   setScriptExecutionDisabled(false);
@@ -497,6 +503,21 @@ Response InspectorEmulationAgent::setUserAgentOverride(
     GetWebViewImpl()->GetPage()->GetSettings().SetNavigatorPlatformOverride(
         navigator_platform_override_.Get());
   }
+  return Response::OK();
+}
+
+Response InspectorEmulationAgent::setLocaleOverride(
+    protocol::Maybe<String> maybe_locale) {
+  // Only allow resetting overrides set by the same agent.
+  if (locale_override_.Get().IsEmpty() &&
+      LocaleController::instance().has_locale_override()) {
+    return Response::Error("Another locale override is already in effect");
+  }
+  String locale = maybe_locale.fromMaybe(String());
+  String error = LocaleController::instance().SetLocaleOverride(locale);
+  if (!error.IsEmpty())
+    return Response::Error(error);
+  locale_override_.Set(locale);
   return Response::OK();
 }
 

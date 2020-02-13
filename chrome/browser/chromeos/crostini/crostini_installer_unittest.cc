@@ -150,7 +150,7 @@ class CrostiniInstallerTest : public testing::Test {
 
   void Install() {
     CrostiniManager::GetForProfile(profile_.get())
-        ->SetInstallerViewStatus(true);
+        ->SetCrostiniDialogStatus(DialogType::INSTALLER, true);
     crostini_installer_->Install(
         CrostiniManager::RestartOptions{},
         base::BindRepeating(&MockCallbacks::OnProgress,

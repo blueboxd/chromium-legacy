@@ -9,5 +9,8 @@ specific_include_rules = {
   "local_storage_impl\.cc": [
     "+sql",
     "+storage/common/database",
-  ]
+  ],
+  "session_storage_context_mojo_unittest\.cc": [
+    "+mojo/core",
+  ],
 }

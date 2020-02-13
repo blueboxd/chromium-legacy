@@ -105,7 +105,7 @@ ScriptPromise ContentIndex::add(ScriptState* script_state,
 void ContentIndex::DidGetIconSizes(
     ScriptPromiseResolver* resolver,
     mojom::blink::ContentDescriptionPtr description,
-    const Vector<WebSize>& icon_sizes) {
+    const Vector<gfx::Size>& icon_sizes) {
   if (!icon_sizes.IsEmpty() && description->icons.IsEmpty()) {
     ScriptState* script_state = resolver->GetScriptState();
     ScriptState::Scope scope(script_state);

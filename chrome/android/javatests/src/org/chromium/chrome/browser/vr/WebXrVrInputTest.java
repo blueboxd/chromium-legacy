@@ -104,12 +104,14 @@ public class WebXrVrInputTest {
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             public void
             testScreenTapsNotRegistered_WebXr() throws InterruptedException {
-        screenTapsNotRegisteredImpl("webxr_test_screen_taps_not_registered", mWebXrVrTestFramework);
+        screenTapsNotRegisteredImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile(
+                                            "webxr_test_screen_taps_not_registered"),
+                mWebXrVrTestFramework);
     }
 
     private void screenTapsNotRegisteredImpl(String url, final WebXrVrTestFramework framework)
             throws InterruptedException {
-        framework.loadFileAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
+        framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.executeStepAndWait("stepVerifyNoInitialTaps()");
         framework.enterSessionWithUserGestureOrFail();
         VrTransitionUtils.waitForOverlayGone();
@@ -141,8 +143,9 @@ public class WebXrVrInputTest {
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testControllerClicksRegisteredOnDaydream_WebXr() {
         EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
-        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
-                "test_webxr_input", PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_input"),
+                PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
 
         int numIterations = 10;
@@ -174,8 +177,9 @@ public class WebXrVrInputTest {
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testControllerExposedAsGamepadOnDaydream_WebXr() {
         EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
-        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
-                "test_webxr_gamepad_support", PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_gamepad_support"),
+                PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
 
         // There must be interaction with the controller before an XRInputSource
@@ -288,8 +292,9 @@ public class WebXrVrInputTest {
     @CommandLineFlags.Add({"enable-features=WebXR"})
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testScreenTapsRegisteredOnCardboard_WebXr() {
-        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
-                "test_webxr_input", PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_input"),
+                PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
         // Make it so that the webpage doesn't try to finish the JavaScript step after each input
         // since we don't need to ack each one like with the Daydream controller.
@@ -323,8 +328,9 @@ public class WebXrVrInputTest {
     @CommandLineFlags.Add({"enable-features=WebXR"})
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testTransientScreenTapsRegisteredOnCardboard_WebXr() {
-        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
-                "test_webxr_transient_input", PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_transient_input"),
+                PAGE_LOAD_TIMEOUT_S);
         // Make it so that the webpage doesn't try to finish the JavaScript step after each input
         // since we don't need to ack each one like with the Daydream controller.
         mWebXrVrTestFramework.runJavaScriptOrFail(
@@ -353,18 +359,20 @@ public class WebXrVrInputTest {
     @CommandLineFlags.Add({"enable-features=WebXR"})
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testPresentationLocksFocus_WebXr() {
-        presentationLocksFocusImpl("webxr_test_presentation_locks_focus", mWebXrVrTestFramework);
+        presentationLocksFocusImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile(
+                                           "webxr_test_presentation_locks_focus"),
+                mWebXrVrTestFramework);
     }
 
     private void presentationLocksFocusImpl(String url, WebXrVrTestFramework framework) {
-        framework.loadFileAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
+        framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
         framework.executeStepAndWait("stepSetupFocusLoss()");
         framework.endTest();
     }
 
     private void appButtonExitsPresentationImpl(String url, WebXrVrTestFramework framework) {
-        framework.loadFileAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
+        framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
         NativeUiUtils.clickAppButton(UserFriendlyElementName.NONE, new PointF());
         assertAppButtonEffect(true /* shouldHaveExited */, framework);
@@ -381,7 +389,8 @@ public class WebXrVrInputTest {
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     @CommandLineFlags.Add({"enable-features=WebXR"})
     public void testAppButtonNoopsWhenBrowsingDisabled_WebXr() throws ExecutionException {
-        appButtonNoopsTestImpl("generic_webxr_page", mWebXrVrTestFramework);
+        appButtonNoopsTestImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
+                mWebXrVrTestFramework);
     }
 
     /**
@@ -396,13 +405,14 @@ public class WebXrVrInputTest {
     @CommandLineFlags.Add({"enable-features=WebXR"})
     public void
     testAppButtonNoopsWhenBrowsingNotSupported_WebXr() throws ExecutionException {
-        appButtonNoopsTestImpl("generic_webxr_page", mWebXrVrTestFramework);
+        appButtonNoopsTestImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
+                mWebXrVrTestFramework);
     }
 
     private void appButtonNoopsTestImpl(String url, WebXrVrTestFramework framework)
             throws ExecutionException {
         VrShellDelegateUtils.getDelegateInstance().setVrBrowsingDisabled(true);
-        framework.loadFileAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
+        framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
 
         MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
@@ -431,11 +441,13 @@ public class WebXrVrInputTest {
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
     @CommandLineFlags.Add({"enable-features=WebXR"})
     public void testAppButtonAfterPageStopsSubmitting_WebXr() {
-        appButtonAfterPageStopsSubmittingImpl("webxr_page_submits_once", mWebXrVrTestFramework);
+        appButtonAfterPageStopsSubmittingImpl(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("webxr_page_submits_once"),
+                mWebXrVrTestFramework);
     }
 
     private void appButtonAfterPageStopsSubmittingImpl(String url, WebXrVrTestFramework framework) {
-        framework.loadFileAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
+        framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
         // Wait for page to stop submitting frames.
         framework.waitOnJavaScriptStep();
@@ -473,8 +485,9 @@ public class WebXrVrInputTest {
     }
 
     private void webxrGamepadSupportImpl(boolean daydream) {
-        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
-                "test_webxr_gamepad_support", PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_gamepad_support"),
+                PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
 
         // Spam input to make sure the Gamepad API registers the gamepad if it should.
@@ -535,8 +548,10 @@ public class WebXrVrInputTest {
     private void testAppButtonLongPressDisplaysPermissionsImpl() throws InterruptedException {
         // Note that we need to pass in the WebContents to use throughout this because automatically
         // using the first tab's WebContents doesn't work in Incognito.
-        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
-                "generic_webxr_permission_page", PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                mWebXrVrTestFramework.getEmbeddedServerUrlForHtmlTestFile(
+                        "generic_webxr_permission_page"),
+                PAGE_LOAD_TIMEOUT_S);
         WebXrVrTestFramework.runJavaScriptOrFail("requestPermission({audio:true})",
                 POLL_TIMEOUT_SHORT_MS, mTestRule.getWebContents());
 
@@ -615,8 +630,10 @@ public class WebXrVrInputTest {
     private void testInSessionPermissionRequestsImpl() {
         // Note that we need to pass in the WebContents to use throughout this because automatically
         // using the first tab's WebContents doesn't work in Incognito.
-        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
-                "generic_webxr_permission_page", PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                mWebXrVrTestFramework.getEmbeddedServerUrlForHtmlTestFile(
+                        "generic_webxr_permission_page"),
+                PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail(mTestRule.getWebContents());
         NativeUiUtils.enableMockedInput();
         NativeUiUtils.performActionAndWaitForVisibilityStatus(

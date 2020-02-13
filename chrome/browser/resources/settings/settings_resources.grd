@@ -877,6 +877,12 @@
                  file="privacy_page/privacy_page_browser_proxy.js"
                  preprocess="true"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_SAFETY_CHECK_PAGE_HTML"
+                 file="safety_check_page/safety_check_page.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_SAFETY_CHECK_PAGE_JS"
+                 file="safety_check_page/safety_check_page.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_PROTOCOL_HANDLERS_HTML"
                  file="site_settings/protocol_handlers.html"
                  preprocess="true"

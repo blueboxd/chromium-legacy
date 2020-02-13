@@ -86,14 +86,15 @@ google_apis::CancelCallback DriveServiceOnWorker::DownloadFile(
 }
 
 google_apis::CancelCallback DriveServiceOnWorker::GetAboutResource(
-    const google_apis::AboutResourceCallback& callback) {
+    google_apis::AboutResourceCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::BindOnce(&DriveServiceWrapper::GetAboutResource, wrapper_,
-                     RelayCallbackToTaskRunner(worker_task_runner_.get(),
-                                               FROM_HERE, callback)));
+      base::BindOnce(
+          &DriveServiceWrapper::GetAboutResource, wrapper_,
+          RelayCallbackToTaskRunner(worker_task_runner_.get(), FROM_HERE,
+                                    std::move(callback))));
 
   return google_apis::CancelCallback();
 }

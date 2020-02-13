@@ -20,6 +20,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/renderer_preferences_util.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "ui/base/window_open_disposition.h"
@@ -609,8 +610,10 @@ void TabImpl::OnExitFullscreen() {
 }
 
 void TabImpl::UpdateRendererPrefs(bool should_sync_prefs) {
-  web_contents_->GetMutableRendererPrefs()->accept_languages =
-      i18n::GetAcceptLangs();
+  blink::mojom::RendererPreferences* prefs =
+      web_contents_->GetMutableRendererPrefs();
+  content::UpdateFontRendererPreferencesFromSystemSettings(prefs);
+  prefs->accept_languages = i18n::GetAcceptLangs();
   if (should_sync_prefs)
     web_contents_->SyncRendererPrefs();
 }

@@ -41,8 +41,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkActivationHandlerImpl
 
   // Handle success from Shill.Service.ActivateCellularModem or
   // Shill.Service.CompleteCellularActivation.
-  void HandleShillSuccess(const std::string& service_path,
-                          const base::Closure& success_callback);
+  void HandleShillSuccess(base::OnceClosure success_callback);
 
   DISALLOW_COPY_AND_ASSIGN(NetworkActivationHandlerImpl);
 };

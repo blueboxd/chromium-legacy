@@ -199,10 +199,9 @@ void NavigatorImpl::DidNavigate(
 
     // Save the new page's embedding token and propagate to any frames that
     // embed it.
-    // - A token will have a value for:
-    //   - the main frame
-    //   - a subframe in a different process than its parent
-    // - An empty token will occur for:
+    // - A token will have a value if it is a cross-origin frame.
+    // - An empty token will occur for;
+    //   - main frames
     //   - a previously out-of-process frame that navigated to be same-process
     //     as its parent
     frame_tree_node->SetEmbeddingToken(params.embedding_token);

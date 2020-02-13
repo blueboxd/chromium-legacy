@@ -1,0 +1,39 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/toolchain/win/midl.gni")
+
+source_set("win") {
+  sources = [
+    "server.cc",
+    "server.h",
+  ]
+
+  configs -= [ "//build/config/win:winver" ]
+  configs += [ ":winver" ]
+
+  deps = [
+    ":updater_idl_idl",
+    "//base",
+  ]
+}
+
+midl("updater_idl_idl") {
+  sources = [ "updater_idl.idl" ]
+
+  writes_tlb = true
+}
+
+# The COM server needs to work with Windows 7, so explicitly setting the defines
+# to reflect this. Otherwise, WRL uses APIs that are only available in later
+# Windows versions.
+config("winver") {
+  defines = [
+    "NTDDI_VERSION=NTDDI_WIN7",
+
+    # Hardcoding version 0x0601, since _WIN32_WINNT_WIN7 may not be defined.
+    "_WIN32_WINNT=0x0601",
+    "WINVER=0x0601",
+  ]
+}

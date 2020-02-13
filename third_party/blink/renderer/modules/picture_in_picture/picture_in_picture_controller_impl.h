@@ -21,7 +21,6 @@ class HTMLVideoElement;
 class PictureInPictureOptions;
 class PictureInPictureWindow;
 class TreeScope;
-struct WebSize;
 
 // The PictureInPictureControllerImpl is keeping the state and implementing the
 // logic around the Picture-in-Picture feature. It is meant to be used as well
@@ -85,7 +84,7 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   void OnPictureInPictureStateChange() override;
 
   // Implementation of PictureInPictureSessionObserver.
-  void OnWindowSizeChanged(const blink::WebSize&) override;
+  void OnWindowSizeChanged(const gfx::Size&) override;
   void OnStopped() override;
 
   // Implementation of PageVisibilityObserver.
@@ -105,7 +104,7 @@ class MODULES_EXPORT PictureInPictureControllerImpl
       HTMLVideoElement*,
       ScriptPromiseResolver*,
       mojo::PendingRemote<mojom::blink::PictureInPictureSession>,
-      const WebSize&);
+      const gfx::Size&);
   void OnExitedPictureInPicture(ScriptPromiseResolver*) override;
 
   // Makes sure the `picture_in_picture_service_` is set. Returns whether it was

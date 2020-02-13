@@ -26,18 +26,18 @@ using blink::WebString;
 using blink::WebVector;
 
 // https://w3c.github.io/manifest/#sizes-member.
-WTF::Vector<WebSize> ParseSizes(const WTF::String& sizes) {
-  WebVector<WebSize> parsed_sizes = blink::WebIconSizesParser::ParseIconSizes(
+WTF::Vector<gfx::Size> ParseSizes(const WTF::String& sizes) {
+  WebVector<gfx::Size> parsed_sizes = blink::WebIconSizesParser::ParseIconSizes(
       WebString::FromASCII(sizes.Ascii()));
   WTF::HashSet<std::pair<int, int>, WTF::PairHash<int, int>,
                WTF::PairHashTraits<WTF::UnsignedWithZeroKeyHashTraits<int>,
                                    WTF::UnsignedWithZeroKeyHashTraits<int>>>
       unique_sizes;
 
-  WTF::Vector<WebSize> results;
+  WTF::Vector<gfx::Size> results;
   for (const auto& size : parsed_sizes) {
     auto add_result =
-        unique_sizes.insert(std::make_pair(size.width, size.height));
+        unique_sizes.insert(std::make_pair(size.width(), size.height()));
     if (add_result.is_new_entry) {
       results.push_back(size);
     }
@@ -138,9 +138,9 @@ Manifest::ImageResource ConvertManifestImageResource(
     }
   }
   // Parse 'sizes'.
-  WTF::Vector<WebSize> sizes = mojo::ParseSizes(icon->sizes());
+  WTF::Vector<gfx::Size> sizes = mojo::ParseSizes(icon->sizes());
   for (const auto& size : sizes) {
-    manifest_icon.sizes.emplace_back(gfx::Size(size.height, size.width));
+    manifest_icon.sizes.emplace_back(size);
   }
 
   return manifest_icon;

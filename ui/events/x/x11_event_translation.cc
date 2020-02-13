@@ -6,14 +6,38 @@
 
 #include <vector>
 
+#include "base/time/time.h"
+#include "ui/events/devices/x11/touch_factory_x11.h"
+#include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
+#include "ui/events/pointer_details.h"
 #include "ui/events/x/events_x_utils.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/x/x11.h"
 
 namespace ui {
 
 namespace {
+
+// In X11 touch events, a new tracking_id/slot mapping is set up for each new
+// event (see |ui::GetTouchIdFromXEvent| function), which needs to be cleared
+// at destruction time for corresponding release/cancel events. In this
+// particular case, ui::TouchEvent class is extended so that dtor can be
+// overridden in order to implement this platform-specific behavior.
+class TouchEventX11 : public ui::TouchEvent {
+ public:
+  TouchEventX11(EventType type,
+                gfx::Point location,
+                base::TimeTicks timestamp,
+                const PointerDetails& pointer_details)
+      : TouchEvent(type, location, timestamp, pointer_details) {}
+
+  ~TouchEventX11() override {
+    if (type() == ET_TOUCH_RELEASED || type() == ET_TOUCH_CANCELLED)
+      TouchFactory::GetInstance()->ReleaseSlot(pointer_details().id);
+  }
+};
 
 Event::Properties GetEventPropertiesFromXEvent(EventType type,
                                                const XEvent& xev) {
@@ -120,16 +144,15 @@ std::unique_ptr<MouseWheelEvent> CreateMouseWheelEvent(const XEvent& xev) {
 
 std::unique_ptr<TouchEvent> CreateTouchEvent(EventType type,
                                              const XEvent& xev) {
-  std::unique_ptr<TouchEvent> event = std::make_unique<TouchEvent>(
+  auto event = std::make_unique<TouchEventX11>(
       type, EventLocationFromXEvent(xev), EventTimeFromXEvent(xev),
       GetTouchPointerDetailsFromXEvent(xev));
-
-  DCHECK(event);
+#if defined(USE_OZONE)
   // Touch events don't usually have |root_location| set differently than
   // |location|, since there is a touch device to display association, but this
   // doesn't happen in Ozone X11.
   event->set_root_location(EventSystemLocationFromXEvent(xev));
-
+#endif
   return event;
 }
 

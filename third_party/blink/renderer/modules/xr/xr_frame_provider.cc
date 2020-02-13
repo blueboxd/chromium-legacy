@@ -567,7 +567,7 @@ void XRFrameProvider::UpdateWebGLLayerViewports(XRWebGLLayer* layer) {
             : WebFloatRect();
 
   immersive_presentation_provider_->UpdateLayerBounds(
-      frame_id_, left_coords, right_coords, WebSize(width, height));
+      frame_id_, left_coords, right_coords, gfx::Size(width, height));
 }
 
 void XRFrameProvider::Dispose() {

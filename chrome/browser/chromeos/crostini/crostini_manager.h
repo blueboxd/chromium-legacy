@@ -579,9 +579,6 @@ class CrostiniManager : public KeyedService,
     component_manager_load_error_for_testing_ = error;
   }
 
-  void SetInstallerViewStatus(bool open);
-  bool GetInstallerViewStatus() const;
-
   void SetCrostiniDialogStatus(DialogType dialog_type, bool open);
   bool GetCrostiniDialogStatus(DialogType dialog_type) const;
   void AddCrostiniDialogStatusObserver(CrostiniDialogStatusObserver* observer);
@@ -870,7 +867,7 @@ class CrostiniManager : public KeyedService,
   // Contains the types of crostini dialogs currently open. It is generally
   // invalid to show more than one. e.g. uninstalling and installing are
   // mutually exclusive.
-  std::set<DialogType> open_crostini_dialogs_;
+  base::flat_set<DialogType> open_crostini_dialogs_;
 
   bool dbus_observers_removed_ = false;
 

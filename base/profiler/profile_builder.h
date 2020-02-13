@@ -61,6 +61,16 @@ class BASE_EXPORT ProfileBuilder {
   // associated with the sample.
   virtual void RecordMetadata(MetadataProvider* metadata_provider) {}
 
+  // Applies the specified metadata |item| to samples collected in the range
+  // [period_start, period_end), iff the profile already captured execution that
+  // covers that range entirely. This restriction avoids bias in the results
+  // towards samples in the middle of the period, at the expense of excluding
+  // periods overlapping the start or end of the profile. |period_end| must be
+  // <= TimeTicks::Now().
+  virtual void ApplyMetadataRetrospectively(TimeTicks period_start,
+                                            TimeTicks period_end,
+                                            const MetadataItem& item) {}
+
   // Records a new set of frames. Invoked when sampling a sample completes.
   virtual void OnSampleCompleted(std::vector<Frame> frames,
                                  TimeTicks sample_timestamp) = 0;

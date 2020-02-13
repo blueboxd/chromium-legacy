@@ -30,7 +30,6 @@ class RoundedLabelButton : public views::LabelButton {
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   const char* GetClassName() const override;
 
  private:

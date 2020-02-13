@@ -85,6 +85,41 @@ void CallStackProfileBuilder::RecordMetadata(
   metadata_.RecordMetadata(metadata_provider);
 }
 
+void CallStackProfileBuilder::ApplyMetadataRetrospectively(
+    base::TimeTicks period_start,
+    base::TimeTicks period_end,
+    const MetadataItem& item) {
+  DCHECK_LE(period_start, period_end);
+  DCHECK_LE(period_end, base::TimeTicks::Now());
+
+  // We don't set metadata if the period extends before the start of the
+  // sampling, to avoid biasing against the unobserved execution. This will
+  // introduce bias due to dropping periods longer than the sampling time, but
+  // that bias is easier to reason about and account for.
+  if (period_start < profile_start_time_)
+    return;
+
+  CallStackProfile* call_stack_profile =
+      sampled_profile_.mutable_call_stack_profile();
+  google::protobuf::RepeatedPtrField<CallStackProfile::StackSample>* samples =
+      call_stack_profile->mutable_stack_sample();
+
+  DCHECK_EQ(sample_timestamps_.size(), static_cast<size_t>(samples->size()));
+
+  const ptrdiff_t start_offset =
+      std::lower_bound(sample_timestamps_.begin(), sample_timestamps_.end(),
+                       period_start) -
+      sample_timestamps_.begin();
+  const ptrdiff_t end_offset =
+      std::upper_bound(sample_timestamps_.begin(), sample_timestamps_.end(),
+                       period_end) -
+      sample_timestamps_.begin();
+
+  metadata_.ApplyMetadata(item, samples->begin() + start_offset,
+                          samples->begin() + end_offset, samples,
+                          call_stack_profile->mutable_metadata_name_hash());
+}
+
 void CallStackProfileBuilder::OnSampleCompleted(
     std::vector<base::Frame> frames,
     base::TimeTicks sample_timestamp) {
@@ -155,6 +190,8 @@ void CallStackProfileBuilder::OnSampleCompleted(
 
   if (profile_start_time_.is_null())
     profile_start_time_ = sample_timestamp;
+
+  sample_timestamps_.push_back(sample_timestamp);
 }
 
 void CallStackProfileBuilder::OnProfileCompleted(

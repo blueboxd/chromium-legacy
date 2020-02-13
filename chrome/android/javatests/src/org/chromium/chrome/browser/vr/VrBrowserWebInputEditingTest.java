@@ -78,7 +78,8 @@ public class VrBrowserWebInputEditingTest {
     @MediumTest
     @CommandLineFlags.Add("enable-features=VrLaunchIntents")
     public void testWebInputFocus() throws InterruptedException {
-        testWebInputFocusImpl(mVrBrowserTestFramework.getUrlForFile("test_web_input_editing"));
+        testWebInputFocusImpl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_web_input_editing"));
     }
 
     /**
@@ -90,8 +91,8 @@ public class VrBrowserWebInputEditingTest {
     @MediumTest
     @CommandLineFlags.Add("enable-features=VrLaunchIntents")
     public void testWebInputFocusIframe() throws InterruptedException {
-        testWebInputFocusImpl(
-                mVrBrowserTestFramework.getUrlForFile("test_web_input_editing_iframe_outer"));
+        testWebInputFocusImpl(VrBrowserTestFramework.getFileUrlForHtmlTestFile(
+                "test_web_input_editing_iframe_outer"));
     }
 
     private void testWebInputFocusImpl(String url) throws InterruptedException {
@@ -153,8 +154,8 @@ public class VrBrowserWebInputEditingTest {
     @Test
     @MediumTest
     public void testSelectTag() throws TimeoutException {
-        mVrTestRule.loadUrl(
-                mVrBrowserTestFramework.getUrlForFile("test_select_tag"), PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_select_tag"),
+                PAGE_LOAD_TIMEOUT_S);
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         NativeUiUtils.enableMockedInput();
         // Click on the <select> tag and wait for the resulting modal dialog to appear.
@@ -197,7 +198,8 @@ public class VrBrowserWebInputEditingTest {
     @Test
     @MediumTest
     public void testKeyboardAutomaticallyClosesOnNavigation() throws InterruptedException {
-        mVrTestRule.loadUrl(mVrBrowserTestFramework.getUrlForFile("test_web_input_editing"),
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_web_input_editing"),
                 PAGE_LOAD_TIMEOUT_S);
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
 
@@ -220,7 +222,8 @@ public class VrBrowserWebInputEditingTest {
                 POLL_CHECK_INTERVAL_SHORT_MS);
 
         // Navigate to a different page and ensure the keyboard automatically hides.
-        mVrTestRule.loadUrl(mVrBrowserTestFramework.getUrlForFile("test_navigation_2d_page"),
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page"),
                 PAGE_LOAD_TIMEOUT_S);
         // The hiding should be done by the time navigation completes, so assert instead of polling.
         Assert.assertFalse(
@@ -237,8 +240,8 @@ public class VrBrowserWebInputEditingTest {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         NativeUiUtils.enableMockedInput();
         NativeUiUtils.enableMockedKeyboard();
-        mVrTestRule.loadUrl(
-                mVrBrowserTestFramework.getUrlForFile("test_web_input_cursor_reposition"),
+        mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile(
+                                    "test_web_input_cursor_reposition"),
                 PAGE_LOAD_TIMEOUT_S);
         NativeUiUtils.clickContentNode(
                 "textfield", new PointF(), 1 /* numClicks */, mVrBrowserTestFramework);
@@ -279,7 +282,8 @@ public class VrBrowserWebInputEditingTest {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         NativeUiUtils.enableMockedInput();
         NativeUiUtils.enableMockedKeyboard();
-        mVrTestRule.loadUrl(mVrBrowserTestFramework.getUrlForFile("test_web_input_selection"),
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_web_input_selection"),
                 PAGE_LOAD_TIMEOUT_S);
         NativeUiUtils.clickContentNode(
                 "textfield", new PointF(), 1 /* numClicks */, mVrBrowserTestFramework);
@@ -325,7 +329,8 @@ public class VrBrowserWebInputEditingTest {
     @MediumTest
     public void testClicksHideKeyboard() throws InterruptedException, TimeoutException {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
-        mVrTestRule.loadUrl(mVrBrowserTestFramework.getUrlForFile("generic_text_entry_page"),
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("generic_text_entry_page"),
                 PAGE_LOAD_TIMEOUT_S);
         NativeUiUtils.enableMockedInput();
 
@@ -395,7 +400,8 @@ public class VrBrowserWebInputEditingTest {
     @MediumTest
     public void testAppButtonHidesKeyboard() throws InterruptedException, TimeoutException {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
-        mVrTestRule.loadUrl(mVrBrowserTestFramework.getUrlForFile("generic_text_entry_page"),
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("generic_text_entry_page"),
                 PAGE_LOAD_TIMEOUT_S);
         NativeUiUtils.enableMockedInput();
 
@@ -445,8 +451,9 @@ public class VrBrowserWebInputEditingTest {
         mRenderTestRule.setPixelDiffThreshold(2);
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         NativeUiUtils.enableMockedInput();
-        mVrBrowserTestFramework.loadFileAndAwaitInitialization(
-                "test_video_controls", PAGE_LOAD_TIMEOUT_S);
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_video_controls"),
+                PAGE_LOAD_TIMEOUT_S);
 
         // Click the fullscreen button. We use a separate button instead of the controls' fullscreen
         // button since that's more stable.

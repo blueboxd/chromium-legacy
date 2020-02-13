@@ -6,10 +6,6 @@ package org.chromium.chrome.browser.profile_card;
 
 import android.view.View;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import org.chromium.base.Log;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.widget.ViewRectProvider;
@@ -19,16 +15,14 @@ import org.chromium.ui.widget.ViewRectProvider;
  * Talks to other components and decides when to show/update the profile card.
  */
 public class ProfileCardCoordinatorImpl implements ProfileCardCoordinator {
-    private static final String TAG = "ShowError";
-
     private PropertyModel mModel;
     private ProfileCardView mView;
     private ProfileCardMediator mMediator;
     private PropertyModelChangeProcessor mModelChangeProcessor;
-    private JSONObject mProfileCardData;
+    private ProfileCardData mProfileCardData;
 
     @Override
-    public void update(View anchorView, JSONObject profileCardData) {
+    public void update(View anchorView, ProfileCardData profileCardData) {
         if (mProfileCardData == profileCardData) return;
         ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
         mView = new ProfileCardView(anchorView.getContext());
@@ -41,11 +35,6 @@ public class ProfileCardCoordinatorImpl implements ProfileCardCoordinator {
 
     @Override
     public void show() {
-        try {
-            mMediator.show();
-        } catch (JSONException e) {
-            e.printStackTrace();
-            Log.e(TAG, "Failed to show profile card.");
-        }
+        mMediator.show();
     }
 }

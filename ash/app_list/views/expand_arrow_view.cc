@@ -22,8 +22,7 @@
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
-#include "ui/views/animation/ink_drop_mask.h"
-#include "ui/views/animation/ink_drop_painted_layer_delegates.h"
+#include "ui/views/controls/highlight_path_generator.h"
 
 namespace ash {
 
@@ -104,6 +103,31 @@ float GetArrowYForAppListProgress(float progress) {
                                        kArrowPeekingY, kArrowFullscreenY);
 }
 
+// Returns the location of the circle, relative to the view's local bounds.
+gfx::Rect GetCircleBounds() {
+  const gfx::Point circle_center(kTileWidth / 2, kCircleCenterPeekingY);
+  const gfx::Rect circle_bounds(
+      circle_center - gfx::Vector2d(kCircleRadius, kCircleRadius),
+      gfx::Size(2 * kCircleRadius, 2 * kCircleRadius));
+  return circle_bounds;
+}
+
+class ExpandArrowHighlightPathGenerator : public views::HighlightPathGenerator {
+ public:
+  ExpandArrowHighlightPathGenerator() = default;
+
+  ExpandArrowHighlightPathGenerator(const ExpandArrowHighlightPathGenerator&) =
+      delete;
+  ExpandArrowHighlightPathGenerator& operator=(
+      const ExpandArrowHighlightPathGenerator&) = delete;
+
+  // views::HighlightPathGenerator:
+  base::Optional<RoundRect> GetRoundRect(const gfx::RectF& rect) override {
+    return base::make_optional(
+        RoundRect{gfx::RectF(GetCircleBounds()), kInkDropRadius});
+  }
+};
+
 }  // namespace
 
 ExpandArrowView::ExpandArrowView(ContentsView* contents_view,
@@ -121,6 +145,8 @@ ExpandArrowView::ExpandArrowView(ContentsView* contents_view,
   // HighlightPathGenerator usage.
   SetInstallFocusRingOnFocus(false);
   SetInkDropMode(InkDropMode::ON);
+  views::HighlightPathGenerator::Install(
+      this, std::make_unique<ExpandArrowHighlightPathGenerator>());
 
   SetAccessibleName(l10n_util::GetStringUTF16(IDS_APP_LIST_EXPAND_BUTTON));
 
@@ -255,24 +281,14 @@ std::unique_ptr<views::InkDrop> ExpandArrowView::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop =
       Button::CreateDefaultInkDropImpl();
   ink_drop->SetShowHighlightOnHover(false);
-  ink_drop->SetShowHighlightOnFocus(false);
   ink_drop->SetAutoHighlightMode(views::InkDropImpl::AutoHighlightMode::NONE);
   return std::move(ink_drop);
 }
 
-std::unique_ptr<views::InkDropMask> ExpandArrowView::CreateInkDropMask() const {
-  return std::make_unique<views::CircleInkDropMask>(
-      size(), gfx::Point(kTileWidth / 2, kCircleCenterPeekingY),
-      kInkDropRadius);
-}
-
 std::unique_ptr<views::InkDropRipple> ExpandArrowView::CreateInkDropRipple()
     const {
-  gfx::Point center(kTileWidth / 2, kCircleCenterPeekingY);
-  gfx::Rect bounds(center.x() - kInkDropRadius, center.y() - kInkDropRadius,
-                   2 * kInkDropRadius, 2 * kInkDropRadius);
   return std::make_unique<views::FloodFillInkDropRipple>(
-      size(), GetLocalBounds().InsetsFrom(bounds),
+      size(), GetLocalBounds().InsetsFrom(GetCircleBounds()),
       GetInkDropCenterBasedOnLastEvent(), kInkDropRippleColor, 1.0f);
 }
 

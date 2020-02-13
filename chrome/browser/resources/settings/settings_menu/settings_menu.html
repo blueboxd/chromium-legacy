@@ -7,6 +7,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-selector/iron-selector.html">
+<link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../router.html">
@@ -116,6 +117,13 @@
         <iron-icon icon="settings:assignment"></iron-icon>
         $i18n{autofillPageTitle}
       </a>
+      <template is="dom-if" if="[[privacySettingsRedesignEnabled_]]" restamp>
+        <a href="/safetyCheck" hidden="[[!pageVisibility.privacy]]">
+          <!-- TODO(crbug.com/1010001) Replace with safety check icon. -->
+          <iron-icon icon="settings:assignment"></iron-icon>
+          $i18n{safetyCheckSectionTitle}
+        </a>
+      </template>
       <a href="/privacy" hidden="[[!pageVisibility.privacy]]">
         <iron-icon icon="cr:security"></iron-icon>
         $i18n{privacyPageTitle}

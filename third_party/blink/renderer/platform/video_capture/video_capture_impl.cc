@@ -553,12 +553,12 @@ void VideoCaptureImpl::OnBufferReady(
         uint8_t* u_data =
             y_data + (media::VideoFrame::Rows(media::VideoFrame::kYPlane,
                                               info->pixel_format,
-                                              info->coded_size.height) *
+                                              info->coded_size.height()) *
                       info->strides->stride_by_plane[0]);
         uint8_t* v_data =
             u_data + (media::VideoFrame::Rows(media::VideoFrame::kUPlane,
                                               info->pixel_format,
-                                              info->coded_size.height) *
+                                              info->coded_size.height()) *
                       info->strides->stride_by_plane[1]);
         frame = media::VideoFrame::WrapExternalYuvData(
             info->pixel_format, gfx::Size(info->coded_size),

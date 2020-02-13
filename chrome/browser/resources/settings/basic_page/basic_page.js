@@ -170,6 +170,16 @@ Polymer({
   },
 
   /**
+   * @param {boolean|undefined} visibility
+   * @return {boolean}
+   * @private
+   */
+  showSafetyCheckPage_: function(visibility) {
+    return loadTimeData.getBoolean('privacySettingsRedesignEnabled') &&
+        this.showPage_(visibility);
+  },
+
+  /**
    * Queues a task to search the basic sections, then another for the advanced
    * sections.
    * @param {string} query The text to search for.

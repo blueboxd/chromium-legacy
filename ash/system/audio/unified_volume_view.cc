@@ -88,7 +88,8 @@ class MoreButton : public views::Button {
     SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO));
     TrayPopupUtils::ConfigureTrayPopupButton(this);
 
-    views::InstallPillHighlightPathGenerator(this);
+    views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(),
+                                                  kTrayItemCornerRadius);
     focus_ring()->SetColor(UnifiedSystemTrayView::GetFocusRingColor());
   }
 
@@ -96,14 +97,14 @@ class MoreButton : public views::Button {
 
   // views::Button:
   void PaintButtonContents(gfx::Canvas* canvas) override {
-    gfx::Rect rect(GetContentsBounds());
+    gfx::RectF rect(GetContentsBounds());
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setColor(AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
         AshColorProvider::ControlsLayerType::kInactiveControlBackground,
         kUnifiedMenuButtonColor));
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    canvas->DrawRoundRect(rect, kTrayItemSize / 2, flags);
+    canvas->DrawRoundRect(rect, kTrayItemCornerRadius, flags);
   }
 
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {

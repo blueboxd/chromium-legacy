@@ -76,10 +76,7 @@ unsigned PrerenderRelTypesFromRelAttribute(
 
 }  // namespace
 
-class LinkLoader::FinishObserver final
-    : public GarbageCollected<LinkLoader::FinishObserver>,
-      public ResourceFinishObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(FinishObserver);
+class LinkLoader::FinishObserver final : public ResourceFinishObserver {
   USING_PRE_FINALIZER(FinishObserver, ClearResource);
 
  public:

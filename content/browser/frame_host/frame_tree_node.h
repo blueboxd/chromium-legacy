@@ -406,8 +406,11 @@ class CONTENT_EXPORT FrameTreeNode {
   void SetOpenerFeaturePolicyState(
       const blink::FeaturePolicy::FeatureState& feature_state);
 
-  // Returns the embedding token for the frame. This will return base::nullopt
-  // for child frames that are in the same process as their parent.
+  // Returns the embedding token for the frame. A frame is embedded if it is the
+  // child to a parent frame that is cross-process. As such, this will return
+  // base::nullopt for:
+  // - The main frame.
+  // - Child frames that are in the same process as their parent.
   const base::Optional<base::UnguessableToken>& GetEmbeddingToken() const;
 
   // Called by NavigationImpl::DidNavigate() on completion of a navigation to

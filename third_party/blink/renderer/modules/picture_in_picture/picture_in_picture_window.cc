@@ -13,14 +13,14 @@ namespace blink {
 
 PictureInPictureWindow::PictureInPictureWindow(
     ExecutionContext* execution_context,
-    const WebSize& size)
+    const gfx::Size& size)
     : ContextClient(execution_context), size_(size) {}
 
 void PictureInPictureWindow::OnClose() {
-  size_.width = size_.height = 0;
+  size_ = gfx::Size();
 }
 
-void PictureInPictureWindow::OnResize(const WebSize& size) {
+void PictureInPictureWindow::OnResize(const gfx::Size& size) {
   if (size_ == size)
     return;
 

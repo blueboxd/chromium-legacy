@@ -40,7 +40,7 @@ class EmbeddingTokenBrowserTest : public ContentBrowserTest {
   FrameTreeVisualizer visualizer_;
 };
 
-IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest, EmbeddingTokenOnMainFrame) {
+IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest, NoEmbeddingTokenOnMainFrame) {
   GURL a_url = embedded_test_server()->GetURL("a.com", "/site_isolation/");
   GURL b_url = embedded_test_server()->GetURL("b.com", "/site_isolation/");
   // Starts without an embedding token.
@@ -49,29 +49,18 @@ IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest, EmbeddingTokenOnMainFrame) {
                             ->root();
   EXPECT_FALSE(root->GetEmbeddingToken().has_value());
 
-  // Embedding tokens should get added to the main frame.
+  // Embedding tokens don't get added to the main frame.
   EXPECT_TRUE(NavigateToURL(shell(), a_url.Resolve("blank.html")));
   root = static_cast<WebContentsImpl*>(shell()->web_contents())
              ->GetFrameTree()
              ->root();
-  EXPECT_TRUE(root->GetEmbeddingToken().has_value());
-  auto first_token = root->GetEmbeddingToken();
-
-  // Tokens shouldn't change for same-site navigation, but should change for a
-  // cross-site one.
-  EXPECT_TRUE(NavigateToURL(shell(), a_url.Resolve("valid.html")));
-  root = static_cast<WebContentsImpl*>(shell()->web_contents())
-             ->GetFrameTree()
-             ->root();
-  EXPECT_TRUE(root->GetEmbeddingToken().has_value());
-  EXPECT_EQ(first_token, root->GetEmbeddingToken().value());
+  EXPECT_FALSE(root->GetEmbeddingToken().has_value());
 
   EXPECT_TRUE(NavigateToURL(shell(), b_url.Resolve("blank.html")));
   root = static_cast<WebContentsImpl*>(shell()->web_contents())
              ->GetFrameTree()
              ->root();
-  EXPECT_TRUE(root->GetEmbeddingToken().has_value());
-  EXPECT_NE(first_token, root->GetEmbeddingToken().value());
+  EXPECT_FALSE(root->GetEmbeddingToken().has_value());
 }
 
 IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
@@ -84,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
                             ->root();
 
   ASSERT_EQ(3U, root->child_count());
-  EXPECT_TRUE(root->GetEmbeddingToken().has_value());
+  EXPECT_FALSE(root->GetEmbeddingToken().has_value());
 
   // Child 0 (b) should have an embedding token.
   auto child_0_token = root->child_at(0)->GetEmbeddingToken();
@@ -122,15 +111,13 @@ IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
                             ->root();
 
   ASSERT_EQ(1U, root->child_count());
-  auto root_token = root->GetEmbeddingToken();
-  EXPECT_TRUE(root_token.has_value());
+  EXPECT_FALSE(root->GetEmbeddingToken().has_value());
 
   // Child 0 (b) should have an embedding token.
   FrameTreeNode* target = root->child_at(0);
   auto child_0_token = target->GetEmbeddingToken();
   ASSERT_TRUE(child_0_token.has_value());
   EXPECT_NE(base::UnguessableToken::Null(), child_0_token);
-  EXPECT_NE(root_token, child_0_token);
 
   // Navigate child 0 (b) to another site (cross-process) the token should swap.
   {
@@ -144,7 +131,6 @@ IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
   auto new_child_0_token = root->child_at(0)->GetEmbeddingToken();
   ASSERT_TRUE(new_child_0_token.has_value());
   EXPECT_NE(base::UnguessableToken::Null(), new_child_0_token);
-  EXPECT_NE(root_token, new_child_0_token);
   EXPECT_NE(child_0_token, new_child_0_token);
 
   // TODO(ckitagawa): Somehow assert that the parent and child have matching
@@ -161,9 +147,7 @@ IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
                             ->root();
 
   ASSERT_EQ(1U, root->child_count());
-  auto root_token = root->GetEmbeddingToken();
-  EXPECT_TRUE(root_token.has_value());
-
+  EXPECT_FALSE(root->GetEmbeddingToken().has_value());
   auto b_url = embedded_test_server()->GetURL("b.com", "/site_isolation/");
   // Navigate child 0 to another site (cross-process) a token should be created.
   {
@@ -179,7 +163,6 @@ IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
   auto child_0_token = target->GetEmbeddingToken();
   ASSERT_TRUE(child_0_token.has_value());
   EXPECT_NE(base::UnguessableToken::Null(), child_0_token);
-  EXPECT_NE(root_token, child_0_token);
 
   // Navigate child 0 (b) to same origin the token should not swap.
   NavigateIframeToURL(shell()->web_contents(), "child-0",
@@ -202,15 +185,13 @@ IN_PROC_BROWSER_TEST_F(EmbeddingTokenBrowserTest,
                             ->root();
 
   ASSERT_EQ(1U, root->child_count());
-  auto root_token = root->GetEmbeddingToken();
-  EXPECT_TRUE(root_token.has_value());
+  EXPECT_FALSE(root->GetEmbeddingToken().has_value());
 
   // Child 0 (b) should have an embedding token.
   FrameTreeNode* target = root->child_at(0);
   auto child_0_token = target->GetEmbeddingToken();
   ASSERT_TRUE(child_0_token.has_value());
   EXPECT_NE(base::UnguessableToken::Null(), child_0_token);
-  EXPECT_NE(root_token, child_0_token);
 
   // Navigate child 0 (b) to the same site as the main frame. This shouldn't
   // create an embedding token as the child is now local.
@@ -237,8 +218,7 @@ IN_PROC_BROWSER_TEST_F(
                             ->root();
 
   ASSERT_EQ(1U, root->child_count());
-  auto root_token = root->GetEmbeddingToken();
-  EXPECT_TRUE(root_token.has_value());
+  EXPECT_FALSE(root->GetEmbeddingToken().has_value());
 
   // Child shouldn't have an embedding token.
   FrameTreeNode* target = root->child_at(0);
@@ -258,7 +238,6 @@ IN_PROC_BROWSER_TEST_F(
   auto new_child_0_token = root->child_at(0)->GetEmbeddingToken();
   ASSERT_TRUE(new_child_0_token.has_value());
   EXPECT_NE(base::UnguessableToken::Null(), new_child_0_token);
-  EXPECT_NE(root_token, new_child_0_token);
 
   // TODO(ckitagawa): Somehow assert that the parent and child have matching
   // embedding tokens in parent HTMLOwnerElement and child LocalFrame.

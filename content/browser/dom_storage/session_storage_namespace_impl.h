@@ -11,13 +11,9 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/session_storage_namespace.h"
-
-namespace base {
-class SequencedTaskRunner;
-}
 
 namespace content {
 class DOMStorageContextWrapper;
@@ -66,13 +62,11 @@ class SessionStorageNamespaceImpl : public SessionStorageNamespace {
   ~SessionStorageNamespaceImpl() override;
 
   static void DeleteSessionNamespaceFromUIThread(
-      scoped_refptr<base::SequencedTaskRunner> mojo_task_runner,
       scoped_refptr<DOMStorageContextWrapper> context_wrapper,
       std::string namespace_id,
       bool should_persist);
 
   scoped_refptr<DOMStorageContextWrapper> context_wrapper_;
-  scoped_refptr<base::SequencedTaskRunner> mojo_task_runner_;
   std::string namespace_id_;
   bool should_persist_;
 

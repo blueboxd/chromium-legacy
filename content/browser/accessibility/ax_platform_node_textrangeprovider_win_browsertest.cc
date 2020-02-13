@@ -1877,7 +1877,7 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
 
   ASSERT_HRESULT_SUCCEEDED(
       text_range_provider->ExpandToEnclosingUnit(TextUnit_Format));
-  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"italic\ntext\n");
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"italic\ntext");
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
@@ -1931,10 +1931,9 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
       TextUnit_Word, "<ol><li>item one</li><li>item two</li></ol>",
       {L"1. ", L"item ", L"one", L"2. ", L"item ", L"two"});
 
-  // The following test should be enabled when crbug.com/1015100 is fixed.
-  // AssertMoveByUnitForMarkup(
-  //     TextUnit_Word, "<ul><li>item one</li><li>item two</li></ul>",
-  //     {L"• ", L"item ", L"one", L"• ", L"item ", L"two"});
+  AssertMoveByUnitForMarkup(TextUnit_Word,
+                            "<ul><li>item one</li><li>item two</li></ul>",
+                            {L"• ", L"item ", L"one", L"• ", L"item ", L"two"});
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
@@ -2017,11 +2016,10 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
                             "a<div style='display:inline-block'>b</div>c",
                             {L"a", L"b\nc"});
 
-  // The following test should be enabled when crbug.com/1015100 is fixed.
-  // AssertMoveByUnitForMarkup(
-  //     TextUnit_Line,
-  //     "<h1>line one</h1><ul><li>line two</li><li>line three</li></ul>",
-  //     {L"line one\n", L"* line two\n", L"* line three"});
+  AssertMoveByUnitForMarkup(
+      TextUnit_Line,
+      "<h1>line one</h1><ul><li>line two</li><li>line three</li></ul>",
+      {L"line one", L"• line two", L"• line three"});
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,

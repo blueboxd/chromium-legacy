@@ -94,21 +94,15 @@ source_set("installer_sources") {
     "installer.mm",
   ]
 
-  deps = [
-    "//base",
-  ]
+  deps = [ "//base" ]
 }
 
 source_set("updater_setup_tests") {
   testonly = true
 
-  sources = [
-    "setup/setup_unittest.mm",
-  ]
+  sources = [ "setup/setup_unittest.mm" ]
 
-  data = [
-    "//chrome/test/data/updater/updater_setup_test_dmg.dmg",
-  ]
+  data = [ "//chrome/test/data/updater/updater_setup_test_dmg.dmg" ]
 
   deps = [
     ":installer_sources",

@@ -829,8 +829,8 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
-    EXPECT_EQ(icons[0]->sizes[0], WebSize(42, 42));
-    EXPECT_EQ(icons[0]->sizes[1], WebSize(48, 48));
+    EXPECT_EQ(icons[0]->sizes[0], gfx::Size(42, 42));
+    EXPECT_EQ(icons[0]->sizes[1], gfx::Size(48, 48));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -842,8 +842,8 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
-    EXPECT_EQ(icons[0]->sizes[0], WebSize(42, 42));
-    EXPECT_EQ(icons[0]->sizes[1], WebSize(48, 48));
+    EXPECT_EQ(icons[0]->sizes[0], gfx::Size(42, 42));
+    EXPECT_EQ(icons[0]->sizes[1], gfx::Size(48, 48));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -855,8 +855,8 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;
-    EXPECT_EQ(icons[0]->sizes[0], WebSize(42, 42));
-    EXPECT_EQ(icons[0]->sizes[1], WebSize(42, 42));
+    EXPECT_EQ(icons[0]->sizes[0], gfx::Size(42, 42));
+    EXPECT_EQ(icons[0]->sizes[1], gfx::Size(42, 42));
     EXPECT_EQ(0u, GetErrorCount());
   }
 
@@ -882,12 +882,12 @@ TEST_F(ManifestParserTest, IconSizesParseRules) {
     EXPECT_EQ("found icon with no valid size.", errors()[0]);
   }
 
-  // 'any' is correctly parsed and transformed to WebSize(0,0).
+  // 'any' is correctly parsed and transformed to gfx::Size(0,0).
   {
     auto& manifest = ParseManifest(
         "{ \"icons\": [ {\"src\": \"\","
         "\"sizes\": \"any AnY ANY aNy\" } ] }");
-    WebSize any = WebSize(0, 0);
+    gfx::Size any = gfx::Size(0, 0);
     EXPECT_FALSE(manifest->icons.IsEmpty());
 
     auto& icons = manifest->icons;

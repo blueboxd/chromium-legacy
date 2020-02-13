@@ -79,6 +79,7 @@ class CORE_EXPORT InspectorEmulationAgent final
       const String& user_agent,
       protocol::Maybe<String> accept_language,
       protocol::Maybe<String> platform) override;
+  protocol::Response setLocaleOverride(protocol::Maybe<String>) override;
 
   // InspectorInstrumentation API
   void ApplyAcceptLanguageOverride(String* accept_lang);
@@ -129,6 +130,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   InspectorAgentState::String navigator_platform_override_;
   InspectorAgentState::String user_agent_override_;
   InspectorAgentState::String accept_language_override_;
+  InspectorAgentState::String locale_override_;
   InspectorAgentState::Double virtual_time_budget_;
   InspectorAgentState::Double virtual_time_budget_initial_offset_;
   InspectorAgentState::Double initial_virtual_time_;

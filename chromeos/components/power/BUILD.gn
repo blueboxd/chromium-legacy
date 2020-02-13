@@ -11,7 +11,6 @@ component("power") {
     "//base",
     "//chromeos/dbus/power",
     "//services/device/public/mojom",
-    "//services/service_manager/public/cpp",
   ]
 
   sources = [
@@ -31,7 +30,6 @@ source_set("unit_tests") {
     "//chromeos/dbus/power",
     "//services/device/public/cpp:test_support",
     "//services/device/public/mojom",
-    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gtest",
   ]
 }

@@ -20,6 +20,8 @@ extern const int kTrayTextFontSizeIncrease;
 
 ASH_EXPORT extern const int kTrayItemSize;
 
+extern const float kTrayItemCornerRadius;
+
 // Extra padding used beside a single icon in the tray area of the shelf.
 constexpr int kTrayImageItemPadding = 3;
 
@@ -152,7 +154,7 @@ constexpr gfx::Insets kUnifiedFeaturePodHoverPadding(2);
 constexpr int kUnifiedFeaturePodVectorIconSize = 20;
 constexpr int kUnifiedFeaturePodLabelWidth = 80;
 constexpr int kUnifiedFeaturePodSpacing = 6;
-constexpr int kUnifiedFeaturePodHoverRadius = 4;
+constexpr int kUnifiedFeaturePodHoverCornerRadius = 4;
 constexpr int kUnifiedFeaturePodVerticalPadding = 24;
 constexpr int kUnifiedFeaturePodTopPadding = 20;
 constexpr int kUnifiedFeaturePodBottomPadding = 0;

@@ -24,8 +24,8 @@
 #include "chrome/installer/util/work_item_list.h"
 #include "chrome/updater/updater_constants.h"
 #include "chrome/updater/util.h"
+#include "chrome/updater/server/win/updater_idl.h"
 #include "chrome/updater/win/constants.h"
-#include "chrome/updater/win/updater_idl.h"
 #include "chrome/updater/win/setup/setup_util.h"
 #include "chrome/updater/win/task_scheduler.h"
 #include "chrome/updater/win/util.h"
@@ -85,7 +85,7 @@ void AddComServerWorkItems(HKEY root,
   list->AddCreateRegKeyWorkItem(root, clsid_reg_path, WorkItem::kWow64Default);
 
   base::CommandLine run_com_server_command(com_server_path);
-  run_com_server_command.AppendSwitch(kComServerSwitch);
+  run_com_server_command.AppendSwitch(kServerSwitch);
   list->AddSetRegValueWorkItem(
       root, clsid_reg_path, WorkItem::kWow64Default, L"LocalServer32",
       run_com_server_command.GetCommandLineString(), true);

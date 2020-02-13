@@ -4086,17 +4086,9 @@ void RenderFrameHostImpl::EnterFullscreen(
   // by a user generated orientation change, because the fullscreen can be
   // triggered by either a user activation or a user generated orientation
   // change.
-  // CanEnterFullscreenWithoutUserActivation is always false by default, so it
-  // keeps the current logic that we can enter fullscreen mode either by the
-  // orientation change or successfully consuming the user activation. This
-  // function is used for layout tests to allow fullscreen when mocking screen
-  // screen orientation changes.
   // TODO(lanwei): Investigate whether we can terminate the renderer when the
   // user activation has already been consumed.
-  if (!delegate_->HasSeenRecentScreenOrientationChange() &&
-      !GetContentClient()
-           ->browser()
-           ->CanEnterFullscreenWithoutUserActivation()) {
+  if (!delegate_->HasSeenRecentScreenOrientationChange()) {
     bool is_consumed = frame_tree_node_->UpdateUserActivationState(
         blink::mojom::UserActivationUpdateType::kConsumeTransientActivation);
     if (!is_consumed) {
@@ -7335,11 +7327,16 @@ bool RenderFrameHostImpl::ValidateDidCommitParams(
   }
 
   // A cross-document navigation requires an embedding token for all embedded
-  // frames (a child frame to a remote parent) or main frames. Embedding tokens
-  // should not exist for other cases.
+  // frames (a child frame to a remote parent). Embedding tokens should not
+  // exist for other cases.
   if (!is_same_document_navigation) {
-    if ((frame_tree_node()->IsMainFrame() || IsCrossProcessSubframe()) &&
-        !params->embedding_token.has_value()) {
+    if (frame_tree_node()->IsMainFrame() &&
+        params->embedding_token.has_value()) {
+      bad_message::ReceivedBadMessage(
+          process, bad_message::RFH_UNEXPECTED_EMBEDDING_TOKEN);
+      return false;
+    } else if (IsCrossProcessSubframe() &&
+               !params->embedding_token.has_value()) {
       bad_message::ReceivedBadMessage(process,
                                       bad_message::RFH_MISSING_EMBEDDING_TOKEN);
       return false;

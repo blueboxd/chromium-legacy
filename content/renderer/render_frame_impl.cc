@@ -4320,10 +4320,10 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
     if (!SwapIn())
       return;
 
-    // Main frames and frames that are remote from their parents require an
-    // embedding token. Frames local to their parent aren't considered to be
+    // Main frames don't require an embedding token since they aren't embedded
+    // in anything. Frames local to their parent also aren't considered to be
     // embedded.
-    if (is_main_frame_ || frame_->Parent()->IsWebRemoteFrame()) {
+    if (!is_main_frame_ && frame_->Parent()->IsWebRemoteFrame()) {
       embedding_token = base::UnguessableToken::Create();
       GetWebFrame()->SetEmbeddingToken(embedding_token.value());
     }
@@ -4337,11 +4337,11 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
     // restore a sane state.
     //
     // Logic behind this behavior:
-    // - Main frames have embedding tokens.
+    // - Main frames don't have embedding tokens.
     // - A remote subframe *must* have an embedding token.
     // - If a remote subframe doesn't have an embedding token to re-use we
     //   need to create one.
-    if ((is_main_frame_ || frame_->Parent()->IsWebRemoteFrame()) &&
+    if (!is_main_frame_ && frame_->Parent()->IsWebRemoteFrame() &&
         !embedding_token.has_value()) {
       embedding_token = base::UnguessableToken::Create();
       GetWebFrame()->SetEmbeddingToken(embedding_token.value());

@@ -310,14 +310,14 @@ String ManifestParser::ParseIconType(const JSONObject* icon) {
   return type.has_value() ? *type : String("");
 }
 
-Vector<WebSize> ManifestParser::ParseIconSizes(const JSONObject* icon) {
+Vector<gfx::Size> ManifestParser::ParseIconSizes(const JSONObject* icon) {
   base::Optional<String> sizes_str = ParseString(icon, "sizes", NoTrim);
   if (!sizes_str.has_value())
-    return Vector<WebSize>();
+    return Vector<gfx::Size>();
 
-  WebVector<WebSize> web_sizes =
+  WebVector<gfx::Size> web_sizes =
       WebIconSizesParser::ParseIconSizes(WebString(*sizes_str));
-  Vector<WebSize> sizes;
+  Vector<gfx::Size> sizes;
   for (auto& size : web_sizes)
     sizes.push_back(size);
 

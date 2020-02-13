@@ -416,7 +416,7 @@ void PaymentInstruments::onGetPaymentInstrument(
     image_object->setType(icon->type);
     String sizes = WTF::g_empty_string;
     for (const auto& size : icon->sizes) {
-      sizes = sizes + String::Format("%dx%d ", size.width, size.height);
+      sizes = sizes + String::Format("%dx%d ", size.width(), size.height());
     }
     image_object->setSizes(sizes.StripWhiteSpace());
     icons.push_back(image_object);

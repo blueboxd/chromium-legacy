@@ -50,7 +50,8 @@ void AnsibleManagementService::ConfigureDefaultContainer(
   configuration_finished_callback_ = std::move(callback);
 
   // Popup dialog is shown in case Crostini has already been installed.
-  if (!CrostiniManager::GetForProfile(profile_)->GetInstallerViewStatus())
+  if (!CrostiniManager::GetForProfile(profile_)->GetCrostiniDialogStatus(
+          DialogType::INSTALLER))
     ShowCrostiniAnsibleSoftwareConfigView(profile_);
 
   for (auto& observer : observers_) {

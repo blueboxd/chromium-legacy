@@ -94,11 +94,7 @@ public class WebappDataStorageTest {
                     @Override
                     public void onDataRetrieved(Bitmap actual) {
                         mCallbackCalled = true;
-
-                        // TODO(lalitm) - once the Robolectric bug is fixed change to
-                        // assertTrue(expected.sameAs(actual)).
-                        // See bitmapEquals(Bitmap, Bitmap) for more information.
-                        assertTrue(bitmapEquals(expected, actual));
+                        assertTrue(expected.sameAs(actual));
                     }
                 });
         BackgroundShadowAsyncTask.runBackgroundTasks();
@@ -346,23 +342,6 @@ public class WebappDataStorageTest {
         // Done when WebAPK is registered in {@link WebApkActivity}.
         storage.updateTimeOfLastCheckForUpdatedWebManifest();
         return storage;
-    }
-
-    // TODO(lalitm) - There seems to be a bug in Robolectric where a Bitmap
-    // produced from a byte stream is hardcoded to be a 100x100 bitmap with
-    // ARGB_8888 pixel format. Because of this, we need to work around the
-    // equality check of bitmaps. Remove this once the bug is fixed.
-    private static boolean bitmapEquals(Bitmap expected, Bitmap actual) {
-        if (actual.getWidth() != 100) return false;
-        if (actual.getHeight() != 100) return false;
-        if (!actual.getConfig().equals(Bitmap.Config.ARGB_8888)) return false;
-
-        for (int i = 0; i < actual.getWidth(); i++) {
-            for (int j = 0; j < actual.getHeight(); j++) {
-                if (actual.getPixel(i, j) != 0) return false;
-            }
-        }
-        return true;
     }
 
     private static Bitmap createBitmap() {

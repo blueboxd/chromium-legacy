@@ -26,7 +26,6 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "components/account_id/account_id.h"
-#include "components/signin/public/identity_manager/account_info.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -141,8 +140,14 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   void UpdateAssistantManagerState();
 
-  CoreAccountInfo RetrievePrimaryAccountInfo();
   void RequestAccessToken();
+
+  void GetUnconsentedPrimaryAccountInfoCallback(
+      const base::Optional<CoreAccountId>& account_id,
+      const base::Optional<std::string>& gaia,
+      const base::Optional<std::string>& email,
+      const identity::AccountState& account_state);
+
   void GetAccessTokenCallback(GoogleServiceAuthError error,
                               signin::AccessTokenInfo access_token_info);
   void RetryRefreshToken();
@@ -169,10 +174,12 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   mojo::Receiver<mojom::AssistantService> receiver_;
   mojo::ReceiverSet<mojom::Assistant> assistant_receivers_;
 
+  bool observing_ash_session_ = false;
   mojo::Remote<mojom::Client> client_;
   mojo::Remote<mojom::DeviceActions> device_actions_;
 
   signin::IdentityManager* const identity_manager_;
+
   AccountId account_id_;
   std::unique_ptr<AssistantManagerService> assistant_manager_service_;
   std::unique_ptr<base::OneShotTimer> token_refresh_timer_;
@@ -182,8 +189,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
                  chromeos::PowerManagerClient::Observer>
       power_manager_observer_{this};
 
-  // Flag to guard the one-time mojom initialization.
-  bool is_assistant_manager_service_finalized_ = false;
   // Whether the current user session is active.
   bool session_active_ = false;
   // Whether the lock screen is on.

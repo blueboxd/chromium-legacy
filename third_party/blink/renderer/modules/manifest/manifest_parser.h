@@ -20,6 +20,10 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
+namespace gfx {
+class Size;
+}  // namespace gfx
+
 namespace blink {
 
 class KURL;
@@ -144,8 +148,8 @@ class MODULES_EXPORT ManifestParser {
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-a-sizes-member-of-an-image
   // Returns a vector of WebSize with the successfully parsed sizes, if any.
   // An empty vector if the field was not present or empty. "Any" is represented
-  // by WebSize(0, 0).
-  Vector<WebSize> ParseIconSizes(const JSONObject* icon);
+  // by gfx::Size(0, 0).
+  Vector<gfx::Size> ParseIconSizes(const JSONObject* icon);
 
   // Parses the 'purpose' field of an icon, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-a-purpose-member-of-an-image

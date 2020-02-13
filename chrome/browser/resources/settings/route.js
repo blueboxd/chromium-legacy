@@ -144,6 +144,10 @@ cr.define('settings', function() {
     if (visibility.privacy !== false) {
       r.PRIVACY = r.BASIC.createSection('/privacy', 'privacy');
       addPrivacyChildRoutes(r);
+
+      if (loadTimeData.getBoolean('privacySettingsRedesignEnabled')) {
+        r.SAFETY_CHECK = r.BASIC.createSection('/safetyCheck', 'safetyCheck');
+      }
     }
 
     if (visibility.defaultBrowser !== false) {

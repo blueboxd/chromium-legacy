@@ -2170,11 +2170,8 @@ void TestRunner::SetMockScreenOrientation(const std::string& orientation_str) {
     blink::WebFrame* main_frame = window->webview()->MainFrame();
     // TODO(lukasza): Need to make this work for remote frames.
     if (main_frame->IsWebLocalFrame()) {
-      bool screen_orientation_changed =
-          mock_screen_orientation_client_.UpdateDeviceOrientation(
-              main_frame->ToWebLocalFrame(), orientation);
-      if (screen_orientation_changed)
-        delegate_->SetScreenOrientationChanged();
+      mock_screen_orientation_client_.UpdateDeviceOrientation(
+          main_frame->ToWebLocalFrame(), orientation);
     }
   }
 }

@@ -671,10 +671,6 @@ void BlinkTestRunner::ForceTextInputStateUpdate(WebLocalFrame* frame) {
   ForceTextInputStateUpdateForRenderFrame(RenderFrame::FromWebFrame(frame));
 }
 
-void BlinkTestRunner::SetScreenOrientationChanged() {
-  GetBlinkTestClientRemote().SetScreenOrientationChanged();
-}
-
 // RenderViewObserver  --------------------------------------------------------
 
 void BlinkTestRunner::DidClearWindowObject(WebLocalFrame* frame) {

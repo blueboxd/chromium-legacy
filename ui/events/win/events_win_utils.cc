@@ -242,29 +242,43 @@ base::TimeTicks EventTimeFromMSG(const MSG& native_event) {
 }
 
 gfx::Point EventLocationFromMSG(const MSG& native_event) {
-  POINT native_point;
+  // This code may use GetCursorPos() to get a mouse location. This may
+  // fail in certain situations (see
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=540840#c20 for
+  // details). To handle failure this code tracks the last known location so
+  // that it can use a reasonable value should GetCursorPos() fail.
+  static gfx::Point last_known_location;
+  gfx::Point event_location = last_known_location;
   if ((native_event.message == WM_MOUSELEAVE ||
        native_event.message == WM_NCMOUSELEAVE) ||
       IsScrollEvent(native_event)) {
     // These events have no coordinates. For sanity with rest of events grab
     // coordinates from the OS.
-    ::GetCursorPos(&native_point);
+    POINT native_point;
+    if (::GetCursorPos(&native_point)) {
+      ScreenToClient(native_event.hwnd, &native_point);
+      event_location = gfx::Point(native_point);
+    }
   } else if (IsClientMouseEvent(native_event) &&
              !IsMouseWheelEvent(native_event)) {
     // Note: Wheel events are considered client, but their position is in screen
     //       coordinates.
     // Client message. The position is contained in the LPARAM.
-    return gfx::Point(static_cast<DWORD>(native_event.lParam));
+    event_location = gfx::Point(static_cast<DWORD>(native_event.lParam));
   } else {
     DCHECK(IsNonClientMouseEvent(native_event) ||
            IsMouseWheelEvent(native_event) || IsScrollEvent(native_event));
     // Non-client message. The position is contained in a POINTS structure in
     // LPARAM, and is in screen coordinates so we have to convert to client.
+    POINT native_point;
     native_point.x = GET_X_LPARAM(native_event.lParam);
     native_point.y = GET_Y_LPARAM(native_event.lParam);
+    ScreenToClient(native_event.hwnd, &native_point);
+    event_location = gfx::Point(native_point);
   }
-  ScreenToClient(native_event.hwnd, &native_point);
-  return gfx::Point(native_point);
+
+  last_known_location = event_location;
+  return event_location;
 }
 
 gfx::Point EventSystemLocationFromMSG(const MSG& native_event) {

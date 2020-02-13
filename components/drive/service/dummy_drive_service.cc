@@ -108,7 +108,9 @@ CancelCallback DummyDriveService::GetFileResource(
     const FileResourceCallback& callback) { return CancelCallback(); }
 
 CancelCallback DummyDriveService::GetAboutResource(
-    const AboutResourceCallback& callback) { return CancelCallback(); }
+    AboutResourceCallback callback) {
+  return CancelCallback();
+}
 
 CancelCallback DummyDriveService::GetStartPageToken(
     const std::string& team_drive_id,

@@ -477,12 +477,12 @@ CancelCallback DriveAPIService::GetFileResource(
 }
 
 CancelCallback DriveAPIService::GetAboutResource(
-    const AboutResourceCallback& callback) {
+    AboutResourceCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   std::unique_ptr<AboutGetRequest> request = std::make_unique<AboutGetRequest>(
-      sender_.get(), url_generator_, callback);
+      sender_.get(), url_generator_, std::move(callback));
   request->set_fields(kAboutResourceFields);
   return sender_->StartRequestWithAuthRetry(std::move(request));
 }

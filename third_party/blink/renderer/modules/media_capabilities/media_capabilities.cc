@@ -857,7 +857,7 @@ void MediaCapabilities::GetPerfInfo(media::VideoCodecProfile video_profile,
   media::mojom::blink::PredictionFeaturesPtr features =
       media::mojom::blink::PredictionFeatures::New(
           static_cast<media::mojom::blink::VideoCodecProfile>(video_profile),
-          WebSize(video_config->width(), video_config->height()),
+          gfx::Size(video_config->width(), video_config->height()),
           video_config->framerate(), key_system, use_hw_secure_codecs);
 
   decode_history_service_->GetPerfInfo(

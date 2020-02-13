@@ -170,7 +170,7 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& resource_id,
       const google_apis::FileResourceCallback& callback) override;
   google_apis::CancelCallback GetAboutResource(
-      const google_apis::AboutResourceCallback& callback) override;
+      google_apis::AboutResourceCallback callback) override;
   google_apis::CancelCallback GetStartPageToken(
       const std::string& team_drive_id,
       const google_apis::StartPageTokenCallback& callback) override;

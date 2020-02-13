@@ -203,10 +203,6 @@ void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
            GetLastCommittedURL().ReplaceComponents(replacements));
 
   params.page_state = PageState::CreateForTesting(url, false, nullptr, nullptr);
-  if (!was_within_same_document) {
-    if (frame_tree_node_->IsMainFrame() || IsCrossProcessSubframe())
-      params.embedding_token = base::UnguessableToken::Create();
-  }
 
   SendNavigateWithParams(&params, was_within_same_document);
 }
@@ -281,10 +277,6 @@ void TestRenderFrameHost::SendNavigateWithParameters(
 
   auto params = BuildDidCommitParams(nav_entry_id, did_create_new_entry, url,
                                      transition, response_code);
-  if (!was_within_same_document) {
-    if (frame_tree_node_->IsMainFrame() || IsCrossProcessSubframe())
-      params->embedding_token = base::UnguessableToken::Create();
-  }
 
   SendNavigateWithParams(params.get(), was_within_same_document);
 }

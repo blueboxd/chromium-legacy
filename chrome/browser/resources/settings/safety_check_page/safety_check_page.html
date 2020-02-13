@@ -1,0 +1,30 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<link rel="import" href="chrome://resources/cr_elements/cr_button/cr_button.html">
+<link rel="import" href="../settings_shared_css.html">
+
+<dom-module id="settings-safety-check-page">
+  <template>
+    <style include="settings-shared">
+      #safetyCheckCollapse .list-item.selected {
+        min-height: var(--settings-row-two-line-min-height);
+      }
+    </style>
+    <div class="settings-box first two-line" id="safetyCheckParent">
+      <div class="start settings-box-text">
+        <div id="safetyCheckParentPrimaryLabel">
+          $i18n{safetyCheckParentPrimaryLabelBeforeCheck}
+        </div>
+        <div class="secondary" id="safetyCheckParentSubLabel">
+          $i18n{safetyCheckParentSubLabelBeforeCheck}
+        </div>
+      </div>
+      <div class="separator"></div>
+      <cr-button id="performSafetyCheck"
+          on-click="onRunSafetyCheckClick_">
+        $i18n{safetyCheckParentButtonBeforeCheck}
+      </cr-button>
+    </div>
+    </template>
+  <script src="safety_check_page.js"></script>
+</dom-module>

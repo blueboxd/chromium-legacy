@@ -19,7 +19,6 @@ class SlideAnimation;
 
 namespace views {
 class InkDrop;
-class InkDropMask;
 class InkDropRipple;
 }  // namespace views
 
@@ -36,22 +35,21 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
   ExpandArrowView(ContentsView* contents_view, AppListView* app_list_view);
   ~ExpandArrowView() override;
 
-  // Overridden from views::Button:
+  // views::Button:
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
-  // Overridden from views::ButtonListener:
+  // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // Overridden from views::View:
+  // views::View:
   gfx::Size CalculatePreferredSize() const override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void OnFocus() override;
   void OnBlur() override;
   const char* GetClassName() const override;
 
-  // Overridden from views::InkDropHost:
+  // views::InkDropHostView:
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
 
   // Calculates vertical offset between expand arrow circle's positions with app
@@ -66,7 +64,7 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
   }
 
  private:
-  // gfx::AnimationDelegate overrides:
+  // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
 

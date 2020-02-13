@@ -96,6 +96,8 @@ blink_core_sources("inspector") {
     "inspector_trace_events.h",
     "legacy_dom_snapshot_agent.cc",
     "legacy_dom_snapshot_agent.h",
+    "locale_controller.cc",
+    "locale_controller.h",
     "main_thread_debugger.cc",
     "main_thread_debugger.h",
     "network_resources_data.cc",

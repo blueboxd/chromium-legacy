@@ -325,7 +325,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // Upon completion, invokes |callback| with results on the calling thread.
   // |callback| must not be null.
   virtual google_apis::CancelCallback GetAboutResource(
-      const google_apis::AboutResourceCallback& callback) = 0;
+      google_apis::AboutResourceCallback callback) = 0;
 
   // Gets the start page token information from the server.
   // If |team_drive_id| is empty, then it will retrieve the start page token for

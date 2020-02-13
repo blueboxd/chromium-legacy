@@ -74,11 +74,13 @@ public class WebXrVrTabTest {
     @Restriction(RESTRICTION_TYPE_SVR)
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testPoseDataUnfocusedTab_WebXr() {
-        testPoseDataUnfocusedTabImpl("webxr_test_pose_data_unfocused_tab", mWebXrVrTestFramework);
+        testPoseDataUnfocusedTabImpl(WebXrVrTestFramework.getFileUrlForHtmlTestFile(
+                                             "webxr_test_pose_data_unfocused_tab"),
+                mWebXrVrTestFramework);
     }
 
     private void testPoseDataUnfocusedTabImpl(String url, WebXrVrTestFramework framework) {
-        framework.loadFileAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
+        framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.executeStepAndWait("stepCheckFrameDataWhileFocusedTab()");
         WebContents firstTabContents = framework.getCurrentWebContents();
 
@@ -110,8 +112,10 @@ public class WebXrVrTabTest {
     }
 
     private void testPermissionsInOtherTabImpl(boolean incognito) throws InterruptedException {
-        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
-                "generic_webxr_permission_page", PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                mWebXrVrTestFramework.getEmbeddedServerUrlForHtmlTestFile(
+                        "generic_webxr_permission_page"),
+                PAGE_LOAD_TIMEOUT_S);
         // Be sure to store the stream we're given so that the permission is actually in use, as
         // otherwise the toast doesn't show up since another tab isn't actually using the
         // permission.
@@ -139,8 +143,9 @@ public class WebXrVrTabTest {
             mTestRule.loadUrlInNewTab("about:blank");
         }
 
-        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
-                "generic_webxr_page", PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page"),
+                PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
         NativeUiUtils.performActionAndWaitForVisibilityStatus(
                 UserFriendlyElementName.WEB_XR_AUDIO_INDICATOR, true /* visible */, () -> {});

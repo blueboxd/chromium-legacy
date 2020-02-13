@@ -100,7 +100,7 @@ RangeAutomationHandler = class extends BaseAutomationHandler {
       // want to delay the output.
       let maybeControlledBy = evt.target;
       while (maybeControlledBy) {
-        if (maybeControlledBy.controlledBy.length &&
+        if (maybeControlledBy.controlledBy &&
             maybeControlledBy.controlledBy.find((n) => !!n.autoComplete)) {
           clearTimeout(this.delayedAttributeOutputId_);
           this.delayedAttributeOutputId_ = setTimeout(() => {

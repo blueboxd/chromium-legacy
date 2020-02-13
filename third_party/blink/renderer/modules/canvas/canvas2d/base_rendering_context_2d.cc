@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_pattern.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/path_2d.h"
 #include "third_party/blink/renderer/platform/geometry/float_quad.h"
+#include "third_party/blink/renderer/platform/graphics/bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/stroke_data.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -1411,7 +1412,7 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
           "Source image is in the 'broken' state.");
       return nullptr;
     case kInvalidSourceImageStatus:
-      image_for_rendering = Image::NullImage();
+      image_for_rendering = BitmapImage::Create();
       break;
     case kIncompleteSourceImageStatus:
       return nullptr;

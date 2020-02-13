@@ -12,6 +12,8 @@
 #include "base/task/thread_pool/pooled_sequenced_task_runner.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
+#include "chrome/browser/media/history/media_history_images_table.h"
+#include "chrome/browser/media/history/media_history_session_images_table.h"
 #include "chrome/browser/media/history/media_history_session_table.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/media_player_watch_time.h"
@@ -126,6 +128,8 @@ TEST_F(MediaHistoryStoreUnitTest, CreateDatabaseTables) {
   ASSERT_TRUE(GetDB().DoesTableExist("origin"));
   ASSERT_TRUE(GetDB().DoesTableExist("playback"));
   ASSERT_TRUE(GetDB().DoesTableExist("playbackSession"));
+  ASSERT_TRUE(GetDB().DoesTableExist("sessionImage"));
+  ASSERT_TRUE(GetDB().DoesTableExist("mediaImage"));
 }
 
 TEST_F(MediaHistoryStoreUnitTest, SavePlayback) {
@@ -183,6 +187,9 @@ TEST_F(MediaHistoryStoreUnitTest, GetStats) {
     EXPECT_EQ(0,
               stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
     EXPECT_EQ(0, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+    EXPECT_EQ(
+        0, stats->table_row_counts[MediaHistorySessionImagesTable::kTableName]);
+    EXPECT_EQ(0, stats->table_row_counts[MediaHistoryImagesTable::kTableName]);
   }
 
   {
@@ -201,6 +208,9 @@ TEST_F(MediaHistoryStoreUnitTest, GetStats) {
     EXPECT_EQ(1,
               stats->table_row_counts[MediaHistoryPlaybackTable::kTableName]);
     EXPECT_EQ(0, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+    EXPECT_EQ(
+        0, stats->table_row_counts[MediaHistorySessionImagesTable::kTableName]);
+    EXPECT_EQ(0, stats->table_row_counts[MediaHistoryImagesTable::kTableName]);
   }
 }
 

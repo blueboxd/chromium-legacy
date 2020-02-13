@@ -35,7 +35,6 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
   WebTestBrowserContext* GetWebTestBrowserContext();
   void SetPopupBlockingEnabled(bool block_popups_);
   void ResetMockClipboardHost();
-  void SetScreenOrientationChanged(bool screen_orientation_changed);
 
   // Retrieves the last created FakeBluetoothChooser instance.
   std::unique_ptr<FakeBluetoothChooser> GetNextFakeBluetoothChooser();
@@ -78,7 +77,6 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
 
   content::TtsControllerDelegate* GetTtsControllerDelegate() override;
   content::TtsPlatform* GetTtsPlatform() override;
-  bool CanEnterFullscreenWithoutUserActivation() override;
 
   // ShellContentBrowserClient overrides.
   std::unique_ptr<LoginDelegate> CreateLoginDelegate(
@@ -108,7 +106,6 @@ class WebTestContentBrowserClient : public ShellContentBrowserClient {
   std::unique_ptr<MockPlatformNotificationService>
       mock_platform_notification_service_;
   bool block_popups_ = false;
-  bool screen_orientation_changed_ = false;
 
   // Stores the FakeBluetoothChooserFactory that produces FakeBluetoothChoosers.
   std::unique_ptr<FakeBluetoothChooserFactory> fake_bluetooth_chooser_factory_;

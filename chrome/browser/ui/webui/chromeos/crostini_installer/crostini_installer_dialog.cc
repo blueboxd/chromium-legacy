@@ -36,9 +36,9 @@ void CrostiniInstallerDialog::Show(Profile* profile,
 
   // TODO(lxj): Move installer status tracking into the CrostiniInstaller.
   DCHECK(!crostini::CrostiniManager::GetForProfile(profile)
-              ->GetInstallerViewStatus());
-  crostini::CrostiniManager::GetForProfile(profile)->SetInstallerViewStatus(
-      true);
+              ->GetCrostiniDialogStatus(crostini::DialogType::INSTALLER));
+  crostini::CrostiniManager::GetForProfile(profile)->SetCrostiniDialogStatus(
+      crostini::DialogType::INSTALLER, true);
 
   instance =
       new CrostiniInstallerDialog(profile, std::move(on_loaded_callback));
@@ -53,8 +53,8 @@ CrostiniInstallerDialog::CrostiniInstallerDialog(
       on_loaded_callback_(std::move(on_loaded_callback)) {}
 
 CrostiniInstallerDialog::~CrostiniInstallerDialog() {
-  crostini::CrostiniManager::GetForProfile(profile_)->SetInstallerViewStatus(
-      false);
+  crostini::CrostiniManager::GetForProfile(profile_)->SetCrostiniDialogStatus(
+      crostini::DialogType::INSTALLER, false);
 }
 
 void CrostiniInstallerDialog::GetDialogSize(gfx::Size* size) const {

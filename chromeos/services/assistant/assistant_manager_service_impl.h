@@ -235,11 +235,6 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) AssistantManagerServiceImpl
   // thread is finished.
   void WaitUntilStartIsFinishedForTesting();
 
-  // Get the action module for testing.
-  action::CrosActionModule* action_module_for_testing() {
-    return action_module_.get();
-  }
-
  private:
   class AssistantMediaSessionObserver;
   void StartAssistantInternal(const base::Optional<std::string>& access_token);

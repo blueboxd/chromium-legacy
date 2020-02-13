@@ -55,9 +55,9 @@ void DriveServiceWrapper::DownloadFile(
 }
 
 void DriveServiceWrapper::GetAboutResource(
-    const google_apis::AboutResourceCallback& callback) {
+    google_apis::AboutResourceCallback callback) {
   DCHECK(sequece_checker_.CalledOnValidSequence());
-  drive_service_->GetAboutResource(callback);
+  drive_service_->GetAboutResource(std::move(callback));
 }
 
 void DriveServiceWrapper::GetStartPageToken(

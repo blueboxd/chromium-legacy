@@ -129,9 +129,9 @@ void NetworkProfileHandler::OnPropertyChanged(const std::string& name,
     VLOG(2) << "Requesting properties of profile path " << *it << ".";
     ShillProfileClient::Get()->GetProperties(
         dbus::ObjectPath(*it),
-        base::Bind(&NetworkProfileHandler::GetProfilePropertiesCallback,
-                   weak_ptr_factory_.GetWeakPtr(), *it),
-        base::Bind(&LogProfileRequestError, *it));
+        base::BindOnce(&NetworkProfileHandler::GetProfilePropertiesCallback,
+                       weak_ptr_factory_.GetWeakPtr(), *it),
+        base::BindOnce(&LogProfileRequestError, *it));
   }
 }
 

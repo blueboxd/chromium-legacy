@@ -1333,11 +1333,10 @@ NavigationSimulatorImpl::BuildDidCommitProvisionalLoadParams(
   }
 
   // Simulate embedding token creation.
-  if (!same_document) {
+  if (!same_document && !request_->IsInMainFrame()) {
     RenderFrameHostImpl* parent = request_->GetParentFrame();
-    if (request_->IsInMainFrame() ||
-        (parent && parent->GetSiteInstance() !=
-                       request_->GetRenderFrameHost()->GetSiteInstance())) {
+    if (parent && parent->GetSiteInstance() !=
+                      request_->GetRenderFrameHost()->GetSiteInstance()) {
       params->embedding_token = base::UnguessableToken::Create();
     }
   }

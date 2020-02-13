@@ -76,8 +76,9 @@ public class WebXrVrDeviceTest {
             @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
             @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebXR is only supported on L+
             public void testWebXrCapabilities() {
-        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
-                "test_webxr_capabilities", PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_webxr_capabilities"),
+                PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.executeStepAndWait("stepCheckCapabilities('Daydream')");
         mWebXrVrTestFramework.endTest();
     }
@@ -98,8 +99,9 @@ public class WebXrVrDeviceTest {
             @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebXR is only supported on L+
             public void testForNullPosesInInlineVrPostImmersive() {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
-        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
-                "test_inline_vr_poses", PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_inline_vr_poses"),
+                PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.enterMagicWindowSessionWithUserGestureOrFail();
 
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
@@ -133,8 +135,9 @@ public class WebXrVrDeviceTest {
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebXR is only supported on L+
     public void testForNullPosesInInlineVrFromNfc() {
-        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
-                "test_inline_vr_poses", PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_inline_vr_poses"),
+                PAGE_LOAD_TIMEOUT_S);
         NfcSimUtils.simNfcScanUntilVrEntry(mTestRule.getActivity());
 
         mWebXrVrTestFramework.enterMagicWindowSessionWithUserGestureOrFail();
@@ -166,8 +169,9 @@ public class WebXrVrDeviceTest {
     @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP) // WebXR is only supported on L+
     public void testForNullPosesInInlineVrOnNavigation() {
         NfcSimUtils.simNfcScanUntilVrEntry(mTestRule.getActivity());
-        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
-                "test_inline_vr_poses", PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_inline_vr_poses"),
+                PAGE_LOAD_TIMEOUT_S);
 
         mWebXrVrTestFramework.enterMagicWindowSessionWithUserGestureOrFail();
         mWebXrVrTestFramework.executeStepAndWait("posesTurnedOffStep()");

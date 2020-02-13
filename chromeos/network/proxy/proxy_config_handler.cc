@@ -103,10 +103,10 @@ void SetProxyConfigForNetwork(const ProxyConfigDictionary& proxy_config,
     // TODO(pneubeck): Consider removing this legacy code.
     ShillServiceClient::Get()->ClearProperty(
         dbus::ObjectPath(network.path()), shill::kProxyConfigProperty,
-        base::Bind(&NotifyNetworkStateHandler, network.path()),
-        base::Bind(&network_handler::ShillErrorCallbackFunction,
-                   "SetProxyConfig.ClearProperty Failed", network.path(),
-                   network_handler::ErrorCallback()));
+        base::BindOnce(&NotifyNetworkStateHandler, network.path()),
+        base::BindOnce(&network_handler::ShillErrorCallbackFunction,
+                       "SetProxyConfig.ClearProperty Failed", network.path(),
+                       network_handler::ErrorCallback()));
   } else {
     std::string proxy_config_str;
     base::JSONWriter::Write(proxy_config.GetDictionary(), &proxy_config_str);

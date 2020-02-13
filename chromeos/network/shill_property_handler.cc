@@ -280,13 +280,13 @@ void ShillPropertyHandler::RequestProperties(ManagedState::ManagedType type,
   if (type == ManagedState::MANAGED_TYPE_NETWORK) {
     ShillServiceClient::Get()->GetProperties(
         dbus::ObjectPath(path),
-        base::Bind(&ShillPropertyHandler::GetPropertiesCallback, AsWeakPtr(),
-                   type, path));
+        base::BindOnce(&ShillPropertyHandler::GetPropertiesCallback,
+                       AsWeakPtr(), type, path));
   } else if (type == ManagedState::MANAGED_TYPE_DEVICE) {
     ShillDeviceClient::Get()->GetProperties(
         dbus::ObjectPath(path),
-        base::Bind(&ShillPropertyHandler::GetPropertiesCallback, AsWeakPtr(),
-                   type, path));
+        base::BindOnce(&ShillPropertyHandler::GetPropertiesCallback,
+                       AsWeakPtr(), type, path));
   } else {
     NOTREACHED();
   }

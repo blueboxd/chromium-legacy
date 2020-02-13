@@ -1090,5 +1090,4 @@ external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.html [ Pass Fail
 external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.serviceworker.html [ Pass Failure ]
 external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.sharedworker.html [ Pass Failure ]
 external/wpt/fetch/cross-origin-resource-policy/fetch.https.any.worker.html [ Pass Failure ]
-external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.pattern.basic.nocontext.worker.html [ Pass Crash Failure Timeout ]
 # ---- End tests differing between CQ and Waterfall

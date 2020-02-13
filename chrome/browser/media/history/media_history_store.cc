@@ -8,8 +8,10 @@
 #include "base/files/file_path.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
+#include "chrome/browser/media/history/media_history_images_table.h"
 #include "chrome/browser/media/history/media_history_origin_table.h"
 #include "chrome/browser/media/history/media_history_playback_table.h"
+#include "chrome/browser/media/history/media_history_session_images_table.h"
 #include "chrome/browser/media/history/media_history_session_table.h"
 #include "content/public/browser/media_player_watch_time.h"
 #include "services/media_session/public/cpp/media_position.h"
@@ -86,6 +88,8 @@ class MediaHistoryStoreInternal
   scoped_refptr<MediaHistoryOriginTable> origin_table_;
   scoped_refptr<MediaHistoryPlaybackTable> playback_table_;
   scoped_refptr<MediaHistorySessionTable> session_table_;
+  scoped_refptr<MediaHistorySessionImagesTable> session_images_table_;
+  scoped_refptr<MediaHistoryImagesTable> images_table_;
   bool initialization_successful_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaHistoryStoreInternal);
@@ -99,12 +103,17 @@ MediaHistoryStoreInternal::MediaHistoryStoreInternal(
       origin_table_(new MediaHistoryOriginTable(db_task_runner_)),
       playback_table_(new MediaHistoryPlaybackTable(db_task_runner_)),
       session_table_(new MediaHistorySessionTable(db_task_runner_)),
+      session_images_table_(
+          new MediaHistorySessionImagesTable(db_task_runner_)),
+      images_table_(new MediaHistoryImagesTable(db_task_runner_)),
       initialization_successful_(false) {}
 
 MediaHistoryStoreInternal::~MediaHistoryStoreInternal() {
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(origin_table_));
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(playback_table_));
   db_task_runner_->ReleaseSoon(FROM_HERE, std::move(session_table_));
+  db_task_runner_->ReleaseSoon(FROM_HERE, std::move(session_images_table_));
+  db_task_runner_->ReleaseSoon(FROM_HERE, std::move(images_table_));
   db_task_runner_->DeleteSoon(FROM_HERE, std::move(db_));
 }
 
@@ -192,6 +201,10 @@ sql::InitStatus MediaHistoryStoreInternal::InitializeTables() {
     status = playback_table_->Initialize(db_.get());
   if (status == sql::INIT_OK)
     status = session_table_->Initialize(db_.get());
+  if (status == sql::INIT_OK)
+    status = session_images_table_->Initialize(db_.get());
+  if (status == sql::INIT_OK)
+    status = images_table_->Initialize(db_.get());
 
   return status;
 }

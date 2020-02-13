@@ -631,14 +631,11 @@ GURL FilesTrashRequest::GetURLInternal() const {
 
 //============================== AboutGetRequest =============================
 
-AboutGetRequest::AboutGetRequest(
-    RequestSender* sender,
-    const DriveApiUrlGenerator& url_generator,
-    const AboutResourceCallback& callback)
-    : DriveApiDataRequest<AboutResource>(sender, callback),
-      url_generator_(url_generator) {
-  DCHECK(!callback.is_null());
-}
+AboutGetRequest::AboutGetRequest(RequestSender* sender,
+                                 const DriveApiUrlGenerator& url_generator,
+                                 AboutResourceCallback callback)
+    : DriveApiDataRequest<AboutResource>(sender, std::move(callback)),
+      url_generator_(url_generator) {}
 
 AboutGetRequest::~AboutGetRequest() {}
 

@@ -49,8 +49,10 @@ public class VrFeedbackInfoBarTest {
     private WebXrVrTestFramework mWebXrVrTestFramework;
     private VrBrowserTestFramework mVrBrowserTestFramework;
 
-    private static final String TEST_PAGE_2D_FILE = "test_navigation_2d_page";
-    private static final String TEST_PAGE_WEBXR_FILE = "generic_webxr_page";
+    private static final String TEST_PAGE_2D_URL =
+            VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
+    private static final String TEST_PAGE_WEBXR_URL =
+            WebXrVrTestFramework.getFileUrlForHtmlTestFile("generic_webxr_page");
 
     @Before
     public void setUp() {
@@ -79,8 +81,8 @@ public class VrFeedbackInfoBarTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testFeedbackFrequency() {
-        mVrBrowserTestFramework.loadFileAndAwaitInitialization(
-                TEST_PAGE_2D_FILE, PAGE_LOAD_TIMEOUT_S);
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
         // Set frequency of infobar to every 2nd time.
         VrShellDelegateUtils.getDelegateInstance().setFeedbackFrequencyForTesting(2);
 
@@ -107,8 +109,8 @@ public class VrFeedbackInfoBarTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testFeedbackOptOut() {
-        mVrBrowserTestFramework.loadFileAndAwaitInitialization(
-                TEST_PAGE_2D_FILE, PAGE_LOAD_TIMEOUT_S);
+        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
+                TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
 
         // Show infobar every time.
         VrShellDelegateUtils.getDelegateInstance().setFeedbackFrequencyForTesting(1);
@@ -134,12 +136,12 @@ public class VrFeedbackInfoBarTest {
     @MediumTest
             @CommandLineFlags.Add({"enable-features=WebXR"})
             public void testFeedbackOnlyOnVrBrowsing_WebXr() {
-        feedbackOnlyOnVrBrowsingImpl(TEST_PAGE_WEBXR_FILE, mWebXrVrTestFramework);
+        feedbackOnlyOnVrBrowsingImpl(TEST_PAGE_WEBXR_URL, mWebXrVrTestFramework);
     }
 
     private void feedbackOnlyOnVrBrowsingImpl(String url, WebXrVrTestFramework framework) {
         // Enter VR presentation mode.
-        framework.loadFileAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
+        framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
         assertState(true /* isInVr */, false /* isInfobarVisible  */);
         Assert.assertTrue("Did not enter WebVR presentation",
@@ -164,20 +166,19 @@ public class VrFeedbackInfoBarTest {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
 
         // Enter VR presentation mode.
-        mWebXrVrTestFramework.loadFileAndAwaitInitialization(
-                TEST_PAGE_WEBXR_FILE, PAGE_LOAD_TIMEOUT_S);
+        mWebXrVrTestFramework.loadUrlAndAwaitInitialization(
+                TEST_PAGE_WEBXR_URL, PAGE_LOAD_TIMEOUT_S);
         mWebXrVrTestFramework.enterSessionWithUserGestureOrFail();
         assertState(true /* isInVr */, false /* isInfobarVisible  */);
         Assert.assertTrue("Did not enter WebVR presentation",
                 TestVrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
 
-        String page2DUrl = mWebXrVrTestFramework.getUrlForFile(TEST_PAGE_2D_FILE);
-
         // Exit presentation mode by navigating to a different url.
         ChromeTabUtils.waitForTabPageLoaded(
-                mTestRule.getActivity().getActivityTab(), page2DUrl, () -> {
+                mTestRule.getActivity().getActivityTab(), TEST_PAGE_2D_URL, () -> {
                     mVrBrowserTestFramework.runJavaScriptOrFail(
-                            "window.location.href = '" + page2DUrl + "';", POLL_TIMEOUT_SHORT_MS);
+                            "window.location.href = '" + TEST_PAGE_2D_URL + "';",
+                            POLL_TIMEOUT_SHORT_MS);
                 }, POLL_TIMEOUT_LONG_MS);
 
         // Exiting VR should prompt for feedback since 2D browsing was performed after.

@@ -2057,6 +2057,7 @@ void CrosNetworkConfig::ConfigureNetwork(mojom::ConfigPropertiesPtr properties,
     NET_LOG(ERROR)
         << "Attempt to set unshared configuration from non primary user";
     std::move(callback).Run(/*guid=*/base::nullopt, kErrorAccessToSharedConfig);
+    return;
   }
 
   std::unique_ptr<base::DictionaryValue> onc =

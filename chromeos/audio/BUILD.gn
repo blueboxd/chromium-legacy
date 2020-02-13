@@ -15,7 +15,6 @@ component("audio") {
     "//components/prefs",
     "//media/base:video_facing",
     "//services/media_session/public/mojom",
-    "//services/service_manager/public/cpp:cpp",
   ]
   sources = [
     "audio_device.cc",
@@ -42,7 +41,6 @@ source_set("unit_tests") {
     "//components/prefs:test_support",
     "//media/base:video_facing",
     "//services/media_session/public/mojom",
-    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]

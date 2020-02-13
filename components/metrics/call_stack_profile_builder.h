@@ -74,6 +74,9 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
   base::ModuleCache* GetModuleCache() override;
   void RecordMetadata(
       base::ProfileBuilder::MetadataProvider* metadata_provider) override;
+  void ApplyMetadataRetrospectively(base::TimeTicks period_start,
+                                    base::TimeTicks period_end,
+                                    const MetadataItem& item) override;
   void OnSampleCompleted(std::vector<base::Frame> frames,
                          base::TimeTicks sample_timestamp) override;
   void OnProfileCompleted(base::TimeDelta profile_duration,
@@ -124,6 +127,9 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
 
   // The distinct modules in the current profile.
   std::vector<const base::ModuleCache::Module*> modules_;
+
+  // Timestamps recording when each sample was taken.
+  std::vector<base::TimeTicks> sample_timestamps_;
 
   // Callback made when sampling a profile completes.
   base::OnceClosure completed_callback_;

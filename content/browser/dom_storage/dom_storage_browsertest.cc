@@ -13,7 +13,6 @@
 #include "components/services/storage/dom_storage/local_storage_impl.h"
 #include "components/services/storage/public/cpp/constants.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
-#include "content/browser/dom_storage/session_storage_context_mojo.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -83,14 +82,6 @@ class DOMStorageBrowserTest : public ContentBrowserTest {
   DOMStorageContextWrapper* context_wrapper() {
     return static_cast<DOMStorageContextWrapper*>(
         partition()->GetDOMStorageContext());
-  }
-
-  base::SequencedTaskRunner* mojo_task_runner() {
-    return context_wrapper()->mojo_task_runner();
-  }
-
-  SessionStorageContextMojo* session_storage_context() {
-    return context_wrapper()->mojo_session_state_;
   }
 };
 

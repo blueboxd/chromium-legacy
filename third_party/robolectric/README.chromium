@@ -1,6 +1,6 @@
 Name: Robolectric
 URL: http://robolectric.org
-Version: 4.0.1
+Version: 4.3.1
 License: Apache 2.0
 License File: NOT_SHIPPED
 Security Critical: no
@@ -15,13 +15,17 @@ Local Modifications:
   needing maven third_party libraries.
 - Added custom_asynctask folder to have workable copies of shadows required
   for our own implementation of AsyncTask
+- Added DefaultSdkProvider as a local file with Jellybean references removed.
 How To Update:
 - Visit the migration guide to see which APIs changed and need updating.
   http://robolectric.org/migrating/
+- Have git admins create a branch for the version in
+  https://chromium.googlesource.com/external/robolectric and set DEPS to the
+  revision.
 - Read through the build.gradle files and make sure all of the depenencies
   in our BUILD.gn file are correct.
-- Update file names in our BUILD.gn file.
-- Update DEPS to new Robolectric revision.
+- Update the source files and add their names in our BUILD.gn file.
 - Update local/robolectric/src/main/resources/robolectric-version.properties
   to the new Robolectric version.
-- Update CIPD package to include new Robolectric Android libraries.
+- Update CIPD package to include the new Robolectric Android libraries file
+  and replace the references to the previous ones with the new one.

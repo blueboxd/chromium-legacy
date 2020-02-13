@@ -25,7 +25,7 @@ constexpr base::TimeDelta kImageFetchTimeout = base::TimeDelta::FromSeconds(90);
 
 enum class NotificationIconType { kImage, kIcon, kBadge, kActionIcon };
 
-WebSize GetIconDimensions(NotificationIconType type) {
+gfx::Size GetIconDimensions(NotificationIconType type) {
   switch (type) {
     case NotificationIconType::kImage:
       return {kNotificationMaxImageWidthPx, kNotificationMaxImageHeightPx};
@@ -109,7 +109,7 @@ void NotificationResourcesLoader::Trace(blink::Visitor* visitor) {
 void NotificationResourcesLoader::LoadIcon(
     ExecutionContext* context,
     const KURL& url,
-    const WebSize& resize_dimensions,
+    const gfx::Size& resize_dimensions,
     ThreadedIconLoader::IconCallback icon_callback) {
   if (url.IsNull() || url.IsEmpty() || !url.IsValid()) {
     std::move(icon_callback).Run(SkBitmap(), -1.0);

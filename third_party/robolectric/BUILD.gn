@@ -7,7 +7,7 @@ import("//build/config/android/rules.gni")
 java_group("robolectric_all_java") {
   testonly = true
   deps = [
-    ":android-all-9-robolectric-4913185-2_java",
+    ":android-all-10-robolectric-5803371_java",
     ":robolectric_annotations_java",
     ":robolectric_java",
     ":robolectric_junit_java",
@@ -56,6 +56,11 @@ java_prebuilt("android-all-9-robolectric-4913185-2_java") {
   jar_path = "lib/android-all-9-robolectric-4913185-2.jar"
 }
 
+java_prebuilt("android-all-10-robolectric-5803371_java") {
+  testonly = true
+  jar_path = "lib/android-all-10-robolectric-5803371.jar"
+}
+
 java_library("robolectric_java") {
   skip_jetify = true
   testonly = true
@@ -64,7 +69,7 @@ java_library("robolectric_java") {
   # depends on targets that requires_android.
   bypass_platform_checks = true
   deps = [
-    ":android-all-9-robolectric-4913185-2_java",
+    ":android-all-10-robolectric-5803371_java",
     ":robolectric_annotations_java",
     ":robolectric_junit_java",
     ":robolectric_resources_java",
@@ -81,6 +86,7 @@ java_library("robolectric_java") {
     "//third_party/xstream:xstream_java",
   ]
   data_deps = [
+    ":android-all-10-robolectric-5803371_java",
     ":android-all-4.4_r1-robolectric-r2_java",
     ":android-all-5.0.2_r3-robolectric-r0_java",
     ":android-all-7.1.0_r7-robolectric-r1_java",
@@ -88,8 +94,22 @@ java_library("robolectric_java") {
     ":android-all-8.1.0-robolectric-4611349_java",
     ":android-all-9-robolectric-4913185-2_java",
   ]
+  provider_configurations = [
+    "local/shadows/robolectric_java/src/main/resources/META-INF/services/androidx.test.internal.platform.app.ActivityInvoker",
+    "local/shadows/robolectric_java/src/main/resources/META-INF/services/androidx.test.internal.platform.content.PermissionGranter",
+    "local/shadows/robolectric_java/src/main/resources/META-INF/services/androidx.test.internal.platform.os.ControlledLooper",
+    "local/shadows/robolectric_java/src/main/resources/META-INF/services/androidx.test.internal.platform.ThreadChecker",
+    "local/shadows/robolectric_java/src/main/resources/META-INF/services/androidx.test.platform.ui.UiController",
+    "local/shadows/robolectric_java/src/main/resources/META-INF/services/org.robolectric.internal.dependency.DependencyResolver",
+    "local/shadows/robolectric_java/src/main/resources/META-INF/services/org.robolectric.pluginapi.config.ConfigurationStrategy",
+    "local/shadows/robolectric_java/src/main/resources/META-INF/services/org.robolectric.pluginapi.config.Configurer",
+    "local/shadows/robolectric_java/src/main/resources/META-INF/services/org.robolectric.pluginapi.config.GlobalConfigProvider",
+    "local/shadows/robolectric_java/src/main/resources/META-INF/services/org.robolectric.pluginapi.SdkPicker",
+    "local/shadows/robolectric_java/src/main/resources/META-INF/services/org.robolectric.pluginapi.SdkProvider",
+  ]
   sources = [
     "local/robolectric/src/main/java/org/robolectric/internal/dependency/MavenDependencyResolver.java",
+    "local/robolectric/src/main/java/org/robolectric/plugins/DefaultSdkProvider.java",
     "robolectric/robolectric/src/main/java/org/robolectric/ApkLoader.java",
     "robolectric/robolectric/src/main/java/org/robolectric/ConfigMerger.java",
     "robolectric/robolectric/src/main/java/org/robolectric/DefaultTestLifecycle.java",
@@ -102,33 +122,45 @@ java_library("robolectric_java") {
     "robolectric/robolectric/src/main/java/org/robolectric/android/AndroidInterceptors.java",
     "robolectric/robolectric/src/main/java/org/robolectric/android/AttributeSetBuilder.java",
     "robolectric/robolectric/src/main/java/org/robolectric/android/AttributeSetBuilderImpl.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/android/fakes/CleanerCompat.java",
     "robolectric/robolectric/src/main/java/org/robolectric/android/fakes/RoboCharsets.java",
     "robolectric/robolectric/src/main/java/org/robolectric/android/fakes/RoboExtendedResponseCache.java",
     "robolectric/robolectric/src/main/java/org/robolectric/android/fakes/RoboMonitoringInstrumentation.java",
     "robolectric/robolectric/src/main/java/org/robolectric/android/fakes/RoboResponseSource.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/android/internal/AndroidTestEnvironment.java",
     "robolectric/robolectric/src/main/java/org/robolectric/android/internal/LocalActivityInvoker.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/android/internal/LocalControlledLooper.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/android/internal/LocalPermissionGranter.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/android/internal/LocalUiController.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/android/internal/LooperDelegatingScheduler.java",
     "robolectric/robolectric/src/main/java/org/robolectric/android/internal/NoOpThreadChecker.java",
-    "robolectric/robolectric/src/main/java/org/robolectric/android/internal/ParallelUniverse.java",
-    "robolectric/robolectric/src/main/java/org/robolectric/android/internal/RoboUiController.java",
     "robolectric/robolectric/src/main/java/org/robolectric/internal/AndroidConfigurer.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/internal/AndroidSandbox.java",
     "robolectric/robolectric/src/main/java/org/robolectric/internal/BuckManifestFactory.java",
     "robolectric/robolectric/src/main/java/org/robolectric/internal/DefaultManifestFactory.java",
     "robolectric/robolectric/src/main/java/org/robolectric/internal/DeprecatedMethodMarkerException.java",
     "robolectric/robolectric/src/main/java/org/robolectric/internal/ManifestFactory.java",
     "robolectric/robolectric/src/main/java/org/robolectric/internal/ManifestIdentifier.java",
     "robolectric/robolectric/src/main/java/org/robolectric/internal/MavenManifestFactory.java",
-    "robolectric/robolectric/src/main/java/org/robolectric/internal/ParallelUniverseInterface.java",
-    "robolectric/robolectric/src/main/java/org/robolectric/internal/SandboxFactory.java",
-    "robolectric/robolectric/src/main/java/org/robolectric/internal/SdkConfig.java",
-    "robolectric/robolectric/src/main/java/org/robolectric/internal/SdkEnvironment.java",
-    "robolectric/robolectric/src/main/java/org/robolectric/internal/dependency/CachedDependencyResolver.java",
-    "robolectric/robolectric/src/main/java/org/robolectric/internal/dependency/DependencyJar.java",
-    "robolectric/robolectric/src/main/java/org/robolectric/internal/dependency/DependencyResolver.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/internal/ResourcesMode.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/internal/SandboxManager.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/internal/TestEnvironment.java",
     "robolectric/robolectric/src/main/java/org/robolectric/internal/dependency/LocalDependencyResolver.java",
     "robolectric/robolectric/src/main/java/org/robolectric/internal/dependency/PropertiesDependencyResolver.java",
     "robolectric/robolectric/src/main/java/org/robolectric/junit/rules/ExpectedLogMessagesRule.java",
     "robolectric/robolectric/src/main/java/org/robolectric/package-info.java",
-    "robolectric/robolectric/src/main/java/org/robolectric/res/NullResourceTable.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/plugins/ConfigConfigurer.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/plugins/DefaultSdkPicker.java",
+
+    # Provided in local DefaultSdkProvider with Jellybean sdks removed.
+    # "robolectric/robolectric/src/main/java/org/robolectric/plugins/DefaultSdkProvider.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/plugins/HierarchicalConfigurationStrategy.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/plugins/LegacyDependencyResolver.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/plugins/LooperModeConfigurer.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/plugins/PackagePropertiesLoader.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/plugins/SdkCollection.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/plugins/TextLayoutModeConfigurer.java",
+    "robolectric/robolectric/src/main/java/org/robolectric/plugins/UnknownSdk.java",
     "robolectric/robolectric/src/main/java/org/robolectric/util/FragmentTestUtil.java",
   ]
   additional_jar_files = [ [
@@ -144,7 +176,7 @@ java_library("robolectric_annotations_java") {
   skip_jetify = true
   testonly = true
   deps = [
-    ":android-all-9-robolectric-4913185-2_java",
+    ":android-all-10-robolectric-5803371_java",
     ":robolectric_shadowapi_java",
   ]
   sources = [
@@ -154,10 +186,13 @@ java_library("robolectric_annotations_java") {
     "robolectric/annotations/src/main/java/org/robolectric/annotation/HiddenApi.java",
     "robolectric/annotations/src/main/java/org/robolectric/annotation/Implementation.java",
     "robolectric/annotations/src/main/java/org/robolectric/annotation/Implements.java",
+    "robolectric/annotations/src/main/java/org/robolectric/annotation/LooperMode.java",
     "robolectric/annotations/src/main/java/org/robolectric/annotation/RealObject.java",
     "robolectric/annotations/src/main/java/org/robolectric/annotation/Resetter.java",
+    "robolectric/annotations/src/main/java/org/robolectric/annotation/TextLayoutMode.java",
     "robolectric/annotations/src/main/java/org/robolectric/annotation/internal/ConfigUtils.java",
     "robolectric/annotations/src/main/java/org/robolectric/annotation/package-info.java",
+    "robolectric/annotations/src/main/java/org/robolectric/shadow/api/ShadowPicker.java",
   ]
 }
 
@@ -224,21 +259,22 @@ group("sdk_list_txt") {
   _data += rebase_path("lib/android-all-8.0.0_r4-robolectric-r1.jar") + CR
   _data += rebase_path("lib/android-all-8.1.0-robolectric-4611349.jar") + CR
   _data += rebase_path("lib/android-all-9-robolectric-4913185-2.jar") + CR
+  _data += rebase_path("lib/android-all-10-robolectric-5803371.jar") + CR
   write_file(sdk_target_dir, _data)
 }
 
 java_library("robolectric_resources_java") {
   skip_jetify = true
   testonly = true
+  bypass_platform_checks = true
   deps = [
-    ":android-all-9-robolectric-4913185-2_java",
+    ":android-all-10-robolectric-5803371_java",
     ":robolectric_annotations_java",
     ":robolectric_utils_java",
     "//third_party/android_deps:com_google_guava_guava_java",
   ]
   sources = [
     "robolectric/resources/src/main/java/org/robolectric/RoboSettings.java",
-    "robolectric/resources/src/main/java/org/robolectric/UsesSdk.java",
     "robolectric/resources/src/main/java/org/robolectric/manifest/ActivityData.java",
     "robolectric/resources/src/main/java/org/robolectric/manifest/AndroidManifest.java",
     "robolectric/resources/src/main/java/org/robolectric/manifest/BroadcastReceiverData.java",
@@ -253,10 +289,10 @@ java_library("robolectric_resources_java") {
     "robolectric/resources/src/main/java/org/robolectric/manifest/ServiceData.java",
     "robolectric/resources/src/main/java/org/robolectric/res/AttrData.java",
     "robolectric/resources/src/main/java/org/robolectric/res/AttributeResource.java",
+    "robolectric/resources/src/main/java/org/robolectric/res/DirBaseNameFilter.java",
     "robolectric/resources/src/main/java/org/robolectric/res/DocumentLoader.java",
     "robolectric/resources/src/main/java/org/robolectric/res/DrawableResourceLoader.java",
     "robolectric/resources/src/main/java/org/robolectric/res/EmptyStyle.java",
-    "robolectric/resources/src/main/java/org/robolectric/res/FileFsFile.java",
     "robolectric/resources/src/main/java/org/robolectric/res/FileTypedResource.java",
     "robolectric/resources/src/main/java/org/robolectric/res/Fs.java",
     "robolectric/resources/src/main/java/org/robolectric/res/FsFile.java",
@@ -279,7 +315,6 @@ java_library("robolectric_resources_java") {
     "robolectric/resources/src/main/java/org/robolectric/res/ResourceTableFactory.java",
     "robolectric/resources/src/main/java/org/robolectric/res/ResourceValueConverter.java",
     "robolectric/resources/src/main/java/org/robolectric/res/RoutingResourceTable.java",
-    "robolectric/resources/src/main/java/org/robolectric/res/StartsWithFilter.java",
     "robolectric/resources/src/main/java/org/robolectric/res/StaxArrayLoader.java",
     "robolectric/resources/src/main/java/org/robolectric/res/StaxAttrLoader.java",
     "robolectric/resources/src/main/java/org/robolectric/res/StaxDocumentLoader.java",
@@ -301,6 +336,7 @@ java_library("robolectric_resources_java") {
     "robolectric/resources/src/main/java/org/robolectric/res/android/AssetDir.java",
     "robolectric/resources/src/main/java/org/robolectric/res/android/AssetPath.java",
     "robolectric/resources/src/main/java/org/robolectric/res/android/AttributeResolution.java",
+    "robolectric/resources/src/main/java/org/robolectric/res/android/AttributeResolution10.java",
     "robolectric/resources/src/main/java/org/robolectric/res/android/AttributeResolution9.java",
     "robolectric/resources/src/main/java/org/robolectric/res/android/ByteBucketArray.java",
     "robolectric/resources/src/main/java/org/robolectric/res/android/Chunk.java",
@@ -347,8 +383,30 @@ java_library("robolectric_resources_java") {
 java_library("robolectric_utils_java") {
   skip_jetify = true
   testonly = true
-  deps = [ ":robolectric_annotations_java" ]
+  bypass_platform_checks = true
+  deps = [
+    ":robolectric_annotations_java",
+    ":robolectric_pluginapi_java",
+    "//third_party/android_deps:com_google_guava_guava_java",
+    "//third_party/android_deps:javax_annotation_javax_annotation_api_java",
+    "//third_party/android_deps:javax_annotation_jsr250_api_java",
+    "//third_party/android_deps:javax_inject_javax_inject_java",
+    "//third_party/android_deps:org_ow2_asm_asm_commons_java",
+    "//third_party/android_deps:org_ow2_asm_asm_java",
+    "//third_party/android_deps:org_ow2_asm_asm_tree_java",
+    "//third_party/hamcrest:hamcrest_java",
+    "//third_party/junit:junit",
+  ]
   sources = [
+    "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/Accessor.java",
+    "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/ForType.java",
+    "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/Reflector.java",
+    "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/ReflectorClassWriter.java",
+    "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/Static.java",
+    "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/UnsafeAccess.java",
+    "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/WeakerHashMap.java",
+    "robolectric/utils/reflector/src/main/java/org/robolectric/util/reflector/WithType.java",
+    "robolectric/utils/src/main/java/org/robolectric/AndroidMetadata.java",
     "robolectric/utils/src/main/java/org/robolectric/AndroidMetadata.java",
     "robolectric/utils/src/main/java/org/robolectric/util/Clock.java",
     "robolectric/utils/src/main/java/org/robolectric/util/Consumer.java",
@@ -357,15 +415,21 @@ java_library("robolectric_utils_java") {
     "robolectric/utils/src/main/java/org/robolectric/util/NamedStream.java",
     "robolectric/utils/src/main/java/org/robolectric/util/Pair.java",
     "robolectric/utils/src/main/java/org/robolectric/util/PerfStatsCollector.java",
-    "robolectric/utils/src/main/java/org/robolectric/util/PerfStatsReporter.java",
     "robolectric/utils/src/main/java/org/robolectric/util/Scheduler.java",
     "robolectric/utils/src/main/java/org/robolectric/util/SimpleFuture.java",
+    "robolectric/utils/src/main/java/org/robolectric/util/SimplePerfStatsReporter.java",
     "robolectric/utils/src/main/java/org/robolectric/util/SoftThreadLocal.java",
     "robolectric/utils/src/main/java/org/robolectric/util/Strftime.java",
     "robolectric/utils/src/main/java/org/robolectric/util/TempDirectory.java",
     "robolectric/utils/src/main/java/org/robolectric/util/TestRunnable.java",
     "robolectric/utils/src/main/java/org/robolectric/util/TimeUtils.java",
     "robolectric/utils/src/main/java/org/robolectric/util/Util.java",
+    "robolectric/utils/src/main/java/org/robolectric/util/inject/AutoFactory.java",
+    "robolectric/utils/src/main/java/org/robolectric/util/inject/InjectionException.java",
+    "robolectric/utils/src/main/java/org/robolectric/util/inject/Injector.java",
+    "robolectric/utils/src/main/java/org/robolectric/util/inject/PluginFinder.java",
+    "robolectric/utils/src/main/java/org/robolectric/util/inject/ServiceFinder.java",
+    "robolectric/utils/src/main/java/org/robolectric/util/inject/Supercedes.java",
     "robolectric/utils/src/main/java/org/robolectric/util/package-info.java",
   ]
 }
@@ -373,10 +437,13 @@ java_library("robolectric_utils_java") {
 java_library("robolectric_sandbox_java") {
   skip_jetify = true
   testonly = true
+  bypass_platform_checks = true
+  provider_configurations = [ "local/shadows/sandbox/src/main/resources/META-INF/services/org.robolectric.internal.bytecode.ClassInstrumentor\$Decorator" ]
   deps = [
     ":robolectric_annotations_java",
     ":robolectric_shadowapi_java",
     ":robolectric_utils_java",
+    "//third_party/android_deps:com_google_auto_service_auto_service_java",
     "//third_party/android_deps:com_google_guava_guava_java",
     "//third_party/android_deps:org_ow2_asm_asm_commons_java",
     "//third_party/android_deps:org_ow2_asm_asm_java",
@@ -404,6 +471,7 @@ java_library("robolectric_sandbox_java") {
     "robolectric/sandbox/src/main/java/org/robolectric/internal/bytecode/MutableClass.java",
     "robolectric/sandbox/src/main/java/org/robolectric/internal/bytecode/OldClassInstrumentor.java",
     "robolectric/sandbox/src/main/java/org/robolectric/internal/bytecode/ProxyMaker.java",
+    "robolectric/sandbox/src/main/java/org/robolectric/internal/bytecode/ResourceProvider.java",
     "robolectric/sandbox/src/main/java/org/robolectric/internal/bytecode/RoboCallSite.java",
     "robolectric/sandbox/src/main/java/org/robolectric/internal/bytecode/RoboType.java",
     "robolectric/sandbox/src/main/java/org/robolectric/internal/bytecode/RobolectricGeneratorAdapter.java",
@@ -417,9 +485,11 @@ java_library("robolectric_sandbox_java") {
     "robolectric/sandbox/src/main/java/org/robolectric/internal/bytecode/ShadowInfo.java",
     "robolectric/sandbox/src/main/java/org/robolectric/internal/bytecode/ShadowInvalidator.java",
     "robolectric/sandbox/src/main/java/org/robolectric/internal/bytecode/ShadowMap.java",
+    "robolectric/sandbox/src/main/java/org/robolectric/internal/bytecode/ShadowProviders.java",
     "robolectric/sandbox/src/main/java/org/robolectric/internal/bytecode/ShadowWrangler.java",
     "robolectric/sandbox/src/main/java/org/robolectric/internal/bytecode/ShadowedObject.java",
     "robolectric/sandbox/src/main/java/org/robolectric/internal/bytecode/TypeMapper.java",
+    "robolectric/sandbox/src/main/java/org/robolectric/internal/bytecode/UrlResourceProvider.java",
     "robolectric/sandbox/src/main/java/org/robolectric/util/Function.java",
     "robolectric/sandbox/src/main/java/org/robolectric/util/JavaVersion.java",
   ]
@@ -435,8 +505,33 @@ java_library("robolectric_junit_java") {
     ":robolectric_shadowapi_java",
     "//third_party/junit:junit",
   ]
+  sources = [
+    "robolectric/junit/src/main/java/org/robolectric/internal/SandboxTestRunner.java",
+    "robolectric/junit/src/main/java/org/robolectric/internal/TimeLimitedStatement.java",
+  ]
+}
 
-  sources = [ "robolectric/junit/src/main/java/org/robolectric/internal/SandboxTestRunner.java" ]
+java_library("robolectric_pluginapi_java") {
+  testonly = true
+  deps = [ ":robolectric_annotations_java" ]
+
+  sources = [
+    "robolectric/pluginapi/src/main/java/org/robolectric/internal/dependency/DependencyJar.java",
+    "robolectric/pluginapi/src/main/java/org/robolectric/internal/dependency/DependencyResolver.java",
+    "robolectric/pluginapi/src/main/java/org/robolectric/pluginapi/ExtensionPoint.java",
+    "robolectric/pluginapi/src/main/java/org/robolectric/pluginapi/Sdk.java",
+    "robolectric/pluginapi/src/main/java/org/robolectric/pluginapi/SdkPicker.java",
+    "robolectric/pluginapi/src/main/java/org/robolectric/pluginapi/SdkProvider.java",
+    "robolectric/pluginapi/src/main/java/org/robolectric/pluginapi/TestEnvironmentLifecyclePlugin.java",
+    "robolectric/pluginapi/src/main/java/org/robolectric/pluginapi/UsesSdk.java",
+    "robolectric/pluginapi/src/main/java/org/robolectric/pluginapi/config/ConfigurationStrategy.java",
+    "robolectric/pluginapi/src/main/java/org/robolectric/pluginapi/config/Configurer.java",
+    "robolectric/pluginapi/src/main/java/org/robolectric/pluginapi/config/GlobalConfigProvider.java",
+    "robolectric/pluginapi/src/main/java/org/robolectric/pluginapi/package-info.java",
+    "robolectric/pluginapi/src/main/java/org/robolectric/pluginapi/perf/Metadata.java",
+    "robolectric/pluginapi/src/main/java/org/robolectric/pluginapi/perf/Metric.java",
+    "robolectric/pluginapi/src/main/java/org/robolectric/pluginapi/perf/PerfStatsReporter.java",
+  ]
 }
 
 java_library("robolectric_shadowapi_java") {
@@ -447,10 +542,10 @@ java_library("robolectric_shadowapi_java") {
   sources = [
     "robolectric/shadowapi/src/main/java/org/robolectric/annotation/internal/DoNotInstrument.java",
     "robolectric/shadowapi/src/main/java/org/robolectric/annotation/internal/Instrument.java",
+    "robolectric/shadowapi/src/main/java/org/robolectric/config/ConfigurationRegistry.java",
     "robolectric/shadowapi/src/main/java/org/robolectric/internal/IShadow.java",
     "robolectric/shadowapi/src/main/java/org/robolectric/internal/ShadowProvider.java",
     "robolectric/shadowapi/src/main/java/org/robolectric/shadow/api/Shadow.java",
-    "robolectric/shadowapi/src/main/java/org/robolectric/shadow/api/ShadowPicker.java",
     "robolectric/shadowapi/src/main/java/org/robolectric/util/ReflectionHelpers.java",
   ]
 }
@@ -500,6 +595,7 @@ java_library("shadows_core_java") {
     ]
   }
   sources = [
+    "robolectric/shadows/framework/src/main/java/android/media/Session2Token.java",
     "robolectric/shadows/framework/src/main/java/android/webkit/RoboCookieManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/RuntimeEnvironment.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/android/AccessibilityUtil.java",
@@ -515,6 +611,9 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/android/controller/IntentServiceController.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/android/controller/ServiceController.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/android/internal/DisplayConfig.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/android/util/concurrent/BackgroundExecutor.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/android/util/concurrent/InlineExecutorService.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/android/util/concurrent/PausedExecutorService.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/android/util/concurrent/RoboExecutorService.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/fakes/BaseCursor.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/fakes/RoboCursor.java",
@@ -530,19 +629,21 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/Converter2.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ImageUtil.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/LegacyManifestParser.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/LooperShadowPicker.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/NativeAndroidInput.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/NativeBitSet64.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/NativeInput.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/OsConstantsValues.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/Provider.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ResourceHelper.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ResourceHelper2.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ResourceModeShadowPicker.java",
-    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/RoboLayoutInflater.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/RoundRectangle.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowAbsListView.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowAbsSeekBar.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowAbsSpinner.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowAbstractCursor.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowAccessibilityButtonController.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowAccessibilityManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowAccessibilityNodeInfo.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowAccessibilityRecord.java",
@@ -553,6 +654,7 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowActivityGroup.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowActivityManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowActivityManagerNative.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowActivityTaskManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowActivityThread.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowAdapterView.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowAlarmManager.java",
@@ -573,6 +675,7 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowArscApkAssets9.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowArscAssetInputStream.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowArscAssetManager.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowArscAssetManager10.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowArscAssetManager9.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowArscResourcesImpl.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowAssetInputStream.java",
@@ -587,6 +690,8 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBackgroundThread.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBackupManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBaseAdapter.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBaseLooper.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBasicTagTechnology.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBatteryManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBinder.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBinderBridge.java",
@@ -599,8 +704,10 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBluetoothAdapter.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBluetoothDevice.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBluetoothGatt.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBluetoothHeadset.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBluetoothManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBluetoothServerSocket.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBluetoothSocket.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBroadcastPendingResult.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBroadcastReceiver.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowBuild.java",
@@ -609,11 +716,14 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowCameraManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowCanvas.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowCaptioningManager.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowCaptureResult.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowCarrierConfigManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowChoreographer.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowClipboardManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowColor.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowColorDisplayManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowColorMatrixColorFilter.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowColorSpace.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowCompoundButton.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowConnectivityManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowContentObserver.java",
@@ -630,6 +740,7 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowCookieSyncManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowCornerPathEffect.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowCountDownTimer.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowCrossProfileApps.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowCursorWindow.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowCursorWrapper.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowDashPathEffect.java",
@@ -637,10 +748,14 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowDateIntervalFormat.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowDatePickerDialog.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowDebug.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowDeviceConfig.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowDevicePolicyManager.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowDexFile.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowDialog.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowDiscoverySession.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowDisplay.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowDisplayEventReceiver.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowDisplayListCanvas.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowDisplayManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowDisplayManagerGlobal.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowDownloadManager.java",
@@ -650,19 +765,20 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowEnvironment.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowEuiccManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowEventLog.java",
-    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowExifInterface.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowExpandableListView.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowFileUtils.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowFilter.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowFingerprintManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowFloatMath.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowFontFamily.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowFontsContract.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowGLES20.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowGLSurfaceView.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowGeocoder.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowGestureDetector.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowGradientDrawable.java",
-    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowHandler.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowHardwareBuffer.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowHardwareRenderer.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowHttpResponseCache.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowIAppOpsService.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowICU.java",
@@ -677,17 +793,29 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowIntent.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowIntentService.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowIoUtils.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowIsoDep.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowJobScheduler.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowJobService.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowJsPromptResult.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowJsResult.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowKeyCharacterMap.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowKeyguardManager.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLauncherApps.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLayoutAnimationController.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLegacyApkAssets.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLegacyAssetInputStream.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLegacyAssetManager.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLegacyAsyncTask.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLegacyAsyncTaskLoader.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLegacyChoreographer.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLegacyLooper.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLegacyMessage.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLegacyMessageQueue.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLegacyOverScroller.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLegacyResourcesImpl.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLegacySystemClock.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLibcoreOsConstants.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLineBreaker.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLinearGradient.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLinearLayout.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLinkMovementMethod.java",
@@ -702,11 +830,15 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowLooper.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMatrix.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMeasuredParagraph.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMeasuredTextBuilder.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMediaCodec.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMediaMetadataRetriever.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMediaMuxer.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMediaPlayer.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMediaRecorder.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMediaRouter.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMediaScannerConnection.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMediaSession.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMediaStore.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMemoryMappedFile.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowMessage.java",
@@ -717,6 +849,7 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowNativeAllocationRegistry.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowNativePluralRules.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowNetwork.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowNetworkCapabilities.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowNetworkInfo.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowNetworkScoreManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowNfcAdapter.java",
@@ -727,6 +860,7 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowNumberPicker.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowObjectAnimator.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowOpenGLMatrix.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowOsConstants.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowOutline.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowOverScroller.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowPackageInstaller.java",
@@ -738,6 +872,14 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowPath.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowPathMeasure.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowPathParser.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowPausedAsyncTask.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowPausedAsyncTaskLoader.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowPausedChoreographer.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowPausedLooper.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowPausedMessage.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowPausedMessageQueue.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowPausedOverScroller.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowPausedSystemClock.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowPeerHandle.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowPendingIntent.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowPhoneWindow.java",
@@ -756,17 +898,22 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowProgressBar.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowProgressDialog.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowQueuedWork.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowRangingResult.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowRecordingCanvas.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowRegion.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowRelativeLayout.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowRemoteCallbackList.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowRenderNode.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowRenderNodeAnimator.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowRenderNodeQ.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowResolveInfo.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowResources.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowResourcesImpl.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowResourcesManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowRestrictionsManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowResultReceiver.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowRotationWatcher.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowRotationWatcherFor22.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowSQLiteConnection.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowSQLiteOpenHelper.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowScaleGestureDetector.java",
@@ -783,6 +930,7 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowSharedMemory.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowSharedPreferences.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowShortcutManager.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowSigningInfo.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowSliceManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowSmsManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowSocketTagger.java",
@@ -792,13 +940,16 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowStatFs.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowStateListDrawable.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowStaticLayout.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowStatusBarManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowStorageManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowStrictModeVmPolicy.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowStringBlock.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowSubscriptionManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowSurface.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowSurfaceView.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowSystem.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowSystemClock.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowSystemFonts.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowSystemProperties.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowSystemServiceRegistry.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowSystemVibrator.java",
@@ -812,16 +963,21 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowTextToSpeech.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowTextUtils.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowTextView.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowThreadedRenderer.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowTile.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowTileService.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowTime.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowTimePickerDialog.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowTimeZoneFinder.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowTimeZoneFinderQ.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowToast.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowTotalCaptureResult.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowTouchDelegate.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowTrace.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowTrafficStats.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowTypedArray.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowTypeface.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowUIModeManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowUsageStatsManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowUsbManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowUserManager.java",
@@ -838,6 +994,7 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowViewRootImpl.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowVirtualRefBasePtr.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowVisualVoicemailSms.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowVpnService.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowWallpaperManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowWebStorage.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowWebSyncManager.java",
@@ -848,6 +1005,7 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowWifiManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowWifiP2pGroup.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowWifiP2pManager.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowWifiRttManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowWindow.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowWindowManager.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowWindowManagerGlobal.java",
@@ -855,16 +1013,43 @@ java_library("shadows_core_java") {
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowXmlBlock.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/ShadowZoomButtonsController.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/StorageVolumeBuilder.java",
+    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/_Activity_.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/package-info.java",
-    "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/util/AppSingletonizer.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/util/DataSource.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/util/SQLiteLibraryLoader.java",
     "robolectric/shadows/framework/src/main/java/org/robolectric/shadows/util/package-info.java",
+
+    # TODO(bjoyce): Add after apache dependencies are added to third_party/android_deps.
+    # "robolectric/shadows/httpclient/src/main/java/org/robolectric/shadows/ShadowAndroidHttpClient.java",
+    # "robolectric/shadows/httpclient/src/main/java/org/robolectric/shadows/httpclient/DefaultRequestDirector.java",
+    # "robolectric/shadows/httpclient/src/main/java/org/robolectric/shadows/httpclient/FakeHttp.java",
+    # "robolectric/shadows/httpclient/src/main/java/org/robolectric/shadows/httpclient/FakeHttpLayer.java",
+    # "robolectric/shadows/httpclient/src/main/java/org/robolectric/shadows/httpclient/HttpEntityStub.java",
+    # "robolectric/shadows/httpclient/src/main/java/org/robolectric/shadows/httpclient/HttpRedirect.java",
+    # "robolectric/shadows/httpclient/src/main/java/org/robolectric/shadows/httpclient/HttpRequestInfo.java",
+    # "robolectric/shadows/httpclient/src/main/java/org/robolectric/shadows/httpclient/HttpResponseGenerator.java",
+    # "robolectric/shadows/httpclient/src/main/java/org/robolectric/shadows/httpclient/HttpResponseStub.java",
+    # "robolectric/shadows/httpclient/src/main/java/org/robolectric/shadows/httpclient/ParamsParser.java",
+    # "robolectric/shadows/httpclient/src/main/java/org/robolectric/shadows/httpclient/RequestMatcher.java",
+    # "robolectric/shadows/httpclient/src/main/java/org/robolectric/shadows/httpclient/ShadowDefaultRequestDirector.java",
+    # "robolectric/shadows/httpclient/src/main/java/org/robolectric/shadows/httpclient/StatusLineStub.java",
+    # "robolectric/shadows/httpclient/src/main/java/org/robolectric/shadows/httpclient/TestHttpResponse.java",
+    # "robolectric/shadows/httpclient/src/main/java/org/robolectric/shadows/httpclient/package-info.java",
+    # "robolectric/shadows/supportv4/src/main/java/org/robolectric/shadows/support/v4/ShadowAsyncTaskLoader.java",
+    # "robolectric/shadows/supportv4/src/main/java/org/robolectric/shadows/support/v4/ShadowDrawerLayout.java",
+    # "robolectric/shadows/supportv4/src/main/java/org/robolectric/shadows/support/v4/ShadowLegacyAsyncTaskLoader.java",
+    # "robolectric/shadows/supportv4/src/main/java/org/robolectric/shadows/support/v4/ShadowLocalBroadcastManager.java",
+    # "robolectric/shadows/supportv4/src/main/java/org/robolectric/shadows/support/v4/ShadowMediaBrowserCompat.java",
+    # "robolectric/shadows/supportv4/src/main/java/org/robolectric/shadows/support/v4/ShadowPausedAsyncTaskLoader.java",
+    # "robolectric/shadows/supportv4/src/main/java/org/robolectric/shadows/support/v4/ShadowSwipeRefreshLayout.java",
+    # "robolectric/shadows/supportv4/src/main/java/org/robolectric/shadows/support/v4/SupportFragmentController.java",
+    # "robolectric/shadows/supportv4/src/main/java/org/robolectric/shadows/support/v4/SupportFragmentTestUtil.java",
+    # "robolectric/shadows/supportv4/src/main/java/org/robolectric/shadows/support/v4/package-info.java",
   ]
 
   annotation_processor_deps = [ ":robolectric_processor" ]
   deps = [
-    ":android-all-9-robolectric-4913185-2_java",
+    ":android-all-10-robolectric-5803371_java",
     ":robolectric_annotations_java",
     ":robolectric_resources_java",
     ":robolectric_shadowapi_java",
@@ -873,6 +1058,7 @@ java_library("shadows_core_java") {
 
     # Note that gson is not a direct dependency for this library, but must be
     # in the classpath when the Robolectric annotation processor runs.
+    "//third_party/android_deps:androidx_test_runner_java",
     "//third_party/android_deps:com_google_code_gson_gson_java",
     "//third_party/android_deps:com_google_guava_guava_java",
     "//third_party/hamcrest:hamcrest_java",
@@ -900,7 +1086,7 @@ java_library("shadows_multidex_java") {
 
   annotation_processor_deps = [ ":robolectric_processor" ]
   deps = [
-    ":android-all-9-robolectric-4913185-2_java",
+    ":android-all-10-robolectric-5803371_java",
     ":robolectric_annotations_java",
     ":robolectric_shadowapi_java",
     ":robolectric_utils_java",
@@ -933,7 +1119,7 @@ java_library("shadows_play_services_java") {
 
   annotation_processor_deps = [ ":robolectric_processor" ]
   deps = [
-    ":android-all-9-robolectric-4913185-2_java",
+    ":android-all-10-robolectric-5803371_java",
     ":robolectric_annotations_java",
     ":robolectric_resources_java",
     ":robolectric_shadowapi_java",

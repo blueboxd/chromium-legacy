@@ -306,8 +306,8 @@ void NetworkSmsHandler::UpdateDevices(const base::ListValue* devices) {
       VLOG(1) << "GetDeviceProperties: " << device_path;
       ShillDeviceClient::Get()->GetProperties(
           dbus::ObjectPath(device_path),
-          base::Bind(&NetworkSmsHandler::DevicePropertiesCallback,
-                     weak_ptr_factory_.GetWeakPtr(), device_path));
+          base::BindOnce(&NetworkSmsHandler::DevicePropertiesCallback,
+                         weak_ptr_factory_.GetWeakPtr(), device_path));
     }
   }
 }

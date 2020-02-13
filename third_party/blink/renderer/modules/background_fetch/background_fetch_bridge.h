@@ -38,7 +38,7 @@ class BackgroundFetchBridge final
   using RegistrationCallback =
       base::OnceCallback<void(mojom::blink::BackgroundFetchError,
                               BackgroundFetchRegistration*)>;
-  using GetIconDisplaySizeCallback = base::OnceCallback<void(const WebSize&)>;
+  using GetIconDisplaySizeCallback = base::OnceCallback<void(const gfx::Size&)>;
 
   static BackgroundFetchBridge* From(ServiceWorkerRegistration* registration);
 

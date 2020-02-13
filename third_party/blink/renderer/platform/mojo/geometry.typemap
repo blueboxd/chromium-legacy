@@ -35,6 +35,6 @@ type_mappings = [
   "gfx.mojom.Quaternion=::gfx::Quaternion",
   "gfx.mojom.RectF=::blink::WebFloatRect",
   "gfx.mojom.Rect=::blink::WebRect",
-  "gfx.mojom.Size=::blink::WebSize",
+  "gfx.mojom.Size=::gfx::Size",
   "gfx.mojom.Vector3dF=::gfx::Vector3dF",
 ]

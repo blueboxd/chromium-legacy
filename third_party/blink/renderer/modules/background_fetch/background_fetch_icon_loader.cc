@@ -49,7 +49,7 @@ void BackgroundFetchIconLoader::Start(
 void BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon(
     ExecutionContext* execution_context,
     IconCallback icon_callback,
-    const WebSize& icon_display_size_pixels) {
+    const gfx::Size& icon_display_size_pixels) {
   // If |icon_display_size_pixels| is empty then no image will be displayed by
   // the UI powering Background Fetch. Bail out immediately.
   if (icon_display_size_pixels.IsEmpty()) {
@@ -58,8 +58,8 @@ void BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon(
     return;
   }
 
-  KURL best_icon_url = PickBestIconForDisplay(execution_context,
-                                              icon_display_size_pixels.height);
+  KURL best_icon_url = PickBestIconForDisplay(
+      execution_context, icon_display_size_pixels.height());
   if (best_icon_url.IsEmpty()) {
     // None of the icons provided was suitable.
     std::move(icon_callback)

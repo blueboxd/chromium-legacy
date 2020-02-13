@@ -57,7 +57,7 @@ class DriveServiceOnWorker : public drive::DriveServiceInterface {
       const google_apis::ProgressCallback& progress_callback) override;
 
   google_apis::CancelCallback GetAboutResource(
-      const google_apis::AboutResourceCallback& callback) override;
+      google_apis::AboutResourceCallback callback) override;
 
   google_apis::CancelCallback GetStartPageToken(
       const std::string& team_drive_id,

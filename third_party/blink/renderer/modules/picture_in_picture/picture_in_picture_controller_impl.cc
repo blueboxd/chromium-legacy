@@ -170,7 +170,7 @@ void PictureInPictureControllerImpl::EnterPictureInPicture(
   picture_in_picture_service_->StartSession(
       video_element->GetWebMediaPlayer()->GetDelegateId(),
       video_element->GetWebMediaPlayer()->GetSurfaceId(),
-      WebSize(video_element->GetWebMediaPlayer()->NaturalSize()),
+      video_element->GetWebMediaPlayer()->NaturalSize(),
       ShouldShowPlayPauseButton(*video_element), std::move(session_observer),
       WTF::Bind(&PictureInPictureControllerImpl::OnEnteredPictureInPicture,
                 WrapPersistent(this), WrapPersistent(video_element),
@@ -181,7 +181,7 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
     HTMLVideoElement* element,
     ScriptPromiseResolver* resolver,
     mojo::PendingRemote<mojom::blink::PictureInPictureSession> session_remote,
-    const WebSize& picture_in_picture_window_size) {
+    const gfx::Size& picture_in_picture_window_size) {
   // If |session_ptr| is null then Picture-in-Picture is not supported by the
   // browser. We should rarely see this because we should have already rejected
   // with |kDisabledBySystem|.
@@ -379,12 +379,12 @@ void PictureInPictureControllerImpl::OnPictureInPictureStateChange() {
   picture_in_picture_session_->Update(
       picture_in_picture_element_->GetWebMediaPlayer()->GetDelegateId(),
       picture_in_picture_element_->GetWebMediaPlayer()->GetSurfaceId(),
-      WebSize(picture_in_picture_element_->GetWebMediaPlayer()->NaturalSize()),
+      picture_in_picture_element_->GetWebMediaPlayer()->NaturalSize(),
       ShouldShowPlayPauseButton(*picture_in_picture_element_));
 }
 
 void PictureInPictureControllerImpl::OnWindowSizeChanged(
-    const blink::WebSize& size) {
+    const gfx::Size& size) {
   if (picture_in_picture_window_)
     picture_in_picture_window_->OnResize(size);
 }

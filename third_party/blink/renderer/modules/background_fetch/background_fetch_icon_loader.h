@@ -45,7 +45,7 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
   void DidGetIconDisplaySizeIfSoLoadIcon(
       ExecutionContext* execution_context,
       IconCallback callback,
-      const WebSize& icon_display_size_pixels);
+      const gfx::Size& icon_display_size_pixels);
 
   void DidGetIcon(SkBitmap icon, double resize_scale);
 

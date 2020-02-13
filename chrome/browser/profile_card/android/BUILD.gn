@@ -8,5 +8,6 @@ android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/profile_card/NavigationDelegate.java",
     "java/src/org/chromium/chrome/browser/profile_card/ProfileCardCoordinator.java",
+    "java/src/org/chromium/chrome/browser/profile_card/ProfileCardData.java",
   ]
 }

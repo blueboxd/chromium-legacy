@@ -50,7 +50,7 @@ import java.util.List;
  * Unit tests for PlatformSensor and PlatformSensorProvider.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(sdk = 21, manifest = Config.NONE)
 public class PlatformSensorAndProviderTest {
     @Mock
     private Context mContext;

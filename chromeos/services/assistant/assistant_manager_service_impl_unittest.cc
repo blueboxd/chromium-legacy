@@ -221,10 +221,6 @@ class AssistantManagerServiceImplTest : public testing::Test {
     return delegate_->assistant_manager_internal();
   }
 
-  action::CrosActionModule* action_module() {
-    return assistant_manager_service_->action_module_for_testing();
-  }
-
   void Start() {
     assistant_manager_service()->Start("dummy-access-token",
                                        /*enable_hotword=*/false);
@@ -544,17 +540,6 @@ TEST_F(AssistantManagerServiceImplTest,
   EXPECT_CALL(observer, OnStateChanged).Times(0);
 
   Start();
-}
-
-TEST_F(AssistantManagerServiceImplTest,
-       ShouldUpdateActionModuleWhenAmbientModeStateChanged) {
-  EXPECT_FALSE(action_module()->IsAmbientModeEnabledForTesting());
-
-  assistant_manager_service()->EnableAmbientMode(true);
-  EXPECT_TRUE(action_module()->IsAmbientModeEnabledForTesting());
-
-  assistant_manager_service()->EnableAmbientMode(false);
-  EXPECT_FALSE(action_module()->IsAmbientModeEnabledForTesting());
 }
 
 }  // namespace assistant

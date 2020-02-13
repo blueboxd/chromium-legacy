@@ -2,28 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/toolchain/win/midl.gni")
 import("//chrome/process_version_rc_template.gni")
 import("//testing/test.gni")
-
-midl("updater_idl_idl") {
-  sources = [ "com/updater_idl.idl" ]
-
-  writes_tlb = true
-}
-
-# The COM server needs to work with Windows 7, so explicitly setting the defines
-# to reflect this. Otherwise, WRL uses APIs that are only available in later
-# Windows versions.
-config("winver") {
-  defines = [
-    "NTDDI_VERSION=NTDDI_WIN7",
-
-    # Hardcoding version 0x0601, since _WIN32_WINNT_WIN7 may not be defined.
-    "_WIN32_WINNT=0x0601",
-    "WINVER=0x0601",
-  ]
-}
 
 # This target builds the updater executable, its installer, and unittests.
 group("win") {
@@ -42,7 +22,6 @@ executable("updater") {
   configs += [ "//build/config/win:windowed" ]
 
   deps = [
-    ":com",
     ":core",
     ":install_app",
     ":version_resources",
@@ -89,21 +68,6 @@ source_set("base") {
   ]
 }
 
-source_set("com") {
-  sources = [
-    "com/com_server.cc",
-    "com/com_server.h",
-  ]
-
-  configs -= [ "//build/config/win:winver" ]
-  configs += [ ":winver" ]
-
-  deps = [
-    ":updater_idl_idl",
-    "//base",
-  ]
-}
-
 source_set("core") {
   sources = [
     "action_handler.cc",
@@ -127,10 +91,10 @@ source_set("core") {
 
   deps = [
     ":base",
-    ":updater_idl_idl",
     "//base",
     "//chrome/installer/util:with_no_strings",
     "//chrome/updater:common",
+    "//chrome/updater/server/win:updater_idl_idl",
     "//components/update_client",
     "//url:url",
   ]
@@ -211,7 +175,7 @@ test("updater_unittests") {
     ":install_app",
     "//base",
     "//base/test:test_support",
-    "//chrome/updater/win:com",
+    "//chrome/updater/server/win",
     "//chrome/updater/win/test:test_executables",
     "//chrome/updater/win/test:test_strings",
     "//testing/gtest",

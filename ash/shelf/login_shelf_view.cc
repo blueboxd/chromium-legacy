@@ -121,32 +121,24 @@ void AnimateButtonOpacity(ui::Layer* layer,
   layer->SetOpacity(target_opacity);
 }
 
-SkPath GetButtonHighlightPath(const views::View* view) {
-  gfx::Rect rect(view->GetLocalBounds());
+// TODO(crbug.com/1051293): The highlight or ink drop will be incorrect if the
+// values returned by |ShelfConfig| change midway.
+gfx::Insets GetButtonInsets() {
   const int height_inset =
       (ShelfConfig::Get()->shelf_size() - ShelfConfig::Get()->control_size()) /
       2;
-  rect.Inset(gfx::Insets(height_inset, ShelfConfig::Get()->button_spacing(),
-                         height_inset, 0));
+  return gfx::Insets(height_inset, ShelfConfig::Get()->button_spacing(),
+                     height_inset, 0);
+}
+
+SkPath GetButtonHighlightPath(const views::View* view) {
+  gfx::Rect rect(view->GetLocalBounds());
+  rect.Inset(GetButtonInsets());
 
   const int border_radius = ShelfConfig::Get()->control_border_radius();
   return SkPath().addRoundRect(gfx::RectToSkRect(rect), border_radius,
                                border_radius);
 }
-
-class LoginShelfButtonHighlightPathGenerator
-    : public views::HighlightPathGenerator {
- public:
-  LoginShelfButtonHighlightPathGenerator() = default;
-
-  // views::HighlightPathGenerator:
-  SkPath GetHighlightPath(const views::View* view) override {
-    return GetButtonHighlightPath(view);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LoginShelfButtonHighlightPathGenerator);
-};
 
 class LoginShelfButton : public views::LabelButton {
  public:
@@ -165,8 +157,8 @@ class LoginShelfButton : public views::LabelButton {
                                    login_constants::kButtonDisabledAlpha)));
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetInstallFocusRingOnFocus(true);
-    views::HighlightPathGenerator::Install(
-        this, std::make_unique<LoginShelfButtonHighlightPathGenerator>());
+    views::InstallRoundRectHighlightPathGenerator(
+        this, GetButtonInsets(), ShelfConfig::Get()->control_border_radius());
     focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
     SetFocusPainter(nullptr);
     SetInkDropMode(InkDropMode::ON);
@@ -276,8 +268,8 @@ class KioskAppsButton : public views::MenuButton,
         ui::SimpleMenuModel(this) {
     SetFocusBehavior(FocusBehavior::ALWAYS);
     SetInstallFocusRingOnFocus(true);
-    views::HighlightPathGenerator::Install(
-        this, std::make_unique<LoginShelfButtonHighlightPathGenerator>());
+    views::InstallRoundRectHighlightPathGenerator(
+        this, GetButtonInsets(), ShelfConfig::Get()->control_border_radius());
     focus_ring()->SetColor(ShelfConfig::Get()->shelf_focus_border_color());
     SetFocusPainter(nullptr);
     SetInkDropMode(InkDropMode::ON);

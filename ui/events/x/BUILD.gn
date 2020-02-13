@@ -40,21 +40,17 @@ source_set("unittests") {
     "//ui/events:events_unittests",
     "//ui/ozone/platform/x11:x11_unittests",
   ]
-  sources = [ "x11_event_translation_unittest.cc" ]
+  sources = [
+    "events_x_unittest.cc",
+    "x11_event_translation_unittest.cc",
+  ]
   configs += [ "//build/config/linux:x11" ]
   deps = [
+    "//base/test:test_support",
     "//testing/gtest",
     "//ui/events:test_support",
+    "//ui/events/devices/x11",
+    "//ui/events/x:x",
+    "//ui/gfx/x",
   ]
-
-  # TODO(nickdiego): Fix X unit tests in Ozone builds
-  if (use_x11) {
-    sources += [ "events_x_unittest.cc" ]
-    deps += [
-      "//base/test:test_support",
-      "//ui/events/devices/x11",
-      "//ui/events/x:x",
-      "//ui/gfx/x",
-    ]
-  }
 }

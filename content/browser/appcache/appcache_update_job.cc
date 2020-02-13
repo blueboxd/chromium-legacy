@@ -211,7 +211,7 @@ const base::Feature kAppCacheManifestScopeChecksFeature{
     "AppCacheManifestScopeChecks", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kAppCacheUpdateResourceOn304Feature{
-    "AppCacheUpdateResourceOn304", base::FEATURE_DISABLED_BY_DEFAULT};
+    "AppCacheUpdateResourceOn304", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Helper class for collecting hosts per frontend when sending notifications
 // so that only one notification is sent for all hosts using the same frontend.

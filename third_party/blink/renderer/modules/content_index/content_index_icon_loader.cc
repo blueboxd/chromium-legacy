@@ -25,7 +25,7 @@ constexpr base::TimeDelta kIconFetchTimeout = base::TimeDelta::FromSeconds(30);
 
 void FetchIcon(ExecutionContext* execution_context,
                const KURL& icon_url,
-               const WebSize& icon_size,
+               const gfx::Size& icon_size,
                ThreadedIconLoader::IconCallback callback) {
   ResourceRequest resource_request(icon_url);
   resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
@@ -49,7 +49,7 @@ WebVector<Manifest::ImageResource> ToImageResource(
     image_resource.type = WebString(icon_definition->type).Utf16();
     for (const auto& size :
          WebIconSizesParser::ParseIconSizes(icon_definition->sizes)) {
-      image_resource.sizes.emplace_back(size.width, size.height);
+      image_resource.sizes.emplace_back(size);
     }
     if (image_resource.sizes.empty())
       image_resource.sizes.emplace_back(0, 0);
@@ -60,13 +60,13 @@ WebVector<Manifest::ImageResource> ToImageResource(
 }
 
 KURL FindBestIcon(WebVector<Manifest::ImageResource> image_resources,
-                  const WebSize& icon_size) {
+                  const gfx::Size& icon_size) {
   return KURL(ManifestIconSelector::FindBestMatchingIcon(
       image_resources.ReleaseVector(),
-      /* ideal_icon_height_in_px= */ icon_size.height,
+      /* ideal_icon_height_in_px= */ icon_size.height(),
       /* minimum_icon_size_in_px= */ 0,
-      /* max_width_to_height_ratio= */ icon_size.width * 1.0f /
-          icon_size.height,
+      /* max_width_to_height_ratio= */ icon_size.width() * 1.0f /
+          icon_size.height(),
       Manifest::ImageResource::Purpose::ANY));
 }
 
@@ -77,7 +77,7 @@ ContentIndexIconLoader::ContentIndexIconLoader() = default;
 void ContentIndexIconLoader::Start(
     ExecutionContext* execution_context,
     mojom::blink::ContentDescriptionPtr description,
-    const Vector<WebSize>& icon_sizes,
+    const Vector<gfx::Size>& icon_sizes,
     IconsCallback callback) {
   DCHECK(!description->icons.IsEmpty());
   DCHECK(!icon_sizes.IsEmpty());

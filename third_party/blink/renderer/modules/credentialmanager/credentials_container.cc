@@ -182,88 +182,6 @@ void AssertSecurityRequirementsBeforeResponse(
   }
 }
 
-#if defined(OS_ANDROID)
-bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
-                                        const String& relying_party_id) {
-  const SecurityOrigin* origin =
-      resolver->GetFrame()->GetSecurityContext()->GetSecurityOrigin();
-
-  if (origin->IsOpaque()) {
-    String error_message =
-        "The origin ' " + origin->ToRawString() +
-        "' is an opaque origin and hence not allowed to access " +
-        "'PublicKeyCredential' objects.";
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotAllowedError, error_message));
-    return false;
-  }
-
-  auto cryptotoken_origin = SecurityOrigin::Create(KURL(kCryptotokenOrigin));
-  if (cryptotoken_origin->IsSameOriginWith(origin)) {
-    // Allow CryptoToken U2F extension to assert any origin, as cryptotoken
-    // handles origin checking separately.
-    return true;
-  }
-
-  if (origin->Protocol() != url::kHttpScheme &&
-      origin->Protocol() != url::kHttpsScheme) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotAllowedError,
-        "Public-key credentials are only available to HTTPS origin or "
-        "HTTP origins that fall under 'localhost'. See "
-        "https://crbug.com/824383"));
-    return false;
-  }
-
-  DCHECK_NE(origin->Protocol(), url::kAboutScheme);
-  DCHECK_NE(origin->Protocol(), url::kFileScheme);
-
-  // Validate the effective domain.
-  // For step 6 of both
-  // https://w3c.github.io/webauthn/#createCredential and
-  // https://w3c.github.io/webauthn/#discover-from-external-source.
-  String effective_domain = origin->Domain();
-
-  // TODO(crbug.com/803077): Avoid constructing an OriginAccessEntry just
-  // for the IP address check. See also crbug.com/827542.
-  bool reject_because_invalid_domain = effective_domain.IsEmpty();
-  if (!reject_because_invalid_domain) {
-    OriginAccessEntry access_entry(
-        *origin, network::mojom::CorsDomainMatchMode::kAllowSubdomains);
-    reject_because_invalid_domain = access_entry.HostIsIPAddress();
-  }
-  if (reject_because_invalid_domain) {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kSecurityError,
-        "Effective domain is not a valid domain."));
-    return false;
-  }
-
-  // For the steps detailed in
-  // https://w3c.github.io/webauthn/#CreateCred-DetermineRpId and
-  // https://w3c.github.io/webauthn/#GetAssn-DetermineRpId.
-  if (!relying_party_id.IsNull()) {
-    scoped_refptr<SecurityOrigin> relaying_party_origin =
-        origin->IsolatedCopy();
-    relaying_party_origin->SetDomainFromDOM(relying_party_id);
-    OriginAccessEntry access_entry(
-        *relaying_party_origin,
-        network::mojom::CorsDomainMatchMode::kAllowSubdomains);
-    if (relying_party_id.IsEmpty() ||
-        access_entry.MatchesDomain(*origin) !=
-            network::cors::OriginAccessEntry::kMatchesOrigin) {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kSecurityError,
-          "The relying party ID '" + relying_party_id +
-              "' is not a registrable domain suffix of, nor equal to '" +
-              origin->ToRawString() + "'."));
-      return false;
-    }
-  }
-  return true;
-}
-#endif  // defined(OS_ANDROID)
-
 // Checks if the icon URL is an a-priori authenticated URL.
 // https://w3c.github.io/webappsec-credential-management/#dom-credentialuserdata-iconurl
 bool IsIconURLNullOrSecure(const KURL& url) {
@@ -581,16 +499,6 @@ ScriptPromise CredentialsContainer::get(
     }
 #endif
 
-#if defined(OS_ANDROID)
-    // TODO(kenrb): Remove this for Android when we can plumb the security
-    // failure error codes from GMSCore. Until then, this has to be here so
-    // informative console messages can appear on security check failures.
-    // https://crbug.com/827542.
-    const String& relying_party_id = options->publicKey()->rpId();
-    if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
-      return promise;
-#endif
-
     if (options->publicKey()->hasExtensions()) {
       if (options->publicKey()->extensions()->hasAppid()) {
         const auto& appid = options->publicKey()->extensions()->appid();
@@ -786,16 +694,6 @@ ScriptPromise CredentialsContainer::create(
           resolver->GetExecutionContext(),
           WebFeature::kCredentialManagerCreatePublicKeyCredential);
     }
-
-#if defined(OS_ANDROID)
-    // TODO(kenrb): Remove this for Android when we can plumb the security
-    // failure error codes from GMSCore. Until then, this has to be here so
-    // informative console messages can appear on security check failures.
-    // https://crbug.com/827542
-    const String& relying_party_id = options->publicKey()->rp()->id();
-    if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
-      return promise;
-#endif
 
     if (options->publicKey()->hasExtensions()) {
       if (options->publicKey()->extensions()->hasAppid()) {

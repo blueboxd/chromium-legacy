@@ -56,8 +56,12 @@ TEST_F('MediaHistoryStatsWebUIBrowserTest', 'MAYBE_All', function() {
 
     assertDeepEquals(
         [
-          ['meta', '3'], ['origin', '0'], ['playback', '0'],
-          ['playbackSession', '0']
+          ['mediaImage', '0'],
+          ['meta', '3'],
+          ['origin', '0'],
+          ['playback', '0'],
+          ['playbackSession', '0'],
+          ['sessionImage', '0'],
         ],
         statsRows.map(
             x => [x.children[0].textContent, x.children[1].textContent]));

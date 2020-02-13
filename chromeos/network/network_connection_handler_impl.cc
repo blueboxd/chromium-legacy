@@ -678,10 +678,10 @@ void NetworkConnectionHandlerImpl::CallShillConnect(
   network_state_handler_->ClearLastErrorForNetwork(service_path);
   ShillServiceClient::Get()->Connect(
       dbus::ObjectPath(service_path),
-      base::Bind(&NetworkConnectionHandlerImpl::HandleShillConnectSuccess,
-                 AsWeakPtr(), service_path),
-      base::Bind(&NetworkConnectionHandlerImpl::HandleShillConnectFailure,
-                 AsWeakPtr(), service_path));
+      base::BindOnce(&NetworkConnectionHandlerImpl::HandleShillConnectSuccess,
+                     AsWeakPtr(), service_path),
+      base::BindOnce(&NetworkConnectionHandlerImpl::HandleShillConnectFailure,
+                     AsWeakPtr(), service_path));
 }
 
 void NetworkConnectionHandlerImpl::HandleConfigurationFailure(
@@ -843,10 +843,11 @@ void NetworkConnectionHandlerImpl::CallShillDisconnect(
   NET_LOG_USER("Disconnect Request", service_path);
   ShillServiceClient::Get()->Disconnect(
       dbus::ObjectPath(service_path),
-      base::Bind(&NetworkConnectionHandlerImpl::HandleShillDisconnectSuccess,
-                 AsWeakPtr(), service_path, success_callback),
-      base::Bind(&network_handler::ShillErrorCallbackFunction,
-                 kErrorDisconnectFailed, service_path, error_callback));
+      base::BindOnce(
+          &NetworkConnectionHandlerImpl::HandleShillDisconnectSuccess,
+          AsWeakPtr(), service_path, success_callback),
+      base::BindOnce(&network_handler::ShillErrorCallbackFunction,
+                     kErrorDisconnectFailed, service_path, error_callback));
 }
 
 void NetworkConnectionHandlerImpl::HandleShillDisconnectSuccess(

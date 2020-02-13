@@ -74,7 +74,7 @@ void AnchorElementMetricsSender::SendAnchorMetricsVectorToBrowser(
     return;
 
   metrics_host_->ReportAnchorElementMetricsOnLoad(std::move(metrics),
-                                                  viewport_size);
+                                                  gfx::Size(viewport_size));
   has_onload_report_sent_ = true;
   anchor_elements_.clear();
 }

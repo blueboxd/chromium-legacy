@@ -149,7 +149,8 @@ class CrostiniManager::CrostiniRestarter
 
   void Restart() {
     StartStage(mojom::InstallerState::kStart);
-    is_initial_install_ = crostini_manager_->GetInstallerViewStatus();
+    is_initial_install_ =
+        crostini_manager_->GetCrostiniDialogStatus(DialogType::INSTALLER);
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     if (!CrostiniFeatures::Get()->IsUIAllowed(profile_)) {
       LOG(ERROR) << "Crostini UI not allowed for profile "
@@ -1817,14 +1818,6 @@ void CrostiniManager::GetContainerSshKeys(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void CrostiniManager::SetInstallerViewStatus(bool open) {
-  SetCrostiniDialogStatus(DialogType::INSTALLER, open);
-}
-
-bool CrostiniManager::GetInstallerViewStatus() const {
-  return GetCrostiniDialogStatus(DialogType::INSTALLER);
-}
-
 bool CrostiniManager::GetCrostiniDialogStatus(DialogType dialog_type) const {
   return open_crostini_dialogs_.count(dialog_type) == 1;
 }
@@ -1947,7 +1940,7 @@ CrostiniManager::RestartId CrostiniManager::RestartCrostiniWithOptions(
     RestartOptions options,
     CrostiniResultCallback callback,
     RestartObserver* observer) {
-  if (GetInstallerViewStatus()) {
+  if (GetCrostiniDialogStatus(DialogType::INSTALLER)) {
     base::UmaHistogramBoolean("Crostini.Setup.Started", true);
   } else {
     base::UmaHistogramBoolean("Crostini.Restarter.Started", true);

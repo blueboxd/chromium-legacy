@@ -4564,6 +4564,10 @@ crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-twice-ma
 crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-two-elements-manual.html [ Failure ]
 crbug.com/852645 external/wpt/fullscreen/api/element-request-fullscreen-two-iframes-manual.html [ Failure Timeout ]
 
+# These tests are disabled temporarily until we plumb the orientation change information to the browser process in the SetMockScreenOrientation function.
+crbug.com/1046933 fullscreen/full-screen-orientation-change.html [ Failure Timeout ]
+crbug.com/1046933 virtual/android/fullscreen/full-screen-orientation-change.html [ Failure Timeout ]
+
 # snav tests fail because of a DCHECK
 crbug.com/985520 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-enter-from-interest-a11y.html [ Crash ]
 crbug.com/985520 virtual/focusless-spat-nav/fast/spatial-navigation/focusless/snav-focusless-enter-from-interest.html [ Crash ]
@@ -6427,7 +6431,6 @@ crbug.com/1042848 virtual/feature-policy-permissions/external/wpt/mediacapture-s
 crbug.com/1046440 fast/loader/submit-form-while-parsing-2.html [ Pass Failure Timeout ]
 crbug.com/1041851 [ Mac ] external/wpt/bluetooth/idl/idlharness.tentative.https.window.html [ Pass Timeout ]
 crbug.com/1041851 [ Win10 ] external/wpt/bluetooth/idl/idlharness.tentative.https.window.html [ Pass Timeout ]
-crbug.com/1045346 external/wpt/offscreen-canvas/fill-and-stroke-styles/2d.pattern.basic.nocontext.worker.html [ Crash Pass Timeout ]
 
 # COOP timeout failure.
 crbug.com/1046698 external/wpt/html/cross-origin-opener-policy/coep-blob-popup.https.html [ Timeout ]

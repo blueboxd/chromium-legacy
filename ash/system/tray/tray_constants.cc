@@ -13,6 +13,8 @@ const int kTrayTextFontSizeIncrease = 2;
 // Size of tray items on the primary axis.
 const int kTrayItemSize = 32;
 
+const float kTrayItemCornerRadius = kTrayItemSize / 2.f;
+
 const int kTrayMenuWidth = 360;
 
 const int kTrayPopupAutoCloseDelayInSeconds = 2;

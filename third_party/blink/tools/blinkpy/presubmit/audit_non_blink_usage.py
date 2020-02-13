@@ -587,6 +587,12 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/inspector/locale_controller.cc'],
+        'allowed': [
+            'base::i18n::SetICUDefaultLocale',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/inspector'],
         'allowed': [
             # Devtools binary protocol uses std::vector<uint8_t> for serialized

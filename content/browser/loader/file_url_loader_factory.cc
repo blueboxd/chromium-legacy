@@ -32,6 +32,7 @@
 #include "content/public/browser/file_url_loader.h"
 #include "content/public/browser/shared_cors_origin_access_list.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -778,6 +779,19 @@ class FileURLLoader : public network::mojom::URLLoader {
   DISALLOW_COPY_AND_ASSIGN(FileURLLoader);
 };
 
+const url::Origin& GetCorsOrigin(const network::ResourceRequest& request) {
+  // Presence of |request_initiator| needs to be verified/ensured by the caller.
+  DCHECK(request.request_initiator.has_value());
+
+  if (request.isolated_world_origin.has_value() &&
+      base::FeatureList::IsEnabled(
+          features::kRelaxIsolatedWorldCorsInFileUrlLoaderFactory)) {
+    return request.isolated_world_origin.value();
+  }
+
+  return request.request_initiator.value();
+}
+
 }  // namespace
 
 FileURLLoaderFactory::FileURLLoaderFactory(
@@ -831,7 +845,7 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
             url::Origin::Create(request.url)) ||
         (shared_cors_origin_access_list_ &&
          shared_cors_origin_access_list_->GetOriginAccessList()
-                 .CheckAccessState(*request.request_initiator, request.url) ==
+                 .CheckAccessState(GetCorsOrigin(request), request.url) ==
              network::cors::OriginAccessList::AccessState::kAllowed)));
 
   network::mojom::FetchResponseType response_type =

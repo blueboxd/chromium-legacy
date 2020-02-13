@@ -6,16 +6,14 @@ package org.chromium.chrome.browser.profile_card;
 
 import android.view.View;
 
-import org.json.JSONObject;
-
 /** Interface for the Profile Card related UI. */
 public interface ProfileCardCoordinator {
     /**
      * Updates the {@link ProfileCard}
      * @param view {@link View} triggers the profile card.
-     * @param profileCardData {@link JSONObject} stores all data needed by profile card.
+     * @param profileCardData {@link ProfileCardData} stores all data needed by profile card.
      */
-    void update(View view, JSONObject profileCardData);
+    void update(View view, ProfileCardData profileCardData);
 
     /**
      * Shows the profile card drop-down bubble.

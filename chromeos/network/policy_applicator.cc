@@ -84,10 +84,10 @@ void PolicyApplicator::Run() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   ShillProfileClient::Get()->GetProperties(
       dbus::ObjectPath(profile_.path),
-      base::Bind(&PolicyApplicator::GetProfilePropertiesCallback,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&PolicyApplicator::GetProfilePropertiesError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&PolicyApplicator::GetProfilePropertiesCallback,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&PolicyApplicator::GetProfilePropertiesError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PolicyApplicator::GetProfilePropertiesCallback(
@@ -118,10 +118,10 @@ void PolicyApplicator::GetProfilePropertiesCallback(
     pending_get_entry_calls_.insert(entry);
     ShillProfileClient::Get()->GetEntry(
         dbus::ObjectPath(profile_.path), entry,
-        base::Bind(&PolicyApplicator::GetEntryCallback,
-                   weak_ptr_factory_.GetWeakPtr(), entry),
-        base::Bind(&PolicyApplicator::GetEntryError,
-                   weak_ptr_factory_.GetWeakPtr(), entry));
+        base::BindOnce(&PolicyApplicator::GetEntryCallback,
+                       weak_ptr_factory_.GetWeakPtr(), entry),
+        base::BindOnce(&PolicyApplicator::GetEntryError,
+                       weak_ptr_factory_.GetWeakPtr(), entry));
   }
   if (pending_get_entry_calls_.empty())
     ApplyRemainingPolicies();
@@ -320,8 +320,8 @@ void PolicyApplicator::DeleteEntry(const std::string& entry,
       base::AdaptCallbackForRepeating(std::move(callback));
   ShillProfileClient::Get()->DeleteEntry(
       dbus::ObjectPath(profile_.path), entry, adapted_callback,
-      base::BindRepeating(&LogErrorMessageAndInvokeCallback, adapted_callback,
-                          FROM_HERE));
+      base::BindOnce(&LogErrorMessageAndInvokeCallback, adapted_callback,
+                     FROM_HERE));
 }
 
 void PolicyApplicator::WriteNewShillConfiguration(base::Value shill_dictionary,

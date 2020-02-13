@@ -63,9 +63,9 @@ class NetworkCertMigrator::MigrationTask
 
       ShillServiceClient::Get()->GetProperties(
           dbus::ObjectPath(service_path),
-          base::Bind(&network_handler::GetPropertiesCallback,
-                     base::Bind(&MigrationTask::MigrateNetwork, this),
-                     network_handler::ErrorCallback(), service_path));
+          base::BindOnce(&network_handler::GetPropertiesCallback,
+                         base::Bind(&MigrationTask::MigrateNetwork, this),
+                         network_handler::ErrorCallback(), service_path));
     }
   }
 
@@ -145,7 +145,7 @@ class NetworkCertMigrator::MigrationTask
                              const base::DictionaryValue& properties) {
     ShillServiceClient::Get()->SetProperties(
         dbus::ObjectPath(service_path), properties, base::DoNothing(),
-        base::Bind(&LogError, service_path));
+        base::BindOnce(&LogError, service_path));
   }
 
   static void LogError(const std::string& service_path,

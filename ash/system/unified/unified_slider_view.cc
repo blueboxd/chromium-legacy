@@ -136,7 +136,8 @@ void UnifiedSliderButton::PaintButtonContents(gfx::Canvas* canvas) {
                 AshColorProvider::ControlsLayerType::kInactiveControlBackground,
                 AshColorProvider::AshColorMode::kDark));
   flags.setStyle(cc::PaintFlags::kFill_Style);
-  canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), kTrayItemSize / 2, flags);
+  canvas->DrawCircle(gfx::PointF(rect.CenterPoint()), kTrayItemCornerRadius,
+                     flags);
 
   views::ImageButton::PaintButtonContents(canvas);
 }

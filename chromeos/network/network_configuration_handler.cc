@@ -118,8 +118,8 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
   void Run() {
     ShillServiceClient::Get()->GetLoadableProfileEntries(
         dbus::ObjectPath(service_path_),
-        base::Bind(&ProfileEntryDeleter::GetProfileEntriesToDeleteCallback,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&ProfileEntryDeleter::GetProfileEntriesToDeleteCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -169,10 +169,12 @@ class NetworkConfigurationHandler::ProfileEntryDeleter {
       // the future.  Tracked in crbug.com/1019396.
       ShillProfileClient::Get()->DeleteEntry(
           dbus::ObjectPath(profile_path), entry_path,
-          base::Bind(&ProfileEntryDeleter::ProfileEntryDeletedCallback,
-                     weak_ptr_factory_.GetWeakPtr(), profile_path, entry_path),
-          base::Bind(&ProfileEntryDeleter::ShillErrorCallback,
-                     weak_ptr_factory_.GetWeakPtr(), profile_path, entry_path));
+          base::BindOnce(&ProfileEntryDeleter::ProfileEntryDeletedCallback,
+                         weak_ptr_factory_.GetWeakPtr(), profile_path,
+                         entry_path),
+          base::BindOnce(&ProfileEntryDeleter::ShillErrorCallback,
+                         weak_ptr_factory_.GetWeakPtr(), profile_path,
+                         entry_path));
     }
 
     RunCallbackIfDone();
@@ -261,9 +263,9 @@ void NetworkConfigurationHandler::GetShillProperties(
   }
   ShillServiceClient::Get()->GetProperties(
       dbus::ObjectPath(service_path),
-      base::Bind(&NetworkConfigurationHandler::GetPropertiesCallback,
-                 weak_ptr_factory_.GetWeakPtr(), callback, error_callback,
-                 service_path));
+      base::BindOnce(&NetworkConfigurationHandler::GetPropertiesCallback,
+                     weak_ptr_factory_.GetWeakPtr(), callback, error_callback,
+                     service_path));
 }
 
 void NetworkConfigurationHandler::SetShillProperties(
@@ -300,11 +302,12 @@ void NetworkConfigurationHandler::SetShillProperties(
       properties_to_set->DeepCopy());
   ShillServiceClient::Get()->SetProperties(
       dbus::ObjectPath(service_path), *properties_to_set,
-      base::Bind(&NetworkConfigurationHandler::SetPropertiesSuccessCallback,
-                 weak_ptr_factory_.GetWeakPtr(), service_path,
-                 base::Passed(&properties_copy), callback),
-      base::Bind(&NetworkConfigurationHandler::SetPropertiesErrorCallback,
-                 weak_ptr_factory_.GetWeakPtr(), service_path, error_callback));
+      base::BindOnce(&NetworkConfigurationHandler::SetPropertiesSuccessCallback,
+                     weak_ptr_factory_.GetWeakPtr(), service_path,
+                     base::Passed(&properties_copy), callback),
+      base::BindOnce(&NetworkConfigurationHandler::SetPropertiesErrorCallback,
+                     weak_ptr_factory_.GetWeakPtr(), service_path,
+                     error_callback));
 }
 
 void NetworkConfigurationHandler::ClearShillProperties(
@@ -324,10 +327,12 @@ void NetworkConfigurationHandler::ClearShillProperties(
   }
   ShillServiceClient::Get()->ClearProperties(
       dbus::ObjectPath(service_path), names,
-      base::Bind(&NetworkConfigurationHandler::ClearPropertiesSuccessCallback,
-                 weak_ptr_factory_.GetWeakPtr(), service_path, names, callback),
-      base::Bind(&NetworkConfigurationHandler::ClearPropertiesErrorCallback,
-                 weak_ptr_factory_.GetWeakPtr(), service_path, error_callback));
+      base::BindOnce(
+          &NetworkConfigurationHandler::ClearPropertiesSuccessCallback,
+          weak_ptr_factory_.GetWeakPtr(), service_path, names, callback),
+      base::BindOnce(&NetworkConfigurationHandler::ClearPropertiesErrorCallback,
+                     weak_ptr_factory_.GetWeakPtr(), service_path,
+                     error_callback));
 }
 
 void NetworkConfigurationHandler::CreateShillConfiguration(
@@ -435,11 +440,11 @@ void NetworkConfigurationHandler::SetNetworkProfile(
   ShillServiceClient::Get()->SetProperty(
       dbus::ObjectPath(service_path), shill::kProfileProperty,
       profile_path_value,
-      base::Bind(&NetworkConfigurationHandler::SetNetworkProfileCompleted,
-                 weak_ptr_factory_.GetWeakPtr(), service_path, profile_path,
-                 callback),
-      base::Bind(&SetNetworkProfileErrorCallback, service_path, profile_path,
-                 error_callback));
+      base::BindOnce(&NetworkConfigurationHandler::SetNetworkProfileCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), service_path, profile_path,
+                     callback),
+      base::BindOnce(&SetNetworkProfileErrorCallback, service_path,
+                     profile_path, error_callback));
 }
 
 void NetworkConfigurationHandler::SetManagerProperty(

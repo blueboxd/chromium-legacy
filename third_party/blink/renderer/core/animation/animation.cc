@@ -986,13 +986,21 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
   //    Set animation’s hold time to zero.
   double effective_playback_rate = EffectivePlaybackRate();
   base::Optional<double> current_time = CurrentTimeInternal();
+
   // TODO(crbug.com/1012073): This should be able to be extracted into a
   // function in AnimationTimeline that each child class can override for their
   // own special behavior.
-  base::Optional<double> initial_hold_time =
-      (timeline_ && timeline_->IsScrollTimeline())
-          ? timeline_->CurrentTimeSeconds()
-          : 0;
+  double initial_hold_time = 0;
+  if (timeline_ && timeline_->IsScrollTimeline() && timeline_->IsActive()) {
+    base::Optional<double> timeline_time = timeline_->CurrentTimeSeconds();
+    if (timeline_time) {
+      // TODO(crbug.com/924159): Once inactive timelines are supported we need
+      // to re-evaluate if it is desired behavior to adjust the hold time when
+      // playback rate is set before play().
+      initial_hold_time = timeline_time.value() * effective_playback_rate;
+    }
+  }
+
   if (effective_playback_rate > 0 && auto_rewind == AutoRewind::kEnabled &&
       (!current_time || current_time < 0 || current_time >= EffectEnd())) {
     hold_time_ = initial_hold_time;
@@ -1006,7 +1014,7 @@ void Animation::PlayInternal(AutoRewind auto_rewind,
           "Cannot play reversed Animation with infinite target effect end.");
       return;
     }
-    hold_time_ = EffectEnd();
+    hold_time_ = initial_hold_time + EffectEnd();
   } else if (effective_playback_rate == 0 && !current_time) {
     hold_time_ = initial_hold_time;
   }
@@ -1415,15 +1423,8 @@ void Animation::ApplyPendingPlaybackRate() {
 
 void Animation::setPlaybackRate(double playback_rate,
                                 ExceptionState& exception_state) {
-  // TODO(crbug.com/916117): Implement setting playback rate for scroll-linked
-  // animations.
-  if (timeline_ && timeline_->IsScrollTimeline()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "Scroll-linked WebAnimation currently does not support setting"
-        " playback rate.");
-    return;
-  }
+  // TODO(crbug.com/924159): Update this after we add support for inactive
+  // timelines and unresolved timeline.currentTime
 
   base::Optional<double> start_time_before = start_time_;
 

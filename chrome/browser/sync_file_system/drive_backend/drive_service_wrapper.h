@@ -42,8 +42,7 @@ class DriveServiceWrapper : public base::SupportsWeakPtr<DriveServiceWrapper> {
       const google_apis::GetContentCallback& get_content_callback,
       const google_apis::ProgressCallback& progress_callback);
 
-  void GetAboutResource(
-      const google_apis::AboutResourceCallback& callback);
+  void GetAboutResource(google_apis::AboutResourceCallback callback);
 
   void GetStartPageToken(const std::string& team_drive_id,
                          const google_apis::StartPageTokenCallback& callback);

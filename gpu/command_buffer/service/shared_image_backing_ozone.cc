@@ -112,6 +112,7 @@ SharedImageBackingOzone::ProduceDawn(SharedImageManager* manager,
                                      MemoryTypeTracker* tracker,
                                      WGPUDevice device) {
 #if BUILDFLAG(USE_DAWN)
+  DCHECK(dawn_procs_);
   WGPUTextureFormat webgpu_format = viz::ToWGPUFormat(format());
   if (webgpu_format == WGPUTextureFormat_Undefined) {
     return nullptr;

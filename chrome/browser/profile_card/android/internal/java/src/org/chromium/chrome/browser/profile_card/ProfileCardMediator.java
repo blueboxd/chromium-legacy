@@ -8,9 +8,6 @@ import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.DES
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.IS_DIALOG_VISIBLE;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.TITLE;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
@@ -20,22 +17,17 @@ import org.chromium.ui.modelutil.PropertyModel;
  * Receives events from the view (callback) and notifies the backend.
  */
 class ProfileCardMediator {
-    private static final String NAME = "name";
-    private static final String DESCRIPTION_OBJ = "description";
-    private static final String TEXT = "text";
-
     private final PropertyModel mModel;
-    private final JSONObject mProfileCardData;
+    private final ProfileCardData mProfileCardData;
 
-    ProfileCardMediator(PropertyModel model, JSONObject profileCardData) {
+    ProfileCardMediator(PropertyModel model, ProfileCardData profileCardData) {
         mModel = model;
         mProfileCardData = profileCardData;
+        mModel.set(TITLE, mProfileCardData.getTitle());
+        mModel.set(DESCRIPTION, mProfileCardData.getDescription());
     }
 
-    public void show() throws JSONException {
-        // Set all properties.
-        mModel.set(TITLE, mProfileCardData.getString(NAME));
-        mModel.set(DESCRIPTION, mProfileCardData.getJSONObject(DESCRIPTION_OBJ).getString(TEXT));
+    public void show() {
         mModel.set(IS_DIALOG_VISIBLE, true);
     }
 }

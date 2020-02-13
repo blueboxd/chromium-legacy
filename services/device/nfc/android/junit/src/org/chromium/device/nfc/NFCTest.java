@@ -68,7 +68,7 @@ import java.util.Arrays;
  * Unit tests for NfcImpl and NdefMessageUtils classes.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(sdk = 21, manifest = Config.NONE)
 public class NFCTest {
     private TestNfcDelegate mDelegate;
     private int mNextWatchId;

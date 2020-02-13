@@ -138,8 +138,4 @@ interface BlinkTestClient {
 
   // Naivgate a URL on the secondary window.
   NavigateSecondaryWindow(url.mojom.Url url);
-
-  // Mark the orientation changed in the browser process for the layout tests
-  // that request fullscreen on screen orientation change.
-  SetScreenOrientationChanged();
 };

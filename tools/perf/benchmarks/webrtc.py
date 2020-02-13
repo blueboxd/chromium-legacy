@@ -35,6 +35,7 @@ class WebrtcPerfBenchmark(perf_benchmark.PerfBenchmark):
     category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
         filter_string=','.join(categories))
     options = timeline_based_measurement.Options(category_filter)
+    options.config.chrome_trace_config.SetTraceBufferSizeInKb(300 * 1024)
     options.SetTimelineBasedMetrics([
         'cpuTimeMetric',
         'webrtcRenderingMetric',

@@ -658,7 +658,7 @@ class AboutGetRequest : public DriveApiDataRequest<AboutResource> {
  public:
   AboutGetRequest(RequestSender* sender,
                   const DriveApiUrlGenerator& url_generator,
-                  const AboutResourceCallback& callback);
+                  AboutResourceCallback callback);
   ~AboutGetRequest() override;
 
  protected:

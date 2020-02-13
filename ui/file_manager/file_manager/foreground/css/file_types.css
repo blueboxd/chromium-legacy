@@ -20,7 +20,6 @@
 body.files-ng [file-type-icon] {
   -webkit-mask-position: center;
   -webkit-mask-repeat: no-repeat;
-  background-color: currentColor;
   background-image: url(../images/filetype/filetype_generic.svg);
   background-size: 20px 20px;
 }
@@ -63,6 +62,7 @@ body.files-ng [file-type-icon='excel'] {
 
 body.files-ng [file-type-icon='folder'] {
   -webkit-mask-image: url(../images/filetype/filetype_folder.svg);
+  background-color: currentColor;
   background-image: none;
 }
 
@@ -78,7 +78,7 @@ body.check-select.files-ng #list-container li[selected] [file-type-icon] {
 }
 
 body.files-ng .computers-root[file-type-icon='folder'] {
-  background-image: url(../images/volumes/computer.svg);
+  -webkit-mask-image: url(../images/volumes/computer.svg);
 }
 
 .external-media-root[file-type-icon='folder'] {
@@ -88,7 +88,7 @@ body.files-ng .computers-root[file-type-icon='folder'] {
 }
 
 body.files-ng .external-media-root[file-type-icon='folder'] {
-  background-image: url(../images/volumes/usb.svg);
+  -webkit-mask-image: url(../images/volumes/usb.svg);
 }
 
 .shared[file-type-icon='folder'] {
@@ -98,7 +98,7 @@ body.files-ng .external-media-root[file-type-icon='folder'] {
 }
 
 body.files-ng .shared[file-type-icon='folder'] {
-  background-image: url(../images/filetype/filetype_folder_shared.svg);
+  -webkit-mask-image: url(../images/filetype/filetype_folder_shared.svg);
 }
 
 .team-drive-root[file-type-icon='folder'] {
@@ -108,7 +108,7 @@ body.files-ng .shared[file-type-icon='folder'] {
 }
 
 body.files-ng .team-drive-root[file-type-icon='folder'] {
-  background-image: url(../images/volumes/hard_drive.svg);
+  -webkit-mask-image: url(../images/volumes/hard_drive.svg);
 }
 
 .tree-row[selected] > [file-type-icon='folder'] {
@@ -395,6 +395,7 @@ body.files-ng [file-type-icon='word'] {
 
 body.files-ng [file-type-icon='downloads'] {
   -webkit-mask-image: url(../images/volumes/downloads.svg);
+  background-color: currentColor;
   background-image: none;
 }
 
@@ -704,6 +705,7 @@ body.files-ng [file-type-icon='downloads'] {
 
 body.files-ng [file-type-icon='removable'] {
   -webkit-mask-image: url(../images/volumes/hard_drive.svg);
+  background-color: currentColor;
   background-image: none;
 }
 
@@ -757,6 +759,7 @@ body.files-ng [file-type-icon='removable'] {
 
 body.files-ng [file-type-icon='crostini'] {
   -webkit-mask-image: url(../images/volumes/linux_files.svg);
+  background-color: currentColor;
   background-image: none;
 }
 
@@ -781,6 +784,7 @@ body.files-ng [file-type-icon='crostini'] {
 
 body.files-ng [file-type-icon='android_files'] {
   -webkit-mask-image: url(../images/volumes/android.svg);
+  background-color: currentColor;
   background-image: none;
 }
 
@@ -799,7 +803,8 @@ body.files-ng [file-type-icon='android_files'] {
 }
 
 body.files-ng [file-type-icon='plugin_vm'] {
-  -webkit-mask-image: url(../images/volumes/plugin_vm.svg);
+  -webkit-mask-image: url(../images/volumes/plugin_vm_ng.svg);
+  background-color: currentColor;
   background-image: none;
 }
 

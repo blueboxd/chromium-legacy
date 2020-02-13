@@ -1,4 +1,5 @@
 include_rules = [
+    "+base/i18n/rtl.h",
     "+base/time/time_override.h",
     "+base/sampling_heap_profiler/module_cache.h",
     "+base/sampling_heap_profiler/poisson_allocation_sampler.h",
@@ -7,4 +8,5 @@ include_rules = [
     "+base/process/process_handle.h",
     "+cc/trees/transform_node.h",
     "+third_party/inspector_protocol/crdtp",
+    "+third_party/icu/source/common/unicode/locid.h",
 ]

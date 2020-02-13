@@ -64,12 +64,9 @@ public class VrInstallUpdateInfoBarTest {
 
     private ChromeActivityTestRule mVrTestRule;
 
-    private VrBrowserTestFramework mVrBrowserTestFramework;
-
     public VrInstallUpdateInfoBarTest(Callable<ChromeActivityTestRule> callable) throws Exception {
         mVrTestRule = callable.call();
         mRuleChain = VrTestRuleUtils.wrapRuleInActivityRestrictionRule(mVrTestRule);
-        mVrBrowserTestFramework = new VrBrowserTestFramework(mVrTestRule);
     }
 
     /**
@@ -184,7 +181,8 @@ public class VrInstallUpdateInfoBarTest {
     }
 
     private void testKeyboardInstallUpgradeImpl(final int uiElementToClick) {
-        mVrTestRule.loadUrl(mVrBrowserTestFramework.getUrlForFile("test_web_input_editing"),
+        mVrTestRule.loadUrl(
+                VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_web_input_editing"),
                 PAGE_LOAD_TIMEOUT_S);
         GvrKeyboardLoaderClient.setFailLoadForTesting(true);
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);

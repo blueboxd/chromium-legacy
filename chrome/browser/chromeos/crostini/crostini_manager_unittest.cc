@@ -1648,7 +1648,8 @@ TEST_F(CrostiniManagerTest, InstallLinuxPackageFromAptSignalOperationBlocked) {
 }
 
 TEST_F(CrostiniManagerTest, InstallerStatusInitiallyFalse) {
-  EXPECT_FALSE(crostini_manager()->GetInstallerViewStatus());
+  EXPECT_FALSE(
+      crostini_manager()->GetCrostiniDialogStatus(DialogType::INSTALLER));
 }
 
 TEST_F(CrostiniManagerTest, StartContainerSuccess) {

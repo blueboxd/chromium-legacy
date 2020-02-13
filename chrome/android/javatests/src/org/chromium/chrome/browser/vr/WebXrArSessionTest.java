@@ -68,8 +68,10 @@ public class WebXrArSessionTest {
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testArRequestSessionSucceeds() {
-        mWebXrArTestFramework.loadFileAndAwaitInitialization(
-                "test_ar_request_session_succeeds", PAGE_LOAD_TIMEOUT_S);
+        mWebXrArTestFramework.loadUrlAndAwaitInitialization(
+                mWebXrArTestFramework.getEmbeddedServerUrlForHtmlTestFile(
+                        "test_ar_request_session_succeeds"),
+                PAGE_LOAD_TIMEOUT_S);
         mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
         mWebXrArTestFramework.assertNoJavaScriptErrors();
     }
@@ -83,8 +85,10 @@ public class WebXrArSessionTest {
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testConsentPersistanceOnSamePage() {
-        mWebXrArTestFramework.loadFileAndAwaitInitialization(
-                "test_ar_request_session_succeeds", PAGE_LOAD_TIMEOUT_S);
+        mWebXrArTestFramework.loadUrlAndAwaitInitialization(
+                mWebXrArTestFramework.getEmbeddedServerUrlForHtmlTestFile(
+                        "test_ar_request_session_succeeds"),
+                PAGE_LOAD_TIMEOUT_S);
         WebContents contents = mWebXrArTestFramework.getCurrentWebContents();
 
         // Start session, decline consent prompt.
@@ -115,8 +119,10 @@ public class WebXrArSessionTest {
     @MediumTest
     @XrActivityRestriction({XrActivityRestriction.SupportedActivity.ALL})
     public void testRepeatedArSessionsSucceed() {
-        mWebXrArTestFramework.loadFileAndAwaitInitialization(
-                "test_ar_request_session_succeeds", PAGE_LOAD_TIMEOUT_S);
+        mWebXrArTestFramework.loadUrlAndAwaitInitialization(
+                mWebXrArTestFramework.getEmbeddedServerUrlForHtmlTestFile(
+                        "test_ar_request_session_succeeds"),
+                PAGE_LOAD_TIMEOUT_S);
         for (int i = 0; i < 2; i++) {
             mWebXrArTestFramework.enterSessionWithUserGestureOrFail();
             mWebXrArTestFramework.endSession();

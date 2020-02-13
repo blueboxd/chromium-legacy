@@ -314,6 +314,9 @@ void AssistantManagerServiceImpl::SetAccessToken(
 }
 
 void AssistantManagerServiceImpl::EnableAmbientMode(bool enabled) {
+  if (!assistant_manager_)
+    return;
+
   // Update |action_module_| accordingly, as some actions, e.g. open URL
   // in the browser, are not supported in ambient mode.
   action_module_->SetAmbientModeEnabled(enabled);
@@ -457,8 +460,6 @@ void AssistantManagerServiceImpl::SyncDeviceAppsStatus() {
 }
 
 void AssistantManagerServiceImpl::StartVoiceInteraction() {
-  DCHECK(assistant_manager_);
-
   platform_api_->SetMicState(true);
   assistant_manager_->StartAssistantInteraction();
 }
@@ -478,7 +479,7 @@ void AssistantManagerServiceImpl::StopActiveInteraction(
 void AssistantManagerServiceImpl::StartWarmerWelcomeInteraction(
     int num_warmer_welcome_triggered,
     bool allow_tts) {
-  DCHECK(assistant_manager_internal_);
+  DCHECK(assistant_manager_internal_ != nullptr);
 
   const std::string interaction =
       CreateWarmerWelcomeInteraction(num_warmer_welcome_triggered);

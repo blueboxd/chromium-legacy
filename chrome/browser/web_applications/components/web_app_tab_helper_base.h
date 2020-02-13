@@ -23,15 +23,6 @@ class WebAppTabHelperBase
   virtual const AppId& GetAppId() const = 0;
   virtual void SetAppId(const AppId& app_id) = 0;
 
-  // These methods require an app associated with the tab (valid GetAppId()).
-
-  // Returns true if the app was installed by user, false if default installed.
-  virtual bool IsUserInstalled() const = 0;
-  // For user-installed apps:
-  // Returns true if the app was installed through the install button.
-  // Returns false if the app was installed through the create shortcut button.
-  virtual bool IsFromInstallButton() const = 0;
-
   virtual const base::UnguessableToken& GetAudioFocusGroupIdForTesting()
       const = 0;
 

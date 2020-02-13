@@ -244,7 +244,7 @@ void SharedWorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {
     debugger->ExceptionThrown(GetThread(), event);
 }
 
-void SharedWorkerGlobalScope::Trace(blink::Visitor* visitor) {
+void SharedWorkerGlobalScope::Trace(Visitor* visitor) {
   visitor->Trace(appcache_host_);
   WorkerGlobalScope::Trace(visitor);
 }

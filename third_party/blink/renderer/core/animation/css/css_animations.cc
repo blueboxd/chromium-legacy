@@ -1170,7 +1170,7 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
   previous_iteration_ = current_iteration;
 }
 
-void CSSAnimations::AnimationEventDelegate::Trace(blink::Visitor* visitor) {
+void CSSAnimations::AnimationEventDelegate::Trace(Visitor* visitor) {
   visitor->Trace(animation_target_);
   AnimationEffect::EventDelegate::Trace(visitor);
 }
@@ -1269,7 +1269,7 @@ void CSSAnimations::TransitionEventDelegate::EnqueueEvent(
   GetDocument().EnqueueAnimationFrameEvent(event);
 }
 
-void CSSAnimations::TransitionEventDelegate::Trace(blink::Visitor* visitor) {
+void CSSAnimations::TransitionEventDelegate::Trace(Visitor* visitor) {
   visitor->Trace(transition_target_);
   AnimationEffect::EventDelegate::Trace(visitor);
 }
@@ -1349,7 +1349,7 @@ bool CSSAnimations::IsAnimatingCustomProperties(
              IsCustomPropertyHandle);
 }
 
-void CSSAnimations::Trace(blink::Visitor* visitor) {
+void CSSAnimations::Trace(Visitor* visitor) {
   visitor->Trace(transitions_);
   visitor->Trace(pending_update_);
   visitor->Trace(running_animations_);

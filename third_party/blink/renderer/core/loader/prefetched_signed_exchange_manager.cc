@@ -185,7 +185,7 @@ PrefetchedSignedExchangeManager::PrefetchedSignedExchangeManager(
 
 PrefetchedSignedExchangeManager::~PrefetchedSignedExchangeManager() {}
 
-void PrefetchedSignedExchangeManager::Trace(blink::Visitor* visitor) {
+void PrefetchedSignedExchangeManager::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
 }
 

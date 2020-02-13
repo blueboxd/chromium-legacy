@@ -534,7 +534,7 @@ TrustedTypePolicyFactory* WorkerGlobalScope::GetTrustedTypes() const {
   return trusted_types_.Get();
 }
 
-void WorkerGlobalScope::Trace(blink::Visitor* visitor) {
+void WorkerGlobalScope::Trace(Visitor* visitor) {
   visitor->Trace(location_);
   visitor->Trace(navigator_);
   visitor->Trace(pending_error_events_);

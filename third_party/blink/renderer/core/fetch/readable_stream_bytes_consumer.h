@@ -38,7 +38,7 @@ class CORE_EXPORT ReadableStreamBytesConsumer final : public BytesConsumer {
   Error GetError() const override;
   String DebugName() const override { return "ReadableStreamBytesConsumer"; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   class OnFulfilled;

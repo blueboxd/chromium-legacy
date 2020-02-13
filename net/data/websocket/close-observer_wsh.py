@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import cgi
+from six.moves.urllib import parse
 import threading
 
 
@@ -16,7 +16,7 @@ def get_role(request):
   query = request.ws_resource.split('?', 1)
   if len(query) == 1:
     raise LookupError('No query string found in URL')
-  param = cgi.parse_qs(query[1])
+  param = parse.parse_qs(query[1])
   if 'role' not in param:
     raise LookupError('No role parameter found in the query string')
   return param['role'][0]

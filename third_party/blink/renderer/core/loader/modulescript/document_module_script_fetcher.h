@@ -35,7 +35,7 @@ class CORE_EXPORT DocumentModuleScriptFetcher final
   void NotifyFinished(Resource*) override;
   String DebugName() const override { return "DocumentModuleScriptFetcher"; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool FetchIfLayeredAPI(const Modulator& modulator_for_built_in_modules,

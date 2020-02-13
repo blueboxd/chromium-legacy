@@ -1,0 +1,67 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/updater/update_service.h"
+
+#include <memory>
+
+#include "base/bind.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/run_loop.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "chrome/updater/configurator.h"
+#include "chrome/updater/installer.h"
+#include "chrome/updater/updater_constants.h"
+#include "components/prefs/pref_service.h"
+#include "components/update_client/crx_update_item.h"
+#include "components/update_client/update_client.h"
+#include "components/update_client/update_client_errors.h"
+
+namespace updater {
+
+UpdateService::UpdateService(scoped_refptr<update_client::Configurator> config)
+    : config_(config),
+      update_client_(update_client::UpdateClientFactory(config)) {}
+
+void UpdateService::UpdateAll(
+    base::OnceCallback<void(update_client::Error)> callback) {
+  auto app_ids = Installer::FindAppIds();
+
+  // Include the app id for the updater if it is not found. This could happen
+  // before the first update for the updater has been handled. This is a
+  // temporary workaround until the source of truth for the registered
+  // version is resolved.
+  if (!base::Contains(app_ids, kUpdaterAppId))
+    app_ids.push_back(kUpdaterAppId);
+
+  std::vector<base::Optional<update_client::CrxComponent>> components;
+  for (const auto& app_id : app_ids) {
+    auto installer = base::MakeRefCounted<Installer>(app_id);
+    installer->FindInstallOfApp();
+    components.push_back(installer->MakeCrxComponent());
+  }
+
+  update_client_->Update(
+      app_ids,
+      base::BindOnce(
+          [](const std::vector<base::Optional<update_client::CrxComponent>>&
+                 components,
+             const std::vector<std::string>& ids) {
+            DCHECK_EQ(components.size(), ids.size());
+            return components;
+          },
+          components),
+      false, std::move(callback));
+}
+
+UpdateService::~UpdateService() {
+  // Block until prefs write is committed.
+  base::RunLoop runloop;
+  config_->GetPrefService()->CommitPendingWrite(base::BindOnce(
+      [](base::OnceClosure quit_closure) { std::move(quit_closure).Run(); },
+      runloop.QuitWhenIdleClosure()));
+  runloop.Run();
+}
+
+}  // namespace updater

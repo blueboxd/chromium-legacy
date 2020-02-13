@@ -62,7 +62,7 @@ class SVGUseElement final : public SVGGraphicsElement,
   void DispatchPendingEvent();
   Path ToClipPath() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void Dispose();

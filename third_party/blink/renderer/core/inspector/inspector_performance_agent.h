@@ -29,7 +29,7 @@ class CORE_EXPORT InspectorPerformanceAgent final
     : public InspectorBaseAgent<protocol::Performance::Metainfo>,
       public base::sequence_manager::TaskTimeObserver {
  public:
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   explicit InspectorPerformanceAgent(InspectedFrames*);
   ~InspectorPerformanceAgent() override;

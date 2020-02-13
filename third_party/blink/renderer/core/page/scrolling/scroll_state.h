@@ -94,7 +94,7 @@ class CORE_EXPORT ScrollState final : public ScriptWrappable {
 
   ScrollStateData* Data() const { return data_.get(); }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(node_);
     ScriptWrappable::Trace(visitor);
   }

@@ -23,7 +23,7 @@ class CORE_EXPORT LargestContentfulPaintCalculator final
       base::Optional<base::WeakPtr<TextRecord>> largest_text,
       base::Optional<const ImageRecord*> largest_image);
 
-  void Trace(blink::Visitor* visitor);
+  void Trace(Visitor* visitor);
 
  private:
   friend class LargestContentfulPaintCalculatorTest;

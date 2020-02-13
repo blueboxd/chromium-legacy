@@ -77,7 +77,7 @@ void TextElementTiming::OnTextObjectPainted(const TextRecord& record) {
       element);
 }
 
-void TextElementTiming::Trace(blink::Visitor* visitor) {
+void TextElementTiming::Trace(Visitor* visitor) {
   Supplement<LocalDOMWindow>::Trace(visitor);
   visitor->Trace(performance_);
 }

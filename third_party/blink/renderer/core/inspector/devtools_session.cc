@@ -331,7 +331,7 @@ void DevToolsSession::flushProtocolNotifications() {
   notification_queue_.clear();
 }
 
-void DevToolsSession::Trace(blink::Visitor* visitor) {
+void DevToolsSession::Trace(Visitor* visitor) {
   visitor->Trace(agent_);
   visitor->Trace(agents_);
 }

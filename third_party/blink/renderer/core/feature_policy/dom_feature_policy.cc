@@ -117,7 +117,7 @@ void DOMFeaturePolicy::AddWarningForUnrecognizedFeature(
       "Unrecognized feature: '" + feature + "'."));
 }
 
-void DOMFeaturePolicy::Trace(blink::Visitor* visitor) {
+void DOMFeaturePolicy::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 

@@ -39,7 +39,7 @@ class CORE_EXPORT Profiler final : public ScriptWrappable {
 
   ~Profiler() override;
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
   void Dispose();
 

@@ -17,6 +17,8 @@ TEST(InitiatorLockCompatibilityTest, VerifyRequestInitiatorSiteLock) {
   url::Origin opaque_origin2 = url::Origin();
 
   url::Origin ip_origin1 = url::Origin::Create(GURL("http://127.0.0.1/"));
+  url::Origin ip_origin1_with_different_port =
+      url::Origin::Create(GURL("http://127.0.0.1:1234/"));
   url::Origin ip_origin2 = url::Origin::Create(GURL("http://217.17.45.162/"));
 
   url::Origin example_com = url::Origin::Create(GURL("http://example.com"));
@@ -73,6 +75,9 @@ TEST(InitiatorLockCompatibilityTest, VerifyRequestInitiatorSiteLock) {
             VerifyRequestInitiatorLock(example_com, bar_foo_example_com));
   EXPECT_EQ(InitiatorLockCompatibility::kCompatibleLock,
             VerifyRequestInitiatorLock(foo_example_com, bar_foo_example_com));
+  EXPECT_EQ(
+      InitiatorLockCompatibility::kCompatibleLock,
+      VerifyRequestInitiatorLock(ip_origin1, ip_origin1_with_different_port));
 
   // The trailing dot is not important (at least for site-URL-based
   // comparisons).

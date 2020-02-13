@@ -80,7 +80,7 @@ class CORE_EXPORT TextAutosizer final : public GarbageCollected<TextAutosizer> {
 
   bool PageNeedsAutosizing() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   class LayoutScope {
     STACK_ALLOCATED();

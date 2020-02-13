@@ -94,7 +94,7 @@ class CORE_EXPORT DedicatedWorker final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
 
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState state) override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Starts the worker.

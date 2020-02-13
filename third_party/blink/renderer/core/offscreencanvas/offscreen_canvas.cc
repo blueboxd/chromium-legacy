@@ -475,7 +475,7 @@ void OffscreenCanvas::UpdateMemoryUsage() {
   memory_usage_ = new_memory_usage;
 }
 
-void OffscreenCanvas::Trace(blink::Visitor* visitor) {
+void OffscreenCanvas::Trace(Visitor* visitor) {
   visitor->Trace(context_);
   visitor->Trace(execution_context_);
   EventTargetWithInlineData::Trace(visitor);

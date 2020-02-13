@@ -152,7 +152,7 @@ class CORE_EXPORT CSSParserContext final
     base::AutoReset<CSSParserMode> mode_reset_;
   };
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   friend class ParserModeOverridingScope;

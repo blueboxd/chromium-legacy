@@ -70,7 +70,7 @@ class CSSSegmentedFontFace final
     return approximate_character_count_;
   }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   void PruneTable();

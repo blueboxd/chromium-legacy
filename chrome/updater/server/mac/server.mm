@@ -5,10 +5,11 @@
 #import "chrome/updater/server/mac/server.h"
 
 #import "base/logging.h"
+#import "chrome/updater/update_service.h"
 
 namespace updater {
 
-int RunServer() {
+int RunServer(std::unique_ptr<UpdateService> update_service) {
   NOTREACHED();
   return -1;
 }

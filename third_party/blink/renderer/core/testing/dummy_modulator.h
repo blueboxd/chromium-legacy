@@ -27,7 +27,7 @@ class DummyModulator : public Modulator {
  public:
   DummyModulator();
   ~DummyModulator() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   ModuleRecordResolver* GetModuleRecordResolver() override;
   base::SingleThreadTaskRunner* TaskRunner() override;

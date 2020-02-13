@@ -224,7 +224,7 @@ void FirstMeaningfulPaintDetector::SetTickClockForTesting(
   g_clock = clock;
 }
 
-void FirstMeaningfulPaintDetector::Trace(blink::Visitor* visitor) {
+void FirstMeaningfulPaintDetector::Trace(Visitor* visitor) {
   visitor->Trace(paint_timing_);
 }
 

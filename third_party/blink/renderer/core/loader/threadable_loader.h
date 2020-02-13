@@ -131,7 +131,7 @@ class CORE_EXPORT ThreadableLoader final
 
   void SetDefersLoading(bool);
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   class AssignOnScopeExit;

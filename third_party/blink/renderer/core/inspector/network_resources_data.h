@@ -67,9 +67,7 @@ class XHRReplayData final : public GarbageCollected<XHRReplayData> {
   const HTTPHeaderMap& Headers() const { return headers_; }
   bool IncludeCredentials() const { return include_credentials_; }
 
-  virtual void Trace(blink::Visitor* visitor) {
-    visitor->Trace(execution_context_);
-  }
+  virtual void Trace(Visitor* visitor) { visitor->Trace(execution_context_); }
 
   void DeleteFormData() { form_data_ = nullptr; }
 
@@ -168,7 +166,7 @@ class NetworkResourcesData final
       post_data_ = post_data;
     }
     EncodedFormData* PostData() const { return post_data_.get(); }
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
 
    private:
     bool HasData() const { return data_buffer_.get(); }
@@ -238,7 +236,7 @@ class NetworkResourcesData final
   int64_t GetAndClearPendingEncodedDataLength(const String& request_id);
   void AddPendingEncodedDataLength(const String& request_id,
                                    size_t encoded_data_length);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   ResourceData* ResourceDataForRequestId(const String& request_id) const;

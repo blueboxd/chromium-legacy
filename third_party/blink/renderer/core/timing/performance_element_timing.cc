@@ -91,7 +91,7 @@ void PerformanceElementTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.Add("url", url_);
 }
 
-void PerformanceElementTiming::Trace(blink::Visitor* visitor) {
+void PerformanceElementTiming::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(intersection_rect_);
   PerformanceEntry::Trace(visitor);

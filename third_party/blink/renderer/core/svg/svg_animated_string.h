@@ -54,7 +54,7 @@ class SVGAnimatedString : public ScriptWrappable,
   virtual void setBaseVal(const String&, ExceptionState&);
   virtual String animVal();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 };
 
 }  // namespace blink

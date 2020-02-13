@@ -77,7 +77,7 @@ NetworkResourcesData::ResourceData::ResourceData(
       pending_encoded_data_length_(0),
       cached_resource_(nullptr) {}
 
-void NetworkResourcesData::ResourceData::Trace(blink::Visitor* visitor) {
+void NetworkResourcesData::ResourceData::Trace(Visitor* visitor) {
   visitor->Trace(network_resources_data_);
   visitor->Trace(xhr_replay_data_);
   visitor->template RegisterWeakCallbackMethod<
@@ -199,7 +199,7 @@ NetworkResourcesData::NetworkResourcesData(size_t total_buffer_size,
 
 NetworkResourcesData::~NetworkResourcesData() = default;
 
-void NetworkResourcesData::Trace(blink::Visitor* visitor) {
+void NetworkResourcesData::Trace(Visitor* visitor) {
   visitor->Trace(request_id_to_resource_data_map_);
 }
 

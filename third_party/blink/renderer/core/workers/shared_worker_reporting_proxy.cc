@@ -120,7 +120,7 @@ void SharedWorkerReportingProxy::DidTerminateWorkerThread() {
                           CrossThreadUnretained(worker_)));
 }
 
-void SharedWorkerReportingProxy::Trace(blink::Visitor* visitor) {
+void SharedWorkerReportingProxy::Trace(Visitor* visitor) {
   visitor->Trace(parent_execution_context_task_runners_);
 }
 

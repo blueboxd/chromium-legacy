@@ -109,7 +109,7 @@ String Navigator::GetAcceptLanguages() {
   return accept_languages;
 }
 
-void Navigator::Trace(blink::Visitor* visitor) {
+void Navigator::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
   NavigatorLanguage::Trace(visitor);
   DOMWindowClient::Trace(visitor);

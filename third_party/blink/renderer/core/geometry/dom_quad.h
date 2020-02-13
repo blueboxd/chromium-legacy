@@ -43,7 +43,7 @@ class CORE_EXPORT DOMQuad : public ScriptWrappable {
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(p1_);
     visitor->Trace(p2_);
     visitor->Trace(p3_);

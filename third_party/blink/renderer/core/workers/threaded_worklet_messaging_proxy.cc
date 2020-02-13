@@ -80,7 +80,7 @@ void ThreadedWorkletMessagingProxy::Initialize(
                          thread_startup_data);
 }
 
-void ThreadedWorkletMessagingProxy::Trace(blink::Visitor* visitor) {
+void ThreadedWorkletMessagingProxy::Trace(Visitor* visitor) {
   ThreadedMessagingProxyBase::Trace(visitor);
 }
 

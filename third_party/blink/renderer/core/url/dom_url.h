@@ -73,7 +73,7 @@ class DOMURL final : public ScriptWrappable, public DOMURLUtils {
 
   String toJSON() { return href(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class URLSearchParams;

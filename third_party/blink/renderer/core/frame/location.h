@@ -92,7 +92,7 @@ class CORE_EXPORT Location final : public ScriptWrappable {
 
   String toString() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Note: it is only valid to call this if this is a Location object for a

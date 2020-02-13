@@ -58,7 +58,7 @@ class CORE_EXPORT TrustedTypePolicy final : public ScriptWrappable {
 
   String name() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   String name_;

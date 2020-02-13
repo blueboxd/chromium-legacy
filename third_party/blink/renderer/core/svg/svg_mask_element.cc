@@ -78,7 +78,7 @@ SVGMaskElement::SVGMaskElement(Document& document)
   AddToPropertyMap(mask_content_units_);
 }
 
-void SVGMaskElement::Trace(blink::Visitor* visitor) {
+void SVGMaskElement::Trace(Visitor* visitor) {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);

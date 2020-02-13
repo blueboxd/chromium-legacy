@@ -45,7 +45,7 @@ XMLErrors::XMLErrors(Document* document)
       error_count_(0),
       last_error_position_(TextPosition::BelowRangePosition()) {}
 
-void XMLErrors::Trace(blink::Visitor* visitor) {
+void XMLErrors::Trace(Visitor* visitor) {
   visitor->Trace(document_);
 }
 

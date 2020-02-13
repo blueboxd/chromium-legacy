@@ -75,7 +75,7 @@ class CORE_EXPORT History final : public ScriptWrappable,
   bool stateChanged() const;
   bool IsSameAsCurrentState(SerializedScriptValue*) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HistoryTest, CanChangeToURL);

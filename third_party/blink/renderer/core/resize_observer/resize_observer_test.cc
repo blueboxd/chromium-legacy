@@ -39,7 +39,7 @@ class TestResizeObserverDelegate : public ResizeObserver::Delegate {
   }
   int CallCount() const { return call_count_; }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     ResizeObserver::Delegate::Trace(visitor);
     visitor->Trace(document_);
   }

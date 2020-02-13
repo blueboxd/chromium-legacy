@@ -60,7 +60,7 @@ void CSSGlobalRuleSet::Dispose() {
   is_dirty_ = true;
 }
 
-void CSSGlobalRuleSet::Trace(blink::Visitor* visitor) {
+void CSSGlobalRuleSet::Trace(Visitor* visitor) {
   visitor->Trace(watched_selectors_rule_set_);
 }
 

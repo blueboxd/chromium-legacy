@@ -101,7 +101,7 @@ bool DeviceSingleWindowEventController::CheckPolicyFeatures(
                      });
 }
 
-void DeviceSingleWindowEventController::Trace(blink::Visitor* visitor) {
+void DeviceSingleWindowEventController::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   PlatformEventController::Trace(visitor);
 }

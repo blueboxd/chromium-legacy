@@ -69,7 +69,7 @@ class CORE_EXPORT OffscreenFontSelector : public FontSelector {
     return execution_context_;
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   void DispatchInvalidationCallbacks();

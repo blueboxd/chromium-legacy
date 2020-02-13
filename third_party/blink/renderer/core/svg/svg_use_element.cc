@@ -95,7 +95,7 @@ void SVGUseElement::Dispose() {
   ClearResource();
 }
 
-void SVGUseElement::Trace(blink::Visitor* visitor) {
+void SVGUseElement::Trace(Visitor* visitor) {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);

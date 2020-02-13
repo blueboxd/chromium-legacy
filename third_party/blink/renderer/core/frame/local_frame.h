@@ -137,7 +137,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   // Frame overrides:
   ~LocalFrame() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   void Navigate(FrameLoadRequest&, WebFrameLoadType) override;
   bool ShouldClose() override;
   const SecurityContext* GetSecurityContext() const override;

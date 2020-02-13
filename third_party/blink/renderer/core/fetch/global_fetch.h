@@ -33,7 +33,7 @@ class CORE_EXPORT GlobalFetch {
     static ScopedFetcher* From(LocalDOMWindow&);
     static ScopedFetcher* From(WorkerGlobalScope&);
 
-    void Trace(blink::Visitor*) override;
+    void Trace(Visitor*) override;
   };
 
   static ScriptPromise fetch(ScriptState*,

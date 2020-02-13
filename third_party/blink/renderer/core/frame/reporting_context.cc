@@ -80,7 +80,7 @@ void ReportingContext::UnregisterObserver(ReportingObserver* observer) {
   observers_.erase(observer);
 }
 
-void ReportingContext::Trace(blink::Visitor* visitor) {
+void ReportingContext::Trace(Visitor* visitor) {
   visitor->Trace(observers_);
   visitor->Trace(report_buffer_);
   visitor->Trace(execution_context_);

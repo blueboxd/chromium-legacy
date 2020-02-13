@@ -179,7 +179,7 @@ class CORE_EXPORT OffscreenCanvas final
 
   FontSelector* GetFontSelector() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   class ScopedInsideWorkerRAF {
     STACK_ALLOCATED();

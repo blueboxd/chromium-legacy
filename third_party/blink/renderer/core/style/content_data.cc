@@ -48,7 +48,7 @@ ContentData* ContentData::Clone() const {
   return result;
 }
 
-void ContentData::Trace(blink::Visitor* visitor) {
+void ContentData::Trace(Visitor* visitor) {
   visitor->Trace(next_);
 }
 
@@ -67,7 +67,7 @@ LayoutObject* ImageContentData::CreateLayoutObject(
   return image;
 }
 
-void ImageContentData::Trace(blink::Visitor* visitor) {
+void ImageContentData::Trace(Visitor* visitor) {
   visitor->Trace(image_);
   ContentData::Trace(visitor);
 }

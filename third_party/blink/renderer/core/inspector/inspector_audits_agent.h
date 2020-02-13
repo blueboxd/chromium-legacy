@@ -21,7 +21,7 @@ class CORE_EXPORT InspectorAuditsAgent final
   explicit InspectorAuditsAgent(InspectorNetworkAgent*, InspectorIssueStorage*);
   ~InspectorAuditsAgent() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void InspectorIssueAdded(InspectorIssue*);
 

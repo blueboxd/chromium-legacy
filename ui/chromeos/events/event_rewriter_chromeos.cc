@@ -520,8 +520,10 @@ bool EventRewriterChromeOS::HasAssistantKeyOnKeyboard(
     bool* has_assistant_key) {
   const char kDevNameProperty[] = "DEVNAME";
   std::string dev_name;
-  if (!GetDeviceProperty(device_path, kDevNameProperty, &dev_name))
+  if (!GetDeviceProperty(device_path, kDevNameProperty, &dev_name) ||
+      dev_name.empty()) {
     return false;
+  }
 
   base::ScopedFD fd(open(dev_name.c_str(), O_RDONLY));
   if (fd.get() < 0) {

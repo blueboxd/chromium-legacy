@@ -46,7 +46,7 @@ class CORE_EXPORT LayoutWorklet : public Worklet,
   void AddPendingLayout(const AtomicString& name, Node*);
   LayoutWorkletGlobalScopeProxy* Proxy();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   // TODO(ikilpatrick): Make selection of the global scope non-deterministic.

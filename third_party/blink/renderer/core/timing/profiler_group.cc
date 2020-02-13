@@ -133,7 +133,7 @@ void ProfilerGroup::WillBeDestroyed() {
     TeardownV8Profiler();
 }
 
-void ProfilerGroup::Trace(blink::Visitor* visitor) {
+void ProfilerGroup::Trace(Visitor* visitor) {
   visitor->Trace(profilers_);
   V8PerIsolateData::GarbageCollectedData::Trace(visitor);
 }

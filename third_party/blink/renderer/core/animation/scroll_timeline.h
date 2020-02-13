@@ -88,7 +88,7 @@ class CORE_EXPORT ScrollTimeline : public AnimationTimeline {
   void AnimationAttached(Animation*) override;
   void AnimationDetached(Animation*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   static bool HasActiveScrollTimeline(Node* node);
 

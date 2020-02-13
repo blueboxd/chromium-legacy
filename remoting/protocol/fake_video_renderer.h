@@ -55,7 +55,7 @@ class FakeFrameConsumer : public FrameConsumer {
   std::unique_ptr<webrtc::DesktopFrame> AllocateFrame(
       const webrtc::DesktopSize& size) override;
   void DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame,
-                 const base::Closure& done) override;
+                 base::OnceClosure done) override;
   PixelFormat GetPixelFormat() override;
 
  private:

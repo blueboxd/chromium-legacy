@@ -1546,7 +1546,7 @@ void TextAutosizer::CheckSuperclusterConsistency() {
   potentially_inconsistent_superclusters.clear();
 }
 
-void TextAutosizer::Trace(blink::Visitor* visitor) {
+void TextAutosizer::Trace(Visitor* visitor) {
   visitor->Trace(document_);
 }
 

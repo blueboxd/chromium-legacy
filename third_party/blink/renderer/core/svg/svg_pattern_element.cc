@@ -82,7 +82,7 @@ SVGPatternElement::SVGPatternElement(Document& document)
   AddToPropertyMap(pattern_content_units_);
 }
 
-void SVGPatternElement::Trace(blink::Visitor* visitor) {
+void SVGPatternElement::Trace(Visitor* visitor) {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);

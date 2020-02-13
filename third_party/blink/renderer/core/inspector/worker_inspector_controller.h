@@ -70,7 +70,7 @@ class WorkerInspectorController final
                             scoped_refptr<InspectorTaskRunner>,
                             std::unique_ptr<WorkerDevToolsParams>);
   ~WorkerInspectorController() override;
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   CoreProbeSink* GetProbeSink() const { return probe_sink_.Get(); }
   DevToolsAgent* GetDevToolsAgent() const { return agent_.Get(); }

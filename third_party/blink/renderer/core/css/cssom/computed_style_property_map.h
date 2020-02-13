@@ -30,7 +30,7 @@ class CORE_EXPORT ComputedStylePropertyMap
         pseudo_id_(CSSSelector::ParsePseudoId(pseudo_element)),
         node_(node) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(node_);
     StylePropertyMapReadOnlyMainThread::Trace(visitor);
   }

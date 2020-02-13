@@ -138,7 +138,7 @@ class CORE_EXPORT WebFrameWidgetBase
 
   void RequestAnimationAfterDelay(const base::TimeDelta&);
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
  protected:
   enum DragAction { kDragEnter, kDragOver };

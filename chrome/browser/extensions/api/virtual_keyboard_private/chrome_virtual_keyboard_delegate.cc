@@ -385,6 +385,9 @@ void ChromeVirtualKeyboardDelegate::OnHasInputDevices(
       "floatingkeyboarddefault",
       base::FeatureList::IsEnabled(
           chromeos::features::kVirtualKeyboardFloatingDefault)));
+  features->AppendString(GenerateFeatureFlag(
+      "imemozcproto",
+      base::FeatureList::IsEnabled(chromeos::features::kImeMozcProto)));
   // 3 flags below are used to enable IME new APIs on each decoder.
   features->AppendString(GenerateFeatureFlag(
       "fstinputlogic",

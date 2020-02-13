@@ -242,8 +242,8 @@ rtc::AsyncPacketSocket* FakePacketSocketFactory::CreateUdpSocket(
       new FakeUdpSocket(this, dispatcher_,
                         rtc::SocketAddress(local_address.ipaddr(), port));
 
-  udp_sockets_[port] =
-      base::Bind(&FakeUdpSocket::ReceivePacket, base::Unretained(result));
+  udp_sockets_[port] = base::BindRepeating(&FakeUdpSocket::ReceivePacket,
+                                           base::Unretained(result));
 
   return result;
 }

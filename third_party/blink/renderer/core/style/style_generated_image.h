@@ -64,7 +64,7 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
   bool IsUsingCustomProperty(const AtomicString& custom_property_name,
                              const Document&) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool IsEqual(const StyleImage&) const override;

@@ -259,7 +259,7 @@ void WorkletGlobalScope::BindContentSecurityPolicyToExecutionContext() {
   GetContentSecurityPolicy()->SetupSelf(*document_security_origin_);
 }
 
-void WorkletGlobalScope::Trace(blink::Visitor* visitor) {
+void WorkletGlobalScope::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   WorkerOrWorkletGlobalScope::Trace(visitor);
 }

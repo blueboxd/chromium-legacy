@@ -123,7 +123,7 @@ String TrustedTypePolicy::name() const {
   return name_;
 }
 
-void TrustedTypePolicy::Trace(blink::Visitor* visitor) {
+void TrustedTypePolicy::Trace(Visitor* visitor) {
   visitor->Trace(policy_options_);
   ScriptWrappable::Trace(visitor);
 }

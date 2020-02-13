@@ -317,6 +317,11 @@ void DirectRenderer::DrawFrame(
 
   bool frame_has_alpha =
       current_frame()->root_render_pass->has_transparent_background;
+  gfx::ColorSpace frame_color_space = RootRenderPassColorSpace();
+  gfx::BufferFormat frame_buffer_format =
+      current_frame()->display_color_spaces.GetOutputBufferFormat(
+          current_frame()->root_render_pass->content_color_usage,
+          frame_has_alpha);
   if (overlay_processor_) {
     // Display transform is needed for overlay validator on Android
     // SurfaceControl. This needs to called before ProcessForOverlays.
@@ -336,9 +341,8 @@ void DirectRenderer::DrawFrame(
       // enough because they're all created with identical properties.
       current_frame()->output_surface_plane =
           overlay_processor_->ProcessOutputSurfaceAsOverlay(
-              device_viewport_size, output_surface_->GetOverlayBufferFormat(),
-              RootRenderPassColorSpace(), frame_has_alpha,
-              output_surface_->GetOverlayMailbox());
+              device_viewport_size, frame_buffer_format, frame_color_space,
+              frame_has_alpha, output_surface_->GetOverlayMailbox());
       primary_plane = &(current_frame()->output_surface_plane.value());
     }
 
@@ -353,6 +357,9 @@ void DirectRenderer::DrawFrame(
 
     // If we promote any quad to an underlay then the main plane must support
     // alpha.
+    // TODO(ccameron): We should update
+    // |root_render_pass->has_transparent_background|, |frame_color_space|, and
+    // |frame_buffer_format| based on the change in |frame_has_alpha|.
     if (current_frame()->output_surface_plane)
       frame_has_alpha |= current_frame()->output_surface_plane->enable_blending;
 
@@ -365,24 +372,19 @@ void DirectRenderer::DrawFrame(
   // viewport size is never set.
   bool use_stencil = overdraw_feedback_;
   bool needs_full_frame_redraw = false;
-  gfx::ColorSpace frame_color_space = RootRenderPassColorSpace();
   if (device_viewport_size != reshape_surface_size_ ||
       device_scale_factor != reshape_device_scale_factor_ ||
-      frame_color_space != reshape_device_color_space_ ||
-      frame_has_alpha != reshape_has_alpha_ ||
+      frame_color_space != reshape_color_space_ ||
+      frame_buffer_format != reshape_buffer_format_ ||
       use_stencil != reshape_use_stencil_) {
     reshape_surface_size_ = device_viewport_size;
     reshape_device_scale_factor_ = device_scale_factor;
-    reshape_device_color_space_ = frame_color_space;
-    reshape_has_alpha_ = frame_has_alpha;
+    reshape_color_space_ = frame_color_space;
+    reshape_buffer_format_ = frame_buffer_format;
     reshape_use_stencil_ = overdraw_feedback_;
     output_surface_->Reshape(reshape_surface_size_,
-                             reshape_device_scale_factor_,
-                             reshape_device_color_space_,
-                             reshape_has_alpha_ ? gfx::BufferFormat::RGBA_8888
-                                                : gfx::BufferFormat::RGBX_8888,
-
-                             reshape_use_stencil_);
+                             reshape_device_scale_factor_, reshape_color_space_,
+                             *reshape_buffer_format_, reshape_use_stencil_);
 #if defined(OS_MACOSX)
     // For Mac, all render passes will be promoted to CALayer, the redraw full
     // frame is for the main surface only.

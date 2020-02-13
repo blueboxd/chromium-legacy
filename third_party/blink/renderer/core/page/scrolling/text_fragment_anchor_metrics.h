@@ -34,7 +34,7 @@ class CORE_EXPORT TextFragmentAnchorMetrics final
 
   void Dismissed();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   Member<Document> document_;

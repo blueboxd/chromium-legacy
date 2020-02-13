@@ -28,7 +28,7 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
  public:
   InspectorDOMSnapshotAgent(InspectedFrames*, InspectorDOMDebuggerAgent*);
   ~InspectorDOMSnapshotAgent() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void Restore() override;
 

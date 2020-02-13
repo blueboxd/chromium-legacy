@@ -127,7 +127,7 @@ class CORE_EXPORT InspectorTraceEvents
 
   void FrameStartedLoading(LocalFrame*);
 
-  void Trace(blink::Visitor*) {}
+  void Trace(Visitor*) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InspectorTraceEvents);

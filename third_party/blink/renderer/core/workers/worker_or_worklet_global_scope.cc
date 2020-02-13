@@ -61,7 +61,7 @@ class OutsideSettingsCSPDelegate final
     DCHECK(global_scope_for_logging_->IsContextThread());
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(global_scope_for_logging_);
     visitor->Trace(outside_settings_object_);
   }
@@ -487,7 +487,7 @@ void WorkerOrWorkletGlobalScope::SetDefersLoadingForResourceFetchers(
     resource_fetcher->SetDefersLoading(defers);
 }
 
-void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {
+void WorkerOrWorkletGlobalScope::Trace(Visitor* visitor) {
   visitor->Trace(inside_settings_resource_fetcher_);
   visitor->Trace(resource_fetchers_);
   visitor->Trace(subresource_filter_);

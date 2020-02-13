@@ -43,7 +43,7 @@ class CORE_EXPORT ReportingContext final
   void RegisterObserver(ReportingObserver*);
   void UnregisterObserver(ReportingObserver*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Counts the use of a report type via UseCounter.

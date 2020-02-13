@@ -83,7 +83,7 @@ ScriptValue PerformanceNavigation::toJSONForBinding(
   return result.GetScriptValue();
 }
 
-void PerformanceNavigation::Trace(blink::Visitor* visitor) {
+void PerformanceNavigation::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
   DOMWindowClient::Trace(visitor);
 }

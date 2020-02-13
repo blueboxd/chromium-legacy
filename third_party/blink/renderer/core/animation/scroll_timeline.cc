@@ -347,7 +347,7 @@ void ScrollTimeline::AnimationDetached(Animation* animation) {
   GetActiveScrollTimelineSet().erase(resolved_scroll_source_);
 }
 
-void ScrollTimeline::Trace(blink::Visitor* visitor) {
+void ScrollTimeline::Trace(Visitor* visitor) {
   visitor->Trace(scroll_source_);
   visitor->Trace(resolved_scroll_source_);
   visitor->Trace(start_scroll_offset_);

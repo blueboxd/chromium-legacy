@@ -88,7 +88,7 @@ class GlobalFetchImpl final : public GarbageCollected<GlobalFetchImpl<T>>,
     return promise;
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(fetch_manager_);
     ScopedFetcher::Trace(visitor);
     Supplement<T>::Trace(visitor);
@@ -118,7 +118,7 @@ GlobalFetch::ScopedFetcher* GlobalFetch::ScopedFetcher::From(
                                                   worker.GetExecutionContext());
 }
 
-void GlobalFetch::ScopedFetcher::Trace(blink::Visitor* visitor) {}
+void GlobalFetch::ScopedFetcher::Trace(Visitor* visitor) {}
 
 ScriptPromise GlobalFetch::fetch(ScriptState* script_state,
                                  LocalDOMWindow& window,

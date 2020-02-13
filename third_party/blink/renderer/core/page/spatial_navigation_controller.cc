@@ -297,7 +297,7 @@ void SpatialNavigationController::DidDetachFrameView(
   }
 }
 
-void SpatialNavigationController::Trace(blink::Visitor* visitor) {
+void SpatialNavigationController::Trace(Visitor* visitor) {
   visitor->Trace(interest_element_);
   visitor->Trace(page_);
 }

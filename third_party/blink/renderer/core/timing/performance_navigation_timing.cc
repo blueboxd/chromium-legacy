@@ -74,7 +74,7 @@ PerformanceEntryType PerformanceNavigationTiming::EntryTypeEnum() const {
   return PerformanceEntry::EntryType::kNavigation;
 }
 
-void PerformanceNavigationTiming::Trace(blink::Visitor* visitor) {
+void PerformanceNavigationTiming::Trace(Visitor* visitor) {
   ContextClient::Trace(visitor);
   PerformanceResourceTiming::Trace(visitor);
 }

@@ -66,7 +66,7 @@ class CORE_EXPORT DedicatedWorkerMessagingProxy
     return *worker_object_proxy_.get();
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class DedicatedWorkerMessagingProxyForTest;

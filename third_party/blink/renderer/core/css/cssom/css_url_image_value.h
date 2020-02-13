@@ -32,7 +32,7 @@ class CORE_EXPORT CSSURLImageValue final : public CSSStyleImageValue {
   StyleValueType GetType() const final { return kURLImageType; }
   const CSSValue* ToCSSValue() const final;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   scoped_refptr<Image> GetImage() const;

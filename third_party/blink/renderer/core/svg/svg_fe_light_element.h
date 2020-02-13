@@ -65,7 +65,7 @@ class SVGFELightElement : public SVGElement {
     return limiting_cone_angle_.Get();
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   SVGFELightElement(const QualifiedName&, Document&);

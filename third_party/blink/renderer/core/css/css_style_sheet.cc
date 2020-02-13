@@ -55,7 +55,7 @@ class StyleSheetCSSRuleList final : public CSSRuleList {
  public:
   StyleSheetCSSRuleList(CSSStyleSheet* sheet) : style_sheet_(sheet) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(style_sheet_);
     CSSRuleList::Trace(visitor);
   }
@@ -621,7 +621,7 @@ bool CSSStyleSheet::CanBeActivated(
   return true;
 }
 
-void CSSStyleSheet::Trace(blink::Visitor* visitor) {
+void CSSStyleSheet::Trace(Visitor* visitor) {
   visitor->Trace(contents_);
   visitor->Trace(owner_node_);
   visitor->Trace(owner_rule_);

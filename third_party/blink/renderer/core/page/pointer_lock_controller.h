@@ -68,7 +68,7 @@ class CORE_EXPORT PointerLockController final
   // changed if pointer is not locked.
   void GetPointerLockPosition(FloatPoint* lock_position,
                               FloatPoint* lock_screen_position);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   void ClearElement();

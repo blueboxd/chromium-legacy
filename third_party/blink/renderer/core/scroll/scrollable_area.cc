@@ -889,7 +889,7 @@ bool ScrollableArea::PerformSnapping(
   return true;
 }
 
-void ScrollableArea::Trace(blink::Visitor* visitor) {
+void ScrollableArea::Trace(Visitor* visitor) {
   visitor->Trace(scroll_animator_);
   visitor->Trace(programmatic_scroll_animator_);
 }

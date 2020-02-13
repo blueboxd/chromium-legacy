@@ -40,7 +40,7 @@ SVGStopElement::SVGStopElement(Document& document)
   DCHECK(HasCustomStyleCallbacks());
 }
 
-void SVGStopElement::Trace(blink::Visitor* visitor) {
+void SVGStopElement::Trace(Visitor* visitor) {
   visitor->Trace(offset_);
   SVGElement::Trace(visitor);
 }

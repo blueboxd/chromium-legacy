@@ -155,7 +155,7 @@ class DedicatedWorkerMessagingProxyForTest
     return static_cast<DedicatedWorkerThreadForTest*>(GetWorkerThread());
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     DedicatedWorkerMessagingProxy::Trace(visitor);
   }
 

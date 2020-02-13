@@ -46,7 +46,7 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   // The caller owns the |clock| which must outlive the paint detector.
   static void SetTickClockForTesting(const base::TickClock* clock);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   enum HadUserInput { kNoUserInput, kHadUserInput, kHadUserInputEnumMax };
 

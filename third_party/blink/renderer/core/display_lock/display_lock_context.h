@@ -134,7 +134,7 @@ class CORE_EXPORT DisplayLockContext final
   ~DisplayLockContext();
 
   // GC functions.
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   void Dispose();
 
   // ContextLifecycleObserver overrides.

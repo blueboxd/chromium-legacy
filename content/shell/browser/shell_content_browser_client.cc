@@ -354,6 +354,17 @@ blink::UserAgentMetadata ShellContentBrowserClient::GetUserAgentMetadata() {
   return GetShellUserAgentMetadata();
 }
 
+void ShellContentBrowserClient::OverrideURLLoaderFactoryParams(
+    BrowserContext* browser_context,
+    const url::Origin& origin,
+    bool is_for_isolated_world,
+    network::mojom::URLLoaderFactoryParams* factory_params) {
+  if (url_loader_factory_params_callback_) {
+    url_loader_factory_params_callback_.Run(factory_params, origin,
+                                            is_for_isolated_world);
+  }
+}
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
     const base::CommandLine& command_line,

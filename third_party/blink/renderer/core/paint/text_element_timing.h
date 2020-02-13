@@ -52,7 +52,7 @@ class CORE_EXPORT TextElementTiming final
   // resolved. Dispatches PerformanceElementTiming entries to WindowPerformance.
   void OnTextObjectPainted(const TextRecord&);
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
   Member<WindowPerformance> performance_;
 

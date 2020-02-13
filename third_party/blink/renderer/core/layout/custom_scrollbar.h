@@ -73,7 +73,7 @@ class CustomScrollbar final : public Scrollbar {
 
   void SetVisualRect(const IntRect&) final;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class Scrollbar;

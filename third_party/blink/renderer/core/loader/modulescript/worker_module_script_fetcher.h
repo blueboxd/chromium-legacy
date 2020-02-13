@@ -31,7 +31,7 @@ class CORE_EXPORT WorkerModuleScriptFetcher final
              ModuleGraphLevel,
              ModuleScriptFetcher::Client*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Implements ResourceClient

@@ -87,7 +87,7 @@ static const Cursor& MiddleClickAutoscrollCursor(const gfx::Vector2dF& velocity,
 
 AutoscrollController::AutoscrollController(Page& page) : page_(&page) {}
 
-void AutoscrollController::Trace(blink::Visitor* visitor) {
+void AutoscrollController::Trace(Visitor* visitor) {
   visitor->Trace(page_);
 }
 

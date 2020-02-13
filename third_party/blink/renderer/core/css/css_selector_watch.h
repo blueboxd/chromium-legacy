@@ -64,7 +64,7 @@ class CORE_EXPORT CSSSelectorWatch final
   void UpdateSelectorMatches(const Vector<String>& removed_selectors,
                              const Vector<String>& added_selectors);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void CallbackSelectorChangeTimerFired(TimerBase*);

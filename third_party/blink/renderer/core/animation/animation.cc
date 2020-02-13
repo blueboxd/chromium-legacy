@@ -2174,7 +2174,7 @@ void Animation::commitStyles(ExceptionState& exception_state) {
   }
 }
 
-void Animation::Trace(blink::Visitor* visitor) {
+void Animation::Trace(Visitor* visitor) {
   visitor->Trace(content_);
   visitor->Trace(document_);
   visitor->Trace(timeline_);

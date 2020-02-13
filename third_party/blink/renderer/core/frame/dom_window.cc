@@ -528,7 +528,7 @@ void DOMWindow::DoPostMessage(scoped_refptr<SerializedScriptValue> message,
   SchedulePostMessage(event, std::move(target), source_document);
 }
 
-void DOMWindow::Trace(blink::Visitor* visitor) {
+void DOMWindow::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(window_proxy_manager_);
   visitor->Trace(input_capabilities_);

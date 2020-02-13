@@ -130,7 +130,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   // For testing only: allows inspection of the entangled channel.
   ::MojoHandle EntangledHandleForTesting() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // mojo::MessageReceiver implementation.

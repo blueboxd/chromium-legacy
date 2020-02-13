@@ -52,7 +52,7 @@ class ClipboardEvent final : public Event {
 
   DataTransfer* clipboardData() const { return clipboard_data_.Get(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   const AtomicString& InterfaceName() const override;

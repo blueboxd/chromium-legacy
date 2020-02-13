@@ -87,7 +87,7 @@ class VIZ_SERVICE_EXPORT GLOutputSurfaceBufferQueue
   unsigned current_texture_ = 0u;
   unsigned last_bound_texture_ = 0u;
   gpu::Mailbox last_bound_mailbox_;
-  const unsigned texture_target_;
+  unsigned texture_target_ = 0u;
 
   unsigned fbo_ = 0u;
 

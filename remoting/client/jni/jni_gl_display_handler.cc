@@ -43,7 +43,7 @@ class JniGlDisplayHandler::Core : public protocol::CursorShapeStub,
   std::unique_ptr<protocol::FrameConsumer> GrabFrameConsumer();
 
   void OnFrameReceived(std::unique_ptr<webrtc::DesktopFrame> frame,
-                       const base::Closure& done);
+                       base::OnceClosure done);
 
   void SurfaceCreated(base::android::ScopedJavaGlobalRef<jobject> surface);
   void SurfaceChanged(int width, int height);
@@ -133,9 +133,9 @@ JniGlDisplayHandler::Core::GrabFrameConsumer() {
 
 void JniGlDisplayHandler::Core::OnFrameReceived(
     std::unique_ptr<webrtc::DesktopFrame> frame,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
-  renderer_->OnFrameReceived(std::move(frame), done);
+  renderer_->OnFrameReceived(std::move(frame), std::move(done));
 }
 
 void JniGlDisplayHandler::Core::SurfaceCreated(

@@ -44,7 +44,7 @@ class CORE_EXPORT PausableScriptExecutor final
 
     virtual Vector<v8::Local<v8::Value>> Execute(LocalFrame*) = 0;
 
-    virtual void Trace(blink::Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) {}
   };
 
   PausableScriptExecutor(LocalFrame*,
@@ -62,7 +62,7 @@ class CORE_EXPORT PausableScriptExecutor final
   void RunAsync(BlockingOption);
   void ContextDestroyed(ExecutionContext*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
 

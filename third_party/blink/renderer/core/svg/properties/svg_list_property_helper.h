@@ -124,7 +124,7 @@ class SVGListPropertyHelper : public SVGPropertyHelper<Derived> {
   ItemPropertyType* AppendItem(ItemPropertyType*);
   ItemPropertyType* ReplaceItem(ItemPropertyType*, uint32_t, ExceptionState&);
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(values_);
     SVGPropertyHelper<Derived>::Trace(visitor);
   }

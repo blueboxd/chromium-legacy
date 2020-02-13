@@ -45,7 +45,7 @@ class CORE_EXPORT InspectorOverlayHost final : public ScriptWrappable {
   };
 
   explicit InspectorOverlayHost(Delegate*);
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void send(const String& message);
   void ClearDelegate();

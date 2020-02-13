@@ -56,7 +56,7 @@ class DeathAwareScriptWrappable : public ScriptWrappable {
     }
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(wrapped_dependency_);
     visitor->Trace(wrapped_vector_dependency_);
     visitor->Trace(wrapped_hash_map_dependency_);

@@ -53,7 +53,7 @@ XPathExpression* XPathExpression::CreateExpression(
   return expr;
 }
 
-void XPathExpression::Trace(blink::Visitor* visitor) {
+void XPathExpression::Trace(Visitor* visitor) {
   visitor->Trace(top_expression_);
   ScriptWrappable::Trace(visitor);
 }

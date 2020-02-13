@@ -153,8 +153,8 @@ std::vector<base::WeakPtr<Drawable>> GlRendererTest::GetDrawables() {
 void GlRendererTest::SetDesktopFrameWithSize(const webrtc::DesktopSize& size) {
   renderer_->OnFrameReceived(
       std::make_unique<webrtc::BasicDesktopFrame>(size),
-      base::Bind(&GlRendererTest::OnDesktopFrameProcessed,
-                 base::Unretained(this)));
+      base::BindOnce(&GlRendererTest::OnDesktopFrameProcessed,
+                     base::Unretained(this)));
 }
 
 void GlRendererTest::PostSetDesktopFrameTasks(const webrtc::DesktopSize& size,

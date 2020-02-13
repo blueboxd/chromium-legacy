@@ -27,7 +27,7 @@ class CORE_EXPORT UnderlyingSourceBase
   USING_GARBAGE_COLLECTED_MIXIN(UnderlyingSourceBase);
 
  public:
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   ~UnderlyingSourceBase() override = default;
 
   ScriptPromise startWrapper(ScriptState*, ScriptValue stream);

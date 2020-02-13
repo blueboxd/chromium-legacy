@@ -14,7 +14,7 @@
 
 namespace blink {
 
-void SVGAnimatedHref::Trace(blink::Visitor* visitor) {
+void SVGAnimatedHref::Trace(Visitor* visitor) {
   visitor->Trace(xlink_href_);
   SVGAnimatedString::Trace(visitor);
 }

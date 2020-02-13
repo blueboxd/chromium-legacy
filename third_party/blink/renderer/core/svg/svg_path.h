@@ -72,7 +72,7 @@ class SVGPath final : public SVGPropertyBase {
   static AnimatedPropertyType ClassType() { return kAnimatedPath; }
   AnimatedPropertyType GetType() const override { return ClassType(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<cssvalue::CSSPathValue> path_value_;

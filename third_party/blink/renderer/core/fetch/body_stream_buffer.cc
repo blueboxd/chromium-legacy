@@ -84,7 +84,7 @@ class BodyStreamBuffer::LoaderClient final
 
   void Abort() override { NOTREACHED(); }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(buffer_);
     visitor->Trace(client_);
     ContextLifecycleObserver::Trace(visitor);
@@ -402,7 +402,7 @@ bool BodyStreamBuffer::IsAborted() {
   return signal_->aborted();
 }
 
-void BodyStreamBuffer::Trace(blink::Visitor* visitor) {
+void BodyStreamBuffer::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(stream_);
   visitor->Trace(consumer_);

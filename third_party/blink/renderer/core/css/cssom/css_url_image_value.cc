@@ -59,7 +59,7 @@ const CSSValue* CSSURLImageValue::ToCSSValue() const {
   return value_;
 }
 
-void CSSURLImageValue::Trace(blink::Visitor* visitor) {
+void CSSURLImageValue::Trace(Visitor* visitor) {
   visitor->Trace(value_);
   CSSStyleImageValue::Trace(visitor);
 }

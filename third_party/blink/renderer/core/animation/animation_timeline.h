@@ -64,7 +64,7 @@ class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
     return animations_;
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   virtual base::Optional<base::TimeDelta> CurrentTimeInternal() = 0;

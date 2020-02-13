@@ -174,7 +174,7 @@ void DOMTimer::Fired() {
   ClearContext();
 }
 
-void DOMTimer::Trace(blink::Visitor* visitor) {
+void DOMTimer::Trace(Visitor* visitor) {
   visitor->Trace(action_);
   ContextLifecycleObserver::Trace(visitor);
 }

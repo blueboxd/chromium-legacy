@@ -31,7 +31,7 @@ class CORE_EXPORT TopDocumentRootScrollerController
  public:
   explicit TopDocumentRootScrollerController(Page&);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   // PaintLayerScrollableAreas need to notify this class when they're being
   // disposed so that we can remove them as the root scroller.

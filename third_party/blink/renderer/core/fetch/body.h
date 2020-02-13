@@ -67,7 +67,7 @@ class CORE_EXPORT Body : public ScriptWrappable,
   // ScriptWrappable override.
   bool HasPendingActivity() const override;
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     ScriptWrappable::Trace(visitor);
     ContextClient::Trace(visitor);
   }

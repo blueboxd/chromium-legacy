@@ -34,7 +34,7 @@ class MojoWatcher final : public ScriptWrappable,
 
   MojoResult cancel();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // ActiveScriptWrappable
   bool HasPendingActivity() const final;

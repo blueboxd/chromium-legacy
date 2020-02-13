@@ -121,7 +121,7 @@ std::unique_ptr<webrtc::DesktopFrame> DualBufferFrameConsumer::AllocateFrame(
 
 void DualBufferFrameConsumer::DrawFrame(
     std::unique_ptr<webrtc::DesktopFrame> frame,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   DCHECK(thread_checker_.CalledOnValidThread());
   webrtc::SharedDesktopFrame* shared_frame =
       reinterpret_cast<webrtc::SharedDesktopFrame*> (frame.get());
@@ -131,7 +131,7 @@ void DualBufferFrameConsumer::DrawFrame(
       buffers_[0]->GetUnderlyingFrame()) {
     buffer_1_mask_.Subtract(frame->updated_region());
   }
-  RunRenderCallback(std::move(frame), done);
+  RunRenderCallback(std::move(frame), std::move(done));
 }
 
 protocol::FrameConsumer::PixelFormat
@@ -145,9 +145,9 @@ base::WeakPtr<DualBufferFrameConsumer> DualBufferFrameConsumer::GetWeakPtr() {
 
 void DualBufferFrameConsumer::RunRenderCallback(
     std::unique_ptr<webrtc::DesktopFrame> frame,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   if (!task_runner_) {
-    callback_.Run(std::move(frame), done);
+    callback_.Run(std::move(frame), std::move(done));
     return;
   }
 
@@ -155,8 +155,9 @@ void DualBufferFrameConsumer::RunRenderCallback(
       FROM_HERE,
       base::BindOnce(
           callback_, std::move(frame),
-          base::Bind(base::IgnoreResult(&base::TaskRunner::PostTask),
-                     base::ThreadTaskRunnerHandle::Get(), FROM_HERE, done)));
+          base::BindOnce(base::IgnoreResult(&base::TaskRunner::PostTask),
+                         base::ThreadTaskRunnerHandle::Get(), FROM_HERE,
+                         std::move(done))));
 }
 
 }  // namespace remoting

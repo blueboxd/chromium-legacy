@@ -204,7 +204,7 @@ void WebViewFrameWidget::ZoomToFindInPageRect(
   web_view_->ZoomToFindInPageRect(rect_in_root_frame);
 }
 
-void WebViewFrameWidget::Trace(blink::Visitor* visitor) {
+void WebViewFrameWidget::Trace(Visitor* visitor) {
   WebFrameWidgetBase::Trace(visitor);
 }
 

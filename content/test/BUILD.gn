@@ -1063,6 +1063,7 @@ test("content_browsertests") {
     "../renderer/webclipboard_impl_browsertest.cc",
     "../test/browser_test_utils_browsertest.cc",
     "../test/content_browser_test_test.cc",
+    "../test/top_frame_population_browsertest.cc",
     "../test/url_loader_interceptor_test.cc",
     "../test/webui_resource_browsertest.cc",
   ]

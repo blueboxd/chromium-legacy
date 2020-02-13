@@ -43,7 +43,7 @@ class CORE_EXPORT SVGImageElement final
  public:
   explicit SVGImageElement(Document&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   bool CurrentFrameHasSingleSecurityOrigin() const;
 

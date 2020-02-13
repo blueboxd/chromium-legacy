@@ -80,7 +80,7 @@ class SVGPatternElement final : public SVGElement,
 
   const SVGPatternElement* ReferencedElement() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool IsValid() const override { return SVGTests::IsValid(); }

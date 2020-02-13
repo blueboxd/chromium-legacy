@@ -39,7 +39,7 @@ class OverscrollEvent final : public Event {
   double deltaX() const { return delta_x_; }
   double deltaY() const { return delta_y_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   double delta_x_ = 0;

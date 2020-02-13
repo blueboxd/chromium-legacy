@@ -133,7 +133,7 @@ base::TimeTicks PointerEvent::OldestPlatformTimeStamp() const {
   return this->PlatformTimeStamp();
 }
 
-void PointerEvent::Trace(blink::Visitor* visitor) {
+void PointerEvent::Trace(Visitor* visitor) {
   visitor->Trace(coalesced_events_);
   visitor->Trace(predicted_events_);
   MouseEvent::Trace(visitor);

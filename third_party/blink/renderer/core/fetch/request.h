@@ -95,7 +95,7 @@ class CORE_EXPORT Request final : public Body {
   mojom::RequestContextType GetRequestContextType() const;
   network::mojom::RequestDestination GetRequestDestination() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   const FetchRequestData* GetRequest() const { return request_; }

@@ -79,9 +79,9 @@ void It2MeStandaloneHost::Run() {
 }
 
 void It2MeStandaloneHost::StartOutputTimer() {
-  timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(1),
-      base::Bind(&OutputFakeConnectionEventLogger, std::cref(event_logger_)));
+  timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(1),
+               base::BindRepeating(&OutputFakeConnectionEventLogger,
+                                   std::cref(event_logger_)));
 }
 
 void It2MeStandaloneHost::Connect() {

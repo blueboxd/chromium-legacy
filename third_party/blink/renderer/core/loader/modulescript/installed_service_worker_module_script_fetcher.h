@@ -29,7 +29,7 @@ class CORE_EXPORT InstalledServiceWorkerModuleScriptFetcher final
              ModuleGraphLevel,
              ModuleScriptFetcher::Client*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   String DebugName() const override {

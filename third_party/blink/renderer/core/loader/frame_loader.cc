@@ -194,7 +194,7 @@ FrameLoader::~FrameLoader() {
   DCHECK(detached_);
 }
 
-void FrameLoader::Trace(blink::Visitor* visitor) {
+void FrameLoader::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(progress_tracker_);
   visitor->Trace(document_loader_);
@@ -1210,6 +1210,8 @@ void FrameLoader::RestoreScrollPositionAndViewState(
   if (!NeedsHistoryItemRestore(load_type))
     return;
 
+  view->LayoutViewport()->SetPendingHistoryRestoreScrollOffset(
+      view_state, scroll_restoration_type != kScrollRestorationManual);
   view->GetScrollableArea()->SetPendingHistoryRestoreScrollOffset(
       view_state, scroll_restoration_type != kScrollRestorationManual);
 

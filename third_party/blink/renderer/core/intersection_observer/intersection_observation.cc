@@ -97,7 +97,7 @@ void IntersectionObservation::InvalidateCachedRects() {
     cached_rects_->valid = false;
 }
 
-void IntersectionObservation::Trace(blink::Visitor* visitor) {
+void IntersectionObservation::Trace(Visitor* visitor) {
   visitor->Trace(observer_);
   visitor->Trace(entries_);
   visitor->Trace(target_);

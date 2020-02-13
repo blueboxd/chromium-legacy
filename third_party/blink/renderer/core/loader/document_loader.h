@@ -252,7 +252,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   void LoadFailed(const ResourceError&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // For automation driver-initiated navigations over the devtools protocol,
   // |devtools_navigation_token_| is used to tag the navigation. This navigation

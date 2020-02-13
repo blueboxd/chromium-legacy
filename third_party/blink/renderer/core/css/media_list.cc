@@ -212,7 +212,7 @@ void MediaList::Reattach(scoped_refptr<MediaQuerySet> media_queries) {
   media_queries_ = media_queries;
 }
 
-void MediaList::Trace(blink::Visitor* visitor) {
+void MediaList::Trace(Visitor* visitor) {
   visitor->Trace(parent_style_sheet_);
   visitor->Trace(parent_rule_);
   ScriptWrappable::Trace(visitor);

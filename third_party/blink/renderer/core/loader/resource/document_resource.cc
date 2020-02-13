@@ -57,7 +57,7 @@ DocumentResource::DocumentResource(
 
 DocumentResource::~DocumentResource() = default;
 
-void DocumentResource::Trace(blink::Visitor* visitor) {
+void DocumentResource::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   Resource::Trace(visitor);
 }

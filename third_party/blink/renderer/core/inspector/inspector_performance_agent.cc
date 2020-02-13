@@ -309,7 +309,7 @@ void InspectorPerformanceAgent::DidProcessTask(base::TimeTicks start_time,
   task_start_ticks_ = base::TimeTicks();
 }
 
-void InspectorPerformanceAgent::Trace(blink::Visitor* visitor) {
+void InspectorPerformanceAgent::Trace(Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   InspectorBaseAgent<protocol::Performance::Metainfo>::Trace(visitor);
 }

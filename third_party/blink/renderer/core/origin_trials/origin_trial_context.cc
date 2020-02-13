@@ -364,7 +364,7 @@ bool OriginTrialContext::EnableTrialFromToken(const SecurityOrigin* origin,
   return valid;
 }
 
-void OriginTrialContext::Trace(blink::Visitor* visitor) {
+void OriginTrialContext::Trace(Visitor* visitor) {
   visitor->Trace(context_);
 }
 

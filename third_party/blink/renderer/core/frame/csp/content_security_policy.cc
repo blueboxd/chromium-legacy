@@ -282,7 +282,7 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToDelegate() {
 
 ContentSecurityPolicy::~ContentSecurityPolicy() = default;
 
-void ContentSecurityPolicy::Trace(blink::Visitor* visitor) {
+void ContentSecurityPolicy::Trace(Visitor* visitor) {
   visitor->Trace(delegate_);
   visitor->Trace(policies_);
   visitor->Trace(console_messages_);

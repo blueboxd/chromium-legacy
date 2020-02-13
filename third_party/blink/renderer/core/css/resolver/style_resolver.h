@@ -136,7 +136,7 @@ class CORE_EXPORT StyleResolver final : public GarbageCollected<StyleResolver> {
       Element& target,
       ActiveInterpolationsMap& animations);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   void ApplyBaseComputedStyle(Element* element,

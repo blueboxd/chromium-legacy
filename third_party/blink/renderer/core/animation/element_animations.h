@@ -86,7 +86,7 @@ class CORE_EXPORT ElementAnimations final
 
   bool AnimationsPreserveAxisAlignment() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   bool IsAnimationStyleChange() const { return animation_style_change_; }

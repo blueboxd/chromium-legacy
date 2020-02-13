@@ -335,7 +335,7 @@ void EventHandlerRegistry::NotifyDidAddOrRemoveEventHandlerTarget(
   }
 }
 
-void EventHandlerRegistry::Trace(blink::Visitor* visitor) {
+void EventHandlerRegistry::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->template RegisterWeakCallbackMethod<
       EventHandlerRegistry, &EventHandlerRegistry::ProcessCustomWeakness>(this);

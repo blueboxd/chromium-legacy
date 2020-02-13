@@ -19,7 +19,7 @@ class StyleRuleUsageTracker : public GarbageCollected<StyleRuleUsageTracker> {
   void Track(const CSSStyleSheet*, const StyleRule*);
   RuleListByStyleSheet TakeDelta();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   bool InsertToUsedRulesMap(const CSSStyleSheet*, const StyleRule*);

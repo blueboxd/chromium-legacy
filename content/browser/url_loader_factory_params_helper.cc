@@ -37,6 +37,7 @@ network::mojom::URLLoaderFactoryParamsPtr CreateParams(
     RenderProcessHost* process,
     const url::Origin& origin,
     const base::Optional<url::Origin>& request_initiator_site_lock,
+    const base::Optional<url::Origin>& top_frame_origin,
     bool is_trusted,
     const base::Optional<base::UnguessableToken>& top_frame_token,
     const base::Optional<net::NetworkIsolationKey>& network_isolation_key,
@@ -55,6 +56,7 @@ network::mojom::URLLoaderFactoryParamsPtr CreateParams(
 
   params->process_id = process->GetID();
   params->request_initiator_site_lock = request_initiator_site_lock;
+  params->top_frame_origin = top_frame_origin;
 
   params->is_trusted = is_trusted;
   params->top_frame_id = top_frame_token;
@@ -98,7 +100,9 @@ URLLoaderFactoryParamsHelper::CreateForFrame(
   return CreateParams(process,
                       frame_origin,  // origin
                       frame_origin,  // request_initiator_site_lock
-                      false,         // is_trusted
+                      // top_frame_origin
+                      frame->ComputeTopFrameOrigin(frame_origin),
+                      false,  // is_trusted
                       frame->GetTopFrameToken(),
                       frame->GetNetworkIsolationKey(),
                       std::move(client_security_state),
@@ -118,6 +122,7 @@ URLLoaderFactoryParamsHelper::CreateForIsolatedWorld(
   return CreateParams(frame->GetProcess(),
                       isolated_world_origin,  // origin
                       main_world_origin,      // request_initiator_site_lock
+                      base::nullopt,          // top_frame_origin
                       false,                  // is_trusted
                       frame->GetTopFrameToken(),
                       frame->GetNetworkIsolationKey(),
@@ -139,7 +144,9 @@ URLLoaderFactoryParamsHelper::CreateForPrefetch(
   return CreateParams(frame->GetProcess(),
                       frame_origin,  // origin
                       frame_origin,  // request_initiator_site_lock
-                      true,          // is_trusted
+                      // top_frame_origin
+                      frame->ComputeTopFrameOrigin(frame_origin),
+                      true,  // is_trusted
                       frame->GetTopFrameToken(),
                       base::nullopt,  // network_isolation_key
                       std::move(client_security_state),
@@ -158,6 +165,7 @@ URLLoaderFactoryParamsHelper::CreateForWorker(
   return CreateParams(process,
                       request_initiator,  // origin
                       request_initiator,  // request_initiator_site_lock
+                      base::nullopt,      // top_frame_origin
                       false,              // is_trusted
                       base::nullopt,      // top_frame_token
                       network_isolation_key, nullptr,
@@ -192,6 +200,7 @@ URLLoaderFactoryParamsHelper::CreateForRendererProcess(
       process,
       url::Origin(),                // origin
       request_initiator_site_lock,  // request_initiator_site_lock
+      base::nullopt,                // top_frame_origin
       false,                        // is_trusted
       top_frame_token, network_isolation_key, nullptr,
       false,   // allow_universal_access_from_file_urls

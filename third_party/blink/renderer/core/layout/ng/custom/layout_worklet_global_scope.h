@@ -45,7 +45,7 @@ class CORE_EXPORT LayoutWorkletGlobalScope final : public WorkletGlobalScope {
 
   CSSLayoutDefinition* FindDefinition(const AtomicString& name);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // https://drafts.css-houdini.org/css-layout-api/#layout-definitions

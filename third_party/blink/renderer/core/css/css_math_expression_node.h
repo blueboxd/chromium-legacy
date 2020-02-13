@@ -146,7 +146,7 @@ class CORE_EXPORT CSSMathExpressionNode
   virtual bool InvolvesPercentageComparisons() const = 0;
 #endif
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
 
  protected:
   CSSMathExpressionNode(CalculationCategory category,
@@ -197,7 +197,7 @@ class CORE_EXPORT CSSMathExpressionNumericLiteral final
   bool IsComputationallyIndependent() const final;
   bool operator==(const CSSMathExpressionNode& other) const final;
   CSSPrimitiveValue::UnitType ResolvedUnitType() const final;
-  void Trace(blink::Visitor* visitor) final;
+  void Trace(Visitor* visitor) final;
 
 #if DCHECK_IS_ON()
   bool InvolvesPercentageComparisons() const final;
@@ -255,7 +255,7 @@ class CORE_EXPORT CSSMathExpressionBinaryOperation final
   String CustomCSSText() const final;
   bool operator==(const CSSMathExpressionNode& exp) const final;
   CSSPrimitiveValue::UnitType ResolvedUnitType() const final;
-  void Trace(blink::Visitor* visitor) final;
+  void Trace(Visitor* visitor) final;
 
 #if DCHECK_IS_ON()
   bool InvolvesPercentageComparisons() const final;
@@ -323,7 +323,7 @@ class CSSMathExpressionVariadicOperation final : public CSSMathExpressionNode {
   bool IsComputationallyIndependent() const final;
   bool operator==(const CSSMathExpressionNode& other) const final;
   CSSPrimitiveValue::UnitType ResolvedUnitType() const final;
-  void Trace(blink::Visitor* visitor) final;
+  void Trace(Visitor* visitor) final;
 
 #if DCHECK_IS_ON()
   bool InvolvesPercentageComparisons() const final;

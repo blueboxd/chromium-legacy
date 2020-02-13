@@ -121,7 +121,7 @@ class CORE_EXPORT Response final : public Body {
 
   FetchHeaderList* InternalHeaderList() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   // A version of IsBodyUsed() which catches exceptions and returns

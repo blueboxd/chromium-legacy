@@ -178,7 +178,7 @@ bool MatchedPropertiesCache::IsCacheable(const StyleResolverState& state) {
   return true;
 }
 
-void MatchedPropertiesCache::Trace(blink::Visitor* visitor) {
+void MatchedPropertiesCache::Trace(Visitor* visitor) {
   visitor->Trace(cache_);
   visitor->RegisterWeakCallbackMethod<
       MatchedPropertiesCache,

@@ -333,7 +333,7 @@ class WebAssociatedURLLoaderImpl::Observer final
       parent_->DocumentDestroyed();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     ContextLifecycleObserver::Trace(visitor);
   }
 

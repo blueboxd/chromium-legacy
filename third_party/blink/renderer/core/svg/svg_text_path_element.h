@@ -66,7 +66,7 @@ class SVGTextPathElement final : public SVGTextContentElement,
     return spacing_.Get();
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   ~SVGTextPathElement() override;

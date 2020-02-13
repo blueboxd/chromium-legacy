@@ -35,7 +35,7 @@ InspectorIssue* InspectorIssueStorage::at(wtf_size_t index) const {
   return issues_[index].Get();
 }
 
-void InspectorIssueStorage::Trace(blink::Visitor* visitor) {
+void InspectorIssueStorage::Trace(Visitor* visitor) {
   visitor->Trace(issues_);
 }
 

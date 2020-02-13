@@ -68,7 +68,7 @@ class ValidationMessageClient : public GarbageCollectedMixin {
   // For CompositeAfterPaint.
   virtual void PaintOverlay(GraphicsContext&) {}
 
-  void Trace(blink::Visitor* visitor) override {}
+  void Trace(Visitor* visitor) override {}
 };
 
 }  // namespace blink

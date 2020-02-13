@@ -46,7 +46,7 @@ class CSSFontFaceRule final : public CSSRule {
 
   StyleRuleFontFace* StyleRule() const { return font_face_rule_.Get(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   CSSRule::Type type() const override { return kFontFaceRule; }

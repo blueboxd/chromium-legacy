@@ -67,7 +67,7 @@ class CORE_EXPORT WorkerNavigator final
   // AcceptLanguagesWatcher override
   void NotifyUpdate() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   String user_agent_;

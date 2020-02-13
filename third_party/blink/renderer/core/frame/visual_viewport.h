@@ -102,7 +102,7 @@ class CORE_EXPORT VisualViewport : public GarbageCollected<VisualViewport>,
   explicit VisualViewport(Page&);
   ~VisualViewport() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void InitializeScrollbars();
 

@@ -35,17 +35,10 @@ void RecordTabOrWindowHistogram(
 }
 
 void RecordUserInstalledHistogram(
-    bool from_install_button,
     bool in_window,
     SiteEngagementService::EngagementType engagement_type) {
   const std::string histogram_prefix = "WebApp.Engagement.UserInstalled";
   RecordTabOrWindowHistogram(histogram_prefix, in_window, engagement_type);
-
-  // Record it into more specific buckets:
-  RecordTabOrWindowHistogram(
-      histogram_prefix + (from_install_button ? ".FromInstallButton"
-                                              : ".FromCreateShortcutButton"),
-      in_window, engagement_type);
 }
 
 }  // namespace
@@ -100,20 +93,22 @@ void WebAppMetrics::OnEngagementEvent(
   // A presence of WebAppTabHelperBase with valid app_id indicates a web app.
   WebAppTabHelperBase* tab_helper =
       WebAppTabHelperBase::FromWebContents(web_contents);
-  if (!tab_helper || tab_helper->GetAppId().empty())
+  if (!tab_helper)
+    return;
+  AppId app_id = tab_helper->GetAppId();
+  if (app_id.empty())
     return;
 
   // No HostedAppBrowserController if app is running as a tab in common browser.
   const bool in_window = !!browser->app_controller();
-  const bool from_install_button = tab_helper->IsFromInstallButton();
-  const bool user_installed = tab_helper->IsUserInstalled();
+  const bool user_installed =
+      WebAppProvider::Get(profile_)->registrar().WasInstalledByUser(app_id);
 
   // Record all web apps:
   RecordTabOrWindowHistogram("WebApp.Engagement", in_window, engagement_type);
 
   if (user_installed) {
-    RecordUserInstalledHistogram(from_install_button, in_window,
-                                 engagement_type);
+    RecordUserInstalledHistogram(in_window, engagement_type);
   } else {
     // Record this app into more specific bucket if was installed by default:
     RecordTabOrWindowHistogram("WebApp.Engagement.DefaultInstalled", in_window,

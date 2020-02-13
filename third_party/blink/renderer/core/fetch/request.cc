@@ -934,7 +934,7 @@ network::mojom::RequestDestination Request::GetRequestDestination() const {
   return request_->Destination();
 }
 
-void Request::Trace(blink::Visitor* visitor) {
+void Request::Trace(Visitor* visitor) {
   Body::Trace(visitor);
   visitor->Trace(request_);
   visitor->Trace(headers_);

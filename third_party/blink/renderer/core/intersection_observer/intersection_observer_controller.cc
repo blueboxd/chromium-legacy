@@ -130,7 +130,7 @@ void IntersectionObserverController::RemoveTrackedObservation(
   implicit_root_observations_.erase(&observation);
 }
 
-void IntersectionObserverController::Trace(blink::Visitor* visitor) {
+void IntersectionObserverController::Trace(Visitor* visitor) {
   visitor->Trace(explicit_root_observers_);
   visitor->Trace(implicit_root_observations_);
   visitor->Trace(pending_intersection_observers_);

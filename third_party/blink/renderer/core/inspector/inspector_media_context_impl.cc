@@ -46,7 +46,7 @@ MediaInspectorContextImpl::MediaInspectorContextImpl(LocalFrame& frame)
     : Supplement<LocalFrame>(frame) {}
 
 // Garbage collection method.
-void MediaInspectorContextImpl::Trace(blink::Visitor* visitor) {
+void MediaInspectorContextImpl::Trace(Visitor* visitor) {
   Supplement<LocalFrame>::Trace(visitor);
   visitor->Trace(players_);
 }

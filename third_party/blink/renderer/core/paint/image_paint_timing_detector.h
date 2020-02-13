@@ -237,7 +237,7 @@ class CORE_EXPORT ImagePaintTimingDetector final
   // Return the candidate.
   ImageRecord* UpdateCandidate();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   friend class LargestContentfulPaintCalculatorTest;

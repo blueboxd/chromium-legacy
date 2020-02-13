@@ -45,7 +45,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       ReportingDisposition,
       ResourceRequest::RedirectStatus) const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   const DetachableResourceFetcherProperties& GetResourceFetcherProperties()
       const {

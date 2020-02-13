@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 import os
-import pickle
+import cPickle as pickle  # 'cPickle' is faster than 'pickle'
 
 
 def read_pickle_file(filepath):

@@ -699,7 +699,7 @@ BuildObjectForResourceResponse(const ResourceResponse& response,
 
 InspectorNetworkAgent::~InspectorNetworkAgent() = default;
 
-void InspectorNetworkAgent::Trace(blink::Visitor* visitor) {
+void InspectorNetworkAgent::Trace(Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   visitor->Trace(worker_global_scope_);
   visitor->Trace(resources_data_);

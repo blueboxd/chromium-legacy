@@ -58,7 +58,7 @@ class DOMPatchSupport final {
   class Digest final : public GarbageCollected<Digest> {
    public:
     explicit Digest(Node* node) : node_(node) {}
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
 
     String sha1_;
     String attrs_sha1_;

@@ -94,7 +94,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   protocol::Response disable() override;
   void Restore() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   WebViewImpl* GetWebViewImpl();

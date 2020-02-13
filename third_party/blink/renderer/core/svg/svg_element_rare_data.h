@@ -104,7 +104,7 @@ class SVGElementRareData final : public GarbageCollected<SVGElementRareData> {
 
   AffineTransform* AnimateMotionTransform();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   SVGElementSet outgoing_references_;

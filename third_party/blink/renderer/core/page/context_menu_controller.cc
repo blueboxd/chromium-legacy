@@ -74,7 +74,7 @@ ContextMenuController::ContextMenuController(Page* page) : page_(page) {}
 
 ContextMenuController::~ContextMenuController() = default;
 
-void ContextMenuController::Trace(blink::Visitor* visitor) {
+void ContextMenuController::Trace(Visitor* visitor) {
   visitor->Trace(page_);
   visitor->Trace(menu_provider_);
   visitor->Trace(hit_test_result_);

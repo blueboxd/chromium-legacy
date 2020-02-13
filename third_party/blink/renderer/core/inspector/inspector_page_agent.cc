@@ -1397,7 +1397,7 @@ Response InspectorPageAgent::generateTestReport(const String& message,
   return Response::OK();
 }
 
-void InspectorPageAgent::Trace(blink::Visitor* visitor) {
+void InspectorPageAgent::Trace(Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   visitor->Trace(inspector_resource_content_loader_);
   visitor->Trace(isolated_worlds_);

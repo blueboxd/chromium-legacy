@@ -83,7 +83,7 @@ void WorkerAnimationFrameProvider::DeregisterOffscreenCanvas(
   }
 }
 
-void WorkerAnimationFrameProvider::Trace(blink::Visitor* visitor) {
+void WorkerAnimationFrameProvider::Trace(Visitor* visitor) {
   visitor->Trace(callback_collection_);
   visitor->Trace(context_);
 }

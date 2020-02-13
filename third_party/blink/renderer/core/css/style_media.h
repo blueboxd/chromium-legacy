@@ -46,7 +46,7 @@ class StyleMedia final : public ScriptWrappable, public ContextClient {
   AtomicString type() const;
   bool matchMedium(const String&) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 };
 
 }  // namespace blink

@@ -28,7 +28,7 @@ ContextFeatureSettings* ContextFeatureSettings::From(
   return settings;
 }
 
-void ContextFeatureSettings::Trace(blink::Visitor* visitor) {
+void ContextFeatureSettings::Trace(Visitor* visitor) {
   Supplement<ExecutionContext>::Trace(visitor);
 }
 

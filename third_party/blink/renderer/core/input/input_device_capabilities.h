@@ -51,7 +51,7 @@ class InputDeviceCapabilitiesConstants final
   // |firesTouchEvents| set to value of |firesTouch|.
   InputDeviceCapabilities* FiresTouchEvents(bool fires_touch);
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->Trace(fires_touch_events_);
     visitor->Trace(doesnt_fire_touch_events_);
   }

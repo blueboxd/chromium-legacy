@@ -83,7 +83,7 @@ class XMLHttpRequestProgressEventThrottle final
   // depending on the value of the ProgressEventAction argument.
   void DispatchReadyStateChangeEvent(Event*, DeferredEventAction);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   // Dispatches a "progress" progress event and usually a readyStateChange

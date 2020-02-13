@@ -100,7 +100,7 @@ ScriptValue PerformanceMark::detail(ScriptState* script_state) {
   return ScriptValue(isolate, value);
 }
 
-void PerformanceMark::Trace(blink::Visitor* visitor) {
+void PerformanceMark::Trace(Visitor* visitor) {
   visitor->Trace(deserialized_detail_map_);
   PerformanceEntry::Trace(visitor);
 }

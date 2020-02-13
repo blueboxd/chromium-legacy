@@ -44,7 +44,7 @@ class CSSMediaRule final : public CSSConditionRule {
 
   MediaList* media() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   CSSRule::Type type() const override { return kMediaRule; }

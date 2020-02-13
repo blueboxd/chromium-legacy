@@ -161,7 +161,7 @@ class SVGAnimatedPropertyCommon : public SVGAnimatedPropertyBase {
     SVGAnimatedPropertyBase::AnimationEnded();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(base_value_);
     visitor->Trace(current_value_);
     SVGAnimatedPropertyBase::Trace(visitor);
@@ -273,7 +273,7 @@ class SVGAnimatedProperty<Property, TearOffType, void>
     return anim_val_tear_off_;
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(base_val_tear_off_);
     visitor->Trace(anim_val_tear_off_);
     SVGAnimatedPropertyCommon<Property>::Trace(visitor);

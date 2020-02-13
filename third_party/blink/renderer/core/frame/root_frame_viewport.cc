@@ -249,20 +249,6 @@ void RootFrameViewport::ApplyPendingHistoryRestoreScrollOffset() {
 
   bool should_restore_scale = pending_view_state_->page_scale_factor_;
 
-  if (should_restore_scroll_) {
-    // TODO(pnoland): attempt to restore the anchor in more places than this.
-    // Anchor-based restore should allow for earlier restoration.
-    bool did_restore = LayoutViewport().RestoreScrollAnchor(
-        {pending_view_state_->scroll_anchor_data_.selector_,
-         LayoutPoint(pending_view_state_->scroll_anchor_data_.offset_.x(),
-                     pending_view_state_->scroll_anchor_data_.offset_.y()),
-         pending_view_state_->scroll_anchor_data_.simhash_});
-    if (!did_restore) {
-      LayoutViewport().SetScrollOffset(pending_view_state_->scroll_offset_,
-                                       mojom::blink::ScrollType::kProgrammatic);
-    }
-  }
-
   // For main frame restore scale and visual viewport position
   ScrollOffset visual_viewport_offset(
       pending_view_state_->visual_viewport_scroll_offset_);
@@ -696,7 +682,7 @@ base::Optional<FloatPoint> RootFrameViewport::GetSnapPositionAndSetTarget(
   return LayoutViewport().GetSnapPositionAndSetTarget(strategy);
 }
 
-void RootFrameViewport::Trace(blink::Visitor* visitor) {
+void RootFrameViewport::Trace(Visitor* visitor) {
   visitor->Trace(visual_viewport_);
   visitor->Trace(layout_viewport_);
   ScrollableArea::Trace(visitor);

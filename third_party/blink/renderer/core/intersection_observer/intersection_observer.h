@@ -157,7 +157,7 @@ class CORE_EXPORT IntersectionObserver final
   // ScriptWrappable override:
   bool HasPendingActivity() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Enable/disable throttling of visibility checking, so we don't have to add
   // sleep() calls to tests to wait for notifications to show up.

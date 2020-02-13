@@ -826,7 +826,7 @@ XMLParserContext::~XMLParserContext() {
 
 XMLDocumentParser::~XMLDocumentParser() = default;
 
-void XMLDocumentParser::Trace(blink::Visitor* visitor) {
+void XMLDocumentParser::Trace(Visitor* visitor) {
   visitor->Trace(current_node_);
   visitor->Trace(current_node_stack_);
   visitor->Trace(leaf_text_node_);

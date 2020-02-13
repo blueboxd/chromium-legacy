@@ -79,7 +79,7 @@ KURL AbstractWorker::ResolveURL(ExecutionContext* execution_context,
   return script_url;
 }
 
-void AbstractWorker::Trace(blink::Visitor* visitor) {
+void AbstractWorker::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }

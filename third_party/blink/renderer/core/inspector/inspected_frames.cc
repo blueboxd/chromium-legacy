@@ -68,7 +68,7 @@ bool InspectedFrames::Iterator::operator!=(const Iterator& other) {
   return !(*this == other);
 }
 
-void InspectedFrames::Trace(blink::Visitor* visitor) {
+void InspectedFrames::Trace(Visitor* visitor) {
   visitor->Trace(root_);
 }
 

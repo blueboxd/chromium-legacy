@@ -26,11 +26,7 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
     gpu::SurfaceHandle surface_handle,
     std::unique_ptr<BufferQueue> buffer_queue)
     : GLOutputSurface(context_provider, surface_handle),
-      buffer_queue_(std::move(buffer_queue)),
-      texture_target_(gpu::GetBufferTextureTarget(
-          gfx::BufferUsage::SCANOUT,
-          buffer_queue_->buffer_format(),
-          context_provider_->ContextCapabilities())) {
+      buffer_queue_(std::move(buffer_queue)) {
   capabilities_.only_invalidates_damage_rect = false;
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
@@ -135,8 +131,9 @@ void GLOutputSurfaceBufferQueue::Reshape(const gfx::Size& size,
   GLOutputSurface::Reshape(size, device_scale_factor, color_space, format,
                            use_stencil);
   DCHECK(buffer_queue_);
-  const bool freed_buffers = buffer_queue_->Reshape(size, color_space, format);
-  if (freed_buffers || (stencil_buffer_ && !use_stencil)) {
+  const bool may_have_freed_buffers =
+      buffer_queue_->Reshape(size, color_space, format);
+  if (may_have_freed_buffers || (stencil_buffer_ && !use_stencil)) {
     auto* gl = context_provider_->ContextGL();
     gl->BindFramebuffer(GL_FRAMEBUFFER, fbo_);
     gl->FramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT,
@@ -145,7 +142,10 @@ void GLOutputSurfaceBufferQueue::Reshape(const gfx::Size& size,
       gl->DeleteRenderbuffers(1, &stencil_buffer_);
       stencil_buffer_ = 0u;
     }
-    if (freed_buffers) {
+
+    // Note that |texture_target_| is initially set to 0, and so if it has not
+    // been set to a valid value, then no buffers have been allocated.
+    if (texture_target_ && may_have_freed_buffers) {
       gl->FramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                                texture_target_, 0, 0);
       gl->BindFramebuffer(GL_FRAMEBUFFER, 0u);
@@ -157,6 +157,10 @@ void GLOutputSurfaceBufferQueue::Reshape(const gfx::Size& size,
       last_bound_mailbox_.SetZero();
     }
   }
+
+  texture_target_ =
+      gpu::GetBufferTextureTarget(gfx::BufferUsage::SCANOUT, format,
+                                  context_provider_->ContextCapabilities());
 }
 
 void GLOutputSurfaceBufferQueue::SwapBuffers(OutputSurfaceFrame frame) {
@@ -207,7 +211,9 @@ gpu::Mailbox GLOutputSurfaceBufferQueue::GetOverlayMailbox() const {
 }
 
 gfx::BufferFormat GLOutputSurfaceBufferQueue::GetOverlayBufferFormat() const {
-  DCHECK(buffer_queue_);
+  // TODO(ccameron): Remove GetOverlayBufferFormat from all OutputSurface
+  // sub-classes.
+  NOTREACHED();
   return buffer_queue_->buffer_format();
 }
 

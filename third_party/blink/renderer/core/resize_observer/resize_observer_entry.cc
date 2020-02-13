@@ -84,7 +84,7 @@ ResizeObserverEntry::ResizeObserverEntry(Element* target) : target_(target) {
   }
 }
 
-void ResizeObserverEntry::Trace(blink::Visitor* visitor) {
+void ResizeObserverEntry::Trace(Visitor* visitor) {
   visitor->Trace(target_);
   visitor->Trace(content_rect_);
   visitor->Trace(content_box_size_);

@@ -56,7 +56,7 @@ class LiveCSSRuleList final : public CSSRuleList {
  public:
   LiveCSSRuleList(Rule* rule) : rule_(rule) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(rule_);
     CSSRuleList::Trace(visitor);
   }

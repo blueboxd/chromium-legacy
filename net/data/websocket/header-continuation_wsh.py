@@ -11,14 +11,15 @@ from mod_pywebsocket.handshake.hybi import compute_accept
 
 
 def web_socket_do_extra_handshake(request):
-  accept = compute_accept(request.headers_in['Sec-WebSocket-Key'])[0]
-  message = ('HTTP/1.1 101 Switching Protocols\r\n'
-             'Upgrade: websocket\r\n'
-             'Connection: Upgrade\r\n'
-             'Sec-WebSocket-Accept: %s\r\n'
-             'Sec-WebSocket-Extensions: permessage-deflate;\r\n'
-             '  server_max_window_bits=10\r\n'
-             '\r\n' % accept)
+  accept = compute_accept(
+      request.headers_in['Sec-WebSocket-Key'].encode('UTF-8'))[0]
+  message = (b'HTTP/1.1 101 Switching Protocols\r\n'
+             b'Upgrade: websocket\r\n'
+             b'Connection: Upgrade\r\n'
+             b'Sec-WebSocket-Accept: %s\r\n'
+             b'Sec-WebSocket-Extensions: permessage-deflate;\r\n'
+             b'  server_max_window_bits=10\r\n'
+             b'\r\n' % accept)
   request.connection.write(message)
   # Prevent pywebsocket from sending its own handshake message.
   raise handshake.AbortedByUserException('Close the connection')

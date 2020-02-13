@@ -205,7 +205,7 @@ void PendingAnimations::FlushWaitingNonCompositedAnimations() {
   }
 }
 
-void PendingAnimations::Trace(blink::Visitor* visitor) {
+void PendingAnimations::Trace(Visitor* visitor) {
   visitor->Trace(pending_);
   visitor->Trace(waiting_for_compositor_animation_start_);
 }

@@ -48,7 +48,7 @@ class SVGAnimatedEnumerationBase
 
   void setBaseVal(uint16_t, ExceptionState&);
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     SVGAnimatedProperty<SVGEnumerationBase>::Trace(visitor);
     ScriptWrappable::Trace(visitor);
   }

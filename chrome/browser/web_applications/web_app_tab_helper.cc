@@ -42,17 +42,6 @@ const AppId& WebAppTabHelper::GetAppId() const {
   return app_id_;
 }
 
-bool WebAppTabHelper::IsUserInstalled() const {
-  return !app_id_.empty() && provider_->registrar().WasInstalledByUser(app_id_);
-}
-
-bool WebAppTabHelper::IsFromInstallButton() const {
-  // TODO(loyso): Use something better to record apps installed from promoted
-  // UIs. crbug.com/774918.
-  return !app_id_.empty() &&
-         provider_->registrar().GetAppScopeInternal(app_id_).has_value();
-}
-
 const base::UnguessableToken& WebAppTabHelper::GetAudioFocusGroupIdForTesting()
     const {
   return audio_focus_group_id_;

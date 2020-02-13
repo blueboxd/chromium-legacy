@@ -132,9 +132,9 @@ class BufferQueueTest : public ::testing::Test,
     context_provider_ = TestContextProvider::Create(std::move(sii));
     context_provider_->BindToCurrentThread();
     gpu_memory_buffer_manager_.reset(new StubGpuMemoryBufferManager);
-    output_surface_.reset(new BufferQueue(
-        context_provider_->SharedImageInterface(), kBufferQueueFormat,
-        gpu_memory_buffer_manager_.get(), kFakeSurfaceHandle));
+    output_surface_.reset(
+        new BufferQueue(context_provider_->SharedImageInterface(),
+                        gpu_memory_buffer_manager_.get(), kFakeSurfaceHandle));
     output_surface_->SetSyncTokenProvider(this);
   }
 
@@ -280,8 +280,8 @@ std::unique_ptr<BufferQueue> CreateBufferQueue(
     gpu::SharedImageInterface* sii,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
     BufferQueue::SyncTokenProvider* sync_token_provider) {
-  std::unique_ptr<BufferQueue> buffer_queue(new BufferQueue(
-      sii, kBufferQueueFormat, gpu_memory_buffer_manager, kFakeSurfaceHandle));
+  std::unique_ptr<BufferQueue> buffer_queue(
+      new BufferQueue(sii, gpu_memory_buffer_manager, kFakeSurfaceHandle));
   buffer_queue->SetSyncTokenProvider(sync_token_provider);
   return buffer_queue;
 }
@@ -297,6 +297,9 @@ TEST(BufferQueueStandaloneTest, BufferCreationAndDestruction) {
   std::unique_ptr<BufferQueue> output_surface = CreateBufferQueue(
       context_provider->SharedImageInterface(), gpu_memory_buffer_manager.get(),
       sync_token_provider.get());
+
+  EXPECT_TRUE(output_surface->Reshape(screen_size, kBufferQueueColorSpace,
+                                      kBufferQueueFormat));
 
   const gpu::Mailbox expected_mailbox = gpu::Mailbox::GenerateForSharedImage();
   {
@@ -376,6 +379,10 @@ TEST_F(BufferQueueTest, PartialSwapOverlapping) {
 }
 
 TEST_F(BufferQueueTest, MultipleGetCurrentBufferCalls) {
+  // It is not valid to call GetCurrentBuffer without having set an initial
+  // size via Reshape.
+  EXPECT_TRUE(output_surface_->Reshape(screen_size, kBufferQueueColorSpace,
+                                       kBufferQueueFormat));
   // Check that multiple bind calls do not create or change surfaces.
   gpu::SyncToken creation_sync_token;
   EXPECT_FALSE(
@@ -464,6 +471,10 @@ TEST_F(BufferQueueTest, CheckTripleBuffering) {
 }
 
 TEST_F(BufferQueueTest, CheckEmptySwap) {
+  // It is not valid to call GetCurrentBuffer without having set an initial
+  // size via Reshape.
+  EXPECT_TRUE(output_surface_->Reshape(screen_size, kBufferQueueColorSpace,
+                                       kBufferQueueFormat));
   // Check empty swap flow, in which the damage is empty and BindFramebuffer
   // might not be called.
   EXPECT_EQ(0, CountBuffers());

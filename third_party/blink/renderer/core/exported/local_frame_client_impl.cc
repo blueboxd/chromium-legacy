@@ -237,7 +237,7 @@ LocalFrameClientImpl::LocalFrameClientImpl(WebLocalFrameImpl* frame)
 
 LocalFrameClientImpl::~LocalFrameClientImpl() = default;
 
-void LocalFrameClientImpl::Trace(blink::Visitor* visitor) {
+void LocalFrameClientImpl::Trace(Visitor* visitor) {
   visitor->Trace(web_frame_);
   LocalFrameClient::Trace(visitor);
 }

@@ -22,7 +22,7 @@ class Document;
 class HTMLMediaElement;
 
 struct MediaPlayer final : public GarbageCollected<MediaPlayer> {
-  void Trace(blink::Visitor*) {}
+  void Trace(Visitor*) {}
 
   WebString player_id;
   InspectorPlayerEvents events;
@@ -55,7 +55,7 @@ class CORE_EXPORT MediaInspectorContextImpl final
   void SetPlayerProperties(WebString, InspectorPlayerProperties) override;
 
   // GarbageCollected methods.
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   Vector<WebString> GetAllPlayerIds();
   std::pair<Vector<InspectorPlayerProperty>, Vector<InspectorPlayerEvent>>

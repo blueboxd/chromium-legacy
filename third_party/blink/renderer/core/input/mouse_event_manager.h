@@ -39,7 +39,7 @@ class CORE_EXPORT MouseEventManager final
  public:
   MouseEventManager(LocalFrame&, ScrollManager&);
   virtual ~MouseEventManager();
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   WebInputEventResult DispatchMouseEvent(EventTarget*,
                                          const AtomicString&,

@@ -47,7 +47,7 @@ SVGStaticStringList::SVGStaticStringList(SVGElement* context_element,
 
 SVGStaticStringList::~SVGStaticStringList() = default;
 
-void SVGStaticStringList::Trace(blink::Visitor* visitor) {
+void SVGStaticStringList::Trace(Visitor* visitor) {
   visitor->Trace(value_);
   visitor->Trace(tear_off_);
   SVGAnimatedPropertyBase::Trace(visitor);

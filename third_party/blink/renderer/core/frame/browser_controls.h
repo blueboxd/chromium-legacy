@@ -27,7 +27,7 @@ class CORE_EXPORT BrowserControls final
  public:
   explicit BrowserControls(const Page&);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   // The height the top controls are hidden; used for viewport adjustments
   // while the controls are resizing.

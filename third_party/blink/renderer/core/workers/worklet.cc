@@ -189,7 +189,7 @@ wtf_size_t Worklet::SelectGlobalScope() {
   return 0u;
 }
 
-void Worklet::Trace(blink::Visitor* visitor) {
+void Worklet::Trace(Visitor* visitor) {
   visitor->Trace(proxies_);
   visitor->Trace(module_responses_map_);
   visitor->Trace(pending_tasks_set_);

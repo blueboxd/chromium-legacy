@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_controller.h"
 #include "third_party/blink/renderer/core/page/scrolling/top_document_root_scroller_controller.h"
@@ -2317,6 +2318,74 @@ TEST_F(ImplicitRootScrollerSimTest, NavigateToValidRemainsRootScroller) {
   EXPECT_EQ(GetDocument().getElementById("container"),
             GetDocument().GetRootScrollerController().EffectiveRootScroller())
       << "Once loaded, the iframe should be promoted again.";
+}
+
+// Ensure that scroll restoration logic in the document does not apply
+// to the implicit root scroller, but rather to the document's LayoutViewport.
+TEST_F(ImplicitRootScrollerSimTest, ScrollRestorationIgnoresImplicit) {
+  WebView().MainFrameWidget()->Resize(WebSize(800, 600));
+  SimRequest main_request("https://example.com/test.html", "text/html");
+  SimRequest child_request("https://example.com/child.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  main_request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            iframe {
+              width: 100%;
+              height: 100%;
+              border: 0;
+            }
+          </style>
+          <iframe id="container" src="child.html">
+          </iframe>
+      )HTML");
+  child_request.Complete(R"HTML(
+        <!DOCTYPE html>
+        <style>
+          body {
+            height: 1000px;
+          }
+        </style>
+  )HTML");
+  Compositor().BeginFrame();
+  ASSERT_EQ(GetDocument().getElementById("container"),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  HistoryItem::ViewState view_state;
+  view_state.scroll_offset_ = ScrollOffset(10, 20);
+
+  GetDocument()
+      .View()
+      ->GetScrollableArea()
+      ->SetPendingHistoryRestoreScrollOffset(view_state, true);
+  GetDocument().View()->LayoutViewport()->SetPendingHistoryRestoreScrollOffset(
+      view_state, true);
+  GetDocument().View()->ScheduleAnimation();
+
+  Compositor().BeginFrame();
+  EXPECT_EQ(ScrollOffset(0, 0),
+            GetDocument().View()->GetScrollableArea()->GetScrollOffset());
+
+  GetDocument().domWindow()->scrollTo(0, 20);
+  GetDocument().View()->ScheduleAnimation();
+  // Check that an implicit scroll offset is not saved.
+  // TODO(chrishtr): probably it should?
+  Compositor().BeginFrame();
+  EXPECT_FALSE(GetDocument()
+                   .GetFrame()
+                   ->Loader()
+                   .GetDocumentLoader()
+                   ->GetHistoryItem()
+                   ->GetViewState());
 }
 
 // Test that a root scroller is considered to fill the viewport at both the URL

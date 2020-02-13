@@ -75,11 +75,10 @@ void AudioEncoderOpus::InitEncoder() {
     // TODO(sergeyu): Figure out the right buffer size to use per packet instead
     // of using media::SincResampler::kDefaultRequestSize.
     resampler_.reset(new media::MultiChannelResampler(
-        channels_,
-        static_cast<double>(sampling_rate_) / kOpusSamplingRate,
+        channels_, static_cast<double>(sampling_rate_) / kOpusSamplingRate,
         media::SincResampler::kDefaultRequestSize,
-        base::Bind(&AudioEncoderOpus::FetchBytesToResample,
-                   base::Unretained(this))));
+        base::BindRepeating(&AudioEncoderOpus::FetchBytesToResample,
+                            base::Unretained(this))));
     resampler_bus_ = media::AudioBus::Create(channels_, kFrameSamples);
   }
 

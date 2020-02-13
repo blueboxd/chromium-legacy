@@ -59,7 +59,7 @@ class BeforeUnloadEvent final : public Event {
     return true;
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   String return_value_;

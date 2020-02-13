@@ -197,7 +197,7 @@ void TextFragmentAnchor::PerformPreRafActions() {
   }
 }
 
-void TextFragmentAnchor::Trace(blink::Visitor* visitor) {
+void TextFragmentAnchor::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(element_fragment_anchor_);
   visitor->Trace(metrics_);

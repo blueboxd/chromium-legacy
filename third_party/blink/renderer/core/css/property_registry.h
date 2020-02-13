@@ -23,7 +23,7 @@ class CORE_EXPORT PropertyRegistry : public GarbageCollected<PropertyRegistry> {
   RegistrationMap::const_iterator begin() const;
   RegistrationMap::const_iterator end() const;
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(registrations_); }
+  void Trace(Visitor* visitor) { visitor->Trace(registrations_); }
 
   void MarkReferenced(const AtomicString&) const;
   bool WasReferenced(const AtomicString&) const;

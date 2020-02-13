@@ -13,7 +13,7 @@ Profiler::~Profiler() {
   Dispose();
 }
 
-void Profiler::Trace(blink::Visitor* visitor) {
+void Profiler::Trace(Visitor* visitor) {
   visitor->Trace(profiler_group_);
   ScriptWrappable::Trace(visitor);
 }

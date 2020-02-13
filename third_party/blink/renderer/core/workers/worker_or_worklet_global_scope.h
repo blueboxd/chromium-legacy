@@ -135,7 +135,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
 
   WorkerReportingProxy& ReportingProxy() { return reporting_proxy_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
 

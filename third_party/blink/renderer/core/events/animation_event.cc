@@ -67,7 +67,7 @@ const AtomicString& AnimationEvent::InterfaceName() const {
   return event_interface_names::kAnimationEvent;
 }
 
-void AnimationEvent::Trace(blink::Visitor* visitor) {
+void AnimationEvent::Trace(Visitor* visitor) {
   Event::Trace(visitor);
 }
 

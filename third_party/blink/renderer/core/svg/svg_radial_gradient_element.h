@@ -44,7 +44,7 @@ class SVGRadialGradientElement final : public SVGGradientElement {
   SVGAnimatedLength* fy() const { return fy_.Get(); }
   SVGAnimatedLength* fr() const { return fr_.Get(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void SvgAttributeChanged(const QualifiedName&) override;

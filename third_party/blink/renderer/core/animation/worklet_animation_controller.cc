@@ -160,7 +160,7 @@ void WorkletAnimationController::ApplyAnimationTimings(
     animation->Update(reason);
 }
 
-void WorkletAnimationController::Trace(blink::Visitor* visitor) {
+void WorkletAnimationController::Trace(Visitor* visitor) {
   visitor->Trace(pending_animations_);
   visitor->Trace(animations_);
   visitor->Trace(document_);

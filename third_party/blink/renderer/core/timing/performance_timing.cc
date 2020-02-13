@@ -639,7 +639,7 @@ uint64_t PerformanceTiming::MonotonicTimeToIntegerMilliseconds(
   return ToIntegerMilliseconds(timing->MonotonicTimeToPseudoWallTime(time));
 }
 
-void PerformanceTiming::Trace(blink::Visitor* visitor) {
+void PerformanceTiming::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
   DOMWindowClient::Trace(visitor);
 }

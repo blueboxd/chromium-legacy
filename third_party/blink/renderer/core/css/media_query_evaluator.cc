@@ -84,7 +84,7 @@ MediaQueryEvaluator::MediaQueryEvaluator(
 
 MediaQueryEvaluator::~MediaQueryEvaluator() = default;
 
-void MediaQueryEvaluator::Trace(blink::Visitor* visitor) {
+void MediaQueryEvaluator::Trace(Visitor* visitor) {
   visitor->Trace(media_values_);
 }
 

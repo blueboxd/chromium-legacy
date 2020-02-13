@@ -51,7 +51,7 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
   // Called by WorkletPendingTasks to notify the Worklet.
   void FinishPendingTasks(WorkletPendingTasks*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   explicit Worklet(Document*);

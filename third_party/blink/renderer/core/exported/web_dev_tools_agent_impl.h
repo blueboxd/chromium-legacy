@@ -69,7 +69,7 @@ class CORE_EXPORT WebDevToolsAgentImpl final
 
   WebDevToolsAgentImpl(WebLocalFrameImpl*, bool include_view_agents);
   ~WebDevToolsAgentImpl() override;
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
   DevToolsAgent* GetDevToolsAgent() const { return agent_.Get(); }
 
   void WillBeDestroyed();

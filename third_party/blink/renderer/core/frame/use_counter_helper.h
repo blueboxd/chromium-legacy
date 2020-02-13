@@ -100,7 +100,7 @@ class CORE_EXPORT UseCounterHelper final {
     // remove a reference to the observer and stop notifications.
     virtual bool OnCountFeature(WebFeature) = 0;
 
-    virtual void Trace(blink::Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) {}
   };
 
   // Repeated calls are ignored.
@@ -133,7 +133,7 @@ class CORE_EXPORT UseCounterHelper final {
 
   void ClearMeasurementForTesting(WebFeature);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   friend class UseCounterHelperTest;

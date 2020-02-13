@@ -25,7 +25,7 @@ class CORE_EXPORT InspectorIssueStorage
   wtf_size_t size() const;
   InspectorIssue* at(wtf_size_t index) const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   HeapDeque<Member<InspectorIssue>> issues_;

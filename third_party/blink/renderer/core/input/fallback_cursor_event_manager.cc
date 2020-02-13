@@ -129,7 +129,7 @@ FallbackCursorEventManager::FallbackCursorEventManager(LocalFrame& root_frame)
   ResetCurrentScrollable();
 }
 
-void FallbackCursorEventManager::Trace(blink::Visitor* visitor) {
+void FallbackCursorEventManager::Trace(Visitor* visitor) {
   visitor->Trace(root_frame_);
   visitor->Trace(current_node_);
 }

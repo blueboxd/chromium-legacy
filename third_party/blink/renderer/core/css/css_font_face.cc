@@ -225,7 +225,7 @@ void CSSFontFace::SetLoadStatus(FontFace::LoadStatusType new_status) {
   }
 }
 
-void CSSFontFace::Trace(blink::Visitor* visitor) {
+void CSSFontFace::Trace(Visitor* visitor) {
   visitor->Trace(segmented_font_faces_);
   visitor->Trace(sources_);
   visitor->Trace(font_face_);

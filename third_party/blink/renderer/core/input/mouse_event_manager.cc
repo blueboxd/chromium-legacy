@@ -184,7 +184,7 @@ void MouseEventManager::Clear() {
 
 MouseEventManager::~MouseEventManager() = default;
 
-void MouseEventManager::Trace(blink::Visitor* visitor) {
+void MouseEventManager::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(scroll_manager_);
   visitor->Trace(element_under_mouse_);

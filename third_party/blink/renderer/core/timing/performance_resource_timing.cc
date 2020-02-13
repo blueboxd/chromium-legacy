@@ -436,7 +436,7 @@ void PerformanceResourceTiming::AddPerformanceEntry(
   }
 }
 
-void PerformanceResourceTiming::Trace(blink::Visitor* visitor) {
+void PerformanceResourceTiming::Trace(Visitor* visitor) {
   visitor->Trace(server_timing_);
   visitor->Trace(worker_timing_);
   PerformanceEntry::Trace(visitor);

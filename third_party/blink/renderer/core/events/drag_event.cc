@@ -29,7 +29,7 @@ bool DragEvent::IsMouseEvent() const {
   return false;
 }
 
-void DragEvent::Trace(blink::Visitor* visitor) {
+void DragEvent::Trace(Visitor* visitor) {
   visitor->Trace(data_transfer_);
   MouseEvent::Trace(visitor);
 }

@@ -224,7 +224,7 @@ void WindowPerformance::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.Add("navigation", navigation());
 }
 
-void WindowPerformance::Trace(blink::Visitor* visitor) {
+void WindowPerformance::Trace(Visitor* visitor) {
   visitor->Trace(event_timings_);
   visitor->Trace(first_pointer_down_event_timing_);
   visitor->Trace(navigation_);

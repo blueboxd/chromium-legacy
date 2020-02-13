@@ -28,6 +28,6 @@ const mojom::blink::InspectorIssueCode& InspectorIssue::Code() const {
   return code_;
 }
 
-void InspectorIssue::Trace(blink::Visitor* visitor) {}
+void InspectorIssue::Trace(Visitor* visitor) {}
 
 }  // namespace blink

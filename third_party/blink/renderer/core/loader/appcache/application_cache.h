@@ -68,7 +68,7 @@ class ApplicationCache final : public EventTargetWithInlineData,
 
   static const AtomicString& ToEventType(mojom::AppCacheEventID);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void RecordAPIUseType() const;

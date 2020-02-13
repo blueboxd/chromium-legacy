@@ -54,10 +54,6 @@ enum HistogramIndex {
   kHistogramDefaultInstalled_InWindow,
   kHistogramUserInstalled_InTab,
   kHistogramUserInstalled_InWindow,
-  kHistogramUserInstalled_FromInstallButton_InTab,
-  kHistogramUserInstalled_FromInstallButton_InWindow,
-  kHistogramUserInstalled_FromCreateShortcutButton_InTab,
-  kHistogramUserInstalled_FromCreateShortcutButton_InWindow,
   kHistogramMoreThanThreeUserInstalledApps,
   kHistogramUpToThreeUserInstalledApps,
   kHistogramNoUserInstalledApps,
@@ -72,10 +68,6 @@ const char* kHistogramNames[] = {
     "WebApp.Engagement.DefaultInstalled.InWindow",
     "WebApp.Engagement.UserInstalled.InTab",
     "WebApp.Engagement.UserInstalled.InWindow",
-    "WebApp.Engagement.UserInstalled.FromInstallButton.InTab",
-    "WebApp.Engagement.UserInstalled.FromInstallButton.InWindow",
-    "WebApp.Engagement.UserInstalled.FromCreateShortcutButton.InTab",
-    "WebApp.Engagement.UserInstalled.FromCreateShortcutButton.InWindow",
     "WebApp.Engagement.MoreThanThreeUserInstalledApps",
     "WebApp.Engagement.UpToThreeUserInstalledApps",
     "WebApp.Engagement.NoUserInstalledApps"};
@@ -257,7 +249,6 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, AppInWindow) {
   Histograms histograms;
   histograms[kHistogramInWindow] = true;
   histograms[kHistogramUserInstalled_InWindow] = true;
-  histograms[kHistogramUserInstalled_FromInstallButton_InWindow] = true;
   histograms[kHistogramUpToThreeUserInstalledApps] = true;
 
   TestEngagementEventWebAppLaunch(tester, histograms);
@@ -283,7 +274,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppEngagementBrowserTest, AppInTab) {
   Histograms histograms;
   histograms[kHistogramInTab] = true;
   histograms[kHistogramUserInstalled_InTab] = true;
-  histograms[kHistogramUserInstalled_FromInstallButton_InTab] = true;
   histograms[kHistogramUpToThreeUserInstalledApps] = true;
 
   TestEngagementEventWebAppLaunch(tester, histograms);
@@ -313,7 +303,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppEngagementBrowserTest, AppWithoutScope) {
   Histograms histograms;
   histograms[kHistogramInWindow] = true;
   histograms[kHistogramUserInstalled_InWindow] = true;
-  histograms[kHistogramUserInstalled_FromCreateShortcutButton_InWindow] = true;
   histograms[kHistogramUpToThreeUserInstalledApps] = true;
 
   TestEngagementEventWebAppLaunch(tester, histograms);
@@ -357,7 +346,6 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, TwoApps) {
   Histograms histograms;
   histograms[kHistogramInWindow] = true;
   histograms[kHistogramUserInstalled_InWindow] = true;
-  histograms[kHistogramUserInstalled_FromInstallButton_InWindow] = true;
   histograms[kHistogramUpToThreeUserInstalledApps] = true;
 
   ExpectUniqueSamples(tester, histograms,
@@ -402,7 +390,6 @@ IN_PROC_BROWSER_TEST_P(WebAppEngagementBrowserTest, ManyUserApps) {
   Histograms histograms;
   histograms[kHistogramInWindow] = true;
   histograms[kHistogramUserInstalled_InWindow] = true;
-  histograms[kHistogramUserInstalled_FromInstallButton_InWindow] = true;
   histograms[kHistogramMoreThanThreeUserInstalledApps] = true;
 
   ExpectUniqueSamples(tester, histograms,
@@ -458,7 +445,6 @@ IN_PROC_BROWSER_TEST_P(HostedAppEngagementBrowserTest, NavigateAwayFromAppTab) {
     Histograms histograms;
     histograms[kHistogramInTab] = true;
     histograms[kHistogramUserInstalled_InTab] = true;
-    histograms[kHistogramUserInstalled_FromInstallButton_InTab] = true;
     histograms[kHistogramUpToThreeUserInstalledApps] = true;
     TestEngagementEventsAfterLaunch(histograms, browser);
   }

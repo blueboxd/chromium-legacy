@@ -169,7 +169,7 @@ AgentMetricsCollector::GetAgentMetricsCollectorHost() {
   return agent_metrics_collector_host_;
 }
 
-void AgentMetricsCollector::Trace(blink::Visitor* visitor) {
+void AgentMetricsCollector::Trace(Visitor* visitor) {
   visitor->Trace(agent_to_documents_map_);
 }
 

@@ -115,6 +115,11 @@ class IdlCompiler(object):
 
         return Database(self._db)
 
+    def _maybe_make_copy(self, ir):
+        # You can make this function return make_copy(ir) for debugging
+        # purpose, etc.
+        return ir  # Skip copying as an optimization.
+
     def _record_defined_in_partial_and_mixin(self):
         old_irs = self._ir_map.irs_of_kinds(
             IRMap.IR.Kind.DICTIONARY, IRMap.IR.Kind.INTERFACE,
@@ -126,7 +131,7 @@ class IdlCompiler(object):
         self._ir_map.move_to_new_phase()
 
         for old_ir in old_irs:
-            new_ir = make_copy(old_ir)
+            new_ir = self._maybe_make_copy(old_ir)
             self._ir_map.add(new_ir)
             is_partial = False
             is_mixin = False
@@ -185,7 +190,7 @@ class IdlCompiler(object):
                 apply_to(member)
 
         def process_interface_like(ir):
-            ir = make_copy(ir)
+            ir = self._maybe_make_copy(ir)
             self._ir_map.add(ir)
 
             propagate = functools.partial(propagate_extattr, ir=ir)
@@ -231,7 +236,7 @@ class IdlCompiler(object):
         self._ir_map.move_to_new_phase()
 
         for old_ir in irs:
-            new_ir = make_copy(old_ir)
+            new_ir = self._maybe_make_copy(old_ir)
             self._ir_map.add(new_ir)
 
             if (new_ir.is_mixin and 'LegacyTreatAsPartialInterface' not in
@@ -289,7 +294,7 @@ class IdlCompiler(object):
         self._ir_map.move_to_new_phase()
 
         for old_ir in mixins:
-            new_ir = make_copy(old_ir)
+            new_ir = self._maybe_make_copy(old_ir)
             self._ir_map.add(new_ir)
             ref_to_mixin = self._ref_to_idl_def_factory.create(
                 new_ir.identifier)
@@ -385,7 +390,7 @@ class IdlCompiler(object):
         for old_ir in old_irs:
             assert not old_ir.constructor_groups
             assert not old_ir.operation_groups
-            new_ir = make_copy(old_ir)
+            new_ir = self._maybe_make_copy(old_ir)
             self._ir_map.add(new_ir)
             sort_key = lambda x: x.identifier
             new_ir.constructor_groups = [
@@ -411,7 +416,7 @@ class IdlCompiler(object):
         self._ir_map.move_to_new_phase()
 
         for old_ir in old_irs:
-            new_ir = make_copy(old_ir)
+            new_ir = self._maybe_make_copy(old_ir)
             self._ir_map.add(new_ir)
 
             for group in new_ir.constructor_groups + new_ir.operation_groups:
@@ -432,7 +437,7 @@ class IdlCompiler(object):
         self._ir_map.move_to_new_phase()
 
         for old_ir in old_irs:
-            new_ir = make_copy(old_ir)
+            new_ir = self._maybe_make_copy(old_ir)
             self._ir_map.add(new_ir)
 
             for group in new_ir.constructor_groups + new_ir.operation_groups:
@@ -495,7 +500,7 @@ class IdlCompiler(object):
         self._ir_map.move_to_new_phase()
 
         for old_ir in old_interfaces:
-            new_ir = make_copy(old_ir)
+            new_ir = self._maybe_make_copy(old_ir)
             self._ir_map.add(new_ir)
 
             assert not new_ir.exposed_constructs
@@ -515,7 +520,7 @@ class IdlCompiler(object):
         self._ir_map.move_to_new_phase()
 
         for old_ir in old_irs:
-            new_ir = make_copy(old_ir)
+            new_ir = self._maybe_make_copy(old_ir)
             self._ir_map.add(new_ir)
 
             new_ir.own_members.sort(key=lambda x: x.identifier)

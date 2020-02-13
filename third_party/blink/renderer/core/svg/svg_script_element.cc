@@ -189,7 +189,7 @@ const AttrNameToTrustedType& SVGScriptElement::GetCheckedAttributeTypes()
   return attribute_map;
 }
 
-void SVGScriptElement::Trace(blink::Visitor* visitor) {
+void SVGScriptElement::Trace(Visitor* visitor) {
   visitor->Trace(loader_);
   SVGElement::Trace(visitor);
   SVGURIReference::Trace(visitor);

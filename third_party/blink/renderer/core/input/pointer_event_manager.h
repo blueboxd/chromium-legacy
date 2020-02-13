@@ -28,7 +28,7 @@ class CORE_EXPORT PointerEventManager final
     : public GarbageCollected<PointerEventManager> {
  public:
   PointerEventManager(LocalFrame&, MouseEventManager&);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   // This is the unified path for handling all input device events. This may
   // cause firing DOM pointerevents, mouseevent, and touch events accordingly.
@@ -112,7 +112,7 @@ class CORE_EXPORT PointerEventManager final
     DISALLOW_NEW();
 
    public:
-    void Trace(blink::Visitor* visitor) { visitor->Trace(target); }
+    void Trace(Visitor* visitor) { visitor->Trace(target); }
     Member<Element> target;
     EventTargetAttributes() : target(nullptr) {}
     EventTargetAttributes(Element* target) : target(target) {}

@@ -60,7 +60,7 @@ class CORE_EXPORT ImageResourceInfo : public GarbageCollectedMixin {
 
   virtual void LoadDeferredImage(ResourceFetcher* fetcher) = 0;
 
-  void Trace(blink::Visitor* visitor) override {}
+  void Trace(Visitor* visitor) override {}
 };
 
 }  // namespace blink

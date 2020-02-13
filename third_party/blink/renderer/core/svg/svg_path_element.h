@@ -49,7 +49,7 @@ class SVGPathElement final : public SVGGeometryElement {
 
   FloatRect GetBBox() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   const StylePath* GetStylePath() const;

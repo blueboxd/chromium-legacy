@@ -232,7 +232,7 @@ class CORE_EXPORT FrameLoader final {
   // the navigation.
   void CancelClientNavigation();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   void DidDropNavigation();
   void MarkAsLoading();

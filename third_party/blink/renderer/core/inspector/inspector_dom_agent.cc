@@ -110,7 +110,7 @@ class InspectorRevalidateDOMTask final
   void ScheduleStyleAttrRevalidationFor(Element*);
   void Reset() { timer_.Stop(); }
   void OnTimer(TimerBase*);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   Member<InspectorDOMAgent> dom_agent_;
@@ -143,7 +143,7 @@ void InspectorRevalidateDOMTask::OnTimer(TimerBase*) {
   style_attr_invalidated_elements_.clear();
 }
 
-void InspectorRevalidateDOMTask::Trace(blink::Visitor* visitor) {
+void InspectorRevalidateDOMTask::Trace(Visitor* visitor) {
   visitor->Trace(dom_agent_);
   visitor->Trace(style_attr_invalidated_elements_);
 }
@@ -2366,7 +2366,7 @@ Response InspectorDOMAgent::getFileInfo(const String& object_id, String* path) {
   return Response::OK();
 }
 
-void InspectorDOMAgent::Trace(blink::Visitor* visitor) {
+void InspectorDOMAgent::Trace(Visitor* visitor) {
   visitor->Trace(dom_listener_);
   visitor->Trace(inspected_frames_);
   visitor->Trace(document_node_to_id_map_);

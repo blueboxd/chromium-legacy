@@ -592,7 +592,7 @@ void CSSComputedStyleDeclaration::SetPropertyInternal(
           "' property is read-only.");
 }
 
-void CSSComputedStyleDeclaration::Trace(blink::Visitor* visitor) {
+void CSSComputedStyleDeclaration::Trace(Visitor* visitor) {
   visitor->Trace(node_);
   CSSStyleDeclaration::Trace(visitor);
 }

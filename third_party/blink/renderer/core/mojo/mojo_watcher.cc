@@ -49,7 +49,7 @@ MojoResult MojoWatcher::cancel() {
   return MOJO_RESULT_OK;
 }
 
-void MojoWatcher::Trace(blink::Visitor* visitor) {
+void MojoWatcher::Trace(Visitor* visitor) {
   visitor->Trace(callback_);
   ScriptWrappable::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);

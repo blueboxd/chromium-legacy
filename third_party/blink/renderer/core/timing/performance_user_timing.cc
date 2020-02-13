@@ -268,7 +268,7 @@ PerformanceEntryVector UserTiming::GetMeasures(const AtomicString& name) const {
   return GetEntrySequenceByName(measures_map_, name);
 }
 
-void UserTiming::Trace(blink::Visitor* visitor) {
+void UserTiming::Trace(Visitor* visitor) {
   visitor->Trace(performance_);
   visitor->Trace(marks_map_);
   visitor->Trace(measures_map_);

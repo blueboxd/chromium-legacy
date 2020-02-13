@@ -43,7 +43,7 @@ class CORE_EXPORT Agent : public GarbageCollected<Agent> {
     return event_loop_;
   }
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
   void AttachExecutionContext(ExecutionContext*);
   void DetachExecutionContext(ExecutionContext*);

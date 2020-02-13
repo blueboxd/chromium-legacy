@@ -323,7 +323,7 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
       std::move(resource_request), target_frame, load_type);
 }
 
-void FormSubmission::Trace(blink::Visitor* visitor) {
+void FormSubmission::Trace(Visitor* visitor) {
   visitor->Trace(form_);
   visitor->Trace(target_frame_);
 }

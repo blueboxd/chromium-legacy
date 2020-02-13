@@ -44,7 +44,7 @@ DocumentLoadTiming::DocumentLoadTiming(DocumentLoader& document_loader)
       tick_clock_(base::DefaultTickClock::GetInstance()),
       document_loader_(document_loader) {}
 
-void DocumentLoadTiming::Trace(blink::Visitor* visitor) {
+void DocumentLoadTiming::Trace(Visitor* visitor) {
   visitor->Trace(document_loader_);
 }
 

@@ -52,7 +52,7 @@ class RecordTest final : public ScriptWrappable {
 
   void setFloatOrStringElementRecord(const FloatOrStringElementRecord&) {}
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Vector<std::pair<String, int32_t>> string_long_record_;

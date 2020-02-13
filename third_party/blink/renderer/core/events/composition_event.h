@@ -63,7 +63,7 @@ class CompositionEvent final : public UIEvent {
 
   bool IsCompositionEvent() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   String data_;

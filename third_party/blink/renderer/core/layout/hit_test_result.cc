@@ -124,7 +124,7 @@ void HitTestResult::PopulateFromCachedResult(const HitTestResult& other) {
           : nullptr;
 }
 
-void HitTestResult::Trace(blink::Visitor* visitor) {
+void HitTestResult::Trace(Visitor* visitor) {
   visitor->Trace(inner_node_);
   visitor->Trace(inert_node_);
   visitor->Trace(inner_element_);

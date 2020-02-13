@@ -66,7 +66,7 @@ class CORE_EXPORT FetchDataLoader : public GarbageCollected<FetchDataLoader> {
     // This function is called when an abort has been signalled.
     virtual void Abort() = 0;
 
-    void Trace(blink::Visitor* visitor) override {}
+    void Trace(Visitor* visitor) override {}
   };
 
   static FetchDataLoader* CreateLoaderAsBlobHandle(const String& mime_type);
@@ -91,7 +91,7 @@ class CORE_EXPORT FetchDataLoader : public GarbageCollected<FetchDataLoader> {
 
   virtual void Cancel() = 0;
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
 };
 
 }  // namespace blink

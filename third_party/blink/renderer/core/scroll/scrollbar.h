@@ -204,7 +204,7 @@ class CORE_EXPORT Scrollbar : public GarbageCollected<Scrollbar>,
 
   WebColorScheme UsedColorScheme() const;
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
  protected:
   void AutoscrollTimerFired(TimerBase*);

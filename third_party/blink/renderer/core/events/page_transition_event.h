@@ -67,7 +67,7 @@ class PageTransitionEvent final : public Event {
 
   bool persisted() const { return persisted_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // TODO(rakina): change to PageTransitionEventPersistence.

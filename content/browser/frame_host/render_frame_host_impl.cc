@@ -4086,9 +4086,17 @@ void RenderFrameHostImpl::EnterFullscreen(
   // by a user generated orientation change, because the fullscreen can be
   // triggered by either a user activation or a user generated orientation
   // change.
+  // CanEnterFullscreenWithoutUserActivation is always false by default, so it
+  // keeps the current logic that we can enter fullscreen mode either by the
+  // orientation change or successfully consuming the user activation. This
+  // function is used for layout tests to allow fullscreen when mocking screen
+  // screen orientation changes.
   // TODO(lanwei): Investigate whether we can terminate the renderer when the
   // user activation has already been consumed.
-  if (!delegate_->HasSeenRecentScreenOrientationChange()) {
+  if (!delegate_->HasSeenRecentScreenOrientationChange() &&
+      !GetContentClient()
+           ->browser()
+           ->CanEnterFullscreenWithoutUserActivation()) {
     bool is_consumed = frame_tree_node_->UpdateUserActivationState(
         blink::mojom::UserActivationUpdateType::kConsumeTransientActivation);
     if (!is_consumed) {

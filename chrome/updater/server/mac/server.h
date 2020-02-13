@@ -9,8 +9,9 @@
 
 namespace updater {
 
-int RunServer();
+class UpdateService;
 
+int RunServer(std::unique_ptr<UpdateService> update_service);
 }
 
 #endif  // CHROME_UPDATER_SERVER_MAC_SERVER_H_

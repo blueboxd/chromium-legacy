@@ -56,7 +56,7 @@ class SVGAnimatedTransformList final
             MakeGarbageCollected<SVGTransformList>(),
             css_property_id) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     SVGAnimatedProperty<SVGTransformList>::Trace(visitor);
     ScriptWrappable::Trace(visitor);
   }

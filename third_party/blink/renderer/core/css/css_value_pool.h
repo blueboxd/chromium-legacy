@@ -127,7 +127,7 @@ class CORE_EXPORT CSSValuePool final : public GarbageCollected<CSSValuePool> {
     return font_face_value_cache_.insert(string, nullptr);
   }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   // Cached individual values.

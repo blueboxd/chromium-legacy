@@ -37,7 +37,7 @@ class SVGViewElement final : public SVGElement,
  public:
   explicit SVGViewElement(Document&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void ParseAttribute(const AttributeModificationParams&) override;

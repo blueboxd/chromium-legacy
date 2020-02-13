@@ -185,7 +185,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   DoublePoint screen_location_;
   DoublePoint client_location_;

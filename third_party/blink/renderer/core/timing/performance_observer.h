@@ -53,7 +53,7 @@ class CORE_EXPORT PerformanceObserver final
 
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) final;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // This describes the types of parameters that an observer can have in its

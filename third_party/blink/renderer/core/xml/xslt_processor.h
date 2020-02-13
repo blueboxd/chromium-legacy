@@ -87,7 +87,7 @@ class XSLTProcessor final : public ScriptWrappable {
 
   typedef HashMap<String, String> ParameterMap;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<XSLStyleSheet> stylesheet_;

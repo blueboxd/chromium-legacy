@@ -67,7 +67,7 @@ class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
 
   ScriptValue detail(ScriptState*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   ~PerformanceMark() override = default;

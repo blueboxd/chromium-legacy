@@ -74,7 +74,7 @@ SVGImageElement::SVGImageElement(Document& document)
   AddToPropertyMap(preserve_aspect_ratio_);
 }
 
-void SVGImageElement::Trace(blink::Visitor* visitor) {
+void SVGImageElement::Trace(Visitor* visitor) {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);

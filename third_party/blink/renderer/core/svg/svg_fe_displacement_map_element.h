@@ -49,7 +49,7 @@ class SVGFEDisplacementMapElement final
     return y_channel_selector_.Get();
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool SetFilterEffectAttribute(FilterEffect*,

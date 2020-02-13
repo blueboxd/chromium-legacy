@@ -307,6 +307,9 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // Callback from PagePopup when it is closed, which it can be done directly
   // without coming through WebViewImpl.
   void CleanupPagePopup();
+  // Ensure popup's size and position is correct based on its owner element's
+  // dimensions.
+  void UpdatePagePopup();
   LocalDOMWindow* PagePopupWindow() const;
 
   PageScheduler* Scheduler() const override;

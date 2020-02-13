@@ -193,7 +193,7 @@ class CORE_EXPORT MessageEvent final : public Event {
 
   void EntangleMessagePorts(ExecutionContext*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   WARN_UNUSED_RESULT v8::Local<v8::Object> AssociateWithWrapper(
       v8::Isolate*,

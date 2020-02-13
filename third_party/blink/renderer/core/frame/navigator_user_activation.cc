@@ -30,7 +30,7 @@ UserActivation* NavigatorUserActivation::userActivation() {
   return user_activation_;
 }
 
-void NavigatorUserActivation::Trace(blink::Visitor* visitor) {
+void NavigatorUserActivation::Trace(Visitor* visitor) {
   visitor->Trace(user_activation_);
   Supplement<Navigator>::Trace(visitor);
 }

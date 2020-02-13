@@ -32,7 +32,7 @@ class PerformanceLongTaskTiming final : public PerformanceEntry {
 
   TaskAttributionVector attribution() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   ~PerformanceLongTaskTiming() override;

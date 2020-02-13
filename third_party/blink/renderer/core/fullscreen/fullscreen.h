@@ -106,7 +106,7 @@ class CORE_EXPORT Fullscreen final : public GarbageCollected<Fullscreen>,
   // ContextLifecycleObserver:
   void ContextDestroyed(ExecutionContext*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   static Fullscreen* FromIfExists(Document&);
@@ -135,7 +135,7 @@ class CORE_EXPORT Fullscreen final : public GarbageCollected<Fullscreen>,
                    RequestType type,
                    ScriptPromiseResolver* resolver);
     virtual ~PendingRequest();
-    virtual void Trace(blink::Visitor* visitor);
+    virtual void Trace(Visitor* visitor);
 
     Element* element() { return element_; }
     RequestType type() { return type_; }

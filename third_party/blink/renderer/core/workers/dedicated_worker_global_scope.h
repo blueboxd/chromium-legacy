@@ -116,7 +116,7 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(messageerror, kMessageerror)
 
   // Called by the Oilpan.
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DidReceiveResponseForClassicScript(

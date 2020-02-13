@@ -40,7 +40,7 @@ void SampledEffect::UpdateReplacedProperties(
   }
 }
 
-void SampledEffect::Trace(blink::Visitor* visitor) {
+void SampledEffect::Trace(Visitor* visitor) {
   visitor->Trace(effect_);
   visitor->Trace(interpolations_);
 }

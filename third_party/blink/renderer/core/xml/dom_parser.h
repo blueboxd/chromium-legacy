@@ -45,7 +45,7 @@ class DOMParser final : public ScriptWrappable {
                             ExceptionState& exception_state);
   Document* parseFromString(const StringOrTrustedHTML&, const String& type);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Document* parseFromStringInternal(const String&, const String& type);

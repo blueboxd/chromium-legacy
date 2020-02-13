@@ -24,7 +24,7 @@ class CORE_EXPORT NavigatorLanguage : public GarbageCollectedMixin {
   // Accepts a comma-separated list of languages.
   void SetLanguagesForTesting(const String& languages);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   virtual String GetAcceptLanguages() = 0;

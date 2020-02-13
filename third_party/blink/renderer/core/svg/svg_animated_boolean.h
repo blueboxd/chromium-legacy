@@ -50,7 +50,7 @@ class SVGAnimatedBoolean final : public ScriptWrappable,
                                         attribute_name,
                                         MakeGarbageCollected<SVGBoolean>()) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     SVGAnimatedProperty<SVGBoolean>::Trace(visitor);
     ScriptWrappable::Trace(visitor);
   }

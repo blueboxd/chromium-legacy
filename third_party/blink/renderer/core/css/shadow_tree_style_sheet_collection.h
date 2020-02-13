@@ -47,7 +47,7 @@ class ShadowTreeStyleSheetCollection final
   void UpdateActiveStyleSheets(StyleEngine& master_engine);
   bool IsShadowTreeStyleSheetCollection() const final { return true; }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     TreeScopeStyleSheetCollection::Trace(visitor);
   }
 

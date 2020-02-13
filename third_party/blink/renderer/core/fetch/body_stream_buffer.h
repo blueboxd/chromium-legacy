@@ -84,7 +84,7 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
 
   bool IsAborted();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   class LoaderClient;

@@ -181,7 +181,7 @@ void CSSFontSelector::ReportFailedLocalFontMatch(
   document_->GetFontMatchingMetrics()->ReportFailedLocalFontMatch(font_name);
 }
 
-void CSSFontSelector::Trace(blink::Visitor* visitor) {
+void CSSFontSelector::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(font_face_cache_);
   visitor->Trace(clients_);

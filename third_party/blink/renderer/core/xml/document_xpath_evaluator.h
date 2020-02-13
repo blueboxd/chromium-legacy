@@ -60,7 +60,7 @@ class DocumentXPathEvaluator final
                                ExceptionState&);
 
   explicit DocumentXPathEvaluator(Document&);
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<XPathEvaluator> xpath_evaluator_;

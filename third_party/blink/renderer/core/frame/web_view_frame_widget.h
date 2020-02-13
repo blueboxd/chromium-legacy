@@ -100,7 +100,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   PageWidgetEventHandler* GetPageWidgetEventHandler() override;

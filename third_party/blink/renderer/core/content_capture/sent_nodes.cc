@@ -16,7 +16,7 @@ void SentNodes::OnSent(const Node& node) {
   sent_nodes_.insert(WeakMember<const Node>(&node));
 }
 
-void SentNodes::Trace(blink::Visitor* visitor) {
+void SentNodes::Trace(Visitor* visitor) {
   visitor->Trace(sent_nodes_);
 }
 

@@ -30,7 +30,7 @@ class ComputedAccessibleNodePromiseResolver final
   ScriptPromise Promise();
   void ComputeAccessibleNode();
   void EnsureUpToDate();
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   void UpdateTreeAndResolve();

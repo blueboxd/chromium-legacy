@@ -36,8 +36,6 @@ class WebAppTabHelper : public WebAppTabHelperBase,
   // WebAppTabHelperBase:
   const AppId& GetAppId() const override;
   void SetAppId(const AppId& app_id) override;
-  bool IsUserInstalled() const override;
-  bool IsFromInstallButton() const override;
   const base::UnguessableToken& GetAudioFocusGroupIdForTesting() const override;
 
   // content::WebContentsObserver:

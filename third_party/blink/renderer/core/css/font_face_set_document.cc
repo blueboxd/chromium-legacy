@@ -208,7 +208,7 @@ size_t FontFaceSetDocument::ApproximateBlankCharacterCount(Document& document) {
   return 0;
 }
 
-void FontFaceSetDocument::Trace(blink::Visitor* visitor) {
+void FontFaceSetDocument::Trace(Visitor* visitor) {
   Supplement<Document>::Trace(visitor);
   FontFaceSet::Trace(visitor);
 }

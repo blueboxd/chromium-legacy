@@ -532,7 +532,7 @@ void DOMPatchSupport::MarkNodeAsUsed(Digest* digest) {
   }
 }
 
-void DOMPatchSupport::Digest::Trace(blink::Visitor* visitor) {
+void DOMPatchSupport::Digest::Trace(Visitor* visitor) {
   visitor->Trace(node_);
   visitor->Trace(children_);
 }

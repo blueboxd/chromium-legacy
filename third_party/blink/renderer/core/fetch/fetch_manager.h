@@ -31,7 +31,7 @@ class CORE_EXPORT FetchManager final : public GarbageCollected<FetchManager>,
                       ExceptionState&);
   void ContextDestroyed(ExecutionContext*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   class Loader;

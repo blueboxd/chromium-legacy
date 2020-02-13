@@ -319,7 +319,7 @@ bool PrintContext::IsFrameValid() const {
          frame_->GetDocument()->GetLayoutView();
 }
 
-void PrintContext::Trace(blink::Visitor* visitor) {
+void PrintContext::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(linked_destinations_);
 }

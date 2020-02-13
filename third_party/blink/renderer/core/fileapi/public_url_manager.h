@@ -71,7 +71,7 @@ class CORE_EXPORT PublicURLManager final
   // ContextLifecycleObserver interface.
   void ContextDestroyed(ExecutionContext*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void SetURLStoreForTesting(
       mojo::AssociatedRemote<mojom::blink::BlobURLStore> url_store) {

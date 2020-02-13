@@ -21,7 +21,7 @@ class ExecutionContextCSPDelegate final
  public:
   explicit ExecutionContextCSPDelegate(ExecutionContext&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // ContentSecurityPolicyDelegate overrides:
   const SecurityOrigin* GetSecurityOrigin() override;

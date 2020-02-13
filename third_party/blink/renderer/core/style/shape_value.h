@@ -68,7 +68,7 @@ class ShapeValue final : public GarbageCollected<ShapeValue> {
 
   bool operator==(const ShapeValue& other) const;
 
-  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(image_); }
+  virtual void Trace(Visitor* visitor) { visitor->Trace(image_); }
 
  private:
   ShapeValueType type_;

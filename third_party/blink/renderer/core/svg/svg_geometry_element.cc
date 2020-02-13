@@ -75,7 +75,7 @@ void SVGGeometryElement::SvgAttributeChanged(const QualifiedName& attr_name) {
   SVGGraphicsElement::SvgAttributeChanged(attr_name);
 }
 
-void SVGGeometryElement::Trace(blink::Visitor* visitor) {
+void SVGGeometryElement::Trace(Visitor* visitor) {
   visitor->Trace(path_length_);
   SVGGraphicsElement::Trace(visitor);
 }

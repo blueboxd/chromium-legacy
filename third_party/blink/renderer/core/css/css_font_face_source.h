@@ -74,7 +74,7 @@ class CORE_EXPORT CSSFontFaceSource
   virtual bool HadBlankText() { return false; }
   virtual void PaintRequested() {}
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
 
  protected:
   CSSFontFaceSource() = default;

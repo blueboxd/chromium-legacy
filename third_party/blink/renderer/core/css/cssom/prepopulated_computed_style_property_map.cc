@@ -121,7 +121,7 @@ String PrepopulatedComputedStylePropertyMap::SerializationForShorthand(
   return "";
 }
 
-void PrepopulatedComputedStylePropertyMap::Trace(blink::Visitor* visitor) {
+void PrepopulatedComputedStylePropertyMap::Trace(Visitor* visitor) {
   visitor->Trace(native_values_);
   visitor->Trace(custom_values_);
   StylePropertyMapReadOnlyMainThread::Trace(visitor);

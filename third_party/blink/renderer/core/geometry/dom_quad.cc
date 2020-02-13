@@ -44,7 +44,7 @@ class DOMQuadPoint final : public DOMPoint {
       quad_->set_needs_bounds_calculation(true);
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(quad_);
     DOMPoint::Trace(visitor);
   }

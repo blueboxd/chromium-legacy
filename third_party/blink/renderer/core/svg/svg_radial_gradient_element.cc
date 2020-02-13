@@ -73,7 +73,7 @@ SVGRadialGradientElement::SVGRadialGradientElement(Document& document)
   AddToPropertyMap(fr_);
 }
 
-void SVGRadialGradientElement::Trace(blink::Visitor* visitor) {
+void SVGRadialGradientElement::Trace(Visitor* visitor) {
   visitor->Trace(cx_);
   visitor->Trace(cy_);
   visitor->Trace(r_);

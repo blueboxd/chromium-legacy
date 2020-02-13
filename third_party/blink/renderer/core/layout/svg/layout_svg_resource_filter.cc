@@ -30,7 +30,7 @@
 
 namespace blink {
 
-void FilterData::Trace(blink::Visitor* visitor) {
+void FilterData::Trace(Visitor* visitor) {
   visitor->Trace(last_effect);
   visitor->Trace(node_map);
 }

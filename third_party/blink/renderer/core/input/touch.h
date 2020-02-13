@@ -105,7 +105,7 @@ class CORE_EXPORT Touch final : public ScriptWrappable {
   const FloatPoint& ScreenLocation() const { return screen_pos_; }
   Touch* CloneWithNewTarget(EventTarget*) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<EventTarget> target_;

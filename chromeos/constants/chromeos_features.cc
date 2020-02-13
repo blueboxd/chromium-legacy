@@ -295,6 +295,10 @@ const base::Feature kVirtualKeyboardBorderedKey{
 const base::Feature kVirtualKeyboardFloatingResizable{
     "VirtualKeyboardFloatingResizable", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable or disable MOZC IME to use protobuf as interactive message format.
+const base::Feature kImeMozcProto{"ImeMozcProto",
+                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
 ////////////////////////////////////////////////////////////////////////////////
 
 bool IsAmbientModeEnabled() {

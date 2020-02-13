@@ -81,7 +81,7 @@ class CORE_EXPORT RemoteFrameOwner final
     required_csp_ = required_csp;
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Intentionally private to prevent redundant checks when the type is

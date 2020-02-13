@@ -145,7 +145,7 @@ VTTCueBackgroundBox::VTTCueBackgroundBox(Document& document)
   SetShadowPseudoId(TextTrackCue::CueShadowPseudoId());
 }
 
-void VTTCueBackgroundBox::Trace(blink::Visitor* visitor) {
+void VTTCueBackgroundBox::Trace(Visitor* visitor) {
   visitor->Trace(track_);
   HTMLDivElement::Trace(visitor);
 }

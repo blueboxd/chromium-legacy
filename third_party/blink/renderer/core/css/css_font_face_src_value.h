@@ -117,7 +117,7 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
       SetResource(resource, task_runner);
     }
 
-    void Trace(blink::Visitor* visitor) override {
+    void Trace(Visitor* visitor) override {
       FontResourceClient::Trace(visitor);
     }
 

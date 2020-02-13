@@ -564,7 +564,7 @@ Response InspectorEmulationAgent::AssertPage() {
   return Response::OK();
 }
 
-void InspectorEmulationAgent::Trace(blink::Visitor* visitor) {
+void InspectorEmulationAgent::Trace(Visitor* visitor) {
   visitor->Trace(web_local_frame_);
   InspectorBaseAgent::Trace(visitor);
 }

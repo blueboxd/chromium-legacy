@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/shell/browser/shell_speech_recognition_manager_delegate.h"
+#include "services/network/public/mojom/network_context.mojom-forward.h"
 
 namespace content {
 
@@ -77,6 +78,12 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   std::string GetUserAgent() override;
   blink::UserAgentMetadata GetUserAgentMetadata() override;
 
+  void OverrideURLLoaderFactoryParams(
+      BrowserContext* browser_context,
+      const url::Origin& origin,
+      bool is_for_isolated_world,
+      network::mojom::URLLoaderFactoryParams* factory_params) override;
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   void GetAdditionalMappedFilesForChildProcess(
       const base::CommandLine& command_line,
@@ -115,6 +122,14 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       base::OnceCallback<void(bool is_main_frame)> login_request_callback) {
     login_request_callback_ = std::move(login_request_callback);
   }
+  void set_url_loader_factory_params_callback(
+      base::RepeatingCallback<void(
+          const network::mojom::URLLoaderFactoryParams*,
+          const url::Origin&,
+          bool is_for_isolated_world)> url_loader_factory_params_callback) {
+    url_loader_factory_params_callback_ =
+        std::move(url_loader_factory_params_callback);
+  }
 
  protected:
   void set_browser_main_parts(ShellBrowserMainParts* parts) {
@@ -126,6 +141,10 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   base::OnceCallback<bool(const service_manager::Identity&)>
       should_terminate_on_service_quit_callback_;
   base::OnceCallback<void(bool is_main_frame)> login_request_callback_;
+  base::RepeatingCallback<void(const network::mojom::URLLoaderFactoryParams*,
+                               const url::Origin&,
+                               bool is_for_isolated_world)>
+      url_loader_factory_params_callback_;
 
   // Owned by content::BrowserMainLoop.
   ShellBrowserMainParts* shell_browser_main_parts_;

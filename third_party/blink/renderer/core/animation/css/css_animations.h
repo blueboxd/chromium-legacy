@@ -99,7 +99,7 @@ class CORE_EXPORT CSSAnimations final {
   }
   void Cancel();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   class RunningAnimation final : public GarbageCollected<RunningAnimation> {
@@ -121,7 +121,7 @@ class CORE_EXPORT CSSAnimations final {
       specified_timing = update.specified_timing;
     }
 
-    void Trace(blink::Visitor* visitor) {
+    void Trace(Visitor* visitor) {
       visitor->Trace(animation);
       visitor->Trace(style_rule);
     }
@@ -139,7 +139,7 @@ class CORE_EXPORT CSSAnimations final {
     DISALLOW_NEW();
 
    public:
-    void Trace(blink::Visitor* visitor) { visitor->Trace(animation); }
+    void Trace(Visitor* visitor) { visitor->Trace(animation); }
 
     Member<Animation> animation;
     scoped_refptr<const ComputedStyle> from;
@@ -204,7 +204,7 @@ class CORE_EXPORT CSSAnimations final {
           previous_phase_(Timing::kPhaseNone) {}
     bool RequiresIterationEvents(const AnimationEffect&) override;
     void OnEventCondition(const AnimationEffect&, Timing::Phase) override;
-    void Trace(blink::Visitor*) override;
+    void Trace(Visitor*) override;
 
    private:
     const Element& AnimationTarget() const { return *animation_target_; }
@@ -231,7 +231,7 @@ class CORE_EXPORT CSSAnimations final {
       return false;
     }
     void OnEventCondition(const AnimationEffect&, Timing::Phase) override;
-    void Trace(blink::Visitor*) override;
+    void Trace(Visitor*) override;
 
    private:
     void EnqueueEvent(const WTF::AtomicString& type,

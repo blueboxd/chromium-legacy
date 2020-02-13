@@ -404,13 +404,9 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^ppapi/thunk/',
   '^remoting/base/',
   '^remoting/client/',
-  '^remoting/codec/',
   '^remoting/host/',
   '^remoting/internal/',
-  '^remoting/ios/',
   '^remoting/protocol/',
-  '^remoting/signaling/',
-  '^remoting/test/',
   '^services/',
   '^third_party/blink/',
   '^tools/clang/base_bind_rewriters/',  # Intentional.

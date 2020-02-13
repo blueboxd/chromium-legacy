@@ -37,7 +37,7 @@ class InspectorResourceContentLoader::ResourceClient final
   explicit ResourceClient(InspectorResourceContentLoader* loader)
       : loader_(loader) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(loader_);
     RawResourceClient::Trace(visitor);
   }
@@ -171,7 +171,7 @@ InspectorResourceContentLoader::~InspectorResourceContentLoader() {
   DCHECK(resources_.IsEmpty());
 }
 
-void InspectorResourceContentLoader::Trace(blink::Visitor* visitor) {
+void InspectorResourceContentLoader::Trace(Visitor* visitor) {
   visitor->Trace(inspected_frame_);
   visitor->Trace(pending_resource_clients_);
   visitor->Trace(resources_);

@@ -62,7 +62,7 @@ class CORE_EXPORT PerformanceNavigationTiming final
   DOMHighResTimeStamp redirectEnd() const override;
   DOMHighResTimeStamp responseEnd() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   void BuildJSONValue(V8ObjectBuilder&) const override;

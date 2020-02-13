@@ -96,7 +96,7 @@ class CORE_EXPORT KeyboardEvent final : public UIEventWithKeyState {
   unsigned which() const override;
   bool isComposing() const { return is_composing_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void InitLocationModifiers(unsigned location);

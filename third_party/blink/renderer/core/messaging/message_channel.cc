@@ -39,7 +39,7 @@ MessageChannel::MessageChannel(ExecutionContext* context)
   port2_->Entangle(std::move(pipe.handle1));
 }
 
-void MessageChannel::Trace(blink::Visitor* visitor) {
+void MessageChannel::Trace(Visitor* visitor) {
   visitor->Trace(port1_);
   visitor->Trace(port2_);
   ScriptWrappable::Trace(visitor);

@@ -46,7 +46,7 @@ class PaintWorkletStylePropertyMapIterationSource final
     return true;
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(values_);
     PairIterable<String, CSSStyleValueVector>::IterationSource::Trace(visitor);
   }
@@ -209,7 +209,7 @@ PaintWorkletStylePropertyMap::StartIteration(ScriptState* script_state,
       result);
 }
 
-void PaintWorkletStylePropertyMap::Trace(blink::Visitor* visitor) {
+void PaintWorkletStylePropertyMap::Trace(Visitor* visitor) {
   StylePropertyMapReadOnly::Trace(visitor);
 }
 

@@ -42,7 +42,7 @@ class CORE_EXPORT PromiseRejectionEvent final : public Event {
   // observed across different worlds.
   bool CanBeDispatchedInWorld(const DOMWrapperWorld&) const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   ~PromiseRejectionEvent() override;

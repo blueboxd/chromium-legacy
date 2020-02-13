@@ -92,7 +92,7 @@ class CORE_EXPORT InspectTool : public GarbageCollected<InspectTool> {
   virtual bool ForwardEventsToOverlay();
   virtual void Draw(float scale) {}
   virtual void Dispatch(const String& message) {}
-  virtual void Trace(blink::Visitor* visitor);
+  virtual void Trace(Visitor* visitor);
   virtual void Dispose() {}
   virtual bool HideOnHideHighlight();
 
@@ -115,7 +115,7 @@ class CORE_EXPORT InspectorOverlayAgent final
                         v8_inspector::V8InspectorSession*,
                         InspectorDOMAgent*);
   ~InspectorOverlayAgent() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // protocol::Dispatcher::OverlayCommandHandler implementation.
   protocol::Response enable() override;

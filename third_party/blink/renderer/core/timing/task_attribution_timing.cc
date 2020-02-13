@@ -55,7 +55,7 @@ void TaskAttributionTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.AddString("containerName", containerName());
 }
 
-void TaskAttributionTiming::Trace(blink::Visitor* visitor) {
+void TaskAttributionTiming::Trace(Visitor* visitor) {
   PerformanceEntry::Trace(visitor);
 }
 

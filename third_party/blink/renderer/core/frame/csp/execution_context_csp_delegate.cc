@@ -29,7 +29,7 @@ ExecutionContextCSPDelegate::ExecutionContextCSPDelegate(
     ExecutionContext& execution_context)
     : execution_context_(&execution_context) {}
 
-void ExecutionContextCSPDelegate::Trace(blink::Visitor* visitor) {
+void ExecutionContextCSPDelegate::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
   ContentSecurityPolicyDelegate::Trace(visitor);
 }

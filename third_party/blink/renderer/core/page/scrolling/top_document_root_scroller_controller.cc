@@ -38,7 +38,7 @@ ScrollableArea* GetScrollableArea(Node* node) {
 TopDocumentRootScrollerController::TopDocumentRootScrollerController(Page& page)
     : page_(&page) {}
 
-void TopDocumentRootScrollerController::Trace(blink::Visitor* visitor) {
+void TopDocumentRootScrollerController::Trace(Visitor* visitor) {
   visitor->Trace(viewport_apply_scroll_);
   visitor->Trace(global_root_scroller_);
   visitor->Trace(page_);

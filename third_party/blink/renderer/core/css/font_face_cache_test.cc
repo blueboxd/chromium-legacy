@@ -43,7 +43,7 @@ class FontFaceCacheTest : public PageTestBase {
 
   FontFaceCache cache_;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  protected:
   const AtomicString kFontNameForTesting{"Arial"};
@@ -494,7 +494,7 @@ TEST_F(FontFaceCacheTest, ObliqueRangeMatching) {
       FontSelectionRange({FontSelectionValue(30), FontSelectionValue(35)}));
 }
 
-void FontFaceCacheTest::Trace(blink::Visitor* visitor) {
+void FontFaceCacheTest::Trace(Visitor* visitor) {
   visitor->Trace(cache_);
 }
 

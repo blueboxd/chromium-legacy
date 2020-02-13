@@ -301,7 +301,7 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   void AcceptLanguagesChanged();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void AnimationHostInitialized(cc::AnimationHost&, LocalFrameView*);
   void WillCloseAnimationHost(LocalFrameView*);

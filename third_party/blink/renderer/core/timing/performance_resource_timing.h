@@ -96,7 +96,7 @@ class CORE_EXPORT PerformanceResourceTiming
   // Implements blink::mojom::blink::WorkerTimingContainer
   void AddPerformanceEntry(
       mojom::blink::PerformanceMarkOrMeasurePtr entry) override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   void BuildJSONValue(V8ObjectBuilder&) const override;

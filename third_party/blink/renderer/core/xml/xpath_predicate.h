@@ -39,7 +39,7 @@ namespace xpath {
 class CORE_EXPORT Number final : public Expression {
  public:
   explicit Number(double);
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Value Evaluate(EvaluationContext&) const override;
@@ -51,7 +51,7 @@ class CORE_EXPORT Number final : public Expression {
 class CORE_EXPORT StringExpression final : public Expression {
  public:
   explicit StringExpression(const String&);
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Value Evaluate(EvaluationContext&) const override;
@@ -120,7 +120,7 @@ class Union final : public Expression {
 class Predicate final : public GarbageCollected<Predicate> {
  public:
   explicit Predicate(Expression*);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   bool Evaluate(EvaluationContext&) const;
   bool IsContextPositionSensitive() const {

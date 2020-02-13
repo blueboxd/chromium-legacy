@@ -1232,7 +1232,7 @@ SVGResourceClient& SVGElement::EnsureSVGResourceClient() {
   return EnsureSVGRareData()->EnsureSVGResourceClient(this);
 }
 
-void SVGElement::Trace(blink::Visitor* visitor) {
+void SVGElement::Trace(Visitor* visitor) {
   visitor->Trace(elements_with_relative_lengths_);
   visitor->Trace(attribute_to_property_map_);
   visitor->Trace(svg_rare_data_);

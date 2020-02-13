@@ -36,7 +36,7 @@ class SampledEffect final : public GarbageCollected<SampledEffect> {
   void RemoveReplacedInterpolations(const HashSet<PropertyHandle>&);
   void UpdateReplacedProperties(HashSet<PropertyHandle>&);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   WeakMember<KeyframeEffect> effect_;

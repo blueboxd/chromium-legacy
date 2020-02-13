@@ -74,7 +74,7 @@ struct CSSGradientColorStop {
 
   bool IsCacheable() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   Member<const CSSPrimitiveValue> offset_;  // percentage | length | angle
   Member<const CSSValue> color_;

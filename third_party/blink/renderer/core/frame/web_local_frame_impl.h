@@ -430,7 +430,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   // Returns true if our print context suggests using printing layout.
   bool UsePrintingLayout() const;
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
  protected:
   // WebLocalFrame protected overrides:

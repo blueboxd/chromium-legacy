@@ -61,7 +61,7 @@ class CustomLayoutFragment : public ScriptWrappable {
 
   bool IsValid() const { return token_->IsValid(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<CustomLayoutChild> child_;

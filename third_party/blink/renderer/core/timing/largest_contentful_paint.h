@@ -36,7 +36,7 @@ class CORE_EXPORT LargestContentfulPaint final : public PerformanceEntry {
   const String& url() const { return url_; }
   Element* element() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void BuildJSONValue(V8ObjectBuilder&) const override;

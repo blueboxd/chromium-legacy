@@ -75,7 +75,7 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   PointerId pointer_id_;

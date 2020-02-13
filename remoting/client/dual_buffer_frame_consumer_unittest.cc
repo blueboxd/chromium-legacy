@@ -62,10 +62,11 @@ class DualBufferFrameConsumerTest : public testing::Test {
  protected:
   std::unique_ptr<DualBufferFrameConsumer> consumer_;
   std::unique_ptr<webrtc::DesktopFrame> received_frame_;
-  base::Closure done_closure_;
+  base::OnceClosure done_closure_;
+
  private:
   void OnFrameReceived(std::unique_ptr<webrtc::DesktopFrame> frame,
-                       const base::Closure& done);
+                       base::OnceClosure done);
 };
 
 void DualBufferFrameConsumerTest::SetUp() {
@@ -77,9 +78,9 @@ void DualBufferFrameConsumerTest::SetUp() {
 
 void DualBufferFrameConsumerTest::OnFrameReceived(
     std::unique_ptr<webrtc::DesktopFrame> frame,
-    const base::Closure& done) {
+    base::OnceClosure done) {
   received_frame_ = std::move(frame);
-  done_closure_ = done;
+  done_closure_ = std::move(done);
 }
 
 TEST_F(DualBufferFrameConsumerTest, AllocateOneFrame) {

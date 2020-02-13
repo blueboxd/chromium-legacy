@@ -528,7 +528,7 @@ class MockFinishObserver : public ResourceFinishObserver {
   MOCK_METHOD0(NotifyFinished, void());
   String DebugName() const override { return "MockFinishObserver"; }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     blink::ResourceFinishObserver::Trace(visitor);
   }
 

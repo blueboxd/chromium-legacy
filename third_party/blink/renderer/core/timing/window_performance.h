@@ -93,7 +93,7 @@ class CORE_EXPORT WindowPerformance final : public Performance,
                                        const String& url,
                                        Element*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   PerformanceNavigationTiming* CreateNavigationTimingInstance() override;

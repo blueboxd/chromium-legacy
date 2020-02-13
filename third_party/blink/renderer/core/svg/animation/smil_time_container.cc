@@ -597,7 +597,7 @@ void SMILTimeContainer::AdvanceFrameForTesting() {
   SetElapsed(Elapsed() + kFrameDuration);
 }
 
-void SMILTimeContainer::Trace(blink::Visitor* visitor) {
+void SMILTimeContainer::Trace(Visitor* visitor) {
   visitor->Trace(animated_targets_);
   visitor->Trace(priority_queue_);
   visitor->Trace(owner_svg_element_);

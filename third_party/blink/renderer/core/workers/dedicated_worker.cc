@@ -477,7 +477,7 @@ void DedicatedWorker::ContextLifecycleStateChanged(
   }
 }
 
-void DedicatedWorker::Trace(blink::Visitor* visitor) {
+void DedicatedWorker::Trace(Visitor* visitor) {
   visitor->Trace(options_);
   visitor->Trace(outside_fetch_client_settings_object_);
   visitor->Trace(context_proxy_);

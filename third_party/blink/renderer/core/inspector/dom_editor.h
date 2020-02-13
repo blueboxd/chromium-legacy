@@ -49,7 +49,7 @@ class DOMEditor final : public GarbageCollected<DOMEditor> {
  public:
   explicit DOMEditor(InspectorHistory*);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   bool InsertBefore(ContainerNode* parent_node,
                     Node*,

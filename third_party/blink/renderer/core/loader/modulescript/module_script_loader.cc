@@ -275,7 +275,7 @@ void ModuleScriptLoader::NotifyFetchFinished(
   AdvanceState(State::kFinished);
 }
 
-void ModuleScriptLoader::Trace(blink::Visitor* visitor) {
+void ModuleScriptLoader::Trace(Visitor* visitor) {
   visitor->Trace(modulator_);
   visitor->Trace(module_script_);
   visitor->Trace(registry_);

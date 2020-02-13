@@ -42,9 +42,10 @@ class WebrtcVideoEncoderSelector final {
     int frame_rate;  // Always > 0
   };
 
-  using IsProfileSupportedFunction = base::Callback<bool(const Profile&)>;
+  using IsProfileSupportedFunction =
+      base::RepeatingCallback<bool(const Profile&)>;
   using CreateEncoderFunction =
-      base::Callback<std::unique_ptr<WebrtcVideoEncoder>()>;
+      base::RepeatingCallback<std::unique_ptr<WebrtcVideoEncoder>()>;
 
   WebrtcVideoEncoderSelector();
   ~WebrtcVideoEncoderSelector();

@@ -133,7 +133,7 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   struct FloatingObject {
     DISALLOW_NEW();
 
-    void Trace(blink::Visitor* visitor) {}
+    void Trace(Visitor* visitor) {}
 
     const ComputedStyle& float_style;
     const ComputedStyle& style;

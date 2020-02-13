@@ -78,7 +78,7 @@ class CSSLayoutDefinition final : public GarbageCollected<CSSLayoutDefinition>,
         CustomLayoutScope*,
         IntrinsicSizesResultOptions*);
 
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
 
    private:
     void ReportException(ExceptionState*);
@@ -106,7 +106,7 @@ class CSSLayoutDefinition final : public GarbageCollected<CSSLayoutDefinition>,
 
   ScriptState* GetScriptState() const { return script_state_; }
 
-  virtual void Trace(blink::Visitor* visitor);
+  virtual void Trace(Visitor* visitor);
 
   const char* NameInHeapSnapshot() const override {
     return "CSSLayoutDefinition";

@@ -59,7 +59,7 @@ class SVGFEConvolveMatrixElement final
   SVGAnimatedInteger* targetX() { return target_x_.Get(); }
   SVGAnimatedInteger* targetY() { return target_y_.Get(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   IntSize MatrixOrder() const;

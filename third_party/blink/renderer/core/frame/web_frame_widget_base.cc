@@ -348,7 +348,7 @@ void WebFrameWidgetBase::RequestDecode(
   Client()->RequestDecode(image, std::move(callback));
 }
 
-void WebFrameWidgetBase::Trace(blink::Visitor* visitor) {
+void WebFrameWidgetBase::Trace(Visitor* visitor) {
   visitor->Trace(local_root_);
   visitor->Trace(current_drag_data_);
 }

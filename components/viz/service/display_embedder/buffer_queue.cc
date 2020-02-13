@@ -17,12 +17,10 @@
 namespace viz {
 
 BufferQueue::BufferQueue(gpu::SharedImageInterface* sii,
-                         gfx::BufferFormat format,
                          gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
                          gpu::SurfaceHandle surface_handle)
     : sii_(sii),
       allocated_count_(0),
-      format_(format),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager),
       surface_handle_(surface_handle) {}
 
@@ -69,10 +67,9 @@ void BufferQueue::SwapBuffers(const gfx::Rect& damage) {
 bool BufferQueue::Reshape(const gfx::Size& size,
                           const gfx::ColorSpace& color_space,
                           gfx::BufferFormat format) {
-  // TODO(https://crbug.com/1049334): Update |format_| here.
-  if (size == size_ && color_space == color_space_) {
+  if (size == size_ && color_space == color_space_ && format == format_)
     return false;
-  }
+
 #if !defined(OS_MACOSX)
   // TODO(ccameron): This assert is being hit on Mac try jobs. Determine if that
   // is cause for concern or if it is benign.
@@ -81,6 +78,7 @@ bool BufferQueue::Reshape(const gfx::Size& size,
 #endif
   size_ = size;
   color_space_ = color_space;
+  format_ = format;
 
   FreeAllSurfaces();
   return true;
@@ -143,7 +141,7 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface(
   // SurfaceHandle, we don't have to create a GpuMemoryBuffer here.
   std::unique_ptr<gfx::GpuMemoryBuffer> buffer(
       gpu_memory_buffer_manager_->CreateGpuMemoryBuffer(
-          size_, format_, gfx::BufferUsage::SCANOUT, surface_handle_));
+          size_, *format_, gfx::BufferUsage::SCANOUT, surface_handle_));
   if (!buffer) {
     LOG(ERROR) << "Failed to allocate GPU memory buffer";
     return nullptr;

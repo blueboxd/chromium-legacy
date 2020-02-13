@@ -50,7 +50,7 @@ class CORE_EXPORT DOMVisualViewport final : public EventTargetWithInlineData {
   explicit DOMVisualViewport(LocalDOMWindow*);
   ~DOMVisualViewport() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // EventTarget overrides:
   const AtomicString& InterfaceName() const override;

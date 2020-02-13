@@ -93,7 +93,7 @@ class CORE_EXPORT PendingAnimations final
   void NotifyCompositorAnimationStarted(double monotonic_animation_start_time,
                                         int compositor_group = 0);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   void TimerFired(TimerBase*) { Update(nullptr, false); }

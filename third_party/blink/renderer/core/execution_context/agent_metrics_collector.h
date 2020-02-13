@@ -53,7 +53,7 @@ class AgentMetricsCollector final
 
   void SetTickClockForTesting(const base::TickClock* clock) { clock_ = clock; }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   void AddTimeToTotalAgents(int time_delta_to_add);

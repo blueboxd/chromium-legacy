@@ -189,7 +189,7 @@ class CORE_EXPORT StyleSheetContents final
 
   String SourceMapURL() const { return source_map_url_; }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   StyleSheetContents& operator=(const StyleSheetContents&) = delete;

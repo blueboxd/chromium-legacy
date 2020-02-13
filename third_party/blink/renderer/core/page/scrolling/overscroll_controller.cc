@@ -35,7 +35,7 @@ OverscrollController::OverscrollController(
     ChromeClient& chrome_client)
     : visual_viewport_(&visual_viewport), chrome_client_(&chrome_client) {}
 
-void OverscrollController::Trace(blink::Visitor* visitor) {
+void OverscrollController::Trace(Visitor* visitor) {
   visitor->Trace(visual_viewport_);
   visitor->Trace(chrome_client_);
 }

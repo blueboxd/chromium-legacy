@@ -86,7 +86,7 @@ void ResizeObservation::ElementSizeChanged() {
   observer_->ElementSizeChanged();
 }
 
-void ResizeObservation::Trace(blink::Visitor* visitor) {
+void ResizeObservation::Trace(Visitor* visitor) {
   visitor->Trace(target_);
   visitor->Trace(observer_);
 }

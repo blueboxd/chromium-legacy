@@ -25,7 +25,7 @@ ViewportScrollCallback::ViewportScrollCallback(
 
 ViewportScrollCallback::~ViewportScrollCallback() = default;
 
-void ViewportScrollCallback::Trace(blink::Visitor* visitor) {
+void ViewportScrollCallback::Trace(Visitor* visitor) {
   visitor->Trace(browser_controls_);
   visitor->Trace(overscroll_controller_);
   visitor->Trace(root_frame_viewport_);

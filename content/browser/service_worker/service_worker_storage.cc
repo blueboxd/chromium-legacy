@@ -483,16 +483,6 @@ ServiceWorkerStorage::CreateResponseMetadataWriter(int64_t resource_id) {
       resource_id, disk_cache()->GetWeakPtr()));
 }
 
-void ServiceWorkerStorage::CreateNewResponseWriter(
-    ResponseWriterCreationCallback callback) {
-  int64_t resource_id = NewResourceId();
-  if (resource_id == ServiceWorkerConsts::kInvalidServiceWorkerResourceId) {
-    std::move(callback).Run(resource_id, nullptr);
-  } else {
-    std::move(callback).Run(resource_id, CreateResponseWriter(resource_id));
-  }
-}
-
 void ServiceWorkerStorage::StoreUncommittedResourceId(
     int64_t resource_id,
     DatabaseStatusCallback callback) {

@@ -98,7 +98,7 @@ class FetchManager::Loader final
          bool is_isolated_world,
          AbortSignal*);
   ~Loader() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // ThreadableLoaderClient implementation.
   bool WillFollowRedirect(const KURL&, const ResourceResponse&) override;
@@ -199,7 +199,7 @@ class FetchManager::Loader final
 
     bool IsFinished() const { return finished_; }
 
-    void Trace(blink::Visitor* visitor) override {
+    void Trace(Visitor* visitor) override {
       visitor->Trace(body_);
       visitor->Trace(updater_);
       visitor->Trace(response_);
@@ -269,7 +269,7 @@ FetchManager::Loader::~Loader() {
   DCHECK(!threadable_loader_);
 }
 
-void FetchManager::Loader::Trace(blink::Visitor* visitor) {
+void FetchManager::Loader::Trace(Visitor* visitor) {
   visitor->Trace(fetch_manager_);
   visitor->Trace(resolver_);
   visitor->Trace(fetch_request_data_);
@@ -902,7 +902,7 @@ void FetchManager::OnLoaderFinished(Loader* loader) {
   loader->Dispose();
 }
 
-void FetchManager::Trace(blink::Visitor* visitor) {
+void FetchManager::Trace(Visitor* visitor) {
   visitor->Trace(loaders_);
   ContextLifecycleObserver::Trace(visitor);
 }

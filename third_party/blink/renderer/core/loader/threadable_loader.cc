@@ -1071,7 +1071,7 @@ Document* ThreadableLoader::GetDocument() const {
   return Document::DynamicFrom(execution_context_.Get());
 }
 
-void ThreadableLoader::Trace(blink::Visitor* visitor) {
+void ThreadableLoader::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
   visitor->Trace(client_);
   visitor->Trace(resource_fetcher_);

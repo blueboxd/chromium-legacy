@@ -81,7 +81,7 @@ class WebMouseWheelEvent;
 class CORE_EXPORT EventHandler final : public GarbageCollected<EventHandler> {
  public:
   explicit EventHandler(LocalFrame&);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   void Clear();
 

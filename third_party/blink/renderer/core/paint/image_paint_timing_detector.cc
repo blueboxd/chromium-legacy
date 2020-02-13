@@ -341,7 +341,7 @@ ImageRecord* ImageRecordsManager::FindLargestPaintCandidate() const {
   return size_ordered_set_.begin()->get();
 }
 
-void ImagePaintTimingDetector::Trace(blink::Visitor* visitor) {
+void ImagePaintTimingDetector::Trace(Visitor* visitor) {
   visitor->Trace(frame_view_);
   visitor->Trace(callback_manager_);
 }

@@ -160,7 +160,7 @@ bool SharedWorker::HasPendingActivity() const {
 void SharedWorker::ContextLifecycleStateChanged(
     mojom::FrameLifecycleState state) {}
 
-void SharedWorker::Trace(blink::Visitor* visitor) {
+void SharedWorker::Trace(Visitor* visitor) {
   visitor->Trace(port_);
   AbstractWorker::Trace(visitor);
   Supplementable<SharedWorker>::Trace(visitor);

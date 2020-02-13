@@ -152,7 +152,7 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(util::PassKey<WebFrameWidget>,
 
 WebFrameWidgetImpl::~WebFrameWidgetImpl() = default;
 
-void WebFrameWidgetImpl::Trace(blink::Visitor* visitor) {
+void WebFrameWidgetImpl::Trace(Visitor* visitor) {
   visitor->Trace(mouse_capture_element_);
   WebFrameWidgetBase::Trace(visitor);
 }
@@ -375,6 +375,7 @@ void WebFrameWidgetImpl::UpdateLifecycle(LifecycleUpdate requested_update,
       LocalRootImpl()->GetFrame()->GetDocument()->Lifecycle());
   PageWidgetDelegate::UpdateLifecycle(*GetPage(), *LocalRootImpl()->GetFrame(),
                                       requested_update, reason);
+  View()->UpdatePagePopup();
 }
 
 void WebFrameWidgetImpl::ThemeChanged() {

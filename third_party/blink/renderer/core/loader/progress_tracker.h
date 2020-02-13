@@ -52,7 +52,7 @@ class CORE_EXPORT ProgressTracker final
  public:
   explicit ProgressTracker(LocalFrame*);
   ~ProgressTracker();
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
   void Dispose();
 
   double EstimatedProgress() const;

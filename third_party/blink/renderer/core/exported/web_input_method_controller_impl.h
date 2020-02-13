@@ -54,7 +54,7 @@ class CORE_EXPORT WebInputMethodControllerImpl
   bool IsInputPanelPolicyManual() const override;
   bool IsEditContextActive() const override;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   LocalFrame* GetFrame() const;

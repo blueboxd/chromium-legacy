@@ -213,7 +213,7 @@ class CORE_EXPORT ContentSecurityPolicy final
 
   ContentSecurityPolicy();
   ~ContentSecurityPolicy();
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   bool IsBound();
   void BindToDelegate(ContentSecurityPolicyDelegate&);

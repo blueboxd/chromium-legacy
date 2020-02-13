@@ -61,7 +61,7 @@ Frame::~Frame() {
   DCHECK(IsDetached());
 }
 
-void Frame::Trace(blink::Visitor* visitor) {
+void Frame::Trace(Visitor* visitor) {
   visitor->Trace(tree_node_);
   visitor->Trace(page_);
   visitor->Trace(owner_);

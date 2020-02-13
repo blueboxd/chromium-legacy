@@ -140,7 +140,7 @@ void SubresourceFilter::ReportLoad(
   }
 }
 
-void SubresourceFilter::Trace(blink::Visitor* visitor) {
+void SubresourceFilter::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
 }
 

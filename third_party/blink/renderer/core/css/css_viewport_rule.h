@@ -53,7 +53,7 @@ class CSSViewportRule final : public CSSRule {
 
   CSSStyleDeclaration* style() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   CSSRule::Type type() const override { return kViewportRule; }

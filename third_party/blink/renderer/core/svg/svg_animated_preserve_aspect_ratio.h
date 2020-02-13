@@ -52,7 +52,7 @@ class SVGAnimatedPreserveAspectRatio
             attribute_name,
             MakeGarbageCollected<SVGPreserveAspectRatio>()) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     SVGAnimatedProperty<SVGPreserveAspectRatio>::Trace(visitor);
     ScriptWrappable::Trace(visitor);
   }

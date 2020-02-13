@@ -66,7 +66,7 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   // Number of live messaging proxies, used by leak detection.
   static int ProxyCount();
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
  protected:
   explicit ThreadedMessagingProxyBase(ExecutionContext*);

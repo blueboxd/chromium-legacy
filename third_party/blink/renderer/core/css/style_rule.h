@@ -73,7 +73,7 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
   CSSRule* CreateCSSOMWrapper(CSSStyleSheet* parent_sheet = nullptr) const;
   CSSRule* CreateCSSOMWrapper(CSSRule* parent_rule) const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
   void TraceAfterDispatch(blink::Visitor* visitor) {}
   void FinalizeGarbageCollectedObject();
 

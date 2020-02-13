@@ -316,7 +316,7 @@ void TrustedTypePolicyFactory::CountTrustedTypeAssignmentError() {
   }
 }
 
-void TrustedTypePolicyFactory::Trace(blink::Visitor* visitor) {
+void TrustedTypePolicyFactory::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
   ContextClient::Trace(visitor);
   visitor->Trace(empty_html_);

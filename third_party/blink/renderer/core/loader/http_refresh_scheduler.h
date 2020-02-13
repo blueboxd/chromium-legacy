@@ -56,7 +56,7 @@ class CORE_EXPORT HttpRefreshScheduler final
   void MaybeStartTimer();
   void Cancel();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   void NavigateTask();

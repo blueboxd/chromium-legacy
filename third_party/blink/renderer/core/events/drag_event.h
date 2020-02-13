@@ -49,7 +49,7 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
 
   DispatchEventResult DispatchEvent(EventDispatcher&) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<DataTransfer> data_transfer_;

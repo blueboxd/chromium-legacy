@@ -313,7 +313,7 @@ void RemoteFontFaceSource::BeginLoadIfNeeded() {
   face_->DidBeginLoad();
 }
 
-void RemoteFontFaceSource::Trace(blink::Visitor* visitor) {
+void RemoteFontFaceSource::Trace(Visitor* visitor) {
   visitor->Trace(face_);
   visitor->Trace(font_selector_);
   CSSFontFaceSource::Trace(visitor);

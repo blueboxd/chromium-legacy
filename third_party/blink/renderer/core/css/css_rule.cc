@@ -63,7 +63,7 @@ void CSSRule::SetParentRule(CSSRule* rule) {
   parent_ = rule;
 }
 
-void CSSRule::Trace(blink::Visitor* visitor) {
+void CSSRule::Trace(Visitor* visitor) {
   visitor->Trace(parent_);
   ScriptWrappable::Trace(visitor);
 }

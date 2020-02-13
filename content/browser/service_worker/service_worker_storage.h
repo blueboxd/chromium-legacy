@@ -191,14 +191,6 @@ class CONTENT_EXPORT ServiceWorkerStorage {
   std::unique_ptr<ServiceWorkerResponseMetadataWriter>
   CreateResponseMetadataWriter(int64_t resource_id);
 
-  // Assigns a new resource ID and creates a response writer associated with
-  // the resource ID. If ID allocation fails, kInvalidServiceWorkerResourceId
-  // and null writer are returned.
-  // NOTE: Currently this method is synchronous but intentionally uses async
-  // style because ServiceWorkerStorage will be accessed via mojo calls soon.
-  // See crbug.com/1046335 for details.
-  void CreateNewResponseWriter(ResponseWriterCreationCallback callback);
-
   // Adds |resource_id| to the set of resources that are in the disk cache
   // but not yet stored with a registration.
   void StoreUncommittedResourceId(int64_t resource_id,

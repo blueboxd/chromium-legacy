@@ -37,7 +37,7 @@ SVGPathElement::SVGPathElement(Document& document)
   AddToPropertyMap(path_);
 }
 
-void SVGPathElement::Trace(blink::Visitor* visitor) {
+void SVGPathElement::Trace(Visitor* visitor) {
   visitor->Trace(path_);
   SVGGeometryElement::Trace(visitor);
 }

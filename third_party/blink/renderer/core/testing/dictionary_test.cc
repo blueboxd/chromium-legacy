@@ -294,7 +294,7 @@ void DictionaryTest::GetDerivedDerivedInternals(
   dict->setDerivedDerivedStringMember(derived_derived_string_member_);
 }
 
-void DictionaryTest::Trace(blink::Visitor* visitor) {
+void DictionaryTest::Trace(Visitor* visitor) {
   visitor->Trace(element_member_);
   visitor->Trace(element_or_null_member_);
   visitor->Trace(object_member_);

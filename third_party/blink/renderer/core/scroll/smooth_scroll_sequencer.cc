@@ -9,7 +9,7 @@
 
 namespace blink {
 
-void SequencedScroll::Trace(blink::Visitor* visitor) {
+void SequencedScroll::Trace(Visitor* visitor) {
   visitor->Trace(scrollable_area);
 }
 
@@ -76,7 +76,7 @@ void SmoothScrollSequencer::DidDisposeScrollableArea(
   }
 }
 
-void SmoothScrollSequencer::Trace(blink::Visitor* visitor) {
+void SmoothScrollSequencer::Trace(Visitor* visitor) {
   visitor->Trace(queue_);
   visitor->Trace(current_scrollable_);
 }

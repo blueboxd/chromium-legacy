@@ -39,7 +39,7 @@ Frame* ToCoreFrame(WebFrame* frame) {
 RemoteFrameClientImpl::RemoteFrameClientImpl(WebRemoteFrameImpl* web_frame)
     : web_frame_(web_frame) {}
 
-void RemoteFrameClientImpl::Trace(blink::Visitor* visitor) {
+void RemoteFrameClientImpl::Trace(Visitor* visitor) {
   visitor->Trace(web_frame_);
   RemoteFrameClient::Trace(visitor);
 }

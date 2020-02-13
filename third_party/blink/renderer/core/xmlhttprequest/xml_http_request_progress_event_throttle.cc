@@ -175,7 +175,7 @@ void XMLHttpRequestProgressEventThrottle::Fired() {
   StartOneShot(kMinimumProgressEventDispatchingInterval, FROM_HERE);
 }
 
-void XMLHttpRequestProgressEventThrottle::Trace(blink::Visitor* visitor) {
+void XMLHttpRequestProgressEventThrottle::Trace(Visitor* visitor) {
   visitor->Trace(target_);
 }
 

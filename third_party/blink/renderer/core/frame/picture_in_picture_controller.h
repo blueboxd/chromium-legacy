@@ -79,7 +79,7 @@ class CORE_EXPORT PictureInPictureController
   // Notifies that one of the states used by Picture-in-Picture has changed.
   virtual void OnPictureInPictureStateChange() = 0;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   explicit PictureInPictureController(Document&);

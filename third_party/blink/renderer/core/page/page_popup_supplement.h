@@ -58,7 +58,7 @@ class CORE_EXPORT PagePopupSupplement final
 
   PagePopupSupplement(LocalFrame&, PagePopup&, PagePopupClient*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void Dispose();

@@ -50,7 +50,7 @@ const AtomicString& FontFaceSetLoadEvent::InterfaceName() const {
   return event_interface_names::kFontFaceSetLoadEvent;
 }
 
-void FontFaceSetLoadEvent::Trace(blink::Visitor* visitor) {
+void FontFaceSetLoadEvent::Trace(Visitor* visitor) {
   visitor->Trace(fontfaces_);
   Event::Trace(visitor);
 }

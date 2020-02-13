@@ -341,7 +341,7 @@ void PerformanceMonitor::InnerReportGenericViolation(
   }
 }
 
-void PerformanceMonitor::Trace(blink::Visitor* visitor) {
+void PerformanceMonitor::Trace(Visitor* visitor) {
   visitor->Trace(local_root_);
   visitor->Trace(task_execution_context_);
   visitor->Trace(subscriptions_);

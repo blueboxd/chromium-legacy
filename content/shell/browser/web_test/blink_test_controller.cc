@@ -528,6 +528,7 @@ bool BlinkTestController::ResetAfterWebTest() {
   should_override_prefs_ = false;
   WebTestContentBrowserClient::Get()->SetPopupBlockingEnabled(false);
   WebTestContentBrowserClient::Get()->ResetMockClipboardHost();
+  WebTestContentBrowserClient::Get()->SetScreenOrientationChanged(false);
   navigation_history_dump_ = "";
   pixel_dump_.reset();
   actual_pixel_hash_ = "";
@@ -1240,6 +1241,10 @@ void BlinkTestController::OnNavigateSecondaryWindow(const GURL& url) {
 void BlinkTestController::OnInspectSecondaryWindow() {
   if (devtools_bindings_)
     devtools_bindings_->Attach();
+}
+
+void BlinkTestController::OnSetScreenOrientationChanged() {
+  WebTestContentBrowserClient::Get()->SetScreenOrientationChanged(true);
 }
 
 base::FilePath BlinkTestController::GetWritableDirectoryForTests() {

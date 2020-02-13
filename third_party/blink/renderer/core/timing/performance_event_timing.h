@@ -45,7 +45,7 @@ class CORE_EXPORT PerformanceEventTiming final : public PerformanceEntry {
 
   void BuildJSONValue(V8ObjectBuilder&) const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   AtomicString entry_type_;

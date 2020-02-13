@@ -49,7 +49,7 @@ class CORE_EXPORT CustomProperty : public Variable {
 
   bool IsRegistered() const { return registration_; }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(registration_); }
+  void Trace(Visitor* visitor) { visitor->Trace(registration_); }
 
  private:
   CustomProperty(const AtomicString& name,

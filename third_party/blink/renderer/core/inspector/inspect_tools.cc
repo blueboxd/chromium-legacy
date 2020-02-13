@@ -114,7 +114,7 @@ SearchingForNodeTool::SearchingForNodeTool(InspectorDOMAgent* dom_agent,
       InspectorOverlayAgent::ToHighlightConfig(highlight_config.get());
 }
 
-void SearchingForNodeTool::Trace(blink::Visitor* visitor) {
+void SearchingForNodeTool::Trace(Visitor* visitor) {
   InspectTool::Trace(visitor);
   visitor->Trace(dom_agent_);
   visitor->Trace(hovered_node_);
@@ -338,7 +338,7 @@ void NodeHighlightTool::DrawMatchingSelector() {
   }
 }
 
-void NodeHighlightTool::Trace(blink::Visitor* visitor) {
+void NodeHighlightTool::Trace(Visitor* visitor) {
   InspectTool::Trace(visitor);
   visitor->Trace(node_);
 }
@@ -404,7 +404,7 @@ void NearbyDistanceTool::Draw(float scale) {
   overlay_->EvaluateInOverlay("drawDistances", highlight.AsProtocolValue());
 }
 
-void NearbyDistanceTool::Trace(blink::Visitor* visitor) {
+void NearbyDistanceTool::Trace(Visitor* visitor) {
   InspectTool::Trace(visitor);
   visitor->Trace(hovered_node_);
 }

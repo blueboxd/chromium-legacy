@@ -15,7 +15,7 @@ NavigationRateLimiter::NavigationRateLimiter(Frame& frame)
       time_first_count_(base::TimeTicks::Now()),
       enabled(frame_->GetSettings()->GetShouldProtectAgainstIpcFlooding()) {}
 
-void NavigationRateLimiter::Trace(blink::Visitor* visitor) {
+void NavigationRateLimiter::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
 }
 

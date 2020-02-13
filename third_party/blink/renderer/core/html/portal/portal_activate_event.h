@@ -64,7 +64,7 @@ class CORE_EXPORT PortalActivateEvent : public Event {
 
   ~PortalActivateEvent() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Event overrides
   const AtomicString& InterfaceName() const override;

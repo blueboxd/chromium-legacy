@@ -56,7 +56,7 @@ void PlatformEventController::PageVisibilityChanged() {
     StopUpdating();
 }
 
-void PlatformEventController::Trace(blink::Visitor* visitor) {
+void PlatformEventController::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   PageVisibilityObserver::Trace(visitor);
 }

@@ -69,7 +69,7 @@ class CORE_EXPORT Navigator final : public ScriptWrappable,
   UserAgentMetadata GetUserAgentMetadata() const override;
   void SetUserAgentMetadataForTesting(UserAgentMetadata);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   UserAgentMetadata metadata_;

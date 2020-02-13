@@ -53,7 +53,7 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
   void Append(InspectorAgent*);
   void Detach();
   void FlushProtocolNotifications();
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   // Core probes.
   void DidStartProvisionalLoad(LocalFrame*);

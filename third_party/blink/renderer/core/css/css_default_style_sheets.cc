@@ -295,7 +295,7 @@ void CSSDefaultStyleSheets::EnsureDefaultStyleSheetForFullscreen() {
                                            ScreenEval());
 }
 
-void CSSDefaultStyleSheets::Trace(blink::Visitor* visitor) {
+void CSSDefaultStyleSheets::Trace(Visitor* visitor) {
   visitor->Trace(default_style_);
   visitor->Trace(default_quirks_style_);
   visitor->Trace(default_print_style_);

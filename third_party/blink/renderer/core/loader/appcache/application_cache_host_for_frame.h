@@ -45,7 +45,7 @@ class CORE_EXPORT ApplicationCacheHostForFrame : public ApplicationCacheHost {
   void SelectCacheWithManifest(const KURL& manifest_url);
   void DidReceiveResponseForMainResource(const ResourceResponse&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   enum IsNewMasterEntry { MAYBE_NEW_ENTRY, NEW_ENTRY, OLD_ENTRY };

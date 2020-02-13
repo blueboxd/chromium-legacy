@@ -12,6 +12,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "build/build_config.h"
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/service/display/display_resource_provider.h"
@@ -318,11 +319,12 @@ class VIZ_SERVICE_EXPORT DirectRenderer {
   DrawingFrame current_frame_;
   bool current_frame_valid_ = false;
 
-  // Cached values given to Reshape().
+  // Cached values given to Reshape(). The |reshape_buffer_format_| is optional
+  // to prevent use of uninitialized values.
   gfx::Size reshape_surface_size_;
   float reshape_device_scale_factor_ = 0.f;
-  gfx::ColorSpace reshape_device_color_space_;
-  bool reshape_has_alpha_ = false;
+  gfx::ColorSpace reshape_color_space_;
+  base::Optional<gfx::BufferFormat> reshape_buffer_format_;
   bool reshape_use_stencil_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DirectRenderer);

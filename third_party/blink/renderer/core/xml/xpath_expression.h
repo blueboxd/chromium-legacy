@@ -57,7 +57,7 @@ class XPathExpression : public ScriptWrappable {
                         const ScriptValue&,
                         ExceptionState&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<xpath::Expression> top_expression_;

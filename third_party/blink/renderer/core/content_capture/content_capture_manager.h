@@ -39,7 +39,7 @@ class CORE_EXPORT ContentCaptureManager
   // Invokes when the local_frame_root shutdown.
   void Shutdown();
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
   ContentCaptureTask* GetContentCaptureTaskForTesting() const {
     return content_capture_idle_task_.get();

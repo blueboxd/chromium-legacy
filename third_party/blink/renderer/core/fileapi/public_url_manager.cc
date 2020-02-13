@@ -164,7 +164,7 @@ void PublicURLManager::ContextDestroyed(ExecutionContext*) {
   url_store_.reset();
 }
 
-void PublicURLManager::Trace(blink::Visitor* visitor) {
+void PublicURLManager::Trace(Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 

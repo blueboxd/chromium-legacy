@@ -25,7 +25,7 @@ class CSSNamespaceRule final : public CSSRule {
   AtomicString namespaceURI() const;
   AtomicString prefix() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   CSSRule::Type type() const override { return kNamespaceRule; }

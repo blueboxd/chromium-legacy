@@ -45,7 +45,7 @@ void TouchEventContext::HandleLocalEvents(Event& event) const {
   touch_event.SetChangedTouches(changed_touches_);
 }
 
-void TouchEventContext::Trace(blink::Visitor* visitor) {
+void TouchEventContext::Trace(Visitor* visitor) {
   visitor->Trace(touches_);
   visitor->Trace(target_touches_);
   visitor->Trace(changed_touches_);

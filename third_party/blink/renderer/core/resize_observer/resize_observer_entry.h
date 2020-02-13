@@ -29,7 +29,7 @@ class CORE_EXPORT ResizeObserverEntry final : public ScriptWrappable {
   ResizeObserverSize* contentBoxSize() const { return content_box_size_; }
   ResizeObserverSize* borderBoxSize() const { return border_box_size_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<Element> target_;

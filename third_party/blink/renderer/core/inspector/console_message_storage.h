@@ -31,7 +31,7 @@ class CORE_EXPORT ConsoleMessageStorage
   ConsoleMessage* at(wtf_size_t index) const;
   int ExpiredCount() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   int expired_count_;

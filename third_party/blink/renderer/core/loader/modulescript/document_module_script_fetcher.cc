@@ -49,7 +49,7 @@ void DocumentModuleScriptFetcher::NotifyFinished(Resource* resource) {
   client_->NotifyFetchFinished(params, error_messages);
 }
 
-void DocumentModuleScriptFetcher::Trace(blink::Visitor* visitor) {
+void DocumentModuleScriptFetcher::Trace(Visitor* visitor) {
   visitor->Trace(client_);
   ResourceClient::Trace(visitor);
 }

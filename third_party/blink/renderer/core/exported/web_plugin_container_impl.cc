@@ -788,7 +788,7 @@ void WebPluginContainerImpl::SetFrameRect(const IntRect& rect) {
     PropagateFrameRects();
 }
 
-void WebPluginContainerImpl::Trace(blink::Visitor* visitor) {
+void WebPluginContainerImpl::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   ContextClient::Trace(visitor);
 }

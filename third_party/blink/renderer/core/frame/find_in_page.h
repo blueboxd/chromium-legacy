@@ -94,7 +94,7 @@ class CORE_EXPORT FindInPage final : public GarbageCollected<FindInPage>,
 
   void Dispose();
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->Trace(text_finder_);
     visitor->Trace(frame_);
   }

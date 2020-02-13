@@ -52,7 +52,7 @@ int ThreadedMessagingProxyBase::ProxyCount() {
   return g_live_messaging_proxy_count;
 }
 
-void ThreadedMessagingProxyBase::Trace(blink::Visitor* visitor) {
+void ThreadedMessagingProxyBase::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
 }
 

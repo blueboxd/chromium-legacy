@@ -141,7 +141,7 @@ void LocalFontFaceSource::LocalFontHistograms::Record(bool load_success) {
   base::UmaHistogramBoolean("WebFont.LocalFontUsed", load_success);
 }
 
-void LocalFontFaceSource::Trace(blink::Visitor* visitor) {
+void LocalFontFaceSource::Trace(Visitor* visitor) {
   visitor->Trace(face_);
   visitor->Trace(font_selector_);
   CSSFontFaceSource::Trace(visitor);

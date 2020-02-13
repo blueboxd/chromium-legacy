@@ -150,7 +150,7 @@ void DocumentTimeline::DocumentTimelineTiming::WakeAfter(
   timer_.StartOneShot(duration, FROM_HERE);
 }
 
-void DocumentTimeline::DocumentTimelineTiming::Trace(blink::Visitor* visitor) {
+void DocumentTimeline::DocumentTimelineTiming::Trace(Visitor* visitor) {
   visitor->Trace(timeline_);
   DocumentTimeline::PlatformTiming::Trace(visitor);
 }
@@ -223,7 +223,7 @@ void DocumentTimeline::InvalidateKeyframeEffects(const TreeScope& tree_scope) {
     animation->InvalidateKeyframeEffect(tree_scope);
 }
 
-void DocumentTimeline::Trace(blink::Visitor* visitor) {
+void DocumentTimeline::Trace(Visitor* visitor) {
   visitor->Trace(timing_);
   AnimationTimeline::Trace(visitor);
 }

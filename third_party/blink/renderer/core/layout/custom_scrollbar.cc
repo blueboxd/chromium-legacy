@@ -96,7 +96,7 @@ int CustomScrollbar::HypotheticalScrollbarThickness(
       enclosing_box.ClientWidth().ToInt(), part_style.get());
 }
 
-void CustomScrollbar::Trace(blink::Visitor* visitor) {
+void CustomScrollbar::Trace(Visitor* visitor) {
   Scrollbar::Trace(visitor);
 }
 

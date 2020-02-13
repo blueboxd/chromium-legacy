@@ -497,7 +497,7 @@ class ScriptOnDestroyPlugin : public GarbageCollected<ScriptOnDestroyPlugin>,
   void DidFinishLoading() override {}
   void DidFailLoading(const WebURLError&) override {}
 
-  void Trace(blink::Visitor*) {}
+  void Trace(Visitor*) {}
 
   bool DestroyCalled() const { return destroy_called_; }
 

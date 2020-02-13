@@ -576,6 +576,10 @@ struct URLLoaderFactoryParams {
   // 2) Make this an *origin* lock (rather than a *site* lock).
   url.mojom.Origin? request_initiator_site_lock;
 
+  // For subresource requests from frames, |top_frame_origin| is the request's
+  // top frame's origin.
+  url.mojom.Origin? top_frame_origin;
+
   // Cross-origin read blocking (CORB) configuration.
   bool is_corb_enabled = true;
 

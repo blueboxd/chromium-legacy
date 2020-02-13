@@ -38,7 +38,7 @@ class CORE_EXPORT ResizeObserver final
     virtual ~Delegate() = default;
     virtual void OnResize(
         const HeapVector<Member<ResizeObserverEntry>>& entries) = 0;
-    virtual void Trace(blink::Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) {}
   };
 
   static ResizeObserver* Create(Document&, V8ResizeObserverCallback*);
@@ -67,7 +67,7 @@ class CORE_EXPORT ResizeObserver final
   // ScriptWrappable override:
   bool HasPendingActivity() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void observeInternal(Element* target, ResizeObserverBoxOptions box_option);

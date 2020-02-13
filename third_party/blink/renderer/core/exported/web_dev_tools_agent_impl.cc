@@ -345,7 +345,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
 
 WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {}
 
-void WebDevToolsAgentImpl::Trace(blink::Visitor* visitor) {
+void WebDevToolsAgentImpl::Trace(Visitor* visitor) {
   visitor->Trace(agent_);
   visitor->Trace(network_agents_);
   visitor->Trace(page_agents_);

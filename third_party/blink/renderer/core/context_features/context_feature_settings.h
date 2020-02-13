@@ -36,7 +36,7 @@ class CORE_EXPORT ContextFeatureSettings final
   void enableMojoJS(bool enable) { enable_mojo_js_ = enable; }
   bool isMojoJSEnabled() const { return enable_mojo_js_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool enable_mojo_js_ = false;

@@ -26,7 +26,7 @@ class NavigationRateLimiter final {
   // is allowed to proceed.
   bool CanProceed();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   Member<Frame> frame_;

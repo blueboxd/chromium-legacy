@@ -69,7 +69,7 @@ class CORE_EXPORT TrustedTypePolicyFactory final : public ScriptWrappable,
   //  relate it to the total number of TT enabled documents.)
   void CountTrustedTypeAssignmentError();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   const WrapperTypeInfo* GetWrapperTypeInfoFromScriptValue(ScriptState*,

@@ -48,7 +48,7 @@ class CORE_EXPORT DocumentResource final : public TextResource {
                    const ResourceLoaderOptions&,
                    const TextResourceDecoderOptions&);
   ~DocumentResource() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   Document* GetDocument() const { return document_.Get(); }
 

@@ -28,7 +28,7 @@ namespace blink {
 SVGSymbolElement::SVGSymbolElement(Document& document)
     : SVGElement(svg_names::kSymbolTag, document), SVGFitToViewBox(this) {}
 
-void SVGSymbolElement::Trace(blink::Visitor* visitor) {
+void SVGSymbolElement::Trace(Visitor* visitor) {
   SVGElement::Trace(visitor);
   SVGFitToViewBox::Trace(visitor);
 }

@@ -45,7 +45,7 @@ class StylePropertyMapIterationSource final
     return true;
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(values_);
     PairIterable<String, CSSStyleValueVector>::IterationSource::Trace(visitor);
   }

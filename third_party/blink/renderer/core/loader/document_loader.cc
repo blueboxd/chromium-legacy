@@ -308,7 +308,7 @@ DocumentLoader::~DocumentLoader() {
   DCHECK_EQ(state_, kSentDidFinishLoad);
 }
 
-void DocumentLoader::Trace(blink::Visitor* visitor) {
+void DocumentLoader::Trace(Visitor* visitor) {
   visitor->Trace(archive_);
   visitor->Trace(frame_);
   visitor->Trace(history_item_);

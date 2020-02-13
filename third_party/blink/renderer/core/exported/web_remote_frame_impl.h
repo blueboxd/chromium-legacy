@@ -111,7 +111,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
 
   static WebRemoteFrameImpl* FromFrame(RemoteFrame&);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   friend class RemoteFrameClientImpl;

@@ -110,7 +110,7 @@ class CORE_EXPORT ImageResource final
   void OnMemoryDump(WebMemoryDumpLevelOfDetail,
                     WebProcessMemoryDump*) const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   enum class MultipartParsingState : uint8_t {

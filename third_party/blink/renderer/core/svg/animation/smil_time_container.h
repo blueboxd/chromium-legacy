@@ -76,7 +76,7 @@ class CORE_EXPORT SMILTimeContainer final
   void AdvanceFrameForTesting();
   bool EventsDisabled() const { return !should_dispatch_events_; }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   enum FrameSchedulingState {

@@ -287,7 +287,7 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   class UnifiedClock {
    public:

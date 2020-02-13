@@ -2763,7 +2763,18 @@ void Document::ApplyScrollRestorationLogic() {
   if (!can_restore_without_annoying_user)
     return;
 
-  View()->GetScrollableArea()->ApplyPendingHistoryRestoreScrollOffset();
+  // Apply scroll restoration to the LayoutView's scroller. Note that we do
+  // *not* apply it to the RootFrameViewport's LayoutViewport, because that
+  // may be for child frame's implicit root scroller, which is not the right
+  // one to apply to because scroll restoration does not affect implicit root
+  // scrollers.
+  auto* layout_scroller = View()->LayoutViewport();
+  layout_scroller->ApplyPendingHistoryRestoreScrollOffset();
+
+  // Also apply restoration to the visual viewport of the root frame, if needed.
+  auto* root_frame_scroller = View()->GetScrollableArea();
+  if (root_frame_scroller != layout_scroller)
+    root_frame_scroller->ApplyPendingHistoryRestoreScrollOffset();
 
   document_loader->GetInitialScrollState().did_restore_from_history = true;
 }

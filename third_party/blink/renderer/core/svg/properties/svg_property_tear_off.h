@@ -90,7 +90,7 @@ class SVGPropertyTearOff : public SVGPropertyTearOffBase {
 
   void SetTarget(Property* target) { target_ = target; }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(target_);
     SVGPropertyTearOffBase::Trace(visitor);
   }

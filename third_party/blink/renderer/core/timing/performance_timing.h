@@ -149,7 +149,7 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   uint64_t MonotonicTimeToIntegerMilliseconds(base::TimeTicks) const;
 

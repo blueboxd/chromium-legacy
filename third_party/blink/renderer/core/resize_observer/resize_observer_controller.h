@@ -39,7 +39,7 @@ class ResizeObserverController final
 
   void SetNeedsForcedResizeObservations();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   // For testing only.
   const HeapLinkedHashSet<WeakMember<ResizeObserver>>& Observers() {

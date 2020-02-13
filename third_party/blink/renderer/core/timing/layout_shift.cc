@@ -36,7 +36,7 @@ void LayoutShift::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.Add("lastInputTime", most_recent_input_timestamp_);
 }
 
-void LayoutShift::Trace(blink::Visitor* visitor) {
+void LayoutShift::Trace(Visitor* visitor) {
   PerformanceEntry::Trace(visitor);
 }
 

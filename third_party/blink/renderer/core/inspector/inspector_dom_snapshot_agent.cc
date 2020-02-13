@@ -718,7 +718,7 @@ void InspectorDOMSnapshotAgent::VisitPaintLayer(
     VisitPaintLayer(child_layer, paint_order_map);
 }
 
-void InspectorDOMSnapshotAgent::Trace(blink::Visitor* visitor) {
+void InspectorDOMSnapshotAgent::Trace(Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   visitor->Trace(dom_debugger_agent_);
   visitor->Trace(document_order_map_);

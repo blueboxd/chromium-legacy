@@ -71,8 +71,8 @@ class CORE_EXPORT DOMTimer final : public GarbageCollected<DOMTimer>,
   // destruction (when lazily swept), but some of its members (m_action) may
   // already have been finalized & must not be accessed.
   void Dispose();
-  
-  void Trace(blink::Visitor*) override;
+
+  void Trace(Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "DOMTimer"; }
 
   void Stop() override;

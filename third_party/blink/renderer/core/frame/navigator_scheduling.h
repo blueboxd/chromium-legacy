@@ -26,7 +26,7 @@ class CORE_EXPORT NavigatorScheduling final
 
   explicit NavigatorScheduling(Navigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   static NavigatorScheduling& From(Navigator&);

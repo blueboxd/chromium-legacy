@@ -178,7 +178,7 @@ class CORE_EXPORT WorkerGlobalScope
   base::TimeTicks TimeOrigin() const { return time_origin_; }
   WorkerSettings* GetWorkerSettings() const { return worker_settings_.get(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   virtual InstalledScriptsManager* GetInstalledScriptsManager() {
     return nullptr;

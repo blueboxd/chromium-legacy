@@ -42,7 +42,7 @@ void PendingLayoutRegistry::AddPendingLayout(const AtomicString& name,
   set->insert(node);
 }
 
-void PendingLayoutRegistry::Trace(blink::Visitor* visitor) {
+void PendingLayoutRegistry::Trace(Visitor* visitor) {
   visitor->Trace(pending_layouts_);
 }
 

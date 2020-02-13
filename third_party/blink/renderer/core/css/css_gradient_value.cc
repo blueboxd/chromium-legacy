@@ -108,7 +108,7 @@ bool CSSGradientColorStop::IsCacheable() const {
          !To<CSSNumericLiteralValue>(*offset_).IsFontRelativeLength();
 }
 
-void CSSGradientColorStop::Trace(blink::Visitor* visitor) {
+void CSSGradientColorStop::Trace(Visitor* visitor) {
   visitor->Trace(offset_);
   visitor->Trace(color_);
 }

@@ -155,7 +155,7 @@ void PreviewsResourceLoadingHints::ReportBlockedLoading(
       GetConsoleLogStringForBlockedLoad(resource_url)));
 }
 
-void PreviewsResourceLoadingHints::Trace(blink::Visitor* visitor) {
+void PreviewsResourceLoadingHints::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
 }
 

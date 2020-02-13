@@ -78,7 +78,7 @@ bool CompositionEvent::IsCompositionEvent() const {
   return true;
 }
 
-void CompositionEvent::Trace(blink::Visitor* visitor) {
+void CompositionEvent::Trace(Visitor* visitor) {
   UIEvent::Trace(visitor);
 }
 

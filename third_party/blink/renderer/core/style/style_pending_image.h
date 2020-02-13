@@ -92,7 +92,7 @@ class StylePendingImage final : public StyleImage {
     return false;
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(value_);
     StyleImage::Trace(visitor);
   }

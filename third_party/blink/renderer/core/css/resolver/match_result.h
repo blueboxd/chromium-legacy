@@ -45,7 +45,7 @@ struct CORE_EXPORT MatchedProperties {
  public:
   MatchedProperties();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   Member<CSSPropertyValueSet> properties;
 

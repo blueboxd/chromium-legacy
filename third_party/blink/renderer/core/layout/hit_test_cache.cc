@@ -40,7 +40,7 @@ bool HitTestCache::LookupCachedResult(const HitTestLocation& location,
   return result;
 }
 
-void HitTestCacheEntry::Trace(blink::Visitor* visitor) {
+void HitTestCacheEntry::Trace(Visitor* visitor) {
   visitor->Trace(result);
 }
 
@@ -85,7 +85,7 @@ void HitTestCache::Clear() {
   items_.clear();
 }
 
-void HitTestCache::Trace(blink::Visitor* visitor) {
+void HitTestCache::Trace(Visitor* visitor) {
   visitor->Trace(items_);
 }
 

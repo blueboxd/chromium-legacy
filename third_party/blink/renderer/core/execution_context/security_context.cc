@@ -96,7 +96,7 @@ SecurityContext::SecurityContext(const SecurityContextInit& init,
       require_safe_types_(false),
       context_type_(context_type) {}
 
-void SecurityContext::Trace(blink::Visitor* visitor) {
+void SecurityContext::Trace(Visitor* visitor) {
   visitor->Trace(content_security_policy_);
 }
 

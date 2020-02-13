@@ -87,7 +87,7 @@ class CORE_EXPORT InspectorDOMAgent final
         : source_location_(std::move(source_location)) {}
 
     SourceLocation& GetSourceLocation() { return *source_location_; }
-    virtual void Trace(blink::Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) {}
 
    private:
     std::unique_ptr<SourceLocation> source_location_;
@@ -103,7 +103,7 @@ class CORE_EXPORT InspectorDOMAgent final
                     InspectedFrames*,
                     v8_inspector::V8InspectorSession*);
   ~InspectorDOMAgent() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void Restore() override;
 

@@ -202,7 +202,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
   bool IsConstructed() { return is_constructed_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool IsAlternate() const;

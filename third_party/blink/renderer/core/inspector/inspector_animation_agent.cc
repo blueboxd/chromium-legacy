@@ -526,7 +526,7 @@ double InspectorAnimationAgent::NormalizedStartTime(
   return std::round(time_ms * 1000) / 1000;
 }
 
-void InspectorAnimationAgent::Trace(blink::Visitor* visitor) {
+void InspectorAnimationAgent::Trace(Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   visitor->Trace(css_agent_);
   visitor->Trace(id_to_animation_);

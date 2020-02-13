@@ -181,7 +181,7 @@ bool InputEvent::IsInputEvent() const {
   return true;
 }
 
-void InputEvent::Trace(blink::Visitor* visitor) {
+void InputEvent::Trace(Visitor* visitor) {
   UIEvent::Trace(visitor);
   visitor->Trace(data_transfer_);
   visitor->Trace(ranges_);

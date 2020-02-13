@@ -107,7 +107,7 @@ class FakeColorChooserClient : public GarbageCollected<FakeColorChooserClient>,
       : owner_element_(owner_element) {}
   ~FakeColorChooserClient() override = default;
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(owner_element_);
     ColorChooserClient::Trace(visitor);
   }
@@ -137,7 +137,7 @@ class FakeDateTimeChooserClient
       : owner_element_(owner_element) {}
   ~FakeDateTimeChooserClient() override = default;
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(owner_element_);
     DateTimeChooserClient::Trace(visitor);
   }

@@ -42,7 +42,7 @@ class BytesConsumerTestUtil {
     USING_GARBAGE_COLLECTED_MIXIN(MockFetchDataLoaderClient);
 
    public:
-    void Trace(blink::Visitor* visitor) override {
+    void Trace(Visitor* visitor) override {
       FetchDataLoader::Client::Trace(visitor);
     }
 

@@ -42,7 +42,7 @@ void StyleRuleUsageTracker::Track(const CSSStyleSheet* parent_sheet,
   }
 }
 
-void StyleRuleUsageTracker::Trace(blink::Visitor* visitor) {
+void StyleRuleUsageTracker::Trace(Visitor* visitor) {
   visitor->Trace(used_rules_);
   visitor->Trace(used_rules_delta_);
 }

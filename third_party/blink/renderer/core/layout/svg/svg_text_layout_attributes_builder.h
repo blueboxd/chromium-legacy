@@ -58,7 +58,7 @@ class SVGTextLayoutAttributesBuilder {
                  unsigned new_length = 0)
         : element(new_element), start(new_start), length(new_length) {}
 
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
 
     Member<SVGTextPositioningElement> element;
     unsigned start;

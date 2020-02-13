@@ -79,7 +79,7 @@ SVGComponentTransferFunctionElement::SVGComponentTransferFunctionElement(
   AddToPropertyMap(type_);
 }
 
-void SVGComponentTransferFunctionElement::Trace(blink::Visitor* visitor) {
+void SVGComponentTransferFunctionElement::Trace(Visitor* visitor) {
   visitor->Trace(table_values_);
   visitor->Trace(slope_);
   visitor->Trace(intercept_);

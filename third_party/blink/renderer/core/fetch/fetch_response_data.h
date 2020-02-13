@@ -120,7 +120,7 @@ class CORE_EXPORT FetchResponseData final
   mojom::blink::FetchAPIResponsePtr PopulateFetchAPIResponse(
       const KURL& request_url);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   network::mojom::FetchResponseType type_;

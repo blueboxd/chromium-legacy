@@ -77,7 +77,7 @@ String InspectorIssueCodeValue(mojom::blink::InspectorIssueCode code) {
 
 }  // namespace
 
-void InspectorAuditsAgent::Trace(blink::Visitor* visitor) {
+void InspectorAuditsAgent::Trace(Visitor* visitor) {
   visitor->Trace(network_agent_);
   visitor->Trace(inspector_issue_storage_);
   InspectorBaseAgent::Trace(visitor);

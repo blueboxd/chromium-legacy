@@ -137,7 +137,7 @@ class MockScrollableAreaForAnimatorTest
     return ScrollbarTheme::GetTheme();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(animator);
     ScrollableArea::Trace(visitor);
   }

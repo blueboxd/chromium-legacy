@@ -31,7 +31,7 @@ class CORE_EXPORT VideoRequestAnimationFrame
 
   virtual ~VideoRequestAnimationFrame() = default;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   virtual void OnWebMediaPlayerCreated() = 0;
   virtual void OnRequestAnimationFrame(

@@ -71,7 +71,7 @@ SVGTextPathElement::SVGTextPathElement(Document& document)
 
 SVGTextPathElement::~SVGTextPathElement() = default;
 
-void SVGTextPathElement::Trace(blink::Visitor* visitor) {
+void SVGTextPathElement::Trace(Visitor* visitor) {
   visitor->Trace(start_offset_);
   visitor->Trace(method_);
   visitor->Trace(spacing_);

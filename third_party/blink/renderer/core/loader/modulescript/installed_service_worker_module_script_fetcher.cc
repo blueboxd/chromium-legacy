@@ -108,7 +108,7 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
   client->NotifyFetchFinished(params, HeapVector<Member<ConsoleMessage>>());
 }
 
-void InstalledServiceWorkerModuleScriptFetcher::Trace(blink::Visitor* visitor) {
+void InstalledServiceWorkerModuleScriptFetcher::Trace(Visitor* visitor) {
   ModuleScriptFetcher::Trace(visitor);
   visitor->Trace(global_scope_);
 }

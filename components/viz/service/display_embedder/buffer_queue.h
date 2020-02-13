@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "components/viz/service/viz_service_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -64,7 +65,6 @@ class VIZ_SERVICE_EXPORT BufferQueue {
   // |gpu_memory_buffer_manager| and associates them with SharedImages using
   // |sii|.
   BufferQueue(gpu::SharedImageInterface* sii,
-              gfx::BufferFormat format,
               gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
               gpu::SurfaceHandle surface_handle);
   virtual ~BufferQueue();
@@ -112,7 +112,7 @@ class VIZ_SERVICE_EXPORT BufferQueue {
                        const gfx::ColorSpace& color_space,
                        gfx::BufferFormat format);
 
-  gfx::BufferFormat buffer_format() const { return format_; }
+  gfx::BufferFormat buffer_format() const { return *format_; }
 
  private:
   friend class BufferQueueTest;
@@ -149,7 +149,8 @@ class VIZ_SERVICE_EXPORT BufferQueue {
   gfx::Size size_;
   gfx::ColorSpace color_space_;
   size_t allocated_count_;
-  const gfx::BufferFormat format_;
+  // The |format_| is optional to prevent use of uninitialized values.
+  base::Optional<gfx::BufferFormat> format_;
   // This surface is currently bound. This may be nullptr if no surface has
   // been bound, or if allocation failed at bind.
   std::unique_ptr<AllocatedSurface> current_surface_;

@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
@@ -322,6 +323,8 @@ void WebPagePopupImpl::Initialize(WebViewImpl* web_view,
   frame->SetPageZoomFactor(popup_client_->ZoomFactor());
   frame->ForceSynchronousDocumentInstall("text/html", std::move(data));
 
+  popup_owner_client_rect_ =
+      popup_client_->OwnerElement().getBoundingClientRect();
   WidgetClient()->Show(WebNavigationPolicy());
   SetFocus(true);
 }
@@ -338,6 +341,20 @@ void WebPagePopupImpl::PostMessageToPopup(const String& message) {
     return;
   ScriptForbiddenScope::AllowUserAgentScript allow_script;
   MainFrame().DomWindow()->DispatchEvent(*MessageEvent::Create(message));
+}
+
+void WebPagePopupImpl::Update() {
+  if (!page_ && !popup_client_)
+    return;
+
+  DOMRect* dom_rect = popup_client_->OwnerElement().getBoundingClientRect();
+  bool forced_update = (*dom_rect != *popup_owner_client_rect_);
+  if (forced_update)
+    popup_owner_client_rect_ = dom_rect;
+
+  popup_client_->Update(forced_update);
+  if (forced_update)
+    SetWindowRect(WindowRectInScreen());
 }
 
 void WebPagePopupImpl::DestroyPage() {

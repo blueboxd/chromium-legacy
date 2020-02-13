@@ -62,7 +62,7 @@ class CORE_EXPORT SVGLength final : public SVGPropertyBase {
 
   void SetInitial(unsigned);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   SVGLength* Clone() const;
   SVGPropertyBase* CloneForAnimation(const String&) const override;

@@ -182,7 +182,7 @@ DispatchEventResult WheelEvent::DispatchEvent(EventDispatcher& dispatcher) {
   return dispatcher.Dispatch();
 }
 
-void WheelEvent::Trace(blink::Visitor* visitor) {
+void WheelEvent::Trace(Visitor* visitor) {
   MouseEvent::Trace(visitor);
 }
 

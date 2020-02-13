@@ -24,7 +24,7 @@ class TaskAttributionTiming final : public PerformanceEntry {
   String containerId() const;
   String containerName() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   TaskAttributionTiming(const AtomicString& type,
                         const AtomicString& container_type,

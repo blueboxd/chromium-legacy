@@ -129,7 +129,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   bool HasAnimation() const;
   bool HasPlayingAnimation() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   bool AnimationsPreserveAxisAlignment() const;
 

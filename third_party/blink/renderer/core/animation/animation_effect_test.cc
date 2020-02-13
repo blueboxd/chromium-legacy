@@ -116,7 +116,7 @@ class TestAnimationEffect : public AnimationEffect {
     return result;
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(event_delegate_);
     AnimationEffect::Trace(visitor);
   }

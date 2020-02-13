@@ -62,7 +62,7 @@ class PopStateEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   scoped_refptr<SerializedScriptValue> serialized_state_;

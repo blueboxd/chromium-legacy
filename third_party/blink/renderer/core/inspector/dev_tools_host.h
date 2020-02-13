@@ -49,7 +49,7 @@ class CORE_EXPORT DevToolsHost final : public ScriptWrappable {
   DevToolsHost(InspectorFrontendClient*, LocalFrame* frontend_frame);
   ~DevToolsHost() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   void DisconnectClient();
 
   float zoomFactor();

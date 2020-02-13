@@ -251,7 +251,7 @@ void PaintLayerScrollableArea::ApplyPendingHistoryRestoreScrollOffset() {
   pending_view_state_.reset();
 }
 
-void PaintLayerScrollableArea::Trace(blink::Visitor* visitor) {
+void PaintLayerScrollableArea::Trace(Visitor* visitor) {
   visitor->Trace(scrollbar_manager_);
   visitor->Trace(scroll_anchor_);
   visitor->Trace(scrolling_background_display_item_client_);

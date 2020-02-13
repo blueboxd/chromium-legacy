@@ -36,7 +36,7 @@ class CORE_EXPORT AccessibleNodeList : public ScriptWrappable {
   unsigned length() const;
   void setLength(unsigned);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void NotifyChanged();

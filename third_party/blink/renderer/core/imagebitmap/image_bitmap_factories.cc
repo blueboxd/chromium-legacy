@@ -239,7 +239,7 @@ void ImageBitmapFactories::DidFinishLoading(ImageBitmapLoader* loader) {
   pending_loaders_.erase(loader);
 }
 
-void ImageBitmapFactories::Trace(blink::Visitor* visitor) {
+void ImageBitmapFactories::Trace(Visitor* visitor) {
   visitor->Trace(pending_loaders_);
   Supplement<LocalDOMWindow>::Trace(visitor);
   Supplement<WorkerGlobalScope>::Trace(visitor);
@@ -378,7 +378,7 @@ void ImageBitmapFactories::ImageBitmapLoader::ResolvePromiseOnOriginalThread(
   factory_->DidFinishLoading(this);
 }
 
-void ImageBitmapFactories::ImageBitmapLoader::Trace(blink::Visitor* visitor) {
+void ImageBitmapFactories::ImageBitmapLoader::Trace(Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(factory_);
   visitor->Trace(resolver_);

@@ -55,7 +55,7 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSRule* parent_rule) const {
   return CreateCSSOMWrapper(nullptr, parent_rule);
 }
 
-void StyleRuleBase::Trace(blink::Visitor* visitor) {
+void StyleRuleBase::Trace(Visitor* visitor) {
   switch (GetType()) {
     case kCharset:
       To<StyleRuleCharset>(this)->TraceAfterDispatch(visitor);

@@ -19,7 +19,7 @@ String SVGAnimatedString::animVal() {
   return SVGAnimatedProperty<SVGString>::animVal();
 }
 
-void SVGAnimatedString::Trace(blink::Visitor* visitor) {
+void SVGAnimatedString::Trace(Visitor* visitor) {
   SVGAnimatedProperty<SVGString>::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }

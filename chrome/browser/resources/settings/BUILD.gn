@@ -122,7 +122,10 @@ group("closure_compile") {
   }
 
   if (is_chromeos) {
-    deps += [ "chromeos:closure_compile" ]
+    deps += [
+      "../../../test/data/webui/settings/chromeos:closure_compile",
+      "chromeos:closure_compile",
+    ]
   }
 }
 

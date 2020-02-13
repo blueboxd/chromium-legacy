@@ -72,7 +72,7 @@ class CORE_EXPORT AdTracker : public GarbageCollected<AdTracker> {
   // identified as an ad resource.
   bool IsAdScriptInStack();
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
   void Shutdown();
   explicit AdTracker(LocalFrame*);

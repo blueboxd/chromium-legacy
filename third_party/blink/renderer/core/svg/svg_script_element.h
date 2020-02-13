@@ -52,7 +52,7 @@ class SVGScriptElement final : public SVGElement,
 
   const AttrNameToTrustedType& GetCheckedAttributeTypes() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void ParseAttribute(const AttributeModificationParams&) override;

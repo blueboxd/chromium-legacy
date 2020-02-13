@@ -258,7 +258,7 @@ BaseFetchContext::CanRequestInternal(
   return base::nullopt;
 }
 
-void BaseFetchContext::Trace(blink::Visitor* visitor) {
+void BaseFetchContext::Trace(Visitor* visitor) {
   visitor->Trace(fetcher_properties_);
   FetchContext::Trace(visitor);
 }

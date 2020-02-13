@@ -116,7 +116,7 @@ class FormSubmission final : public GarbageCollected<FormSubmission> {
   // FormSubmission for DialogMethod
   explicit FormSubmission(const String& result);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   void Navigate();
 

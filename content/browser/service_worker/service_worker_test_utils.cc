@@ -488,15 +488,8 @@ std::unique_ptr<ServiceWorkerResponseWriter> CreateNewResponseWriterSync(
     ServiceWorkerStorage* storage) {
   base::RunLoop run_loop;
   std::unique_ptr<ServiceWorkerResponseWriter> writer;
-  storage->CreateNewResponseWriter(base::BindLambdaForTesting(
-      [&](int64_t /*resource_id*/,
-          std::unique_ptr<ServiceWorkerResponseWriter> new_writer) {
-        DCHECK(new_writer);
-        writer = std::move(new_writer);
-        run_loop.Quit();
-      }));
-  run_loop.Run();
-  return writer;
+  int64_t resource_id = GetNewResourceIdSync(storage);
+  return storage->CreateResponseWriter(resource_id);
 }
 
 int64_t GetNewResourceIdSync(ServiceWorkerStorage* storage) {

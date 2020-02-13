@@ -86,4 +86,36 @@
   <message name="IDS_SETTINGS_CAPTIONS_ENABLE_LIVE_CAPTION" desc="Name of the setting to enable Live Caption.">
     Enable Live Caption
   </message>
+
+ <!-- Personalization Options SubPage (strings used by the <settings-personalization-options> element) -->
+  <message name="IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION" desc="The label of the checkbox to enable/disable url keyed anonymized data collection.">
+    Make searches and browsing better
+  </message>
+  <message name="IDS_SETTINGS_ENABLE_URL_KEYED_ANONYMIZED_DATA_COLLECTION_DESC" desc="The description of the checkbox to enable/disable url keyed anonymized data collection.">
+    Sends URLs of pages you visit to Google
+  </message>
+  <message name="IDS_SETTINGS_SPELLING_PREF" desc="The documentation string of the 'Use Spelling' preference">
+    Enhanced spell check
+  </message>
+  <message name="IDS_SETTINGS_SUGGEST_PREF" desc="The documentation string of the 'Use Suggest' preference">
+    Autocomplete searches and URLs
+  </message>
+  <message name="IDS_SETTINGS_SUGGEST_PREF_DESC" desc="The description of the 'Use Suggest' preference">
+    Sends some cookies and searches from the address bar and search box to your default search engine
+  </message>
+  <message name="IDS_SETTINGS_ENABLE_LOGGING_PREF" desc="The label of the checkbox to enable/disable crash and user metrics logging. This string does not need a Chromium counter-part because it will only be visible if Google-branded.">
+    Help improve Chrome's features and performance
+  </message>
+  <message name="IDS_SETTINGS_ENABLE_LOGGING_PREF_DESC" desc="The description of the checkbox to enable/disable crash and user metrics logging">
+    Automatically sends usage statistics and crash reports to Google
+  </message>
+  <message name="IDS_SETTINGS_LINKDOCTOR_PREF" desc="The documentation string of the 'Use Link Doctor' preference to help with navigation errors.">
+    Show suggestions for similar pages when a page can't be found
+  </message>
+  <message name="IDS_SETTINGS_LINKDOCTOR_PREF_DESC" desc="The description of the 'Use Link Doctor' preference to help with navigation errors.">
+    Sends the web address of the page you're trying to reach to Google
+  </message>
+  <message name="IDS_DRIVE_SUGGEST_PREF" desc="The documentation string of the 'Show Drive Results in Omnibox' preference - short description">
+    Google Drive search suggestions
+  </message>
 </grit-part>

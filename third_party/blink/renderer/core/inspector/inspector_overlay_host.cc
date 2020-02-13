@@ -42,7 +42,7 @@ void InspectorOverlayHost::ClearDelegate() {
   delegate_.Clear();
 }
 
-void InspectorOverlayHost::Trace(blink::Visitor* visitor) {
+void InspectorOverlayHost::Trace(Visitor* visitor) {
   visitor->Trace(delegate_);
   ScriptWrappable::Trace(visitor);
 }

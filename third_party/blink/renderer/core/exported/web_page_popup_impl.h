@@ -51,6 +51,7 @@ class PagePopupChromeClient;
 class PagePopupClient;
 class WebViewImpl;
 class LocalDOMWindow;
+class DOMRect;
 
 class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
                                            public PageWidgetEventHandler,
@@ -103,6 +104,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
   // PagePopup implementation.
   void PostMessageToPopup(const String& message) override;
+  void Update() override;
 
   // PageWidgetEventHandler implementation.
   WebInputEventResult HandleKeyEvent(const WebKeyboardEvent&) override;
@@ -172,6 +174,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   bool is_accelerated_compositing_active_ = false;
 
   bool suppress_next_keypress_event_ = false;
+  Persistent<DOMRect> popup_owner_client_rect_;
 
   friend class WebPagePopup;
   friend class PagePopupChromeClient;

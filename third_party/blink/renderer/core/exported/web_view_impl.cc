@@ -1165,6 +1165,11 @@ void WebViewImpl::CleanupPagePopup() {
   DisablePopupMouseWheelEventListener();
 }
 
+void WebViewImpl::UpdatePagePopup() {
+  if (page_popup_)
+    page_popup_->Update();
+}
+
 void WebViewImpl::EnablePopupMouseWheelEventListener(
     WebLocalFrameImpl* local_root) {
   DCHECK(!popup_mouse_wheel_event_listener_);
@@ -1594,6 +1599,8 @@ void WebViewImpl::UpdateLifecycle(WebWidget::LifecycleUpdate requested_update,
       *AsView().page, *MainFrameImpl()->GetFrame(), requested_update, reason);
   if (requested_update != WebWidget::LifecycleUpdate::kAll)
     return;
+
+  UpdatePagePopup();
 
   // There is no background color for non-composited WebViews (eg printing).
   if (does_composite_) {

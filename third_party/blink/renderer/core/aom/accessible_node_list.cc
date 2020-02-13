@@ -105,7 +105,7 @@ void AccessibleNodeList::NotifyChanged() {
     owner.second->OnRelationListChanged(owner.first);
 }
 
-void AccessibleNodeList::Trace(blink::Visitor* visitor) {
+void AccessibleNodeList::Trace(Visitor* visitor) {
   visitor->Trace(nodes_);
   visitor->Trace(owners_);
   ScriptWrappable::Trace(visitor);

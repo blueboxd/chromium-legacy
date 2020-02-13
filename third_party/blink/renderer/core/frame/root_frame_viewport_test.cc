@@ -84,9 +84,7 @@ class ScrollableAreaStub : public GarbageCollected<ScrollableAreaStub>,
   }
   bool ScrollAnimatorEnabled() const override { return true; }
 
-  void Trace(blink::Visitor* visitor) override {
-    ScrollableArea::Trace(visitor);
-  }
+  void Trace(Visitor* visitor) override { ScrollableArea::Trace(visitor); }
 
  protected:
   CompositorElementId GetScrollElementId() const override {

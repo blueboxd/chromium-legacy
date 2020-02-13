@@ -217,7 +217,7 @@ class CORE_EXPORT InspectorPageAgent final
   void Restore() override;
   bool ScreencastEnabled();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void GetResourceContentAfterResourcesContentLoaded(

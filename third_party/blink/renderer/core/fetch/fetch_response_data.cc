@@ -382,7 +382,7 @@ void FetchResponseData::ReplaceBodyStreamBuffer(BodyStreamBuffer* buffer) {
   }
 }
 
-void FetchResponseData::Trace(blink::Visitor* visitor) {
+void FetchResponseData::Trace(Visitor* visitor) {
   visitor->Trace(header_list_);
   visitor->Trace(internal_response_);
   visitor->Trace(buffer_);

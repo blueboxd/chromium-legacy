@@ -104,7 +104,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   FetchContext* Detach() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   bool CalculateIfAdSubresource(const ResourceRequest& resource_request,
                                 ResourceType type) override;

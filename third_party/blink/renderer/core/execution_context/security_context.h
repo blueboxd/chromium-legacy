@@ -77,7 +77,7 @@ class CORE_EXPORT SecurityContext {
   SecurityContext(const SecurityContextInit&, SecurityContextType context_type);
   virtual ~SecurityContext() = default;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   using InsecureNavigationsSet = HashSet<unsigned, WTF::AlreadyHashed>;
   static WTF::Vector<unsigned> SerializeInsecureNavigationSet(

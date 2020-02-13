@@ -43,7 +43,7 @@ class CORE_EXPORT FrameClient : public GarbageCollected<FrameClient> {
 
   virtual ~FrameClient() = default;
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
 };
 
 }  // namespace blink

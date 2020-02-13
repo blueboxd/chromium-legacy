@@ -33,7 +33,7 @@ class ComputedAccessibleNodePromiseResolver::RequestAnimationFrameCallback final
     resolver_->UpdateTreeAndResolve();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(resolver_);
     FrameRequestCallbackCollection::FrameCallback::Trace(visitor);
   }
@@ -56,7 +56,7 @@ ScriptPromise ComputedAccessibleNodePromiseResolver::Promise() {
   return resolver_->Promise();
 }
 
-void ComputedAccessibleNodePromiseResolver::Trace(blink::Visitor* visitor) {
+void ComputedAccessibleNodePromiseResolver::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(resolver_);
 }

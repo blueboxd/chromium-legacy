@@ -54,7 +54,7 @@ class CORE_EXPORT AXObjectCache : public GarbageCollected<AXObjectCache>,
   static AXObjectCache* Create(Document&);
 
   virtual ~AXObjectCache();
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   virtual void Dispose() = 0;
 

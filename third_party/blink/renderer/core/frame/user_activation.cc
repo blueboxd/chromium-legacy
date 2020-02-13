@@ -22,7 +22,7 @@ UserActivation::UserActivation(LocalDOMWindow* window) : window_(window) {}
 
 UserActivation::~UserActivation() = default;
 
-void UserActivation::Trace(blink::Visitor* visitor) {
+void UserActivation::Trace(Visitor* visitor) {
   visitor->Trace(window_);
   ScriptWrappable::Trace(visitor);
 }

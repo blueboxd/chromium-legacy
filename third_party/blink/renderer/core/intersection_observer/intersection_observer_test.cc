@@ -64,7 +64,7 @@ class TestIntersectionObserverDelegate : public IntersectionObserverDelegate {
     return geometry.IntersectionRect();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     IntersectionObserverDelegate::Trace(visitor);
     visitor->Trace(document_);
     visitor->Trace(entries_);

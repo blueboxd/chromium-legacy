@@ -63,7 +63,7 @@ class CORE_EXPORT ImageElementTiming final
   void NotifyImageRemoved(const LayoutObject*,
                           const ImageResourceContent* image);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class ImageElementTimingTest;
@@ -99,7 +99,7 @@ class CORE_EXPORT ImageElementTiming final
           element(element) {}
     ~ElementTimingInfo() = default;
 
-    void Trace(blink::Visitor* visitor) { visitor->Trace(element); }
+    void Trace(Visitor* visitor) { visitor->Trace(element); }
 
     String url;
     FloatRect rect;

@@ -75,7 +75,7 @@ class MatchedRule {
     return GetRuleData()->Specificity() + specificity_;
   }
   const CSSStyleSheet* ParentStyleSheet() const { return parent_style_sheet_; }
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->Trace(parent_style_sheet_);
     visitor->Trace(rule_data_);
   }

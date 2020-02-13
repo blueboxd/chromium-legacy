@@ -41,7 +41,7 @@ class PropertySetCSSStyleDeclaration
       : AbstractPropertySetCSSStyleDeclaration(execution_context),
         property_set_(&property_set) {}
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   MutableCSSPropertyValueSet& PropertySet() const final {

@@ -117,7 +117,7 @@ Touch* Touch::CloneWithNewTarget(EventTarget* event_target) const {
       rotation_angle_, force_, region_, absolute_location_);
 }
 
-void Touch::Trace(blink::Visitor* visitor) {
+void Touch::Trace(Visitor* visitor) {
   visitor->Trace(target_);
   ScriptWrappable::Trace(visitor);
 }

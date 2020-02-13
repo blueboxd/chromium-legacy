@@ -40,7 +40,7 @@ class CORE_EXPORT MultipartParser final
     virtual void PartDataInMultipartReceived(const char* bytes, size_t) = 0;
     // The method is called whenever all data of a complete part is parsed.
     virtual void PartDataInMultipartFullyReceived() = 0;
-    void Trace(blink::Visitor* visitor) override {}
+    void Trace(Visitor* visitor) override {}
   };
 
   MultipartParser(Vector<char> boundary, Client*);
@@ -50,7 +50,7 @@ class CORE_EXPORT MultipartParser final
 
   bool IsCancelled() const { return state_ == State::kCancelled; }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   class Matcher {

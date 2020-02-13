@@ -465,7 +465,7 @@ class CORE_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // for layout movements (bit.ly/scroll-anchoring).
   virtual bool ShouldPerformScrollAnchoring() const { return false; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   virtual void ClearScrollableArea();
 

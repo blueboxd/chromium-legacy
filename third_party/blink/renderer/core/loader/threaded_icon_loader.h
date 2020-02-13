@@ -51,7 +51,7 @@ class CORE_EXPORT ThreadedIconLoader final
   void DidFail(const ResourceError& error) override;
   void DidFailRedirectCheck() override;
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   void DecodeAndResizeImageOnBackgroundThread(

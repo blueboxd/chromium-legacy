@@ -144,7 +144,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   // Event related methods:
   void MouseContextMenu(const WebMouseEvent&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class WebFrameWidget;  // For WebFrameWidget::create.

@@ -111,7 +111,7 @@ class CORE_EXPORT ScrollAnimatorCompositorCoordinator
 
   RunState RunStateForTesting() { return run_state_; }
 
-  virtual void Trace(blink::Visitor* visitor) {}
+  virtual void Trace(Visitor* visitor) {}
 
  protected:
   explicit ScrollAnimatorCompositorCoordinator();

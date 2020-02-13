@@ -51,7 +51,7 @@ Step::Step(Axis axis,
 
 Step::~Step() = default;
 
-void Step::Trace(blink::Visitor* visitor) {
+void Step::Trace(Visitor* visitor) {
   visitor->Trace(node_test_);
   visitor->Trace(predicates_);
   ParseNode::Trace(visitor);

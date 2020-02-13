@@ -124,7 +124,7 @@ class CORE_EXPORT FetchRequestData final
   const base::UnguessableToken& WindowId() const { return window_id_; }
   void SetWindowId(const base::UnguessableToken& id) { window_id_ = id; }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   FetchRequestData* CloneExceptBody();

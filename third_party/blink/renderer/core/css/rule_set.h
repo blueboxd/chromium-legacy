@@ -68,7 +68,7 @@ class MinimalRuleData {
   MinimalRuleData(StyleRule* rule, unsigned selector_index, AddRuleFlags flags)
       : rule_(rule), selector_index_(selector_index), flags_(flags) {}
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   Member<StyleRule> rule_;
   unsigned selector_index_;
@@ -127,7 +127,7 @@ class CORE_EXPORT RuleData : public GarbageCollected<RuleData> {
     return descendant_selector_identifier_hashes_;
   }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   // This number is picked fairly arbitrary. If lowered, be aware that there
   // might be sites and extensions using style rules with selector lists
@@ -288,7 +288,7 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   void Show() const;
 #endif
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   using PendingRuleMap =
@@ -321,7 +321,7 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
     PendingRuleMap tag_rules;
     PendingRuleMap shadow_pseudo_element_rules;
 
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
   };
 
   PendingRuleMaps* EnsurePendingRules() {

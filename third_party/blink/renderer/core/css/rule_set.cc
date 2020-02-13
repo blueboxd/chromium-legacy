@@ -413,22 +413,22 @@ void RuleSet::CompactRules() {
   slotted_pseudo_element_rules_.ShrinkToFit();
 }
 
-void MinimalRuleData::Trace(blink::Visitor* visitor) {
+void MinimalRuleData::Trace(Visitor* visitor) {
   visitor->Trace(rule_);
 }
 
-void RuleData::Trace(blink::Visitor* visitor) {
+void RuleData::Trace(Visitor* visitor) {
   visitor->Trace(rule_);
 }
 
-void RuleSet::PendingRuleMaps::Trace(blink::Visitor* visitor) {
+void RuleSet::PendingRuleMaps::Trace(Visitor* visitor) {
   visitor->Trace(id_rules);
   visitor->Trace(class_rules);
   visitor->Trace(tag_rules);
   visitor->Trace(shadow_pseudo_element_rules);
 }
 
-void RuleSet::Trace(blink::Visitor* visitor) {
+void RuleSet::Trace(Visitor* visitor) {
   visitor->Trace(id_rules_);
   visitor->Trace(class_rules_);
   visitor->Trace(tag_rules_);

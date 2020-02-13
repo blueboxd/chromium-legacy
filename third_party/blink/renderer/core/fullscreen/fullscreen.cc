@@ -1016,7 +1016,7 @@ void Fullscreen::ElementRemoved(Element& node) {
   // layer. This is done in Element::RemovedFrom.
 }
 
-void Fullscreen::Trace(blink::Visitor* visitor) {
+void Fullscreen::Trace(Visitor* visitor) {
   visitor->Trace(pending_requests_);
   visitor->Trace(pending_exits_);
   Supplement<Document>::Trace(visitor);
@@ -1030,7 +1030,7 @@ Fullscreen::PendingRequest::PendingRequest(Element* element,
 
 Fullscreen::PendingRequest::~PendingRequest() = default;
 
-void Fullscreen::PendingRequest::Trace(blink::Visitor* visitor) {
+void Fullscreen::PendingRequest::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(resolver_);
 }

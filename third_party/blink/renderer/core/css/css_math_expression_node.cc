@@ -271,7 +271,7 @@ bool CSSMathExpressionNumericLiteral::IsComputationallyIndependent() const {
   return value_->IsComputationallyIndependent();
 }
 
-void CSSMathExpressionNumericLiteral::Trace(blink::Visitor* visitor) {
+void CSSMathExpressionNumericLiteral::Trace(Visitor* visitor) {
   visitor->Trace(value_);
   CSSMathExpressionNode::Trace(visitor);
 }
@@ -739,7 +739,7 @@ CSSPrimitiveValue::UnitType CSSMathExpressionBinaryOperation::ResolvedUnitType()
   return CSSPrimitiveValue::UnitType::kUnknown;
 }
 
-void CSSMathExpressionBinaryOperation::Trace(blink::Visitor* visitor) {
+void CSSMathExpressionBinaryOperation::Trace(Visitor* visitor) {
   visitor->Trace(left_side_);
   visitor->Trace(right_side_);
   CSSMathExpressionNode::Trace(visitor);
@@ -826,7 +826,7 @@ CSSMathExpressionVariadicOperation::CSSMathExpressionVariadicOperation(
       operands_(std::move(operands)),
       operator_(op) {}
 
-void CSSMathExpressionVariadicOperation::Trace(blink::Visitor* visitor) {
+void CSSMathExpressionVariadicOperation::Trace(Visitor* visitor) {
   visitor->Trace(operands_);
   CSSMathExpressionNode::Trace(visitor);
 }

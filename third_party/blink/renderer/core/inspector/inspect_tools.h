@@ -34,7 +34,7 @@ class SearchingForNodeTool : public InspectTool {
   bool HandlePointerEvent(const WebPointerEvent&) override;
   void Draw(float scale) override;
   void NodeHighlightRequested(Node*);
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
   Member<InspectorDOMAgent> dom_agent_;
   bool ua_shadow_;
@@ -79,7 +79,7 @@ class NodeHighlightTool : public InspectTool {
   void Draw(float scale) override;
   void DrawNode();
   void DrawMatchingSelector();
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
   bool is_locked_ancestor_ = false;
   Member<Node> node_;
@@ -102,7 +102,7 @@ class NearbyDistanceTool : public InspectTool {
   bool HandleMouseMove(const WebMouseEvent& event) override;
   bool HandleMouseUp(const WebMouseEvent& event) override;
   void Draw(float scale) override;
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
   Member<Node> hovered_node_;
   DISALLOW_COPY_AND_ASSIGN(NearbyDistanceTool);

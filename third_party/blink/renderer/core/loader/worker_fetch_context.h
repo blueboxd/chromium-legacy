@@ -92,7 +92,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   bool AllowRunningInsecureContent(bool enabled_per_settings,
                                    const KURL& url) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void SetFirstPartyCookie(ResourceRequest&);

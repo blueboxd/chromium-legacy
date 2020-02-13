@@ -67,7 +67,7 @@ class CORE_EXPORT AutoscrollController final
  public:
   explicit AutoscrollController(Page&);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   // Selection and drag-and-drop autoscroll.
   void Animate();

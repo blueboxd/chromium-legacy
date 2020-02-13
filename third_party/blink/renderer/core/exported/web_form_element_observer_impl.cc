@@ -27,7 +27,7 @@ class WebFormElementObserverImpl::ObserverCallback
 
   void Disconnect();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<HTMLElement> element_;
@@ -138,7 +138,7 @@ void WebFormElementObserverImpl::Disconnect() {
   self_keep_alive_.Clear();
 }
 
-void WebFormElementObserverImpl::Trace(blink::Visitor* visitor) {
+void WebFormElementObserverImpl::Trace(Visitor* visitor) {
   visitor->Trace(mutation_callback_);
 }
 

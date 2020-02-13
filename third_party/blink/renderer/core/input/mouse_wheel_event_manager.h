@@ -23,7 +23,7 @@ class MouseWheelEventManager final
     : public GarbageCollected<MouseWheelEventManager> {
  public:
   explicit MouseWheelEventManager(LocalFrame&, ScrollManager&);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   void Clear();
 

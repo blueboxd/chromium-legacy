@@ -126,7 +126,7 @@ class CORE_EXPORT ExecutionContext
   MERGE_GARBAGE_COLLECTED_MIXINS();
 
  public:
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   static ExecutionContext* From(const ScriptState*);
   static ExecutionContext* From(v8::Local<v8::Context>);

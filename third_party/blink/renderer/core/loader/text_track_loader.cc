@@ -157,7 +157,7 @@ void TextTrackLoader::GetNewStyleSheets(
     cue_parser_->GetNewStyleSheets(output_sheets);
 }
 
-void TextTrackLoader::Trace(blink::Visitor* visitor) {
+void TextTrackLoader::Trace(Visitor* visitor) {
   visitor->Trace(client_);
   visitor->Trace(cue_parser_);
   visitor->Trace(document_);

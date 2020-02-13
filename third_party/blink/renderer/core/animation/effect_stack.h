@@ -82,7 +82,7 @@ class CORE_EXPORT EffectStack {
       PropertyHandleFilter property_handle_filter = nullptr,
       KeyframeEffect* partial_effect_stack_cutoff = nullptr);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   void RemoveRedundantSampledEffects();

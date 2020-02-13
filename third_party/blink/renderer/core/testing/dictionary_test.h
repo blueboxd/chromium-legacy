@@ -48,7 +48,7 @@ class DictionaryTest : public ScriptWrappable {
                             Dictionary iterable,
                             ExceptionState&) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void Reset();

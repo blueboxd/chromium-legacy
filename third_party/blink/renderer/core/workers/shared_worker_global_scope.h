@@ -86,7 +86,7 @@ class CORE_EXPORT SharedWorkerGlobalScope final : public WorkerGlobalScope {
 
   void OnAppCacheSelected();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DidReceiveResponseForClassicScript(

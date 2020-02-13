@@ -26,7 +26,7 @@ class CORE_EXPORT FallbackCursorEventManager
     : public GarbageCollected<FallbackCursorEventManager> {
  public:
   FallbackCursorEventManager(LocalFrame&);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   void SetIsFallbackCursorModeOn(bool is_on);
 

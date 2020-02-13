@@ -78,7 +78,7 @@ void PerformanceEventTiming::BuildJSONValue(V8ObjectBuilder& builder) const {
   builder.AddBoolean("cancelable", cancelable_);
 }
 
-void PerformanceEventTiming::Trace(blink::Visitor* visitor) {
+void PerformanceEventTiming::Trace(Visitor* visitor) {
   PerformanceEntry::Trace(visitor);
 }
 

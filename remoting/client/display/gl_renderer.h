@@ -76,7 +76,7 @@ class GlRenderer {
   // |done| will be queued up and called on the display thread after the actual
   // rendering happens.
   void OnFrameReceived(std::unique_ptr<webrtc::DesktopFrame> frame,
-                       const base::Closure& done);
+                       base::OnceClosure done);
 
   void OnCursorShapeChanged(const protocol::CursorShapeInfo& shape);
 
@@ -122,7 +122,7 @@ class GlRenderer {
 
   // Done callbacks from OnFrameReceived. Will all be called once rendering
   // takes place.
-  base::queue<base::Closure> pending_done_callbacks_;
+  base::queue<base::OnceClosure> pending_done_callbacks_;
 
   bool render_scheduled_ = false;
 

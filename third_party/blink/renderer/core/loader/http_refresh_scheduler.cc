@@ -141,7 +141,7 @@ void HttpRefreshScheduler::Cancel() {
   refresh_.reset();
 }
 
-void HttpRefreshScheduler::Trace(blink::Visitor* visitor) {
+void HttpRefreshScheduler::Trace(Visitor* visitor) {
   visitor->Trace(document_);
 }
 

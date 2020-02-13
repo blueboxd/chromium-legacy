@@ -75,7 +75,7 @@ SVGFETurbulenceElement::SVGFETurbulenceElement(Document& document)
   AddToPropertyMap(num_octaves_);
 }
 
-void SVGFETurbulenceElement::Trace(blink::Visitor* visitor) {
+void SVGFETurbulenceElement::Trace(Visitor* visitor) {
   visitor->Trace(base_frequency_);
   visitor->Trace(seed_);
   visitor->Trace(stitch_tiles_);

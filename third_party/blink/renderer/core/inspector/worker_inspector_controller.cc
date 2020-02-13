@@ -179,7 +179,7 @@ void WorkerInspectorController::EmitTraceEvent() {
                            worker_thread_id_));
 }
 
-void WorkerInspectorController::Trace(blink::Visitor* visitor) {
+void WorkerInspectorController::Trace(Visitor* visitor) {
   visitor->Trace(agent_);
   visitor->Trace(inspected_frames_);
   visitor->Trace(probe_sink_);

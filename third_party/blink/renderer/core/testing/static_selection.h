@@ -29,7 +29,7 @@ class StaticSelection final : public ScriptWrappable {
   unsigned focusOffset() const { return focus_offset_; }
   bool isCollapsed() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   const Member<Node> anchor_node_;

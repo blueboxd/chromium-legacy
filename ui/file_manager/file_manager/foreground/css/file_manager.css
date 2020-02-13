@@ -579,6 +579,10 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
   width: 32px;
 }
 
+.dialog-header.files-ng #tasks {
+  border-radius: 4px;
+}
+
 .dialog-header.files-ng cr-button > .icon,
 .dialog-header.files-ng #search-box .clear,
 .dialog-header.files-ng #read-only-icon,

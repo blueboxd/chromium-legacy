@@ -90,7 +90,7 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   bool HadUserGesture() const override;
   bool IsListingFtpDirectory() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   ~WebDocumentLoaderImpl() override;

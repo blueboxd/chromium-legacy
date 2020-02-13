@@ -58,7 +58,7 @@ SVGEllipseElement::SVGEllipseElement(Document& document)
   AddToPropertyMap(ry_);
 }
 
-void SVGEllipseElement::Trace(blink::Visitor* visitor) {
+void SVGEllipseElement::Trace(Visitor* visitor) {
   visitor->Trace(cx_);
   visitor->Trace(cy_);
   visitor->Trace(rx_);

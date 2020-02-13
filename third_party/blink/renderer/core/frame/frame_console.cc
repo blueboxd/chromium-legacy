@@ -129,7 +129,7 @@ void FrameConsole::DidFailLoading(DocumentLoader* loader,
       message.ToString(), error.FailingURL(), loader, request_identifier));
 }
 
-void FrameConsole::Trace(blink::Visitor* visitor) {
+void FrameConsole::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
 }
 

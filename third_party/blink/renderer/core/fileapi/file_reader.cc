@@ -125,7 +125,7 @@ class FileReader::ThrottlingController final
       : Supplement<ExecutionContext>(context),
         max_running_readers_(kMaxOutstandingRequestsPerThread) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(pending_readers_);
     visitor->Trace(running_readers_);
     Supplement<ExecutionContext>::Trace(visitor);
@@ -475,7 +475,7 @@ void FileReader::FireEvent(const AtomicString& type) {
   }
 }
 
-void FileReader::Trace(blink::Visitor* visitor) {
+void FileReader::Trace(Visitor* visitor) {
   visitor->Trace(error_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);

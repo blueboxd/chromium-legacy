@@ -30,7 +30,7 @@ class CORE_EXPORT LayoutShift final : public PerformanceEntry {
   bool hadRecentInput() const { return had_recent_input_; }
   double lastInputTime() const { return most_recent_input_timestamp_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void BuildJSONValue(V8ObjectBuilder&) const override;

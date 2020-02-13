@@ -40,7 +40,7 @@ void CSSPropertyRule::Reattach(StyleRuleBase* rule) {
     properties_cssom_wrapper_->Reattach(property_rule_->MutableProperties());
 }
 
-void CSSPropertyRule::Trace(blink::Visitor* visitor) {
+void CSSPropertyRule::Trace(Visitor* visitor) {
   visitor->Trace(property_rule_);
   visitor->Trace(properties_cssom_wrapper_);
   CSSRule::Trace(visitor);

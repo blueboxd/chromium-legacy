@@ -201,7 +201,7 @@ bool ResizeObserver::HasPendingActivity() const {
   return !observations_.IsEmpty();
 }
 
-void ResizeObserver::Trace(blink::Visitor* visitor) {
+void ResizeObserver::Trace(Visitor* visitor) {
   visitor->Trace(callback_);
   visitor->Trace(delegate_);
   visitor->Trace(observations_);

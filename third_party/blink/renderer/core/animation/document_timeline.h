@@ -56,7 +56,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
     // Calls DocumentTimeline's wake() method after duration seconds.
     virtual void WakeAfter(base::TimeDelta duration) = 0;
     virtual ~PlatformTiming() = default;
-    virtual void Trace(blink::Visitor* visitor) {}
+    virtual void Trace(Visitor* visitor) {}
   };
 
   // Web Animations API IDL constructor
@@ -96,7 +96,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   void ResetForTesting();
   void SetTimingForTesting(PlatformTiming* timing);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   base::Optional<base::TimeDelta> CurrentTimeInternal() override;
@@ -135,7 +135,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
 
     void TimerFired(TimerBase*) { timeline_->ScheduleServiceOnNextFrame(); }
 
-    void Trace(blink::Visitor*) override;
+    void Trace(Visitor*) override;
 
    private:
     Member<DocumentTimeline> timeline_;

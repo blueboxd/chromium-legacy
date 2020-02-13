@@ -25,7 +25,7 @@ LinkHighlight::~LinkHighlight() {
   RemoveHighlight();
 }
 
-void LinkHighlight::Trace(blink::Visitor* visitor) {
+void LinkHighlight::Trace(Visitor* visitor) {
   visitor->Trace(page_);
 }
 

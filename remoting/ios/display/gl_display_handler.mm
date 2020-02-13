@@ -53,7 +53,7 @@ class Core : public protocol::CursorShapeStub, public GlRendererDelegate {
   void OnSizeChanged(int width, int height) override;
 
   void OnFrameReceived(std::unique_ptr<webrtc::DesktopFrame> frame,
-                       const base::Closure& done);
+                       base::OnceClosure done);
   void CreateRendererContext(EAGLView* view);
   void DestroyRendererContext();
   void SetSurfaceSize(int width, int height);
@@ -98,7 +98,7 @@ Core::Core() : weak_factory_(this) {
 
   // Do not bind GlRenderer::OnFrameReceived. |renderer_| is not ready yet.
   owned_frame_consumer_.reset(new remoting::DualBufferFrameConsumer(
-      base::Bind(&Core::OnFrameReceived, weak_ptr_),
+      base::BindRepeating(&Core::OnFrameReceived, weak_ptr_),
       runtime_->display_task_runner(),
       protocol::FrameConsumer::PixelFormat::FORMAT_RGBA));
   frame_consumer_ = owned_frame_consumer_->GetWeakPtr();
@@ -166,9 +166,9 @@ std::unique_ptr<protocol::FrameConsumer> Core::GrabFrameConsumer() {
 }
 
 void Core::OnFrameReceived(std::unique_ptr<webrtc::DesktopFrame> frame,
-                           const base::Closure& done) {
+                           base::OnceClosure done) {
   DCHECK(runtime_->display_task_runner()->BelongsToCurrentThread());
-  renderer_->OnFrameReceived(std::move(frame), done);
+  renderer_->OnFrameReceived(std::move(frame), std::move(done));
 }
 
 void Core::OnFrameRendered() {

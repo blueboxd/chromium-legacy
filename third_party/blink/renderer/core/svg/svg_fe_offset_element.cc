@@ -41,7 +41,7 @@ SVGFEOffsetElement::SVGFEOffsetElement(Document& document)
   AddToPropertyMap(in1_);
 }
 
-void SVGFEOffsetElement::Trace(blink::Visitor* visitor) {
+void SVGFEOffsetElement::Trace(Visitor* visitor) {
   visitor->Trace(dx_);
   visitor->Trace(dy_);
   visitor->Trace(in1_);

@@ -58,7 +58,7 @@ class CORE_EXPORT IntersectionObservation final
   void Disconnect();
   void InvalidateCachedRects();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   bool CanUseCachedRectsForTesting() const { return CanUseCachedRects(); }
 

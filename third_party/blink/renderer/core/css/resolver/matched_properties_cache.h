@@ -52,7 +52,7 @@ class CachedMatchedProperties final
            const MatchedPropertiesVector&);
   void Clear();
 
-  void Trace(blink::Visitor*) {}
+  void Trace(Visitor*) {}
 
   bool operator==(const MatchedPropertiesVector& properties);
   bool operator!=(const MatchedPropertiesVector& properties);
@@ -79,7 +79,7 @@ class CORE_EXPORT MatchedPropertiesCache {
   static bool IsCacheable(const StyleResolverState&);
   static bool IsStyleCacheable(const ComputedStyle&);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   // The cache is mapping a hash to a cached entry where the entry is kept as

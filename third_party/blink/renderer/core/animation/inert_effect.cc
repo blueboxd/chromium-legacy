@@ -64,7 +64,7 @@ AnimationTimeDelta InertEffect::CalculateTimeToEffectChange(
   return AnimationTimeDelta::Max();
 }
 
-void InertEffect::Trace(blink::Visitor* visitor) {
+void InertEffect::Trace(Visitor* visitor) {
   visitor->Trace(model_);
   AnimationEffect::Trace(visitor);
 }

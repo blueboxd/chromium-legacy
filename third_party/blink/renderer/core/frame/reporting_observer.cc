@@ -88,7 +88,7 @@ HeapVector<Member<Report>> ReportingObserver::takeRecords() {
   return reports;
 }
 
-void ReportingObserver::Trace(blink::Visitor* visitor) {
+void ReportingObserver::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
   visitor->Trace(callback_);
   visitor->Trace(options_);

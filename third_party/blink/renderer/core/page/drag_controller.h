@@ -93,7 +93,7 @@ class CORE_EXPORT DragController final
   // ContextLifecycleObserver.
   void ContextDestroyed(ExecutionContext*) final;
 
-  void Trace(blink::Visitor*) final;
+  void Trace(Visitor*) final;
 
  private:
   DispatchEventResult DispatchTextInputEventFor(LocalFrame*, DragData*);

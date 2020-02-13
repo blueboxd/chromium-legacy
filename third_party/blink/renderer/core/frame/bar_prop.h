@@ -55,7 +55,7 @@ class BarProp final : public ScriptWrappable, public DOMWindowClient {
 
   bool visible() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Type type_;

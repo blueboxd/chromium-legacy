@@ -69,7 +69,7 @@ class FrontendMenuProvider final : public ContextMenuProvider {
     DCHECK(!devtools_host_);
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(devtools_host_);
     ContextMenuProvider::Trace(visitor);
   }
@@ -109,7 +109,7 @@ DevToolsHost::DevToolsHost(InspectorFrontendClient* client,
 
 DevToolsHost::~DevToolsHost() = default;
 
-void DevToolsHost::Trace(blink::Visitor* visitor) {
+void DevToolsHost::Trace(Visitor* visitor) {
   visitor->Trace(client_);
   visitor->Trace(frontend_frame_);
   visitor->Trace(menu_provider_);

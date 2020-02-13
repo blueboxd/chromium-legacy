@@ -95,7 +95,7 @@ void NavigatorLanguage::EnsureUpdatedLanguage() {
   }
 }
 
-void NavigatorLanguage::Trace(blink::Visitor* visitor) {
+void NavigatorLanguage::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
 }
 

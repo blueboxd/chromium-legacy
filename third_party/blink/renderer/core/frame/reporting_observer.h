@@ -58,7 +58,7 @@ class CORE_EXPORT ReportingObserver final
   void disconnect();
   HeapVector<Member<Report>> takeRecords();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<ExecutionContext> execution_context_;

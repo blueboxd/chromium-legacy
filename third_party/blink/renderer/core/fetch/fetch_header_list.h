@@ -50,7 +50,7 @@ class CORE_EXPORT FetchHeaderList final
   static bool IsValidHeaderName(const String&);
   static bool IsValidHeaderValue(const String&);
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 
  private:
   // While using STL data structures in Blink is not very common or

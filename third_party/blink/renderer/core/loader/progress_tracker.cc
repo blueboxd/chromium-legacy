@@ -67,7 +67,7 @@ ProgressTracker::ProgressTracker(LocalFrame* frame)
 
 ProgressTracker::~ProgressTracker() = default;
 
-void ProgressTracker::Trace(blink::Visitor* visitor) {
+void ProgressTracker::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
 }
 

@@ -41,7 +41,7 @@ class CORE_EXPORT ProfilerGroup
                            ExceptionState&);
 
   void WillBeDestroyed() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class Profiler;

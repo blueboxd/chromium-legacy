@@ -197,7 +197,7 @@ void AnimationTimeline::ScheduleServiceOnNextFrame() {
     document_->View()->ScheduleAnimation();
 }
 
-void AnimationTimeline::Trace(blink::Visitor* visitor) {
+void AnimationTimeline::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(animations_needing_update_);
   visitor->Trace(animations_);

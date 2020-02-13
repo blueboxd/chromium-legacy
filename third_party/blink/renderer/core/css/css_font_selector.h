@@ -88,7 +88,7 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
   }
   void UpdateGenericFontFamilySettings(Document&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   void DispatchInvalidationCallbacks();

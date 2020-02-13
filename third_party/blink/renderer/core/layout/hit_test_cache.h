@@ -37,7 +37,7 @@ namespace blink {
 struct HitTestCacheEntry {
   DISALLOW_NEW();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
   HitTestLocation location;
   HitTestResult result;
 
@@ -61,7 +61,7 @@ class CORE_EXPORT HitTestCache final : public GarbageCollected<HitTestCache> {
                        const HitTestResult&,
                        uint64_t dom_tree_version);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   // The below UMA values reference a validity region. This code has not

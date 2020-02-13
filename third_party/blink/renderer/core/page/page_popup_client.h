@@ -85,6 +85,9 @@ class CORE_EXPORT PagePopupClient {
   // This is called whenever a PagePopup was closed.
   virtual void DidClosePopup() = 0;
 
+  // This is called when popup content or its owner's position changed.
+  virtual void Update(bool force_update) {}
+
   virtual ~PagePopupClient() = default;
 
   // Helper functions to be used in PagePopupClient::writeDocument().

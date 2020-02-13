@@ -64,7 +64,7 @@ class CORE_EXPORT PerformanceMeasure final : public PerformanceEntry {
   mojom::blink::PerformanceMarkOrMeasurePtr ToMojoPerformanceMarkOrMeasure()
       override;
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   ~PerformanceMeasure() override = default;

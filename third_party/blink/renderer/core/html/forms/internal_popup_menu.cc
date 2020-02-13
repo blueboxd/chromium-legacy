@@ -508,20 +508,12 @@ void InternalPopupMenu::Hide() {
 }
 
 void InternalPopupMenu::UpdateFromElement(UpdateReason) {
-  if (needs_update_)
-    return;
   needs_update_ = true;
-  OwnerElement()
-      .GetDocument()
-      .GetTaskRunner(TaskType::kUserInteraction)
-      ->PostTask(FROM_HERE,
-                 WTF::Bind(&InternalPopupMenu::Update, WrapPersistent(this)));
 }
 
-void InternalPopupMenu::Update() {
-  if (!popup_ || !owner_element_)
+void InternalPopupMenu::Update(bool force_update) {
+  if (!popup_ || !owner_element_ || (!needs_update_ && !force_update))
     return;
-  OwnerElement().GetDocument().UpdateStyleAndLayoutTree();
   // disconnectClient() might have been called.
   if (!owner_element_)
     return;

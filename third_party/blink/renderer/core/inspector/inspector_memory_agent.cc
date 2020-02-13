@@ -81,7 +81,7 @@ Response InspectorMemoryAgent::forciblyPurgeJavaScriptMemory() {
   return Response::OK();
 }
 
-void InspectorMemoryAgent::Trace(blink::Visitor* visitor) {
+void InspectorMemoryAgent::Trace(Visitor* visitor) {
   visitor->Trace(frames_);
   InspectorBaseAgent::Trace(visitor);
 }

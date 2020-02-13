@@ -109,7 +109,7 @@ class CORE_EXPORT InspectorCSSAgent final
                     InspectorResourceContentLoader*,
                     InspectorResourceContainer*);
   ~InspectorCSSAgent() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void ForcePseudoState(Element*, CSSSelector::PseudoType, bool* result);
   void DidCommitLoadForLocalFrame(LocalFrame*) override;

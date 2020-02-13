@@ -66,7 +66,7 @@ class CORE_EXPORT CSSPropertyRef {
     return GetProperty();
   }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(custom_property_); }
+  void Trace(Visitor* visitor) { visitor->Trace(custom_property_); }
 
  private:
   CSSPropertyID property_id_;

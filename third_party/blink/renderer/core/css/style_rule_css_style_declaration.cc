@@ -64,7 +64,7 @@ void StyleRuleCSSStyleDeclaration::Reattach(
   property_set_ = &property_set;
 }
 
-void StyleRuleCSSStyleDeclaration::Trace(blink::Visitor* visitor) {
+void StyleRuleCSSStyleDeclaration::Trace(Visitor* visitor) {
   visitor->Trace(parent_rule_);
   PropertySetCSSStyleDeclaration::Trace(visitor);
 }

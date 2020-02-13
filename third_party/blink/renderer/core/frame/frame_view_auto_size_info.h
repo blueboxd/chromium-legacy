@@ -23,7 +23,7 @@ class FrameViewAutoSizeInfo final
   void ConfigureAutoSizeMode(const IntSize& min_size, const IntSize& max_size);
   void AutoSizeIfNeeded();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   Member<LocalFrameView> frame_view_;

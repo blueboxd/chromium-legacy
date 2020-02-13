@@ -34,6 +34,13 @@ class CORE_EXPORT DOMRect final : public DOMRectReadOnly {
   void setHeight(double height) { height_ = height; }
 };
 
+constexpr bool operator==(const DOMRect& lhs, const DOMRect& rhs) {
+  return lhs.x() == rhs.x() && lhs.y() == rhs.y() &&
+         lhs.width() == rhs.width() && lhs.height() == rhs.height();
+}
+constexpr bool operator!=(const DOMRect& lhs, const DOMRect& rhs) {
+  return !(lhs == rhs);
+}
 }  // namespace blink
 
-#endif
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_GEOMETRY_DOM_RECT_H_

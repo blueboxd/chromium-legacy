@@ -60,7 +60,7 @@ class CORE_EXPORT DocumentAnimations final
       const PaintArtifactCompositor* paint_artifact_compositor);
 
   HeapVector<Member<Animation>> getAnimations();
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   Member<Document> document_;

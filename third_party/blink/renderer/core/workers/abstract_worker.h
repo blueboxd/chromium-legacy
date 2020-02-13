@@ -62,7 +62,7 @@ class CORE_EXPORT AbstractWorker : public EventTargetWithInlineData,
   AbstractWorker(ExecutionContext*);
   ~AbstractWorker() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   // Helper function that converts a URL to an absolute URL and checks the

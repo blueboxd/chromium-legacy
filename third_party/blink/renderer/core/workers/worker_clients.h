@@ -49,7 +49,7 @@ class CORE_EXPORT WorkerClients final : public GarbageCollected<WorkerClients>,
  public:
   WorkerClients() = default;
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     Supplementable<WorkerClients>::Trace(visitor);
   }
 

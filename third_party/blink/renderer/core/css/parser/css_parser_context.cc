@@ -274,7 +274,7 @@ bool CSSParserContext::IsForMarkupSanitization() const {
   return document_ && document_->IsForMarkupSanitization();
 }
 
-void CSSParserContext::Trace(blink::Visitor* visitor) {
+void CSSParserContext::Trace(Visitor* visitor) {
   visitor->Trace(document_);
 }
 

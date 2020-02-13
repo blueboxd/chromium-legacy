@@ -35,7 +35,7 @@ class CORE_EXPORT KeyboardEventManager final
 #endif
 
   KeyboardEventManager(LocalFrame&, ScrollManager&);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   bool HandleAccessKey(const WebKeyboardEvent&);
   WebInputEventResult KeyEvent(const WebKeyboardEvent&);

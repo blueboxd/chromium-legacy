@@ -28,7 +28,7 @@ class CORE_EXPORT DevToolsEmulator final
     : public GarbageCollected<DevToolsEmulator> {
  public:
   explicit DevToolsEmulator(WebViewImpl*);
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   // Settings overrides.
   void SetTextAutosizingEnabled(bool);

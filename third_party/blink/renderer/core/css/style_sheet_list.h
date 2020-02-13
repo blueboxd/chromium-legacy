@@ -50,7 +50,7 @@ class CORE_EXPORT StyleSheetList final : public ScriptWrappable {
 
   CSSStyleSheet* AnonymousNamedGetter(const AtomicString&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   const HeapVector<Member<StyleSheet>>& StyleSheets() const;

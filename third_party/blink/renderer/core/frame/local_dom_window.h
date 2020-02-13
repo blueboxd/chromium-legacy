@@ -105,7 +105,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   LocalFrame* GetFrame() const { return To<LocalFrame>(DOMWindow::GetFrame()); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   Document* InstallNewDocument(const DocumentInit&, bool force_xhtml);
 

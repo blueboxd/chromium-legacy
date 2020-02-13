@@ -82,7 +82,7 @@ FloatSize LayoutImageResourceStyleImage::ImageSizeWithDefaultSize(
       layout_object_->GetDocument(), multiplier, default_size,
       LayoutObject::ShouldRespectImageOrientation(layout_object_));
 }
-void LayoutImageResourceStyleImage::Trace(blink::Visitor* visitor) {
+void LayoutImageResourceStyleImage::Trace(Visitor* visitor) {
   visitor->Trace(style_image_);
   LayoutImageResource::Trace(visitor);
 }

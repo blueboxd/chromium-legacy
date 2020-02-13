@@ -48,11 +48,11 @@ std::unique_ptr<webrtc::DesktopFrame> FakeFrameConsumer::AllocateFrame(
 }
 
 void FakeFrameConsumer::DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame,
-                                  const base::Closure& done) {
+                                  base::OnceClosure done) {
   CHECK(thread_checker_.CalledOnValidThread());
   received_frames_.push_back(std::move(frame));
   if (!done.is_null())
-    done.Run();
+    std::move(done).Run();
   if (!on_frame_callback_.is_null())
     on_frame_callback_.Run();
 }

@@ -52,7 +52,7 @@ class WindowAgentFactory final : public GarbageCollected<WindowAgentFactory> {
                                  v8::Isolate* isolate,
                                  const SecurityOrigin* origin);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   struct SchemeAndRegistrableDomain {

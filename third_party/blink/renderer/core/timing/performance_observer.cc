@@ -257,7 +257,7 @@ void PerformanceObserver::ContextLifecycleStateChanged(
     performance_->SuspendObserver(*this);
 }
 
-void PerformanceObserver::Trace(blink::Visitor* visitor) {
+void PerformanceObserver::Trace(Visitor* visitor) {
   visitor->Trace(callback_);
   visitor->Trace(performance_);
   visitor->Trace(performance_entries_);

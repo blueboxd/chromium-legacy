@@ -74,7 +74,7 @@ class StyleFetchedImage final : public StyleImage,
 
   void LoadDeferredImage(const Document& document);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool IsEqual(const StyleImage&) const override;

@@ -44,7 +44,7 @@ class SVGFEMorphologyElement final
     return svg_operator_.Get();
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool SetFilterEffectAttribute(FilterEffect*, const QualifiedName&) override;

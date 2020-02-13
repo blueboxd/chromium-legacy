@@ -91,7 +91,7 @@ class MediaList final : public ScriptWrappable {
 
   void Reattach(scoped_refptr<MediaQuerySet>);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   scoped_refptr<MediaQuerySet> media_queries_;

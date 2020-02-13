@@ -23,7 +23,7 @@ class CORE_EXPORT InspectorIssue final
 
   const mojom::blink::InspectorIssueCode& Code() const;
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   mojom::blink::InspectorIssueCode code_;

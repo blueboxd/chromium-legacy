@@ -72,7 +72,7 @@ SVGRectElement::SVGRectElement(Document& document)
   AddToPropertyMap(ry_);
 }
 
-void SVGRectElement::Trace(blink::Visitor* visitor) {
+void SVGRectElement::Trace(Visitor* visitor) {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);

@@ -19,7 +19,7 @@ VideoRequestAnimationFrame* VideoRequestAnimationFrame::From(
       element);
 }
 
-void VideoRequestAnimationFrame::Trace(blink::Visitor* visitor) {
+void VideoRequestAnimationFrame::Trace(Visitor* visitor) {
   Supplement<HTMLVideoElement>::Trace(visitor);
 }
 

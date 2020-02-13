@@ -73,7 +73,7 @@ class CORE_EXPORT LinkLoader final : public SingleModuleClient,
 
   Resource* GetResourceForTesting();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   class FinishObserver;

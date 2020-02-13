@@ -20,7 +20,7 @@ class SentNodes final : public GarbageCollected<SentNodes> {
   bool HasSent(const Node& node);
   void OnSent(const Node& node);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   HeapHashSet<WeakMember<const Node>> sent_nodes_;

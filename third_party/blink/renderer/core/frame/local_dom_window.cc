@@ -1623,7 +1623,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
   return result.frame->DomWindow();
 }
 
-void LocalDOMWindow::Trace(blink::Visitor* visitor) {
+void LocalDOMWindow::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(screen_);
   visitor->Trace(history_);

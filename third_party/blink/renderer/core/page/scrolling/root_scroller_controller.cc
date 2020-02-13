@@ -99,7 +99,7 @@ PaintLayerScrollableArea* GetScrollableArea(const Element& element) {
 RootScrollerController::RootScrollerController(Document& document)
     : document_(&document), effective_root_scroller_(&document) {}
 
-void RootScrollerController::Trace(blink::Visitor* visitor) {
+void RootScrollerController::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(root_scroller_);
   visitor->Trace(effective_root_scroller_);

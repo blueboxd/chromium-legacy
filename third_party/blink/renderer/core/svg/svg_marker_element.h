@@ -76,7 +76,7 @@ class SVGMarkerElement final : public SVGElement, public SVGFitToViewBox {
     return orient_angle_->OrientType();
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void SvgAttributeChanged(const QualifiedName&) override;

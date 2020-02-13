@@ -1361,7 +1361,7 @@ void DragController::ContextDestroyed(ExecutionContext*) {
   drag_state_ = nullptr;
 }
 
-void DragController::Trace(blink::Visitor* visitor) {
+void DragController::Trace(Visitor* visitor) {
   visitor->Trace(page_);
   visitor->Trace(document_under_mouse_);
   visitor->Trace(drag_initiator_);

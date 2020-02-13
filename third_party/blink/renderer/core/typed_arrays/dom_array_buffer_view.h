@@ -86,7 +86,7 @@ class CORE_EXPORT DOMArrayBufferView : public ScriptWrappable {
     return v8::Local<v8::Object>();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(dom_array_buffer_);
     ScriptWrappable::Trace(visitor);
   }

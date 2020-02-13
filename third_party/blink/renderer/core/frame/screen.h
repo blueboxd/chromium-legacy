@@ -60,7 +60,7 @@ class CORE_EXPORT Screen final : public ScriptWrappable,
   int availHeight() const;
   int availWidth() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Proposed extensions to the Screen interface.
   // https://github.com/webscreens/screen-enumeration

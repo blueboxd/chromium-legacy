@@ -555,7 +555,7 @@ FetchHeaderList* Response::InternalHeaderList() const {
   return response_->InternalHeaderList();
 }
 
-void Response::Trace(blink::Visitor* visitor) {
+void Response::Trace(Visitor* visitor) {
   Body::Trace(visitor);
   visitor->Trace(response_);
   visitor->Trace(headers_);

@@ -116,7 +116,7 @@ class CORE_EXPORT ScrollAnimatorBase
 
   virtual bool SetScrollbarsVisibleForTesting(bool) { return false; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   virtual void NotifyOffsetChanged();

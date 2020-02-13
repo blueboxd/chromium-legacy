@@ -45,7 +45,7 @@ class CORE_EXPORT InspectorMemoryAgent final
  public:
   explicit InspectorMemoryAgent(InspectedFrames*);
   ~InspectorMemoryAgent() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void Restore() override;
 

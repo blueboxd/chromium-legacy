@@ -238,7 +238,7 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
   GetExecutionContext()->DispatchErrorEvent(event, mute_script_errors);
 }
 
-void DedicatedWorkerMessagingProxy::Trace(blink::Visitor* visitor) {
+void DedicatedWorkerMessagingProxy::Trace(Visitor* visitor) {
   visitor->Trace(worker_object_);
   ThreadedMessagingProxyBase::Trace(visitor);
 }

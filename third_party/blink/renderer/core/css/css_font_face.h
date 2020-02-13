@@ -82,7 +82,7 @@ class CORE_EXPORT CSSFontFace final : public GarbageCollected<CSSFontFace> {
 
   bool HadBlankText() { return IsValid() && sources_.front()->HadBlankText(); }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   void SetLoadStatus(FontFace::LoadStatusType);

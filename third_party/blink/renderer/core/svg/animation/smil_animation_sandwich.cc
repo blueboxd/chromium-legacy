@@ -119,7 +119,7 @@ bool SMILAnimationSandwich::ApplyAnimationValues() {
   return true;
 }
 
-void SMILAnimationSandwich::Trace(blink::Visitor* visitor) {
+void SMILAnimationSandwich::Trace(Visitor* visitor) {
   visitor->Trace(sandwich_);
   visitor->Trace(active_);
 }

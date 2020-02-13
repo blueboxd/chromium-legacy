@@ -81,7 +81,7 @@ ScriptPromise CustomLayoutChild::layoutNextFragment(
   return resolver->Promise();
 }
 
-void CustomLayoutChild::Trace(blink::Visitor* visitor) {
+void CustomLayoutChild::Trace(Visitor* visitor) {
   visitor->Trace(style_map_);
   visitor->Trace(token_);
   ScriptWrappable::Trace(visitor);

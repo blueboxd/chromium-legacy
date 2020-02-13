@@ -203,7 +203,7 @@ FetchRequestData::FetchRequestData()
       priority_(ResourceLoadPriority::kUnresolved),
       keepalive_(false) {}
 
-void FetchRequestData::Trace(blink::Visitor* visitor) {
+void FetchRequestData::Trace(Visitor* visitor) {
   visitor->Trace(buffer_);
   visitor->Trace(header_list_);
 }

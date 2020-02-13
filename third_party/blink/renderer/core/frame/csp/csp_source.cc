@@ -302,7 +302,7 @@ network::mojom::blink::CSPSourcePtr CSPSource::ExposeForNavigationalChecks()
   );
 }
 
-void CSPSource::Trace(blink::Visitor* visitor) {
+void CSPSource::Trace(Visitor* visitor) {
   visitor->Trace(policy_);
 }
 

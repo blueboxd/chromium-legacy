@@ -48,7 +48,7 @@ class CORE_EXPORT ContextMenuController final
  public:
   explicit ContextMenuController(Page*);
   ~ContextMenuController();
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   void ClearContextMenu();
 

@@ -221,7 +221,7 @@ void IdlenessDetector::NetworkQuietTimerFired(TimerBase*) {
   }
 }
 
-void IdlenessDetector::Trace(blink::Visitor* visitor) {
+void IdlenessDetector::Trace(Visitor* visitor) {
   visitor->Trace(local_frame_);
 }
 

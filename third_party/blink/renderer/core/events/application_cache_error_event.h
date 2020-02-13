@@ -42,7 +42,7 @@ class ApplicationCacheErrorEvent final : public Event {
     return event_interface_names::kApplicationCacheErrorEvent;
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   String reason_;

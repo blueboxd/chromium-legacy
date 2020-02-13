@@ -115,7 +115,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   wtf_size_t& PriorityQueueHandle() { return queue_handle_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   enum BeginOrEnd { kBegin, kEnd };
@@ -180,7 +180,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
               unsigned repeat);
 
     ~Condition();
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
 
     Type GetType() const { return type_; }
     BeginOrEnd GetBeginOrEnd() const { return begin_or_end_; }

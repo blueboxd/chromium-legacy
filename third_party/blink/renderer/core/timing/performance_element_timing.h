@@ -58,7 +58,7 @@ class CORE_EXPORT PerformanceElementTiming final : public PerformanceEntry {
   String url() const { return url_; }
   Element* element() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void BuildJSONValue(V8ObjectBuilder&) const override;

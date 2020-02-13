@@ -45,7 +45,7 @@ class FEImage final : public FilterEffect {
   WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
                                           int indention) const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   ~FEImage() override = default;

@@ -41,7 +41,7 @@ DummyModulator::DummyModulator()
 
 DummyModulator::~DummyModulator() = default;
 
-void DummyModulator::Trace(blink::Visitor* visitor) {
+void DummyModulator::Trace(Visitor* visitor) {
   visitor->Trace(resolver_);
   Modulator::Trace(visitor);
 }

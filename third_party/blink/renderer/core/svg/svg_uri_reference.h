@@ -81,7 +81,7 @@ class CORE_EXPORT SVGURIReference : public GarbageCollectedMixin {
   // JS API
   SVGAnimatedHref* href() const { return href_.Get(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   explicit SVGURIReference(SVGElement*);

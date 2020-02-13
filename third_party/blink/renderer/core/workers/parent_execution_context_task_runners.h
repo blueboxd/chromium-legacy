@@ -44,7 +44,7 @@ class CORE_EXPORT ParentExecutionContextTaskRunners final
   scoped_refptr<base::SingleThreadTaskRunner> Get(TaskType)
       LOCKS_EXCLUDED(mutex_);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   using TaskRunnerHashMap = HashMap<TaskType,

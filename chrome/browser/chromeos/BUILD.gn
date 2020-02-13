@@ -3216,6 +3216,9 @@ source_set("unit_tests") {
     "//ui/events/devices:test_support",
     "//ui/shell_dialogs",
   ]
+  if (use_udev) {
+    deps += [ "//device/udev_linux:test_support" ]
+  }
   data = [ "//chromeos/test/data/" ]
 }
 

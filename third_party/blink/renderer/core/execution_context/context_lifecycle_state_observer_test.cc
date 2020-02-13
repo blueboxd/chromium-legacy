@@ -47,7 +47,7 @@ class MockContextLifecycleStateObserver final
   explicit MockContextLifecycleStateObserver(ExecutionContext* context)
       : ContextLifecycleStateObserver(context) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     ContextLifecycleStateObserver::Trace(visitor);
   }
 

@@ -84,7 +84,7 @@ class ConditionEventListener final : public NativeEventListener {
         animation_->Elapsed() + condition_->Offset(), SMILTimeOrigin::kEvent);
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(animation_);
     visitor->Trace(condition_);
     NativeEventListener::Trace(visitor);
@@ -110,7 +110,7 @@ SVGSMILElement::Condition::Condition(Type type,
 
 SVGSMILElement::Condition::~Condition() = default;
 
-void SVGSMILElement::Condition::Trace(blink::Visitor* visitor) {
+void SVGSMILElement::Condition::Trace(Visitor* visitor) {
   visitor->Trace(base_element_);
   visitor->Trace(base_id_observer_);
   visitor->Trace(event_listener_);
@@ -1297,7 +1297,7 @@ void SVGSMILElement::DidChangeAnimationTarget() {
   is_scheduled_ = true;
 }
 
-void SVGSMILElement::Trace(blink::Visitor* visitor) {
+void SVGSMILElement::Trace(Visitor* visitor) {
   visitor->Trace(target_element_);
   visitor->Trace(target_id_observer_);
   visitor->Trace(time_container_);

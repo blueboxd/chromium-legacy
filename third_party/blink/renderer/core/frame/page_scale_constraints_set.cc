@@ -47,7 +47,7 @@ PageScaleConstraintsSet::PageScaleConstraintsSet(Page* page)
       needs_reset_(false),
       constraints_dirty_(false) {}
 
-void PageScaleConstraintsSet::Trace(blink::Visitor* visitor) {
+void PageScaleConstraintsSet::Trace(Visitor* visitor) {
   visitor->Trace(page_);
 }
 

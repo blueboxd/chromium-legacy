@@ -48,7 +48,7 @@ class CORE_EXPORT SpatialNavigationController final
   void FocusedNodeChanged(Document*);
   void FullscreenStateChanged(Element* element);
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   // Entry-point into SpatialNavigation advancement. Will return true if an

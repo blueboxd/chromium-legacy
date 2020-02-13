@@ -41,7 +41,7 @@ class InlineCSSStyleDeclaration final
                            : nullptr),
         parent_element_(parent_element) {}
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   MutableCSSPropertyValueSet& PropertySet() const override;

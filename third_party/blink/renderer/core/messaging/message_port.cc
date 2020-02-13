@@ -258,7 +258,7 @@ MessagePortArray* MessagePort::EntanglePorts(
   return connector_->handle().value();
 }
 
-void MessagePort::Trace(blink::Visitor* visitor) {
+void MessagePort::Trace(Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }

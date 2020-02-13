@@ -59,7 +59,7 @@ FEImage::FEImage(Filter* filter,
   FilterEffect::SetOperatingInterpolationSpace(kInterpolationSpaceSRGB);
 }
 
-void FEImage::Trace(blink::Visitor* visitor) {
+void FEImage::Trace(Visitor* visitor) {
   visitor->Trace(tree_scope_);
   visitor->Trace(preserve_aspect_ratio_);
   FilterEffect::Trace(visitor);

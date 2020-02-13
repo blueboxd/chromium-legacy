@@ -263,6 +263,9 @@ class WebTestDelegate {
   // Forces a text input state update for the client of WebFrameWidget
   // associated with |frame|.
   virtual void ForceTextInputStateUpdate(blink::WebLocalFrame* frame) = 0;
+
+  // Mark the orientation changed for fullscreen layout tests.
+  virtual void SetScreenOrientationChanged() = 0;
 };
 
 }  // namespace test_runner

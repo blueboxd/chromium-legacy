@@ -215,7 +215,7 @@ EventHandler::EventHandler(LocalFrame& frame)
   }
 }
 
-void EventHandler::Trace(blink::Visitor* visitor) {
+void EventHandler::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(selection_controller_);
   visitor->Trace(capturing_mouse_events_element_);

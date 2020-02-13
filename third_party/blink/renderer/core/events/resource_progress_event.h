@@ -57,7 +57,7 @@ class CORE_EXPORT ResourceProgressEvent final : public ProgressEvent {
 
   const AtomicString& InterfaceName() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   String url_;

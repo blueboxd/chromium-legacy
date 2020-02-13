@@ -67,7 +67,7 @@ class CORE_EXPORT ModuleScriptLoader final
   bool IsInitialState() const { return state_ == State::kInitial; }
   bool HasFinished() const { return state_ == State::kFinished; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void FetchInternal(const ModuleScriptFetchRequest&,

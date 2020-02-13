@@ -38,7 +38,7 @@ class CORE_EXPORT SVGAElement final : public SVGGraphicsElement,
 
   explicit SVGAElement(Document&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   String title() const override;

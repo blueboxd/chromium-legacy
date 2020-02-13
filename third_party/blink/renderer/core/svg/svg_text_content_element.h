@@ -71,7 +71,7 @@ class CORE_EXPORT SVGTextContentElement : public SVGGraphicsElement {
     return length_adjust_.Get();
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   SVGTextContentElement(const QualifiedName&, Document&);

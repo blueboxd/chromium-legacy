@@ -50,7 +50,7 @@ class SVGFEImageElement final : public SVGFilterPrimitiveStandardAttributes,
 
   void Dispose();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void SvgAttributeChanged(const QualifiedName&) override;

@@ -58,7 +58,7 @@ class CORE_EXPORT MultipartImageResourceParser final
     virtual ~Client() = default;
     virtual void OnePartInMultipartReceived(const ResourceResponse&) = 0;
     virtual void MultipartDataReceived(const char* bytes, size_t) = 0;
-    void Trace(blink::Visitor* visitor) override {}
+    void Trace(Visitor* visitor) override {}
   };
 
   MultipartImageResourceParser(const ResourceResponse&,
@@ -68,7 +68,7 @@ class CORE_EXPORT MultipartImageResourceParser final
   void Finish();
   void Cancel() { is_cancelled_ = true; }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
   static wtf_size_t SkippableLengthForTest(const Vector<char>& data,
                                            wtf_size_t size) {

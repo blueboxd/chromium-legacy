@@ -207,7 +207,7 @@ class CORE_EXPORT SVGElement : public Element {
   void SetNeedsStyleRecalcForInstances(StyleChangeType,
                                        const StyleChangeReasonForTracing&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   static const AtomicString& EventParameterName();
 

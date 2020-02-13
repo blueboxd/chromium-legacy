@@ -144,7 +144,7 @@ DevToolsAgent::DevToolsAgent(
 
 DevToolsAgent::~DevToolsAgent() {}
 
-void DevToolsAgent::Trace(blink::Visitor* visitor) {
+void DevToolsAgent::Trace(Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   visitor->Trace(probe_sink_);
   visitor->Trace(sessions_);

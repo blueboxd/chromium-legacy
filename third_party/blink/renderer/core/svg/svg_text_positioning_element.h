@@ -38,7 +38,7 @@ class SVGTextPositioningElement : public SVGTextContentElement {
   SVGAnimatedLengthList* dy() { return dy_.Get(); }
   SVGAnimatedNumberList* rotate() { return rotate_.Get(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   SVGTextPositioningElement(const QualifiedName&, Document&);

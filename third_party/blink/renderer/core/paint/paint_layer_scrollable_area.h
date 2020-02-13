@@ -165,7 +165,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
     void DestroyDetachedScrollbars();
     void Dispose();
 
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
 
    private:
     Scrollbar* CreateScrollbar(ScrollbarOrientation);
@@ -565,7 +565,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool HasHorizontalOverflow() const;
   bool HasVerticalOverflow() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   const DisplayItemClient& GetScrollingBackgroundDisplayItemClient() const {
     return scrolling_background_display_item_client_;

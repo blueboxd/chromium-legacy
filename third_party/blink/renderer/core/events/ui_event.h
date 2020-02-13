@@ -87,7 +87,7 @@ class CORE_EXPORT UIEvent : public Event {
 
   virtual unsigned which() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<AbstractView> view_;

@@ -57,7 +57,7 @@ class CORE_EXPORT FragmentAnchor : public GarbageCollected<FragmentAnchor> {
   // dismissed and can be disposed.
   virtual bool Dismiss() = 0;
 
-  virtual void Trace(blink::Visitor*) {}
+  virtual void Trace(Visitor*) {}
 };
 
 }  // namespace blink

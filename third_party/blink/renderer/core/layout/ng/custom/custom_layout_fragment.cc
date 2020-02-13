@@ -59,7 +59,7 @@ ScriptValue CustomLayoutFragment::data(ScriptState* script_state) const {
       layout_worklet_world_v8_data_.NewLocal(script_state->GetIsolate()));
 }
 
-void CustomLayoutFragment::Trace(blink::Visitor* visitor) {
+void CustomLayoutFragment::Trace(Visitor* visitor) {
   visitor->Trace(child_);
   visitor->Trace(token_);
   visitor->Trace(layout_worklet_world_v8_data_);

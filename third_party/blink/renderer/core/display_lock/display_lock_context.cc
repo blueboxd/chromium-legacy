@@ -119,7 +119,7 @@ DisplayLockContext::~DisplayLockContext() {
   DCHECK_EQ(state_, kUnlocked);
 }
 
-void DisplayLockContext::Trace(blink::Visitor* visitor) {
+void DisplayLockContext::Trace(Visitor* visitor) {
   visitor->Trace(update_resolver_);
   visitor->Trace(element_);
   visitor->Trace(document_);

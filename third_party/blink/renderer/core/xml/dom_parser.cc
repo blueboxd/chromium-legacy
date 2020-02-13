@@ -59,7 +59,7 @@ Document* DOMParser::parseFromStringInternal(const String& str,
 DOMParser::DOMParser(Document& document)
     : context_document_(document.ContextDocument()) {}
 
-void DOMParser::Trace(blink::Visitor* visitor) {
+void DOMParser::Trace(Visitor* visitor) {
   visitor->Trace(context_document_);
   ScriptWrappable::Trace(visitor);
 }

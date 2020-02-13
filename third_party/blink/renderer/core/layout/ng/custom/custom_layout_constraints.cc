@@ -50,7 +50,7 @@ ScriptValue CustomLayoutConstraints::data(ScriptState* script_state) const {
       layout_worklet_world_v8_data_.NewLocal(script_state->GetIsolate()));
 }
 
-void CustomLayoutConstraints::Trace(blink::Visitor* visitor) {
+void CustomLayoutConstraints::Trace(Visitor* visitor) {
   visitor->Trace(layout_worklet_world_v8_data_);
   ScriptWrappable::Trace(visitor);
 }

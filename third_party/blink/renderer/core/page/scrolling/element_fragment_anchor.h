@@ -55,7 +55,7 @@ class CORE_EXPORT ElementFragmentAnchor final : public FragmentAnchor {
   // Does nothing as an element anchor does not have any dismissal work.
   bool Dismiss() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ElementFragmentAnchorTest,

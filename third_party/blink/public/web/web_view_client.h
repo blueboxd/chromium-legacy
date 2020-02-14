@@ -47,7 +47,9 @@ class WebPagePopup;
 class WebURL;
 class WebURLRequest;
 class WebView;
+namespace mojom {
 enum class WebSandboxFlags;
+}
 struct WebRect;
 struct WebSize;
 struct WebTextAutosizerPageInfo;
@@ -71,7 +73,7 @@ class WebViewClient {
       const WebWindowFeatures& features,
       const WebString& name,
       WebNavigationPolicy policy,
-      WebSandboxFlags,
+      mojom::WebSandboxFlags,
       const FeaturePolicy::FeatureState&,
       const SessionStorageNamespaceId& session_storage_namespace_id) {
     return nullptr;

@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Check that navigator.xr.supportsSession and navigator.xr.requestSession reject on a detached navigator. promise_rejects is not defined
+Harness: the test ran to completion.
+

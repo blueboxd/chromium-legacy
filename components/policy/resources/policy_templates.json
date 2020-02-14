@@ -20004,6 +20004,26 @@ When this policy is set, the user cannot override the value.
 
 If this policy is left unset, privacy screen is disabled initially but can be controlled by the user.''',
     },
+    {
+      'name': 'AllowNativeNotifications',
+      'owners': ['file://chrome/browser/notifications/OWNERS'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome.linux:82-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 678,
+      'caption': '''Allows native notifcations''',
+      'tags': [],
+      'desc': '''Configures whether <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> on Linux will use native notifications.
+
+If set to True or not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> is allowed to use native notifications.
+
+If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not use native notifications. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Message Center will be used as a fallback.''',
+    },
   ],
 
   'messages': {
@@ -20842,6 +20862,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 677,
+  'highest_id_currently_used': 678,
   'highest_atomic_group_id_currently_used': 38
 }

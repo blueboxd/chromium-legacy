@@ -20,6 +20,7 @@ namespace {
 using base::ASCIIToUTF16;
 using testing::ElementsAre;
 
+using BlacklistedStatus = OriginCredentialStore::BlacklistedStatus;
 using IsPublicSuffixMatch = UiCredential::IsPublicSuffixMatch;
 using IsAffiliationBasedMatch = UiCredential::IsAffiliationBasedMatch;
 
@@ -99,6 +100,20 @@ TEST_F(OriginCredentialStoreTest, ClearsCredentials) {
 
   store()->ClearCredentials();
   EXPECT_EQ(store()->GetCredentials().size(), 0u);
+}
+
+TEST_F(OriginCredentialStoreTest, InitializesBlacklistedStatus) {
+  store()->InitializeBlacklistedStatus(true);
+  EXPECT_EQ(BlacklistedStatus::kIsBlacklisted, store()->GetBlacklistedStatus());
+}
+
+TEST_F(OriginCredentialStoreTest, CorrectlyUpdatesBlacklistedStatus) {
+  store()->InitializeBlacklistedStatus(true);
+  EXPECT_EQ(BlacklistedStatus::kIsBlacklisted, store()->GetBlacklistedStatus());
+
+  store()->UpdateBlacklistedStatus(false);
+  EXPECT_EQ(BlacklistedStatus::kWasBlacklisted,
+            store()->GetBlacklistedStatus());
 }
 
 }  // namespace password_manager

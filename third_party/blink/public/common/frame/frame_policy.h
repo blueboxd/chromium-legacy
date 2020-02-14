@@ -25,7 +25,7 @@ namespace blink {
 // navigated.
 struct BLINK_COMMON_EXPORT FramePolicy {
   FramePolicy();
-  FramePolicy(WebSandboxFlags sandbox_flags,
+  FramePolicy(mojom::WebSandboxFlags sandbox_flags,
               const ParsedFeaturePolicy& container_policy,
               const DocumentPolicy::FeatureState& required_document_policy,
               bool allowed_to_download = true,
@@ -33,7 +33,7 @@ struct BLINK_COMMON_EXPORT FramePolicy {
   FramePolicy(const FramePolicy& lhs);
   ~FramePolicy();
 
-  WebSandboxFlags sandbox_flags;
+  mojom::WebSandboxFlags sandbox_flags;
   ParsedFeaturePolicy container_policy;
   // |required_document_policy| is the combination of the following:
   // - iframe 'policy' attribute

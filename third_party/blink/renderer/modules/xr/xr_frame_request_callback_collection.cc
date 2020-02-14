@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/bindings/modules/v8/v8_xr_frame_request_callback.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+#include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/modules/xr/xr_frame.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
@@ -20,12 +21,13 @@ XRFrameRequestCallbackCollection::CallbackId
 XRFrameRequestCallbackCollection::RegisterCallback(
     V8XRFrameRequestCallback* callback) {
   CallbackId id = ++next_callback_id_;
-  auto add_result =
-      callbacks_.Set(id, CallbackAndAsyncTask(callback, probe::AsyncTaskId()));
+  auto add_result = callbacks_.Set(
+      id,
+      CallbackAndAsyncTask(callback, std::make_unique<probe::AsyncTaskId>()));
   pending_callbacks_.push_back(id);
 
-  probe::AsyncTaskScheduledBreakable(context_, "XRRequestFrame",
-                                     &add_result.stored_value->value.second);
+  probe::AsyncTaskScheduledBreakable(
+      context_, "XRRequestFrame", add_result.stored_value->value.second.get());
   return id;
 }
 
@@ -60,7 +62,7 @@ void XRFrameRequestCallbackCollection::ExecuteCallbacks(XRSession* session,
     if (it == current_callbacks_.end())
       continue;
 
-    probe::AsyncTask async_task(context_, &it->value.second);
+    probe::AsyncTask async_task(context_, it->value.second.get());
     probe::UserCallback probe(context_, "XRRequestFrame", AtomicString(), true);
     it->value.first->InvokeAndReportException(session, timestamp, frame);
   }

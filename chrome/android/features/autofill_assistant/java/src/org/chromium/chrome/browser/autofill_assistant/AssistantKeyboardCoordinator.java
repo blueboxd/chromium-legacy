@@ -19,10 +19,16 @@ class AssistantKeyboardCoordinator {
     private final KeyboardVisibilityListener mKeyboardVisibilityListener =
             this::onKeyboardVisibilityChanged;
     private boolean mAllowShowingSoftKeyboard = true;
+    private Delegate mDelegate;
 
-    AssistantKeyboardCoordinator(ChromeActivity activity, AssistantModel model) {
+    interface Delegate {
+        void onKeyboardVisibilityChanged(boolean visible);
+    }
+
+    AssistantKeyboardCoordinator(ChromeActivity activity, AssistantModel model, Delegate delegate) {
         mActivity = activity;
         mKeyboardDelegate = activity.getWindowAndroid().getKeyboardDelegate();
+        mDelegate = delegate;
 
         model.addObserver((source, propertyKey) -> {
             if (AssistantModel.VISIBLE == propertyKey) {
@@ -78,6 +84,7 @@ class AssistantKeyboardCoordinator {
     // TODO(crbug.com/806868): Current solution only hides the keyboard once it has been already
     // shown. We should improve it and prevent from the showing in the first place.
     private void onKeyboardVisibilityChanged(boolean isShowing) {
+        mDelegate.onKeyboardVisibilityChanged(isShowing);
         if (isShowing && !mAllowShowingSoftKeyboard) {
             hideKeyboard();
         }

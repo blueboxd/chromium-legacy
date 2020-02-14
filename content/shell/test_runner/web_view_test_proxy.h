@@ -75,7 +75,7 @@ class TEST_RUNNER_EXPORT WebViewTestProxy : public content::RenderViewImpl {
                              const blink::WebWindowFeatures& features,
                              const blink::WebString& frame_name,
                              blink::WebNavigationPolicy policy,
-                             blink::WebSandboxFlags sandbox_flags,
+                             blink::mojom::WebSandboxFlags sandbox_flags,
                              const blink::FeaturePolicy::FeatureState&,
                              const blink::SessionStorageNamespaceId&
                                  session_storage_namespace_id) override;

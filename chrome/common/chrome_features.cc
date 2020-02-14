@@ -260,7 +260,7 @@ const base::Feature kDesktopPWAsTabStrip{"DesktopPWAsTabStrip",
 // TODO(crbug.com/877898): Enable and delete this feature flag before
 // kDesktopPWAsWithoutExtensions launch.
 const base::Feature kDesktopPWAsUnifiedUiController{
-    "DesktopPWAsUnifiedUiController", base::FEATURE_ENABLED_BY_DEFAULT};
+    "DesktopPWAsUnifiedUiController", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables use of new Desktop PWAs launch manager by
 // extensions-based bookmark apps. (Note that Bookmark apps not based

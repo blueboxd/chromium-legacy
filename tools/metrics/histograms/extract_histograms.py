@@ -433,6 +433,12 @@ def _ExtractHistogramsFromXmlTree(tree, enums):
             ' milestone format (M*), or "never": found %s.', name,
             EXPIRY_DATE_PATTERN, expiry_str)
         have_errors = True
+    else:
+      logging.error(
+          'Your histogram must have an expiry date. If you are marking a '
+          'histogram as obsolete, please set the expiry date to the current '
+          'date.')
+      have_errors = True
 
     # Find <owner> tag.
     owners, has_owner = _ExtractOwners(histogram)

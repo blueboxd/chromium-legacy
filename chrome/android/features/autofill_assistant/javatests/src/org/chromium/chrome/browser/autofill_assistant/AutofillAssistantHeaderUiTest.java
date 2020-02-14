@@ -156,7 +156,7 @@ public class AutofillAssistantHeaderUiTest {
 
         String chipText = "Hello World";
         AssistantChip chip = new AssistantChip(AssistantChip.Type.BUTTON_FILLED_BLUE, Icon.DONE,
-                chipText, /* disabled= */ false, /* sticky= */ false, () -> {});
+                chipText, /* disabled= */ false, /* sticky= */ false, "", () -> {});
 
         // Set the header chip without displaying it.
         TestThreadUtils.runOnUiThreadBlocking(() -> model.set(AssistantHeaderModel.CHIP, chip));

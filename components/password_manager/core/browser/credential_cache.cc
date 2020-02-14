@@ -22,8 +22,9 @@ namespace password_manager {
 CredentialCache::CredentialCache() = default;
 CredentialCache::~CredentialCache() = default;
 
-void CredentialCache::SaveCredentialsForOrigin(
+void CredentialCache::SaveCredentialsAndBlacklistedForOrigin(
     const std::vector<const PasswordForm*>& best_matches,
+    IsOriginBlacklisted is_blacklisted,
     const url::Origin& origin) {
   std::vector<UiCredential> credentials;
   credentials.reserve(best_matches.size());
@@ -42,6 +43,15 @@ void CredentialCache::SaveCredentialsForOrigin(
                           return credential.origin() == origin;
                         });
   GetOrCreateCredentialStore(origin).SaveCredentials(std::move(credentials));
+  GetOrCreateCredentialStore(origin).InitializeBlacklistedStatus(
+      is_blacklisted.value());
+}
+
+void CredentialCache::UpdateBlacklistedForOrigin(
+    const url::Origin& origin,
+    IsOriginBlacklisted is_blacklisted) {
+  GetOrCreateCredentialStore(origin).UpdateBlacklistedStatus(
+      is_blacklisted.value());
 }
 
 const OriginCredentialStore& CredentialCache::GetCredentialStore(

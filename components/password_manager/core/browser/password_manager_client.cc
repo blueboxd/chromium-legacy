@@ -42,7 +42,8 @@ void PasswordManagerClient::GeneratePassword() {}
 
 void PasswordManagerClient::UpdateCredentialCache(
     const GURL& origin,
-    const std::vector<const autofill::PasswordForm*>& best_matches) {}
+    const std::vector<const autofill::PasswordForm*>& best_matches,
+    bool is_blacklisted) {}
 
 void PasswordManagerClient::PasswordWasAutofilled(
     const std::vector<const autofill::PasswordForm*>& best_matches,

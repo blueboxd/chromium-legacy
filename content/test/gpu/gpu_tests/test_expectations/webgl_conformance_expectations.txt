@@ -182,7 +182,7 @@ crbug.com/951628 [ win no-passthrough ] conformance/rendering/blending.html [ Fa
 # Win NVIDIA failures
 crbug.com/626524 [ win nvidia no-passthrough ] conformance/textures/misc/texture-npot-video.html [ RetryOnFailure ]
 crbug.com/630860 [ win nvidia ] conformance/textures/misc/texture-upload-size.html [ RetryOnFailure ]
-crbug.com/1045339 [ win10 debug nvidia ] conformance/extensions/oes-texture-half-float-with-video.html [ RetryOnFailure ]
+crbug.com/1045339 [ win10 debug nvidia ] conformance/extensions/oes-texture-half-float-with-video.html [ Skip ]
 
 # crbug.com/679696 [ win nvidia no_passthrough ] conformance/extensions/ext-sRGB.html [ Failure ]
 

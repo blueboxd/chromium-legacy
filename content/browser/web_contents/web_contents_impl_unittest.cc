@@ -3503,17 +3503,18 @@ TEST_F(WebContentsImplTest, ResetJavaScriptDialogOnUserNavigate) {
 
 TEST_F(WebContentsImplTest, StartingSandboxFlags) {
   WebContents::CreateParams params(browser_context());
-  const blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::kPopups | blink::WebSandboxFlags::kModals |
-      blink::WebSandboxFlags::kTopNavigation;
+  const blink::mojom::WebSandboxFlags expected_flags =
+      blink::mojom::WebSandboxFlags::kPopups |
+      blink::mojom::WebSandboxFlags::kModals |
+      blink::mojom::WebSandboxFlags::kTopNavigation;
   params.starting_sandbox_flags = expected_flags;
   std::unique_ptr<WebContentsImpl> new_contents(
       WebContentsImpl::CreateWithOpener(params, nullptr));
   FrameTreeNode* root = new_contents->GetFrameTree()->root();
-  blink::WebSandboxFlags pending_flags =
+  blink::mojom::WebSandboxFlags pending_flags =
       root->pending_frame_policy().sandbox_flags;
   EXPECT_EQ(pending_flags, expected_flags);
-  blink::WebSandboxFlags effective_flags =
+  blink::mojom::WebSandboxFlags effective_flags =
       root->effective_frame_policy().sandbox_flags;
   EXPECT_EQ(effective_flags, expected_flags);
 }

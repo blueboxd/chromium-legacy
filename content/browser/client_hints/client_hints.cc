@@ -353,9 +353,7 @@ bool IsValidURLForClientHints(const GURL& url) {
 }
 
 bool UserAgentClientHintEnabled() {
-  return base::FeatureList::IsEnabled(features::kUserAgentClientHint) ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableExperimentalWebPlatformFeatures);
+  return base::FeatureList::IsEnabled(features::kUserAgentClientHint);
 }
 
 void AddUAHeader(net::HttpRequestHeaders* headers,
@@ -365,9 +363,7 @@ void AddUAHeader(net::HttpRequestHeaders* headers,
 }
 
 bool IsFeaturePolicyForClientHintsEnabled() {
-  return base::FeatureList::IsEnabled(features::kFeaturePolicyForClientHints) ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableExperimentalWebPlatformFeatures);
+  return base::FeatureList::IsEnabled(features::kFeaturePolicyForClientHints);
 }
 
 bool ShouldAddClientHint(

@@ -1012,7 +1012,8 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     return false;
   }
 
-  if (GetSecurityContext()->IsSandboxed(WebSandboxFlags::kNavigation)) {
+  if (GetSecurityContext()->IsSandboxed(
+          mojom::blink::WebSandboxFlags::kNavigation)) {
     if (!target_frame.Tree().IsDescendantOf(this) &&
         !target_frame.IsMainFrame()) {
       PrintNavigationErrorMessage(
@@ -1027,8 +1028,10 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     // 'allow-popups' flag is specified, or if the
     if (target_frame.IsMainFrame() && target_frame != Tree().Top() &&
         GetSecurityContext()->IsSandboxed(
-            WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts) &&
-        (GetSecurityContext()->IsSandboxed(WebSandboxFlags::kPopups) ||
+            mojom::blink::WebSandboxFlags::
+                kPropagatesToAuxiliaryBrowsingContexts) &&
+        (GetSecurityContext()->IsSandboxed(
+             mojom::blink::WebSandboxFlags::kPopups) ||
          target_frame.Client()->Opener() != this)) {
       PrintNavigationErrorMessage(
           target_frame,
@@ -1041,9 +1044,10 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
     // Top navigation is forbidden unless opted-in. allow-top-navigation or
     // allow-top-navigation-by-user-activation will also skips origin checks.
     if (target_frame == Tree().Top()) {
-      if (GetSecurityContext()->IsSandboxed(WebSandboxFlags::kTopNavigation) &&
+      if (GetSecurityContext()->IsSandboxed(
+              mojom::blink::WebSandboxFlags::kTopNavigation) &&
           GetSecurityContext()->IsSandboxed(
-              WebSandboxFlags::kTopNavigationByUserActivation)) {
+              mojom::blink::WebSandboxFlags::kTopNavigationByUserActivation)) {
         PrintNavigationErrorMessage(
             target_frame,
             "The frame attempting navigation of the top-level window is "
@@ -1052,9 +1056,10 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
         return false;
       }
 
-      if (GetSecurityContext()->IsSandboxed(WebSandboxFlags::kTopNavigation) &&
+      if (GetSecurityContext()->IsSandboxed(
+              mojom::blink::WebSandboxFlags::kTopNavigation) &&
           !GetSecurityContext()->IsSandboxed(
-              WebSandboxFlags::kTopNavigationByUserActivation) &&
+              mojom::blink::WebSandboxFlags::kTopNavigationByUserActivation) &&
           !LocalFrame::HasTransientUserActivation(this)) {
         // With only 'allow-top-navigation-by-user-activation' (but not
         // 'allow-top-navigation'), top navigation requires a user gesture.

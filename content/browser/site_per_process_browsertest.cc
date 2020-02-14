@@ -4316,13 +4316,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicSandboxFlags) {
   EXPECT_EQ(baz_url, observer.last_navigation_url());
 
   // Both frames should not be sandboxed to start with.
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             root->child_at(0)->pending_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             root->child_at(0)->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             root->child_at(1)->pending_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             root->child_at(1)->effective_frame_policy().sandbox_flags);
 
   // Dynamically update sandbox flags for the first frame.
@@ -4335,12 +4335,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, DynamicSandboxFlags) {
   // flags, because sandbox flag updates take place only after navigations.
   // "allow-scripts" resets both SandboxFlags::Scripts and
   // SandboxFlags::AutomaticFeatures bits per blink::parseSandboxPolicy().
-  blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
-      ~blink::WebSandboxFlags::kAutomaticFeatures;
+  blink::mojom::WebSandboxFlags expected_flags =
+      blink::mojom::WebSandboxFlags::kAll &
+      ~blink::mojom::WebSandboxFlags::kScripts &
+      ~blink::mojom::WebSandboxFlags::kAutomaticFeatures;
   EXPECT_EQ(expected_flags,
             root->child_at(0)->pending_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             root->child_at(0)->effective_frame_policy().sandbox_flags);
 
   // Navigate the first frame to a page on the same site.  The new sandbox
@@ -4432,12 +4433,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Check that the current sandbox flags are updated but the effective
   // sandbox flags are not.
-  blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
-      ~blink::WebSandboxFlags::kAutomaticFeatures;
+  blink::mojom::WebSandboxFlags expected_flags =
+      blink::mojom::WebSandboxFlags::kAll &
+      ~blink::mojom::WebSandboxFlags::kScripts &
+      ~blink::mojom::WebSandboxFlags::kAutomaticFeatures;
   EXPECT_EQ(expected_flags,
             root->child_at(1)->pending_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             root->child_at(1)->effective_frame_policy().sandbox_flags);
 
   // Navigate the second subframe to a page on bar.com.  This will trigger a
@@ -4484,9 +4486,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
             root->child_at(0)->current_url());
 
   // The frame should not be sandboxed to start with.
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             root->child_at(0)->pending_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             root->child_at(0)->effective_frame_policy().sandbox_flags);
 
   // Dynamically update the frame's sandbox flags.
@@ -4499,12 +4501,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // because sandbox flag updates take place only after navigations.
   // "allow-scripts" resets both SandboxFlags::Scripts and
   // SandboxFlags::AutomaticFeatures bits per blink::parseSandboxPolicy().
-  blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
-      ~blink::WebSandboxFlags::kAutomaticFeatures;
+  blink::mojom::WebSandboxFlags expected_flags =
+      blink::mojom::WebSandboxFlags::kAll &
+      ~blink::mojom::WebSandboxFlags::kScripts &
+      ~blink::mojom::WebSandboxFlags::kAutomaticFeatures;
   EXPECT_EQ(expected_flags,
             root->child_at(0)->pending_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             root->child_at(0)->effective_frame_policy().sandbox_flags);
 
   // Perform a renderer-initiated same-site navigation in the first frame. The
@@ -4593,10 +4596,11 @@ IN_PROC_BROWSER_TEST_F(
   // Check that the sandbox flags in the browser process are correct.
   // "allow-scripts" resets both WebSandboxFlags::Scripts and
   // WebSandboxFlags::AutomaticFeatures bits per blink::parseSandboxPolicy().
-  blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
-      ~blink::WebSandboxFlags::kAutomaticFeatures &
-      ~blink::WebSandboxFlags::kOrigin;
+  blink::mojom::WebSandboxFlags expected_flags =
+      blink::mojom::WebSandboxFlags::kAll &
+      ~blink::mojom::WebSandboxFlags::kScripts &
+      ~blink::mojom::WebSandboxFlags::kAutomaticFeatures &
+      ~blink::mojom::WebSandboxFlags::kOrigin;
   EXPECT_EQ(expected_flags,
             root->child_at(1)->effective_frame_policy().sandbox_flags);
 
@@ -6625,12 +6629,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, SandboxFlagsInheritance) {
   // Calculate expected flags.  Note that "allow-scripts" resets both
   // WebSandboxFlags::Scripts and WebSandboxFlags::AutomaticFeatures bits per
   // blink::parseSandboxPolicy().
-  blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
-      ~blink::WebSandboxFlags::kAutomaticFeatures;
+  blink::mojom::WebSandboxFlags expected_flags =
+      blink::mojom::WebSandboxFlags::kAll &
+      ~blink::mojom::WebSandboxFlags::kScripts &
+      ~blink::mojom::WebSandboxFlags::kAutomaticFeatures;
   EXPECT_EQ(expected_flags,
             root->child_at(0)->pending_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             root->child_at(0)->effective_frame_policy().sandbox_flags);
 
   // Navigate child frame so that the sandbox flags take effect.  Use a page
@@ -6677,12 +6682,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // These flags should be pending but not take effect, since there's been no
   // navigation.
-  blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
-      ~blink::WebSandboxFlags::kAutomaticFeatures;
+  blink::mojom::WebSandboxFlags expected_flags =
+      blink::mojom::WebSandboxFlags::kAll &
+      ~blink::mojom::WebSandboxFlags::kScripts &
+      ~blink::mojom::WebSandboxFlags::kAutomaticFeatures;
   FrameTreeNode* child = root->child_at(0);
   EXPECT_EQ(expected_flags, child->pending_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             child->effective_frame_policy().sandbox_flags);
 
   // Add a new grandchild frame and navigate it cross-site.
@@ -6699,9 +6705,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Since the update flags haven't yet taken effect in its parent, this
   // grandchild frame should not be sandboxed.
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             grandchild->pending_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             grandchild->effective_frame_policy().sandbox_flags);
 
   // Check that the grandchild frame isn't sandboxed on the renderer side.  If
@@ -6730,10 +6736,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Calculate expected flags.  Note that "allow-scripts" resets both
   // WebSandboxFlags::Scripts and WebSandboxFlags::AutomaticFeatures bits per
   // blink::parseSandboxPolicy().
-  blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
-      ~blink::WebSandboxFlags::kAutomaticFeatures &
-      ~blink::WebSandboxFlags::kPopups;
+  blink::mojom::WebSandboxFlags expected_flags =
+      blink::mojom::WebSandboxFlags::kAll &
+      ~blink::mojom::WebSandboxFlags::kScripts &
+      ~blink::mojom::WebSandboxFlags::kAutomaticFeatures &
+      ~blink::mojom::WebSandboxFlags::kPopups;
   EXPECT_EQ(expected_flags,
             root->child_at(0)->pending_frame_policy().sandbox_flags);
 
@@ -6839,11 +6846,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Set expected flags for the child frame.  Note that "allow-scripts" resets
   // both WebSandboxFlags::Scripts and WebSandboxFlags::AutomaticFeatures bits
   // per blink::parseSandboxPolicy().
-  blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
-      ~blink::WebSandboxFlags::kAutomaticFeatures &
-      ~blink::WebSandboxFlags::kPopups &
-      ~blink::WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts;
+  blink::mojom::WebSandboxFlags expected_flags =
+      blink::mojom::WebSandboxFlags::kAll &
+      ~blink::mojom::WebSandboxFlags::kScripts &
+      ~blink::mojom::WebSandboxFlags::kAutomaticFeatures &
+      ~blink::mojom::WebSandboxFlags::kPopups &
+      ~blink::mojom::WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts;
   EXPECT_EQ(expected_flags,
             root->child_at(0)->pending_frame_policy().sandbox_flags);
 
@@ -6867,7 +6875,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Check that the sandbox flags for new popup are correct in the browser
   // process.  They should not have been inherited.
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             foo_root->effective_frame_policy().sandbox_flags);
 
   // The popup's origin should match |b_url|, since it's not sandboxed.
@@ -7181,7 +7189,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     // navigation.
     EXPECT_EQ(c_url.GetOrigin().spec(),
               root->child_at(0)->current_origin().Serialize() + "/");
-    EXPECT_EQ(blink::WebSandboxFlags::kNone,
+    EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
               root->child_at(0)->effective_frame_policy().sandbox_flags);
   }
 }
@@ -11228,34 +11236,38 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Main page is served with a CSP header applying sandbox flags allow-popups,
   // allow-pointer-lock and allow-scripts.
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             root->pending_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             root->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kPopups &
-                ~blink::WebSandboxFlags::kPointerLock &
-                ~blink::WebSandboxFlags::kScripts &
-                ~blink::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
+                ~blink::mojom::WebSandboxFlags::kPopups &
+                ~blink::mojom::WebSandboxFlags::kPointerLock &
+                ~blink::mojom::WebSandboxFlags::kScripts &
+                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
             root->active_sandbox_flags());
 
   // Child frame has iframe sandbox flags allow-popups, allow-scripts, and
   // allow-orientation-lock. It should receive the intersection of those with
   // the parent sandbox flags: allow-popups and allow-scripts.
-  EXPECT_EQ(blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kPopups &
-                ~blink::WebSandboxFlags::kScripts &
-                ~blink::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
+                ~blink::mojom::WebSandboxFlags::kPopups &
+                ~blink::mojom::WebSandboxFlags::kScripts &
+                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
             root->child_at(0)->pending_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kPopups &
-                ~blink::WebSandboxFlags::kScripts &
-                ~blink::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
+                ~blink::mojom::WebSandboxFlags::kPopups &
+                ~blink::mojom::WebSandboxFlags::kScripts &
+                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
             root->child_at(0)->effective_frame_policy().sandbox_flags);
 
   // Document in child frame is served with a CSP header giving sandbox flags
   // allow-scripts, allow-popups and allow-pointer-lock. The final effective
   // flags should only include allow-scripts and allow-popups.
-  EXPECT_EQ(blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kPopups &
-                ~blink::WebSandboxFlags::kScripts &
-                ~blink::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
+                ~blink::mojom::WebSandboxFlags::kPopups &
+                ~blink::mojom::WebSandboxFlags::kScripts &
+                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
             root->child_at(0)->active_sandbox_flags());
 
   // Navigate the child frame to a new page. This should clear any CSP-applied
@@ -11268,17 +11280,20 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Navigating should reset the sandbox flags to the frame owner flags:
   // allow-popups and allow-scripts.
-  EXPECT_EQ(blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kPopups &
-                ~blink::WebSandboxFlags::kScripts &
-                ~blink::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
+                ~blink::mojom::WebSandboxFlags::kPopups &
+                ~blink::mojom::WebSandboxFlags::kScripts &
+                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
             root->child_at(0)->active_sandbox_flags());
-  EXPECT_EQ(blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kPopups &
-                ~blink::WebSandboxFlags::kScripts &
-                ~blink::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
+                ~blink::mojom::WebSandboxFlags::kPopups &
+                ~blink::mojom::WebSandboxFlags::kScripts &
+                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
             root->child_at(0)->pending_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kPopups &
-                ~blink::WebSandboxFlags::kScripts &
-                ~blink::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
+                ~blink::mojom::WebSandboxFlags::kPopups &
+                ~blink::mojom::WebSandboxFlags::kScripts &
+                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
             root->child_at(0)->effective_frame_policy().sandbox_flags);
 }
 
@@ -11298,10 +11313,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       static_cast<WebContentsImpl*>(shell()->web_contents())->GetMainFrame();
 
   // Check sandbox flags on RFH before navigating away.
-  EXPECT_EQ(blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kPopups &
-                ~blink::WebSandboxFlags::kPointerLock &
-                ~blink::WebSandboxFlags::kScripts &
-                ~blink::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
+                ~blink::mojom::WebSandboxFlags::kPopups &
+                ~blink::mojom::WebSandboxFlags::kPointerLock &
+                ~blink::mojom::WebSandboxFlags::kScripts &
+                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
             rfh->active_sandbox_flags());
 
   // Set up a slow unload handler to force the RFH to linger in the unloaded but
@@ -11326,14 +11342,15 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   ASSERT_FALSE(rfh_observer.deleted());
 
   // Check sandbox flags on old RFH -- they should be unchanged.
-  EXPECT_EQ(blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kPopups &
-                ~blink::WebSandboxFlags::kPointerLock &
-                ~blink::WebSandboxFlags::kScripts &
-                ~blink::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
+                ~blink::mojom::WebSandboxFlags::kPopups &
+                ~blink::mojom::WebSandboxFlags::kPointerLock &
+                ~blink::mojom::WebSandboxFlags::kScripts &
+                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
             rfh->active_sandbox_flags());
 
   // The FrameTreeNode should have flags which represent the new state.
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             root->effective_frame_policy().sandbox_flags);
 }
 
@@ -11400,8 +11417,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // The child of the sandboxed frame should've inherited sandbox flags, so it
   // should not be able to create popups.
   EXPECT_EQ(
-      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
-          ~blink::WebSandboxFlags::kAutomaticFeatures,
+      blink::mojom::WebSandboxFlags::kAll &
+          ~blink::mojom::WebSandboxFlags::kScripts &
+          ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
       root->child_at(0)->child_at(0)->effective_frame_policy().sandbox_flags);
   EXPECT_EQ(
       root->child_at(0)->child_at(0)->active_sandbox_flags(),
@@ -11434,8 +11452,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // The child of the sandboxed frame should've inherited sandbox flags, so it
   // should not be able to create popups.
   EXPECT_EQ(
-      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
-          ~blink::WebSandboxFlags::kAutomaticFeatures,
+      blink::mojom::WebSandboxFlags::kAll &
+          ~blink::mojom::WebSandboxFlags::kScripts &
+          ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
       root->child_at(0)->child_at(0)->effective_frame_policy().sandbox_flags);
   EXPECT_EQ(
       root->child_at(0)->child_at(0)->active_sandbox_flags(),
@@ -11486,8 +11505,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // The child of the sandboxed frame should've inherited sandbox flags, so it
   // should not be able to create popups.
   EXPECT_EQ(
-      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
-          ~blink::WebSandboxFlags::kAutomaticFeatures,
+      blink::mojom::WebSandboxFlags::kAll &
+          ~blink::mojom::WebSandboxFlags::kScripts &
+          ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
       root->child_at(0)->child_at(0)->effective_frame_policy().sandbox_flags);
   EXPECT_EQ(
       root->child_at(0)->child_at(0)->active_sandbox_flags(),
@@ -11513,8 +11533,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   NavigateFrameToURL(root->child_at(0)->child_at(0),
                      embedded_test_server()->GetURL("foo.com", "/title2.html"));
   EXPECT_EQ(
-      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
-          ~blink::WebSandboxFlags::kAutomaticFeatures,
+      blink::mojom::WebSandboxFlags::kAll &
+          ~blink::mojom::WebSandboxFlags::kScripts &
+          ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
       root->child_at(0)->child_at(0)->effective_frame_policy().sandbox_flags);
   EXPECT_EQ(
       root->child_at(0)->child_at(0)->active_sandbox_flags(),
@@ -11545,31 +11566,31 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // The second child has both iframe-attribute sandbox flags and CSP-set flags.
   // Verify that it the flags are combined correctly in the frame tree.
-  EXPECT_EQ(blink::WebSandboxFlags::kAll &
-                ~blink::WebSandboxFlags::kPointerLock &
-                ~blink::WebSandboxFlags::kOrientationLock &
-                ~blink::WebSandboxFlags::kScripts &
-                ~blink::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
+                ~blink::mojom::WebSandboxFlags::kPointerLock &
+                ~blink::mojom::WebSandboxFlags::kOrientationLock &
+                ~blink::mojom::WebSandboxFlags::kScripts &
+                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
             root->child_at(1)->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kAll &
-                ~blink::WebSandboxFlags::kPointerLock &
-                ~blink::WebSandboxFlags::kScripts &
-                ~blink::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
+                ~blink::mojom::WebSandboxFlags::kPointerLock &
+                ~blink::mojom::WebSandboxFlags::kScripts &
+                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
             root->child_at(1)->active_sandbox_flags());
 
   NavigateFrameToURL(
       root->child_at(1),
       embedded_test_server()->GetURL("bar.com", "/sandboxed_child_frame.html"));
-  EXPECT_EQ(blink::WebSandboxFlags::kAll &
-                ~blink::WebSandboxFlags::kPointerLock &
-                ~blink::WebSandboxFlags::kOrientationLock &
-                ~blink::WebSandboxFlags::kScripts &
-                ~blink::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
+                ~blink::mojom::WebSandboxFlags::kPointerLock &
+                ~blink::mojom::WebSandboxFlags::kOrientationLock &
+                ~blink::mojom::WebSandboxFlags::kScripts &
+                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
             root->child_at(1)->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kAll &
-                ~blink::WebSandboxFlags::kPointerLock &
-                ~blink::WebSandboxFlags::kScripts &
-                ~blink::WebSandboxFlags::kAutomaticFeatures,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kAll &
+                ~blink::mojom::WebSandboxFlags::kPointerLock &
+                ~blink::mojom::WebSandboxFlags::kScripts &
+                ~blink::mojom::WebSandboxFlags::kAutomaticFeatures,
             root->child_at(1)->active_sandbox_flags());
 
   // Remove the sandbox attribute from the child frame.
@@ -11588,14 +11609,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
           "bar.com", "/cross_site_iframe_factory.html?bar(foo)"));
 
   // Check the sandbox flags on the child frame in the browser process.
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             root->child_at(1)->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             root->child_at(1)->active_sandbox_flags());
 
   // Check the sandbox flags on the grandchid frame in the browser process.
   EXPECT_EQ(
-      blink::WebSandboxFlags::kNone,
+      blink::mojom::WebSandboxFlags::kNone,
       root->child_at(1)->child_at(0)->effective_frame_policy().sandbox_flags);
   EXPECT_EQ(
       root->child_at(1)->child_at(0)->active_sandbox_flags(),
@@ -13852,9 +13873,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   FrameTreeNode* subframe = root->child_at(0);
 
   // The subframe should not be sandboxed.
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             subframe->pending_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             subframe->effective_frame_policy().sandbox_flags);
 
   // Set the "sandbox" attribute on the subframe; pending policy should update.
@@ -13862,11 +13883,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
       root, "document.querySelector('iframe').sandbox = 'allow-scripts';"));
   // "allow-scripts" resets both SandboxFlags::Scripts and
   // SandboxFlags::AutomaticFeatures bits per blink::ParseSandboxPolicy().
-  blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
-      ~blink::WebSandboxFlags::kAutomaticFeatures;
+  blink::mojom::WebSandboxFlags expected_flags =
+      blink::mojom::WebSandboxFlags::kAll &
+      ~blink::mojom::WebSandboxFlags::kScripts &
+      ~blink::mojom::WebSandboxFlags::kAutomaticFeatures;
   EXPECT_EQ(expected_flags, subframe->pending_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             subframe->effective_frame_policy().sandbox_flags);
 
   // Commit a same-document navigation with replaceState.  The new sandbox
@@ -13877,7 +13899,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   replace_state_observer.Wait();
 
   EXPECT_EQ(expected_flags, subframe->pending_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             subframe->effective_frame_policy().sandbox_flags);
 
   // Also try a same-document navigation to a fragment, which also shouldn't
@@ -13892,7 +13914,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   }
 
   EXPECT_EQ(expected_flags, subframe->pending_frame_policy().sandbox_flags);
-  EXPECT_EQ(blink::WebSandboxFlags::kNone,
+  EXPECT_EQ(blink::mojom::WebSandboxFlags::kNone,
             subframe->effective_frame_policy().sandbox_flags);
 }
 
@@ -15100,15 +15122,18 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicySandboxTest,
           "a.com",
           "/cross_site_iframe_factory.html?a(b{sandbox-allow-scripts})")));
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
-      ~blink::WebSandboxFlags::kAutomaticFeatures;
+  blink::mojom::WebSandboxFlags expected_flags =
+      blink::mojom::WebSandboxFlags::kAll &
+      ~blink::mojom::WebSandboxFlags::kScripts &
+      ~blink::mojom::WebSandboxFlags::kAutomaticFeatures;
   // Validate sandbox flags bit-by-bit. This is equivalent to an equality check
   // when FeaturePolicyForSandbox is disabled, but when that feature is enabled,
   // this will check the appropriate policy-controlled feature for each expected
   // sandbox flag.
-  for (unsigned bit = 0; bit < sizeof(blink::WebSandboxFlags) * 8; bit++) {
-    blink::WebSandboxFlags flag = static_cast<blink::WebSandboxFlags>(1 << bit);
+  for (unsigned bit = 0; bit < sizeof(blink::mojom::WebSandboxFlags) * 8;
+       bit++) {
+    blink::mojom::WebSandboxFlags flag =
+        static_cast<blink::mojom::WebSandboxFlags>(1 << bit);
     if (static_cast<unsigned>(expected_flags) & (1 << bit)) {
       EXPECT_TRUE(root->child_at(0)->current_frame_host()->IsSandboxed(flag));
     } else {
@@ -15125,15 +15150,17 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicySandboxTest,
           "a.com",
           "/cross_site_iframe_factory.html?a(b{sandbox,allow-scripts})")));
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  blink::WebSandboxFlags expected_flags =
-      blink::WebSandboxFlags::kAll & ~blink::WebSandboxFlags::kScripts &
-      ~blink::WebSandboxFlags::kAutomaticFeatures;
+  blink::mojom::WebSandboxFlags expected_flags =
+      blink::mojom::WebSandboxFlags::kAll &
+      ~blink::mojom::WebSandboxFlags::kScripts &
+      ~blink::mojom::WebSandboxFlags::kAutomaticFeatures;
   // Validate sandbox flags bit-by-bit. This is equivalent to an equality check
   // when FeaturePolicyForSandbox is disabled, but when that feature is enabled,
   // this will check the appropriate policy-controlled feature for each expected
   // sandbox flag.
   for (int bit = 0; bit < 32; bit++) {
-    blink::WebSandboxFlags flag = static_cast<blink::WebSandboxFlags>(1 << bit);
+    blink::mojom::WebSandboxFlags flag =
+        static_cast<blink::mojom::WebSandboxFlags>(1 << bit);
     if (static_cast<unsigned>(expected_flags) & (1 << bit)) {
       EXPECT_TRUE(root->child_at(0)->current_frame_host()->IsSandboxed(flag));
     } else {

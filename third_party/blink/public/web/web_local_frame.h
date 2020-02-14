@@ -19,6 +19,7 @@
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-shared.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-shared.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-shared.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-shared.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-shared.h"
@@ -91,7 +92,7 @@ class WebLocalFrame : public WebFrame {
       blink::InterfaceRegistry*,
       WebFrame* opener = nullptr,
       const WebString& name = WebString(),
-      WebSandboxFlags = WebSandboxFlags::kNone,
+      mojom::WebSandboxFlags = mojom::WebSandboxFlags::kNone,
       const FeaturePolicy::FeatureState& opener_feature_state =
           FeaturePolicy::FeatureState());
 
@@ -521,7 +522,7 @@ class WebLocalFrame : public WebFrame {
   // where the notion of FrameReplicationState is relevant to.
   // Returns the effective sandbox flags which are inherited from their parent
   // frame.
-  virtual WebSandboxFlags EffectiveSandboxFlagsForTesting() const = 0;
+  virtual mojom::WebSandboxFlags EffectiveSandboxFlagsForTesting() const = 0;
 
   // Returns false if this frame, or any parent frame is sandboxed and does not
   // have the flag "allow-downloads" set.

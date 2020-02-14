@@ -260,7 +260,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   // HTTP header (for sandbox flags) is encountered while loading the frame's
   // document.
   virtual void DidSetFramePolicyHeaders(
-      WebSandboxFlags flags,
+      mojom::WebSandboxFlags flags,
       const ParsedFeaturePolicy& feature_policy_header,
       const DocumentPolicy::FeatureState& document_policy_header) {}
 

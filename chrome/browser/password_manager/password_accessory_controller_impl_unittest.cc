@@ -24,6 +24,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/autofill/core/common/signatures_util.h"
+#include "components/password_manager/core/browser/credential_cache.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/strings/grit/components_strings.h"
@@ -43,6 +44,7 @@ using autofill::UserInfo;
 using autofill::mojom::FocusedFieldType;
 using base::ASCIIToUTF16;
 using password_manager::CreateEntry;
+using password_manager::CredentialCache;
 using testing::_;
 using testing::ByMove;
 using testing::Mock;
@@ -169,8 +171,10 @@ TEST_F(PasswordAccessoryControllerTest, IsNotRecreatedForSameWebContents) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
-  cache()->SaveCredentialsForOrigin(
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
       {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      CredentialCache::IsOriginBlacklisted(false),
+
       url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
       mock_manual_filling_controller_,
@@ -188,8 +192,9 @@ TEST_F(PasswordAccessoryControllerTest, TransformsMatchesToSuggestions) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
-  cache()->SaveCredentialsForOrigin(
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
       {CreateEntry("", "S3cur3", GURL(kExampleSite), false, false).get()},
+      CredentialCache::IsOriginBlacklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 
   EXPECT_CALL(
@@ -207,11 +212,12 @@ TEST_F(PasswordAccessoryControllerTest, HintsToEmptyUserNames) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
-  cache()->SaveCredentialsForOrigin(
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
       {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get(),
        CreateEntry("Zebra", "M3h", GURL(kExampleSite), false, false).get(),
        CreateEntry("Alf", "PWD", GURL(kExampleSite), false, false).get(),
        CreateEntry("Cat", "M1@u", GURL(kExampleSite), false, false).get()},
+      CredentialCache::IsOriginBlacklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 
   AccessorySheetData result(AccessoryTabType::PASSWORDS, base::string16());
@@ -246,8 +252,9 @@ TEST_F(PasswordAccessoryControllerTest, SortsAlphabeticalDuringTransform) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
-  cache()->SaveCredentialsForOrigin(
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
       {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      CredentialCache::IsOriginBlacklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 
   // Pretend that any input in the same frame was focused.
@@ -267,8 +274,9 @@ TEST_F(PasswordAccessoryControllerTest, RepeatsSuggestionsForSameFrame) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
-  cache()->SaveCredentialsForOrigin({},
-                                    url::Origin::Create(GURL(kExampleSite)));
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
+      {}, CredentialCache::IsOriginBlacklisted(false),
+      url::Origin::Create(GURL(kExampleSite)));
 
   EXPECT_CALL(mock_manual_filling_controller_,
               RefreshSuggestions(PasswordAccessorySheetDataBuilder(
@@ -280,8 +288,9 @@ TEST_F(PasswordAccessoryControllerTest, ProvidesEmptySuggestionsMessage) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
-  cache()->SaveCredentialsForOrigin(
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
       {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      CredentialCache::IsOriginBlacklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
   // Pretend a username field was focused. This should result in non-interactive
   // suggestion.
@@ -317,8 +326,9 @@ TEST_F(PasswordAccessoryControllerTest, PasswordFieldChangesSuggestionType) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
-  cache()->SaveCredentialsForOrigin(
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
       {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      CredentialCache::IsOriginBlacklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
       mock_manual_filling_controller_,
@@ -334,8 +344,9 @@ TEST_F(PasswordAccessoryControllerTest, CachesIsReplacedByNewPasswords) {
       FocusedFieldType::kFillableUsernameField,
       /*is_manual_generation_available=*/false);
 
-  cache()->SaveCredentialsForOrigin(
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
       {CreateEntry("Alf", "M3lm4k", GURL(kExampleSite), false, false).get()},
+      CredentialCache::IsOriginBlacklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
       mock_manual_filling_controller_,
@@ -356,10 +367,11 @@ TEST_F(PasswordAccessoryControllerTest, HidesEntriesForPSLMatchedOriginsInV1) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
       autofill::features::kAutofillKeyboardAccessory);
-  cache()->SaveCredentialsForOrigin(
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
       {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get(),
        CreateEntry("Alf", "R4nd0m", GURL(kExampleSiteMobile), true, false)
            .get()},
+      CredentialCache::IsOriginBlacklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 
   AccessorySheetData result(AccessoryTabType::PASSWORDS, base::string16());
@@ -385,10 +397,11 @@ TEST_F(PasswordAccessoryControllerTest, SetsTitleForPSLMatchedOriginsInV2) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
       autofill::features::kAutofillKeyboardAccessory);
-  cache()->SaveCredentialsForOrigin(
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
       {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get(),
        CreateEntry("Alf", "R4nd0m", GURL(kExampleSiteMobile), true, false)
            .get()},
+      CredentialCache::IsOriginBlacklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
 
   AccessorySheetData result(AccessoryTabType::PASSWORDS, base::string16());
@@ -416,8 +429,9 @@ TEST_F(PasswordAccessoryControllerTest, SetsTitleForPSLMatchedOriginsInV2) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
-  cache()->SaveCredentialsForOrigin(
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
       {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      CredentialCache::IsOriginBlacklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
   // Pretend a username field was focused. This should result in non-emtpy
   // suggestions.
@@ -449,8 +463,9 @@ TEST_F(PasswordAccessoryControllerTest, UnfillableFieldClearsSuggestions) {
 TEST_F(PasswordAccessoryControllerTest, NavigatingMainFrameClearsSuggestions) {
   // Set any, non-empty password list and pretend a username field was focused.
   // This should result in non-emtpy suggestions.
-  cache()->SaveCredentialsForOrigin(
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
       {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      CredentialCache::IsOriginBlacklisted(false),
       url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(
       mock_manual_filling_controller_,
@@ -493,8 +508,9 @@ TEST_F(PasswordAccessoryControllerTest, OnAutomaticGenerationRequested) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, AddsGenerationCommandWhenAvailable) {
-  cache()->SaveCredentialsForOrigin({},
-                                    url::Origin::Create(GURL(kExampleSite)));
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
+      {}, CredentialCache::IsOriginBlacklisted(false),
+      url::Origin::Create(GURL(kExampleSite)));
   AccessorySheetData::Builder data_builder(AccessoryTabType::PASSWORDS,
                                            passwords_empty_str(kExampleDomain));
   data_builder
@@ -510,8 +526,9 @@ TEST_F(PasswordAccessoryControllerTest, AddsGenerationCommandWhenAvailable) {
 }
 
 TEST_F(PasswordAccessoryControllerTest, NoGenerationCommandIfNotPasswordField) {
-  cache()->SaveCredentialsForOrigin({},
-                                    url::Origin::Create(GURL(kExampleSite)));
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
+      {}, CredentialCache::IsOriginBlacklisted(false),
+      url::Origin::Create(GURL(kExampleSite)));
   EXPECT_CALL(mock_manual_filling_controller_,
               RefreshSuggestions(PasswordAccessorySheetDataBuilder(
                                      passwords_empty_str(kExampleDomain))

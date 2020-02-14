@@ -85,6 +85,7 @@
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-forward.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/frame/user_activation_update_types.mojom.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-forward.h"
@@ -674,7 +675,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidChangeFramePolicy(blink::WebFrame* child_frame,
                             const blink::FramePolicy& frame_policy) override;
   void DidSetFramePolicyHeaders(
-      blink::WebSandboxFlags flags,
+      blink::mojom::WebSandboxFlags flags,
       const blink::ParsedFeaturePolicy& fp_header,
       const blink::DocumentPolicy::FeatureState& dp_header) override;
   void DidChangeFrameOwnerProperties(

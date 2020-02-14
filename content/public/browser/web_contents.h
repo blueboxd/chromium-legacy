@@ -215,7 +215,7 @@ class WebContents : public PageNavigator,
     } desired_renderer_state;
 
     // Sandboxing flags set on the new WebContents.
-    blink::WebSandboxFlags starting_sandbox_flags;
+    blink::mojom::WebSandboxFlags starting_sandbox_flags;
 
     // Value used to set the last time the WebContents was made active, this is
     // the value that'll be returned by GetLastActiveTime(). If this is left

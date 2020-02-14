@@ -71,7 +71,7 @@ class FakeRemoteFrame : public blink::mojom::RemoteFrame {
   void IntrinsicSizingInfoOfChildChanged(
       blink::mojom::IntrinsicSizingInfoPtr sizing_info) override;
   void DidSetFramePolicyHeaders(
-      blink::WebSandboxFlags sandbox_flags,
+      blink::mojom::WebSandboxFlags sandbox_flags,
       const std::vector<blink::ParsedFeaturePolicyDeclaration>&
           parsed_feature_policy) override {}
 

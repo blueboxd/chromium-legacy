@@ -122,7 +122,7 @@ public class AutofillAssistantUiTest {
                 ()
                         -> new AssistantCoordinator(getActivity(), bottomSheetController,
                                 getActivity().getTabObscuringHandler(),
-                                /* overlayCoordinator= */ null));
+                                /* overlayCoordinator= */ null, null));
 
         // Bottom sheet is shown in the BottomSheet when creating the AssistantCoordinator.
         ViewGroup bottomSheetContent =
@@ -217,10 +217,10 @@ public class AutofillAssistantUiTest {
         List<AssistantChip> chips = Arrays.asList(
                 new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, AssistantChip.Icon.NONE,
                         "chip 0",
-                        /* disabled= */ false, /* sticky= */ false, () -> {/* do nothing */}),
+                        /* disabled= */ false, /* sticky= */ false, "", () -> {/* do nothing */}),
                 new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, AssistantChip.Icon.NONE,
                         "chip 1",
-                        /* disabled= */ false, /* sticky= */ false, mRunnableMock));
+                        /* disabled= */ false, /* sticky= */ false, "", mRunnableMock));
         ThreadUtils.runOnUiThreadBlocking(() -> carouselModel.getChipsModel().set(chips));
         RecyclerView chipsViewContainer = carouselCoordinator.getView();
         Assert.assertEquals(2, chipsViewContainer.getAdapter().getItemCount());
@@ -243,7 +243,7 @@ public class AutofillAssistantUiTest {
                 ()
                         -> new AssistantCoordinator(getActivity(), bottomSheetController,
                                 getActivity().getTabObscuringHandler(),
-                                /* overlayCoordinator= */ null));
+                                /* overlayCoordinator= */ null, null));
 
         // Bottom sheet is shown in the BottomSheet when creating the AssistantCoordinator.
         ViewGroup bottomSheetContent =

@@ -28,7 +28,7 @@ class BLINK_COMMON_EXPORT
     return frame_policy.container_policy;
   }
 
-  static blink::WebSandboxFlags sandbox_flags(
+  static blink::mojom::WebSandboxFlags sandbox_flags(
       const blink::FramePolicy& frame_policy) {
     return frame_policy.sandbox_flags;
   }

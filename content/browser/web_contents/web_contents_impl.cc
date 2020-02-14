@@ -747,16 +747,17 @@ std::unique_ptr<WebContentsImpl> WebContentsImpl::CreateWithOpener(
   // See https://html.spec.whatwg.org/#attr-iframe-sandbox.
   FrameTreeNode* new_root = new_contents->GetFrameTree()->root();
   if (opener) {
-    blink::WebSandboxFlags opener_flags = opener_rfh->active_sandbox_flags();
-    const blink::WebSandboxFlags inherit_flag =
-        blink::WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts;
+    blink::mojom::WebSandboxFlags opener_flags =
+        opener_rfh->active_sandbox_flags();
+    const blink::mojom::WebSandboxFlags inherit_flag =
+        blink::mojom::WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts;
     bool sandbox_propagates_to_auxilary_context =
         (opener_flags & inherit_flag) == inherit_flag;
     if (sandbox_propagates_to_auxilary_context)
       new_root->SetPendingFramePolicy({opener_flags,
                                        {} /* container_policy */,
                                        {} /* required_document_policy */});
-    if (opener_flags == blink::WebSandboxFlags::kNone ||
+    if (opener_flags == blink::mojom::WebSandboxFlags::kNone ||
         sandbox_propagates_to_auxilary_context) {
       // TODO(ekaramad, iclelland): Do not propagate feature policies from non-
       // sandboxed disowned openers (rel=noopener).
@@ -4949,7 +4950,7 @@ void WebContentsImpl::OnGoToEntryAtOffset(RenderFrameHostImpl* source,
 
   // All frames are allowed to navigate the global history.
   if (!delegate_ || delegate_->OnGoToEntryOffset(offset)) {
-    if (source->IsSandboxed(blink::WebSandboxFlags::kTopNavigation)) {
+    if (source->IsSandboxed(blink::mojom::WebSandboxFlags::kTopNavigation)) {
       // Keep track of whether this is a session history from a sandboxed iframe
       // with top level navigation disallowed.
       controller_.GoToOffsetInSandboxedFrame(offset,

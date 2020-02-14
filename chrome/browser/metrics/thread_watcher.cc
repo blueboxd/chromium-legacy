@@ -473,16 +473,6 @@ bool ThreadWatcher::IsVeryUnresponsive() {
   return unresponsive_count_ >= unresponsive_threshold_;
 }
 
-namespace {
-// StartupTimeBomb::DisarmStartupTimeBomb() proxy, to avoid ifdefing out
-// individual calls by ThreadWatcherList methods.
-static void DisarmStartupTimeBomb() {
-#if !defined(OS_ANDROID)
-  StartupTimeBomb::DisarmStartupTimeBomb();
-#endif
-}
-}  // namespace
-
 // ThreadWatcherList methods and members.
 //
 // static
@@ -515,16 +505,11 @@ void ThreadWatcherList::StartWatchingAll(
       FROM_HERE,
       base::Bind(&ThreadWatcherList::SetStopped, false));
 
-  if (!WatchDogThread::PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&ThreadWatcherList::InitializeAndStartWatching,
-                     unresponsive_threshold,
-                     crash_on_hang_threads),
-          base::TimeDelta::FromSeconds(g_initialize_delay_seconds))) {
-    // Disarm() the startup timebomb, if we couldn't post the task to start the
-    // ThreadWatcher (becasue WatchDog thread is not running).
-    DisarmStartupTimeBomb();
-  }
+  WatchDogThread::PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ThreadWatcherList::InitializeAndStartWatching,
+                 unresponsive_threshold, crash_on_hang_threads),
+      base::TimeDelta::FromSeconds(g_initialize_delay_seconds));
 }
 
 // static
@@ -664,10 +649,6 @@ void ThreadWatcherList::InitializeAndStartWatching(
     uint32_t unresponsive_threshold,
     const CrashOnHangThreadMap& crash_on_hang_threads) {
   DCHECK(WatchDogThread::CurrentlyOnWatchDogThread());
-
-  // Disarm the startup timebomb, even if stop has been called.
-  base::PostTask(FROM_HERE, {BrowserThread::UI},
-                 base::BindOnce(&DisarmStartupTimeBomb));
 
   // This method is deferred in relationship to its StopWatchingAll()
   // counterpart. If a previous initialization has already happened, or if
@@ -850,7 +831,7 @@ void WatchDogThread::CleanUp() {
   g_watchdog_thread = nullptr;
 }
 
-// StartupTimeBomb and ShutdownWatcherHelper are not available on Android.
+// ShutdownWatcherHelper is not available on Android.
 #if !defined(OS_ANDROID)
 
 namespace {
@@ -901,72 +882,6 @@ class ShutdownWatchDogThread : public base::Watchdog {
 };
 
 }  // namespace
-
-// StartupTimeBomb methods and members.
-//
-// static
-StartupTimeBomb* StartupTimeBomb::g_startup_timebomb_ = nullptr;
-
-StartupTimeBomb::StartupTimeBomb()
-    : startup_watchdog_(nullptr),
-      thread_id_(base::PlatformThread::CurrentId()) {
-  CHECK(!g_startup_timebomb_);
-  g_startup_timebomb_ = this;
-}
-
-StartupTimeBomb::~StartupTimeBomb() {
-  DCHECK(this == g_startup_timebomb_);
-  DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
-  if (startup_watchdog_)
-    Disarm();
-  g_startup_timebomb_ = nullptr;
-}
-
-void StartupTimeBomb::Arm(const base::TimeDelta& duration) {
-  DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
-  DCHECK(!startup_watchdog_);
-  startup_watchdog_ = new StartupWatchDogThread(duration);
-  startup_watchdog_->Arm();
-  return;
-}
-
-void StartupTimeBomb::Disarm() {
-  DCHECK_EQ(thread_id_, base::PlatformThread::CurrentId());
-  if (startup_watchdog_) {
-    base::Watchdog* startup_watchdog = startup_watchdog_;
-    startup_watchdog_ = nullptr;
-
-    startup_watchdog->Disarm();
-    startup_watchdog->Cleanup();
-    DeleteStartupWatchdog(thread_id_, startup_watchdog);
-  }
-}
-
-// static
-void StartupTimeBomb::DeleteStartupWatchdog(
-    const base::PlatformThreadId thread_id,
-    base::Watchdog* startup_watchdog) {
-  DCHECK_EQ(thread_id, base::PlatformThread::CurrentId());
-  if (startup_watchdog->IsJoinable()) {
-    // Allow the watchdog thread to shutdown on UI. Watchdog thread shutdowns
-    // very fast.
-    base::ScopedAllowBaseSyncPrimitivesOutsideBlockingScope allow_thread_join;
-    delete startup_watchdog;
-    return;
-  }
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&StartupTimeBomb::DeleteStartupWatchdog, thread_id,
-                     base::Unretained(startup_watchdog)),
-      base::TimeDelta::FromSeconds(10));
-}
-
-// static
-void StartupTimeBomb::DisarmStartupTimeBomb() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (g_startup_timebomb_)
-    g_startup_timebomb_->Disarm();
-}
 
 // ShutdownWatcherHelper methods and members.
 //

@@ -410,7 +410,7 @@ WorkerOrWorkletGlobalScope::GetTaskRunner(TaskType type) {
 
 void WorkerOrWorkletGlobalScope::ApplySandboxFlags(SandboxFlags mask) {
   GetSecurityContext().ApplySandboxFlags(mask);
-  if (IsSandboxed(WebSandboxFlags::kOrigin) &&
+  if (IsSandboxed(mojom::blink::WebSandboxFlags::kOrigin) &&
       !GetSecurityOrigin()->IsOpaque()) {
     GetSecurityContext().SetSecurityOrigin(
         GetSecurityOrigin()->DeriveNewOpaqueOrigin());

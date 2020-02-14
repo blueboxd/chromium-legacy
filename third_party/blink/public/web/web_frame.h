@@ -50,7 +50,9 @@ class WebLocalFrame;
 class WebRemoteFrame;
 class WebSecurityOrigin;
 class WebView;
+namespace mojom {
 enum class WebSandboxFlags;
+}
 struct FramePolicy;
 struct WebFrameOwnerProperties;
 

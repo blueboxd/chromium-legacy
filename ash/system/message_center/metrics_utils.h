@@ -72,27 +72,6 @@ void LogClickedActionButton(const std::string& notification_id, bool is_popup);
 // Logs a ExpireToTray event for a pop-up notification.
 void LogPopupExpiredToTray(const std::string& notification_id);
 
-// Logs a ClosedByUser event.
-void LogClosedByUser(const std::string& notification_id,
-                     bool is_swipe,
-                     bool is_popup);
-
-// Logs a SettingsShown event.
-void LogSettingsShown(const std::string& notification_id,
-                      bool is_slide_controls,
-                      bool is_popup);
-
-// Logs a Snoozed event.
-void LogSnoozed(const std::string& notification_id,
-                bool is_slide_controls,
-                bool is_popup);
-
-// Logs a popup Shown event.
-void LogPopupShown(const std::string& notification_id);
-
-// Logs a tray ClosedByClearAll event.
-void LogClosedByClearAll(const std::string& notification_id);
-
 }  // namespace metrics_utils
 
 }  // namespace ash

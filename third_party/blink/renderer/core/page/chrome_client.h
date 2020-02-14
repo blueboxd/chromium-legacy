@@ -191,7 +191,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
                      const FrameLoadRequest&,
                      const AtomicString& frame_name,
                      const WebWindowFeatures&,
-                     WebSandboxFlags,
+                     mojom::blink::WebSandboxFlags,
                      const FeaturePolicy::FeatureState&,
                      const SessionStorageNamespaceId&);
   virtual void Show(NavigationPolicy) = 0;
@@ -508,7 +508,7 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
                                      const FrameLoadRequest&,
                                      const AtomicString& frame_name,
                                      const WebWindowFeatures&,
-                                     WebSandboxFlags,
+                                     mojom::blink::WebSandboxFlags,
                                      const FeaturePolicy::FeatureState&,
                                      const SessionStorageNamespaceId&) = 0;
 

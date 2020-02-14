@@ -116,7 +116,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::StopFindAction,
                           content::STOP_FIND_ACTION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FaviconIconType,
                           blink::mojom::FaviconIconType::kMaxValue)
-IPC_ENUM_TRAITS(blink::WebSandboxFlags)  // Bitmask.
+IPC_ENUM_TRAITS(blink::mojom::WebSandboxFlags)  // Bitmask
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTreeScopeType,
                           blink::WebTreeScopeType::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(ui::MenuSourceType, ui::MENU_SOURCE_TYPE_LAST)

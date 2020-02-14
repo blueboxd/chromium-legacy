@@ -7034,7 +7034,7 @@ class TestNewWindowWebViewClient
                       const WebWindowFeatures&,
                       const WebString&,
                       WebNavigationPolicy,
-                      WebSandboxFlags,
+                      mojom::blink::WebSandboxFlags,
                       const FeaturePolicy::FeatureState&,
                       const SessionStorageNamespaceId&) override {
     EXPECT_TRUE(false);

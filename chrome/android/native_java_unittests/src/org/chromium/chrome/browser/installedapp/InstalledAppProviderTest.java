@@ -847,8 +847,7 @@ public class InstalledAppProviderTest {
      * <p>Web app also related to an app with the same name on another platform, and another Android
      * app which is not installed.
      */
-    // Disabled test: https://crbug.com/1052024
-    // @CalledByNativeJavaTest
+    @CalledByNativeJavaTest
     public void testMultipleInstalledRelatedApps() throws Exception {
         RelatedApplication[] manifestRelatedApps = new RelatedApplication[] {
                 createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null),

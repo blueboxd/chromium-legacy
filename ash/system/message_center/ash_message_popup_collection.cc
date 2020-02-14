@@ -11,7 +11,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/system/message_center/metrics_utils.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -22,7 +21,6 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
-#include "ui/message_center/views/message_popup_view.h"
 #include "ui/wm/core/shadow_types.h"
 
 namespace ash {
@@ -141,42 +139,6 @@ void AshMessagePopupCollection::ConfigureWidgetInitParamsForContainer(
 bool AshMessagePopupCollection::IsPrimaryDisplayForNotification() const {
   return screen_ &&
          GetCurrentDisplay().id() == screen_->GetPrimaryDisplay().id();
-}
-
-void AshMessagePopupCollection::NotifyPopupAdded(
-    message_center::MessagePopupView* popup) {
-  MessagePopupCollection::NotifyPopupAdded(popup);
-  popup->message_view()->AddObserver(this);
-  metrics_utils::LogPopupShown(popup->message_view()->notification_id());
-}
-
-void AshMessagePopupCollection::NotifyPopupClosed(
-    message_center::MessagePopupView* popup) {
-  MessagePopupCollection::NotifyPopupClosed(popup);
-  popup->message_view()->RemoveObserver(this);
-}
-
-void AshMessagePopupCollection::OnSlideOut(const std::string& notification_id) {
-  metrics_utils::LogClosedByUser(notification_id, /*is_swipe=*/true,
-                                 /*is_popup=*/true);
-}
-
-void AshMessagePopupCollection::OnCloseButtonPressed(
-    const std::string& notification_id) {
-  metrics_utils::LogClosedByUser(notification_id, /*is_swipe=*/false,
-                                 /*is_popup=*/true);
-}
-
-void AshMessagePopupCollection::OnSettingsButtonPressed(
-    const std::string& notification_id) {
-  metrics_utils::LogSettingsShown(notification_id, /*is_slide_controls=*/false,
-                                  /*is_popup=*/true);
-}
-
-void AshMessagePopupCollection::OnSnoozeButtonPressed(
-    const std::string& notification_id) {
-  metrics_utils::LogSnoozed(notification_id, /*is_slide_controls=*/false,
-                            /*is_popup=*/true);
 }
 
 ShelfAlignment AshMessagePopupCollection::GetAlignment() const {

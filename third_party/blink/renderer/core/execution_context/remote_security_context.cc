@@ -39,11 +39,12 @@ void RemoteSecurityContext::ResetReplicatedContentSecurityPolicy() {
   GetContentSecurityPolicy()->SetupSelf(*GetSecurityOrigin());
 }
 
-void RemoteSecurityContext::ResetAndEnforceSandboxFlags(WebSandboxFlags flags) {
+void RemoteSecurityContext::ResetAndEnforceSandboxFlags(
+    mojom::blink::WebSandboxFlags flags) {
   sandbox_flags_ = flags;
 
-  if (IsSandboxed(WebSandboxFlags::kOrigin) && GetSecurityOrigin() &&
-      !GetSecurityOrigin()->IsOpaque()) {
+  if (IsSandboxed(mojom::blink::WebSandboxFlags::kOrigin) &&
+      GetSecurityOrigin() && !GetSecurityOrigin()->IsOpaque()) {
     SetSecurityOrigin(GetSecurityOrigin()->DeriveNewOpaqueOrigin());
   }
 }

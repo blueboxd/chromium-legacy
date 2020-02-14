@@ -193,7 +193,10 @@ void JNI_ManualFillingComponentBridge_CachePasswordSheetDataForTesting(
   }
   return ChromePasswordManagerClient::FromWebContents(web_contents)
       ->GetCredentialCacheForTesting()
-      ->SaveCredentialsForOrigin(credentials, origin);
+      ->SaveCredentialsAndBlacklistedForOrigin(
+          credentials,
+          password_manager::CredentialCache::IsOriginBlacklisted(false),
+          origin);
 }
 
 // static

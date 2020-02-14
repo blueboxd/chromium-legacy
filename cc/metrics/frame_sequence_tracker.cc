@@ -60,6 +60,8 @@ namespace {
 // Avoid reporting any throughput metric for sequences that do not have a
 // sufficient number of frames.
 constexpr int kMinFramesForThroughputMetric = 100;
+// Used to avoid reporting throughput when it underflows.
+constexpr unsigned kMaxFramesForThroughputMetric = 6000;
 
 constexpr int kBuiltinSequenceNum = FrameSequenceTrackerType::kMaxType + 1;
 constexpr int kMaximumHistogramIndex = 3 * kBuiltinSequenceNum;
@@ -465,6 +467,9 @@ void FrameSequenceTracker::ScheduleTerminate() {
   // It could happen that a main/impl frame is generated, but never processed
   // (didn't report no damage and didn't submit) when this happens.
   if (last_processed_impl_sequence_ < last_started_impl_sequence_) {
+    DCHECK_GE(impl_throughput().frames_expected,
+              begin_impl_frame_data_.previous_sequence_delta)
+        << TRACKER_DCHECK_MSG;
     impl_throughput().frames_expected -=
         begin_impl_frame_data_.previous_sequence_delta;
 #if DCHECK_IS_ON()
@@ -962,7 +967,9 @@ base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
           GetFrameSequenceLengthHistogramName(sequence_type), 1, 1000, 50,
           base::HistogramBase::kUmaTargetedHistogramFlag));
 
-  if (data.frames_expected < kMinFramesForThroughputMetric)
+  DCHECK_LT(data.frames_expected, kMaxFramesForThroughputMetric);
+  if (data.frames_expected < kMinFramesForThroughputMetric ||
+      data.frames_expected > kMaxFramesForThroughputMetric)
     return base::nullopt;
 
   const int percent =

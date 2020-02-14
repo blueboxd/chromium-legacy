@@ -7,7 +7,6 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/message_center/message_center_style.h"
-#include "ash/system/message_center/metrics_utils.h"
 #include "ash/system/message_center/notification_swipe_control_view.h"
 #include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/tray/tray_constants.h"
@@ -57,21 +56,21 @@ bool CompareNotifications(message_center::Notification* n1,
 // All children of UnifiedMessageListView should be MessageViewContainer.
 class UnifiedMessageListView::MessageViewContainer
     : public views::View,
-      public MessageView::Observer {
+      public MessageView::SlideObserver {
  public:
   MessageViewContainer(MessageView* message_view,
                        UnifiedMessageListView* list_view)
       : message_view_(message_view),
         list_view_(list_view),
         control_view_(new NotificationSwipeControlView(message_view)) {
-    message_view_->AddObserver(this);
+    message_view_->AddSlideObserver(this);
 
     SetLayoutManager(std::make_unique<views::FillLayout>());
     AddChildView(control_view_);
     AddChildView(message_view_);
   }
 
-  ~MessageViewContainer() override { message_view_->RemoveObserver(this); }
+  ~MessageViewContainer() override { message_view_->RemoveSlideObserver(this); }
 
   // Update the border and background corners based on if the notification is
   // at the top or the bottom.
@@ -120,7 +119,6 @@ class UnifiedMessageListView::MessageViewContainer
   }
 
   void SlideOutAndClose() {
-    is_slid_out_programatically = true;
     message_view_->SlideOutAndClose(1 /* direction */);
   }
 
@@ -153,17 +151,12 @@ class UnifiedMessageListView::MessageViewContainer
 
   const char* GetClassName() const override { return "UnifiedMessageListView"; }
 
-  // MessageView::Observer:
+  // MessageView::SlideObserver:
   void OnSlideChanged(const std::string& notification_id) override {
     control_view_->UpdateButtonsVisibility();
   }
 
   void OnSlideOut(const std::string& notification_id) override {
-    if (!is_slid_out_programatically) {
-      metrics_utils::LogClosedByUser(notification_id, /*is_swipe=*/true,
-                                     /*is_popup=*/false);
-    }
-
     is_slid_out_ = true;
     set_is_removed();
     list_view_->OnNotificationSlidOut();
@@ -199,10 +192,6 @@ class UnifiedMessageListView::MessageViewContainer
 
   // True if the notification is slid out completely.
   bool is_slid_out_ = false;
-
-  // True if the notification is slid out through SlideOutAndClose()
-  // programagically. False if slid out manually by the user.
-  bool is_slid_out_programatically = false;
 
   MessageView* const message_view_;
   UnifiedMessageListView* const list_view_;
@@ -254,12 +243,6 @@ void UnifiedMessageListView::ClearAllWithAnimation() {
   if (state_ == State::CLEAR_ALL_STACKED || state_ == State::CLEAR_ALL_VISIBLE)
     return;
   ResetBounds();
-
-  // Record a ClosedByClearAll metric for each notification dismissed.
-  for (auto* child : children()) {
-    auto* view = AsMVC(child);
-    metrics_utils::LogClosedByClearAll(view->GetNotificationId());
-  }
 
   {
     base::AutoReset<bool> auto_reset(&ignore_notification_remove_, true);
@@ -450,24 +433,6 @@ void UnifiedMessageListView::OnSlideStarted(
   }
 }
 
-void UnifiedMessageListView::OnCloseButtonPressed(
-    const std::string& notification_id) {
-  metrics_utils::LogClosedByUser(notification_id, /*is_swipe=*/false,
-                                 /*is_popup=*/false);
-}
-
-void UnifiedMessageListView::OnSettingsButtonPressed(
-    const std::string& notification_id) {
-  metrics_utils::LogSettingsShown(notification_id, /*is_slide_controls=*/false,
-                                  /*is_popup=*/false);
-}
-
-void UnifiedMessageListView::OnSnoozeButtonPressed(
-    const std::string& notification_id) {
-  metrics_utils::LogSnoozed(notification_id, /*is_slide_controls=*/false,
-                            /*is_popup=*/false);
-}
-
 void UnifiedMessageListView::AnimationEnded(const gfx::Animation* animation) {
   // This is also called from AnimationCanceled().
   animation_->SetCurrentValue(1.0);
@@ -501,7 +466,7 @@ MessageView* UnifiedMessageListView::CreateMessageView(
     const Notification& notification) {
   auto* view = message_center::MessageViewFactory::Create(notification);
   view->SetIsNested();
-  view->AddObserver(this);
+  view->AddSlideObserver(this);
   message_center_view_->ConfigureMessageView(view);
   return view;
 }

@@ -77,7 +77,7 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
   }
 
   if (!document->GetSecurityOrigin()->CanAccessNativeFileSystem()) {
-    if (document->IsSandboxed(WebSandboxFlags::kOrigin)) {
+    if (document->IsSandboxed(mojom::blink::WebSandboxFlags::kOrigin)) {
       exception_state.ThrowSecurityError(
           "Sandboxed documents aren't allowed to show a file picker.");
       return ScriptPromise();

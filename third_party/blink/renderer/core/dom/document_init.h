@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 
 namespace blink {
 
@@ -93,7 +94,7 @@ class CORE_EXPORT DocumentInit final {
   bool HasSecurityContext() const { return MasterDocumentLoader(); }
   bool IsSrcdocDocument() const;
   bool ShouldSetURL() const;
-  WebSandboxFlags GetSandboxFlags() const;
+  mojom::blink::WebSandboxFlags GetSandboxFlags() const;
   WebInsecureRequestPolicy GetInsecureRequestPolicy() const;
   const SecurityContext::InsecureNavigationsSet* InsecureNavigationsToUpgrade()
       const;
@@ -156,7 +157,7 @@ class CORE_EXPORT DocumentInit final {
   DocumentInit& WithOriginTrialsHeader(const String& header);
   const String& OriginTrialsHeader() const { return origin_trials_header_; }
 
-  DocumentInit& WithSandboxFlags(WebSandboxFlags flags);
+  DocumentInit& WithSandboxFlags(mojom::blink::WebSandboxFlags flags);
 
   DocumentInit& WithContentSecurityPolicy(ContentSecurityPolicy* policy);
   DocumentInit& WithContentSecurityPolicyFromContextDoc();
@@ -239,7 +240,8 @@ class CORE_EXPORT DocumentInit final {
   String origin_trials_header_;
 
   // Additional sandbox flags
-  WebSandboxFlags sandbox_flags_ = WebSandboxFlags::kNone;
+  mojom::blink::WebSandboxFlags sandbox_flags_ =
+      mojom::blink::WebSandboxFlags::kNone;
 
   // Loader's CSP
   ContentSecurityPolicy* content_security_policy_ = nullptr;

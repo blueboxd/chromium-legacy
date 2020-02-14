@@ -82,11 +82,17 @@ class Union(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
         # Make this union type look defined in 'modules' if the union type is
         # used in 'modules' in order to keep the backward compatibility with
         # the old bindings generator.
+        is_defined_in_core = False
+        is_defined_in_modules = False
         for idl_type in union_types:
             filepath = idl_type.debug_info.location.filepath
+            if filepath.startswith('third_party/blink/renderer/core/'):
+                is_defined_in_core = True
             if filepath.startswith('third_party/blink/renderer/modules/'):
-                from .composition_parts import Component
-                components.add(Component('modules'))
+                is_defined_in_modules = True
+        if not is_defined_in_core and is_defined_in_modules:
+            from .composition_parts import Component
+            components.add(Component('modules'))
 
         # TODO(peria, yukishiino): Produce unique union names.  Trying to
         # produce the names compatible to the old bindings generator for the

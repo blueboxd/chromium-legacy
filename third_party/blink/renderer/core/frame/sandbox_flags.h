@@ -29,31 +29,35 @@
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/dom/space_split_string.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 using SandboxFlagFeaturePolicyPairs =
-    Vector<std::pair<WebSandboxFlags, mojom::blink::FeaturePolicyFeature>>;
+    Vector<std::pair<mojom::blink::WebSandboxFlags,
+                     mojom::blink::FeaturePolicyFeature>>;
 
 // Returns a vector of pairs of sandbox flags and the corresponding feature
 // policies. This includes most but not all sandbox flags as some flags have not
 // yet migrated to using feature policies.
 const SandboxFlagFeaturePolicyPairs& SandboxFlagsWithFeaturePolicies();
 
-WebSandboxFlags ParseSandboxPolicy(const SpaceSplitString& policy,
-                                   String& invalid_tokens_error_message);
+mojom::blink::WebSandboxFlags ParseSandboxPolicy(
+    const SpaceSplitString& policy,
+    String& invalid_tokens_error_message);
 
 // With FeaturePolicyForSandbox most sandbox flags will be represented with
 // features. This method returns the part of sandbox flags which were not mapped
 // to corresponding features.
-WebSandboxFlags GetSandboxFlagsNotImplementedAsFeaturePolicy(WebSandboxFlags);
+mojom::blink::WebSandboxFlags GetSandboxFlagsNotImplementedAsFeaturePolicy(
+    mojom::blink::WebSandboxFlags);
 
 // Applies the sandbox flags as parsed feature policies; If a flag is present
 // both in the provided flags and in the parsed feature as a feature policy,
 // the parsed policy takes precedence.
-void ApplySandboxFlagsToParsedFeaturePolicy(WebSandboxFlags,
+void ApplySandboxFlagsToParsedFeaturePolicy(mojom::blink::WebSandboxFlags,
                                             ParsedFeaturePolicy&);
 
 }  // namespace blink

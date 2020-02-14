@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "url/origin.h"
 
 namespace autofill {
@@ -21,15 +22,26 @@ class OriginCredentialStore;
 // This class caches and provides credential stores for different origins.
 class CredentialCache {
  public:
+  // TODO(crbug.com/1051553): Consider reusing this alias for other password
+  // manager code as well.
+  using IsOriginBlacklisted =
+      util::StrongAlias<class IsOriginBlacklistedTag, bool>;
   CredentialCache();
   CredentialCache(const CredentialCache&) = delete;
   CredentialCache& operator=(const CredentialCache&) = delete;
   ~CredentialCache();
 
-  // Saves credentials for an origin so that they can be used in the sheet.
-  void SaveCredentialsForOrigin(
+  // Saves credentials and blacklisted status for an origin so that they can be
+  // used in the sheet.
+  void SaveCredentialsAndBlacklistedForOrigin(
       const std::vector<const autofill::PasswordForm*>& matches,
+      IsOriginBlacklisted is_blacklisted,
       const url::Origin& origin);
+
+  // Updates the blacklisted status for the origin. This is triggered by the
+  // user while still on the page.
+  void UpdateBlacklistedForOrigin(const url::Origin& origin,
+                                  IsOriginBlacklisted is_blacklisted);
 
   // Returns the credential store for a given origin. If it does not exist, an
   // empty store will be created.

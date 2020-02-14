@@ -127,14 +127,14 @@ void SecurityContext::SetContentSecurityPolicy(
   content_security_policy_ = content_security_policy;
 }
 
-bool SecurityContext::IsSandboxed(WebSandboxFlags mask) const {
+bool SecurityContext::IsSandboxed(mojom::blink::WebSandboxFlags mask) const {
   if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
     mojom::blink::FeaturePolicyFeature feature =
         FeaturePolicy::FeatureForSandboxFlag(mask);
     if (feature != mojom::blink::FeaturePolicyFeature::kNotFound)
       return !feature_policy_->IsFeatureEnabled(feature);
   }
-  return (sandbox_flags_ & mask) != WebSandboxFlags::kNone;
+  return (sandbox_flags_ & mask) != mojom::blink::WebSandboxFlags::kNone;
 }
 
 void SecurityContext::SetRequireTrustedTypes() {

@@ -65,6 +65,8 @@ namespace autofill_assistant {
 
 namespace {
 
+static const char* const kCancelChipIdentifier = "CANCEL_CHIP_ID";
+
 std::vector<float> ToFloatVector(const std::vector<RectF>& areas) {
   std::vector<float> flattened;
   for (const auto& rect : areas) {
@@ -588,17 +590,23 @@ void UiControllerAndroid::UpdateActions(
         break;
 
       case HIGHLIGHTED_ACTION:
+        // Here and below, we set the identifier to the empty string so that we
+        // can hide all the chips except for the cancel chip when the keyboard
+        // is showing.
+        // TODO(b/149543425): Find a better way to do this.
         Java_AutofillAssistantUiController_addHighlightedActionButton(
             env, java_object_, chips, chip.icon,
             base::android::ConvertUTF8ToJavaString(env, chip.text), i,
-            !action.enabled(), chip.sticky);
+            !action.enabled(), chip.sticky,
+            base::android::ConvertUTF8ToJavaString(env, ""));
         break;
 
       case NORMAL_ACTION:
         Java_AutofillAssistantUiController_addActionButton(
             env, java_object_, chips, chip.icon,
             base::android::ConvertUTF8ToJavaString(env, chip.text), i,
-            !action.enabled(), chip.sticky);
+            !action.enabled(), chip.sticky,
+            base::android::ConvertUTF8ToJavaString(env, ""));
         break;
 
       case CANCEL_ACTION:
@@ -607,7 +615,8 @@ void UiControllerAndroid::UpdateActions(
         Java_AutofillAssistantUiController_addCancelButton(
             env, java_object_, chips, chip.icon,
             base::android::ConvertUTF8ToJavaString(env, chip.text), i,
-            !action.enabled(), chip.sticky);
+            !action.enabled(), chip.sticky,
+            base::android::ConvertUTF8ToJavaString(env, kCancelChipIdentifier));
         has_close_or_cancel = true;
         break;
 
@@ -615,7 +624,8 @@ void UiControllerAndroid::UpdateActions(
         Java_AutofillAssistantUiController_addActionButton(
             env, java_object_, chips, chip.icon,
             base::android::ConvertUTF8ToJavaString(env, chip.text), i,
-            !action.enabled(), chip.sticky);
+            !action.enabled(), chip.sticky,
+            base::android::ConvertUTF8ToJavaString(env, ""));
         has_close_or_cancel = true;
         break;
 
@@ -623,7 +633,8 @@ void UiControllerAndroid::UpdateActions(
         Java_AutofillAssistantUiController_addHighlightedActionButton(
             env, java_object_, chips, chip.icon,
             base::android::ConvertUTF8ToJavaString(env, chip.text), i,
-            !action.enabled(), chip.sticky);
+            !action.enabled(), chip.sticky,
+            base::android::ConvertUTF8ToJavaString(env, ""));
         has_close_or_cancel = true;
         break;
     }
@@ -634,12 +645,14 @@ void UiControllerAndroid::UpdateActions(
       Java_AutofillAssistantUiController_addCloseButton(
           env, java_object_, chips, ICON_CLEAR,
           base::android::ConvertUTF8ToJavaString(env, ""),
-          /* disabled= */ false, /* sticky= */ true);
+          /* disabled= */ false, /* sticky= */ true,
+          base::android::ConvertUTF8ToJavaString(env, ""));
     } else if (ui_delegate_->GetState() != AutofillAssistantState::INACTIVE) {
       Java_AutofillAssistantUiController_addCancelButton(
           env, java_object_, chips, ICON_CLEAR,
           base::android::ConvertUTF8ToJavaString(env, ""), -1,
-          /* disabled= */ false, /* sticky= */ true);
+          /* disabled= */ false, /* sticky= */ true,
+          base::android::ConvertUTF8ToJavaString(env, kCancelChipIdentifier));
     }
   }
 
@@ -677,6 +690,19 @@ void UiControllerAndroid::OnCloseButtonClicked(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
   DestroySelf();
+}
+
+void UiControllerAndroid::OnKeyboardVisibilityChanged(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller,
+    jboolean visible) {
+  // Hide all chips except cancel while the keyboard is shown, to prevent users
+  // from accidentally tapping chips while using the keyboard.
+  // TODO(b/149543425): Find a better way to do this.
+  Java_AutofillAssistantUiController_setAllChipsVisibleExcept(
+      env, java_object_,
+      base::android::ConvertUTF8ToJavaString(env, kCancelChipIdentifier),
+      !visible);
 }
 
 void UiControllerAndroid::CloseOrCancel(

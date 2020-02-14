@@ -52,7 +52,7 @@ bool NativeNotificationsEnabled(Profile* profile) {
 #if defined(OS_LINUX)
   if (profile) {
     PrefService* prefs = profile->GetPrefs();
-    if (prefs->GetBoolean(prefs::kNativeNotificationsDisabled))
+    if (!prefs->GetBoolean(prefs::kAllowNativeNotifications))
       return false;
   }
 #endif
@@ -132,7 +132,7 @@ NotificationDisplayServiceImpl* NotificationDisplayServiceImpl::GetForProfile(
 void NotificationDisplayServiceImpl::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  registry->RegisterBooleanPref(prefs::kNativeNotificationsDisabled, false);
+  registry->RegisterBooleanPref(prefs::kAllowNativeNotifications, true);
 #endif
 }
 

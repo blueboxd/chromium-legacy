@@ -36,6 +36,7 @@
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/password_manager/content/browser/content_password_manager_driver.h"
 #include "components/password_manager/content/browser/password_manager_log_router_factory.h"
+#include "components/password_manager/core/browser/credential_cache.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -97,6 +98,10 @@ using testing::_;
 using testing::NiceMock;
 using testing::Return;
 using testing::StrictMock;
+
+#if defined(OS_ANDROID)
+using password_manager::CredentialCache;
+#endif
 
 namespace {
 // TODO(crbug.com/474577): Get rid of the mocked client in the client's own
@@ -876,8 +881,10 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
   form.origin = origin.GetURL();
   form.username_value = base::ASCIIToUTF16("alice");
   form.password_value = base::ASCIIToUTF16("S3cr3t");
-  GetClient()->GetCredentialCacheForTesting()->SaveCredentialsForOrigin({&form},
-                                                                        origin);
+  GetClient()
+      ->GetCredentialCacheForTesting()
+      ->SaveCredentialsAndBlacklistedForOrigin(
+          {&form}, CredentialCache::IsOriginBlacklisted(false), origin);
 
   // Check that a navigation within the same document does not clear the cache.
   content::MockNavigationHandle handle(web_contents());

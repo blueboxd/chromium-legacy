@@ -217,7 +217,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       const blink::WebWindowFeatures& features,
       const blink::WebString& frame_name,
       blink::WebNavigationPolicy policy,
-      blink::WebSandboxFlags sandbox_flags,
+      blink::mojom::WebSandboxFlags sandbox_flags,
       const blink::FeaturePolicy::FeatureState& opener_feature_state,
       const blink::SessionStorageNamespaceId& session_storage_namespace_id)
       override;

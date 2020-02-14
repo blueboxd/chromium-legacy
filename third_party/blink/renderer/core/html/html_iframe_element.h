@@ -61,7 +61,8 @@ class CORE_EXPORT HTMLIFrameElement final
     return FrameOwnerElementType::kIframe;
   }
 
-  WebSandboxFlags sandbox_flags_converted_to_feature_policies() const {
+  mojom::blink::WebSandboxFlags sandbox_flags_converted_to_feature_policies()
+      const {
     return sandbox_flags_converted_to_feature_policies_;
   }
 
@@ -102,8 +103,8 @@ class CORE_EXPORT HTMLIFrameElement final
   // This represents a subset of sandbox flags set through 'sandbox' attribute
   // that will be converted to feature policies as part of the container
   // policies.
-  WebSandboxFlags sandbox_flags_converted_to_feature_policies_ =
-      WebSandboxFlags::kNone;
+  mojom::blink::WebSandboxFlags sandbox_flags_converted_to_feature_policies_ =
+      mojom::blink::WebSandboxFlags::kNone;
 
   network::mojom::ReferrerPolicy referrer_policy_;
 };

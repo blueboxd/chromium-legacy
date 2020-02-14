@@ -64,16 +64,19 @@ public class AssistantChip {
      */
     private final boolean mSticky;
 
+    private final String mIdentifier;
+
     /** The callback that will be triggered when this chip is clicked. */
     private final Runnable mSelectedListener;
 
     public AssistantChip(@Type int type, @Icon int icon, String text, boolean disabled,
-            boolean sticky, Runnable selectedListener) {
+            boolean sticky, String identifier, Runnable selectedListener) {
         mType = type;
         mIcon = icon;
         mText = text;
         mDisabled = disabled;
         mSticky = sticky;
+        mIdentifier = identifier;
         mSelectedListener = selectedListener;
     }
 
@@ -104,6 +107,10 @@ public class AssistantChip {
 
     public boolean isSticky() {
         return mSticky;
+    }
+
+    public String getIdentifier() {
+        return mIdentifier;
     }
 
     public Runnable getSelectedListener() {

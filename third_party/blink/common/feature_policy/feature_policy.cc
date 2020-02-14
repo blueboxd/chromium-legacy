@@ -381,41 +381,41 @@ const FeaturePolicy::FeatureList& FeaturePolicy::GetFeatureList() const {
 
 // static
 mojom::FeaturePolicyFeature FeaturePolicy::FeatureForSandboxFlag(
-    WebSandboxFlags flag) {
+    mojom::WebSandboxFlags flag) {
   switch (flag) {
-    case WebSandboxFlags::kAll:
+    case mojom::WebSandboxFlags::kAll:
       NOTREACHED();
       break;
-    case WebSandboxFlags::kTopNavigation:
+    case mojom::WebSandboxFlags::kTopNavigation:
       return mojom::FeaturePolicyFeature::kTopNavigation;
-    case WebSandboxFlags::kForms:
+    case mojom::WebSandboxFlags::kForms:
       return mojom::FeaturePolicyFeature::kFormSubmission;
-    case WebSandboxFlags::kAutomaticFeatures:
-    case WebSandboxFlags::kScripts:
+    case mojom::WebSandboxFlags::kAutomaticFeatures:
+    case mojom::WebSandboxFlags::kScripts:
       return mojom::FeaturePolicyFeature::kScript;
-    case WebSandboxFlags::kPopups:
+    case mojom::WebSandboxFlags::kPopups:
       return mojom::FeaturePolicyFeature::kPopups;
-    case WebSandboxFlags::kPointerLock:
+    case mojom::WebSandboxFlags::kPointerLock:
       return mojom::FeaturePolicyFeature::kPointerLock;
-    case WebSandboxFlags::kOrientationLock:
+    case mojom::WebSandboxFlags::kOrientationLock:
       return mojom::FeaturePolicyFeature::kOrientationLock;
-    case WebSandboxFlags::kModals:
+    case mojom::WebSandboxFlags::kModals:
       return mojom::FeaturePolicyFeature::kModals;
-    case WebSandboxFlags::kPresentationController:
+    case mojom::WebSandboxFlags::kPresentationController:
       return mojom::FeaturePolicyFeature::kPresentation;
-    case WebSandboxFlags::kDownloads:
+    case mojom::WebSandboxFlags::kDownloads:
       return mojom::FeaturePolicyFeature::kDownloads;
     // Other flags fall through to the bitmask test below. They are named
     // specifically here so that authors introducing new flags must consider
     // this method when adding them.
-    case WebSandboxFlags::kDocumentDomain:
-    case WebSandboxFlags::kNavigation:
-    case WebSandboxFlags::kNone:
-    case WebSandboxFlags::kOrigin:
-    case WebSandboxFlags::kPlugins:
-    case WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts:
-    case WebSandboxFlags::kTopNavigationByUserActivation:
-    case WebSandboxFlags::kStorageAccessByUserActivation:
+    case mojom::WebSandboxFlags::kDocumentDomain:
+    case mojom::WebSandboxFlags::kNavigation:
+    case mojom::WebSandboxFlags::kNone:
+    case mojom::WebSandboxFlags::kOrigin:
+    case mojom::WebSandboxFlags::kPlugins:
+    case mojom::WebSandboxFlags::kPropagatesToAuxiliaryBrowsingContexts:
+    case mojom::WebSandboxFlags::kTopNavigationByUserActivation:
+    case mojom::WebSandboxFlags::kStorageAccessByUserActivation:
       break;
   }
   return mojom::FeaturePolicyFeature::kNotFound;

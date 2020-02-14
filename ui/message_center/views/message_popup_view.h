@@ -63,8 +63,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupView : public views::WidgetDelegateView,
   bool is_hovered() const { return is_hovered_; }
   bool is_active() const { return is_active_; }
 
-  MessageView* message_view() { return message_view_; }
-
  protected:
   // For unit testing.
   MessagePopupView(MessagePopupCollection* popup_collection);

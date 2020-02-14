@@ -21,7 +21,9 @@
 
 namespace blink {
 
+namespace mojom {
 enum class WebSandboxFlags;
+}
 
 // Feature Policy is a mechanism for controlling the availability of web
 // platform features in a frame, including all embedded frames. It can be used
@@ -256,7 +258,7 @@ class BLINK_COMMON_EXPORT FeaturePolicy {
   static const FeatureList& GetDefaultFeatureList();
 
   static mojom::FeaturePolicyFeature FeatureForSandboxFlag(
-      WebSandboxFlags flag);
+      mojom::WebSandboxFlags flag);
 
  private:
   friend class FeaturePolicyTest;

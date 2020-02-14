@@ -104,8 +104,8 @@ DocumentLoader* DocumentInit::MasterDocumentLoader() const {
   return nullptr;
 }
 
-WebSandboxFlags DocumentInit::GetSandboxFlags() const {
-  WebSandboxFlags flags = sandbox_flags_;
+mojom::blink::WebSandboxFlags DocumentInit::GetSandboxFlags() const {
+  mojom::blink::WebSandboxFlags flags = sandbox_flags_;
   if (DocumentLoader* loader = MasterDocumentLoader())
     flags |= loader->GetFrame()->Loader().EffectiveSandboxFlags();
   // If the load was blocked by CSP, force the Document's origin to be unique,
@@ -113,7 +113,7 @@ WebSandboxFlags DocumentInit::GetSandboxFlags() const {
   // document's load per CSP spec:
   // https://www.w3.org/TR/CSP3/#directive-frame-ancestors.
   if (blocked_by_csp_)
-    flags |= WebSandboxFlags::kOrigin;
+    flags |= mojom::blink::WebSandboxFlags::kOrigin;
   return flags;
 }
 
@@ -355,7 +355,8 @@ DocumentInit& DocumentInit::WithOriginTrialsHeader(const String& header) {
   return *this;
 }
 
-DocumentInit& DocumentInit::WithSandboxFlags(WebSandboxFlags flags) {
+DocumentInit& DocumentInit::WithSandboxFlags(
+    mojom::blink::WebSandboxFlags flags) {
   // Only allow adding more sandbox flags.
   sandbox_flags_ |= flags;
   return *this;

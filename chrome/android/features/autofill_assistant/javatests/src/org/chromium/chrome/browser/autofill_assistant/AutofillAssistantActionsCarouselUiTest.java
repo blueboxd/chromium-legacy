@@ -90,7 +90,7 @@ public class AutofillAssistantActionsCarouselUiTest {
                 ()
                         -> model.getChipsModel().add(
                                 new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE,
-                                        AssistantChip.Icon.NONE, "Test", false, true, null)));
+                                        AssistantChip.Icon.NONE, "Test", false, true, "", null)));
 
         // Chip was created and is displayed on the screen.
         onView(is(coordinator.getView()))
@@ -111,10 +111,10 @@ public class AutofillAssistantActionsCarouselUiTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             for (int i = 0; i < numChips; i++) {
                 model.getChipsModel().add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE,
-                        AssistantChip.Icon.NONE, "T" + i, false, false, null));
+                        AssistantChip.Icon.NONE, "T" + i, false, false, "", null));
             }
             model.getChipsModel().add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE,
-                    AssistantChip.Icon.NONE, "X", false, true, null));
+                    AssistantChip.Icon.NONE, "X", false, true, "", null));
         });
 
         // Cancel chip is displayed to the user.
@@ -138,10 +138,10 @@ public class AutofillAssistantActionsCarouselUiTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             for (int i = 0; i < numChips; i++) {
                 model.getChipsModel().add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE,
-                        AssistantChip.Icon.NONE, "Test" + i, false, false, null));
+                        AssistantChip.Icon.NONE, "Test" + i, false, false, "", null));
             }
             model.getChipsModel().add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE,
-                    AssistantChip.Icon.NONE, "Cancel", false, true, null));
+                    AssistantChip.Icon.NONE, "Cancel", false, true, "", null));
         });
 
         // Cancel chip is initially displayed to the user.

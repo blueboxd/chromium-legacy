@@ -117,7 +117,8 @@ class ChromePasswordManagerClient
           saved_form_manager) override;
   void UpdateCredentialCache(
       const GURL& origin,
-      const std::vector<const autofill::PasswordForm*>& best_matches) override;
+      const std::vector<const autofill::PasswordForm*>& best_matches,
+      bool is_blacklisted) override;
   void PasswordWasAutofilled(
       const std::vector<const autofill::PasswordForm*>& best_matches,
       const GURL& origin,

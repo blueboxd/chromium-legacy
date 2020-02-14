@@ -29,7 +29,6 @@ class StartupData;
 class PrefService;
 class Profile;
 class StartupBrowserCreator;
-class StartupTimeBomb;
 class ShutdownWatcherHelper;
 class WebUsbDetector;
 
@@ -144,9 +143,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   int result_code_;
 
 #if !defined(OS_ANDROID)
-  // Create StartupTimeBomb object for watching jank during startup.
-  std::unique_ptr<StartupTimeBomb> startup_watcher_;
-
   // Create ShutdownWatcherHelper object for watching jank during shutdown.
   // Please keep |shutdown_watcher| as the first object constructed, and hence
   // it is destroyed last.

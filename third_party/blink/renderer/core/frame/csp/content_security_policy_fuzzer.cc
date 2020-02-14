@@ -29,7 +29,8 @@ int LLVMFuzzerInitialize(int* argc, char*** argv) {
   // has all possible sandbox flags set on the document already when the
   // CSP is bound.
   scoped_refptr<SharedBuffer> empty_document_data = SharedBuffer::Create();
-  g_page_holder->GetFrame().Loader().ForceSandboxFlags(WebSandboxFlags::kAll);
+  g_page_holder->GetFrame().Loader().ForceSandboxFlags(
+      mojom::blink::WebSandboxFlags::kAll);
   g_page_holder->GetFrame().ForceSynchronousDocumentInstall(
       "text/html", empty_document_data);
   return 0;

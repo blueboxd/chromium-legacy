@@ -108,7 +108,8 @@ class AutofillAssistantUiController {
         mNativeUiController = nativeUiController;
         mActivity = activity;
         mCoordinator = new AssistantCoordinator(activity, controller, tabObscuringHandler,
-                onboardingCoordinator == null ? null : onboardingCoordinator.transferControls());
+                onboardingCoordinator == null ? null : onboardingCoordinator.transferControls(),
+                this::safeNativeOnKeyboardVisibilityChanged);
         mActivityTabObserver =
                 new ActivityTabProvider.ActivityTabTabObserver(activity.getActivityTabProvider()) {
                     @Override
@@ -255,9 +256,9 @@ class AutofillAssistantUiController {
      */
     @CalledByNative
     private void addActionButton(List<AssistantChip> chips, int icon, String text, int actionIndex,
-            boolean disabled, boolean sticky) {
+            boolean disabled, boolean sticky, String identifier) {
         chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled,
-                sticky, () -> safeNativeOnUserActionSelected(actionIndex)));
+                sticky, identifier, () -> safeNativeOnUserActionSelected(actionIndex)));
     }
 
     /**
@@ -266,9 +267,9 @@ class AutofillAssistantUiController {
      */
     @CalledByNative
     private void addHighlightedActionButton(List<AssistantChip> chips, int icon, String text,
-            int actionIndex, boolean disabled, boolean sticky) {
+            int actionIndex, boolean disabled, boolean sticky, String identifier) {
         chips.add(new AssistantChip(Type.BUTTON_FILLED_BLUE, icon, text, disabled, sticky,
-                () -> safeNativeOnUserActionSelected(actionIndex)));
+                identifier, () -> safeNativeOnUserActionSelected(actionIndex)));
     }
 
     /**
@@ -278,25 +279,32 @@ class AutofillAssistantUiController {
      */
     @CalledByNative
     private void addCancelButton(List<AssistantChip> chips, int icon, String text, int actionIndex,
-            boolean disabled, boolean sticky) {
+            boolean disabled, boolean sticky, String identifier) {
         chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled,
-                sticky, () -> safeNativeOnCancelButtonClicked(actionIndex)));
+                sticky, identifier, () -> safeNativeOnCancelButtonClicked(actionIndex)));
     }
 
     /**
      * Adds a close action button to the chip list, which shuts down Autofill Assistant.
      */
     @CalledByNative
-    private void addCloseButton(
-            List<AssistantChip> chips, int icon, String text, boolean disabled, boolean sticky) {
+    private void addCloseButton(List<AssistantChip> chips, int icon, String text, boolean disabled,
+            boolean sticky, String identifier) {
         chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, icon, text, disabled,
-                sticky, this::safeNativeOnCloseButtonClicked));
+                sticky, identifier, this::safeNativeOnCloseButtonClicked));
     }
 
     @CalledByNative
     private void setActions(List<AssistantChip> chips) {
         setActionChips(chips);
         setHeaderChip(chips);
+    }
+
+    @CalledByNative
+    private void setAllChipsVisibleExcept(String identifier, boolean visible) {
+        mCoordinator.getBottomBarCoordinator()
+                .getActionsCarouselCoordinator()
+                .setAllChipsVisibleExcept(identifier, visible);
     }
 
     private void setHeaderChip(List<AssistantChip> chips) {
@@ -376,6 +384,13 @@ class AutofillAssistantUiController {
         }
     }
 
+    private void safeNativeOnKeyboardVisibilityChanged(boolean visible) {
+        if (mNativeUiController != 0) {
+            AutofillAssistantUiControllerJni.get().onKeyboardVisibilityChanged(
+                    mNativeUiController, AutofillAssistantUiController.this, visible);
+        }
+    }
+
     private void safeNativeSetVisible(boolean visible) {
         if (mNativeUiController != 0) {
             AutofillAssistantUiControllerJni.get().setVisible(
@@ -397,6 +412,8 @@ class AutofillAssistantUiController {
                 long nativeUiControllerAndroid, AutofillAssistantUiController caller, int index);
         void onCloseButtonClicked(
                 long nativeUiControllerAndroid, AutofillAssistantUiController caller);
+        void onKeyboardVisibilityChanged(long nativeUiControllerAndroid,
+                AutofillAssistantUiController caller, boolean visible);
         void setVisible(long nativeUiControllerAndroid, AutofillAssistantUiController caller,
                 boolean visible);
     }

@@ -570,7 +570,8 @@ void PasswordFormManager::OnFetchCompleted() {
   }
 
   client_->UpdateCredentialCache(observed_form_.url.GetOrigin(),
-                                 form_fetcher_->GetBestMatches());
+                                 form_fetcher_->GetBestMatches(),
+                                 form_fetcher_->IsBlacklisted());
 
   if (is_submitted_)
     CreatePendingCredentials();

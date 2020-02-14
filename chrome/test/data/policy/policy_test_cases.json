@@ -516,6 +516,16 @@
     ]
   },
 
+  "AllowNativeNotifications" : {
+    "os": ["linux"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "AllowNativeNotifications": true },
+        "prefs": { "native_notifications.allowed": {} }
+      }
+    ]
+  },
+
   "NativePrinters": {
     "os": ["chromeos"],
     "policy_pref_mapping_test": [

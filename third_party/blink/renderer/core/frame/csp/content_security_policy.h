@@ -73,7 +73,7 @@ class SecurityPolicyViolationEventInit;
 class SourceLocation;
 enum class ResourceType : uint8_t;
 
-using SandboxFlags = WebSandboxFlags;
+using SandboxFlags = mojom::blink::WebSandboxFlags;
 typedef HeapVector<Member<CSPDirectiveList>> CSPDirectiveListVector;
 typedef HeapVector<Member<ConsoleMessage>> ConsoleMessageVector;
 typedef std::pair<String, network::mojom::ContentSecurityPolicyType>

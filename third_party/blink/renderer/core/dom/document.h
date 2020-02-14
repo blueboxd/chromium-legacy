@@ -359,8 +359,8 @@ class CORE_EXPORT Document : public ContainerNode,
   const SecurityOrigin* GetSecurityOrigin() const;
   SecurityOrigin* GetMutableSecurityOrigin();
   ContentSecurityPolicy* GetContentSecurityPolicy() const;
-  WebSandboxFlags GetSandboxFlags() const;
-  bool IsSandboxed(WebSandboxFlags mask) const;
+  mojom::blink::WebSandboxFlags GetSandboxFlags() const;
+  bool IsSandboxed(mojom::blink::WebSandboxFlags mask) const;
   PublicURLManager& GetPublicURLManager();
   bool IsContextPaused() const;
   bool IsContextDestroyed() const;

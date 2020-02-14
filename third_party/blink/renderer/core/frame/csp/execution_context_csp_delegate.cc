@@ -60,7 +60,7 @@ void ExecutionContextCSPDelegate::SetSandboxFlags(SandboxFlags mask) {
   // already been set on the security context. Meta tags can't set them
   // and we should have already constructed the document with the correct
   // sandbox flags from CSP already.
-  WebSandboxFlags flags = GetSecurityContext().GetSandboxFlags();
+  mojom::blink::WebSandboxFlags flags = GetSecurityContext().GetSandboxFlags();
   CHECK_EQ(flags | mask, flags);
 }
 

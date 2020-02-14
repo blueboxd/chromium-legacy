@@ -259,7 +259,8 @@ void WebRemoteFrameImpl::SetReplicatedOrigin(
                                   is_potentially_trustworthy_opaque_origin);
 }
 
-void WebRemoteFrameImpl::SetReplicatedSandboxFlags(WebSandboxFlags flags) {
+void WebRemoteFrameImpl::SetReplicatedSandboxFlags(
+    mojom::blink::WebSandboxFlags flags) {
   DCHECK(GetFrame());
   GetFrame()->SetReplicatedSandboxFlags(flags);
 }

@@ -137,7 +137,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
                              const FrameLoadRequest&,
                              const AtomicString&,
                              const WebWindowFeatures&,
-                             WebSandboxFlags,
+                             mojom::blink::WebSandboxFlags,
                              const FeaturePolicy::FeatureState&,
                              const SessionStorageNamespaceId&) override {
     return nullptr;

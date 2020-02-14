@@ -23,7 +23,6 @@ class Frame;
 class LocalFrame;
 class OriginTrialContext;
 class SecurityOrigin;
-enum class WebSandboxFlags;
 
 class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   STACK_ALLOCATED();
@@ -39,7 +38,9 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
     return security_origin_;
   }
 
-  WebSandboxFlags GetSandboxFlags() const { return sandbox_flags_; }
+  mojom::blink::WebSandboxFlags GetSandboxFlags() const {
+    return sandbox_flags_;
+  }
 
   ContentSecurityPolicy* GetCSP() const { return csp_; }
 
@@ -81,7 +82,8 @@ class CORE_EXPORT SecurityContextInit : public FeaturePolicyParserDelegate {
   void InitializeAgent(const DocumentInit&);
 
   scoped_refptr<SecurityOrigin> security_origin_;
-  WebSandboxFlags sandbox_flags_ = WebSandboxFlags::kNone;
+  mojom::blink::WebSandboxFlags sandbox_flags_ =
+      mojom::blink::WebSandboxFlags::kNone;
   DocumentPolicy::FeatureState document_policy_;
   bool initialized_feature_policy_state_ = false;
   Vector<String> feature_policy_parse_messages_;

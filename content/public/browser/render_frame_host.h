@@ -402,7 +402,7 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // The effective flags include those which have been set by a
   // Content-Security-Policy header, in addition to those which are set by the
   // embedding frame.
-  virtual bool IsSandboxed(blink::WebSandboxFlags flags) = 0;
+  virtual bool IsSandboxed(blink::mojom::WebSandboxFlags flags) = 0;
 
   // Calls |FlushForTesting()| on Network Service and FrameNavigationControl
   // related interfaces to make sure all in-flight mojo messages have been

@@ -62,7 +62,6 @@
 #include "content/public/browser/browser_thread.h"
 
 class CustomThreadWatcher;
-class StartupTimeBomb;
 class ThreadWatcherList;
 
 namespace base {
@@ -394,7 +393,7 @@ class ThreadWatcherList {
 
   // This constructs the |ThreadWatcherList| singleton and starts watching
   // browser threads by calling StartWatching() on each browser thread that is
-  // watched. It disarms StartupTimeBomb.
+  // watched.
   static void InitializeAndStartWatching(
       uint32_t unresponsive_threshold,
       const CrashOnHangThreadMap& crash_on_hang_threads);
@@ -496,55 +495,10 @@ class WatchDogThread : public base::Thread {
   DISALLOW_COPY_AND_ASSIGN(WatchDogThread);
 };
 
-// StartupTimeBomb is disabled on Android, see https://crbug.com/366699.
-// NOTE: uncomment body of DisarmStartupTimeBomb() global function once
-//       StartupTimeBomb is enabled on Android.
 // ShutdownWatcherHelper is useless on Android because there is no shutdown,
 // Chrome is always killed one way or another (swiped away in the task
 // switcher, OOM-killed, etc.).
 #if !defined(OS_ANDROID)
-
-// This is a wrapper class for getting the crash dumps of the hangs during
-// startup.
-class StartupTimeBomb {
- public:
-  // This singleton is instantiated when the browser process is launched.
-  StartupTimeBomb();
-
-  // Destructor disarm's startup_watchdog_ (if it is arm'ed) so that alarm
-  // doesn't go off.
-  ~StartupTimeBomb();
-
-  // Constructs |startup_watchdog_| which spawns a thread and starts timer.
-  // |duration| specifies how long |startup_watchdog_| will wait before it
-  // calls alarm.
-  void Arm(const base::TimeDelta& duration);
-
-  // Disarms |startup_watchdog_| thread and then deletes it which stops the
-  // Watchdog thread.
-  void Disarm();
-
-  // Disarms |g_startup_timebomb_|.
-  static void DisarmStartupTimeBomb();
-
- private:
-  // Deletes the watchdog thread if it is joinable; otherwise it posts a delayed
-  // task to try again.
-  static void DeleteStartupWatchdog(const base::PlatformThreadId thread_id,
-                                    base::Watchdog* startup_watchdog);
-
-  // The singleton of this class.
-  static StartupTimeBomb* g_startup_timebomb_;
-
-  // Watches for hangs during startup until it is disarm'ed.
-  base::Watchdog* startup_watchdog_;
-
-  // The |thread_id_| on which this object is constructed.
-  const base::PlatformThreadId thread_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(StartupTimeBomb);
-};
-
 // This is a wrapper class for detecting hangs during shutdown.
 class ShutdownWatcherHelper {
  public:

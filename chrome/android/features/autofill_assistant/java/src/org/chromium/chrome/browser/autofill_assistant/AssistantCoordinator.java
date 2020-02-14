@@ -30,7 +30,8 @@ class AssistantCoordinator {
 
     AssistantCoordinator(ChromeActivity activity, BottomSheetController controller,
             TabObscuringHandler tabObscuringHandler,
-            @Nullable AssistantOverlayCoordinator overlayCoordinator) {
+            @Nullable AssistantOverlayCoordinator overlayCoordinator,
+            AssistantKeyboardCoordinator.Delegate keyboardCoordinatorDelegate) {
         mActivity = activity;
 
         if (overlayCoordinator != null) {
@@ -44,7 +45,8 @@ class AssistantCoordinator {
 
         mBottomBarCoordinator = new AssistantBottomBarCoordinator(
                 activity, mModel, controller, tabObscuringHandler);
-        mKeyboardCoordinator = new AssistantKeyboardCoordinator(activity, mModel);
+        mKeyboardCoordinator =
+                new AssistantKeyboardCoordinator(activity, mModel, keyboardCoordinatorDelegate);
 
         activity.getCompositorViewHolder().addCompositorViewResizer(mBottomBarCoordinator);
         mModel.setVisible(true);

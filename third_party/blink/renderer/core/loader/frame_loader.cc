@@ -178,7 +178,7 @@ ResourceRequest FrameLoader::ResourceRequestForReload(
 FrameLoader::FrameLoader(LocalFrame* frame)
     : frame_(frame),
       progress_tracker_(MakeGarbageCollected<ProgressTracker>(frame)),
-      forced_sandbox_flags_(WebSandboxFlags::kNone),
+      forced_sandbox_flags_(mojom::blink::WebSandboxFlags::kNone),
       dispatching_did_clear_window_object_in_main_world_(false),
       detached_(false),
       virtual_time_pauser_(
@@ -538,9 +538,9 @@ bool FrameLoader::AllowRequestForThisFrame(const FrameLoadRequest& request) {
     if (!javascript_url_is_allowed)
       return false;
 
-    if (frame_->Owner() &&
-        ((frame_->Owner()->GetFramePolicy().sandbox_flags &
-          WebSandboxFlags::kOrigin) != WebSandboxFlags::kNone))
+    if (frame_->Owner() && ((frame_->Owner()->GetFramePolicy().sandbox_flags &
+                             mojom::blink::WebSandboxFlags::kOrigin) !=
+                            mojom::blink::WebSandboxFlags::kNone))
       return false;
   }
 
@@ -1425,10 +1425,11 @@ bool FrameLoader::ShouldReuseDefaultView(
   // be considered when deciding whether to reuse it.
   // Spec:
   // https://html.spec.whatwg.org/C/#initialise-the-document-object
-  if ((csp && (csp->GetSandboxMask() & WebSandboxFlags::kOrigin) !=
-                  WebSandboxFlags::kNone) ||
-      ((EffectiveSandboxFlags() & WebSandboxFlags::kOrigin) !=
-       WebSandboxFlags::kNone)) {
+  if ((csp &&
+       (csp->GetSandboxMask() & mojom::blink::WebSandboxFlags::kOrigin) !=
+           mojom::blink::WebSandboxFlags::kNone) ||
+      ((EffectiveSandboxFlags() & mojom::blink::WebSandboxFlags::kOrigin) !=
+       mojom::blink::WebSandboxFlags::kNone)) {
     return false;
   }
 

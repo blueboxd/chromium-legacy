@@ -108,21 +108,17 @@ void ProducerClient::NewDataSourceAdded(
   new_registration.set_handles_incremental_state_clear(true);
 
   // Add categories to the DataSourceDescriptor.
-  protozero::ScatteredHeapBuffer buffer;
-  protozero::ScatteredStreamWriter stream(&buffer);
-  perfetto::protos::pbzero::TrackEventDescriptor proto;
-  proto.Reset(&stream);
-  buffer.set_writer(&stream);
-
   std::set<std::string> category_set;
   tracing::TracedProcessImpl::GetInstance()->GetCategories(&category_set);
+  protozero::HeapBuffered<perfetto::protos::pbzero::TrackEventDescriptor> proto;
   for (const std::string& s : category_set) {
-    proto.add_available_categories(s.c_str());
+    auto* cat = proto->add_available_categories();
+    cat->set_name(s);
+    if (s.find(TRACE_DISABLED_BY_DEFAULT("")) == 0) {
+      cat->add_tags("slow");
+    }
   }
-
-  auto raw_proto = buffer.StitchSlices();
-  std::string track_event_descriptor_raw(raw_proto.begin(), raw_proto.end());
-  new_registration.set_track_event_descriptor_raw(track_event_descriptor_raw);
+  new_registration.set_track_event_descriptor_raw(proto.SerializeAsString());
 
   producer_host_->RegisterDataSource(std::move(new_registration));
 }

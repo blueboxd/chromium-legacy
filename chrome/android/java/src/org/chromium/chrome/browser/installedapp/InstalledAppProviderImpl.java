@@ -11,6 +11,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
 import android.util.Pair;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.annotation.VisibleForTesting;
 import androidx.annotation.WorkerThread;
@@ -37,6 +38,8 @@ import org.chromium.webapk.lib.client.WebApkValidator;
 
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
+
 /**
  * Android implementation of the InstalledAppProvider service defined in
  * installed_app_provider.mojom
@@ -116,20 +119,22 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
                 int numTasks, Callback<Pair<ArrayList<RelatedApplication>, Integer>> callback) {
             mNumTasks = numTasks;
             mCallback = callback;
-            mInstalledApps = new ArrayList<RelatedApplication>();
+            mInstalledApps =
+                    new ArrayList<RelatedApplication>(Collections.nCopies(mNumTasks, null));
             mDelayMs = 0;
             if (mNumTasks == 0) {
                 mCallback.onResult(Pair.create(mInstalledApps, mDelayMs));
             }
         }
 
-        public void onResult(RelatedApplication app, int delayMs) {
+        public void onResult(@Nullable RelatedApplication app, int taskIdx, int delayMs) {
             assert mNumTasks > 0;
 
-            if (app != null) mInstalledApps.add(app);
+            if (app != null) mInstalledApps.add(taskIdx, app);
             mDelayMs += delayMs;
 
             if (--mNumTasks == 0) {
+                mInstalledApps.removeAll(Collections.singleton(null));
                 mCallback.onResult(Pair.create(mInstalledApps, mDelayMs));
             }
         }
@@ -153,22 +158,24 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
         // NOTE: A manual loop is used to take MAX_ALLOWED_RELATED_APPS into account.
         for (int i = 0; i < numTasks; i++) {
             RelatedApplication app = relatedApps[i];
+            int taskIdx = i;
+
             if (isInstantNativeApp(app)) {
                 PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
-                        () -> checkInstantApp(resultHolder, app, frameUrl));
+                        () -> checkInstantApp(resultHolder, taskIdx, app, frameUrl));
             } else if (isRegularNativeApp(app)) {
                 PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
-                        () -> checkPlayApp(resultHolder, app, frameUrl));
+                        () -> checkPlayApp(resultHolder, taskIdx, app, frameUrl));
             } else if (isWebApk(app) && app.url.equals(manifestUrl.url)) {
                 // The website wants to check whether its own WebAPK is installed.
                 PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
-                        () -> checkWebApkInstalled(resultHolder, app));
+                        () -> checkWebApkInstalled(resultHolder, taskIdx, app));
             } else if (isWebApk(app)) {
                 // The website wants to check whether another WebAPK is installed.
-                checkWebApk(resultHolder, app, manifestUrl);
+                checkWebApk(resultHolder, taskIdx, app, manifestUrl);
             } else {
                 // The app did not match any category.
-                resultHolder.onResult(null, 0);
+                resultHolder.onResult(null, taskIdx, 0);
             }
         }
     }
@@ -199,58 +206,62 @@ public class InstalledAppProviderImpl implements InstalledAppProvider {
     }
 
     @WorkerThread
-    private void checkInstantApp(ResultHolder resultHolder, RelatedApplication app, URI frameUrl) {
+    private void checkInstantApp(
+            ResultHolder resultHolder, int taskIdx, RelatedApplication app, URI frameUrl) {
         int delayMs = calculateDelayForPackageMs(app.id);
 
         if (!mInstantAppsHandler.isInstantAppAvailable(frameUrl.toString(),
                     INSTANT_APP_HOLDBACK_ID_STRING.equals(app.id),
                     true /* includeUserPrefersBrowser */)) {
-            delayThenRun(() -> resultHolder.onResult(null, delayMs), 0);
+            delayThenRun(() -> resultHolder.onResult(null, taskIdx, delayMs), 0);
             return;
         }
 
         setVersionInfo(app);
-        delayThenRun(() -> resultHolder.onResult(app, delayMs), 0);
+        delayThenRun(() -> resultHolder.onResult(app, taskIdx, delayMs), 0);
     }
 
     @WorkerThread
-    private void checkPlayApp(ResultHolder resultHolder, RelatedApplication app, URI frameUrl) {
+    private void checkPlayApp(
+            ResultHolder resultHolder, int taskIdx, RelatedApplication app, URI frameUrl) {
         int delayMs = calculateDelayForPackageMs(app.id);
 
         if (!isAppInstalledAndAssociatedWithOrigin(app.id, frameUrl, mPackageManagerDelegate)) {
-            delayThenRun(() -> resultHolder.onResult(null, delayMs), 0);
+            delayThenRun(() -> resultHolder.onResult(null, taskIdx, delayMs), 0);
             return;
         }
 
         setVersionInfo(app);
-        delayThenRun(() -> resultHolder.onResult(app, delayMs), 0);
+        delayThenRun(() -> resultHolder.onResult(app, taskIdx, delayMs), 0);
     }
 
     @WorkerThread
-    private void checkWebApkInstalled(ResultHolder resultHolder, RelatedApplication app) {
+    private void checkWebApkInstalled(
+            ResultHolder resultHolder, int taskIdx, RelatedApplication app) {
         int delayMs = calculateDelayForPackageMs(app.url);
 
         if (!isWebApkInstalled(app.url)) {
-            delayThenRun(() -> resultHolder.onResult(null, delayMs), 0);
+            delayThenRun(() -> resultHolder.onResult(null, taskIdx, delayMs), 0);
             return;
         }
 
         // TODO(crbug.com/1043970): Should we expose the package name and the
         // version?
-        delayThenRun(() -> resultHolder.onResult(app, delayMs), 0);
+        delayThenRun(() -> resultHolder.onResult(app, taskIdx, delayMs), 0);
     }
 
     @UiThread
-    private void checkWebApk(ResultHolder resultHolder, RelatedApplication app, Url manifestUrl) {
+    private void checkWebApk(
+            ResultHolder resultHolder, int taskIdx, RelatedApplication app, Url manifestUrl) {
         int delayMs = calculateDelayForPackageMs(app.url);
 
         InstalledAppProviderImplJni.get().checkDigitalAssetLinksRelationshipForWebApk(
                 getProfile(), app.url, manifestUrl.url, (verified) -> {
                     if (verified) {
                         PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK,
-                                () -> checkWebApkInstalled(resultHolder, app));
+                                () -> checkWebApkInstalled(resultHolder, taskIdx, app));
                     } else {
-                        resultHolder.onResult(null, delayMs);
+                        resultHolder.onResult(null, taskIdx, delayMs);
                     }
                 });
     }

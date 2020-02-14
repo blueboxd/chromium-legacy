@@ -99,7 +99,6 @@ class HistogramSynchronizer;
 class KeyStorageLinux;
 class NativeBackendKWallet;
 class NativeDesktopMediaList;
-class StartupTimeBomb;
 
 namespace android_webview {
 class AwFormDatabaseService;
@@ -471,7 +470,6 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class ::BrowserProcessImpl;  // http://crbug.com/125207
   friend class ::KeyStorageLinux;
   friend class ::NativeDesktopMediaList;
-  friend class ::StartupTimeBomb;
   friend class android::JavaHandlerThread;
   friend class android_webview::
       AwFormDatabaseService;  // http://crbug.com/904431

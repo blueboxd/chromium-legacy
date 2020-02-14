@@ -88,7 +88,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
       const ParsedFeaturePolicy& parsed_header,
       const FeaturePolicy::FeatureState&);
 
-  void SetReplicatedSandboxFlags(WebSandboxFlags);
+  void SetReplicatedSandboxFlags(mojom::blink::WebSandboxFlags);
   void SetInsecureRequestPolicy(WebInsecureRequestPolicy);
   void SetInsecureNavigationsSet(const WebVector<unsigned>&);
 
@@ -125,7 +125,7 @@ class CORE_EXPORT RemoteFrame final : public Frame,
   void IntrinsicSizingInfoOfChildChanged(
       mojom::blink::IntrinsicSizingInfoPtr sizing_info) override;
   void DidSetFramePolicyHeaders(
-      WebSandboxFlags,
+      mojom::blink::WebSandboxFlags,
       const WTF::Vector<ParsedFeaturePolicyDeclaration>&) override;
 
   void SetMainFrameViewportSize(const IntSize&) override;

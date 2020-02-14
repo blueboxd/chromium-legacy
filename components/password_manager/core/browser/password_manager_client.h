@@ -202,7 +202,8 @@ class PasswordManagerClient {
   // Currently only implemented on Android.
   virtual void UpdateCredentialCache(
       const GURL& origin,
-      const std::vector<const autofill::PasswordForm*>& best_matches);
+      const std::vector<const autofill::PasswordForm*>& best_matches,
+      bool is_blacklisted);
 
   // Called when a password is saved in an automated fashion. Embedder may
   // inform the user that this save has occurred.

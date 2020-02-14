@@ -72,6 +72,16 @@ std::ostream& operator<<(std::ostream& os, const UiCredential& credential);
 // credentials without creating unnecessary copies.
 class OriginCredentialStore {
  public:
+  enum class BlacklistedStatus {
+    // The origin was not blacklisted at the moment this store was initialized.
+    kNeverBlacklisted,
+    // The origin was blacklisted when the store was initialized, but it isn't
+    // currently blacklisted.
+    kWasBlacklisted,
+    // The origin is currently blacklisted.
+    kIsBlacklisted
+  };
+
   explicit OriginCredentialStore(url::Origin origin);
   OriginCredentialStore(const OriginCredentialStore&) = delete;
   OriginCredentialStore& operator=(const OriginCredentialStore&) = delete;
@@ -83,6 +93,17 @@ class OriginCredentialStore {
   // Returns references to the held credentials (or an empty set if aren't any).
   base::span<const UiCredential> GetCredentials() const;
 
+  // Initializes the blacklisted status with either |kNeverBlacklisted|
+  // or |kIsBlacklisted|.
+  void InitializeBlacklistedStatus(bool is_blacklisted);
+
+  // Updates the blacklsited status as a result of a use action. The status
+  // can only change from |kWasBlacklsited| to |kIsBlacklisted| or vice-versa.
+  void UpdateBlacklistedStatus(bool is_blacklisted);
+
+  // Returns the blacklsited status for |origin_|.
+  BlacklistedStatus GetBlacklistedStatus() const;
+
   // Removes all credentials from the store.
   void ClearCredentials();
 
@@ -92,6 +113,11 @@ class OriginCredentialStore {
  private:
   // Contains all previously stored of credentials.
   std::vector<UiCredential> credentials_;
+
+  // The blacklisted status for |origin_|.
+  // Used to know whether unblacklisting UI needs to be displayed and what
+  // state it should display;
+  BlacklistedStatus blacklisted_status_ = BlacklistedStatus::kNeverBlacklisted;
 
   // The origin which all stored passwords are related to.
   const url::Origin origin_;

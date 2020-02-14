@@ -731,7 +731,7 @@ void LocalDOMWindow::alert(ScriptState* script_state, const String& message) {
   if (!GetFrame())
     return;
 
-  if (document()->IsSandboxed(WebSandboxFlags::kModals)) {
+  if (document()->IsSandboxed(mojom::blink::WebSandboxFlags::kModals)) {
     UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
     GetFrameConsole()->AddMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
@@ -764,7 +764,7 @@ bool LocalDOMWindow::confirm(ScriptState* script_state, const String& message) {
   if (!GetFrame())
     return false;
 
-  if (document()->IsSandboxed(WebSandboxFlags::kModals)) {
+  if (document()->IsSandboxed(mojom::blink::WebSandboxFlags::kModals)) {
     UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
     GetFrameConsole()->AddMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,
@@ -799,7 +799,7 @@ String LocalDOMWindow::prompt(ScriptState* script_state,
   if (!GetFrame())
     return String();
 
-  if (document()->IsSandboxed(WebSandboxFlags::kModals)) {
+  if (document()->IsSandboxed(mojom::blink::WebSandboxFlags::kModals)) {
     UseCounter::Count(document(), WebFeature::kDialogInSandboxedContext);
     GetFrameConsole()->AddMessage(MakeGarbageCollected<ConsoleMessage>(
         mojom::ConsoleMessageSource::kSecurity,

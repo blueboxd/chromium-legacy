@@ -159,7 +159,7 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
       bool same_document);
 
   // Send a message with the sandbox flags and feature policy
-  void SendFramePolicy(blink::WebSandboxFlags sandbox_flags,
+  void SendFramePolicy(blink::mojom::WebSandboxFlags sandbox_flags,
                        const blink::ParsedFeaturePolicy& fp_header,
                        const blink::DocumentPolicy::FeatureState& dp_header);
 

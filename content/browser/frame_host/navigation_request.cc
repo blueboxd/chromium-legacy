@@ -1769,7 +1769,7 @@ void NavigationRequest::OnResponseStarted(
     if (response_head_->cross_origin_opener_policy !=
             network::mojom::CrossOriginOpenerPolicy::kUnsafeNone &&
         (frame_tree_node_->pending_frame_policy().sandbox_flags !=
-         blink::WebSandboxFlags::kNone)) {
+         blink::mojom::WebSandboxFlags::kNone)) {
       OnRequestFailedInternal(
           network::URLLoaderCompletionStatus(net::ERR_FAILED),
           false /* skip_throttles */, base::nullopt /* error_page_content */,
@@ -2159,7 +2159,8 @@ void NavigationRequest::OnStartChecksComplete(
   // for this frame.
   bool can_create_service_worker =
       (frame_tree_node_->pending_frame_policy().sandbox_flags &
-       blink::WebSandboxFlags::kOrigin) != blink::WebSandboxFlags::kOrigin;
+       blink::mojom::WebSandboxFlags::kOrigin) !=
+      blink::mojom::WebSandboxFlags::kOrigin;
   if (can_create_service_worker) {
     ServiceWorkerContextWrapper* service_worker_context =
         static_cast<ServiceWorkerContextWrapper*>(

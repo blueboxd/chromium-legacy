@@ -60,7 +60,8 @@ PresentationRequest* PresentationRequest::Create(
     const Vector<String>& urls,
     ExceptionState& exception_state) {
   if (Document::From(execution_context)
-          ->IsSandboxed(WebSandboxFlags::kPresentationController)) {
+          ->IsSandboxed(
+              mojom::blink::WebSandboxFlags::kPresentationController)) {
     exception_state.ThrowSecurityError(
         "The document is sandboxed and lacks the 'allow-presentation' flag.");
     return nullptr;

@@ -102,9 +102,7 @@ void SessionDataDeleter::Run(
 
     // If the feature policy feature is enabled, delete the client hint
     // preferences
-    if (base::FeatureList::IsEnabled(features::kFeaturePolicyForClientHints) ||
-        base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableExperimentalWebPlatformFeatures)) {
+    if (base::FeatureList::IsEnabled(features::kFeaturePolicyForClientHints)) {
       host_content_settings_map->ClearSettingsForOneType(
           ContentSettingsType::CLIENT_HINTS);
     }

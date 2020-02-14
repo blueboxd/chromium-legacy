@@ -239,7 +239,8 @@ class CORE_EXPORT WebLocalFrameImpl final
       const WebVector<WebString>& words) override;
   void SetContentSettingsClient(WebContentSettingsClient*) override;
   void ReloadImage(const WebNode&) override;
-  WebSandboxFlags EffectiveSandboxFlagsForTesting() const override;
+  mojom::blink::WebSandboxFlags EffectiveSandboxFlagsForTesting()
+      const override;
   bool IsAllowedToDownload() const override;
   bool FindForTesting(int identifier,
                       const WebString& search_text,
@@ -329,7 +330,8 @@ class CORE_EXPORT WebLocalFrameImpl final
       FrameOwner*,
       const AtomicString& name,
       WindowAgentFactory*,
-      WebSandboxFlags sandbox_flags = WebSandboxFlags::kNone,
+      mojom::blink::WebSandboxFlags sandbox_flags =
+          mojom::blink::WebSandboxFlags::kNone,
       const FeaturePolicy::FeatureState& opener_feature_state =
           FeaturePolicy::FeatureState());
   LocalFrame* GetFrame() const { return frame_.Get(); }
@@ -343,7 +345,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                                             InterfaceRegistry*,
                                             WebFrame* opener,
                                             const WebString& name,
-                                            WebSandboxFlags,
+                                            mojom::blink::WebSandboxFlags,
                                             const FeaturePolicy::FeatureState&);
   static WebLocalFrameImpl* CreateProvisional(WebLocalFrameClient*,
                                               InterfaceRegistry*,

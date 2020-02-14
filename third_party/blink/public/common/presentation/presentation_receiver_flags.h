@@ -38,9 +38,9 @@ namespace blink {
 // Disable popups, modals, and top-level navigation for presentation receivers.
 // See:
 // https://w3c.github.io/presentation-api/#creating-a-receiving-browsing-context
-constexpr WebSandboxFlags kPresentationReceiverSandboxFlags =
-    WebSandboxFlags::kPopups | WebSandboxFlags::kModals |
-    WebSandboxFlags::kTopNavigation;
+constexpr mojom::WebSandboxFlags kPresentationReceiverSandboxFlags =
+    mojom::WebSandboxFlags::kPopups | mojom::WebSandboxFlags::kModals |
+    mojom::WebSandboxFlags::kTopNavigation;
 
 }  // namespace blink
 

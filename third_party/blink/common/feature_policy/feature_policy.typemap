@@ -13,5 +13,4 @@ traits_headers = [
 ]
 type_mappings = [
   "blink.mojom.ParsedFeaturePolicyDeclaration=::blink::ParsedFeaturePolicyDeclaration",
-  "blink.mojom.WebSandboxFlags=::blink::WebSandboxFlags",
 ]

@@ -10,6 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/origin_credential_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,6 +24,7 @@ using url::Origin;
 
 using IsPublicSuffixMatch = UiCredential::IsPublicSuffixMatch;
 using IsAffiliationBasedMatch = UiCredential::IsAffiliationBasedMatch;
+using IsOriginBlacklisted = CredentialCache::IsOriginBlacklisted;
 
 constexpr char kExampleSite[] = "https://example.com/";
 constexpr char kExampleSite2[] = "https://example.two.com/";
@@ -61,7 +63,7 @@ TEST_F(CredentialCacheTest, ReturnsSameStoreForSameOriginOnly) {
 
 TEST_F(CredentialCacheTest, StoresCredentialsSortedByAplhabetAndOrigins) {
   Origin origin = Origin::Create(GURL(kExampleSite));
-  cache()->SaveCredentialsForOrigin(
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
       {CreateEntry("Berta", "30948", GURL(kExampleSite), false, false).get(),
        CreateEntry("Adam", "Pas83B", GURL(kExampleSite), false, false).get(),
        CreateEntry("Dora", "PakudC", GURL(kExampleSite), false, false).get(),
@@ -76,7 +78,7 @@ TEST_F(CredentialCacheTest, StoresCredentialsSortedByAplhabetAndOrigins) {
            .get(),
        CreateEntry("Alf", "R4nd50m", GURL(kExampleSiteMobile), true, false)
            .get()},
-      origin);
+      IsOriginBlacklisted(false), origin);
 
   EXPECT_THAT(
       cache()->GetCredentialStore(origin).GetCredentials(),
@@ -110,12 +112,12 @@ TEST_F(CredentialCacheTest, StoredCredentialsForIndependentOrigins) {
   Origin origin = Origin::Create(GURL(kExampleSite));
   Origin origin2 = Origin::Create(GURL(kExampleSite2));
 
-  cache()->SaveCredentialsForOrigin(
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
       {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
-      origin);
-  cache()->SaveCredentialsForOrigin(
+      IsOriginBlacklisted(false), origin);
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
       {CreateEntry("Abe", "B4dPW", GURL(kExampleSite2), false, false).get()},
-      origin2);
+      IsOriginBlacklisted(false), origin2);
 
   EXPECT_THAT(cache()->GetCredentialStore(origin).GetCredentials(),
               testing::ElementsAre(MakeUiCredential("Ben", "S3cur3")));
@@ -126,14 +128,23 @@ TEST_F(CredentialCacheTest, StoredCredentialsForIndependentOrigins) {
 
 TEST_F(CredentialCacheTest, ClearsCredentials) {
   Origin origin = Origin::Create(GURL(kExampleSite));
-  cache()->SaveCredentialsForOrigin(
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
       {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
-      Origin::Create(GURL(kExampleSite)));
+      IsOriginBlacklisted(false), Origin::Create(GURL(kExampleSite)));
   ASSERT_THAT(cache()->GetCredentialStore(origin).GetCredentials(),
               testing::ElementsAre(MakeUiCredential("Ben", "S3cur3")));
 
   cache()->ClearCredentials();
   EXPECT_EQ(cache()->GetCredentialStore(origin).GetCredentials().size(), 0u);
+}
+
+TEST_F(CredentialCacheTest, StoresBlacklistedWithCredentials) {
+  Origin origin = Origin::Create(GURL(kExampleSite));
+  cache()->SaveCredentialsAndBlacklistedForOrigin(
+      {CreateEntry("Ben", "S3cur3", GURL(kExampleSite), false, false).get()},
+      IsOriginBlacklisted(true), Origin::Create(GURL(kExampleSite)));
+  EXPECT_EQ(OriginCredentialStore::BlacklistedStatus::kIsBlacklisted,
+            cache()->GetCredentialStore(origin).GetBlacklistedStatus());
 }
 
 }  // namespace password_manager

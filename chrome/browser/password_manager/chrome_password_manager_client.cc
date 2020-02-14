@@ -128,6 +128,10 @@
 #include "extensions/common/constants.h"
 #endif
 
+#if defined(OS_ANDROID)
+using password_manager::CredentialCache;
+#endif
+
 using autofill::PasswordForm;
 using autofill::mojom::FocusedFieldType;
 using password_manager::BadMessageReason;
@@ -508,10 +512,13 @@ void ChromePasswordManagerClient::AutomaticPasswordSave(
 
 void ChromePasswordManagerClient::UpdateCredentialCache(
     const GURL& origin,
-    const std::vector<const autofill::PasswordForm*>& best_matches) {
+    const std::vector<const autofill::PasswordForm*>& best_matches,
+    bool is_blacklisted) {
 #if defined(OS_ANDROID)
-  credential_cache_.SaveCredentialsForOrigin(best_matches,
-                                             url::Origin::Create(origin));
+  credential_cache_.SaveCredentialsAndBlacklistedForOrigin(
+      best_matches, CredentialCache::IsOriginBlacklisted(is_blacklisted),
+      url::Origin::Create(origin));
+
 #endif
 }
 

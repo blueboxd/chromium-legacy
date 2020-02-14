@@ -6570,3 +6570,6 @@ crbug.com/1025274 http/tests/security/mixedContent/insecure-audio-video-in-main-
 #Mixed content autoupgrade tests that can be re-enabled once image autoupgrades launch
 crbug.com/1042877 virtual/autoupgrade-optionally-blockable-mixed-content/http/tests/mixed-autoupgrade/optionally/image-upgrade-console-message.https.html [ Failure ]
 crbug.com/1042877 virtual/autoupgrade-optionally-blockable-mixed-content/http/tests/mixed-autoupgrade/optionally/image-upgrade.https.html [ Failure ]
+
+# DevTools roll
+crbug.com/1006759 http/tests/devtools/profiler/agents-disabled-check.js [ Skip ]

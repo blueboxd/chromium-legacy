@@ -148,7 +148,8 @@ void RemoteFrame::Navigate(FrameLoadRequest& frame_request,
     is_opener_navigation = frame->Client()->Opener() == this;
     initiator_frame_has_download_sandbox_flag =
         frame->GetSecurityContext() &&
-        frame->GetSecurityContext()->IsSandboxed(WebSandboxFlags::kDownloads);
+        frame->GetSecurityContext()->IsSandboxed(
+            mojom::blink::WebSandboxFlags::kDownloads);
     initiator_frame_is_ad = frame->IsAdSubframe();
     if (frame_request.ClientRedirectReason() != ClientNavigationReason::kNone) {
       probe::FrameRequestedNavigation(frame, this, url,
@@ -319,7 +320,8 @@ void RemoteFrame::SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
   ApplyReplicatedFeaturePolicyHeader();
 }
 
-void RemoteFrame::SetReplicatedSandboxFlags(WebSandboxFlags flags) {
+void RemoteFrame::SetReplicatedSandboxFlags(
+    mojom::blink::WebSandboxFlags flags) {
   security_context_.ResetAndEnforceSandboxFlags(flags);
 }
 
@@ -549,7 +551,7 @@ void RemoteFrame::IntrinsicSizingInfoOfChildChanged(
 // ensure that sandbox flags and feature policy are inherited properly if this
 // proxy ever parents a local frame.
 void RemoteFrame::DidSetFramePolicyHeaders(
-    WebSandboxFlags sandbox_flags,
+    mojom::blink::WebSandboxFlags sandbox_flags,
     const Vector<ParsedFeaturePolicyDeclaration>& parsed_feature_policy) {
   SetReplicatedSandboxFlags(sandbox_flags);
   // Convert from WTF::Vector<ParsedFeaturePolicyDeclaration>

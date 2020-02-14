@@ -18,7 +18,7 @@ class CORE_EXPORT RemoteSecurityContext final : public SecurityContext {
 
   void SetReplicatedOrigin(scoped_refptr<SecurityOrigin>);
   void ResetReplicatedContentSecurityPolicy();
-  void ResetAndEnforceSandboxFlags(WebSandboxFlags flags);
+  void ResetAndEnforceSandboxFlags(mojom::blink::WebSandboxFlags flags);
 
   // Constructs the enforcement FeaturePolicy struct for this security context.
   // The resulting FeaturePolicy is a combination of:

@@ -159,7 +159,7 @@ ScriptPromise ScreenOrientation::lock(ScriptState* state,
     return ScriptPromise();
   }
 
-  if (document->IsSandboxed(WebSandboxFlags::kOrientationLock)) {
+  if (document->IsSandboxed(mojom::blink::WebSandboxFlags::kOrientationLock)) {
     exception_state.ThrowSecurityError(
         "The document is sandboxed and lacks the "
         "'allow-orientation-lock' flag.");

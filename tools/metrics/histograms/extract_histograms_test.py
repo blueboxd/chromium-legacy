@@ -11,13 +11,13 @@ import extract_histograms
 TEST_SUFFIX_OBSOLETION_XML_CONTENT = """
 <histogram-configuration>
 <histograms>
-  <histogram name="Test.Test1" units="units">
+  <histogram name="Test.Test1" units="units" expires_after="2019-01-01">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Sample description.
     </summary>
   </histogram>
-  <histogram name="Test.Test2" units="units">
+  <histogram name="Test.Test2" units="units" expires_after="2019-01-01">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Sample description.
@@ -65,13 +65,14 @@ TEST_BASE_HISTOGRAM_XML_CONTENT = """
 <histogram-configuration>
 <histograms>
   <histogram base="true" name="Test.Base" expires_after="2211-11-22"
-      units="units">
+      units="units" expires_after="2019-01-01">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Base histogram.
     </summary>
   </histogram>
-  <histogram base="true" name="Test.Base.Obsolete" units="units">
+  <histogram base="true" name="Test.Base.Obsolete" units="units"
+      expires_after="2019-01-01">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Obsolete base histogram.
@@ -80,13 +81,15 @@ TEST_BASE_HISTOGRAM_XML_CONTENT = """
       The whole related set of histograms is obsolete!
     </obsolete>
   </histogram>
-  <histogram base="false" name="Test.NotBase.Explicit" units="units" >
+  <histogram base="false" name="Test.NotBase.Explicit" units="units"
+      expires_after="2019-01-01">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Not a base histogram: base attribute explicitly set to "false".
     </summary>
   </histogram>
-  <histogram name="Test.NotBase.Implicit" expires_after="M100" units="units" >
+  <histogram name="Test.NotBase.Implicit" expires_after="M100" units="units"
+      expires_after="2019-01-01">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Not a base histogram: no base attribute specified.
@@ -190,7 +193,7 @@ class ExtractHistogramsTest(unittest.TestCase):
 
 <histograms>
 
-<histogram name="Histogram.Name"{} units="units" >
+<histogram name="Histogram.Name" units="units" {}>
   <owner>SomeOne@google.com</owner>
   <summary>Summary</summary>
 </histogram>
@@ -200,37 +203,37 @@ class ExtractHistogramsTest(unittest.TestCase):
 </histogram-configuration>
 """
     chrome_histogram_correct_expiry_date = chrome_histogram_pattern.format(
-        ' expires_after="2211-11-22"')
+        'expires_after="2211-11-22"')
     _, had_errors = extract_histograms.ExtractHistogramsFromDom(
         xml.dom.minidom.parseString(chrome_histogram_correct_expiry_date))
     self.assertFalse(had_errors)
 
     chrome_histogram_wrong_expiry_date_format = chrome_histogram_pattern.format(
-        ' expires_after="2211/11/22"')
+        'expires_after="2211/11/22"')
     _, had_errors = extract_histograms.ExtractHistogramsFromDom(
         xml.dom.minidom.parseString(chrome_histogram_wrong_expiry_date_format))
     self.assertTrue(had_errors)
 
     chrome_histogram_wrong_expiry_date_value = chrome_histogram_pattern.format(
-        ' expires_after="2211-22-11"')
+        'expires_after="2211-22-11"')
     _, had_errors = extract_histograms.ExtractHistogramsFromDom(
         xml.dom.minidom.parseString(chrome_histogram_wrong_expiry_date_value))
     self.assertTrue(had_errors)
 
     chrome_histogram_correct_expiry_milestone = chrome_histogram_pattern.format(
-        ' expires_after="M22"')
+        'expires_after="M22"')
     _, had_errors = extract_histograms.ExtractHistogramsFromDom(
         xml.dom.minidom.parseString(chrome_histogram_correct_expiry_milestone))
     self.assertFalse(had_errors)
 
     chrome_histogram_wrong_expiry_milestone = chrome_histogram_pattern.format(
-        ' expires_after="22"')
+        'expires_after="22"')
     _, had_errors = extract_histograms.ExtractHistogramsFromDom(
         xml.dom.minidom.parseString(chrome_histogram_wrong_expiry_milestone))
     self.assertTrue(had_errors)
 
     chrome_histogram_wrong_expiry_milestone = chrome_histogram_pattern.format(
-        ' expires_after="MM22"')
+        'expires_after="MM22"')
     _, had_errors = extract_histograms.ExtractHistogramsFromDom(
         xml.dom.minidom.parseString(chrome_histogram_wrong_expiry_milestone))
     self.assertTrue(had_errors)
@@ -238,14 +241,14 @@ class ExtractHistogramsTest(unittest.TestCase):
     chrome_histogram_no_expiry = chrome_histogram_pattern.format('')
     _, had_errors = extract_histograms.ExtractHistogramsFromDom(
         xml.dom.minidom.parseString(chrome_histogram_no_expiry))
-    self.assertFalse(had_errors)
+    self.assertTrue(had_errors)
 
   def testExpiryDateExtraction(self):
     chrome_histogram_pattern = """<histogram-configuration>
 
 <histograms>
 
-<histogram name="Histogram.Name"{} units="units">
+<histogram name="Histogram.Name" units="units" {}>
   <owner>SomeOne@google.com</owner>
   <summary>Summary</summary>
 </histogram>
@@ -256,7 +259,7 @@ class ExtractHistogramsTest(unittest.TestCase):
 """
     date_str = '2211-11-22'
     chrome_histogram_correct_expiry_date = chrome_histogram_pattern.format(
-        ' expires_after="{}"'.format(date_str))
+        'expires_after="{}"'.format(date_str))
     histograms, _ = extract_histograms.ExtractHistogramsFromDom(
         xml.dom.minidom.parseString(chrome_histogram_correct_expiry_date))
     histogram_content = histograms['Histogram.Name']
@@ -265,7 +268,7 @@ class ExtractHistogramsTest(unittest.TestCase):
 
     milestone_str = 'M22'
     chrome_histogram_correct_expiry_milestone = chrome_histogram_pattern.format(
-        ' expires_after="{}"'.format(milestone_str))
+        'expires_after="{}"'.format(milestone_str))
     histograms, _ = extract_histograms.ExtractHistogramsFromDom(
         xml.dom.minidom.parseString(chrome_histogram_correct_expiry_milestone))
     histogram_content = histograms['Histogram.Name']
@@ -282,7 +285,8 @@ class ExtractHistogramsTest(unittest.TestCase):
     multiple_paragraph_pattern = xml.dom.minidom.parseString("""
 <histogram-configuration>
 <histograms>
-  <histogram name="MultiParagraphTest.Test1" units="units">
+  <histogram name="MultiParagraphTest.Test1" units="units"
+      expires_after="2019-01-01">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Sample description
@@ -290,7 +294,8 @@ class ExtractHistogramsTest(unittest.TestCase):
     </summary>
   </histogram>
 
-  <histogram name="MultiParagraphTest.Test2" units="units">
+  <histogram name="MultiParagraphTest.Test2" units="units"
+      expires_after="2019-01-01">
     <owner>chrome-metrics-team@google.com</owner>
     <summary>
       Multi-paragraph sample description UI&gt;Browser.
@@ -319,7 +324,7 @@ class ExtractHistogramsTest(unittest.TestCase):
     histogram_without_summary = xml.dom.minidom.parseString("""
 <histogram-configuration>
 <histograms>
- <histogram name="Test.Histogram" units="things">
+ <histogram name="Test.Histogram" units="things" expires_after="2019-01-01">
    <owner>person@chromium.org</owner>
  </histogram>
 </histograms>
@@ -333,7 +338,7 @@ class ExtractHistogramsTest(unittest.TestCase):
     histogram_without_enum_or_unit = xml.dom.minidom.parseString("""
 <histogram-configuration>
 <histograms>
- <histogram name="Test.Histogram">
+ <histogram name="Test.Histogram" expires_after="2019-01-01">
   <owner>chrome-metrics-team@google.com</owner>
   <summary> This is a summary </summary>
  </histogram>
@@ -348,7 +353,8 @@ class ExtractHistogramsTest(unittest.TestCase):
     histogram_with_enum_and_unit = xml.dom.minidom.parseString("""
 <histogram-configuration>
 <histograms>
- <histogram name="Test.Histogram" enum="MyEnumType" unit="things">
+ <histogram name="Test.Histogram" enum="MyEnumType" unit="things"
+    expires_after="2019-01-01">
   <owner>chrome-metrics-team@google.com</owner>
   <summary> This is a summary </summary>
  </histogram>
@@ -371,7 +377,8 @@ class ExtractHistogramsTest(unittest.TestCase):
 </enums>
 
 <histograms>
- <histogram name="Test.Histogram.Enum" enum="MyEnumType">
+ <histogram name="Test.Histogram.Enum" enum="MyEnumType"
+    expires_after="2019-01-01">
   <owner>chrome-metrics-team@google.com</owner>
   <summary> This is a summary </summary>
  </histogram>
@@ -386,7 +393,7 @@ class ExtractHistogramsTest(unittest.TestCase):
     histogram_with_units = xml.dom.minidom.parseString("""
 <histogram-configuration>
 <histograms>
- <histogram name="Test.Histogram" units="units">
+ <histogram name="Test.Histogram" units="units" expires_after="2019-01-01">
   <owner>chrome-metrics-team@google.com</owner>
   <summary> This is a summary </summary>
  </histogram>
@@ -401,7 +408,7 @@ class ExtractHistogramsTest(unittest.TestCase):
     histogram_with_empty_owner_tag = xml.dom.minidom.parseString("""
 <histogram-configuration>
 <histograms>
- <histogram name="Test.Histogram" units="things">
+ <histogram name="Test.Histogram" units="things" expires_after="2019-01-01">
   <owner></owner>
   <summary> This is a summary </summary>
  </histogram>
@@ -416,7 +423,7 @@ class ExtractHistogramsTest(unittest.TestCase):
     histogram_without_owner_tag = xml.dom.minidom.parseString("""
 <histogram-configuration>
 <histograms>
- <histogram name="Test.Histogram" units="things">
+ <histogram name="Test.Histogram" units="things" expires_after="2019-01-01">
   <summary> This is a summary </summary>
  </histogram>
 </histograms>
@@ -430,7 +437,7 @@ class ExtractHistogramsTest(unittest.TestCase):
     histogram_with_comma_separated_owners = xml.dom.minidom.parseString("""
 <histogram-configuration>
 <histograms>
- <histogram name="Test.Histogram" units="things">
+ <histogram name="Test.Histogram" units="things" expires_after="2019-01-01">
   <owner>cait@chromium.org, paul@chromium.org</owner>
   <summary> This is a summary </summary>
  </histogram>
@@ -445,7 +452,7 @@ class ExtractHistogramsTest(unittest.TestCase):
     histogram_with_invalid_owner = xml.dom.minidom.parseString("""
 <histogram-configuration>
 <histograms>
- <histogram name="Test.Histogram" units="things">
+ <histogram name="Test.Histogram" units="things" expires_after="2019-01-01">
   <owner>sarah</owner>
   <summary> This is a summary </summary>
  </histogram>
@@ -460,7 +467,7 @@ class ExtractHistogramsTest(unittest.TestCase):
     histogram_with_owner_placeholder = xml.dom.minidom.parseString("""
 <histogram-configuration>
 <histograms>
- <histogram name="Test.Histogram" units="things">
+ <histogram name="Test.Histogram" units="things" expires_after="2019-01-01">
   <owner> Please list the metric's owners. Add more owner tags as needed.
   </owner>
   <summary>
@@ -480,7 +487,7 @@ class ExtractHistogramsTest(unittest.TestCase):
     histogram_with_owner_placeholder = xml.dom.minidom.parseString("""
 <histogram-configuration>
 <histograms>
- <histogram name="Test.Histogram" units="things">
+ <histogram name="Test.Histogram" units="things" expires_after="2019-01-01">
   <owner> Please list the metric's owners. Add more owner tags as needed.
   </owner>
   <summary>This is a summary with &amp; and &quot; and &apos;</summary>

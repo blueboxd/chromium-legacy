@@ -1220,6 +1220,12 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     spellcheck::prefs::kSpellCheckUseSpellingService,
     base::Value::Type::BOOLEAN },
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  { key::kAllowNativeNotifications,
+    prefs::kAllowNativeNotifications,
+    base::Value::Type::BOOLEAN },
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 };
 // clang-format on
 

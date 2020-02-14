@@ -156,8 +156,6 @@ void ArcNotificationView::OnSettingsButtonPressed(const ui::Event& event) {
 }
 
 void ArcNotificationView::OnSnoozeButtonPressed(const ui::Event& event) {
-  MessageView::OnSnoozeButtonPressed(event);
-
   if (item_)
     return item_->OpenSnooze();
 }

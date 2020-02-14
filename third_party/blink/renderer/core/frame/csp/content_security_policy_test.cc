@@ -224,15 +224,15 @@ TEST_F(ContentSecurityPolicyTest, FrameAncestorsInMeta) {
 // delivered in <meta> elements.
 TEST_F(ContentSecurityPolicyTest, SandboxInMeta) {
   csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
-  EXPECT_EQ(WebSandboxFlags::kNone, csp->GetSandboxMask());
+  EXPECT_EQ(mojom::blink::WebSandboxFlags::kNone, csp->GetSandboxMask());
   csp->DidReceiveHeader("sandbox;", ContentSecurityPolicyType::kEnforce,
                         ContentSecurityPolicySource::kMeta);
-  EXPECT_EQ(WebSandboxFlags::kNone, csp->GetSandboxMask());
+  EXPECT_EQ(mojom::blink::WebSandboxFlags::kNone, csp->GetSandboxMask());
   execution_context->GetSecurityContext().ApplySandboxFlags(
-      WebSandboxFlags::kAll);
+      mojom::blink::WebSandboxFlags::kAll);
   csp->DidReceiveHeader("sandbox;", ContentSecurityPolicyType::kEnforce,
                         ContentSecurityPolicySource::kHTTP);
-  EXPECT_EQ(WebSandboxFlags::kAll, csp->GetSandboxMask());
+  EXPECT_EQ(mojom::blink::WebSandboxFlags::kAll, csp->GetSandboxMask());
 }
 
 // Tests that report-uri directives are discarded from policies
@@ -1622,7 +1622,7 @@ TEST_F(ContentSecurityPolicyTest, EmptyCSPIsNoOp) {
   EXPECT_EQ(kLeaveInsecureRequestsAlone, csp->GetInsecureRequestPolicy());
   EXPECT_FALSE(csp->HasHeaderDeliveredPolicy());
   EXPECT_FALSE(csp->SupportsWasmEval());
-  EXPECT_EQ(WebSandboxFlags::kNone, csp->GetSandboxMask());
+  EXPECT_EQ(mojom::blink::WebSandboxFlags::kNone, csp->GetSandboxMask());
   EXPECT_FALSE(csp->HasPolicyFromSource(ContentSecurityPolicySource::kHTTP));
 }
 

@@ -100,9 +100,13 @@ class CORE_EXPORT SecurityContext {
   // Like SetSecurityOrigin(), but no security CHECKs.
   void SetSecurityOriginForTesting(scoped_refptr<SecurityOrigin>);
 
-  WebSandboxFlags GetSandboxFlags() const { return sandbox_flags_; }
-  bool IsSandboxed(WebSandboxFlags mask) const;
-  void ApplySandboxFlags(WebSandboxFlags flags) { sandbox_flags_ |= flags; }
+  mojom::blink::WebSandboxFlags GetSandboxFlags() const {
+    return sandbox_flags_;
+  }
+  bool IsSandboxed(mojom::blink::WebSandboxFlags mask) const;
+  void ApplySandboxFlags(mojom::blink::WebSandboxFlags flags) {
+    sandbox_flags_ |= flags;
+  }
 
   void SetAddressSpace(network::mojom::IPAddressSpace space) {
     address_space_ = space;
@@ -164,7 +168,7 @@ class CORE_EXPORT SecurityContext {
       base::Optional<mojom::FeaturePolicyDisposition>* = nullptr) const;
 
  protected:
-  WebSandboxFlags sandbox_flags_;
+  mojom::blink::WebSandboxFlags sandbox_flags_;
   scoped_refptr<SecurityOrigin> security_origin_;
   std::unique_ptr<FeaturePolicy> feature_policy_;
   std::unique_ptr<FeaturePolicy> report_only_feature_policy_;

@@ -1671,7 +1671,7 @@ WebLocalFrame* WebLocalFrame::CreateMainFrame(
     InterfaceRegistry* interface_registry,
     WebFrame* opener,
     const WebString& name,
-    WebSandboxFlags sandbox_flags,
+    mojom::blink::WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state) {
   return WebLocalFrameImpl::CreateMainFrame(
       web_view, client, interface_registry, opener, name, sandbox_flags,
@@ -1693,7 +1693,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateMainFrame(
     InterfaceRegistry* interface_registry,
     WebFrame* opener,
     const WebString& name,
-    WebSandboxFlags sandbox_flags,
+    mojom::blink::WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state) {
   auto* frame = MakeGarbageCollected<WebLocalFrameImpl>(
       util::PassKey<WebLocalFrameImpl>(), WebTreeScopeType::kDocument, client,
@@ -1722,7 +1722,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::CreateProvisional(
   Frame* previous_frame = ToCoreFrame(*previous_web_frame);
   web_frame->SetParent(previous_web_frame->Parent());
   web_frame->SetOpener(previous_web_frame->Opener());
-  WebSandboxFlags sandbox_flags = WebSandboxFlags::kNone;
+  mojom::blink::WebSandboxFlags sandbox_flags =
+      mojom::blink::WebSandboxFlags::kNone;
   FeaturePolicy::FeatureState feature_state;
   if (!previous_frame->Owner()) {
     // Provisional main frames need to force sandbox flags.  This is necessary
@@ -1828,7 +1829,7 @@ void WebLocalFrameImpl::InitializeCoreFrame(
     FrameOwner* owner,
     const AtomicString& name,
     WindowAgentFactory* window_agent_factory,
-    WebSandboxFlags sandbox_flags,
+    mojom::blink::WebSandboxFlags sandbox_flags,
     const FeaturePolicy::FeatureState& opener_feature_state) {
   SetCoreFrame(MakeGarbageCollected<LocalFrame>(local_frame_client_.Get(), page,
                                                 owner, window_agent_factory,
@@ -2303,9 +2304,10 @@ void WebLocalFrameImpl::CopyImageAtForTesting(
   GetFrame()->CopyImageAtViewportPoint(IntPoint(pos_in_viewport));
 }
 
-WebSandboxFlags WebLocalFrameImpl::EffectiveSandboxFlagsForTesting() const {
+mojom::blink::WebSandboxFlags
+WebLocalFrameImpl::EffectiveSandboxFlagsForTesting() const {
   if (!GetFrame())
-    return WebSandboxFlags::kNone;
+    return mojom::blink::WebSandboxFlags::kNone;
   SandboxFlags flags = GetFrame()->Loader().EffectiveSandboxFlags();
   if (RuntimeEnabledFeatures::FeaturePolicyForSandboxEnabled()) {
     // When some of sandbox flags set in the 'sandbox' attribute are implemented
@@ -2323,7 +2325,7 @@ WebSandboxFlags WebLocalFrameImpl::EffectiveSandboxFlagsForTesting() const {
                    ->sandbox_flags_converted_to_feature_policies();
     }
   }
-  return static_cast<WebSandboxFlags>(flags);
+  return static_cast<mojom::blink::WebSandboxFlags>(flags);
 }
 
 bool WebLocalFrameImpl::IsAllowedToDownload() const {
@@ -2342,7 +2344,8 @@ bool WebLocalFrameImpl::IsAllowedToDownload() const {
            GetFrame()->Owner()->GetFramePolicy().allowed_to_download;
   }
   return (GetFrame()->Loader().PendingEffectiveSandboxFlags() &
-          WebSandboxFlags::kDownloads) == WebSandboxFlags::kNone;
+          mojom::blink::WebSandboxFlags::kDownloads) ==
+         mojom::blink::WebSandboxFlags::kNone;
 }
 
 void WebLocalFrameImpl::UsageCountChromeLoadTimes(const WebString& metric) {

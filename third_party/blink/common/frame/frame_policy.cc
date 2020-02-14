@@ -7,14 +7,14 @@
 namespace blink {
 
 FramePolicy::FramePolicy()
-    : sandbox_flags(WebSandboxFlags::kNone),
+    : sandbox_flags(mojom::WebSandboxFlags::kNone),
       container_policy({}),
       required_document_policy({}),
       allowed_to_download(true),
       disallow_document_access(false) {}
 
 FramePolicy::FramePolicy(
-    WebSandboxFlags sandbox_flags,
+    mojom::WebSandboxFlags sandbox_flags,
     const ParsedFeaturePolicy& container_policy,
     const DocumentPolicy::FeatureState& required_document_policy,
     bool allowed_to_download,

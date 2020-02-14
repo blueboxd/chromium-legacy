@@ -621,7 +621,8 @@ void LocalFrameClientImpl::BeginNavigation(
         frame->Client()->Opener() == ToCoreFrame(web_frame_);
     navigation_info->initiator_frame_has_download_sandbox_flag =
         frame->GetSecurityContext() &&
-        frame->GetSecurityContext()->IsSandboxed(WebSandboxFlags::kDownloads);
+        frame->GetSecurityContext()->IsSandboxed(
+            mojom::blink::WebSandboxFlags::kDownloads);
     navigation_info->initiator_frame_is_ad = frame->IsAdSubframe();
   }
 
@@ -954,13 +955,13 @@ void LocalFrameClientImpl::DidChangeFramePolicy(
 }
 
 void LocalFrameClientImpl::DidSetFramePolicyHeaders(
-    WebSandboxFlags sandbox_flags,
+    mojom::blink::WebSandboxFlags sandbox_flags,
     const ParsedFeaturePolicy& feature_policy_header,
     const DocumentPolicy::FeatureState& document_policy_header) {
   if (web_frame_->Client()) {
     web_frame_->Client()->DidSetFramePolicyHeaders(
-        static_cast<WebSandboxFlags>(sandbox_flags), feature_policy_header,
-        document_policy_header);
+        static_cast<mojom::blink::WebSandboxFlags>(sandbox_flags),
+        feature_policy_header, document_policy_header);
   }
 }
 

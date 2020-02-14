@@ -500,7 +500,6 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(
     browser_defaults::enable_help_app = false;
 
 #if !defined(OS_ANDROID)
-  startup_watcher_ = std::make_unique<StartupTimeBomb>();
   shutdown_watcher_ = std::make_unique<ShutdownWatcherHelper>();
 #endif  // !defined(OS_ANDROID)
 }
@@ -1709,9 +1708,6 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
   // Start watching for jank during shutdown. It gets disarmed when
   // |shutdown_watcher_| object is destructed.
   shutdown_watcher_->Arm(base::TimeDelta::FromSeconds(300));
-
-  // Disarm the startup hang detector time bomb if it is still Arm'ed.
-  startup_watcher_->Disarm();
 
   web_usb_detector_.reset();
 

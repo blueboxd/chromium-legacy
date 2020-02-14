@@ -94,7 +94,7 @@ class WebRemoteFrame : public WebFrame {
       bool is_potentially_trustworthy_opaque_origin) = 0;
 
   // Set sandbox flags replicated from another process.
-  virtual void SetReplicatedSandboxFlags(WebSandboxFlags) = 0;
+  virtual void SetReplicatedSandboxFlags(mojom::WebSandboxFlags) = 0;
 
   // Set frame |name| replicated from another process.
   virtual void SetReplicatedName(const WebString&) = 0;

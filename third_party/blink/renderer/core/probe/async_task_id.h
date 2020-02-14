@@ -14,6 +14,13 @@ namespace probe {
 // The core probes use this class as an identifier for an async task.
 class CORE_EXPORT AsyncTaskId {
  public:
+  AsyncTaskId() = default;
+
+  // Not copyable or movable, since the address of an AsyncTaskId is what's used
+  // to keep track of them.
+  AsyncTaskId(const AsyncTaskId&) = delete;
+  AsyncTaskId& operator=(const AsyncTaskId&) = delete;
+
   void SetAdTask() { ad_task_ = true; }
   bool IsAdTask() const { return ad_task_; }
 

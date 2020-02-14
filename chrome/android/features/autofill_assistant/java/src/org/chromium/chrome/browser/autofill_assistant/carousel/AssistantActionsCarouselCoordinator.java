@@ -109,6 +109,17 @@ public class AssistantActionsCarouselCoordinator {
         }
     }
 
+    /** Changes the visibility of all chips not matching the identifier **/
+    public void setAllChipsVisibleExcept(String identifier, boolean visible) {
+        ListModel<AssistantChip> chips = mModel.getChipsModel();
+        for (int i = 0; i < chips.size(); ++i) {
+            View view = mView.getLayoutManager().findViewByPosition(i);
+            if (view != null && !chips.get(i).getIdentifier().equals(identifier)) {
+                view.setVisibility(visible ? View.VISIBLE : View.GONE);
+            }
+        }
+    }
+
     /**
      * Returns |true| if all chips in the list are considered equal, meaning the same except their
      * |isDisabled()| state.

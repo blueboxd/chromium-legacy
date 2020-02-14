@@ -435,7 +435,6 @@ bool MessagePopupCollection::AddPopup() {
 
     item.popup->Show();
     popup_items_.push_back(item);
-    NotifyPopupAdded(item.popup);
   }
 
   // There are existing notifications that have to be moved up (existing ones +

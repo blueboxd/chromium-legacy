@@ -61,7 +61,8 @@ void PointerLockController::RequestPointerLock(
                       WebFeature::kPointerLockUnadjustedMovement);
   }
 
-  if (target->GetDocument().IsSandboxed(WebSandboxFlags::kPointerLock)) {
+  if (target->GetDocument().IsSandboxed(
+          mojom::blink::WebSandboxFlags::kPointerLock)) {
     // FIXME: This message should be moved off the console once a solution to
     // https://bugs.webkit.org/show_bug.cgi?id=103274 exists.
     target->GetDocument().AddConsoleMessage(

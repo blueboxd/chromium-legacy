@@ -228,8 +228,8 @@ void MimeHandlerViewEmbedder::CheckSandboxFlags() {
   // If the FrameTreeNode is deleted while it has ownership of the ongoing
   // NavigationRequest, DidFinishNavigation is called before FrameDeleted (see
   // https://crbug.com/969840).
-  if (render_frame_host_ &&
-      !render_frame_host_->IsSandboxed(blink::WebSandboxFlags::kPlugins)) {
+  if (render_frame_host_ && !render_frame_host_->IsSandboxed(
+                                blink::mojom::WebSandboxFlags::kPlugins)) {
     return;
   }
   if (render_frame_host_) {

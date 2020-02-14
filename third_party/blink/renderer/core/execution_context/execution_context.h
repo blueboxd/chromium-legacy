@@ -80,7 +80,6 @@ class SecurityContextInit;
 class SecurityOrigin;
 class ScriptState;
 class TrustedTypePolicyFactory;
-enum class WebSandboxFlags;
 
 enum class TaskType : unsigned char;
 
@@ -162,8 +161,8 @@ class CORE_EXPORT ExecutionContext
 
   ContentSecurityPolicy* GetContentSecurityPolicy() const;
 
-  WebSandboxFlags GetSandboxFlags() const;
-  bool IsSandboxed(WebSandboxFlags mask) const;
+  mojom::blink::WebSandboxFlags GetSandboxFlags() const;
+  bool IsSandboxed(mojom::blink::WebSandboxFlags mask) const;
 
   // Returns the content security policy to be used based on the current
   // JavaScript world we are in.

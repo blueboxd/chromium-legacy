@@ -420,7 +420,8 @@ void RenderFrameProxyHost::OnOpenURL(
       current_rfh, params.user_gesture, &download_policy);
 
   if ((frame_tree_node_->pending_frame_policy().sandbox_flags &
-       blink::WebSandboxFlags::kDownloads) != blink::WebSandboxFlags::kNone) {
+       blink::mojom::WebSandboxFlags::kDownloads) !=
+      blink::mojom::WebSandboxFlags::kNone) {
     if (download_policy.blocking_downloads_in_sandbox_enabled) {
       download_policy.SetDisallowed(content::NavigationDownloadType::kSandbox);
     } else {

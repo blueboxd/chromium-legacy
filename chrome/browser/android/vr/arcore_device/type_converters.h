@@ -22,8 +22,8 @@ struct TypeConverter<gfx::Transform, device::mojom::VRPosePtr> {
 };
 
 template <>
-struct TypeConverter<gfx::Transform, device::mojom::PosePtr> {
-  static gfx::Transform Convert(const device::mojom::PosePtr& pose);
+struct TypeConverter<gfx::Transform, device::mojom::Pose> {
+  static gfx::Transform Convert(const device::mojom::Pose& pose);
 };
 
 }  // namespace mojo

@@ -54,7 +54,7 @@ double Accelerometer::z(bool& is_null) const {
   return GetReading().accel.z;
 }
 
-void Accelerometer::Trace(blink::Visitor* visitor) {
+void Accelerometer::Trace(Visitor* visitor) {
   Sensor::Trace(visitor);
 }
 

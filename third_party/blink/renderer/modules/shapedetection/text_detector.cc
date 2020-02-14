@@ -88,7 +88,7 @@ void TextDetector::OnTextServiceConnectionError() {
   text_service_.reset();
 }
 
-void TextDetector::Trace(blink::Visitor* visitor) {
+void TextDetector::Trace(Visitor* visitor) {
   ShapeDetector::Trace(visitor);
   visitor->Trace(text_service_requests_);
 }

@@ -42,7 +42,7 @@ void TimedCanvasDrawListener::RequestFrameTimerFired(TimerBase*) {
   frame_capture_requested_ = true;
 }
 
-void TimedCanvasDrawListener::Trace(blink::Visitor* visitor) {
+void TimedCanvasDrawListener::Trace(Visitor* visitor) {
   OnRequestCanvasDrawListener::Trace(visitor);
 }
 

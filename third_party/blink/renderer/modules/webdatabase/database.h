@@ -59,7 +59,7 @@ class Database final : public ScriptWrappable {
            const String& display_name,
            uint32_t estimated_size);
   ~Database() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   bool OpenAndVerifyVersion(bool set_version_in_new_database,
                             DatabaseError&,

@@ -240,5 +240,14 @@ void LogClickedActionButton(const std::string& notification_id, bool is_popup) {
   }
 }
 
+void LogPopupExpiredToTray(const std::string& notification_id) {
+  auto type = GetNotificationType(notification_id);
+  if (!type.has_value())
+    return;
+
+  UMA_HISTOGRAM_ENUMERATION("Notifications.Cros.Actions.Popup.ExpireToTray",
+                            type.value());
+}
+
 }  // namespace metrics_utils
 }  // namespace ash

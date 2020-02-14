@@ -3,8 +3,8 @@ PASS Unmapped / should resolve ./ specifiers as URLs
 PASS Unmapped / should resolve ../ specifiers as URLs
 PASS Unmapped / should resolve / specifiers as URLs
 PASS Unmapped / should parse absolute fetch-scheme URLs
-FAIL Unmapped / should fail for absolute non-fetch-scheme URLs assert_throws: function "() => resolveUnderTest('mailto:bad')" did not throw
-FAIL Unmapped / should fail for strings not parseable as absolute URLs and not starting with ./ ../ or / assert_throws: function "() => resolveUnderTest('https://ex ample.org/')" did not throw
+FAIL Unmapped / should fail for absolute non-fetch-scheme URLs assert_throws_js: function "() => resolveUnderTest('mailto:bad')" did not throw
+FAIL Unmapped / should fail for strings not parseable as absolute URLs and not starting with ./ ../ or / assert_throws_js: function "() => resolveUnderTest('https://ex ample.org/')" did not throw
 PASS Mapped using the "imports" key only (no scopes) / should fail when the mapping is to an empty array
 PASS Mapped using the "imports" key only (no scopes) / Package-like scenarios / should work for package main modules
 PASS Mapped using the "imports" key only (no scopes) / Package-like scenarios / should work for package submodules

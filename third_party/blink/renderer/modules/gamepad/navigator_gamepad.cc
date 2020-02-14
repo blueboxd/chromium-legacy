@@ -159,7 +159,7 @@ GamepadHapticActuator* NavigatorGamepad::GetVibrationActuatorForGamepad(
   return vibration_actuators_[pad_index].Get();
 }
 
-void NavigatorGamepad::Trace(blink::Visitor* visitor) {
+void NavigatorGamepad::Trace(Visitor* visitor) {
   visitor->Trace(gamepads_);
   visitor->Trace(gamepads_back_);
   visitor->Trace(vibration_actuators_);

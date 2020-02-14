@@ -30,7 +30,7 @@ class MODULES_EXPORT HIDCollectionInfo : public ScriptWrappable {
   const HeapVector<Member<HIDReportInfo>>& featureReports() const;
   uint32_t collectionType() const;
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   uint16_t usage_page_;

@@ -49,7 +49,7 @@ class MODULES_EXPORT DOMWindowSpeechSynthesis final
 
   static SpeechSynthesis* speechSynthesis(ScriptState*, LocalDOMWindow&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void SetSpeechSynthesisForTesting(SpeechSynthesis*);
 

@@ -52,7 +52,7 @@ PresentationController* PresentationController::FromContext(
   return PresentationController::From(*document->GetFrame());
 }
 
-void PresentationController::Trace(blink::Visitor* visitor) {
+void PresentationController::Trace(Visitor* visitor) {
   visitor->Trace(presentation_);
   visitor->Trace(connections_);
   visitor->Trace(availability_state_);

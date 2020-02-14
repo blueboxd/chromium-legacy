@@ -21,7 +21,6 @@
 #include "chrome/browser/permissions/contextual_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
-#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/profiles/profile.h"
@@ -30,6 +29,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_request.h"
+#include "components/permissions/permission_uma_util.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -455,7 +455,7 @@ void PermissionRequestManager::ShowBubble() {
     return;
 
   if (!current_request_view_shown_to_user_) {
-    PermissionUmaUtil::PermissionPromptShown(requests_);
+    permissions::PermissionUmaUtil::PermissionPromptShown(requests_);
 
     if (ShouldCurrentRequestUseQuietUI()) {
       base::RecordAction(base::UserMetricsAction(
@@ -483,7 +483,7 @@ void PermissionRequestManager::FinalizeBubble(
     permissions::PermissionAction permission_action) {
   DCHECK(IsRequestInProgress());
 
-  PermissionUmaUtil::PermissionPromptResolved(
+  permissions::PermissionUmaUtil::PermissionPromptResolved(
       requests_, web_contents(), permission_action,
       DetermineCurrentRequestUIDispositionForUMA());
 
@@ -507,22 +507,23 @@ void PermissionRequestManager::FinalizeBubble(
           ->RecordPermissionPromptOutcome(permission_action);
     }
 
-    PermissionEmbargoStatus embargo_status =
-        PermissionEmbargoStatus::NOT_EMBARGOED;
+    permissions::PermissionEmbargoStatus embargo_status =
+        permissions::PermissionEmbargoStatus::NOT_EMBARGOED;
     if (permission_action == permissions::PermissionAction::DISMISSED) {
       if (autoblocker->RecordDismissAndEmbargo(
               request->GetOrigin(), request->GetContentSettingsType(),
               ShouldCurrentRequestUseQuietUI())) {
-        embargo_status = PermissionEmbargoStatus::REPEATED_DISMISSALS;
+        embargo_status =
+            permissions::PermissionEmbargoStatus::REPEATED_DISMISSALS;
       }
     } else if (permission_action == permissions::PermissionAction::IGNORED) {
       if (autoblocker->RecordIgnoreAndEmbargo(
               request->GetOrigin(), request->GetContentSettingsType(),
               ShouldCurrentRequestUseQuietUI())) {
-        embargo_status = PermissionEmbargoStatus::REPEATED_IGNORES;
+        embargo_status = permissions::PermissionEmbargoStatus::REPEATED_IGNORES;
       }
     }
-    PermissionUmaUtil::RecordEmbargoStatus(embargo_status);
+    permissions::PermissionUmaUtil::RecordEmbargoStatus(embargo_status);
   }
   std::vector<permissions::PermissionRequest*>::iterator requests_iter;
   for (requests_iter = requests_.begin();
@@ -658,18 +659,19 @@ void PermissionRequestManager::OnSelectedUiToUseForNotifications(
   ScheduleShowBubble();
 }
 
-PermissionPromptDisposition
+permissions::PermissionPromptDisposition
 PermissionRequestManager::DetermineCurrentRequestUIDispositionForUMA() {
 #if defined(OS_ANDROID)
   return ShouldCurrentRequestUseQuietUI()
-             ? PermissionPromptDisposition::MINI_INFOBAR
-             : PermissionPromptDisposition::MODAL_DIALOG;
+             ? permissions::PermissionPromptDisposition::MINI_INFOBAR
+             : permissions::PermissionPromptDisposition::MODAL_DIALOG;
 #else
   return !ShouldCurrentRequestUseQuietUI()
-             ? PermissionPromptDisposition::ANCHORED_BUBBLE
+             ? permissions::PermissionPromptDisposition::ANCHORED_BUBBLE
              : ReasonForUsingQuietUi() == QuietUiReason::kTriggeredByCrowdDeny
-                   ? PermissionPromptDisposition::LOCATION_BAR_RIGHT_STATIC_ICON
-                   : PermissionPromptDisposition::
+                   ? permissions::PermissionPromptDisposition::
+                         LOCATION_BAR_RIGHT_STATIC_ICON
+                   : permissions::PermissionPromptDisposition::
                          LOCATION_BAR_RIGHT_ANIMATED_ICON;
 #endif
 }

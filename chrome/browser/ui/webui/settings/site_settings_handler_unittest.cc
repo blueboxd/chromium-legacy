@@ -29,7 +29,6 @@
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/permissions/chooser_context_base_mock_permission_observer.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
-#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
@@ -47,6 +46,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/infobars/core/infobar.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
+#include "components/permissions/permission_uma_util.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/navigation_controller.h"
@@ -1068,8 +1068,9 @@ TEST_F(SiteSettingsHandlerTest, NotificationPermissionRevokeUkm) {
   auto* entry = entries.front();
 
   ukm_recorder.ExpectEntrySourceHasUrl(entry, GURL(google));
-  EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Source"),
-            static_cast<int64_t>(PermissionSourceUI::SITE_SETTINGS));
+  EXPECT_EQ(
+      *ukm_recorder.GetEntryMetric(entry, "Source"),
+      static_cast<int64_t>(permissions::PermissionSourceUI::SITE_SETTINGS));
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "PermissionType"),
             static_cast<int64_t>(ContentSettingsType::NOTIFICATIONS));
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Action"),

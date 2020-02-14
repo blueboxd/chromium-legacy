@@ -26,7 +26,7 @@ const HeapVector<Member<HIDReportItem>>& HIDReportInfo::items() const {
   return items_;
 }
 
-void HIDReportInfo::Trace(blink::Visitor* visitor) {
+void HIDReportInfo::Trace(Visitor* visitor) {
   visitor->Trace(items_);
   ScriptWrappable::Trace(visitor);
 }

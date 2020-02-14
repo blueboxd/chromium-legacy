@@ -64,7 +64,7 @@ void RTCVoidRequestPromiseImpl::Clear() {
   requester_.Clear();
 }
 
-void RTCVoidRequestPromiseImpl::Trace(blink::Visitor* visitor) {
+void RTCVoidRequestPromiseImpl::Trace(Visitor* visitor) {
   visitor->Trace(resolver_);
   visitor->Trace(requester_);
   RTCVoidRequest::Trace(visitor);

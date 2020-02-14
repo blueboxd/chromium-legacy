@@ -55,7 +55,7 @@ class MediaControlPopupMenuElement::EventListener final
     }
   }
 
-  void Trace(blink::Visitor* visitor) final {
+  void Trace(Visitor* visitor) final {
     NativeEventListener::Trace(visitor);
     visitor->Trace(popup_menu_);
   }
@@ -166,7 +166,7 @@ void MediaControlPopupMenuElement::RemovedFrom(ContainerNode& container) {
   MediaControlDivElement::RemovedFrom(container);
 }
 
-void MediaControlPopupMenuElement::Trace(blink::Visitor* visitor) {
+void MediaControlPopupMenuElement::Trace(Visitor* visitor) {
   MediaControlDivElement::Trace(visitor);
   visitor->Trace(event_listener_);
   visitor->Trace(last_focused_element_);

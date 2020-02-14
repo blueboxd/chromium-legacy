@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 
+#include "base/time/time.h"
 #include "chrome/browser/printing/cloud_print/privet_device_lister.h"
 #include "chrome/browser/printing/cloud_print/privet_http.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -101,6 +102,10 @@ class PrivetNotificationService
       public PrivetNotificationsListener::Delegate,
       public base::SupportsWeakPtr<PrivetNotificationService> {
  public:
+  // Visible for testing.
+  static constexpr base::TimeDelta kStartDelay =
+      base::TimeDelta::FromSeconds(5);
+
   explicit PrivetNotificationService(content::BrowserContext* profile);
   ~PrivetNotificationService() override;
 
@@ -116,6 +121,11 @@ class PrivetNotificationService
 
   static bool IsEnabled();
   static bool IsForced();
+
+  PrivetDeviceLister* device_lister_for_test() { return device_lister_.get(); }
+  PrivetTrafficDetector* traffic_detector_for_test() {
+    return traffic_detector_.get();
+  }
 
  private:
   void Start();

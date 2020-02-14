@@ -50,6 +50,7 @@ struct CORE_EXPORT FrameLoadRequest {
 
  public:
   FrameLoadRequest(Document* origin_document, const ResourceRequest&);
+  FrameLoadRequest(Document* origin_document, const ResourceRequestHead&);
   FrameLoadRequest(const FrameLoadRequest&) = delete;
   FrameLoadRequest& operator=(const FrameLoadRequest&) = delete;
 

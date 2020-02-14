@@ -79,7 +79,7 @@ class MODULES_EXPORT ServiceWorkerContainer final
   explicit ServiceWorkerContainer(Document*);
   ~ServiceWorkerContainer() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   ServiceWorker* controller() { return controller_; }
   ScriptPromise ready(ScriptState*, ExceptionState&);

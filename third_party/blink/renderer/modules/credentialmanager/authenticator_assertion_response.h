@@ -31,7 +31,7 @@ class MODULES_EXPORT AuthenticatorAssertionResponse final
 
   DOMArrayBuffer* userHandle() const { return user_handle_.Get(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   const Member<DOMArrayBuffer> authenticator_data_;

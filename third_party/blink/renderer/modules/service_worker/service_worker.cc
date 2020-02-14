@@ -205,7 +205,7 @@ void ServiceWorker::Dispose() {
   receiver_.reset();
 }
 
-void ServiceWorker::Trace(blink::Visitor* visitor) {
+void ServiceWorker::Trace(Visitor* visitor) {
   AbstractWorker::Trace(visitor);
 }
 

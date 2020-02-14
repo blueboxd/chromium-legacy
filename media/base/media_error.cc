@@ -8,22 +8,26 @@
 
 namespace media {
 
-MediaError::MediaError(ErrorCode code,
-                       std::string message,
-                       const base::Location& location) {
-  if (code == ErrorCode::kOk) {
-    DCHECK(message.empty());
-    return;
-  }
+MediaError::MediaError() = default;
 
-  data_ = std::make_unique<MediaErrorInternal>(code, std::move(message));
+MediaError::MediaError(ErrorCode code,
+                       base::StringPiece message,
+                       const base::Location& location) {
+  DCHECK(code != ErrorCode::kOk);
+  data_ = std::make_unique<MediaErrorInternal>(code, message.as_string());
   AddFrame(location);
 }
 
 // Copy Constructor
 MediaError::MediaError(const MediaError& copy) {
-  if (copy.IsOk())
-    return;
+  *this = copy;
+}
+
+MediaError& MediaError::operator=(const MediaError& copy) {
+  if (copy.IsOk()) {
+    data_.reset();
+    return *this;
+  }
 
   data_ = std::make_unique<MediaErrorInternal>(copy.GetErrorCode(),
                                                copy.GetErrorMessage());
@@ -32,6 +36,7 @@ MediaError::MediaError(const MediaError& copy) {
   for (const MediaError& err : copy.data_->causes)
     data_->causes.push_back(err);
   data_->data = copy.data_->data.Clone();
+  return *this;
 }
 
 // Allow move.

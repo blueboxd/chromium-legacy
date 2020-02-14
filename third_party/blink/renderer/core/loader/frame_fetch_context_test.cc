@@ -342,7 +342,11 @@ class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
     const KURL input_url(input);
     const KURL main_frame_url(main_frame);
     ResourceRequest resource_request(input_url);
-    resource_request.SetRequestContext(mojom::RequestContextType::IMAGE);
+    // TODO(crbug.com/1026464, carlosil): Default behavior currently is to not
+    // autoupgrade images, setting the context to AUDIO to ensure the upgrade
+    // flow runs, this can be switched back to IMAGE once autoupgrades launch
+    // for them.
+    resource_request.SetRequestContext(mojom::RequestContextType::AUDIO);
 
     RecreateFetchContext(main_frame_url);
     document->GetSecurityContext().SetInsecureRequestPolicy(policy);

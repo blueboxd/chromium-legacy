@@ -527,7 +527,7 @@ void LabelButton::ClearTextIfShrunkDown() {
     // Once the button shrinks down to its preferred size (that disregards the
     // current text), we finish the operation by clearing the text.
     shrinking_down_label_ = false;
-    SetTextInternal(base::string16());
+    SetText(base::string16());
   }
 }
 

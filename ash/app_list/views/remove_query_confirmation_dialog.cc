@@ -35,6 +35,14 @@ RemoveQueryConfirmationDialog::RemoveQueryConfirmationDialog(
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
                                    l10n_util::GetStringUTF16(IDS_APP_CANCEL));
 
+  auto run_callback = [](RemoveQueryConfirmationDialog* dialog, bool accept) {
+    std::move(dialog->confirm_callback_).Run(accept, dialog->event_flags_);
+  };
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(run_callback, base::Unretained(this), true));
+  DialogDelegate::set_cancel_callback(
+      base::BindOnce(run_callback, base::Unretained(this), false));
+
   const views::LayoutProvider* provider = views::LayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
@@ -75,20 +83,6 @@ ui::ModalType RemoveQueryConfirmationDialog::GetModalType() const {
 
 bool RemoveQueryConfirmationDialog::ShouldShowCloseButton() const {
   return false;
-}
-
-bool RemoveQueryConfirmationDialog::Accept() {
-  if (confirm_callback_)
-    std::move(confirm_callback_).Run(true, event_flags_);
-
-  return true;
-}
-
-bool RemoveQueryConfirmationDialog::Cancel() {
-  if (confirm_callback_)
-    std::move(confirm_callback_).Run(false, event_flags_);
-
-  return true;
 }
 
 gfx::Size RemoveQueryConfirmationDialog::CalculatePreferredSize() const {

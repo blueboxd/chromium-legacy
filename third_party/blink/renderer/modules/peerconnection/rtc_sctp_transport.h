@@ -63,7 +63,7 @@ class MODULES_EXPORT RTCSctpTransport final
   // Called from owning RtcPeerConnection when it is closed.
   void Close();
   // For garbage collection.
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   webrtc::SctpTransportInformation current_state_;

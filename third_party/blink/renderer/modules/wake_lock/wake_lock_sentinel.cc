@@ -53,7 +53,7 @@ const AtomicString& WakeLockSentinel::InterfaceName() const {
   return event_target_names::kWakeLockSentinel;
 }
 
-void WakeLockSentinel::Trace(blink::Visitor* visitor) {
+void WakeLockSentinel::Trace(Visitor* visitor) {
   visitor->Trace(manager_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);

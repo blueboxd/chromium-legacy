@@ -32,7 +32,7 @@ class NavigatorBluetooth final : public GarbageCollected<NavigatorBluetooth>,
 
   explicit NavigatorBluetooth(Navigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<Bluetooth> bluetooth_;

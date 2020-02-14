@@ -94,11 +94,18 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
 #if defined(OS_WIN)
   // The extra timeout the GPU main thread needs to make a progress.
   void WindowsNumOfExtraTimeoutsHistogram();
+  // The number of users per timeout stay in Chrome after giving extra thread
+  // time.
+  void NumOfUsersWaitingWithExtraThreadTimeHistogram(int count);
 #endif
 
   // The wait time in OnWatchdogTimeout() for the GPU main thread to make a
   // progress.
   void GpuWatchdogWaitTimeHistogram(base::TimeDelta wait_time);
+
+  // The number of users per second stay in Chrome after entering the 60-second
+  // wait time.
+  void NumOfUsersWaitHistogram(int count, bool gpu_is_active);
 
   // Used for metrics. It's 1 minute after the event.
   bool WithinOneMinFromPowerResumed();

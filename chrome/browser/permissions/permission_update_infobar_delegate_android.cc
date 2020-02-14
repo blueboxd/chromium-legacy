@@ -12,10 +12,10 @@
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/android/preferences/website_preference_bridge.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
+#include "components/permissions/permission_uma_util.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/android/window_android.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -110,14 +110,15 @@ PermissionUpdateInfoBarDelegate::ShouldShowPermissionInfoBar(
 
     for (const auto& android_permission : android_permissions) {
       if (!window_android->HasPermission(android_permission)) {
-        PermissionUmaUtil::RecordMissingPermissionInfobarShouldShow(
-            true, content_settings_types);
+        permissions::PermissionUmaUtil::
+            RecordMissingPermissionInfobarShouldShow(true,
+                                                     content_settings_types);
         return ShowPermissionInfoBarState::SHOW_PERMISSION_INFOBAR;
       }
     }
   }
 
-  PermissionUmaUtil::RecordMissingPermissionInfobarShouldShow(
+  permissions::PermissionUmaUtil::RecordMissingPermissionInfobarShouldShow(
       false, content_settings_types);
   return ShowPermissionInfoBarState::NO_NEED_TO_SHOW_PERMISSION_INFOBAR;
 }
@@ -126,7 +127,7 @@ void PermissionUpdateInfoBarDelegate::OnPermissionResult(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
     jboolean all_permissions_granted) {
-  PermissionUmaUtil::RecordMissingPermissionInfobarAction(
+  permissions::PermissionUmaUtil::RecordMissingPermissionInfobarAction(
       permissions::PermissionAction::GRANTED, content_settings_types_);
   std::move(callback_).Run(all_permissions_granted);
   infobar()->RemoveSelf();
@@ -208,13 +209,13 @@ bool PermissionUpdateInfoBarDelegate::Accept() {
 
 bool PermissionUpdateInfoBarDelegate::Cancel() {
   std::move(callback_).Run(false);
-  PermissionUmaUtil::RecordMissingPermissionInfobarAction(
+  permissions::PermissionUmaUtil::RecordMissingPermissionInfobarAction(
       permissions::PermissionAction::DENIED, content_settings_types_);
   return true;
 }
 
 void PermissionUpdateInfoBarDelegate::InfoBarDismissed() {
-  PermissionUmaUtil::RecordMissingPermissionInfobarAction(
+  permissions::PermissionUmaUtil::RecordMissingPermissionInfobarAction(
       permissions::PermissionAction::DISMISSED, content_settings_types_);
   std::move(callback_).Run(false);
 }

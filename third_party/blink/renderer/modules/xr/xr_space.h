@@ -80,7 +80,7 @@ class XRSpace : public EventTargetWithInlineData {
 
   virtual base::Optional<XRNativeOriginInformation> NativeOrigin() const = 0;
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  protected:
   std::unique_ptr<TransformationMatrix> TryInvert(

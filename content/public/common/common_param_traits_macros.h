@@ -26,11 +26,7 @@
 #include "third_party/blink/public/platform/web_history_scroll_restoration_type.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_url_request.h"
-#include "ui/accessibility/ax_enums.mojom.h"
-#include "ui/accessibility/ax_event.h"
-#include "ui/accessibility/ax_node_data.h"
-#include "ui/accessibility/ax_relative_bounds.h"
-#include "ui/accessibility/ax_tree_update.h"
+#include "ui/accessibility/ax_param_traits.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -261,37 +257,6 @@ IPC_STRUCT_TRAITS_BEGIN(blink::mojom::WindowFeatures)
   IPC_STRUCT_TRAITS_MEMBER(status_bar_visible)
   IPC_STRUCT_TRAITS_MEMBER(tool_bar_visible)
   IPC_STRUCT_TRAITS_MEMBER(scrollbars_visible)
-IPC_STRUCT_TRAITS_END()
-
-IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::Event, ax::mojom::Event::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::Role, ax::mojom::Role::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::BoolAttribute,
-                          ax::mojom::BoolAttribute::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::FloatAttribute,
-                          ax::mojom::FloatAttribute::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::IntAttribute,
-                          ax::mojom::IntAttribute::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::IntListAttribute,
-                          ax::mojom::IntListAttribute::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::StringListAttribute,
-                          ax::mojom::StringListAttribute::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::StringAttribute,
-                          ax::mojom::StringAttribute::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::TextAffinity,
-                          ax::mojom::TextAffinity::kMaxValue)
-IPC_ENUM_TRAITS_MAX_VALUE(ax::mojom::EventFrom, ax::mojom::EventFrom::kMaxValue)
-
-IPC_STRUCT_TRAITS_BEGIN(ui::AXRelativeBounds)
-  IPC_STRUCT_TRAITS_MEMBER(offset_container_id)
-  IPC_STRUCT_TRAITS_MEMBER(bounds)
-  IPC_STRUCT_TRAITS_MEMBER(transform)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(ui::AXEvent)
-  IPC_STRUCT_TRAITS_MEMBER(event_type)
-  IPC_STRUCT_TRAITS_MEMBER(id)
-  IPC_STRUCT_TRAITS_MEMBER(event_from)
-  IPC_STRUCT_TRAITS_MEMBER(action_request_id)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(gfx::FontRenderParams::Hinting,

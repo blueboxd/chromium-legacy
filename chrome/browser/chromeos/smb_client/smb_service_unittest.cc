@@ -15,6 +15,7 @@
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -33,7 +34,6 @@
 #include "chromeos/dbus/fake_smb_provider_client.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
-#include "extensions/browser/extension_registry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -56,8 +56,12 @@ constexpr char kTestUser[] = "foobar";
 constexpr char kTestPassword[] = "my_secret_password";
 constexpr char kTestDomain[] = "EXAMPLE.COM";
 constexpr char kSharePath[] = "\\\\server\\foobar";
-constexpr char kMountPath[] = "smb://server/foobar";
+constexpr char kShareUrl[] = "smb://server/foobar";
 constexpr char kDisplayName[] = "My Share";
+
+constexpr char kTestADUser[] = "ad-test-user";
+constexpr char kTestADDomain[] = "foorbar.corp";
+constexpr char kTestADGuid[] = "ad-user-guid";
 
 void SaveMountResult(SmbMountResult* out, SmbMountResult result) {
   *out = result;
@@ -68,14 +72,18 @@ class MockSmbProviderClient : public chromeos::FakeSmbProviderClient {
   MockSmbProviderClient()
       : FakeSmbProviderClient(true /* should_run_synchronously */) {}
 
-  MOCK_METHOD4(Mount,
-               void(const base::FilePath& share_path,
-                    const MountOptions& options,
-                    base::ScopedFD password_fd,
-                    SmbProviderClient::MountCallback callback));
-  MOCK_METHOD2(SetupKerberos,
-               void(const std::string& account_id,
-                    SmbProviderClient::SetupKerberosCallback callback));
+  MOCK_METHOD(void,
+              Mount,
+              (const base::FilePath& share_path,
+               const MountOptions& options,
+               base::ScopedFD password_fd,
+               SmbProviderClient::MountCallback callback),
+              (override));
+  MOCK_METHOD(void,
+              SetupKerberos,
+              (const std::string& account_id,
+               SmbProviderClient::SetupKerberosCallback callback),
+              (override));
 };
 
 // Gets a password from |password_fd|. The data has to be in the format of
@@ -112,11 +120,11 @@ class SmbServiceTest : public testing::Test {
     user_manager_temp->AddUser(
         AccountId::FromUserEmail(profile_->GetProfileUserName()));
 
-    ad_profile_ =
-        profile_manager_->CreateTestingProfile("ad-test-user@example.com");
+    ad_user_email_ = base::StrCat({kTestADUser, "@", kTestADDomain});
+    ad_profile_ = profile_manager_->CreateTestingProfile(ad_user_email_);
     user_manager_temp->AddUserWithAffiliationAndTypeAndProfile(
         AccountId::AdFromUserEmailObjGuid(ad_profile_->GetProfileUserName(),
-                                          "abc"),
+                                          kTestADGuid),
         false, user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY, ad_profile_);
 
     // Run pending async tasks resulting from profile construction to ensure
@@ -201,16 +209,15 @@ class SmbServiceTest : public testing::Test {
   content::BrowserTaskEnvironment
       task_environment_;  // Included so tests magically don't crash.
   TestingProfile* profile_ = nullptr;     // Not owned.
+  std::string ad_user_email_;
   TestingProfile* ad_profile_ = nullptr;  // Not owned.
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   MockSmbProviderClient* mock_client_;  // Owned by DBusThreadManager.
   std::unique_ptr<SmbService> smb_service_;
 
-  std::unique_ptr<file_system_provider::Service> fsp_service_;
-  file_system_provider::FakeRegistry* registry_;  // Owned by |fsp_service_|.
-  // Extension Registry and Registry needed for fsp_service.
-  std::unique_ptr<extensions::ExtensionRegistry> extension_registry_;
+  // Owned by file_system_provider::Service.
+  file_system_provider::FakeRegistry* registry_;
 
   chromeos::file_system_provider::MountOptions mount_options_;
 };
@@ -250,7 +257,7 @@ TEST_F(SmbServiceTest, Mount) {
   EXPECT_CALL(
       *mock_client_,
       Mount(
-          base::FilePath(kMountPath),
+          base::FilePath(kShareUrl),
           AllOf(Field(&SmbProviderClient::MountOptions::username, kTestUser),
                 Field(&SmbProviderClient::MountOptions::workgroup, ""),
                 Field(&SmbProviderClient::MountOptions::ntlm_enabled, true),
@@ -296,7 +303,7 @@ TEST_F(SmbServiceTest, MountSaveCredentials) {
   EXPECT_CALL(
       *mock_client_,
       Mount(
-          base::FilePath(kMountPath),
+          base::FilePath(kShareUrl),
           AllOf(Field(&SmbProviderClient::MountOptions::username, kTestUser),
                 Field(&SmbProviderClient::MountOptions::workgroup, ""),
                 Field(&SmbProviderClient::MountOptions::ntlm_enabled, true),
@@ -350,7 +357,7 @@ TEST_F(SmbServiceTest, Remount) {
   base::RunLoop run_loop;
   EXPECT_CALL(
       *mock_client_,
-      Mount(base::FilePath(kMountPath),
+      Mount(base::FilePath(kShareUrl),
             AllOf(Field(&SmbProviderClient::MountOptions::skip_connect, true),
                   Field(&SmbProviderClient::MountOptions::restore_password,
                         false)),
@@ -386,7 +393,7 @@ TEST_F(SmbServiceTest, Remount_ActiveDirectory) {
 
   base::RunLoop run_loop;
 
-  EXPECT_CALL(*mock_client_, SetupKerberos(_, _))
+  EXPECT_CALL(*mock_client_, SetupKerberos(kTestADGuid, _))
       .WillOnce(WithArg<1>(
           Invoke([](SmbProviderClient::SetupKerberosCallback callback) {
             base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -395,10 +402,11 @@ TEST_F(SmbServiceTest, Remount_ActiveDirectory) {
   EXPECT_CALL(
       *mock_client_,
       Mount(
-          base::FilePath(kMountPath),
+          base::FilePath(kShareUrl),
           AllOf(
-              Field(&SmbProviderClient::MountOptions::username, "ad-test-user"),
-              Field(&SmbProviderClient::MountOptions::workgroup, kTestDomain),
+              Field(&SmbProviderClient::MountOptions::username, kTestADUser),
+              Field(&SmbProviderClient::MountOptions::workgroup,
+                    base::ToUpperASCII(kTestADDomain)),
               Field(&SmbProviderClient::MountOptions::skip_connect, true),
               Field(&SmbProviderClient::MountOptions::restore_password, false)),
           _, _))
@@ -432,7 +440,7 @@ TEST_F(SmbServiceTest, Remount_SavedUser) {
   EXPECT_CALL(
       *mock_client_,
       Mount(
-          base::FilePath(kMountPath),
+          base::FilePath(kShareUrl),
           AllOf(Field(&SmbProviderClient::MountOptions::username, kTestUser),
                 Field(&SmbProviderClient::MountOptions::workgroup, kTestDomain),
                 Field(&SmbProviderClient::MountOptions::skip_connect, true),
@@ -469,7 +477,7 @@ TEST_F(SmbServiceTest, Remount_SavedInvalidUser) {
   base::RunLoop run_loop;
   EXPECT_CALL(
       *mock_client_,
-      Mount(base::FilePath(kMountPath),
+      Mount(base::FilePath(kShareUrl),
             AllOf(Field(&SmbProviderClient::MountOptions::username, ""),
                   Field(&SmbProviderClient::MountOptions::workgroup, ""),
                   Field(&SmbProviderClient::MountOptions::skip_connect, true),

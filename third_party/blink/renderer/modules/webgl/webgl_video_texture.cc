@@ -35,7 +35,7 @@ const char* WebGLVideoTexture::ExtensionName() {
   return "WEBGL_video_texture";
 }
 
-void WebGLVideoTexture::Trace(blink::Visitor* visitor) {
+void WebGLVideoTexture::Trace(Visitor* visitor) {
   visitor->Trace(current_frame_metadata_);
   WebGLExtension::Trace(visitor);
 }

@@ -61,8 +61,8 @@ class FakeArCore : public ArCore {
   mojom::XRLightEstimationDataPtr GetLightEstimationData() override;
 
   base::Optional<uint64_t> CreateAnchor(
-      const device::mojom::PosePtr& pose) override;
-  base::Optional<uint64_t> CreateAnchor(const device::mojom::PosePtr& pose,
+      const device::mojom::Pose& pose) override;
+  base::Optional<uint64_t> CreateAnchor(const device::mojom::Pose& pose,
                                         uint64_t plane_id) override;
   void DetachAnchor(uint64_t anchor_id) override;
 

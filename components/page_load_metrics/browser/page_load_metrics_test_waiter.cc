@@ -127,8 +127,8 @@ void PageLoadMetricsTestWaiter::OnLoadedResource(
   if (ExpectationsSatisfied())
     return;
 
-  if (extra_request_complete_info.resource_type !=
-      blink::mojom::ResourceType::kMainFrame) {
+  if (extra_request_complete_info.request_destination !=
+      network::mojom::RequestDestination::kDocument) {
     // The waiter confirms loading timing for the main frame only.
     return;
   }

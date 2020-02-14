@@ -66,7 +66,7 @@ class SpeechRecognitionEvent final : public Event {
   // Event
   const AtomicString& InterfaceName() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   uint32_t result_index_;

@@ -178,7 +178,7 @@ base::Optional<XRNativeOriginInformation> XRReferenceSpace::NativeOrigin()
   return XRNativeOriginInformation::Create(this);
 }
 
-void XRReferenceSpace::Trace(blink::Visitor* visitor) {
+void XRReferenceSpace::Trace(Visitor* visitor) {
   visitor->Trace(origin_offset_);
   XRSpace::Trace(visitor);
 }

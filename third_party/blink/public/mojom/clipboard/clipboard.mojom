@@ -42,10 +42,6 @@ interface ClipboardHost {
   ReadAvailableTypes(ClipboardBuffer buffer) =>
       (array<mojo_base.mojom.String16> types, bool result);
 
-  // Reads unsanitized/raw platform-specific types.
-  ReadAvailablePlatformSpecificFormatNames(ClipboardBuffer buffer) =>
-      (array<mojo_base.mojom.String16> raw_types);
-
   [Sync]
   ReadText(ClipboardBuffer buffer) => (mojo_base.mojom.BigString16 result);
 
@@ -77,8 +73,6 @@ interface ClipboardHost {
 
   // Chrome-specific pickled data.
   WriteCustomData(map<mojo_base.mojom.String16, mojo_base.mojom.BigString16> data);
-  // Arbitrary unsanitized data from renderer.
-  WriteRawData(mojo_base.mojom.String16 format, mojo_base.mojom.BigBuffer data);
 
   // TODO(dcheng): The |url| parameter should really be a GURL, but <canvas>'s
   // copy as image tries to set very long data: URLs on the clipboard. Using

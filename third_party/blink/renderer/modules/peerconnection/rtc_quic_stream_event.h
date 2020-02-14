@@ -32,7 +32,7 @@ class MODULES_EXPORT RTCQuicStreamEvent final : public Event {
   const AtomicString& InterfaceName() const override;
 
   // For garbage collection.
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<RTCQuicStream> stream_;

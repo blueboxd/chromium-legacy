@@ -83,7 +83,9 @@ InfobarModalCompletionNotifier::ModalCompletionInstaller::GetRequestSupport()
 void InfobarModalCompletionNotifier::ModalCompletionInstaller::
     InstallCallbacksInternal(OverlayRequest* request) {
   InfoBarIOS* infobar = GetOverlayRequestInfobar(request);
-  DCHECK(infobar);
+  if (!infobar)
+    return;
+
   request->GetCallbackManager()->AddCompletionCallback(base::BindOnce(
       &InfobarModalCompletionNotifier::ModalCompletionInstaller::ModalCompleted,
       weak_factory_.GetWeakPtr(), infobar));

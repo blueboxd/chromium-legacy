@@ -28,7 +28,7 @@ BluetoothRemoteGATTService::BluetoothRemoteGATTService(
       device_instance_id_(device_instance_id),
       device_(device) {}
 
-void BluetoothRemoteGATTService::Trace(blink::Visitor* visitor) {
+void BluetoothRemoteGATTService::Trace(Visitor* visitor) {
   visitor->Trace(device_);
   ScriptWrappable::Trace(visitor);
 }

@@ -142,7 +142,7 @@ XRRigidTransform* XRView::transform() const {
   return ref_space_from_eye_;
 }
 
-void XRView::Trace(blink::Visitor* visitor) {
+void XRView::Trace(Visitor* visitor) {
   visitor->Trace(session_);
   visitor->Trace(projection_matrix_);
   visitor->Trace(ref_space_from_eye_);

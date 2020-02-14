@@ -54,7 +54,7 @@ class NavigatorDoNotTrack final : public GarbageCollected<NavigatorDoNotTrack>,
 
   explicit NavigatorDoNotTrack(Navigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 };
 
 }  // namespace blink

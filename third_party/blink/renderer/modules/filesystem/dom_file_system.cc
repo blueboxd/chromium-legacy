@@ -178,7 +178,7 @@ void DOMFileSystem::ScheduleCallback(ExecutionContext* execution_context,
                            WTF::Passed(std::move(identifier))));
 }
 
-void DOMFileSystem::Trace(blink::Visitor* visitor) {
+void DOMFileSystem::Trace(Visitor* visitor) {
   visitor->Trace(root_entry_);
   DOMFileSystemBase::Trace(visitor);
   ContextClient::Trace(visitor);

@@ -106,7 +106,7 @@ class BackgroundFetchRegistration final
 
   void Dispose();
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
   // Keeps the object alive until there are non-zero number of |observers_|.
   bool HasPendingActivity() const final;

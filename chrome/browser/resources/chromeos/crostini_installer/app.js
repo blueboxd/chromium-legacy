@@ -167,7 +167,7 @@ Polymer({
       }),
       callbackRouter.onCanceled.addListener(() => this.closeDialog_()),
       callbackRouter.onAmountOfFreeDiskSpace.addListener(
-          (ticks, defaultIndex, min, max) => {
+          (ticks, defaultIndex) => {
             if (ticks.length === 0) {
               // Error getting the data we need for the slider e.g. unable to
               // get the amount of free space.
@@ -204,7 +204,8 @@ Polymer({
   onNextButtonClick_() {
     assert(this.state_ === State.PROMPT);
     this.state_ = State.CONFIGURE;
-    this.$.install.focus();
+    // Focus the username input and move the cursor to the end.
+    this.$.username.select(this.username_.length, this.username_.length);
   },
 
   /** @private */

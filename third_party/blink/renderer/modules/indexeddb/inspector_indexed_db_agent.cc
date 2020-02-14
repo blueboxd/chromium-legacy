@@ -269,7 +269,7 @@ class OpenDatabaseCallback final : public NativeEventListener {
     idb_database->close();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(script_state_);
     NativeEventListener::Trace(visitor);
   }
@@ -608,7 +608,7 @@ class OpenCursorCallback final : public NativeEventListener {
     request_callback_->sendSuccess(std::move(result_), has_more);
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(script_state_);
     NativeEventListener::Trace(visitor);
   }
@@ -1179,7 +1179,7 @@ void InspectorIndexedDBAgent::deleteDatabase(
       false);
 }
 
-void InspectorIndexedDBAgent::Trace(blink::Visitor* visitor) {
+void InspectorIndexedDBAgent::Trace(Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   InspectorBaseAgent::Trace(visitor);
 }

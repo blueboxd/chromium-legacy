@@ -176,7 +176,7 @@ class AudioScheduledSourceNode
   // ScriptWrappable:
   bool HasPendingActivity() const final;
 
-  void Trace(blink::Visitor* visitor) override { AudioNode::Trace(visitor); }
+  void Trace(Visitor* visitor) override { AudioNode::Trace(visitor); }
 
   AudioScheduledSourceHandler& GetAudioScheduledSourceHandler() const;
 

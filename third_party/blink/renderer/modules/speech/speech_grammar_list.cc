@@ -59,7 +59,7 @@ void SpeechGrammarList::addFromString(const String& string, double weight) {
 
 SpeechGrammarList::SpeechGrammarList() = default;
 
-void SpeechGrammarList::Trace(blink::Visitor* visitor) {
+void SpeechGrammarList::Trace(Visitor* visitor) {
   visitor->Trace(grammars_);
   ScriptWrappable::Trace(visitor);
 }

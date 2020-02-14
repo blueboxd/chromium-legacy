@@ -93,7 +93,7 @@ GPU::GPU(ExecutionContext& execution_context,
 
 GPU::~GPU() = default;
 
-void GPU::Trace(blink::Visitor* visitor) {
+void GPU::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }

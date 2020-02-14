@@ -33,7 +33,7 @@ class PaymentAppServiceWorkerRegistration final
                                         ServiceWorkerRegistration&);
   PaymentManager* paymentManager(ScriptState*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<ServiceWorkerRegistration> registration_;

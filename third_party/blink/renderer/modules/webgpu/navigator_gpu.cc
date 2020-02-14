@@ -37,7 +37,7 @@ GPU* NavigatorGPU::gpu(ScriptState* script_state) {
   return gpu_;
 }
 
-void NavigatorGPU::Trace(blink::Visitor* visitor) {
+void NavigatorGPU::Trace(Visitor* visitor) {
   visitor->Trace(gpu_);
   Supplement<Navigator>::Trace(visitor);
 }

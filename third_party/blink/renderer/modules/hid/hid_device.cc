@@ -272,7 +272,7 @@ void HIDDevice::ContextDestroyed(ExecutionContext*) {
   receiver_.reset();
 }
 
-void HIDDevice::Trace(blink::Visitor* visitor) {
+void HIDDevice::Trace(Visitor* visitor) {
   visitor->Trace(parent_);
   visitor->Trace(device_requests_);
   visitor->Trace(collections_);

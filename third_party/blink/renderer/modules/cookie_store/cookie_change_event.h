@@ -59,7 +59,7 @@ class CookieChangeEvent final : public Event {
   const AtomicString& InterfaceName() const override;
 
   // GarbageCollected
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   static CookieListItem* ToCookieListItem(
       const CanonicalCookie& canonical_cookie,

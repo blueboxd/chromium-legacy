@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents_receiver_set.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "net/cookies/canonical_cookie.h"
+#include "services/network/public/mojom/fetch_api.mojom-forward.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 
@@ -201,7 +202,7 @@ class MetricsWebContentsObserver
   PageLoadTracker* GetTrackerOrNullForRequest(
       const content::GlobalRequestID& request_id,
       content::RenderFrameHost* render_frame_host_or_null,
-      blink::mojom::ResourceType resource_type,
+      network::mojom::RequestDestination request_destination,
       base::TimeTicks creation_time);
 
   // Notify all loads, provisional and committed, that we performed an action

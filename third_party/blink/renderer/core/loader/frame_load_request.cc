@@ -76,6 +76,12 @@ FrameLoadRequest::FrameLoadRequest(Document* origin_document,
   }
 }
 
+FrameLoadRequest::FrameLoadRequest(
+    Document* origin_document,
+    const ResourceRequestHead& resource_request_head)
+    : FrameLoadRequest(origin_document,
+                       ResourceRequest(resource_request_head)) {}
+
 ClientRedirectPolicy FrameLoadRequest::ClientRedirect() const {
   // Form submissions and anchor clicks have not historically been reported
   // to the extensions API as client redirects.

@@ -86,8 +86,8 @@ void LoadingStatsCollectorTest::TestRedirectStatusHistogram(
   std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(
       CreateResourceLoadInfoWithRedirects({initial_url, navigation_url}));
-  resources.push_back(
-      CreateResourceLoadInfo(script_url, blink::mojom::ResourceType::kScript));
+  resources.push_back(CreateResourceLoadInfo(
+      script_url, network::mojom::RequestDestination::kScript));
   PageRequestSummary summary =
       CreatePageRequestSummary(navigation_url, initial_url, resources);
 
@@ -121,10 +121,10 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectPrecisionRecallHistograms) {
   // know the main frame origin.
   std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(CreateResourceLoadInfo(main_frame_url));
-  resources.push_back(
-      CreateResourceLoadInfo(gen(1), blink::mojom::ResourceType::kScript));
-  resources.push_back(
-      CreateResourceLoadInfo(gen(100), blink::mojom::ResourceType::kScript));
+  resources.push_back(CreateResourceLoadInfo(
+      gen(1), network::mojom::RequestDestination::kScript));
+  resources.push_back(CreateResourceLoadInfo(
+      gen(100), network::mojom::RequestDestination::kScript));
   PageRequestSummary summary =
       CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
 
@@ -193,12 +193,12 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistograms) {
     // Simulate a page load with 3 origins.
     std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
     resources.push_back(CreateResourceLoadInfo(main_frame_url));
-    resources.push_back(
-        CreateResourceLoadInfo(gen(1), blink::mojom::ResourceType::kScript));
-    resources.push_back(
-        CreateResourceLoadInfo(gen(2), blink::mojom::ResourceType::kScript));
-    resources.push_back(
-        CreateResourceLoadInfo(gen(100), blink::mojom::ResourceType::kScript));
+    resources.push_back(CreateResourceLoadInfo(
+        gen(1), network::mojom::RequestDestination::kScript));
+    resources.push_back(CreateResourceLoadInfo(
+        gen(2), network::mojom::RequestDestination::kScript));
+    resources.push_back(CreateResourceLoadInfo(
+        gen(100), network::mojom::RequestDestination::kScript));
     PageRequestSummary summary =
         CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
 
@@ -228,8 +228,9 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsEmpty) {
 
   std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
   resources.push_back(CreateResourceLoadInfo(main_frame_url));
-  resources.push_back(CreateResourceLoadInfo(
-      "http://cdn.google.com/script.js", blink::mojom::ResourceType::kScript));
+  resources.push_back(
+      CreateResourceLoadInfo("http://cdn.google.com/script.js",
+                             network::mojom::RequestDestination::kScript));
   PageRequestSummary summary =
       CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
   stats_collector_->RecordPageRequestSummary(summary);
@@ -276,12 +277,12 @@ TEST_F(LoadingStatsCollectorTest, TestPreconnectHistogramsPreresolvesOnly) {
     // Simulate a page load with 3 origins.
     std::vector<blink::mojom::ResourceLoadInfoPtr> resources;
     resources.push_back(CreateResourceLoadInfo(main_frame_url));
-    resources.push_back(
-        CreateResourceLoadInfo(gen(1), blink::mojom::ResourceType::kScript));
-    resources.push_back(
-        CreateResourceLoadInfo(gen(2), blink::mojom::ResourceType::kScript));
-    resources.push_back(
-        CreateResourceLoadInfo(gen(100), blink::mojom::ResourceType::kScript));
+    resources.push_back(CreateResourceLoadInfo(
+        gen(1), network::mojom::RequestDestination::kScript));
+    resources.push_back(CreateResourceLoadInfo(
+        gen(2), network::mojom::RequestDestination::kScript));
+    resources.push_back(CreateResourceLoadInfo(
+        gen(100), network::mojom::RequestDestination::kScript));
     PageRequestSummary summary =
         CreatePageRequestSummary(main_frame_url, main_frame_url, resources);
 

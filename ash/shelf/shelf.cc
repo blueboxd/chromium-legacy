@@ -56,6 +56,53 @@ bool IsAppListBackground(ash::ShelfBackgroundType background_type) {
 
 namespace ash {
 
+// Records smoothness of bounds animations for the HotseatWidget.
+class HotseatWidgetAnimationMetricsReporter
+    : public HotseatTransitionAnimator::Observer,
+      public ui::AnimationMetricsReporter {
+ public:
+  explicit HotseatWidgetAnimationMetricsReporter(HotseatState state,
+                                                 Shelf* shelf)
+      : target_state_(state) {}
+
+  ~HotseatWidgetAnimationMetricsReporter() override {}
+
+  void OnHotseatTransitionAnimationStarted(HotseatState from_state,
+                                           HotseatState to_state) override {
+    target_state_ = to_state;
+  }
+
+  // ui::AnimationMetricsReporter:
+  void Report(int value) override {
+    switch (target_state_) {
+      case HotseatState::kShown:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.HotseatWidgetAnimation.AnimationSmoothness."
+            "TransitionToShownHotseat",
+            value);
+        break;
+      case HotseatState::kExtended:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.HotseatWidgetAnimation.AnimationSmoothness."
+            "TransitionToExtendedHotseat",
+            value);
+        break;
+      case HotseatState::kHidden:
+        UMA_HISTOGRAM_PERCENTAGE(
+            "Ash.HotseatWidgetAnimation.AnimationSmoothness."
+            "TransitionToHiddenHotseat",
+            value);
+        break;
+      default:
+        NOTREACHED();
+    }
+  }
+
+ private:
+  // The state to which the animation is transitioning.
+  HotseatState target_state_;
+};
+
 // Shelf::AutoHideEventHandler -----------------------------------------------
 
 // Forwards mouse and gesture events to ShelfLayoutManager for auto-hide.
@@ -218,6 +265,11 @@ void Shelf::CreateHotseatWidget(aura::Window* container) {
   hotseat_widget_ = std::make_unique<HotseatWidget>();
   hotseat_widget_->Initialize(container, this);
   shelf_widget_->RegisterHotseatWidget(hotseat_widget());
+  hotseat_transition_metrics_reporter_ =
+      std::make_unique<HotseatWidgetAnimationMetricsReporter>(
+          hotseat_widget()->state(), this);
+  shelf_widget_->hotseat_transition_animator()->AddObserver(
+      hotseat_transition_metrics_reporter_.get());
 }
 
 void Shelf::CreateStatusAreaWidget(aura::Window* status_container) {
@@ -255,6 +307,8 @@ void Shelf::CreateShelfWidget(aura::Window* root) {
 }
 
 void Shelf::ShutdownShelfWidget() {
+  shelf_widget_->hotseat_transition_animator()->RemoveObserver(
+      hotseat_transition_metrics_reporter_.get());
   // The contents view of the hotseat widget may rely on the status area widget.
   // So do explicit destruction here.
   hotseat_widget_.reset();
@@ -491,6 +545,10 @@ ShelfLockingManager* Shelf::GetShelfLockingManagerForTesting() {
 
 ShelfView* Shelf::GetShelfViewForTesting() {
   return shelf_widget_->shelf_view_for_testing();
+}
+
+ui::AnimationMetricsReporter* Shelf::GetHotseatTransitionMetricsReporter() {
+  return hotseat_transition_metrics_reporter_.get();
 }
 
 void Shelf::WillDeleteShelfLayoutManager() {

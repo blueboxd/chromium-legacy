@@ -33,7 +33,7 @@ UserMediaController::UserMediaController(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
       ContextLifecycleObserver(frame.GetDocument()) {}
 
-void UserMediaController::Trace(blink::Visitor* visitor) {
+void UserMediaController::Trace(Visitor* visitor) {
   Supplement<LocalFrame>::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(client_);

@@ -148,7 +148,7 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
                 uint16_t code,
                 const String& reason) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // FIXME: This should inherit blink::EventQueue.
@@ -174,7 +174,7 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
 
     bool IsPaused();
 
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
 
    private:
     enum State {

@@ -7,6 +7,7 @@
 #include "chrome/browser/ssl/ssl_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
 
 namespace web_app {
@@ -15,7 +16,11 @@ void CheckMixedContentLoaded(Browser* browser) {
   DCHECK(browser);
   ssl_test_util::CheckSecurityState(
       browser->tab_strip_model()->GetActiveWebContents(),
-      ssl_test_util::CertError::NONE, security_state::NONE,
+      ssl_test_util::CertError::NONE,
+      base::FeatureList::IsEnabled(
+          security_state::features::kPassiveMixedContentWarning)
+          ? security_state::WARNING
+          : security_state::NONE,
       ssl_test_util::AuthState::DISPLAYED_INSECURE_CONTENT);
 }
 

@@ -25,7 +25,7 @@ class MODULES_EXPORT TextDetector final : public ShapeDetector {
 
   explicit TextDetector(ExecutionContext*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   ~TextDetector() override = default;

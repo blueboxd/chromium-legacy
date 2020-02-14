@@ -3843,7 +3843,7 @@ std::ostream& operator<<(std::ostream& stream, const AXObject& obj) {
   return stream << obj.ToString().Utf8();
 }
 
-void AXObject::Trace(blink::Visitor* visitor) {
+void AXObject::Trace(Visitor* visitor) {
   visitor->Trace(children_);
   visitor->Trace(parent_);
   visitor->Trace(cached_live_region_root_);

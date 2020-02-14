@@ -91,7 +91,7 @@ class SpeechSynthesisUtterance final
     return ContextClient::GetExecutionContext();
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // mojom::blink::SpeechSynthesisClient
   void OnStartedSpeaking() override;

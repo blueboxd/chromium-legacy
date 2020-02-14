@@ -45,7 +45,7 @@ class MODULES_EXPORT NDEFReader : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(reading, kReading)
   ScriptPromise scan(ScriptState*, const NDEFScanOptions*, ExceptionState&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Called by NFCProxy for dispatching events.
   virtual void OnReading(const String& serial_number,

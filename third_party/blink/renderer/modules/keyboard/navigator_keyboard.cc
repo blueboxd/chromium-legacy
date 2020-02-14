@@ -34,7 +34,7 @@ Keyboard* NavigatorKeyboard::keyboard(Navigator& navigator) {
   return supplement->keyboard_;
 }
 
-void NavigatorKeyboard::Trace(blink::Visitor* visitor) {
+void NavigatorKeyboard::Trace(Visitor* visitor) {
   visitor->Trace(keyboard_);
   Supplement<Navigator>::Trace(visitor);
 }

@@ -342,11 +342,10 @@ void WebApps::Uninstall(const std::string& app_id,
 }
 
 void WebApps::PauseApp(const std::string& app_id) {
-  if (base::Contains(paused_apps_, app_id)) {
+  if (!paused_apps_.MaybeAddApp(app_id)) {
     return;
   }
 
-  paused_apps_.insert(app_id);
   SetIconEffect(app_id);
 
   for (auto* browser : *BrowserList::GetInstance()) {
@@ -360,11 +359,10 @@ void WebApps::PauseApp(const std::string& app_id) {
 }
 
 void WebApps::UnpauseApps(const std::string& app_id) {
-  if (!base::Contains(paused_apps_, app_id)) {
+  if (!paused_apps_.MaybeRemoveApp(app_id)) {
     return;
   }
 
-  paused_apps_.erase(app_id);
   SetIconEffect(app_id);
 }
 
@@ -465,7 +463,7 @@ void WebApps::OnWebAppWillBeUninstalled(const web_app::AppId& app_id) {
     return;
   }
 
-  paused_apps_.erase(web_app->app_id());
+  paused_apps_.MaybeRemoveApp(app_id);
 
   // Construct an App with only the information required to identify an
   // uninstallation.
@@ -591,7 +589,10 @@ apps::mojom::AppPtr WebApps::Convert(const web_app::WebApp* web_app,
   app->name = web_app->name();
   app->short_name = web_app->name();
   app->description = web_app->description();
-  app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffects(web_app));
+
+  bool paused = paused_apps_.IsPaused(web_app->app_id());
+  app->icon_key =
+      icon_key_factory_.MakeIconKey(GetIconEffects(web_app, paused));
   // app->version is left empty here.
   // TODO(loyso): Populate app->last_launch_time and app->install_time.
 
@@ -602,9 +603,8 @@ apps::mojom::AppPtr WebApps::Convert(const web_app::WebApp* web_app,
   app->is_platform_app = apps::mojom::OptionalBool::kFalse;
   app->recommendable = apps::mojom::OptionalBool::kTrue;
   app->searchable = apps::mojom::OptionalBool::kTrue;
-  app->paused = base::Contains(paused_apps_, web_app->app_id())
-                    ? apps::mojom::OptionalBool::kTrue
-                    : apps::mojom::OptionalBool::kFalse;
+  app->paused = paused ? apps::mojom::OptionalBool::kTrue
+                       : apps::mojom::OptionalBool::kFalse;
   SetShowInFields(app, web_app);
 
   // Get the intent filters for PWAs.
@@ -634,7 +634,8 @@ void WebApps::StartPublishingWebApps(
   subscribers_.Add(std::move(subscriber));
 }
 
-IconEffects WebApps::GetIconEffects(const web_app::WebApp* web_app) {
+IconEffects WebApps::GetIconEffects(const web_app::WebApp* web_app,
+                                    bool paused) {
   IconEffects icon_effects = IconEffects::kNone;
 #if defined(OS_CHROMEOS)
   icon_effects =
@@ -651,7 +652,7 @@ IconEffects WebApps::GetIconEffects(const web_app::WebApp* web_app) {
   }
   icon_effects =
       static_cast<IconEffects>(icon_effects | IconEffects::kRoundCorners);
-  if (base::Contains(paused_apps_, web_app->app_id())) {
+  if (paused) {
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kPaused);
   }
@@ -678,7 +679,8 @@ void WebApps::SetIconEffect(const std::string& app_id) {
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = apps::mojom::AppType::kWeb;
   app->app_id = app_id;
-  app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffects(web_app));
+  app->icon_key = icon_key_factory_.MakeIconKey(
+      GetIconEffects(web_app, paused_apps_.IsPaused(app_id)));
   Publish(std::move(app));
 }
 

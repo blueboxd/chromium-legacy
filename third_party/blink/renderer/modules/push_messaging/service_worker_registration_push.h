@@ -32,7 +32,7 @@ class ServiceWorkerRegistrationPush final
   static PushManager* pushManager(ServiceWorkerRegistration& registration);
   PushManager* pushManager();
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   Member<ServiceWorkerRegistration> registration_;

@@ -206,8 +206,7 @@ class ContentVerifierHashTest
       EnableExtension(id());
       registry_observer.WaitForExtensionLoaded();
     }
-    if (!base::Contains(verifier_observer.completed_fetches(), id()))
-      verifier_observer.WaitForFetchComplete(id());
+    verifier_observer.EnsureFetchCompleted(id());
     LOG(INFO) << "Verifier observer has seen FetchComplete";
 
     if (job_observer) {
@@ -339,8 +338,7 @@ class ContentVerifierHashTest
     }
 
     const ExtensionId& extension_id = extension->id();
-    if (!base::Contains(verifier_observer.completed_fetches(), extension_id))
-      verifier_observer.WaitForFetchComplete(extension_id);
+    verifier_observer.EnsureFetchCompleted(extension_id);
 
     info_ = std::make_unique<ExtensionInfo>(extension, type);
 
@@ -570,8 +568,7 @@ IN_PROC_BROWSER_TEST_P(ContentVerifierHashTest,
       EnableExtension(extension_id);
       registry_observer.WaitForExtensionLoaded();
     }
-    if (!base::Contains(verifier_observer.completed_fetches(), extension_id))
-      verifier_observer.WaitForFetchComplete(extension_id);
+    verifier_observer.EnsureFetchCompleted(extension_id);
     LOG(INFO) << "Verifier observer has seen FetchComplete";
 
     if (job_observer) {

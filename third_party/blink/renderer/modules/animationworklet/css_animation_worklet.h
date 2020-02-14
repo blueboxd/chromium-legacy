@@ -31,7 +31,7 @@ class MODULES_EXPORT CSSAnimationWorklet final
 
   void ContextDestroyed(ExecutionContext*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   static CSSAnimationWorklet& From(LocalDOMWindow&);

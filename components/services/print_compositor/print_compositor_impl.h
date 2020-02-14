@@ -17,13 +17,16 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "components/services/print_compositor/public/cpp/print_service_mojo_types.h"
 #include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "printing/buildflags/buildflags.h"
 #include "third_party/skia/include/core/SkPicture.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkStream.h"
+#include "ui/accessibility/ax_tree_update.h"
 
 class SkDocument;
 
@@ -61,6 +64,10 @@ class PrintCompositorImpl : public mojom::PrintCompositor {
       uint64_t frame_guid,
       base::ReadOnlySharedMemoryRegion serialized_content,
       const ContentToFrameMap& subframe_content_map) override;
+#if BUILDFLAG(ENABLE_TAGGED_PDF)
+  void SetAccessibilityTree(
+      const ui::AXTreeUpdate& accessibility_tree) override;
+#endif
   void CompositePageToPdf(
       uint64_t frame_guid,
       base::ReadOnlySharedMemoryRegion serialized_content,
@@ -240,6 +247,10 @@ class PrintCompositorImpl : public mojom::PrintCompositor {
 
   std::vector<std::unique_ptr<RequestInfo>> requests_;
   std::unique_ptr<DocumentInfo> docinfo_;
+
+  // If present, the accessibility tree for the document needed to
+  // export a tagged (accessible) PDF.
+  ui::AXTreeUpdate accessibility_tree_;
 
   DISALLOW_COPY_AND_ASSIGN(PrintCompositorImpl);
 };

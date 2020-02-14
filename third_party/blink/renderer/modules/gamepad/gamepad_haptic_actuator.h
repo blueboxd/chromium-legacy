@@ -43,7 +43,7 @@ class GamepadHapticActuator final : public ScriptWrappable,
 
   ScriptPromise reset(ScriptState*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void OnPlayEffectCompleted(ScriptPromiseResolver*,

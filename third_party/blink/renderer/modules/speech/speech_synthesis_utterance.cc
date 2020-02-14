@@ -74,7 +74,7 @@ void SpeechSynthesisUtterance::setVoice(SpeechSynthesisVoice* voice) {
   mojom_utterance_->voice = voice_ ? voice_->name() : String();
 }
 
-void SpeechSynthesisUtterance::Trace(blink::Visitor* visitor) {
+void SpeechSynthesisUtterance::Trace(Visitor* visitor) {
   visitor->Trace(synthesis_);
   visitor->Trace(voice_);
   ContextClient::Trace(visitor);

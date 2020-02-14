@@ -53,7 +53,7 @@ class ScreenOrientation final : public EventTargetWithInlineData,
   // Helper being used by this class and LockOrientationCallback.
   static const AtomicString& OrientationTypeToString(WebScreenOrientationType);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   ScreenOrientationControllerImpl* Controller();

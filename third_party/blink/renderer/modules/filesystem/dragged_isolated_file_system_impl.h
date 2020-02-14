@@ -59,7 +59,7 @@ class DraggedIsolatedFileSystemImpl final
 
   DraggedIsolatedFileSystemImpl() = default;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   static void PrepareForDataObject(DataObject*);
 

@@ -355,7 +355,7 @@ AudioParam::~AudioParam() {
   }
 }
 
-void AudioParam::Trace(blink::Visitor* visitor) {
+void AudioParam::Trace(Visitor* visitor) {
   visitor->Trace(context_);
   InspectorHelperMixin::Trace(visitor);
   ScriptWrappable::Trace(visitor);

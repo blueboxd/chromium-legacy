@@ -92,10 +92,13 @@ static_library("vr_android") {
       "arcore_device/arcore_install_helper.h",
       "arcore_device/arcore_java_utils.cc",
       "arcore_device/arcore_java_utils.h",
+      "arcore_device/arcore_plane_manager.cc",
+      "arcore_device/arcore_plane_manager.h",
       "arcore_device/arcore_sdk.h",
       "arcore_device/arcore_session_utils.h",
       "arcore_device/arcore_shim.cc",
       "arcore_device/arcore_shim.h",
+      "arcore_device/scoped_arcore_objects.h",
       "arcore_device/type_converters.cc",
       "arcore_device/type_converters.h",
     ]

@@ -1,0 +1,5 @@
+This is a testharness.js-based test.
+PASS Should not be able to create an autonomous custom element extending StdSwitchElement
+FAIL Should not be able to define a customized built-in element for std-switch assert_throws is not defined
+Harness: the test ran to completion.
+

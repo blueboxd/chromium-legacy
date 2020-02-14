@@ -139,7 +139,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
     running_on_main_thread_ = running_on_main_thread;
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   void Dispose();
 
  private:

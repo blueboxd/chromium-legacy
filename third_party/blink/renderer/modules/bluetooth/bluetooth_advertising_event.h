@@ -34,7 +34,7 @@ class BluetoothAdvertisingEvent final : public Event {
 
   ~BluetoothAdvertisingEvent() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   const AtomicString& InterfaceName() const override;
 

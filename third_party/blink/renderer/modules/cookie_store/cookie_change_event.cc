@@ -23,7 +23,7 @@ const AtomicString& CookieChangeEvent::InterfaceName() const {
   return event_interface_names::kCookieChangeEvent;
 }
 
-void CookieChangeEvent::Trace(blink::Visitor* visitor) {
+void CookieChangeEvent::Trace(Visitor* visitor) {
   Event::Trace(visitor);
   visitor->Trace(changed_);
   visitor->Trace(deleted_);

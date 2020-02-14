@@ -197,9 +197,9 @@ TEST_F(AndroidPageLoadMetricsObserverTest, LoadTimingInfo) {
       url::Origin::Create(GURL("https://ignored.com")), net::IPEndPoint(),
       frame_tree_node_id, false, /* cached */
       10 * 1024 /* size */, 0 /* original_network_content_length */,
-      nullptr
-      /* data_reduction_proxy_data */,
-      blink::mojom::ResourceType::kMainFrame, 0, std::move(load_timing_info));
+      nullptr /* data_reduction_proxy_data */,
+      network::mojom::RequestDestination::kDocument, 0,
+      std::move(load_timing_info));
   tester()->SimulateLoadedResource(info,
                                    navigation_simulator->GetGlobalRequestID());
   EXPECT_EQ(kNow.since_origin().InMilliseconds(),

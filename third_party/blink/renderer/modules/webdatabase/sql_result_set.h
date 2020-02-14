@@ -43,7 +43,7 @@ class SQLResultSet final : public ScriptWrappable {
  public:
   SQLResultSet();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   SQLResultSetRowList* rows() const;
 

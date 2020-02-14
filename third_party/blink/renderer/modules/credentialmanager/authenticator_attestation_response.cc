@@ -27,7 +27,7 @@ Vector<String> AuthenticatorAttestationResponse::getTransports() const {
   return ret;
 }
 
-void AuthenticatorAttestationResponse::Trace(blink::Visitor* visitor) {
+void AuthenticatorAttestationResponse::Trace(Visitor* visitor) {
   visitor->Trace(attestation_object_);
   AuthenticatorResponse::Trace(visitor);
 }

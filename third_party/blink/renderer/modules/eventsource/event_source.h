@@ -99,7 +99,7 @@ class MODULES_EXPORT EventSource final
   // ScriptWrappable
   bool HasPendingActivity() const final;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DidReceiveResponse(uint64_t, const ResourceResponse&) override;

@@ -7,89 +7,17 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "base/scoped_generic.h"
 #include "base/util/type_safety/id_type.h"
 #include "chrome/browser/android/vr/arcore_device/arcore.h"
+#include "chrome/browser/android/vr/arcore_device/arcore_plane_manager.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_sdk.h"
+#include "chrome/browser/android/vr/arcore_device/scoped_arcore_objects.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 
 namespace device {
 
-namespace internal {
+class ArCorePlaneManager;
 
-template <class T>
-struct ScopedGenericArObject {
-  static T InvalidValue() { return nullptr; }
-  static void Free(T object) {}
-};
-
-template <>
-void inline ScopedGenericArObject<ArSession*>::Free(ArSession* ar_session) {
-  ArSession_destroy(ar_session);
-}
-
-template <>
-void inline ScopedGenericArObject<ArFrame*>::Free(ArFrame* ar_frame) {
-  ArFrame_destroy(ar_frame);
-}
-
-template <>
-void inline ScopedGenericArObject<ArConfig*>::Free(ArConfig* ar_config) {
-  ArConfig_destroy(ar_config);
-}
-
-template <>
-void inline ScopedGenericArObject<ArPose*>::Free(ArPose* ar_pose) {
-  ArPose_destroy(ar_pose);
-}
-
-template <>
-void inline ScopedGenericArObject<ArTrackable*>::Free(
-    ArTrackable* ar_trackable) {
-  ArTrackable_release(ar_trackable);
-}
-
-template <>
-void inline ScopedGenericArObject<ArPlane*>::Free(ArPlane* ar_plane) {
-  // ArPlane itself doesn't have a method to decrease refcount, but it is an
-  // instance of ArTrackable & we have to use ArTrackable_release.
-  ArTrackable_release(ArAsTrackable(ar_plane));
-}
-
-template <>
-void inline ScopedGenericArObject<ArAnchor*>::Free(ArAnchor* ar_anchor) {
-  ArAnchor_release(ar_anchor);
-}
-
-template <>
-void inline ScopedGenericArObject<ArTrackableList*>::Free(
-    ArTrackableList* ar_trackable_list) {
-  ArTrackableList_destroy(ar_trackable_list);
-}
-
-template <>
-void inline ScopedGenericArObject<ArCamera*>::Free(ArCamera* ar_camera) {
-  // Do nothing - ArCamera has no destroy method and is managed by ArCore.
-}
-
-template <>
-void inline ScopedGenericArObject<ArHitResultList*>::Free(
-    ArHitResultList* ar_hit_result_list) {
-  ArHitResultList_destroy(ar_hit_result_list);
-}
-
-template <>
-void inline ScopedGenericArObject<ArHitResult*>::Free(
-    ArHitResult* ar_hit_result) {
-  ArHitResult_destroy(ar_hit_result);
-}
-
-template <class T>
-using ScopedArCoreObject = base::ScopedGeneric<T, ScopedGenericArObject<T>>;
-
-}  // namespace internal
-
-using PlaneId = util::IdTypeU64<class PlaneTag>;
 using AnchorId = util::IdTypeU64<class AnchorTag>;
 using HitTestSubscriptionId = util::IdTypeU64<class HitTestSubscriptionTag>;
 
@@ -174,8 +102,8 @@ class ArCoreImpl : public ArCore {
   void UnsubscribeFromHitTest(uint64_t subscription_id) override;
 
   base::Optional<uint64_t> CreateAnchor(
-      const device::mojom::PosePtr& pose) override;
-  base::Optional<uint64_t> CreateAnchor(const device::mojom::PosePtr& pose,
+      const device::mojom::Pose& pose) override;
+  base::Optional<uint64_t> CreateAnchor(const device::mojom::Pose& pose,
                                         uint64_t plane_id) override;
 
   void DetachAnchor(uint64_t anchor_id) override;
@@ -194,13 +122,6 @@ class ArCoreImpl : public ArCore {
   internal::ScopedArCoreObject<ArSession*> arcore_session_;
   internal::ScopedArCoreObject<ArFrame*> arcore_frame_;
 
-  // List of trackables - used for retrieving planes detected by ARCore. The
-  // list will initially be null - call EnsureArCorePlanesList() before using
-  // it.
-  // Allows reuse of the list across updates; ARCore clears the list on each
-  // call to the ARCore SDK.
-  internal::ScopedArCoreObject<ArTrackableList*> arcore_planes_;
-
   // List of anchors - used for retrieving anchors tracked by ARCore. The list
   // will initially be null - call EnsureArCoreAnchorsList() before using it.
   // Allows reuse of the list across updates; ARCore clears the list on each
@@ -210,21 +131,8 @@ class ArCoreImpl : public ArCore {
   // ArCore light estimation data
   internal::ScopedArCoreObject<ArLightEstimate*> arcore_light_estimate_;
 
-  // Initializes |arcore_planes_| list.
-  void EnsureArCorePlanesList();
-
   // Initializes |arcore_anchors_| list.
   void EnsureArCoreAnchorsList();
-
-  // Returns vector containing information about all planes updated in current
-  // frame, assigning IDs for newly detected planes as needed.
-  std::vector<mojom::XRPlaneDataPtr> GetUpdatedPlanesData();
-
-  // This must be called after GetUpdatedPlanesData as it assumes that all
-  // planes already have an ID assigned. The result includes freshly assigned
-  // IDs for newly detected planes along with previously known IDs for updated
-  // and unchanged planes. It excludes planes that are no longer being tracked.
-  std::vector<uint64_t> GetAllPlaneIds();
 
   // Returns vector containing information about all anchors updated in the
   // current frame.
@@ -234,10 +142,9 @@ class ArCoreImpl : public ArCore {
   // frame.
   std::vector<uint64_t> GetAllAnchorIds();
 
+  std::unique_ptr<ArCorePlaneManager> plane_manager_;
+
   uint64_t next_id_ = 1;
-  std::map<void*, PlaneId> ar_plane_address_to_id_;
-  std::map<PlaneId, device::internal::ScopedArCoreObject<ArTrackable*>>
-      plane_id_to_plane_object_;
   std::map<void*, AnchorId> ar_anchor_address_to_id_;
   std::map<AnchorId, device::internal::ScopedArCoreObject<ArAnchor*>>
       anchor_id_to_anchor_object_;
@@ -247,9 +154,8 @@ class ArCoreImpl : public ArCore {
   std::map<HitTestSubscriptionId, TransientInputHitTestSubscriptionData>
       hit_test_subscription_id_to_transient_hit_test_data_;
 
-  // Returns tuple containing plane id and a boolean signifying that the plane
+  // Returns tuple containing anchor id and a boolean signifying that the anchor
   // was created.
-  std::pair<PlaneId, bool> CreateOrGetPlaneId(void* plane_address);
   std::pair<AnchorId, bool> CreateOrGetAnchorId(void* anchor_address);
 
   HitTestSubscriptionId CreateHitTestSubscriptionId();
@@ -305,11 +211,6 @@ class ArCoreImpl : public ArCore {
       const gfx::Transform& mojo_from_viewer,
       const base::Optional<std::vector<mojom::XRInputSourceStatePtr>>&
           maybe_input_state);
-
-  // Executes |fn| for each still tracked, non-subsumed plane present in
-  // |arcore_planes_|.
-  template <typename FunctionType>
-  void ForEachArCorePlane(FunctionType fn);
 
   // Executes |fn| for each still tracked anchor present in |arcore_anchors_|.
   template <typename FunctionType>

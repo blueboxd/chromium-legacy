@@ -58,7 +58,7 @@ class MODULES_EXPORT AudioWorkletProcessor : public ScriptWrappable {
   // IDL
   MessagePort* port() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<AudioWorkletGlobalScope> global_scope_;

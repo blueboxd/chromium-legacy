@@ -290,7 +290,7 @@ SpeechSynthesisUtterance* SpeechSynthesis::CurrentSpeechUtterance() const {
   return utterance_queue_.front();
 }
 
-void SpeechSynthesis::Trace(blink::Visitor* visitor) {
+void SpeechSynthesis::Trace(Visitor* visitor) {
   visitor->Trace(voice_list_);
   visitor->Trace(utterance_queue_);
   ContextClient::Trace(visitor);

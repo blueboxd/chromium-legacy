@@ -18,7 +18,7 @@ class XRAnchorSet : public ScriptWrappable, public XRSetlike<XRAnchor> {
  public:
   explicit XRAnchorSet(HeapHashSet<Member<XRAnchor>> anchors);
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  protected:
   const HeapHashSet<Member<XRAnchor>>& elements() const override;

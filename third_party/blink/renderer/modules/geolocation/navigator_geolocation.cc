@@ -58,7 +58,7 @@ Geolocation* NavigatorGeolocation::geolocation() {
   return geolocation_;
 }
 
-void NavigatorGeolocation::Trace(blink::Visitor* visitor) {
+void NavigatorGeolocation::Trace(Visitor* visitor) {
   visitor->Trace(geolocation_);
   Supplement<Navigator>::Trace(visitor);
 }

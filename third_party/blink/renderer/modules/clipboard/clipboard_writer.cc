@@ -7,6 +7,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom-blink.h"
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
+#include "third_party/blink/renderer/core/clipboard/raw_system_clipboard.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
@@ -97,10 +98,10 @@ class ClipboardTextWriter final : public ClipboardWriter {
 // Writes a blob with arbitrary, unsanitized content to the System Clipboard.
 class ClipboardRawDataWriter final : public ClipboardWriter {
  public:
-  ClipboardRawDataWriter(SystemClipboard* system_clipboard,
+  ClipboardRawDataWriter(RawSystemClipboard* raw_system_clipboard,
                          ClipboardPromise* promise,
                          String mime_type)
-      : ClipboardWriter(system_clipboard, promise), mime_type_(mime_type) {}
+      : ClipboardWriter(raw_system_clipboard, promise), mime_type_(mime_type) {}
   ~ClipboardRawDataWriter() override = default;
 
  private:
@@ -125,7 +126,7 @@ class ClipboardRawDataWriter final : public ClipboardWriter {
     mojo_base::BigBuffer buffer(std::vector<uint8_t>(
         raw_data_pointer, raw_data_pointer + raw_data->ByteLengthAsSizeT()));
 
-    system_clipboard()->WriteRawData(mime_type_, std::move(buffer));
+    raw_system_clipboard()->Write(mime_type_, std::move(buffer));
 
     promise_->CompleteWriteRepresentation();
   }
@@ -140,13 +141,7 @@ class ClipboardRawDataWriter final : public ClipboardWriter {
 // static
 ClipboardWriter* ClipboardWriter::Create(SystemClipboard* system_clipboard,
                                          const String& mime_type,
-                                         bool is_raw,
                                          ClipboardPromise* promise) {
-  DCHECK(base::FeatureList::IsEnabled(features::kRawClipboard) || !is_raw);
-  if (is_raw) {
-    return MakeGarbageCollected<ClipboardRawDataWriter>(system_clipboard,
-                                                        promise, mime_type);
-  }
   if (mime_type == kMimeTypeImagePng) {
     return MakeGarbageCollected<ClipboardImageWriter>(system_clipboard,
                                                       promise);
@@ -158,14 +153,35 @@ ClipboardWriter* ClipboardWriter::Create(SystemClipboard* system_clipboard,
   return nullptr;
 }
 
+// static
+ClipboardWriter* ClipboardWriter::Create(
+    RawSystemClipboard* raw_system_clipboard,
+    const String& mime_type,
+    ClipboardPromise* promise) {
+  DCHECK(base::FeatureList::IsEnabled(features::kRawClipboard));
+
+  return MakeGarbageCollected<ClipboardRawDataWriter>(raw_system_clipboard,
+                                                      promise, mime_type);
+}
+
 ClipboardWriter::ClipboardWriter(SystemClipboard* system_clipboard,
+                                 ClipboardPromise* promise)
+    : ClipboardWriter(system_clipboard, nullptr, promise) {}
+
+ClipboardWriter::ClipboardWriter(RawSystemClipboard* raw_system_clipboard,
+                                 ClipboardPromise* promise)
+    : ClipboardWriter(nullptr, raw_system_clipboard, promise) {}
+
+ClipboardWriter::ClipboardWriter(SystemClipboard* system_clipboard,
+                                 RawSystemClipboard* raw_system_clipboard,
                                  ClipboardPromise* promise)
     : promise_(promise),
       clipboard_task_runner_(promise->GetExecutionContext()->GetTaskRunner(
           TaskType::kUserInteraction)),
       file_reading_task_runner_(promise->GetExecutionContext()->GetTaskRunner(
           TaskType::kFileReading)),
-      system_clipboard_(system_clipboard) {}
+      system_clipboard_(system_clipboard),
+      raw_system_clipboard_(raw_system_clipboard) {}
 
 ClipboardWriter::~ClipboardWriter() = default;
 
@@ -209,6 +225,7 @@ void ClipboardWriter::DidFail(FileErrorCode error_code) {
 void ClipboardWriter::Trace(Visitor* visitor) {
   visitor->Trace(promise_);
   visitor->Trace(system_clipboard_);
+  visitor->Trace(raw_system_clipboard_);
 }
 
 }  // namespace blink

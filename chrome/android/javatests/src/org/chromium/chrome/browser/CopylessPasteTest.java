@@ -19,6 +19,9 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
+import org.chromium.blink.mojom.Entity;
+import org.chromium.blink.mojom.Property;
+import org.chromium.blink.mojom.Values;
 import org.chromium.blink.mojom.WebPage;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.util.UrlConstants;
@@ -27,15 +30,14 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
-import org.chromium.schema_org.mojom.Entity;
-import org.chromium.schema_org.mojom.Property;
-import org.chromium.schema_org.mojom.Values;
 import org.chromium.url.mojom.Url;
 
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-/** Tests Copyless Paste AppIndexing using instrumented tests. */
+/**
+ * Tests Copyless Paste AppIndexing using instrumented tests.
+ */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=CopylessPaste"})
@@ -89,7 +91,9 @@ public class CopylessPasteTest {
         }
     }
 
-    /** Tests that CopylessPaste is disabled in Incognito tabs. */
+    /**
+     * Tests that CopylessPaste is disabled in Incognito tabs.
+     */
     @Test
     @LargeTest
     @Feature({"CopylessPaste"})
@@ -103,7 +107,9 @@ public class CopylessPasteTest {
         Assert.assertEquals(0, mCallbackHelper.getCallCount());
     }
 
-    /** Tests that CopylessPaste skips invalid schemes. */
+    /**
+     * Tests that CopylessPaste skips invalid schemes.
+     */
     @Test
     @LargeTest
     @Feature({"CopylessPaste"})
@@ -114,7 +120,9 @@ public class CopylessPasteTest {
         Assert.assertEquals(0, mCallbackHelper.getCallCount());
     }
 
-    /** Tests that CopylessPaste works on pages without desired metadata. */
+    /**
+     * Tests that CopylessPaste works on pages without desired metadata.
+     */
     @Test
     @LargeTest
     @RetryOnFailure
@@ -125,7 +133,9 @@ public class CopylessPasteTest {
         Assert.assertNull(mCallbackHelper.getWebPage());
     }
 
-    /** Tests that CopylessPaste works end-to-end. */
+    /**
+     * Tests that CopylessPaste works end-to-end.
+     */
     @Test
     @LargeTest
     @RetryOnFailure
@@ -155,7 +165,9 @@ public class CopylessPasteTest {
         Assert.assertEquals(expected.serialize(), extracted.serialize());
     }
 
-    /** Tests that CopylessPaste skips parsing visited pages. */
+    /**
+     * Tests that CopylessPaste skips parsing visited pages.
+     */
     @Test
     @LargeTest
     @RetryOnFailure

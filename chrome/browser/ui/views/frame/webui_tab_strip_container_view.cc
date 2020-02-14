@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/frame/webui_tab_strip_container_view.h"
 
+#include <string>
 #include <utility>
 
 #include "base/command_line.h"
@@ -12,6 +13,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/ranges.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -51,6 +53,8 @@
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/theme_provider.h"
+#include "ui/events/event_handler.h"
+#include "ui/events/event_target.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -147,9 +151,44 @@ class WebUITabStripContainerView::AutoCloser : public ui::EventHandler {
   bool enabled_ = false;
 };
 
+class WebUITabStripContainerView::DragToOpenHandler : public ui::EventHandler {
+ public:
+  DragToOpenHandler(WebUITabStripContainerView* container,
+                    views::View* drag_handle)
+      : container_(container), drag_handle_(drag_handle) {
+    DCHECK(container_);
+    drag_handle_->AddPostTargetHandler(this);
+  }
+
+  ~DragToOpenHandler() override { drag_handle_->RemovePostTargetHandler(this); }
+
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    switch (event->type()) {
+      case ui::ET_GESTURE_SCROLL_BEGIN:
+        event->SetHandled();
+        break;
+      case ui::ET_GESTURE_SCROLL_UPDATE:
+        container_->UpdateHeightForDragToOpen(event->details().scroll_y());
+        event->SetHandled();
+        break;
+      case ui::ET_GESTURE_SCROLL_END:
+        container_->EndDragToOpen();
+        event->SetHandled();
+        break;
+      default:
+        break;
+    }
+  }
+
+ private:
+  WebUITabStripContainerView* const container_;
+  views::View* const drag_handle_;
+};
+
 WebUITabStripContainerView::WebUITabStripContainerView(
     Browser* browser,
-    views::View* tab_contents_container)
+    views::View* tab_contents_container,
+    views::View* drag_handle)
     : browser_(browser),
       web_view_(AddChildView(
           std::make_unique<WebUITabStripWebView>(browser->profile()))),
@@ -160,7 +199,9 @@ WebUITabStripContainerView::WebUITabStripContainerView(
           base::Bind(&WebUITabStripContainerView::EventShouldPropagate,
                      base::Unretained(this)),
           base::Bind(&WebUITabStripContainerView::CloseForEventOutsideTabStrip,
-                     base::Unretained(this)))) {
+                     base::Unretained(this)))),
+      drag_to_open_handler_(
+          std::make_unique<DragToOpenHandler>(this, drag_handle)) {
   DCHECK(UseTouchableTabStrip());
   animation_.SetTweenType(gfx::Tween::Type::FAST_OUT_SLOW_IN);
 
@@ -278,6 +319,44 @@ WebUITabStripContainerView::GetAcceleratorProvider() const {
 void WebUITabStripContainerView::CloseContainer() {
   SetContainerTargetVisibility(false);
   iph_tracker_->NotifyEvent(feature_engagement::events::kWebUITabStripClosed);
+}
+
+void WebUITabStripContainerView::UpdateHeightForDragToOpen(int height_delta) {
+  if (!current_drag_height_) {
+    // If we are visible and aren't already dragging, ignore; either we are
+    // animating open, or the touch would've triggered autoclose.
+    if (GetVisible())
+      return;
+
+    SetVisible(true);
+    current_drag_height_ = 0;
+    animation_.Reset();
+  }
+
+  current_drag_height_ = base::ClampToRange(
+      *current_drag_height_ + height_delta, 0, desired_height_);
+  PreferredSizeChanged();
+}
+
+void WebUITabStripContainerView::EndDragToOpen() {
+  if (!current_drag_height_)
+    return;
+
+  const int final_drag_height = *current_drag_height_;
+  current_drag_height_ = base::nullopt;
+
+  // If we are at least halfway open by now, animate fully open.
+  // Otherwise, animate back to closed.
+  const double open_proportion =
+      static_cast<double>(final_drag_height) / desired_height_;
+  const bool opening = open_proportion >= 0.5;
+  if (opening) {
+    iph_tracker_->NotifyEvent(feature_engagement::events::kWebUITabStripOpened);
+    RecordTabStripUIOpenHistogram(TabStripUIOpenAction::kToolbarDrag);
+  }
+
+  animation_.Reset(open_proportion);
+  SetContainerTargetVisibility(opening);
 }
 
 void WebUITabStripContainerView::SetContainerTargetVisibility(
@@ -409,13 +488,15 @@ void WebUITabStripContainerView::RemovedFromWidget() {
 }
 
 int WebUITabStripContainerView::GetHeightForWidth(int w) const {
-  if (!GetVisible())
-    return 0;
-  if (!animation_.is_animating())
-    return desired_height_;
+  DCHECK(!(animation_.is_animating() && current_drag_height_));
+  if (animation_.is_animating()) {
+    return gfx::Tween::LinearIntValueBetween(animation_.GetCurrentValue(), 0,
+                                             desired_height_);
+  }
+  if (current_drag_height_)
+    return *current_drag_height_;
 
-  return gfx::Tween::LinearIntValueBetween(animation_.GetCurrentValue(), 0,
-                                           desired_height_);
+  return GetVisible() ? desired_height_ : 0;
 }
 
 void WebUITabStripContainerView::ButtonPressed(views::Button* sender,

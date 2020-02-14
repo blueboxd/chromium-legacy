@@ -28,7 +28,7 @@ class MODULES_EXPORT MediaControlOverlayPlayButtonElement final
 
   void SetIsDisplayed(bool);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   const char* GetNameForHistograms() const override;

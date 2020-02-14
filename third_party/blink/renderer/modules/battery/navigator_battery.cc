@@ -53,7 +53,7 @@ NavigatorBattery& NavigatorBattery::From(Navigator& navigator) {
   return *supplement;
 }
 
-void NavigatorBattery::Trace(blink::Visitor* visitor) {
+void NavigatorBattery::Trace(Visitor* visitor) {
   visitor->Trace(battery_manager_);
   Supplement<Navigator>::Trace(visitor);
 }

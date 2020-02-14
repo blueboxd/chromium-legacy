@@ -90,9 +90,15 @@ struct PLATFORM_EXPORT PaintChunk {
 
   std::unique_ptr<HitTestData> hit_test_data;
 
-  // The total bounds of this paint chunk's contents, in the coordinate space of
-  // the containing transform node.
+  // The total bounds of visual rects of all display items in this paint chunk,
+  // in the coordinate space of the containing transform node. This can be
+  // larger than |drawble_bounds|, because of non-drawable display items e.g.
+  // for hit testing.
   IntRect bounds;
+
+  // The total bounds of visual rects of drawable display items in this paint
+  // chunk.
+  IntRect drawable_bounds;
 
   // Some raster effects can exceed |bounds| in the rasterization space. This
   // is the maximum DisplayItemClient::VisualRectOutsetForRasterEffects() of

@@ -33,7 +33,7 @@ class NDEFWriter : public ScriptWrappable, public ContextClient {
   explicit NDEFWriter(ExecutionContext*);
   ~NDEFWriter() override = default;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Write NDEFMessageSource asynchronously to NFC tag.
   ScriptPromise write(ScriptState*,

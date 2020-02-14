@@ -26,7 +26,7 @@ class MODULES_EXPORT DOMWindowStorageController final
 
   explicit DOMWindowStorageController(Document&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   static DOMWindowStorageController& From(Document&);
 

@@ -69,7 +69,7 @@ ScriptPromise NavigatorBadge::clearAppBadge(ScriptState* script_state,
   return ClearAppBadgeHelper(script_state);
 }
 
-void NavigatorBadge::Trace(blink::Visitor* visitor) {
+void NavigatorBadge::Trace(Visitor* visitor) {
   Supplement<ExecutionContext>::Trace(visitor);
 
   visitor->Trace(context_);

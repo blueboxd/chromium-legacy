@@ -29,7 +29,7 @@ class GPUSwapChain : public ScriptWrappable,
                         const GPUSwapChainDescriptor* descriptor);
   ~GPUSwapChain() override;
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
   void Neuter();
   cc::Layer* CcLayer();

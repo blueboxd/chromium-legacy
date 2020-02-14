@@ -5,13 +5,13 @@
 #ifndef CHROME_BROWSER_APPS_APP_SERVICE_WEB_APPS_H_
 #define CHROME_BROWSER_APPS_APP_SERVICE_WEB_APPS_H_
 
-#include <set>
 #include <string>
 
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
+#include "chrome/browser/apps/app_service/paused_apps.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
@@ -127,7 +127,7 @@ class WebApps : public apps::mojom::Publisher,
   void StartPublishingWebApps(
       mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote);
 
-  IconEffects GetIconEffects(const web_app::WebApp* web_app);
+  IconEffects GetIconEffects(const web_app::WebApp* web_app, bool paused);
 
   // Get the equivalent Chrome app from |arc_package_name| and set the Chrome
   // app badge on the icon effects for the equivalent Chrome apps. If the
@@ -152,7 +152,7 @@ class WebApps : public apps::mojom::Publisher,
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
 
-  std::set<std::string> paused_apps_;
+  PausedApps paused_apps_;
 
   web_app::WebAppProvider* provider_ = nullptr;
 

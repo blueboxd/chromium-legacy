@@ -20,7 +20,7 @@ const AtomicString& ExtendableCookieChangeEvent::InterfaceName() const {
   return event_interface_names::kExtendableCookieChangeEvent;
 }
 
-void ExtendableCookieChangeEvent::Trace(blink::Visitor* visitor) {
+void ExtendableCookieChangeEvent::Trace(Visitor* visitor) {
   ExtendableEvent::Trace(visitor);
   visitor->Trace(changed_);
   visitor->Trace(deleted_);

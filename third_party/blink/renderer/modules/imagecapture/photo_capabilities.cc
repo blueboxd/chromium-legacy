@@ -45,7 +45,7 @@ bool PhotoCapabilities::IsRedEyeReductionControllable() const {
          media::mojom::blink::RedEyeReduction::CONTROLLABLE;
 }
 
-void PhotoCapabilities::Trace(blink::Visitor* visitor) {
+void PhotoCapabilities::Trace(Visitor* visitor) {
   visitor->Trace(image_height_);
   visitor->Trace(image_width_);
   ScriptWrappable::Trace(visitor);

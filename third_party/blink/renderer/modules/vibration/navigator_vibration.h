@@ -68,7 +68,7 @@ class MODULES_EXPORT NavigatorVibration final
 
   VibrationController* Controller(LocalFrame&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Inherited from ContextLifecycleObserver.

@@ -61,7 +61,7 @@ class MODULES_EXPORT ManifestManager : public GarbageCollected<ManifestManager>,
   void RequestManifestDebugInfo(
       RequestManifestDebugInfoCallback callback) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   enum ResolveState { ResolveStateSuccess, ResolveStateFailure };

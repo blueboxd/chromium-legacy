@@ -21,7 +21,7 @@ class XRTargetRaySpace : public XRSpace {
 
   base::Optional<XRNativeOriginInformation> NativeOrigin() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<XRInputSource> input_source_;

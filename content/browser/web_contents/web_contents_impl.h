@@ -62,6 +62,7 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "services/network/public/mojom/fetch_api.mojom-forward.h"
 #include "third_party/blink/public/mojom/choosers/color_chooser.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
@@ -1354,7 +1355,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       const GURL& url,
       const std::string& http_request,
       const std::string& mime_type,
-      blink::mojom::ResourceType resource_type);
+      network::mojom::RequestDestination request_destination);
   void OnDidRunInsecureContent(RenderFrameHostImpl* source,
                                const GURL& security_origin,
                                const GURL& target_url);

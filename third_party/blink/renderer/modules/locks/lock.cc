@@ -39,7 +39,7 @@ class Lock::ThenFunction final : public ScriptFunction {
   ThenFunction(ScriptState* script_state, Lock* lock, ResolveType type)
       : ScriptFunction(script_state), lock_(lock), resolve_type_(type) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(lock_);
     ScriptFunction::Trace(visitor);
   }
@@ -124,7 +124,7 @@ void Lock::ContextDestroyed(ExecutionContext* context) {
   ReleaseIfHeld();
 }
 
-void Lock::Trace(blink::Visitor* visitor) {
+void Lock::Trace(Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
   ScriptWrappable::Trace(visitor);
   visitor->Trace(resolver_);

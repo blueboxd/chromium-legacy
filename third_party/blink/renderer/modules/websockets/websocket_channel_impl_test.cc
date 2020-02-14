@@ -74,7 +74,7 @@ class MockWebSocketChannelClient
   MOCK_METHOD3(DidClose,
                void(ClosingHandshakeCompletionStatus, uint16_t, const String&));
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     WebSocketChannelClient::Trace(visitor);
   }
 };

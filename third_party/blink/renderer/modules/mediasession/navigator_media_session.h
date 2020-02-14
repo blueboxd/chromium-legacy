@@ -28,7 +28,7 @@ class NavigatorMediaSession final
 
   explicit NavigatorMediaSession(Navigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // The MediaSession instance of this Navigator.

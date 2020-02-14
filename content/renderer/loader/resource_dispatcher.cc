@@ -40,7 +40,9 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 
@@ -399,13 +401,13 @@ void ResourceDispatcher::OnTransferSizeUpdated(int request_id,
 
 ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
     std::unique_ptr<RequestPeer> peer,
-    blink::mojom::ResourceType resource_type,
+    network::mojom::RequestDestination request_destination,
     int render_frame_id,
     const GURL& request_url,
     std::unique_ptr<NavigationResponseOverrideParameters>
         navigation_response_override_params)
     : peer(std::move(peer)),
-      resource_type(resource_type),
+      request_destination(request_destination),
       render_frame_id(render_frame_id),
       url(request_url),
       response_url(request_url),
@@ -497,9 +499,10 @@ int ResourceDispatcher::StartAsync(
   CheckSchemeForReferrerPolicy(*request);
 
 #if defined(OS_ANDROID)
-  if (request->resource_type !=
-          static_cast<int>(blink::mojom::ResourceType::kMainFrame) &&
-      request->has_user_gesture) {
+  // Main frame shouldn't come here.
+  DCHECK(!(request->is_main_frame &&
+           blink::IsRequestDestinationFrame(request->destination)));
+  if (request->has_user_gesture) {
     NotifyUpdateUserGestureCarryoverInfo(request->render_frame_id);
   }
 #endif
@@ -511,24 +514,23 @@ int ResourceDispatcher::StartAsync(
   // Compute a unique request_id for this renderer process.
   int request_id = MakeRequestID();
   pending_requests_[request_id] = std::make_unique<PendingRequestInfo>(
-      std::move(peer),
-      static_cast<blink::mojom::ResourceType>(request->resource_type),
-      request->render_frame_id, request->url,
-      std::move(response_override_params));
+      std::move(peer), request->destination, request->render_frame_id,
+      request->url, std::move(response_override_params));
   PendingRequestInfo* pending_request = pending_requests_[request_id].get();
 
   pending_request->resource_load_info = NotifyResourceLoadInitiated(
       request->render_frame_id, request_id, request->url, request->method,
-      request->referrer, pending_request->resource_type, request->priority);
+      request->referrer, pending_request->request_destination,
+      request->priority);
 
   pending_request->previews_state = request->previews_state;
 
   if (override_url_loader) {
-    DCHECK(request->resource_type ==
-               static_cast<int>(blink::mojom::ResourceType::kWorker) ||
-           request->resource_type ==
-               static_cast<int>(blink::mojom::ResourceType::kSharedWorker))
-        << request->resource_type;
+    DCHECK(request->destination ==
+               network::mojom::RequestDestination::kWorker ||
+           request->destination ==
+               network::mojom::RequestDestination::kSharedWorker)
+        << request->destination;
 
     // Redirect checks are handled by NavigationURLLoaderImpl, so it's safe to
     // pass true for |bypass_redirect_checks|.

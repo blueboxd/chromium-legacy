@@ -126,7 +126,7 @@ class PaymentInstrumentParameter final
   bool has_name() const { return has_name_; }
   const String& name() const { return name_; }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->Trace(icons_);
     visitor->Trace(capabilities_);
   }

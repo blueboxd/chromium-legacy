@@ -457,7 +457,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
   UpdateRequiredPolicy();
 
   KURL url_to_request = url.IsNull() ? BlankURL() : url;
-  ResourceRequest request(url_to_request);
+  ResourceRequestHead request(url_to_request);
   request.SetReferrerPolicy(ReferrerPolicyAttribute());
 
   if (ContentFrame()) {

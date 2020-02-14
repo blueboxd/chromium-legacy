@@ -13,10 +13,11 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
-#include "base/test/task_environment.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_util.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/permissions/test/test_permissions_client.h"
+#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_context.h"
 
 namespace permissions {
 namespace {
@@ -33,29 +34,19 @@ bool FilterAll(const GURL& url) {
 
 class PermissionDecisionAutoBlockerUnitTest : public testing::Test {
  protected:
-  void SetUp() override {
-    testing::Test::SetUp();
-
-    HostContentSettingsMap::RegisterProfilePrefs(prefs_.registry());
-    settings_map_ = base::MakeRefCounted<HostContentSettingsMap>(&prefs_, false,
-                                                                 false, false);
-    autoblocker_ =
-        std::make_unique<PermissionDecisionAutoBlocker>(settings_map_.get());
-
+  PermissionDecisionAutoBlockerUnitTest() {
     feature_list_.InitWithFeatures({features::kBlockPromptsIfDismissedOften,
                                     features::kBlockPromptsIfIgnoredOften},
                                    {});
     last_embargoed_status_ = false;
-    autoblocker_->SetClockForTesting(&clock_);
+    autoblocker()->SetClockForTesting(&clock_);
     callback_was_run_ = false;
   }
 
-  void TearDown() override {
-    settings_map_->ShutdownOnUIThread();
-    testing::Test::TearDown();
+  PermissionDecisionAutoBlocker* autoblocker() {
+    return PermissionsClient::Get()->GetPermissionDecisionAutoBlocker(
+        &browser_context_);
   }
-
-  PermissionDecisionAutoBlocker* autoblocker() { return autoblocker_.get(); }
 
   void SetLastEmbargoStatus(base::Closure quit_closure, bool status) {
     callback_was_run_ = true;
@@ -73,12 +64,11 @@ class PermissionDecisionAutoBlockerUnitTest : public testing::Test {
   base::SimpleTestClock* clock() { return &clock_; }
 
  private:
-  base::test::TaskEnvironment task_environment_;
-  std::unique_ptr<PermissionDecisionAutoBlocker> autoblocker_;
-  sync_preferences::TestingPrefServiceSyncable prefs_;
-  scoped_refptr<HostContentSettingsMap> settings_map_;
-  base::test::ScopedFeatureList feature_list_;
+  content::BrowserTaskEnvironment task_environment_;
   base::SimpleTestClock clock_;
+  base::test::ScopedFeatureList feature_list_;
+  content::TestBrowserContext browser_context_;
+  TestPermissionsClient permissions_client_;
   bool last_embargoed_status_;
   bool callback_was_run_;
 };

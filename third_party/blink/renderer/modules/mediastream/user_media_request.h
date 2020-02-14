@@ -63,7 +63,7 @@ class MODULES_EXPORT UserMediaRequest final
     virtual void OnError(ScriptWrappable* callback_this_value,
                          DOMExceptionOrOverconstrainedError) = 0;
 
-    virtual void Trace(blink::Visitor*) {}
+    virtual void Trace(Visitor*) {}
 
    protected:
     Callbacks() = default;
@@ -119,7 +119,7 @@ class MODULES_EXPORT UserMediaRequest final
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   WebUserMediaRequest::MediaType media_type_;

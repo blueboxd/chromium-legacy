@@ -77,7 +77,7 @@ class PLATFORM_EXPORT RasterInvalidator {
           id(chunk_it->id),
 #endif
           bounds_in_layer(invalidator.ClipByLayerBounds(
-              mapper.MapVisualRect(chunk_it->bounds))),
+              mapper.MapVisualRect(chunk_it->drawable_bounds))),
           chunk_to_layer_clip(mapper.ClipRect()),
           chunk_to_layer_transform(mapper.Transform()) {
     }

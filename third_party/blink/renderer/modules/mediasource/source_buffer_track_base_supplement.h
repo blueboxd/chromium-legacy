@@ -24,7 +24,7 @@ class SourceBufferTrackBaseSupplement
   static SourceBuffer* sourceBuffer(TrackBase&);
   static void SetSourceBuffer(TrackBase&, SourceBuffer*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   static SourceBufferTrackBaseSupplement& From(TrackBase&);

@@ -55,7 +55,7 @@ IDBIndex::IDBIndex(scoped_refptr<IDBIndexMetadata> metadata,
 
 IDBIndex::~IDBIndex() = default;
 
-void IDBIndex::Trace(blink::Visitor* visitor) {
+void IDBIndex::Trace(Visitor* visitor) {
   visitor->Trace(object_store_);
   visitor->Trace(transaction_);
   ScriptWrappable::Trace(visitor);

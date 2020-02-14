@@ -85,7 +85,7 @@ void DirectoryEntry::removeRecursively(V8VoidCallback* success_callback,
                                   std::move(error_callback_wrapper));
 }
 
-void DirectoryEntry::Trace(blink::Visitor* visitor) {
+void DirectoryEntry::Trace(Visitor* visitor) {
   Entry::Trace(visitor);
 }
 

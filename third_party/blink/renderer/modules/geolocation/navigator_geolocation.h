@@ -45,7 +45,7 @@ class NavigatorGeolocation final
 
   explicit NavigatorGeolocation(Navigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   const char* NameInHeapSnapshot() const override {
     return "NavigatorGeolocation";
   }

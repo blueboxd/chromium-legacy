@@ -62,7 +62,7 @@ WorkletAnimationId AnimationWorklet::NextWorkletAnimationId() {
   return WorkletAnimationId(worklet_id_, ++last_animation_id_);
 }
 
-void AnimationWorklet::Trace(blink::Visitor* visitor) {
+void AnimationWorklet::Trace(Visitor* visitor) {
   Worklet::Trace(visitor);
   visitor->Trace(proxy_client_);
 }

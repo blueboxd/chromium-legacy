@@ -12,6 +12,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
@@ -46,17 +47,17 @@ void ResourceResponseReceived(int render_frame_id,
                               int request_id,
                               const GURL& response_url,
                               network::mojom::URLResponseHeadPtr response_head,
-                              blink::mojom::ResourceType resource_type,
+                              network::mojom::RequestDestination destination,
                               PreviewsState previews_state) {
   RenderFrameImpl* frame = RenderFrameImpl::FromRoutingID(render_frame_id);
   if (!frame)
     return;
-  if (!blink::IsResourceTypeFrame(resource_type)) {
+  if (!blink::IsRequestDestinationFrame(destination)) {
     frame->GetFrameHost()->SubresourceResponseStarted(
         response_url, response_head->cert_status);
   }
   frame->DidStartResponse(response_url, request_id, std::move(response_head),
-                          resource_type, previews_state);
+                          destination, previews_state);
 }
 
 void ResourceTransferSizeUpdated(int render_frame_id,
@@ -106,13 +107,13 @@ blink::mojom::ResourceLoadInfoPtr NotifyResourceLoadInitiated(
     const GURL& request_url,
     const std::string& http_method,
     const GURL& referrer,
-    blink::mojom::ResourceType resource_type,
+    network::mojom::RequestDestination request_destination,
     net::RequestPriority request_priority) {
   auto resource_load_info = blink::mojom::ResourceLoadInfo::New();
   resource_load_info->method = http_method;
   resource_load_info->original_url = request_url;
   resource_load_info->final_url = request_url;
-  resource_load_info->resource_type = resource_type;
+  resource_load_info->request_destination = request_destination;
   resource_load_info->request_id = request_id;
   resource_load_info->referrer = referrer;
   resource_load_info->network_info = blink::mojom::CommonNetworkInfo::New();
@@ -149,8 +150,8 @@ void NotifyResourceResponseReceived(
     network::mojom::URLResponseHeadPtr response_head,
     PreviewsState previews_state) {
   if (response_head->network_accessed) {
-    if (resource_load_info->resource_type ==
-        blink::mojom::ResourceType::kMainFrame) {
+    if (resource_load_info->request_destination ==
+        network::mojom::RequestDestination::kDocument) {
       UMA_HISTOGRAM_ENUMERATION("Net.ConnectionInfo.MainFrame",
                                 response_head->connection_info,
                                 net::HttpResponseInfo::NUM_OF_CONNECTION_INFOS);
@@ -174,10 +175,10 @@ void NotifyResourceResponseReceived(
   if (!task_runner)
     return;
   if (task_runner->BelongsToCurrentThread()) {
-    ResourceResponseReceived(render_frame_id, resource_load_info->request_id,
-                             resource_load_info->final_url,
-                             std::move(response_head),
-                             resource_load_info->resource_type, previews_state);
+    ResourceResponseReceived(
+        render_frame_id, resource_load_info->request_id,
+        resource_load_info->final_url, std::move(response_head),
+        resource_load_info->request_destination, previews_state);
     return;
   }
 
@@ -191,7 +192,7 @@ void NotifyResourceResponseReceived(
       base::BindOnce(ResourceResponseReceived, render_frame_id,
                      resource_load_info->request_id,
                      resource_load_info->final_url, std::move(response_head),
-                     resource_load_info->resource_type, previews_state));
+                     resource_load_info->request_destination, previews_state));
 }
 
 void NotifyResourceTransferSizeUpdated(
@@ -217,7 +218,8 @@ void NotifyResourceLoadCompleted(
     blink::mojom::ResourceLoadInfoPtr resource_load_info,
     const network::URLLoaderCompletionStatus& status) {
   RecordLoadHistograms(url::Origin::Create(resource_load_info->final_url),
-                       resource_load_info->resource_type, status.error_code);
+                       resource_load_info->request_destination,
+                       status.error_code);
 
   resource_load_info->was_cached = status.exists_in_cache;
   resource_load_info->net_error = status.error_code;
@@ -242,7 +244,7 @@ void NotifyResourceLoadCanceled(
     blink::mojom::ResourceLoadInfoPtr resource_load_info,
     int net_error) {
   RecordLoadHistograms(url::Origin::Create(resource_load_info->final_url),
-                       resource_load_info->resource_type, net_error);
+                       resource_load_info->request_destination, net_error);
 
   auto task_runner = RenderThreadImpl::DeprecatedGetMainTaskRunner();
   if (!task_runner)

@@ -118,7 +118,7 @@ void PresentationReceiver::ContextDestroyed(ExecutionContext*) {
   presentation_service_remote_.reset();
 }
 
-void PresentationReceiver::Trace(blink::Visitor* visitor) {
+void PresentationReceiver::Trace(Visitor* visitor) {
   visitor->Trace(connection_list_);
   visitor->Trace(connection_list_property_);
   ScriptWrappable::Trace(visitor);

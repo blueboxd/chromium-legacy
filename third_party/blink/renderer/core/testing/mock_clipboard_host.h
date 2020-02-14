@@ -32,9 +32,6 @@ class MockClipboardHost : public mojom::blink::ClipboardHost {
                          IsFormatAvailableCallback callback) override;
   void ReadAvailableTypes(mojom::ClipboardBuffer clipboard_buffer,
                           ReadAvailableTypesCallback callback) override;
-  void ReadAvailablePlatformSpecificFormatNames(
-      mojom::ClipboardBuffer clipboard_buffer,
-      ReadAvailablePlatformSpecificFormatNamesCallback callback) override;
   void ReadText(mojom::ClipboardBuffer clipboard_buffer,
                 ReadTextCallback callback) override;
   void ReadHtml(mojom::ClipboardBuffer clipboard_buffer,
@@ -50,7 +47,6 @@ class MockClipboardHost : public mojom::blink::ClipboardHost {
   void WriteHtml(const String& markup, const KURL& url) override;
   void WriteSmartPasteMarker() override;
   void WriteCustomData(const HashMap<String, String>& data) override;
-  void WriteRawData(const String&, mojo_base::BigBuffer) override;
   void WriteBookmark(const String& url, const String& title) override;
   void WriteImage(const SkBitmap& bitmap) override;
   void CommitWrite() override;
@@ -65,7 +61,6 @@ class MockClipboardHost : public mojom::blink::ClipboardHost {
   KURL url_;
   SkBitmap image_;
   HashMap<String, String> custom_data_;
-  HashMap<String, mojo_base::BigBuffer> raw_data_;
   bool write_smart_paste_ = false;
   bool needs_reset_ = false;
 

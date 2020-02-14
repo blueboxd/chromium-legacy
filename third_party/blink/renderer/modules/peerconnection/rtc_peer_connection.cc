@@ -632,7 +632,7 @@ bool RTCPeerConnection::EventWrapper::Setup() {
   return true;
 }
 
-void RTCPeerConnection::EventWrapper::Trace(blink::Visitor* visitor) {
+void RTCPeerConnection::EventWrapper::Trace(Visitor* visitor) {
   visitor->Trace(event_);
 }
 
@@ -3404,7 +3404,7 @@ void RTCPeerConnection::DispatchScheduledEvents() {
   events.clear();
 }
 
-void RTCPeerConnection::Trace(blink::Visitor* visitor) {
+void RTCPeerConnection::Trace(Visitor* visitor) {
   visitor->Trace(tracks_);
   visitor->Trace(rtp_senders_);
   visitor->Trace(rtp_receivers_);

@@ -49,11 +49,6 @@ void SessionAbortedDialog::Show(const std::string& user_email) {
   }
 }
 
-bool SessionAbortedDialog::Accept() {
-  Shell::Get()->session_controller()->RequestSignOut();
-  return true;
-}
-
 ui::ModalType SessionAbortedDialog::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
@@ -79,6 +74,8 @@ SessionAbortedDialog::SessionAbortedDialog() {
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
           IDS_ASH_MULTIPROFILES_SESSION_ABORT_BUTTON_LABEL));
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      []() { Shell::Get()->session_controller()->RequestSignOut(); }));
 }
 
 SessionAbortedDialog::~SessionAbortedDialog() = default;

@@ -90,7 +90,7 @@ AudioWorkletMessagingProxy* AudioWorklet::GetMessagingProxy() {
                    FindAvailableGlobalScope());
 }
 
-void AudioWorklet::Trace(blink::Visitor* visitor) {
+void AudioWorklet::Trace(Visitor* visitor) {
   visitor->Trace(context_);
   Worklet::Trace(visitor);
 }

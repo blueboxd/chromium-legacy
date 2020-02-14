@@ -29,7 +29,7 @@ class NavigatorNetworkInformation final
 
   explicit NavigatorNetworkInformation(Navigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   NetworkInformation* connection();

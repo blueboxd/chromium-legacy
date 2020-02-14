@@ -60,7 +60,7 @@ class NavigatorStorageQuota final
 
   explicit NavigatorStorageQuota(Navigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   mutable Member<DeprecatedStorageQuota> temporary_storage_;

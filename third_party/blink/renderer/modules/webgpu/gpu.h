@@ -32,7 +32,7 @@ class GPU final : public ScriptWrappable, public ContextLifecycleObserver {
   ~GPU() override;
 
   // ScriptWrappable overrides
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
   // ContextLifecycleObserver overrides
   void ContextDestroyed(ExecutionContext* execution_context) override;

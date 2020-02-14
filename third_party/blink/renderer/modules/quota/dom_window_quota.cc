@@ -65,7 +65,7 @@ DeprecatedStorageInfo* DOMWindowQuota::webkitStorageInfo() const {
   return storage_info_.Get();
 }
 
-void DOMWindowQuota::Trace(blink::Visitor* visitor) {
+void DOMWindowQuota::Trace(Visitor* visitor) {
   visitor->Trace(storage_info_);
   Supplement<LocalDOMWindow>::Trace(visitor);
 }

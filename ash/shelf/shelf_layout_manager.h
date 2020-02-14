@@ -44,7 +44,6 @@
 
 namespace ui {
 class EventHandler;
-class ImplicitAnimationObserver;
 class LocatedEvent;
 class MouseEvent;
 class MouseWheelEvent;
@@ -303,8 +302,6 @@ class ASH_EXPORT ShelfLayoutManager
     ~TargetBounds();
 
     float opacity;
-
-    gfx::Insets shelf_insets;           // Shelf insets within the screen
   };
 
   struct State {
@@ -366,13 +363,11 @@ class ASH_EXPORT ShelfLayoutManager
   // it's only allowed in tablet mode, not in laptop mode.
   bool IsDraggingWindowFromTopOrCaptionArea() const;
 
-  // Stops any animations and progresses them to the end.
-  void StopAnimating();
-
   // Calculates shelf target bounds assuming visibility of
-  // |state.visibilty_state| and |hotseat_target_state|.
-  void CalculateTargetBounds(const State& state,
-                             HotseatState hotseat_target_state);
+  // |state.visibilty_state| and |hotseat_target_state|. Returns the desired
+  // shelf insets.
+  gfx::Insets CalculateTargetBounds(const State& state,
+                                    HotseatState hotseat_target_state);
 
   // Calculates the target bounds using |state_| and updates the
   // |user_work_area_bounds_|.
@@ -592,9 +587,6 @@ class ASH_EXPORT ShelfLayoutManager
 
   // The display on which this shelf is shown.
   display::Display display_;
-
-  // Sets shelf opacity to 0 after all animations have completed.
-  std::unique_ptr<ui::ImplicitAnimationObserver> hide_animation_observer_;
 
   // The current shelf background. Should not be assigned to directly, use
   // MaybeUpdateShelfBackground() instead.

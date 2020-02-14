@@ -150,7 +150,7 @@ void SyncManager::GetRegistrationsCallback(
   }
 }
 
-void SyncManager::Trace(blink::Visitor* visitor) {
+void SyncManager::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
   ScriptWrappable::Trace(visitor);
 }

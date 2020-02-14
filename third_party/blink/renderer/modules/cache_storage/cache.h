@@ -84,7 +84,7 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
                      const CacheQueryOptions*,
                      ExceptionState&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   class BarrierCallbackForPut;

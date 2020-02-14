@@ -261,6 +261,7 @@ class CC_PAINT_EXPORT PaintImage {
   SkColorSpace* color_space() const {
     return paint_worklet_input_ ? nullptr : GetSkImage()->colorSpace();
   }
+  bool isSRGB() const;
   const gfx::Rect subset_rect() const { return subset_rect_; }
 
   // Returns whether this image will be decoded and rendered from YUV data

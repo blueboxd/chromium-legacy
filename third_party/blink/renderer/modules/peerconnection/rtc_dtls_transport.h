@@ -60,7 +60,7 @@ class MODULES_EXPORT RTCDtlsTransport final
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
   // For garbage collection.
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
   // Others
   void ChangeState(webrtc::DtlsTransportInformation info);
   webrtc::DtlsTransportInterface* native_transport();

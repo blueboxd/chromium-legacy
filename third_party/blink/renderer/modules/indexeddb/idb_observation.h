@@ -32,7 +32,7 @@ class IDBObservation final : public ScriptWrappable {
   ~IDBObservation() override;
 
   void SetIsolate(v8::Isolate* isolate);
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Implement the IDL
   ScriptValue key(ScriptState*);

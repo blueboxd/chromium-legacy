@@ -29,7 +29,7 @@ class Presentation final : public ScriptWrappable, public ContextClient {
 
   explicit Presentation(LocalFrame*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   PresentationRequest* defaultRequest() const;
   void setDefaultRequest(PresentationRequest*);

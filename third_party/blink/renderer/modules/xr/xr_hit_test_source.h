@@ -35,7 +35,7 @@ class XRHitTestSource : public ScriptWrappable {
   void Update(
       const Vector<device::mojom::blink::XRHitResultPtr>& hit_test_results);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   const uint64_t id_;

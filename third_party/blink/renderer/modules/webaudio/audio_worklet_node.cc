@@ -391,7 +391,7 @@ scoped_refptr<AudioWorkletHandler> AudioWorkletNode::GetWorkletHandler() const {
   return WrapRefCounted(&static_cast<AudioWorkletHandler&>(Handler()));
 }
 
-void AudioWorkletNode::Trace(blink::Visitor* visitor) {
+void AudioWorkletNode::Trace(Visitor* visitor) {
   visitor->Trace(parameter_map_);
   visitor->Trace(node_port_);
   AudioNode::Trace(visitor);

@@ -107,7 +107,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
             public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
                 if (mSheetContent == null) return;
                 if (heightFraction == 0.0f) mMetrics.recordMetricsForClosed(mCloseReason);
-                mSheetContent.showOpenInNewTabButton(heightFraction);
+                if (canPromoteToNewTab()) mSheetContent.showOpenInNewTabButton(heightFraction);
             }
         });
     }
@@ -187,6 +187,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
             mActivity.getCurrentTabCreator().createNewTab(
                     new LoadUrlParams(mUrl, PageTransition.LINK), TabLaunchType.FROM_LINK,
                     mActivity.getActivityTabProvider().get());
+            mMetrics.recordOpenInNewTab();
         }
     }
 
@@ -245,6 +246,11 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
             @Override
             public void titleWasSet(String title) {
                 mSheetContent.updateTitle(title);
+            }
+
+            @Override
+            public void didStartNavigation(NavigationHandle navigation) {
+                mMetrics.recordNavigateLink();
             }
 
             @Override

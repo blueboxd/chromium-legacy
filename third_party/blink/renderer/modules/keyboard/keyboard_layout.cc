@@ -114,7 +114,7 @@ void KeyboardLayout::GotKeyboardLayoutMap(
   script_promise_resolver_ = nullptr;
 }
 
-void KeyboardLayout::Trace(blink::Visitor* visitor) {
+void KeyboardLayout::Trace(Visitor* visitor) {
   visitor->Trace(script_promise_resolver_);
   ContextLifecycleObserver::Trace(visitor);
 }

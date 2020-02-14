@@ -208,7 +208,7 @@ TransformationMatrix XRRay::RawMatrix() {
   return *raw_matrix_;
 }
 
-void XRRay::Trace(blink::Visitor* visitor) {
+void XRRay::Trace(Visitor* visitor) {
   visitor->Trace(origin_);
   visitor->Trace(direction_);
   visitor->Trace(matrix_);

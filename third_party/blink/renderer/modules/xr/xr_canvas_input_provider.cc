@@ -40,7 +40,7 @@ class XRCanvasInputEventListener : public NativeEventListener {
     }
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(input_provider_);
     EventListener::Trace(visitor);
   }
@@ -128,7 +128,7 @@ void XRCanvasInputProvider::ClearInputSource() {
   input_source_ = nullptr;
 }
 
-void XRCanvasInputProvider::Trace(blink::Visitor* visitor) {
+void XRCanvasInputProvider::Trace(Visitor* visitor) {
   visitor->Trace(session_);
   visitor->Trace(canvas_);
   visitor->Trace(listener_);

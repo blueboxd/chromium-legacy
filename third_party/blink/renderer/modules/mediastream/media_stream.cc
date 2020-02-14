@@ -495,7 +495,7 @@ void MediaStream::ScheduledEventTimerFired(TimerBase*) {
   events.clear();
 }
 
-void MediaStream::Trace(blink::Visitor* visitor) {
+void MediaStream::Trace(Visitor* visitor) {
   visitor->Trace(audio_tracks_);
   visitor->Trace(video_tracks_);
   visitor->Trace(descriptor_);

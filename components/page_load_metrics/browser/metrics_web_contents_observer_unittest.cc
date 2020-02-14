@@ -23,6 +23,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
@@ -48,12 +49,12 @@ void PopulatePageLoadTiming(mojom::PageLoadTiming* timing) {
 
 blink::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
     const GURL& url,
-    blink::mojom::ResourceType resource_type) {
+    network::mojom::RequestDestination request_destination) {
   blink::mojom::ResourceLoadInfoPtr resource_load_info =
       blink::mojom::ResourceLoadInfo::New();
   resource_load_info->final_url = url;
   resource_load_info->original_url = url;
-  resource_load_info->resource_type = resource_type;
+  resource_load_info->request_destination = request_destination;
   resource_load_info->was_cached = false;
   resource_load_info->raw_body_bytes = 0;
   resource_load_info->net_error = net::OK;
@@ -1365,7 +1366,7 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_MainFrame) {
   observer()->ResourceLoadComplete(
       web_contents()->GetMainFrame(), request_id,
       *CreateResourceLoadInfo(main_resource_url,
-                              blink::mojom::ResourceType::kMainFrame));
+                              network::mojom::RequestDestination::kFrame));
   EXPECT_EQ(1u, loaded_resources().size());
   EXPECT_EQ(url::Origin::Create(main_resource_url),
             loaded_resources().back().origin_of_final_url);
@@ -1377,7 +1378,7 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_MainFrame) {
   observer()->ResourceLoadComplete(
       web_contents()->GetMainFrame(), request_id,
       *CreateResourceLoadInfo(main_resource_url,
-                              blink::mojom::ResourceType::kMainFrame));
+                              network::mojom::RequestDestination::kFrame));
   EXPECT_EQ(1u, loaded_resources().size());
   EXPECT_EQ(url::Origin::Create(main_resource_url),
             loaded_resources().back().origin_of_final_url);
@@ -1391,7 +1392,7 @@ TEST_F(MetricsWebContentsObserverTest, OnLoadedResource_Subresource) {
   observer()->ResourceLoadComplete(
       web_contents()->GetMainFrame(), content::GlobalRequestID(),
       *CreateResourceLoadInfo(loaded_resource_url,
-                              blink::mojom::ResourceType::kScript));
+                              network::mojom::RequestDestination::kScript));
 
   EXPECT_EQ(1u, loaded_resources().size());
   EXPECT_EQ(url::Origin::Create(loaded_resource_url),
@@ -1416,7 +1417,7 @@ TEST_F(MetricsWebContentsObserverTest,
   observer()->ResourceLoadComplete(
       other_web_contents->GetMainFrame(), content::GlobalRequestID(),
       *CreateResourceLoadInfo(GURL("http://www.other.com/"),
-                              blink::mojom::ResourceType::kScript));
+                              network::mojom::RequestDestination::kScript));
 
   EXPECT_TRUE(loaded_resources().empty());
 }
@@ -1430,7 +1431,7 @@ TEST_F(MetricsWebContentsObserverTest,
   observer()->ResourceLoadComplete(
       web_contents()->GetMainFrame(), content::GlobalRequestID(),
       *CreateResourceLoadInfo(loaded_resource_url,
-                              blink::mojom::ResourceType::kScript));
+                              network::mojom::RequestDestination::kScript));
 
   EXPECT_TRUE(loaded_resources().empty());
 }

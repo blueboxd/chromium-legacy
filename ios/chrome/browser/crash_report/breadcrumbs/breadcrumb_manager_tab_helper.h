@@ -12,6 +12,43 @@ namespace web {
 class WebState;
 }  // namespace web
 
+// Name of DidStartNavigation event (see WebStateObserver::DidStartNavigation).
+extern const char kBreadcrumbDidStartNavigation[];
+
+// Name of DidStartNavigation event (see WebStateObserver::DidFinishNavigation).
+extern const char kBreadcrumbDidFinishNavigation[];
+
+// Name of PageLoaded event (see WebStateObserver::PageLoaded).
+extern const char kBreadcrumbPageLoaded[];
+
+// Constants below represent metadata for breadcrumb events.
+
+// Appended to |kBreadcrumbDidFinishNavigation| event if
+// navigation is a download.
+extern const char kBreadcrumbDownload[];
+
+// Appended to |kBreadcrumbPageLoaded| event if page load has
+// failed.
+extern const char kBreadcrumbPageLoadFailure[];
+
+// Appended to |kBreadcrumbDidStartNavigation| and
+// |kBreadcrumbPageLoaded| event if the navigation url was Chrome's New Tab
+// Page.
+extern const char kBreadcrumbNtpNavigation[];
+
+// Appended to |kBreadcrumbPageLoaded| event if page load has
+// succeeded.
+extern const char kBreadcrumbPageLoadSuccess[];
+
+// Appended to |kBreadcrumbDidStartNavigation| event if navigation
+// was a client side redirect (f.e. window.open without user gesture).
+extern const char kBreadcrumbRendererInitiatedByScript[];
+
+// Appended to |kBreadcrumbDidStartNavigation| event if navigation
+// was renderer-initiated navigation with user gesture (f.e. link tap or
+// widow.open with user gesture).
+extern const char kBreadcrumbRendererInitiatedByUser[];
+
 // Handles logging of Breadcrumb events associated with |web_state_| based on
 // calls from WebStateObserver.
 class BreadcrumbManagerTabHelper

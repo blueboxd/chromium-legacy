@@ -94,7 +94,7 @@ class LockManager::LockRequestImpl final
     receiver_.reset();
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->Trace(resolver_);
     visitor->Trace(manager_);
     visitor->Trace(callback_);
@@ -416,7 +416,7 @@ bool LockManager::IsPendingRequest(LockRequestImpl* request) {
   return pending_requests_.Contains(request);
 }
 
-void LockManager::Trace(blink::Visitor* visitor) {
+void LockManager::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(pending_requests_);

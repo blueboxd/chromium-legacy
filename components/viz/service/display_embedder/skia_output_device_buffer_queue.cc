@@ -67,7 +67,7 @@ class SkiaOutputDeviceBufferQueue::Image {
     return true;
   }
 
-  SkSurface* BeginWriteSkia() {
+  void BeginWriteSkia() {
     DCHECK(!scoped_skia_write_access_);
     DCHECK(!scoped_overlay_read_access_);
     DCHECK(end_semaphores_.empty());
@@ -87,8 +87,11 @@ class SkiaOutputDeviceBufferQueue::Image {
       scoped_skia_write_access_->surface()->wait(begin_semaphores.size(),
                                                  begin_semaphores.data());
     }
+  }
 
-    return scoped_skia_write_access_->surface();
+  SkSurface* sk_surface() {
+    return scoped_skia_write_access_ ? scoped_skia_write_access_->surface()
+                                     : nullptr;
   }
 
   std::vector<GrBackendSemaphore> TakeEndWriteSkiaSemaphores() {
@@ -96,6 +99,7 @@ class SkiaOutputDeviceBufferQueue::Image {
     temp_vector.swap(end_semaphores_);
     return temp_vector;
   }
+
   void EndWriteSkia() {
     // The Flush now takes place in finishPaintCurrentBuffer on the CPU side.
     // check if end_semaphores is not empty then flash here
@@ -328,6 +332,10 @@ void SkiaOutputDeviceBufferQueue::PageFlipComplete(Image* image) {
     displayed_image_->EndPresent();
     if (!displayed_image_->present_count()) {
       available_images_.push_back(displayed_image_);
+      // Call BeginWriteSkia() for the next frame here to avoid some expensive
+      // operations on the critical code path.
+      if (!available_images_.front()->sk_surface())
+        available_images_.front()->BeginWriteSkia();
     }
   }
 
@@ -550,7 +558,9 @@ bool SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,
 SkSurface* SkiaOutputDeviceBufferQueue::BeginPaint() {
   if (!current_image_)
     current_image_ = GetNextImage();
-  return current_image_->BeginWriteSkia();
+  if (!current_image_->sk_surface())
+    current_image_->BeginWriteSkia();
+  return current_image_->sk_surface();
 }
 
 void SkiaOutputDeviceBufferQueue::EndPaint(

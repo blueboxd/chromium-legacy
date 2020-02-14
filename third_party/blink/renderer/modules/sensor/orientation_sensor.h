@@ -21,7 +21,7 @@ class OrientationSensor : public Sensor {
 
   bool isReadingDirty() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   OrientationSensor(ExecutionContext*,

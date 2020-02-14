@@ -22,7 +22,7 @@ XRViewerPose::XRViewerPose(XRSession* session,
   }
 }
 
-void XRViewerPose::Trace(blink::Visitor* visitor) {
+void XRViewerPose::Trace(Visitor* visitor) {
   visitor->Trace(views_);
   XRPose::Trace(visitor);
 }

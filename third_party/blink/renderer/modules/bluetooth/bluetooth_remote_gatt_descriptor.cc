@@ -160,7 +160,7 @@ String BluetoothRemoteGATTDescriptor::CreateInvalidDescriptorErrorMessage() {
          "after reconnecting.";
 }
 
-void BluetoothRemoteGATTDescriptor::Trace(blink::Visitor* visitor) {
+void BluetoothRemoteGATTDescriptor::Trace(Visitor* visitor) {
   visitor->Trace(characteristic_);
   visitor->Trace(value_);
   ScriptWrappable::Trace(visitor);

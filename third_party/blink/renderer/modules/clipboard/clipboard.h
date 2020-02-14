@@ -17,7 +17,6 @@
 namespace blink {
 
 class ScriptState;
-class SystemClipboard;
 
 class Clipboard : public EventTargetWithInlineData,
                   public ContextLifecycleObserver {
@@ -25,7 +24,7 @@ class Clipboard : public EventTargetWithInlineData,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  Clipboard(SystemClipboard*, ExecutionContext*);
+  explicit Clipboard(ExecutionContext* execution_context);
 
   ScriptPromise read(ScriptState*);
   ScriptPromise readText(ScriptState*);
@@ -40,9 +39,6 @@ class Clipboard : public EventTargetWithInlineData,
   void Trace(Visitor*) override;
 
  private:
-  // Access to the frame's system clipboard.
-  Member<SystemClipboard> system_clipboard_;
-
   DISALLOW_COPY_AND_ASSIGN(Clipboard);
 };
 

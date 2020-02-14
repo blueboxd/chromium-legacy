@@ -29,7 +29,7 @@ class XRFrameRequestCallbackCollection final
 
   bool IsEmpty() const { return !callbacks_.size(); }
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
   const char* NameInHeapSnapshot() const override {
     return "XRFrameRequestCallbackCollection";
   }

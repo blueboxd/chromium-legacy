@@ -28,7 +28,7 @@ KURL Credential::ParseStringAsURLOrThrow(const String& url,
   return parsed_url;
 }
 
-void Credential::Trace(blink::Visitor* visitor) {
+void Credential::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 

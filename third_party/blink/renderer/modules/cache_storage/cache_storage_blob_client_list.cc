@@ -41,7 +41,7 @@ class CacheStorageBlobClientList::Client
       owner_->RevokeClient(this);
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->Trace(owner_);
     visitor->Trace(completion_notifier_);
   }
@@ -75,7 +75,7 @@ void CacheStorageBlobClientList::AddClient(
       this, std::move(client_pending_receiver), completion_notifier));
 }
 
-void CacheStorageBlobClientList::Trace(blink::Visitor* visitor) {
+void CacheStorageBlobClientList::Trace(Visitor* visitor) {
   visitor->Trace(clients);
 }
 

@@ -57,7 +57,7 @@ void AbortPaymentRespondWithObserver::OnNoResponse() {
       ->RespondToAbortPaymentEvent(event_id_, false);
 }
 
-void AbortPaymentRespondWithObserver::Trace(blink::Visitor* visitor) {
+void AbortPaymentRespondWithObserver::Trace(Visitor* visitor) {
   RespondWithObserver::Trace(visitor);
 }
 

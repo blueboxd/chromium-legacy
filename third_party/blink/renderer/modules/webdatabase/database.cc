@@ -270,7 +270,7 @@ Database::~Database() {
   DCHECK(!Opened());
 }
 
-void Database::Trace(blink::Visitor* visitor) {
+void Database::Trace(Visitor* visitor) {
   visitor->Trace(database_context_);
   ScriptWrappable::Trace(visitor);
 }

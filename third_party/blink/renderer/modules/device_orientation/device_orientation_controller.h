@@ -36,7 +36,7 @@ class MODULES_EXPORT DeviceOrientationController
   void SetOverride(DeviceOrientationData*);
   void ClearOverride();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   static void LogToConsolePolicyFeaturesDisabled(
       LocalFrame*,

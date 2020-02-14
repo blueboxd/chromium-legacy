@@ -72,7 +72,7 @@ class BluetoothRemoteGATTCharacteristic final
   bool HasPendingActivity() const override;
 
   // Interface required by garbage collection.
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // IDL exposed interface:
   BluetoothRemoteGATTService* service() { return service_; }

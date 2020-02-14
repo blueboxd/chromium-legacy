@@ -40,6 +40,9 @@ PasswordInfobarModalOverlayRequestCallbackInstaller::
 void PasswordInfobarModalOverlayRequestCallbackInstaller::
     UpdateCredentialsCallback(OverlayRequest* request,
                               OverlayResponse* response) {
+  InfoBarIOS* infobar = GetOverlayRequestInfobar(request);
+  if (!infobar)
+    return;
   UpdateCredentialsInfo* info = response->GetInfo<UpdateCredentialsInfo>();
   interaction_handler_->UpdateCredentials(GetOverlayRequestInfobar(request),
                                           info->username(), info->password());
@@ -48,6 +51,9 @@ void PasswordInfobarModalOverlayRequestCallbackInstaller::
 void PasswordInfobarModalOverlayRequestCallbackInstaller::
     NeverSaveCredentialsCallback(OverlayRequest* request,
                                  OverlayResponse* response) {
+  InfoBarIOS* infobar = GetOverlayRequestInfobar(request);
+  if (!infobar)
+    return;
   // Inform the interaction handler to never save credentials, then add the
   // infobar removal callback as a completion.  This causes the infobar and its
   // badge to be removed once the infobar modal's dismissal finishes.
@@ -72,15 +78,20 @@ void PasswordInfobarModalOverlayRequestCallbackInstaller::
 void PasswordInfobarModalOverlayRequestCallbackInstaller::
     RemoveInfobarCompletionCallback(OverlayRequest* request,
                                     OverlayResponse* response) {
+  InfoBarIOS* infobar = GetOverlayRequestInfobar(request);
+  if (!infobar)
+    return;
   InfoBarManagerImpl::FromWebState(request->GetQueueWebState())
-      ->RemoveInfoBar(GetOverlayRequestInfobar(request));
+      ->RemoveInfoBar(infobar);
 }
 
 void PasswordInfobarModalOverlayRequestCallbackInstaller::
     PresentPasswordSettingsCompletionCallback(OverlayRequest* request,
                                               OverlayResponse* response) {
-  interaction_handler_->PresentPasswordsSettings(
-      GetOverlayRequestInfobar(request));
+  InfoBarIOS* infobar = GetOverlayRequestInfobar(request);
+  if (!infobar)
+    return;
+  interaction_handler_->PresentPasswordsSettings(infobar);
 }
 
 #pragma mark - OverlayRequestCallbackInstaller

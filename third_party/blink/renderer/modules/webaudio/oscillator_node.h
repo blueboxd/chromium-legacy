@@ -125,7 +125,7 @@ class OscillatorNode final : public AudioScheduledSourceNode {
   OscillatorNode(BaseAudioContext&,
                  const String& oscillator_type,
                  PeriodicWave* wave_table);
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   String type() const;
   void setType(const String&, ExceptionState&);

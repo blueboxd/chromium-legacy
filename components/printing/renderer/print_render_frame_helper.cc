@@ -1822,6 +1822,7 @@ void PrintRenderFrameHelper::DidFinishPrinting(PrintingResult result) {
   prep_frame_view_.reset();
   print_pages_params_.reset();
   notify_browser_of_print_failure_ = true;
+  snapshotter_.reset();
 }
 
 void PrintRenderFrameHelper::OnFramePreparedForPrintPages() {
@@ -2262,6 +2263,14 @@ void PrintRenderFrameHelper::RequestPrintPreview(PrintPreviewRequestType type) {
   const bool is_modifiable = print_preview_context_.IsModifiable();
   const bool is_pdf = print_preview_context_.IsPdf();
   const bool has_selection = print_preview_context_.HasSelection();
+
+  // If tagged PDF exporting is enabled, we also need to capture an
+  // accessibility tree. AXTreeSnapshotter should stay alive through the end of
+  // the scope of printing, because text drawing commands are only annotated
+  // with a DOMNodeId if accessibility is enabled.
+  if (delegate_->ShouldGenerateTaggedPDF())
+    snapshotter_ = render_frame()->CreateAXTreeSnapshotter();
+
   PrintHostMsg_RequestPrintPreview_Params params;
   params.is_from_arc = is_from_arc;
   params.is_modifiable = is_modifiable;
@@ -2355,6 +2364,22 @@ bool PrintRenderFrameHelper::PreviewPageRendered(
   DCHECK_GE(page_number, FIRST_PAGE_INDEX);
   DCHECK(metafile);
   DCHECK(print_preview_context_.IsModifiable());
+
+#if BUILDFLAG(ENABLE_TAGGED_PDF)
+  // For tagged PDF exporting, send a snapshot of the accessibility tree
+  // along with page 0. The accessibility tree contains the content for
+  // all of the pages of the main frame.
+  //
+  // TODO(dmazzoni) Support multi-frame tagged PDFs.
+  // http://crbug.com/1039817
+  if (snapshotter_ && page_number == 0) {
+    ui::AXTreeUpdate accessibility_tree;
+    snapshotter_->Snapshot(ui::kAXModeComplete, 0, &accessibility_tree);
+    Send(new PrintHostMsg_AccessibilityTree(
+        routing_id(), print_pages_params_->params.document_cookie,
+        accessibility_tree));
+  }
+#endif
 
   PrintHostMsg_DidPreviewPage_Params preview_page_params;
   if (!CopyMetafileDataToReadOnlySharedMem(*metafile,

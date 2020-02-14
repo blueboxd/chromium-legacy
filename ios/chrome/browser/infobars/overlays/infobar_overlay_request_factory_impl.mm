@@ -33,10 +33,13 @@ InfobarOverlayRequestFactoryImpl::CreateInfobarRequest(
     InfobarOverlayType type) {
   DCHECK(infobar);
   InfoBarIOS* infobar_ios = static_cast<InfoBarIOS*>(infobar);
-  // It is an error to call this for an InfobarType/InfobarOverlayType combo
-  // that has not been added to the factory storages.
-  return factory_storages_[infobar_ios->InfobarUIDelegate().infobarType][type]
-      ->CreateInfobarRequest(infobar_ios);
+  // TODO(crbug.com/1030357): This factory should DCHECK that |factory| is
+  // non-null after all existing infobars have been converted to using overlays.
+  // Early return in the interim to prevent crashing while the remaining
+  // infobars are being converted.
+  FactoryHelper* factory =
+      factory_storages_[infobar_ios->InfobarUIDelegate().infobarType][type];
+  return factory ? factory->CreateInfobarRequest(infobar_ios) : nullptr;
 }
 
 void InfobarOverlayRequestFactoryImpl::SetUpFactories(

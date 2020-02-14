@@ -36,7 +36,7 @@ class MODULES_EXPORT BarcodeDetector final : public ShapeDetector {
                            const BarcodeDetectorOptions*,
                            ExceptionState& exception_state);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   ~BarcodeDetector() override = default;

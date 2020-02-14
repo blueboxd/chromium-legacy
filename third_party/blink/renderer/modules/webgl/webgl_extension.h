@@ -61,7 +61,7 @@ class WebGLExtension : public ScriptWrappable {
 
   bool IsLost() { return !context_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   explicit WebGLExtension(WebGLRenderingContextBase*);

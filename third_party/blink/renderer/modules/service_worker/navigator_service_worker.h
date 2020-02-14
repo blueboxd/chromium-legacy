@@ -34,7 +34,7 @@ class MODULES_EXPORT NavigatorServiceWorker final
                                                ExceptionState&);
 
   explicit NavigatorServiceWorker(Navigator&);
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   ServiceWorkerContainer* GetOrCreateContainer(LocalFrame*, ExceptionState&);

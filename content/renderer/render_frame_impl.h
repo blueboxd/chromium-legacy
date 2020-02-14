@@ -902,7 +902,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidStartResponse(const GURL& response_url,
                         int request_id,
                         network::mojom::URLResponseHeadPtr response_head,
-                        blink::mojom::ResourceType resource_type,
+                        network::mojom::RequestDestination request_destination,
                         PreviewsState previews_state);
   void DidCompleteResponse(int request_id,
                            const network::URLLoaderCompletionStatus& status);

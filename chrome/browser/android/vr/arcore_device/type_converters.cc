@@ -36,14 +36,14 @@ gfx::Transform TypeConverter<gfx::Transform, device::mojom::VRPosePtr>::Convert(
   return gfx::ComposeTransform(decomposed);
 }
 
-gfx::Transform TypeConverter<gfx::Transform, device::mojom::PosePtr>::Convert(
-    const device::mojom::PosePtr& pose) {
+gfx::Transform TypeConverter<gfx::Transform, device::mojom::Pose>::Convert(
+    const device::mojom::Pose& pose) {
   gfx::DecomposedTransform decomposed;
-  decomposed.quaternion = pose->orientation;
+  decomposed.quaternion = pose.orientation;
 
-  decomposed.translate[0] = pose->position.x();
-  decomposed.translate[1] = pose->position.y();
-  decomposed.translate[2] = pose->position.z();
+  decomposed.translate[0] = pose.position.x();
+  decomposed.translate[1] = pose.position.y();
+  decomposed.translate[2] = pose.position.z();
 
   return gfx::ComposeTransform(decomposed);
 }

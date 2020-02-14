@@ -103,7 +103,7 @@ const KURL& BackgroundFetchRecord::ObservedUrl() const {
   return request_->url();
 }
 
-void BackgroundFetchRecord::Trace(blink::Visitor* visitor) {
+void BackgroundFetchRecord::Trace(Visitor* visitor) {
   visitor->Trace(request_);
   visitor->Trace(response_ready_property_);
   visitor->Trace(script_state_);

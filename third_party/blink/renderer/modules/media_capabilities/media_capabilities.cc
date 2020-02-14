@@ -127,7 +127,7 @@ class MediaCapabilitiesKeySystemAccessInitializer final
     resolver_->Resolve(info);
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     MediaKeySystemAccessInitializerBase::Trace(visitor);
   }
 

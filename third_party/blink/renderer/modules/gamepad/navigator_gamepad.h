@@ -70,7 +70,7 @@ class MODULES_EXPORT NavigatorGamepad final
   static GamepadList* getGamepads(Navigator&);
   GamepadList* Gamepads();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void SampleGamepads();

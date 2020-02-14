@@ -38,7 +38,6 @@
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
@@ -60,6 +59,7 @@
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_result.h"
+#include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
@@ -575,8 +575,9 @@ void PageInfo::OnSitePermissionChanged(ContentSettingsType type,
     }
   }
 
-  PermissionUmaUtil::ScopedRevocationReporter scoped_revocation_reporter(
-      profile_, site_url_, site_url_, type, PermissionSourceUI::OIB);
+  permissions::PermissionUmaUtil::ScopedRevocationReporter
+      scoped_revocation_reporter(profile_, site_url_, site_url_, type,
+                                 permissions::PermissionSourceUI::OIB);
 
   // The permission may have been blocked due to being under embargo, so if it
   // was changed away from BLOCK, clear embargo status if it exists.

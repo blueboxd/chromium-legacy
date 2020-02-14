@@ -35,7 +35,7 @@ class NavigatorBeacon final : public GarbageCollected<NavigatorBeacon>,
       const ArrayBufferViewOrBlobOrStringOrFormDataOrReadableStream&,
       ExceptionState&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool SendBeaconImpl(

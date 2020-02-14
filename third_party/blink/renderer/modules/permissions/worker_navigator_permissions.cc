@@ -38,7 +38,7 @@ Permissions* WorkerNavigatorPermissions::permissions(
   return self.permissions_;
 }
 
-void WorkerNavigatorPermissions::Trace(blink::Visitor* visitor) {
+void WorkerNavigatorPermissions::Trace(Visitor* visitor) {
   visitor->Trace(permissions_);
   Supplement<WorkerNavigator>::Trace(visitor);
 }

@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 
 using content::BrowserThread;
@@ -20,31 +21,35 @@ namespace predictors {
 
 namespace {
 
+// Called only for subresources.
 net::RequestPriority GetRequestPriority(
-    blink::mojom::ResourceType resource_type) {
-  switch (resource_type) {
-    case blink::mojom::ResourceType::kMainFrame:
-    case blink::mojom::ResourceType::kStylesheet:
-    case blink::mojom::ResourceType::kFontResource:
+    network::mojom::RequestDestination request_destination) {
+  switch (request_destination) {
+    case network::mojom::RequestDestination::kStyle:
+    case network::mojom::RequestDestination::kFont:
       return net::HIGHEST;
-    case blink::mojom::ResourceType::kScript:
+
+    case network::mojom::RequestDestination::kScript:
       return net::MEDIUM;
-    case blink::mojom::ResourceType::kSubFrame:
-    case blink::mojom::ResourceType::kImage:
-    case blink::mojom::ResourceType::kSubResource:
-    case blink::mojom::ResourceType::kObject:
-    case blink::mojom::ResourceType::kMedia:
-    case blink::mojom::ResourceType::kWorker:
-    case blink::mojom::ResourceType::kSharedWorker:
-    case blink::mojom::ResourceType::kPrefetch:
-    case blink::mojom::ResourceType::kFavicon:
-    case blink::mojom::ResourceType::kXhr:
-    case blink::mojom::ResourceType::kPing:
-    case blink::mojom::ResourceType::kServiceWorker:
-    case blink::mojom::ResourceType::kCspReport:
-    case blink::mojom::ResourceType::kPluginResource:
-    case blink::mojom::ResourceType::kNavigationPreloadMainFrame:
-    case blink::mojom::ResourceType::kNavigationPreloadSubFrame:
+
+    case network::mojom::RequestDestination::kEmpty:
+    case network::mojom::RequestDestination::kAudio:
+    case network::mojom::RequestDestination::kAudioWorklet:
+    case network::mojom::RequestDestination::kDocument:
+    case network::mojom::RequestDestination::kEmbed:
+    case network::mojom::RequestDestination::kFrame:
+    case network::mojom::RequestDestination::kIframe:
+    case network::mojom::RequestDestination::kImage:
+    case network::mojom::RequestDestination::kManifest:
+    case network::mojom::RequestDestination::kObject:
+    case network::mojom::RequestDestination::kPaintWorklet:
+    case network::mojom::RequestDestination::kReport:
+    case network::mojom::RequestDestination::kServiceWorker:
+    case network::mojom::RequestDestination::kSharedWorker:
+    case network::mojom::RequestDestination::kTrack:
+    case network::mojom::RequestDestination::kVideo:
+    case network::mojom::RequestDestination::kWorker:
+    case network::mojom::RequestDestination::kXslt:
       return net::LOWEST;
   }
 }
@@ -130,7 +135,7 @@ void LoadingPredictorTabHelper::ResourceLoadComplete(
 void LoadingPredictorTabHelper::DidLoadResourceFromMemoryCache(
     const GURL& url,
     const std::string& mime_type,
-    blink::mojom::ResourceType resource_type) {
+    network::mojom::RequestDestination request_destination) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!predictor_)
     return;
@@ -143,10 +148,10 @@ void LoadingPredictorTabHelper::DidLoadResourceFromMemoryCache(
   resource_load_info.original_url = url;
   resource_load_info.final_url = url;
   resource_load_info.mime_type = mime_type;
-  resource_load_info.resource_type = resource_type;
+  resource_load_info.request_destination = request_destination;
   resource_load_info.method = "GET";
   resource_load_info.request_priority =
-      GetRequestPriority(resource_load_info.resource_type);
+      GetRequestPriority(resource_load_info.request_destination);
   resource_load_info.network_info =
       blink::mojom::CommonNetworkInfo::New(false, false, base::nullopt);
   predictor_->loading_data_collector()->RecordResourceLoadComplete(

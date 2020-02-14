@@ -44,7 +44,7 @@ class XRFrame final : public ScriptWrappable {
   XRWorldInformation* worldInformation() const { return world_information_; }
   XRAnchorSet* trackedAnchors() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void Deactivate();
 

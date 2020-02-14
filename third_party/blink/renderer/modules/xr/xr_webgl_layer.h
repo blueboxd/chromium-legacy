@@ -76,7 +76,7 @@ class XRWebGLLayer final : public ScriptWrappable {
 
   scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   const Member<XRSession> session_;

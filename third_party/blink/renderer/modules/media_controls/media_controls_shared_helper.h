@@ -29,7 +29,7 @@ class MediaControlsSharedHelpers final {
     void Detach();
     bool IsAttached() const;
     void Invoke(ExecutionContext* context, Event* event) override;
-    void Trace(blink::Visitor* visitor) override;
+    void Trace(Visitor* visitor) override;
 
    private:
     bool attached_ = false;

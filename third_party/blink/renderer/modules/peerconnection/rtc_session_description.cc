@@ -95,7 +95,7 @@ RTCSessionDescriptionPlatform* RTCSessionDescription::WebSessionDescription() {
   return platform_session_description_;
 }
 
-void RTCSessionDescription::Trace(blink::Visitor* visitor) {
+void RTCSessionDescription::Trace(Visitor* visitor) {
   visitor->Trace(platform_session_description_);
   ScriptWrappable::Trace(visitor);
 }

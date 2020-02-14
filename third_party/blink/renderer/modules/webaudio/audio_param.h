@@ -282,7 +282,7 @@ class AudioParam final : public ScriptWrappable, public InspectorHelperMixin {
 
   ~AudioParam() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   // |handler| always returns a valid object.
   AudioParamHandler& Handler() const { return *handler_; }
   // |context| always returns a valid object.

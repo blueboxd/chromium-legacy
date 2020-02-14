@@ -109,7 +109,11 @@ class ASH_EXPORT OverviewWindowDragController {
   SplitViewController::SnapPosition GetSnapPosition(
       const gfx::PointF& location_in_screen) const;
 
-  void SnapWindow(SplitViewController::SnapPosition snap_position);
+  // Snaps and activates the window. Uses the divider spawn animation (see
+  // |SplitViewController::SnapWindow|). Sets |item_| to null because the
+  // overview item is destroyed.
+  void SnapWindow(SplitViewController* split_view_controller,
+                  SplitViewController::SnapPosition snap_position);
 
   OverviewSession* overview_session_;
 

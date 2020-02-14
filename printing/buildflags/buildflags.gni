@@ -17,6 +17,9 @@ declare_args() {
   # enable_basic_printing within the same declare_args() block.
   enable_print_preview = !is_android && !is_chromecast && !is_ios && !is_fuchsia
 
+  # Enable exporting to tagged PDF.
+  enable_tagged_pdf = !is_android && !is_chromecast && !is_ios && !is_fuchsia
+
   if (use_fuzzing_engine && is_linux) {
     # For fuzzing, just restrict to chromeos and linux.
     use_cups = true

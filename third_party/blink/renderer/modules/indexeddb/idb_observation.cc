@@ -81,7 +81,7 @@ void IDBObservation::SetIsolate(v8::Isolate* isolate) {
   value_->Value()->SetIsolate(isolate);
 }
 
-void IDBObservation::Trace(blink::Visitor* visitor) {
+void IDBObservation::Trace(Visitor* visitor) {
   visitor->Trace(key_range_);
   visitor->Trace(value_);
   ScriptWrappable::Trace(visitor);

@@ -49,7 +49,7 @@ double Magnetometer::z(bool& is_null) const {
   return GetReading().magn.z;
 }
 
-void Magnetometer::Trace(blink::Visitor* visitor) {
+void Magnetometer::Trace(Visitor* visitor) {
   Sensor::Trace(visitor);
 }
 

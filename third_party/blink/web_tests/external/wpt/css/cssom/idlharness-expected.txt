@@ -80,7 +80,7 @@ PASS StyleSheet interface: attribute parentStyleSheet
 PASS StyleSheet interface: attribute title
 PASS StyleSheet interface: attribute media
 PASS StyleSheet interface: attribute disabled
-FAIL CSSStyleSheet interface: existence and properties of interface object assert_throws: interface object didn't throw TypeError when called as a constructor function "function() {
+FAIL CSSStyleSheet interface: existence and properties of interface object assert_throws_js: interface object didn't throw TypeError when called as a constructor function "function() {
                 new interface_object();
             }" did not throw
 PASS CSSStyleSheet interface object length

@@ -40,7 +40,7 @@ class LoadingPredictorTabHelper
   void DidLoadResourceFromMemoryCache(
       const GURL& url,
       const std::string& mime_type,
-      blink::mojom::ResourceType resource_type) override;
+      network::mojom::RequestDestination request_destination) override;
   void DocumentOnLoadCompletedInMainFrame() override;
 
   void SetLoadingPredictorForTesting(

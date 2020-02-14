@@ -51,7 +51,7 @@ class MediaStreamTrackEvent final : public Event {
   // Event
   const AtomicString& InterfaceName() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<MediaStreamTrack> track_;

@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -24,6 +23,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/pref_names.h"
 #include "components/history/core/browser/history_service.h"
+#include "components/permissions/permission_uma_util.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/ssl_status.h"
@@ -299,7 +299,7 @@ TEST_F(PageInfoBubbleViewTest, NotificationPermissionRevokeUkm) {
 
   ukm_recorder.ExpectEntrySourceHasUrl(entry, origin_url);
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Source"),
-            static_cast<int64_t>(PermissionSourceUI::OIB));
+            static_cast<int64_t>(permissions::PermissionSourceUI::OIB));
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "PermissionType"),
             static_cast<int64_t>(ContentSettingsType::NOTIFICATIONS));
   EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Action"),

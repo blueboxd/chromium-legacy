@@ -106,7 +106,7 @@ RespondWithObserver::RespondWithObserver(ExecutionContext* context,
       state_(kInitial),
       observer_(observer) {}
 
-void RespondWithObserver::Trace(blink::Visitor* visitor) {
+void RespondWithObserver::Trace(Visitor* visitor) {
   visitor->Trace(observer_);
   ContextClient::Trace(visitor);
 }

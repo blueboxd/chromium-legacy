@@ -4927,18 +4927,19 @@ void RenderFrameImpl::DidLoadResourceFromMemoryCache(
   // message is needed to display the correct SSL indicators.
   Send(new FrameHostMsg_DidLoadResourceFromMemoryCache(
       routing_id_, request.Url(), request.HttpMethod().Utf8(),
-      response.MimeType().Utf8(), WebURLRequestToResourceType(request)));
+      response.MimeType().Utf8(), request.GetRequestDestination()));
 }
 
 void RenderFrameImpl::DidStartResponse(
     const GURL& response_url,
     int request_id,
     network::mojom::URLResponseHeadPtr response_head,
-    blink::mojom::ResourceType resource_type,
+    network::mojom::RequestDestination request_destination,
     PreviewsState previews_state) {
-  for (auto& observer : observers_)
+  for (auto& observer : observers_) {
     observer.DidStartResponse(response_url, request_id, *response_head,
-                              resource_type, previews_state);
+                              request_destination, previews_state);
+  }
 }
 
 void RenderFrameImpl::DidCompleteResponse(

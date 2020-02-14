@@ -91,7 +91,7 @@ class MODULES_EXPORT WaitUntilObserver final
   // TODO(falken): Can this just use Event::IsBeingDispatched?
   bool IsDispatchingEvent() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class InternalsServiceWorker;

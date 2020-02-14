@@ -152,7 +152,7 @@ class MODULES_EXPORT DOMFileSystemBase : public ScriptWrappable {
                      EntriesCallbacks::ErrorCallback,
                      SynchronousType = kAsynchronous);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   DOMFileSystemBase(ExecutionContext*,

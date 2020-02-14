@@ -98,6 +98,9 @@ ResourceRequest::ResourceRequest(const String& url_string)
 
 ResourceRequest::ResourceRequest(const KURL& url) : ResourceRequestHead(url) {}
 
+ResourceRequest::ResourceRequest(const ResourceRequestHead& head)
+    : ResourceRequestHead(head) {}
+
 ResourceRequest& ResourceRequest::operator=(const ResourceRequest&) = default;
 
 ResourceRequest::ResourceRequest(ResourceRequest&&) = default;

@@ -42,7 +42,7 @@ const AtomicString& NDEFReadingEvent::InterfaceName() const {
   return event_interface_names::kNDEFReadingEvent;
 }
 
-void NDEFReadingEvent::Trace(blink::Visitor* visitor) {
+void NDEFReadingEvent::Trace(Visitor* visitor) {
   visitor->Trace(message_);
   Event::Trace(visitor);
 }

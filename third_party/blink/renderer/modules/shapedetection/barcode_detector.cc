@@ -193,7 +193,7 @@ void BarcodeDetector::OnConnectionError() {
   }
 }
 
-void BarcodeDetector::Trace(blink::Visitor* visitor) {
+void BarcodeDetector::Trace(Visitor* visitor) {
   ShapeDetector::Trace(visitor);
   visitor->Trace(detect_requests_);
 }

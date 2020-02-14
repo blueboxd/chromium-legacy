@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_APPS_APP_SERVICE_EXTENSION_APPS_H_
 
 #include <map>
-#include <set>
 #include <string>
 
 #include "base/macros.h"
@@ -14,6 +13,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
+#include "chrome/browser/apps/app_service/paused_apps.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/services/app_service/public/cpp/instance.h"
 #include "chrome/services/app_service/public/cpp/instance_registry.h"
@@ -188,7 +188,8 @@ class ExtensionApps : public apps::mojom::Publisher,
                      std::vector<apps::mojom::AppPtr>* apps_out);
 
   // Calculate the icon effects for the extension.
-  IconEffects GetIconEffects(const extensions::Extension* extension);
+  IconEffects GetIconEffects(const extensions::Extension* extension,
+                             bool paused);
 
   // Get the equivalent Chrome app from |arc_package_name| and set the Chrome
   // app badge on the icon effects for the equivalent Chrome apps. If the
@@ -229,7 +230,7 @@ class ExtensionApps : public apps::mojom::Publisher,
   using EnableFlowPtr = std::unique_ptr<ExtensionAppsEnableFlow>;
   std::map<std::string, EnableFlowPtr> enable_flow_map_;
 
-  std::set<std::string> paused_apps_;
+  PausedApps paused_apps_;
 
   std::map<extensions::AppWindow*, aura::Window*> app_window_to_aura_window_;
 

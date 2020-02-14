@@ -63,7 +63,7 @@ class MODULES_EXPORT NavigatorContentUtils final
                                         const String& url,
                                         ExceptionState&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void SetClientForTest(NavigatorContentUtilsClient* client) {
     client_ = client;

@@ -54,7 +54,7 @@ class MODULES_EXPORT SpeechRecognitionErrorEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }
+  void Trace(Visitor* visitor) override { Event::Trace(visitor); }
 
  private:
   String error_;

@@ -235,12 +235,14 @@ VerifierObserver::~VerifierObserver() {
   ContentVerifier::SetObserverForTests(nullptr);
 }
 
-void VerifierObserver::WaitForFetchComplete(const ExtensionId& extension_id) {
+void VerifierObserver::EnsureFetchCompleted(const ExtensionId& extension_id) {
   EXPECT_TRUE(content::BrowserThread::CurrentlyOn(creation_thread_));
+  if (base::Contains(completed_fetches_, extension_id))
+    return;
   EXPECT_TRUE(id_to_wait_for_.empty());
   EXPECT_EQ(loop_runner_.get(), nullptr);
   id_to_wait_for_ = extension_id;
-  loop_runner_ = new content::MessageLoopRunner();
+  loop_runner_ = base::MakeRefCounted<content::MessageLoopRunner>();
   loop_runner_->Run();
   id_to_wait_for_.clear();
   loop_runner_ = nullptr;
@@ -256,8 +258,10 @@ void VerifierObserver::OnFetchComplete(const ExtensionId& extension_id,
     return;
   }
   completed_fetches_.insert(extension_id);
-  if (extension_id == id_to_wait_for_)
+  if (extension_id == id_to_wait_for_) {
+    DCHECK(loop_runner_);
     loop_runner_->Quit();
+  }
 }
 
 // ContentHashResult ----------------------------------------------------------

@@ -53,7 +53,7 @@ class DOMWindowCrypto final : public GarbageCollected<DOMWindowCrypto>,
 
   Crypto* crypto() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   mutable Member<Crypto> crypto_;

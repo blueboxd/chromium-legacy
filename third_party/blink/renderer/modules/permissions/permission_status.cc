@@ -101,7 +101,7 @@ void PermissionStatus::OnPermissionStatusChange(MojoPermissionStatus status) {
   DispatchEvent(*Event::Create(event_type_names::kChange));
 }
 
-void PermissionStatus::Trace(blink::Visitor* visitor) {
+void PermissionStatus::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleStateObserver::Trace(visitor);
 }

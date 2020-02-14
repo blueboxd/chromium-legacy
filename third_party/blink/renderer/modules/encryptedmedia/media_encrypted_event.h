@@ -50,7 +50,7 @@ class MediaEncryptedEvent final : public Event {
   String initDataType() const { return init_data_type_; }
   DOMArrayBuffer* initData() const { return init_data_.Get(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   String init_data_type_;

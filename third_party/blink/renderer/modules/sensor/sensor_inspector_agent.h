@@ -16,7 +16,7 @@ class SensorProviderProxy;
 class SensorInspectorAgent : public GarbageCollected<SensorInspectorAgent> {
  public:
   explicit SensorInspectorAgent(Document* document);
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
   void DidCommitLoadForLocalFrame(LocalFrame* frame);
 

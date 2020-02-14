@@ -303,7 +303,7 @@ scoped_refptr<StaticBitmapImage> XRWebGLLayer::TransferToStaticBitmapImage() {
   return nullptr;
 }
 
-void XRWebGLLayer::Trace(blink::Visitor* visitor) {
+void XRWebGLLayer::Trace(Visitor* visitor) {
   visitor->Trace(session_);
   visitor->Trace(left_viewport_);
   visitor->Trace(right_viewport_);

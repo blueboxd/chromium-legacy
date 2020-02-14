@@ -436,7 +436,6 @@ cast_source_set("browser") {
     deps += [
       "//chromecast/internal/shell/browser:cast_content_browser_internal_manifest_overlay",
       "//chromecast/internal/shell/browser:cast_content_packaged_services_internal_manifest_overlay",
-      "//chromecast/internal/shell/browser:cast_content_renderer_internal_manifest_overlay",
     ]
 
     defines = [ "USE_INTERNAL_OVERLAY_MANIFESTS=1" ]

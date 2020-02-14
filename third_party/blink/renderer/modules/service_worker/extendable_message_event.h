@@ -77,7 +77,7 @@ class MODULES_EXPORT ExtendableMessageEvent final : public ExtendableEvent {
 
   const AtomicString& InterfaceName() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   scoped_refptr<SerializedScriptValue> serialized_data_;

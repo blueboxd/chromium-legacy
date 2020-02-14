@@ -52,7 +52,7 @@ void GamepadDispatcher::InitializeHaptics() {
   }
 }
 
-void GamepadDispatcher::Trace(blink::Visitor* visitor) {
+void GamepadDispatcher::Trace(Visitor* visitor) {
   PlatformEventDispatcher::Trace(visitor);
 }
 

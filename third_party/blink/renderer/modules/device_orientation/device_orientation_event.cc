@@ -79,7 +79,7 @@ const AtomicString& DeviceOrientationEvent::InterfaceName() const {
   return event_interface_names::kDeviceOrientationEvent;
 }
 
-void DeviceOrientationEvent::Trace(blink::Visitor* visitor) {
+void DeviceOrientationEvent::Trace(Visitor* visitor) {
   visitor->Trace(orientation_);
   Event::Trace(visitor);
 }

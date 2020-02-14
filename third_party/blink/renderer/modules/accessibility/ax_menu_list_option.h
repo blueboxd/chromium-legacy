@@ -43,7 +43,7 @@ class AXMenuListOption final : public AXMockObject {
   int SetSize() const override;
 
  private:
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   bool IsMenuListOption() const override { return true; }
 

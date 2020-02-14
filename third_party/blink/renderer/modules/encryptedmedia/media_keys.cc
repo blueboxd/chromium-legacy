@@ -96,7 +96,7 @@ class MediaKeys::PendingAction final
                 const String& string_data)
       : type_(type), result_(result), data_(data), string_data_(string_data) {}
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->Trace(result_);
     visitor->Trace(data_);
   }
@@ -154,7 +154,7 @@ class SetCertificateResultPromise
         exception_code, system_code, error_message);
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(media_keys_);
     ContentDecryptionModuleResultPromise::Trace(visitor);
   }
@@ -190,7 +190,7 @@ class GetStatusForPolicyResultPromise
     Resolve(EncryptedMediaUtils::ConvertKeyStatusToString(key_status));
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(media_keys_);
     ContentDecryptionModuleResultPromise::Trace(visitor);
   }
@@ -423,7 +423,7 @@ WebContentDecryptionModule* MediaKeys::ContentDecryptionModule() {
   return cdm_.get();
 }
 
-void MediaKeys::Trace(blink::Visitor* visitor) {
+void MediaKeys::Trace(Visitor* visitor) {
   visitor->Trace(pending_actions_);
   visitor->Trace(media_element_);
   ScriptWrappable::Trace(visitor);

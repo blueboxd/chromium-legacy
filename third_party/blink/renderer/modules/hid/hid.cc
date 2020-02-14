@@ -252,7 +252,7 @@ void HID::OnServiceConnectionError() {
     resolver->Resolve(HeapVector<Member<HIDDevice>>());
 }
 
-void HID::Trace(blink::Visitor* visitor) {
+void HID::Trace(Visitor* visitor) {
   visitor->Trace(get_devices_promises_);
   visitor->Trace(request_device_promises_);
   visitor->Trace(device_cache_);

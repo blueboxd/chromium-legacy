@@ -72,7 +72,7 @@ class MODULES_EXPORT CSSPaintDefinition final
 
   ScriptState* GetScriptState() const { return script_state_; }
 
-  virtual void Trace(blink::Visitor* visitor);
+  virtual void Trace(Visitor* visitor);
   const char* NameInHeapSnapshot() const override {
     return "CSSPaintDefinition";
   }

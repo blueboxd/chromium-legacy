@@ -27,7 +27,7 @@ class WorkerNavigatorMediaCapabilities final
 
   explicit WorkerNavigatorMediaCapabilities(WorkerNavigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   static WorkerNavigatorMediaCapabilities& From(WorkerNavigator&);

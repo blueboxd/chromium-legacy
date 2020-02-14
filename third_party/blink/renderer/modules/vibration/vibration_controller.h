@@ -65,7 +65,7 @@ class MODULES_EXPORT VibrationController final
 
   VibrationPattern Pattern() const { return pattern_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Inherited from ContextLifecycleObserver.

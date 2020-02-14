@@ -30,7 +30,7 @@ class RTCErrorEvent final : public Event {
 
   RTCError* error() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<RTCError> error_;

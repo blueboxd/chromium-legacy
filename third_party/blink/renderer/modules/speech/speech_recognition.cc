@@ -224,7 +224,7 @@ SpeechRecognition::SpeechRecognition(LocalFrame* frame,
 
 SpeechRecognition::~SpeechRecognition() = default;
 
-void SpeechRecognition::Trace(blink::Visitor* visitor) {
+void SpeechRecognition::Trace(Visitor* visitor) {
   visitor->Trace(grammars_);
   visitor->Trace(controller_);
   visitor->Trace(final_results_);

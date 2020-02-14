@@ -19,6 +19,7 @@ class ChromePrintRenderFrameHelperDelegate
   blink::WebElement GetPdfElement(blink::WebLocalFrame* frame) override;
   bool IsPrintPreviewEnabled() override;
   bool OverridePrint(blink::WebLocalFrame* frame) override;
+  bool ShouldGenerateTaggedPDF() override;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePrintRenderFrameHelperDelegate);
 };

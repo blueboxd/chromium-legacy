@@ -53,7 +53,7 @@ class ServiceWorkerRegistrationNotifications final
   // ContextLifecycleObserver interface.
   void ContextDestroyed(ExecutionContext* context) override;
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   static ServiceWorkerRegistrationNotifications& From(

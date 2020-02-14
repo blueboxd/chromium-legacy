@@ -43,7 +43,7 @@ PushManager* ServiceWorkerRegistrationPush::pushManager() {
   return push_manager_.Get();
 }
 
-void ServiceWorkerRegistrationPush::Trace(blink::Visitor* visitor) {
+void ServiceWorkerRegistrationPush::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
   visitor->Trace(push_manager_);
   Supplement<ServiceWorkerRegistration>::Trace(visitor);

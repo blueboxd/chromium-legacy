@@ -31,7 +31,7 @@ class WorkerNavigatorUSB final : public GarbageCollected<WorkerNavigatorUSB>,
 
   explicit WorkerNavigatorUSB(WorkerNavigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<USB> usb_;

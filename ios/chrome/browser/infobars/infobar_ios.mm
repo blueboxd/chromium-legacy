@@ -53,6 +53,10 @@ void InfoBarIOS::RemoveView() {
   [controller_ removeView];
 }
 
+base::WeakPtr<InfoBarIOS> InfoBarIOS::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
 #pragma mark - InfoBarControllerDelegate
 
 bool InfoBarIOS::IsOwned() {

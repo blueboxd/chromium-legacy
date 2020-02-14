@@ -359,7 +359,7 @@ bool EventSource::HasPendingActivity() const {
   return state_ != kClosed;
 }
 
-void EventSource::Trace(blink::Visitor* visitor) {
+void EventSource::Trace(Visitor* visitor) {
   visitor->Trace(parser_);
   visitor->Trace(loader_);
   EventTargetWithInlineData::Trace(visitor);

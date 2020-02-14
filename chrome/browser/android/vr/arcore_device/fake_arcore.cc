@@ -304,16 +304,14 @@ mojom::XRLightEstimationDataPtr FakeArCore::GetLightEstimationData() {
   return result;
 }
 
-base::Optional<uint64_t> FakeArCore::CreateAnchor(const mojom::PosePtr& pose,
+base::Optional<uint64_t> FakeArCore::CreateAnchor(const mojom::Pose& pose,
                                                   uint64_t plane_id) {
   // TODO(992035): Fix this when implementing tests.
   return CreateAnchor(pose);
 }
 
-base::Optional<uint64_t> FakeArCore::CreateAnchor(const mojom::PosePtr& pose) {
-  DCHECK(pose);
-
-  anchors_[next_id_] = {pose->position, pose->orientation};
+base::Optional<uint64_t> FakeArCore::CreateAnchor(const mojom::Pose& pose) {
+  anchors_[next_id_] = {pose.position, pose.orientation};
   int32_t anchor_id = next_id_;
 
   next_id_++;

@@ -70,19 +70,19 @@ PageRequestSummary CreatePageRequestSummary(
 
 blink::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
     const std::string& url,
-    blink::mojom::ResourceType resource_type =
-        blink::mojom::ResourceType::kMainFrame,
+    network::mojom::RequestDestination request_destination =
+        network::mojom::RequestDestination::kDocument,
     bool always_access_network = false);
 
 blink::mojom::ResourceLoadInfoPtr CreateLowPriorityResourceLoadInfo(
     const std::string& url,
-    blink::mojom::ResourceType resource_type =
-        blink::mojom::ResourceType::kMainFrame);
+    network::mojom::RequestDestination request_destination =
+        network::mojom::RequestDestination::kDocument);
 
 blink::mojom::ResourceLoadInfoPtr CreateResourceLoadInfoWithRedirects(
     const std::vector<std::string>& redirect_chain,
-    blink::mojom::ResourceType resource_type =
-        blink::mojom::ResourceType::kMainFrame);
+    network::mojom::RequestDestination request_destination =
+        network::mojom::RequestDestination::kDocument);
 
 PreconnectPrediction CreatePreconnectPrediction(
     std::string host,

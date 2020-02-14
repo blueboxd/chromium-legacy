@@ -75,7 +75,7 @@ String AXVirtualObject::TextAlternative(bool recursive,
                              &found_text_alternative);
 }
 
-void AXVirtualObject::Trace(blink::Visitor* visitor) {
+void AXVirtualObject::Trace(Visitor* visitor) {
   visitor->Trace(accessible_node_);
   AXObject::Trace(visitor);
 }

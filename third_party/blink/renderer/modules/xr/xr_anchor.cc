@@ -75,7 +75,7 @@ void XRAnchor::detach() {
   session_->xr()->xrEnvironmentProviderRemote()->DetachAnchor(id_);
 }
 
-void XRAnchor::Trace(blink::Visitor* visitor) {
+void XRAnchor::Trace(Visitor* visitor) {
   visitor->Trace(session_);
   visitor->Trace(anchor_space_);
   ScriptWrappable::Trace(visitor);

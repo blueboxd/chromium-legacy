@@ -28,7 +28,7 @@ class WorkerNavigatorWakeLock final
 
   explicit WorkerNavigatorWakeLock(WorkerNavigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   WakeLock* GetWakeLock(ScriptState*);

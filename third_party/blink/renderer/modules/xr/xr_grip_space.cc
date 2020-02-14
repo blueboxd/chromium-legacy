@@ -40,7 +40,7 @@ base::Optional<XRNativeOriginInformation> XRGripSpace::NativeOrigin() const {
   return input_source_->nativeOrigin();
 }
 
-void XRGripSpace::Trace(blink::Visitor* visitor) {
+void XRGripSpace::Trace(Visitor* visitor) {
   visitor->Trace(input_source_);
   XRSpace::Trace(visitor);
 }

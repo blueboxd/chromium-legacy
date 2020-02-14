@@ -99,7 +99,7 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
       const device::mojom::blink::XRInputSourceStatePtr& state);
   bool IsVisible() const { return state_.is_visible; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // In order to ease copying, any new member variables that can be trivially

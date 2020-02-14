@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/metrics/histogram_functions.h"
-#include "components/schema_org/common/metadata.mojom-blink.h"
 #include "third_party/blink/public/mojom/document_metadata/document_metadata.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -27,14 +26,14 @@ namespace blink {
 
 namespace {
 
+using mojom::blink::Entity;
+using mojom::blink::EntityPtr;
+using mojom::blink::Property;
+using mojom::blink::PropertyPtr;
+using mojom::blink::Values;
+using mojom::blink::ValuesPtr;
 using mojom::blink::WebPage;
 using mojom::blink::WebPagePtr;
-using schema_org::mojom::blink::Entity;
-using schema_org::mojom::blink::EntityPtr;
-using schema_org::mojom::blink::Property;
-using schema_org::mojom::blink::PropertyPtr;
-using schema_org::mojom::blink::Values;
-using schema_org::mojom::blink::ValuesPtr;
 
 // App Indexing enforces a max nesting depth of 5. Our top level message
 // corresponds to the WebPage, so this only leaves 4 more levels. We will parse

@@ -184,11 +184,6 @@ void SystemClipboard::WriteImage(const SkBitmap& bitmap) {
   clipboard_->WriteImage(bitmap);
 }
 
-void SystemClipboard::WriteRawData(const String& type,
-                                   mojo_base::BigBuffer data) {
-  clipboard_->WriteRawData(type, std::move(data));
-}
-
 String SystemClipboard::ReadCustomData(const String& type) {
   if (!IsValidBufferType(buffer_))
     return String();

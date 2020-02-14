@@ -260,7 +260,7 @@ const base::Feature kDesktopPWAsTabStrip{"DesktopPWAsTabStrip",
 // TODO(crbug.com/877898): Enable and delete this feature flag before
 // kDesktopPWAsWithoutExtensions launch.
 const base::Feature kDesktopPWAsUnifiedUiController{
-    "DesktopPWAsUnifiedUiController", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DesktopPWAsUnifiedUiController", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables use of new Desktop PWAs launch manager by
 // extensions-based bookmark apps. (Note that Bookmark apps not based
@@ -342,6 +342,12 @@ const base::Feature kEnterpriseReportingInChromeOS{
 const base::Feature kEventBasedStatusReporting{
     "EventBasedStatusReporting", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
+
+// If enabled, generate a tagged (accessible) file when printing to PDF.
+// The plan is for this to go away once tagged PDFs become the default.
+// See https://crbug.com/607777
+const base::Feature kExportTaggedPDF{"ExportTaggedPDF",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled, this feature's |kExternalInstallDefaultButtonKey| field trial
 // parameter value controls which |ExternalInstallBubbleAlert| button is the

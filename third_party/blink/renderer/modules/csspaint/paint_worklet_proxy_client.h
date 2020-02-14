@@ -74,7 +74,7 @@ class MODULES_EXPORT PaintWorkletProxyClient
   // after the first have no effect.
   void Dispose();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Hooks for testing.
   const Vector<CrossThreadPersistent<PaintWorkletGlobalScope>>&

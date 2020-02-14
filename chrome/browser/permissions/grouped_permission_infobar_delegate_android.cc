@@ -10,13 +10,13 @@
 #include "chrome/browser/permissions/notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_prompt_android.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/ui/android/infobars/grouped_permission_infobar.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/infobar.h"
 #include "components/permissions/permission_request.h"
+#include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/web_contents.h"
@@ -24,7 +24,8 @@
 #include "ui/strings/grit/ui_strings.h"
 
 GroupedPermissionInfoBarDelegate::~GroupedPermissionInfoBarDelegate() {
-  PermissionUmaUtil::RecordInfobarDetailsExpanded(details_expanded_);
+  permissions::PermissionUmaUtil::RecordInfobarDetailsExpanded(
+      details_expanded_);
 }
 
 // static

@@ -17,7 +17,7 @@ namespace blink {
 class IntersectionObserver;
 class IntersectionObserverEntry;
 class HTMLFrameOwnerElement;
-class ResourceRequest;
+class ResourceRequestHead;
 class Visitor;
 
 class LazyLoadFrameObserver final
@@ -44,7 +44,7 @@ class LazyLoadFrameObserver final
   explicit LazyLoadFrameObserver(HTMLFrameOwnerElement&);
   ~LazyLoadFrameObserver();
 
-  void DeferLoadUntilNearViewport(const ResourceRequest&, WebFrameLoadType);
+  void DeferLoadUntilNearViewport(const ResourceRequestHead&, WebFrameLoadType);
   bool IsLazyLoadPending() const { return lazy_load_intersection_observer_; }
   void CancelPendingLazyLoad();
 

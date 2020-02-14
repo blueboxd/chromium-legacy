@@ -3,5 +3,9 @@ include_rules = [
   "+components/keyed_service/content",
   "+components/keyed_service/core",
   "+components/sync_preferences",
+  "+components/ukm/content",
   "+content/public/browser",
+  "+content/public/common",
+  "+content/public/test",
+  "+services/metrics/public/cpp",
 ]

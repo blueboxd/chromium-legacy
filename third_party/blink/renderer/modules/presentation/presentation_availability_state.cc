@@ -136,7 +136,7 @@ void PresentationAvailabilityState::UpdateAvailability(
   }
 }
 
-void PresentationAvailabilityState::Trace(blink::Visitor* visitor) {
+void PresentationAvailabilityState::Trace(Visitor* visitor) {
   visitor->Trace(availability_listeners_);
 }
 

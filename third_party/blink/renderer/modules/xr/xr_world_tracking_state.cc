@@ -33,7 +33,7 @@ XRWorldTrackingState::XRWorldTrackingState(
   }
 }
 
-void XRWorldTrackingState::Trace(blink::Visitor* visitor) {
+void XRWorldTrackingState::Trace(Visitor* visitor) {
   visitor->Trace(plane_detection_state_);
   visitor->Trace(light_estimation_state_);
   ScriptWrappable::Trace(visitor);

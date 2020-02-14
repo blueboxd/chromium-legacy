@@ -78,7 +78,7 @@ class GainNode final : public AudioNode {
 
   GainNode(BaseAudioContext&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   AudioParam* gain() const;
 

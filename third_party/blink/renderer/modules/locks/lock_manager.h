@@ -43,7 +43,7 @@ class LockManager final : public ScriptWrappable,
 
   ScriptPromise query(ScriptState*, ExceptionState&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Terminate all outstanding requests when the context is destroyed, since
   // this can unblock requests by other contexts.

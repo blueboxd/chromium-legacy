@@ -39,7 +39,7 @@ blink::mojom::ResourceLoadInfoPtr NotifyResourceLoadInitiated(
     const GURL& request_url,
     const std::string& http_method,
     const GURL& referrer,
-    blink::mojom::ResourceType resource_type,
+    network::mojom::RequestDestination request_destination,
     net::RequestPriority request_priority);
 
 void NotifyResourceRedirectReceived(

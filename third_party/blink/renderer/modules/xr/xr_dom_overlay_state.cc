@@ -24,7 +24,7 @@ const String MapOverlayType(XRDOMOverlayState::DOMOverlayType type) {
 XRDOMOverlayState::XRDOMOverlayState(DOMOverlayType type)
     : type_string_(MapOverlayType(type)) {}
 
-void XRDOMOverlayState::Trace(blink::Visitor* visitor) {
+void XRDOMOverlayState::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 

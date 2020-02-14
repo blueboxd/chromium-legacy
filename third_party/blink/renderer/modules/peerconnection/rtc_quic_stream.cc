@@ -400,7 +400,7 @@ ExecutionContext* RTCQuicStream::GetExecutionContext() const {
   return ContextClient::GetExecutionContext();
 }
 
-void RTCQuicStream::Trace(blink::Visitor* visitor) {
+void RTCQuicStream::Trace(Visitor* visitor) {
   visitor->Trace(transport_);
   visitor->Trace(pending_read_buffered_amount_promises_);
   visitor->Trace(pending_write_buffered_amount_promises_);

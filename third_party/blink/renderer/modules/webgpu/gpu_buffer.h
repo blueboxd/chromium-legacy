@@ -30,7 +30,7 @@ class GPUBuffer : public DawnObject<WGPUBuffer> {
   explicit GPUBuffer(GPUDevice* device, uint64_t size, WGPUBuffer buffer);
   ~GPUBuffer() override;
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
   // gpu_buffer.idl
   void setSubData(uint64_t dst_byte_offset,

@@ -5,6 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_COMMON_INFOBARS_INFOBAR_OVERLAY_REQUEST_CONFIG_H_
 #define IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_COMMON_INFOBARS_INFOBAR_OVERLAY_REQUEST_CONFIG_H_
 
+#include "base/memory/weak_ptr.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
 #import "ios/chrome/browser/infobars/overlays/infobar_overlay_type.h"
 #include "ios/chrome/browser/overlays/public/overlay_request_config.h"
@@ -19,7 +20,7 @@ class InfobarOverlayRequestConfig
   ~InfobarOverlayRequestConfig() override;
 
   // The infobar that triggered this OverlayRequest.
-  InfoBarIOS* infobar() const { return infobar_; }
+  InfoBarIOS* infobar() const { return infobar_.get(); }
   // |infobar_|'s type.
   InfobarType infobar_type() const { return infobar_type_; }
   // Whether |infobar_| has a badge.
@@ -32,7 +33,7 @@ class InfobarOverlayRequestConfig
   explicit InfobarOverlayRequestConfig(InfoBarIOS* infobar,
                                        InfobarOverlayType overlay_type);
 
-  InfoBarIOS* infobar_ = nullptr;
+  base::WeakPtr<InfoBarIOS> infobar_ = nullptr;
   InfobarType infobar_type_;
   bool has_badge_ = false;
   InfobarOverlayType overlay_type_;

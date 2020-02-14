@@ -25,7 +25,7 @@ class XRBoundedReferenceSpace final : public XRReferenceSpace {
 
   base::Optional<XRNativeOriginInformation> NativeOrigin() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void OnReset() override;
 

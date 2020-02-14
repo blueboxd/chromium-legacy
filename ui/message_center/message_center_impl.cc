@@ -411,8 +411,10 @@ void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
 
   if (HasMessageCenterView()) {
     notification_list_->MarkSinglePopupAsShown(id, mark_notification_as_read);
-    for (auto& observer : observer_list_)
+    for (auto& observer : observer_list_) {
       observer.OnNotificationUpdated(id);
+      observer.OnNotificationPopupShown(id, mark_notification_as_read);
+    }
   } else {
     RemoveNotification(id, false);
   }

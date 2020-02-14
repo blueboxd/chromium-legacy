@@ -237,7 +237,7 @@ class MediaControlsImpl::MediaControlsResizeObserverDelegate final
     controls_->NotifyElementSizeChanged(entries[0]->contentRect());
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(controls_);
     ResizeObserver::Delegate::Trace(visitor);
   }
@@ -297,7 +297,7 @@ class MediaControlsImpl::MediaElementMutationCallback
 
   void Disconnect() { observer_->disconnect(); }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(controls_);
     visitor->Trace(observer_);
     MutationObserver::Delegate::Trace(visitor);
@@ -2125,7 +2125,7 @@ HTMLVideoElement& MediaControlsImpl::VideoElement() {
   return *To<HTMLVideoElement>(&MediaElement());
 }
 
-void MediaControlsImpl::Trace(blink::Visitor* visitor) {
+void MediaControlsImpl::Trace(Visitor* visitor) {
   visitor->Trace(element_mutation_callback_);
   visitor->Trace(resize_observer_);
   visitor->Trace(panel_);

@@ -204,7 +204,7 @@ void ServiceWorkerContainer::ContextDestroyed(ExecutionContext*) {
   controller_ = nullptr;
 }
 
-void ServiceWorkerContainer::Trace(blink::Visitor* visitor) {
+void ServiceWorkerContainer::Trace(Visitor* visitor) {
   visitor->Trace(controller_);
   visitor->Trace(ready_);
   visitor->Trace(dom_content_loaded_observer_);

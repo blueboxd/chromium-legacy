@@ -54,7 +54,7 @@ class WorkerGlobalScopeCrypto final
 
   WorkerGlobalScopeCrypto();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   mutable Member<Crypto> crypto_;

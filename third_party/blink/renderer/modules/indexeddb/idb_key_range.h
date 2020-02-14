@@ -76,9 +76,7 @@ class MODULES_EXPORT IDBKeyRange final : public ScriptWrappable {
                                       const ScriptValue&,
                                       ExceptionState&);
 
-  void Trace(blink::Visitor* visitor) override {
-    ScriptWrappable::Trace(visitor);
-  }
+  void Trace(Visitor* visitor) override { ScriptWrappable::Trace(visitor); }
 
   // Implement the IDBKeyRange IDL
   IDBKey* Lower() const { return lower_.get(); }

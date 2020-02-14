@@ -100,10 +100,6 @@ class PrerenderContents::WebContentsDelegateImpl
     return false;
   }
 
-  void CloseContents(content::WebContents* contents) override {
-    prerender_contents_->Destroy(FINAL_STATUS_CLOSED);
-  }
-
   void CanDownload(const GURL& url,
                    const std::string& request_method,
                    base::OnceCallback<void(bool)> callback) override {

@@ -121,7 +121,7 @@ AudioListener::AudioListener(BaseAudioContext& context)
 
 AudioListener::~AudioListener() = default;
 
-void AudioListener::Trace(blink::Visitor* visitor) {
+void AudioListener::Trace(Visitor* visitor) {
   visitor->Trace(position_x_);
   visitor->Trace(position_y_);
   visitor->Trace(position_z_);

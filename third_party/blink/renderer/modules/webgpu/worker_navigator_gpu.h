@@ -30,7 +30,7 @@ class WorkerNavigatorGPU final : public GarbageCollected<WorkerNavigatorGPU>,
 
   explicit WorkerNavigatorGPU(WorkerNavigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<GPU> gpu_;

@@ -128,7 +128,7 @@ void OrientationSensor::OnSensorReadingChanged() {
   Sensor::OnSensorReadingChanged();
 }
 
-void OrientationSensor::Trace(blink::Visitor* visitor) {
+void OrientationSensor::Trace(Visitor* visitor) {
   Sensor::Trace(visitor);
 }
 

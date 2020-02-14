@@ -91,8 +91,8 @@ class ArCore {
 
   virtual void UnsubscribeFromHitTest(uint64_t subscription_id) = 0;
 
-  virtual base::Optional<uint64_t> CreateAnchor(const mojom::PosePtr& pose) = 0;
-  virtual base::Optional<uint64_t> CreateAnchor(const mojom::PosePtr& pose,
+  virtual base::Optional<uint64_t> CreateAnchor(const mojom::Pose& pose) = 0;
+  virtual base::Optional<uint64_t> CreateAnchor(const mojom::Pose& pose,
                                                 uint64_t plane_id) = 0;
 
   virtual void DetachAnchor(uint64_t anchor_id) = 0;

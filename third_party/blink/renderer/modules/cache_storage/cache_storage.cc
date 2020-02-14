@@ -496,7 +496,7 @@ bool CacheStorage::HasPendingActivity() const {
   return ever_used_;
 }
 
-void CacheStorage::Trace(blink::Visitor* visitor) {
+void CacheStorage::Trace(Visitor* visitor) {
   visitor->Trace(scoped_fetcher_);
   visitor->Trace(blob_client_list_);
   ScriptWrappable::Trace(visitor);

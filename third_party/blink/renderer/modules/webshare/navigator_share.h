@@ -48,7 +48,7 @@ class MODULES_EXPORT NavigatorShare final
                              const ShareData*,
                              ExceptionState&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   class ShareClientImpl;

@@ -150,6 +150,13 @@ void PrintCompositorImpl::AddSubframeContent(
   UpdateRequestsWithSubframeInfo(frame_guid, pending_subframes);
 }
 
+#if BUILDFLAG(ENABLE_TAGGED_PDF)
+void PrintCompositorImpl::SetAccessibilityTree(
+    const ui::AXTreeUpdate& accessibility_tree) {
+  accessibility_tree_ = accessibility_tree;
+}
+#endif
+
 void PrintCompositorImpl::CompositePageToPdf(
     uint64_t frame_guid,
     base::ReadOnlySharedMemoryRegion serialized_content,
@@ -338,7 +345,7 @@ mojom::PrintCompositor::Status PrintCompositorImpl::CompositeToPdf(
 
   SkDynamicMemoryWStream wstream;
   sk_sp<SkDocument> doc =
-      MakePdfDocument(creator_, ui::AXTreeUpdate(), &wstream);
+      MakePdfDocument(creator_, accessibility_tree_, &wstream);
 
   for (const auto& page : pages) {
     SkCanvas* canvas = doc->beginPage(page.fSize.width(), page.fSize.height());

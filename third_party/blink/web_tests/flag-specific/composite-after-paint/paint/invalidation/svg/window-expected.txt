@@ -82,11 +82,6 @@
           "reason": "paint property change"
         },
         {
-          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
-          "rect": [615, 115, 12, 11],
-          "reason": "paint property change"
-        },
-        {
           "object": "LayoutSVGContainer use id='maximizeButtonnavWindow'",
           "rect": [615, 99, 12, 11],
           "reason": "paint property change"
@@ -97,13 +92,18 @@
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutSVGContainer use id='minimizeButtonnestedWindow'",
-          "rect": [349, 184, 12, 11],
+          "object": "LayoutSVGContainer use id='closeButtoncolourPickerWindow'",
+          "rect": [235, 197, 12, 11],
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutSVGContainer use id='closeButtoncolourPickerWindow'",
-          "rect": [235, 197, 12, 11],
+          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
+          "rect": [615, 123, 12, 3],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonnestedWindow'",
+          "rect": [349, 192, 12, 3],
           "reason": "chunk appeared"
         },
         {
@@ -112,11 +112,6 @@
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutSVGContainer use id='minimizeButtonstatusWindow'",
-          "rect": [363, 345, 11, 12],
-          "reason": "chunk appeared"
-        },
-        {
           "object": "LayoutSVGContainer use id='maximizeButtonnavWindow'",
           "rect": [769, 94, 11, 11],
           "reason": "chunk appeared"
@@ -124,26 +119,11 @@
         {
           "object": "LayoutSVGContainer use id='maximizeButtonnavWindow'",
           "rect": [769, 94, 11, 11],
-          "reason": "paint property change"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
-          "rect": [756, 94, 11, 11],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
-          "rect": [756, 94, 11, 11],
           "reason": "paint property change"
         },
         {
           "object": "LayoutSVGContainer use id='maximizeButtonbigWindow'",
           "rect": [558, 145, 11, 11],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtonbigWindow'",
-          "rect": [545, 145, 11, 11],
           "reason": "chunk appeared"
         },
         {
@@ -154,11 +134,6 @@
         {
           "object": "LayoutSVGContainer use id='maximizeButtonsmallWindow'",
           "rect": [441, 379, 11, 11],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtonsmallWindow'",
-          "rect": [428, 379, 11, 11],
           "reason": "chunk appeared"
         },
         {
@@ -177,8 +152,33 @@
           "reason": "chunk appeared"
         },
         {
+          "object": "LayoutSVGContainer use id='minimizeButtonbigWindow'",
+          "rect": [545, 153, 11, 3],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonstatusWindow'",
+          "rect": [363, 354, 11, 3],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
+          "rect": [756, 103, 11, 2],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
+          "rect": [756, 103, 11, 2],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutSVGContainer use id='minimizeButtonsmallWindow'",
+          "rect": [428, 388, 11, 2],
+          "reason": "chunk appeared"
+        },
+        {
           "object": "LayoutSVGContainer use id='minimizeButtoncolourPickerWindow'",
-          "rect": [209, 197, 11, 11],
+          "rect": [209, 206, 11, 2],
           "reason": "chunk appeared"
         }
       ]

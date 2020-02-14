@@ -41,7 +41,7 @@ class MODULES_EXPORT XRRigidTransform : public ScriptWrappable {
   TransformationMatrix InverseTransformMatrix();
   TransformationMatrix TransformMatrix();  // copies matrix_
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DecomposeMatrix();

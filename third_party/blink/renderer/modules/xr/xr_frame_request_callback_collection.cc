@@ -68,7 +68,7 @@ void XRFrameRequestCallbackCollection::ExecuteCallbacks(XRSession* session,
   current_callbacks_.clear();
 }
 
-void XRFrameRequestCallbackCollection::Trace(blink::Visitor* visitor) {
+void XRFrameRequestCallbackCollection::Trace(Visitor* visitor) {
   visitor->Trace(callbacks_);
   visitor->Trace(current_callbacks_);
   visitor->Trace(context_);

@@ -36,7 +36,7 @@ class NavigatorInstalledApp final
 
   explicit NavigatorInstalledApp(Navigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 };
 
 }  // namespace blink

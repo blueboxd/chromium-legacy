@@ -11,7 +11,8 @@ class TimeDelta;
 
 enum class TabStripUIOpenAction {
   kTapOnTabCounter = 0,
-  kMaxValue = kTapOnTabCounter,
+  kToolbarDrag = 1,
+  kMaxValue = kToolbarDrag,
 };
 
 enum class TabStripUICloseAction {

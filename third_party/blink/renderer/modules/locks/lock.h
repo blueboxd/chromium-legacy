@@ -35,7 +35,7 @@ class Lock final : public ScriptWrappable, public ContextLifecycleObserver {
        LockManager*);
   ~Lock() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void Dispose();
 

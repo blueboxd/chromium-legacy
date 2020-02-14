@@ -171,7 +171,7 @@ PaymentRequestRespondWithObserver::PaymentRequestRespondWithObserver(
     WaitUntilObserver* observer)
     : RespondWithObserver(context, event_id, observer) {}
 
-void PaymentRequestRespondWithObserver::Trace(blink::Visitor* visitor) {
+void PaymentRequestRespondWithObserver::Trace(Visitor* visitor) {
   RespondWithObserver::Trace(visitor);
 }
 

@@ -269,7 +269,7 @@ MediaElementAudioSourceNode* MediaElementAudioSourceNode::Create(
   return Create(*context, *options->mediaElement(), exception_state);
 }
 
-void MediaElementAudioSourceNode::Trace(blink::Visitor* visitor) {
+void MediaElementAudioSourceNode::Trace(Visitor* visitor) {
   visitor->Trace(media_element_);
   AudioSourceProviderClient::Trace(visitor);
   AudioNode::Trace(visitor);

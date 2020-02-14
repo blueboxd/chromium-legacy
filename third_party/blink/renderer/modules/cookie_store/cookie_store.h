@@ -66,7 +66,7 @@ class CookieStore final : public EventTargetWithInlineData,
                        ExceptionState&);
 
   // GarbageCollected
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;

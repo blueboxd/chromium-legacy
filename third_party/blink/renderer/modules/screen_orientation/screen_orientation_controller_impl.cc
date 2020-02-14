@@ -219,7 +219,7 @@ void ScreenOrientationControllerImpl::ContextDestroyed(ExecutionContext*) {
   active_lock_ = false;
 }
 
-void ScreenOrientationControllerImpl::Trace(blink::Visitor* visitor) {
+void ScreenOrientationControllerImpl::Trace(Visitor* visitor) {
   visitor->Trace(orientation_);
   ContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);

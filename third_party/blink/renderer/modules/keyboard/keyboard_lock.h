@@ -30,7 +30,7 @@ class KeyboardLock final : public GarbageCollected<KeyboardLock>,
   void unlock(ScriptState*);
 
   // ContextLifecycleObserver override.
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Returns true if the local frame is attached to the renderer.

@@ -319,7 +319,7 @@ bool USB::IsFeatureEnabled(ReportOptions report_options) const {
       mojom::blink::FeaturePolicyFeature::kUsb, report_options);
 }
 
-void USB::Trace(blink::Visitor* visitor) {
+void USB::Trace(Visitor* visitor) {
   visitor->Trace(get_devices_requests_);
   visitor->Trace(get_permission_requests_);
   visitor->Trace(device_cache_);

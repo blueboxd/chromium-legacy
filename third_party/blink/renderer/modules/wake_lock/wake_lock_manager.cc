@@ -96,7 +96,7 @@ void WakeLockManager::OnWakeLockConnectionError() {
   ClearWakeLocks();
 }
 
-void WakeLockManager::Trace(blink::Visitor* visitor) {
+void WakeLockManager::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
   visitor->Trace(wake_lock_sentinels_);
 }

@@ -184,7 +184,7 @@ void PeriodicSyncManager::UnregisterCallback(
   }
 }
 
-void PeriodicSyncManager::Trace(blink::Visitor* visitor) {
+void PeriodicSyncManager::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
   ScriptWrappable::Trace(visitor);
 }

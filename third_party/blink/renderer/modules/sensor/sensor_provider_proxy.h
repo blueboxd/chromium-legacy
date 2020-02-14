@@ -39,7 +39,7 @@ class MODULES_EXPORT SensorProviderProxy final
   void set_inspector_mode(bool flag) { inspector_mode_ = flag; }
   bool inspector_mode() const { return inspector_mode_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class SensorProxy;

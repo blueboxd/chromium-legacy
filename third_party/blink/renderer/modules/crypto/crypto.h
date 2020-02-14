@@ -51,7 +51,7 @@ class Crypto final : public ScriptWrappable {
 
   SubtleCrypto* subtle();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<SubtleCrypto> subtle_crypto_;

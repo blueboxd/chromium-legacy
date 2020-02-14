@@ -259,6 +259,7 @@ void LocalFrame::Trace(Visitor* visitor) {
   visitor->Trace(smooth_scroll_sequencer_);
   visitor->Trace(content_capture_manager_);
   visitor->Trace(system_clipboard_);
+  visitor->Trace(raw_system_clipboard_);
   Frame::Trace(visitor);
   Supplementable<LocalFrame>::Trace(visitor);
 }
@@ -1856,6 +1857,13 @@ SystemClipboard* LocalFrame::GetSystemClipboard() {
     system_clipboard_ = MakeGarbageCollected<SystemClipboard>(this);
 
   return system_clipboard_.Get();
+}
+
+RawSystemClipboard* LocalFrame::GetRawSystemClipboard() {
+  if (!raw_system_clipboard_)
+    raw_system_clipboard_ = MakeGarbageCollected<RawSystemClipboard>(this);
+
+  return raw_system_clipboard_.Get();
 }
 
 void LocalFrame::WasAttachedAsLocalMainFrame() {

@@ -19,6 +19,7 @@
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_param_traits.h"
 #include "ui/accessibility/ax_relative_bounds.h"
 #include "ui/accessibility/ax_tree_update.h"
 #include "ui/gfx/transform.h"

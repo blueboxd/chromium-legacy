@@ -48,7 +48,7 @@ double Gyroscope::z(bool& is_null) const {
   return GetReading().gyro.z;
 }
 
-void Gyroscope::Trace(blink::Visitor* visitor) {
+void Gyroscope::Trace(Visitor* visitor) {
   Sensor::Trace(visitor);
 }
 

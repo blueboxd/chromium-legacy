@@ -1,0 +1,8 @@
+This is a testharness.js-based test.
+PASS Fulfillment handler on fulfilled promise
+PASS Rejection handler on rejected promise
+PASS Fulfillment handler on pending-then-fulfilled promise
+PASS Rejection handler on pending-then-rejected promise
+FAIL Thenable resolution assert_equals: expected "http://web-platform.test:8001/html/webappapis/scripting/processing-model-2/integration-with-the-javascript-job-queue/resources/function/resources/window-to-open.html" but got "http://web-platform.test:8001/html/webappapis/scripting/processing-model-2/integration-with-the-javascript-job-queue/resources/window-to-open.html"
+Harness: the test ran to completion.
+

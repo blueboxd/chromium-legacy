@@ -70,7 +70,7 @@ void CanMakePaymentEvent::respondWith(ScriptState* script_state,
   }
 }
 
-void CanMakePaymentEvent::Trace(blink::Visitor* visitor) {
+void CanMakePaymentEvent::Trace(Visitor* visitor) {
   visitor->Trace(method_data_);
   visitor->Trace(modifiers_);
   visitor->Trace(observer_);

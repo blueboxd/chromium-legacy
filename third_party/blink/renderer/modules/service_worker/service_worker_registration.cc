@@ -311,7 +311,7 @@ void ServiceWorkerRegistration::Dispose() {
   receiver_.reset();
 }
 
-void ServiceWorkerRegistration::Trace(blink::Visitor* visitor) {
+void ServiceWorkerRegistration::Trace(Visitor* visitor) {
   visitor->Trace(installing_);
   visitor->Trace(waiting_);
   visitor->Trace(active_);

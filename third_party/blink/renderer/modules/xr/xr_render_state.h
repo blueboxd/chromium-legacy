@@ -36,7 +36,7 @@ class XRRenderState : public ScriptWrappable {
   // bound to a different session.
   void removeOutputContext();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool immersive_;

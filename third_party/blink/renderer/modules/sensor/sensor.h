@@ -62,7 +62,7 @@ class MODULES_EXPORT Sensor : public EventTargetWithInlineData,
   // ActiveScriptWrappable overrides.
   bool HasPendingActivity() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   Sensor(ExecutionContext*,

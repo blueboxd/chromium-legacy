@@ -12,7 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
 #include "chrome/browser/predictors/navigation_id.h"
-#include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
+#include "services/network/public/mojom/fetch_api.mojom-forward.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-forward.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -114,9 +115,10 @@ class LoadingDataCollector {
       const NavigationID& navigation_id,
       const blink::mojom::ResourceLoadInfo& resource_load_info) const;
 
-  // Returns true if the subresource has a supported type.
-  static bool IsHandledResourceType(blink::mojom::ResourceType resource_type,
-                                    const std::string& mime_type);
+  // Returns true if the resource has a supported type.
+  static bool IsHandledResourceType(
+      network::mojom::RequestDestination destination,
+      const std::string& mime_type);
 
   // Cleanup inflight_navigations_ and call a cleanup for stats_collector_.
   void CleanupAbandonedNavigations(const NavigationID& navigation_id);

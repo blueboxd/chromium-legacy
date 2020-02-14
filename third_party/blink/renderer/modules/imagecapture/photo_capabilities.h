@@ -38,7 +38,7 @@ class PhotoCapabilities final : public ScriptWrappable {
   }
   bool IsRedEyeReductionControllable() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<MediaSettingsRange> image_height_;

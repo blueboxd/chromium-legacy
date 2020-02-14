@@ -120,7 +120,7 @@ bool PresentationAvailability::value() const {
   return value_;
 }
 
-void PresentationAvailability::Trace(blink::Visitor* visitor) {
+void PresentationAvailability::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
   ContextLifecycleStateObserver::Trace(visitor);

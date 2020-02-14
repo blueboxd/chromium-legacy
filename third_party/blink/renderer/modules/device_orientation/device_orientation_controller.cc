@@ -140,7 +140,7 @@ void DeviceOrientationController::ClearOverride() {
     DidUpdateData();
 }
 
-void DeviceOrientationController::Trace(blink::Visitor* visitor) {
+void DeviceOrientationController::Trace(Visitor* visitor) {
   visitor->Trace(override_orientation_data_);
   visitor->Trace(orientation_event_pump_);
   DeviceSingleWindowEventController::Trace(visitor);

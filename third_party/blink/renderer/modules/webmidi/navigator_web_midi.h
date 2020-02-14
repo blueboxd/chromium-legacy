@@ -60,7 +60,7 @@ class NavigatorWebMIDI final : public GarbageCollected<NavigatorWebMIDI>,
 
   explicit NavigatorWebMIDI(Navigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 };
 
 }  // namespace blink

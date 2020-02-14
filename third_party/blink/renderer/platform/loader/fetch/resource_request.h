@@ -546,6 +546,7 @@ class PLATFORM_EXPORT ResourceRequest final : public ResourceRequestHead {
   ResourceRequest();
   explicit ResourceRequest(const String& url_string);
   explicit ResourceRequest(const KURL&);
+  explicit ResourceRequest(const ResourceRequestHead&);
 
   ResourceRequest(const ResourceRequest&) = delete;
   ResourceRequest(ResourceRequest&&);

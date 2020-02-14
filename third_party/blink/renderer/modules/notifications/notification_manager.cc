@@ -244,7 +244,7 @@ NotificationManager::GetNotificationService() {
   return notification_service_;
 }
 
-void NotificationManager::Trace(blink::Visitor* visitor) {
+void NotificationManager::Trace(Visitor* visitor) {
   Supplement<ExecutionContext>::Trace(visitor);
 }
 

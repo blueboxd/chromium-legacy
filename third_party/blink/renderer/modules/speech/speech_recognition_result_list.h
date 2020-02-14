@@ -45,7 +45,7 @@ class SpeechRecognitionResultList : public ScriptWrappable {
   unsigned length() { return results_.size(); }
   SpeechRecognitionResult* item(unsigned index);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   HeapVector<Member<SpeechRecognitionResult>> results_;

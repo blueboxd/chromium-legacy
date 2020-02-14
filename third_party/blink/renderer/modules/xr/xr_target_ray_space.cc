@@ -62,7 +62,7 @@ base::Optional<XRNativeOriginInformation> XRTargetRaySpace::NativeOrigin()
   return input_source_->nativeOrigin();
 }
 
-void XRTargetRaySpace::Trace(blink::Visitor* visitor) {
+void XRTargetRaySpace::Trace(Visitor* visitor) {
   visitor->Trace(input_source_);
   XRSpace::Trace(visitor);
 }

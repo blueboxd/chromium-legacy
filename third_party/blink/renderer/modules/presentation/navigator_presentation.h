@@ -27,7 +27,7 @@ class NavigatorPresentation final
 
   NavigatorPresentation();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Presentation* presentation();

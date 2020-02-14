@@ -98,7 +98,7 @@ PushSubscriptionOptions::PushSubscriptionOptions(
           application_server_key.data(),
           SafeCast<unsigned>(application_server_key.size()))) {}
 
-void PushSubscriptionOptions::Trace(blink::Visitor* visitor) {
+void PushSubscriptionOptions::Trace(Visitor* visitor) {
   visitor->Trace(application_server_key_);
   ScriptWrappable::Trace(visitor);
 }

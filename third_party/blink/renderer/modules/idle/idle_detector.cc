@@ -148,7 +148,7 @@ void IdleDetector::Update(mojom::blink::IdleStatePtr state) {
   DispatchEvent(*Event::Create(event_type_names::kChange));
 }
 
-void IdleDetector::Trace(blink::Visitor* visitor) {
+void IdleDetector::Trace(Visitor* visitor) {
   visitor->Trace(state_);
   EventTargetWithInlineData::Trace(visitor);
   ContextClient::Trace(visitor);

@@ -92,7 +92,7 @@ class ServiceWorkerRegistration final
 
   void Dispose();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // ContextLifecycleObserver overrides.

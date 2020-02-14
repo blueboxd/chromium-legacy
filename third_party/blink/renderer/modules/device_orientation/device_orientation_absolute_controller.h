@@ -24,7 +24,7 @@ class MODULES_EXPORT DeviceOrientationAbsoluteController final
   void DidAddEventListener(LocalDOMWindow*,
                            const AtomicString& event_type) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Inherited from PlatformEventController.

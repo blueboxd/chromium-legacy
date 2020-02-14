@@ -154,7 +154,7 @@ void NDEFReader::OnRequestPermission(ScriptPromiseResolver* resolver,
       WTF::Bind(&OnScanRequestCompleted, WrapPersistent(resolver)));
 }
 
-void NDEFReader::Trace(blink::Visitor* visitor) {
+void NDEFReader::Trace(Visitor* visitor) {
   visitor->Trace(resolver_);
   EventTargetWithInlineData::Trace(visitor);
   ActiveScriptWrappable::Trace(visitor);

@@ -38,7 +38,7 @@ Serial* WorkerNavigatorSerial::serial(ScriptState* script_state) {
   return serial_;
 }
 
-void WorkerNavigatorSerial::Trace(blink::Visitor* visitor) {
+void WorkerNavigatorSerial::Trace(Visitor* visitor) {
   visitor->Trace(serial_);
   Supplement<WorkerNavigator>::Trace(visitor);
 }

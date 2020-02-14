@@ -37,13 +37,8 @@ NavigatorClipboard::NavigatorClipboard(Navigator& navigator)
   if (!GetSupplementable()->GetFrame())
     return;
 
-  SystemClipboard* system_clipboard =
-      GetSupplementable()->GetFrame()->GetSystemClipboard();
   clipboard_ = MakeGarbageCollected<Clipboard>(
-      system_clipboard,
-      GetSupplementable()->GetFrame()
-          ? GetSupplementable()->GetFrame()->GetDocument()->ToExecutionContext()
-          : nullptr);
+      GetSupplementable()->GetFrame()->GetDocument()->ToExecutionContext());
 }
 
 }  // namespace blink

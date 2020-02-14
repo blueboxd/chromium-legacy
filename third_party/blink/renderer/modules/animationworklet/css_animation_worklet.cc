@@ -34,7 +34,7 @@ void CSSAnimationWorklet::ContextDestroyed(ExecutionContext*) {
   animation_worklet_ = nullptr;
 }
 
-void CSSAnimationWorklet::Trace(blink::Visitor* visitor) {
+void CSSAnimationWorklet::Trace(Visitor* visitor) {
   visitor->Trace(animation_worklet_);
   Supplement<LocalDOMWindow>::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);

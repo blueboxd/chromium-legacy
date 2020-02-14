@@ -7,7 +7,9 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/strings/string_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/renderer/render_frame.h"
@@ -74,4 +76,8 @@ bool ChromePrintRenderFrameHelperDelegate::OverridePrint(
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   return false;
+}
+
+bool ChromePrintRenderFrameHelperDelegate::ShouldGenerateTaggedPDF() {
+  return base::FeatureList::IsEnabled(features::kExportTaggedPDF);
 }

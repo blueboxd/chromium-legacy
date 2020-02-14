@@ -90,7 +90,7 @@ InstalledAppController* NavigatorInstalledApp::Controller() {
 
 const char NavigatorInstalledApp::kSupplementName[] = "NavigatorInstalledApp";
 
-void NavigatorInstalledApp::Trace(blink::Visitor* visitor) {
+void NavigatorInstalledApp::Trace(Visitor* visitor) {
   Supplement<Navigator>::Trace(visitor);
 }
 

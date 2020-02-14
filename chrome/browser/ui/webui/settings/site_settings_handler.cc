@@ -27,7 +27,6 @@
 #include "chrome/browser/permissions/chooser_context_base.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/ui/browser.h"
@@ -48,6 +47,7 @@
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/crx_file/id_util.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
+#include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
@@ -963,9 +963,10 @@ void SiteSettingsHandler::HandleSetOriginPermissions(
     HostContentSettingsMap* map =
         HostContentSettingsMapFactory::GetForProfile(profile_);
 
-    PermissionUmaUtil::ScopedRevocationReporter scoped_revocation_reporter(
-        profile_, origin, origin, content_type,
-        PermissionSourceUI::SITE_SETTINGS);
+    permissions::PermissionUmaUtil::ScopedRevocationReporter
+        scoped_revocation_reporter(
+            profile_, origin, origin, content_type,
+            permissions::PermissionSourceUI::SITE_SETTINGS);
 
     // Clear any existing embargo status if the new setting isn't block.
     if (setting != CONTENT_SETTING_BLOCK) {
@@ -1053,9 +1054,10 @@ void SiteSettingsHandler::HandleResetCategoryPermissionForPattern(
       secondary_pattern_string.empty()
           ? ContentSettingsPattern::Wildcard()
           : ContentSettingsPattern::FromString(secondary_pattern_string);
-  PermissionUmaUtil::ScopedRevocationReporter scoped_revocation_reporter(
-      profile, primary_pattern, secondary_pattern, content_type,
-      PermissionSourceUI::SITE_SETTINGS);
+  permissions::PermissionUmaUtil::ScopedRevocationReporter
+      scoped_revocation_reporter(
+          profile, primary_pattern, secondary_pattern, content_type,
+          permissions::PermissionSourceUI::SITE_SETTINGS);
 
   map->SetContentSettingCustomScope(primary_pattern, secondary_pattern,
                                     content_type, "", CONTENT_SETTING_DEFAULT);
@@ -1113,9 +1115,10 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForPattern(
           ? ContentSettingsPattern::Wildcard()
           : ContentSettingsPattern::FromString(secondary_pattern_string);
 
-  PermissionUmaUtil::ScopedRevocationReporter scoped_revocation_reporter(
-      profile, primary_pattern, secondary_pattern, content_type,
-      PermissionSourceUI::SITE_SETTINGS);
+  permissions::PermissionUmaUtil::ScopedRevocationReporter
+      scoped_revocation_reporter(
+          profile, primary_pattern, secondary_pattern, content_type,
+          permissions::PermissionSourceUI::SITE_SETTINGS);
 
   map->SetContentSettingCustomScope(primary_pattern, secondary_pattern,
                                     content_type, "", setting);

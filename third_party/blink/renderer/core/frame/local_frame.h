@@ -47,6 +47,7 @@
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/viewport_intersection_state.h"
+#include "third_party/blink/renderer/core/clipboard/raw_system_clipboard.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/weak_identifier_map.h"
@@ -504,6 +505,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void SetScaleFactor(float scale) override;
 
   SystemClipboard* GetSystemClipboard();
+  RawSystemClipboard* GetRawSystemClipboard();
 
   // Indicate that this frame was attached as a MainFrame.
   void WasAttachedAsLocalMainFrame();
@@ -653,8 +655,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   mojo::AssociatedReceiver<mojom::blink::LocalMainFrame> main_frame_receiver_{
       this};
 
-  // Access to the global system clipboard.
+  // Access to the global sanitized system clipboard.
   Member<SystemClipboard> system_clipboard_;
+  // Access to the global raw/unsanitized system clipboard
+  Member<RawSystemClipboard> raw_system_clipboard_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

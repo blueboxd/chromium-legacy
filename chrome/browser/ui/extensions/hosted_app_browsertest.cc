@@ -2110,6 +2110,14 @@ INSTANTIATE_TEST_SUITE_P(All,
                                            AppType::BOOKMARK_APP,
                                            AppType::WEB_APP));
 
+INSTANTIATE_TEST_SUITE_P(All,
+                         HostedAppTestWithAutoupgradesDisabled,
+                         ::testing::Values(AppType::HOSTED_APP));
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         HostedAppPWAOnlyTestWithAutoupgradesDisabled,
+                         ::testing::Values(AppType::BOOKMARK_APP));
+
 INSTANTIATE_TEST_SUITE_P(
     All,
     HostedAppPWAOnlyTest,

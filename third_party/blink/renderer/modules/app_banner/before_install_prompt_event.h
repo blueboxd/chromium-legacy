@@ -77,7 +77,7 @@ class BeforeInstallPromptEvent final
   // ScriptWrappable
   bool HasPendingActivity() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // mojom::blink::AppBannerEvent methods:

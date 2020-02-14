@@ -36,7 +36,7 @@ class PeriodicSyncManager final : public ScriptWrappable {
   ScriptPromise getTags(ScriptState* script_state);
   ScriptPromise unregister(ScriptState* script_state, const String& tag);
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   // Returns an initialized

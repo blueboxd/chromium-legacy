@@ -68,7 +68,7 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   explicit AXObjectCacheImpl(Document&);
   ~AXObjectCacheImpl() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   Document& GetDocument() { return *document_; }
   AXObject* FocusedObject();

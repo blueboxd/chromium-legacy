@@ -29,7 +29,7 @@ GPUCanvasContext::GPUCanvasContext(
 
 GPUCanvasContext::~GPUCanvasContext() {}
 
-void GPUCanvasContext::Trace(blink::Visitor* visitor) {
+void GPUCanvasContext::Trace(Visitor* visitor) {
   visitor->Trace(swapchain_);
   CanvasRenderingContext::Trace(visitor);
 }

@@ -977,12 +977,13 @@ bool HTMLInputElement::HasBeenPasswordField() const {
 }
 
 void HTMLInputElement::DispatchChangeEventIfNeeded() {
-  if (input_type_->ShouldSendChangeEventAfterCheckedChanged())
+  if (isConnected() && input_type_->ShouldSendChangeEventAfterCheckedChanged())
     DispatchChangeEvent();
 }
 
 void HTMLInputElement::DispatchInputAndChangeEventIfNeeded() {
-  if (input_type_->ShouldSendChangeEventAfterCheckedChanged()) {
+  if (isConnected() &&
+      input_type_->ShouldSendChangeEventAfterCheckedChanged()) {
     DispatchInputEvent();
     DispatchChangeEvent();
   }

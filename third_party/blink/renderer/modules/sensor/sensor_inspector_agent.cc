@@ -17,7 +17,7 @@ namespace blink {
 SensorInspectorAgent::SensorInspectorAgent(Document* document)
     : provider_(SensorProviderProxy::From(document)) {}
 
-void SensorInspectorAgent::Trace(blink::Visitor* visitor) {
+void SensorInspectorAgent::Trace(Visitor* visitor) {
   visitor->Trace(provider_);
 }
 

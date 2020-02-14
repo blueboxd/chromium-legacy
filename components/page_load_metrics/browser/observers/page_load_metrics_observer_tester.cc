@@ -220,7 +220,8 @@ void PageLoadMetricsObserverTester::SimulateLoadedResource(
 void PageLoadMetricsObserverTester::SimulateLoadedResource(
     const ExtraRequestCompleteInfo& info,
     const content::GlobalRequestID& request_id) {
-  if (info.resource_type == blink::mojom::ResourceType::kMainFrame) {
+  if (info.request_destination ==
+      network::mojom::RequestDestination::kDocument) {
     ASSERT_NE(content::GlobalRequestID(), request_id)
         << "Main frame resources must have a GlobalRequestID.";
   }
@@ -231,7 +232,7 @@ void PageLoadMetricsObserverTester::SimulateLoadedResource(
   resource_load_info.raw_body_bytes = info.raw_body_bytes;
   resource_load_info.total_received_bytes =
       info.original_network_content_length;
-  resource_load_info.resource_type = info.resource_type;
+  resource_load_info.request_destination = info.request_destination;
   resource_load_info.net_error = info.net_error;
   resource_load_info.network_info = blink::mojom::CommonNetworkInfo::New();
   resource_load_info.network_info->remote_endpoint = info.remote_endpoint;

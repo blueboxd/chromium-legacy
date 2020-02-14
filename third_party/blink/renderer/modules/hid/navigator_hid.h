@@ -28,7 +28,7 @@ class NavigatorHID final : public GarbageCollected<NavigatorHID>,
   static HID* hid(Navigator&);
   HID* hid();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   explicit NavigatorHID(Navigator&);
 

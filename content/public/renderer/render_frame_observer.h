@@ -192,7 +192,7 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
       const GURL& response_url,
       int request_id,
       const network::mojom::URLResponseHead& response_head,
-      blink::mojom::ResourceType resource_type,
+      network::mojom::RequestDestination request_destination,
       PreviewsState previews_state) {}
   virtual void DidCompleteResponse(
       int request_id,

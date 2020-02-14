@@ -41,7 +41,7 @@ class GlobalIndexedDBImpl final
     return idb_factory_;
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(idb_factory_);
     Supplement<T>::Trace(visitor);
   }

@@ -259,7 +259,7 @@ class XRSession::XRSessionResizeObserverDelegate final
     session_->UpdateCanvasDimensions(entries[0]->target());
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(session_);
     ResizeObserver::Delegate::Trace(visitor);
   }
@@ -1845,7 +1845,7 @@ bool XRSession::HasPendingActivity() const {
   return !callback_collection_->IsEmpty() && !ended_;
 }
 
-void XRSession::Trace(blink::Visitor* visitor) {
+void XRSession::Trace(Visitor* visitor) {
   visitor->Trace(xr_);
   visitor->Trace(render_state_);
   visitor->Trace(world_tracking_state_);

@@ -26,7 +26,7 @@ class RemoveQueryConfirmationDialog
 
   RemoveQueryConfirmationDialog(const base::string16& query,
                                 RemovalConfirmationCallback callback,
-                                int event_flgas,
+                                int event_flags,
                                 ContentsView* contents_view);
   ~RemoveQueryConfirmationDialog() override;
 
@@ -41,10 +41,6 @@ class RemoveQueryConfirmationDialog
   base::string16 GetWindowTitle() const override;
   ui::ModalType GetModalType() const override;
   bool ShouldShowCloseButton() const override;
-
-  // views::DialogDelegate:
-  bool Accept() override;
-  bool Cancel() override;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;

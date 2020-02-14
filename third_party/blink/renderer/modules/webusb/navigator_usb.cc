@@ -30,7 +30,7 @@ USB* NavigatorUSB::usb() {
   return usb_;
 }
 
-void NavigatorUSB::Trace(blink::Visitor* visitor) {
+void NavigatorUSB::Trace(Visitor* visitor) {
   visitor->Trace(usb_);
   Supplement<Navigator>::Trace(visitor);
 }

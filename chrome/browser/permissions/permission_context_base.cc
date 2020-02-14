@@ -20,7 +20,6 @@
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_request_impl.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
@@ -30,6 +29,7 @@
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_request_id.h"
+#include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
@@ -179,7 +179,8 @@ void PermissionContextBase::RequestPermission(
 
     // If we are under embargo, record the embargo reason for which we have
     // suppressed the prompt.
-    PermissionUmaUtil::RecordEmbargoPromptSuppressionFromSource(result.source);
+    permissions::PermissionUmaUtil::RecordEmbargoPromptSuppressionFromSource(
+        result.source);
     NotifyPermissionSet(id, requesting_origin, embedding_origin,
                         std::move(callback), false /* persist */,
                         result.content_setting);
@@ -196,10 +197,10 @@ void PermissionContextBase::RequestPermission(
   }
 
   // We are going to show a prompt now.
-  PermissionUmaUtil::PermissionRequested(content_settings_type_,
-                                         requesting_origin);
-  PermissionUmaUtil::RecordEmbargoPromptSuppression(
-      PermissionEmbargoStatus::NOT_EMBARGOED);
+  permissions::PermissionUmaUtil::PermissionRequested(content_settings_type_,
+                                                      requesting_origin);
+  permissions::PermissionUmaUtil::RecordEmbargoPromptSuppression(
+      permissions::PermissionEmbargoStatus::NOT_EMBARGOED);
 
   DecidePermission(web_contents, id, requesting_origin, embedding_origin,
                    user_gesture, std::move(callback));

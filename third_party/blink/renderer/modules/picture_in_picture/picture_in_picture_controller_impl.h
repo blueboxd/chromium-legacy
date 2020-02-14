@@ -93,7 +93,7 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   // Implementation of DocumentShutdownObserver.
   void ContextDestroyed(Document*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   bool IsSessionObserverReceiverBoundForTesting() {
     return session_observer_receiver_.is_bound();

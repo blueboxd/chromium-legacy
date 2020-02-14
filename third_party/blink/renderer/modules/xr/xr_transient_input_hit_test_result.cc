@@ -28,7 +28,7 @@ HeapVector<Member<XRHitTestResult>> XRTransientInputHitTestResult::results() {
   return results_;
 }
 
-void XRTransientInputHitTestResult::Trace(blink::Visitor* visitor) {
+void XRTransientInputHitTestResult::Trace(Visitor* visitor) {
   visitor->Trace(input_source_);
   visitor->Trace(results_);
   ScriptWrappable::Trace(visitor);

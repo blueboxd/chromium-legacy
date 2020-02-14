@@ -131,7 +131,7 @@ class MODULES_EXPORT WebSocketChannelImpl final
                      const String& reason) override;
   void OnClosingHandshake() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   struct DataFrame final {

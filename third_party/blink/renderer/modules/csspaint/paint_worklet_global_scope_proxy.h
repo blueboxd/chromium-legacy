@@ -47,7 +47,7 @@ class MODULES_EXPORT PaintWorkletGlobalScopeProxy
 
   PaintWorkletGlobalScope* global_scope() const { return global_scope_.Get(); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   std::unique_ptr<MainThreadWorkletReportingProxy> reporting_proxy_;

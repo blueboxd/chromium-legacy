@@ -264,24 +264,6 @@ base::Optional<InAppShelfGestures> CalculateHotseatGestureToRecord(
   return base::nullopt;
 }
 
-// Sets the shelf opacity to 0 when the shelf is done hiding to avoid getting
-// rid of blur.
-class HideAnimationObserver : public ui::ImplicitAnimationObserver {
- public:
-  explicit HideAnimationObserver(ui::Layer* layer) : layer_(layer) {}
-
-  // ui::ImplicitAnimationObserver:
-  void OnImplicitAnimationsScheduled() override {}
-
-  void OnImplicitAnimationsCompleted() override { layer_->SetOpacity(0); }
-
- private:
-  // Unowned.
-  ui::Layer* layer_;
-
-  DISALLOW_COPY_AND_ASSIGN(HideAnimationObserver);
-};
-
 // Forwards gesture events to ShelfLayoutManager to hide the hotseat
 // when it is kExtended.
 class HotseatEventHandler : public ui::EventHandler,
@@ -1455,58 +1437,12 @@ void ShelfLayoutManager::SetDimmed(bool dimmed) {
 }
 
 void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
-  hide_animation_observer_.reset();
-  if (GetLayer(shelf_widget_)->opacity() != target_bounds_.opacity) {
-    if (target_bounds_.opacity == 0) {
-      // On hide, set the opacity after the animation completes.
-      hide_animation_observer_ =
-          std::make_unique<HideAnimationObserver>(GetLayer(shelf_widget_));
-    } else {
-      // On show, set the opacity before the animation begins to ensure the blur
-      // is shown while the shelf moves.
-      GetLayer(shelf_widget_)->SetOpacity(kDefaultShelfOpacity);
-    }
-  }
 
   ShelfNavigationWidget* nav_widget = shelf_->navigation_widget();
   HotseatWidget* hotseat_widget = shelf_->hotseat_widget();
   StatusAreaWidget* status_widget = shelf_widget_->status_area_widget();
   base::AutoReset<bool> auto_reset_updating_bounds(&updating_bounds_, true);
   {
-    gfx::Rect current_shelf_bounds = shelf_widget_->GetWindowBoundsInScreen();
-
-    if (GetLayer(shelf_widget_)->GetAnimator()->is_animating()) {
-      // When the |shelf_widget_| needs to reverse the direction of the current
-      // animation, we must take into account the transform when calculating the
-      // current shelf widget bounds.
-      gfx::RectF transformed_bounds(current_shelf_bounds);
-      shelf_widget_->GetLayer()->transform().TransformRect(&transformed_bounds);
-      current_shelf_bounds = gfx::ToEnclosedRect(transformed_bounds);
-    }
-
-    gfx::Transform shelf_widget_target_transform;
-    shelf_widget_target_transform.Translate(
-        current_shelf_bounds.origin() -
-        shelf_->shelf_widget()->GetTargetBounds().origin());
-    shelf_widget_->GetLayer()->SetTransform(shelf_widget_target_transform);
-    shelf_widget_->SetBounds(shelf_->shelf_widget()->GetTargetBounds());
-
-    ui::ScopedLayerAnimationSettings shelf_animation_setter(
-        GetLayer(shelf_widget_)->GetAnimator());
-
-    if (hide_animation_observer_)
-      shelf_animation_setter.AddObserver(hide_animation_observer_.get());
-
-    const base::TimeDelta animation_duration =
-        animate ? ShelfConfig::Get()->shelf_animation_duration()
-                : base::TimeDelta();
-    if (!animate)
-      StopAnimating();
-
-    SetupAnimator(&shelf_animation_setter, animation_duration,
-                  gfx::Tween::EASE_OUT);
-    shelf_widget_->GetLayer()->SetTransform(gfx::Transform());
-
     shelf_->shelf_widget()->UpdateLayout(animate);
     hotseat_widget->UpdateLayout(animate);
 
@@ -1518,6 +1454,10 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
     }
 
     status_widget->UpdateLayout(animate);
+
+    const base::TimeDelta animation_duration =
+        animate ? ShelfConfig::Get()->shelf_animation_duration()
+                : base::TimeDelta();
 
     // Nav widget handles its own bounds animations so we use AnimateOpacity to
     // create a separate ScopedLayerAnimationSettings for nav widget opacity.
@@ -1597,12 +1537,7 @@ bool ShelfLayoutManager::IsDraggingWindowFromTopOrCaptionArea() const {
   return false;
 }
 
-void ShelfLayoutManager::StopAnimating() {
-  GetLayer(shelf_widget_)->GetAnimator()->StopAnimating();
-  GetLayer(shelf_widget_->status_area_widget())->GetAnimator()->StopAnimating();
-}
-
-void ShelfLayoutManager::CalculateTargetBounds(
+gfx::Insets ShelfLayoutManager::CalculateTargetBounds(
     const State& state,
     HotseatState hotseat_target_state) {
   shelf_->shelf_widget()->CalculateTargetBounds();
@@ -1621,7 +1556,7 @@ void ShelfLayoutManager::CalculateTargetBounds(
       snapped_shelf_bounds, shelf_->shelf_widget()->GetNativeWindow());
   shelf_->shelf_widget()->set_target_bounds(snapped_shelf_bounds);
 
-  target_bounds_.shelf_insets = shelf_->SelectValueForShelfAlignment(
+  return shelf_->SelectValueForShelfAlignment(
       gfx::Insets(0, 0,
                   GetShelfInset(state.visibility_state,
                                 IsHotseatEnabled()
@@ -1637,7 +1572,8 @@ void ShelfLayoutManager::CalculateTargetBounds(
 void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea() {
   HotseatState hotseat_target_state =
       CalculateHotseatState(visibility_state(), auto_hide_state());
-  CalculateTargetBounds(state_, hotseat_target_state);
+  gfx::Insets shelf_insets =
+      CalculateTargetBounds(state_, hotseat_target_state);
   gfx::Rect shelf_bounds_for_workarea_calculation =
       shelf_->shelf_widget()->GetTargetBounds();
   // When the hotseat is enabled, only use the in-app shelf bounds when
@@ -1649,7 +1585,7 @@ void ShelfLayoutManager::CalculateTargetBoundsAndUpdateWorkArea() {
   if (!suspend_work_area_update_) {
     WorkAreaInsets::ForWindow(shelf_widget_->GetNativeWindow())
         ->SetShelfBoundsAndInsets(shelf_bounds_for_workarea_calculation,
-                                  target_bounds_.shelf_insets);
+                                  shelf_insets);
     for (auto& observer : observers_)
       observer.OnWorkAreaInsetsChanged();
   }

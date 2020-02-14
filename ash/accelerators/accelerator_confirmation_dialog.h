@@ -5,7 +5,7 @@
 #ifndef ASH_ACCELERATORS_ACCELERATOR_CONFIRMATION_DIALOG_H_
 #define ASH_ACCELERATORS_ACCELERATOR_CONFIRMATION_DIALOG_H_
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
@@ -24,8 +24,6 @@ class AcceleratorConfirmationDialog : public views::DialogDelegateView {
   ~AcceleratorConfirmationDialog() override;
 
   // views::DialogDelegateView:
-  bool Accept() override;
-  bool Cancel() override;
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
 
@@ -33,8 +31,6 @@ class AcceleratorConfirmationDialog : public views::DialogDelegateView {
 
  private:
   const base::string16 window_title_;
-  base::OnceClosure on_accept_callback_;
-  base::OnceClosure on_cancel_callback_;
 
   base::WeakPtrFactory<AcceleratorConfirmationDialog> weak_ptr_factory_{this};
 

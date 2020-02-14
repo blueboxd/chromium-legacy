@@ -68,7 +68,7 @@ class MediaControlsOrientationLockDelegate final : public NativeEventListener {
 
   // NativeEventListener implementation.
   void Invoke(ExecutionContext*, Event*) override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class MediaControlsOrientationLockDelegateTest;

@@ -38,7 +38,7 @@ SMSReceiver* NavigatorSMS::sms(ScriptState* script_state,
   return NavigatorSMS::From(navigator).GetSMSReceiver(script_state);
 }
 
-void NavigatorSMS::Trace(blink::Visitor* visitor) {
+void NavigatorSMS::Trace(Visitor* visitor) {
   visitor->Trace(sms_receiver_);
   Supplement<Navigator>::Trace(visitor);
 }

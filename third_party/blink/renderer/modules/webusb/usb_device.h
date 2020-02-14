@@ -98,7 +98,7 @@ class USBDevice : public ScriptWrappable, public ContextLifecycleObserver {
   // ContextLifecycleObserver interface.
   void ContextDestroyed(ExecutionContext*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   static const size_t kEndpointsBitsNumber = 16;

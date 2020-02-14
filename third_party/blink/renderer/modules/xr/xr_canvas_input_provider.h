@@ -38,7 +38,7 @@ class XRCanvasInputProvider : public GarbageCollected<XRCanvasInputProvider>,
 
   XRInputSource* GetInputSource();
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
   const char* NameInHeapSnapshot() const override {
     return "XRCanvasInputProvider";
   }

@@ -118,7 +118,7 @@ class AudioWorkletNode final : public AudioNode,
 
   void FireProcessorError();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // InspectorHelperMixin
   void ReportDidCreate() final;

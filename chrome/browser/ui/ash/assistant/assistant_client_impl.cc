@@ -32,6 +32,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/service_process_host.h"
+#include "content/public/common/content_switches.h"
 #include "services/identity/public/mojom/identity_service.mojom.h"
 
 AssistantClientImpl::AssistantClientImpl() {
@@ -244,6 +245,11 @@ void AssistantClientImpl::OnUserProfileLoaded(const AccountId& account_id) {
 }
 
 void AssistantClientImpl::OnUserSessionStarted(bool is_primary_user) {
-  if (is_primary_user && !chromeos::switches::ShouldSkipOobePostLogin())
+  // Disable the handling for browser tests to prevent the Assistant being
+  // enabled unexpectedly.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (is_primary_user && !chromeos::switches::ShouldSkipOobePostLogin() &&
+      !command_line->HasSwitch(switches::kBrowserTest)) {
     MaybeStartAssistantOptInFlow();
+  }
 }

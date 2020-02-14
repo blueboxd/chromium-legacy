@@ -388,7 +388,7 @@ class SparseAttributeAXPropertyAdapter
                                    protocol::Array<AXProperty>& properties)
       : ax_object_(&ax_object), properties_(properties) {}
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(ax_object_); }
+  void Trace(Visitor* visitor) { visitor->Trace(ax_object_); }
 
  private:
   Member<AXObject> ax_object_;
@@ -888,7 +888,7 @@ void InspectorAccessibilityAgent::CreateAXContext() {
     context_ = std::make_unique<AXContext>(*document);
 }
 
-void InspectorAccessibilityAgent::Trace(blink::Visitor* visitor) {
+void InspectorAccessibilityAgent::Trace(Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   visitor->Trace(dom_agent_);
   InspectorBaseAgent::Trace(visitor);

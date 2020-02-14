@@ -111,7 +111,7 @@ Geolocation::Geolocation(ExecutionContext* context)
 
 Geolocation::~Geolocation() = default;
 
-void Geolocation::Trace(blink::Visitor* visitor) {
+void Geolocation::Trace(Visitor* visitor) {
   visitor->Trace(one_shots_);
   visitor->Trace(watchers_);
   visitor->Trace(one_shots_being_invoked_);

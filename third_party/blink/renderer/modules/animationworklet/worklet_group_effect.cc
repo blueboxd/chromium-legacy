@@ -19,7 +19,7 @@ WorkletGroupEffect::WorkletGroupEffect(
   }
 }
 
-void WorkletGroupEffect::Trace(blink::Visitor* visitor) {
+void WorkletGroupEffect::Trace(Visitor* visitor) {
   visitor->Trace(effects_);
   ScriptWrappable::Trace(visitor);
 }

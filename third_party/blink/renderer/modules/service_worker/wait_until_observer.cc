@@ -63,7 +63,7 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
         resolve_type_(type),
         callback_(std::move(callback)) {}
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(observer_);
     ScriptFunction::Trace(visitor);
   }
@@ -334,7 +334,7 @@ void WaitUntilObserver::ConsumeWindowInteraction(TimerBase*) {
     context->ConsumeWindowInteraction();
 }
 
-void WaitUntilObserver::Trace(blink::Visitor* visitor) {
+void WaitUntilObserver::Trace(Visitor* visitor) {
   ContextClient::Trace(visitor);
 }
 

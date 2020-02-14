@@ -114,7 +114,7 @@ void FaceDetector::OnFaceServiceConnectionError() {
   face_service_.reset();
 }
 
-void FaceDetector::Trace(blink::Visitor* visitor) {
+void FaceDetector::Trace(Visitor* visitor) {
   ShapeDetector::Trace(visitor);
   visitor->Trace(face_service_requests_);
 }

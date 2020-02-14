@@ -181,6 +181,19 @@ jumbo_component("accessibility") {
     "//ui/strings",
   ]
 
+  if (!is_ios) {
+    sources += [
+      "ax_param_traits.cc",
+      "ax_param_traits.h",
+      "ax_param_traits_macros.h",
+    ]
+
+    public_deps += [
+      "//ipc",
+      "//ui/gfx/ipc/skia",
+    ]
+  }
+
   if (is_win) {
     public_deps += [ "//third_party/iaccessible2" ]
     libs = [

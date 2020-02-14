@@ -49,7 +49,7 @@ class ContentDecryptionModuleResultPromise
   // It is only valid to call this before completion.
   ScriptPromise Promise();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   // |interface_name| and |property_name| must have static life time.

@@ -134,7 +134,7 @@ void FileWriterSync::PrepareForWrite() {
 
 FileWriterSync::~FileWriterSync() = default;
 
-void FileWriterSync::Trace(blink::Visitor* visitor) {
+void FileWriterSync::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
   FileWriterBase::Trace(visitor);
   ContextClient::Trace(visitor);

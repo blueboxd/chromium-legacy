@@ -57,7 +57,7 @@ class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
   HTMLMediaElementEncryptedMedia(HTMLMediaElement&);
   ~HTMLMediaElementEncryptedMedia();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class SetMediaKeysHandler;

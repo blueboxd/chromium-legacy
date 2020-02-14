@@ -59,7 +59,7 @@ class DirectoryEntrySync final : public EntrySync {
                                    ExceptionState&);
   void removeRecursively(ExceptionState&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 };
 
 template <>

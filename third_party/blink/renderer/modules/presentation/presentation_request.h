@@ -55,7 +55,7 @@ class MODULES_EXPORT PresentationRequest final
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connectionavailable, kConnectionavailable)
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   // EventTarget implementation.

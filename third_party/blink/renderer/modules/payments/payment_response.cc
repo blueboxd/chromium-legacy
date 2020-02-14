@@ -141,7 +141,7 @@ ExecutionContext* PaymentResponse::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
-void PaymentResponse::Trace(blink::Visitor* visitor) {
+void PaymentResponse::Trace(Visitor* visitor) {
   visitor->Trace(details_);
   visitor->Trace(shipping_address_);
   visitor->Trace(payment_state_resolver_);

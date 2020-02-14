@@ -104,13 +104,13 @@ PageRequestSummary CreatePageRequestSummary(
 
 blink::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
     const std::string& url,
-    blink::mojom::ResourceType resource_type,
+    network::mojom::RequestDestination request_destination,
     bool always_access_network) {
   auto resource_load_info = blink::mojom::ResourceLoadInfo::New();
   resource_load_info->final_url = GURL(url);
   resource_load_info->original_url = GURL(url);
   resource_load_info->method = "GET";
-  resource_load_info->resource_type = resource_type;
+  resource_load_info->request_destination = request_destination;
   resource_load_info->network_info = blink::mojom::CommonNetworkInfo::New(
       true, always_access_network, base::nullopt);
   resource_load_info->request_priority = net::HIGHEST;
@@ -119,20 +119,21 @@ blink::mojom::ResourceLoadInfoPtr CreateResourceLoadInfo(
 
 blink::mojom::ResourceLoadInfoPtr CreateLowPriorityResourceLoadInfo(
     const std::string& url,
-    blink::mojom::ResourceType resource_type) {
-  auto resource_load_info = CreateResourceLoadInfo(url, resource_type, false);
+    network::mojom::RequestDestination request_destination) {
+  auto resource_load_info =
+      CreateResourceLoadInfo(url, request_destination, false);
   resource_load_info->request_priority = net::LOWEST;
   return resource_load_info;
 }
 
 blink::mojom::ResourceLoadInfoPtr CreateResourceLoadInfoWithRedirects(
     const std::vector<std::string>& redirect_chain,
-    blink::mojom::ResourceType resource_type) {
+    network::mojom::RequestDestination request_destination) {
   auto resource_load_info = blink::mojom::ResourceLoadInfo::New();
   resource_load_info->final_url = GURL(redirect_chain.back());
   resource_load_info->original_url = GURL(redirect_chain.front());
   resource_load_info->method = "GET";
-  resource_load_info->resource_type = resource_type;
+  resource_load_info->request_destination = request_destination;
   resource_load_info->request_priority = net::HIGHEST;
   auto common_network_info =
       blink::mojom::CommonNetworkInfo::New(true, false, base::nullopt);
@@ -314,8 +315,9 @@ std::ostream& operator<<(std::ostream& os, const CommonNetworkInfo& info) {
 
 std::ostream& operator<<(std::ostream& os, const ResourceLoadInfo& info) {
   return os << "[" << info.original_url.spec() << ","
-            << static_cast<int>(info.resource_type) << "," << info.mime_type
-            << "," << info.method << "," << *info.network_info << "]";
+            << static_cast<int>(info.request_destination) << ","
+            << info.mime_type << "," << info.method << "," << *info.network_info
+            << "]";
 }
 
 bool operator==(const CommonNetworkInfo& lhs, const CommonNetworkInfo& rhs) {
@@ -325,7 +327,7 @@ bool operator==(const CommonNetworkInfo& lhs, const CommonNetworkInfo& rhs) {
 
 bool operator==(const ResourceLoadInfo& lhs, const ResourceLoadInfo& rhs) {
   return lhs.original_url == rhs.original_url &&
-         lhs.resource_type == rhs.resource_type &&
+         lhs.request_destination == rhs.request_destination &&
          lhs.mime_type == rhs.mime_type && lhs.method == rhs.method &&
          *lhs.network_info == *rhs.network_info;
 }

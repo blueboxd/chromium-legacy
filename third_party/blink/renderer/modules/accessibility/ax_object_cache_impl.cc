@@ -1892,7 +1892,7 @@ void AXObjectCacheImpl::ContextDestroyed(ExecutionContext*) {
   permission_observer_receiver_.reset();
 }
 
-void AXObjectCacheImpl::Trace(blink::Visitor* visitor) {
+void AXObjectCacheImpl::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(accessible_node_mapping_);
   visitor->Trace(node_object_mapping_);

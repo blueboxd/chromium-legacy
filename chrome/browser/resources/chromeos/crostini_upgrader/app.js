@@ -151,6 +151,10 @@ Polymer({
         this.state_ = State.ERROR;
       }),
       callbackRouter.onCanceled.addListener(() => {
+        if (this.state_ === State.RESTORE) {
+          this.state_ = State.ERROR;
+          return;
+        }
         this.closeDialog_();
       }),
     ];

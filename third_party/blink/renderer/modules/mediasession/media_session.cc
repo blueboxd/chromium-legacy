@@ -373,7 +373,7 @@ void MediaSession::DidReceiveAction(
   iter->value->InvokeAndReportException(this, blink_details);
 }
 
-void MediaSession::Trace(blink::Visitor* visitor) {
+void MediaSession::Trace(Visitor* visitor) {
   visitor->Trace(metadata_);
   visitor->Trace(action_handlers_);
   ScriptWrappable::Trace(visitor);

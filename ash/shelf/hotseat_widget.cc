@@ -21,6 +21,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/metrics/histogram_macros.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/aura/scoped_window_targeter.h"
 #include "ui/aura/window_targeter.h"
@@ -108,9 +109,6 @@ class HotseatWidget::DelegateView : public HotseatTransitionAnimator::Observer,
   // unless the feature flag is disabled or |disable_blur_for_animations_| is
   // true, in which case this disables background blur.
   void SetBackgroundBlur(bool enable_blur);
-
-  // Updates the hotseat background when tablet mode changes.
-  void OnTabletModeChanged();
 
   // HotseatTransitionAnimator::Observer:
   void OnHotseatTransitionAnimationStarted(HotseatState from_state,
@@ -228,10 +226,6 @@ void HotseatWidget::DelegateView::SetBackgroundBlur(bool enable_blur) {
       enable_blur ? ShelfConfig::Get()->shelf_blur_radius() : 0;
   if (translucent_background_.background_blur() != blur_radius)
     translucent_background_.SetBackgroundBlur(blur_radius);
-}
-
-void HotseatWidget::DelegateView::OnTabletModeChanged() {
-  UpdateTranslucentBackground();
 }
 
 void HotseatWidget::DelegateView::OnHotseatTransitionAnimationStarted(
@@ -388,7 +382,6 @@ void HotseatWidget::FocusFirstOrLastFocusableChild(bool last) {
 
 void HotseatWidget::OnTabletModeChanged() {
   GetShelfView()->OnTabletModeChanged();
-  delegate_view_->OnTabletModeChanged();
 }
 
 float HotseatWidget::CalculateOpacity() const {
@@ -468,10 +461,13 @@ void HotseatWidget::UpdateLayout(bool animate) {
   animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
   animation_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  animation_setter.SetAnimationMetricsReporter(
+      shelf_->GetHotseatTransitionMetricsReporter());
 
   layer->SetOpacity(new_layout_inputs.opacity);
   SetBounds(new_layout_inputs.bounds);
   layout_inputs_ = new_layout_inputs;
+  delegate_view_->UpdateTranslucentBackground();
 }
 
 gfx::Size HotseatWidget::GetTranslucentBackgroundSize() const {

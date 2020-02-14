@@ -16,7 +16,6 @@
 #include "build/build_config.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/base/big_buffer.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -140,9 +139,6 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
                          IsFormatAvailableCallback callback) override;
   void ReadAvailableTypes(ui::ClipboardBuffer clipboard_buffer,
                           ReadAvailableTypesCallback callback) override;
-  void ReadAvailablePlatformSpecificFormatNames(
-      ui::ClipboardBuffer clipboard_buffer,
-      ReadAvailablePlatformSpecificFormatNamesCallback callback) override;
   void ReadText(ui::ClipboardBuffer clipboard_buffer,
                 ReadTextCallback callback) override;
   void ReadHtml(ui::ClipboardBuffer clipboard_buffer,
@@ -159,7 +155,6 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
   void WriteSmartPasteMarker() override;
   void WriteCustomData(
       const base::flat_map<base::string16, base::string16>& data) override;
-  void WriteRawData(const base::string16&, mojo_base::BigBuffer) override;
   void WriteBookmark(const std::string& url,
                      const base::string16& title) override;
   void WriteImage(const SkBitmap& bitmap) override;

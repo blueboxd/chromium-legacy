@@ -71,7 +71,7 @@ class USB final : public EventTargetWithInlineData,
 
   void OnServiceConnectionError();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   // EventTarget protected overrides.

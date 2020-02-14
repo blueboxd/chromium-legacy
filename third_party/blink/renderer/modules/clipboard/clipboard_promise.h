@@ -20,7 +20,8 @@
 namespace blink {
 
 class ScriptPromiseResolver;
-class SystemClipboard;
+class LocalFrame;
+class ExecutionContext;
 
 class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
                                public ContextLifecycleObserver {
@@ -28,16 +29,16 @@ class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
 
  public:
   // Creates promise to execute Clipboard API functions off the main thread.
-  static ScriptPromise CreateForRead(SystemClipboard*, ScriptState*);
-  static ScriptPromise CreateForReadText(SystemClipboard*, ScriptState*);
-  static ScriptPromise CreateForWrite(SystemClipboard*,
+  static ScriptPromise CreateForRead(ExecutionContext*, ScriptState*);
+  static ScriptPromise CreateForReadText(ExecutionContext*, ScriptState*);
+  static ScriptPromise CreateForWrite(ExecutionContext*,
                                       ScriptState*,
                                       const HeapVector<Member<ClipboardItem>>&);
-  static ScriptPromise CreateForWriteText(SystemClipboard*,
+  static ScriptPromise CreateForWriteText(ExecutionContext*,
                                           ScriptState*,
                                           const String&);
 
-  ClipboardPromise(SystemClipboard* system_clipboard, ScriptState*);
+  ClipboardPromise(ExecutionContext*, ScriptState*);
   virtual ~ClipboardPromise();
 
   // Completes current write and starts next write.
@@ -45,7 +46,7 @@ class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
   // For rejections originating from ClipboardWriter.
   void RejectFromReadOrDecodeFailure();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Called to begin writing a type.
@@ -70,6 +71,7 @@ class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
       bool allow_without_sanitization,
       base::OnceCallback<void(::blink::mojom::PermissionStatus)> callback);
 
+  LocalFrame* GetLocalFrame() const;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
 
   Member<ScriptState> script_state_;
@@ -85,9 +87,6 @@ class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
   bool is_raw_;  // Corresponds to allowWithoutSanitization in ClipboardItem.
   // Index of clipboard representation currently being processed.
   wtf_size_t clipboard_representation_index_;
-
-  // Access to the global system clipboard.  Not owned.
-  Member<SystemClipboard> system_clipboard_;
 
   // Because v8 is thread-hostile, ensures that all interactions with
   // ScriptState and ScriptPromiseResolver occur on the main thread.

@@ -44,7 +44,7 @@ WakeLock* NavigatorWakeLock::wakeLock(Navigator& navigator) {
   return NavigatorWakeLock::From(navigator).GetWakeLock();
 }
 
-void NavigatorWakeLock::Trace(blink::Visitor* visitor) {
+void NavigatorWakeLock::Trace(Visitor* visitor) {
   visitor->Trace(wake_lock_);
   Supplement<Navigator>::Trace(visitor);
 }

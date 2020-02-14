@@ -324,7 +324,7 @@ ScriptPromise CookieStore::Delete(ScriptState* script_state,
   return DoWrite(script_state, set_options, exception_state);
 }
 
-void CookieStore::Trace(blink::Visitor* visitor) {
+void CookieStore::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }

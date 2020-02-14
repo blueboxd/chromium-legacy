@@ -27,7 +27,7 @@ class XRDOMOverlayState : public ScriptWrappable {
 
   const String& type() const { return type_string_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   const String type_string_;

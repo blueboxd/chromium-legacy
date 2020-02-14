@@ -270,7 +270,7 @@ void ContentIndex::DidGetDescriptions(
   }
 }
 
-void ContentIndex::Trace(blink::Visitor* visitor) {
+void ContentIndex::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
   ScriptWrappable::Trace(visitor);
 }

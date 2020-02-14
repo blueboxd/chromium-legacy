@@ -198,6 +198,7 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/messaging/transferable_message.h"
 #include "third_party/blink/public/mojom/appcache/appcache.mojom.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom.h"
@@ -4864,10 +4865,11 @@ void RenderFrameHostImpl::SubresourceResponseStarted(
 void RenderFrameHostImpl::ResourceLoadComplete(
     blink::mojom::ResourceLoadInfoPtr resource_load_info) {
   GlobalRequestID global_request_id;
+  const bool is_frame_request =
+      blink::IsRequestDestinationFrame(resource_load_info->request_destination);
   if (main_frame_request_ids_.first == resource_load_info->request_id) {
     global_request_id = main_frame_request_ids_.second;
-  } else if (resource_load_info->resource_type ==
-             blink::mojom::ResourceType::kMainFrame) {
+  } else if (is_frame_request) {
     // The load complete message for the main resource arrived before
     // |DidCommitProvisionalLoad()|. We save the load info so
     // |ResourceLoadComplete()| can be called later in

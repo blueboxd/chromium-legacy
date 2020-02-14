@@ -311,7 +311,7 @@ def write_file(new_text, destination_filename):
                 return
 
     destination_dirname = os.path.dirname(destination_filename)
-    if not os.path.exists(destination_dirname):
+    if destination_dirname and not os.path.exists(destination_dirname):
         os.makedirs(destination_dirname)
     # Write file in binary so that when run on Windows, line endings are not
     # converted

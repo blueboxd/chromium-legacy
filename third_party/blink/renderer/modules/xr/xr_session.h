@@ -248,7 +248,7 @@ class XRSession final
 
   bool UsesInputEventing() { return uses_input_eventing_; }
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
   // ScriptWrappable
   bool HasPendingActivity() const override;

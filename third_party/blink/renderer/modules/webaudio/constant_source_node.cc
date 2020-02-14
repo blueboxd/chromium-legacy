@@ -153,7 +153,7 @@ ConstantSourceNode* ConstantSourceNode::Create(
   return node;
 }
 
-void ConstantSourceNode::Trace(blink::Visitor* visitor) {
+void ConstantSourceNode::Trace(Visitor* visitor) {
   visitor->Trace(offset_);
   AudioScheduledSourceNode::Trace(visitor);
 }

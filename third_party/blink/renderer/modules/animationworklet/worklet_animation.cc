@@ -863,7 +863,7 @@ void WorkletAnimation::Dispose() {
   DestroyCompositorAnimation();
 }
 
-void WorkletAnimation::Trace(blink::Visitor* visitor) {
+void WorkletAnimation::Trace(Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(effects_);
   visitor->Trace(timeline_);

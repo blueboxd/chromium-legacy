@@ -188,7 +188,7 @@ void MIDIPort::ContextDestroyed(ExecutionContext*) {
   connection_ = kConnectionStateClosed;
 }
 
-void MIDIPort::Trace(blink::Visitor* visitor) {
+void MIDIPort::Trace(Visitor* visitor) {
   visitor->Trace(access_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);

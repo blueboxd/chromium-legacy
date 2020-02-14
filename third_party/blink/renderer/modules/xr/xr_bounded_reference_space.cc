@@ -108,7 +108,7 @@ XRBoundedReferenceSpace::NativeOrigin() const {
   return XRNativeOriginInformation::Create(this);
 }
 
-void XRBoundedReferenceSpace::Trace(blink::Visitor* visitor) {
+void XRBoundedReferenceSpace::Trace(Visitor* visitor) {
   visitor->Trace(offset_bounds_geometry_);
   XRReferenceSpace::Trace(visitor);
 }

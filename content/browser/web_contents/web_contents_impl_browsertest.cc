@@ -713,17 +713,17 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ResourceLoadComplete) {
   ASSERT_EQ(3U, observer.resource_load_infos().size());
   SCOPE_TRACED(observer.CheckResourceLoaded(
       page_url, /*referrer=*/GURL(), "GET",
-      blink::mojom::ResourceType::kMainFrame,
+      network::mojom::RequestDestination::kDocument,
       FILE_PATH_LITERAL("page_with_iframe.html"), "text/html", "127.0.0.1",
       /*was_cached=*/false, /*first_network_request=*/true, before, after));
   SCOPE_TRACED(observer.CheckResourceLoaded(
       embedded_test_server()->GetURL("/image.jpg"),
-      /*referrer=*/page_url, "GET", blink::mojom::ResourceType::kImage,
+      /*referrer=*/page_url, "GET", network::mojom::RequestDestination::kImage,
       FILE_PATH_LITERAL("image.jpg"), "image/jpeg", "127.0.0.1",
       /*was_cached=*/false, /*first_network_request=*/false, before, after));
   SCOPE_TRACED(observer.CheckResourceLoaded(
       embedded_test_server()->GetURL("/title1.html"),
-      /*referrer=*/page_url, "GET", blink::mojom::ResourceType::kSubFrame,
+      /*referrer=*/page_url, "GET", network::mojom::RequestDestination::kIframe,
       FILE_PATH_LITERAL("title1.html"), "text/html", "127.0.0.1",
       /*was_cached=*/false, /*first_network_request=*/false, before, after));
 }
@@ -744,14 +744,14 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   ASSERT_EQ(2U, observer.resource_load_infos().size());
   SCOPE_TRACED(observer.CheckResourceLoaded(
       page_url, /*referrer=*/GURL(), "GET",
-      blink::mojom::ResourceType::kMainFrame,
+      network::mojom::RequestDestination::kDocument,
       /*served_file_name=*/FILE_PATH_LITERAL(""), "text/html", "127.0.0.1",
       /*was_cached=*/false,
       /*first_network_request=*/true, before, after));
 
   SCOPE_TRACED(observer.CheckResourceLoaded(
       resource_url, /*referrer=*/page_url, "GET",
-      blink::mojom::ResourceType::kScript,
+      network::mojom::RequestDestination::kScript,
       /*served_file_name=*/FILE_PATH_LITERAL(""), "text/html", "127.0.0.1",
       /*was_cached=*/false, /*first_network_request=*/false, before, after));
   EXPECT_TRUE(
@@ -766,7 +766,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   ASSERT_EQ(1U, observer.resource_load_infos().size());
   SCOPE_TRACED(observer.CheckResourceLoaded(
       page_url, /*referrer=*/GURL(), "GET",
-      blink::mojom::ResourceType::kMainFrame,
+      network::mojom::RequestDestination::kDocument,
       /*served_file_name=*/FILE_PATH_LITERAL(""), "text/html", "127.0.0.1",
       /*was_cached=*/false, /*first_network_request=*/false, before, after));
   ASSERT_EQ(1U, observer.memory_cached_loaded_urls().size());
@@ -785,12 +785,12 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   ASSERT_EQ(2U, observer.resource_load_infos().size());
   SCOPE_TRACED(observer.CheckResourceLoaded(
       page_url, /*referrer=*/GURL(), "GET",
-      blink::mojom::ResourceType::kMainFrame,
+      network::mojom::RequestDestination::kDocument,
       /*served_file_name=*/FILE_PATH_LITERAL(""), "text/html", "127.0.0.1",
       /*was_cached=*/false, /*first_network_request=*/true, before, after));
   SCOPE_TRACED(observer.CheckResourceLoaded(
       resource_url, /*referrer=*/page_url, "GET",
-      blink::mojom::ResourceType::kScript,
+      network::mojom::RequestDestination::kScript,
       /*served_file_name=*/FILE_PATH_LITERAL(""), "text/html", "127.0.0.1",
       /*was_cached=*/true, /*first_network_request=*/false, before, after));
   EXPECT_TRUE(observer.memory_cached_loaded_urls().empty());

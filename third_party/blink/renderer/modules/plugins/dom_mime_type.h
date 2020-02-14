@@ -44,7 +44,7 @@ class DOMMimeType final : public ScriptWrappable, public ContextClient {
   const String& description() const;
   DOMPlugin* enabledPlugin() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<const MimeClassInfo> mime_class_info_;

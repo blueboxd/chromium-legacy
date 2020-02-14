@@ -86,7 +86,6 @@ class ToolbarButton : public views::LabelButton,
   void SetLayoutInsets(const gfx::Insets& insets);
 
   // views::LabelButton:
-  void SetText(const base::string16& text) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void OnThemeChanged() override;
   gfx::Rect GetAnchorBoundsInScreen() const override;
@@ -221,6 +220,11 @@ class ToolbarButton : public views::LabelButton,
 
   // views::ImageButton:
   const char* GetClassName() const override;
+
+  // views::LabelButton:
+  // This is private to avoid a foot-shooter. Callers should use SetHighlight()
+  // instead which sets an optional color as well.
+  void SetText(const base::string16& text) override;
 
   // The model that populates the attached menu.
   std::unique_ptr<ui::MenuModel> model_;

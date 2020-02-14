@@ -66,7 +66,7 @@ class DOMWebSocketWithMockChannel final : public DOMWebSocket {
     return channel_.Get();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(channel_);
     DOMWebSocket::Trace(visitor);
   }

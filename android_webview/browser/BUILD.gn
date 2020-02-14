@@ -42,8 +42,6 @@ source_set("browser") {
     "aw_contents_client_bridge.h",
     "aw_contents_io_thread_client.cc",
     "aw_contents_io_thread_client.h",
-    "aw_contents_lifecycle_notifier.cc",
-    "aw_contents_lifecycle_notifier.h",
     "aw_contents_statics.cc",
     "aw_cookie_access_policy.cc",
     "aw_cookie_access_policy.h",
@@ -183,14 +181,13 @@ source_set("browser") {
     "tracing/aw_tracing_controller.h",
     "tracing/aw_tracing_delegate.cc",
     "tracing/aw_tracing_delegate.h",
-    "webview_app_state_observer.cc",
-    "webview_app_state_observer.h",
   ]
 
   deps = [
     "//android_webview:browser_jni_headers",
     "//android_webview:generate_components_strings",
     "//android_webview/browser/gfx",
+    "//android_webview/browser/lifecycle",
     "//android_webview/browser/metrics",
     "//android_webview/common",
     "//android_webview/common:common_mojom",

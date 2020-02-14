@@ -699,12 +699,12 @@ bool MixedContentChecker::ShouldAutoupgrade(
       blink::features::kMixedContentAutoupgradeModeParamName);
 
   if (autoupgrade_mode ==
-      blink::features::kMixedContentAutoupgradeModeNoImages) {
-    return type != mojom::RequestContextType::IMAGE;
+      blink::features::kMixedContentAutoupgradeModeAllPassive) {
+    return true;
   }
 
-  // Otherwise we default to autoupgrading all mixed content.
-  return true;
+  // Otherwise we default to excluding images.
+  return type != mojom::RequestContextType::IMAGE;
 }
 
 void MixedContentChecker::CheckMixedPrivatePublic(

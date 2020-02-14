@@ -43,7 +43,7 @@ class MODULES_EXPORT PresentationConnectionList final
   void DispatchConnectionAvailableEvent(PresentationConnection*);
   bool IsEmpty();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   // EventTarget implementation.

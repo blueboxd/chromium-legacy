@@ -802,7 +802,7 @@ ExecutionContext* MediaStreamTrack::GetExecutionContext() const {
   return execution_context_.Get();
 }
 
-void MediaStreamTrack::Trace(blink::Visitor* visitor) {
+void MediaStreamTrack::Trace(Visitor* visitor) {
   visitor->Trace(registered_media_streams_);
   visitor->Trace(component_);
   visitor->Trace(image_capture_);

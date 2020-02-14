@@ -34,7 +34,7 @@ class MODULES_EXPORT VideoRequestAnimationFrameImpl final
   explicit VideoRequestAnimationFrameImpl(HTMLVideoElement&);
   ~VideoRequestAnimationFrameImpl() override = default;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   int requestAnimationFrame(V8VideoFrameRequestCallback*);
   void cancelAnimationFrame(int);

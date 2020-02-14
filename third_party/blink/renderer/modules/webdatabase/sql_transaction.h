@@ -59,7 +59,7 @@ class SQLTransaction final : public ScriptWrappable,
   class OnProcessCallback : public GarbageCollected<OnProcessCallback> {
    public:
     virtual ~OnProcessCallback() = default;
-    virtual void Trace(blink::Visitor*) {}
+    virtual void Trace(Visitor*) {}
     virtual bool OnProcess(SQLTransaction*) = 0;
 
    protected:
@@ -76,7 +76,7 @@ class SQLTransaction final : public ScriptWrappable,
     explicit OnProcessV8Impl(V8SQLTransactionCallback* callback)
         : callback_(callback) {}
 
-    void Trace(blink::Visitor*) override;
+    void Trace(Visitor*) override;
     bool OnProcess(SQLTransaction*) override;
 
    private:
@@ -86,7 +86,7 @@ class SQLTransaction final : public ScriptWrappable,
   class OnSuccessCallback : public GarbageCollected<OnSuccessCallback> {
    public:
     virtual ~OnSuccessCallback() = default;
-    virtual void Trace(blink::Visitor*) {}
+    virtual void Trace(Visitor*) {}
     virtual void OnSuccess() = 0;
 
    protected:
@@ -102,7 +102,7 @@ class SQLTransaction final : public ScriptWrappable,
 
     explicit OnSuccessV8Impl(V8VoidCallback* callback) : callback_(callback) {}
 
-    void Trace(blink::Visitor*) override;
+    void Trace(Visitor*) override;
     void OnSuccess() override;
 
    private:
@@ -112,7 +112,7 @@ class SQLTransaction final : public ScriptWrappable,
   class OnErrorCallback : public GarbageCollected<OnErrorCallback> {
    public:
     virtual ~OnErrorCallback() = default;
-    virtual void Trace(blink::Visitor*) {}
+    virtual void Trace(Visitor*) {}
     virtual bool OnError(SQLError*) = 0;
 
    protected:
@@ -128,7 +128,7 @@ class SQLTransaction final : public ScriptWrappable,
     explicit OnErrorV8Impl(V8SQLTransactionErrorCallback* callback)
         : callback_(callback) {}
 
-    void Trace(blink::Visitor*) override;
+    void Trace(Visitor*) override;
     bool OnError(SQLError*) override;
 
    private:
@@ -147,7 +147,7 @@ class SQLTransaction final : public ScriptWrappable,
                  OnErrorCallback*,
                  bool read_only);
   ~SQLTransaction() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void PerformPendingCallback();
 

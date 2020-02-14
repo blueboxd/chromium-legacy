@@ -60,7 +60,7 @@ class WebGL2ComputeRenderingContext : public WebGL2ComputeRenderingContextBase {
   void SetCanvasGetContextResult(RenderingContext&) final;
   void SetOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   Member<EXTColorBufferFloat> ext_color_buffer_float_;

@@ -114,7 +114,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   bool InitializationSegmentReceived(const WebVector<MediaTrackInfo>&) override;
   void NotifyParseWarning(const ParseWarning) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void Dispose();

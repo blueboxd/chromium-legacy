@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Test that <img> below viewport is not loaded when moved to another document and then scrolled to assert_unreached: The below viewport image should not load Reached unreachable code
+Harness: the test ran to completion.
+

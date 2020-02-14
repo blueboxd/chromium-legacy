@@ -49,7 +49,7 @@ class DOMPlugin final : public ScriptWrappable, public ContextClient {
   void NamedPropertyEnumerator(Vector<String>&, ExceptionState&) const;
   bool NamedPropertyQuery(const AtomicString&, ExceptionState&) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<const PluginInfo> plugin_info_;

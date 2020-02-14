@@ -57,7 +57,7 @@ class SetSinkIdResolver : public ScriptPromiseResolver {
   ~SetSinkIdResolver() override = default;
   void StartAsync();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DoSetSinkId();
@@ -147,7 +147,7 @@ void SetSinkIdResolver::OnSetSinkIdComplete(
   Resolve();
 }
 
-void SetSinkIdResolver::Trace(blink::Visitor* visitor) {
+void SetSinkIdResolver::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   ScriptPromiseResolver::Trace(visitor);
 }
@@ -196,7 +196,7 @@ HTMLMediaElementAudioOutputDevice& HTMLMediaElementAudioOutputDevice::From(
   return *supplement;
 }
 
-void HTMLMediaElementAudioOutputDevice::Trace(blink::Visitor* visitor) {
+void HTMLMediaElementAudioOutputDevice::Trace(Visitor* visitor) {
   Supplement<HTMLMediaElement>::Trace(visitor);
 }
 

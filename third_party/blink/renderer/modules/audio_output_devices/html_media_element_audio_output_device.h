@@ -27,7 +27,7 @@ class MODULES_EXPORT HTMLMediaElementAudioOutputDevice final
 
   HTMLMediaElementAudioOutputDevice();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   static String sinkId(HTMLMediaElement&);
   static ScriptPromise setSinkId(ScriptState*,
                                  HTMLMediaElement&,

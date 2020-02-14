@@ -123,6 +123,14 @@ TestPaintArtifact& TestPaintArtifact::KnownToBeOpaque() {
 
 TestPaintArtifact& TestPaintArtifact::Bounds(const IntRect& bounds) {
   paint_chunks_.back().bounds = bounds;
+  paint_chunks_.back().drawable_bounds = bounds;
+  return *this;
+}
+
+TestPaintArtifact& TestPaintArtifact::DrawableBounds(
+    const IntRect& drawable_bounds) {
+  paint_chunks_.back().drawable_bounds = drawable_bounds;
+  DCHECK(paint_chunks_.back().bounds.Contains(drawable_bounds));
   return *this;
 }
 

@@ -166,7 +166,7 @@ void Gamepad::SetTimestamp(const device::Gamepad& device_gamepad) {
   }
 }
 
-void Gamepad::Trace(blink::Visitor* visitor) {
+void Gamepad::Trace(Visitor* visitor) {
   visitor->Trace(client_);
   visitor->Trace(buttons_);
   ScriptWrappable::Trace(visitor);

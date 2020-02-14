@@ -435,9 +435,13 @@ ListThumbnailLoader.Task = class {
 
           // If the file is on a network filesystem, don't generate thumbnails
           // from file entry, as it could cause very high network traffic.
+          // Allow Drive to do so however, as ThumbnailLoader tries to generate
+          // thumbnails of Drive files from file entry only if cached locally.
           const volumeInfo = this.volumeManager_.getVolumeInfo(this.entry_);
           if (volumeInfo &&
-              volumeInfo.source !== VolumeManagerCommon.Source.NETWORK) {
+              (volumeInfo.source !== VolumeManagerCommon.Source.NETWORK ||
+               volumeInfo.volumeType ===
+                   VolumeManagerCommon.VolumeType.DRIVE)) {
             loadTargets.push(ThumbnailLoader.LoadTarget.FILE_ENTRY);
           }
 

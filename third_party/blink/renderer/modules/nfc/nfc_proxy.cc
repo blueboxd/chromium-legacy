@@ -44,7 +44,7 @@ void NFCProxy::Dispose() {
   client_receiver_.reset();
 }
 
-void NFCProxy::Trace(blink::Visitor* visitor) {
+void NFCProxy::Trace(Visitor* visitor) {
   visitor->Trace(writers_);
   visitor->Trace(readers_);
   PageVisibilityObserver::Trace(visitor);

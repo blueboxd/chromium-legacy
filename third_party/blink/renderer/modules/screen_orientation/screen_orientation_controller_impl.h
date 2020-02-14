@@ -49,7 +49,7 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
   void SetScreenOrientationAssociatedRemoteForTests(
       mojo::AssociatedRemote<device::mojom::blink::ScreenOrientation>);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest;

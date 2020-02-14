@@ -133,7 +133,7 @@ class AudioListener : public ScriptWrappable, public InspectorHelperMixin {
   void ReportDidCreate() final;
   void ReportWillBeDestroyed() final;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void setPosition(const FloatPoint3D&, ExceptionState&);

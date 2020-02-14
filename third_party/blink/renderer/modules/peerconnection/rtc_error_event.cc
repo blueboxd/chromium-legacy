@@ -28,7 +28,7 @@ RTCError* RTCErrorEvent::error() const {
   return error_;
 }
 
-void RTCErrorEvent::Trace(blink::Visitor* visitor) {
+void RTCErrorEvent::Trace(Visitor* visitor) {
   visitor->Trace(error_);
   Event::Trace(visitor);
 }

@@ -39,7 +39,7 @@ namespace blink {
 NavigatorDoNotTrack::NavigatorDoNotTrack(Navigator& navigator)
     : Supplement<Navigator>(navigator) {}
 
-void NavigatorDoNotTrack::Trace(blink::Visitor* visitor) {
+void NavigatorDoNotTrack::Trace(Visitor* visitor) {
   Supplement<Navigator>::Trace(visitor);
 }
 

@@ -56,7 +56,7 @@ class MediaKeyStatusMap::MapEntry final
     return a->KeyId()->ByteLengthAsSizeT() < b->KeyId()->ByteLengthAsSizeT();
   }
 
-  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(key_id_); }
+  virtual void Trace(Visitor* visitor) { visitor->Trace(key_id_); }
 
  private:
   const Member<DOMArrayBuffer> key_id_;
@@ -85,7 +85,7 @@ class MapIterationSource final
     return true;
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(map_);
     PairIterable<ArrayBufferOrArrayBufferView, String>::IterationSource::Trace(
         visitor);
@@ -149,7 +149,7 @@ MediaKeyStatusMap::StartIteration(ScriptState*, ExceptionState&) {
   return MakeGarbageCollected<MapIterationSource>(this);
 }
 
-void MediaKeyStatusMap::Trace(blink::Visitor* visitor) {
+void MediaKeyStatusMap::Trace(Visitor* visitor) {
   visitor->Trace(entries_);
   ScriptWrappable::Trace(visitor);
 }

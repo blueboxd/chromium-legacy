@@ -75,7 +75,7 @@ class MIDIPort : public EventTargetWithInlineData,
   void SetState(midi::mojom::PortState);
   ConnectionState GetConnection() const { return connection_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(statechange, kStatechange)
 

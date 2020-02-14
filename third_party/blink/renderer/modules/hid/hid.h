@@ -48,7 +48,7 @@ class HID : public EventTargetWithInlineData, public ContextLifecycleObserver {
                    connection_client,
                device::mojom::blink::HidManager::ConnectCallback callback);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   // EventTarget:

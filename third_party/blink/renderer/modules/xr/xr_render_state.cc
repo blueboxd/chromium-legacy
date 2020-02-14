@@ -60,7 +60,7 @@ double XRRenderState::inlineVerticalFieldOfView(bool& is_null) const {
   return is_null ? 0 : *inline_vertical_fov_;
 }
 
-void XRRenderState::Trace(blink::Visitor* visitor) {
+void XRRenderState::Trace(Visitor* visitor) {
   visitor->Trace(base_layer_);
   visitor->Trace(inline_vertical_fov_);
   ScriptWrappable::Trace(visitor);

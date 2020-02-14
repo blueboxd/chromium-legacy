@@ -27,7 +27,7 @@ class NavigatorPermissions final
 
   NavigatorPermissions();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<Permissions> permissions_;

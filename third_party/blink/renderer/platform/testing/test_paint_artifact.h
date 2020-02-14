@@ -121,8 +121,10 @@ class TestPaintArtifact {
 
   // Sets fake bounds for the last paint chunk. Note that the bounds will be
   // overwritten when the PaintArtifact is constructed if the chunk has any
-  // display items.
+  // display items. Bounds() sets both bounds and drawable_bounds, while
+  // DrawableBounds() sets drawable_bounds only.
   TestPaintArtifact& Bounds(const IntRect&);
+  TestPaintArtifact& DrawableBounds(const IntRect&);
 
   TestPaintArtifact& OutsetForRasterEffects(float);
   TestPaintArtifact& KnownToBeOpaque();

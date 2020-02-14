@@ -284,8 +284,8 @@ void UkmPageLoadMetricsObserver::OnLoadedResource(
         extra_request_complete_info) {
   if (was_hidden_)
     return;
-  if (extra_request_complete_info.resource_type ==
-      blink::mojom::ResourceType::kMainFrame) {
+  if (extra_request_complete_info.request_destination ==
+      network::mojom::RequestDestination::kDocument) {
     DCHECK(!main_frame_timing_.has_value());
     main_frame_timing_ = *extra_request_complete_info.load_timing_info;
   }

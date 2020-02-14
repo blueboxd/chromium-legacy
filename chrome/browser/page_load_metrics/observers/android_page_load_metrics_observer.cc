@@ -115,8 +115,8 @@ void AndroidPageLoadMetricsObserver::OnLoadedResource(
     const page_load_metrics::ExtraRequestCompleteInfo&
         extra_request_complete_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (extra_request_complete_info.resource_type ==
-      blink::mojom::ResourceType::kMainFrame) {
+  if (extra_request_complete_info.request_destination ==
+      network::mojom::RequestDestination::kDocument) {
     DCHECK(!did_dispatch_on_main_resource_);
     if (did_dispatch_on_main_resource_) {
       // We are defensive for the case of something strange happening and return

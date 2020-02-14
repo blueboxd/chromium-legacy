@@ -32,7 +32,7 @@ class USBIsochronousOutTransferResult final : public ScriptWrappable {
     return packets_;
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(packets_);
     ScriptWrappable::Trace(visitor);
   }

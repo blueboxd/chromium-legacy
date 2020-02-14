@@ -65,7 +65,7 @@ class RTCVoidRequestImpl final : public RTCVoidRequest,
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void Clear();

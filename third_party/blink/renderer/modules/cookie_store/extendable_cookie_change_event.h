@@ -57,7 +57,7 @@ class ExtendableCookieChangeEvent final : public ExtendableEvent {
   const AtomicString& InterfaceName() const override;
 
   // GarbageCollected
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
 

@@ -59,7 +59,7 @@ class IDBCursor : public ScriptWrappable {
             IDBTransaction*);
   ~IDBCursor() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   void ContextWillBeDestroyed() { backend_.reset(); }
 
   WARN_UNUSED_RESULT v8::Local<v8::Object> AssociateWithWrapper(

@@ -22,7 +22,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -34,6 +33,7 @@
 #include "components/permissions/features.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_request_id.h"
+#include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -264,10 +264,12 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
     histograms.ExpectUniqueSample(
         "Permissions.AutoBlocker.EmbargoPromptSuppression",
-        static_cast<int>(PermissionEmbargoStatus::NOT_EMBARGOED), 1);
+        static_cast<int>(permissions::PermissionEmbargoStatus::NOT_EMBARGOED),
+        1);
     histograms.ExpectUniqueSample(
         "Permissions.AutoBlocker.EmbargoStatus",
-        static_cast<int>(PermissionEmbargoStatus::NOT_EMBARGOED), 1);
+        static_cast<int>(permissions::PermissionEmbargoStatus::NOT_EMBARGOED),
+        1);
 
     if (action.has_value()) {
       auto entries = ukm_recorder.GetEntriesByName("Permission");
@@ -282,7 +284,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
                 -1);
 
       EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Source"),
-                static_cast<int64_t>(PermissionSourceUI::PROMPT));
+                static_cast<int64_t>(permissions::PermissionSourceUI::PROMPT));
       EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "PermissionType"),
                 static_cast<int64_t>(ContentSettingTypeToHistogramValue(
                     content_settings_type, &num_values)));
@@ -290,13 +292,13 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
                 static_cast<int64_t>(action.value()));
 
 #if defined(OS_ANDROID)
-      EXPECT_EQ(
-          *ukm_recorder.GetEntryMetric(entry, "PromptDisposition"),
-          static_cast<int64_t>(PermissionPromptDisposition::MODAL_DIALOG));
+      EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "PromptDisposition"),
+                static_cast<int64_t>(
+                    permissions::PermissionPromptDisposition::MODAL_DIALOG));
 #else
-      EXPECT_EQ(
-          *ukm_recorder.GetEntryMetric(entry, "PromptDisposition"),
-          static_cast<int64_t>(PermissionPromptDisposition::ANCHORED_BUBBLE));
+      EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "PromptDisposition"),
+                static_cast<int64_t>(
+                    permissions::PermissionPromptDisposition::ANCHORED_BUBBLE));
 #endif
     }
   }
@@ -345,21 +347,26 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
 
       histograms.ExpectUniqueSample(
           "Permissions.AutoBlocker.EmbargoPromptSuppression",
-          static_cast<int>(PermissionEmbargoStatus::NOT_EMBARGOED), i + 1);
+          static_cast<int>(permissions::PermissionEmbargoStatus::NOT_EMBARGOED),
+          i + 1);
       if (i < 2) {
         EXPECT_EQ(permissions::PermissionStatusSource::UNSPECIFIED,
                   result.source);
         EXPECT_EQ(CONTENT_SETTING_ASK, result.content_setting);
         histograms.ExpectUniqueSample(
             "Permissions.AutoBlocker.EmbargoStatus",
-            static_cast<int>(PermissionEmbargoStatus::NOT_EMBARGOED), i + 1);
+            static_cast<int>(
+                permissions::PermissionEmbargoStatus::NOT_EMBARGOED),
+            i + 1);
       } else {
         EXPECT_EQ(permissions::PermissionStatusSource::MULTIPLE_DISMISSALS,
                   result.source);
         EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
         histograms.ExpectBucketCount(
             "Permissions.AutoBlocker.EmbargoStatus",
-            static_cast<int>(PermissionEmbargoStatus::REPEATED_DISMISSALS), 1);
+            static_cast<int>(
+                permissions::PermissionEmbargoStatus::REPEATED_DISMISSALS),
+            1);
       }
 
       ASSERT_EQ(1u, permission_context.decisions().size());
@@ -390,7 +397,9 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
               result.source);
     histograms.ExpectBucketCount(
         "Permissions.AutoBlocker.EmbargoPromptSuppression",
-        static_cast<int>(PermissionEmbargoStatus::REPEATED_DISMISSALS), 1);
+        static_cast<int>(
+            permissions::PermissionEmbargoStatus::REPEATED_DISMISSALS),
+        1);
   }
 
   void TestBlockOnSeveralDismissals_TestContent() {
@@ -428,10 +437,14 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
             "Permissions.Prompt.Dismissed.PriorDismissCount.Geolocation", i, 1);
         histograms.ExpectUniqueSample(
             "Permissions.AutoBlocker.EmbargoPromptSuppression",
-            static_cast<int>(PermissionEmbargoStatus::NOT_EMBARGOED), i + 1);
+            static_cast<int>(
+                permissions::PermissionEmbargoStatus::NOT_EMBARGOED),
+            i + 1);
         histograms.ExpectUniqueSample(
             "Permissions.AutoBlocker.EmbargoStatus",
-            static_cast<int>(PermissionEmbargoStatus::NOT_EMBARGOED), i + 1);
+            static_cast<int>(
+                permissions::PermissionEmbargoStatus::NOT_EMBARGOED),
+            i + 1);
 
         ASSERT_EQ(1u, permission_context.decisions().size());
         EXPECT_EQ(CONTENT_SETTING_ASK, permission_context.decisions()[0]);
@@ -510,7 +523,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
           "Permissions.Prompt.Dismissed.PriorDismissCount.MidiSysEx", i, 1);
       histograms.ExpectUniqueSample(
           "Permissions.AutoBlocker.EmbargoPromptSuppression",
-          static_cast<int>(PermissionEmbargoStatus::NOT_EMBARGOED), i + 1);
+          static_cast<int>(permissions::PermissionEmbargoStatus::NOT_EMBARGOED),
+          i + 1);
       histograms.ExpectTotalCount("Permissions.AutoBlocker.EmbargoStatus",
                                   i + 1);
       if (i < 4) {
@@ -519,14 +533,18 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
                   result.source);
         histograms.ExpectUniqueSample(
             "Permissions.AutoBlocker.EmbargoStatus",
-            static_cast<int>(PermissionEmbargoStatus::NOT_EMBARGOED), i + 1);
+            static_cast<int>(
+                permissions::PermissionEmbargoStatus::NOT_EMBARGOED),
+            i + 1);
       } else {
         EXPECT_EQ(CONTENT_SETTING_BLOCK, result.content_setting);
         EXPECT_EQ(permissions::PermissionStatusSource::MULTIPLE_DISMISSALS,
                   result.source);
         histograms.ExpectBucketCount(
             "Permissions.AutoBlocker.EmbargoStatus",
-            static_cast<int>(PermissionEmbargoStatus::REPEATED_DISMISSALS), 1);
+            static_cast<int>(
+                permissions::PermissionEmbargoStatus::REPEATED_DISMISSALS),
+            1);
       }
     }
 

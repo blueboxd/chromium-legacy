@@ -116,11 +116,12 @@ void ToolbarButton::SetHighlight(const base::string16& highlight_text,
   }
 
   highlight_color_animation_.Show(highlight_color);
-  LabelButton::SetText(highlight_text);
+  SetText(highlight_text);
 }
 
 void ToolbarButton::SetText(const base::string16& text) {
-  NOTREACHED() << "Use SetHighlight(text, _) instead of SetText(text)";
+  LabelButton::SetText(text);
+  UpdateColorsAndInsets();
 }
 
 void ToolbarButton::ClearHighlight() {

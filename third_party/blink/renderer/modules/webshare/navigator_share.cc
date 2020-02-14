@@ -90,7 +90,7 @@ class NavigatorShare::ShareClientImpl final
 
   void OnConnectionError();
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(Visitor* visitor) {
     visitor->Trace(navigator_);
     visitor->Trace(resolver_);
   }
@@ -148,7 +148,7 @@ NavigatorShare& NavigatorShare::From(Navigator& navigator) {
   return *supplement;
 }
 
-void NavigatorShare::Trace(blink::Visitor* visitor) {
+void NavigatorShare::Trace(Visitor* visitor) {
   visitor->Trace(clients_);
   Supplement<Navigator>::Trace(visitor);
 }

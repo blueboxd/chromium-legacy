@@ -26,7 +26,7 @@ class MODULES_EXPORT FaceDetector final : public ShapeDetector {
 
   FaceDetector(ExecutionContext*, const FaceDetectorOptions*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   ~FaceDetector() override = default;

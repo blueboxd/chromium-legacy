@@ -9,12 +9,15 @@
 #include <memory>
 
 #include "base/containers/flat_set.h"
+#include "build/build_config.h"
 #include "components/printing/common/print.mojom.h"
 #include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "printing/buildflags/buildflags.h"
+#include "ui/accessibility/ax_tree_update_forward.h"
 
 struct PrintHostMsg_DidPrintContent_Params;
 
@@ -41,6 +44,10 @@ class PrintCompositeClient
       content::RenderFrameHost* render_frame_host,
       int document_cookie,
       const PrintHostMsg_DidPrintContent_Params& params);
+#if BUILDFLAG(ENABLE_TAGGED_PDF)
+  void OnAccessibilityTree(int document_cookie,
+                           const ui::AXTreeUpdate& accessibility_tree);
+#endif
 
   // Instructs the specified subframe to print.
   void PrintCrossProcessSubframe(const gfx::Rect& rect,

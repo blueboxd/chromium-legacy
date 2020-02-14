@@ -23,6 +23,7 @@
 #include "media/base/eme_constants.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/hdr_metadata.h"
+#include "media/base/media_error_codes.h"
 #include "media/base/media_log_record.h"
 #include "media/base/media_status.h"
 #include "media/base/output_device_info.h"
@@ -146,6 +147,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::VideoRotation, media::VIDEO_ROTATION_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::container_names::MediaContainerName,
                           media::container_names::CONTAINER_MAX)
+
+IPC_ENUM_TRAITS_MAX_VALUE(media::ErrorCode, media::ErrorCode::kMaxValue)
 
 #if BUILDFLAG(ENABLE_MEDIA_DRM_STORAGE)
 IPC_ENUM_TRAITS_MIN_MAX_VALUE(media::MediaDrmKeyType,

@@ -11,12 +11,23 @@
 #include <vector>
 
 #include "base/location.h"
+#include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "media/base/media_error_codes.h"
 #include "media/base/media_export.h"
 #include "media/base/media_serializers_base.h"
 
+// Mojo namespaces for serialization friend declarations.
+namespace mojo {
+template <typename T, typename U>
+struct StructTraits;
+}  // namespace mojo
+
 namespace media {
+
+namespace mojom {
+class MediaErrorDataView;
+}
 
 // MediaError is meant to be a relatively small (sizeof(void*) bytes) object
 // that can be returned as an error value from functions or passed to callbacks
@@ -32,7 +43,7 @@ class MEDIA_EXPORT MediaError {
   // Convenience function to return |kOk|.
   // OK won't have a message, trace, or data associated with them, and DCHECK
   // if they are added.
-  static MediaError Ok() { return MediaError(ErrorCode::kOk); }
+  static MediaError Ok() { return MediaError(); }
 
   // Constructor to create a new MediaError from a numeric code & message.
   // These are immutable; if you'd like to change them, then you likely should
@@ -40,11 +51,12 @@ class MEDIA_EXPORT MediaError {
   // NOTE: This should never be given a location parameter when called - It is
   // defaulted in order to grab the caller location.
   MediaError(ErrorCode code,
-             std::string message = "",
+             base::StringPiece message = "",
              const base::Location& location = base::Location::Current());
 
-  // Copy Constructor
-  MediaError(const MediaError& copy);
+  // Copy Constructor & assignment. (Mojo uses both of these)
+  MediaError(const MediaError&);
+  MediaError& operator=(const MediaError&);
 
   // Allows move.
   MediaError(MediaError&&);
@@ -56,7 +68,11 @@ class MEDIA_EXPORT MediaError {
   bool IsOk() const { return !data_; }
 
   // Getters for internal fields
-  std::string GetErrorMessage() const { return data_ ? data_->message : ""; }
+  const std::string& GetErrorMessage() const {
+    DCHECK(data_);
+    return data_->message;
+  }
+
   ErrorCode GetErrorCode() const {
     return data_ ? data_->code : ErrorCode::kOk;
   }
@@ -94,11 +110,14 @@ class MEDIA_EXPORT MediaError {
   }
 
  private:
+  // Default constructor can be used for MediaError::Ok();
+  MediaError();
+
   // Private helper to add the current stack frame to the error trace.
   void AddFrame(const base::Location& location);
 
   // Keep the internal data in a unique ptr to minimize size of OK errors.
-  struct MediaErrorInternal {
+  struct MEDIA_EXPORT MediaErrorInternal {
     MediaErrorInternal(ErrorCode code, std::string message);
     ~MediaErrorInternal();
 
@@ -121,6 +140,11 @@ class MEDIA_EXPORT MediaError {
 
   // Allow self-serialization
   friend struct internal::MediaSerializer<MediaError>;
+
+  // Allow mojo-serialization
+  friend struct std::allocator<MediaError>;
+  friend struct mojo::StructTraits<media::mojom::MediaErrorDataView,
+                                   MediaError>;
 
   // A null internals is an implicit OK.
   std::unique_ptr<MediaErrorInternal> data_;

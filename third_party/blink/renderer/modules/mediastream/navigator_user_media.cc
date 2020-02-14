@@ -39,7 +39,7 @@ MediaDevices* NavigatorUserMedia::mediaDevices(Navigator& navigator) {
   return NavigatorUserMedia::From(navigator).GetMediaDevices();
 }
 
-void NavigatorUserMedia::Trace(blink::Visitor* visitor) {
+void NavigatorUserMedia::Trace(Visitor* visitor) {
   visitor->Trace(media_devices_);
   Supplement<Navigator>::Trace(visitor);
 }

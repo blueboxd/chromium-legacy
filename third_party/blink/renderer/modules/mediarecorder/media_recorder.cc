@@ -448,7 +448,7 @@ void MediaRecorder::DispatchScheduledEvent() {
     DispatchEvent(*event);
 }
 
-void MediaRecorder::Trace(blink::Visitor* visitor) {
+void MediaRecorder::Trace(Visitor* visitor) {
   visitor->Trace(stream_);
   visitor->Trace(recorder_handler_);
   visitor->Trace(scheduled_events_);

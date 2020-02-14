@@ -29,7 +29,7 @@ HID* NavigatorHID::hid() {
   return hid_;
 }
 
-void NavigatorHID::Trace(blink::Visitor* visitor) {
+void NavigatorHID::Trace(Visitor* visitor) {
   visitor->Trace(hid_);
   Supplement<Navigator>::Trace(visitor);
 }

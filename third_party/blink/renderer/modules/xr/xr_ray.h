@@ -49,7 +49,7 @@ class XRRay final : public ScriptWrappable {
   static XRRay* Create(XRRigidTransform* transform,
                        ExceptionState& exception_state);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void Set(const TransformationMatrix& matrix, ExceptionState& exception_state);

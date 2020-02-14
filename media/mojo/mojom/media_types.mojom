@@ -36,6 +36,10 @@ enum ColorSpace;
 [Native]
 enum DecodeStatus;
 
+// See media/base/media_error_codes.h for descriptions.
+[Native]
+enum ErrorCode;
+
 // See media/base/media_log_record.h for description.
 [Native]
 struct MediaLogRecord;
@@ -350,4 +354,13 @@ struct PipelineDecoderInfo {
   string decoder_name;
   bool is_platform_decoder = false;
   bool has_decrypting_demuxer_stream = false;
+};
+
+// See media/base/media_error.h for descriptions.
+struct MediaError {
+  ErrorCode code;
+  string? message;
+  array<mojo_base.mojom.Value> frames;
+  array<media.mojom.MediaError> causes;
+  mojo_base.mojom.Value? data;
 };

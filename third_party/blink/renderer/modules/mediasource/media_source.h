@@ -128,7 +128,7 @@ class MediaSource final : public EventTargetWithInlineData,
   void AddedToRegistry();
   void RemovedFromRegistry();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void SetReadyState(const AtomicString&);

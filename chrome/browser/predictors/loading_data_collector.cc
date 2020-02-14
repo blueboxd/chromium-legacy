@@ -19,8 +19,10 @@
 #include "net/base/mime_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
-#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 
 using content::BrowserThread;
 
@@ -44,19 +46,19 @@ const char* const kFontMimeTypes[] = {"font/woff2",
                                       "application/font-sfnt",
                                       "application/font-ttf"};
 
-// Determines the ResourceType from the mime type, defaulting to the
-// |fallback| if the ResourceType could not be determined.
-blink::mojom::ResourceType GetResourceTypeFromMimeType(
+// Determines the request destination from the mime type, defaulting to the
+// |fallback| if the destination could not be determined.
+network::mojom::RequestDestination GetRequestDestinationFromMimeType(
     const std::string& mime_type,
-    blink::mojom::ResourceType fallback) {
+    network::mojom::RequestDestination fallback) {
   if (mime_type.empty()) {
     return fallback;
   } else if (blink::IsSupportedImageMimeType(mime_type)) {
-    return blink::mojom::ResourceType::kImage;
+    return network::mojom::RequestDestination::kImage;
   } else if (blink::IsSupportedJavascriptMimeType(mime_type)) {
-    return blink::mojom::ResourceType::kScript;
+    return network::mojom::RequestDestination::kScript;
   } else if (net::MatchesMimeType("text/css", mime_type)) {
-    return blink::mojom::ResourceType::kStylesheet;
+    return network::mojom::RequestDestination::kStyle;
   } else {
     bool found =
         std::any_of(std::begin(kFontMimeTypes), std::end(kFontMimeTypes),
@@ -64,26 +66,24 @@ blink::mojom::ResourceType GetResourceTypeFromMimeType(
                       return net::MatchesMimeType(mime, mime_type);
                     });
     if (found)
-      return blink::mojom::ResourceType::kFontResource;
+      return network::mojom::RequestDestination::kFont;
   }
   return fallback;
 }
 
 // Determines the resource type from the declared one, falling back to MIME
 // type detection when it is not explicit.
-blink::mojom::ResourceType GetResourceType(
-    blink::mojom::ResourceType resource_type,
+network::mojom::RequestDestination GetRequestDestination(
+    network::mojom::RequestDestination destination,
     const std::string& mime_type) {
-  // Restricts content::RESOURCE_TYPE_{PREFETCH,SUB_RESOURCE,XHR} to a small set
-  // of mime types, because these resource types don't communicate how the
-  // resources will be used.
-  if (resource_type == blink::mojom::ResourceType::kPrefetch ||
-      resource_type == blink::mojom::ResourceType::kSubResource ||
-      resource_type == blink::mojom::ResourceType::kXhr) {
-    return GetResourceTypeFromMimeType(
-        mime_type, blink::mojom::ResourceType::kSubResource);
+  // Restricts empty request destination (e.g. prefetch, prerender, fetch,
+  // xhr etc) to a small set of mime types, because these destination types
+  // don't communicate how the resources will be used.
+  if (destination == network::mojom::RequestDestination::kEmpty) {
+    return GetRequestDestinationFromMimeType(
+        mime_type, network::mojom::RequestDestination::kEmpty);
   }
-  return resource_type;
+  return destination;
 }
 
 }  // namespace
@@ -250,7 +250,7 @@ bool LoadingDataCollector::ShouldRecordResourceLoad(
     return false;
   }
 
-  if (!IsHandledResourceType(resource_load_info.resource_type,
+  if (!IsHandledResourceType(resource_load_info.request_destination,
                              resource_load_info.mime_type)) {
     return false;
   }
@@ -262,15 +262,15 @@ bool LoadingDataCollector::ShouldRecordResourceLoad(
 
 // static
 bool LoadingDataCollector::IsHandledResourceType(
-    blink::mojom::ResourceType resource_type,
+    network::mojom::RequestDestination destination,
     const std::string& mime_type) {
-  blink::mojom::ResourceType actual_resource_type =
-      GetResourceType(resource_type, mime_type);
-  return actual_resource_type == blink::mojom::ResourceType::kMainFrame ||
-         actual_resource_type == blink::mojom::ResourceType::kStylesheet ||
-         actual_resource_type == blink::mojom::ResourceType::kScript ||
-         actual_resource_type == blink::mojom::ResourceType::kImage ||
-         actual_resource_type == blink::mojom::ResourceType::kFontResource;
+  network::mojom::RequestDestination actual_destination =
+      GetRequestDestination(destination, mime_type);
+  return actual_destination == network::mojom::RequestDestination::kDocument ||
+         actual_destination == network::mojom::RequestDestination::kStyle ||
+         actual_destination == network::mojom::RequestDestination::kScript ||
+         actual_destination == network::mojom::RequestDestination::kImage ||
+         actual_destination == network::mojom::RequestDestination::kFont;
 }
 
 void LoadingDataCollector::CleanupAbandonedNavigations(

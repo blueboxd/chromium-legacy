@@ -103,7 +103,7 @@ void XRPlane::Update(const device::mojom::blink::XRPlaneDataPtr& plane_data,
       plane_data->polygon);
 }
 
-void XRPlane::Trace(blink::Visitor* visitor) {
+void XRPlane::Trace(Visitor* visitor) {
   visitor->Trace(polygon_);
   visitor->Trace(session_);
   visitor->Trace(plane_space_);

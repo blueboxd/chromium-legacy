@@ -28,7 +28,7 @@ class NavigatorSMS final : public GarbageCollected<NavigatorSMS>,
 
   explicit NavigatorSMS(Navigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   SMSReceiver* GetSMSReceiver(ScriptState*);

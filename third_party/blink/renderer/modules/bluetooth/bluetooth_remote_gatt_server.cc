@@ -82,7 +82,7 @@ void BluetoothRemoteGATTServer::Dispose() {
   client_receivers_.Clear();
 }
 
-void BluetoothRemoteGATTServer::Trace(blink::Visitor* visitor) {
+void BluetoothRemoteGATTServer::Trace(Visitor* visitor) {
   visitor->Trace(active_algorithms_);
   visitor->Trace(device_);
   ScriptWrappable::Trace(visitor);

@@ -37,7 +37,7 @@ class CanvasRenderingContext2DState final
                                 ClipListCopyMode);
   ~CanvasRenderingContext2DState() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   enum PaintType {
     kFillPaintType,

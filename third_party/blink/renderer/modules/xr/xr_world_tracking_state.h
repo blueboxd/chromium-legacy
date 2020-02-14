@@ -30,7 +30,7 @@ class XRWorldTrackingState : public ScriptWrappable {
     return light_estimation_state_;
   }
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   Member<XRPlaneDetectionState> plane_detection_state_;

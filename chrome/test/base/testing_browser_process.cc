@@ -18,6 +18,7 @@
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
+#include "chrome/browser/permissions/chrome_permissions_client.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -28,6 +29,7 @@
 #include "chrome/test/base/testing_browser_process_platform_part.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/permissions/permissions_client.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/prefs/pref_service.h"
 #include "components/subresource_filter/content/browser/ruleset_service.h"
@@ -120,6 +122,9 @@ void TestingBrowserProcess::Init() {
   extensions::AppWindowClient::Set(ChromeAppWindowClient::GetInstance());
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
 #endif
+
+  // Make sure permissions client has been set.
+  ChromePermissionsClient::GetInstance();
 
 #if !defined(OS_ANDROID)
   KeepAliveRegistry::GetInstance()->SetIsShuttingDown(false);

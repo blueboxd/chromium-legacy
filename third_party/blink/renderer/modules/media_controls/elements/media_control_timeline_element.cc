@@ -224,7 +224,7 @@ void MediaControlTimelineElement::RenderBarSegments() {
   SetAfterSegmentPosition(after_segment);
 }
 
-void MediaControlTimelineElement::Trace(blink::Visitor* visitor) {
+void MediaControlTimelineElement::Trace(Visitor* visitor) {
   MediaControlSliderElement::Trace(visitor);
 }
 

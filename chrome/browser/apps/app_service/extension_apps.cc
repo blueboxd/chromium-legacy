@@ -584,11 +584,10 @@ void ExtensionApps::Uninstall(const std::string& app_id,
 }
 
 void ExtensionApps::PauseApp(const std::string& app_id) {
-  if (base::Contains(paused_apps_, app_id)) {
+  if (!paused_apps_.MaybeAddApp(app_id)) {
     return;
   }
 
-  paused_apps_.insert(app_id);
   SetIconEffect(app_id);
 
   if (instance_registry_->GetWindows(app_id).empty()) {
@@ -622,11 +621,10 @@ void ExtensionApps::PauseApp(const std::string& app_id) {
 }
 
 void ExtensionApps::UnpauseApps(const std::string& app_id) {
-  if (!base::Contains(paused_apps_, app_id)) {
+  if (!paused_apps_.MaybeRemoveApp(app_id)) {
     return;
   }
 
-  paused_apps_.erase(app_id);
   SetIconEffect(app_id);
 
   for (auto* browser : *BrowserList::GetInstance()) {
@@ -940,7 +938,7 @@ void ExtensionApps::OnExtensionUninstalled(
   }
 
   enable_flow_map_.erase(extension->id());
-  paused_apps_.erase(extension->id());
+  paused_apps_.MaybeRemoveApp(extension->id());
 
   // Construct an App with only the information required to identify an
   // uninstallation.
@@ -1179,7 +1177,10 @@ apps::mojom::AppPtr ExtensionApps::Convert(
   app->short_name = extension->short_name();
   app->description = extension->description();
   app->version = extension->GetVersionForDisplay();
-  app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffects(extension));
+
+  bool paused = paused_apps_.IsPaused(extension->id());
+  app->icon_key =
+      icon_key_factory_.MakeIconKey(GetIconEffects(extension, paused));
 
   if (profile_) {
     auto* prefs = extensions::ExtensionPrefs::Get(profile_);
@@ -1202,9 +1203,8 @@ apps::mojom::AppPtr ExtensionApps::Convert(
                              : apps::mojom::OptionalBool::kFalse;
   app->recommendable = apps::mojom::OptionalBool::kTrue;
   app->searchable = apps::mojom::OptionalBool::kTrue;
-  app->paused = base::Contains(paused_apps_, extension->id())
-                    ? apps::mojom::OptionalBool::kTrue
-                    : apps::mojom::OptionalBool::kFalse;
+  app->paused = paused ? apps::mojom::OptionalBool::kTrue
+                       : apps::mojom::OptionalBool::kFalse;
   SetShowInFields(app, extension, profile_);
 
   // Get the intent filters for PWAs.
@@ -1252,7 +1252,8 @@ bool ExtensionApps::RunExtensionEnableFlow(
 }
 
 IconEffects ExtensionApps::GetIconEffects(
-    const extensions::Extension* extension) {
+    const extensions::Extension* extension,
+    bool paused) {
   IconEffects icon_effects = IconEffects::kNone;
 #if defined(OS_CHROMEOS)
   icon_effects =
@@ -1270,7 +1271,7 @@ IconEffects ExtensionApps::GetIconEffects(
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kRoundCorners);
   }
-  if (base::Contains(paused_apps_, extension->id())) {
+  if (paused) {
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kPaused);
   }
@@ -1300,7 +1301,8 @@ void ExtensionApps::SetIconEffect(const std::string& app_id) {
   apps::mojom::AppPtr app = apps::mojom::App::New();
   app->app_type = app_type_;
   app->app_id = app_id;
-  app->icon_key = icon_key_factory_.MakeIconKey(GetIconEffects(extension));
+  app->icon_key = icon_key_factory_.MakeIconKey(
+      GetIconEffects(extension, paused_apps_.IsPaused(app_id)));
   Publish(std::move(app));
 }
 

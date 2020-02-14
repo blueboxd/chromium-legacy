@@ -165,7 +165,7 @@ bool StorageArea::NamedPropertyQuery(const AtomicString& name,
   return found && !exception_state.HadException();
 }
 
-void StorageArea::Trace(blink::Visitor* visitor) {
+void StorageArea::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
   ContextClient::Trace(visitor);
 }

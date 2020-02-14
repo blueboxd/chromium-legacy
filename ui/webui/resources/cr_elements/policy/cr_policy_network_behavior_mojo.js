@@ -4,48 +4,58 @@
 
 /**
  * @fileoverview Behavior for policy controlled network properties.
+ * Note: Many of these methods may be called from HTML, so they support
+ * optional properties (which may be null|undefined).
  */
 
 /** @polymerBehavior */
 const CrPolicyNetworkBehaviorMojo = {
   /**
-   * @param {!OncMojo.ManagedProperty} property
+   * @param {?OncMojo.ManagedProperty|undefined} property
    * @return {boolean} True if the property is controlled by network policy.
    */
   isNetworkPolicyControlled(property) {
-    assert(property);
+    if (!property) {
+      return false;
+    }
     const mojom = chromeos.networkConfig.mojom;
     return property.policySource !== mojom.PolicySource.kNone &&
         property.policySource !== mojom.PolicySource.kActiveExtension;
   },
 
   /**
-   * @param {!OncMojo.ManagedProperty} property
+   * @param {?OncMojo.ManagedProperty|undefined} property
    * @return {boolean} True if the property is controlled by an extension.
    */
   isExtensionControlled(property) {
-    assert(property);
+    if (!property) {
+      return false;
+    }
     return property.policySource ===
         chromeos.networkConfig.mojom.PolicySource.kActiveExtension;
   },
 
   /**
-   * @param {!OncMojo.ManagedProperty} property
+   * @param {?OncMojo.ManagedProperty|undefined} property
    * @return {boolean} True if the network property is controlled by a network
    *     policy or an extension.
    */
   isControlled(property) {
-    assert(property);
+    if (!property) {
+      return false;
+    }
     return property.policySource !==
         chromeos.networkConfig.mojom.PolicySource.kNone;
   },
 
   /**
-   * @param {!OncMojo.ManagedProperty} property
+   * @param {?OncMojo.ManagedProperty|undefined} property
    * @return {boolean} True if the network property is editable.
    */
   isEditable(property) {
-    assert(property);
+    if (!property) {
+      return false;
+    }
     const mojom = chromeos.networkConfig.mojom;
     return property.policySource !== mojom.PolicySource.kUserPolicyEnforced &&
         property.policySource !== mojom.PolicySource.kDevicePolicyEnforced &&
@@ -53,7 +63,7 @@ const CrPolicyNetworkBehaviorMojo = {
   },
 
   /**
-   * @param {!OncMojo.ManagedProperty} property
+   * @param {?OncMojo.ManagedProperty|undefined} property
    * @return {boolean} True if the network property is enforced by a policy.
    */
   isNetworkPolicyEnforced(property) {
@@ -66,7 +76,7 @@ const CrPolicyNetworkBehaviorMojo = {
   },
 
   /**
-   * @param {!OncMojo.ManagedProperty} property
+   * @param {?OncMojo.ManagedProperty|undefined} property
    * @return {boolean} True if the network property is recommended by a policy.
    */
   isNetworkPolicyRecommended(property) {
@@ -106,7 +116,7 @@ const CrPolicyNetworkBehaviorMojo = {
 
   /**
    * Get policy indicator type for the setting at |path|.
-   * @param {!OncMojo.ManagedProperty} property
+   * @param {?OncMojo.ManagedProperty|undefined} property
    * @return {CrPolicyIndicatorType}
    */
   getPolicyIndicatorType(property) {

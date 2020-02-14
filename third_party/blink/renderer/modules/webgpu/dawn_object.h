@@ -47,7 +47,7 @@ class DawnObjectImpl : public ScriptWrappable, public DawnObjectBase {
   DawnObjectImpl(GPUDevice* device);
   ~DawnObjectImpl() override;
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  protected:
   Member<GPUDevice> device_;

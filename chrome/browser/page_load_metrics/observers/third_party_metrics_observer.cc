@@ -73,8 +73,8 @@ void ThirdPartyMetricsObserver::OnLoadedResource(
     const page_load_metrics::ExtraRequestCompleteInfo&
         extra_request_complete_info) {
   if (third_party_font_loaded_ ||
-      extra_request_complete_info.resource_type !=
-          blink::mojom::ResourceType::kFontResource) {
+      extra_request_complete_info.request_destination !=
+          network::mojom::RequestDestination::kFont) {
     return;
   }
 

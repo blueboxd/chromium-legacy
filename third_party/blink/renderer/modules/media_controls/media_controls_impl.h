@@ -158,7 +158,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   const MediaControlRemainingTimeDisplayElement& RemainingTimeDisplay() const;
   MediaControlToggleClosedCaptionsButtonElement& ToggleClosedCaptions();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Track the state of the controls.
   enum ControlsState {

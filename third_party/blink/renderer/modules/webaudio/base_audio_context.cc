@@ -793,7 +793,7 @@ void BaseAudioContext::StartRendering() {
   }
 }
 
-void BaseAudioContext::Trace(blink::Visitor* visitor) {
+void BaseAudioContext::Trace(Visitor* visitor) {
   visitor->Trace(destination_node_);
   visitor->Trace(listener_);
   visitor->Trace(resume_resolvers_);

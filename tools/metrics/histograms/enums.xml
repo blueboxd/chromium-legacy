@@ -52070,7 +52070,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="TIMED_OUT"/>
   <int value="2" label="EVICTED (Obsolete)"/>
   <int value="3" label="MANAGER_SHUTDOWN (Obsolete)"/>
-  <int value="4" label="CLOSED"/>
+  <int value="4" label="CLOSED (Obsolete)"/>
   <int value="5" label="CREATE_NEW_WINDOW"/>
   <int value="6" label="PROFILE_DESTROYED"/>
   <int value="7" label="APP_TERMINATING"/>
@@ -68080,6 +68080,7 @@ Full version information for the fingerprint enum values:
 
 <enum name="WebUITabStripOpenActions">
   <int value="0" label="Tap on tab counter"/>
+  <int value="1" label="Dragged open from toolbar"/>
 </enum>
 
 <enum name="WebUIUrlHashes">

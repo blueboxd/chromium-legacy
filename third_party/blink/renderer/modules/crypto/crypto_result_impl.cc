@@ -80,7 +80,7 @@ class CryptoResultImpl::Resolver final : public ScriptPromiseResolver {
     ScriptPromiseResolver::ContextDestroyed(destroyed_context);
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(result_);
     ScriptPromiseResolver::Trace(visitor);
   }
@@ -121,7 +121,7 @@ CryptoResultImpl::~CryptoResultImpl() {
   DCHECK(!resolver_);
 }
 
-void CryptoResultImpl::Trace(blink::Visitor* visitor) {
+void CryptoResultImpl::Trace(Visitor* visitor) {
   visitor->Trace(resolver_);
   CryptoResult::Trace(visitor);
 }

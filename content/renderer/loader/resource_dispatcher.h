@@ -27,6 +27,7 @@
 #include "net/base/request_priority.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/fetch_api.mojom-forward.h"
 #include "services/network/public/mojom/url_loader.mojom-forward.h"
 #include "services/network/public/mojom/url_response_head.mojom-forward.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -174,7 +175,7 @@ class CONTENT_EXPORT ResourceDispatcher {
 
   struct PendingRequestInfo {
     PendingRequestInfo(std::unique_ptr<RequestPeer> peer,
-                       blink::mojom::ResourceType resource_type,
+                       network::mojom::RequestDestination request_destination,
                        int render_frame_id,
                        const GURL& request_url,
                        std::unique_ptr<NavigationResponseOverrideParameters>
@@ -183,7 +184,7 @@ class CONTENT_EXPORT ResourceDispatcher {
     ~PendingRequestInfo();
 
     std::unique_ptr<RequestPeer> peer;
-    blink::mojom::ResourceType resource_type;
+    network::mojom::RequestDestination request_destination;
     int render_frame_id;
     bool is_deferred = false;
     // Original requested url.

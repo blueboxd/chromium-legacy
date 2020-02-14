@@ -61,7 +61,7 @@ DeviceMotionData* DeviceMotionEventPump::LatestDeviceMotionData() {
   return data_.Get();
 }
 
-void DeviceMotionEventPump::Trace(blink::Visitor* visitor) {
+void DeviceMotionEventPump::Trace(Visitor* visitor) {
   visitor->Trace(accelerometer_);
   visitor->Trace(linear_acceleration_sensor_);
   visitor->Trace(gyroscope_);

@@ -37,7 +37,7 @@ void RTCVoidRequestScriptPromiseResolverImpl::RequestFailed(
   resolver_->Reject(exception_state);
 }
 
-void RTCVoidRequestScriptPromiseResolverImpl::Trace(blink::Visitor* visitor) {
+void RTCVoidRequestScriptPromiseResolverImpl::Trace(Visitor* visitor) {
   visitor->Trace(resolver_);
   RTCVoidRequest::Trace(visitor);
 }

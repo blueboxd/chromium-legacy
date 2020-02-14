@@ -49,7 +49,8 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
                                    public views::WidgetObserver {
  public:
   WebUITabStripContainerView(Browser* browser,
-                             views::View* tab_contents_container);
+                             views::View* tab_contents_container,
+                             views::View* drag_handle);
   ~WebUITabStripContainerView() override;
 
   static bool UseTouchableTabStrip();
@@ -77,7 +78,10 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
 
  private:
   class AutoCloser;
+  class DragToOpenHandler;
 
+  void UpdateHeightForDragToOpen(int height_delta);
+  void EndDragToOpen();
   void SetContainerTargetVisibility(bool target_visible);
 
   // When the container is open, it intercepts most tap and click
@@ -127,6 +131,7 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   views::View* tab_counter_ = nullptr;
 
   int desired_height_ = 0;
+  base::Optional<int> current_drag_height_;
 
   // When opened, if currently open. Used to calculate metric for how
   // long the tab strip is kept open.
@@ -138,6 +143,7 @@ class WebUITabStripContainerView : public TabStripUIEmbedder,
   gfx::SlideAnimation animation_{this};
 
   std::unique_ptr<AutoCloser> auto_closer_;
+  std::unique_ptr<DragToOpenHandler> drag_to_open_handler_;
 
   std::unique_ptr<views::MenuRunner> context_menu_runner_;
   std::unique_ptr<ui::MenuModel> context_menu_model_;

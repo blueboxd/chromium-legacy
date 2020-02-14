@@ -63,7 +63,7 @@ class BatteryManager final : public EventTargetWithInlineData,
   // ScriptWrappable implementation.
   bool HasPendingActivity() const final;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   using BatteryProperty =

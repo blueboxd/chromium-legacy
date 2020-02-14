@@ -52,7 +52,7 @@ void XRHitTestSource::Update(
         std::make_unique<TransformationMatrix>(result->hit_matrix.matrix()));
   }
 }
-void XRHitTestSource::Trace(blink::Visitor* visitor) {
+void XRHitTestSource::Trace(Visitor* visitor) {
   visitor->Trace(xr_session_);
   ScriptWrappable::Trace(visitor);
 }

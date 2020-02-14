@@ -93,7 +93,7 @@ class MediaKeys : public ScriptWrappable,
 
   WebContentDecryptionModule* ContentDecryptionModule();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // ContextLifecycleObserver implementation.
   // FIXME: This class could derive from ContextLifecycleObserver

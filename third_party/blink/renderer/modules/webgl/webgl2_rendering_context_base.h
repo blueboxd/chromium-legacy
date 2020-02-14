@@ -970,7 +970,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   /* Helpers */
   GLint GetMaxTransformFeedbackSeparateAttribs() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   friend class V8WebGL2RenderingContext;

@@ -65,7 +65,7 @@ const base::Feature kJSONModules{"JSONModules",
 const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Used to control the collection of anchor element metrics (crbug.com/856683).
 // If kNavigationPredictor is enabled, then metrics of anchor elements
@@ -247,7 +247,7 @@ const base::Feature kPrefetchPrivacyChanges{"PrefetchPrivacyChanges",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char kMixedContentAutoupgradeModeParamName[] = "mode";
-const char kMixedContentAutoupgradeModeNoImages[] = "no-images";
+const char kMixedContentAutoupgradeModeAllPassive[] = "all-passive";
 
 // Decodes jpeg 4:2:0 formatted images to YUV instead of RGBX and stores in this
 // format in the image decode cache. See crbug.com/919627 for details on the

@@ -35,7 +35,7 @@ class XRTransientInputHitTestSource : public ScriptWrappable {
 
   HeapVector<Member<XRTransientInputHitTestResult>> Results();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   HeapVector<Member<XRTransientInputHitTestResult>> current_frame_results_;

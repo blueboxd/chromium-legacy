@@ -124,7 +124,7 @@ class MediaElementAudioSourceNode final : public AudioNode,
 
   MediaElementAudioSourceNode(AudioContext&, HTMLMediaElement&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   MediaElementAudioSourceHandler& GetMediaElementAudioSourceHandler() const;
 
   HTMLMediaElement* mediaElement() const;

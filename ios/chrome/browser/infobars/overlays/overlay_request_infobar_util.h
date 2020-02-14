@@ -11,8 +11,8 @@
 class InfoBarIOS;
 class OverlayRequest;
 
-// Returns the InfoBarIOS used to configure |request|, or nullptr if it was not
-// created with an infobar config.
+// Returns the InfoBarIOS used to configure |request|, or null if the InfoBarIOS
+// was already destroyed or if |request| was not created with an infobar config.
 InfoBarIOS* GetOverlayRequestInfobar(OverlayRequest* request);
 
 // Returns the InfobarType of the InfoBar used to configure |request|.

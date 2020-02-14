@@ -311,7 +311,8 @@ void OverviewWindowDragController::ActivateDraggedWindow() {
       split_state == SplitViewController::State::kNoSnap) {
     overview_session_->SelectWindow(item_);
   } else if (split_view_controller->CanSnapWindow(item_->GetWindow())) {
-    SnapWindow(split_state == SplitViewController::State::kLeftSnapped
+    SnapWindow(split_view_controller,
+               split_state == SplitViewController::State::kLeftSnapped
                    ? SplitViewController::RIGHT
                    : SplitViewController::LEFT);
   } else {
@@ -567,7 +568,8 @@ OverviewWindowDragController::CompleteNormalDrag(
 
   // Snap a window if appropriate.
   if (should_allow_split_view_ && snap_position_ != SplitViewController::NONE) {
-    SnapWindow(snap_position_);
+    SnapWindow(SplitViewController::Get(GetRootWindowBeingDraggedIn()),
+               snap_position_);
     overview_session_->PositionWindows(/*animate=*/true);
     return DragResult::kSnap;
   }
@@ -686,6 +688,7 @@ SplitViewController::SnapPosition OverviewWindowDragController::GetSnapPosition(
 }
 
 void OverviewWindowDragController::SnapWindow(
+    SplitViewController* split_view_controller,
     SplitViewController::SnapPosition snap_position) {
   DCHECK_NE(snap_position, SplitViewController::NONE);
 
@@ -693,9 +696,8 @@ void OverviewWindowDragController::SnapWindow(
   DCHECK(!SplitViewController::Get(Shell::GetPrimaryRootWindow())
               ->IsDividerAnimating());
   aura::Window* window = item_->GetWindow();
-  SplitViewController::Get(GetRootWindowBeingDraggedIn())
-      ->SnapWindow(window, snap_position,
-                   /*use_divider_spawn_animation=*/true);
+  split_view_controller->SnapWindow(window, snap_position,
+                                    /*use_divider_spawn_animation=*/true);
   item_ = nullptr;
   wm::ActivateWindow(window);
 }

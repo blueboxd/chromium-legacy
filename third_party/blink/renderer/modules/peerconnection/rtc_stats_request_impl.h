@@ -58,7 +58,7 @@ class RTCStatsRequestImpl final : public RTCStatsRequest,
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void Clear();

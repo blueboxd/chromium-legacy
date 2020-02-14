@@ -40,6 +40,8 @@ LogoutConfirmationDialog::LogoutConfirmationDialog(
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_ASH_LOGOUT_CONFIRMATION_BUTTON));
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      &LogoutConfirmationDialog::OnDialogAccepted, base::Unretained(this)));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(
@@ -76,13 +78,6 @@ void LogoutConfirmationDialog::Update(base::TimeTicks logout_time) {
 void LogoutConfirmationDialog::ControllerGone() {
   controller_ = nullptr;
   GetWidget()->Close();
-}
-
-bool LogoutConfirmationDialog::Accept() {
-  logout_time_ = controller_->clock()->NowTicks();
-  UpdateLabel();
-  controller_->OnLogoutConfirmed();
-  return true;
 }
 
 ui::ModalType LogoutConfirmationDialog::GetModalType() const {
@@ -127,6 +122,12 @@ void LogoutConfirmationDialog::UpdateLabel() {
         l10n_util::GetStringUTF16(IDS_ASH_LOGOUT_CONFIRMATION_WARNING_NOW));
     update_timer_.Stop();
   }
+}
+
+void LogoutConfirmationDialog::OnDialogAccepted() {
+  logout_time_ = controller_->clock()->NowTicks();
+  UpdateLabel();
+  controller_->OnLogoutConfirmed();
 }
 
 }  // namespace ash

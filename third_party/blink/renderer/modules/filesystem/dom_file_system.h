@@ -88,7 +88,7 @@ class MODULES_EXPORT DOMFileSystem final
   static void ScheduleCallback(ExecutionContext* execution_context,
                                base::OnceClosure task);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   static String TaskNameForInstrumentation() { return "FileSystem"; }

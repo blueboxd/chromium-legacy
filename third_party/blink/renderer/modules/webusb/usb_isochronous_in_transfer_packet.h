@@ -33,7 +33,7 @@ class USBIsochronousInTransferPacket final : public ScriptWrappable {
   String status() const { return status_; }
   DOMDataView* data() const { return data_; }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(data_);
     ScriptWrappable::Trace(visitor);
   }

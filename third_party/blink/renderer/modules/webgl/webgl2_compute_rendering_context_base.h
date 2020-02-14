@@ -69,7 +69,7 @@ class WebGL2ComputeRenderingContextBase : public WebGL2RenderingContextBase {
                                   GLenum target,
                                   GLuint index) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   WebGL2ComputeRenderingContextBase(

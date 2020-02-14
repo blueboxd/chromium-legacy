@@ -25,7 +25,7 @@ class NavigatorUserMedia final : public GarbageCollected<NavigatorUserMedia>,
 
   explicit NavigatorUserMedia(Navigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   MediaDevices* GetMediaDevices();

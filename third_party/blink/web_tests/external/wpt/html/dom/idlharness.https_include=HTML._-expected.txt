@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 3729 tests; 3691 PASS, 38 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 3732 tests; 3694 PASS, 38 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS idl_test validation
 PASS Partial interface Document: original interface defined
@@ -866,6 +866,7 @@ PASS HTMLImageElement interface: attribute complete
 PASS HTMLImageElement interface: attribute currentSrc
 PASS HTMLImageElement interface: attribute referrerPolicy
 PASS HTMLImageElement interface: attribute decoding
+PASS HTMLImageElement interface: attribute loading
 PASS HTMLImageElement interface: operation decode()
 PASS HTMLImageElement interface: attribute name
 PASS HTMLImageElement interface: attribute lowsrc
@@ -891,6 +892,7 @@ PASS HTMLImageElement interface: document.createElement("img") must inherit prop
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "currentSrc" with the proper type
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "referrerPolicy" with the proper type
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "decoding" with the proper type
+PASS HTMLImageElement interface: document.createElement("img") must inherit property "loading" with the proper type
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "decode()" with the proper type
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "name" with the proper type
 PASS HTMLImageElement interface: document.createElement("img") must inherit property "lowsrc" with the proper type
@@ -916,6 +918,7 @@ PASS HTMLImageElement interface: new Image() must inherit property "complete" wi
 PASS HTMLImageElement interface: new Image() must inherit property "currentSrc" with the proper type
 PASS HTMLImageElement interface: new Image() must inherit property "referrerPolicy" with the proper type
 PASS HTMLImageElement interface: new Image() must inherit property "decoding" with the proper type
+PASS HTMLImageElement interface: new Image() must inherit property "loading" with the proper type
 PASS HTMLImageElement interface: new Image() must inherit property "decode()" with the proper type
 PASS HTMLImageElement interface: new Image() must inherit property "name" with the proper type
 PASS HTMLImageElement interface: new Image() must inherit property "lowsrc" with the proper type

@@ -42,7 +42,7 @@ SQLResultSet::SQLResultSet()
   DCHECK(IsMainThread());
 }
 
-void SQLResultSet::Trace(blink::Visitor* visitor) {
+void SQLResultSet::Trace(Visitor* visitor) {
   visitor->Trace(rows_);
   ScriptWrappable::Trace(visitor);
 }

@@ -76,7 +76,7 @@ class StorageArea final : public ScriptWrappable,
 
   bool CanAccessStorage() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // CachedStorageArea::Source:
   KURL GetPageUrl() const override;

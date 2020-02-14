@@ -88,7 +88,7 @@ void ManifestFetcher::DidFailRedirectCheck() {
   DidFail(ResourceError::Failure(NullURL()));
 }
 
-void ManifestFetcher::Trace(blink::Visitor* visitor) {
+void ManifestFetcher::Trace(Visitor* visitor) {
   visitor->Trace(loader_);
   ThreadableLoaderClient::Trace(visitor);
 }

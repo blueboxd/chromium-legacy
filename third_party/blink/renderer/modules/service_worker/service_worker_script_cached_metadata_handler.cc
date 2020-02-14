@@ -30,7 +30,7 @@ ServiceWorkerScriptCachedMetadataHandler::
 ServiceWorkerScriptCachedMetadataHandler::
     ~ServiceWorkerScriptCachedMetadataHandler() = default;
 
-void ServiceWorkerScriptCachedMetadataHandler::Trace(blink::Visitor* visitor) {
+void ServiceWorkerScriptCachedMetadataHandler::Trace(Visitor* visitor) {
   visitor->Trace(global_scope_);
   CachedMetadataHandler::Trace(visitor);
 }

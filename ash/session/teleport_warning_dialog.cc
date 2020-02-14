@@ -30,6 +30,17 @@ TeleportWarningDialog::TeleportWarningDialog(OnAcceptCallback callback)
           l10n_util::GetStringUTF16(IDS_ASH_DIALOG_DONT_SHOW_AGAIN))),
       on_accept_(std::move(callback)) {
   never_show_again_checkbox_->SetChecked(true);
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      [](TeleportWarningDialog* dialog) {
+        std::move(dialog->on_accept_)
+            .Run(true, dialog->never_show_again_checkbox_->GetChecked());
+      },
+      base::Unretained(this)));
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      [](TeleportWarningDialog* dialog) {
+        std::move(dialog->on_accept_).Run(false, false);
+      },
+      base::Unretained(this)));
 }
 
 TeleportWarningDialog::~TeleportWarningDialog() = default;
@@ -44,16 +55,6 @@ void TeleportWarningDialog::Show(OnAcceptCallback callback) {
   views::Widget* widget = dialog_view->GetWidget();
   DCHECK(widget);
   widget->Show();
-}
-
-bool TeleportWarningDialog::Cancel() {
-  std::move(on_accept_).Run(false, false);
-  return true;
-}
-
-bool TeleportWarningDialog::Accept() {
-  std::move(on_accept_).Run(true, never_show_again_checkbox_->GetChecked());
-  return true;
 }
 
 ui::ModalType TeleportWarningDialog::GetModalType() const {

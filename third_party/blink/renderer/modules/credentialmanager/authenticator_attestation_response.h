@@ -32,7 +32,7 @@ class MODULES_EXPORT AuthenticatorAttestationResponse final
 
   Vector<String> getTransports() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   const Member<DOMArrayBuffer> attestation_object_;

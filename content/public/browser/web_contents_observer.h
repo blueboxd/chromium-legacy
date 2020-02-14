@@ -19,6 +19,7 @@
 #include "content/public/common/frame_navigate_params.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/system/message_pipe.h"
+#include "services/network/public/mojom/fetch_api.mojom-forward.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
@@ -270,7 +271,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   virtual void DidLoadResourceFromMemoryCache(
       const GURL& url,
       const std::string& mime_type,
-      blink::mojom::ResourceType resource_type) {}
+      network::mojom::RequestDestination request_destination) {}
 
   // This method is invoked when a resource associate with the frame
   // |render_frame_host| has been loaded, successfully or not. |request_id| will

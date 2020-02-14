@@ -1,0 +1,4 @@
+include_rules = [
+  "-android_webview/browser",
+  "+android_webview/browser/lifecycle",
+]

@@ -581,7 +581,7 @@ bool RTCIceTransport::HasPendingActivity() const {
   return !!proxy_;
 }
 
-void RTCIceTransport::Trace(blink::Visitor* visitor) {
+void RTCIceTransport::Trace(Visitor* visitor) {
   visitor->Trace(local_candidates_);
   visitor->Trace(remote_candidates_);
   visitor->Trace(local_parameters_);

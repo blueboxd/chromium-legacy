@@ -110,6 +110,7 @@ body.files-ng .dialog-main {
 
 body.files-ng .dialog-navigation-list {
   background-color: inherit;
+  border-inline-end: none;
 }
 
 .dialog-navigation-list-contents {
@@ -468,13 +469,15 @@ body[type='open-multi-file'].check-select .dialog-header {
 }
 
 .dialog-header.files-ng cr-button {
+  --hover-bg-color: rgba(0, 0, 0, 4%);
+  --ink-color: var(--google-grey-700);
+  --text-color: currentColor;
   border: 1px solid transparent;
   border-radius: 18px;
   color: var(--google-grey-700);
   height: 36px;
   margin: 0 6px;
   min-width: 36px;
-  --text-color: currentColor;
 }
 
 .dialog-header.files-ng cr-button::after {
@@ -496,11 +499,6 @@ body[type='open-multi-file'].check-select .dialog-header {
 .dialog-header:not(.files-ng) button,
 .dialog-header:not(.files-ng) button:hover {
   color: white;
-}
-
-.dialog-header.files-ng cr-button {
-  --hover-bg-color: rgba(0, 0, 0, 4%);
-  --text-color: currentColor;
 }
 
 body.check-select button,
@@ -579,6 +577,12 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
   width: 32px;
 }
 
+.dialog-header.files-ng cr-button > .icon {
+  height: 20px;
+  padding: calc(8px - 1px);
+  width: 20px;
+}
+
 .dialog-header.files-ng #tasks {
   border-radius: 4px;
 }
@@ -597,12 +601,6 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
   background-image: -webkit-image-set(
       url(../images/files/ui/search_white.png) 1x,
       url(../images/files/ui/2x/search_white.png) 2x);
-}
-
-.dialog-header.files-ng cr-button > .icon {
-  height: 20px;
-  padding: calc(8px - 1px);
-  width: 20px;
 }
 
 .dialog-header.files-ng #search-button > .icon {

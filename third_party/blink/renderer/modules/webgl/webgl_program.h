@@ -71,7 +71,7 @@ class WebGLProgram final : public WebGLSharedPlatform3DObject {
   bool AttachShader(WebGLShader*);
   bool DetachShader(WebGLShader*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   void DeleteObjectImpl(gpu::gles2::GLES2Interface*) override;

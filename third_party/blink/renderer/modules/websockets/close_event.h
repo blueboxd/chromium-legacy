@@ -70,7 +70,7 @@ class CloseEvent final : public Event {
     return event_interface_names::kCloseEvent;
   }
 
-  void Trace(blink::Visitor* visitor) override { Event::Trace(visitor); }
+  void Trace(Visitor* visitor) override { Event::Trace(visitor); }
 
  private:
   bool was_clean_;

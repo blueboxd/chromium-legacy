@@ -14,7 +14,6 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/geolocation/android/location_settings.h"
 #include "chrome/browser/geolocation/android/location_settings_impl.h"
-#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_update_infobar_delegate_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -22,6 +21,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/infobars/core/infobar.h"
 #include "components/permissions/permission_request_id.h"
+#include "components/permissions/permission_uma_util.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
@@ -412,14 +412,14 @@ void GeolocationPermissionContextAndroid::OnLocationSettingsDialogShown(
     LogLocationSettingsMetric(kLocationSettingsAcceptMetricBase,
                               is_default_search,
                               LocationSettingsBackOffLevel(is_default_search));
-    PermissionUmaUtil::RecordWithBatteryBucket(
+    permissions::PermissionUmaUtil::RecordWithBatteryBucket(
         kLocationSettingsAcceptBatteryMetric);
     ResetLocationSettingsBackOff(is_default_search);
   } else {
     LogLocationSettingsMetric(kLocationSettingsDenyMetricBase,
                               is_default_search,
                               LocationSettingsBackOffLevel(is_default_search));
-    PermissionUmaUtil::RecordWithBatteryBucket(
+    permissions::PermissionUmaUtil::RecordWithBatteryBucket(
         kLocationSettingsDenyBatteryMetric);
     UpdateLocationSettingsBackOff(is_default_search);
     content_setting = CONTENT_SETTING_BLOCK;

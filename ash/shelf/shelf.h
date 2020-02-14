@@ -22,6 +22,7 @@ class Rect;
 }
 
 namespace ui {
+class AnimationMetricsReporter;
 class GestureEvent;
 class MouseWheelEvent;
 class MouseEvent;
@@ -36,6 +37,7 @@ namespace ash {
 
 enum class AnimationChangeType;
 class HotseatWidget;
+class HotseatWidgetAnimationMetricsReporter;
 class ShelfFocusCycler;
 class ShelfLayoutManager;
 class ShelfLayoutManagerTest;
@@ -233,6 +235,8 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   ShelfTooltipManager* tooltip() { return tooltip_.get(); }
 
+  ui::AnimationMetricsReporter* GetHotseatTransitionMetricsReporter();
+
  protected:
   // ShelfLayoutManagerObserver:
   void WillDeleteShelfLayoutManager() override;
@@ -287,6 +291,11 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
 
   // Hands focus off to different parts of the shelf.
   std::unique_ptr<ShelfFocusCycler> shelf_focus_cycler_;
+
+  // Animation metrics reporter for hotseat animations. Owned by the Shelf to
+  // ensure it outlives the Hotseat Widget.
+  std::unique_ptr<HotseatWidgetAnimationMetricsReporter>
+      hotseat_transition_metrics_reporter_;
 
   // True while the animation to enter or exit tablet mode is running. Sometimes
   // this value is true when the shelf movements are not actually animating

@@ -32,7 +32,7 @@ class SMSReceiver final : public ScriptWrappable, public ContextClient {
                         const SMSReceiverOptions*,
                         ExceptionState&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   HeapHashSet<Member<ScriptPromiseResolver>> requests_;

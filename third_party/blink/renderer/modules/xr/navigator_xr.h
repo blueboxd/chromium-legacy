@@ -30,7 +30,7 @@ class MODULES_EXPORT NavigatorXR final : public GarbageCollected<NavigatorXR>,
   static XR* xr(Navigator&);
   XR* xr();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Document* GetDocument();

@@ -42,7 +42,7 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
                const WebAudioLatencyHint&,
                base::Optional<float> sample_rate);
   ~AudioContext() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // For ContextLifeCycleObserver
   void ContextDestroyed(ExecutionContext*) final;

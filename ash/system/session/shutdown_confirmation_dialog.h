@@ -26,10 +26,6 @@ class ShutdownConfirmationDialog : public views::DialogDelegateView {
                              base::OnceClosure on_cancel_callback);
   ~ShutdownConfirmationDialog() override;
 
-  // views::DialogDelegateView:
-  bool Accept() override;
-  bool Cancel() override;
-
   // views::WidgetDelegate:
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
@@ -40,8 +36,6 @@ class ShutdownConfirmationDialog : public views::DialogDelegateView {
 
  private:
   const base::string16 window_title_;
-  base::OnceClosure on_accept_callback_;
-  base::OnceClosure on_cancel_callback_;
   views::Label* label_;
 
   DISALLOW_COPY_AND_ASSIGN(ShutdownConfirmationDialog);

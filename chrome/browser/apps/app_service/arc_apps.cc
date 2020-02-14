@@ -471,22 +471,19 @@ void ArcApps::Uninstall(const std::string& app_id,
 }
 
 void ArcApps::PauseApp(const std::string& app_id) {
-  if (base::Contains(paused_apps_, app_id)) {
+  if (!paused_apps_.MaybeAddApp(app_id)) {
     return;
   }
 
-  paused_apps_.insert(app_id);
   SetIconEffect(app_id);
-
   CloseTasks(app_id);
 }
 
 void ArcApps::UnpauseApps(const std::string& app_id) {
-  if (!base::Contains(paused_apps_, app_id)) {
+  if (!paused_apps_.MaybeRemoveApp(app_id)) {
     return;
   }
 
-  paused_apps_.erase(app_id);
   SetIconEffect(app_id);
 }
 
@@ -645,7 +642,7 @@ void ArcApps::OnAppStatesChanged(const std::string& app_id,
 }
 
 void ArcApps::OnAppRemoved(const std::string& app_id) {
-  paused_apps_.erase(app_id);
+  paused_apps_.MaybeRemoveApp(app_id);
   if (base::Contains(app_id_to_task_ids_, app_id)) {
     for (int task_id : app_id_to_task_ids_[app_id]) {
       task_id_to_app_id_.erase(task_id);
@@ -897,7 +894,7 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
   app->short_name = app->name;
   app->publisher_id = app_info.package_name;
 
-  auto paused = base::Contains(paused_apps_, app_id)
+  auto paused = paused_apps_.IsPaused(app_id)
                     ? apps::mojom::OptionalBool::kTrue
                     : apps::mojom::OptionalBool::kFalse;
 
@@ -989,7 +986,7 @@ void ArcApps::SetIconEffect(const std::string& app_id) {
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kBlocked);
   }
-  if (paused_apps_.find(app_id) != paused_apps_.end()) {
+  if (paused_apps_.IsPaused(app_id)) {
     icon_effects =
         static_cast<IconEffects>(icon_effects | IconEffects::kPaused);
   }

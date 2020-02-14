@@ -73,7 +73,7 @@ class MODULES_EXPORT ServiceWorker final
 
   ServiceWorker(ExecutionContext*, WebServiceWorkerObjectInfo);
   ~ServiceWorker() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Pre-finalization needed to promptly release owned WebServiceWorker.
   void Dispose();

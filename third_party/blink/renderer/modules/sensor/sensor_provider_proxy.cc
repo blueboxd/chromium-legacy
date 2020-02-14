@@ -44,7 +44,7 @@ SensorProviderProxy* SensorProviderProxy::From(Document* document) {
 
 SensorProviderProxy::~SensorProviderProxy() = default;
 
-void SensorProviderProxy::Trace(blink::Visitor* visitor) {
+void SensorProviderProxy::Trace(Visitor* visitor) {
   visitor->Trace(sensor_proxies_);
   Supplement<Document>::Trace(visitor);
 }

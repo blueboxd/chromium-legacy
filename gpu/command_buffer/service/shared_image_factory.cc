@@ -33,6 +33,8 @@
 #include "gpu/command_buffer/service/shared_image_backing_factory_ahardwarebuffer.h"
 #elif defined(OS_MACOSX)
 #include "gpu/command_buffer/service/shared_image_backing_factory_iosurface.h"
+#elif defined(OS_CHROMEOS)
+#include "gpu/command_buffer/service/shared_image_backing_factory_ozone.h"
 #endif
 
 #if defined(OS_WIN)
@@ -105,6 +107,11 @@ SharedImageFactory::SharedImageFactory(
   interop_backing_factory_ =
       std::make_unique<SharedImageBackingFactoryIOSurface>(
           workarounds, gpu_feature_info, use_gl);
+#elif defined(OS_CHROMEOS)
+  if (context_state && context_state->vk_context_provider()) {
+    interop_backing_factory_ =
+        std::make_unique<SharedImageBackingFactoryOzone>(context_state);
+  }
 #else
   // Others
   if (using_vulkan_)

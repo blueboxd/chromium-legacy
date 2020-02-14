@@ -460,7 +460,6 @@ jumbo_source_set("unit_tests") {
     ":modules",
     ":modules_testing",
     "//build:chromecast_buildflags",
-    "//components/schema_org/common:mojom_blink",
     "//media:test_support",
     "//net:quic_test_tools",
     "//services/device/public/cpp:test_support",

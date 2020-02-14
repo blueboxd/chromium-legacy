@@ -107,7 +107,7 @@ class MODULES_EXPORT BaseAudioContext
 
   ~BaseAudioContext() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Is the destination node initialized and ready to handle audio?
   bool IsDestinationInitialized() const {

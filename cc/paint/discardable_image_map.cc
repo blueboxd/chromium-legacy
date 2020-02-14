@@ -262,10 +262,9 @@ class DiscardableImageGenerator {
       // Make a note if any image was originally specified in a non-sRGB color
       // space. PaintWorklets do not have the concept of a color space, so
       // should not be used to accumulate either counter.
-      SkColorSpace* source_color_space = paint_image.color_space();
       color_stats_total_pixel_count_ += image_rect.size().GetCheckedArea();
       color_stats_total_image_count_++;
-      if (!source_color_space || source_color_space->isSRGB()) {
+      if (paint_image.isSRGB()) {
         color_stats_srgb_pixel_count_ += image_rect.size().GetCheckedArea();
         color_stats_srgb_image_count_++;
       }

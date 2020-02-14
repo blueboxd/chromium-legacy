@@ -33,7 +33,7 @@ class XRObjectSpace : public XRSpace {
     return XRNativeOriginInformation::Create(object_);
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(object_);
     XRSpace::Trace(visitor);
   }

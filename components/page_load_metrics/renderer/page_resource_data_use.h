@@ -31,7 +31,7 @@ class PageResourceDataUse {
   void DidStartResponse(const GURL& response_url,
                         int resource_id,
                         const network::mojom::URLResponseHead& response_head,
-                        blink::mojom::ResourceType resource_type,
+                        network::mojom::RequestDestination request_destination,
                         content::PreviewsState previews_state);
 
   // Updates received bytes.

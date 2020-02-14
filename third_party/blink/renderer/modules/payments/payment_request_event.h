@@ -78,7 +78,7 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
                                      ExceptionState&);
   void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void OnChangePaymentRequestDetailsResponse(

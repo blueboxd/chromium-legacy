@@ -29,7 +29,7 @@ GPUSwapChain::~GPUSwapChain() {
   Neuter();
 }
 
-void GPUSwapChain::Trace(blink::Visitor* visitor) {
+void GPUSwapChain::Trace(Visitor* visitor) {
   visitor->Trace(device_);
   visitor->Trace(context_);
   visitor->Trace(texture_);

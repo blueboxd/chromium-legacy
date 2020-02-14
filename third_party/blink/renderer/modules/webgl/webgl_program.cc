@@ -173,7 +173,7 @@ void WebGLProgram::setLinkStatus(bool link_status) {
   info_valid_ = true;
 }
 
-void WebGLProgram::Trace(blink::Visitor* visitor) {
+void WebGLProgram::Trace(Visitor* visitor) {
   visitor->Trace(vertex_shader_);
   visitor->Trace(fragment_shader_);
   visitor->Trace(compute_shader_);

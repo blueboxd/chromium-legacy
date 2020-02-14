@@ -15,6 +15,7 @@ struct SameSizeAsPaintChunk {
   PaintChunk::Id id;
   PropertyTreeState properties;
   IntRect bounds;
+  IntRect drawable_bounds;
   float outset_for_raster_effects;
   SkColor safe_opaque_background_color;
   unsigned bools;  // known_to_be_opaque, is_cacheable, client_is_just_created

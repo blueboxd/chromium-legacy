@@ -37,7 +37,7 @@ class MODULES_EXPORT DeviceOrientationEventPump
   // Note that the returned object is owned by this class.
   DeviceOrientationData* LatestDeviceOrientationData();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // DeviceSensorEventPump:
   void SendStartMessage(LocalFrame* frame) override;

@@ -54,7 +54,7 @@ class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
   IDBObjectStore(scoped_refptr<IDBObjectStoreMetadata>, IDBTransaction*);
   ~IDBObjectStore() override = default;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   const IDBObjectStoreMetadata& Metadata() const { return *metadata_; }
   const IDBKeyPath& IdbKeyPath() const { return Metadata().key_path; }

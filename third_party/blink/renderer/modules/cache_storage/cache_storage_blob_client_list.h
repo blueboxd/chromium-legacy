@@ -23,7 +23,7 @@ class CacheStorageBlobClientList
           client_pending_receiver,
       DataPipeBytesConsumer::CompletionNotifier* completion_notifier);
 
-  void Trace(blink::Visitor* visitor);
+  void Trace(Visitor* visitor);
 
  private:
   class Client;

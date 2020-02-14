@@ -41,7 +41,7 @@ class XRReferenceSpaceEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<XRReferenceSpace> reference_space_;

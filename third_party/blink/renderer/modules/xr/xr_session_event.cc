@@ -31,7 +31,7 @@ const AtomicString& XRSessionEvent::InterfaceName() const {
   return event_interface_names::kXRSessionEvent;
 }
 
-void XRSessionEvent::Trace(blink::Visitor* visitor) {
+void XRSessionEvent::Trace(Visitor* visitor) {
   visitor->Trace(session_);
   Event::Trace(visitor);
 }

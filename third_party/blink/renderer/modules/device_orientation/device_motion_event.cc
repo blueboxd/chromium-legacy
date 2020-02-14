@@ -68,7 +68,7 @@ const AtomicString& DeviceMotionEvent::InterfaceName() const {
   return event_interface_names::kDeviceMotionEvent;
 }
 
-void DeviceMotionEvent::Trace(blink::Visitor* visitor) {
+void DeviceMotionEvent::Trace(Visitor* visitor) {
   visitor->Trace(device_motion_data_);
   Event::Trace(visitor);
 }

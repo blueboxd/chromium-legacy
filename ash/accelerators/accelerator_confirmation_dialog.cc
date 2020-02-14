@@ -27,11 +27,11 @@ AcceleratorConfirmationDialog::AcceleratorConfirmationDialog(
     int dialog_text_id,
     base::OnceClosure on_accept_callback,
     base::OnceClosure on_cancel_callback)
-    : window_title_(l10n_util::GetStringUTF16(window_title_text_id)),
-      on_accept_callback_(std::move(on_accept_callback)),
-      on_cancel_callback_(std::move(on_cancel_callback)) {
+    : window_title_(l10n_util::GetStringUTF16(window_title_text_id)) {
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK, l10n_util::GetStringUTF16(IDS_ASH_CONTINUE_BUTTON));
+  DialogDelegate::set_accept_callback(std::move(on_accept_callback));
+  DialogDelegate::set_cancel_callback(std::move(on_cancel_callback));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   SetBorder(views::CreateEmptyBorder(
@@ -58,16 +58,6 @@ AcceleratorConfirmationDialog::AcceleratorConfirmationDialog(
 }
 
 AcceleratorConfirmationDialog::~AcceleratorConfirmationDialog() = default;
-
-bool AcceleratorConfirmationDialog::Accept() {
-  std::move(on_accept_callback_).Run();
-  return true;
-}
-
-bool AcceleratorConfirmationDialog::Cancel() {
-  std::move(on_cancel_callback_).Run();
-  return true;
-}
 
 ui::ModalType AcceleratorConfirmationDialog::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;

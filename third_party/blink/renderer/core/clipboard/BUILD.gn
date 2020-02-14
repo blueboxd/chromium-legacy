@@ -24,6 +24,8 @@ blink_core_sources("clipboard") {
     "dragged_isolated_file_system.cc",
     "dragged_isolated_file_system.h",
     "paste_mode.h",
+    "raw_system_clipboard.cc",
+    "raw_system_clipboard.h",
     "system_clipboard.cc",
     "system_clipboard.h",
   ]

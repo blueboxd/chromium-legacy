@@ -196,9 +196,10 @@ void History::go(ScriptState* script_state,
     return;
 
   if (delta) {
-    if (Page* page = GetFrame()->GetPage())
-      page->HistoryNavigationVirtualTimePauser().PauseVirtualTime();
-    GetFrame()->Client()->NavigateBackForward(delta);
+    if (GetFrame()->Client()->NavigateBackForward(delta)) {
+      if (Page* page = GetFrame()->GetPage())
+        page->HistoryNavigationVirtualTimePauser().PauseVirtualTime();
+    }
   } else {
     // We intentionally call reload() for the current frame if delta is zero.
     // Otherwise, navigation happens on the root frame.

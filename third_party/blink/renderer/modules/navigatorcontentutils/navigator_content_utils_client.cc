@@ -12,7 +12,7 @@ namespace blink {
 NavigatorContentUtilsClient::NavigatorContentUtilsClient(LocalFrame* frame)
     : frame_(frame) {}
 
-void NavigatorContentUtilsClient::Trace(blink::Visitor* visitor) {
+void NavigatorContentUtilsClient::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
 }
 

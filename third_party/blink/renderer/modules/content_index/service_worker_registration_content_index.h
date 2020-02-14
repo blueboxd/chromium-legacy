@@ -32,7 +32,7 @@ class ServiceWorkerRegistrationContentIndex final
   static ContentIndex* index(ServiceWorkerRegistration& registration);
   ContentIndex* index();
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   Member<ServiceWorkerRegistration> registration_;

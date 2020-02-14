@@ -157,7 +157,7 @@ class ScriptProcessorNode final
   // ScriptWrappable
   bool HasPendingActivity() const final;
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
   // InspectorHelperMixin
   void ReportDidCreate() final;

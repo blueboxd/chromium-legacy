@@ -287,7 +287,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(message, kMessage)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(messageerror, kMessageerror)
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Returns true if a FetchEvent exists with the given request URL and
   // is still waiting for a Response.

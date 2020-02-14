@@ -176,7 +176,7 @@ ScriptPromise XRFrame::createAnchor(ScriptState* script_state,
                                 exception_state);
 }
 
-void XRFrame::Trace(blink::Visitor* visitor) {
+void XRFrame::Trace(Visitor* visitor) {
   visitor->Trace(session_);
   visitor->Trace(world_information_);
   ScriptWrappable::Trace(visitor);

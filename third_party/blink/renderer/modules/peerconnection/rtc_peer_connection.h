@@ -399,7 +399,7 @@ class MODULES_EXPORT RTCPeerConnection final
 
   webrtc::SdpSemantics sdp_semantics() { return sdp_semantics_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   base::TimeTicks WebRtcTimestampToBlinkTimestamp(
       base::TimeTicks webrtc_monotonic_time) const;
@@ -427,7 +427,7 @@ class MODULES_EXPORT RTCPeerConnection final
     // |m_event| will only be fired if setup() returns true;
     bool Setup();
 
-    void Trace(blink::Visitor*);
+    void Trace(Visitor*);
 
     Member<Event> event_;
 

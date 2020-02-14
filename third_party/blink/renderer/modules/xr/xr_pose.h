@@ -25,7 +25,7 @@ class XRPose : public ScriptWrappable {
   XRRigidTransform* transform() const { return transform_; }
   bool emulatedPosition() const { return emulated_position_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   Member<XRRigidTransform> transform_;

@@ -54,6 +54,10 @@ class WebLocalFrame;
 class WebView;
 }
 
+namespace content {
+class AXTreeSnapshotter;
+}
+
 namespace printing {
 
 struct PageSizeMargins;
@@ -602,6 +606,13 @@ class PrintRenderFrameHelper
   bool is_scripted_preview_delayed_ = false;
   int ipc_nesting_level_ = 0;
   bool render_frame_gone_ = false;
+
+  // If tagged PDF exporting is enabled, we also need to capture an
+  // accessibility tree and store it in the metafile. AXTreeSnapshotter should
+  // stay alive through the duration of printing one document, because text
+  // drawing commands are only annotated with a DOMNodeId if accessibility
+  // is enabled.
+  std::unique_ptr<content::AXTreeSnapshotter> snapshotter_;
 
   // Used to fix a race condition where the source is a PDF and print preview
   // hangs because RequestPrintPreview is called before DidStopLoading() is

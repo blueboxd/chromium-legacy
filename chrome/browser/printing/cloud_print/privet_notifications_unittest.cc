@@ -320,6 +320,24 @@ TEST_F(PrivetNotificationsNotificationTest, DontShowAgain) {
                     .size());
 }
 
+#if defined(OS_CHROMEOS)
+TEST(PrivetNotificationServiceTest, NoNotificationsInGuestMode) {
+  content::BrowserTaskEnvironment task_environment{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  TestingProfileManager profile_manager(TestingBrowserProcess::GetGlobal());
+  ASSERT_TRUE(profile_manager.SetUp());
+  Profile* profile = profile_manager.CreateGuestProfile();
+
+  TestPrivetNotificationService service(profile);
+  // Wait for delayed initialization.
+  task_environment.FastForwardBy(PrivetNotificationService::kStartDelay * 2);
+
+  // We're not watching for printers.
+  EXPECT_FALSE(service.device_lister_for_test());
+  EXPECT_FALSE(service.traffic_detector_for_test());
+}
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace
 
 }  // namespace cloud_print

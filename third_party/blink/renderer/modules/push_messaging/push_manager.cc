@@ -143,7 +143,7 @@ ScriptPromise PushManager::permissionState(
       ->GetPermissionState(script_state, options);
 }
 
-void PushManager::Trace(blink::Visitor* visitor) {
+void PushManager::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
   ScriptWrappable::Trace(visitor);
 }

@@ -133,7 +133,7 @@ void VideoRequestAnimationFrameImpl::cancelAnimationFrame(int id) {
   callback_collection_->CancelFrameCallback(id);
 }
 
-void VideoRequestAnimationFrameImpl::Trace(blink::Visitor* visitor) {
+void VideoRequestAnimationFrameImpl::Trace(Visitor* visitor) {
   visitor->Trace(callback_collection_);
   Supplement<HTMLVideoElement>::Trace(visitor);
 }

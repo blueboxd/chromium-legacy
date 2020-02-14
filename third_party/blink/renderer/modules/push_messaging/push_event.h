@@ -45,7 +45,7 @@ class MODULES_EXPORT PushEvent final : public ExtendableEvent {
 
   PushMessageData* data();
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   Member<PushMessageData> data_;

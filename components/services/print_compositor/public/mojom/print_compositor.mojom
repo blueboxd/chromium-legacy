@@ -8,6 +8,9 @@ import "components/discardable_memory/public/mojom/discardable_shared_memory_man
 import "mojo/public/mojom/base/shared_memory.mojom";
 import "url/mojom/url.mojom";
 
+[EnableIf=enable_tagged_pdf]
+import "ui/accessibility/mojom/ax_tree_update.mojom";
+
 interface PrintCompositor {
   // The status of composition and conversion execution.
   // These values are persisted to logs. Entries should not be renumbered and
@@ -42,6 +45,11 @@ interface PrintCompositor {
       uint64 frame_guid,
       mojo_base.mojom.ReadOnlySharedMemoryRegion serialized_content,
       map<uint32, uint64> subframe_content_info);
+
+  // Sets the accessibility tree for the overall document. This is needed
+  // to generate tagged (accessible) PDFs.
+  [EnableIf=enable_tagged_pdf]
+  SetAccessibilityTree(ax.mojom.AXTreeUpdate accessibility_tree);
 
   // Requests to composite a page and convert it into a PDF file.
   // |frame_guid| is the global unique id of the frame to be composited.

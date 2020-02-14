@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Below-viewport loading=lazy images do not block the window load event when scrolled into viewport assert_true: The window load event should fire before the below-viewport loading=lazy images load expected true got false
+Harness: the test ran to completion.
+

@@ -42,7 +42,7 @@ class MODULES_EXPORT AbortPaymentEvent final : public ExtendableEvent {
 
   void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<RespondWithObserver> observer_;

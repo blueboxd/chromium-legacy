@@ -38,7 +38,7 @@ class ServiceWorkerRegistrationSync final
   PeriodicSyncManager* periodicSync();
   SyncManager* sync();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<ServiceWorkerRegistration> registration_;

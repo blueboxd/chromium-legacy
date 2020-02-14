@@ -298,7 +298,7 @@ NetworkInformation::NetworkInformation(ExecutionContext* context)
   DCHECK_GE(20u, GetNetworkStateNotifier().RandomizationSalt());
 }
 
-void NetworkInformation::Trace(blink::Visitor* visitor) {
+void NetworkInformation::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }

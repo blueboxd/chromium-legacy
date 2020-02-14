@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//printing/buildflags/buildflags.gni")
 
 mojom("mojom") {
   sources = [ "print_compositor.mojom" ]
@@ -11,4 +12,12 @@ mojom("mojom") {
     "//mojo/public/mojom/base",
     "//url/mojom:url_mojom_gurl",
   ]
+
+  if (enable_tagged_pdf) {
+    enabled_features = [ "enable_tagged_pdf" ]
+
+    # Accessibility dependencies for exporting tagged PDFs on platforms
+    # that support print preview only (desktop platforms).
+    public_deps += [ "//ui/accessibility/mojom" ]
+  }
 }

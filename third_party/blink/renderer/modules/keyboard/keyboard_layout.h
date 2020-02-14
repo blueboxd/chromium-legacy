@@ -29,7 +29,7 @@ class KeyboardLayout final : public GarbageCollected<KeyboardLayout>,
   ScriptPromise GetKeyboardLayoutMap(ScriptState*, ExceptionState&);
 
   // ContextLifecycleObserver override.
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // Returns true if the local frame is attached to the renderer.

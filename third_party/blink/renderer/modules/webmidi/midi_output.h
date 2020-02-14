@@ -63,7 +63,7 @@ class MIDIOutput final : public MIDIPort {
   void send(NotShared<DOMUint8Array>, ExceptionState&);
   void send(Vector<unsigned>, ExceptionState&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void DidOpen(bool opened) override;

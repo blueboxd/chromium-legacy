@@ -190,7 +190,7 @@ void VibrationController::PageVisibilityChanged() {
     Cancel();
 }
 
-void VibrationController::Trace(blink::Visitor* visitor) {
+void VibrationController::Trace(Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
 }

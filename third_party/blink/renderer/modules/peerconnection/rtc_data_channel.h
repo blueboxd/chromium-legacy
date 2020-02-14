@@ -104,7 +104,7 @@ class MODULES_EXPORT RTCDataChannel final
   // ScriptWrappable
   bool HasPendingActivity() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class Observer;

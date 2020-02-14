@@ -21,7 +21,7 @@ class PaintWorkletMessagingProxy final : public ThreadedWorkletMessagingProxy {
  public:
   explicit PaintWorkletMessagingProxy(ExecutionContext*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   ~PaintWorkletMessagingProxy() override;

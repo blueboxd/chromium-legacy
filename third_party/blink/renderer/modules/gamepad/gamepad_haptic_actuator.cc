@@ -187,7 +187,7 @@ void GamepadHapticActuator::OnResetCompleted(
   resolver->Resolve(ResultToString(result));
 }
 
-void GamepadHapticActuator::Trace(blink::Visitor* visitor) {
+void GamepadHapticActuator::Trace(Visitor* visitor) {
   visitor->Trace(gamepad_dispatcher_);
   ScriptWrappable::Trace(visitor);
   ContextClient::Trace(visitor);

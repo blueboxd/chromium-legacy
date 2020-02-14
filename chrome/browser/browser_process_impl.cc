@@ -60,6 +60,7 @@
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/system_notification_helper.h"
+#include "chrome/browser/permissions/chrome_permissions_client.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
@@ -100,6 +101,7 @@
 #include "components/network_time/network_time_tracker.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
+#include "components/permissions/permissions_client.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -299,6 +301,9 @@ void BrowserProcessImpl::Init() {
 
   update_client::UpdateQueryParams::SetDelegate(
       ChromeUpdateQueryParamsDelegate::GetInstance());
+
+  // Make sure permissions client has been set.
+  ChromePermissionsClient::GetInstance();
 
 #if !defined(OS_ANDROID)
   KeepAliveRegistry::GetInstance()->SetIsShuttingDown(false);

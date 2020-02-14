@@ -31,7 +31,7 @@ class MODULES_EXPORT InspectorAccessibilityAgent
   void CreateAXContext();
 
   // Base agent methods.
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   void Restore() override;
 
   // Protocol methods.

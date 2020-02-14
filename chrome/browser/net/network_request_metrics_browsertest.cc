@@ -83,8 +83,8 @@ class WaitForMainFrameResourceObserver : public content::WebContentsObserver {
       RenderFrameHost* render_frame_host,
       const content::GlobalRequestID& request_id,
       const blink::mojom::ResourceLoadInfo& resource_load_info) override {
-    EXPECT_EQ(blink::mojom::ResourceType::kMainFrame,
-              resource_load_info.resource_type);
+    EXPECT_EQ(network::mojom::RequestDestination::kDocument,
+              resource_load_info.request_destination);
     EXPECT_EQ(net::OK, resource_load_info.net_error);
     run_loop_.Quit();
   }

@@ -33,7 +33,7 @@ class MODULES_EXPORT AudioGraphTracer final
 
   AudioGraphTracer();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void SetInspectorAgent(InspectorWebAudioAgent*);
 

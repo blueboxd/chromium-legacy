@@ -23,7 +23,7 @@ class RTCVoidRequestScriptPromiseResolverImpl : public RTCVoidRequest {
   void RequestSucceeded() override;
   void RequestFailed(const webrtc::RTCError&) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   Member<ScriptPromiseResolver> resolver_;

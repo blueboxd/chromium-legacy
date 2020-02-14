@@ -9,7 +9,9 @@
 #include "base/numerics/math_constants.h"
 #include "base/optional.h"
 #include "base/trace_event/trace_event.h"
+#include "base/util/type_safety/pass_key.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_java_utils.h"
+#include "chrome/browser/android/vr/arcore_device/arcore_plane_manager.h"
 #include "chrome/browser/android/vr/arcore_device/type_converters.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
@@ -22,64 +24,19 @@ using base::android::JavaRef;
 
 namespace {
 
-std::pair<gfx::Quaternion, gfx::Point3F> GetPositionAndOrientationFromArPose(
-    const ArSession* session,
-    const device::internal::ScopedArCoreObject<ArPose*>& pose) {
-  std::array<float, 7> pose_raw;  // 7 = orientation(4) + position(3).
-  ArPose_getPoseRaw(session, pose.get(), pose_raw.data());
-
-  return {gfx::Quaternion(pose_raw[0], pose_raw[1], pose_raw[2], pose_raw[3]),
-          gfx::Point3F(pose_raw[4], pose_raw[5], pose_raw[6])};
-}
-
 // Helper, returns new VRPosePtr with position and orientation set to match the
 // position and orientation of passed in |pose|.
-device::mojom::VRPosePtr GetMojomVRPoseFromArPose(
-    const ArSession* session,
-    const device::internal::ScopedArCoreObject<ArPose*>& pose) {
+device::mojom::VRPosePtr GetMojomVRPoseFromArPose(const ArSession* session,
+                                                  const ArPose* pose) {
   device::mojom::VRPosePtr result = device::mojom::VRPose::New();
   std::tie(result->orientation, result->position) =
-      GetPositionAndOrientationFromArPose(session, pose);
-
-  return result;
-}
-
-// Helper, returns new PosePtr with position and orientation set to match the
-// position and orientation of passed in |pose|.
-device::mojom::PosePtr GetMojomPoseFromArPose(
-    const ArSession* session,
-    const device::internal::ScopedArCoreObject<ArPose*>& pose) {
-  device::mojom::PosePtr result = device::mojom::Pose::New();
-  std::tie(result->orientation, result->position) =
-      GetPositionAndOrientationFromArPose(session, pose);
+      device::GetPositionAndOrientationFromArPose(session, pose);
 
   return result;
 }
 
 // Helper, creates new ArPose* with position and orientation set to match the
 // position and orientation of passed in |pose|.
-device::internal::ScopedArCoreObject<ArPose*> GetArPoseFromMojomPose(
-    ArSession* session,
-    const device::mojom::PosePtr& pose) {
-  float pose_raw[7] = {};  // 7 = orientation(4) + position(3).
-
-  pose_raw[0] = pose->orientation.x();
-  pose_raw[1] = pose->orientation.y();
-  pose_raw[2] = pose->orientation.z();
-  pose_raw[3] = pose->orientation.w();
-
-  pose_raw[4] = pose->position.x();
-  pose_raw[5] = pose->position.y();
-  pose_raw[6] = pose->position.z();
-
-  device::internal::ScopedArCoreObject<ArPose*> result;
-
-  ArPose_create(
-      session, pose_raw,
-      device::internal::ScopedArCoreObject<ArPose*>::Receiver(result).get());
-
-  return result;
-}
 
 ArTrackableType GetArCoreEntityType(
     device::mojom::EntityTypeForHitTest entity_type) {
@@ -400,6 +357,8 @@ bool ArCoreImpl::Initialize(
   arcore_frame_ = std::move(frame);
   arcore_session_ = std::move(session);
   arcore_light_estimate_ = std::move(light_estimate);
+  plane_manager_ = std::make_unique<ArCorePlaneManager>(
+      util::PassKey<ArCoreImpl>(), arcore_session_.get());
   return true;
 }
 
@@ -485,18 +444,7 @@ mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
   ArCamera_getDisplayOrientedPose(arcore_session_.get(), arcore_camera.get(),
                                   arcore_pose.get());
 
-  return GetMojomVRPoseFromArPose(arcore_session_.get(),
-                                  std::move(arcore_pose));
-}
-
-void ArCoreImpl::EnsureArCorePlanesList() {
-  if (!arcore_planes_.is_valid()) {
-    ArTrackableList_create(
-        arcore_session_.get(),
-        internal::ScopedArCoreObject<ArTrackableList*>::Receiver(arcore_planes_)
-            .get());
-    DCHECK(arcore_planes_.is_valid());
-  }
+  return GetMojomVRPoseFromArPose(arcore_session_.get(), arcore_pose.get());
 }
 
 void ArCoreImpl::EnsureArCoreAnchorsList() {
@@ -508,58 +456,6 @@ void ArCoreImpl::EnsureArCoreAnchorsList() {
     DCHECK(arcore_anchors_.is_valid());
   }
 }
-
-template <typename FunctionType>
-void ArCoreImpl::ForEachArCorePlane(FunctionType fn) {
-  DCHECK(arcore_planes_.is_valid());
-
-  int32_t trackable_list_size;
-  ArTrackableList_getSize(arcore_session_.get(), arcore_planes_.get(),
-                          &trackable_list_size);
-
-  for (int i = 0; i < trackable_list_size; i++) {
-    internal::ScopedArCoreObject<ArTrackable*> trackable;
-    ArTrackableList_acquireItem(
-        arcore_session_.get(), arcore_planes_.get(), i,
-        internal::ScopedArCoreObject<ArTrackable*>::Receiver(trackable).get());
-
-    ArTrackingState tracking_state;
-    ArTrackable_getTrackingState(arcore_session_.get(), trackable.get(),
-                                 &tracking_state);
-
-    if (tracking_state != ArTrackingState::AR_TRACKING_STATE_TRACKING) {
-      // Skip all planes that are not currently tracked.
-      continue;
-    }
-
-#if DCHECK_IS_ON()
-    {
-      ArTrackableType type;
-      ArTrackable_getType(arcore_session_.get(), trackable.get(), &type);
-      DCHECK(type == ArTrackableType::AR_TRACKABLE_PLANE)
-          << "arcore_planes_ contains a trackable that is not an ArPlane!";
-    }
-#endif
-
-    ArPlane* ar_plane =
-        ArAsPlane(trackable.get());  // Naked pointer is fine here, ArAsPlane
-                                     // does not increase ref count.
-
-    internal::ScopedArCoreObject<ArPlane*> subsuming_plane;
-    ArPlane_acquireSubsumedBy(
-        arcore_session_.get(), ar_plane,
-        internal::ScopedArCoreObject<ArPlane*>::Receiver(subsuming_plane)
-            .get());
-
-    if (subsuming_plane.is_valid()) {
-      // Current plane was subsumed by other plane, skip this loop iteration.
-      // Subsuming plane will be handled when its turn comes.
-      continue;
-    }
-
-    fn(std::move(trackable), ar_plane);
-  }
-}  // namespace device
 
 std::vector<mojom::XRAnchorDataPtr> ArCoreImpl::GetUpdatedAnchorsData() {
   EnsureArCoreAnchorsList();
@@ -576,8 +472,8 @@ std::vector<mojom::XRAnchorDataPtr> ArCoreImpl::GetUpdatedAnchorsData() {
         arcore_session_.get(), nullptr,
         internal::ScopedArCoreObject<ArPose*>::Receiver(anchor_pose).get());
     ArAnchor_getPose(arcore_session_.get(), ar_anchor, anchor_pose.get());
-    mojom::PosePtr pose =
-        GetMojomPoseFromArPose(arcore_session_.get(), std::move(anchor_pose));
+    mojom::Pose pose =
+        GetMojomPoseFromArPose(arcore_session_.get(), anchor_pose.get());
 
     // ID
     AnchorId anchor_id;
@@ -588,8 +484,8 @@ std::vector<mojom::XRAnchorDataPtr> ArCoreImpl::GetUpdatedAnchorsData() {
         << "Anchor creation is app-initiated - we should never encounter an "
            "anchor that was created outside of `ArCoreImpl::CreateAnchor()`.";
 
-    result.push_back(
-        mojom::XRAnchorData::New(anchor_id.GetUnsafeValue(), std::move(pose)));
+    result.push_back(mojom::XRAnchorData::New(anchor_id.GetUnsafeValue(),
+                                              device::mojom::Pose::New(pose)));
   });
 
   return result;
@@ -645,102 +541,9 @@ void ArCoreImpl::ForEachArCoreAnchor(FunctionType fn) {
   }
 }
 
-std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetUpdatedPlanesData() {
-  EnsureArCorePlanesList();
-
-  std::vector<mojom::XRPlaneDataPtr> result;
-
-  ArTrackableType plane_tracked_type = AR_TRACKABLE_PLANE;
-  ArFrame_getUpdatedTrackables(arcore_session_.get(), arcore_frame_.get(),
-                               plane_tracked_type, arcore_planes_.get());
-
-  ForEachArCorePlane([this, &result](
-                         internal::ScopedArCoreObject<ArTrackable*> trackable,
-                         ArPlane* ar_plane) {
-    // orientation
-    ArPlaneType plane_type;
-    ArPlane_getType(arcore_session_.get(), ar_plane, &plane_type);
-
-    // pose
-    internal::ScopedArCoreObject<ArPose*> plane_pose;
-    ArPose_create(
-        arcore_session_.get(), nullptr,
-        internal::ScopedArCoreObject<ArPose*>::Receiver(plane_pose).get());
-    ArPlane_getCenterPose(arcore_session_.get(), ar_plane, plane_pose.get());
-    mojom::PosePtr pose =
-        GetMojomPoseFromArPose(arcore_session_.get(), std::move(plane_pose));
-
-    // polygon
-    int32_t polygon_size;
-    ArPlane_getPolygonSize(arcore_session_.get(), ar_plane, &polygon_size);
-    // We are supposed to get 2*N floats describing (x, z) cooridinates of N
-    // points.
-    DCHECK(polygon_size % 2 == 0);
-
-    std::unique_ptr<float[]> vertices_raw =
-        std::make_unique<float[]>(polygon_size);
-    ArPlane_getPolygon(arcore_session_.get(), ar_plane, vertices_raw.get());
-
-    std::vector<mojom::XRPlanePointDataPtr> vertices;
-    for (int i = 0; i < polygon_size; i += 2) {
-      vertices.push_back(
-          mojom::XRPlanePointData::New(vertices_raw[i], vertices_raw[i + 1]));
-    }
-
-    // ID
-    PlaneId plane_id;
-    bool created;
-    std::tie(plane_id, created) = CreateOrGetPlaneId(ar_plane);
-
-    result.push_back(mojom::XRPlaneData::New(
-        plane_id.GetUnsafeValue(),
-        mojo::ConvertTo<device::mojom::XRPlaneOrientation>(plane_type),
-        std::move(pose), std::move(vertices)));
-  });
-
-  return result;
-}
-
-std::vector<uint64_t> ArCoreImpl::GetAllPlaneIds() {
-  EnsureArCorePlanesList();
-
-  std::vector<uint64_t> result;
-
-  ArTrackableType plane_tracked_type = AR_TRACKABLE_PLANE;
-  ArSession_getAllTrackables(arcore_session_.get(), plane_tracked_type,
-                             arcore_planes_.get());
-
-  std::map<PlaneId, device::internal::ScopedArCoreObject<ArTrackable*>>
-      plane_id_to_plane_object;
-
-  ForEachArCorePlane([this, &plane_id_to_plane_object, &result](
-                         internal::ScopedArCoreObject<ArTrackable*> trackable,
-                         ArPlane* ar_plane) {
-    // ID
-    PlaneId plane_id;
-    bool created;
-    std::tie(plane_id, created) = CreateOrGetPlaneId(ar_plane);
-
-    DCHECK(!created)
-        << "Newly detected planes should be handled by GetUpdatedPlanesData().";
-
-    result.emplace_back(plane_id);
-    plane_id_to_plane_object[plane_id] = std::move(trackable);
-  });
-
-  plane_id_to_plane_object_.swap(plane_id_to_plane_object);
-
-  return result;
-}
-
 mojom::XRPlaneDetectionDataPtr ArCoreImpl::GetDetectedPlanesData() {
   TRACE_EVENT0("gpu", __FUNCTION__);
-
-  auto updated_planes = GetUpdatedPlanesData();
-  auto all_plane_ids = GetAllPlaneIds();
-
-  return mojom::XRPlaneDetectionData::New(all_plane_ids,
-                                          std::move(updated_planes));
+  return plane_manager_->GetDetectedPlanesData(arcore_frame_.get());
 }
 
 mojom::XRAnchorsDataPtr ArCoreImpl::GetAnchorsData() {
@@ -783,21 +586,6 @@ mojom::XRLightEstimationDataPtr ArCoreImpl::GetLightEstimationData() {
   }
 
   return light_estimation_data;
-}
-
-std::pair<PlaneId, bool> ArCoreImpl::CreateOrGetPlaneId(void* plane_address) {
-  auto it = ar_plane_address_to_id_.find(plane_address);
-  if (it != ar_plane_address_to_id_.end()) {
-    return std::make_pair(it->second, false);
-  }
-
-  CHECK(next_id_ != std::numeric_limits<uint64_t>::max())
-      << "preventing ID overflow";
-
-  uint64_t current_id = next_id_++;
-  ar_plane_address_to_id_.emplace(plane_address, current_id);
-
-  return std::make_pair(PlaneId(current_id), true);
 }
 
 std::pair<AnchorId, bool> ArCoreImpl::CreateOrGetAnchorId(
@@ -877,8 +665,8 @@ base::Optional<uint64_t> ArCoreImpl::SubscribeToHitTest(
   } else if (native_origin_information->is_plane_id()) {
     // Validate that we know which plane's space the hit test is interested in
     // tracking.
-    if (plane_id_to_plane_object_.count(
-            PlaneId(native_origin_information->get_plane_id())) == 0) {
+    if (!plane_manager_->PlaneExists(
+            PlaneId(native_origin_information->get_plane_id()))) {
       return base::nullopt;
     }
   } else if (native_origin_information->is_anchor_id()) {
@@ -1095,25 +883,8 @@ base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromNativeOrigin(
         native_origin_information->get_reference_space_category(),
         mojo_from_viewer);
   } else if (native_origin_information->is_plane_id()) {
-    auto plane_it = plane_id_to_plane_object_.find(
+    return plane_manager_->GetMojoFromPlane(
         PlaneId(native_origin_information->get_plane_id()));
-    if (plane_it == plane_id_to_plane_object_.end()) {
-      return base::nullopt;
-    }
-
-    // Naked pointer is fine as we don't own the object and ArAsPlane does not
-    // increase the refcount.
-    ArPlane* plane = ArAsPlane(plane_it->second.get());
-
-    internal::ScopedArCoreObject<ArPose*> ar_pose;
-    ArPose_create(
-        arcore_session_.get(), nullptr,
-        internal::ScopedArCoreObject<ArPose*>::Receiver(ar_pose).get());
-    ArPlane_getCenterPose(arcore_session_.get(), plane, ar_pose.get());
-    mojom::PosePtr mojo_pose =
-        GetMojomPoseFromArPose(arcore_session_.get(), std::move(ar_pose));
-
-    return mojo::ConvertTo<gfx::Transform>(mojo_pose);
   } else if (native_origin_information->is_anchor_id()) {
     auto anchor_it = anchor_id_to_anchor_object_.find(
         AnchorId(native_origin_information->get_anchor_id()));
@@ -1128,8 +899,8 @@ base::Optional<gfx::Transform> ArCoreImpl::GetMojoFromNativeOrigin(
 
     ArAnchor_getPose(arcore_session_.get(), anchor_it->second.get(),
                      ar_pose.get());
-    mojom::PosePtr mojo_pose =
-        GetMojomPoseFromArPose(arcore_session_.get(), std::move(ar_pose));
+    mojom::Pose mojo_pose =
+        GetMojomPoseFromArPose(arcore_session_.get(), ar_pose.get());
 
     return mojo::ConvertTo<gfx::Transform>(mojo_pose);
   } else {
@@ -1301,16 +1072,18 @@ bool ArCoreImpl::RequestHitTest(
 }
 
 base::Optional<uint64_t> ArCoreImpl::CreateAnchor(
-    const device::mojom::PosePtr& pose) {
-  DCHECK(pose);
-
+    const device::mojom::Pose& pose) {
   auto ar_pose = GetArPoseFromMojomPose(arcore_session_.get(), pose);
 
   device::internal::ScopedArCoreObject<ArAnchor*> ar_anchor;
-  ArSession_acquireNewAnchor(
+  ArStatus status = ArSession_acquireNewAnchor(
       arcore_session_.get(), ar_pose.get(),
       device::internal::ScopedArCoreObject<ArAnchor*>::Receiver(ar_anchor)
           .get());
+
+  if (status != AR_SUCCESS) {
+    return base::nullopt;
+  }
 
   AnchorId anchor_id;
   bool created;
@@ -1325,22 +1098,12 @@ base::Optional<uint64_t> ArCoreImpl::CreateAnchor(
 }
 
 base::Optional<uint64_t> ArCoreImpl::CreateAnchor(
-    const device::mojom::PosePtr& pose,
+    const device::mojom::Pose& pose,
     uint64_t plane_id) {
-  DCHECK(pose);
-
-  auto ar_pose = GetArPoseFromMojomPose(arcore_session_.get(), pose);
-
-  auto it = plane_id_to_plane_object_.find(PlaneId(plane_id));
-  if (it == plane_id_to_plane_object_.end()) {
+  auto ar_anchor = plane_manager_->CreateAnchor(PlaneId(plane_id), pose);
+  if (!ar_anchor.is_valid()) {
     return base::nullopt;
   }
-
-  device::internal::ScopedArCoreObject<ArAnchor*> ar_anchor;
-  ArTrackable_acquireNewAnchor(
-      arcore_session_.get(), it->second.get(), ar_pose.get(),
-      device::internal::ScopedArCoreObject<ArAnchor*>::Receiver(ar_anchor)
-          .get());
 
   AnchorId anchor_id;
   bool created;

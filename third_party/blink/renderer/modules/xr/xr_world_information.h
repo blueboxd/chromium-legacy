@@ -26,7 +26,7 @@ class XRWorldInformation : public ScriptWrappable {
 
   XRLightEstimation* lightEstimation() const;
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
   // Applies changes to the stored plane information based on the contents of
   // the received frame data. This will update the contents of

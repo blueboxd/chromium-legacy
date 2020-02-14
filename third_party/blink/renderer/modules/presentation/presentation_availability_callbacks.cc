@@ -49,7 +49,7 @@ void PresentationAvailabilityCallbacks::RejectAvailabilityNotSupported() {
   resolver_->Reject(CreateAvailabilityNotSupportedError());
 }
 
-void PresentationAvailabilityCallbacks::Trace(blink::Visitor* visitor) {
+void PresentationAvailabilityCallbacks::Trace(Visitor* visitor) {
   visitor->Trace(resolver_);
 }
 

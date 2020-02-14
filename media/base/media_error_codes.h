@@ -11,7 +11,8 @@ namespace media {
 // UMA yet!
 enum class ErrorCode : uint32_t {
   kOk = 0,
-  kCodeOnlyForTesting = std::numeric_limits<uint32_t>::max(),
+  kCodeOnlyForTesting = 1,
+  kMaxValue = kCodeOnlyForTesting,
 };
 
 }  // namespace media

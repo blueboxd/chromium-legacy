@@ -17,11 +17,10 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-enum class PermissionPromptDisposition;
-
 namespace permissions {
 class PermissionRequest;
 enum class PermissionAction;
+enum class PermissionPromptDisposition;
 }
 
 namespace test {
@@ -195,7 +194,8 @@ class PermissionRequestManager
       UiToUse ui_to_use,
       base::Optional<QuietUiReason> quiet_ui_reason);
 
-  PermissionPromptDisposition DetermineCurrentRequestUIDispositionForUMA();
+  permissions::PermissionPromptDisposition
+  DetermineCurrentRequestUIDispositionForUMA();
 
   void DoAutoResponseForTesting();
 

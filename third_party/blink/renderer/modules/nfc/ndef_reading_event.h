@@ -31,7 +31,7 @@ class NDEFReadingEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   const String& serialNumber() const;
   NDEFMessage* message() const;

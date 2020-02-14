@@ -76,6 +76,8 @@ class ASH_EXPORT MessageCenterUiController
   void OnQuietModeChanged(bool in_quiet_mode) override;
   void OnBlockingStateChanged(
       message_center::NotificationBlocker* blocker) override;
+  void OnNotificationPopupShown(const std::string& notification_id,
+                                bool mark_notification_as_read) override;
 
  private:
   void OnMessageCenterChanged();

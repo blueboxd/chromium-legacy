@@ -122,7 +122,7 @@ void MediaMetadata::SetArtworkInternal(
   artwork_.swap(processed_artwork);
 }
 
-void MediaMetadata::Trace(blink::Visitor* visitor) {
+void MediaMetadata::Trace(Visitor* visitor) {
   visitor->Trace(artwork_);
   visitor->Trace(session_);
   ScriptWrappable::Trace(visitor);

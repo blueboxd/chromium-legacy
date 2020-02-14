@@ -62,7 +62,7 @@ HTMLMediaElement& MediaControlElementBase::MediaElement() const {
   return GetMediaControls().MediaElement();
 }
 
-void MediaControlElementBase::Trace(blink::Visitor* visitor) {
+void MediaControlElementBase::Trace(Visitor* visitor) {
   visitor->Trace(media_controls_);
   visitor->Trace(element_);
 }

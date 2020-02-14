@@ -422,7 +422,7 @@ void Bluetooth::ContextDestroyed(ExecutionContext*) {
   client_receivers_.Clear();
 }
 
-void Bluetooth::Trace(blink::Visitor* visitor) {
+void Bluetooth::Trace(Visitor* visitor) {
   visitor->Trace(device_instance_map_);
   EventTargetWithInlineData::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);

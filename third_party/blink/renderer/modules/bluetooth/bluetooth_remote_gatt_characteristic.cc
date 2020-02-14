@@ -453,7 +453,7 @@ BluetoothRemoteGATTCharacteristic::CreateInvalidCharacteristicErrorMessage() {
          "after reconnecting.";
 }
 
-void BluetoothRemoteGATTCharacteristic::Trace(blink::Visitor* visitor) {
+void BluetoothRemoteGATTCharacteristic::Trace(Visitor* visitor) {
   visitor->Trace(service_);
   visitor->Trace(properties_);
   visitor->Trace(value_);

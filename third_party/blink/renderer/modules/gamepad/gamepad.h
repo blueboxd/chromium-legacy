@@ -88,7 +88,7 @@ class MODULES_EXPORT Gamepad final : public ScriptWrappable {
     return vibration_actuator_type_;
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void SetTimestamp(const device::Gamepad& device_gamepad);

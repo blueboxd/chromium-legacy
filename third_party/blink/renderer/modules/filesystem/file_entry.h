@@ -52,7 +52,7 @@ class MODULES_EXPORT FileEntry final : public Entry {
 
   bool isFile() const override { return true; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 };
 
 }  // namespace blink

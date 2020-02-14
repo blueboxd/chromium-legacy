@@ -50,7 +50,7 @@ class MODULES_EXPORT DeviceOrientationData final
                         const base::Optional<double>& gamma,
                         bool absolute);
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(Visitor* visitor) {}
 
   double Alpha() const;
   double Beta() const;

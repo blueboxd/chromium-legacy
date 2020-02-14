@@ -98,7 +98,7 @@ void ServiceWorkerRegistrationNotifications::ContextDestroyed(
     loader->Stop();
 }
 
-void ServiceWorkerRegistrationNotifications::Trace(blink::Visitor* visitor) {
+void ServiceWorkerRegistrationNotifications::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
   visitor->Trace(loaders_);
   Supplement<ServiceWorkerRegistration>::Trace(visitor);

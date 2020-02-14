@@ -30,6 +30,8 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "ui/base/page_transition_types.h"
 
 namespace page_load_metrics {
@@ -247,9 +249,9 @@ void MetricsWebContentsObserver::WillProcessNavigationResponse(
 PageLoadTracker* MetricsWebContentsObserver::GetTrackerOrNullForRequest(
     const content::GlobalRequestID& request_id,
     content::RenderFrameHost* render_frame_host_or_null,
-    blink::mojom::ResourceType resource_type,
+    network::mojom::RequestDestination request_destination,
     base::TimeTicks creation_time) {
-  if (resource_type == blink::mojom::ResourceType::kMainFrame) {
+  if (request_destination == network::mojom::RequestDestination::kDocument) {
     DCHECK(request_id != content::GlobalRequestID());
     // The main frame request can complete either before or after commit, so we
     // look at both provisional loads and the committed load to find a
@@ -278,7 +280,7 @@ PageLoadTracker* MetricsWebContentsObserver::GetTrackerOrNullForRequest(
     // TODO(bmcquade): consider tracking GlobalRequestIDs for sub-frame
     // navigations in each PageLoadTracker, and performing a lookup for
     // sub-frames similar to the main-frame lookup above.
-    if (resource_type == blink::mojom::ResourceType::kSubFrame)
+    if (blink::IsRequestDestinationFrame(request_destination))
       return committed_load_.get();
 
     // This was originally a DCHECK but it fails when the document load happened
@@ -312,7 +314,7 @@ void MetricsWebContentsObserver::ResourceLoadComplete(
     return;
 
   PageLoadTracker* tracker = GetTrackerOrNullForRequest(
-      request_id, render_frame_host, resource_load_info.resource_type,
+      request_id, render_frame_host, resource_load_info.request_destination,
       resource_load_info.load_timing_info.request_start);
   if (tracker) {
     // TODO(crbug.com/721403): Fill in data reduction proxy fields when this is
@@ -332,8 +334,8 @@ void MetricsWebContentsObserver::ResourceLoadComplete(
         network_info->remote_endpoint.value(),
         render_frame_host->GetFrameTreeNodeId(), resource_load_info.was_cached,
         resource_load_info.raw_body_bytes, original_content_length,
-        std::move(data_reduction_proxy_data), resource_load_info.resource_type,
-        resource_load_info.net_error,
+        std::move(data_reduction_proxy_data),
+        resource_load_info.request_destination, resource_load_info.net_error,
         std::make_unique<net::LoadTimingInfo>(
             resource_load_info.load_timing_info));
     tracker->OnLoadedResource(extra_request_complete_info);

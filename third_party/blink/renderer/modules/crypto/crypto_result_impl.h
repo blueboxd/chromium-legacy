@@ -72,7 +72,7 @@ class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
 
   WebCryptoResult Result() { return WebCryptoResult(this, cancel_.get()); }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   class Resolver;

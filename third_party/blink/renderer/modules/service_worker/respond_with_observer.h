@@ -54,7 +54,7 @@ class MODULES_EXPORT RespondWithObserver
   // Called when the event handler finished without calling respondWith().
   virtual void OnNoResponse() = 0;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   RespondWithObserver(ExecutionContext*, int event_id, WaitUntilObserver*);

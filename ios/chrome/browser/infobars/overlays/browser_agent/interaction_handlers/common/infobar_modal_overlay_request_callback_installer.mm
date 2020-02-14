@@ -36,7 +36,10 @@ InfobarModalOverlayRequestCallbackInstaller::
 void InfobarModalOverlayRequestCallbackInstaller::MainActionCallback(
     OverlayRequest* request,
     OverlayResponse* response) {
-  interaction_handler_->PerformMainAction(GetOverlayRequestInfobar(request));
+  InfoBarIOS* infobar = GetOverlayRequestInfobar(request);
+  if (!infobar)
+    return;
+  interaction_handler_->PerformMainAction(infobar);
 }
 
 #pragma mark - OverlayRequestCallbackInstaller

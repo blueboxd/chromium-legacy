@@ -48,7 +48,7 @@ bool PictureInPictureWindow::HasPendingActivity() const {
   return GetExecutionContext() && HasEventListeners();
 }
 
-void PictureInPictureWindow::Trace(blink::Visitor* visitor) {
+void PictureInPictureWindow::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
   ContextClient::Trace(visitor);
 }

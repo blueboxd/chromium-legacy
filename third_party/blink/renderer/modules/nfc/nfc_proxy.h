@@ -38,7 +38,7 @@ class MODULES_EXPORT NFCProxy final : public GarbageCollected<NFCProxy>,
 
   void Dispose();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // There is no matching RemoveWriter() method because writers are
   // automatically removed from the weak hash set when they are garbage

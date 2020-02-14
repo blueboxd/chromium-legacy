@@ -84,6 +84,9 @@ bool PrintCompositeClient::OnMessageReceived(
                                    render_frame_host)
     IPC_MESSAGE_HANDLER(PrintHostMsg_DidPrintFrameContent,
                         OnDidPrintFrameContent)
+#if BUILDFLAG(ENABLE_TAGGED_PDF)
+    IPC_MESSAGE_HANDLER(PrintHostMsg_AccessibilityTree, OnAccessibilityTree)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -141,6 +144,15 @@ void PrintCompositeClient::OnDidPrintFrameContent(
     pending_subframe_cookies_.erase(frame_guid);
   printed_subframes_[document_cookie].insert(frame_guid);
 }
+
+#if BUILDFLAG(ENABLE_TAGGED_PDF)
+void PrintCompositeClient::OnAccessibilityTree(
+    int document_cookie,
+    const ui::AXTreeUpdate& accessibility_tree) {
+  auto* compositor = GetCompositeRequest(document_cookie);
+  compositor->SetAccessibilityTree(accessibility_tree);
+}
+#endif
 
 void PrintCompositeClient::PrintCrossProcessSubframe(
     const gfx::Rect& rect,

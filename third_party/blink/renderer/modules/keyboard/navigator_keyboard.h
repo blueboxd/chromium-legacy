@@ -26,7 +26,7 @@ class NavigatorKeyboard final : public GarbageCollected<NavigatorKeyboard>,
 
   explicit NavigatorKeyboard(Navigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<Keyboard> keyboard_;

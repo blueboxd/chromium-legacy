@@ -26,7 +26,7 @@ class NavigatorWakeLock final : public GarbageCollected<NavigatorWakeLock>,
 
   explicit NavigatorWakeLock(Navigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   WakeLock* GetWakeLock();

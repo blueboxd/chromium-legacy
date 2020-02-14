@@ -164,10 +164,51 @@ suite('<crostini-upgrader-app>', () => {
     fakeBrowserProxy.page.onUpgradeProgress(['foo', 'bar']);
     fakeBrowserProxy.page.onUpgradeSucceeded();
     await flushTasks();
-    expectEquals(app.$$('#upgrade-progress-bar > paper-progress').value, 2);
 
     expectEquals(fakeBrowserProxy.handler.getCallCount('close'), 0);
     expectTrue(getRestoreProgressBar().hidden);
+
+    await clickAction();
+    expectEquals(fakeBrowserProxy.handler.getCallCount('launch'), 1);
+    expectEquals(fakeBrowserProxy.handler.getCallCount('close'), 1);
+  });
+
+  test('upgradeFlowFailureOffersRestore', async () => {
+    expectFalse(app.$$('#prompt-message').hidden);
+    expectEquals(fakeBrowserProxy.handler.getCallCount('backup'), 0);
+
+    await clickAction();
+    expectFalse(getProgressMessage().hidden);
+    expectEquals(fakeBrowserProxy.handler.getCallCount('backup'), 1);
+    expectTrue(getActionButton().hidden);
+    expectTrue(getCancelButton().hidden);
+
+    fakeBrowserProxy.page.onBackupSucceeded();
+    await flushTasks();
+    expectEquals(fakeBrowserProxy.handler.getCallCount('upgrade'), 0);
+    // The UI pauses for 2000 ms before continuing.
+    await waitMillis(2010).then(flushTasks());
+    fakeBrowserProxy.page.precheckStatus(
+        chromeos.crostiniUpgrader.mojom.UpgradePrecheckStatus.OK);
+    await flushTasks();
+
+    expectEquals(fakeBrowserProxy.handler.getCallCount('upgrade'), 1);
+    expectFalse(getUpgradeProgressBar().hidden);
+    fakeBrowserProxy.page.onUpgradeProgress(['foo', 'bar']);
+    fakeBrowserProxy.page.onUpgradeFailed();
+    await flushTasks();
+
+    expectEquals(fakeBrowserProxy.handler.getCallCount('restore'), 0);
+    await clickAction();
+    expectEquals(fakeBrowserProxy.handler.getCallCount('restore'), 1);
+    fakeBrowserProxy.page.onRestoreProgress(50);
+    await flushTasks();
+    expectTrue(
+        !!getProgressMessage().textContent, 'progress message should be set');
+    expectFalse(getRestoreProgressBar().hidden);
+    expectEquals(app.$$('#restore-progress-bar > paper-progress').value, 50);
+    fakeBrowserProxy.page.onRestoreSucceeded();
+    await flushTasks();
 
     await clickAction();
     expectEquals(fakeBrowserProxy.handler.getCallCount('launch'), 1);

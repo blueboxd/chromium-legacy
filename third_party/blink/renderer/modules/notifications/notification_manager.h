@@ -79,7 +79,7 @@ class NotificationManager final : public GarbageCollected<NotificationManager>,
                         bool include_triggered,
                         ScriptPromiseResolver* resolver);
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   void DidDisplayPersistentNotification(

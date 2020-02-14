@@ -25,6 +25,8 @@ public_headers = [
   "//media/base/video_types.h",
   "//media/base/waiting.h",
   "//media/base/watch_time_keys.h",
+  "//media/base/media_error.h",
+  "//media/base/media_error_codes.h",
 ]
 
 traits_headers = [
@@ -65,4 +67,5 @@ type_mappings = [
   "media.mojom.WaitingReason=::media::WaitingReason",
   "media.mojom.WatchTimeKey=::media::WatchTimeKey",
   "media.mojom.MediaStatusState=::media::MediaStatus::State",
+  "media.mojom.ErrorCode=::media::ErrorCode",
 ]

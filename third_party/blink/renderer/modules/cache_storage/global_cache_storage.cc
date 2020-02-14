@@ -75,7 +75,7 @@ class GlobalCacheStorageImpl final
     return caches_;
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(caches_);
     Supplement<T>::Trace(visitor);
   }

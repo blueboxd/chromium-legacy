@@ -460,7 +460,7 @@ XRInputSourceEvent* XRInputSource::CreateInputSourceEvent(
   return XRInputSourceEvent::Create(type, presentation_frame, this);
 }
 
-void XRInputSource::Trace(blink::Visitor* visitor) {
+void XRInputSource::Trace(Visitor* visitor) {
   visitor->Trace(session_);
   visitor->Trace(target_ray_space_);
   visitor->Trace(grip_space_);

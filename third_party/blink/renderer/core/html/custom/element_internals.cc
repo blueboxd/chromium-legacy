@@ -47,7 +47,6 @@ class CustomStatesTokenList : public DOMTokenList {
 };
 
 ElementInternals::ElementInternals(HTMLElement& target) : target_(target) {
-  value_.SetUSVString(String());
 }
 
 void ElementInternals::Trace(Visitor* visitor) {

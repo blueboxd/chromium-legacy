@@ -11,6 +11,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/sessions/content/session_tab_helper.h"
 #include "content/public/test/navigation_simulator.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 
@@ -204,7 +205,7 @@ TEST_F(LoadingPredictorTabHelperTest, ResourceLoadComplete) {
 
   auto navigation_id = CreateNavigationID(GetTabID(), "http://test.org");
   auto resource_load_info = CreateResourceLoadInfo(
-      "http://test.org/script.js", blink::mojom::ResourceType::kScript);
+      "http://test.org/script.js", network::mojom::RequestDestination::kScript);
   EXPECT_CALL(*mock_collector_,
               RecordResourceLoadComplete(navigation_id,
                                          Eq(ByRef(*resource_load_info))));
@@ -222,8 +223,10 @@ TEST_F(LoadingPredictorTabHelperTest, ResourceLoadCompleteInSubFrame) {
   NavigateAndCommitInFrame("http://sub.test.org", subframe);
 
   // Resource loaded in subframe shouldn't be recorded.
-  auto resource_load_info = CreateResourceLoadInfo(
-      "http://sub.test.org/script.js", blink::mojom::ResourceType::kScript);
+  auto resource_load_info =
+      CreateResourceLoadInfo("http://sub.test.org/script.js",
+                             network::mojom::RequestDestination::kScript,
+                             /*always_access_network=*/false);
   tab_helper_->ResourceLoadComplete(subframe, content::GlobalRequestID(),
                                     *resource_load_info);
 }
@@ -235,7 +238,8 @@ TEST_F(LoadingPredictorTabHelperTest, LoadResourceFromMemoryCache) {
 
   auto navigation_id = CreateNavigationID(GetTabID(), "http://test.org");
   auto resource_load_info = CreateResourceLoadInfo(
-      "http://test.org/script.js", blink::mojom::ResourceType::kScript, false);
+      "http://test.org/script.js", network::mojom::RequestDestination::kScript,
+      false);
   resource_load_info->mime_type = "application/javascript";
   resource_load_info->network_info->network_accessed = false;
   EXPECT_CALL(*mock_collector_,
@@ -243,7 +247,7 @@ TEST_F(LoadingPredictorTabHelperTest, LoadResourceFromMemoryCache) {
                                          Eq(ByRef(*resource_load_info))));
   tab_helper_->DidLoadResourceFromMemoryCache(
       GURL("http://test.org/script.js"), "application/javascript",
-      blink::mojom::ResourceType::kScript);
+      network::mojom::RequestDestination::kScript);
 }
 
 class TestLoadingDataCollector : public LoadingDataCollector {
@@ -324,7 +328,7 @@ TEST_F(LoadingPredictorTabHelperTestCollectorTest, ResourceLoadComplete) {
   // Set expected priority to HIGHEST and load a HIGHEST priority resource.
   test_collector_->SetExpectedResourcePriority(net::HIGHEST);
   auto resource_load_info = CreateResourceLoadInfo(
-      "http://test.org/script.js", blink::mojom::ResourceType::kScript);
+      "http://test.org/script.js", network::mojom::RequestDestination::kScript);
   tab_helper_->ResourceLoadComplete(main_rfh(), content::GlobalRequestID(),
                                     *resource_load_info);
   EXPECT_EQ(1u, test_collector_->count_resource_loads_completed());
@@ -332,7 +336,7 @@ TEST_F(LoadingPredictorTabHelperTestCollectorTest, ResourceLoadComplete) {
   // Set expected priority to LOWEST and load a LOWEST priority resource.
   test_collector_->SetExpectedResourcePriority(net::LOWEST);
   resource_load_info = CreateLowPriorityResourceLoadInfo(
-      "http://test.org/script.js", blink::mojom::ResourceType::kScript);
+      "http://test.org/script.js", network::mojom::RequestDestination::kScript);
   tab_helper_->ResourceLoadComplete(main_rfh(), content::GlobalRequestID(),
                                     *resource_load_info);
   EXPECT_EQ(2u, test_collector_->count_resource_loads_completed());

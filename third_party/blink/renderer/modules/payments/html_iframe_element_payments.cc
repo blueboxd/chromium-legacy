@@ -51,7 +51,7 @@ bool HTMLIFrameElementPayments::AllowPaymentRequest(
          element.FastHasAttribute(html_names::kAllowpaymentrequestAttr);
 }
 
-void HTMLIFrameElementPayments::Trace(blink::Visitor* visitor) {
+void HTMLIFrameElementPayments::Trace(Visitor* visitor) {
   Supplement<HTMLIFrameElement>::Trace(visitor);
 }
 

@@ -33,7 +33,6 @@
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -45,6 +44,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
+#include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
@@ -259,9 +259,10 @@ void JNI_WebsitePreferenceBridge_SetSettingForOrigin(
     return;
   }
 
-  PermissionUmaUtil::ScopedRevocationReporter scoped_revocation_reporter(
-      profile, origin_url, embedder_url, content_type,
-      PermissionSourceUI::SITE_SETTINGS);
+  permissions::PermissionUmaUtil::ScopedRevocationReporter
+      scoped_revocation_reporter(
+          profile, origin_url, embedder_url, content_type,
+          permissions::PermissionSourceUI::SITE_SETTINGS);
   HostContentSettingsMapFactory::GetForProfile(profile)
       ->SetContentSettingDefaultScope(origin_url, embedder_url, content_type,
                                       std::string(), setting);
@@ -521,9 +522,10 @@ static void JNI_WebsitePreferenceBridge_SetNotificationSettingForOrigin(
     return;
   }
 
-  PermissionUmaUtil::ScopedRevocationReporter scoped_revocation_reporter(
-      profile, url, GURL(), ContentSettingsType::NOTIFICATIONS,
-      PermissionSourceUI::SITE_SETTINGS);
+  permissions::PermissionUmaUtil::ScopedRevocationReporter
+      scoped_revocation_reporter(
+          profile, url, GURL(), ContentSettingsType::NOTIFICATIONS,
+          permissions::PermissionSourceUI::SITE_SETTINGS);
 
   NotificationPermissionContext::UpdatePermission(profile, url, setting);
   WebSiteSettingsUmaUtil::LogPermissionChange(
@@ -546,9 +548,10 @@ static void JNI_WebsitePreferenceBridge_ReportNotificationRevokedForOrigin(
   WebSiteSettingsUmaUtil::LogPermissionChange(
       ContentSettingsType::NOTIFICATIONS, setting);
 
-  PermissionUmaUtil::PermissionRevoked(ContentSettingsType::NOTIFICATIONS,
-                                       PermissionSourceUI::ANDROID_SETTINGS,
-                                       url.GetOrigin(), profile);
+  permissions::PermissionUmaUtil::PermissionRevoked(
+      ContentSettingsType::NOTIFICATIONS,
+      permissions::PermissionSourceUI::ANDROID_SETTINGS, url.GetOrigin(),
+      profile);
 }
 
 static void JNI_WebsitePreferenceBridge_GetCameraOrigins(

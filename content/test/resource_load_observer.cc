@@ -26,7 +26,7 @@ void ResourceLoadObserver::CheckResourceLoaded(
     const GURL& original_url,
     const GURL& referrer,
     const std::string& load_method,
-    blink::mojom::ResourceType resource_type,
+    network::mojom::RequestDestination request_destination,
     const base::FilePath::StringPieceType& served_file_name,
     const std::string& mime_type,
     const std::string& ip_address,
@@ -50,7 +50,7 @@ void ResourceLoadObserver::CheckResourceLoaded(
     }
     EXPECT_EQ(referrer, resource_load_info->referrer);
     EXPECT_EQ(load_method, resource_load_info->method);
-    EXPECT_EQ(resource_type, resource_load_info->resource_type);
+    EXPECT_EQ(request_destination, resource_load_info->request_destination);
     if (!first_network_request)
       EXPECT_GT(resource_load_info->request_id, 0);
     EXPECT_EQ(mime_type, resource_load_info->mime_type);
@@ -133,7 +133,7 @@ void ResourceLoadObserver::ResourceLoadComplete(
 void ResourceLoadObserver::DidLoadResourceFromMemoryCache(
     const GURL& url,
     const std::string& mime_type,
-    blink::mojom::ResourceType resource_type) {
+    network::mojom::RequestDestination request_destination) {
   memory_cached_loaded_urls_.push_back(url);
 }
 

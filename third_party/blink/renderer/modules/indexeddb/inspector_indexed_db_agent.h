@@ -47,7 +47,7 @@ class MODULES_EXPORT InspectorIndexedDBAgent final
  public:
   InspectorIndexedDBAgent(InspectedFrames*, v8_inspector::V8InspectorSession*);
   ~InspectorIndexedDBAgent() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void Restore() override;
   void DidCommitLoadForLocalFrame(LocalFrame*) override;

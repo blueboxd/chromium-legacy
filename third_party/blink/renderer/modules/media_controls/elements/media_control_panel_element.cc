@@ -72,7 +72,7 @@ void MediaControlPanelElement::RemovedFrom(ContainerNode& insertion_point) {
   DetachTransitionEventListener();
 }
 
-void MediaControlPanelElement::Trace(blink::Visitor* visitor) {
+void MediaControlPanelElement::Trace(Visitor* visitor) {
   MediaControlDivElement::Trace(visitor);
   visitor->Trace(event_listener_);
 }

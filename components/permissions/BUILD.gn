@@ -14,27 +14,52 @@ source_set("permissions") {
     "permission_request_id.h",
     "permission_result.cc",
     "permission_result.h",
+    "permission_uma_util.cc",
+    "permission_uma_util.h",
     "permission_util.cc",
     "permission_util.h",
+    "permissions_client.cc",
+    "permissions_client.h",
   ]
   deps = [
     "//base",
     "//components/content_settings/core/browser",
     "//components/keyed_service/content",
+    "//components/ukm/content",
     "//components/variations",
     "//content/public/browser",
+    "//services/metrics/public/cpp:ukm_builders",
+  ]
+  if (is_android) {
+    deps += [ "//components/permissions/android:jni" ]
+  }
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test/test_permissions_client.cc",
+    "test/test_permissions_client.h",
+  ]
+  deps = [
+    ":permissions",
+    "//components/sync_preferences:test_support",
   ]
 }
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "permission_decision_auto_blocker_unittest.cc" ]
+  sources = [
+    "permission_decision_auto_blocker_unittest.cc",
+    "permission_uma_util_unittest.cc",
+  ]
   deps = [
     ":permissions",
+    ":test_support",
     "//base",
     "//base/test:test_support",
+    "//components/content_settings/core/browser",
     "//components/keyed_service/content",
-    "//components/sync_preferences:test_support",
     "//content/test:test_support",
     "//testing/gtest",
   ]

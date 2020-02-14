@@ -180,7 +180,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   IDBRequest(ScriptState*, const Source&, IDBTransaction*, AsyncTraceState);
   ~IDBRequest() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   v8::Isolate* GetIsolate() const { return isolate_; }
   ScriptValue result(ScriptState*, ExceptionState&);

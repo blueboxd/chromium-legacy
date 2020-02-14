@@ -26,7 +26,7 @@ class MediaControlsMediaEventListener final : public NativeEventListener {
   // object to be garbage collected.
   void Detach();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void Invoke(ExecutionContext*, Event*) override;
 

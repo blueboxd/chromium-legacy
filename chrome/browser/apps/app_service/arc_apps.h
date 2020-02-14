@@ -18,6 +18,7 @@
 #include "chrome/browser/apps/app_service/app_icon_factory.h"
 #include "chrome/browser/apps/app_service/arc_icon_once_loader.h"
 #include "chrome/browser/apps/app_service/icon_key_util.h"
+#include "chrome/browser/apps/app_service/paused_apps.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
@@ -148,7 +149,7 @@ class ArcApps : public KeyedService,
 
   apps_util::IncrementingIconKeyFactory icon_key_factory_;
 
-  std::set<std::string> paused_apps_;
+  PausedApps paused_apps_;
 
   AppIdToTaskIds app_id_to_task_ids_;
   TaskIdToAppId task_id_to_app_id_;

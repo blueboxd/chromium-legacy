@@ -155,7 +155,7 @@ void KeyboardLock::LockRequestFinished(
   request_keylock_resolver_ = nullptr;
 }
 
-void KeyboardLock::Trace(blink::Visitor* visitor) {
+void KeyboardLock::Trace(Visitor* visitor) {
   visitor->Trace(request_keylock_resolver_);
   ContextLifecycleObserver::Trace(visitor);
 }

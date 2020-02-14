@@ -77,12 +77,12 @@ static bool CheckChunkInvalidation(
 }
 
 MATCHER_P4(ChunkInvalidation, chunk, reason, layer_offset, mapper, "") {
-  return CheckChunkInvalidation(arg, *chunk, chunk->bounds, reason,
+  return CheckChunkInvalidation(arg, *chunk, chunk->drawable_bounds, reason,
                                 layer_offset, mapper);
 }
 
 MATCHER_P2(ChunkInvalidation, chunk, reason, "") {
-  return CheckChunkInvalidation(arg, *chunk, chunk->bounds, reason,
+  return CheckChunkInvalidation(arg, *chunk, chunk->drawable_bounds, reason,
                                 -kDefaultLayerBounds.Location());
 }
 
@@ -218,6 +218,40 @@ TEST_P(RasterInvalidatorTest, ChunkAppearAndDisappear) {
           ChunkInvalidation(&artifact->PaintChunks()[1],
                             PaintInvalidationReason::kChunkDisappeared),
           ChunkInvalidation(&artifact->PaintChunks()[2],
+                            PaintInvalidationReason::kChunkDisappeared)));
+  FinishCycle(*new_artifact);
+}
+
+TEST_P(RasterInvalidatorTest, InvalidateDrawableBounds) {
+  IntRect drawable_bounds(11, 22, 33, 44);
+  IntRect bounds(0, 0, 100, 100);
+  auto artifact = TestPaintArtifact()
+                      .Chunk(0)
+                      .Chunk(1)
+                      .Bounds(bounds)
+                      .DrawableBounds(drawable_bounds)
+                      .Build();
+  invalidator_.Generate(artifact, kDefaultLayerBounds,
+                        DefaultPropertyTreeState());
+  FinishCycle(*artifact);
+
+  invalidator_.SetTracksRasterInvalidations(true);
+  auto new_artifact = TestPaintArtifact()
+                          .Chunk(0)
+                          .Chunk(2)
+                          .Bounds(bounds)
+                          .DrawableBounds(drawable_bounds)
+                          .Build();
+  invalidator_.Generate(new_artifact, kDefaultLayerBounds,
+                        DefaultPropertyTreeState());
+  // ChunkInvalidation uses the drawable_bounds. We expect raster invalidations
+  // based on drawable_bounds instead of bounds.
+  EXPECT_THAT(
+      TrackedRasterInvalidations(),
+      ElementsAre(
+          ChunkInvalidation(&new_artifact->PaintChunks()[1],
+                            PaintInvalidationReason::kChunkAppeared),
+          ChunkInvalidation(&artifact->PaintChunks()[1],
                             PaintInvalidationReason::kChunkDisappeared)));
   FinishCycle(*new_artifact);
 }

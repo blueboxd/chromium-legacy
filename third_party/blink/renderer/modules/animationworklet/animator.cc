@@ -32,7 +32,7 @@ Animator::Animator(v8::Isolate* isolate,
 
 Animator::~Animator() = default;
 
-void Animator::Trace(blink::Visitor* visitor) {
+void Animator::Trace(Visitor* visitor) {
   visitor->Trace(definition_);
   visitor->Trace(instance_);
   visitor->Trace(group_effect_);

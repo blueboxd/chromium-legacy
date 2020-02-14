@@ -320,7 +320,7 @@ void PaymentRequestEvent::respondWith(ScriptState* script_state,
   }
 }
 
-void PaymentRequestEvent::Trace(blink::Visitor* visitor) {
+void PaymentRequestEvent::Trace(Visitor* visitor) {
   visitor->Trace(method_data_);
   visitor->Trace(total_);
   visitor->Trace(modifiers_);

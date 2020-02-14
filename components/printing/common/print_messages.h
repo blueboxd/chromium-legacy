@@ -22,6 +22,7 @@
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
 #include "third_party/blink/public/web/web_print_scaling_option.h"
+#include "ui/accessibility/ax_param_traits.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/ipc/geometry/gfx_param_traits.h"
@@ -370,6 +371,14 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PrintHostMsg_DidPrintDocument,
 IPC_MESSAGE_ROUTED2(PrintHostMsg_DidPrintFrameContent,
                     int /* rendered document cookie */,
                     PrintHostMsg_DidPrintContent_Params)
+
+#if BUILDFLAG(ENABLE_TAGGED_PDF)
+// Sends the accessibility tree corresponding to a document being
+// printed, needed for a tagged (accessible) PDF.
+IPC_MESSAGE_ROUTED2(PrintHostMsg_AccessibilityTree,
+                    int /* rendered document cookie */,
+                    ui::AXTreeUpdate)
+#endif
 
 // The renderer wants to know the default print settings.
 IPC_SYNC_MESSAGE_ROUTED0_1(PrintHostMsg_GetDefaultPrintSettings,

@@ -28,7 +28,7 @@ class NavigatorCredentials final
 
   explicit NavigatorCredentials(Navigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   CredentialsContainer* credentials();

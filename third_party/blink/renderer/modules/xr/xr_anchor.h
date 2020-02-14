@@ -41,7 +41,7 @@ class XRAnchor : public ScriptWrappable {
   void Update(const device::mojom::blink::XRAnchorDataPtr& anchor_data,
               double timestamp);
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   // AnchorData will only be present in an XRAnchor after the anchor was updated

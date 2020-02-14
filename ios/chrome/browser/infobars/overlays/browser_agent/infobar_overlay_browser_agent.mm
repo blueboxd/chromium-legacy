@@ -77,9 +77,11 @@ InfobarOverlayBrowserAgent::OverlayVisibilityObserver::
 
 void InfobarOverlayBrowserAgent::OverlayVisibilityObserver::
     OverlayVisibilityChanged(OverlayRequest* request, bool visible) {
+  InfoBarIOS* infobar = GetOverlayRequestInfobar(request);
+  if (!infobar)
+    return;
   browser_agent_->GetInteractionHandler(request)->InfobarVisibilityChanged(
-      GetOverlayRequestInfobar(request),
-      GetOverlayRequestInfobarOverlayType(request), visible);
+      infobar, GetOverlayRequestInfobarOverlayType(request), visible);
 }
 
 const OverlayRequestSupport*

@@ -60,7 +60,7 @@ class XRReferenceSpace : public XRSpace {
 
   base::Optional<XRNativeOriginInformation> NativeOrigin() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   virtual void OnReset();
 

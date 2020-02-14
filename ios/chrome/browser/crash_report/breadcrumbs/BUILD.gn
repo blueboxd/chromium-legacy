@@ -18,9 +18,11 @@ source_set("breadcrumbs") {
     "//base",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
+    "//ios/chrome/browser:chrome_url_constants",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/web_state_list",
+    "//ios/net",
     "//ios/web/public",
   ]
 
@@ -74,6 +76,7 @@ source_set("unit_tests") {
     ":breadcrumbs",
     ":generate_not_user_triggered_actions",
     "//base/test:test_support",
+    "//ios/chrome/browser:chrome_url_constants",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/browser/main:test_support",
     "//ios/chrome/browser/ui/commands",

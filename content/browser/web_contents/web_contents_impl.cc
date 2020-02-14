@@ -4690,9 +4690,10 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
     const GURL& url,
     const std::string& http_method,
     const std::string& mime_type,
-    blink::mojom::ResourceType resource_type) {
+    network::mojom::RequestDestination request_destination) {
   for (auto& observer : observers_)
-    observer.DidLoadResourceFromMemoryCache(url, mime_type, resource_type);
+    observer.DidLoadResourceFromMemoryCache(url, mime_type,
+                                            request_destination);
 
   if (url.is_valid() && url.SchemeIsHTTPOrHTTPS()) {
     StoragePartition* partition = source->GetProcess()->GetStoragePartition();

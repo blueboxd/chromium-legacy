@@ -47,6 +47,7 @@
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/mojom/content_security_policy.mojom.h"
+#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
@@ -136,6 +137,8 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::FrameOcclusionState,
                               blink::FrameOcclusionState::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::WebFeature,
                           blink::mojom::WebFeature::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(network::mojom::RequestDestination,
+                          network::mojom::RequestDestination::kMaxValue)
 
 IPC_STRUCT_TRAITS_BEGIN(content::NavigationDownloadPolicy)
   IPC_STRUCT_TRAITS_MEMBER(observed_types)
@@ -950,7 +953,7 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_DidLoadResourceFromMemoryCache,
                     GURL /* url */,
                     std::string /* http method */,
                     std::string /* mime type */,
-                    blink::mojom::ResourceType /* resource type */)
+                    network::mojom::RequestDestination)
 
 // Sent as a response to FrameMsg_VisualStateRequest.
 // The message is delivered using RenderWidget::QueueMessage.

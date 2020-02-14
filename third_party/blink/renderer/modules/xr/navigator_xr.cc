@@ -72,7 +72,7 @@ Document* NavigatorXR::GetDocument() {
   return GetSupplementable()->GetFrame()->GetDocument();
 }
 
-void NavigatorXR::Trace(blink::Visitor* visitor) {
+void NavigatorXR::Trace(Visitor* visitor) {
   visitor->Trace(xr_);
   Supplement<Navigator>::Trace(visitor);
 }

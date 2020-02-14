@@ -44,7 +44,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
  public:
   AXNodeObject(Node*, AXObjectCacheImpl&);
   ~AXNodeObject() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   bool children_dirty_;

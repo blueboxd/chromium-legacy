@@ -40,7 +40,7 @@ class MODULES_EXPORT MediaControlAnimationEventListener final
     // This is the element to watch for animation events.
     virtual Element& WatchedAnimationElement() const = 0;
 
-    void Trace(blink::Visitor*) override;
+    void Trace(Visitor*) override;
   };
 
   explicit MediaControlAnimationEventListener(Observer*);

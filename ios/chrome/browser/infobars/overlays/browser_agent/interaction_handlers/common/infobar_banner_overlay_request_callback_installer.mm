@@ -37,21 +37,29 @@ InfobarBannerOverlayRequestCallbackInstaller::
 void InfobarBannerOverlayRequestCallbackInstaller::MainActionButtonTapped(
     OverlayRequest* request,
     OverlayResponse* response) {
-  interaction_handler_->MainButtonTapped(GetOverlayRequestInfobar(request));
+  InfoBarIOS* infobar = GetOverlayRequestInfobar(request);
+  if (!infobar)
+    return;
+  interaction_handler_->MainButtonTapped(infobar);
 }
 
 void InfobarBannerOverlayRequestCallbackInstaller::ShowModalButtonTapped(
     OverlayRequest* request,
     OverlayResponse* response) {
-  interaction_handler_->ShowModalButtonTapped(GetOverlayRequestInfobar(request),
+  InfoBarIOS* infobar = GetOverlayRequestInfobar(request);
+  if (!infobar)
+    return;
+  interaction_handler_->ShowModalButtonTapped(infobar,
                                               request->GetQueueWebState());
 }
 
 void InfobarBannerOverlayRequestCallbackInstaller::BannerDismissedByUser(
     OverlayRequest* request,
     OverlayResponse* response) {
-  interaction_handler_->BannerDismissedByUser(
-      GetOverlayRequestInfobar(request));
+  InfoBarIOS* infobar = GetOverlayRequestInfobar(request);
+  if (!infobar)
+    return;
+  interaction_handler_->BannerDismissedByUser(infobar);
 }
 
 #pragma mark - OverlayRequestCallbackInstaller

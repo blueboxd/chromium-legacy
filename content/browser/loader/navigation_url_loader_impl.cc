@@ -202,6 +202,7 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->trusted_params = network::ResourceRequest::TrustedParams();
   new_request->trusted_params->network_isolation_key =
       request_info->network_isolation_key;
+  new_request->is_main_frame = request_info->is_main_frame;
 
   if (request_info->is_main_frame) {
     new_request->trusted_params->update_network_isolation_key_on_redirect =
@@ -339,7 +340,6 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       std::unique_ptr<network::ResourceRequest> resource_request,
       BrowserContext* browser_context,
       const GURL& url,
-      bool is_main_frame,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>
           proxied_factory_receiver,
       mojo::PendingRemote<network::mojom::URLLoaderFactory>
@@ -370,8 +370,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // received without receiving any headers looks broken, anyways.
     if (!received_response_ && (!status_ || status_->error_code != net::OK)) {
       RecordLoadHistograms(url::Origin::Create(url_),
-                           static_cast<blink::mojom::ResourceType>(
-                               resource_request_->resource_type),
+                           resource_request_->destination,
                            status_ ? status_->error_code : net::ERR_ABORTED);
     }
   }
@@ -1428,10 +1427,9 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
   DCHECK(!request_controller_);
   request_controller_ = std::make_unique<URLLoaderRequestController>(
       std::move(initial_interceptors), std::move(new_request), browser_context,
-      request_info->common_params->url, request_info->is_main_frame,
-      std::move(proxied_factory_receiver), std::move(proxied_factory_remote),
-      std::move(known_schemes), bypass_redirect_checks,
-      weak_factory_.GetWeakPtr());
+      request_info->common_params->url, std::move(proxied_factory_receiver),
+      std::move(proxied_factory_remote), std::move(known_schemes),
+      bypass_redirect_checks, weak_factory_.GetWeakPtr());
   request_controller_->Start(
       std::move(pending_network_factory), service_worker_handle,
       service_worker_handle_core, appcache_handle,

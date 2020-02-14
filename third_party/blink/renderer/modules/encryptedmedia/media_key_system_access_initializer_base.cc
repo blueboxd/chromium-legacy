@@ -146,7 +146,7 @@ ScriptPromise MediaKeySystemAccessInitializerBase::Promise() {
   return resolver_->Promise();
 }
 
-void MediaKeySystemAccessInitializerBase::Trace(blink::Visitor* visitor) {
+void MediaKeySystemAccessInitializerBase::Trace(Visitor* visitor) {
   visitor->Trace(resolver_);
   EncryptedMediaRequest::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);

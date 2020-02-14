@@ -22,7 +22,7 @@ class OnRequestCanvasDrawListener : public AutoCanvasDrawListener {
   void SendNewFrame(sk_sp<SkImage>,
                     base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 };
 
 }  // namespace blink

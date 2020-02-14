@@ -72,7 +72,7 @@ class MODULES_EXPORT SpeechSynthesis final
   }
 
   // GarbageCollected
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // mojom::blink::SpeechSynthesisVoiceListObserver
   void OnSetVoiceList(

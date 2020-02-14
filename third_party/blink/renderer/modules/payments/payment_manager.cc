@@ -76,7 +76,7 @@ ScriptPromise PaymentManager::enableDelegations(
   return enable_delegations_resolver_->Promise();
 }
 
-void PaymentManager::Trace(blink::Visitor* visitor) {
+void PaymentManager::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
   visitor->Trace(instruments_);
   visitor->Trace(enable_delegations_resolver_);

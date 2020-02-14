@@ -22,7 +22,7 @@ class MODULES_EXPORT ManifestChangeNotifier
   explicit ManifestChangeNotifier(LocalFrame& frame);
   virtual ~ManifestChangeNotifier();
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
   virtual void DidChangeManifest();
 

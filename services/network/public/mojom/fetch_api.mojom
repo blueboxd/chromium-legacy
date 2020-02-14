@@ -21,6 +21,12 @@ enum RequestMode {
 
 // Corresponds to Fetch request's "destination":
 // https://fetch.spec.whatwg.org/#concept-request-destination
+//
+// Note: some types like kIframe and kFrame are still in PR
+// as of Feb 2020: https://github.com/whatwg/fetch/pull/948
+//
+// Note: if destination is kDocument it should be a main
+// resource request for main frames, except for Portals cases.
 enum RequestDestination {
   kEmpty,
   kAudio,

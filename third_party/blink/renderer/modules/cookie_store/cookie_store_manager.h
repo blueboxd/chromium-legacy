@@ -42,7 +42,7 @@ class CookieStoreManager final : public ScriptWrappable {
                                  ExceptionState& exception_state);
 
   // GarbageCollected
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   // The non-static callbacks keep CookieStoreManager alive during mojo calls.

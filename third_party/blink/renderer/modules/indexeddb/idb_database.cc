@@ -121,7 +121,7 @@ IDBDatabase::~IDBDatabase() {
     backend_->Close();
 }
 
-void IDBDatabase::Trace(blink::Visitor* visitor) {
+void IDBDatabase::Trace(Visitor* visitor) {
   visitor->Trace(version_change_transaction_);
   visitor->Trace(transactions_);
   visitor->Trace(observers_);

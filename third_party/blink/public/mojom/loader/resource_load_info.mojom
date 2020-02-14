@@ -9,12 +9,14 @@ import "services/network/public/mojom/ip_endpoint.mojom";
 import "services/network/public/mojom/load_timing_info.mojom";
 import "services/network/public/mojom/network_param.mojom";
 import "services/network/public/mojom/url_loader.mojom";
+import "services/network/public/mojom/fetch_api.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
 // These values are used for UMA. Entries should not be renumbered. Please keep
 // in sync with "ContentResourceType2" in
 // src/tools/metrics/histograms/enums.xml.
+// DEPRECATED. Consider using network::mojom::RequestDestination instead.
 enum ResourceType {
   kMainFrame = 0,           // top level page
   kSubFrame = 1,            // frame or iframe
@@ -85,8 +87,8 @@ struct ResourceLoadInfo {
   // The request method used to fetch this response.
   string method;
 
-  // The resource type.
-  ResourceType resource_type;
+  // The request destination type.
+  network.mojom.RequestDestination request_destination;
 
   // Loading priority of the corresponding request.
   network.mojom.RequestPriority request_priority;

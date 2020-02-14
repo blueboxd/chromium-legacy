@@ -30,7 +30,7 @@ void SensorProxyImpl::Dispose() {
   client_receiver_.reset();
 }
 
-void SensorProxyImpl::Trace(blink::Visitor* visitor) {
+void SensorProxyImpl::Trace(Visitor* visitor) {
   SensorProxy::Trace(visitor);
 }
 

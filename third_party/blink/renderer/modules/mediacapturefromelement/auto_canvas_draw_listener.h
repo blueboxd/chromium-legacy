@@ -26,7 +26,7 @@ class AutoCanvasDrawListener : public GarbageCollected<AutoCanvasDrawListener>,
   bool NeedsNewFrame() const final;
   void RequestFrame() final;
 
-  void Trace(blink::Visitor*) override {}
+  void Trace(Visitor*) override {}
 
  protected:
   std::unique_ptr<CanvasCaptureHandler> handler_;

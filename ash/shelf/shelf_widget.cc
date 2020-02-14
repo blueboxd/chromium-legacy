@@ -82,6 +82,22 @@ bool IsHotseatEnabled() {
          chromeos::switches::ShouldShowShelfHotseat();
 }
 
+// Sets the shelf opacity to 0 when the shelf is done hiding to avoid getting
+// rid of blur.
+class HideAnimationObserver : public ui::ImplicitAnimationObserver {
+ public:
+  explicit HideAnimationObserver(ui::Layer* layer) : layer_(layer) {}
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsScheduled() override {}
+
+  void OnImplicitAnimationsCompleted() override { layer_->SetOpacity(0); }
+
+ private:
+  // Unowned.
+  ui::Layer* layer_;
+};
+
 }  // namespace
 
 // The contents view of the Shelf. In an active session, this is used to
@@ -727,7 +743,62 @@ void ShelfWidget::CalculateTargetBounds() {
 }
 
 void ShelfWidget::UpdateLayout(bool animate) {
-  // TODO(manucornet): Refactor layout update logic into this method.
+  const ShelfLayoutManager* layout_manager = shelf_->shelf_layout_manager();
+  hide_animation_observer_.reset();
+  const float target_opacity = layout_manager->GetOpacity();
+  if (GetLayer()->opacity() != target_opacity) {
+    if (target_opacity == 0) {
+      // On hide, set the opacity after the animation completes.
+      hide_animation_observer_ =
+          std::make_unique<HideAnimationObserver>(GetLayer());
+    } else {
+      // On show, set the opacity before the animation begins to ensure the blur
+      // is shown while the shelf moves.
+      GetLayer()->SetOpacity(1.0f);
+    }
+  }
+
+  gfx::Rect current_shelf_bounds = GetWindowBoundsInScreen();
+
+  if (GetNativeView()->layer()->GetAnimator()->is_animating()) {
+    // When the |shelf_widget_| needs to reverse the direction of the current
+    // animation, we must take into account the transform when calculating the
+    // current shelf widget bounds.
+    gfx::RectF transformed_bounds(current_shelf_bounds);
+    GetLayer()->transform().TransformRect(&transformed_bounds);
+    current_shelf_bounds = gfx::ToEnclosedRect(transformed_bounds);
+  }
+
+  gfx::Transform shelf_widget_target_transform;
+  shelf_widget_target_transform.Translate(current_shelf_bounds.origin() -
+                                          GetTargetBounds().origin());
+  GetLayer()->SetTransform(shelf_widget_target_transform);
+  SetBounds(target_bounds_);
+
+  {
+    ui::ScopedLayerAnimationSettings shelf_animation_setter(
+        GetLayer()->GetAnimator());
+
+    if (hide_animation_observer_)
+      shelf_animation_setter.AddObserver(hide_animation_observer_.get());
+
+    const base::TimeDelta animation_duration =
+        animate ? ShelfConfig::Get()->shelf_animation_duration()
+                : base::TimeDelta();
+    if (!animate) {
+      GetLayer()->GetAnimator()->StopAnimating();
+      shelf_->status_area_widget()->GetLayer()->GetAnimator()->StopAnimating();
+    }
+
+    shelf_animation_setter.SetTransitionDuration(animation_duration);
+    if (animate) {
+      shelf_animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
+      shelf_animation_setter.SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    }
+    GetLayer()->SetTransform(gfx::Transform());
+  }
+
   delegate_view_->UpdateOpaqueBackground();
 }
 

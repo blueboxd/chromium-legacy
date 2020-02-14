@@ -180,7 +180,7 @@ LocalFileSystem::LocalFileSystem(LocalFrame& frame)
 LocalFileSystem::LocalFileSystem(WorkerGlobalScope& worker_global_scope)
     : Supplement<WorkerGlobalScope>(worker_global_scope) {}
 
-void LocalFileSystem::Trace(blink::Visitor* visitor) {
+void LocalFileSystem::Trace(Visitor* visitor) {
   Supplement<LocalFrame>::Trace(visitor);
   Supplement<WorkerGlobalScope>::Trace(visitor);
 }

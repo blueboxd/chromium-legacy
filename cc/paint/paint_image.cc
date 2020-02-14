@@ -290,6 +290,20 @@ int PaintImage::height() const {
              : GetSkImage()->height();
 }
 
+bool PaintImage::isSRGB() const {
+  // Right now, JS paint worklets can only be in sRGB
+  if (paint_worklet_input_)
+    return true;
+
+  auto* color_space = GetSkImage()->colorSpace();
+  if (!color_space) {
+    // Assume the image will be sRGB if we don't know yet.
+    return true;
+  }
+
+  return color_space->isSRGB();
+}
+
 const ImageHeaderMetadata* PaintImage::GetImageHeaderMetadata() const {
   if (paint_image_generator_)
     return paint_image_generator_->GetMetadataForDecodeAcceleration();

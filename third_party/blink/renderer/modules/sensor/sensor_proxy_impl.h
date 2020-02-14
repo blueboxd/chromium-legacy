@@ -29,7 +29,7 @@ class SensorProxyImpl final : public SensorProxy,
                   Page*);
   ~SensorProxyImpl() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   void Dispose();
 

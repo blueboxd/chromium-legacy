@@ -20,8 +20,11 @@ class Image;
 class KURL;
 class LocalFrame;
 
-// This singleton provides read/write access to the system clipboard,
-// mediating between core classes and mojom::ClipboardHost.
+// SystemClipboard:
+// - is a singleton.
+// - provides sanitized, platform-neutral read/write access to the clipboard.
+// - mediates between core classes and mojom::ClipboardHost.
+//
 // All calls to write functions must be followed by a call to CommitWrite().
 class CORE_EXPORT SystemClipboard final
     : public GarbageCollected<SystemClipboard> {
@@ -60,9 +63,6 @@ class CORE_EXPORT SystemClipboard final
   void WriteImageWithTag(Image*, const KURL&, const String& title);
   // Write the image only.
   void WriteImage(const SkBitmap&);
-
-  // Arbitrary unsanitized data from renderer.
-  void WriteRawData(const String& type, mojo_base::BigBuffer data);
 
   String ReadCustomData(const String& type);
   void WriteDataObject(DataObject*);

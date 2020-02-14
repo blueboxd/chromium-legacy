@@ -111,7 +111,7 @@ class PresentationConnection::Message final
   Message(scoped_refptr<BlobDataHandle> blob_data_handle)
       : type(kMessageTypeBlob), blob_data_handle(std::move(blob_data_handle)) {}
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(array_buffer); }
+  void Trace(Visitor* visitor) { visitor->Trace(array_buffer); }
 
   MessageType type;
   String text;
@@ -148,9 +148,7 @@ class PresentationConnection::BlobLoader final
 
   void Cancel() { loader_->Cancel(); }
 
-  void Trace(blink::Visitor* visitor) {
-    visitor->Trace(presentation_connection_);
-  }
+  void Trace(Visitor* visitor) { visitor->Trace(presentation_connection_); }
 
  private:
   Member<PresentationConnection> presentation_connection_;
@@ -267,7 +265,7 @@ ControllerPresentationConnection::ControllerPresentationConnection(
 
 ControllerPresentationConnection::~ControllerPresentationConnection() {}
 
-void ControllerPresentationConnection::Trace(blink::Visitor* visitor) {
+void ControllerPresentationConnection::Trace(Visitor* visitor) {
   visitor->Trace(controller_);
   PresentationConnection::Trace(visitor);
 }
@@ -377,7 +375,7 @@ void ReceiverPresentationConnection::TerminateInternal() {
     target_connection_->DidChangeState(state_);
 }
 
-void ReceiverPresentationConnection::Trace(blink::Visitor* visitor) {
+void ReceiverPresentationConnection::Trace(Visitor* visitor) {
   visitor->Trace(receiver_);
   PresentationConnection::Trace(visitor);
 }
@@ -431,7 +429,7 @@ void PresentationConnection::CloseConnection() {
   connection_receiver_.reset();
 }
 
-void PresentationConnection::Trace(blink::Visitor* visitor) {
+void PresentationConnection::Trace(Visitor* visitor) {
   visitor->Trace(blob_loader_);
   visitor->Trace(messages_);
   EventTargetWithInlineData::Trace(visitor);

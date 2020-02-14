@@ -45,7 +45,7 @@ class MODULES_EXPORT PushSubscriptionChangeEvent final
   PushSubscription* newSubscription() const;
   PushSubscription* oldSubscription() const;
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   Member<PushSubscription> new_subscription_;

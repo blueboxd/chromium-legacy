@@ -71,7 +71,7 @@ class RTCRtpSender final : public ScriptWrappable {
   void set_transceiver(RTCRtpTransceiver*);
   void set_transport(RTCDtlsTransport*);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<RTCPeerConnection> pc_;

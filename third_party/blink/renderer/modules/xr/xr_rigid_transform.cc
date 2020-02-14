@@ -156,7 +156,7 @@ void XRRigidTransform::EnsureInverse() {
   }
 }
 
-void XRRigidTransform::Trace(blink::Visitor* visitor) {
+void XRRigidTransform::Trace(Visitor* visitor) {
   visitor->Trace(position_);
   visitor->Trace(orientation_);
   visitor->Trace(inverse_);

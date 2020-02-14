@@ -77,7 +77,7 @@ class LocalFileSystem final : public GarbageCollected<LocalFileSystem>,
 
   static LocalFileSystem* From(ExecutionContext&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   const char* NameInHeapSnapshot() const override { return "LocalFileSystem"; }
 
  private:

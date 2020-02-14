@@ -46,7 +46,7 @@ class UserMediaController final : public GarbageCollected<UserMediaController>,
   static const char kSupplementName[];
 
   UserMediaController(LocalFrame&);
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   UserMediaClient* Client();
 

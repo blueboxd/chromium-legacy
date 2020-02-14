@@ -19,8 +19,8 @@
 #include "net/base/ip_endpoint.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/metrics/public/cpp/ukm_source.h"
+#include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
-#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -107,7 +107,7 @@ struct ExtraRequestCompleteInfo {
       int64_t original_network_content_length,
       std::unique_ptr<data_reduction_proxy::DataReductionProxyData>
           data_reduction_proxy_data,
-      blink::mojom::ResourceType detected_resource_type,
+      network::mojom::RequestDestination request_destination,
       int net_error,
       std::unique_ptr<net::LoadTimingInfo> load_timing_info);
 
@@ -145,7 +145,7 @@ struct ExtraRequestCompleteInfo {
   // be more accurate than the type in the ExtraRequestStartInfo since we can
   // examine the type headers that arrived with the request.  During XHRs, we
   // sometimes see resources come back as a different type than we expected.
-  const blink::mojom::ResourceType resource_type;
+  const network::mojom::RequestDestination request_destination;
 
   // The network error encountered by the request, as defined by
   // net/base/net_error_list.h. If no error was encountered, this value will be

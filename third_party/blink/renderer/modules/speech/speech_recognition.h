@@ -120,7 +120,7 @@ class MODULES_EXPORT SpeechRecognition final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(start, kStart)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(end, kEnd)
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   void OnConnectionError();

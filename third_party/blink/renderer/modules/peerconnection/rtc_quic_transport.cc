@@ -694,7 +694,7 @@ ExecutionContext* RTCQuicTransport::GetExecutionContext() const {
   return ContextClient::GetExecutionContext();
 }
 
-void RTCQuicTransport::Trace(blink::Visitor* visitor) {
+void RTCQuicTransport::Trace(Visitor* visitor) {
   visitor->Trace(transport_);
   visitor->Trace(certificates_);
   visitor->Trace(remote_certificates_);

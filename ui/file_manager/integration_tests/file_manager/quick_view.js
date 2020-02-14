@@ -2231,7 +2231,6 @@
     const webView =
         ['#quick-view', 'files-safe-media[type="image"]', 'webview'];
 
-
     // Wait for the Quick View <webview> to load and display its content.
     function checkWebViewImageLoaded(elements) {
       let haveElements = Array.isArray(elements) && elements.length === 1;

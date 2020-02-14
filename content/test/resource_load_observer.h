@@ -44,7 +44,7 @@ class ResourceLoadObserver : public WebContentsObserver {
       const GURL& original_url,
       const GURL& referrer,
       const std::string& load_method,
-      blink::mojom::ResourceType resource_type,
+      network::mojom::RequestDestination request_destination,
       const base::FilePath::StringPieceType& served_file_name,
       const std::string& mime_type,
       const std::string& ip_address,
@@ -69,7 +69,7 @@ class ResourceLoadObserver : public WebContentsObserver {
   void DidLoadResourceFromMemoryCache(
       const GURL& url,
       const std::string& mime_type,
-      blink::mojom::ResourceType resource_type) override;
+      network::mojom::RequestDestination request_destination) override;
 
   std::vector<GURL> memory_cached_loaded_urls_;
   std::vector<blink::mojom::ResourceLoadInfoPtr> resource_load_infos_;

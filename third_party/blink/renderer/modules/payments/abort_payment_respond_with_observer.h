@@ -33,7 +33,7 @@ class MODULES_EXPORT AbortPaymentRespondWithObserver final
                            const char* property_name) override;
   void OnNoResponse() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 };
 
 }  // namespace blink

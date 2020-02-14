@@ -46,7 +46,7 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
                              float device_scale_factor);
 
   int WorkletId() const { return worklet_id_; }
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // The DocumentDefinitionMap tracks definitions registered via
   // registerProperty; definitions are only considered valid once all global

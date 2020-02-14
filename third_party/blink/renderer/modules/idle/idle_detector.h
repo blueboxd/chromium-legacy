@@ -63,7 +63,7 @@ class IdleDetector final : public EventTargetWithInlineData,
   // causes an event to be dispatched.
   void Update(mojom::blink::IdleStatePtr state) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<blink::IdleState> state_;

@@ -443,7 +443,7 @@ void MediaControlsOrientationLockDelegate::
       kLockToAnyDelay);
 }
 
-void MediaControlsOrientationLockDelegate::Trace(blink::Visitor* visitor) {
+void MediaControlsOrientationLockDelegate::Trace(Visitor* visitor) {
   NativeEventListener::Trace(visitor);
   visitor->Trace(video_element_);
 }

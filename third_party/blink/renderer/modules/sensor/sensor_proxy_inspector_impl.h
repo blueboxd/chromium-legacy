@@ -18,7 +18,7 @@ class SensorProxyInspectorImpl final : public SensorProxy {
                            Page* page);
   ~SensorProxyInspectorImpl() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   // SensorProxy overrides.

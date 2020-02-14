@@ -52,7 +52,7 @@ AnimationWorkletGlobalScope::AnimationWorkletGlobalScope(
 
 AnimationWorkletGlobalScope::~AnimationWorkletGlobalScope() = default;
 
-void AnimationWorkletGlobalScope::Trace(blink::Visitor* visitor) {
+void AnimationWorkletGlobalScope::Trace(Visitor* visitor) {
   visitor->Trace(animator_definitions_);
   visitor->Trace(animators_);
   WorkletGlobalScope::Trace(visitor);

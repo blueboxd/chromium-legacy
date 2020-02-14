@@ -64,7 +64,7 @@ class MODULES_EXPORT PresentationAvailability final
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  protected:
   // EventTarget implementation.

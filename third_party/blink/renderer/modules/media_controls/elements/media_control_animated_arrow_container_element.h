@@ -27,7 +27,7 @@ class MODULES_EXPORT MediaControlAnimatedArrowContainerElement final
 
   void ShowArrowAnimation(ArrowDirection);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class MediaControlAnimatedArrowContainerElementTest;

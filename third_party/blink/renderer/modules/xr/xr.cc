@@ -239,7 +239,7 @@ XR::PendingSupportsSessionQuery::PendingSupportsSessionQuery(
       mode_(session_mode),
       throw_on_unsupported_(throw_on_unsupported) {}
 
-void XR::PendingSupportsSessionQuery::Trace(blink::Visitor* visitor) {
+void XR::PendingSupportsSessionQuery::Trace(Visitor* visitor) {
   visitor->Trace(resolver_);
 }
 
@@ -498,7 +498,7 @@ void XR::PendingRequestSessionQuery::ParseSensorRequirement() {
   sensor_requirement_ = kNone;
 }
 
-void XR::PendingRequestSessionQuery::Trace(blink::Visitor* visitor) {
+void XR::PendingRequestSessionQuery::Trace(Visitor* visitor) {
   visitor->Trace(resolver_);
   visitor->Trace(dom_overlay_element_);
 }
@@ -580,7 +580,7 @@ void XR::OverlayFullscreenEventManager::RequestFullscreen() {
                                 Fullscreen::RequestType::kUnprefixed);
 }
 
-void XR::OverlayFullscreenEventManager::Trace(blink::Visitor* visitor) {
+void XR::OverlayFullscreenEventManager::Trace(Visitor* visitor) {
   visitor->Trace(xr_);
   visitor->Trace(query_);
   EventListener::Trace(visitor);
@@ -1325,7 +1325,7 @@ void XR::OnEnvironmentProviderDisconnect() {
   environment_provider_.reset();
 }
 
-void XR::Trace(blink::Visitor* visitor) {
+void XR::Trace(Visitor* visitor) {
   visitor->Trace(frame_provider_);
   visitor->Trace(sessions_);
   visitor->Trace(outstanding_support_queries_);

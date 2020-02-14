@@ -147,6 +147,14 @@ void MessageCenterUiController::OnBlockingStateChanged(
   OnMessageCenterChanged();
 }
 
+void MessageCenterUiController::OnNotificationPopupShown(
+    const std::string& notification_id,
+    bool mark_notification_as_read) {
+  // Timed out popup notifications are not marked as read.
+  if (!mark_notification_as_read)
+    metrics_utils::LogPopupExpiredToTray(notification_id);
+}
+
 void MessageCenterUiController::OnMessageCenterChanged() {
   if (hide_on_last_notification_ && message_center_visible_ &&
       message_center_->NotificationCount() == 0) {

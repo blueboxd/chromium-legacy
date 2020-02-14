@@ -45,7 +45,7 @@ class XRFrameProvider final : public GarbageCollected<XRFrameProvider> {
     return immersive_data_provider_.get();
   }
 
-  virtual void Trace(blink::Visitor*);
+  virtual void Trace(Visitor*);
 
  private:
   void OnImmersiveFrameData(device::mojom::blink::XRFrameDataPtr data);

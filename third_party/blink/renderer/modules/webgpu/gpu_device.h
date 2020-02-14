@@ -60,7 +60,7 @@ class GPUDevice final : public EventTargetWithInlineData,
                      const GPUDeviceDescriptor* descriptor);
   ~GPUDevice() override;
 
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
   // gpu_device.idl
   GPUAdapter* adapter() const;

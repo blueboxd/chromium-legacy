@@ -59,7 +59,7 @@ class MediaKeySystemAccessInitializer final
       std::unique_ptr<WebContentDecryptionModuleAccess>) override;
   void RequestNotSupported(const WebString& error_message) override;
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     MediaKeySystemAccessInitializerBase::Trace(visitor);
   }
 

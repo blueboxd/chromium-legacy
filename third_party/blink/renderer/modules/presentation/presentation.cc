@@ -27,7 +27,7 @@ Presentation* Presentation::Create(LocalFrame* frame) {
   return presentation;
 }
 
-void Presentation::Trace(blink::Visitor* visitor) {
+void Presentation::Trace(Visitor* visitor) {
   visitor->Trace(default_request_);
   visitor->Trace(receiver_);
   ScriptWrappable::Trace(visitor);

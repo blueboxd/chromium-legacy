@@ -44,7 +44,7 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
                            const char* property_name) override;
   void OnNoResponse() override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   const KURL request_url_;

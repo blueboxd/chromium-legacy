@@ -38,7 +38,7 @@ BackgroundFetchUpdateUIEvent::BackgroundFetchUpdateUIEvent(
 
 BackgroundFetchUpdateUIEvent::~BackgroundFetchUpdateUIEvent() = default;
 
-void BackgroundFetchUpdateUIEvent::Trace(blink::Visitor* visitor) {
+void BackgroundFetchUpdateUIEvent::Trace(Visitor* visitor) {
   visitor->Trace(service_worker_registration_);
   visitor->Trace(loader_);
   BackgroundFetchEvent::Trace(visitor);

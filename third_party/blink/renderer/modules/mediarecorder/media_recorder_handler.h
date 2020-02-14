@@ -77,7 +77,7 @@ class MODULES_EXPORT MediaRecorderHandler final
                     OnMediaCapabilitiesEncodingInfoCallback cb);
   String ActualMimeType();
 
-  void Trace(blink::Visitor*);
+  void Trace(Visitor*);
 
  private:
   friend class MediaRecorderHandlerTest;

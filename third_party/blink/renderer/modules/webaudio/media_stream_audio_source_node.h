@@ -96,7 +96,7 @@ class MediaStreamAudioSourceNode final
                              MediaStreamTrack*,
                              std::unique_ptr<AudioSourceProvider>);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   MediaStream* getMediaStream() const;
 

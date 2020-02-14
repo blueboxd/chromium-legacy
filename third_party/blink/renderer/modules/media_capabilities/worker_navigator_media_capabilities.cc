@@ -23,7 +23,7 @@ MediaCapabilities* WorkerNavigatorMediaCapabilities::mediaCapabilities(
   return self.capabilities_.Get();
 }
 
-void WorkerNavigatorMediaCapabilities::Trace(blink::Visitor* visitor) {
+void WorkerNavigatorMediaCapabilities::Trace(Visitor* visitor) {
   visitor->Trace(capabilities_);
   Supplement<WorkerNavigator>::Trace(visitor);
 }

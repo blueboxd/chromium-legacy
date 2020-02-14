@@ -38,7 +38,7 @@ class MODULES_EXPORT ServiceWorkerWindowClient final
   ScriptPromise focus(ScriptState*);
   ScriptPromise navigate(ScriptState*, const String& url);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   bool page_hidden_;

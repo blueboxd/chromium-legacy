@@ -76,7 +76,7 @@ class MODULES_EXPORT ImageCapture final
   void ClearMediaTrackConstraints();
   void GetMediaTrackSettings(MediaTrackSettings*) const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   using PromiseResolverFunction =

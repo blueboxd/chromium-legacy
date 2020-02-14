@@ -121,7 +121,7 @@ GPUBuffer::~GPUBuffer() {
   GetProcs().bufferRelease(GetHandle());
 }
 
-void GPUBuffer::Trace(blink::Visitor* visitor) {
+void GPUBuffer::Trace(Visitor* visitor) {
   visitor->Trace(mapped_buffer_);
   DawnObject<WGPUBuffer>::Trace(visitor);
 }

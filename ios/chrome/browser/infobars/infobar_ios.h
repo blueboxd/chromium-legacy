@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "components/infobars/core/infobar.h"
@@ -26,6 +27,8 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
              std::unique_ptr<infobars::InfoBarDelegate> delegate,
              bool skip_banner = false);
   ~InfoBarIOS() override;
+  InfoBarIOS(const InfoBarIOS&) = delete;
+  InfoBarIOS& operator=(const InfoBarIOS&) = delete;
 
   // Observer interface for objects interested in changes to InfoBarIOS.
   class Observer : public base::CheckedObserver {
@@ -57,6 +60,9 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
   // Remove the infobar view from infobar container view.
   void RemoveView();
 
+  // Returns a weak pointer to the infobar.
+  base::WeakPtr<InfoBarIOS> GetWeakPtr();
+
  private:
   // InfoBarControllerDelegate overrides:
   bool IsOwned() override;
@@ -66,7 +72,7 @@ class InfoBarIOS : public infobars::InfoBar, public InfoBarControllerDelegate {
   id<InfobarUIDelegate> controller_ = nil;
   bool accepted_ = false;
   bool skip_banner_ = false;
-  DISALLOW_COPY_AND_ASSIGN(InfoBarIOS);
+  base::WeakPtrFactory<InfoBarIOS> weak_factory_{this};
 };
 
 #endif  // IOS_CHROME_BROWSER_INFOBARS_INFOBAR_IOS_H_

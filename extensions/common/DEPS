@@ -11,4 +11,5 @@ include_rules = [
   "+services/network/public/mojom/cors_origin_pattern.mojom.h",
   "+third_party/re2",
   "+third_party/zlib",
+  "+ui/accessibility",
 ]

@@ -677,7 +677,7 @@ void MediaRecorderHandler::SetAudioFormatForTesting(
     recorder->OnSetFormat(params);
 }
 
-void MediaRecorderHandler::Trace(blink::Visitor* visitor) {
+void MediaRecorderHandler::Trace(Visitor* visitor) {
   visitor->Trace(media_stream_);
   visitor->Trace(video_tracks_);
   visitor->Trace(audio_tracks_);

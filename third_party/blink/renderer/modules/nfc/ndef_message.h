@@ -39,7 +39,7 @@ class MODULES_EXPORT NDEFMessage final : public ScriptWrappable {
 
   const HeapVector<Member<NDEFRecord>>& records() const;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   HeapVector<Member<NDEFRecord>> records_;

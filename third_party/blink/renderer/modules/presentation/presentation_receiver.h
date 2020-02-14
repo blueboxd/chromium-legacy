@@ -58,7 +58,7 @@ class MODULES_EXPORT PresentationReceiver final
   void RemoveConnection(ReceiverPresentationConnection*);
   void Terminate();
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class PresentationReceiverTest;

@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS Unmapped built-in module specifiers / should resolve "std:blank" to "std:blank"
-FAIL Unmapped built-in module specifiers / should error resolving "std:none" assert_throws: function "() => resolveUnderTest(NONE)" did not throw
+FAIL Unmapped built-in module specifiers / should error resolving "std:none" assert_throws_js: function "() => resolveUnderTest(NONE)" did not throw
 PASS Remapping built-in module specifiers / should remap built-in modules
 PASS Remapping built-in module specifiers / should remap built-in modules with slashes
 FAIL Remapping built-in module specifiers / should remap built-in modules with fallbacks Failed to resolve module specifier std:blank: Import Map: "std:blank" matches with "std:blank" but fails to be mapped (no viable URLs)

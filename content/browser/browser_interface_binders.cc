@@ -16,6 +16,7 @@
 #include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/feature_observer.h"
 #include "content/browser/frame_host/clipboard_host_impl.h"
+#include "content/browser/frame_host/raw_clipboard_host_impl.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/image_capture/image_capture_impl.h"
@@ -700,6 +701,8 @@ void PopulateBinderMapWithContext(
 
   map->Add<blink::mojom::ClipboardHost>(
       base::BindRepeating(&ClipboardHostImpl::Create));
+  map->Add<blink::mojom::RawClipboardHost>(
+      base::BindRepeating(&RawClipboardHostImpl::Create));
 
   GetContentClient()->browser()->RegisterBrowserInterfaceBindersForFrame(host,
                                                                          map);

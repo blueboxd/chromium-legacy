@@ -48,7 +48,7 @@ NetworkInformation* WorkerNavigatorNetworkInformation::connection(
       .connection(context);
 }
 
-void WorkerNavigatorNetworkInformation::Trace(blink::Visitor* visitor) {
+void WorkerNavigatorNetworkInformation::Trace(Visitor* visitor) {
   visitor->Trace(connection_);
   Supplement<WorkerNavigator>::Trace(visitor);
 }

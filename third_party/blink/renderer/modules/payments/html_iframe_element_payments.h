@@ -31,7 +31,7 @@ class HTMLIFrameElementPayments final
   static HTMLIFrameElementPayments& From(HTMLIFrameElement&);
   static bool AllowPaymentRequest(HTMLIFrameElement&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 };
 
 }  // namespace blink

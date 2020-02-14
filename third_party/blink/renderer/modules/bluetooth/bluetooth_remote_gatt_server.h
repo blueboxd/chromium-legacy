@@ -74,7 +74,7 @@ class BluetoothRemoteGATTServer
   void Dispose();
 
   // Interface required by Garbage Collectoin:
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // IDL exposed interface:
   BluetoothDevice* device() { return device_; }

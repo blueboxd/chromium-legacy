@@ -35,7 +35,7 @@ class MODULES_EXPORT PublicKeyCredential final : public Credential {
   AuthenticationExtensionsClientOutputs* getClientExtensionResults() const;
 
   // Credential:
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   bool IsPublicKeyCredential() const override;
 
  private:

@@ -102,7 +102,7 @@ void NotificationResourcesLoader::Stop() {
     icon_loader->Stop();
 }
 
-void NotificationResourcesLoader::Trace(blink::Visitor* visitor) {
+void NotificationResourcesLoader::Trace(Visitor* visitor) {
   visitor->Trace(icon_loaders_);
 }
 

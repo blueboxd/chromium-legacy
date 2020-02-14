@@ -18,9 +18,6 @@ class SessionAbortedDialog : public views::DialogDelegateView {
  public:
   static void Show(const std::string& user_email);
 
-  // views::DialogDelegate overrides.
-  bool Accept() override;
-
   // views::WidgetDelegate overrides.
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;

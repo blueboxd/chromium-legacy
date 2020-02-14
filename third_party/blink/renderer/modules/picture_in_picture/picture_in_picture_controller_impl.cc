@@ -393,7 +393,7 @@ void PictureInPictureControllerImpl::OnStopped() {
   OnExitedPictureInPicture(nullptr);
 }
 
-void PictureInPictureControllerImpl::Trace(blink::Visitor* visitor) {
+void PictureInPictureControllerImpl::Trace(Visitor* visitor) {
   visitor->Trace(picture_in_picture_element_);
   visitor->Trace(auto_picture_in_picture_elements_);
   visitor->Trace(picture_in_picture_window_);

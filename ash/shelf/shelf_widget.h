@@ -193,6 +193,9 @@ class ASH_EXPORT ShelfWidget : public AccessibilityObserver,
   // Owned by the shelf container's window.
   ShelfLayoutManager* shelf_layout_manager_;
 
+  // Sets shelf opacity to 0 after all animations have completed.
+  std::unique_ptr<ui::ImplicitAnimationObserver> hide_animation_observer_;
+
   // |delegate_view_| is the contents view of this widget and is cleaned up
   // during CloseChildWindows of the associated RootWindowController.
   DelegateView* delegate_view_;

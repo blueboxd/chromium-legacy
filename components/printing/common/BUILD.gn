@@ -21,6 +21,7 @@ static_library("common") {
     "//printing",
     "//printing/common:common",
     "//third_party/blink/public:blink_headers",
+    "//ui/accessibility",
     "//ui/gfx/geometry",
     "//ui/gfx/ipc",
     "//ui/gfx/ipc/geometry",

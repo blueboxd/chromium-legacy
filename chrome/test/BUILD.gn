@@ -3320,7 +3320,6 @@ test("unit_tests") {
     "../browser/permissions/permission_context_base_unittest.cc",
     "../browser/permissions/permission_manager_unittest.cc",
     "../browser/permissions/permission_request_manager_unittest.cc",
-    "../browser/permissions/permission_uma_util_unittest.cc",
     "../browser/plugins/pdf_iframe_navigation_throttle_unittest.cc",
     "../browser/policy/browser_dm_token_storage_linux_unittest.cc",
     "../browser/policy/browser_dm_token_storage_mac_unittest.cc",

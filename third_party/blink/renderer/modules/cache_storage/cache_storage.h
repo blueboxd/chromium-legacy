@@ -45,7 +45,7 @@ class CacheStorage final : public ScriptWrappable,
                       ExceptionState&);
 
   bool HasPendingActivity() const override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
   void ContextDestroyed(ExecutionContext*) override;
 
  private:

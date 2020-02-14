@@ -243,7 +243,7 @@ InspectorWebAudioAgent::BuildProtocolContext(BaseAudioContext* context) {
       .build();
 }
 
-void InspectorWebAudioAgent::Trace(blink::Visitor* visitor) {
+void InspectorWebAudioAgent::Trace(Visitor* visitor) {
   visitor->Trace(page_);
   InspectorBaseAgent::Trace(visitor);
 }

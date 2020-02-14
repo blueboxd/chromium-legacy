@@ -48,6 +48,8 @@ void ComputeChunkDerivedData(const DisplayItemList& display_items,
   auto items = display_items.ItemsInPaintChunk(chunk);
   for (const DisplayItem& item : items) {
     chunk.bounds.Unite(item.VisualRect());
+    if (item.DrawsContent())
+      chunk.drawable_bounds.Unite(item.VisualRect());
     chunk.outset_for_raster_effects = std::max(chunk.outset_for_raster_effects,
                                                item.OutsetForRasterEffects());
 

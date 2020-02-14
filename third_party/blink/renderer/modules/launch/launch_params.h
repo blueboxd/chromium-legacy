@@ -24,7 +24,7 @@ class LaunchParams final : public ScriptWrappable {
   // LaunchParams IDL interface.
   const HeapVector<Member<NativeFileSystemHandle>>& files() { return files_; }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   HeapVector<Member<NativeFileSystemHandle>> files_;

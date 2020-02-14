@@ -46,7 +46,7 @@ class MODULES_EXPORT RTCPeerConnectionIceErrorEvent final : public Event {
   String errorText() const;
   const AtomicString& InterfaceName() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   String address_;

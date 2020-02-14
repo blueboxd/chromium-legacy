@@ -54,7 +54,7 @@ class MetricsRenderFrameObserver
   void DidStartResponse(const GURL& response_url,
                         int request_id,
                         const network::mojom::URLResponseHead& response_head,
-                        blink::mojom::ResourceType resource_type,
+                        network::mojom::RequestDestination request_destination,
                         content::PreviewsState previews_state) override;
   void DidReceiveTransferSizeUpdate(int request_id,
                                     int received_data_length) override;

@@ -56,7 +56,7 @@ class SpeechSynthesisEvent : public Event {
     return event_interface_names::kSpeechSynthesisEvent;
   }
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<SpeechSynthesisUtterance> utterance_;

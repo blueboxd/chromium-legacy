@@ -188,7 +188,7 @@ class MODULES_EXPORT RTCQuicTransport final
   ExecutionContext* GetExecutionContext() const override;
 
   // For garbage collection.
-  void Trace(blink::Visitor* visitor) override;
+  void Trace(Visitor* visitor) override;
 
  private:
   enum class StartReason {

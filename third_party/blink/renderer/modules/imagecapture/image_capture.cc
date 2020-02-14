@@ -955,7 +955,7 @@ void ImageCapture::ResolveWithPhotoCapabilities(
   resolver->Resolve(photo_capabilities_);
 }
 
-void ImageCapture::Trace(blink::Visitor* visitor) {
+void ImageCapture::Trace(Visitor* visitor) {
   visitor->Trace(stream_track_);
   visitor->Trace(capabilities_);
   visitor->Trace(settings_);

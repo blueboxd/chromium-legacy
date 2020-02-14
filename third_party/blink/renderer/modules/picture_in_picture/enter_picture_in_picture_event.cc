@@ -36,7 +36,7 @@ EnterPictureInPictureEvent::EnterPictureInPictureEvent(
     : Event(type, initializer),
       picture_in_picture_window_(initializer->pictureInPictureWindow()) {}
 
-void EnterPictureInPictureEvent::Trace(blink::Visitor* visitor) {
+void EnterPictureInPictureEvent::Trace(Visitor* visitor) {
   visitor->Trace(picture_in_picture_window_);
   Event::Trace(visitor);
 }

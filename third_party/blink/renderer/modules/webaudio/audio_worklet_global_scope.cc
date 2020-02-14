@@ -392,7 +392,7 @@ double AudioWorkletGlobalScope::currentTime() const {
         : 0.0;
 }
 
-void AudioWorkletGlobalScope::Trace(blink::Visitor* visitor) {
+void AudioWorkletGlobalScope::Trace(Visitor* visitor) {
   visitor->Trace(processor_definition_map_);
   visitor->Trace(processor_instances_);
   WorkletGlobalScope::Trace(visitor);

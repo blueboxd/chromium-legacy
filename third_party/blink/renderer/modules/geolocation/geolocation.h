@@ -68,7 +68,7 @@ class MODULES_EXPORT Geolocation final
 
   explicit Geolocation(ExecutionContext*);
   ~Geolocation() override;
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
   // Inherited from ContextLifecycleObserver and PageVisibilityObserver.
   void ContextDestroyed(ExecutionContext*) override;

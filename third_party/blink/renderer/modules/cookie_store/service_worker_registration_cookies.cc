@@ -57,7 +57,7 @@ class ServiceWorkerRegistrationCookiesImpl final
     return cookie_store_manager_.Get();
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(registration_);
     visitor->Trace(cookie_store_manager_);
     Supplement<ServiceWorkerRegistration>::Trace(visitor);

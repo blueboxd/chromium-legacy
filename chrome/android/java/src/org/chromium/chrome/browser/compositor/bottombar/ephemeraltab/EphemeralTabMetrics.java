@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.compositor.bottombar.ephemeraltab;
 
 import org.chromium.base.TimeUtils;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController.StateChangeReason;
 
 /**
@@ -45,6 +46,16 @@ public class EphemeralTabMetrics {
         RecordHistogram.recordEnumeratedHistogram("EphemeralTab.BottomSheet.CloseReason",
                 stateChangeReason, StateChangeReason.MAX_VALUE + 1);
         resetTimers();
+    }
+
+    /** Records a user action that promotes the ephemeral tab to a full tab. */
+    public void recordOpenInNewTab() {
+        RecordUserAction.record("EphemeralTab.OpenInNewTab");
+    }
+
+    /** Records a user action that navigates to a new link on the ephemeral tab. */
+    public void recordNavigateLink() {
+        RecordUserAction.record("EphemeralTab.NavigateLink");
     }
 
     /** Resets the metrics used by the timers. */

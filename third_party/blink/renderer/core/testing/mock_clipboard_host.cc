@@ -50,21 +50,6 @@ void MockClipboardHost::ReadAvailableTypes(
   std::move(callback).Run(types, false);
 }
 
-void MockClipboardHost::ReadAvailablePlatformSpecificFormatNames(
-    mojom::ClipboardBuffer clipboard_buffer,
-    ReadAvailablePlatformSpecificFormatNamesCallback callback) {
-  Vector<String> raw_types;
-  if (!plain_text_.IsEmpty())
-    raw_types.push_back("text/plain");
-  if (!html_text_.IsEmpty())
-    raw_types.push_back("text/html");
-  if (!image_.isNull())
-    raw_types.push_back("image/png");
-  for (auto& it : raw_data_)
-    raw_types.push_back(it.key);
-  std::move(callback).Run(raw_types);
-}
-
 void MockClipboardHost::IsFormatAvailable(
     mojom::ClipboardFormat format,
     mojom::ClipboardBuffer clipboard_buffer,
@@ -139,13 +124,6 @@ void MockClipboardHost::WriteCustomData(const HashMap<String, String>& data) {
     Reset();
   for (auto& it : data)
     custom_data_.Set(it.key, it.value);
-}
-
-void MockClipboardHost::WriteRawData(const String& format,
-                                     mojo_base::BigBuffer data) {
-  if (needs_reset_)
-    Reset();
-  raw_data_.Set(format, std::move(data));
 }
 
 void MockClipboardHost::WriteBookmark(const String& url, const String& title) {}

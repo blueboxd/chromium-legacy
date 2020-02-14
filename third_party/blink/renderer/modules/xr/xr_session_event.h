@@ -41,7 +41,7 @@ class XRSessionEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<XRSession> session_;

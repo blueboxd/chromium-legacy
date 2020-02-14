@@ -71,7 +71,7 @@ class MODULES_EXPORT PaymentResponse final
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   String request_id_;

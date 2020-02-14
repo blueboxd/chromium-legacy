@@ -275,7 +275,7 @@ void ManifestManager::Prefinalize() {
   receivers_.Clear();
 }
 
-void ManifestManager::Trace(blink::Visitor* visitor) {
+void ManifestManager::Trace(Visitor* visitor) {
   visitor->Trace(fetcher_);
   visitor->Trace(manifest_change_notifier_);
   Supplement<LocalFrame>::Trace(visitor);

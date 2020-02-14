@@ -37,7 +37,7 @@ class MediaControlsRotateToFullscreenDelegate final
   // EventListener implementation.
   void Invoke(ExecutionContext*, Event*) override;
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   friend class MediaControlsRotateToFullscreenDelegateTest;

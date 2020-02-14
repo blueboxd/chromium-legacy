@@ -34,7 +34,7 @@ DawnObjectImpl::DawnObjectImpl(GPUDevice* device)
 
 DawnObjectImpl::~DawnObjectImpl() = default;
 
-void DawnObjectImpl::Trace(blink::Visitor* visitor) {
+void DawnObjectImpl::Trace(Visitor* visitor) {
   visitor->Trace(device_);
   ScriptWrappable::Trace(visitor);
 }

@@ -497,7 +497,7 @@ bool Notification::HasPendingActivity() const {
   return false;
 }
 
-void Notification::Trace(blink::Visitor* visitor) {
+void Notification::Trace(Visitor* visitor) {
   visitor->Trace(show_trigger_);
   visitor->Trace(loader_);
   EventTargetWithInlineData::Trace(visitor);

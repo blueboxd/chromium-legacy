@@ -99,7 +99,7 @@ void MIDIInput::DidReceiveMIDIData(unsigned port_index,
                     WebFeature::kMIDIMessageEvent);
 }
 
-void MIDIInput::Trace(blink::Visitor* visitor) {
+void MIDIInput::Trace(Visitor* visitor) {
   MIDIPort::Trace(visitor);
 }
 

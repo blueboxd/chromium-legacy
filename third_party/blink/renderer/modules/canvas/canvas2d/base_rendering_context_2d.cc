@@ -1990,7 +1990,7 @@ BaseRenderingContext2D::GetUsage() {
   return usage_counters_;
 }
 
-void BaseRenderingContext2D::Trace(blink::Visitor* visitor) {
+void BaseRenderingContext2D::Trace(Visitor* visitor) {
   visitor->Trace(state_stack_);
 }
 

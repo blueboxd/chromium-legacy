@@ -29,7 +29,7 @@ class NavigatorBattery final : public GarbageCollected<NavigatorBattery>,
 
   explicit NavigatorBattery(Navigator&);
 
-  void Trace(blink::Visitor*) override;
+  void Trace(Visitor*) override;
 
  private:
   Member<BatteryManager> battery_manager_;

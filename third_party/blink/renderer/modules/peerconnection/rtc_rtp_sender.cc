@@ -61,7 +61,7 @@ class ReplaceTrackRequest : public RTCVoidRequest {
     resolver_->Reject(exception_state);
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(sender_);
     visitor->Trace(with_track_);
     visitor->Trace(resolver_);
@@ -92,7 +92,7 @@ class SetParametersRequest : public RTCVoidRequestScriptPromiseResolverImpl {
     RTCVoidRequestScriptPromiseResolverImpl::RequestFailed(error);
   }
 
-  void Trace(blink::Visitor* visitor) override {
+  void Trace(Visitor* visitor) override {
     visitor->Trace(sender_);
     RTCVoidRequestScriptPromiseResolverImpl::Trace(visitor);
   }
@@ -561,7 +561,7 @@ void RTCRtpSender::setStreams(HeapVector<Member<MediaStream>> streams,
   sender_->SetStreams(stream_ids);
 }
 
-void RTCRtpSender::Trace(blink::Visitor* visitor) {
+void RTCRtpSender::Trace(Visitor* visitor) {
   visitor->Trace(pc_);
   visitor->Trace(track_);
   visitor->Trace(transport_);

@@ -69,6 +69,9 @@ void LogClickedBody(const std::string& notification_id, bool is_popup);
 // Logs a ClickedActionButton event.
 void LogClickedActionButton(const std::string& notification_id, bool is_popup);
 
+// Logs a ExpireToTray event for a pop-up notification.
+void LogPopupExpiredToTray(const std::string& notification_id);
+
 }  // namespace metrics_utils
 
 }  // namespace ash

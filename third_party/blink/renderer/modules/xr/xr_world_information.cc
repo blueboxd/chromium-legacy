@@ -13,7 +13,7 @@ namespace blink {
 XRWorldInformation::XRWorldInformation(XRSession* session)
     : session_(session) {}
 
-void XRWorldInformation::Trace(blink::Visitor* visitor) {
+void XRWorldInformation::Trace(Visitor* visitor) {
   visitor->Trace(plane_ids_to_planes_);
   visitor->Trace(light_estimation_);
   visitor->Trace(session_);

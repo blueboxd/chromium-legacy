@@ -66,7 +66,7 @@ InspectorDOMStorageAgent::InspectorDOMStorageAgent(
 
 InspectorDOMStorageAgent::~InspectorDOMStorageAgent() = default;
 
-void InspectorDOMStorageAgent::Trace(blink::Visitor* visitor) {
+void InspectorDOMStorageAgent::Trace(Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   InspectorBaseAgent::Trace(visitor);
 }

@@ -22,7 +22,6 @@
 #include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/permissions/notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
@@ -34,6 +33,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/permissions/permission_request.h"
+#include "components/permissions/permission_uma_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/core/db/test_database_manager.h"
@@ -508,34 +508,36 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleAcceptedGestureBubble) {
 
   manager_->AddRequest(&request1_);
   WaitForBubbleToBeShown();
-  histograms.ExpectUniqueSample(PermissionUmaUtil::kPermissionsPromptShown,
-                                static_cast<base::HistogramBase::Sample>(
-                                    permissions::PermissionRequestType::QUOTA),
-                                1);
   histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptShownGesture,
+      permissions::PermissionUmaUtil::kPermissionsPromptShown,
+      static_cast<base::HistogramBase::Sample>(
+          permissions::PermissionRequestType::QUOTA),
+      1);
+  histograms.ExpectUniqueSample(
+      permissions::PermissionUmaUtil::kPermissionsPromptShownGesture,
       static_cast<base::HistogramBase::Sample>(
           permissions::PermissionRequestType::QUOTA),
       1);
   histograms.ExpectTotalCount(
-      PermissionUmaUtil::kPermissionsPromptShownNoGesture, 0);
+      permissions::PermissionUmaUtil::kPermissionsPromptShownNoGesture, 0);
   histograms.ExpectTotalCount("Permissions.Engagement.Accepted.Quota", 0);
 
   Accept();
-  histograms.ExpectUniqueSample(PermissionUmaUtil::kPermissionsPromptAccepted,
-                                static_cast<base::HistogramBase::Sample>(
-                                    permissions::PermissionRequestType::QUOTA),
-                                1);
-  histograms.ExpectTotalCount(
-      PermissionUmaUtil::kPermissionsPromptDenied, 0);
-
   histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptAcceptedGesture,
+      permissions::PermissionUmaUtil::kPermissionsPromptAccepted,
       static_cast<base::HistogramBase::Sample>(
           permissions::PermissionRequestType::QUOTA),
       1);
   histograms.ExpectTotalCount(
-      PermissionUmaUtil::kPermissionsPromptAcceptedNoGesture, 0);
+      permissions::PermissionUmaUtil::kPermissionsPromptDenied, 0);
+
+  histograms.ExpectUniqueSample(
+      permissions::PermissionUmaUtil::kPermissionsPromptAcceptedGesture,
+      static_cast<base::HistogramBase::Sample>(
+          permissions::PermissionRequestType::QUOTA),
+      1);
+  histograms.ExpectTotalCount(
+      permissions::PermissionUmaUtil::kPermissionsPromptAcceptedNoGesture, 0);
   histograms.ExpectUniqueSample("Permissions.Engagement.Accepted.Quota",
                                 kTestEngagementScore, 1);
 }
@@ -547,9 +549,9 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleDeniedNoGestureBubble) {
   WaitForBubbleToBeShown();
 
   histograms.ExpectTotalCount(
-      PermissionUmaUtil::kPermissionsPromptShownGesture, 0);
+      permissions::PermissionUmaUtil::kPermissionsPromptShownGesture, 0);
   histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptShownNoGesture,
+      permissions::PermissionUmaUtil::kPermissionsPromptShownNoGesture,
       static_cast<base::HistogramBase::Sample>(
           permissions::PermissionRequestType::DOWNLOAD),
       1);
@@ -560,20 +562,20 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleDeniedNoGestureBubble) {
 
   Deny();
   histograms.ExpectTotalCount(
-      PermissionUmaUtil::kPermissionsPromptAccepted, 0);
+      permissions::PermissionUmaUtil::kPermissionsPromptAccepted, 0);
   histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptDenied,
+      permissions::PermissionUmaUtil::kPermissionsPromptDenied,
       static_cast<base::HistogramBase::Sample>(
           permissions::PermissionRequestType::DOWNLOAD),
       1);
 
   histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptDeniedNoGesture,
+      permissions::PermissionUmaUtil::kPermissionsPromptDeniedNoGesture,
       static_cast<base::HistogramBase::Sample>(
           permissions::PermissionRequestType::DOWNLOAD),
       1);
   histograms.ExpectTotalCount(
-      PermissionUmaUtil::kPermissionsPromptDeniedGesture, 0);
+      permissions::PermissionUmaUtil::kPermissionsPromptDeniedGesture, 0);
   histograms.ExpectUniqueSample(
       "Permissions.Engagement.Denied.MultipleDownload", kTestEngagementScore,
       1);
@@ -591,10 +593,11 @@ TEST_F(PermissionRequestManagerTest, UMAForSimpleDeniedBubbleAlternatePath) {
   // UMAForSimpleAcceptedBubble.
 
   Deny();
-  histograms.ExpectUniqueSample(PermissionUmaUtil::kPermissionsPromptDenied,
-                                static_cast<base::HistogramBase::Sample>(
-                                    permissions::PermissionRequestType::QUOTA),
-                                1);
+  histograms.ExpectUniqueSample(
+      permissions::PermissionUmaUtil::kPermissionsPromptDenied,
+      static_cast<base::HistogramBase::Sample>(
+          permissions::PermissionRequestType::QUOTA),
+      1);
 }
 
 TEST_F(PermissionRequestManagerTest, UMAForMergedAcceptedBubble) {
@@ -605,21 +608,21 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedAcceptedBubble) {
   WaitForBubbleToBeShown();
 
   histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptShown,
+      permissions::PermissionUmaUtil::kPermissionsPromptShown,
       static_cast<base::HistogramBase::Sample>(
           permissions::PermissionRequestType::MULTIPLE),
       1);
   histograms.ExpectTotalCount(
-      PermissionUmaUtil::kPermissionsPromptShownGesture, 0);
+      permissions::PermissionUmaUtil::kPermissionsPromptShownGesture, 0);
   histograms.ExpectTotalCount(
-      PermissionUmaUtil::kPermissionsPromptShownNoGesture, 0);
+      permissions::PermissionUmaUtil::kPermissionsPromptShownNoGesture, 0);
   histograms.ExpectTotalCount(
       "Permissions.Engagement.Accepted.AudioAndVideoCapture", 0);
 
   Accept();
 
   histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptAccepted,
+      permissions::PermissionUmaUtil::kPermissionsPromptAccepted,
       static_cast<base::HistogramBase::Sample>(
           permissions::PermissionRequestType::MULTIPLE),
       1);
@@ -642,7 +645,7 @@ TEST_F(PermissionRequestManagerTest, UMAForMergedDeniedBubble) {
   Deny();
 
   histograms.ExpectUniqueSample(
-      PermissionUmaUtil::kPermissionsPromptDenied,
+      permissions::PermissionUmaUtil::kPermissionsPromptDenied,
       static_cast<base::HistogramBase::Sample>(
           permissions::PermissionRequestType::MULTIPLE),
       1);
@@ -679,17 +682,19 @@ TEST_F(PermissionRequestManagerTest, UMAForTabSwitching) {
 
   manager_->AddRequest(&request1_);
   WaitForBubbleToBeShown();
-  histograms.ExpectUniqueSample(PermissionUmaUtil::kPermissionsPromptShown,
-                                static_cast<base::HistogramBase::Sample>(
-                                    permissions::PermissionRequestType::QUOTA),
-                                1);
+  histograms.ExpectUniqueSample(
+      permissions::PermissionUmaUtil::kPermissionsPromptShown,
+      static_cast<base::HistogramBase::Sample>(
+          permissions::PermissionRequestType::QUOTA),
+      1);
 
   MockTabSwitchAway();
   MockTabSwitchBack();
-  histograms.ExpectUniqueSample(PermissionUmaUtil::kPermissionsPromptShown,
-                                static_cast<base::HistogramBase::Sample>(
-                                    permissions::PermissionRequestType::QUOTA),
-                                1);
+  histograms.ExpectUniqueSample(
+      permissions::PermissionUmaUtil::kPermissionsPromptShown,
+      static_cast<base::HistogramBase::Sample>(
+          permissions::PermissionRequestType::QUOTA),
+      1);
 }
 
 TEST_F(PermissionRequestManagerTest,

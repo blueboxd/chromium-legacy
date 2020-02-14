@@ -179,7 +179,7 @@ ScriptPromise CookieStoreManager::getSubscriptions(
   return resolver->Promise();
 }
 
-void CookieStoreManager::Trace(blink::Visitor* visitor) {
+void CookieStoreManager::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
   ScriptWrappable::Trace(visitor);
 }

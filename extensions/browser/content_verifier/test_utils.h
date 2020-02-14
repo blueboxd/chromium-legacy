@@ -183,12 +183,9 @@ class VerifierObserver : public ContentVerifier::TestObserver {
   VerifierObserver();
   virtual ~VerifierObserver();
 
-  const std::set<ExtensionId>& completed_fetches() {
-    return completed_fetches_;
-  }
-
-  // Returns when we've seen OnFetchComplete for |extension_id|.
-  void WaitForFetchComplete(const ExtensionId& extension_id);
+  // Ensures that |extension_id| has seen OnFetchComplete, waits for it to
+  // complete if it hasn't already.
+  void EnsureFetchCompleted(const ExtensionId& extension_id);
 
   // ContentVerifier::TestObserver
   void OnFetchComplete(const ExtensionId& extension_id, bool success) override;

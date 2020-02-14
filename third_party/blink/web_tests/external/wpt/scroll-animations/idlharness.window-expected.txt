@@ -18,7 +18,6 @@ PASS ScrollTimeline interface: attribute orientation
 PASS ScrollTimeline interface: attribute startScrollOffset
 PASS ScrollTimeline interface: attribute endScrollOffset
 PASS ScrollTimeline interface: attribute timeRange
-PASS ScrollTimeline interface: attribute fill
 FAIL ScrollTimeline must be primary interface of new ScrollTimeline() assert_equals: Unexpected exception when evaluating object expected null but got object "NotSupportedError: Failed to construct 'ScrollTimeline': 'auto' value for timeRange not yet supported"
 FAIL Stringification of new ScrollTimeline() assert_equals: Unexpected exception when evaluating object expected null but got object "NotSupportedError: Failed to construct 'ScrollTimeline': 'auto' value for timeRange not yet supported"
 FAIL ScrollTimeline interface: new ScrollTimeline() must inherit property "scrollSource" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "NotSupportedError: Failed to construct 'ScrollTimeline': 'auto' value for timeRange not yet supported"
@@ -26,6 +25,5 @@ FAIL ScrollTimeline interface: new ScrollTimeline() must inherit property "orien
 FAIL ScrollTimeline interface: new ScrollTimeline() must inherit property "startScrollOffset" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "NotSupportedError: Failed to construct 'ScrollTimeline': 'auto' value for timeRange not yet supported"
 FAIL ScrollTimeline interface: new ScrollTimeline() must inherit property "endScrollOffset" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "NotSupportedError: Failed to construct 'ScrollTimeline': 'auto' value for timeRange not yet supported"
 FAIL ScrollTimeline interface: new ScrollTimeline() must inherit property "timeRange" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "NotSupportedError: Failed to construct 'ScrollTimeline': 'auto' value for timeRange not yet supported"
-FAIL ScrollTimeline interface: new ScrollTimeline() must inherit property "fill" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "NotSupportedError: Failed to construct 'ScrollTimeline': 'auto' value for timeRange not yet supported"
 Harness: the test ran to completion.
 

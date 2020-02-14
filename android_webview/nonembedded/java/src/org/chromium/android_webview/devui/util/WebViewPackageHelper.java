@@ -6,12 +6,14 @@ package org.chromium.android_webview.devui.util;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.webkit.WebView;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Locale;
 
 /**
  * A helper class to get info about WebView package.
@@ -130,6 +132,24 @@ public final class WebViewPackageHelper {
         PackageInfo systemWebViewPackage = getCurrentWebViewPackage(context);
         if (systemWebViewPackage == null) return false;
         return context.getPackageName().equals(systemWebViewPackage.packageName);
+    }
+
+    /**
+     * Loads a label for the app specified by {@code mContext}. This is designed to be consistent
+     * with how the system's WebView chooser labels WebView packages (see {@code
+     * com.android.settings.webview.WebViewAppPicker.WebViewAppInfo#loadLabel()} in the AOSP source
+     * code).
+     */
+    public static CharSequence loadLabel(Context context) {
+        ApplicationInfo applicationInfo = context.getApplicationInfo();
+        PackageManager pm = context.getPackageManager();
+        CharSequence appLabel = applicationInfo.loadLabel(pm);
+        try {
+            String versionName = pm.getPackageInfo(context.getPackageName(), 0).versionName;
+            return String.format(Locale.US, "%s %s", appLabel, versionName);
+        } catch (PackageManager.NameNotFoundException e) {
+            return appLabel;
+        }
     }
 
     // Do not instantiate this class.

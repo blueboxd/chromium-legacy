@@ -875,6 +875,8 @@ jumbo_static_library("browser") {
     "native_file_system/native_file_system_permission_context_factory.h",
     "native_file_system/native_file_system_permission_request_manager.cc",
     "native_file_system/native_file_system_permission_request_manager.h",
+    "native_file_system/native_file_system_tab_helper.cc",
+    "native_file_system/native_file_system_tab_helper.h",
     "native_file_system/origin_scoped_native_file_system_permission_context.cc",
     "native_file_system/origin_scoped_native_file_system_permission_context.h",
     "native_file_system/tab_scoped_native_file_system_permission_context.cc",

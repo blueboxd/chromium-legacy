@@ -452,8 +452,6 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
   void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) override {}
   void AdvanceFocus(mojom::blink::FocusType, LocalFrame* source) override {}
-  void UpdateRenderThrottlingStatus(bool is_throttled,
-                                    bool subtree_throttled) override {}
   uint32_t Print(const IntRect& rect, cc::PaintCanvas* canvas) const override {
     return 0;
   }

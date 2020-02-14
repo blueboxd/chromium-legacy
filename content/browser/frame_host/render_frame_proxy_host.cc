@@ -326,6 +326,13 @@ void RenderFrameProxyHost::SetInheritedEffectiveTouchAction(
       touch_action);
 }
 
+void RenderFrameProxyHost::UpdateRenderThrottlingStatus(
+    bool is_throttled,
+    bool subtree_throttled) {
+  cross_process_frame_connector_->UpdateRenderThrottlingStatus(
+      is_throttled, subtree_throttled);
+}
+
 void RenderFrameProxyHost::VisibilityChanged(
     blink::mojom::FrameVisibility visibility) {
   cross_process_frame_connector_->OnVisibilityChanged(visibility);

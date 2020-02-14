@@ -16,6 +16,10 @@ void FakeRemoteFrameHost::Init(blink::AssociatedInterfaceProvider* provider) {
 void FakeRemoteFrameHost::SetInheritedEffectiveTouchAction(
     cc::TouchAction touch_action) {}
 
+void FakeRemoteFrameHost::UpdateRenderThrottlingStatus(bool is_throttled,
+                                                       bool subtree_throttled) {
+}
+
 void FakeRemoteFrameHost::VisibilityChanged(
     mojom::blink::FrameVisibility visibility) {}
 

@@ -21,6 +21,13 @@ namespace {
 using permissions::PermissionAction;
 
 enum class GrantType { kRead, kWrite };
+
+// This long after the last top-level tab or window for an origin is closed (or
+// is navigated to another origin), all the permissions for that origin will be
+// revoked.
+constexpr base::TimeDelta kPermissionRevocationTimeout =
+    base::TimeDelta::FromSeconds(5);
+
 }  // namespace
 
 class OriginScopedNativeFileSystemPermissionContext::PermissionGrantImpl
@@ -284,6 +291,11 @@ struct OriginScopedNativeFileSystemPermissionContext::OriginState {
   // closed.
   std::map<base::FilePath, PermissionGrantImpl*> read_grants;
   std::map<base::FilePath, PermissionGrantImpl*> write_grants;
+
+  // Timer that is triggered whenever the user navigates away from this origin.
+  // This is used to give a website a little bit of time for background work
+  // before revoking all permissions for the origin.
+  std::unique_ptr<base::RetainingOneShotTimer> cleanup_timer;
 };
 
 OriginScopedNativeFileSystemPermissionContext::
@@ -481,6 +493,68 @@ bool OriginScopedNativeFileSystemPermissionContext::OriginHasWriteAccess(
       return true;
   }
   return false;
+}
+
+void OriginScopedNativeFileSystemPermissionContext::NavigatedAwayFromOrigin(
+    const url::Origin& origin) {
+  auto it = origins_.find(origin);
+  // If we have no permissions for the origin, there is nothing to do.
+  if (it == origins_.end())
+    return;
+
+  // Start a timer to possibly clean up permissions for this origin.
+  if (!it->second.cleanup_timer) {
+    it->second.cleanup_timer = std::make_unique<base::RetainingOneShotTimer>(
+        FROM_HERE, kPermissionRevocationTimeout,
+        base::BindRepeating(&OriginScopedNativeFileSystemPermissionContext::
+                                MaybeCleanupPermissions,
+                            base::Unretained(this), origin));
+  }
+  it->second.cleanup_timer->Reset();
+}
+
+void OriginScopedNativeFileSystemPermissionContext::TriggerTimersForTesting() {
+  for (const auto& it : origins_) {
+    if (it.second.cleanup_timer) {
+      auto task = it.second.cleanup_timer->user_task();
+      it.second.cleanup_timer->Stop();
+      task.Run();
+    }
+  }
+}
+
+void OriginScopedNativeFileSystemPermissionContext::MaybeCleanupPermissions(
+    const url::Origin& origin) {
+  auto it = origins_.find(origin);
+  // If we have no permissions for the origin, there is nothing to do.
+  if (it == origins_.end())
+    return;
+
+#if !defined(OS_ANDROID)
+  // Iterate over all top-level frames by iterating over all browsers, and all
+  // tabs within those browsers. This also counts PWAs in windows without
+  // tab strips, as those are still implemented as a Browser with a single tab.
+  for (Browser* browser : *BrowserList::GetInstance()) {
+    if (browser->profile() != profile())
+      continue;
+    TabStripModel* tabs = browser->tab_strip_model();
+    for (int i = 0; i < tabs->count(); ++i) {
+      content::WebContents* web_contents = tabs->GetWebContentsAt(i);
+      url::Origin tab_origin =
+          url::Origin::Create(web_contents->GetLastCommittedURL());
+      // Found a tab for this origin, so early exit and don't revoke grants.
+      if (tab_origin == origin)
+        return;
+    }
+  }
+
+  // No tabs found with the same origin, so revoke all permissions for the
+  // origin.
+  // TODO(mek): process_id and frame_id are meaningless in the below call for
+  // this permissions context implementation, remove them once this is the only
+  // implementation.
+  RevokeGrants(origin, /*process_id=*/0, /*frame_id=*/0);
+#endif
 }
 
 void OriginScopedNativeFileSystemPermissionContext::PermissionGrantDestroyed(

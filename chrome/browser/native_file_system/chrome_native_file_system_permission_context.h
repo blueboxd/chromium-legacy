@@ -95,6 +95,10 @@ class ChromeNativeFileSystemPermissionContext
   virtual bool OriginHasReadAccess(const url::Origin& origin);
   virtual bool OriginHasWriteAccess(const url::Origin& origin);
 
+  // Called by NativeFileSystemTabHelper when a top-level frame was navigated
+  // away from |origin| to some other origin.
+  virtual void NavigatedAwayFromOrigin(const url::Origin& origin) {}
+
   HostContentSettingsMap* content_settings() { return content_settings_.get(); }
 
  protected:

@@ -73,8 +73,6 @@ bool CrossProcessFrameConnector::OnMessageReceived(const IPC::Message& msg) {
                         OnSynchronizeVisualProperties)
     IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateViewportIntersection,
                         OnUpdateViewportIntersection)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateRenderThrottlingStatus,
-                        OnUpdateRenderThrottlingStatus)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -460,7 +458,7 @@ void CrossProcessFrameConnector::ResetScreenSpaceRect() {
   last_received_local_frame_size_ = gfx::Size();
 }
 
-void CrossProcessFrameConnector::OnUpdateRenderThrottlingStatus(
+void CrossProcessFrameConnector::UpdateRenderThrottlingStatus(
     bool is_throttled,
     bool subtree_throttled) {
   if (is_throttled != is_throttled_ ||

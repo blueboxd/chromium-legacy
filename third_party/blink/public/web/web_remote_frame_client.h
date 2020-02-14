@@ -48,10 +48,6 @@ class WebRemoteFrameClient {
   virtual void UpdateRemoteViewportIntersection(
       const ViewportIntersectionState& intersection_state) {}
 
-  // Toggles render throttling for the remote frame.
-  virtual void UpdateRenderThrottlingStatus(bool is_throttled,
-                                            bool subtree_throttled) {}
-
   // This frame updated its opener to another frame.
   virtual void DidChangeOpener(WebFrame* opener) {}
 

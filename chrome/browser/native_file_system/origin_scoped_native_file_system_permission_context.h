@@ -55,8 +55,11 @@ class OriginScopedNativeFileSystemPermissionContext
                     int frame_id) override;
   bool OriginHasReadAccess(const url::Origin& origin) override;
   bool OriginHasWriteAccess(const url::Origin& origin) override;
+  void NavigatedAwayFromOrigin(const url::Origin& origin) override;
 
   content::BrowserContext* profile() const { return profile_; }
+
+  void TriggerTimersForTesting();
 
  private:
   class PermissionGrantImpl;
@@ -70,6 +73,10 @@ class OriginScopedNativeFileSystemPermissionContext
   // Updates the native file system usage indicator icon in all currently open
   // windows.
   void DoUsageIconUpdate();
+
+  // Checks if any tabs are open for |origin|, and if not revokes all
+  // permissions for that origin.
+  void MaybeCleanupPermissions(const url::Origin& origin);
 
   base::WeakPtr<ChromeNativeFileSystemPermissionContext> GetWeakPtr() override;
 

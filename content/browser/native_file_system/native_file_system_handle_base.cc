@@ -170,14 +170,14 @@ void NativeFileSystemHandleBase::DidRequestPermission(
               blink::mojom::NativeFileSystemStatus::kPermissionDenied,
               "Not allowed to request permissions in this context."),
           writable ? GetWritePermissionStatus() : GetReadPermissionStatus());
-      break;
+      return;
     case Outcome::kNoUserActivation:
       std::move(callback).Run(
           native_file_system_error::FromStatus(
               blink::mojom::NativeFileSystemStatus::kPermissionDenied,
               "User activation is required to request permissions."),
           writable ? GetWritePermissionStatus() : GetReadPermissionStatus());
-      break;
+      return;
     case Outcome::kBlockedByContentSetting:
     case Outcome::kUserGranted:
     case Outcome::kUserDenied:

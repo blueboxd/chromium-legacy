@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/payments/credit_card_save_manager.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/theme_change_waiter.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/base/theme_provider.h"
 
@@ -205,10 +206,12 @@ IN_PROC_BROWSER_TEST_F(BrowserNonClientFrameViewBrowserTest,
   InstallAndLaunchBookmarkApp();
   EXPECT_EQ(app_frame_view_->GetFrameColor(), *app_theme_color_);
 
+  content::ThemeChangeWaiter waiter(web_contents_);
   EXPECT_TRUE(content::ExecJs(web_contents_, R"(
       document.documentElement.innerHTML =
           '<meta name="theme-color" content="yellow">';
   )"));
+  waiter.Wait();
 
   // Frame view may get reset after theme change.
   // TODO(crbug.com/1020050): Make it not do this and only refresh the Widget.

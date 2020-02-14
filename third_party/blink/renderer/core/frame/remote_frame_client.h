@@ -53,9 +53,6 @@ class RemoteFrameClient : public FrameClient {
 
   virtual void AdvanceFocus(mojom::blink::FocusType, LocalFrame* source) = 0;
 
-  virtual void UpdateRenderThrottlingStatus(bool isThrottled,
-                                            bool subtreeThrottled) = 0;
-
   virtual uint32_t Print(const IntRect&, cc::PaintCanvas*) const = 0;
 };
 

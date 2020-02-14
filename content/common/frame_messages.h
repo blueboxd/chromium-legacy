@@ -910,14 +910,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_SynchronizeVisualProperties,
 IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateViewportIntersection,
                     blink::ViewportIntersectionState /* intersection_state */)
 
-// Toggles render throttling on a remote frame. |is_throttled| indicates
-// whether the current frame should be throttled based on its viewport
-// visibility, and |subtree_throttled| indicates that an ancestor frame has
-// been throttled, so all descendant frames also should be throttled.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_UpdateRenderThrottlingStatus,
-                    bool /* is_throttled */,
-                    bool /* subtree_throttled */)
-
 // Transfers user activation state from the source frame to the current frame.
 IPC_MESSAGE_ROUTED1(FrameMsg_TransferUserActivationFrom,
                     int /* source_routing_id */)

@@ -152,13 +152,6 @@ void RemoteFrameClientImpl::AdvanceFocus(mojom::blink::FocusType type,
                                      WebLocalFrameImpl::FromFrame(source));
 }
 
-void RemoteFrameClientImpl::UpdateRenderThrottlingStatus(
-    bool is_throttled,
-    bool subtree_throttled) {
-  web_frame_->Client()->UpdateRenderThrottlingStatus(is_throttled,
-                                                     subtree_throttled);
-}
-
 uint32_t RemoteFrameClientImpl::Print(const IntRect& rect,
                                       cc::PaintCanvas* canvas) const {
   return web_frame_->Client()->Print(rect, canvas);

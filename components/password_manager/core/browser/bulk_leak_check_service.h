@@ -9,9 +9,12 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -27,7 +30,8 @@ class BulkLeakCheck;
 
 // The service that allows to check arbitrary number of passwords against the
 // database of leaked credentials.
-class BulkLeakCheckService : public KeyedService {
+class BulkLeakCheckService : public KeyedService,
+                             public BulkLeakCheckDelegateInterface {
  public:
   enum class State {
     // The service is idle and there was no previous error.
@@ -50,6 +54,16 @@ class BulkLeakCheckService : public KeyedService {
     kServiceError,
   };
 
+  class Observer : public base::CheckedObserver {
+   public:
+    // BulkLeakCheckService changed its state. |state| and |pending_credentials|
+    // are added for convenience.
+    virtual void OnStateChanged(State state, size_t pending_credentials) = 0;
+
+    // Called when |credential| is determined to be leaked.
+    virtual void OnLeakFound(const LeakCheckCredential& credential) = 0;
+  };
+
   BulkLeakCheckService(
       signin::IdentityManager* identity_manager,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
@@ -67,6 +81,10 @@ class BulkLeakCheckService : public KeyedService {
   // Returns the current state of the service.
   State state() const { return state_; }
 
+  void AddObserver(Observer* obs) { observers_.AddObserver(obs); }
+
+  void RemoveObserver(Observer* obs) { observers_.RemoveObserver(obs); }
+
   // KeyedService:
   void Shutdown() override;
 
@@ -77,6 +95,14 @@ class BulkLeakCheckService : public KeyedService {
 #endif  // defined(UNIT_TEST)
 
  private:
+  // BulkLeakCheckDelegateInterface:
+  void OnFinishedCredential(LeakCheckCredential credential,
+                            IsLeaked is_leaked) override;
+  void OnError(LeakDetectionError error) override;
+
+  // Notify the observers.
+  void NotifyStateChanged();
+
   signin::IdentityManager* identity_manager_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
@@ -86,6 +112,7 @@ class BulkLeakCheckService : public KeyedService {
   std::unique_ptr<BulkLeakCheck> bulk_leak_check_;
 
   State state_ = State::kIdle;
+  base::ObserverList<Observer> observers_;
 };
 
 }  // namespace password_manager

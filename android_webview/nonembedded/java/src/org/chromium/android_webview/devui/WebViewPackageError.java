@@ -8,9 +8,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Build;
 import android.provider.Settings;
@@ -80,30 +78,12 @@ public class WebViewPackageError {
         return !mContext.getPackageName().equals(systemWebViewPackage.packageName);
     }
 
-    /**
-     * Loads a label for the app specified by {@code mContext}. This is designed to be consistent
-     * with how the system's WebView chooser labels WebView packages (see {@code
-     * com.android.settings.webview.WebViewAppPicker.WebViewAppInfo#loadLabel()} in the AOSP source
-     * code).
-     */
-    private CharSequence loadLabel() {
-        ApplicationInfo applicationInfo = mContext.getApplicationInfo();
-        PackageManager pm = mContext.getPackageManager();
-        CharSequence appLabel = applicationInfo.loadLabel(pm);
-        try {
-            String versionName = pm.getPackageInfo(mContext.getPackageName(), 0).versionName;
-            return String.format(Locale.US, "%s %s", appLabel, versionName);
-        } catch (PackageManager.NameNotFoundException e) {
-            return appLabel;
-        }
-    }
-
     private Dialog buildDifferentPackageErrorDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
         builder.setTitle("Wrong WebView DevTools")
                 .setMessage(String.format(Locale.US,
                         "This app (%s) is not the system's selected WebView provider.",
-                        loadLabel()));
+                        WebViewPackageHelper.loadLabel(mContext)));
         builder.setPositiveButton("Open the current WebView provider", (dialog, id) -> {
             PackageInfo systemWebViewPackage =
                     WebViewPackageHelper.getCurrentWebViewPackage(mContext);

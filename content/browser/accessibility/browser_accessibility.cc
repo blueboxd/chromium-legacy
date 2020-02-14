@@ -1271,12 +1271,20 @@ bool BrowserAccessibility::HasVisibleCaretOrSelection() const {
   if (!focus_object)
     return false;
 
+  // Text inputs can have sub-objects that are not exposed, and can cause issues
+  // in determining whether a caret is present. Avoid this situation by
+  // comparing against the closest platform object, which will be in the tree.
+  BrowserAccessibility* platform_object = PlatformGetClosestPlatformObject();
+  DCHECK(platform_object);
+
   // Selection or caret will be visible in a focused editable area, or if caret
   // browsing is enabled.
-  if (HasState(ax::mojom::State::kEditable) ||
+  // Caret browsing should be looking at leaf text nodes so it might not return
+  // expected results in this method. See https://crbug.com/1052091.
+  if (platform_object->HasState(ax::mojom::State::kEditable) ||
       BrowserAccessibilityStateImpl::GetInstance()->IsCaretBrowsingEnabled()) {
-    return IsPlainTextField() ? focus_object == this
-                              : focus_object->IsDescendantOf(this);
+    return IsPlainTextField() ? focus_object == platform_object
+                              : focus_object->IsDescendantOf(platform_object);
   }
 
   // The selection will be visible in non-editable content only if it is not
@@ -1284,7 +1292,7 @@ bool BrowserAccessibility::HasVisibleCaretOrSelection() const {
   return (focus_id != unignored_selection.anchor_object_id ||
           unignored_selection.focus_offset !=
               unignored_selection.anchor_offset) &&
-         focus_object->IsDescendantOf(this);
+         focus_object->IsDescendantOf(platform_object);
 }
 
 std::set<ui::AXPlatformNode*> BrowserAccessibility::GetNodesForNodeIdSet(

@@ -15,8 +15,8 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_handle.h"
-#include "chrome/common/prerender.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "third_party/blink/public/mojom/prerender/prerender.mojom.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -42,9 +42,9 @@ class PrerenderLinkManager : public KeyedService,
   bool OnAddPrerender(
       int launcher_render_process_id,
       int launcher_render_view_id,
-      chrome::mojom::PrerenderAttributesPtr attributes,
-      mojo::PendingRemote<chrome::mojom::PrerenderHandleClient> handle_client,
-      mojo::PendingReceiver<chrome::mojom::PrerenderHandle> handle);
+      blink::mojom::PrerenderAttributesPtr attributes,
+      mojo::PendingRemote<blink::mojom::PrerenderHandleClient> handle_client,
+      mojo::PendingReceiver<blink::mojom::PrerenderHandle> handle);
 
  private:
   friend class PrerenderBrowserTest;

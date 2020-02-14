@@ -32,7 +32,7 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemView;
+import org.chromium.components.browser_ui.widget.selectable_list.SelectableItemViewBase;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectionDelegate;
 
 import java.util.List;
@@ -40,7 +40,7 @@ import java.util.List;
 /**
  * A container class for a view showing a photo in the Photo Picker.
  */
-public class PickerBitmapView extends SelectableItemView<PickerBitmap> {
+public class PickerBitmapView extends SelectableItemViewBase<PickerBitmap> {
     // The length of the image selection animation (in ms).
     private static final int ANIMATION_DURATION = 100;
 

@@ -7,7 +7,7 @@ import("//build/config/android/rules.gni")
 import("//weblayer/variables.gni")
 
 android_resources("weblayer_resources") {
-  resource_dirs = []
+  resource_dirs = [ "res" ]
   custom_package = "org.chromium.weblayer_private"
 }
 
@@ -80,6 +80,7 @@ android_library("java") {
     "//components/javascript_dialogs/android:java",
     "//components/metrics:metrics_java",
     "//components/minidump_uploader:minidump_uploader_java",
+    "//components/omnibox/browser:browser_java",
     "//components/security_interstitials/content/android:java",
     "//components/spellcheck/browser/android:java",
     "//components/variations/android:variations_java",
@@ -87,6 +88,7 @@ android_library("java") {
     "//content/public/android:content_java",
     "//net/android:net_java",
     "//third_party/android_deps:com_android_support_support_compat_java",
+    "//ui/android:ui_full_java",
     "//ui/android:ui_java",
   ]
   srcjar_deps = [

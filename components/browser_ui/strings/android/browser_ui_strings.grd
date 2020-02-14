@@ -327,6 +327,15 @@
       <message name="IDS_SELECT_ITEMS" desc="Label shown on toolbar asking user to select items from the list.">
         Select items
       </message>
+        <message name="IDS_ACCESSIBILITY_SECURITY_BTN_SECURE" desc="Content description for the security icon for pages with a valid certificate. The content description also includes the call to action for opening the page info bubble (Site information).">
+          Connection is secure. Site information
+      </message>
+      <message name="IDS_ACCESSIBILITY_SECURITY_BTN_WARN" desc="Content description for the security icon for pages with insecure passive content. The content description also includes the call to action for opening the page info bubble (Site information).">
+        Your connection to this site is not secure. Site information
+      </message>
+      <message name="IDS_ACCESSIBILITY_SECURITY_BTN_DANGEROUS" desc="Content description for the security icon for dangerous pages. The content description also includes the call to action for opening the page info bubble (Site information).">
+        This page is dangerous. Site information
+      </message>
     </messages>
   </release>
 </grit>

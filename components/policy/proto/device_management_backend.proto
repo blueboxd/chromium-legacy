@@ -2082,6 +2082,9 @@ message RemoteCommand {
 
     // Refresh the device machine certificate and re-upload it.
     DEVICE_REFRESH_ENTERPRISE_MACHINE_CERTIFICATE = 8;
+
+    // Retrieve a list of available diagnostics routines.
+    DEVICE_GET_AVAILABLE_DIAGNOSTIC_ROUTINES = 9;
   }
 
   // The command type.

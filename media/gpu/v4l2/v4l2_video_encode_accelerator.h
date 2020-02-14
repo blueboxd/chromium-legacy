@@ -211,6 +211,9 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   bool NegotiateInputFormat(VideoPixelFormat input_format,
                             const gfx::Size& frame_size);
 
+  // Apply the current crop parameters to the V4L2 device.
+  bool ApplyCrop();
+
   // Set up the device to the output format requested in Initialize().
   bool SetOutputFormat(VideoCodecProfile output_profile);
 

@@ -822,6 +822,13 @@ DocumentPolicy::FeatureState DocumentLoader::CreateDocumentPolicy() {
   if (!RuntimeEnabledFeatures::DocumentPolicyEnabled())
     return DocumentPolicy::FeatureState{};
 
+  // For URLs referring to local content to parent frame, they have no way to
+  // specify the document policy they use. If the parent frame requires a
+  // document policy on them, use the required policy as effective policy.
+  if (url_.IsEmpty() || url_.ProtocolIsAbout() || url_.ProtocolIsData() ||
+      url_.ProtocolIs("blob") || url_.ProtocolIs("filesystem"))
+    return frame_policy_.required_document_policy;
+
   const DocumentPolicy::FeatureState header_policy =
       DocumentPolicyParser::Parse(
           response_.HttpHeaderField(http_names::kDocumentPolicy))

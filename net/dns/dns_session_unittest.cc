@@ -80,19 +80,19 @@ class TestClientSocketFactory : public ClientSocketFactory {
 
 struct PoolEvent {
   enum { ALLOCATE, FREE } action;
-  unsigned server_index;
+  size_t server_index;
 };
 
 class DnsSessionTest : public TestWithTaskEnvironment {
  public:
-  void OnSocketAllocated(unsigned server_index);
-  void OnSocketFreed(unsigned server_index);
+  void OnSocketAllocated(size_t server_index);
+  void OnSocketFreed(size_t server_index);
 
  protected:
-  void Initialize(unsigned num_servers, unsigned num_doh_servers);
-  std::unique_ptr<DnsSession::SocketLease> Allocate(unsigned server_index);
-  bool DidAllocate(unsigned server_index);
-  bool DidFree(unsigned server_index);
+  void Initialize(size_t num_servers, size_t num_doh_servers);
+  std::unique_ptr<DnsSession::SocketLease> Allocate(size_t server_index);
+  bool DidAllocate(size_t server_index);
+  bool DidFree(size_t server_index);
   bool NoMoreEvents();
 
   DnsConfig config_;
@@ -118,12 +118,12 @@ class MockDnsSocketPool : public DnsSocketPool {
   }
 
   std::unique_ptr<DatagramClientSocket> AllocateSocket(
-      unsigned server_index) override {
+      size_t server_index) override {
     test_->OnSocketAllocated(server_index);
     return CreateConnectedSocket(server_index);
   }
 
-  void FreeSocket(unsigned server_index,
+  void FreeSocket(size_t server_index,
                   std::unique_ptr<DatagramClientSocket> socket) override {
     test_->OnSocketFreed(server_index);
   }
@@ -132,9 +132,8 @@ class MockDnsSocketPool : public DnsSocketPool {
   DnsSessionTest* test_;
 };
 
-void DnsSessionTest::Initialize(unsigned num_servers,
-                                unsigned num_doh_servers) {
-  CHECK(num_servers < 256u);
+void DnsSessionTest::Initialize(size_t num_servers, size_t num_doh_servers) {
+  CHECK_LT(num_servers, 256u);
   config_.nameservers.clear();
   config_.dns_over_https_servers.clear();
   for (unsigned char i = 0; i < num_servers; ++i) {
@@ -163,16 +162,16 @@ void DnsSessionTest::Initialize(unsigned num_servers,
 }
 
 std::unique_ptr<DnsSession::SocketLease> DnsSessionTest::Allocate(
-    unsigned server_index) {
+    size_t server_index) {
   return session_->AllocateSocket(server_index, source_);
 }
 
-bool DnsSessionTest::DidAllocate(unsigned server_index) {
+bool DnsSessionTest::DidAllocate(size_t server_index) {
   PoolEvent expected_event = { PoolEvent::ALLOCATE, server_index };
   return ExpectEvent(expected_event);
 }
 
-bool DnsSessionTest::DidFree(unsigned server_index) {
+bool DnsSessionTest::DidFree(size_t server_index) {
   PoolEvent expected_event = { PoolEvent::FREE, server_index };
   return ExpectEvent(expected_event);
 }
@@ -181,12 +180,12 @@ bool DnsSessionTest::NoMoreEvents() {
   return events_.empty();
 }
 
-void DnsSessionTest::OnSocketAllocated(unsigned server_index) {
+void DnsSessionTest::OnSocketAllocated(size_t server_index) {
   PoolEvent event = { PoolEvent::ALLOCATE, server_index };
   events_.push_back(event);
 }
 
-void DnsSessionTest::OnSocketFreed(unsigned server_index) {
+void DnsSessionTest::OnSocketFreed(size_t server_index) {
   PoolEvent event = { PoolEvent::FREE, server_index };
   events_.push_back(event);
 }
@@ -280,13 +279,13 @@ TEST_F(DnsSessionTest, HistogramTimeoutLong) {
 // test for https://crbug.com/753568.
 TEST_F(DnsSessionTest, NegativeRtt) {
   Initialize(2 /* num_servers */, 2 /* num_doh_servers */);
-  session_->RecordRTT(0, false /* is_doh_server */,
+  session_->RecordRtt(0, false /* is_doh_server */,
                       false /* is_validated_doh_server */,
                       base::TimeDelta::FromMilliseconds(-1), OK /* rv */);
-  session_->RecordRTT(0, true /* is_doh_server */,
+  session_->RecordRtt(0, true /* is_doh_server */,
                       false /* is_validated_doh_server */,
                       base::TimeDelta::FromMilliseconds(-1), OK /* rv */);
-  session_->RecordRTT(0, true /* is_doh_server */,
+  session_->RecordRtt(0, true /* is_doh_server */,
                       true /* is_validated_doh_server */,
                       base::TimeDelta::FromMilliseconds(-1), OK /* rv */);
 }
@@ -339,4 +338,4 @@ TEST_F(DnsSessionTest, DohProbeNonConsecutiveFailures) {
 
 }  // namespace
 
-} // namespace net
+}  // namespace net

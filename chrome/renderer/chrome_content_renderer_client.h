@@ -71,10 +71,6 @@ namespace extensions {
 class Extension;
 }
 
-namespace prerender {
-class WebPrerenderingSupportImpl;
-}
-
 namespace subresource_filter {
 class UnverifiedRulesetDealer;
 }
@@ -281,8 +277,6 @@ class ChromeContentRendererClient
 #endif
   std::unique_ptr<subresource_filter::UnverifiedRulesetDealer>
       subresource_filter_ruleset_dealer_;
-  std::unique_ptr<prerender::WebPrerenderingSupportImpl>
-      web_prerendering_support_impl_;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   std::unique_ptr<ChromePDFPrintClient> pdf_print_client_;
 #endif

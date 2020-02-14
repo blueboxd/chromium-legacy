@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/values.h"
@@ -249,9 +248,6 @@ class DnsClientImpl : public DnsClient,
       NetworkChangeNotifier::ConnectionType type) override {
     if (session_) {
       session_->UpdateTimeouts(type);
-      const char* kTrialName = "AsyncDnsFlushServerStatsOnConnectionTypeChange";
-      if (base::FieldTrialList::FindFullName(kTrialName) == "enable")
-        session_->InitializeServerStats();
     }
   }
 

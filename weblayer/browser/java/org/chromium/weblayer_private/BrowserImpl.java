@@ -16,6 +16,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.weblayer_private.interfaces.APICallException;
 import org.chromium.weblayer_private.interfaces.IBrowser;
@@ -204,6 +205,11 @@ public class BrowserImpl extends IBrowser.Stub {
         }
 
         return mWindowAndroid.getContext().get();
+    }
+
+    public boolean isWindowOnSmallDevice() {
+        assert mWindowAndroid != null;
+        return !DeviceFormFactor.isWindowOnTablet(mWindowAndroid);
     }
 
     @Override

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "cc/test/pixel_test.h"
 #include "cc/test/pixel_test_utils.h"
 #include "cc/test/render_pass_test_utils.h"
@@ -115,8 +116,6 @@ class CopyOutputScalingPixelTest
       cc::AddRenderPassQuad(root_pass, smaller_passes[i]);
     cc::AddQuad(root_pass, gfx::Rect(viewport_size), root_pass_color);
 
-    renderer()->DecideRenderPassAllocationsForFrame(list);
-
     // Make a copy request and execute it by drawing a frame. A subset of the
     // viewport is requested, to test that scaled offsets are being computed
     // correctly as well.
@@ -167,6 +166,7 @@ class CopyOutputScalingPixelTest
       request->SetScaleRatio(scale_from_, scale_to_);
       list.back()->copy_requests.push_back(std::move(request));
 
+      renderer()->DecideRenderPassAllocationsForFrame(list);
       renderer()->DrawFrame(&list, 1.0f, viewport_size,
                             gfx::DisplayColorSpaces());
       loop.Run();
@@ -300,9 +300,14 @@ TEST_P(GLCopyOutputScalingPixelTest, ScaledCopyOfDrawnFrame) {
 }
 INSTANTIATE_TEST_SUITE_P(All, GLCopyOutputScalingPixelTest, kParameters);
 
-// TODO(crbug.com/939442): Enable this test for SkiaRenderer.
+#if defined(OS_FUCHSIA)
+// TODO(crbug.com/1052351): Enable after flake is fixed.
+#define MAYBE_ScaledCopyOfDrawnFrame DISABLED_ScaledCopyOfDrawnFrame
+#else
+#define MAYBE_ScaledCopyOfDrawnFrame ScaledCopyOfDrawnFrame
+#endif
 using SkiaCopyOutputScalingPixelTest = CopyOutputScalingPixelTest<SkiaRenderer>;
-TEST_P(SkiaCopyOutputScalingPixelTest, DISABLED_ScaledCopyOfDrawnFrame) {
+TEST_P(SkiaCopyOutputScalingPixelTest, MAYBE_ScaledCopyOfDrawnFrame) {
   RunTest();
 }
 INSTANTIATE_TEST_SUITE_P(All, SkiaCopyOutputScalingPixelTest, kParameters);

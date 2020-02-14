@@ -39,8 +39,9 @@ public abstract class PackagePaths {
         }
         try {
             PackageManager pm = ContextUtils.getApplicationContext().getPackageManager();
-            PackageInfo pi = pm.getPackageInfo(
-                    BuildInfo.getInstance().packageName, PackageManager.GET_SHARED_LIBRARY_FILES);
+            PackageInfo pi = pm.getPackageInfo(BuildInfo.getInstance().packageName,
+                    PackageManager.GET_SHARED_LIBRARY_FILES
+                            | PackageManager.MATCH_UNINSTALLED_PACKAGES);
 
             List<String> zipPaths = new ArrayList<>(10);
             zipPaths.add(pi.applicationInfo.sourceDir);

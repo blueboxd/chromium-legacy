@@ -34,7 +34,7 @@
 
 namespace blink {
 
-class MenuListSelectType : public SelectType {
+class MenuListSelectType final : public SelectType {
  public:
   explicit MenuListSelectType(HTMLSelectElement& select) : SelectType(select) {}
 
@@ -77,7 +77,7 @@ void MenuListSelectType::DidSelectOption(
 
 // ============================================================================
 
-class ListBoxSelectType : public SelectType {
+class ListBoxSelectType final : public SelectType {
  public:
   explicit ListBoxSelectType(HTMLSelectElement& select) : SelectType(select) {}
 };

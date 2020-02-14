@@ -6,6 +6,7 @@
 #define WEBLAYER_PUBLIC_URL_BAR_CONTROLLER_H_
 
 #include "base/strings/string16.h"
+#include "components/security_state/core/security_state.h"
 
 namespace weblayer {
 
@@ -17,6 +18,8 @@ class UrlBarController {
 
   virtual ~UrlBarController() {}
   virtual base::string16 GetUrlForDisplay() = 0;
+  virtual security_state::SecurityLevel GetConnectionSecurityLevel() = 0;
+  virtual bool ShouldShowDangerTriangleForWarningLevel() = 0;
 };
 
 }  // namespace weblayer

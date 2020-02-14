@@ -36,12 +36,8 @@
 
 namespace blink {
 
-class WebLocalFrame;
-class WebPrerender;
-
 class WebPrerendererClient {
  public:
-  virtual void WillAddPrerender(WebLocalFrame*, WebPrerender*) = 0;
   virtual bool IsPrefetchOnly() = 0;
 };
 

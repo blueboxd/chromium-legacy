@@ -501,6 +501,7 @@ class IdentityManager : public KeyedService,
                                           AccountInfo account_info);
   friend void SimulateAccountImageFetch(IdentityManager* identity_manager,
                                         const CoreAccountId& account_id,
+                                        const std::string& image_url_with_size,
                                         const gfx::Image& image);
   friend void SetFreshnessOfAccountsInGaiaCookie(
       IdentityManager* identity_manager,

@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 
@@ -37,7 +38,7 @@ const char kHelpMsg[] = R"(
   subresource_filter_tool is a utility for querying a ruleset, and provides
   multiple commands:
 
-    * match --document-origin=<origin> --url=<request_url> --type=<request_type>
+    * match --document_origin=<origin> --url=<request_url> --type=<request_type>
         Prints if the request would be blocked or allowed, as well as a
         matching ruleset rule (if one matches). The output format is:
             <BLOCKED/ALLOWED> <UrlRule if any> <document_origin> <request_url>
@@ -130,7 +131,13 @@ int main(int argc, char* argv[]) {
     if (!command_line.HasSwitch(kSwitchOrigin) ||
         !command_line.HasSwitch(kSwitchUrl) ||
         !command_line.HasSwitch(kSwitchType)) {
-      std::cerr << "Missing argument for match command:" << std::endl;
+      std::vector<std::string> missing_args;
+      for (auto* arg : {kSwitchOrigin, kSwitchUrl, kSwitchType}) {
+        if (!command_line.HasSwitch(arg))
+          missing_args.push_back(arg);
+      }
+      std::cerr << "Missing arguments for match command: "
+                << base::JoinString(missing_args, ",") << std::endl;
       PrintHelp();
       return 1;
     }

@@ -10,21 +10,15 @@
 #include <memory>
 #include <vector>
 
-#include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/bucket_ranges.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/rand_callback.h"
 #include "net/dns/dns_config.h"
 #include "net/dns/dns_socket_pool.h"
-
-namespace base {
-class BucketRanges;
-}
 
 namespace net {
 
@@ -53,17 +47,17 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
   class NET_EXPORT_PRIVATE SocketLease {
    public:
     SocketLease(scoped_refptr<DnsSession> session,
-                unsigned server_index,
+                size_t server_index,
                 std::unique_ptr<DatagramClientSocket> socket);
     ~SocketLease();
 
-    unsigned server_index() const { return server_index_; }
+    size_t server_index() const { return server_index_; }
 
     DatagramClientSocket* socket() { return socket_.get(); }
 
    private:
     scoped_refptr<DnsSession> session_;
-    unsigned server_index_;
+    size_t server_index_;
     std::unique_ptr<DatagramClientSocket> socket_;
 
     DISALLOW_COPY_AND_ASSIGN(SocketLease);
@@ -83,31 +77,38 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
   // Return the next random query ID.
   uint16_t NextQueryId() const;
 
-  // Return the index of the first configured server to use on first attempt.
-  unsigned NextFirstServerIndex();
+  // TODO(crbug.com/1045507): Rework the server index selection logic and
+  // interface to not be susceptible to race conditions on server
+  // availability/failure-tracking changing between attempts. As-is, this code
+  // can easily result in working servers getting skipped and failing servers
+  // getting extra attempts (further inflating the failure tracking).
 
-  // Start with |server_index| and find the index of the next known
-  // good non-dns-over-https server to use on this attempt. Returns
-  // |server_index| if this server is below the failure limit, or if there are
-  // no other servers below the failure limit or with an older last failure.
-  unsigned NextGoodServerIndex(unsigned server_index);
+  // Return the (potentially rotating) index of the first configured server (to
+  // be passed to [Doh]ServerIndexToUse()).
+  size_t FirstServerIndex(bool doh_server);
+
+  // Find the index of a non-DoH server to use for this attempt.  Starts from
+  // |starting_server| and finds the first eligible server (wrapping around as
+  // necessary) below failure limits, or if no eligible servers are below
+  // failure limits, the one with the oldest last failure.
+  size_t ServerIndexToUse(size_t starting_server);
 
   // TODO(b/1022059): Remove once all server stats are moved to ResolveContext.
-  base::Time GetLastDohFailure(size_t server_index);
+  base::TimeTicks GetLastDohFailure(size_t server_index);
   int GetLastDohFailureCount(size_t server_index);
 
   // Record that server failed to respond (due to SRV_FAIL or timeout). If
   // |is_doh_server| and the number of failures has surpassed a threshold,
   // sets the DoH probe state to unavailable.
-  void RecordServerFailure(unsigned server_index,
+  void RecordServerFailure(size_t server_index,
                            bool is_doh_server,
                            ResolveContext* resolve_context);
 
   // Record that server responded successfully.
-  void RecordServerSuccess(unsigned server_index, bool is_doh_server);
+  void RecordServerSuccess(size_t server_index, bool is_doh_server);
 
   // Record how long it took to receive a response from the server.
-  void RecordRTT(unsigned server_index,
+  void RecordRtt(size_t server_index,
                  bool is_doh_server,
                  bool is_validated_doh_server,
                  base::TimeDelta rtt,
@@ -115,19 +116,19 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
 
   // Return the timeout for the next query. |attempt| counts from 0 and is used
   // for exponential backoff.
-  base::TimeDelta NextTimeout(unsigned server_index, int attempt);
+  base::TimeDelta NextTimeout(size_t server_index, int attempt);
 
   // Return the timeout for the next DoH query.
-  base::TimeDelta NextDohTimeout(unsigned doh_server_index);
+  base::TimeDelta NextDohTimeout(size_t doh_server_index);
 
   // Allocate a socket, already connected to the server address.
   // When the SocketLease is destroyed, the socket will be freed.
-  std::unique_ptr<SocketLease> AllocateSocket(unsigned server_index,
+  std::unique_ptr<SocketLease> AllocateSocket(size_t server_index,
                                               const NetLogSource& source);
 
   // Creates a StreamSocket from the factory for a transaction over TCP. These
   // sockets are not pooled.
-  std::unique_ptr<StreamSocket> CreateTCPSocket(unsigned server_index,
+  std::unique_ptr<StreamSocket> CreateTCPSocket(size_t server_index,
                                                 const NetLogSource& source);
 
   base::WeakPtr<DnsSession> GetWeakPtr() {
@@ -142,22 +143,22 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
   ~DnsSession();
 
   // Release a socket.
-  void FreeSocket(unsigned server_index,
+  void FreeSocket(size_t server_index,
                   std::unique_ptr<DatagramClientSocket> socket);
 
   // Returns the ServerStats for the designated server. Returns nullptr if no
   // ServerStats found.
-  ServerStats* GetServerStats(unsigned server_index, bool is_doh_server);
+  ServerStats* GetServerStats(size_t server_index, bool is_doh_server);
 
   // Return the timeout for the next query.
   base::TimeDelta NextTimeoutHelper(ServerStats* server_stats, int attempt);
 
   // Record the time to perform a query.
-  void RecordRTTForHistogram(unsigned server_index,
-                             bool is_doh_server,
-                             bool is_validated_doh_server,
-                             base::TimeDelta rtt,
-                             int rv);
+  void RecordRttForUma(size_t server_index,
+                       bool is_doh_server,
+                       bool is_validated_doh_server,
+                       base::TimeDelta rtt,
+                       int rv);
 
   const DnsConfig config_;
   std::unique_ptr<DnsSocketPool> socket_pool_;
@@ -178,12 +179,6 @@ class NET_EXPORT_PRIVATE DnsSession : public base::RefCounted<DnsSession> {
 
   // Track runtime statistics of each DoH server.
   std::vector<std::unique_ptr<ServerStats>> doh_server_stats_;
-
-  // Buckets shared for all |ServerStats::rtt_histogram|.
-  struct RttBuckets : public base::BucketRanges {
-    RttBuckets();
-  };
-  static base::LazyInstance<RttBuckets>::Leaky rtt_buckets_;
 
   base::WeakPtrFactory<DnsSession> weak_ptr_factory_{this};
 

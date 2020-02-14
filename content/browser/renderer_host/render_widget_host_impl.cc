@@ -1232,11 +1232,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
     is_in_gesture_scroll_[static_cast<int>(gesture_event.SourceDevice())] =
         true;
     scroll_peak_gpu_mem_tracker_ =
-        PeakGpuMemoryTracker::Create(base::BindOnce([](uint64_t peak_memory) {
-          // Converting Bytes to Kilobytes.
-          UMA_HISTOGRAM_MEMORY_KB("Memory.GPU.PeakMemoryUsage.Scroll",
-                                  peak_memory / 1024u);
-        }));
+        PeakGpuMemoryTracker::Create(PeakGpuMemoryTracker::Usage::SCROLL);
   } else if (gesture_event.GetType() ==
              blink::WebInputEvent::kGestureScrollEnd) {
     DCHECK(

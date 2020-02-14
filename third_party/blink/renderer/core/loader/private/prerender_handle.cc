@@ -31,12 +31,12 @@
 #include "third_party/blink/renderer/core/loader/private/prerender_handle.h"
 
 #include "services/network/public/mojom/referrer_policy.mojom-blink.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/loader/frame_loader.h"
-#include "third_party/blink/renderer/core/loader/prerenderer_client.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
+#include "third_party/blink/renderer/core/loader/private/prerender_client.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/prerender.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 
 namespace blink {
@@ -48,34 +48,60 @@ PrerenderHandle* PrerenderHandle::Create(Document& document,
                                          const unsigned prerender_rel_types) {
   // Prerenders are unlike requests in most ways (for instance, they pass down
   // fragments, and they don't return data), but they do have referrers.
+
   if (!document.GetFrame())
     return nullptr;
 
-  auto* prerender = MakeGarbageCollected<Prerender>(
-      client, url, prerender_rel_types,
-      SecurityPolicy::GenerateReferrer(document.GetReferrerPolicy(), url,
-                                       document.OutgoingReferrer()),
-      document.GetSecurityOrigin());
+  Referrer referrer = SecurityPolicy::GenerateReferrer(
+      document.GetReferrerPolicy(), url, document.OutgoingReferrer());
 
-  PrerendererClient* prerenderer_client =
-      PrerendererClient::From(document.GetPage());
-  if (prerenderer_client)
-    prerenderer_client->WillAddPrerender(document.GetFrame(), prerender);
-  prerender->Add();
+  mojom::blink::PrerenderAttributesPtr attributes =
+      mojom::blink::PrerenderAttributes::New();
+  attributes->url = url;
+  attributes->rel_types = prerender_rel_types;
+  attributes->referrer = mojom::blink::Referrer::New(
+      KURL(NullURL(), referrer.referrer), referrer.referrer_policy);
+  attributes->initiator_origin = document.GetSecurityOrigin();
+  attributes->view_size =
+      gfx::Size(document.GetFrame()->GetMainFrameViewportSize());
 
-  return MakeGarbageCollected<PrerenderHandle>(document, prerender);
+  mojo::Remote<mojom::blink::PrerenderProcessor> prerender_processor;
+  document.GetFrame()->Client()->GetBrowserInterfaceBroker().GetInterface(
+      prerender_processor.BindNewPipeAndPassReceiver());
+
+  mojo::PendingRemote<mojom::blink::PrerenderHandleClient>
+      prerender_handle_client;
+  auto receiver = prerender_handle_client.InitWithNewPipeAndPassReceiver();
+
+  mojo::Remote<mojom::blink::PrerenderHandle> remote_handle;
+  prerender_processor->AddPrerender(std::move(attributes),
+                                    std::move(prerender_handle_client),
+                                    remote_handle.BindNewPipeAndPassReceiver());
+
+  return MakeGarbageCollected<PrerenderHandle>(PassKey(), document, client, url,
+                                               std::move(remote_handle),
+                                               std::move(receiver));
 }
 
-PrerenderHandle::PrerenderHandle(Document& document, Prerender* prerender)
-    : ContextLifecycleObserver(&document), prerender_(prerender) {}
+PrerenderHandle::PrerenderHandle(
+    PassKey pass_key,
+    Document& document,
+    PrerenderClient* client,
+    const KURL& url,
+    mojo::Remote<mojom::blink::PrerenderHandle> remote_handle,
+    mojo::PendingReceiver<mojom::blink::PrerenderHandleClient> receiver)
+    : ContextLifecycleObserver(&document),
+      url_(url),
+      client_(client),
+      remote_handle_(std::move(remote_handle)),
+      receiver_(this, std::move(receiver)) {}
 
 PrerenderHandle::~PrerenderHandle() = default;
 
 void PrerenderHandle::Dispose() {
-  if (prerender_) {
-    prerender_->Abandon();
-    Detach();
-  }
+  if (remote_handle_)
+    remote_handle_->Abandon();
+  Detach();
 }
 
 void PrerenderHandle::Cancel() {
@@ -83,14 +109,13 @@ void PrerenderHandle::Cancel() {
   // case, the LinkLoader cancels the PrerenderHandle as the Document is
   // destroyed, even through the ContextLifecycleObserver has already abandoned
   // it.
-  if (!prerender_)
-    return;
-  prerender_->Cancel();
+  if (remote_handle_)
+    remote_handle_->Cancel();
   Detach();
 }
 
 const KURL& PrerenderHandle::Url() const {
-  return prerender_->Url();
+  return url_;
 }
 
 void PrerenderHandle::ContextDestroyed(ExecutionContext*) {
@@ -98,20 +123,37 @@ void PrerenderHandle::ContextDestroyed(ExecutionContext*) {
   // the next GC runs. Thus contextDestroyed() can be called for a
   // PrerenderHandle that is already cancelled (and thus detached). In that
   // case, we should not detach the PrerenderHandle again.
-  if (!prerender_)
-    return;
-  prerender_->Abandon();
-  Detach();
+  Dispose();
 }
 
-void PrerenderHandle::Detach() {
-  prerender_->Dispose();
-  prerender_.Clear();
+void PrerenderHandle::OnPrerenderStart() {
+  if (client_)
+    client_->DidStartPrerender();
+}
+
+void PrerenderHandle::OnPrerenderStopLoading() {
+  if (client_)
+    client_->DidSendLoadForPrerender();
+}
+
+void PrerenderHandle::OnPrerenderDomContentLoaded() {
+  if (client_)
+    client_->DidSendDOMContentLoadedForPrerender();
+}
+
+void PrerenderHandle::OnPrerenderStop() {
+  if (client_)
+    client_->DidStopPrerender();
 }
 
 void PrerenderHandle::Trace(Visitor* visitor) {
-  visitor->Trace(prerender_);
+  visitor->Trace(client_);
   ContextLifecycleObserver::Trace(visitor);
+}
+
+void PrerenderHandle::Detach() {
+  remote_handle_.reset();
+  receiver_.reset();
 }
 
 }  // namespace blink

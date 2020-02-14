@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "components/viz/test/gpu_host_impl_test_api.h"
 #include "content/browser/gpu/gpu_process_host.h"
@@ -24,7 +25,8 @@ namespace content {
 
 namespace {
 
-const uint64_t kPeakMemory = 42u;
+const uint64_t kPeakMemoryKB = 42u;
+const uint64_t kPeakMemory = kPeakMemoryKB * 1024u;
 
 // Test implementation of viz::mojom::GpuService which only implements the peak
 // memory monitoring aspects.
@@ -164,17 +166,11 @@ class PeakGpuMemoryTrackerImplTest : public ContentBrowserTest {
     gpu_host_impl_test_api_->SetGpuService(std::move(gpu_service_remote));
   }
 
-  // Callback to provide to a PeakGpuMemoryTracker. Tests must provide
-  // |runloop_closure| and run the base::RunLoop. This will then quit the loop
-  // once the response from mojo has been received and reposted to the main
-  // thread.
-  void PeakMemoryCallback(base::OnceClosure runloop_closure,
-                          uint64_t peak_memory) {
-    peak_memory_ = peak_memory;
-    std::move(runloop_closure).Run();
+  void SetTestingCallback(PeakGpuMemoryTracker* tracker,
+                          base::OnceClosure callback) {
+    static_cast<PeakGpuMemoryTrackerImpl*>(tracker)
+        ->post_gpu_service_callback_for_testing_ = std::move(callback);
   }
-
-  uint64_t peak_memory() const { return peak_memory_; }
 
   // Provides access to the TestGpuService on the Main Thread for test
   // verifications. All mojo calls should be performed on the IO Thread.
@@ -196,23 +192,23 @@ class PeakGpuMemoryTrackerImplTest : public ContentBrowserTest {
   }
 
  private:
-  uint64_t peak_memory_ = 0;
   std::unique_ptr<TestGpuService> test_gpu_service_ = nullptr;
   std::unique_ptr<viz::GpuHostImplTestApi> gpu_host_impl_test_api_ = nullptr;
   std::unique_ptr<mojo::Receiver<viz::mojom::GpuService>>
       gpu_service_receiver_ = nullptr;
 };
 
-// Verifies that when a PeakGpuMemoryTracker is destroyed, that the client's
-// callback is appropriately called.
+// Verifies that when a PeakGpuMemoryTracker is destroyed, that the browser's
+// callback properly updates the histograms.
 IN_PROC_BROWSER_TEST_F(PeakGpuMemoryTrackerImplTest, PeakGpuMemoryCallback) {
+  base::HistogramTester histogram;
   base::RunLoop run_loop;
-  std::unique_ptr<PeakGpuMemoryTracker> tracker = PeakGpuMemoryTracker::Create(
-      base::BindOnce(&PeakGpuMemoryTrackerImplTest::PeakMemoryCallback,
-                     base::Unretained(this), run_loop.QuitClosure()));
+  std::unique_ptr<PeakGpuMemoryTracker> tracker =
+      PeakGpuMemoryTracker::Create(PeakGpuMemoryTracker::Usage::PAGE_LOAD);
+  SetTestingCallback(tracker.get(), run_loop.QuitClosure());
   FlushRemoteForTesting();
   // No report in response to creation.
-  EXPECT_EQ(0u, peak_memory());
+  histogram.ExpectTotalCount("Memory.GPU.PeakMemoryUsage.PageLoad", 0);
   // However the serive should have started monitoring.
   EXPECT_TRUE(gpu_service()->peak_memory_monitor_started());
 
@@ -220,9 +216,11 @@ IN_PROC_BROWSER_TEST_F(PeakGpuMemoryTrackerImplTest, PeakGpuMemoryCallback) {
   // the callback being a posted task.
   tracker.reset();
   FlushRemoteForTesting();
-  // Wait for PeakMemoryCallback to be ran on this thread.
+  // Wait for callback to be ran on the IO thread, which will call the
+  // QuitClosure.
   run_loop.Run();
-  EXPECT_EQ(kPeakMemory, peak_memory());
+  histogram.ExpectUniqueSample("Memory.GPU.PeakMemoryUsage.PageLoad",
+                               kPeakMemoryKB, 1);
 }
 
 }  // namespace content

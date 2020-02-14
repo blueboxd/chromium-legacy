@@ -341,6 +341,16 @@ inline hb_script_t ICUScriptToHBScript(UScriptCode script) {
   return hb_script_from_string(uscript_getShortName(script), -1);
 }
 
+bool FontWasAlreadyTried(sk_sp<SkTypeface> typeface,
+                         std::set<SkFontID>* fallback_fonts) {
+  return fallback_fonts->count(typeface->uniqueID()) != 0;
+}
+
+void MarkFontAsTried(sk_sp<SkTypeface> typeface,
+                     std::set<SkFontID>* fallback_fonts) {
+  fallback_fonts->insert(typeface->uniqueID());
+}
+
 // Whether |segment| corresponds to the newline character.
 bool IsNewlineSegment(const base::string16& text,
                       const internal::LineSegment& segment) {
@@ -741,14 +751,6 @@ class HarfBuzzLineBreaker {
   std::vector<SegmentHandle> rtl_segments_;
 
   DISALLOW_COPY_AND_ASSIGN(HarfBuzzLineBreaker);
-};
-
-// Function object for case insensitive string comparison.
-struct CaseInsensitiveCompare {
-  bool operator() (const Font& a, const Font& b) const {
-    return base::CompareCaseInsensitiveASCII(a.GetFontName(), b.GetFontName()) <
-           0;
-  }
 };
 
 // Applies a forced text rendering direction if specified by a command-line
@@ -1977,14 +1979,21 @@ void RenderTextHarfBuzz::ShapeRuns(
     return;
   }
 
-  const Font& primary_font = font_list().GetPrimaryFont();
+  // Keep a set of fonts already tried for shaping runs.
+  std::set<SkFontID> fallback_fonts_already_tried;
+  std::vector<Font> fallback_font_candidates;
 
   // Shaping with primary configured fonts from font_list().
   for (const Font& font : font_list().GetFonts()) {
     internal::TextRunHarfBuzz::FontParams test_font_params = font_params;
     if (test_font_params.SetRenderParamsRematchFont(
-            font, font.GetFontRenderParams())) {
+            font, font.GetFontRenderParams()) &&
+        !FontWasAlreadyTried(test_font_params.skia_face,
+                             &fallback_fonts_already_tried)) {
       ShapeRunsWithFont(text, test_font_params, &runs);
+      MarkFontAsTried(test_font_params.skia_face,
+                      &fallback_fonts_already_tried);
+      fallback_font_candidates.push_back(font);
     }
     if (runs.empty()) {
       RecordShapeRunsFallback(ShapeRunFallback::NO_FALLBACK);
@@ -1992,9 +2001,7 @@ void RenderTextHarfBuzz::ShapeRuns(
     }
   }
 
-  // Keep a set of fonts already tried for shaping runs.
-  std::set<Font, CaseInsensitiveCompare> fallback_fonts_already_tried;
-  fallback_fonts_already_tried.insert(primary_font);
+  const Font& primary_font = font_list().GetPrimaryFont();
 
   // Find fallback fonts for the remaining runs using a worklist algorithm. Try
   // to shape the first run by using GetFallbackFont(...) and then try shaping
@@ -2018,14 +2025,14 @@ void RenderTextHarfBuzz::ShapeRuns(
     }
 
     if (fallback_found) {
-      const bool fallback_font_is_untried =
-          fallback_fonts_already_tried.insert(fallback_font).second;
-      if (fallback_font_is_untried) {
-        internal::TextRunHarfBuzz::FontParams test_font_params = font_params;
-        if (test_font_params.SetRenderParamsOverrideSkiaFaceFromFont(
-                fallback_font, fallback_font.GetFontRenderParams())) {
-          ShapeRunsWithFont(text, test_font_params, &runs);
-        }
+      internal::TextRunHarfBuzz::FontParams test_font_params = font_params;
+      if (test_font_params.SetRenderParamsOverrideSkiaFaceFromFont(
+              fallback_font, fallback_font.GetFontRenderParams()) &&
+          !FontWasAlreadyTried(test_font_params.skia_face,
+                               &fallback_fonts_already_tried)) {
+        ShapeRunsWithFont(text, test_font_params, &runs);
+        MarkFontAsTried(test_font_params.skia_face,
+                        &fallback_fonts_already_tried);
       }
     }
 
@@ -2053,7 +2060,7 @@ void RenderTextHarfBuzz::ShapeRuns(
     // Append fonts in the fallback list of the fallback fonts.
     // TODO(tapted): Investigate whether there's a case that benefits from this
     // on Mac.
-    for (const auto& fallback_font : fallback_fonts_already_tried) {
+    for (const auto& fallback_font : fallback_font_candidates) {
       std::vector<Font> fallback_fonts = GetFallbackFonts(fallback_font);
       fallback_font_list.insert(fallback_font_list.end(),
                                 fallback_fonts.begin(), fallback_fonts.end());
@@ -2065,7 +2072,8 @@ void RenderTextHarfBuzz::ShapeRuns(
     // could be a raster font like System, which would not give us a reasonable
     // fallback font list.
     Font segoe("Segoe UI", 13);
-    if (!fallback_fonts_already_tried.count(segoe)) {
+    if (!FontWasAlreadyTried(segoe.platform_font()->GetNativeSkTypeface(),
+                             &fallback_fonts_already_tried)) {
       std::vector<Font> default_fallback_families = GetFallbackFonts(segoe);
       fallback_font_list.insert(fallback_font_list.end(),
                                 default_fallback_families.begin(),
@@ -2084,11 +2092,6 @@ void RenderTextHarfBuzz::ShapeRuns(
   for (const auto& font : fallback_font_list) {
     std::string font_name = font.GetFontName();
 
-    const bool fallback_font_is_untried =
-        fallback_fonts_already_tried.insert(font).second;
-    if (!fallback_font_is_untried)
-      continue;
-
     FontRenderParamsQuery query;
     query.families.push_back(font_name);
     query.pixel_size = font_params.font_size;
@@ -2096,8 +2099,12 @@ void RenderTextHarfBuzz::ShapeRuns(
     FontRenderParams fallback_render_params = GetFontRenderParams(query, NULL);
     internal::TextRunHarfBuzz::FontParams test_font_params = font_params;
     if (test_font_params.SetRenderParamsOverrideSkiaFaceFromFont(
-            font, fallback_render_params)) {
+            font, fallback_render_params) &&
+        !FontWasAlreadyTried(test_font_params.skia_face,
+                             &fallback_fonts_already_tried)) {
       ShapeRunsWithFont(text, test_font_params, &runs);
+      MarkFontAsTried(test_font_params.skia_face,
+                      &fallback_fonts_already_tried);
     }
     if (runs.empty()) {
       TRACE_EVENT_INSTANT2("ui", "RenderTextHarfBuzz::FallbackFont",

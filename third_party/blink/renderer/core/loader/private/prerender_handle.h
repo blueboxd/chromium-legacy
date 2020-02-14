@@ -33,6 +33,9 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/util/type_safety/pass_key.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/mojom/prerender/prerender.mojom-blink.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -40,11 +43,11 @@
 namespace blink {
 
 class Document;
-class Prerender;
 class PrerenderClient;
 
 class PrerenderHandle final : public GarbageCollected<PrerenderHandle>,
-                              public ContextLifecycleObserver {
+                              public ContextLifecycleObserver,
+                              public mojom::blink::PrerenderHandleClient {
   USING_GARBAGE_COLLECTED_MIXIN(PrerenderHandle);
   USING_PRE_FINALIZER(PrerenderHandle, Dispose);
 
@@ -54,8 +57,14 @@ class PrerenderHandle final : public GarbageCollected<PrerenderHandle>,
                                  const KURL&,
                                  unsigned prerender_rel_types);
 
-  PrerenderHandle(Document&, Prerender*);
-  virtual ~PrerenderHandle();
+  using PassKey = util::PassKey<PrerenderHandle>;
+  PrerenderHandle(PassKey,
+                  Document&,
+                  PrerenderClient*,
+                  const KURL&,
+                  mojo::Remote<mojom::blink::PrerenderHandle>,
+                  mojo::PendingReceiver<mojom::blink::PrerenderHandleClient>);
+  ~PrerenderHandle() override;
   void Dispose();
 
   void Cancel();
@@ -64,12 +73,21 @@ class PrerenderHandle final : public GarbageCollected<PrerenderHandle>,
   // ContextLifecycleObserver:
   void ContextDestroyed(ExecutionContext*) override;
 
+  // mojom::blink::PrerenderHandleClient:
+  void OnPrerenderStart() override;
+  void OnPrerenderStopLoading() override;
+  void OnPrerenderDomContentLoaded() override;
+  void OnPrerenderStop() override;
+
   void Trace(Visitor*) override;
 
  private:
   void Detach();
 
-  Member<Prerender> prerender_;
+  KURL url_;
+  WeakMember<PrerenderClient> client_;
+  mojo::Remote<mojom::blink::PrerenderHandle> remote_handle_;
+  mojo::Receiver<mojom::blink::PrerenderHandleClient> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderHandle);
 };

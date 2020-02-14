@@ -419,7 +419,7 @@
       },
       'Linux ASan Tests (sandboxed)': {
         'swarming': {
-          'shards': 2, # https://crbug.com/955853
+          'shards': 4, # https://crbug.com/1051944
         },
       },
       'Linux TSan Tests': {

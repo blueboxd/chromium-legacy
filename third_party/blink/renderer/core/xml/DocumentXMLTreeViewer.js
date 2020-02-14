@@ -4,7 +4,6 @@
 
 "use strict";
 
-var nodeParentPairs = [];
 var tree;
 
 function prepareWebKitXMLViewer()
@@ -52,10 +51,7 @@ function sourceXMLLoaded()
         return; // Stop if some XML tree extension is already processing this document
 
     for (var child = sourceXML.firstChild; child; child = child.nextSibling)
-        nodeParentPairs.push({parentElement: tree, node: child});
-
-    for (var i = 0; i < nodeParentPairs.length; i++)
-        processNode(nodeParentPairs[i].parentElement, nodeParentPairs[i].node);
+      processNode(tree, child);
 
     initButtons();
 
@@ -120,10 +116,11 @@ function processShortTextOnlyElement(parentElement, node)
 function processComplexElement(parentElement, node)
 {
     var collapsible = createCollapsible();
-
     collapsible.expanded.start.appendChild(createTag(node, false, false));
+
     for (var child = node.firstChild; child; child = child.nextSibling)
-        nodeParentPairs.push({parentElement: collapsible.expanded.content, node: child});
+      processNode(collapsible.expanded.content, child);
+
     collapsible.expanded.end.appendChild(createTag(node, true, false));
 
     collapsible.collapsed.content.appendChild(createTag(node, false, false));

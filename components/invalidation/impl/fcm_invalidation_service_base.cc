@@ -247,16 +247,16 @@ void FCMInvalidationServiceBase::PopulateClientID() {
   instance_id::InstanceID* instance_id =
       instance_id_driver_->GetInstanceID(GetApplicationName());
   instance_id->GetID(
-      base::Bind(&FCMInvalidationServiceBase::OnInstanceIDReceived,
-                 base::Unretained(this)));
+      base::BindOnce(&FCMInvalidationServiceBase::OnInstanceIDReceived,
+                     base::Unretained(this)));
 }
 
 void FCMInvalidationServiceBase::ResetClientID() {
   instance_id::InstanceID* instance_id =
       instance_id_driver_->GetInstanceID(GetApplicationName());
   instance_id->DeleteID(
-      base::Bind(&FCMInvalidationServiceBase::OnDeleteInstanceIDCompleted,
-                 base::Unretained(this)));
+      base::BindOnce(&FCMInvalidationServiceBase::OnDeleteInstanceIDCompleted,
+                     base::Unretained(this)));
 
   // Immediately clear our cached values (before we get confirmation of the
   // deletion), since they shouldn't be used anymore. Lower layers are the

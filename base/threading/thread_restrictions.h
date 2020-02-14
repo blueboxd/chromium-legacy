@@ -7,6 +7,7 @@
 
 #include "base/base_export.h"
 #include "base/gtest_prod_util.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 
@@ -375,8 +376,8 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class content::RenderProcessHostImpl;
   friend class weblayer::WebLayerPathProvider;
 
-  ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;
-  ~ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;
+  ScopedAllowBlocking(const Location& from_here = Location::Current());
+  ~ScopedAllowBlocking();
 
 #if DCHECK_IS_ON()
   const bool was_disallowed_;
@@ -527,10 +528,10 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class service_manager::ServiceProcessLauncher;
   friend class ui::WindowResizeHelperMac;  // http://crbug.com/902829
 
-  ScopedAllowBaseSyncPrimitivesOutsideBlockingScope()
-      EMPTY_BODY_IF_DCHECK_IS_OFF;
-  ~ScopedAllowBaseSyncPrimitivesOutsideBlockingScope()
-      EMPTY_BODY_IF_DCHECK_IS_OFF;
+  ScopedAllowBaseSyncPrimitivesOutsideBlockingScope(
+      const Location& from_here = Location::Current());
+
+  ~ScopedAllowBaseSyncPrimitivesOutsideBlockingScope();
 
 #if DCHECK_IS_ON()
   const bool was_disallowed_;
@@ -597,8 +598,8 @@ class BASE_EXPORT ThreadRestrictions {
   // DEPRECATED. Use ScopedAllowBlocking(ForTesting).
   class BASE_EXPORT ScopedAllowIO {
    public:
-    ScopedAllowIO() EMPTY_BODY_IF_DCHECK_IS_OFF;
-    ~ScopedAllowIO() EMPTY_BODY_IF_DCHECK_IS_OFF;
+    ScopedAllowIO(const Location& from_here = Location::Current());
+    ~ScopedAllowIO();
 
    private:
 #if DCHECK_IS_ON()

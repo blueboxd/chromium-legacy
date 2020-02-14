@@ -8,11 +8,17 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.util.TypedValue;
+import android.view.View;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import androidx.annotation.DrawableRes;
 
 import org.chromium.base.LifetimeAssert;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.components.omnibox.SecurityStatusIcon;
 import org.chromium.weblayer_private.interfaces.IObjectWrapper;
 import org.chromium.weblayer_private.interfaces.IUrlBarController;
 import org.chromium.weblayer_private.interfaces.ObjectWrapper;
@@ -66,15 +72,19 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
     }
 
     protected class UrlBarView
-            extends TextView implements BrowserImpl.VisibleSecurityStateObserver {
+            extends LinearLayout implements BrowserImpl.VisibleSecurityStateObserver {
         private float mTextSize;
+        private TextView mUrlTextView;
+        private ImageButton mSecurityButton;
+
         public UrlBarView(@NonNull Context context, Bundle options) {
             super(context);
+            mTextSize = options.getFloat(URL_TEXT_SIZE, DEFAULT_TEXT_SIZE);
+            View.inflate(getContext(), R.layout.weblayer_url_bar, this);
+            mUrlTextView = findViewById(R.id.url_text);
+            mSecurityButton = (ImageButton) findViewById(R.id.security_button);
 
             updateView();
-
-            mTextSize = options.getFloat(URL_TEXT_SIZE, DEFAULT_TEXT_SIZE);
-            setTextSize(TypedValue.COMPLEX_UNIT_SP, Math.max(MINIMUM_TEXT_SIZE, mTextSize));
         }
 
         // BrowserImpl.VisibleSecurityStateObserver
@@ -100,12 +110,31 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
         }
 
         private void updateView() {
-            // TODO(crbug.com/1025607): Add a way to get a formatted URL based
-            // on mOptions.
             if (mBrowserImpl == null) return;
             String displayUrl =
                     UrlBarControllerImplJni.get().getUrlForDisplay(mNativeUrlBarController);
-            setText(displayUrl);
+            mUrlTextView.setText(displayUrl);
+            mUrlTextView.setTextSize(
+                    TypedValue.COMPLEX_UNIT_SP, Math.max(MINIMUM_TEXT_SIZE, mTextSize));
+
+            mSecurityButton.setImageResource(getSecurityIcon());
+            mSecurityButton.setContentDescription(getContext().getResources().getString(
+                    SecurityStatusIcon.getSecurityIconContentDescriptionResourceId(
+                            UrlBarControllerImplJni.get().getConnectionSecurityLevel(
+                                    mNativeUrlBarController))));
+
+            // TODO(crbug.com/1025607): Set a click listener to show Page Info UI.
+        }
+
+        @DrawableRes
+        private int getSecurityIcon() {
+            return SecurityStatusIcon.getSecurityIconResource(
+                    UrlBarControllerImplJni.get().getConnectionSecurityLevel(
+                            mNativeUrlBarController),
+                    UrlBarControllerImplJni.get().shouldShowDangerTriangleForWarningLevel(
+                            mNativeUrlBarController),
+                    mBrowserImpl.isWindowOnSmallDevice(),
+                    /* skipIconForNeutralState= */ true);
         }
     }
 
@@ -114,5 +143,7 @@ public class UrlBarControllerImpl extends IUrlBarController.Stub {
         long createUrlBarController(long browserPtr);
         void deleteUrlBarController(long urlBarControllerImplPtr);
         String getUrlForDisplay(long nativeUrlBarControllerImpl);
+        int getConnectionSecurityLevel(long nativeUrlBarControllerImpl);
+        boolean shouldShowDangerTriangleForWarningLevel(long nativeUrlBarControllerImpl);
     }
 }

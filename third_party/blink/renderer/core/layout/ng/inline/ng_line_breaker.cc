@@ -1437,6 +1437,10 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
       !leading_floats_.IsEmpty()) {
     DCHECK_LT(leading_floats_index_, leading_floats_.size());
     item_result->positioned_float = leading_floats_[leading_floats_index_++];
+
+    // Don't break after leading floats if indented.
+    if (position_ != 0)
+      item_result->can_break_after = false;
     return;
   }
 

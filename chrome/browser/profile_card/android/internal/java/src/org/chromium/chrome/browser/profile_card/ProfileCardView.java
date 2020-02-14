@@ -16,7 +16,7 @@ import android.widget.TextView;
 import org.chromium.chrome.browser.profile_card.internal.R;
 
 /**
- * UI component that handles showing a text bubble with a preceding image.
+ * UI component that handles showing a profile card view.
  */
 public class ProfileCardView extends LinearLayout {
     private View mMainContentView;

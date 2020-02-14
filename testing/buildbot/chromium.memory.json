@@ -4801,7 +4801,7 @@
               "os": "Ubuntu-16.04"
             }
           ],
-          "shards": 2
+          "shards": 4
         },
         "test": "content_browsertests",
         "test_target": "//content/test:content_browsertests"

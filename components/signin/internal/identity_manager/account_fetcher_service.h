@@ -138,6 +138,7 @@ class AccountFetcherService : public ProfileOAuth2TokenServiceObserver {
   void FetchAccountImage(const CoreAccountId& account_id);
 
   void OnImageFetched(const CoreAccountId& account_id,
+                      const std::string& image_url_with_size,
                       const gfx::Image& image,
                       const image_fetcher::RequestMetadata& image_metadata);
 

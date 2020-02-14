@@ -114,8 +114,11 @@ void UserTiming::ClearMarks(const AtomicString& mark_name) {
 
 double UserTiming::FindExistingMarkStartTime(const AtomicString& mark_name,
                                              ExceptionState& exception_state) {
-  if (marks_map_.Contains(mark_name))
-    return marks_map_.at(mark_name).back()->startTime();
+  PerformanceEntryMap::const_iterator existing_marks =
+      marks_map_.find(mark_name);
+  if (existing_marks != marks_map_.end()) {
+    return existing_marks->value.back()->startTime();
+  }
 
   PerformanceTiming::PerformanceTimingGetter timing_function =
       PerformanceTiming::GetAttributeMapping().at(mark_name);

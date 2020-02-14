@@ -190,6 +190,8 @@ bool CSSParserContext::operator==(const CSSParserContext& other) const {
          resource_fetch_restriction_ == other.resource_fetch_restriction_;
 }
 
+// TODO(xiaochengh): This function never returns null. Change it to return a
+// const reference to avoid confusion.
 const CSSParserContext* StrictCSSParserContext(
     SecureContextMode secure_context_mode) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<Persistent<CSSParserContext>>,

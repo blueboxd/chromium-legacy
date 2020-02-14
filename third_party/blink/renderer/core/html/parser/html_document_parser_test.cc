@@ -6,7 +6,6 @@
 
 #include <memory>
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_prerendering_support.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/loader/prerenderer_client.h"
@@ -24,19 +23,9 @@ class MockPrerendererClient : public PrerendererClient {
       : PrerendererClient(page, nullptr), is_prefetch_only_(is_prefetch_only) {}
 
  private:
-  void WillAddPrerender(LocalFrame*, Prerender*) override {}
   bool IsPrefetchOnly() override { return is_prefetch_only_; }
 
   bool is_prefetch_only_;
-};
-
-class MockWebPrerenderingSupport : public WebPrerenderingSupport {
- public:
-  MockWebPrerenderingSupport() { Initialize(this); }
-
-  void Add(const WebPrerender&) override {}
-  void Cancel(const WebPrerender&) override {}
-  void Abandon(const WebPrerender&) override {}
 };
 
 class HTMLDocumentParserTest : public PageTestBase {
@@ -54,9 +43,6 @@ class HTMLDocumentParserTest : public PageTestBase {
     parser->SetDecoder(std::move(decoder));
     return parser;
   }
-
- private:
-  MockWebPrerenderingSupport prerendering_support_;
 };
 
 }  // namespace

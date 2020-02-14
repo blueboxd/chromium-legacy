@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PRERENDER_PRERENDER_PROCESSOR_IMPL_H_
 #define CHROME_BROWSER_PRERENDER_PRERENDER_PROCESSOR_IMPL_H_
 
-#include "chrome/common/prerender.mojom.h"
+#include "third_party/blink/public/mojom/prerender/prerender.mojom.h"
 
 namespace content {
 class RenderFrameHost;
@@ -13,20 +13,20 @@ class RenderFrameHost;
 
 namespace prerender {
 
-class PrerenderProcessorImpl : public chrome::mojom::PrerenderProcessor {
+class PrerenderProcessorImpl : public blink::mojom::PrerenderProcessor {
  public:
   PrerenderProcessorImpl(int render_process_id, int render_frame_id);
   ~PrerenderProcessorImpl() override;
 
   static void Create(
       content::RenderFrameHost* frame_host,
-      mojo::PendingReceiver<chrome::mojom::PrerenderProcessor> receiver);
+      mojo::PendingReceiver<blink::mojom::PrerenderProcessor> receiver);
 
-  // chrome::mojom::PrerenderProcessor implementation
+  // blink::mojom::PrerenderProcessor implementation
   void AddPrerender(
-      chrome::mojom::PrerenderAttributesPtr attributes,
-      mojo::PendingRemote<chrome::mojom::PrerenderHandleClient> client,
-      mojo::PendingReceiver<chrome::mojom::PrerenderHandle> handle) override;
+      blink::mojom::PrerenderAttributesPtr attributes,
+      mojo::PendingRemote<blink::mojom::PrerenderHandleClient> client,
+      mojo::PendingReceiver<blink::mojom::PrerenderHandle> handle) override;
 
  private:
   int render_process_id_;

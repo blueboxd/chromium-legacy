@@ -246,6 +246,9 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
 #else
   image_format_ = RGBA_8888;
 #endif
+  // GL is origin is at bottom left normally, all Surfaceless implementations
+  // are flipped.
+  DCHECK(gl_surface_->FlipsVertically());
 
   capabilities_.android_surface_control_feature_enabled = true;
   capabilities_.supports_post_sub_buffer = gl_surface_->SupportsPostSubBuffer();
@@ -256,6 +259,11 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   // Set supports_surfaceless to enable overlays.
   capabilities_.supports_surfaceless = true;
   capabilities_.preserve_buffer_content = true;
+  // We expect origin of buffers is at top left, so set flipped_output_surface
+  // to true.
+  // TODO(penghuang): flipped_output_surface is confusing, change it to
+  // something like GrSurfaceOrigin.
+  capabilities_.flipped_output_surface = true;
 }
 
 SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(

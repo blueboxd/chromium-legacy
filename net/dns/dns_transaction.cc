@@ -183,7 +183,7 @@ class DnsAttempt {
 
 class DnsUDPAttempt : public DnsAttempt {
  public:
-  DnsUDPAttempt(unsigned server_index,
+  DnsUDPAttempt(size_t server_index,
                 std::unique_ptr<DnsSession::SocketLease> socket_lease,
                 std::unique_ptr<DnsQuery> query)
       : DnsAttempt(server_index),
@@ -326,7 +326,7 @@ class DnsUDPAttempt : public DnsAttempt {
 
 class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
  public:
-  DnsHTTPAttempt(unsigned doh_server_index,
+  DnsHTTPAttempt(size_t doh_server_index,
                  std::unique_ptr<DnsQuery> query,
                  const string& server_template,
                  const GURL& gurl_without_parameters,
@@ -588,7 +588,7 @@ void ConstructDnsHTTPAttempt(DnsSession* session,
 
 class DnsTCPAttempt : public DnsAttempt {
  public:
-  DnsTCPAttempt(unsigned server_index,
+  DnsTCPAttempt(size_t server_index,
                 std::unique_ptr<StreamSocket> socket,
                 std::unique_ptr<DnsQuery> query)
       : DnsAttempt(server_index),
@@ -984,7 +984,7 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
         // so the ServerStats have not been updated yet.
         session_->RecordServerSuccess(doh_server_index,
                                       true /* is_doh_server */);
-        session_->RecordRTT(doh_server_index, true /* is_doh_server */,
+        session_->RecordRtt(doh_server_index, true /* is_doh_server */,
                             false /* is_validated_doh_server */,
                             base::TimeTicks::Now() - query_start_time, rv);
         context_->SetProbeSuccess(doh_server_index, true /* success */,
@@ -1192,7 +1192,7 @@ class DnsTransactionImpl : public DnsTransaction,
   // next nameserver.
   AttemptResult MakeUDPAttempt() {
     DCHECK(!secure_);
-    unsigned attempt_number = attempts_.size();
+    size_t attempt_number = attempts_.size();
 
     uint16_t id = session_->NextQueryId();
     std::unique_ptr<DnsQuery> query;
@@ -1204,10 +1204,10 @@ class DnsTransactionImpl : public DnsTransaction,
 
     const DnsConfig& config = session_->config();
 
-    unsigned non_doh_server_index =
+    size_t non_doh_server_index =
         (first_server_index_ + attempt_number) % config.nameservers.size();
     // Skip over known failed servers.
-    non_doh_server_index = session_->NextGoodServerIndex(non_doh_server_index);
+    non_doh_server_index = session_->ServerIndexToUse(non_doh_server_index);
 
     std::unique_ptr<DnsSession::SocketLease> lease =
         session_->AllocateSocket(non_doh_server_index, net_log_.source());
@@ -1245,7 +1245,9 @@ class DnsTransactionImpl : public DnsTransaction,
     // have configured and search for the next good server.
     base::Optional<size_t> doh_server_index =
         resolve_context_->DohServerIndexToUse(
-            doh_attempts_ % session_->config().dns_over_https_servers.size(),
+            first_server_index_ +
+                doh_attempts_ %
+                    session_->config().dns_over_https_servers.size(),
             secure_dns_mode_, session_.get());
     // Do not construct an attempt if there is no DoH server that we should send
     // a request to.
@@ -1275,7 +1277,7 @@ class DnsTransactionImpl : public DnsTransaction,
     DCHECK(previous_attempt);
     DCHECK(!had_tcp_attempt_);
 
-    unsigned server_index = previous_attempt->server_index();
+    size_t server_index = previous_attempt->server_index();
 
     std::unique_ptr<StreamSocket> socket(
         session_->CreateTCPSocket(server_index, net_log_.source()));
@@ -1319,9 +1321,7 @@ class DnsTransactionImpl : public DnsTransaction,
     net_log_.BeginEventWithStringParams(NetLogEventType::DNS_TRANSACTION_QUERY,
                                         "qname", dotted_qname);
 
-    first_server_index_ = session_->config().nameservers.empty()
-                              ? 0
-                              : session_->NextFirstServerIndex();
+    first_server_index_ = session_->FirstServerIndex(secure_);
     attempts_.clear();
     had_tcp_attempt_ = false;
     return MakeAttempt();
@@ -1337,7 +1337,7 @@ class DnsTransactionImpl : public DnsTransaction,
       bool is_validated_doh_server =
           secure_ && resolve_context_->GetDohServerAvailability(
                          attempt->server_index(), session_.get());
-      session_->RecordRTT(attempt->server_index(), secure_ /* is_doh_server */,
+      session_->RecordRtt(attempt->server_index(), secure_ /* is_doh_server */,
                           is_validated_doh_server,
                           base::TimeTicks::Now() - start, rv);
     }
@@ -1490,7 +1490,7 @@ class DnsTransactionImpl : public DnsTransaction,
   bool had_tcp_attempt_;
 
   // Index of the first server to try on each search query.
-  int first_server_index_;
+  size_t first_server_index_;
 
   base::OneShotTimer timer_;
 

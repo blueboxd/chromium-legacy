@@ -17,7 +17,6 @@
 #include "chrome/browser/prerender/prerender_handle.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/common/prerender.mojom.h"
 #include "chrome/common/prerender_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -63,18 +62,18 @@ void RecordLinkManagerStarting(const uint32_t rel_types) {
 
 // Implementation of the interface used to control a requested prerender.
 class PrerenderLinkManager::PrerenderHandleProxy
-    : public chrome::mojom::PrerenderHandle {
+    : public blink::mojom::PrerenderHandle {
  public:
   PrerenderHandleProxy(
       PrerenderLinkManager* prerender_link_manager,
       PrerenderLinkManager::LinkPrerender* link_prerender,
-      mojo::PendingReceiver<chrome::mojom::PrerenderHandle> handle)
+      mojo::PendingReceiver<blink::mojom::PrerenderHandle> handle)
       : prerender_link_manager_(prerender_link_manager),
         link_prerender_(link_prerender),
         receiver_(this, std::move(handle)) {}
   ~PrerenderHandleProxy() override = default;
 
-  // chrome::mojom::PrerenderHandle implementation
+  // blink::mojom::PrerenderHandle implementation
   void Cancel() override {
     prerender_link_manager_->OnCancelPrerender(link_prerender_);
   }
@@ -85,7 +84,7 @@ class PrerenderLinkManager::PrerenderHandleProxy
  private:
   PrerenderLinkManager* prerender_link_manager_;
   LinkPrerender* link_prerender_;
-  mojo::Receiver<chrome::mojom::PrerenderHandle> receiver_;
+  mojo::Receiver<blink::mojom::PrerenderHandle> receiver_;
 };
 
 // Used to store state about a requested prerender.
@@ -94,8 +93,8 @@ class PrerenderLinkManager::LinkPrerender {
   LinkPrerender(
       int launcher_render_process_id,
       int launcher_render_view_id,
-      chrome::mojom::PrerenderAttributesPtr attributes,
-      mojo::PendingRemote<chrome::mojom::PrerenderHandleClient> handle_client,
+      blink::mojom::PrerenderAttributesPtr attributes,
+      mojo::PendingRemote<blink::mojom::PrerenderHandleClient> handle_client,
       base::TimeTicks creation_time,
       PrerenderContents* deferred_launcher);
   ~LinkPrerender();
@@ -113,7 +112,7 @@ class PrerenderLinkManager::LinkPrerender {
   gfx::Size size;
 
   // Notification interface back to the requestor of this prerender.
-  mojo::Remote<chrome::mojom::PrerenderHandleClient> remote_handle_client;
+  mojo::Remote<blink::mojom::PrerenderHandleClient> remote_handle_client;
 
   // Control interface used by the requestor of this prerender. Owned by this
   // class to ensure that it gets destroyed at the same time.
@@ -138,8 +137,8 @@ class PrerenderLinkManager::LinkPrerender {
 PrerenderLinkManager::LinkPrerender::LinkPrerender(
     int launcher_render_process_id,
     int launcher_render_view_id,
-    chrome::mojom::PrerenderAttributesPtr attributes,
-    mojo::PendingRemote<chrome::mojom::PrerenderHandleClient> handle_client,
+    blink::mojom::PrerenderAttributesPtr attributes,
+    mojo::PendingRemote<blink::mojom::PrerenderHandleClient> handle_client,
     base::TimeTicks creation_time,
     PrerenderContents* deferred_launcher)
     : launcher_render_process_id(launcher_render_process_id),
@@ -218,9 +217,9 @@ PrerenderLinkManager::~PrerenderLinkManager() {
 bool PrerenderLinkManager::OnAddPrerender(
     int launcher_render_process_id,
     int launcher_render_view_id,
-    chrome::mojom::PrerenderAttributesPtr attributes,
-    mojo::PendingRemote<chrome::mojom::PrerenderHandleClient> handle_client,
-    mojo::PendingReceiver<chrome::mojom::PrerenderHandle> handle) {
+    blink::mojom::PrerenderAttributesPtr attributes,
+    mojo::PendingRemote<blink::mojom::PrerenderHandleClient> handle_client,
+    mojo::PendingReceiver<blink::mojom::PrerenderHandle> handle) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   content::RenderViewHost* rvh = content::RenderViewHost::FromID(
       launcher_render_process_id, launcher_render_view_id);
@@ -251,7 +250,7 @@ bool PrerenderLinkManager::OnAddPrerender(
       std::move(attributes), std::move(handle_client),
       manager_->GetCurrentTimeTicks(), prerender_contents);
 
-  // Setup implementation of chrome::mojom::PrerenderHandle as a proxy to the
+  // Setup implementation of blink::mojom::PrerenderHandle as a proxy to the
   // real PrerenderHandle. The first two raw pointers are safe as the proxy is
   // owned by |prerender| which is owned by |this|.
   prerender->handle_proxy = std::make_unique<PrerenderHandleProxy>(

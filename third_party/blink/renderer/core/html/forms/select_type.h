@@ -28,7 +28,7 @@ class SelectType : public GarbageCollected<SelectType> {
  protected:
   explicit SelectType(HTMLSelectElement& select);
 
-  Member<HTMLSelectElement> select_;
+  const Member<HTMLSelectElement> select_;
 
  private:
   SelectType(const SelectType&) = delete;

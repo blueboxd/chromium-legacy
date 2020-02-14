@@ -10,7 +10,7 @@
 #include "base/optional.h"
 #include "base/sequenced_task_runner.h"
 #include "base/timer/timer.h"
-#include "chrome/common/prerender.mojom.h"
+#include "chrome/common/prerender_canceler.mojom.h"
 #include "chrome/common/prerender_types.h"
 #include "net/base/request_priority.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"

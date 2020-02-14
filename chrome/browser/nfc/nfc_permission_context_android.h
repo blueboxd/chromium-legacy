@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_NFC_NFC_PERMISSION_CONTEXT_ANDROID_H_
 #define CHROME_BROWSER_NFC_NFC_PERMISSION_CONTEXT_ANDROID_H_
 
-#include "chrome/browser/android/nfc_system_level_setting.h"
+#include "chrome/browser/nfc/android/nfc_system_level_setting.h"
 #include "chrome/browser/nfc/nfc_permission_context.h"
 
 namespace permissions {

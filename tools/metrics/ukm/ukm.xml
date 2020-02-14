@@ -3942,15 +3942,15 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
-<event name="Graphics.Smoothness.Throughput">
+<event name="Graphics.Smoothness.PercentDroppedFrames">
   <owner>animations-dev@chromium.org</owner>
   <owner>sadrul@chromium.org</owner>
   <summary>
-    Tracks the throughput of a particular sequence of frames such as during
-    scroll or animation. Throughput is measured by tracking the number of frames
-    the sequence was expected to produce, and the number of frames that were
-    actually displayed on screen. Throughput is the ratio of actual to expected,
-    converted to a percentage.
+    Tracks the percent of dropped frames for a particular sequence of frames
+    such as during scroll or animation. PercentDroppedFrames is measured by
+    tracking the number of frames the sequence was expected to produce, and the
+    number of frames that were not displayed on screen (dropped). It is the
+    ratio of dropped over expected, converted to a percentage.
   </summary>
   <metric name="CompositorThread.CompositorAnimation">
     <summary>
@@ -4147,6 +4147,147 @@ be describing additional metrics about the same event.
         </statistics>
       </history>
     </aggregation>
+  </metric>
+</event>
+
+<event name="Graphics.Smoothness.Throughput">
+  <owner>animations-dev@chromium.org</owner>
+  <owner>sadrul@chromium.org</owner>
+  <summary>
+    As of 2020-02-12, this is deprecated in favor of
+    Graphics.Smoothness.PercentDroppedFrames.
+  </summary>
+  <metric name="CompositorThread.CompositorAnimation">
+    <summary>
+      The throughput of the compositor thread during a compositor animation.
+    </summary>
+  </metric>
+  <metric name="CompositorThread.MainThreadAnimation">
+    <summary>
+      The throughput of the compositor thread during a main thread animation.
+    </summary>
+  </metric>
+  <metric name="CompositorThread.PinchZoom">
+    <summary>
+      The throughput of the compositor thread during pinch-zoom interactions.
+    </summary>
+  </metric>
+  <metric name="CompositorThread.RAF">
+    <summary>
+      The throughput of the compositor thread during rAF callback driven
+      animation.
+    </summary>
+  </metric>
+  <metric name="CompositorThread.TouchScroll">
+    <summary>
+      The throughput of the compositor thread during touchscroll driven
+      interactions.
+    </summary>
+  </metric>
+  <metric name="CompositorThread.Universal">
+    <summary>
+      The throughput of the compositor thread for all frame production.
+    </summary>
+  </metric>
+  <metric name="CompositorThread.Video">
+    <summary>
+      The throughput of the compositor thread during video play.
+    </summary>
+  </metric>
+  <metric name="CompositorThread.WheelScroll">
+    <summary>
+      The throughput of the compositor thread during mousewheel scroll driven
+      interactions.
+    </summary>
+  </metric>
+  <metric name="MainThread.CompositorAnimation">
+    <summary>
+      The throughput of the main thread during a compositor animation.
+    </summary>
+  </metric>
+  <metric name="MainThread.MainThreadAnimation">
+    <summary>
+      The throughput of the main thread during a main thread animation.
+    </summary>
+  </metric>
+  <metric name="MainThread.PinchZoom">
+    <summary>
+      The throughput of the main thread during pinch-zoom interactions.
+    </summary>
+  </metric>
+  <metric name="MainThread.RAF">
+    <summary>
+      The throughput of the main thread during rAF callback driven animation.
+    </summary>
+  </metric>
+  <metric name="MainThread.TouchScroll">
+    <summary>
+      The throughput of the main thread during touchscroll driven interactions.
+    </summary>
+  </metric>
+  <metric name="MainThread.Universal">
+    <summary>
+      The throughput of the main thread for all frame production.
+    </summary>
+  </metric>
+  <metric name="MainThread.Video">
+    <summary>
+      The throughput of the main thread during video play.
+    </summary>
+  </metric>
+  <metric name="MainThread.WheelScroll">
+    <summary>
+      The throughput of the main thread during mousewheel scroll driven
+      interactions.
+    </summary>
+  </metric>
+  <metric name="SlowerThread.CompositorAnimation">
+    <summary>
+      The worse throughput of the main and the compositor thread during a
+      compositor animation.
+    </summary>
+  </metric>
+  <metric name="SlowerThread.MainThreadAnimation">
+    <summary>
+      The worse throughput of the main and the compositor thread during a main
+      thread animation.
+    </summary>
+  </metric>
+  <metric name="SlowerThread.PinchZoom">
+    <summary>
+      The worse throughput of the main and the compositor thread during
+      pinch-zoom interactions.
+    </summary>
+  </metric>
+  <metric name="SlowerThread.RAF">
+    <summary>
+      The worse throughput of the main and the compositor thread during rAF
+      callback driven animation.
+    </summary>
+  </metric>
+  <metric name="SlowerThread.TouchScroll">
+    <summary>
+      The worse throughput of the main and the compositor thread during
+      touchscroll driven interactions.
+    </summary>
+  </metric>
+  <metric name="SlowerThread.Universal">
+    <summary>
+      The worse throughput of the main and the compositor thread for all frame
+      production.
+    </summary>
+  </metric>
+  <metric name="SlowerThread.Video">
+    <summary>
+      The worse throughput of the main and the compositor thread during video
+      play.
+    </summary>
+  </metric>
+  <metric name="SlowerThread.WheelScroll">
+    <summary>
+      The worse throughput of the main and the compositor thread during
+      mousewheel scroll driven interactions.
+    </summary>
   </metric>
 </event>
 

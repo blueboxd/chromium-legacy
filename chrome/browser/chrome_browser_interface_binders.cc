@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals.mojom.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals_ui.h"
-#include "chrome/common/prerender.mojom.h"
 #include "components/dom_distiller/content/browser/distillability_driver.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_service_impl.h"
 #include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
@@ -54,6 +53,7 @@
 #include "third_party/blink/public/mojom/insecure_input/insecure_input_service.mojom.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
+#include "third_party/blink/public/mojom/prerender/prerender.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
 
 #if BUILDFLAG(ENABLE_FEED_IN_CHROME)
@@ -340,7 +340,7 @@ void PopulateChromeFrameBinders(
   map->Add<mojom::PrerenderCanceler>(
       base::BindRepeating(&BindPrerenderCanceler));
 
-  map->Add<mojom::PrerenderProcessor>(
+  map->Add<blink::mojom::PrerenderProcessor>(
       base::BindRepeating(&prerender::PrerenderProcessorImpl::Create));
 
   map->Add<performance_manager::mojom::DocumentCoordinationUnit>(

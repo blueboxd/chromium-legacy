@@ -219,7 +219,9 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOneSmsRequestPerOrigin) {
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 }
 
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOneSmsRequestPerOriginPerTab) {
+// Disabled test: https://crbug.com/1052385
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest,
+                       DISABLED_AtMostOneSmsRequestPerOriginPerTab) {
   auto provider = std::make_unique<MockSmsProvider>();
   MockSmsProvider* mock_provider_ptr = provider.get();
   GetSmsFetcher()->SetSmsProviderForTesting(std::move(provider));
@@ -390,7 +392,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Close) {
   ExpectNoOutcomeUKM();
 }
 
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
+// Disabled test: https://crbug.com/1052385
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsSameOrigin) {
   auto provider = std::make_unique<MockSmsProvider>();
   MockSmsProvider* mock_provider_ptr = provider.get();
   GetSmsFetcher()->SetSmsProviderForTesting(std::move(provider));
@@ -470,7 +473,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
 }
 
-IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsDifferentOrigin) {
+// Disabled test: https://crbug.com/1052385
+IN_PROC_BROWSER_TEST_F(SmsBrowserTest, DISABLED_TwoTabsDifferentOrigin) {
   auto provider = std::make_unique<MockSmsProvider>();
   MockSmsProvider* mock_provider_ptr = provider.get();
   GetSmsFetcher()->SetSmsProviderForTesting(std::move(provider));

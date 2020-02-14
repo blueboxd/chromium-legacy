@@ -133,8 +133,8 @@ PropertyRegistration* PropertyRegistration::MaybeCreate(
     const CSSParserContext* parser_context =
         document.ElementSheet().Contents()->ParserContext();
     const bool is_animation_tainted = false;
-    initial = syntax->Parse(initial_variable_data->TokenRange(), parser_context,
-                            is_animation_tainted);
+    initial = syntax->Parse(initial_variable_data->TokenRange(),
+                            *parser_context, is_animation_tainted);
     if (!initial)
       return nullptr;
     if (!ComputationallyIndependent(*initial))
@@ -195,7 +195,7 @@ void PropertyRegistration::registerProperty(
     const auto tokens = tokenizer.TokenizeToEOF();
     bool is_animation_tainted = false;
     initial = syntax_definition->Parse(CSSParserTokenRange(tokens),
-                                       parser_context, is_animation_tainted);
+                                       *parser_context, is_animation_tainted);
     if (!initial) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kSyntaxError,

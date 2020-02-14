@@ -297,13 +297,6 @@ class ASH_EXPORT ShelfLayoutManager
   friend class NotificationTrayTest;
   friend class Shelf;
 
-  struct TargetBounds {
-    TargetBounds();
-    ~TargetBounds();
-
-    float opacity;
-  };
-
   struct State {
     State();
 
@@ -507,6 +500,8 @@ class ASH_EXPORT ShelfLayoutManager
   // Current state.
   State state_;
 
+  float target_opacity_ = 0.0f;
+
   ShelfWidget* shelf_widget_;
   Shelf* shelf_;
 
@@ -607,9 +602,6 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Location of the beginning of a drag in screen coordinates.
   gfx::Point drag_start_point_in_screen_;
-
-  // The current set of target bounds for shelf-related widgets.
-  TargetBounds target_bounds_;
 
   // When it is true, |CalculateAutoHideState| returns the current auto hide
   // state.

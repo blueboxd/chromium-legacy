@@ -1358,6 +1358,11 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
                << device_input_layout_->coded_size().ToString();
       return false;
     }
+    // Make sure that the crop is preserved as we have changed the input
+    // resolution.
+    if (!ApplyCrop()) {
+      return false;
+    }
     if (native_input_mode_) {
       input_frame_size_ = VideoFrame::DetermineAlignedSize(
           input_format, encoder_input_visible_rect_.size());
@@ -1369,18 +1374,9 @@ bool V4L2VideoEncodeAccelerator::NegotiateInputFormat(
   return false;
 }
 
-bool V4L2VideoEncodeAccelerator::SetFormats(VideoPixelFormat input_format,
-                                            VideoCodecProfile output_profile) {
+bool V4L2VideoEncodeAccelerator::ApplyCrop() {
   VLOGF(2);
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
-  DCHECK(!input_queue_->IsStreaming());
-  DCHECK(!output_queue_->IsStreaming());
-
-  if (!SetOutputFormat(output_profile))
-    return false;
-
-  if (!NegotiateInputFormat(input_format, encoder_input_visible_rect_.size()))
-    return false;
 
   struct v4l2_rect visible_rect;
   visible_rect.left = encoder_input_visible_rect_.x();
@@ -1413,6 +1409,22 @@ bool V4L2VideoEncodeAccelerator::SetFormats(VideoPixelFormat input_format,
                 visible_rect.height);
   VLOGF(2) << "After adjusted by driver, encoder_input_visible_rect_="
            << encoder_input_visible_rect_.ToString();
+  return true;
+}
+
+bool V4L2VideoEncodeAccelerator::SetFormats(VideoPixelFormat input_format,
+                                            VideoCodecProfile output_profile) {
+  VLOGF(2);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
+  DCHECK(!input_queue_->IsStreaming());
+  DCHECK(!output_queue_->IsStreaming());
+
+  if (!SetOutputFormat(output_profile))
+    return false;
+
+  if (!NegotiateInputFormat(input_format, encoder_input_visible_rect_.size()))
+    return false;
+
   return true;
 }
 

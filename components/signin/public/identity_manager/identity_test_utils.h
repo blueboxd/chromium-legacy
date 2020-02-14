@@ -153,6 +153,7 @@ void UpdateAccountInfoForAccount(IdentityManager* identity_manager,
 
 void SimulateAccountImageFetch(IdentityManager* identity_manager,
                                const CoreAccountId& account_id,
+                               const std::string& image_url_with_size,
                                const gfx::Image& image);
 
 // Sets whether the list of accounts in Gaia cookie jar is fresh and does not

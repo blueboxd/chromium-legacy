@@ -254,8 +254,8 @@ void FCMNetworkHandler::StartTokenValidation() {
       sender_id_, kGCMScope, GetTimeToLive(sender_id_),
       std::map<std::string, std::string>(),
       /*flags=*/{InstanceID::Flags::kIsLazy},
-      base::Bind(&FCMNetworkHandler::DidReceiveTokenForValidation,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FCMNetworkHandler::DidReceiveTokenForValidation,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FCMNetworkHandler::DidReceiveTokenForValidation(

@@ -147,7 +147,8 @@ TEST_F(GAIAInfoUpdateServiceTest, SyncOnSyncOff) {
 
   gfx::Image gaia_picture = gfx::test::CreateImage(256, 256);
   signin::SimulateAccountImageFetch(identity_test_env()->identity_manager(),
-                                    info.account_id, gaia_picture);
+                                    info.account_id, "GAIA_IMAGE_URL_WITH_SIZE",
+                                    gaia_picture);
   // Set a fake picture URL.
   EXPECT_TRUE(gfx::test::AreImagesEqual(gaia_picture, entry->GetAvatarIcon()));
   // Log out.
@@ -177,7 +178,8 @@ TEST_F(GAIAInfoUpdateServiceTest, SyncOnSyncOffKeepAllAccounts) {
   ProfileAttributesEntry* entry = storage()->GetAllProfilesAttributes().front();
   gfx::Image gaia_picture = gfx::test::CreateImage(256, 256);
   signin::SimulateAccountImageFetch(identity_test_env()->identity_manager(),
-                                    info.account_id, gaia_picture);
+                                    info.account_id, "GAIA_IMAGE_URL_WITH_SIZE",
+                                    gaia_picture);
   // Turn off sync but stay logged in.
   identity_test_env()->ClearPrimaryAccount(
       signin::ClearPrimaryAccountPolicy::KEEP_ALL_ACCOUNTS);
@@ -216,7 +218,8 @@ TEST_F(GAIAInfoUpdateServiceTest, LogInLogOut) {
 
   gfx::Image gaia_picture = gfx::test::CreateImage(256, 256);
   signin::SimulateAccountImageFetch(identity_test_env()->identity_manager(),
-                                    info.account_id, gaia_picture);
+                                    info.account_id, "GAIA_IMAGE_URL_WITH_SIZE",
+                                    gaia_picture);
   // Set a fake picture URL.
   EXPECT_TRUE(gfx::test::AreImagesEqual(gaia_picture, entry->GetAvatarIcon()));
   // Log out.

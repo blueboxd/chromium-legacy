@@ -476,7 +476,7 @@ SplitViewController::SnapPosition GetSnapPosition(
     drag_end_near_edge = true;
   }
 
-  if (!drag_end_near_edge) {
+  if (!drag_end_near_edge && window->GetRootWindow() == root_window) {
     // Check how far the window has been dragged.
     const auto distance = location_in_screen - initial_location_in_screen;
     const int primary_axis_distance = horizontal ? distance.x() : distance.y();

@@ -28,8 +28,6 @@ namespace ash {
 
 namespace {
 
-constexpr int kAnimationDurationMs = 250;
-
 constexpr int kPaddingBetweenItems = 8;
 
 class StatusAreaWidgetDelegateAnimationSettings
@@ -37,10 +35,9 @@ class StatusAreaWidgetDelegateAnimationSettings
  public:
   explicit StatusAreaWidgetDelegateAnimationSettings(ui::Layer* layer)
       : ui::ScopedLayerAnimationSettings(layer->GetAnimator()) {
-    SetTransitionDuration(
-        base::TimeDelta::FromMilliseconds(kAnimationDurationMs));
+    SetTransitionDuration(ShelfConfig::Get()->shelf_animation_duration());
     SetPreemptionStrategy(ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-    SetTweenType(gfx::Tween::EASE_IN_OUT);
+    SetTweenType(gfx::Tween::EASE_OUT);
   }
 
   ~StatusAreaWidgetDelegateAnimationSettings() override = default;
@@ -213,7 +210,6 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
     }
   }
 
-  layer()->GetAnimator()->StopAnimating();
   StatusAreaWidgetDelegateAnimationSettings settings(layer());
 
   Layout();

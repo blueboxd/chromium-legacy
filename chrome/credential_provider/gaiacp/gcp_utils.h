@@ -225,6 +225,7 @@ HRESULT LookupLocalizedNameForWellKnownSid(WELL_KNOWN_SID_TYPE sid_type,
 // winlogon process unusable.
 bool VerifyStartupSentinel();
 void DeleteStartupSentinel();
+void DeleteStartupSentinelForVersion(const base::string16& version);
 
 // Gets a string resource from the DLL with the given id.
 base::string16 GetStringResource(int base_message_id);

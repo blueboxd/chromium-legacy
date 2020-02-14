@@ -7,6 +7,7 @@ import("//build/config/chromecast_build.gni")
 typemaps = [
   "//chromecast/common/mojom/application_media_capabilities.typemap",
   "//chromecast/common/mojom/multiroom.typemap",
+  "//chromecast/media/mojom/decoder_config.typemap",
 ]
 
 if (chromecast_branding != "public") {

@@ -444,18 +444,21 @@ TEST_F(AccountTrackerServiceTest, TokenAvailable_UserInfo_ImageSuccess) {
                     AccountKeyToEmail(kAccountKeyAlpha)),
   }));
 
-  EXPECT_TRUE(account_tracker()
-                  ->GetAccountInfo(AccountKeyToAccountId(kAccountKeyAlpha))
-                  .account_image.IsEmpty());
+  AccountInfo account_info = account_tracker()->GetAccountInfo(
+      AccountKeyToAccountId(kAccountKeyAlpha));
+  EXPECT_TRUE(account_info.account_image.IsEmpty());
+  EXPECT_TRUE(account_info.last_downloaded_image_url_with_size.empty());
   ReturnAccountImageFetchSuccess(kAccountKeyAlpha);
   EXPECT_TRUE(CheckAccountTrackerEvents({
       TrackingEvent(UPDATED, AccountKeyToAccountId(kAccountKeyAlpha),
                     AccountKeyToGaiaId(kAccountKeyAlpha),
                     AccountKeyToEmail(kAccountKeyAlpha)),
   }));
-  EXPECT_FALSE(account_tracker()
-                   ->GetAccountInfo(AccountKeyToAccountId(kAccountKeyAlpha))
-                   .account_image.IsEmpty());
+  account_info = account_tracker()->GetAccountInfo(
+      AccountKeyToAccountId(kAccountKeyAlpha));
+  EXPECT_FALSE(account_info.account_image.IsEmpty());
+  EXPECT_EQ(account_info.last_downloaded_image_url_with_size,
+            AccountKeyToPictureURLWithSize(kAccountKeyAlpha));
 }
 
 TEST_F(AccountTrackerServiceTest, TokenAvailable_UserInfo_ImageFailure) {
@@ -468,13 +471,15 @@ TEST_F(AccountTrackerServiceTest, TokenAvailable_UserInfo_ImageFailure) {
                     AccountKeyToEmail(kAccountKeyAlpha)),
   }));
 
-  EXPECT_TRUE(account_tracker()
-                  ->GetAccountInfo(AccountKeyToAccountId(kAccountKeyAlpha))
-                  .account_image.IsEmpty());
+  AccountInfo account_info = account_tracker()->GetAccountInfo(
+      AccountKeyToAccountId(kAccountKeyAlpha));
+  EXPECT_TRUE(account_info.account_image.IsEmpty());
+  EXPECT_TRUE(account_info.last_downloaded_image_url_with_size.empty());
   ReturnAccountImageFetchFailure(kAccountKeyAlpha);
-  EXPECT_TRUE(account_tracker()
-                  ->GetAccountInfo(AccountKeyToAccountId(kAccountKeyAlpha))
-                  .account_image.IsEmpty());
+  account_info = account_tracker()->GetAccountInfo(
+      AccountKeyToAccountId(kAccountKeyAlpha));
+  EXPECT_TRUE(account_info.account_image.IsEmpty());
+  EXPECT_TRUE(account_info.last_downloaded_image_url_with_size.empty());
 }
 
 TEST_F(AccountTrackerServiceTest, TokenAvailable_UserInfo_Revoked) {

@@ -14,6 +14,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "build/build_config.h"
 #include "components/autofill/content/common/mojom/autofill_agent.mojom.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
@@ -110,6 +111,7 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
                               public FormTracker::Observer,
                               public mojom::PasswordAutofillAgent {
  public:
+  using UseFallbackData = util::StrongAlias<class UseFallbackDataTag, bool>;
   PasswordAutofillAgent(content::RenderFrame* render_frame,
                         blink::AssociatedInterfaceRegistry* registry);
   ~PasswordAutofillAgent() override;
@@ -358,8 +360,11 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // corresponding username, password elements and PasswordInfo into
   // |username_element|, |password_element| and |pasword_info|, respectively.
   // Note, that |username_element->IsNull()| can be true if |element| is a
-  // password.
+  // password. Callers have the chance to restrict the usage of fallback data
+  // by setting |use_fallback_data| to false. In that case data provided via
+  // MaybeStoreFallbackData will be ignored and the function returns early.
   bool FindPasswordInfoForElement(const blink::WebInputElement& element,
+                                  UseFallbackData use_fallback_data,
                                   blink::WebInputElement* username_element,
                                   blink::WebInputElement* password_element,
                                   PasswordInfo** password_info);

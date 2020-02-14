@@ -84,7 +84,7 @@ constexpr base::win::i18n::LanguageSelector::LangToOffset
 #undef HANDLE_LANGUAGE
 };
 
-base::FilePath GetStartupSentinelLocation() {
+base::FilePath GetStartupSentinelLocation(const base::string16& version) {
   base::FilePath sentienal_path;
   if (!base::PathService::Get(base::DIR_COMMON_APP_DATA, &sentienal_path)) {
     HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
@@ -95,8 +95,7 @@ base::FilePath GetStartupSentinelLocation() {
   sentienal_path = sentienal_path.Append(GetInstallParentDirectoryName())
                        .Append(kCredentialProviderFolder);
 
-  return sentienal_path.Append(TEXT(CHROME_VERSION_STRING))
-      .AppendASCII(kSentinelFilename);
+  return sentienal_path.Append(version).AppendASCII(kSentinelFilename);
 }
 
 const base::win::i18n::LanguageSelector& GetLanguageSelector() {
@@ -218,6 +217,7 @@ void DeleteVersionsExcept(const base::FilePath& gcp_path,
     // best effort only.  If any errors occurred they are logged by
     // DeleteVersionDirectory().
     DeleteVersionDirectory(gcp_path.Append(basename));
+    DeleteStartupSentinelForVersion(basename.value());
   }
 }
 
@@ -693,7 +693,8 @@ bool VerifyStartupSentinel() {
   // fails for any reason (file locked, no access etc) consider this a failure.
   // If no sentinel file path can be found this probably means that we are
   // running in a unit test so just let the verification pass in this case.
-  base::FilePath startup_sentinel_path = GetStartupSentinelLocation();
+  base::FilePath startup_sentinel_path =
+      GetStartupSentinelLocation(TEXT(CHROME_VERSION_STRING));
   if (!startup_sentinel_path.empty()) {
     base::FilePath startup_sentinel_directory = startup_sentinel_path.DirName();
     if (!base::DirectoryExists(startup_sentinel_directory)) {
@@ -724,7 +725,11 @@ bool VerifyStartupSentinel() {
 }
 
 void DeleteStartupSentinel() {
-  base::FilePath startup_sentinel_path = GetStartupSentinelLocation();
+  DeleteStartupSentinelForVersion(TEXT(CHROME_VERSION_STRING));
+}
+
+void DeleteStartupSentinelForVersion(const base::string16& version) {
+  base::FilePath startup_sentinel_path = GetStartupSentinelLocation(version);
   if (base::PathExists(startup_sentinel_path) &&
       !base::DeleteFile(startup_sentinel_path, false)) {
     LOGFN(ERROR) << "Failed to delete sentinel file: " << startup_sentinel_path;

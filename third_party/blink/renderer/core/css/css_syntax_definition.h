@@ -17,7 +17,7 @@ class CSSValue;
 class CORE_EXPORT CSSSyntaxDefinition {
  public:
   const CSSValue* Parse(CSSParserTokenRange,
-                        const CSSParserContext*,
+                        const CSSParserContext&,
                         bool is_animation_tainted) const;
   bool IsTokenStream() const {
     return syntax_components_.size() == 1 &&

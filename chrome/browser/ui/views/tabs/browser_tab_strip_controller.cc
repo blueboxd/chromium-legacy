@@ -250,11 +250,7 @@ void BrowserTabStripController::SelectTab(int model_index,
                                           const ui::Event& event) {
   std::unique_ptr<content::PeakGpuMemoryTracker> tracker =
       content::PeakGpuMemoryTracker::Create(
-          base::BindOnce([](uint64_t peak_memory) {
-            // Converting Bytes to Kilobytes.
-            UMA_HISTOGRAM_MEMORY_KB("Memory.GPU.PeakMemoryUsage.ChangeTab",
-                                    peak_memory / 1024u);
-          }));
+          content::PeakGpuMemoryTracker::Usage::CHANGE_TAB);
 
   TabStripModel::UserGestureDetails gesture_detail(
       TabStripModel::GestureType::kOther, event.time_stamp());

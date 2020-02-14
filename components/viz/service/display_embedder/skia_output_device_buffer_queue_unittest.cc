@@ -151,6 +151,8 @@ class MockGLSurfaceAsync : public gl::GLSurfaceStub {
     return true;
   }
 
+  bool FlipsVertically() const override { return true; }
+
   void SwapComplete() {
     DCHECK(!callbacks_.empty());
     std::move(callbacks_.front()).Run(gfx::SwapResult::SWAP_ACK, nullptr);

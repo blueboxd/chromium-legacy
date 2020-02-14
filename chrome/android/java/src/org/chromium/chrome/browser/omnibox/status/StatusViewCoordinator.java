@@ -136,7 +136,7 @@ public class StatusViewCoordinator implements View.OnClickListener, UrlTextChang
         mMediator.setSecurityIconResource(mToolbarDataProvider.getSecurityIconResource(mIsTablet));
         mMediator.setSecurityIconTint(mToolbarDataProvider.getSecurityIconColorStateList());
         mMediator.setSecurityIconDescription(
-                mToolbarDataProvider.getSecurityIconContentDescription());
+                mToolbarDataProvider.getSecurityIconContentDescriptionResourceId());
 
         // TODO(ender): drop these during final cleanup round.
         updateVerboseStatusVisibility();

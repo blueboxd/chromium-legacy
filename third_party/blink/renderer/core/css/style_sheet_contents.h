@@ -59,6 +59,8 @@ class CORE_EXPORT StyleSheetContents final
   StyleSheetContents() = delete;
   ~StyleSheetContents();
 
+  // TODO(xiaochengh): |parser_context_| should never be null. Make it return a
+  // const reference here to avoid confusion.
   const CSSParserContext* ParserContext() const { return parser_context_; }
 
   const AtomicString& DefaultNamespace() const { return default_namespace_; }

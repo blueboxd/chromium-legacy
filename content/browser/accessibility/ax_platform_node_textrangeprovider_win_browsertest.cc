@@ -516,6 +516,94 @@ IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
+                       DoNotNormalizeRangeWithVisibleCaretOrSelection) {
+  LoadInitialAccessibilityTreeFromHtml(std::string(R"HTML(
+      <!DOCTYPE html>
+      <html>
+        <body>
+          <div aria-value="wrapper">
+            <input type='text' aria-label='input_text'><span
+              style="font-size: 12pt">Text1</span>
+          </div>
+        </body>
+      </html>
+  )HTML"));
+
+  // In order for the test harness to effectively simulate typing in a text
+  // input, first change the value of the text input and then focus it. Only
+  // editing the value won't show the cursor and only focusing will put the
+  // cursor at the beginning of the text input, so both steps are necessary.
+  auto* input_text_node = FindNode(ax::mojom::Role::kTextField, "input_text");
+  ASSERT_NE(nullptr, input_text_node);
+  EXPECT_TRUE(input_text_node->PlatformIsLeaf());
+  EXPECT_EQ(0u, input_text_node->PlatformChildCount());
+
+  AccessibilityNotificationWaiter edit_waiter(shell()->web_contents(),
+                                              ui::kAXModeComplete,
+                                              ax::mojom::Event::kValueChanged);
+  ui::AXActionData edit_data;
+  edit_data.target_node_id = input_text_node->GetId();
+  edit_data.action = ax::mojom::Action::kSetValue;
+  edit_data.value = "test";
+  input_text_node->AccessibilityPerformAction(edit_data);
+  edit_waiter.WaitForNotification();
+
+  AccessibilityNotificationWaiter focus_waiter(
+      shell()->web_contents(), ui::kAXModeComplete, ax::mojom::Event::kFocus);
+  ui::AXActionData focus_data;
+  focus_data.target_node_id = input_text_node->GetId();
+  focus_data.action = ax::mojom::Action::kFocus;
+  input_text_node->AccessibilityPerformAction(focus_data);
+  focus_waiter.WaitForNotification();
+
+  ComPtr<ITextRangeProvider> text_range_provider;
+  GetTextRangeProviderFromTextNode(*input_text_node, &text_range_provider);
+  ASSERT_NE(nullptr, text_range_provider.Get());
+  EXPECT_UIA_TEXTRANGE_EQ(text_range_provider, L"test");
+
+  // Move the first position so that both endpoints are at the end of the text
+  // input. This is where calls to NormalizeTextRange can be problematic.
+  EXPECT_UIA_MOVE_ENDPOINT_BY_UNIT(
+      text_range_provider, TextPatternRangeEndpoint_Start, TextUnit_Character,
+      /*count*/ 4,
+      /*expected_text*/ L"",
+      /*expected_count*/ 4);
+
+  // Clone the original text range so we can keep track if NormalizeEndpoints
+  // causes a change in position.
+  ComPtr<ITextRangeProvider> text_range_provider_clone;
+  text_range_provider->Clone(&text_range_provider_clone);
+
+  // Since both ranges are identical, the result of CompareEndpoints should be
+  // 0.
+  int result = 0;
+  EXPECT_HRESULT_SUCCEEDED(text_range_provider->CompareEndpoints(
+      TextPatternRangeEndpoint_End, text_range_provider_clone.Get(),
+      TextPatternRangeEndpoint_Start, &result));
+  ASSERT_EQ(0, result);
+
+  // Calling GetAttributeValue will call NormalizeTextRange, which shouldn't
+  // change the result of CompareEndpoints below.
+  base::win::ScopedVariant value;
+  EXPECT_HRESULT_SUCCEEDED(text_range_provider->GetAttributeValue(
+      UIA_IsReadOnlyAttributeId, value.Receive()));
+  EXPECT_EQ(value.type(), VT_BOOL);
+  EXPECT_EQ(V_BOOL(value.ptr()), VARIANT_FALSE);
+  value.Reset();
+
+  EXPECT_HRESULT_SUCCEEDED(text_range_provider_clone->GetAttributeValue(
+      UIA_IsReadOnlyAttributeId, value.Receive()));
+  EXPECT_EQ(value.type(), VT_BOOL);
+  EXPECT_EQ(V_BOOL(value.ptr()), VARIANT_FALSE);
+  value.Reset();
+
+  EXPECT_HRESULT_SUCCEEDED(text_range_provider->CompareEndpoints(
+      TextPatternRangeEndpoint_End, text_range_provider_clone.Get(),
+      TextPatternRangeEndpoint_Start, &result));
+  ASSERT_EQ(0, result);
+}
+
+IN_PROC_BROWSER_TEST_F(AXPlatformNodeTextRangeProviderWinBrowserTest,
                        GetBoundingRectangles) {
   LoadInitialAccessibilityTreeFromHtml(std::string(R"HTML(
       <!DOCTYPE html>

@@ -351,11 +351,7 @@ void CompositorView::OnTabChanged(
     return;
   std::unique_ptr<content::PeakGpuMemoryTracker> tracker =
       content::PeakGpuMemoryTracker::Create(
-          base::BindOnce([](uint64_t peak_memory) {
-            // Converting Bytes to Kilobytes.
-            UMA_HISTOGRAM_MEMORY_KB("Memory.GPU.PeakMemoryUsage.ChangeTab",
-                                    peak_memory / 1024u);
-          }));
+          content::PeakGpuMemoryTracker::Usage::CHANGE_TAB);
   compositor_->RequestPresentationTimeForNextFrame(base::BindOnce(
       [](std::unique_ptr<content::PeakGpuMemoryTracker> tracker,
          const gfx::PresentationFeedback& feedback) {

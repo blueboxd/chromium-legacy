@@ -40,7 +40,8 @@ class FakeInvalidationService : public InvalidationService {
   std::string GetInvalidatorClientId() const override;
   InvalidationLogger* GetInvalidationLogger() override;
   void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> caller) const override;
+      base::RepeatingCallback<void(const base::DictionaryValue&)> caller)
+      const override;
 
   void SetInvalidatorState(syncer::InvalidatorState state);
 

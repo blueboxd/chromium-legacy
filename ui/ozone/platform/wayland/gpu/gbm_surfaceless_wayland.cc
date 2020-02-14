@@ -166,6 +166,12 @@ void GbmSurfacelessWayland::SetRelyOnImplicitSync() {
   use_egl_fence_sync_ = false;
 }
 
+bool GbmSurfacelessWayland::FlipsVertically() const {
+  // GbmSurfacelessWayland's y-axis is flipped compare to GL - (0,0) is at top
+  // left corner.
+  return true;
+}
+
 GbmSurfacelessWayland::~GbmSurfacelessWayland() {
   buffer_manager_->UnregisterSurface(widget_);
 }

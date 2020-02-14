@@ -5,18 +5,13 @@
 #include "third_party/blink/public/common/feature_policy/document_policy.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.h"
 
 namespace blink {
 namespace {
 
-class DocumentPolicyTest : public ::testing::Test {
- public:
-  DocumentPolicyTest() = default;
-
- protected:
-  std::unique_ptr<DocumentPolicy> document_policy_;
-};
+using DocumentPolicyTest = ::testing::Test;
 
 // Helper function to convert literal to FeatureState.
 template <class T>
@@ -47,6 +42,25 @@ TEST_F(DocumentPolicyTest, MergeFeatureState) {
           FeatureState<double>({{1, 1.0}, {2, 1.0}, {3, 1.0}, {4, 0.5}}),
           FeatureState<double>({{2, 0.5}, {3, 1.0}, {4, 1.0}, {5, 1.0}})),
       FeatureState<double>({{1, 1.0}, {2, 0.5}, {3, 1.0}, {4, 0.5}, {5, 1.0}}));
+}
+
+// IsPolicyCompatible should use default value for incoming policy when required
+// policy specifies a value for a feature and incoming policy is missing value
+// for that feature.
+TEST_F(DocumentPolicyTest, IsPolicyCompatible) {
+  mojom::FeaturePolicyFeature feature =
+      mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages;
+  double default_policy_value =
+      GetDocumentPolicyFeatureInfoMap().at(feature).default_value.DoubleValue();
+  // Cap the default_policy_value, as it can be INF.
+  double strict_policy_value =
+      default_policy_value > 1.0 ? 1.0 : default_policy_value / 2;
+
+  EXPECT_FALSE(DocumentPolicy::IsPolicyCompatible(
+      DocumentPolicy::FeatureState{
+          {feature, PolicyValue(strict_policy_value)}}, /* required policy */
+      DocumentPolicy::FeatureState{}                    /* incoming policy */
+      ));
 }
 
 }  // namespace

@@ -19,6 +19,22 @@
 
 namespace blink {
 
+namespace {
+
+typedef HeapVector<Member<Document>, 32> DocumentsVector;
+
+// We walk through all the frames in DOM tree order and get all the documents
+DocumentsVector GetAllDocuments(Frame* main_frame) {
+  DocumentsVector documents;
+  for (Frame* frame = main_frame; frame; frame = frame->Tree().TraverseNext()) {
+    if (auto* local_frame = DynamicTo<LocalFrame>(frame))
+      documents.push_back(local_frame->GetDocument());
+  }
+  return documents;
+}
+
+}  // namespace
+
 PageAnimator::PageAnimator(Page& page)
     : page_(page),
       servicing_animations_(false),
@@ -37,12 +53,7 @@ void PageAnimator::ServiceScriptedAnimations(
   Clock().SetAllowedToDynamicallyUpdateTime(false);
   Clock().UpdateTime(monotonic_animation_start_time);
 
-  HeapVector<Member<Document>, 32> documents;
-  for (Frame* frame = page_->MainFrame(); frame;
-       frame = frame->Tree().TraverseNext()) {
-    if (auto* local_frame = DynamicTo<LocalFrame>(frame))
-      documents.push_back(local_frame->GetDocument());
-  }
+  DocumentsVector documents = GetAllDocuments(page_->MainFrame());
 
   for (auto& document : documents) {
     ScopedFrameBlamer frame_blamer(document->GetFrame());
@@ -90,7 +101,7 @@ void PageAnimator::ServiceScriptedAnimations(
 }
 
 void PageAnimator::PostAnimate() {
-  HeapVector<Member<Document>, 32> documents;
+  DocumentsVector documents;
   for (Frame* frame = page_->MainFrame(); frame;
        frame = frame->Tree().TraverseNext()) {
     if (frame->IsLocalFrame())
@@ -171,4 +182,14 @@ void PageAnimator::UpdateHitTestOcclusionData(LocalFrame& root_frame) {
   }
 }
 
+HeapVector<Member<Animation>> PageAnimator::GetAnimations(Document* document_) {
+  HeapVector<Member<Animation>> animations;
+  DocumentsVector documents = GetAllDocuments(page_->MainFrame());
+
+  for (auto& document : documents) {
+    document->GetDocumentAnimations().GetAnimationsTargetingDocument(
+        document_, animations);
+  }
+  return animations;
+}
 }  // namespace blink

@@ -514,6 +514,12 @@ void GLSurfaceEGLSurfaceControl::SetDisplayTransform(
   display_transform_ = transform;
 }
 
+bool GLSurfaceEGLSurfaceControl::FlipsVertically() const {
+  // GLSurfaceEGLSurfaceControl's y-axis is flipped compare to GL - (0,0) is at
+  // top left corner.
+  return true;
+}
+
 gfx::Rect GLSurfaceEGLSurfaceControl::ApplyDisplayInverse(
     const gfx::Rect& input) const {
   gfx::Transform display_inverse = gfx::OverlayTransformToTransform(

@@ -1127,8 +1127,17 @@ void AXPlatformNodeTextRangeProviderWin::NormalizeTextRange() {
   // first snap them both to be unignored positions.
   NormalizeAsUnignoredTextRange();
 
+  // Do not normalize text ranges when a cursor or selection is visible. ATs
+  // may depend on the specific position that the caret or selection is at.
+  AXPlatformNodeDelegate* start_delegate = GetDelegate(start_.get());
+  AXPlatformNodeDelegate* end_delegate = GetDelegate(end_.get());
+  if ((start_delegate && start_delegate->HasVisibleCaretOrSelection()) ||
+      (start_delegate && end_delegate->HasVisibleCaretOrSelection()))
+    return;
+
   AXPositionInstance normalized_start =
       start_->AsLeafTextPositionBeforeCharacter();
+
   // For a degenerate range, the |end_| will always be the same as the
   // normalized start, so there's no need to compute the normalized end.
   // However, a degenerate range might go undetected if there's an ignored node

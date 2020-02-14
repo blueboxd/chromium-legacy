@@ -112,7 +112,13 @@ _COVERAGE_EXCLUSION_LIST_MAP = {
         '../../base/message_loop/message_pump_win.cc',
         '../../base/task/sequence_manager/thread_controller_with_message_pump_impl.cc',  #pylint: disable=line-too-long
     ],
-    'win': [],
+    'win': [
+        # TODO(crbug.com/1051561): angle_unittests affected by coverage.
+        '../../base/message_loop/message_pump_default.cc',
+        '../../base/message_loop/message_pump_libevent.cc',
+        '../../base/message_loop/message_pump_win.cc',
+        '../../base/task/sequence_manager/thread_controller_with_message_pump_impl.cc',  #pylint: disable=line-too-long
+    ],
 }
 
 # Map of force lists indexed by target OS.

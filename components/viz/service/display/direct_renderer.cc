@@ -812,7 +812,21 @@ gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
   gfx::Rect root_damage_rect = current_frame()->root_damage_rect;
 
   if (render_pass == root_render_pass) {
-    root_damage_rect.Union(output_surface_->GetCurrentFramebufferDamage());
+    auto display_area = current_frame()->device_viewport_size.GetArea();
+    DCHECK(display_area);
+
+    auto frame_buffer_damage = output_surface_->GetCurrentFramebufferDamage();
+    auto root_damage_area = root_damage_rect.size().GetArea();
+
+    UMA_HISTOGRAM_PERCENTAGE(
+        "Compositing.DirectRenderer.PartialSwap.FrameBufferDamage",
+        100ull * frame_buffer_damage.size().GetArea() / display_area);
+    UMA_HISTOGRAM_PERCENTAGE(
+        "Compositing.DirectRenderer.PartialSwap.RootDamage",
+        100ull * root_damage_area / display_area);
+
+    root_damage_rect.Union(frame_buffer_damage);
+
     // If the root damage rect intersects any child render pass that has a
     // pixel-moving backdrop-filter, expand the damage to include the entire
     // child pass. See crbug.com/986206 for context.
@@ -829,6 +843,18 @@ gfx::Rect DirectRenderer::ComputeScissorRectForRenderPass(
         }
       }
     }
+
+    // Total damage after all adjustments.
+    auto total_damage_area = root_damage_rect.size().GetArea();
+
+    UMA_HISTOGRAM_PERCENTAGE(
+        "Compositing.DirectRenderer.PartialSwap.TotalDamage",
+        100ull * total_damage_area / display_area);
+
+    UMA_HISTOGRAM_PERCENTAGE(
+        "Compositing.DirectRenderer.PartialSwap.ExtraDamage",
+        100ull * (total_damage_area - root_damage_area) / display_area);
+
     return root_damage_rect;
   }
 

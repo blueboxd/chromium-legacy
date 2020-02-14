@@ -928,7 +928,8 @@ NavigationRequest::NavigationRequest(
       common_params_->url, *common_params_->referrer);
 
   if (frame_tree_node_->IsMainFrame()) {
-    loading_mem_tracker_ = PeakGpuMemoryTracker::Create(base::DoNothing());
+    loading_mem_tracker_ =
+        PeakGpuMemoryTracker::Create(PeakGpuMemoryTracker::Usage::PAGE_LOAD);
   }
 
   if (from_begin_navigation_) {
@@ -1081,6 +1082,8 @@ NavigationRequest::NavigationRequest(
 
 NavigationRequest::~NavigationRequest() {
   TRACE_EVENT_ASYNC_END0("navigation", "NavigationRequest", this);
+  if (loading_mem_tracker_)
+    loading_mem_tracker_->Cancel();
   ResetExpectedProcess();
   if (state_ >= WILL_START_NAVIGATION && state_ < READY_TO_COMMIT) {
     devtools_instrumentation::OnNavigationRequestFailed(

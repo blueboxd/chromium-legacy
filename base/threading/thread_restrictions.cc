@@ -4,6 +4,8 @@
 
 #include "base/threading/thread_restrictions.h"
 
+#include "base/trace_event/trace_event.h"
+
 #if DCHECK_IS_ON()
 
 #include "base/debug/stack_trace.h"
@@ -98,16 +100,6 @@ ScopedDisallowBlocking::~ScopedDisallowBlocking() {
   g_blocking_disallowed.Get().Set(was_disallowed_);
 }
 
-ScopedAllowBlocking::ScopedAllowBlocking()
-    : was_disallowed_(g_blocking_disallowed.Get().Get()) {
-  g_blocking_disallowed.Get().Set(false);
-}
-
-ScopedAllowBlocking::~ScopedAllowBlocking() {
-  DCHECK(!g_blocking_disallowed.Get().Get());
-  g_blocking_disallowed.Get().Set(was_disallowed_);
-}
-
 void DisallowBaseSyncPrimitives() {
   g_base_sync_primitives_disallowed.Get().Set(true);
 }
@@ -122,18 +114,6 @@ ScopedAllowBaseSyncPrimitives::ScopedAllowBaseSyncPrimitives()
 }
 
 ScopedAllowBaseSyncPrimitives::~ScopedAllowBaseSyncPrimitives() {
-  DCHECK(!g_base_sync_primitives_disallowed.Get().Get());
-  g_base_sync_primitives_disallowed.Get().Set(was_disallowed_);
-}
-
-ScopedAllowBaseSyncPrimitivesOutsideBlockingScope::
-    ScopedAllowBaseSyncPrimitivesOutsideBlockingScope()
-    : was_disallowed_(g_base_sync_primitives_disallowed.Get().Get()) {
-  g_base_sync_primitives_disallowed.Get().Set(false);
-}
-
-ScopedAllowBaseSyncPrimitivesOutsideBlockingScope::
-    ~ScopedAllowBaseSyncPrimitivesOutsideBlockingScope() {
   DCHECK(!g_base_sync_primitives_disallowed.Get().Get());
   g_base_sync_primitives_disallowed.Get().Set(was_disallowed_);
 }
@@ -208,13 +188,6 @@ void DisallowUnresponsiveTasks() {
   g_cpu_intensive_work_disallowed.Get().Set(true);
 }
 
-ThreadRestrictions::ScopedAllowIO::ScopedAllowIO()
-    : was_allowed_(SetIOAllowed(true)) {}
-
-ThreadRestrictions::ScopedAllowIO::~ScopedAllowIO() {
-  SetIOAllowed(was_allowed_);
-}
-
 // static
 bool ThreadRestrictions::SetIOAllowed(bool allowed) {
   bool previous_disallowed = g_blocking_disallowed.Get().Get();
@@ -256,3 +229,73 @@ bool ThreadRestrictions::SetWaitAllowed(bool allowed) {
 }  // namespace base
 
 #endif  // DCHECK_IS_ON()
+
+namespace base {
+
+ScopedAllowBlocking::ScopedAllowBlocking(const Location& from_here)
+#if DCHECK_IS_ON()
+    : was_disallowed_(g_blocking_disallowed.Get().Get())
+#endif
+{
+  TRACE_EVENT_BEGIN2("base", "ScopedAllowBlocking", "file_name",
+                     from_here.file_name(), "function_name",
+                     from_here.function_name());
+
+#if DCHECK_IS_ON()
+  g_blocking_disallowed.Get().Set(false);
+#endif
+}
+
+ScopedAllowBlocking::~ScopedAllowBlocking() {
+  TRACE_EVENT_END0("base", "ScopedAllowBlocking");
+
+#if DCHECK_IS_ON()
+  DCHECK(!g_blocking_disallowed.Get().Get());
+  g_blocking_disallowed.Get().Set(was_disallowed_);
+#endif
+}
+
+ScopedAllowBaseSyncPrimitivesOutsideBlockingScope::
+    ScopedAllowBaseSyncPrimitivesOutsideBlockingScope(const Location& from_here)
+#if DCHECK_IS_ON()
+    : was_disallowed_(g_base_sync_primitives_disallowed.Get().Get())
+#endif
+{
+  TRACE_EVENT_BEGIN2(
+      "base", "ScopedAllowBaseSyncPrimitivesOutsideBlockingScope", "file_name",
+      from_here.file_name(), "function_name", from_here.function_name());
+
+#if DCHECK_IS_ON()
+  g_base_sync_primitives_disallowed.Get().Set(false);
+#endif
+}
+
+ScopedAllowBaseSyncPrimitivesOutsideBlockingScope::
+    ~ScopedAllowBaseSyncPrimitivesOutsideBlockingScope() {
+  TRACE_EVENT_END0("base", "ScopedAllowBaseSyncPrimitivesOutsideBlockingScope");
+
+#if DCHECK_IS_ON()
+  DCHECK(!g_base_sync_primitives_disallowed.Get().Get());
+  g_base_sync_primitives_disallowed.Get().Set(was_disallowed_);
+#endif
+}
+
+ThreadRestrictions::ScopedAllowIO::ScopedAllowIO(const Location& from_here)
+#if DCHECK_IS_ON()
+    : was_allowed_(SetIOAllowed(true))
+#endif
+{
+  TRACE_EVENT_BEGIN2("base", "ScopedAllowIO", "file_name",
+                     from_here.file_name(), "function_name",
+                     from_here.function_name());
+}
+
+ThreadRestrictions::ScopedAllowIO::~ScopedAllowIO() {
+  TRACE_EVENT_END0("base", "ScopedAllowIO");
+
+#if DCHECK_IS_ON()
+  SetIOAllowed(was_allowed_);
+#endif
+}
+
+}  // namespace base

@@ -70,8 +70,8 @@ void InvalidationsMessageHandler::HandleRequestDetailedStatus(
       GetInvalidationProvider(Profile::FromWebUI(web_ui()));
   if (invalidation_provider) {
     invalidation_provider->GetInvalidationService()->RequestDetailedStatus(
-        base::Bind(&InvalidationsMessageHandler::OnDetailedStatus,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindRepeating(&InvalidationsMessageHandler::OnDetailedStatus,
+                            weak_ptr_factory_.GetWeakPtr()));
   }
 }
 

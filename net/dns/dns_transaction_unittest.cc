@@ -573,10 +573,10 @@ class DnsTransactionTestBase : public testing::Test {
   ~DnsTransactionTestBase() override = default;
 
   // Generates |nameservers| for DnsConfig.
-  void ConfigureNumServers(unsigned num_servers) {
+  void ConfigureNumServers(size_t num_servers) {
     CHECK_LE(num_servers, 255u);
     config_.nameservers.clear();
-    for (unsigned i = 0; i < num_servers; ++i) {
+    for (size_t i = 0; i < num_servers; ++i) {
       config_.nameservers.push_back(
           IPEndPoint(IPAddress(192, 168, 1, i), dns_protocol::kDefaultPort));
     }
@@ -586,21 +586,21 @@ class DnsTransactionTestBase : public testing::Test {
   // accept GET or POST requests based on use_post. If a
   // ResponseModifierCallback is provided it will be called to construct the
   // HTTPResponse.
-  void ConfigureDohServers(bool use_post, unsigned num_doh_servers = 1) {
+  void ConfigureDohServers(bool use_post, size_t num_doh_servers = 1) {
     GURL url(URLRequestMockDohJob::GetMockHttpsUrl("doh_test"));
     URLRequestFilter* filter = URLRequestFilter::GetInstance();
     filter->AddHostnameInterceptor(url.scheme(), url.host(),
                                    std::make_unique<DohJobInterceptor>(this));
     CHECK_LE(num_doh_servers, 255u);
-    for (unsigned i = 0; i < num_doh_servers; ++i) {
+    for (size_t i = 0; i < num_doh_servers; ++i) {
       std::string server_template(URLRequestMockDohJob::GetMockHttpsUrl(
-                                      base::StringPrintf("doh_test_%d", i)) +
+                                      base::StringPrintf("doh_test_%zu", i)) +
                                   "{?dns}");
       config_.dns_over_https_servers.push_back(
           DnsConfig::DnsOverHttpsServerConfig(server_template, use_post));
     }
     ConfigureFactory();
-    for (unsigned i = 0; i < num_doh_servers; ++i) {
+    for (size_t i = 0; i < num_doh_servers; ++i) {
       resolve_context_->SetProbeSuccess(i, true /* success */, session_.get());
     }
   }
@@ -725,7 +725,7 @@ class DnsTransactionTestBase : public testing::Test {
 
   // Checks if the sockets were connected in the order matching the indices in
   // |servers|.
-  void CheckServerOrder(const unsigned* servers, size_t num_attempts) {
+  void CheckServerOrder(const size_t* servers, size_t num_attempts) {
     ASSERT_EQ(num_attempts, socket_factory_->remote_endpoints_.size());
     auto num_insecure_nameservers = session_->config().nameservers.size();
     for (size_t i = 0; i < num_attempts; ++i) {
@@ -1160,7 +1160,7 @@ TEST_F(DnsTransactionTestWithMockTime, ServerFallbackAndRotate) {
   EXPECT_TRUE(helper0.has_completed());
   EXPECT_TRUE(helper1.Run(transaction_factory_.get()));
 
-  unsigned kOrder[] = {
+  size_t kOrder[] = {
       0, 1, 2, 0, 1,  // The first transaction.
       1, 2, 0,        // The second transaction starts from the next server.
   };
@@ -1191,7 +1191,7 @@ TEST_F(DnsTransactionTest, SuffixSearchAboveNdots) {
   EXPECT_TRUE(helper0.Run(transaction_factory_.get()));
 
   // Also check if suffix search causes server rotation.
-  unsigned kOrder0[] = {0, 1, 0, 1};
+  size_t kOrder0[] = {0, 1, 0, 1};
   CheckServerOrder(kOrder0, base::size(kOrder0));
 }
 
@@ -1730,7 +1730,7 @@ TEST_F(DnsTransactionTest, HttpsMarkHttpsBad) {
   // UDP server 0 is our only UDP server, so it will be good. HTTPS
   // servers 0 and 1 failed and will be marked bad. HTTPS server 2 succeeded
   // so will be good.
-  EXPECT_EQ(session_->NextGoodServerIndex(0), 0u);
+  EXPECT_EQ(session_->ServerIndexToUse(0), 0u);
   EXPECT_THAT(resolve_context_->DohServerIndexToUse(
                   0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
               testing::Optional(2u));
@@ -1740,7 +1740,7 @@ TEST_F(DnsTransactionTest, HttpsMarkHttpsBad) {
   EXPECT_THAT(resolve_context_->DohServerIndexToUse(
                   2, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
               testing::Optional(2u));
-  unsigned kOrder0[] = {1, 2, 3};
+  size_t kOrder0[] = {1, 2, 3};
   CheckServerOrder(kOrder0, base::size(kOrder0));
 
   EXPECT_TRUE(helper1.RunUntilDone(transaction_factory_.get()));
@@ -1749,7 +1749,7 @@ TEST_F(DnsTransactionTest, HttpsMarkHttpsBad) {
   // server 0 then had the oldest failure so would be the next good server and
   // failed so is marked bad. Next attempt was HTTPS server 1, which succeeded
   // so is good.
-  EXPECT_EQ(session_->NextGoodServerIndex(0), 0u);
+  EXPECT_EQ(session_->ServerIndexToUse(0), 0u);
   EXPECT_THAT(resolve_context_->DohServerIndexToUse(
                   0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
               testing::Optional(1u));
@@ -1759,7 +1759,7 @@ TEST_F(DnsTransactionTest, HttpsMarkHttpsBad) {
   EXPECT_THAT(resolve_context_->DohServerIndexToUse(
                   2, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
               testing::Optional(1u));
-  unsigned kOrder1[] = {
+  size_t kOrder1[] = {
       1, 2, 3, /* transaction0 */
       3, 1, 2  /* transaction1 */
   };
@@ -1778,7 +1778,7 @@ TEST_F(DnsTransactionTest, HttpsPostFailThenHTTPFallback) {
   TransactionHelper helper0(kT0HostName, kT0Qtype, true /* secure */,
                             kT0RecordCount, resolve_context_.get());
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
-  unsigned kOrder0[] = {1, 2};
+  size_t kOrder0[] = {1, 2};
   CheckServerOrder(kOrder0, base::size(kOrder0));
 }
 
@@ -1797,7 +1797,7 @@ TEST_F(DnsTransactionTest, HttpsPostFailTwice) {
                             ERR_FAILED, resolve_context_.get());
   SetDohJobMakerCallback(base::BindRepeating(DohJobMakerCallbackFailStart));
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
-  unsigned kOrder0[] = {1, 2};
+  size_t kOrder0[] = {1, 2};
   CheckServerOrder(kOrder0, base::size(kOrder0));
 }
 
@@ -1817,7 +1817,7 @@ TEST_F(DnsTransactionTest, HttpsNotAvailableThenHttpFallback) {
   TransactionHelper helper0(kT0HostName, kT0Qtype, true /* secure */,
                             kT0RecordCount, resolve_context_.get());
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
-  unsigned kOrder0[] = {2};
+  size_t kOrder0[] = {2};
   CheckServerOrder(kOrder0, base::size(kOrder0));
   EXPECT_THAT(resolve_context_->DohServerIndexToUse(
                   0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
@@ -1848,7 +1848,7 @@ TEST_F(DnsTransactionTest, HttpsFailureThenNotAvailable_Automatic) {
   TransactionHelper helper0(kT0HostName, kT0Qtype, true /* secure */,
                             ERR_CONNECTION_REFUSED, resolve_context_.get());
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
-  unsigned kOrder0[] = {1};
+  size_t kOrder0[] = {1};
   CheckServerOrder(kOrder0, base::size(kOrder0));
   EXPECT_THAT(resolve_context_->DohServerIndexToUse(
                   0, DnsConfig::SecureDnsMode::AUTOMATIC, session_.get()),
@@ -1890,7 +1890,7 @@ TEST_F(DnsTransactionTest, HttpsFailureThenNotAvailable_Secure) {
   TransactionHelper helper0(kT0HostName, kT0Qtype, true /* secure */,
                             ERR_CONNECTION_REFUSED, resolve_context_.get());
   EXPECT_TRUE(helper0.RunUntilDone(transaction_factory_.get()));
-  unsigned kOrder0[] = {1, 2, 3};
+  size_t kOrder0[] = {1, 2, 3};
   CheckServerOrder(kOrder0, base::size(kOrder0));
   EXPECT_THAT(resolve_context_->DohServerIndexToUse(
                   0, DnsConfig::SecureDnsMode::SECURE, session_.get()),

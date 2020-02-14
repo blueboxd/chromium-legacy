@@ -57,6 +57,7 @@ class GbmSurfacelessWayland : public gl::SurfacelessEGL,
                           PresentationCallback presentation_callback) override;
   EGLConfig GetConfig() override;
   void SetRelyOnImplicitSync() override;
+  bool FlipsVertically() const override;
 
  private:
   ~GbmSurfacelessWayland() override;

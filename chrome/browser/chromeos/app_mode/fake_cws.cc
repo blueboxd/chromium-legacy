@@ -15,6 +15,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/initialize_extensions_client.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "crypto/sha2.h"
 #include "extensions/common/extensions_client.h"
@@ -71,12 +72,32 @@ bool GetAppIdsFromUpdateUrl(const GURL& update_url,
   return !ids->empty();
 }
 
+// FakeCWS uses ScopedIgnoreContentVerifierForTest to disable extension
+// content verification. This helper could be instantiated only once. Usually
+// that not an issue, since FakeCWS is also instantiated only once, in a base
+// test class. Some tests use a secondary FakeCWS instance. This flag will be
+// set by first created FakeCWS (which we'll call "primary"), and only primary
+// FakeCWS will hold the ScopedIgnoreContentVerifierForTest instance.
+bool g_is_fakecws_active = false;
+
 }  // namespace
 
 FakeCWS::FakeCWS() : update_check_count_(0) {
+  if (!g_is_fakecws_active) {
+    g_is_fakecws_active = true;
+    scoped_ignore_content_verifier_ =
+        std::make_unique<extensions::ScopedIgnoreContentVerifierForTest>();
+  }
 }
 
 FakeCWS::~FakeCWS() {
+  // If the secondary FakeCWS was desructed after primary one, secondary will
+  // work without scoped_ignore_content_verifier_. We want to catch such a
+  // situation, so we check that primary FakeCWS is not destroyed yet.
+  DCHECK(g_is_fakecws_active);
+
+  if (scoped_ignore_content_verifier_)
+    g_is_fakecws_active = false;
 }
 
 void FakeCWS::Init(net::EmbeddedTestServer* embedded_test_server) {
@@ -85,7 +106,7 @@ void FakeCWS::Init(net::EmbeddedTestServer* embedded_test_server) {
   update_check_end_point_ = "/update_check.xml";
 
   SetupWebStoreURL(embedded_test_server->base_url());
-  OverrideGalleryCommandlineSwitches(GalleryUpdateMode::kOnlyCommandLine);
+  OverrideGalleryCommandlineSwitches();
   embedded_test_server->RegisterRequestHandler(
       base::Bind(&FakeCWS::HandleRequest, base::Unretained(this)));
 }
@@ -97,8 +118,7 @@ void FakeCWS::InitAsPrivateStore(net::EmbeddedTestServer* embedded_test_server,
   update_check_end_point_ = update_check_end_point;
 
   SetupWebStoreURL(embedded_test_server->base_url());
-  OverrideGalleryCommandlineSwitches(
-      GalleryUpdateMode::kModifyExtensionsClient);
+  OverrideGalleryCommandlineSwitches();
 
   embedded_test_server->RegisterRequestHandler(
       base::Bind(&FakeCWS::HandleRequest, base::Unretained(this)));
@@ -156,8 +176,7 @@ void FakeCWS::SetupWebStoreURL(const GURL& test_server_url) {
   web_store_url_ = test_server_url.ReplaceComponents(replace_webstore_host);
 }
 
-void FakeCWS::OverrideGalleryCommandlineSwitches(
-    GalleryUpdateMode gallery_update_mode) {
+void FakeCWS::OverrideGalleryCommandlineSwitches() {
   DCHECK(web_store_url_.is_valid());
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
@@ -175,8 +194,8 @@ void FakeCWS::OverrideGalleryCommandlineSwitches(
   command_line->AppendSwitchASCII(::switches::kAppsGalleryUpdateURL,
                                   update_url.spec());
 
-  if (gallery_update_mode == GalleryUpdateMode::kModifyExtensionsClient)
-    extensions::ExtensionsClient::Get()->InitializeWebStoreUrls(command_line);
+  EnsureExtensionsClientInitialized();
+  extensions::ExtensionsClient::Get()->InitializeWebStoreUrls(command_line);
 }
 
 bool FakeCWS::GetUpdateCheckContent(const std::vector<std::string>& ids,

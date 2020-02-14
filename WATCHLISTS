@@ -1680,6 +1680,9 @@
     'storage_service' : {
       'filepath': 'components/services/storage/',
     },
+    'structured_headers' : {
+      'filepath': 'net/http/structured_headers*',
+    },
     'styleguide': {
       'filepath': '^styleguide/',
     },
@@ -2680,6 +2683,7 @@
     'startup': ['grt+watch@chromium.org',
                 'pastarmovj+watch@chromium.org'],
     'storage_service': ['dmurph+watching-storageservice@chromium.org'],
+    'structured_headers': ['iclelland+watch@chromium.org'],
     'styleguide': ['danakj+watch@chromium.org',
                    'jbroman+cpp@chromium.org',
                    'vmpstr+watch@chromium.org'],

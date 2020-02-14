@@ -274,13 +274,23 @@ AccountFetcherService::GetOrCreateImageFetcher() {
 
 void AccountFetcherService::FetchAccountImage(const CoreAccountId& account_id) {
   DCHECK(signin_client_);
-  std::string picture_url_string =
-      account_tracker_service_->GetAccountInfo(account_id).picture_url;
+  AccountInfo account_info =
+      account_tracker_service_->GetAccountInfo(account_id);
+  std::string picture_url_string = account_info.picture_url;
+
   GURL picture_url(picture_url_string);
   if (!picture_url.is_valid()) {
     DVLOG(1) << "Invalid avatar picture URL: \"" + picture_url_string + "\"";
     return;
   }
+  GURL image_url_with_size(signin::GetAvatarImageURLWithOptions(
+      picture_url, signin::kAccountInfoImageSize, true /* no_silhouette */));
+
+  if (image_url_with_size.spec() ==
+      account_info.last_downloaded_image_url_with_size) {
+    return;
+  }
+
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("accounts_image_fetcher", R"(
         semantics {
@@ -303,14 +313,14 @@ void AccountFetcherService::FetchAccountImage(const CoreAccountId& account_id) {
             "uploaded or saved; this request merely downloads the web account"
             "profile image."
         })");
-  GURL image_url_with_size(signin::GetAvatarImageURLWithOptions(
-      picture_url, signin::kAccountInfoImageSize, true /* no_silhouette */));
-  auto callback = base::BindRepeating(&AccountFetcherService::OnImageFetched,
-                                      base::Unretained(this), account_id);
+
+  auto callback = base::BindOnce(&AccountFetcherService::OnImageFetched,
+                                 base::Unretained(this), account_id,
+                                 image_url_with_size.spec());
   image_fetcher::ImageFetcherParams params(traffic_annotation,
                                            kImageFetcherUmaClient);
-  GetOrCreateImageFetcher()->FetchImage(image_url_with_size, callback,
-                                        std::move(params));
+  GetOrCreateImageFetcher()->FetchImage(image_url_with_size,
+                                        std::move(callback), std::move(params));
 }
 
 void AccountFetcherService::OnUserInfoFetchFailure(
@@ -369,11 +379,13 @@ void AccountFetcherService::OnRefreshTokensLoaded() {
 
 void AccountFetcherService::OnImageFetched(
     const CoreAccountId& account_id,
+    const std::string& image_url_with_size,
     const gfx::Image& image,
     const image_fetcher::RequestMetadata& metadata) {
   if (metadata.http_response_code != net::HTTP_OK) {
     DCHECK(image.IsEmpty());
     return;
   }
-  account_tracker_service_->SetAccountImage(account_id, image);
+  account_tracker_service_->SetAccountImage(account_id, image_url_with_size,
+                                            image);
 }

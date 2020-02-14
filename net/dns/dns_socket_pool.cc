@@ -28,12 +28,12 @@ namespace {
 // them.  Everywhere else, request fresh, random ports each time.
 #if defined(OS_WIN)
 const DatagramSocket::BindType kBindType = DatagramSocket::DEFAULT_BIND;
-const unsigned kInitialPoolSize = 256;
-const unsigned kAllocateMinSize = 256;
+const size_t kInitialPoolSize = 256;
+const size_t kAllocateMinSize = 256;
 #else
 const DatagramSocket::BindType kBindType = DatagramSocket::RANDOM_BIND;
-const unsigned kInitialPoolSize = 0;
-const unsigned kAllocateMinSize = 1;
+const size_t kInitialPoolSize = 0;
+const size_t kAllocateMinSize = 1;
 #endif
 
 } // namespace
@@ -58,7 +58,7 @@ void DnsSocketPool::InitializeInternal(
 }
 
 std::unique_ptr<StreamSocket> DnsSocketPool::CreateTCPSocket(
-    unsigned server_index,
+    size_t server_index,
     const NetLogSource& source) {
   DCHECK_LT(server_index, nameservers_->size());
 
@@ -69,7 +69,7 @@ std::unique_ptr<StreamSocket> DnsSocketPool::CreateTCPSocket(
 }
 
 std::unique_ptr<DatagramClientSocket> DnsSocketPool::CreateConnectedSocket(
-    unsigned server_index) {
+    size_t server_index) {
   DCHECK_LT(server_index, nameservers_->size());
 
   std::unique_ptr<DatagramClientSocket> socket;
@@ -107,11 +107,11 @@ class NullDnsSocketPool : public DnsSocketPool {
   }
 
   std::unique_ptr<DatagramClientSocket> AllocateSocket(
-      unsigned server_index) override {
+      size_t server_index) override {
     return CreateConnectedSocket(server_index);
   }
 
-  void FreeSocket(unsigned server_index,
+  void FreeSocket(size_t server_index,
                   std::unique_ptr<DatagramClientSocket> socket) override {}
 
  private:
@@ -138,13 +138,13 @@ class DefaultDnsSocketPool : public DnsSocketPool {
                   NetLog* net_log) override;
 
   std::unique_ptr<DatagramClientSocket> AllocateSocket(
-      unsigned server_index) override;
+      size_t server_index) override;
 
-  void FreeSocket(unsigned server_index,
+  void FreeSocket(size_t server_index,
                   std::unique_ptr<DatagramClientSocket> socket) override;
 
  private:
-  void FillPool(unsigned server_index, unsigned size);
+  void FillPool(size_t server_index, size_t size);
 
   typedef std::vector<std::unique_ptr<DatagramClientSocket>> SocketVector;
 
@@ -169,16 +169,16 @@ void DefaultDnsSocketPool::Initialize(
   InitializeInternal(nameservers, net_log);
 
   DCHECK(pools_.empty());
-  const unsigned num_servers = nameservers->size();
+  const size_t num_servers = nameservers->size();
   pools_.resize(num_servers);
-  for (unsigned server_index = 0; server_index < num_servers; ++server_index)
+  for (size_t server_index = 0; server_index < num_servers; ++server_index)
     FillPool(server_index, kInitialPoolSize);
 }
 
 DefaultDnsSocketPool::~DefaultDnsSocketPool() = default;
 
 std::unique_ptr<DatagramClientSocket> DefaultDnsSocketPool::AllocateSocket(
-    unsigned server_index) {
+    size_t server_index) {
   DCHECK_LT(server_index, pools_.size());
   SocketVector& pool = pools_[server_index];
 
@@ -194,7 +194,7 @@ std::unique_ptr<DatagramClientSocket> DefaultDnsSocketPool::AllocateSocket(
              << " in pool " << server_index << ".";
   }
 
-  unsigned socket_index = GetRandomInt(0, pool.size() - 1);
+  size_t socket_index = GetRandomInt(0, pool.size() - 1);
   std::unique_ptr<DatagramClientSocket> socket = std::move(pool[socket_index]);
   pool[socket_index] = std::move(pool.back());
   pool.pop_back();
@@ -203,15 +203,15 @@ std::unique_ptr<DatagramClientSocket> DefaultDnsSocketPool::AllocateSocket(
 }
 
 void DefaultDnsSocketPool::FreeSocket(
-    unsigned server_index,
+    size_t server_index,
     std::unique_ptr<DatagramClientSocket> socket) {
   DCHECK_LT(server_index, pools_.size());
 }
 
-void DefaultDnsSocketPool::FillPool(unsigned server_index, unsigned size) {
+void DefaultDnsSocketPool::FillPool(size_t server_index, size_t size) {
   SocketVector& pool = pools_[server_index];
 
-  for (unsigned pool_index = pool.size(); pool_index < size; ++pool_index) {
+  for (size_t pool_index = pool.size(); pool_index < size; ++pool_index) {
     std::unique_ptr<DatagramClientSocket> socket =
         CreateConnectedSocket(server_index);
     if (!socket)

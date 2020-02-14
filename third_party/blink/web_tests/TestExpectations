@@ -279,7 +279,6 @@ crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/filters-
 
 # Copying these from elsewhere in TestExpectations (for non-scalefactor200 virtual suite)
 crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-all-on-background-hw.html [ Failure Pass ]
-crbug.com/968791 [ Win10 ] virtual/scalefactor200/css3/filters/effect-contrast-hw.html [ Failure ]
 crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-colorspace-hw.html [ Failure Pass ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-hw.html [ Failure Pass ]
 crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-image-hw.html [ Failure Pass ]
@@ -439,6 +438,9 @@ crbug.com/1048765 [ Mac10.10 ] external/wpt/svg/animations/svglength-animation-n
 crbug.com/1048765 [ Mac10.10 ] external/wpt/svg/animations/animate-marker-orient-from-angle-to-auto.html [ Skip ]
 crbug.com/1048765 [ Mac10.10 ] external/wpt/svg/animations/animate-dynamic-update-attributeName.html [ Skip ]
 crbug.com/1048765 [ Mac10.10 ] external/wpt/svg/animations/short-simple-duration-and-fractional-repeatcount.html [ Skip ]
+
+crbug.com/1052202 external/wpt/svg/linking/scripted/href-mpath-element.html [ Timeout ]
+crbug.com/1052202 external/wpt/svg/linking/scripted/href-animate-element.html [ Timeout ]
 
 # Slightly flaky timeouts (about 1 in 30)
 crbug.com/1050993 [ Linux ] virtual/gpu-rasterization/images/drag-image-descendant-painting-sibling.html [ Pass Timeout ]
@@ -2214,21 +2216,14 @@ crbug.com/492664 [ Mac ] external/wpt/css/css-writing-modes/sizing-orthog-htb-in
 
 crbug.com/381684 [ Mac ] fonts/family-fallback-gardiner.html [ Skip ]
 crbug.com/381684 [ Win ] fonts/family-fallback-gardiner.html [ Skip ]
-crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip ]
 
 crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 crbug.com/636239 [ Win7 ] virtual/audio-service/media/video-zoom-controls.html [ Failure ]
 
 crbug.com/377696 printing/setPrinting.html [ Failure ]
 
-crbug.com/658305 [ Mac ] css3/filters/buffer-offset.html [ Failure Pass ]
-crbug.com/658305 [ Mac ] css3/filters/effect-reference-external.html [ Failure Pass ]
 crbug.com/658305 css3/filters/effect-reference-image.html [ Pass Failure ]
 crbug.com/658305 css3/filters/effect-reference-image-lazy-attach.html [ Pass Failure ]
-crbug.com/658305 [ Mac ] css3/filters/effect-reference-subregion-chained.html [ Failure Pass ]
-crbug.com/658305 [ Mac ] css3/filters/effect-reference-subregion-colormatrix.html [ Failure Pass ]
-crbug.com/658305 [ Mac ] css3/filters/effect-reference-tile.html [ Failure Pass ]
-crbug.com/658305 [ Mac ] css3/filters/effect-reference-tile-hw.html [ Failure Pass ]
 
 crbug.com/524160 [ Debug ] http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
 crbug.com/524160 [ Debug ] virtual/audio-service/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
@@ -2812,9 +2807,6 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-004.html [ Fail
 crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux ] external/wpt/svg/linking/scripted/href-mpath-element.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/svg/linking/scripted/href-mpath-element.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/svg/linking/scripted/href-mpath-element.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-text/letter-spacing/letter-spacing-nesting-003.xht [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/letter-spacing/letter-spacing-nesting-003.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text/letter-spacing/letter-spacing-nesting-003.xht [ Failure ]
@@ -2839,9 +2831,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-text/letter-spacing/letter-spacing
 crbug.com/626703 [ Linux ] virtual/web-components-v0-disabled/external/wpt/html/semantics/embedded-content/the-img-element/image-loading-lazy-in-cross-origin-ifame-001.sub.html [ Timeout ]
 crbug.com/626703 [ Mac ] virtual/web-components-v0-disabled/external/wpt/html/semantics/embedded-content/the-img-element/image-loading-lazy-in-cross-origin-ifame-001.sub.html [ Timeout ]
 crbug.com/626703 [ Win ] virtual/web-components-v0-disabled/external/wpt/html/semantics/embedded-content/the-img-element/image-loading-lazy-in-cross-origin-ifame-001.sub.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/svg/linking/scripted/href-animate-element.html [ Timeout ]
-crbug.com/626703 [ Mac ] external/wpt/svg/linking/scripted/href-animate-element.html [ Timeout ]
-crbug.com/626703 [ Win ] external/wpt/svg/linking/scripted/href-animate-element.html [ Timeout ]
 crbug.com/626703 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/shared-worker-options-mismatch.html [ Timeout ]
 crbug.com/626703 [ Mac ] virtual/omt-worker-fetch/external/wpt/workers/shared-worker-options-mismatch.html [ Timeout ]
 crbug.com/626703 [ Win ] virtual/omt-worker-fetch/external/wpt/workers/shared-worker-options-mismatch.html [ Timeout ]

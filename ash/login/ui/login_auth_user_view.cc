@@ -138,6 +138,11 @@ ui::CallbackLayerAnimationObserver* BuildObserverToNotifyA11yLocationChanged(
   return new ui::CallbackLayerAnimationObserver(base::BindRepeating(
       [](views::View* view,
          const ui::CallbackLayerAnimationObserver& observer) {
+        // Don't notify a11y event if the animation is aborted, as |view| may no
+        // longer be valid.
+        if (observer.aborted_count())
+          return true;
+
         view->NotifyAccessibilityEvent(ax::mojom::Event::kLocationChanged,
                                        false /*send_native_event*/);
         return true;
@@ -150,6 +155,11 @@ ui::CallbackLayerAnimationObserver* BuildObserverToNotifyA11yLocationChanged(
   return new ui::CallbackLayerAnimationObserver(base::BindRepeating(
       [](LoginPinView* view,
          const ui::CallbackLayerAnimationObserver& observer) {
+        // Don't notify a11y event if the animation is aborted, as |view| may no
+        // longer be valid.
+        if (observer.aborted_count())
+          return true;
+
         view->NotifyAccessibilityLocationChanged();
         return true;
       },

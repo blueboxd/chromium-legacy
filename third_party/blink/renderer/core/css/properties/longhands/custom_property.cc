@@ -188,7 +188,7 @@ const CSSValue* CustomProperty::ParseTyped(
     const CSSParserLocalContext& local_context) const {
   if (!registration_)
     return ParseUntyped(range, context, local_context);
-  return registration_->Syntax().Parse(range, &context,
+  return registration_->Syntax().Parse(range, context,
                                        local_context.IsAnimationTainted());
 }
 

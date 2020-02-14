@@ -172,17 +172,21 @@ std::unique_ptr<DocumentPolicy> DocumentPolicy::CreateWithHeaderPolicy(
 bool DocumentPolicy::IsPolicyCompatible(
     const DocumentPolicy::FeatureState& required_policy,
     const DocumentPolicy::FeatureState& incoming_policy) {
-  for (const auto& incoming_entry : incoming_policy) {
+  for (const auto& required_entry : required_policy) {
     // feature value > threshold => enabled, where feature value is the value in
     // document policy and threshold is the value to test against.
     // The smaller the feature value, the stricter the policy.
     // Incoming policy should be at least as strict as the required one.
-    const auto required_entry =
-        required_policy.find(incoming_entry.first /* feature */);
+    const auto& feature = required_entry.first;
+    const auto& required_value = required_entry.second;
+    // Use default value when incoming policy does not specify a value.
+    const auto incoming_entry = incoming_policy.find(feature);
+    const auto& incoming_value =
+        incoming_entry != incoming_policy.end()
+            ? incoming_entry->second
+            : GetDocumentPolicyFeatureInfoMap().at(feature).default_value;
 
-    if (required_entry != required_policy.end() &&
-        required_entry->second /* required_value */ <
-            incoming_entry.second /* incoming_value */)
+    if (required_value < incoming_value)
       return false;
   }
   return true;

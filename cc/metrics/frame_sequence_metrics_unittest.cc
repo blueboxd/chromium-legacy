@@ -47,11 +47,12 @@ TEST(FrameSequenceMetricsTest, AllMetricsReported) {
   // The compositor-thread metric should be reported, but not the main-thread
   // metric.
   histograms.ExpectTotalCount(
-      "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 1u);
+      "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll",
+      1u);
   histograms.ExpectTotalCount(
-      "Graphics.Smoothness.Throughput.MainThread.TouchScroll", 0u);
+      "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll", 0u);
   histograms.ExpectTotalCount(
-      "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 1u);
+      "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.TouchScroll", 1u);
 
   // There should still be data left over for the main-thread.
   EXPECT_TRUE(first.HasDataLeftForReporting());
@@ -65,11 +66,12 @@ TEST(FrameSequenceMetricsTest, AllMetricsReported) {
   EXPECT_TRUE(first.HasEnoughDataForReporting());
   first.ReportMetrics();
   histograms.ExpectTotalCount(
-      "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 2u);
+      "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll",
+      2u);
   histograms.ExpectTotalCount(
-      "Graphics.Smoothness.Throughput.MainThread.TouchScroll", 1u);
+      "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll", 1u);
   histograms.ExpectTotalCount(
-      "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 2u);
+      "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.TouchScroll", 2u);
   // All the metrics have now been reported. No data should be left over.
   EXPECT_FALSE(first.HasDataLeftForReporting());
 
@@ -82,11 +84,12 @@ TEST(FrameSequenceMetricsTest, AllMetricsReported) {
   third.ReportMetrics();
 
   histograms.ExpectTotalCount(
-      "Graphics.Smoothness.Throughput.CompositorThread.Universal", 1u);
+      "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.Universal",
+      1u);
   histograms.ExpectTotalCount(
-      "Graphics.Smoothness.Throughput.MainThread.Universal", 1u);
+      "Graphics.Smoothness.PercentDroppedFrames.MainThread.Universal", 1u);
   histograms.ExpectTotalCount(
-      "Graphics.Smoothness.Throughput.SlowerThread.Universal", 1u);
+      "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.Universal", 1u);
 }
 
 TEST(FrameSequenceMetricsTest, IrrelevantMetricsNotReported) {
@@ -106,12 +109,16 @@ TEST(FrameSequenceMetricsTest, IrrelevantMetricsNotReported) {
   // The compositor-thread metric should be reported, but not the main-thread
   // or slower-thread metric.
   histograms.ExpectTotalCount(
-      "Graphics.Smoothness.Throughput.CompositorThread.CompositorAnimation",
+      "Graphics.Smoothness.PercentDroppedFrames.CompositorThread."
+      "CompositorAnimation",
       1u);
   histograms.ExpectTotalCount(
-      "Graphics.Smoothness.Throughput.MainThread.CompositorAnimation", 0u);
+      "Graphics.Smoothness.PercentDroppedFrames.MainThread.CompositorAnimation",
+      0u);
   histograms.ExpectTotalCount(
-      "Graphics.Smoothness.Throughput.SlowerThread.CompositorAnimation", 0u);
+      "Graphics.Smoothness.PercentDroppedFrames.SlowerThread."
+      "CompositorAnimation",
+      0u);
 
   FrameSequenceMetrics second(FrameSequenceTrackerType::kRAF, nullptr);
   second.impl_throughput().frames_expected = 120;
@@ -124,11 +131,11 @@ TEST(FrameSequenceMetricsTest, IrrelevantMetricsNotReported) {
   // The main-thread metric should be reported, but not the compositor-thread
   // or slower-thread metric.
   histograms.ExpectTotalCount(
-      "Graphics.Smoothness.Throughput.CompositorThread.RAF", 0u);
-  histograms.ExpectTotalCount("Graphics.Smoothness.Throughput.MainThread.RAF",
-                              1u);
-  histograms.ExpectTotalCount("Graphics.Smoothness.Throughput.SlowerThread.RAF",
-                              0u);
+      "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.RAF", 0u);
+  histograms.ExpectTotalCount(
+      "Graphics.Smoothness.PercentDroppedFrames.MainThread.RAF", 1u);
+  histograms.ExpectTotalCount(
+      "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.RAF", 0u);
 }
 
 }  // namespace cc

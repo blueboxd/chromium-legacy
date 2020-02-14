@@ -15,6 +15,10 @@
 #include "base/android/scoped_java_ref.h"
 #endif
 
+namespace content {
+class WebContents;
+}
+
 namespace weblayer {
 class BrowserImpl;
 
@@ -28,10 +32,14 @@ class UrlBarControllerImpl : public UrlBarController,
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jstring> GetUrlForDisplay(JNIEnv* env);
+  jint GetConnectionSecurityLevel(JNIEnv* env);
+  jboolean ShouldShowDangerTriangleForWarningLevel(JNIEnv* env);
 #endif
 
   // UrlBarController:
   base::string16 GetUrlForDisplay() override;
+  security_state::SecurityLevel GetConnectionSecurityLevel() override;
+  bool ShouldShowDangerTriangleForWarningLevel() override;
 
   // LocationBarModelDelegate:
   bool GetURL(GURL* url) const override;
@@ -41,6 +49,7 @@ class UrlBarControllerImpl : public UrlBarController,
       const base::string16& formatted_url) const override;
 
  private:
+  content::WebContents* GetActiveWebContents() const;
   BrowserImpl* const browser_;
   std::unique_ptr<LocationBarModelImpl> location_bar_model_;
 };

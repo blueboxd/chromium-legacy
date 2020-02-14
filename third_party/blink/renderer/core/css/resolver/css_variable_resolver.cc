@@ -52,7 +52,7 @@ CSSVariableResolver::Fallback CSSVariableResolver::ResolveFallback(
     const CSSParserContext* context =
         StrictCSSParserContext(state_.GetDocument().GetSecureContextMode());
     const bool is_animation_tainted = false;
-    if (!registration->Syntax().Parse(resolved_range, context,
+    if (!registration->Syntax().Parse(resolved_range, *context,
                                       is_animation_tainted))
       return Fallback::kFail;
   }

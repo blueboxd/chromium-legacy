@@ -84,7 +84,7 @@ std::string GetCheckerboardingHistogramName(FrameSequenceTrackerType type) {
 std::string GetThroughputHistogramName(FrameSequenceTrackerType type,
                                        const char* thread_name) {
   return base::StrCat(
-      {"Graphics.Smoothness.Throughput.", thread_name, ".",
+      {"Graphics.Smoothness.PercentDroppedFrames.", thread_name, ".",
        FrameSequenceTracker::GetFrameSequenceTrackerTypeName(type)});
 }
 
@@ -972,8 +972,12 @@ base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
       data.frames_expected > kMaxFramesForThroughputMetric)
     return base::nullopt;
 
+  // Throughput means the percent of frames that was expected to show on the
+  // screen but didn't. In other words, the lower the throughput is, the
+  // smoother user experience.
   const int percent =
-      static_cast<int>(100 * data.frames_produced / data.frames_expected);
+      std::ceil(100 * (data.frames_expected - data.frames_produced) /
+                static_cast<double>(data.frames_expected));
 
   const bool is_animation =
       ShouldReportForAnimation(sequence_type, thread_type);
@@ -981,18 +985,18 @@ base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
       ShouldReportForInteraction(sequence_type, thread_type);
 
   if (is_animation) {
-    UMA_HISTOGRAM_PERCENTAGE("Graphics.Smoothness.Throughput.AllAnimations",
-                             percent);
+    UMA_HISTOGRAM_PERCENTAGE(
+        "Graphics.Smoothness.PercentDroppedFrames.AllAnimations", percent);
   }
 
   if (is_interaction) {
-    UMA_HISTOGRAM_PERCENTAGE("Graphics.Smoothness.Throughput.AllInteractions",
-                             percent);
+    UMA_HISTOGRAM_PERCENTAGE(
+        "Graphics.Smoothness.PercentDroppedFrames.AllInteractions", percent);
   }
 
   if (is_animation || is_interaction) {
-    UMA_HISTOGRAM_PERCENTAGE("Graphics.Smoothness.Throughput.AllSequences",
-                             percent);
+    UMA_HISTOGRAM_PERCENTAGE(
+        "Graphics.Smoothness.PercentDroppedFrames.AllSequences", percent);
   }
 
   if (!is_animation && !IsInteractionType(sequence_type) &&

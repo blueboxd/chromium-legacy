@@ -1067,7 +1067,7 @@ void ShelfLayoutManager::OnDeskSwitchAnimationFinished() {
 }
 
 float ShelfLayoutManager::GetOpacity() const {
-  return target_bounds_.opacity;
+  return target_opacity_;
 }
 
 int ShelfLayoutManager::CalculateHotseatYInScreen(
@@ -1118,10 +1118,6 @@ void ShelfLayoutManager::OnTabletModeEnded() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfLayoutManager, private:
-
-ShelfLayoutManager::TargetBounds::TargetBounds() : opacity(0.0f) {}
-
-ShelfLayoutManager::TargetBounds::~TargetBounds() = default;
 
 void ShelfLayoutManager::OnCenterVisibilityChanged(
     message_center::Visibility visibility) {
@@ -1423,17 +1419,17 @@ void ShelfLayoutManager::SetDimmed(bool dimmed) {
   const gfx::Tween::Type dim_animation_tween =
       ShelfConfig::Get()->DimAnimationTween();
 
-  AnimateOpacity(shelf_->navigation_widget(), target_bounds_.opacity,
+  AnimateOpacity(shelf_->navigation_widget(), target_opacity_,
                  dim_animation_duration, dim_animation_tween);
 
   AnimateOpacity(shelf_->hotseat_widget(),
                  shelf_->hotseat_widget()->CalculateOpacity(),
                  dim_animation_duration, dim_animation_tween);
 
-  AnimateOpacity(shelf_->status_area_widget(), target_bounds_.opacity,
+  AnimateOpacity(shelf_->status_area_widget(), target_opacity_,
                  dim_animation_duration, dim_animation_tween);
 
-  shelf_widget_->SetLoginShelfButtonOpacity(target_bounds_.opacity);
+  shelf_widget_->SetLoginShelfButtonOpacity(target_opacity_);
 }
 
 void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
@@ -1448,7 +1444,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
 
     // Having a window which is visible but does not have an opacity is an
     // illegal state. We therefore hide the shelf here if required.
-    if (!target_bounds_.opacity) {
+    if (!target_opacity_) {
       nav_widget->Hide();
       status_widget->Hide();
     }
@@ -1461,7 +1457,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
 
     // Nav widget handles its own bounds animations so we use AnimateOpacity to
     // create a separate ScopedLayerAnimationSettings for nav widget opacity.
-    AnimateOpacity(nav_widget, target_bounds_.opacity, animation_duration,
+    AnimateOpacity(nav_widget, target_opacity_, animation_duration,
                    gfx::Tween::EASE_OUT);
 
     // Let the navigation widget handle its own layout changes.
@@ -1506,7 +1502,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
 
   // Setting visibility during an animation causes the visibility property to
   // animate. Set the visibility property without an animation.
-  if (target_bounds_.opacity) {
+  if (target_opacity_) {
     if (state_.IsActiveSessionState()) {
       nav_widget->ShowInactive();
       hotseat_widget->ShowInactive();
@@ -1545,7 +1541,7 @@ gfx::Insets ShelfLayoutManager::CalculateTargetBounds(
   shelf_->navigation_widget()->CalculateTargetBounds();
   shelf_->hotseat_widget()->CalculateTargetBounds();
 
-  target_bounds_.opacity = ComputeTargetOpacity(state);
+  target_opacity_ = ComputeTargetOpacity(state);
 
   if (drag_status_ == kDragInProgress)
     UpdateTargetBoundsForGesture(hotseat_target_state);

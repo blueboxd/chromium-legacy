@@ -20,7 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_origin.h"
-#include "chrome/common/prerender.mojom.h"
+#include "chrome/common/prerender_canceler.mojom.h"
 #include "chrome/common/prerender_types.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"

@@ -66,12 +66,12 @@ class UnitTestPrerenderManager;
 
 namespace {
 
-class DummyPrerenderHandleClient : public chrome::mojom::PrerenderHandleClient {
+class DummyPrerenderHandleClient : public blink::mojom::PrerenderHandleClient {
  public:
   DummyPrerenderHandleClient() = default;
   ~DummyPrerenderHandleClient() override = default;
 
-  // chrome::mojom::PrerenderHandleClient implementation
+  // blink::mojom::PrerenderHandleClient implementation
   void OnPrerenderStart() override {}
   void OnPrerenderStopLoading() override {}
   void OnPrerenderDomContentLoaded() override {}
@@ -396,8 +396,8 @@ class PrerenderTest : public testing::Test {
                     const GURL& initiator_url,
                     int render_process_id,
                     int render_view_id) {
-    chrome::mojom::PrerenderAttributesPtr attributes =
-        chrome::mojom::PrerenderAttributes::New();
+    blink::mojom::PrerenderAttributesPtr attributes =
+        blink::mojom::PrerenderAttributes::New();
     attributes->url = url;
     attributes->rel_types = kDefaultRelTypes;
     attributes->referrer = blink::mojom::Referrer::New(
@@ -405,11 +405,11 @@ class PrerenderTest : public testing::Test {
     attributes->initiator_origin = url::Origin::Create(initiator_url);
     attributes->view_size = kDefaultViewSize;
 
-    mojo::PendingRemote<chrome::mojom::PrerenderHandleClient> handle_client;
+    mojo::PendingRemote<blink::mojom::PrerenderHandleClient> handle_client;
     clients_.Add(std::make_unique<DummyPrerenderHandleClient>(),
                  handle_client.InitWithNewPipeAndPassReceiver());
 
-    mojo::PendingRemote<chrome::mojom::PrerenderHandle> handle;
+    mojo::PendingRemote<blink::mojom::PrerenderHandle> handle;
 
     // This could delete an existing prerender as a side-effect.
     bool added = prerender_link_manager()->OnAddPrerender(
@@ -489,7 +489,7 @@ class PrerenderTest : public testing::Test {
   std::unique_ptr<UnitTestPrerenderManager> prerender_manager_;
   std::unique_ptr<PrerenderLinkManager> prerender_link_manager_;
   base::HistogramTester histogram_tester_;
-  mojo::UniqueReceiverSet<chrome::mojom::PrerenderHandleClient> clients_;
+  mojo::UniqueReceiverSet<blink::mojom::PrerenderHandleClient> clients_;
 
   // Restore prerender mode after this test finishes running.
   test_utils::RestorePrerenderMode restore_prerender_mode_;

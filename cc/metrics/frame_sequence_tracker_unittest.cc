@@ -140,11 +140,13 @@ class FrameSequenceTrackerTest : public testing::Test {
     tracker_->impl_throughput().frames_produced = 85u;
     tracker_->ReportMetricsForTesting();
     histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 1u);
+        "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll",
+        1u);
     histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.Throughput.MainThread.TouchScroll", 0u);
+        "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll", 0u);
     histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 1u);
+        "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.TouchScroll",
+        1u);
 
     // Test that both are reported.
     tracker_->impl_throughput().frames_expected = 100u;
@@ -153,11 +155,13 @@ class FrameSequenceTrackerTest : public testing::Test {
     tracker_->main_throughput().frames_produced = 25u;
     tracker_->ReportMetricsForTesting();
     histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 2u);
+        "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll",
+        2u);
     histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.Throughput.MainThread.TouchScroll", 1u);
+        "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll", 1u);
     histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 2u);
+        "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.TouchScroll",
+        2u);
 
     // Test that none is reported.
     tracker_->main_throughput().frames_expected = 2u;
@@ -166,11 +170,13 @@ class FrameSequenceTrackerTest : public testing::Test {
     tracker_->impl_throughput().frames_produced = 1u;
     tracker_->ReportMetricsForTesting();
     histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 2u);
+        "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll",
+        2u);
     histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.Throughput.MainThread.TouchScroll", 1u);
+        "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll", 1u);
     histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 2u);
+        "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.TouchScroll",
+        2u);
 
     // Test the case where compositor and main thread have the same throughput.
     tracker_->impl_throughput().frames_expected = 120u;
@@ -179,11 +185,13 @@ class FrameSequenceTrackerTest : public testing::Test {
     tracker_->main_throughput().frames_produced = 118u;
     tracker_->ReportMetricsForTesting();
     histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 3u);
+        "Graphics.Smoothness.PercentDroppedFrames.CompositorThread.TouchScroll",
+        3u);
     histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.Throughput.MainThread.TouchScroll", 2u);
+        "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll", 2u);
     histogram_tester.ExpectTotalCount(
-        "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 3u);
+        "Graphics.Smoothness.PercentDroppedFrames.SlowerThread.TouchScroll",
+        3u);
   }
 
   void GenerateSequence(const char* str) {
@@ -622,10 +630,11 @@ TEST_F(FrameSequenceTrackerTest, BeginMainFrameSubmit) {
   base::HistogramTester histogram_tester;
   ReportMetrics();
 
-  const char metric[] = "Graphics.Smoothness.Throughput.MainThread.TouchScroll";
+  const char metric[] =
+      "Graphics.Smoothness.PercentDroppedFrames.MainThread.TouchScroll";
   histogram_tester.ExpectTotalCount(metric, 1u);
   EXPECT_THAT(histogram_tester.GetAllSamples(metric),
-              testing::ElementsAre(base::Bucket(99, 1)));
+              testing::ElementsAre(base::Bucket(1, 1)));
 }
 
 TEST_F(FrameSequenceTrackerTest, SimpleSequenceOneFrame) {

@@ -9,7 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.settings.NfcSystemLevelSetting;
+import org.chromium.chrome.browser.nfc.NfcSystemLevelSetting;
 
 /**
  * A class for dealing with the NFC category.

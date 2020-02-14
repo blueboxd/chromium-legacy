@@ -710,7 +710,7 @@ mojom("mojo_bindings") {
     "network_easter_egg.mojom",
     "open_search_description_document_handler.mojom",
     "plugin.mojom",
-    "prerender.mojom",
+    "prerender_canceler.mojom",
     "renderer_configuration.mojom",
     "sync_encryption_keys_extension.mojom",
   ]

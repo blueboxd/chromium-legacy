@@ -6,7 +6,6 @@
 
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
-#include "chrome/common/prerender.mojom.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/prerender_url_loader_throttle.h"
 #include "content/public/renderer/document_state.h"

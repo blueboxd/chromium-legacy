@@ -16,7 +16,7 @@
 #include "content/public/test/test_utils.h"
 
 #if defined(OS_ANDROID)
-#include "chrome/browser/android/mock_nfc_system_level_setting.h"
+#include "chrome/browser/nfc/android/mock_nfc_system_level_setting.h"
 #include "chrome/browser/nfc/nfc_permission_context_android.h"
 #endif
 

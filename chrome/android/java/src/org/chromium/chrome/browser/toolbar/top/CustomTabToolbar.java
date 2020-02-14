@@ -781,7 +781,8 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
                 mAnimDelegate.showSecurityButton();
             }
 
-            int contentDescriptionId = getToolbarDataProvider().getSecurityIconContentDescription();
+            int contentDescriptionId =
+                    getToolbarDataProvider().getSecurityIconContentDescriptionResourceId();
             String contentDescription = getContext().getString(contentDescriptionId);
             mSecurityButton.setContentDescription(contentDescription);
 

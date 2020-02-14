@@ -40,6 +40,8 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/page_animator.h"
 
 namespace blink {
 
@@ -121,8 +123,29 @@ HeapVector<Member<Animation>> DocumentAnimations::getAnimations() {
   // This method implements the Document::getAnimations method defined in the
   // web-animations-1 spec.
   // https://drafts.csswg.org/web-animations-1/#dom-document-getanimations
+  // TODO(crbug.com/1046916): refactoring work to create a shared implementation
+  // of getAnimations for Documents and ShadowRoots.
   document_->UpdateStyleAndLayoutTree();
   HeapVector<Member<Animation>> animations;
+  if (document_->GetPage())
+    animations = document_->GetPage()->Animator().GetAnimations(document_);
+  else
+    GetAnimationsTargetingDocument(document_, animations);
+
+  std::sort(animations.begin(), animations.end(), CompareAnimations);
+  return animations;
+}
+
+void DocumentAnimations::Trace(blink::Visitor* visitor) {
+  visitor->Trace(document_);
+  visitor->Trace(timelines_);
+}
+
+void DocumentAnimations::GetAnimationsTargetingDocument(
+    Document* document_,
+    HeapVector<Member<Animation>>& animations) {
+  // This method follows the timelines in a given docmuent and append all the
+  // animations to the reference animations.
   for (auto& timeline : timelines_) {
     for (const auto& animation : timeline->GetAnimations()) {
       if (animation->ReplaceStateRemoved())
@@ -141,13 +164,5 @@ HeapVector<Member<Animation>> DocumentAnimations::getAnimations() {
       animations.push_back(animation);
     }
   }
-  std::sort(animations.begin(), animations.end(), CompareAnimations);
-  return animations;
 }
-
-void DocumentAnimations::Trace(Visitor* visitor) {
-  visitor->Trace(document_);
-  visitor->Trace(timelines_);
-}
-
 }  // namespace blink

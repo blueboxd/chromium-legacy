@@ -7505,15 +7505,9 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
   // loads to UMA.
   if (loading_mem_tracker_)
     loading_mem_tracker_->Cancel();
+  // Main Frames will create the tracker, which will be triggered after we
+  // receive OnDidStopLoading.
   loading_mem_tracker_ = navigation_request->TakePeakGpuMemoryTracker();
-  // Main Frames will create the tracker, add a callback to report the memory
-  // usage. This will be triggered after we receive OnDidStopLoading.
-  if (loading_mem_tracker_) {
-    loading_mem_tracker_->SetCallback(base::BindOnce([](uint64_t peak_memory) {
-      UMA_HISTOGRAM_MEMORY_KB("Memory.GPU.PeakMemoryUsage.PageLoad",
-                              peak_memory / 1024u);
-    }));
-  }
 
   network::mojom::ClientSecurityStatePtr client_security_state =
       navigation_request->TakeClientSecurityState();

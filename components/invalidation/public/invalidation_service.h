@@ -103,7 +103,8 @@ class InvalidationService {
 
   // Triggers requests of internal status.
   virtual void RequestDetailedStatus(
-      base::Callback<void(const base::DictionaryValue&)> post_caller) const = 0;
+      base::RepeatingCallback<void(const base::DictionaryValue&)> post_caller)
+      const = 0;
 };
 
 }  // namespace invalidation

@@ -51,6 +51,8 @@ class CORE_EXPORT DocumentAnimations final
   void UpdateAnimationTimingForAnimationFrame();
   bool NeedsAnimationTimingUpdate();
   void UpdateAnimationTimingIfNeeded();
+  void GetAnimationsTargetingDocument(Document*,
+                                      HeapVector<Member<Animation>>&);
 
   // Updates existing animations as part of generating a new (document
   // lifecycle) frame. Note that this considers and updates state for

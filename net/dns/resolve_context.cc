@@ -30,7 +30,7 @@ base::Optional<size_t> ResolveContext::DohServerIndexToUse(
 
   CHECK_LT(starting_doh_server_index, doh_server_availability_.size());
   size_t index = starting_doh_server_index;
-  base::Time oldest_server_failure;
+  base::TimeTicks oldest_server_failure;
   base::Optional<size_t> oldest_available_server_failure_index;
 
   do {
@@ -47,7 +47,7 @@ base::Optional<size_t> ResolveContext::DohServerIndexToUse(
         return index;
       }
       // Track oldest failed available server.
-      base::Time cur_server_failure =
+      base::TimeTicks cur_server_failure =
           current_session_->GetLastDohFailure(index);
       if (!oldest_available_server_failure_index ||
           cur_server_failure < oldest_server_failure) {

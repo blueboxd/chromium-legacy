@@ -57,16 +57,16 @@ class NET_EXPORT_PRIVATE DnsSocketPool {
   // available to reuse and the factory fails to produce a socket (or produces
   // one on which Connect fails).
   virtual std::unique_ptr<DatagramClientSocket> AllocateSocket(
-      unsigned server_index) = 0;
+      size_t server_index) = 0;
 
   // Frees a socket allocated by AllocateSocket.  |server_index| must be the
   // same index passed to AllocateSocket.
-  virtual void FreeSocket(unsigned server_index,
+  virtual void FreeSocket(size_t server_index,
                           std::unique_ptr<DatagramClientSocket> socket) = 0;
 
   // Creates a StreamSocket from the factory for a transaction over TCP. These
   // sockets are not pooled.
-  std::unique_ptr<StreamSocket> CreateTCPSocket(unsigned server_index,
+  std::unique_ptr<StreamSocket> CreateTCPSocket(size_t server_index,
                                                 const NetLogSource& source);
 
  protected:
@@ -78,7 +78,7 @@ class NET_EXPORT_PRIVATE DnsSocketPool {
       NetLog* net_log);
 
   std::unique_ptr<DatagramClientSocket> CreateConnectedSocket(
-      unsigned server_index);
+      size_t server_index);
 
   // Returns a random int in the specified range.
   int GetRandomInt(int min, int max);

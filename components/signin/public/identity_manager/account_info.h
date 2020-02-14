@@ -61,6 +61,7 @@ struct AccountInfo : public CoreAccountInfo {
   std::string hosted_domain;
   std::string locale;
   std::string picture_url;
+  std::string last_downloaded_image_url_with_size;
   gfx::Image account_image;
   bool is_child_account = false;
 

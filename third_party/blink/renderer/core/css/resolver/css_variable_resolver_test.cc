@@ -301,7 +301,7 @@ TEST_F(CSSVariableResolverTest, NeedsResolutionClearedByResolver) {
   const auto tokens = CSSTokenizer(initial_value_str).TokenizeToEOF();
   const auto* context = MakeGarbageCollected<CSSParserContext>(GetDocument());
   const CSSValue* initial_value =
-      token_syntax->Parse(CSSParserTokenRange(tokens), context, false);
+      token_syntax->Parse(CSSParserTokenRange(tokens), *context, false);
   ASSERT_TRUE(initial_value);
   ASSERT_TRUE(initial_value->IsVariableReferenceValue());
   PropertyRegistration* registration =

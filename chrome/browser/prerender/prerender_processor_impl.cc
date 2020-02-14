@@ -26,7 +26,7 @@ PrerenderProcessorImpl::~PrerenderProcessorImpl() = default;
 // static
 void PrerenderProcessorImpl::Create(
     content::RenderFrameHost* frame_host,
-    mojo::PendingReceiver<chrome::mojom::PrerenderProcessor> receiver) {
+    mojo::PendingReceiver<blink::mojom::PrerenderProcessor> receiver) {
   mojo::MakeSelfOwnedReceiver(
       std::make_unique<PrerenderProcessorImpl>(
           frame_host->GetProcess()->GetID(), frame_host->GetRoutingID()),
@@ -34,9 +34,9 @@ void PrerenderProcessorImpl::Create(
 }
 
 void PrerenderProcessorImpl::AddPrerender(
-    chrome::mojom::PrerenderAttributesPtr attributes,
-    mojo::PendingRemote<chrome::mojom::PrerenderHandleClient> handle_client,
-    mojo::PendingReceiver<chrome::mojom::PrerenderHandle> handle) {
+    blink::mojom::PrerenderAttributesPtr attributes,
+    mojo::PendingRemote<blink::mojom::PrerenderHandleClient> handle_client,
+    mojo::PendingReceiver<blink::mojom::PrerenderHandle> handle) {
   if (!attributes->initiator_origin.opaque() &&
       !content::ChildProcessSecurityPolicy::GetInstance()
            ->CanAccessDataForOrigin(render_process_id_,

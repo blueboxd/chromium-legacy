@@ -85,10 +85,6 @@ void StatusAreaWidget::Initialize() {
   overview_button_tray_ = std::make_unique<OverviewButtonTray>(shelf_);
   AddTrayButton(overview_button_tray_.get());
 
-  // The layout depends on the number of children, so build it once after
-  // adding all of them.
-  status_area_widget_delegate_->UpdateLayout();
-
   // Initialize after all trays have been created.
   for (TrayBackgroundView* tray_button : tray_buttons_)
     tray_button->Initialize();
@@ -129,9 +125,6 @@ void StatusAreaWidget::UpdateAfterLoginStatusChange(LoginStatus login_status) {
 void StatusAreaWidget::SetSystemTrayVisibility(bool visible) {
   TrayBackgroundView* tray = unified_system_tray_.get();
   tray->SetVisiblePreferred(visible);
-  // Opacity is set to prevent flakiness in kiosk browser tests. See
-  // https://crbug.com/624584.
-  SetOpacity(visible ? 1.f : 0.f);
   if (visible) {
     Show();
   } else {
@@ -194,8 +187,8 @@ gfx::Rect StatusAreaWidget::GetTargetBounds() const {
 
 void StatusAreaWidget::UpdateLayout(bool animate) {
   const LayoutInputs new_layout_inputs = GetLayoutInputs();
-  // TODO(manucornet): Return early once we're sure we've captured all
-  // layout inputs and nothing has changed.
+  if (layout_inputs_ == new_layout_inputs)
+    return;
   ui::Layer* layer = GetNativeView()->layer();
   ui::ScopedLayerAnimationSettings animation_setter(layer->GetAnimator());
   layer->SetOpacity(new_layout_inputs.opacity);

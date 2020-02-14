@@ -20,6 +20,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/masked_targeter_delegate.h"
 #include "ui/views/view.h"
 
@@ -149,6 +150,8 @@ class AutoclickScrollButton : public CustomShapeButton,
 
     SetClipPath(CreateCustomShapePath(gfx::Rect(GetPreferredSize())));
     SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
+
+    views::InstallRoundRectHighlightPathGenerator(this, gfx::Insets(), 0.f);
   }
 
   ~AutoclickScrollButton() override {

@@ -4203,6 +4203,13 @@ bool IsMenuList(const LayoutObject* object) {
   return select && select->UsesMenuList();
 }
 
+bool IsListBox(const LayoutObject* object) {
+  if (!object)
+    return false;
+  auto* select = DynamicTo<HTMLSelectElement>(object->GetNode());
+  return select && !select->UsesMenuList();
+}
+
 }  // namespace blink
 
 #if DCHECK_IS_ON()

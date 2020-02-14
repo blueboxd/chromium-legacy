@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/timing/measure_memory/measure_memory_delegate.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_measure_memory.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_measure_memory_breakdown.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -152,8 +153,7 @@ void MeasureMemoryDelegate::MeasurementComplete(
   result->setBreakdown(breakdown);
   v8::Local<v8::Promise::Resolver> promise_resolver =
       promise_resolver_.NewLocal(isolate_);
-  promise_resolver
-      ->Resolve(context, result->ToV8Impl(promise_resolver, isolate_))
+  promise_resolver->Resolve(context, ToV8(result, promise_resolver, isolate_))
       .ToChecked();
 }
 

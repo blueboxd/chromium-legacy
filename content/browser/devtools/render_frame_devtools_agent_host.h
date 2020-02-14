@@ -139,6 +139,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void UpdateFrameHost(RenderFrameHostImpl* frame_host);
   void SetFrameTreeNode(FrameTreeNode* frame_tree_node);
   void ChangeFrameHostAndObservedProcess(RenderFrameHostImpl* frame_host);
+  void UpdateFrameAlive();
 
   bool ShouldAllowSession(DevToolsSession* session);
 
@@ -159,6 +160,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   RenderFrameHostImpl* frame_host_ = nullptr;
   base::flat_set<NavigationRequest*> navigation_requests_;
   bool render_frame_alive_ = false;
+  bool render_frame_crashed_ = false;
 
   // The FrameTreeNode associated with this agent.
   FrameTreeNode* frame_tree_node_;

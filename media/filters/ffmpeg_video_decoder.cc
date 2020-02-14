@@ -134,11 +134,6 @@ int FFmpegVideoDecoder::GetVideoBuffer(struct AVCodecContext* codec_context,
   gfx::Size coded_size(std::max(size.width(), codec_context->coded_width),
                        std::max(size.height(), codec_context->coded_height));
 
-  if (!VideoFrame::IsValidConfig(format, VideoFrame::STORAGE_UNKNOWN,
-                                 coded_size, gfx::Rect(size), natural_size)) {
-    return AVERROR(EINVAL);
-  }
-
   // FFmpeg expects the initial allocation to be zero-initialized.  Failure to
   // do so can lead to uninitialized value usage.  See http://crbug.com/390941
   scoped_refptr<VideoFrame> video_frame = frame_pool_.CreateFrame(

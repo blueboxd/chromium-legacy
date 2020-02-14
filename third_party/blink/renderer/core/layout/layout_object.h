@@ -669,7 +669,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsLayoutTableCol() const {
     return IsOfType(kLayoutObjectLayoutTableCol);
   }
-  bool IsListBox() const { return IsOfType(kLayoutObjectListBox); }
   bool IsListItem() const { return IsOfType(kLayoutObjectListItem); }
   bool IsListMarker() const { return IsOfType(kLayoutObjectListMarker); }
   bool IsMathML() const { return IsOfType(kLayoutObjectMathML); }
@@ -3519,6 +3518,7 @@ CORE_EXPORT std::ostream& operator<<(std::ostream&, const LayoutObject&);
                     object.predicate)
 
 bool IsMenuList(const LayoutObject* object);
+CORE_EXPORT bool IsListBox(const LayoutObject* object);
 
 }  // namespace blink
 

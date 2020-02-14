@@ -92,6 +92,10 @@ void DevToolsSession::SetRuntimeResumeCallback(
   runtime_resume_ = std::move(runtime_resume);
 }
 
+bool DevToolsSession::IsWaitingForDebuggerOnStart() const {
+  return !runtime_resume_.is_null();
+}
+
 void DevToolsSession::Dispose() {
   dispatcher_.reset();
   for (auto& pair : handlers_)

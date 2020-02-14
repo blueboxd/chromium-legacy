@@ -17,6 +17,7 @@
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_string_resource.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_address_errors.h"
@@ -363,9 +364,9 @@ void SetAndroidPayMethodData(v8::Isolate* isolate,
                              const ScriptValue& input,
                              PaymentMethodDataPtr& output,
                              ExceptionState& exception_state) {
-  AndroidPayMethodData* android_pay = AndroidPayMethodData::Create();
-  V8AndroidPayMethodData::ToImpl(isolate, input.V8Value(), android_pay,
-                                 exception_state);
+  AndroidPayMethodData* android_pay =
+      NativeValueTraits<AndroidPayMethodData>::NativeValue(
+          isolate, input.V8Value(), exception_state);
   if (exception_state.HadException())
     return;
 
@@ -966,13 +967,13 @@ void PaymentRequest::OnUpdatePaymentDetails(
 
   update_payment_details_timer_.Stop();
 
-  PaymentDetailsUpdate* details = PaymentDetailsUpdate::Create();
   ExceptionState exception_state(v8::Isolate::GetCurrent(),
                                  ExceptionState::kConstructionContext,
                                  "PaymentDetailsUpdate");
-  V8PaymentDetailsUpdate::ToImpl(resolver->GetScriptState()->GetIsolate(),
-                                 details_script_value.V8Value(), details,
-                                 exception_state);
+  PaymentDetailsUpdate* details =
+      NativeValueTraits<PaymentDetailsUpdate>::NativeValue(
+          resolver->GetScriptState()->GetIsolate(),
+          details_script_value.V8Value(), exception_state);
   if (exception_state.HadException()) {
     resolver->Reject(exception_state.GetException());
     ClearResolversAndCloseMojoConnection();

@@ -82,6 +82,11 @@ NGInlineCursor::NGInlineCursor(const NGPaintFragment& root_paint_fragment) {
   SetRoot(root_paint_fragment);
 }
 
+NGInlineCursor::NGInlineCursor(const NGInlineBackwardCursor& backward_cursor)
+    : NGInlineCursor(backward_cursor.cursor_) {
+  MoveTo(backward_cursor.Current());
+}
+
 bool NGInlineCursor::operator==(const NGInlineCursor& other) const {
   if (root_paint_fragment_) {
     return root_paint_fragment_ == other.root_paint_fragment_ &&
@@ -1360,6 +1365,9 @@ void NGInlineCursor::MoveToPreviousSiblingPaintFragment() {
 NGInlineBackwardCursor::NGInlineBackwardCursor(const NGInlineCursor& cursor)
     : cursor_(cursor) {
   if (cursor.root_paint_fragment_) {
+    DCHECK(!cursor.CurrentPaintFragment() ||
+           cursor.CurrentPaintFragment()->Parent()->FirstChild() ==
+               cursor.CurrentPaintFragment());
     for (NGInlineCursor sibling(cursor); sibling; sibling.MoveToNextSibling())
       sibling_paint_fragments_.push_back(sibling.CurrentPaintFragment());
     current_index_ = sibling_paint_fragments_.size();
@@ -1368,7 +1376,9 @@ NGInlineBackwardCursor::NGInlineBackwardCursor(const NGInlineCursor& cursor)
     return;
   }
   if (cursor.IsItemCursor()) {
-    for (NGInlineCursor sibling(cursor); sibling; sibling.MoveToNextSibling())
+    DCHECK(!cursor || cursor.items_.begin() == cursor.Current().item_iter_);
+    for (NGInlineCursor sibling(cursor); sibling;
+         sibling.MoveToNextSkippingChildren())
       sibling_item_iterators_.push_back(sibling.Current().item_iter_);
     current_index_ = sibling_item_iterators_.size();
     if (current_index_) {

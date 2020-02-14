@@ -72,6 +72,21 @@ TEST(FrameSequenceMetricsTest, AllMetricsReported) {
       "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 2u);
   // All the metrics have now been reported. No data should be left over.
   EXPECT_FALSE(first.HasDataLeftForReporting());
+
+  FrameSequenceMetrics third(FrameSequenceTrackerType::kUniversal, nullptr);
+  third.impl_throughput().frames_expected = 120;
+  third.impl_throughput().frames_produced = 80;
+  third.main_throughput().frames_expected = 120;
+  third.main_throughput().frames_produced = 80;
+  EXPECT_TRUE(third.HasEnoughDataForReporting());
+  third.ReportMetrics();
+
+  histograms.ExpectTotalCount(
+      "Graphics.Smoothness.Throughput.CompositorThread.Universal", 1u);
+  histograms.ExpectTotalCount(
+      "Graphics.Smoothness.Throughput.MainThread.Universal", 1u);
+  histograms.ExpectTotalCount(
+      "Graphics.Smoothness.Throughput.SlowerThread.Universal", 1u);
 }
 
 TEST(FrameSequenceMetricsTest, IrrelevantMetricsNotReported) {

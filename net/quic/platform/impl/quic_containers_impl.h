@@ -13,7 +13,6 @@
 #include "base/containers/small_map.h"
 #include "net/base/interval_set.h"
 #include "net/third_party/quiche/src/common/simple_linked_hash_map.h"
-#include "net/third_party/quiche/src/quic/core/quic_circular_deque.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 
 namespace quic {
@@ -63,13 +62,6 @@ using QuicIntervalSetImpl = net::IntervalSet<T>;
 // DOES NOT GUARANTEE POINTER STABILITY!
 template <typename T>
 using QuicQueueImpl = base::queue<T>;
-
-// Represents a double-ended queue which may be backed by a list or
-// a flat circular buffer.
-//
-// DOES NOT GUARANTEE POINTER OR ITERATOR STABILITY!
-template <typename T>
-using QuicDequeImpl = QuicCircularDeque<T>;
 
 // TODO(wub): Switch to absl::InlinedVector once it is allowed.
 template <typename T, size_t N, typename A = std::allocator<T>>

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as metrics from './metrics.js';
 import {ChromeHelper} from './mojo/chrome_helper.js';
 import {Mode} from './type.js';
 
@@ -108,6 +109,7 @@ export class Intent {
     }
     this.done_ = true;
     await this.chromeHelper_.finish(this.intentId);
+    metrics.log(metrics.Type.INTENT, this, metrics.IntentResultType.CONFIRMED);
   }
 
   /**
@@ -120,6 +122,7 @@ export class Intent {
     }
     this.done_ = true;
     await this.chromeHelper_.cancel(this.intentId);
+    metrics.log(metrics.Type.INTENT, this, metrics.IntentResultType.CANCELED);
   }
 
   /**

@@ -1064,12 +1064,11 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
       const NGFragmentItem& item = *cursor.Current().Item();
       const NGPhysicalBoxFragment* box_fragment = item.BoxFragment();
       DCHECK(box_fragment);
-      NGInlineCursor descendants = cursor.CursorForDescendants();
       // NGBoxFragmentPainter::NodeAtPoint() takes an offset that is accumulated
       // up to the fragment itself. Compute this offset.
       const PhysicalOffset child_offset =
           accumulated_offset + item.OffsetInContainerBlock();
-      if (NGBoxFragmentPainter(item, *box_fragment, &descendants)
+      if (NGBoxFragmentPainter(cursor, item, *box_fragment)
               .NodeAtPoint(result, hit_test_location, child_offset,
                            hit_test_action))
         return true;

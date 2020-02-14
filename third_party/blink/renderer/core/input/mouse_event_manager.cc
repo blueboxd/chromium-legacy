@@ -852,7 +852,7 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
       return WebInputEventResult::kNotHandled;
 
     layout_object = parent->GetLayoutObject();
-    if (!layout_object || !layout_object->IsListBox())
+    if (!layout_object || !IsListBox(layout_object))
       return WebInputEventResult::kNotHandled;
   }
 

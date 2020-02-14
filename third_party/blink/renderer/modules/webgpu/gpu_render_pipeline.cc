@@ -138,26 +138,26 @@ WGPUVertexStateInfo GPUVertexStateAsWGPUVertexState(
         continue;
       }
 
-      GPUVertexBufferLayoutDescriptor vertex_buffer;
-      V8GPUVertexBufferLayoutDescriptor::ToImpl(isolate, value, &vertex_buffer,
-                                                exception_state);
+      GPUVertexBufferLayoutDescriptor* vertex_buffer =
+          NativeValueTraits<GPUVertexBufferLayoutDescriptor>::NativeValue(
+              isolate, value, exception_state);
       if (exception_state.HadException()) {
         return std::make_tuple(dawn_desc, std::move(dawn_vertex_buffers),
                                std::move(dawn_vertex_attributes));
       }
 
       WGPUVertexBufferLayoutDescriptor dawn_vertex_buffer = {};
-      dawn_vertex_buffer.arrayStride = vertex_buffer.arrayStride();
+      dawn_vertex_buffer.arrayStride = vertex_buffer->arrayStride();
       dawn_vertex_buffer.stepMode =
-          AsDawnEnum<WGPUInputStepMode>(vertex_buffer.stepMode());
+          AsDawnEnum<WGPUInputStepMode>(vertex_buffer->stepMode());
       dawn_vertex_buffer.attributeCount =
-          static_cast<uint32_t>(vertex_buffer.attributes().size());
+          static_cast<uint32_t>(vertex_buffer->attributes().size());
       dawn_vertex_buffer.attributes = nullptr;
       dawn_vertex_buffers.push_back(dawn_vertex_buffer);
 
-      for (wtf_size_t j = 0; j < vertex_buffer.attributes().size(); ++j) {
+      for (wtf_size_t j = 0; j < vertex_buffer->attributes().size(); ++j) {
         const GPUVertexAttributeDescriptor* attribute =
-            vertex_buffer.attributes()[j];
+            vertex_buffer->attributes()[j];
         WGPUVertexAttributeDescriptor dawn_vertex_attribute = {};
         dawn_vertex_attribute.shaderLocation = attribute->shaderLocation();
         dawn_vertex_attribute.offset = attribute->offset();

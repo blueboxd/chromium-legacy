@@ -18,7 +18,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/accessibility/view_accessibility.h"
-#include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/separator.h"
@@ -58,13 +57,6 @@ class AutoclickMenuButton : public TopShortcutButton {
 
   // views::Button:
   const char* GetClassName() const override { return "AutoclickMenuButton"; }
-
-  // views::ImageButton:
-  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    gfx::Rect bounds = GetContentsBounds();
-    return std::make_unique<views::CircleInkDropMask>(
-        size(), bounds.CenterPoint(), bounds.width() / 2);
-  }
 
   // Set the vector icon shown in a circle.
   void SetVectorIcon(const gfx::VectorIcon& icon) {

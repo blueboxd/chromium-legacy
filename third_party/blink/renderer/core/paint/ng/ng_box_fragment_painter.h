@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/api/hit_test_action.h"
 #include "third_party/blink/renderer/core/layout/background_bleed_avoidance.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_cursor.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/box_painter_base.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
@@ -42,13 +43,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   // Construct for an inline formatting context.
   NGBoxFragmentPainter(const NGPaintFragment&);
   // Construct for an inline box.
-  NGBoxFragmentPainter(const NGPhysicalBoxFragment& box_fragment,
-                       const NGPaintFragment* paint_fragment,
-                       const NGFragmentItem* box_item,
-                       NGInlineCursor* descendants);
-  NGBoxFragmentPainter(const NGFragmentItem& item,
-                       const NGPhysicalBoxFragment& fragment,
-                       NGInlineCursor* descendants);
+  NGBoxFragmentPainter(const NGInlineCursor& inline_box_cursor,
+                       const NGFragmentItem& item,
+                       const NGPhysicalBoxFragment& fragment);
 
   void Paint(const PaintInfo&);
   void PaintObject(const PaintInfo&,
@@ -95,8 +92,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   NGBoxFragmentPainter(const NGPhysicalBoxFragment&,
                        const DisplayItemClient& display_item_client,
                        const NGPaintFragment* = nullptr,
-                       const NGFragmentItem* = nullptr,
-                       NGInlineCursor* descendants = nullptr);
+                       const NGInlineCursor* inline_box_cursor = nullptr,
+                       const NGFragmentItem* = nullptr);
 
   enum MoveTo { kDontSkipChildren, kSkipChildren };
   bool ShouldPaint(const ScopedPaintState&) const;
@@ -294,7 +291,7 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   const NGPaintFragment* paint_fragment_;
   const NGFragmentItems* items_;
   const NGFragmentItem* box_item_ = nullptr;
-  NGInlineCursor* descendants_ = nullptr;
+  const NGInlineCursor* inline_box_cursor_ = nullptr;
   mutable base::Optional<NGBorderEdges> border_edges_;
 };
 
@@ -302,37 +299,44 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
     const NGPhysicalBoxFragment& box,
     const DisplayItemClient& display_item_client,
     const NGPaintFragment* paint_fragment,
-    const NGFragmentItem* box_item,
-    NGInlineCursor* descendants)
+    const NGInlineCursor* inline_box_cursor,
+    const NGFragmentItem* box_item)
     : BoxPainterBase(&box.GetDocument(), box.Style(), box.GeneratingNode()),
       box_fragment_(box),
       display_item_client_(display_item_client),
       paint_fragment_(paint_fragment),
       items_(box.Items()),
       box_item_(box_item),
-      descendants_(descendants) {
+      inline_box_cursor_(inline_box_cursor) {
   DCHECK(box.IsBox() || box.IsRenderedLegend());
-  DCHECK(!paint_fragment || !descendants);
 #if DCHECK_IS_ON()
-  if (box.IsInlineBox()) {
-    DCHECK(paint_fragment_ || box_item_);
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    DCHECK(!paint_fragment_);
+    if (inline_box_cursor_)
+      DCHECK_EQ(inline_box_cursor_->Current().Item(), box_item_);
+    if (box_item_)
+      DCHECK_EQ(box_item_->BoxFragment(), &box);
+    DCHECK_EQ(box.IsInlineBox(), !!inline_box_cursor_);
+    DCHECK_EQ(box.IsInlineBox(), !!box_item_);
+  } else {
+    DCHECK(!inline_box_cursor_);
+    DCHECK(!box_item_);
     if (paint_fragment)
       DCHECK_EQ(&paint_fragment->PhysicalFragment(), &box);
-    if (box_item)
-      DCHECK_EQ(box_item->BoxFragment(), &box);
-  } else if (!box.IsInlineFormattingContext()) {
-    // We may not have |paint_fragment_| nor |box_item_|.
-  } else {
-    // If no children, there maybe or may not be NGPaintFragment.
-    // TODO(kojii): To be investigated if this correct or should be fixed.
-    if (!box.Children().empty()) {
-      if (!box.GetLayoutObject() ||
-          !box.GetLayoutObject()->PaintBlockedByDisplayLock(
-              DisplayLockLifecycleTarget::kChildren)) {
-        DCHECK(paint_fragment || box.HasItems());
+    if (box.IsInlineBox()) {
+      DCHECK(paint_fragment_);
+    } else if (box.IsInlineFormattingContext()) {
+      // If no children, there maybe or may not be NGPaintFragment.
+      // TODO(kojii): To be investigated if this correct or should be fixed.
+      if (!box.Children().empty()) {
+        if (!box.GetLayoutObject() ||
+            !box.GetLayoutObject()->PaintBlockedByDisplayLock(
+                DisplayLockLifecycleTarget::kChildren)) {
+          DCHECK(paint_fragment);
+        }
       }
-      if (paint_fragment)
-        DCHECK_EQ(&paint_fragment->PhysicalFragment(), &box);
+    } else {
+      // We may not have |paint_fragment_| nor |box_item_|.
     }
   }
 #endif
@@ -343,8 +347,8 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
     : NGBoxFragmentPainter(fragment,
                            *fragment.GetLayoutObject(),
                            /* paint_fragment */ nullptr,
-                           /* box_item */ nullptr,
-                           /* descendants */ nullptr) {}
+                           /* inline_box_cursor */ nullptr,
+                           /* box_item */ nullptr) {}
 
 inline NGBoxFragmentPainter::NGBoxFragmentPainter(
     const NGPhysicalBoxFragment& fragment,
@@ -356,22 +360,8 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
               : *static_cast<const DisplayItemClient*>(
                     fragment.GetLayoutObject()),
           paint_fragment,
-          /* box_item */ nullptr,
-          /* descendants */ nullptr) {}
-
-inline NGBoxFragmentPainter::NGBoxFragmentPainter(
-    const NGPhysicalBoxFragment& fragment,
-    const NGPaintFragment* paint_fragment,
-    const NGFragmentItem* box_item,
-    NGInlineCursor* descendants)
-    : NGBoxFragmentPainter(
-          fragment,
-          paint_fragment
-              ? *static_cast<const DisplayItemClient*>(paint_fragment)
-              : *static_cast<const DisplayItemClient*>(box_item),
-          paint_fragment,
-          box_item,
-          descendants) {}
+          /* inline_box_cursor */ nullptr,
+          /* box_item */ nullptr) {}
 
 inline NGBoxFragmentPainter::NGBoxFragmentPainter(
     const NGPaintFragment& paint_fragment)
@@ -381,14 +371,14 @@ inline NGBoxFragmentPainter::NGBoxFragmentPainter(
           &paint_fragment) {}
 
 inline NGBoxFragmentPainter::NGBoxFragmentPainter(
+    const NGInlineCursor& inline_box_cursor,
     const NGFragmentItem& item,
-    const NGPhysicalBoxFragment& fragment,
-    NGInlineCursor* descendants)
+    const NGPhysicalBoxFragment& fragment)
     : NGBoxFragmentPainter(fragment,
                            item,
                            /* paint_fragment */ nullptr,
-                           &item,
-                           descendants) {
+                           &inline_box_cursor,
+                           &item) {
   DCHECK_EQ(item.BoxFragment(), &fragment);
   DCHECK(fragment.IsInlineBox());
 }

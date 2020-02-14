@@ -29,7 +29,6 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/channel_info.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -53,6 +52,7 @@
 #include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_constants.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/profiling.h"
@@ -275,39 +275,20 @@ void SetUpExtendedCrashReporting(bool is_browser_process) {
 
 #if defined(OS_LINUX)
 void AdjustLinuxOOMScore(const std::string& process_type) {
-  // Browsers and zygotes should still be killable, but killed last.
-  const int kZygoteScore = 0;
-  // The minimum amount to bump a score by.  This is large enough that
-  // even if it's translated into the old values, it will still go up
-  // by at least one.
-  const int kScoreBump = 100;
-  // This is the lowest score that renderers and extensions start with
-  // in the OomPriorityManager.
-  const int kRendererScore = chrome::kLowestRendererOomScore;
-  // For "miscellaneous" things, we want them after renderers,
-  // but before plugins.
-  const int kMiscScore = kRendererScore - kScoreBump;
-  // We want plugins to die after the renderers.
-  const int kPluginScore = kMiscScore - kScoreBump;
   int score = -1;
 
-  DCHECK_GT(kMiscScore, 0);
-  DCHECK_GT(kPluginScore, 0);
-
   if (process_type == switches::kPpapiPluginProcess) {
-    score = kPluginScore;
-  } else if (process_type == switches::kPpapiBrokerProcess) {
-    // The broker should be killed before the PPAPI plugin.
-    score = kPluginScore + kScoreBump;
+    score = content::kPluginOomScore;
   } else if (process_type == switches::kUtilityProcess ||
              process_type == switches::kGpuProcess ||
              process_type == switches::kCloudPrintServiceProcess ||
-             process_type == service_manager::switches::kProcessTypeService) {
-    score = kMiscScore;
+             process_type == service_manager::switches::kProcessTypeService ||
+             process_type == switches::kPpapiBrokerProcess) {
+    score = content::kMiscOomScore;
 #if BUILDFLAG(ENABLE_NACL)
   } else if (process_type == switches::kNaClLoaderProcess ||
              process_type == switches::kNaClLoaderNonSfiProcess) {
-    score = kPluginScore;
+    score = content::kPluginOomScore;
 #endif
   } else if (process_type == service_manager::switches::kZygoteProcess ||
              process_type ==
@@ -315,14 +296,14 @@ void AdjustLinuxOOMScore(const std::string& process_type) {
              process_type.empty()) {
     // For zygotes and unlabeled process types, we want to still make
     // them killable by the OOM killer.
-    score = kZygoteScore;
+    score = content::kZygoteOomScore;
   } else if (process_type == switches::kRendererProcess) {
     LOG(WARNING) << "process type 'renderer' "
                  << "should be created through the zygote.";
     // When debugging, this process type can end up being run directly, but
     // this isn't the typical path for assigning the OOM score for it.  Still,
     // we want to assign a score that is somewhat representative for debugging.
-    score = kRendererScore;
+    score = content::kLowestRendererOomScore;
   } else {
     NOTREACHED() << "Unknown process type";
   }

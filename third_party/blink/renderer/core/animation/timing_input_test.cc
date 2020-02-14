@@ -50,18 +50,16 @@ Timing AnimationTimingInputTest::ApplyTimingInputNumber(
   Timing result;
   if (is_keyframeeffectoptions) {
     KeyframeEffectOptions* timing_input_dictionary =
-        KeyframeEffectOptions::Create();
-    V8KeyframeEffectOptions::ToImpl(isolate, timing_input,
-                                    timing_input_dictionary, exception_state);
+        NativeValueTraits<KeyframeEffectOptions>::NativeValue(
+            isolate, timing_input, exception_state);
     UnrestrictedDoubleOrKeyframeEffectOptions timing_input =
         UnrestrictedDoubleOrKeyframeEffectOptions::FromKeyframeEffectOptions(
             timing_input_dictionary);
     result = TimingInput::Convert(timing_input, GetDocument(), exception_state);
   } else {
     KeyframeAnimationOptions* timing_input_dictionary =
-        KeyframeAnimationOptions::Create();
-    V8KeyframeAnimationOptions::ToImpl(
-        isolate, timing_input, timing_input_dictionary, exception_state);
+        NativeValueTraits<KeyframeAnimationOptions>::NativeValue(
+            isolate, timing_input, exception_state);
     UnrestrictedDoubleOrKeyframeAnimationOptions timing_input =
         UnrestrictedDoubleOrKeyframeAnimationOptions::
             FromKeyframeAnimationOptions(timing_input_dictionary);

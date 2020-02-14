@@ -251,8 +251,7 @@ void HTMLOptionElement::SetSelectedState(bool selected) {
       // notifications only when it's a listbox (and not a menu list). If
       // there's no layoutObject, fire them anyway just to be safe (to make sure
       // the AX tree is in sync).
-      if (!select->GetLayoutObject() ||
-          select->GetLayoutObject()->IsListBox()) {
+      if (!select->GetLayoutObject() || !select->UsesMenuList()) {
         cache->ListboxOptionStateChanged(this);
         cache->ListboxSelectedChildrenChanged(select);
       }

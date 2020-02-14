@@ -4,13 +4,21 @@
 
 #include "chrome/browser/ui/global_media_controls/cast_media_session_controller.h"
 
-#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chrome/common/media_router/mojom/media_status.mojom.h"
+#include "content/public/test/browser_task_environment.h"
+#include "services/media_session/public/mojom/constants.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using media_session::mojom::MediaSessionAction;
+
+namespace {
+
+constexpr base::TimeDelta kDefaultSeekSeconds =
+    base::TimeDelta::FromSeconds(media_session::mojom::kDefaultSeekTimeSeconds);
+
+}
 
 class MockMediaController : public media_router::mojom::MediaController {
  public:
@@ -44,7 +52,8 @@ class CastMediaSessionControllerTest : public testing::Test {
   }
 
  protected:
-  base::test::TaskEnvironment task_environment_;
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   MockMediaController mock_controller_;
   media_router::mojom::MediaStatusPtr media_status_;
   mojo::Receiver<media_router::mojom::MediaController>
@@ -73,8 +82,8 @@ TEST_F(CastMediaSessionControllerTest, SendNextTrackCommand) {
 }
 
 TEST_F(CastMediaSessionControllerTest, SendSeekBackwardCommand) {
-  EXPECT_CALL(mock_controller_, Seek(media_status_->current_time -
-                                     base::TimeDelta::FromSeconds(5)));
+  EXPECT_CALL(mock_controller_,
+              Seek(media_status_->current_time - kDefaultSeekSeconds));
   SendToController(MediaSessionAction::kSeekBackward);
 }
 
@@ -86,9 +95,18 @@ TEST_F(CastMediaSessionControllerTest, SeekBackwardOutOfRange) {
   SendToController(MediaSessionAction::kSeekBackward);
 }
 
+TEST_F(CastMediaSessionControllerTest, SeekBackwardAfterWaiting) {
+  const base::TimeDelta wait = base::TimeDelta::FromSeconds(3);
+  task_environment_.FastForwardBy(wait);
+
+  EXPECT_CALL(mock_controller_,
+              Seek(media_status_->current_time + wait - kDefaultSeekSeconds));
+  SendToController(MediaSessionAction::kSeekBackward);
+}
+
 TEST_F(CastMediaSessionControllerTest, SendSeekForwardCommand) {
-  EXPECT_CALL(mock_controller_, Seek(media_status_->current_time +
-                                     base::TimeDelta::FromSeconds(5)));
+  EXPECT_CALL(mock_controller_,
+              Seek(media_status_->current_time + kDefaultSeekSeconds));
   SendToController(MediaSessionAction::kSeekForward);
 }
 
@@ -98,6 +116,15 @@ TEST_F(CastMediaSessionControllerTest, SeekForwardOutOfRange) {
   controller_->OnMediaStatusUpdated(media_status_.Clone());
 
   EXPECT_CALL(mock_controller_, Seek(media_status_->duration));
+  SendToController(MediaSessionAction::kSeekForward);
+}
+
+TEST_F(CastMediaSessionControllerTest, SeekForwardAfterWaiting) {
+  const base::TimeDelta wait = base::TimeDelta::FromSeconds(3);
+  task_environment_.FastForwardBy(wait);
+
+  EXPECT_CALL(mock_controller_,
+              Seek(media_status_->current_time + wait + kDefaultSeekSeconds));
   SendToController(MediaSessionAction::kSeekForward);
 }
 

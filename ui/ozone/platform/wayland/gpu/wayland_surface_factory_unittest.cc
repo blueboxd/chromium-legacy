@@ -132,7 +132,8 @@ TEST_P(WaylandSurfaceFactoryTest, Canvas) {
   ASSERT_TRUE(canvas);
 
   canvas->ResizeCanvas(window_->GetBounds().size());
-  canvas->GetSurface();
+  auto* sk_canvas = canvas->GetCanvas();
+  DCHECK(sk_canvas);
   canvas->PresentCanvas(gfx::Rect(5, 10, 20, 15));
 
   // Wait until the mojo calls are done.
@@ -161,9 +162,11 @@ TEST_P(WaylandSurfaceFactoryTest, CanvasResize) {
   ASSERT_TRUE(canvas);
 
   canvas->ResizeCanvas(window_->GetBounds().size());
-  canvas->GetSurface();
+  auto* sk_canvas = canvas->GetCanvas();
+  DCHECK(sk_canvas);
   canvas->ResizeCanvas(gfx::Size(100, 50));
-  canvas->GetSurface();
+  sk_canvas = canvas->GetCanvas();
+  DCHECK(sk_canvas);
   canvas->PresentCanvas(gfx::Rect(0, 0, 100, 50));
 
   base::RunLoop().RunUntilIdle();

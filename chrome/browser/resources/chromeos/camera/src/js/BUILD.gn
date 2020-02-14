@@ -41,6 +41,7 @@ js_library("chrome_util") {
 js_library("intent") {
   deps = [
     ":chrome_util",
+    ":metrics",
     ":type",
     "mojo:chrome_helper",
   ]

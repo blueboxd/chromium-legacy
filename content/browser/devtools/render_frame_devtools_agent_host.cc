@@ -245,6 +245,12 @@ RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
   SetFrameTreeNode(frame_tree_node);
   ChangeFrameHostAndObservedProcess(frame_host);
   render_frame_alive_ = frame_host_ && frame_host_->IsRenderFrameLive();
+  if (frame_tree_node->parent()) {
+    render_frame_crashed_ = !render_frame_alive_;
+  } else {
+    WebContents* web_contents = WebContents::FromRenderFrameHost(frame_host);
+    render_frame_crashed_ = web_contents && web_contents->IsCrashed();
+  }
   AddRef();  // Balanced in DestroyOnRenderFrameGone.
   NotifyCreated();
 }
@@ -441,12 +447,8 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
 void RenderFrameDevToolsAgentHost::UpdateFrameHost(
     RenderFrameHostImpl* frame_host) {
   if (frame_host == frame_host_) {
-    if (frame_host && !render_frame_alive_) {
-      render_frame_alive_ = true;
-      for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
-        inspector->TargetReloadedAfterCrash();
-      UpdateRendererChannel(IsAttached());
-    }
+    if (frame_host && !render_frame_alive_)
+      UpdateFrameAlive();
     return;
   }
 
@@ -469,13 +471,7 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
   if (!restricted_sessions.empty())
     ForceDetachRestrictedSessions(restricted_sessions);
 
-  if (!render_frame_alive_) {
-    render_frame_alive_ = true;
-    for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
-      inspector->TargetReloadedAfterCrash();
-  }
-
-  UpdateRendererChannel(IsAttached());
+  UpdateFrameAlive();
 }
 
 void RenderFrameDevToolsAgentHost::DidStartNavigation(
@@ -558,6 +554,16 @@ void RenderFrameDevToolsAgentHost::ChangeFrameHostAndObservedProcess(
     frame_host_->GetProcess()->AddObserver(this);
 }
 
+void RenderFrameDevToolsAgentHost::UpdateFrameAlive() {
+  render_frame_alive_ = frame_host_ && frame_host_->IsRenderFrameLive();
+  if (render_frame_alive_ && render_frame_crashed_) {
+    render_frame_crashed_ = false;
+    for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
+      inspector->TargetReloadedAfterCrash();
+  }
+  UpdateRendererChannel(IsAttached());
+}
+
 void RenderFrameDevToolsAgentHost::RenderProcessExited(
     RenderProcessHost* host,
     const ChildProcessTerminationInfo& info) {
@@ -575,6 +581,7 @@ void RenderFrameDevToolsAgentHost::RenderProcessExited(
       for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))
         inspector->TargetCrashed();
       NotifyCrashed(info.status);
+      render_frame_crashed_ = true;
       break;
     default:
       for (auto* inspector : protocol::InspectorHandler::ForAgentHost(this))

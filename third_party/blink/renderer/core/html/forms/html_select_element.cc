@@ -638,7 +638,7 @@ void HTMLSelectElement::SetActiveSelectionEnd(HTMLOptionElement* option) {
 void HTMLSelectElement::UpdateListBoxSelection(bool deselect_other_options,
                                                bool scroll) {
   DCHECK(GetLayoutObject());
-  DCHECK(GetLayoutObject()->IsListBox() || is_multiple_);
+  DCHECK(!UsesMenuList() || is_multiple_);
 
   int active_selection_anchor_index =
       active_selection_anchor_ ? active_selection_anchor_->index() : -1;
@@ -957,7 +957,7 @@ void HTMLSelectElement::ScrollToOptionTask() {
   // another owner.
   DCHECK_EQ(option->OwnerSelectElement(), this);
   GetDocument().UpdateStyleAndLayout(DocumentUpdateReason::kScroll);
-  if (!GetLayoutObject() || !GetLayoutObject()->IsListBox())
+  if (!GetLayoutObject() || UsesMenuList())
     return;
   PhysicalRect bounds = option->BoundingBoxForScrollIntoView();
 
@@ -1604,7 +1604,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
     focus();
     // Calling focus() may cause us to lose our layoutObject or change the
     // layoutObject type, in which case do not want to handle the event.
-    if (!GetLayoutObject() || !GetLayoutObject()->IsListBox())
+    if (!GetLayoutObject() || UsesMenuList())
       return;
 
     // Convert to coords relative to the list box if needed.
@@ -1623,8 +1623,7 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
     focus();
     // Calling focus() may cause us to lose our layoutObject, in which case
     // do not want to handle the event.
-    if (!GetLayoutObject() || !GetLayoutObject()->IsListBox() ||
-        IsDisabledFormControl())
+    if (!GetLayoutObject() || UsesMenuList() || IsDisabledFormControl())
       return;
 
     // Convert to coords relative to the list box if needed.

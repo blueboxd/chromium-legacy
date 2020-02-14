@@ -148,27 +148,20 @@ class NGInlineBoxFragmentPainter : public NGInlineBoxFragmentPainterBase {
   // Constructor for |NGFragmentItem|.
   NGInlineBoxFragmentPainter(const NGInlineCursor& inline_box_cursor,
                              const NGFragmentItem& inline_box_item,
-                             const NGPhysicalBoxFragment& inline_box_fragment,
-                             NGInlineCursor* descendants = nullptr)
+                             const NGPhysicalBoxFragment& inline_box_fragment)
       : NGInlineBoxFragmentPainterBase(inline_box_cursor,
                                        inline_box_item,
                                        inline_box_fragment,
                                        *inline_box_fragment.GetLayoutObject(),
                                        inline_box_fragment.Style(),
-                                       inline_box_fragment.Style()),
-        descendants_(descendants) {
-    DCHECK_EQ(inline_box_fragment.Type(),
-              NGPhysicalFragment::NGFragmentType::kFragmentBox);
-    DCHECK_EQ(inline_box_fragment.BoxType(),
-              NGPhysicalFragment::NGBoxType::kInlineBox);
+                                       inline_box_fragment.Style()) {
+    CheckValid();
   }
   NGInlineBoxFragmentPainter(const NGInlineCursor& inline_box_cursor,
-                             const NGFragmentItem& inline_box_item,
-                             NGInlineCursor* descendants = nullptr)
+                             const NGFragmentItem& inline_box_item)
       : NGInlineBoxFragmentPainter(inline_box_cursor,
                                    inline_box_item,
-                                   *inline_box_item.BoxFragment(),
-                                   descendants) {
+                                   *inline_box_item.BoxFragment()) {
     DCHECK(inline_box_item.BoxFragment());
   }
 
@@ -185,8 +178,13 @@ class NGInlineBoxFragmentPainter : public NGInlineBoxFragmentPainterBase {
 
   const NGBorderEdges BorderEdges() const final;
 
+#if DCHECK_IS_ON()
+  void CheckValid() const;
+#else
+  void CheckValid() const {}
+#endif
+
   mutable base::Optional<NGBorderEdges> border_edges_;
-  NGInlineCursor* descendants_ = nullptr;
 };
 
 // Painter for LayoutNG line box fragments. Line boxes don't paint anything,

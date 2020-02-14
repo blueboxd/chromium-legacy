@@ -57,12 +57,12 @@ void SoftwareRenderer::RenderFrame() {
 
   float fraction = NextFraction();
 
-  sk_sp<SkSurface> surface = software_surface_->GetSurface();
+  SkCanvas* canvas = software_surface_->GetCanvas();
 
   SkColor color =
       SkColorSetARGB(0xff, 0, 0xff * fraction, 0xff * (1 - fraction));
 
-  surface->getCanvas()->clear(color);
+  canvas->clear(color);
 
   software_surface_->PresentCanvas(gfx::Rect(size_));
 

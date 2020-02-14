@@ -96,11 +96,11 @@ _COMMON_EXTERNS = [
 
 # List of top-level scripts and externs that we can check.
 _TOP_LEVEL_SCRIPTS = [
-    [[CVoxPath('background/learn_mode/kbexplorer_loader.js')], _COMMON_EXTERNS],
+    [[CVoxPath('learn_mode/kbexplorer_loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('background/loader.js')], _COMMON_EXTERNS],
     [[CVoxPath('background/logging/log_loader.js')], _COMMON_EXTERNS],
-    [[CVoxPath('background/options/options_loader.js')], _COMMON_EXTERNS],
-    [[CVoxPath('background/panel/panel_loader.js')], _COMMON_EXTERNS],
+    [[CVoxPath('options/options_loader.js')], _COMMON_EXTERNS],
+    [[CVoxPath('panel/panel_loader.js')], _COMMON_EXTERNS],
 ]
 
 

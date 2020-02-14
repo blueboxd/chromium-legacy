@@ -307,28 +307,6 @@ bool UnifiedSystemTray::ShouldEnableExtraKeyboardAccessibility() {
   return Shell::Get()->accessibility_controller()->spoken_feedback_enabled();
 }
 
-void UnifiedSystemTray::AddInkDropLayer(ui::Layer* ink_drop_layer) {
-  TrayBackgroundView::AddInkDropLayer(ink_drop_layer);
-  ink_drop_layer_ = ink_drop_layer;
-}
-
-void UnifiedSystemTray::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
-  DCHECK_EQ(ink_drop_layer, ink_drop_layer_);
-  TrayBackgroundView::RemoveInkDropLayer(ink_drop_layer);
-  ink_drop_layer_ = nullptr;
-}
-
-void UnifiedSystemTray::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  TrayBackgroundView::OnBoundsChanged(previous_bounds);
-  // Workarounding an ui::Layer bug that layer mask is not properly updated.
-  // https://crbug.com/860367
-  // TODO(tetsui): Remove after the bug is fixed on ui::Layer side.
-  if (ink_drop_layer_) {
-    ResetInkDropMask();
-    InstallInkDropMask(ink_drop_layer_);
-  }
-}
-
 const char* UnifiedSystemTray::GetClassName() const {
   return "UnifiedSystemTray";
 }

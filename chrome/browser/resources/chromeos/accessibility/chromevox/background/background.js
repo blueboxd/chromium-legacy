@@ -357,7 +357,7 @@ Background = class extends ChromeVoxState {
    * Open the options page in a new tab.
    */
   showOptionsPage() {
-    const optionsPage = {url: 'background/options/options.html'};
+    const optionsPage = {url: 'options/options.html'};
     chrome.tabs.create(optionsPage);
   }
 

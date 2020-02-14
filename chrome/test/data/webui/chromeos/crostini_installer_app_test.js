@@ -138,6 +138,7 @@ suite('<crostini-installer-app>', () => {
         app.$.username.value,
         loadTimeData.getString('defaultContainerUsername'));
 
+    // Test invalid usernames
     const invalidUsernames = [
       'root',   // Unavailable.
       '0abcd',  // Invalid first character.
@@ -153,6 +154,15 @@ suite('<crostini-installer-app>', () => {
       expectTrue(app.$.install.disabled);
     }
 
+    // Test the empty username. The username field should not show an error, but
+    // we want the install button to be disabled.
+    app.$.username.value = '';
+    await flushTasks();
+    expectFalse(app.$.username.invalid);
+    expectFalse(!!app.$.username.errorMessage);
+    expectTrue(app.$.install.disabled);
+
+    // Test a valid username
     const validUsername = 'totally-valid_username';
     app.$.username.value = validUsername;
     await flushTasks();

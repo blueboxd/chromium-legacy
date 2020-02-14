@@ -4291,7 +4291,7 @@ void LayoutBlockFlow::CreateOrDestroyMultiColumnFlowThreadIfNeeded(
 
   // Form controls are replaced content, and are therefore not supposed to
   // support multicol.
-  if (IsFileUploadControl() || IsTextControl() || IsListBox())
+  if (IsFileUploadControl() || IsTextControl() || IsListBox(this))
     return;
 
   // We don't allow custom layout and multicol on the same object. This is

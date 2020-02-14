@@ -149,7 +149,7 @@
     <cr-button id="install" class="action-button"
         on-click="onInstallButtonClick_" aria-describedby="title"
         aria-details="prompt-message" hidden="[[!showInstallButton_(state_)]]"
-        disabled="[[disableInstallButton_(state_, usernameError_)]]">
+        disabled="[[disableInstallButton_(state_, username_, usernameError_)]]">
       [[getInstallButtonLabel_(state_)]]
     </cr-button>
   </div>

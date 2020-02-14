@@ -59,8 +59,7 @@ base::Optional<MinMaxSize> NGCustomLayoutAlgorithm::ComputeMinMaxSize(
     return FallbackMinMaxSize(input);
   }
 
-  IntrinsicSizesResultOptions* intrinsic_sizes_result_options =
-      IntrinsicSizesResultOptions::Create();
+  IntrinsicSizesResultOptions* intrinsic_sizes_result_options = nullptr;
   if (!instance->IntrinsicSizes(
           ConstraintSpace(), document, Node(),
           container_builder_.InitialBorderBoxSize(), border_scrollbar_padding_,
@@ -105,8 +104,7 @@ scoped_refptr<const NGLayoutResult> NGCustomLayoutAlgorithm::Layout() {
     return FallbackLayout();
   }
 
-  FragmentResultOptions* fragment_result_options =
-      FragmentResultOptions::Create();
+  FragmentResultOptions* fragment_result_options = nullptr;
   scoped_refptr<SerializedScriptValue> fragment_result_data;
   if (!instance->Layout(
           ConstraintSpace(), document, Node(),

@@ -13,6 +13,7 @@
 #include "net/third_party/quiche/src/quic/core/crypto/proof_verifier.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_compressed_certs_cache.h"
 #include "net/third_party/quiche/src/quic/core/crypto/quic_crypto_server_config.h"
+#include "net/third_party/quiche/src/quic/core/quic_circular_deque.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_session.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_mem_slice_span.h"
@@ -241,7 +242,7 @@ class FakePacketTransport : public P2PQuicPacketTransport,
     }
   }
   // If async, packets are queued here to send.
-  quic::QuicDeque<std::string> packet_queue_;
+  quic::QuicCircularDeque<std::string> packet_queue_;
   // Alarm used to send data asynchronously.
   quic::QuicArenaScopedPtr<quic::QuicAlarm> alarm_;
   // The P2PQuicTransportImpl, which sets itself as the delegate in its

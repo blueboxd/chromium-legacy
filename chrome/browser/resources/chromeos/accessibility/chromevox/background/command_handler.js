@@ -106,10 +106,7 @@ CommandHandler.onCommand = function(command) {
       ChromeVox.tts.speak(Msgs.getMsg('pass_through_key'), QueueMode.QUEUE);
       return true;
     case 'showKbExplorerPage':
-      const explorerPage = {
-        url: 'background/learn_mode/kbexplorer.html',
-        type: 'panel'
-      };
+      const explorerPage = {url: 'learn_mode/kbexplorer.html', type: 'panel'};
       chrome.windows.create(explorerPage);
       break;
     case 'showLogPage':

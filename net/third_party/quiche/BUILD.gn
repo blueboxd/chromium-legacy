@@ -79,6 +79,8 @@ source_set("quiche") {
       "src/http2/hpack/decoder/hpack_decoder_string_buffer.h",
       "src/http2/hpack/decoder/hpack_decoder_tables.cc",
       "src/http2/hpack/decoder/hpack_decoder_tables.h",
+      "src/http2/hpack/decoder/hpack_decoding_error.cc",
+      "src/http2/hpack/decoder/hpack_decoding_error.h",
       "src/http2/hpack/decoder/hpack_entry_decoder.cc",
       "src/http2/hpack/decoder/hpack_entry_decoder.h",
       "src/http2/hpack/decoder/hpack_entry_decoder_listener.cc",
@@ -384,6 +386,8 @@ source_set("quiche") {
       "src/quic/core/quic_buffered_packet_store.cc",
       "src/quic/core/quic_buffered_packet_store.h",
       "src/quic/core/quic_circular_deque.h",
+      "src/quic/core/quic_clock.cc",
+      "src/quic/core/quic_clock.h",
       "src/quic/core/quic_coalesced_packet.cc",
       "src/quic/core/quic_coalesced_packet.h",
       "src/quic/core/quic_config.cc",
@@ -493,8 +497,6 @@ source_set("quiche") {
       "src/quic/platform/api/quic_bug_tracker.h",
       "src/quic/platform/api/quic_cert_utils.h",
       "src/quic/platform/api/quic_client_stats.h",
-      "src/quic/platform/api/quic_clock.cc",
-      "src/quic/platform/api/quic_clock.h",
       "src/quic/platform/api/quic_containers.h",
       "src/quic/platform/api/quic_error_code_wrappers.h",
       "src/quic/platform/api/quic_estimate_memory_usage.h",
@@ -803,17 +805,6 @@ source_set("epoll_server_test_tools_core") {
     "//base",
     "//net",
     "//net:test_support",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-}
-
-source_set("spdy_test_tools_core") {
-  testonly = true
-  sources = [ "src/spdy/platform/api/spdy_test.h" ]
-  deps = [
-    "//base",
-    "//net",
     "//testing/gmock",
     "//testing/gtest",
   ]

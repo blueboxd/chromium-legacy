@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/payments/basic_card_helper.h"
 
 #include "base/stl_util.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_basic_card_request.h"
 #include "third_party/blink/renderer/modules/payments/payment_request.h"
 
@@ -34,9 +35,9 @@ void BasicCardHelper::ParseBasiccardData(
     ExceptionState& exception_state) {
   DCHECK(!input.IsEmpty());
 
-  BasicCardRequest* basic_card = BasicCardRequest::Create();
-  V8BasicCardRequest::ToImpl(input.GetIsolate(), input.V8Value(), basic_card,
-                             exception_state);
+  BasicCardRequest* basic_card =
+      NativeValueTraits<BasicCardRequest>::NativeValue(
+          input.GetIsolate(), input.V8Value(), exception_state);
   if (exception_state.HadException())
     return;
 

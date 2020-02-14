@@ -30,7 +30,7 @@ class UnifiedSystemTrayModel;
 class ASH_EXPORT UnifiedMessageListView
     : public views::View,
       public message_center::MessageCenterObserver,
-      public message_center::MessageView::SlideObserver,
+      public message_center::MessageView::Observer,
       public views::AnimationDelegateViews {
  public:
   // |message_center_view| can be null in unit tests.
@@ -85,8 +85,11 @@ class ASH_EXPORT UnifiedMessageListView
   void OnNotificationRemoved(const std::string& id, bool by_user) override;
   void OnNotificationUpdated(const std::string& id) override;
 
-  // message_center::MessageView::SlideObserver:
+  // message_center::MessageView::Observer:
   void OnSlideStarted(const std::string& notification_id) override;
+  void OnCloseButtonPressed(const std::string& notification_id) override;
+  void OnSettingsButtonPressed(const std::string& notification_id) override;
+  void OnSnoozeButtonPressed(const std::string& notification_id) override;
 
   // views::AnimationDelegateViews:
   void AnimationEnded(const gfx::Animation* animation) override;

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/modules/v8/v8_extendable_message_event.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_extendable_message_event_init.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
@@ -25,16 +26,18 @@ void V8ExtendableMessageEvent::ConstructorCustom(
   if (!type.Prepare())
     return;
 
-  ExtendableMessageEventInit* event_init_dict =
-      ExtendableMessageEventInit::Create();
-  if (!IsUndefinedOrNull(info[1])) {
+  ExtendableMessageEventInit* event_init_dict = nullptr;
+  if (IsUndefinedOrNull(info[1])) {
+    event_init_dict = ExtendableMessageEventInit::Create();
+  } else {
     if (!info[1]->IsObject()) {
       exception_state.ThrowTypeError(
           "parameter 2 ('eventInitDict') is not an object.");
       return;
     }
-    V8ExtendableMessageEventInit::ToImpl(isolate, info[1], event_init_dict,
-                                         exception_state);
+    event_init_dict =
+        NativeValueTraits<ExtendableMessageEventInit>::NativeValue(
+            isolate, info[1], exception_state);
     if (exception_state.HadException())
       return;
   }

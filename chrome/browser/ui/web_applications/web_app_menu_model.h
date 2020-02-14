@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 
-// Menu model for the menu button in a hosted app browser window.
+// Menu model for the menu button in a web app browser window.
 class WebAppMenuModel : public AppMenuModel {
  public:
   static constexpr int kUninstallAppCommandId = 1;

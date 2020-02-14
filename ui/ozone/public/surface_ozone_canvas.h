@@ -11,7 +11,7 @@
 #include "base/component_export.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
-class SkSurface;
+class SkCanvas;
 
 namespace gfx {
 class Rect;
@@ -29,8 +29,11 @@ class COMPONENT_EXPORT(OZONE_BASE) SurfaceOzoneCanvas {
  public:
   virtual ~SurfaceOzoneCanvas();
 
-  // Returns an SkSurface for drawing on the window.
-  virtual sk_sp<SkSurface> GetSurface() = 0;
+  // Returns an SkCanvas for drawing on the window. The SurfaceOzoneCanvas keeps
+  // the SkCanvas alive until the client finishes writing contents and calls
+  // PresentCanvas. Additionally, the SkCanvas becomes invalid after
+  // ResizeCanvas is called. See comment at ResizeCanvas.
+  virtual SkCanvas* GetCanvas() = 0;
 
   // Attempts to resize the canvas to match the viewport size. After
   // resizing, the compositor must call GetSurface() to get the next

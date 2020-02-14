@@ -170,7 +170,7 @@ WaylandCanvasSurface::~WaylandCanvasSurface() {
   buffer_manager_->UnregisterSurface(widget_);
 }
 
-sk_sp<SkSurface> WaylandCanvasSurface::GetSurface() {
+SkCanvas* WaylandCanvasSurface::GetCanvas() {
   DCHECK(!pending_buffer_)
       << "The previous pending buffer has not been presented yet";
 
@@ -197,7 +197,7 @@ sk_sp<SkSurface> WaylandCanvasSurface::GetSurface() {
 
   DCHECK(pending_buffer_);
   pending_buffer_->OnUse();
-  return pending_buffer_->sk_surface();
+  return pending_buffer_->sk_surface()->getCanvas();
 }
 
 void WaylandCanvasSurface::ResizeCanvas(const gfx::Size& viewport_size) {

@@ -5,6 +5,7 @@
 #include "base/path_service.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -314,6 +315,12 @@ class RedirectDisabledSubresourceRedirectBrowserTest
       : SubresourceRedirectBrowserTest(false) {}
 };
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) DISABLED_##x
+#else
+#define DISABLE_ON_WIN_MAC_CHROMEOS(x) x
+#endif
+
 //  NOTE: It is indirectly verified that correct requests are being sent to
 //  the mock compression server by the counts in the histogram bucket for
 //  HTTP_TEMPORARY_REDIRECTs.
@@ -496,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest, NoTriggerOnNonImage) {
 // original resource), 1 404 not-found from the compression server, and 1
 // 200 ok from the original resource.
 IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
-                       FallbackOnServerNotFound) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(FallbackOnServerNotFound)) {
   EnableDataSaver(true);
   CreateUkmRecorder();
   SetUpPublicImageURLPaths({"/load_image/fail_image.png"});
@@ -592,8 +599,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
 // This test verifies that only the images in the public image URL list are
 // is_subresource_redirect_feature_enabled. In this test both images should load
 // but only one image should be redirected.
-IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
-                       TestOnlyPublicImageIsRedirected) {
+IN_PROC_BROWSER_TEST_F(
+    SubresourceRedirectBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(TestOnlyPublicImageIsRedirected)) {
   EnableDataSaver(true);
   CreateUkmRecorder();
   SetUpPublicImageURLPaths({"/load_image/image.png"});
@@ -622,8 +630,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
 
 // This test verifies that the fragments in the image URL are removed before
 // checking against the public image URL list.
-IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
-                       TestImageURLFragmentAreRemoved) {
+IN_PROC_BROWSER_TEST_F(
+    SubresourceRedirectBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(TestImageURLFragmentAreRemoved)) {
   EnableDataSaver(true);
   CreateUkmRecorder();
   SetUpPublicImageURLPaths({"/load_image/image.png"});

@@ -328,31 +328,31 @@ ui::Layer* MessageView::GetSlideOutLayer() {
 }
 
 void MessageView::OnSlideStarted() {
-  for (auto& observer : slide_observers_) {
+  for (auto& observer : observers_) {
     observer.OnSlideStarted(notification_id_);
   }
 }
 
 void MessageView::OnSlideChanged(bool in_progress) {
-  for (auto& observer : slide_observers_) {
+  for (auto& observer : observers_) {
     observer.OnSlideChanged(notification_id_);
   }
 }
 
-void MessageView::AddSlideObserver(MessageView::SlideObserver* observer) {
-  slide_observers_.AddObserver(observer);
+void MessageView::AddObserver(MessageView::Observer* observer) {
+  observers_.AddObserver(observer);
 }
 
-void MessageView::RemoveSlideObserver(MessageView::SlideObserver* observer) {
-  slide_observers_.RemoveObserver(observer);
+void MessageView::RemoveObserver(MessageView::Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void MessageView::OnSlideOut() {
+  for (auto& observer : observers_)
+    observer.OnSlideOut(notification_id_);
+
   MessageCenter::Get()->RemoveNotification(notification_id_,
                                            true /* by_user */);
-
-  for (auto& observer : slide_observers_)
-    observer.OnSlideOut(notification_id_);
 }
 
 void MessageView::OnWillChangeFocus(views::View* before, views::View* now) {}
@@ -419,16 +419,22 @@ void MessageView::SetCornerRadius(int top_radius, int bottom_radius) {
 }
 
 void MessageView::OnCloseButtonPressed() {
+  for (auto& observer : observers_)
+    observer.OnCloseButtonPressed(notification_id_);
   MessageCenter::Get()->RemoveNotification(notification_id_,
                                            true /* by_user */);
 }
 
 void MessageView::OnSettingsButtonPressed(const ui::Event& event) {
+  for (auto& observer : observers_)
+    observer.OnSettingsButtonPressed(notification_id_);
+
   MessageCenter::Get()->ClickOnSettingsButton(notification_id_);
 }
 
 void MessageView::OnSnoozeButtonPressed(const ui::Event& event) {
-  // No default implementation for snooze.
+  for (auto& observer : observers_)
+    observer.OnSnoozeButtonPressed(notification_id_);
 }
 
 bool MessageView::ShouldShowControlButtons() const {

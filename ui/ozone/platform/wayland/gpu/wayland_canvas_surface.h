@@ -15,6 +15,8 @@
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_gpu.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
+class SkCanvas;
+
 namespace ui {
 
 class WaylandBufferManagerGpu;
@@ -31,7 +33,7 @@ class WaylandCanvasSurface : public SurfaceOzoneCanvas,
   ~WaylandCanvasSurface() override;
 
   // SurfaceOzoneCanvas
-  sk_sp<SkSurface> GetSurface() override;
+  SkCanvas* GetCanvas() override;
   void ResizeCanvas(const gfx::Size& viewport_size) override;
   void PresentCanvas(const gfx::Rect& damage) override;
   std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;

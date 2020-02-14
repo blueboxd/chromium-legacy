@@ -1347,6 +1347,9 @@ void NotificationViewMD::SetManuallyExpandedOrCollapsed(bool value) {
 }
 
 void NotificationViewMD::OnSettingsButtonPressed(const ui::Event& event) {
+  for (auto& observer : *observers())
+    observer.OnSettingsButtonPressed(notification_id());
+
   if (settings_row_)
     ToggleInlineSettings(event);
   else

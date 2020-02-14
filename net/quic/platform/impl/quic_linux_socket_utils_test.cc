@@ -9,6 +9,7 @@
 #include <sstream>
 #include <vector>
 
+#include "net/third_party/quiche/src/quic/core/quic_circular_deque.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_test.h"
 
 using testing::_;
@@ -30,8 +31,8 @@ class QuicLinuxSocketUtilsTest : public QuicTest {
  protected:
   WriteResult TestWriteMultiplePackets(
       int fd,
-      const QuicDeque<BufferedWrite>::const_iterator& first,
-      const QuicDeque<BufferedWrite>::const_iterator& last,
+      const QuicCircularDeque<BufferedWrite>::const_iterator& first,
+      const QuicCircularDeque<BufferedWrite>::const_iterator& last,
       int* num_packets_sent) {
     QuicMMsgHdr mhdr(
         first, last, kCmsgSpaceForIp,
@@ -101,7 +102,7 @@ void CheckIpAndGsoSizeInCbuf(msghdr* hdr,
 }
 
 TEST_F(QuicLinuxSocketUtilsTest, QuicMMsgHdr) {
-  QuicDeque<BufferedWrite> buffered_writes;
+  QuicCircularDeque<BufferedWrite> buffered_writes;
   char packet_buf1[1024];
   char packet_buf2[512];
   buffered_writes.emplace_back(
@@ -135,7 +136,7 @@ TEST_F(QuicLinuxSocketUtilsTest, QuicMMsgHdr) {
 
 TEST_F(QuicLinuxSocketUtilsTest, WriteMultiplePackets_NoPacketsToSend) {
   int num_packets_sent;
-  QuicDeque<BufferedWrite> buffered_writes;
+  QuicCircularDeque<BufferedWrite> buffered_writes;
 
   EXPECT_CALL(mock_syscalls_, Sendmmsg(_, _, _, _)).Times(0);
 
@@ -146,7 +147,7 @@ TEST_F(QuicLinuxSocketUtilsTest, WriteMultiplePackets_NoPacketsToSend) {
 
 TEST_F(QuicLinuxSocketUtilsTest, WriteMultiplePackets_WriteBlocked) {
   int num_packets_sent;
-  QuicDeque<BufferedWrite> buffered_writes;
+  QuicCircularDeque<BufferedWrite> buffered_writes;
   buffered_writes.emplace_back(nullptr, 0, QuicIpAddress(),
                                QuicSocketAddress(QuicIpAddress::Any4(), 0));
 
@@ -165,7 +166,7 @@ TEST_F(QuicLinuxSocketUtilsTest, WriteMultiplePackets_WriteBlocked) {
 
 TEST_F(QuicLinuxSocketUtilsTest, WriteMultiplePackets_WriteError) {
   int num_packets_sent;
-  QuicDeque<BufferedWrite> buffered_writes;
+  QuicCircularDeque<BufferedWrite> buffered_writes;
   buffered_writes.emplace_back(nullptr, 0, QuicIpAddress(),
                                QuicSocketAddress(QuicIpAddress::Any4(), 0));
 
@@ -184,7 +185,7 @@ TEST_F(QuicLinuxSocketUtilsTest, WriteMultiplePackets_WriteError) {
 
 TEST_F(QuicLinuxSocketUtilsTest, WriteMultiplePackets_WriteSuccess) {
   int num_packets_sent;
-  QuicDeque<BufferedWrite> buffered_writes;
+  QuicCircularDeque<BufferedWrite> buffered_writes;
   const int kNumBufferedWrites = 10;
   static_assert(kNumBufferedWrites < 256, "Must be less than 256");
   std::vector<std::string> buffer_holder;

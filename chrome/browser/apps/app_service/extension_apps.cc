@@ -695,7 +695,7 @@ void ExtensionApps::GetMenuModel(const std::string& app_id,
     AddCommandItem(ash::UNINSTALL, IDS_APP_LIST_UNINSTALL_ITEM, &menu_items);
   }
 
-  if (!is_system_web_app) {
+  if (!is_system_web_app && extension->ShouldDisplayInAppLauncher()) {
     AddCommandItem(ash::SHOW_APP_INFO, IDS_APP_CONTEXT_MENU_SHOW_INFO,
                    &menu_items);
   }

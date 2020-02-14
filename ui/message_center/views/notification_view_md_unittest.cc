@@ -102,12 +102,10 @@ class DummyEvent : public ui::Event {
   ~DummyEvent() override = default;
 };
 
-class NotificationViewMDTest
-    : public views::InkDropObserver,
-      public views::ViewsTestBase,
-      public views::ViewObserver,
-      public message_center::MessageView::SlideObserver,
-      public message_center::MessageCenterObserver {
+class NotificationViewMDTest : public views::InkDropObserver,
+                               public views::ViewsTestBase,
+                               public views::ViewObserver,
+                               public message_center::MessageCenterObserver {
  public:
   NotificationViewMDTest();
   ~NotificationViewMDTest() override;
@@ -126,9 +124,6 @@ class NotificationViewMDTest
     DCHECK_EQ(widget_, notification_view()->GetWidget());
     return widget_;
   }
-
-  // Overridden from message_center::MessageView::Observer:
-  void OnSlideChanged(const std::string& notification_id) override {}
 
   // Overridden from message_center::MessageCenterObserver:
   void OnNotificationRemoved(const std::string& notification_id,
@@ -220,7 +215,7 @@ void NotificationViewMDTest::TearDown() {
          delete_on_notification_removed_);
   if (notification_view_) {
     notification_view_->SetInkDropMode(MessageView::InkDropMode::OFF);
-    notification_view_->RemoveObserver(this);
+    static_cast<views::View*>(notification_view_.get())->RemoveObserver(this);
     widget()->Close();
     notification_view_.reset();
   }
@@ -315,7 +310,7 @@ void NotificationViewMDTest::UpdateNotificationViews(
     // TODO(tetsui): Confirm that NotificationViewMD options are same as one
     // created by the method.
     notification_view_ = std::make_unique<NotificationViewMD>(notification);
-    notification_view_->AddObserver(this);
+    static_cast<views::View*>(notification_view_.get())->AddObserver(this);
     notification_view_->set_owned_by_client();
 
     views::Widget::InitParams init_params(

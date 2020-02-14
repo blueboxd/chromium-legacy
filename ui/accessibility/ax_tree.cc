@@ -589,14 +589,18 @@ AXTree::AXTree(const AXTreeUpdate& initial_state) {
 }
 
 AXTree::~AXTree() {
-  if (root_) {
+  if (root_)
     RecursivelyNotifyNodeDeletedForTreeTeardown(root_);
+
+  // Prevent observers from accessing tree in the middle of being destroyed.
+  observers_.Clear();
+
+  if (root_) {
     base::AutoReset<bool> update_state_resetter(&tree_update_in_progress_,
                                                 true);
     DestroyNodeAndSubtree(root_, nullptr);
   }
-  for (auto& entry : table_info_map_)
-    delete entry.second;
+
   table_info_map_.clear();
 }
 
@@ -1097,31 +1101,25 @@ AXTableInfo* AXTree::GetTableInfo(const AXNode* const_table_node) const {
   if (cached != table_info_map_.end()) {
     // Get existing table info, and update if invalid because the
     // tree has changed since the last time we accessed it.
-    AXTableInfo* table_info = cached->second;
-    if (!table_info->valid()) {
-      bool success = table_info->Update();
-      if (!success) {
+    AXTableInfo* table_info = cached->second.get();
+    if (!cached->second->valid()) {
+      if (!cached->second->Update()) {
         // If Update() returned false, this is no longer a valid table.
         // Remove it from the map.
-        delete table_info;
-        table_info = nullptr;
         table_info_map_.erase(table_node->id());
+        return nullptr;
       }
-      // See note about const_cast, above.
-      for (AXTreeObserver& observer : observers_)
-        observer.OnNodeChanged(tree, table_node);
     }
     return table_info;
   }
 
   AXTableInfo* table_info = AXTableInfo::Create(tree, table_node);
-  if (!table_info)
+  if (!table_info) {
+    table_info_map_.erase(table_node->id());
     return nullptr;
+  }
 
-  table_info_map_[table_node->id()] = table_info;
-  for (AXTreeObserver& observer : observers_)
-    observer.OnNodeChanged(tree, table_node);
-
+  table_info_map_[table_node->id()] = base::WrapUnique<AXTableInfo>(table_info);
   return table_info;
 }
 
@@ -1739,13 +1737,6 @@ void AXTree::DestroyNodeAndSubtree(AXNode* node,
   AXNodeData empty_data;
   empty_data.id = node->id();
   UpdateReverseRelations(node, empty_data);
-
-  // Remove any table infos.
-  const auto& table_info_entry = table_info_map_.find(node->id());
-  if (table_info_entry != table_info_map_.end()) {
-    delete table_info_entry->second;
-    table_info_map_.erase(node->id());
-  }
 
   id_map_.erase(node->id());
   for (auto* child : node->children())

@@ -12610,9 +12610,8 @@ TEST_P(QuicStreamFactoryTest,
 // With dns race experiment on, dns resolve async, stale used and connects
 // async, finishes before dns, but no match
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleAsyncResolveAsyncNoMatch) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
-    // 0-rtt is not supported in IETF QUIC yet.
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // TODO(fayang): 0-rtt is not supported in IETF QUIC yet. Fix it.
     return;
   }
   quic_params_->race_stale_dns_on_connection = true;
@@ -12700,9 +12699,8 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleAsyncResolveAsyncNoMatch) {
 // With dns race experiment on, dns resolve async, stale used and connects
 // async, dns finishes first, but no match
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncStaleAsyncNoMatch) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
-    // 0-rtt is not supported in IETF QUIC yet.
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // TODO(fayang): 0-rtt is not supported in IETF QUIC yet. Fix it.
     return;
   }
   quic_params_->race_stale_dns_on_connection = true;
@@ -13068,9 +13066,8 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceStaleErrorDNSNoMatchError) {
 // With dns race experiment on, dns resolve async and stale connect async, dns
 // resolve returns error and then preconnect finishes
 TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncErrorStaleAsync) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
-    // 0-rtt is not supported in IETF QUIC yet.
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // TODO(fayang): 0-rtt is not supported in IETF QUIC yet. Fix it.
     return;
   }
   quic_params_->race_stale_dns_on_connection = true;
@@ -13134,9 +13131,8 @@ TEST_P(QuicStreamFactoryTest, ResultAfterDNSRaceResolveAsyncErrorStaleAsync) {
 // resolve returns error and then preconnect fails.
 TEST_P(QuicStreamFactoryTest,
        ResultAfterDNSRaceResolveAsyncErrorStaleAsyncError) {
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3 &&
-      version_.transport_version == quic::QUIC_VERSION_99) {
-    // 0-rtt is not supported in IETF QUIC yet.
+  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
+    // TODO(fayang): 0-rtt is not supported in IETF QUIC yet. Fix it.
     return;
   }
   quic_params_->race_stale_dns_on_connection = true;

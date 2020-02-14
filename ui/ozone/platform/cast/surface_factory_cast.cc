@@ -26,7 +26,7 @@ class DummySurface : public SurfaceOzoneCanvas {
   ~DummySurface() override {}
 
   // SurfaceOzoneCanvas implementation:
-  sk_sp<SkSurface> GetSurface() override { return surface_; }
+  SkCanvas* GetCanvas() override { return surface_->getCanvas(); }
 
   void ResizeCanvas(const gfx::Size& viewport_size) override {
     surface_ =

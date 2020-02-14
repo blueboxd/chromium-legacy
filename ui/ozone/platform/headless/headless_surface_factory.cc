@@ -75,7 +75,7 @@ class FileSurface : public SurfaceOzoneCanvas {
     surface_ = SkSurface::MakeRaster(SkImageInfo::MakeN32Premul(
         viewport_size.width(), viewport_size.height()));
   }
-  sk_sp<SkSurface> GetSurface() override { return surface_; }
+  SkCanvas* GetCanvas() override { return surface_->getCanvas(); }
   void PresentCanvas(const gfx::Rect& damage) override {
     if (base_path_.empty())
       return;

@@ -83,7 +83,7 @@ void ScenicWindowCanvas::ResizeCanvas(const gfx::Size& viewport_size) {
   }
 }
 
-sk_sp<SkSurface> ScenicWindowCanvas::GetSurface() {
+SkCanvas* ScenicWindowCanvas::GetCanvas() {
   if (viewport_size_.IsEmpty() || frames_[current_frame_].is_empty())
     return nullptr;
 
@@ -108,7 +108,7 @@ sk_sp<SkSurface> ScenicWindowCanvas::GetSurface() {
     }
   }
 
-  return frames_[current_frame_].surface;
+  return frames_[current_frame_].surface->getCanvas();
 }
 
 void ScenicWindowCanvas::PresentCanvas(const gfx::Rect& damage) {

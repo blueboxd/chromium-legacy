@@ -44,6 +44,7 @@ class DevToolsSession : public protocol::FrontendChannel,
 
   void SetAgentHost(DevToolsAgentHostImpl* agent_host);
   void SetRuntimeResumeCallback(base::OnceClosure runtime_resume);
+  bool IsWaitingForDebuggerOnStart() const;
   void Dispose();
 
   // content::DevToolsAgentHostClientChannel implementation.

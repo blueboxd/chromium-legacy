@@ -31,7 +31,6 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
@@ -91,7 +90,6 @@ using web_app::NavigateToURLAndWait;
 
 namespace {
 
-constexpr const char kExampleURL[] = "http://example.org/";
 constexpr const char kImagePath[] = "/ssl/google_files/logo.gif";
 constexpr const char kAppDotComManifest[] =
     "{"
@@ -122,18 +120,6 @@ void CheckWebContentsDoesNotHaveAppPrefs(content::WebContents* web_contents) {
   blink::mojom::RendererPreferences* prefs =
       web_contents->GetMutableRendererPrefs();
   EXPECT_TRUE(prefs->can_accept_load_drops);
-}
-
-// Returns a path string that points to a page with the
-// "REPLACE_WITH_HOST_AND_PORT" string replaced with |host_port_pair|.
-// The page at |original_path| should contain the string
-// "REPLACE_WITH_HOST_AND_PORT".
-std::string GetPathWithHostAndPortReplaced(const std::string& original_path,
-                                           net::HostPortPair host_port_pair) {
-  base::StringPairs replacement_text = {
-      {"REPLACE_WITH_HOST_AND_PORT", host_port_pair.ToString()}};
-  return net::test_server::GetFilePathWithReplacements(original_path,
-                                                       replacement_text);
 }
 
 // Tries to load an image at |image_url| and returns whether or not it loaded
@@ -236,47 +222,6 @@ class HostedAppTest : public extensions::ExtensionBrowserTest,
 
   static const char* GetInstallableAppName() { return "Manifest test app"; }
 
-  GURL GetSecureIFrameAppURL() {
-    net::HostPortPair host_port_pair = net::HostPortPair::FromURL(
-        https_server()->GetURL("foo.com", "/simple.html"));
-    const std::string path = GetPathWithHostAndPortReplaced(
-        "/ssl/page_with_cross_site_frame.html", host_port_pair);
-
-    return https_server_.GetURL("app.com", path);
-  }
-
-  void InstallMixedContentPWA() { return InstallPWA(GetMixedContentAppURL()); }
-
-  void InstallMixedContentIFramePWA() {
-    net::HostPortPair host_port_pair = net::HostPortPair::FromURL(
-        https_server()->GetURL("foo.com", "/simple.html"));
-    const std::string path = GetPathWithHostAndPortReplaced(
-        "/ssl/page_displays_insecure_content_in_iframe.html", host_port_pair);
-
-    InstallPWA(https_server()->GetURL("app.com", path));
-  }
-
-  void InstallSecurePWA() { return InstallPWA(GetSecureAppURL()); }
-
-  void InstallSecureIFramePWA() { return InstallPWA(GetSecureIFrameAppURL()); }
-
-  void InstallPWA(const GURL& app_url) {
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = app_url;
-    web_app_info.scope = app_url.GetWithoutFilename();
-    web_app_info.open_as_window = true;
-
-    app_ = InstallBookmarkApp(web_app_info);
-
-    ui_test_utils::UrlLoadObserver url_observer(
-        app_url, content::NotificationService::AllSources());
-    app_browser_ = LaunchAppBrowser(app_);
-    url_observer.Wait();
-
-    CHECK(app_browser_);
-    CHECK(app_browser_ != browser());
-  }
-
   void SetUpInProcessBrowserTestFixture() override {
     extensions::ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
     cert_verifier_.SetUpInProcessBrowserTestFixture();
@@ -356,8 +301,6 @@ class HostedAppTest : public extensions::ExtensionBrowserTest,
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppTest);
 };
-
-using SharedAppTest = HostedAppTest;
 
 // Tests that "Open link in new tab" opens a link in a foreground tab.
 IN_PROC_BROWSER_TEST_P(HostedAppTest, OpenLinkInNewTab) {
@@ -625,8 +568,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, ShouldShowCustomTabBarForAppWithoutWWW) {
 }
 
 // Check that a subframe on a regular web page can navigate to a URL that
-// redirects to a hosted app.  https://crbug.com/721949.
-IN_PROC_BROWSER_TEST_P(SharedAppTest, SubframeRedirectsToHostedApp) {
+// redirects to a platform app.  https://crbug.com/721949.
+IN_PROC_BROWSER_TEST_P(HostedAppTest, SubframeRedirectsToHostedApp) {
   // This test only applies to hosted apps.
   if (app_type() != AppType::HOSTED_APP)
     return;
@@ -661,31 +604,9 @@ IN_PROC_BROWSER_TEST_P(SharedAppTest, SubframeRedirectsToHostedApp) {
       EvalJs(subframe, "document.body.innerText.trim();").ExtractString());
 }
 
-// Check that no assertions are hit when showing a permission request bubble.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, PermissionBubble) {
-  ASSERT_TRUE(https_server()->Start());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = GetSecureAppURL();
-  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
-
-  ui_test_utils::UrlLoadObserver url_observer(
-      GetSecureAppURL(), content::NotificationService::AllSources());
-  Browser* app_browser = LaunchAppBrowser(app);
-  url_observer.Wait();
-
-  RenderFrameHost* render_frame_host =
-      app_browser->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
-  EXPECT_TRUE(content::ExecuteScript(
-      render_frame_host,
-      "navigator.geolocation.getCurrentPosition(function(){});"));
-}
-
-// Tests that regular Hosted Apps and Bookmark Apps can still load mixed
-// content.
+// Tests that platform apps can still load mixed content.
 IN_PROC_BROWSER_TEST_P(HostedAppTestWithAutoupgradesDisabled,
-                       MixedContentInBookmarkApp) {
+                       MixedContentInPlatformApp) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -702,280 +623,11 @@ IN_PROC_BROWSER_TEST_P(HostedAppTestWithAutoupgradesDisabled,
   web_app::CheckMixedContentLoaded(app_browser_);
 }
 
-// Ensure that hosted app windows with blank titles don't display the URL as a
-// default window title.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, EmptyTitlesDoNotDisplayUrl) {
-  ASSERT_TRUE(https_server()->Start());
-  GURL url = https_server()->GetURL("app.site.com", "/empty.html");
-
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = url;
-  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
-
-  Browser* app_browser = LaunchAppBrowser(app);
-  content::WebContents* web_contents =
-      app_browser->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(web_contents);
-  EXPECT_EQ(base::string16(), app_browser->GetWindowTitleForCurrentTab(false));
-  NavigateToURLAndWait(app_browser,
-                       https_server()->GetURL("app.site.com", "/simple.html"));
-  EXPECT_EQ(base::ASCIIToUTF16("OK"),
-            app_browser->GetWindowTitleForCurrentTab(false));
-}
-
-// Ensure that hosted app windows display the app title instead of the page
-// title when off scope.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, OffScopeUrlsDisplayAppTitle) {
-  ASSERT_TRUE(https_server()->Start());
-  GURL url = GetSecureAppURL();
-
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = url;
-  web_app_info.scope = url.GetWithoutFilename();
-  web_app_info.title = base::ASCIIToUTF16("A Hosted App");
-  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
-
-  Browser* app_browser = LaunchAppBrowser(app);
-  content::WebContents* web_contents =
-      app_browser->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(web_contents);
-
-  // When we are within scope, show the page title.
-  EXPECT_EQ(base::ASCIIToUTF16("Google"),
-            app_browser->GetWindowTitleForCurrentTab(false));
-
-  NavigateToURLAndWait(app_browser,
-                       https_server()->GetURL("app.site.com", "/simple.html"));
-
-  // When we are off scope, show the app title.
-  EXPECT_EQ(base::ASCIIToUTF16("A Hosted App"),
-            app_browser->GetWindowTitleForCurrentTab(false));
-}
-
-// Ensure that hosted app windows display the app title instead of the page
-// title when using http.
-IN_PROC_BROWSER_TEST_P(HostedAppTest, InScopeHttpUrlsDisplayAppTitle) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("app.site.com", "/simple.html");
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = url;
-  web_app_info.title = base::ASCIIToUTF16("A Hosted App");
-
-  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
-
-  Browser* app_browser = LaunchAppBrowser(app);
-  content::WebContents* web_contents =
-      app_browser->tab_strip_model()->GetActiveWebContents();
-  content::WaitForLoadStop(web_contents);
-
-  // The page title is "OK" but the page is being served over HTTP, so the app
-  // title should be used instead.
-  EXPECT_EQ(base::ASCIIToUTF16("A Hosted App"),
-            app_browser->GetWindowTitleForCurrentTab(false));
-}
-
-using HostedAppPWAOnlyTest = HostedAppTest;
-using SharedPWATest = HostedAppTest;
-using HostedAppPWAOnlyTestWithAutoupgradesDisabled =
-    HostedAppTestWithAutoupgradesDisabled;
-
-// Tests that when calling OpenInChrome, mixed content can be loaded in the new
-// tab.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
-                       MixedContentOpenInChrome) {
-  ASSERT_TRUE(https_server()->Start());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  InstallMixedContentPWA();
-
-  // Mixed content is not allowed in PWAs.
-  web_app::CheckMixedContentFailedToLoad(app_browser_);
-
-  chrome::OpenInChrome(app_browser_);
-  ASSERT_EQ(browser(), chrome::FindLastActive());
-  ASSERT_EQ(GetMixedContentAppURL(), browser()
-                                         ->tab_strip_model()
-                                         ->GetActiveWebContents()
-                                         ->GetLastCommittedURL());
-
-  // The WebContents is just reparented, so mixed content is still not loaded.
-  web_app::CheckMixedContentFailedToLoad(browser());
-  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
-            kEnabled);
-
-  ui_test_utils::UrlLoadObserver url_observer(
-      GetMixedContentAppURL(), content::NotificationService::AllSources());
-  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-  url_observer.Wait();
-
-  // After reloading, mixed content should successfully load because the
-  // WebContents is no longer in a PWA window.
-
-  web_app::CheckMixedContentLoaded(browser());
-  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
-            kNotPresent);
-  EXPECT_EQ(web_app::ReparentWebAppForSecureActiveTab(browser()), nullptr);
-}
-
-// Tests that when calling web_app::ReparentWebContentsIntoAppBrowser, mixed
-// content cannot be loaded in the new app window.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
-                       MixedContentReparentWebContentsIntoAppBrowser) {
-  ASSERT_TRUE(https_server()->Start());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  InstallMixedContentPWA();
-
-  NavigateToURLAndWait(browser(), GetMixedContentAppURL());
-  content::WebContents* tab_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_EQ(tab_contents->GetLastCommittedURL(), GetMixedContentAppURL());
-
-  // A regular tab should be able to load mixed content.
-  web_app::CheckMixedContentLoaded(browser());
-  EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
-            kNotPresent);
-
-  Browser* app_browser =
-      web_app::ReparentWebContentsIntoAppBrowser(tab_contents, app_->id());
-
-  ASSERT_NE(app_browser, browser());
-  ASSERT_EQ(GetMixedContentAppURL(), app_browser->tab_strip_model()
-                                         ->GetActiveWebContents()
-                                         ->GetLastCommittedURL());
-
-  // After reparenting, the WebContents should still have its mixed content
-  // loaded. Note that in practice, this should never happen for PWAs. Users
-  // won't be able to reparent WebContents if there is mixed content loaded
-  // in them.
-  web_app::CheckMixedContentLoaded(app_browser);
-
-  ui_test_utils::UrlLoadObserver url_observer(
-      GetMixedContentAppURL(), content::NotificationService::AllSources());
-  chrome::Reload(app_browser, WindowOpenDisposition::CURRENT_TAB);
-  url_observer.Wait();
-
-  // After reloading, mixed content should fail to load, because the WebContents
-  // is now in a PWA window.
-  web_app::CheckMixedContentFailedToLoad(app_browser);
-}
-
-// Tests that mixed content is not loaded inside iframes in PWA windows.
-IN_PROC_BROWSER_TEST_P(SharedPWATest, IFrameMixedContentInPWA) {
-  ASSERT_TRUE(https_server()->Start());
-
-  InstallMixedContentIFramePWA();
-
-  web_app::CheckMixedContentFailedToLoad(app_browser_);
-}
-
-// Tests that iframes can't dynamically load mixed content in a PWA window, when
-// the iframe was created in a regular tab.
-IN_PROC_BROWSER_TEST_P(
-    HostedAppPWAOnlyTestWithAutoupgradesDisabled,
-    IFrameDynamicMixedContentInPWAReparentWebContentsIntoAppBrowser) {
-  ASSERT_TRUE(https_server()->Start());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  InstallSecureIFramePWA();
-
-  NavigateToURLAndWait(browser(), GetSecureIFrameAppURL());
-  web_app::CheckMixedContentFailedToLoad(browser());
-
-  app_browser_ = web_app::ReparentWebContentsIntoAppBrowser(
-      browser()->tab_strip_model()->GetActiveWebContents(), app_->id());
-  web_app::CheckMixedContentFailedToLoad(app_browser_);
-
-  content::RenderFrameHost* main_frame =
-      app_browser_->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
-  content::RenderFrameHost* iframe = content::ChildFrameAt(main_frame, 0);
-  EXPECT_FALSE(TryToLoadImage(
-      iframe, embedded_test_server()->GetURL("foo.com", kImagePath)));
-
-  web_app::CheckMixedContentFailedToLoad(app_browser_);
-}
-
-// Tests that iframes can dynamically load mixed content in a regular browser
-// tab, when the iframe was created in a PWA window.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTestWithAutoupgradesDisabled,
-                       IFrameDynamicMixedContentInPWAOpenInChrome) {
-  ASSERT_TRUE(https_server()->Start());
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  InstallSecureIFramePWA();
-
-  chrome::OpenInChrome(app_browser_);
-
-  content::RenderFrameHost* main_frame =
-      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
-  content::RenderFrameHost* iframe = content::ChildFrameAt(main_frame, 0);
-
-  EXPECT_TRUE(TryToLoadImage(
-      iframe, embedded_test_server()->GetURL("foo.com", kImagePath)));
-
-  web_app::CheckMixedContentLoaded(browser());
-}
-
 IN_PROC_BROWSER_TEST_P(HostedAppTest, CreatedForInstalledPwaForNonPwas) {
   SetupApp("https_app");
 
   EXPECT_FALSE(app_browser_->app_controller()->CreatedForInstalledPwa());
 }
-
-// Check the 'Open in Chrome' menu button for Hosted App windows.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, OpenInChrome) {
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = GURL(kExampleURL);
-  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
-  {
-    Browser* app_browser = LaunchAppBrowser(app);
-
-    EXPECT_EQ(1, app_browser->tab_strip_model()->count());
-    EXPECT_EQ(1, browser()->tab_strip_model()->count());
-    ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
-
-    chrome::ExecuteCommand(app_browser, IDC_OPEN_IN_CHROME);
-
-    // The browser frame is closed next event loop so it's still safe to access
-    // here.
-    EXPECT_EQ(0, app_browser->tab_strip_model()->count());
-
-    EXPECT_EQ(2, browser()->tab_strip_model()->count());
-    EXPECT_EQ(1, browser()->tab_strip_model()->active_index());
-    EXPECT_EQ(
-        GURL(kExampleURL),
-        browser()->tab_strip_model()->GetActiveWebContents()->GetVisibleURL());
-  }
-
-  // Wait until the browser actually gets closed. This invalidates
-  // |app_browser|.
-  content::RunAllPendingInMessageLoop();
-  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
-}
-
-// This feature is only available for ChromeOS at the moment.
-#if defined(OS_CHROMEOS)
-// Check the 'App info' menu button for Hosted App windows.
-IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, AppInfoOpensPageInfo) {
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = GURL(kExampleURL);
-  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
-  Browser* app_browser = LaunchAppBrowser(app);
-
-  bool dialog_created = false;
-
-  GetPageInfoDialogCreatedCallbackForTesting() = base::BindOnce(
-      [](bool* dialog_created) { *dialog_created = true; }, &dialog_created);
-
-  chrome::ExecuteCommand(app_browser, IDC_WEB_APP_MENU_APP_INFO);
-
-  EXPECT_TRUE(dialog_created);
-
-  // The test closure should have run. But clear the global in case it hasn't.
-  EXPECT_FALSE(GetPageInfoDialogCreatedCallbackForTesting());
-  GetPageInfoDialogCreatedCallbackForTesting().Reset();
-}
-#endif
 
 // Common app manifest for HostedAppProcessModelTests.
 constexpr const char kHostedAppProcessModelManifest[] =
@@ -2105,28 +1757,8 @@ INSTANTIATE_TEST_SUITE_P(All,
                                            AppType::BOOKMARK_APP));
 
 INSTANTIATE_TEST_SUITE_P(All,
-                         SharedAppTest,
-                         ::testing::Values(AppType::HOSTED_APP,
-                                           AppType::BOOKMARK_APP,
-                                           AppType::WEB_APP));
-
-INSTANTIATE_TEST_SUITE_P(All,
                          HostedAppTestWithAutoupgradesDisabled,
                          ::testing::Values(AppType::HOSTED_APP));
-
-INSTANTIATE_TEST_SUITE_P(All,
-                         HostedAppPWAOnlyTestWithAutoupgradesDisabled,
-                         ::testing::Values(AppType::BOOKMARK_APP));
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    HostedAppPWAOnlyTest,
-    ::testing::Values(AppType::BOOKMARK_APP));
-
-INSTANTIATE_TEST_SUITE_P(
-    All,
-    SharedPWATest,
-    ::testing::Values(AppType::BOOKMARK_APP, AppType::WEB_APP));
 
 INSTANTIATE_TEST_SUITE_P(
     All,

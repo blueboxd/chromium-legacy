@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/themes/custom_theme_supplier.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_types.h"
@@ -152,11 +153,15 @@ SkColor BrowserNonClientFrameView::GetFrameColor(
   if (frame_->ShouldUseTheme())
     return GetFrameThemeProvider()->GetColor(color_id);
 
-  // Use app theme color if it is set, but not for apps with tabs.
+  // Use ThemeSupplier.
   web_app::AppBrowserController* app_controller =
       browser_view_->browser()->app_controller();
-  if (app_controller && app_controller->GetThemeColor())
-    return *app_controller->GetThemeColor();
+  if (app_controller && app_controller->GetThemeSupplier()) {
+    CustomThemeSupplier* theme = app_controller->GetThemeSupplier();
+    SkColor result;
+    if (theme->GetColor(color_id, &result))
+      return result;
+  }
 
   return GetUnthemedColor(color_id);
 }

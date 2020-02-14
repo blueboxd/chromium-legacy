@@ -91,7 +91,7 @@ bool CSSLayoutDefinition::Instance::Layout(
     const NGBoxStrut& border_scrollbar_padding,
     const LayoutUnit child_percentage_resolution_block_size_for_min_max,
     CustomLayoutScope* custom_layout_scope,
-    FragmentResultOptions* fragment_result_options,
+    FragmentResultOptions*& fragment_result_options,
     scoped_refptr<SerializedScriptValue>* fragment_result_data) {
   ScriptState* script_state = definition_->GetScriptState();
   v8::Isolate* isolate = script_state->GetIsolate();
@@ -174,8 +174,9 @@ bool CSSLayoutDefinition::Instance::Layout(
   v8::Local<v8::Value> inner_value = v8_result_promise->Result();
 
   // Attempt to convert the result.
-  V8FragmentResultOptions::ToImpl(isolate, inner_value, fragment_result_options,
-                                  exception_state);
+  fragment_result_options =
+      NativeValueTraits<FragmentResultOptions>::NativeValue(
+          isolate, inner_value, exception_state);
 
   if (exception_state.HadException()) {
     V8ScriptRunner::ReportException(isolate, exception_state.GetException());
@@ -222,7 +223,7 @@ bool CSSLayoutDefinition::Instance::IntrinsicSizes(
     const NGBoxStrut& border_scrollbar_padding,
     const LayoutUnit child_percentage_resolution_block_size_for_min_max,
     CustomLayoutScope* custom_layout_scope,
-    IntrinsicSizesResultOptions* intrinsic_sizes_result_options) {
+    IntrinsicSizesResultOptions*& intrinsic_sizes_result_options) {
   ScriptState* script_state = definition_->GetScriptState();
   v8::Isolate* isolate = script_state->GetIsolate();
 
@@ -299,8 +300,9 @@ bool CSSLayoutDefinition::Instance::IntrinsicSizes(
   v8::Local<v8::Value> inner_value = v8_result_promise->Result();
 
   // Attempt to convert the result.
-  V8IntrinsicSizesResultOptions::ToImpl(
-      isolate, inner_value, intrinsic_sizes_result_options, exception_state);
+  intrinsic_sizes_result_options =
+      NativeValueTraits<IntrinsicSizesResultOptions>::NativeValue(
+          isolate, inner_value, exception_state);
 
   if (exception_state.HadException()) {
     V8ScriptRunner::ReportException(isolate, exception_state.GetException());

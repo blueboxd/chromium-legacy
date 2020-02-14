@@ -25,6 +25,7 @@ class LayoutObject;
 class LayoutUnit;
 class NGFragmentItem;
 class NGFragmentItems;
+class NGInlineBackwardCursor;
 class NGInlineBreakToken;
 class NGInlineCursor;
 class NGPaintFragment;
@@ -177,6 +178,7 @@ class CORE_EXPORT NGInlineCursor {
                           ItemsSpan items);
   explicit NGInlineCursor(const NGPaintFragment& root_paint_fragment);
   NGInlineCursor(const NGInlineCursor& other) = default;
+  NGInlineCursor(const NGInlineBackwardCursor& backward_cursor);
 
   // Creates an |NGInlineCursor| without the root. Even when callers don't know
   // the root of the inline formatting context, this cursor can |MoveTo()|
@@ -346,6 +348,7 @@ class CORE_EXPORT NGInlineCursor {
   void MoveToNextLine();
 
   // Move the current position to next sibling fragment.
+  // |MoveToNextSibling()| is deprecated. New code should not be used.
   void MoveToNextSibling();
 
   // Same as |MoveToNext| except that this skips children even if they exist.
@@ -450,6 +453,8 @@ class CORE_EXPORT NGInlineBackwardCursor {
   STACK_ALLOCATED();
 
  public:
+  // |cursor| should be the first child of root or descendants, e.g. the first
+  // item in |NGInlineCursor::items_|.
   NGInlineBackwardCursor(const NGInlineCursor& cursor);
 
   const NGInlineCursorPosition& Current() const { return current_; }
@@ -465,6 +470,8 @@ class CORE_EXPORT NGInlineBackwardCursor {
   Vector<const NGPaintFragment*, 16> sibling_paint_fragments_;
   Vector<NGInlineCursor::ItemsSpan::iterator, 16> sibling_item_iterators_;
   wtf_size_t current_index_;
+
+  friend class NGInlineCursor;
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGInlineCursor&);

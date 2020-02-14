@@ -131,9 +131,6 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   void UpdateAfterShelfChange() override;
   void UpdateAfterLoginStatusChange(LoginStatus status) override;
   bool ShouldEnableExtraKeyboardAccessibility() override;
-  void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void RemoveInkDropLayer(ui::Layer* ink_drop_layer) override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   const char* GetClassName() const override;
 
   // ShelfConfig::Observer:
@@ -188,7 +185,6 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
 
   tray::NetworkTrayView* network_tray_view_ = nullptr;
 
-  ui::Layer* ink_drop_layer_ = nullptr;
   base::OneShotTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTray);

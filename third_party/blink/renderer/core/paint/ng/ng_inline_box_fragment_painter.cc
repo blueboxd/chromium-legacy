@@ -71,9 +71,10 @@ void NGInlineBoxFragmentPainter::Paint(const PaintInfo& paint_info,
                             suppress_box_decoration_background);
     return;
   }
+  DCHECK(inline_box_cursor_);
   DCHECK(inline_box_item_);
-  NGBoxFragmentPainter box_painter(*inline_box_item_, PhysicalFragment(),
-                                   descendants_);
+  NGBoxFragmentPainter box_painter(*inline_box_cursor_, *inline_box_item_,
+                                   PhysicalFragment());
   box_painter.PaintObject(paint_info, adjusted_paint_offset,
                           suppress_box_decoration_background);
 }
@@ -131,10 +132,9 @@ void NGInlineBoxFragmentPainterBase::PaintBackgroundBorderShadow(
     return;
   }
   DCHECK(inline_box_cursor_);
-  NGInlineCursor descendants = inline_box_cursor_->CursorForDescendants();
   NGBoxFragmentPainter box_painter(
-      To<NGPhysicalBoxFragment>(inline_box_fragment_),
-      inline_box_paint_fragment_, inline_box_item_, &descendants);
+      *inline_box_cursor_, *inline_box_item_,
+      To<NGPhysicalBoxFragment>(inline_box_fragment_));
   PaintBoxDecorationBackground(box_painter, paint_info, paint_offset,
                                adjusted_frame_rect, geometry,
                                object_has_multiple_boxes,
@@ -371,10 +371,23 @@ void NGInlineBoxFragmentPainter::PaintAllFragments(
     DCHECK(item);
     const NGPhysicalBoxFragment* box_fragment = item->BoxFragment();
     DCHECK(box_fragment);
-    NGInlineCursor descendants = cursor.CursorForDescendants();
-    NGInlineBoxFragmentPainter(cursor, *item, *box_fragment, &descendants)
+    NGInlineBoxFragmentPainter(cursor, *item, *box_fragment)
         .Paint(paint_info, paint_offset);
   }
 }
+
+#if DCHECK_IS_ON()
+void NGInlineBoxFragmentPainter::CheckValid() const {
+  if (inline_box_item_) {
+    DCHECK(inline_box_cursor_);
+    DCHECK_EQ(inline_box_cursor_->Current().Item(), inline_box_item_);
+  }
+
+  DCHECK_EQ(inline_box_fragment_.Type(),
+            NGPhysicalFragment::NGFragmentType::kFragmentBox);
+  DCHECK_EQ(inline_box_fragment_.BoxType(),
+            NGPhysicalFragment::NGBoxType::kInlineBox);
+}
+#endif
 
 }  // namespace blink

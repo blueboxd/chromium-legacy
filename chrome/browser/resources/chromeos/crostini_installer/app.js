@@ -302,12 +302,16 @@ Polymer({
 
   /**
    * @param {State} state
+   * @param {string} username
    * @param {string} usernameError
    * @returns {boolean}
    * @private
    */
-  disableInstallButton_(state, usernameError) {
-    return state === State.CONFIGURE && usernameError !== '';
+  disableInstallButton_(state, username, usernameError) {
+    if (state === State.CONFIGURE) {
+      return !username || !!usernameError;
+    }
+    return false;
   },
 
   /**
@@ -485,7 +489,9 @@ Polymer({
 
   /** @private */
   onUsernameChanged_(username, oldUsername) {
-    if (UNAVAILABLE_USERNAMES.includes(username)) {
+    if (!username) {
+      this.usernameError_ = '';
+    } else if (UNAVAILABLE_USERNAMES.includes(username)) {
       this.usernameError_ =
           loadTimeData.getStringF('usernameNotAvailableError', username);
     } else if (!/^[a-z_]/.test(username)) {

@@ -109,6 +109,17 @@ WebAppBrowserController* WebAppBrowserController::AsWebAppBrowserController() {
   return this;
 }
 
+base::string16 WebAppBrowserController::GetTitle() const {
+  // When showing the toolbar, display the name of the app, instead of the
+  // current page as the title.
+  if (ShouldShowCustomTabBar()) {
+    // TODO(crbug.com/1051379): Use name instead of short_name.
+    return base::UTF8ToUTF16(registrar().GetAppShortName(GetAppId()));
+  }
+
+  return AppBrowserController::GetTitle();
+}
+
 std::string WebAppBrowserController::GetAppShortName() const {
   return registrar().GetAppShortName(GetAppId());
 }

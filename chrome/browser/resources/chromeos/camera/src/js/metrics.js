@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// eslint-disable-next-line no-unused-vars
+import {Intent} from './intent.js';
 import * as state from './state.js';
-import {Mode,
-        Resolution,  // eslint-disable-line no-unused-vars
+import {
+  Mode,
+  Resolution,  // eslint-disable-line no-unused-vars
 } from './type.js';
 
 /**
@@ -154,6 +157,23 @@ function perfType(event, duration, extras = {}) {
 }
 
 /**
+ * Returns event builder for the metrics type: intent.
+ * @param {!Intent} intent Intent to be logged.
+ * @param {!IntentResultType} intentResult
+ * @return {!analytics.EventBuilder}
+ */
+function intentType(intent, intentResult) {
+  const getBoolValue = (b) => b ? '1' : '0';
+  return base.category('intent')
+      .action(intent.mode)
+      .label(intentResult)
+      .dimen(12, intentResult)
+      .dimen(13, getBoolValue(intent.shouldHandleResult))
+      .dimen(14, getBoolValue(intent.shouldDownScale))
+      .dimen(15, getBoolValue(intent.isSecure));
+}
+
+/**
  * Metrics types.
  * @enum {function(...): !analytics.EventBuilder}
  */
@@ -161,6 +181,7 @@ export const Type = {
   LAUNCH: launchType,
   CAPTURE: captureType,
   PERF: perfType,
+  INTENT: intentType,
 };
 
 /**

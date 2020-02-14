@@ -37,7 +37,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/arc_util.h"
@@ -49,6 +48,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/common/content_constants.h"
 #include "services/service_manager/zygote/zygote_host_linux.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -391,14 +391,14 @@ void TabManagerDelegate::OnFocusTabScoreAdjustmentTimeout() {
     return;
 
   // Update the OOM score cache.
-  oom_score_map_[pid] = chrome::kLowestRendererOomScore;
+  oom_score_map_[pid] = content::kLowestRendererOomScore;
 
   // Sets OOM score.
-  VLOG(3) << "Set OOM score " << chrome::kLowestRendererOomScore
+  VLOG(3) << "Set OOM score " << content::kLowestRendererOomScore
           << " for focused tab " << pid;
-  if (!base::AdjustOOMScore(pid, chrome::kLowestRendererOomScore))
+  if (!base::AdjustOOMScore(pid, content::kLowestRendererOomScore))
     LOG(ERROR) << "Failed to set oom_score_adj to "
-               << chrome::kLowestRendererOomScore
+               << content::kLowestRendererOomScore
                << " for focused tab, pid: " << pid;
 }
 
@@ -414,8 +414,9 @@ void TabManagerDelegate::AdjustFocusedTabScore(base::ProcessHandle pid) {
   // set it. This can happen in case the newly focused tab is script
   // connected to the previous tab.
   ProcessScoreMap::iterator it = oom_score_map_.find(pid);
-  const bool not_lowest_score = (it == oom_score_map_.end() ||
-                                 it->second != chrome::kLowestRendererOomScore);
+  const bool not_lowest_score =
+      (it == oom_score_map_.end() ||
+       it->second != content::kLowestRendererOomScore);
 
   if (not_lowest_score) {
     // By starting a timer we guarantee that the tab is focused for
@@ -763,7 +764,8 @@ void TabManagerDelegate::AdjustOomPrioritiesImpl(
   // Break the processes into 2 parts. This is to help lower the chance of
   // altering OOM score for many processes on any small change.
   int range_middle =
-      (chrome::kLowestRendererOomScore + chrome::kHighestRendererOomScore) / 2;
+      (content::kLowestRendererOomScore + content::kHighestRendererOomScore) /
+      2;
 
   // Find some pivot point. FOCUSED_TAB, FOCUSED_APP, and PROTECTED_BACKGROUND
   // processes are in the first half and BACKGROUND and CACHED_APP processes
@@ -786,11 +788,11 @@ void TabManagerDelegate::AdjustOomPrioritiesImpl(
 
   // Higher priority part.
   DistributeOomScoreInRange(candidates.begin(), lower_priority_part,
-                            chrome::kLowestRendererOomScore, range_middle,
+                            content::kLowestRendererOomScore, range_middle,
                             &new_map);
   // Lower priority part.
   DistributeOomScoreInRange(lower_priority_part, candidates.end(), range_middle,
-                            chrome::kHighestRendererOomScore, &new_map);
+                            content::kHighestRendererOomScore, &new_map);
 
   oom_score_map_.swap(new_map);
 }

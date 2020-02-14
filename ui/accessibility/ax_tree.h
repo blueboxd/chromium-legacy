@@ -307,7 +307,8 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
 
   // Map from node ID to cached table info, if the given node is a table.
   // Invalidated every time the tree is updated.
-  mutable std::unordered_map<int32_t, AXTableInfo*> table_info_map_;
+  mutable std::unordered_map<int32_t, std::unique_ptr<AXTableInfo>>
+      table_info_map_;
 
   // The next negative node ID to use for internal nodes.
   int32_t next_negative_internal_node_id_ = -1;

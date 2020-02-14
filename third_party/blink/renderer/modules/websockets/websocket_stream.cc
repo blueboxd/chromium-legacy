@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_array_buffer.h"
@@ -665,10 +666,9 @@ void WebSocketStream::CloseMaybeWithReason(ScriptValue maybe_reason) {
   // Exceptions thrown here are ignored.
   ExceptionState exception_state(script_state_->GetIsolate(),
                                  ExceptionState::kUnknownContext, "", "");
-  WebSocketCloseInfo* info = MakeGarbageCollected<WebSocketCloseInfo>();
-  V8WebSocketCloseInfo::ToImpl(script_state_->GetIsolate(),
-                               maybe_reason.V8Value(), info, exception_state);
-  if (info->hasCode() && !exception_state.HadException()) {
+  WebSocketCloseInfo* info = NativeValueTraits<WebSocketCloseInfo>::NativeValue(
+      script_state_->GetIsolate(), maybe_reason.V8Value(), exception_state);
+  if (!exception_state.HadException() && info->hasCode()) {
     CloseInternal(info->code(), info->reason(), exception_state);
     if (!exception_state.HadException())
       return;

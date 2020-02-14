@@ -119,11 +119,9 @@ base::flat_set<GURL> GetFrameUrls(RenderFrameHostImpl* render_frame_host) {
 }  // namespace
 
 TargetAutoAttacher::TargetAutoAttacher(
-    AttachCallback attach_callback,
-    DetachCallback detach_callback,
+    Delegate* delegate,
     DevToolsRendererChannel* renderer_channel)
-    : attach_callback_(attach_callback),
-      detach_callback_(detach_callback),
+    : delegate_(delegate),
       renderer_channel_(renderer_channel),
       render_frame_host_(nullptr),
       auto_attach_(false),
@@ -206,6 +204,13 @@ bool TargetAutoAttacher::ShouldThrottleFramesNavigation() {
   return auto_attach_;
 }
 
+void TargetAutoAttacher::AttachToAgentHost(DevToolsAgentHost* host) {
+  scoped_refptr<DevToolsAgentHost> agent_host(host);
+  DCHECK(auto_attached_hosts_.find(agent_host) == auto_attached_hosts_.end());
+  delegate_->AutoAttach(agent_host.get(), wait_for_debugger_on_start_);
+  auto_attached_hosts_.insert(agent_host);
+}
+
 DevToolsAgentHost* TargetAutoAttacher::AutoAttachToFrame(
     NavigationRequest* navigation_request) {
   if (!ShouldThrottleFramesNavigation())
@@ -223,20 +228,6 @@ DevToolsAgentHost* TargetAutoAttacher::AutoAttachToFrame(
   scoped_refptr<DevToolsAgentHost> agent_host =
       RenderFrameDevToolsAgentHost::FindForDangling(frame_tree_node);
 
-  // Process the window.open auto-attaches for new targets.
-  if (frame_tree_node->original_opener()) {
-    if (!agent_host) {
-      agent_host =
-          RenderFrameDevToolsAgentHost::CreateForCrossProcessNavigation(
-              navigation_request);
-    }
-    if (auto_attached_hosts_.find(agent_host) != auto_attached_hosts_.end())
-      return nullptr;
-    attach_callback_.Run(agent_host.get(), wait_for_debugger_on_start_);
-    auto_attached_hosts_.insert(agent_host);
-    return wait_for_debugger_on_start_ ? agent_host.get() : nullptr;
-  }
-
   bool old_cross_process = !!agent_host;
   bool is_portal_main_frame =
       frame_tree_node->IsMainFrame() &&
@@ -251,8 +242,7 @@ DevToolsAgentHost* TargetAutoAttacher::AutoAttachToFrame(
   if (new_cross_process) {
     agent_host = RenderFrameDevToolsAgentHost::CreateForCrossProcessNavigation(
         navigation_request);
-    attach_callback_.Run(agent_host.get(), wait_for_debugger_on_start_);
-    auto_attached_hosts_.insert(agent_host);
+    AttachToAgentHost(agent_host.get());
     return wait_for_debugger_on_start_ ? agent_host.get() : nullptr;
   }
 
@@ -263,7 +253,7 @@ DevToolsAgentHost* TargetAutoAttacher::AutoAttachToFrame(
   if (it == auto_attached_hosts_.end())
     return nullptr;
   auto_attached_hosts_.erase(it);
-  detach_callback_.Run(agent_host.get());
+  delegate_->AutoDetach(agent_host.get());
   return nullptr;
 }
 
@@ -291,12 +281,12 @@ void TargetAutoAttacher::ReattachTargetsOfType(const Hosts& new_hosts,
   for (auto& host : old_hosts) {
     if (host->GetType() == type && new_hosts.find(host) == new_hosts.end()) {
       auto_attached_hosts_.erase(host);
-      detach_callback_.Run(host.get());
+      delegate_->AutoDetach(host.get());
     }
   }
   for (auto& host : new_hosts) {
     if (old_hosts.find(host) == old_hosts.end()) {
-      attach_callback_.Run(host.get(), waiting_for_debugger);
+      delegate_->AutoAttach(host.get(), waiting_for_debugger);
       auto_attached_hosts_.insert(host);
     }
   }
@@ -371,7 +361,7 @@ void TargetAutoAttacher::WorkerDestroyed(ServiceWorkerDevToolsAgentHost* host) {
 
 void TargetAutoAttacher::ChildWorkerCreated(DevToolsAgentHostImpl* agent_host,
                                             bool waiting_for_debugger) {
-  attach_callback_.Run(agent_host, waiting_for_debugger);
+  delegate_->AutoAttach(agent_host, waiting_for_debugger);
   auto_attached_hosts_.insert(scoped_refptr<DevToolsAgentHost>(agent_host));
 }
 

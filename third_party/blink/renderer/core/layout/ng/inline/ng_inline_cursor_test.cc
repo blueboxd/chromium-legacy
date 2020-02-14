@@ -627,10 +627,10 @@ TEST_P(NGInlineCursorTest, Sibling) {
   InsertStyleElement("a, b { background: gray; }");
   NGInlineCursor cursor =
       SetupCursor("<div id=root>abc<a>DEF<b>GHI</b></a>xyz</div>");
+  TestPrevoiusSibling(cursor.CursorForDescendants());
   cursor.MoveToFirstChild();  // go to "abc"
   Vector<String> list = SiblingsToDebugStringList(cursor);
   EXPECT_THAT(list, ElementsAre("abc", "LayoutInline A", "xyz"));
-  TestPrevoiusSibling(cursor);
 }
 
 TEST_P(NGInlineCursorTest, Sibling2) {
@@ -639,10 +639,10 @@ TEST_P(NGInlineCursorTest, Sibling2) {
   NGInlineCursor cursor =
       SetupCursor("<div id=root><a>abc<b>def</b>xyz</a></div>");
   cursor.MoveToFirstChild();  // go to <a>abc</a>
+  TestPrevoiusSibling(cursor.CursorForDescendants());
   cursor.MoveToFirstChild();  // go to "abc"
   Vector<String> list = SiblingsToDebugStringList(cursor);
   EXPECT_THAT(list, ElementsAre("abc", "LayoutInline B", "xyz"));
-  TestPrevoiusSibling(cursor);
 }
 
 TEST_P(NGInlineCursorTest, NextSkippingChildren) {

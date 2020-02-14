@@ -52,9 +52,6 @@ class ChooserBubbleUiViewDelegate : public views::BubbleDialogDelegateView,
   // views::DialogDelegate:
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   views::View* GetInitiallyFocusedView() override;
-  bool Accept() override;
-  bool Cancel() override;
-  bool Close() override;
 
   // views::TableViewObserver:
   void OnSelectionChanged() override;
@@ -104,6 +101,26 @@ ChooserBubbleUiViewDelegate::ChooserBubbleUiViewDelegate(
 
   DialogDelegate::SetExtraView(device_chooser_content_view_->CreateExtraView());
 
+  using ContentViewFn = void (DeviceChooserContentView::*)();
+  auto closure_callback = [](ChooserBubbleUiViewDelegate* dialog,
+                             ContentViewFn func,
+                             base::Optional<BubbleCloseReason> reason) {
+    (dialog->device_chooser_content_view_->*func)();
+    if (reason.has_value() && dialog->bubble_reference_)
+      dialog->bubble_reference_->CloseBubble(reason.value());
+  };
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      closure_callback, base::Unretained(this),
+      &DeviceChooserContentView::Accept,
+      base::make_optional<BubbleCloseReason>(BUBBLE_CLOSE_ACCEPTED)));
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      closure_callback, base::Unretained(this),
+      &DeviceChooserContentView::Cancel,
+      base::make_optional<BubbleCloseReason>(BUBBLE_CLOSE_CANCELED)));
+  DialogDelegate::set_close_callback(
+      base::BindOnce(closure_callback, base::Unretained(this),
+                     &DeviceChooserContentView::Close, base::nullopt));
+
   UpdateAnchor(browser);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CHOOSER_UI);
 }
@@ -125,25 +142,6 @@ views::View* ChooserBubbleUiViewDelegate::GetInitiallyFocusedView() {
 bool ChooserBubbleUiViewDelegate::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   return device_chooser_content_view_->IsDialogButtonEnabled(button);
-}
-
-bool ChooserBubbleUiViewDelegate::Accept() {
-  device_chooser_content_view_->Accept();
-  if (bubble_reference_)
-    bubble_reference_->CloseBubble(BUBBLE_CLOSE_ACCEPTED);
-  return true;
-}
-
-bool ChooserBubbleUiViewDelegate::Cancel() {
-  device_chooser_content_view_->Cancel();
-  if (bubble_reference_)
-    bubble_reference_->CloseBubble(BUBBLE_CLOSE_CANCELED);
-  return true;
-}
-
-bool ChooserBubbleUiViewDelegate::Close() {
-  device_chooser_content_view_->Close();
-  return true;
 }
 
 void ChooserBubbleUiViewDelegate::OnSelectionChanged() {

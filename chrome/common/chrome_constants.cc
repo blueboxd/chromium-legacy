@@ -209,11 +209,6 @@ const wchar_t kUserDataDirname[] = L"User Data";
 
 const float kMaxShareOfExtensionProcesses = 0.30f;
 
-#if defined(OS_LINUX)
-const int kLowestRendererOomScore = 300;
-const int kHighestRendererOomScore = 1000;
-#endif
-
 #if defined(OS_CHROMEOS)
 const char kProfileDirPrefix[] = "u-";
 const char kLegacyProfileDir[] = "user";

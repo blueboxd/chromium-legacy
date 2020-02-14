@@ -405,3 +405,9 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_better_mtu_packet_check, false)
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_neuter_unencrypted_control_frames,
           false)
+
+// When the EACK connection option is sent by the client, an ack-eliciting frame
+// is bundled with ACKs sent after the PTO fires.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_bundle_retransmittable_with_pto_ack,
+          false)

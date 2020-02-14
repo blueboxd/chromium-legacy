@@ -9,6 +9,7 @@
 // handle. Call sites must check IsEmpty() before using return value.
 
 #include "third_party/blink/renderer/bindings/core/v8/idl_dictionary_base.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/platform/bindings/to_v8.h"
@@ -48,6 +49,15 @@ inline v8::Local<v8::Value> ToV8(const IDLDictionaryBase* value,
   if (!value)
     return v8::Null(isolate);
   return value->ToV8Impl(creation_context, isolate);
+}
+
+// Promise
+
+inline v8::Local<v8::Value> ToV8(const ScriptPromise& value,
+                                 v8::Local<v8::Object> creation_context,
+                                 v8::Isolate* isolate) {
+  DCHECK(!value.IsEmpty());
+  return value.V8Value();
 }
 
 // ScriptValue

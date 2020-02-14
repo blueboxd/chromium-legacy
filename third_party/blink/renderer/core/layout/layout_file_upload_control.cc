@@ -89,51 +89,6 @@ void LayoutFileUploadControl::ComputeIntrinsicLogicalWidths(
     min_logical_width = max_logical_width;
 }
 
-void LayoutFileUploadControl::ComputePreferredLogicalWidths() {
-  DCHECK(PreferredLogicalWidthsDirty());
-
-  min_preferred_logical_width_ = LayoutUnit();
-  max_preferred_logical_width_ = LayoutUnit();
-  const ComputedStyle& style_to_use = StyleRef();
-
-  if (style_to_use.Width().IsFixed() && style_to_use.Width().Value() > 0)
-    min_preferred_logical_width_ = max_preferred_logical_width_ =
-        AdjustContentBoxLogicalWidthForBoxSizing(
-            LayoutUnit(style_to_use.Width().Value()));
-  else
-    ComputeIntrinsicLogicalWidths(min_preferred_logical_width_,
-                                  max_preferred_logical_width_);
-
-  if (style_to_use.MinWidth().IsFixed() &&
-      style_to_use.MinWidth().Value() > 0) {
-    max_preferred_logical_width_ =
-        std::max(max_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     LayoutUnit(style_to_use.MinWidth().Value())));
-    min_preferred_logical_width_ =
-        std::max(min_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     LayoutUnit(style_to_use.MinWidth().Value())));
-  }
-
-  if (style_to_use.MaxWidth().IsFixed()) {
-    max_preferred_logical_width_ =
-        std::min(max_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     LayoutUnit(style_to_use.MaxWidth().Value())));
-    min_preferred_logical_width_ =
-        std::min(min_preferred_logical_width_,
-                 AdjustContentBoxLogicalWidthForBoxSizing(
-                     LayoutUnit(style_to_use.MaxWidth().Value())));
-  }
-
-  int to_add = BorderAndPaddingWidth().ToInt();
-  min_preferred_logical_width_ += to_add;
-  max_preferred_logical_width_ += to_add;
-
-  ClearPreferredLogicalWidthsDirty();
-}
-
 HTMLInputElement* LayoutFileUploadControl::UploadButton() const {
   return To<HTMLInputElement>(GetNode())->UploadButton();
 }

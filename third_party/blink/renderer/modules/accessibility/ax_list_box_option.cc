@@ -66,7 +66,7 @@ bool AXListBoxOption::IsParentPresentationalRole() const {
   if (!parent)
     return false;
 
-  if (parent_layout_object->IsListBox() &&
+  if (IsListBox(parent_layout_object) &&
       parent->HasInheritedPresentationalRole())
     return true;
 

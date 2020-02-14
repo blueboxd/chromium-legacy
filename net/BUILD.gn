@@ -2590,9 +2590,6 @@ source_set("spdy_test_tools") {
     "//testing/gmock",
     "//testing/gtest",
   ]
-  public_deps = [ "//net/third_party/quiche:spdy_test_tools_core" ]
-  allow_circular_includes_from =
-      [ "//net/third_party/quiche:spdy_test_tools_core" ]
 }
 
 source_set("quiche_test_tools") {

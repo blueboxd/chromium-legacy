@@ -988,8 +988,11 @@ base::Optional<int> FrameSequenceMetrics::ThroughputData::ReportHistogram(
                              percent);
   }
 
-  if (!is_animation && !IsInteractionType(sequence_type))
+  if (!is_animation && !IsInteractionType(sequence_type) &&
+      sequence_type != FrameSequenceTrackerType::kUniversal &&
+      sequence_type != FrameSequenceTrackerType::kVideo) {
     return base::nullopt;
+  }
 
   const char* thread_name =
       thread_type == ThreadType::kCompositor

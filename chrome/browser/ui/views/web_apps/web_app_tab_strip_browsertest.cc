@@ -68,11 +68,10 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, TabThemeColor) {
               SK_ColorBLACK);
     initial_tab_color = GetTabColor();
     EXPECT_NE(initial_tab_color, SK_ColorTRANSPARENT);
-    EXPECT_NE(initial_tab_color, SK_ColorBLACK);
+    EXPECT_EQ(initial_tab_color, SK_ColorBLACK);
   }
 
-  // Update theme color to cyan and check that the tab background color
-  // changed.
+  // Update theme color to cyan and check that the tab color matches.
   {
     content::ThemeChangeWaiter waiter(web_contents);
     EXPECT_TRUE(content::ExecJs(web_contents,
@@ -83,7 +82,7 @@ IN_PROC_BROWSER_TEST_F(WebAppTabStripBrowserTest, TabThemeColor) {
               SK_ColorCYAN);
     SkColor tab_color = GetTabColor();
     EXPECT_NE(tab_color, initial_tab_color);
-    EXPECT_NE(tab_color, SK_ColorCYAN);
+    EXPECT_EQ(tab_color, SK_ColorCYAN);
   }
 }
 

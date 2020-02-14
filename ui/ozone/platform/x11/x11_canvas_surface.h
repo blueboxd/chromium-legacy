@@ -18,6 +18,8 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
+class SkSurface;
+
 namespace ui {
 
 // The platform-specific part of an software output. The class is intended
@@ -31,7 +33,7 @@ class X11CanvasSurface : public SurfaceOzoneCanvas {
   ~X11CanvasSurface() override;
 
   // SurfaceOzoneCanvas overrides:
-  sk_sp<SkSurface> GetSurface() override;
+  SkCanvas* GetCanvas() override;
   void ResizeCanvas(const gfx::Size& viewport_size) override;
   void PresentCanvas(const gfx::Rect& damage) override;
   std::unique_ptr<gfx::VSyncProvider> CreateVSyncProvider() override;

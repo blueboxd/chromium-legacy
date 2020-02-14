@@ -47,4 +47,24 @@ const int kDefaultDetachableCancelDelayMs = 30000;
 const char kCorsExemptPurposeHeaderName[] = "Purpose";
 const char kCorsExemptRequestedWithHeaderName[] = "X-Requested-With";
 
+#if defined(OS_LINUX)
+const int kLowestRendererOomScore = 300;
+const int kHighestRendererOomScore = 1000;
+
+// The minimum amount to bump a score by.  This is large enough that
+// even if it's translated into the old values, it will still go up
+// by at least one.
+static const int kOomScoreBump = 100;
+
+// Browsers and zygotes should still be killable, but killed last.
+const int kZygoteOomScore = 0;
+// For "miscellaneous" things, we want them after renderers, but before plugins.
+const int kMiscOomScore = kLowestRendererOomScore - kOomScoreBump;
+// We want plugins to die after the renderers.
+const int kPluginOomScore = kMiscOomScore - kOomScoreBump;
+
+static_assert(kMiscOomScore > 0, "kMiscOomScore should be greater than 0");
+static_assert(kPluginOomScore > 0, "kPluginOomScore should be greater than 0");
+#endif
+
 }  // namespace content

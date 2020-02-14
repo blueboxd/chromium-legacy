@@ -95,13 +95,6 @@ extern const wchar_t kUserDataDirname[];
 // installed.
 extern const float kMaxShareOfExtensionProcesses;
 
-#if defined(OS_LINUX)
-// The highest and lowest assigned OOM score adjustment
-// (oom_score_adj) used by the OomPriority Manager.
-extern const int kLowestRendererOomScore;
-extern const int kHighestRendererOomScore;
-#endif
-
 #if defined(OS_CHROMEOS)
 // Chrome OS profile directories have custom prefix.
 // Profile path format: [user_data_dir]/u-[$hash]

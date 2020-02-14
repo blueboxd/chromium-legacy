@@ -15,6 +15,7 @@
 #include "ui/display/display_observer.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/message_center/views/message_popup_collection.h"
+#include "ui/message_center/views/message_view.h"
 #include "ui/views/widget/widget_observer.h"
 
 namespace display {
@@ -32,7 +33,8 @@ class ASH_EXPORT AshMessagePopupCollection
     : public message_center::MessagePopupCollection,
       public ShelfObserver,
       public display::DisplayObserver,
-      public views::WidgetObserver {
+      public views::WidgetObserver,
+      public message_center::MessageView::Observer {
  public:
   // The name that will set for the message popup widget in
   // ConfigureWidgetInitParamsForContainer(), and that can be used to identify a
@@ -60,12 +62,20 @@ class ASH_EXPORT AshMessagePopupCollection
       views::Widget* widget,
       views::Widget::InitParams* init_params) override;
   bool IsPrimaryDisplayForNotification() const override;
+  void NotifyPopupAdded(message_center::MessagePopupView* popup) override;
+  void NotifyPopupClosed(message_center::MessagePopupView* popup) override;
 
   // Returns the current tray bubble height or 0 if there is no bubble.
   int tray_bubble_height_for_test() const { return tray_bubble_height_; }
 
  private:
   friend class AshMessagePopupCollectionTest;
+
+  // message_center::MessageView::Observer:
+  void OnSlideOut(const std::string& notification_id) override;
+  void OnCloseButtonPressed(const std::string& notification_id) override;
+  void OnSettingsButtonPressed(const std::string& notification_id) override;
+  void OnSnoozeButtonPressed(const std::string& notification_id) override;
 
   // Get the current alignment of the shelf.
   ShelfAlignment GetAlignment() const;

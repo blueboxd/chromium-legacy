@@ -77,7 +77,7 @@ const base::Feature kCrostiniUsbAllowUnsupported{
 
 // Enables or disables the new WebUI Crostini upgrader.
 const base::Feature kCrostiniWebUIUpgrader{"CrostiniWebUIUpgrader",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables using Cryptauth's GetDevicesActivityStatus API.
 const base::Feature kCryptAuthV2DeviceActivityStatus{

@@ -28,7 +28,8 @@ namespace protocol {
 
 class TargetHandler : public DevToolsDomainHandler,
                       public Target::Backend,
-                      public DevToolsAgentHostObserver {
+                      public DevToolsAgentHostObserver,
+                      public TargetAutoAttacher::Delegate {
  public:
   enum class AccessMode {
     // Only setAutoAttach is supported. Any non-related target are not
@@ -63,7 +64,6 @@ class TargetHandler : public DevToolsDomainHandler,
   void SetAutoAttach(bool auto_attach,
                      bool wait_for_debugger_on_start,
                      Maybe<bool> flatten,
-                     Maybe<bool> window_open,
                      std::unique_ptr<SetAutoAttachCallback> callback) override;
   Response SetRemoteLocations(
       std::unique_ptr<protocol::Array<Target::RemoteLocation>>) override;
@@ -106,9 +106,12 @@ class TargetHandler : public DevToolsDomainHandler,
  private:
   class Session;
   class Throttle;
+  class MainFrameThrottle;
 
-  void AutoAttach(DevToolsAgentHost* host, bool waiting_for_debugger);
-  void AutoDetach(DevToolsAgentHost* host);
+  // TargetAutoAttacher::Delegate implementation.
+  void AutoAttach(DevToolsAgentHost* host, bool waiting_for_debugger) override;
+  void AutoDetach(DevToolsAgentHost* host) override;
+
   Response FindSession(Maybe<std::string> session_id,
                        Maybe<std::string> target_id,
                        Session** session);
@@ -116,8 +119,8 @@ class TargetHandler : public DevToolsDomainHandler,
   void SetAutoAttachInternal(bool auto_attach,
                              bool wait_for_debugger_on_start,
                              bool flatten,
-                             bool window_open,
                              base::OnceClosure callback);
+  void UpdateAgentHostObserver();
 
   // DevToolsAgentHostObserver implementation.
   bool ShouldForceDevToolsAgentHostCreation() override;
@@ -132,8 +135,8 @@ class TargetHandler : public DevToolsDomainHandler,
   std::unique_ptr<Target::Frontend> frontend_;
   TargetAutoAttacher auto_attacher_;
   bool flatten_auto_attach_ = false;
-  bool attach_to_window_open_ = false;
   bool discover_;
+  bool observing_agent_hosts_ = false;
   std::map<std::string, std::unique_ptr<Session>> attached_sessions_;
   std::map<DevToolsAgentHost*, Session*> auto_attached_sessions_;
   std::set<DevToolsAgentHost*> reported_hosts_;

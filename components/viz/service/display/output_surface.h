@@ -154,11 +154,23 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   // Get the format for the main image's overlay.
   virtual gfx::BufferFormat GetOverlayBufferFormat() const = 0;
 
+  // TODO(vasilyt): Merge two Reshape versions into one.
   virtual void Reshape(const gfx::Size& size,
                        float device_scale_factor,
                        const gfx::ColorSpace& color_space,
                        gfx::BufferFormat format,
                        bool use_stencil) = 0;
+
+  // This version is used only with SkiaRenderer. |was_forced| flags that
+  // reshape was forced by client and it's necessary to query surface
+  // characterization from Gpu Thread. Default implementation will call the
+  // function above.
+  virtual void Reshape(const gfx::Size& size,
+                       float device_scale_factor,
+                       const gfx::ColorSpace& color_space,
+                       gfx::BufferFormat format,
+                       bool use_stencil,
+                       bool was_forced);
 
   virtual bool HasExternalStencilTest() const = 0;
   virtual void ApplyExternalStencil() = 0;

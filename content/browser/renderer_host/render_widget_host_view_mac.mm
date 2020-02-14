@@ -350,7 +350,10 @@ void RenderWidgetHostViewMac::InitAsPopup(
   popup_parent_host_view_->popup_child_host_view_ = this;
 
   // This path is used by the time/date picker.
-  ns_view_->InitAsPopup(pos);
+  // When FormControlsRefresh is enabled the popup window should use
+  // the native shadow.
+  bool has_shadow = features::IsFormControlsRefreshEnabled();
+  ns_view_->InitAsPopup(pos, has_shadow);
 }
 
 void RenderWidgetHostViewMac::InitAsFullscreen(

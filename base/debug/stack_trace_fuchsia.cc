@@ -11,7 +11,6 @@
 #include <unwind.h>
 #include <zircon/process.h>
 #include <zircon/syscalls.h>
-#include <zircon/syscalls/definitions.h>
 #include <zircon/syscalls/port.h>
 #include <zircon/types.h>
 

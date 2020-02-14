@@ -22,6 +22,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams.PerformanceClass;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -59,6 +60,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     private final ContextMenuItemDelegate mDelegate;
     private final @ContextMenuMode int mMode;
     private final Supplier<ShareDelegate> mShareDelegateSupplier;
+    private final ExternalAuthUtils mExternalAuthUtils;
     private boolean mEnableLensWithSearchByImageText;
     private @Nullable UkmRecorder.Bridge mUkmRecorderBridge;
 
@@ -237,7 +239,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         // Only add new values at the end, right before NUM_ENTRIES.
         @IntDef({LensSupportStatus.LENS_SUPPORTED, LensSupportStatus.NON_GOOGLE_SEARCH_ENGINE,
                 LensSupportStatus.ACTIVITY_NOT_ACCESSIBLE, LensSupportStatus.OUT_OF_DATE,
-                LensSupportStatus.SEARCH_BY_IMAGE_UNAVAILABLE, LensSupportStatus.LEGACY_OS})
+                LensSupportStatus.SEARCH_BY_IMAGE_UNAVAILABLE, LensSupportStatus.LEGACY_OS,
+                LensSupportStatus.INVALID_PACKAGE})
         @Retention(RetentionPolicy.SOURCE)
         public @interface LensSupportStatus {
             int LENS_SUPPORTED = 0;
@@ -246,7 +249,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             int OUT_OF_DATE = 3;
             int SEARCH_BY_IMAGE_UNAVAILABLE = 4;
             int LEGACY_OS = 5;
-            int NUM_ENTRIES = 6;
+            int INVALID_PACKAGE = 6;
+            int NUM_ENTRIES = 7;
         }
 
         /**
@@ -267,10 +271,12 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
      * @param mode Defines the context menu mode
      */
     public ChromeContextMenuPopulator(ContextMenuItemDelegate delegate,
-            Supplier<ShareDelegate> shareDelegate, @ContextMenuMode int mode) {
+            Supplier<ShareDelegate> shareDelegate, @ContextMenuMode int mode,
+            ExternalAuthUtils externalAuthUtils) {
         mDelegate = delegate;
         mShareDelegateSupplier = shareDelegate;
         mMode = mode;
+        mExternalAuthUtils = externalAuthUtils;
     }
 
     @Override
@@ -715,6 +721,12 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
 
         if (LensUtils.isDeviceOsBelowMinimum()) {
             ContextMenuUma.recordLensSupportStatus(ContextMenuUma.LensSupportStatus.LEGACY_OS);
+            return false;
+        }
+
+        if (!LensUtils.isValidAgsaPackage(mExternalAuthUtils)) {
+            ContextMenuUma.recordLensSupportStatus(
+                    ContextMenuUma.LensSupportStatus.INVALID_PACKAGE);
             return false;
         }
 

@@ -959,6 +959,31 @@ TEST_F(ProofVerifierChromiumTest, UnknownRootAcceptedWithOverride) {
             verify_details->cert_verify_result.cert_status);
 }
 
+TEST_F(ProofVerifierChromiumTest, UnknownRootAcceptedWithWildcardOverride) {
+  dummy_result_.is_issued_by_known_root = false;
+
+  MockCertVerifier dummy_verifier;
+  dummy_verifier.AddResultForCert(test_cert_.get(), dummy_result_, OK);
+
+  ProofVerifierChromium proof_verifier(&dummy_verifier, &ct_policy_enforcer_,
+                                       &transport_security_state_,
+                                       ct_verifier_.get(), {""});
+
+  std::unique_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
+  quic::QuicAsyncStatus status = proof_verifier.VerifyProof(
+      kTestHostname, kTestPort, kTestConfig, quic::QUIC_VERSION_43,
+      kTestChloHash, certs_, kTestEmptySCT, GetTestSignature(),
+      verify_context_.get(), &error_details_, &details_, std::move(callback));
+  ASSERT_EQ(quic::QUIC_SUCCESS, status);
+
+  ASSERT_TRUE(details_.get());
+  ProofVerifyDetailsChromium* verify_details =
+      static_cast<ProofVerifyDetailsChromium*>(details_.get());
+  EXPECT_EQ(dummy_result_.cert_status,
+            verify_details->cert_verify_result.cert_status);
+}
+
 // Tests that the VerifyCertChain verifies certificates.
 TEST_F(ProofVerifierChromiumTest, VerifyCertChain) {
   MockCertVerifier dummy_verifier;

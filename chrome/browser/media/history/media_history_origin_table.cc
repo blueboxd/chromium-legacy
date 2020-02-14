@@ -4,12 +4,22 @@
 
 #include "chrome/browser/media/history/media_history_origin_table.h"
 
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "sql/statement.h"
+#include "url/origin.h"
 
 namespace media_history {
 
 const char MediaHistoryOriginTable::kTableName[] = "origin";
+
+// static
+std::string MediaHistoryOriginTable::GetOriginForStorage(
+    const url::Origin& origin) {
+  auto str = origin.Serialize();
+  base::TrimString(str, "/", base::TrimPositions::TRIM_TRAILING);
+  return str;
+}
 
 MediaHistoryOriginTable::MediaHistoryOriginTable(
     scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner)
@@ -44,7 +54,7 @@ sql::InitStatus MediaHistoryOriginTable::CreateTableIfNonExistent() {
   return sql::INIT_OK;
 }
 
-bool MediaHistoryOriginTable::CreateOriginId(const std::string& origin) {
+bool MediaHistoryOriginTable::CreateOriginId(const url::Origin& origin) {
   DCHECK_LT(0, DB()->transaction_nesting());
   if (!CanAccessDatabase())
     return false;
@@ -56,7 +66,7 @@ bool MediaHistoryOriginTable::CreateOriginId(const std::string& origin) {
                          "(origin, last_updated_time_s) VALUES (?, ?)",
                          kTableName)
           .c_str()));
-  statement.BindString(0, origin);
+  statement.BindString(0, GetOriginForStorage(origin));
   statement.BindInt64(1,
                       base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
   if (!statement.Run()) {
@@ -68,7 +78,7 @@ bool MediaHistoryOriginTable::CreateOriginId(const std::string& origin) {
 }
 
 bool MediaHistoryOriginTable::IncrementAggregateAudioVideoWatchTime(
-    const std::string& origin,
+    const url::Origin& origin,
     const base::TimeDelta& time) {
   DCHECK_LT(0, DB()->transaction_nesting());
   if (!CanAccessDatabase())
@@ -87,7 +97,7 @@ bool MediaHistoryOriginTable::IncrementAggregateAudioVideoWatchTime(
   statement.BindInt64(0, time.InSeconds());
   statement.BindInt64(1,
                       base::Time::Now().ToDeltaSinceWindowsEpoch().InSeconds());
-  statement.BindString(2, origin);
+  statement.BindString(2, GetOriginForStorage(origin));
 
   if (!statement.Run()) {
     LOG(ERROR) << "Failed to update the watchtime.";

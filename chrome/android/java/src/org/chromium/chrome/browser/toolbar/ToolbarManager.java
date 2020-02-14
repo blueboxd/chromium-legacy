@@ -72,7 +72,9 @@ import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
+import org.chromium.chrome.browser.share.ShareButtonController;
 import org.chromium.chrome.browser.share.ShareDelegate;
+import org.chromium.chrome.browser.share.ShareUtils;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.SadTab;
 import org.chromium.chrome.browser.tab.Tab;
@@ -194,6 +196,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
     private final ObservableSupplier<ShareDelegate> mShareDelegateSupplier;
     private ObservableSupplierImpl<View> mTabGroupPopUiParentSupplier;
     private @Nullable TabGroupPopupUi mTabGroupPopupUi;
+    private ShareButtonController mShareButtonController;
 
     private TabObserver mTabObserver;
     private BookmarkBridge.BookmarkModelObserver mBookmarksObserver;
@@ -358,6 +361,9 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         mIdentityDiscController =
                 new IdentityDiscController(activity, this, activity.getLifecycleDispatcher());
+
+        mShareButtonController = new ShareButtonController(activity,
+                mActivity.getActivityTabProvider(), this, mShareDelegateSupplier, new ShareUtils());
 
         mToolbar.setPaintInvalidator(invalidator);
         mActionModeController.setTabStripHeight(mToolbar.getTabStripHeight());
@@ -705,8 +711,10 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 assert CachedFeatureFlags.isStartSurfaceEnabled();
                 mToolbar.updateTabSwitcherToolbarState(showTabSwitcherToolbar);
                 mOverviewModeState = overviewModeState;
-                mIdentityDiscController.updateButtonState(
-                        mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE);
+                // TODO(https://crbug.com/1041475). After the upcoming refactor this shuold be
+                // mIdentityDiscController.updateButtonState(mOverviewModeState ==
+                // OverviewModeState.SHOWN_HOMEPAGE);
+                updateButtonStatus();
             }
 
             @Override
@@ -994,10 +1002,11 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      * @param onClickListener The {@link OnClickListener} to be called when the button is clicked.
      * @param image The drawable to display for the button.
      * @param contentDescriptionResId The resource id of the content description for the button.
+     * @param useTint Whether tint should be automatically applied to the button.
      */
     public void enableExperimentalButton(OnClickListener onClickListener, Drawable image,
-            @StringRes int contentDescriptionResId) {
-        mToolbar.enableExperimentalButton(onClickListener, image, contentDescriptionResId);
+            @StringRes int contentDescriptionResId, boolean useTint) {
+        mToolbar.enableExperimentalButton(onClickListener, image, contentDescriptionResId, useTint);
     }
 
     /**
@@ -1206,6 +1215,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mTabCountProvider.destroy();
 
         mIdentityDiscController.destroy();
+        mShareButtonController.destroy();
         mLocationBarModel.destroy();
         mHandler.removeCallbacksAndMessages(null); // Cancel delayed tasks.
         mFullscreenManager.removeListener(mFullscreenListener);
@@ -1240,6 +1250,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 mAppMenuButtonHelper.setMenuShowsFromBottom(isMenuFromBottom());
             }
             mIdentityDiscController.updateButtonState();
+            mShareButtonController.updateButtonState();
 
             if (mTabGroupPopupUi != null) {
                 mTabGroupPopUiParentSupplier.set(mIsBottomToolbarVisible
@@ -1744,6 +1755,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
         mIdentityDiscController.updateButtonState(
                 mLocationBarModel.getNewTabPageForCurrentTab() != null
                 || mOverviewModeState == OverviewModeState.SHOWN_HOMEPAGE);
+        mShareButtonController.updateButtonState(currentTab, mOverviewModeState);
     }
 
     private void updateBookmarkButtonStatus() {

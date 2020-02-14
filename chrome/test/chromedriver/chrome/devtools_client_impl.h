@@ -154,7 +154,9 @@ class DevToolsClientImpl : public DevToolsClient {
                              bool wait_for_response,
                              int client_command_id,
                              const Timeout* timeout);
-  Status ProcessNextMessage(int expected_id, const Timeout& timeout);
+  Status ProcessNextMessage(int expected_id,
+                            bool log_timeout,
+                            const Timeout& timeout);
   Status HandleMessage(int expected_id, const std::string& message);
   Status ProcessEvent(const internal::InspectorEvent& event);
   Status ProcessCommandResponse(

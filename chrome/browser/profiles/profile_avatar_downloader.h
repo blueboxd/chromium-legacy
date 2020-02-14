@@ -16,8 +16,11 @@ class Image;
 
 class ProfileAvatarDownloader : public BitmapFetcherDelegate {
  public:
-  using FetchCompleteCallback = base::RepeatingCallback<
-      void(gfx::Image, const std::string&, const base::FilePath&)>;
+  using FetchCompleteCallback =
+      base::RepeatingCallback<void(gfx::Image,
+                                   const std::string&,
+                                   const base::FilePath&,
+                                   base::OnceClosure)>;
 
   ProfileAvatarDownloader(size_t icon_index,
                           const FetchCompleteCallback& callback);

@@ -1949,8 +1949,8 @@ TEST_F(PartialRasterTileManagerTest, CancelledTasksHaveNoContentId) {
   // with its invalidated resource ID.
   gfx::Rect total_invalidated_rect;
   EXPECT_FALSE(host_impl()->resource_pool()->TryAcquireResourceForPartialRaster(
-      kInvalidatedId + 1, gfx::Rect(), kInvalidatedId,
-      &total_invalidated_rect));
+      kInvalidatedId + 1, gfx::Rect(), kInvalidatedId, &total_invalidated_rect,
+      gfx::ColorSpace::CreateSRGB()));
   EXPECT_EQ(gfx::Rect(), total_invalidated_rect);
 
   // Free our host_impl_ before the tile_task_manager we passed it, as it
@@ -2007,8 +2007,8 @@ void RunPartialRasterCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
 
   // Ensure there's a resource with our |kInvalidatedId| in the resource pool.
   ResourcePool::InUsePoolResource resource =
-      host_impl->resource_pool()->AcquireResource(kTileSize, viz::RGBA_8888,
-                                                  gfx::ColorSpace());
+      host_impl->resource_pool()->AcquireResource(
+          kTileSize, viz::RGBA_8888, gfx::ColorSpace::CreateSRGB());
 
   resource.set_software_backing(std::make_unique<TestSoftwareBacking>());
   host_impl->resource_pool()->PrepareForExport(resource);
@@ -2072,8 +2072,8 @@ void RunPartialTileDecodeCheck(std::unique_ptr<LayerTreeHostImpl> host_impl,
 
   // Ensure there's a resource with our |kInvalidatedId| in the resource pool.
   ResourcePool::InUsePoolResource resource =
-      host_impl->resource_pool()->AcquireResource(kTileSize, viz::RGBA_8888,
-                                                  gfx::ColorSpace());
+      host_impl->resource_pool()->AcquireResource(
+          kTileSize, viz::RGBA_8888, gfx::ColorSpace::CreateSRGB());
   host_impl->resource_pool()->OnContentReplaced(resource, kInvalidatedId);
   host_impl->resource_pool()->ReleaseResource(std::move(resource));
 

@@ -215,7 +215,8 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider {
       uint64_t new_content_id,
       const gfx::Rect& new_invalidated_rect,
       uint64_t previous_content_id,
-      gfx::Rect* total_invalidated_rect);
+      gfx::Rect* total_invalidated_rect,
+      const gfx::ColorSpace& raster_color_space);
 
   // Gives the InUsePoolResource a |resource_id_for_export()| in order to allow
   // exporting of the resource to the display compositor. This must be called

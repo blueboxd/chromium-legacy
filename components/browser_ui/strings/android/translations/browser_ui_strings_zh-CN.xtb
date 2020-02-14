@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">显示</translation>
 <translation id="5301954838959518834">知道了</translation>
 <translation id="5317780077021120954">保存</translation>
+<translation id="5391532827096253100">您与此网站之间建立的连接不安全。网站信息</translation>
 <translation id="5556459405103347317">重新加载</translation>
 <translation id="5596627076506792578">更多选项</translation>
 <translation id="5860033963881614850">关闭</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">关闭</translation>
 <translation id="6042308850641462728">更多</translation>
 <translation id="6165508094623778733">了解详情</translation>
+<translation id="6206551242102657620">连接是安全的。网站信息</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />选项</translation>
 <translation id="6527303717912515753">分享</translation>
 <translation id="6746124502594467657">下移</translation>
 <translation id="6818926723028410516">选择内容</translation>
 <translation id="6910211073230771657">已删除</translation>
 <translation id="6945221475159498467">选择</translation>
+<translation id="6963642900430330478">此网页存在危险。网站信息</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{已选择 1 项}other{已选择 # 项}}</translation>
 <translation id="7087918508125750058">已选择 <ph name="ITEM_COUNT" /> 项。选项位于屏幕顶部附近</translation>

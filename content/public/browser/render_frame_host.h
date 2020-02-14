@@ -23,6 +23,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
+#include "third_party/blink/public/common/feature_policy/document_policy.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
@@ -360,11 +361,28 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // third_party/blink/public/common/feature_policy/feature_policy.h for how to
   // compare values of different types. Use this in the browser process to
   // determine whether access to a feature is allowed.
+  //
+  // TODO(chenleihu): remove this method when policy with non-boolean value
+  // fully migrated to document policy. After the migration, feature policy
+  // feature will only only hold boolean type value, and this method signature
+  // will no longer be needed.
   virtual bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature,
+                                blink::PolicyValue threshold_value) = 0;
+  // Returns true if the queried FeaturePolicyFeature is allowed by
+  // feature policy.
+  virtual bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature) = 0;
+
+  // Returns true if the given |threshold_value| is below the threshold value
+  // specified in the policy for |feature| for this RenderFrameHost. See
+  // third_party/blink/public/common/feature_policy/document_policy.h for how to
+  // compare values of different types. Use this in the browser process to
+  // determine whether access to a feature is allowed.
+  virtual bool IsFeatureEnabled(blink::mojom::DocumentPolicyFeature feature,
                                 blink::PolicyValue threshold_value) = 0;
   // Same as above, with |threshold_value| set to the max value the given
   // |feature| can have.
-  virtual bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature) = 0;
+  virtual bool IsFeatureEnabled(
+      blink::mojom::DocumentPolicyFeature feature) = 0;
 
   // Opens view-source tab for the document last committed in this
   // RenderFrameHost.

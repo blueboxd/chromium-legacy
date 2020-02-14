@@ -203,7 +203,7 @@ bool AwProxyingRestrictedCookieManager::AllowCookies(
     return AwCookieAccessPolicy::GetInstance()->GetShouldAcceptCookies();
   } else {
     return AwCookieAccessPolicy::GetInstance()->AllowCookies(
-        url, site_for_cookies.RepresentativeUrl(), process_id_, frame_id_);
+        url, site_for_cookies, process_id_, frame_id_);
   }
 }
 

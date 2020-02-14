@@ -89,10 +89,8 @@ scoped_refptr<VideoFrame> VideoFramePool::PoolImpl::CreateFrame(
     scoped_refptr<VideoFrame> pool_frame = std::move(frames_.back().frame);
     frames_.pop_back();
 
-    if (pool_frame->format() == format &&
-        pool_frame->coded_size() == coded_size &&
-        pool_frame->visible_rect() == visible_rect &&
-        pool_frame->natural_size() == natural_size) {
+    if (pool_frame->IsSameAllocation(format, coded_size, visible_rect,
+                                     natural_size)) {
       frame = pool_frame;
       frame->set_timestamp(timestamp);
       frame->metadata()->Clear();

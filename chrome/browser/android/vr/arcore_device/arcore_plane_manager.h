@@ -36,32 +36,34 @@ class ArCorePlaneManager {
                      ArSession* arcore_session);
   ~ArCorePlaneManager();
 
-  mojom::XRPlaneDetectionDataPtr GetDetectedPlanesData(ArFrame* ar_frame);
+  // Updates plane manager state - it should be called in every frame if the
+  // ARCore session supports plane detection. Currently, if the WebXR session
+  // supports hit test feature or plane detection feature, the ARCore session
+  // needs to be configured with planes enabled and this method needs to be
+  // called.
+  void Update(ArFrame* ar_frame);
 
-  bool PlaneExists(PlaneId id);
+  mojom::XRPlaneDetectionDataPtr GetDetectedPlanesData() const;
+
+  bool PlaneExists(PlaneId id) const;
 
   // Returns base::nullopt if plane with the given id does not exist.
-  base::Optional<gfx::Transform> GetMojoFromPlane(PlaneId id);
+  base::Optional<gfx::Transform> GetMojoFromPlane(PlaneId id) const;
 
+  // Creates Anchor object given a plane ID. This is needed since Plane objects
+  // are managed by this class in its entirety and are not accessible outside
+  // it.
   device::internal::ScopedArCoreObject<ArAnchor*> CreateAnchor(
       PlaneId id,
-      const device::mojom::Pose& pose);
+      const device::mojom::Pose& pose) const;
 
  private:
-  // Returns vector containing information about all planes updated in current
-  // frame, assigning IDs for newly detected planes as needed.
-  std::vector<mojom::XRPlaneDataPtr> GetUpdatedPlanesData(ArFrame* ar_frame);
-
-  // This must be called after GetUpdatedPlanesData as it assumes that all
-  // planes already have an ID assigned. The result includes freshly assigned
-  // IDs for newly detected planes along with previously known IDs for updated
-  // and unchanged planes. It excludes planes that are no longer being tracked.
-  std::vector<uint64_t> GetAllPlaneIds();
-
   // Executes |fn| for each still tracked, non-subsumed plane present in
-  // |arcore_planes_|.
+  // |arcore_planes|. |fn| will receive 2 parameters, an owning
+  // `ScopedArCoreObject<ArAnchor*>`, and, for convenience, the non-owning
+  // ArPlane* typecast from the first parameter.
   template <typename FunctionType>
-  void ForEachArCorePlane(FunctionType fn);
+  void ForEachArCorePlane(ArTrackableList* arcore_planes, FunctionType fn);
 
   // Owned by ArCoreImpl - non-owning pointer is fine since ArCorePlaneManager
   // is also owned by ArCoreImpl.
@@ -71,17 +73,24 @@ class ArCorePlaneManager {
   // Allows reuse of the list across updates; ARCore clears the list on each
   // call to the ARCore SDK.
   internal::ScopedArCoreObject<ArTrackableList*> arcore_planes_;
-  // Allows reuse of the pose across different objects.
+  // Allows reuse of the pose object; ARCore will populate it with new data on
+  // each call to the ARCore SDK.
   internal::ScopedArCoreObject<ArPose*> ar_pose_;
 
   uint64_t next_id_ = 1;
   // Returns tuple containing plane id and a boolean signifying that the
-  // plane was created.;
+  // plane was created. It should be called only during calls to |Update()|.
   std::pair<PlaneId, bool> CreateOrGetPlaneId(void* plane_address);
-
+  // Mapping from plane address to plane ID. It should be modified only during
+  // calls to |Update()|.
   std::map<void*, PlaneId> ar_plane_address_to_id_;
+  // Mapping from plane ID to ARCore plane object. It should be modified only
+  // during calls to |Update()|.
   std::map<PlaneId, device::internal::ScopedArCoreObject<ArTrackable*>>
       plane_id_to_plane_object_;
+  // Set containing IDs of planes updated in the last frame. It should be
+  // modified only during calls to |Update()|.
+  std::set<PlaneId> updated_plane_ids_;
 };
 
 }  // namespace device

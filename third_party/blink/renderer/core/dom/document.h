@@ -2292,7 +2292,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool had_find_in_page_request_ = false;
   bool had_find_in_page_render_subtree_active_match_ = false;
 
-  std::map<HTMLFormElement*, TaskHandle> form_to_pending_submission_;
+  HeapHashMap<Member<HTMLFormElement>, TaskHandle> form_to_pending_submission_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

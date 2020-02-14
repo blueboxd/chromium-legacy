@@ -11,13 +11,13 @@ class SwitchAccess {
   static initialize() {
     window.switchAccess = new SwitchAccess();
 
-    AutoScanManager.initialize();
-    Commands.initialize();
-    SwitchAccessPreferences.initialize();
-
     chrome.automation.getDesktop((desktop) => {
+      AutoScanManager.initialize();
       NavigationManager.initialize(desktop);
+
       BackButtonNode.findAutomationNode(desktop);
+      Commands.initialize();
+      SwitchAccessPreferences.initialize();
     });
   }
 

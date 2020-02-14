@@ -138,11 +138,6 @@ void BreadcrumbManagerTabHelper::PageLoaded(
   LogEvent(base::JoinString(event, " "));
 }
 
-void BreadcrumbManagerTabHelper::DidChangeBackForwardState(
-    web::WebState* web_state) {
-  LogEvent("DidChangeBackForwardState");
-}
-
 void BreadcrumbManagerTabHelper::DidChangeVisibleSecurityState(
     web::WebState* web_state) {
   LogEvent("DidChangeVisibleSecurityState");

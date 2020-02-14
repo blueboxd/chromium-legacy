@@ -8,7 +8,7 @@
 #include "base/containers/flat_map.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/feature_policy/policy_value.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-forward.h"
+#include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom-forward.h"
 
 namespace blink {
 
@@ -19,10 +19,10 @@ struct DocumentPolicyFeatureInfo {
 };
 
 using DocumentPolicyFeatureInfoMap =
-    base::flat_map<mojom::FeaturePolicyFeature, DocumentPolicyFeatureInfo>;
+    base::flat_map<mojom::DocumentPolicyFeature, DocumentPolicyFeatureInfo>;
 
 using DocumentPolicyNameFeatureMap =
-    base::flat_map<std::string, mojom::FeaturePolicyFeature>;
+    base::flat_map<std::string, mojom::DocumentPolicyFeature>;
 
 BLINK_COMMON_EXPORT const DocumentPolicyFeatureInfoMap&
 GetDocumentPolicyFeatureInfoMap();

@@ -24,6 +24,7 @@
 #include "sql/meta_table.h"
 
 namespace media_session {
+struct MediaImage;
 struct MediaMetadata;
 struct MediaPosition;
 }  // namespace media_session
@@ -45,12 +46,20 @@ class MediaHistoryStore {
 
   // Represents a single playback session stored in the database.
   struct MediaPlaybackSession {
+    int64_t id;
     GURL url;
     base::TimeDelta duration;
     base::TimeDelta position;
     media_session::MediaMetadata metadata;
+    std::vector<media_session::MediaImage> artwork;
+
+    MediaPlaybackSession();
+    ~MediaPlaybackSession();
+    MediaPlaybackSession(const MediaPlaybackSession&) = delete;
+    MediaPlaybackSession& operator=(const MediaPlaybackSession&) = delete;
   };
-  using MediaPlaybackSessionList = std::vector<MediaPlaybackSession>;
+  using MediaPlaybackSessionList =
+      std::vector<std::unique_ptr<MediaPlaybackSession>>;
 
   // Saves a playback from a single player in the media history store.
   void SavePlayback(const content::MediaPlayerWatchTime& watch_time);
@@ -87,7 +96,8 @@ class MediaHistoryStore {
   void SavePlaybackSession(
       const GURL& url,
       const media_session::MediaMetadata& metadata,
-      const base::Optional<media_session::MediaPosition>& position);
+      const base::Optional<media_session::MediaPosition>& position,
+      const std::vector<media_session::MediaImage>& artwork);
 
   scoped_refptr<base::UpdateableSequencedTaskRunner> GetDBTaskRunnerForTest();
 

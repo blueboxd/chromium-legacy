@@ -1092,7 +1092,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
       Si no se establece esta política, la función del proxy de compresión de datos estará disponible para que el usuario decida si quiere o no utilizarla.</translation>
 <translation id="2575738503503093841">Especifica la demora máxima en milisegundos entre la recepción de la invalidación de una política y la recuperación de la nueva política del servicio de administración del dispositivo.
 
-      Al establecer esta política, se anula el valor predeterminado de 10,000 milisegundos. Los valores válidos para esta política van de 1,000 (1 segundo) a 300,000 (5 minutos). Todos los valores fuera de este intervalo estarán sujetos al límite correspondiente.
+      Al establecer esta política, se anula el valor predeterminado de 10,000 milisegundos. Los valores válidos para esta política van de 1,000 (1 segundo) a 300,000 (5 minutos). Todos los valores que estén fuera de este intervalo estarán sujetos al límite correspondiente.
 
       Si no se establece esta política, <ph name="PRODUCT_NAME" /> utilizará el valor predeterminado de 10,000 milisegundos.</translation>
 <translation id="257788512393330403">Se requiere el ingreso de la contraseña cada 6 horas</translation>

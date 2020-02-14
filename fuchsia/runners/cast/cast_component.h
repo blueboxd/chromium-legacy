@@ -16,11 +16,14 @@
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_fuchsia.h"
 #include "base/optional.h"
-#include "fuchsia/base/agent_manager.h"
 #include "fuchsia/runners/cast/api_bindings_client.h"
 #include "fuchsia/runners/cast/application_controller_impl.h"
 #include "fuchsia/runners/cast/named_message_port_connector.h"
 #include "fuchsia/runners/common/web_component.h"
+
+namespace cr_fuchsia {
+class AgentManager;
+}
 
 class CastRunner;
 

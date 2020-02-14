@@ -704,4 +704,8 @@ bool MultipleFieldsTemporalInputTypeView::TypeShouldForceLegacyLayout() const {
   return false;
 }
 
+String MultipleFieldsTemporalInputTypeView::RawValue() const {
+  return GetDateTimeEditElement()->innerText();
+}
+
 }  // namespace blink

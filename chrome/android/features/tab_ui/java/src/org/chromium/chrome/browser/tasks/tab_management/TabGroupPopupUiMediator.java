@@ -110,7 +110,10 @@ public class TabGroupPopupUiMediator {
 
             @Override
             public void didAddTab(Tab tab, int type) {
-                if (isTabStripShowing()) {
+                // TODO(crbug.com/1050846): The popup tab strip doesn't update accordingly when tab
+                // is opened in background. This might require us to specify how the view measures
+                // in this case. Skip it for now to avoid crash crbug.com/1045944.
+                if (isTabStripShowing() && type != TabLaunchType.FROM_LONGPRESS_BACKGROUND) {
                     mUiUpdater.updateTabGroupPopUi();
                     return;
                 }

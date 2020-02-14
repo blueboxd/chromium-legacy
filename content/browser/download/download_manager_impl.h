@@ -350,8 +350,6 @@ class CONTENT_EXPORT DownloadManagerImpl
 
   // The download GUIDs that are cleared up on startup.
   std::set<std::string> cleared_download_guids_on_startup_;
-  int cancelled_download_cleared_from_history_;
-  int interrupted_download_cleared_from_history_;
 
   // In progress downloads returned by |in_progress_manager_| that are not yet
   // added to |downloads_|. If a download was started without launching full

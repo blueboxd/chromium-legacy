@@ -9,7 +9,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
-#include "components/payments/core/features.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/url_formatter/url_formatter.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
@@ -32,9 +31,6 @@
 #include "ios/chrome/browser/crash_report/crash_report_helper.h"
 #include "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/ntp/features.h"
-#include "ios/chrome/browser/payments/ios_payment_instrument_launcher.h"
-#include "ios/chrome/browser/payments/ios_payment_instrument_launcher_factory.h"
-#include "ios/chrome/browser/payments/payment_request_constants.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -808,40 +804,6 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
                 startupInformation:startupInformation
                           appState:appState];
   }
-}
-
-- (BOOL)shouldCompletePaymentRequestOnCurrentTab:
-    (id<StartupInformation>)startupInformation {
-  if (!startupInformation.startupParameters)
-    return NO;
-
-  if (!startupInformation.startupParameters.completePaymentRequest)
-    return NO;
-
-  if (!base::FeatureList::IsEnabled(payments::features::kWebPaymentsNativeApps))
-    return NO;
-
-  payments::IOSPaymentInstrumentLauncher* paymentAppLauncher =
-      payments::IOSPaymentInstrumentLauncherFactory::GetInstance()
-          ->GetForBrowserState(self.mainController.mainBrowserState);
-
-  if (!paymentAppLauncher->delegate())
-    return NO;
-
-  std::string payment_id =
-      startupInformation.startupParameters.externalURLParams
-          .find(payments::kPaymentRequestIDExternal)
-          ->second;
-  if (paymentAppLauncher->payment_request_id() != payment_id)
-    return NO;
-
-  std::string payment_response =
-      startupInformation.startupParameters.externalURLParams
-          .find(payments::kPaymentRequestDataExternal)
-          ->second;
-  paymentAppLauncher->ReceiveResponseFromIOSPaymentInstrument(payment_response);
-  [startupInformation setStartupParameters:nil];
-  return YES;
 }
 
 - (BOOL)URLIsOpenedInRegularMode:(const GURL&)URL {

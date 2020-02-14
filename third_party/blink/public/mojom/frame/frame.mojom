@@ -532,3 +532,10 @@ interface LocalMainFrame {
   // Scales the view without affecting layout by using the visual viewport.
   SetScaleFactor(float scale);
 };
+
+// Implemented in Browser, this interface defines main-frame-specific methods
+// that will be invoked from the renderer process (e.g. WebViewImpl).
+interface LocalMainFrameHost {
+  // Indicates the scale of the view has changed.
+  ScaleFactorChanged(float scale);
+};

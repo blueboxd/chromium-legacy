@@ -19,12 +19,6 @@ HeadlessContentRendererClient::HeadlessContentRendererClient() = default;
 
 HeadlessContentRendererClient::~HeadlessContentRendererClient() = default;
 
-bool HeadlessContentRendererClient::RequiresWebComponentsV0(const GURL& url) {
-  // TODO(1049126): Headless clients do not (yet) support origin trials.
-  // In the meantime, re-enable Web Components v0 on all headless clients.
-  return true;
-}
-
 void HeadlessContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
 #if BUILDFLAG(ENABLE_PRINTING)

@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/feature_policy/policy_value.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.h"
+#include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom.h"
 
 namespace blink {
@@ -34,9 +34,7 @@ namespace blink {
 // Features
 // --------
 // Features which can be controlled by policy are defined by instances of enum
-// mojom::FeaturePolicyFeature, declared in |feature_policy_feature.mojom|.
-// TODO(iclelland): Make a clear distinction between feature policy features
-// and document policy features.
+// mojom::DocumentPolicyFeature, declared in |document_policy_feature.mojom|.
 //
 // Declarations
 // ------------
@@ -65,27 +63,28 @@ namespace blink {
 
 class BLINK_COMMON_EXPORT DocumentPolicy {
  public:
-  using FeatureState = base::flat_map<mojom::FeaturePolicyFeature, PolicyValue>;
+  using FeatureState =
+      base::flat_map<mojom::DocumentPolicyFeature, PolicyValue>;
 
   static std::unique_ptr<DocumentPolicy> CreateWithHeaderPolicy(
       const FeatureState& header_policy);
 
   // Returns true if the feature is unrestricted (has its default value for the
   // platform)
-  bool IsFeatureEnabled(mojom::FeaturePolicyFeature feature) const;
+  bool IsFeatureEnabled(mojom::DocumentPolicyFeature feature) const;
 
   // Returns true if the feature is unrestricted, or is not restricted as much
   // as the given threshold value.
-  bool IsFeatureEnabled(mojom::FeaturePolicyFeature feature,
+  bool IsFeatureEnabled(mojom::DocumentPolicyFeature feature,
                         const PolicyValue& threshold_value) const;
 
   // Returns true if the feature is being migrated to document policy
   // TODO(iclelland): remove this method when those features are fully
   // migrated to document policy.
-  bool IsFeatureSupported(mojom::FeaturePolicyFeature feature) const;
+  bool IsFeatureSupported(mojom::DocumentPolicyFeature feature) const;
 
   // Returns the value of the given feature on the given origin.
-  PolicyValue GetFeatureValue(mojom::FeaturePolicyFeature feature) const;
+  PolicyValue GetFeatureValue(mojom::DocumentPolicyFeature feature) const;
 
   // Returns true if the incoming policy is compatible with the given required
   // policy, i.e. incoming policy is at least as strict as required policy.
@@ -115,7 +114,7 @@ class BLINK_COMMON_EXPORT DocumentPolicy {
   // Internal feature state is represented as an array to avoid overhead
   // in using container classes.
   PolicyValue internal_feature_state_
-      [static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1];
+      [static_cast<size_t>(mojom::DocumentPolicyFeature::kMaxValue) + 1];
 
   DISALLOW_COPY_AND_ASSIGN(DocumentPolicy);
 };

@@ -29,7 +29,6 @@ class ToastDialogView : public views::BubbleDialogDelegateView {
   base::string16 GetWindowTitle() const override;
 
   // views::BubbleDialogDelegate:
-  bool Close() override;
   void AddedToWidget() override;
   bool ShouldShowCloseButton() const override;
 

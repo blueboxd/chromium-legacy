@@ -48,6 +48,7 @@ OverlayPresentationContextImpl::OverlayPresentationContextImpl(
     : presenter_(OverlayPresenter::FromBrowser(browser, modality)),
       shutdown_helper_(browser, presenter_),
       coordinator_delegate_(this),
+      fullscreen_disabler_(browser, modality),
       coordinator_factory_([OverlayRequestCoordinatorFactory
           factoryForBrowser:browser
                    modality:modality]),

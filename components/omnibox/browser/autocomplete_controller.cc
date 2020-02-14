@@ -21,6 +21,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -251,11 +252,9 @@ AutocompleteController::AutocompleteController(
   // doing its thing by the time the HistoryURLProvider task runs.
   // (And hope that it completes before AutocompleteController::Start() is
   // called the next time.)
-  // ZeroSuggestProvider and ClipboardURLProvider take a reference to
-  // HistoryURLProvider. If we're going to need either, we should initialize
-  // history_url_provider_.
+  // ClipboardURLProvider take a reference to HistoryURLProvider. If we're going
+  // to need it, we should initialize history_url_provider_.
   if (provider_types & (AutocompleteProvider::TYPE_HISTORY_URL |
-                        AutocompleteProvider::TYPE_ZERO_SUGGEST |
                         AutocompleteProvider::TYPE_CLIPBOARD)) {
     history_url_provider_ =
         new HistoryURLProvider(provider_client_.get(), this);
@@ -534,6 +533,41 @@ void AutocompleteController::UpdateMatchDestinationURLWithQueryFormulationTime(
       (zero_suggest_provider_ &&
        zero_suggest_provider_->field_trial_triggered_in_session()),
       input_.current_page_classification());
+
+  // Append the experiment stats to the AQS parameter to be logged in
+  // searchbox_stats.proto's experiment_stats_v2 field.
+  if (zero_suggest_provider_) {
+    // The field number for the experiment stat type specified as an int
+    // in ExperimentStatsV2.
+    constexpr char kTypeIntFieldNumber[] = "4";
+    // The field number for the string value in ExperimentStatsV2.
+    constexpr char kStringValueFieldNumber[] = "2";
+    std::vector<std::string> experiment_stats_v2;
+    for (const auto& experiment_stat :
+         zero_suggest_provider_->experiment_stats()) {
+      DCHECK(experiment_stat.is_dict());
+      base::Optional<int> type_int =
+          experiment_stat.FindIntPath(kTypeIntFieldNumber);
+      const std::string* string_value =
+          experiment_stat.FindStringPath(kStringValueFieldNumber);
+      if (type_int && string_value) {
+        // The string value consists of suggestion type/subtype pairs which are
+        // delimited with colons. Replace colons with commas as expected by the
+        // Searchbox logging flow.
+        std::string value = *string_value;
+        std::replace(value.begin(), value.end(), ':', ',');
+        // 'i' is used as a delimiter between experiment stat type and value.
+        experiment_stats_v2.push_back(base::NumberToString(*type_int) + "i" +
+                                      value);
+      }
+    }
+    if (!experiment_stats_v2.empty()) {
+      // 'j' is used as a delimiter between individual experiment stat entries.
+      search_terms_args.assisted_query_stats +=
+          "." + base::JoinString(experiment_stats_v2, "j");
+    }
+  }
+
   UpdateMatchDestinationURL(search_terms_args, match);
 }
 

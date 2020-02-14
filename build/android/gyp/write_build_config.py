@@ -862,6 +862,13 @@ def main(argv):
       help='Path to the .jar to use for javac classpath purposes.')
   parser.add_option('--interface-jar-path',
       help='Path to the .interface.jar to use for javac classpath purposes.')
+  parser.add_option(
+      '--jetified-jar-path',
+      help='Path to the jetified.jar to use for javac classpath purposes.')
+  parser.add_option(
+      '--skip-jetify',
+      action='store_true',
+      help='Whether to use jetified or non-jetified classpath.')
   parser.add_option('--is-prebuilt', action='store_true',
                     help='Whether the jar was compiled or pre-compiled.')
   parser.add_option('--java-sources-file', help='Path to .sources file')
@@ -1212,6 +1219,10 @@ def main(argv):
       deps_info['jar_path'] = options.jar_path
       deps_info['unprocessed_jar_path'] = options.unprocessed_jar_path
       deps_info['interface_jar_path'] = options.interface_jar_path
+    if options.skip_jetify:
+      deps_info['jetified_jar_path'] = options.interface_jar_path
+    else:
+      deps_info['jetified_jar_path'] = options.jetified_jar_path
     if options.dex_path:
       deps_info['dex_path'] = options.dex_path
       if is_apk_or_module_target:
@@ -1359,6 +1370,10 @@ def main(argv):
     # The classpath used for error prone.
     javac_full_interface_classpath = [
         c['interface_jar_path'] for c in all_library_deps]
+    # The path of the jetified jars.
+    jetified_full_jar_classpath = [
+        c['jetified_jar_path'] for c in all_library_deps
+    ]
     # The classpath used for bytecode-rewritting.
     javac_full_classpath = [
         c['unprocessed_jar_path'] for c in all_library_deps]
@@ -1369,6 +1384,8 @@ def main(argv):
           base_module_build_config['deps_info']['jar_path'])
       javac_full_interface_classpath.append(
           base_module_build_config['deps_info']['interface_jar_path'])
+      jetified_full_jar_classpath.append(
+          base_module_build_config['deps_info']['jetified_jar_path'])
 
     for dep in direct_group_deps:
       javac_classpath.extend(dep.get('extra_classpath_jars', []))
@@ -1377,6 +1394,8 @@ def main(argv):
     for dep in all_group_deps:
       javac_full_classpath.extend(dep.get('extra_classpath_jars', []))
       javac_full_interface_classpath.extend(
+          dep.get('extra_classpath_interface_jars', []))
+      jetified_full_jar_classpath.extend(
           dep.get('extra_classpath_interface_jars', []))
 
     # Deps to add to the compile-time classpath (but not the runtime classpath).
@@ -1413,6 +1432,8 @@ def main(argv):
     javac_full_interface_classpath.extend(
         p for p in interface_extra_jars
         if p not in javac_full_interface_classpath)
+    jetified_full_jar_classpath.extend(
+        p for p in interface_extra_jars if p not in jetified_full_jar_classpath)
 
   if is_java_target or options.type == 'android_app_bundle':
     # The classpath to use to run this target (or as an input to ProGuard).
@@ -1596,9 +1617,13 @@ def main(argv):
     javac_interface_classpath.append(tested_apk_config['interface_jar_path'])
     javac_full_interface_classpath.append(
         tested_apk_config['interface_jar_path'])
+    jetified_full_jar_classpath.append(tested_apk_config['interface_jar_path'])
     javac_full_interface_classpath.extend(
         p for p in tested_apk_config['javac_full_interface_classpath']
         if p not in javac_full_interface_classpath)
+    jetified_full_jar_classpath.extend(
+        p for p in tested_apk_config['jetified_full_jar_classpath']
+        if p not in jetified_full_jar_classpath)
     javac_full_classpath.extend(
         p for p in tested_apk_config['javac_full_classpath']
         if p not in javac_full_classpath)
@@ -1637,6 +1662,7 @@ def main(argv):
         c['main_class'] for c in processor_deps.Direct()]
     deps_info['javac_full_classpath'] = javac_full_classpath
     deps_info['javac_full_interface_classpath'] = javac_full_interface_classpath
+    deps_info['jetified_full_jar_classpath'] = jetified_full_jar_classpath
   elif options.type == 'android_app_bundle':
     # bundles require javac_full_classpath to create .aab.jar.info.
     javac_full_classpath = set()
@@ -1742,6 +1768,7 @@ def main(argv):
     RemoveObjDups(config, base, 'deps_info', 'java_runtime_classpath')
     RemoveObjDups(config, base, 'deps_info', 'javac_full_classpath')
     RemoveObjDups(config, base, 'deps_info', 'javac_full_interface_classpath')
+    RemoveObjDups(config, base, 'deps_info', 'jetified_full_jar_classpath')
     RemoveObjDups(config, base, 'deps_info', 'jni', 'all_source')
     RemoveObjDups(config, base, 'final_dex', 'all_dex_files')
     RemoveObjDups(config, base, 'extra_android_manifests')

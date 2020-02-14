@@ -1059,6 +1059,7 @@ java_library("shadows_core_java") {
     # Note that gson is not a direct dependency for this library, but must be
     # in the classpath when the Robolectric annotation processor runs.
     "//third_party/android_deps:androidx_test_runner_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/android_deps:com_google_code_gson_gson_java",
     "//third_party/android_deps:com_google_guava_guava_java",
     "//third_party/hamcrest:hamcrest_java",
@@ -1092,7 +1093,7 @@ java_library("shadows_multidex_java") {
     ":robolectric_utils_java",
     ":shadows_core_java",
     "//build/android:sun_tools_java",
-    "//third_party/android_deps:com_android_support_multidex_java",
+    "//third_party/android_deps:com_android_support_multidex_java_orig",
     "//third_party/android_deps:com_google_code_gson_gson_java",
     "//third_party/android_deps:com_google_guava_guava_java",
   ]
@@ -1129,6 +1130,7 @@ java_library("shadows_play_services_java") {
     "$google_play_services_package:google_play_services_base_java",
     "$google_play_services_package:google_play_services_basement_java",
     "//third_party/android_deps:android_support_v4_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
     "//third_party/android_deps:com_google_code_gson_gson_java",
     "//third_party/android_deps:com_google_guava_guava_java",
   ]

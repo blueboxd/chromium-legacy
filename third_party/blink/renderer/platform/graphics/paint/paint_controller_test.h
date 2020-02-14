@@ -47,7 +47,7 @@ class PaintControllerTestBase : public testing::Test {
   void InitRootChunk() { InitRootChunk(GetPaintController()); }
   void InitRootChunk(PaintController& paint_controller) {
     paint_controller.UpdateCurrentPaintChunkProperties(
-        root_paint_chunk_id_, DefaultPaintChunkProperties());
+        &root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
   const PaintChunk::Id DefaultRootChunkId() const {
     return root_paint_chunk_id_;

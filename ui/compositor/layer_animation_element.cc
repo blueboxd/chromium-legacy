@@ -11,6 +11,7 @@
 #include "base/strings/stringprintf.h"
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/keyframe_model.h"
+#include "ui/compositor/animation_metrics_recorder.h"
 #include "ui/compositor/float_animation_curve_adapter.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_delegate.h"
@@ -579,9 +580,7 @@ LayerAnimationElement::LayerAnimationElement(AnimatableProperties properties,
       tween_type_(gfx::Tween::LINEAR),
       keyframe_model_id_(cc::AnimationIdProvider::NextKeyframeModelId()),
       animation_group_id_(0),
-      last_progressed_fraction_(0.0),
-      animation_metrics_reporter_(nullptr),
-      start_frame_number_(0) {}
+      last_progressed_fraction_(0.0) {}
 
 LayerAnimationElement::LayerAnimationElement(
     const LayerAnimationElement& element)
@@ -591,12 +590,9 @@ LayerAnimationElement::LayerAnimationElement(
       tween_type_(element.tween_type_),
       keyframe_model_id_(cc::AnimationIdProvider::NextKeyframeModelId()),
       animation_group_id_(element.animation_group_id_),
-      last_progressed_fraction_(element.last_progressed_fraction_),
-      animation_metrics_reporter_(nullptr),
-      start_frame_number_(0) {}
+      last_progressed_fraction_(element.last_progressed_fraction_) {}
 
-LayerAnimationElement::~LayerAnimationElement() {
-}
+LayerAnimationElement::~LayerAnimationElement() = default;
 
 void LayerAnimationElement::Start(LayerAnimationDelegate* delegate,
                                   int animation_group_id) {
@@ -605,10 +601,13 @@ void LayerAnimationElement::Start(LayerAnimationDelegate* delegate,
   animation_group_id_ = animation_group_id;
   last_progressed_fraction_ = 0.0;
   OnStart(delegate);
-  if (delegate)
-    start_frame_number_ = delegate->GetFrameNumber();
   RequestEffectiveStart(delegate);
   first_frame_ = false;
+
+  if (animation_metrics_recorder_ && delegate) {
+    animation_metrics_recorder_->OnAnimationStart(
+        delegate->GetFrameNumber(), effective_start_time_, duration_);
+  }
 }
 
 bool LayerAnimationElement::Progress(base::TimeTicks now,
@@ -660,29 +659,17 @@ bool LayerAnimationElement::IsFinished(base::TimeTicks time,
 }
 
 bool LayerAnimationElement::ProgressToEnd(LayerAnimationDelegate* delegate) {
-  const int frame_number = delegate ? delegate->GetFrameNumber() : 0;
-  if (first_frame_) {
+  if (first_frame_)
     OnStart(delegate);
-    start_frame_number_ = frame_number;
-  }
+
   base::WeakPtr<LayerAnimationElement> alive(weak_ptr_factory_.GetWeakPtr());
   bool need_draw = OnProgress(1.0, delegate);
 
-  int end_frame_number = frame_number;
-  if (animation_metrics_reporter_ && end_frame_number > start_frame_number_ &&
-      !duration_.is_zero()) {
-    base::TimeDelta elapsed = base::TimeTicks::Now() - effective_start_time_;
-    if (elapsed >= duration_) {
-      int smoothness = 100;
-      const float kFrameInterval =
-          base::Time::kMillisecondsPerSecond / delegate->GetRefreshRate();
-      const float actual_duration =
-          (end_frame_number - start_frame_number_) * kFrameInterval;
-      if (duration_.InMillisecondsF() - actual_duration >= kFrameInterval)
-        smoothness = 100 * (actual_duration / duration_.InMillisecondsF());
-      animation_metrics_reporter_->Report(smoothness);
-    }
+  if (animation_metrics_recorder_ && delegate) {
+    animation_metrics_recorder_->OnAnimationEnd(delegate->GetFrameNumber(),
+                                                delegate->GetRefreshRate());
   }
+
   if (!alive)
     return need_draw;
   last_progressed_fraction_ = 1.0;
@@ -692,6 +679,16 @@ bool LayerAnimationElement::ProgressToEnd(LayerAnimationDelegate* delegate) {
 
 void LayerAnimationElement::GetTargetValue(TargetValue* target) const {
   OnGetTarget(target);
+}
+
+void LayerAnimationElement::SetAnimationMetricsReporter(
+    AnimationMetricsReporter* reporter) {
+  if (reporter) {
+    animation_metrics_recorder_ =
+        std::make_unique<AnimationMetricsRecorder>(reporter);
+  } else {
+    animation_metrics_recorder_.reset();
+  }
 }
 
 bool LayerAnimationElement::IsThreaded(LayerAnimationDelegate* delegate) const {

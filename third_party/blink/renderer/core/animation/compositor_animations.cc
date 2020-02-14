@@ -84,7 +84,9 @@ bool ConsiderAnimationAsIncompatible(const Animation& animation,
       return true;
     case Animation::kPaused:
     case Animation::kFinished:
-      if (Animation::HasLowerCompositeOrdering(&animation, &animation_to_add)) {
+      if (Animation::HasLowerCompositeOrdering(
+              &animation, &animation_to_add,
+              Animation::CompareAnimationsOrdering::kPointerOrder)) {
         return effect_to_add.AffectedByUnderlyingAnimations();
       }
       return true;

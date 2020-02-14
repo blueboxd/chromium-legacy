@@ -96,7 +96,6 @@ component("web_engine_core") {
     "//third_party/fuchsia-sdk/sdk:fuchsia-accessibility-semantics",
     "//third_party/fuchsia-sdk/sdk:fuchsia-math",
     "//third_party/fuchsia-sdk/sdk:fuchsia-ui-gfx",
-    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
     "//third_party/fuchsia-sdk/sdk:scenic_cpp",
     "//third_party/fuchsia-sdk/sdk:sys_cpp",
     "//third_party/widevine/cdm:headers",
@@ -112,7 +111,10 @@ component("web_engine_core") {
     "//ui/wm/public",
   ]
   data_deps = [ ":web_engine_pak" ]
-  public_deps = [ "//content/public/browser" ]
+  public_deps = [
+    "//content/public/browser",
+    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
+  ]
   data = [ "$root_out_dir/web_engine.pak" ]
   configs += [ ":web_engine_implementation" ]
   sources = [
@@ -180,10 +182,7 @@ component("web_engine_core") {
     "web_engine_main_delegate.cc",
     "web_engine_main_delegate.h",
   ]
-  visibility = [
-    ":*",
-    "//fuchsia/runners:cast_runner_browsertests__exec",
-  ]
+  visibility = [ ":*" ]
 }
 
 source_set("switches") {

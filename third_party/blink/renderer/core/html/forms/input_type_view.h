@@ -143,6 +143,8 @@ class CORE_EXPORT InputTypeView : public GarbageCollectedMixin {
   // Validation functions
   virtual bool HasBadInput() const;
 
+  virtual String RawValue() const;
+
  protected:
   InputTypeView(HTMLInputElement& element) : element_(&element) {}
   HTMLInputElement& GetElement() const { return *element_; }

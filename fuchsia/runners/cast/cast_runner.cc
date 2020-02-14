@@ -13,6 +13,7 @@
 #include "base/fuchsia/file_utils.h"
 #include "base/fuchsia/fuchsia_logging.h"
 #include "base/logging.h"
+#include "fuchsia/base/agent_manager.h"
 #include "url/gurl.h"
 
 namespace {

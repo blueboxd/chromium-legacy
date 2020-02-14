@@ -12,6 +12,7 @@
 #include "ash/public/cpp/night_light_controller.h"
 #include "ash/session/session_observer.h"
 #include "ash/system/night_light/time_of_day.h"
+#include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -193,6 +194,10 @@ class ASH_EXPORT NightLightControllerImpl
   message_center::Notification* GetAutoNightLightNotificationForTesting() const;
 
  private:
+  // Attempts restoring a previously stored schedule for the current user if
+  // possible and returns true if so, false otherwise.
+  bool MaybeRestoreSchedule();
+
   // Returns true if the user has ever changed the schedule type, which means we
   // must respect the user's choice and let it overwrite Auto Night Light.
   bool UserHasEverChangedSchedule() const;
@@ -256,17 +261,23 @@ class ASH_EXPORT NightLightControllerImpl
   // parameters. |did_schedule_change| is true when Refresh() is called as a
   // result of a change in one of the schedule related prefs, and false
   // otherwise.
-  void Refresh(bool did_schedule_change);
+  // If |keep_manual_toggles_during_schedules| is true, refreshing the schedule
+  // will not override a previous user's decision to toggle the NightLight
+  // status while the schedule is being used.
+  void Refresh(bool did_schedule_change,
+               bool keep_manual_toggles_during_schedules);
 
   // Given the desired start and end times that determine the time interval
   // during which NightLight will be ON, depending on the time of "now", it
   // refreshes the |timer_| to either schedule the future start or end of
   // NightLight mode, as well as update the current status if needed.
-  // For |did_schedule_change|, see Refresh() above.
+  // For |did_schedule_change| and |keep_manual_toggles_during_schedules|, see
+  // Refresh() above.
   // This function should never be called if the schedule type is |kNone|.
   void RefreshScheduleTimer(base::Time start_time,
                             base::Time end_time,
-                            bool did_schedule_change);
+                            bool did_schedule_change,
+                            bool keep_manual_toggles_during_schedules);
 
   // Schedule the upcoming next toggle of NightLight mode. This is used for the
   // automatic status changes of NightLight which always use an
@@ -285,6 +296,18 @@ class ASH_EXPORT NightLightControllerImpl
   AnimationDuration last_animation_duration_ = AnimationDuration::kShort;
 
   std::unique_ptr<ColorTemperatureAnimation> temperature_animation_;
+
+  // Tracks the upcoming NightLight state changes per each user due to automatic
+  // schedules. This can be used to restore a manually toggled status while the
+  // schedule is being used. See MaybeRestoreSchedule().
+  struct ScheduleTargetState {
+    // The time at which NightLight will switch to |target_status| defined
+    // below.
+    base::Time target_time;
+    bool target_status;
+  };
+  base::flat_map<PrefService*, ScheduleTargetState>
+      per_user_schedule_target_state_;
 
   // The timer that schedules the start and end of NightLight when the schedule
   // type is either kSunsetToSunrise or kCustom.

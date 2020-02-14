@@ -163,7 +163,8 @@ class CORE_EXPORT OffscreenCanvas final
                                                AccelerationHint,
                                                const FloatSize&) final;
   bool WouldTaintOrigin() const final { return !origin_clean_; }
-  FloatSize ElementSize(const FloatSize& default_object_size) const final {
+  FloatSize ElementSize(const FloatSize& default_object_size,
+                        const RespectImageOrientationEnum) const final {
     return FloatSize(width(), height());
   }
   bool IsOpaque() const final;

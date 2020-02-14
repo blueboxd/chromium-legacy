@@ -24,7 +24,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
-#include "net/base/static_cookie_policy.h"
+#include "net/cookies/static_cookie_policy.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
@@ -466,7 +466,10 @@ void WebSocket::StartClosingHandshake(uint16_t code,
 }
 
 bool WebSocket::AllowCookies(const GURL& url) const {
-  const GURL site_for_cookies = origin_.GetURL();
+  // TODO(https://crbug.com/1052454): This should be using passed-in
+  // site_for_cookies instead.
+  const net::SiteForCookies site_for_cookies =
+      net::SiteForCookies::FromOrigin(origin_);
   net::StaticCookiePolicy::Type policy =
       net::StaticCookiePolicy::ALLOW_ALL_COOKIES;
   if (options_ & mojom::kWebSocketOptionBlockAllCookies) {

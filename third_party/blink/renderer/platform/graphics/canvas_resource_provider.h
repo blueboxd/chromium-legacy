@@ -8,6 +8,7 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "cc/raster/playback_image_provider.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
+#include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 class GrContext;
@@ -127,8 +128,11 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // Use Snapshot() for capturing a frame that is intended to be displayed via
   // the compositor. Cases that are destined to be transferred via a
   // TransferableResource should call ProduceCanvasResource() instead.
+  // The ImageOrientationEnum conveys the desired orientation of the image, and
+  // should be derived from the source of the bitmap data.
   virtual scoped_refptr<CanvasResource> ProduceCanvasResource() = 0;
-  virtual scoped_refptr<StaticBitmapImage> Snapshot() = 0;
+  virtual scoped_refptr<StaticBitmapImage> Snapshot(
+      const ImageOrientation& = kDefaultImageOrientation) = 0;
 
   // WebGraphicsContext3DProvider::DestructionObserver implementation.
   void OnContextDestroyed() override;
@@ -221,7 +225,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
                                : kBottomLeft_GrSurfaceOrigin;
   }
   SkFilterQuality FilterQuality() const { return filter_quality_; }
-  scoped_refptr<StaticBitmapImage> SnapshotInternal();
+  scoped_refptr<StaticBitmapImage> SnapshotInternal(const ImageOrientation&);
   scoped_refptr<CanvasResource> GetImportedResource() const;
 
   CanvasResourceProvider(const ResourceProviderType&,

@@ -59,6 +59,7 @@ var global = {
     ],
     isLocaleRTL: false,
     isFormControlsRefreshEnabled: false,
+    isBorderTransparent: false,
     mode: 'date',
     isAMPMFirst: false,
     hasAMPM: false,
@@ -4325,7 +4326,9 @@ CalendarTableView.prototype.throwAwayWeekNumberCell = function(weekNumberCell) {
 function CalendarPicker(type, config) {
   View.call(this, createElement('div', CalendarPicker.ClassNameCalendarPicker));
   this.element.classList.add(CalendarPicker.ClassNamePreparing);
-
+  if (global.params.isBorderTransparent) {
+    this.element.style.borderColor = 'transparent';
+  }
   /**
    * @type {!string}
    * @const

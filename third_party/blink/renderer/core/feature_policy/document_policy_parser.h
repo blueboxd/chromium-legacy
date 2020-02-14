@@ -26,7 +26,7 @@ class CORE_EXPORT DocumentPolicyParser {
       const String& policy_string,
       const DocumentPolicyNameFeatureMap& name_feature_map,
       const DocumentPolicyFeatureInfoMap& feature_info_map,
-      const FeatureSet& available_features);
+      const DocumentPolicyFeatureSet& available_features);
 };
 }  // namespace blink
 

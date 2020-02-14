@@ -16,6 +16,8 @@ const char kQuickAnswerClick[] = "QuickAnswers.Click";
 const char kQuickAnswerResult[] = "QuickAnswers.Result";
 const char kQuickAnswerLoadingStatus[] = "QuickAnswers.Loading.Status";
 const char kQuickAnswerLoadingDuration[] = "QuickAnswers.Loading.Duration";
+const char kQuickAnswerSelectedContentLength[] =
+    "QuickAnswers.SelectedContent.Length";
 const char kDurationSuffix[] = ".Duration";
 
 std::string ResultTypeToString(ResultType result_type) {
@@ -69,6 +71,10 @@ void RecordLoadingStatus(LoadStatus status, const base::TimeDelta duration) {
 void RecordClick(ResultType result_type, const base::TimeDelta duration) {
   RecordTypeAndDuration(kQuickAnswerClick, result_type, duration,
                         /*is_medium_bucketization=*/true);
+}
+
+void RecordSelectedTextLength(int length) {
+  base::UmaHistogramCounts1000(kQuickAnswerSelectedContentLength, length);
 }
 
 }  // namespace quick_answers

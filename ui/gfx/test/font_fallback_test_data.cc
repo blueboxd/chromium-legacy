@@ -253,29 +253,6 @@ std::vector<FallbackFontTestCase> kGetFontFallbackTests = {
     {USCRIPT_VAI, "vai", L"\uA501\uA502", {"Ebrima"}},
     {USCRIPT_YI, "yi", L"\uA000\uA001", {"Microsoft Yi Baiti"}}};
 
-#elif defined(OS_MACOSX)
-
-std::vector<FallbackFontTestCase> kGetFontFallbackTests = {
-    {USCRIPT_ARABIC,
-     "ar",
-     base::WideToUTF16(L"\u062A\u062D"),
-     {".Arabic UI Text", ".AppleArabicFont", ".Geeza Pro Interface"}},
-    {USCRIPT_DESERET,
-     "en",
-     base::WideToUTF16(L"\U00010400\U00010401"),
-     {"Baskerville"}},
-    {USCRIPT_DEVANAGARI,
-     "hi",
-     base::WideToUTF16(L"\u0905\u0906"),
-     {"Kohinoor Devanagari"}},
-    {USCRIPT_ETHIOPIC, "am", base::WideToUTF16(L"\u1201\u1202"), {"Kefa"}},
-    {USCRIPT_TELUGU,
-     "te",
-     base::WideToUTF16(L"\u0C21\u0C22"),
-     {"Kohinoor Telugu"}},
-    {USCRIPT_THAI, "th", base::WideToUTF16(L"\u0e01\u0e02"), {"Thonburi"}},
-};
-
 #elif defined(OS_LINUX)
 
 // A list of script and the fallback font on the linux test environment.

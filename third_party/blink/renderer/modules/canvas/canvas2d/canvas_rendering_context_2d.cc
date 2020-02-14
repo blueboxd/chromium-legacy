@@ -1146,4 +1146,12 @@ bool CanvasRenderingContext2D::IsCanvas2DBufferValid() const {
   return false;
 }
 
+RespectImageOrientationEnum CanvasRenderingContext2D::RespectImageOrientation()
+    const {
+  if (canvas()->RespectImageOrientation() != kRespectImageOrientation) {
+    return kDoNotRespectImageOrientation;
+  }
+  return kRespectImageOrientation;
+}
+
 }  // namespace blink

@@ -166,7 +166,7 @@ WebRequestInfoInitParams::WebRequestInfoInitParams(
     base::Optional<int64_t> navigation_id)
     : id(request_id),
       url(request.url),
-      site_for_cookies(request.site_for_cookies.RepresentativeUrl()),
+      site_for_cookies(request.site_for_cookies),
       render_process_id(render_process_id),
       routing_id(routing_id),
       frame_id(render_frame_id),

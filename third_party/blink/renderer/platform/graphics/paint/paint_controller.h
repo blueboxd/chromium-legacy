@@ -73,34 +73,18 @@ class PLATFORM_EXPORT PaintController {
   // These methods are called during painting.
 
   // Provide a new set of paint chunk properties to apply to recorded display
-  // items.
-  void UpdateCurrentPaintChunkProperties(
-      const base::Optional<PaintChunk::Id>& id,
-      const PropertyTreeState& properties) {
-    if (id) {
-      PaintChunk::Id id_with_fragment(*id, current_fragment_);
-      UpdateCurrentPaintChunkPropertiesUsingIdWithFragment(id_with_fragment,
-                                                           properties);
-#if DCHECK_IS_ON()
-      CheckDuplicatePaintChunkId(id_with_fragment);
-#endif
-    } else {
-      new_paint_chunks_.UpdateCurrentPaintChunkProperties(base::nullopt,
-                                                          properties);
-    }
-  }
+  // items. If id is nullptr, the id of the first display item will be used as
+  // the id of the paint chunk if needed.
+  void UpdateCurrentPaintChunkProperties(const PaintChunk::Id*,
+                                         const PropertyTreeState&);
+
+  void ForceNewChunk(const DisplayItemClient&, DisplayItem::Type);
 
   const PropertyTreeState& CurrentPaintChunkProperties() const {
     return new_paint_chunks_.CurrentPaintChunkProperties();
   }
-
   PaintChunk& CurrentPaintChunk() { return new_paint_chunks_.LastChunk(); }
 
-  void ForceNewChunk(const DisplayItemClient& client, DisplayItem::Type type) {
-    new_paint_chunks_.ForceNewChunk();
-    new_paint_chunks_.UpdateCurrentPaintChunkProperties(
-        PaintChunk::Id(client, type), CurrentPaintChunkProperties());
-  }
 
   template <typename DisplayItemClass, typename... Args>
   void CreateAndAppend(Args&&... args) {
@@ -278,9 +262,12 @@ class PLATFORM_EXPORT PaintController {
     }
   }
 
-  // Set new item state (cache skipping, etc) for a new item.
+  // Set new item state (cache skipping, etc) for the last new display item.
   void ProcessNewItem(DisplayItem&);
+
+  void DidAppendItem(DisplayItem&);
   DisplayItem& MoveItemFromCurrentListToNewList(wtf_size_t);
+  void DidAppendChunk();
 
   // Maps clients to indices of display items or chunks of each client.
   using IndicesByClientMap =
@@ -296,13 +283,7 @@ class PLATFORM_EXPORT PaintController {
   wtf_size_t FindCachedItem(const DisplayItem::Id&);
   wtf_size_t FindOutOfOrderCachedItemForward(const DisplayItem::Id&);
   void CopyCachedSubsequence(wtf_size_t begin_index, wtf_size_t end_index);
-
-  void UpdateCurrentPaintChunkPropertiesUsingIdWithFragment(
-      const PaintChunk::Id& id_with_fragment,
-      const PropertyTreeState& properties) {
-    new_paint_chunks_.UpdateCurrentPaintChunkProperties(id_with_fragment,
-                                                        properties);
-  }
+  void AppendChunkByMoving(PaintChunk&&);
 
   // Resets the indices (e.g. next_item_to_match_) of
   // current_paint_artifact_.GetDisplayItemList() to their initial values. This
@@ -339,8 +320,9 @@ class PLATFORM_EXPORT PaintController {
 
   SubsequenceMarkers* GetSubsequenceMarkers(const DisplayItemClient&);
 
-#if DCHECK_IS_ON()
   void CheckDuplicatePaintChunkId(const PaintChunk::Id&);
+
+#if DCHECK_IS_ON()
   void ShowDebugDataInternal(DisplayItemList::JsonFlags) const;
 #endif
 

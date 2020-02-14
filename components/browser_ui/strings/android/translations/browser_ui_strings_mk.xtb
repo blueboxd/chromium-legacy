@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Прикажи</translation>
 <translation id="5301954838959518834">Добро, сфатив</translation>
 <translation id="5317780077021120954">Зачувај</translation>
+<translation id="5391532827096253100">Врската со сајтов не е безбедна. Информации за сајтот</translation>
 <translation id="5556459405103347317">Повторно вчитај</translation>
 <translation id="5596627076506792578">Повеќе опции</translation>
 <translation id="5860033963881614850">Исклучено</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="6042308850641462728">Повеќе</translation>
 <translation id="6165508094623778733">Дознајте повеќе</translation>
+<translation id="6206551242102657620">Врската е безбедна. Информации за сајтот</translation>
 <translation id="6216432067784365534">Опции за <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Сподели</translation>
 <translation id="6746124502594467657">Премести долу</translation>
 <translation id="6818926723028410516">Изберете ставки</translation>
 <translation id="6910211073230771657">Избришано</translation>
 <translation id="6945221475159498467">Избери</translation>
+<translation id="6963642900430330478">Страницава е опасна. Информации за сајтот</translation>
 <translation id="6965382102122355670">Во ред</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Избрана е 1}one{Избрана е #}other{Избрани се #}}</translation>
 <translation id="7087918508125750058">Избрани ставки: <ph name="ITEM_COUNT" />. Достапни се опции во горниот дел од екранот</translation>

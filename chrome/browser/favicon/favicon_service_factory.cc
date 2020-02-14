@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "chrome/browser/favicon/chrome_favicon_client.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -22,10 +21,17 @@ namespace {
 std::unique_ptr<KeyedService> BuildFaviconService(
     content::BrowserContext* context) {
   Profile* profile = Profile::FromBrowserContext(context);
-  return std::make_unique<favicon::FaviconServiceImpl>(
-      base::WrapUnique(new ChromeFaviconClient(profile)),
+  history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile,
-                                           ServiceAccessType::EXPLICIT_ACCESS));
+                                           ServiceAccessType::EXPLICIT_ACCESS);
+  // |history_service| may be null, most likely because initialization failed.
+  if (!history_service) {
+    // This is rare enough that it's worth logging.
+    LOG(WARNING) << "FaviconService not created as HistoryService is null";
+    return nullptr;
+  }
+  return std::make_unique<favicon::FaviconServiceImpl>(
+      std::make_unique<ChromeFaviconClient>(profile), history_service);
 }
 
 }  // namespace

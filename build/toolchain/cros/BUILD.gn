@@ -69,6 +69,7 @@ cros_toolchain("target") {
     use_debug_fission = use_debug_fission
     use_gold = use_gold
     use_sysroot = use_sysroot
+    sysroot = target_sysroot
   }
 }
 
@@ -132,6 +133,7 @@ cros_toolchain("host") {
     current_cpu = host_cpu
     current_os = "linux"
     use_sysroot = use_sysroot
+    sysroot = cros_host_sysroot
   }
 }
 
@@ -166,5 +168,6 @@ cros_toolchain("v8_snapshot") {
     v8_current_cpu = v8_target_cpu
     current_os = "linux"
     use_sysroot = use_sysroot
+    sysroot = cros_v8_snapshot_sysroot
   }
 }

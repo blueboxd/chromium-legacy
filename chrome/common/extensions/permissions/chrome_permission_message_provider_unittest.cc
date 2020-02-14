@@ -53,12 +53,14 @@ class ChromePermissionMessageProviderUnittest : public testing::Test {
   }
 
   bool IsPrivilegeIncrease(const APIPermissionSet& granted_permissions,
-                           const APIPermissionSet& requested_permissions) {
+                           const URLPatternSet& granted_hosts,
+                           const APIPermissionSet& requested_permissions,
+                           const URLPatternSet& requested_hosts) {
     return message_provider_->IsPrivilegeIncrease(
         PermissionSet(granted_permissions.Clone(), ManifestPermissionSet(),
-                      URLPatternSet(), URLPatternSet()),
+                      granted_hosts.Clone(), URLPatternSet()),
         PermissionSet(requested_permissions.Clone(), ManifestPermissionSet(),
-                      URLPatternSet(), URLPatternSet()),
+                      requested_hosts.Clone(), URLPatternSet()),
         Manifest::TYPE_EXTENSION);
   }
 
@@ -200,6 +202,33 @@ TEST_F(ChromePermissionMessageProviderUnittest, PowerfulPermissions) {
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_HISTORY_READ),
         messages.front().message());
   }
+}
+
+// Checks that granted hosts that may cause API permission messages are
+// processed as part of IsPrivilegeIncrease. Regression test for
+// crbug.com/1014505.
+TEST_F(ChromePermissionMessageProviderUnittest, PrivilegeIncreaseAllUrls) {
+  APIPermissionSet granted_permissions;
+  granted_permissions.insert(APIPermission::kWebRequest);
+
+  extensions::URLPatternSet granted_hosts;
+  granted_hosts.AddPattern(URLPattern(URLPattern::SCHEME_ALL, "<all_urls>"));
+
+  APIPermissionSet requested_permissions;
+  requested_permissions.insert(APIPermission::kWebRequest);
+  requested_permissions.insert(APIPermission::kDeclarativeNetRequest);
+
+  extensions::URLPatternSet requested_hosts;
+  requested_hosts.AddPattern(URLPattern(URLPattern::SCHEME_ALL, "<all_urls>"));
+
+  // While |kDeclarativeNetRequest| would cause a permission message, the
+  // inclusion of <all_urls> for both granted and request permissions should
+  // subsume the permission message for |kDeclarativeNetRequest| with its own
+  // message. Since this message would be identical between
+  // |granted_permissions| and |requested_permissions|, there should not be a
+  // privilege increase.
+  EXPECT_FALSE(IsPrivilegeIncrease(granted_permissions, granted_hosts,
+                                   requested_permissions, requested_hosts));
 }
 
 }  // namespace extensions

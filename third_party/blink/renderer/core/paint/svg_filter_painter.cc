@@ -26,7 +26,7 @@ GraphicsContext* SVGFilterRecordingContext::BeginContent() {
   // Use initial_context_'s current paint chunk properties so that any new
   // chunk created during painting the content will be in the correct state.
   paint_controller_->UpdateCurrentPaintChunkProperties(
-      base::nullopt,
+      nullptr,
       initial_context_.GetPaintController().CurrentPaintChunkProperties());
 
   return context_.get();

@@ -10,12 +10,12 @@ js_type_check("closure_compile") {
 
 js_library("os_settings_ui") {
   deps = [
+    "..:metrics_recorder",
     "..:os_page_visibility",
     "..:os_route",
     "../..:global_scroll_target_behavior",
     "../..:router",
     "../../prefs",
-    "../metrics_recorder:metrics_recorder",
     "../os_settings_main:os_settings_main",
     "../os_toolbar",
     "//ui/webui/resources/cr_elements:cr_container_shadow_behavior",

@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Wys</translation>
 <translation id="5301954838959518834">OK, het dit</translation>
 <translation id="5317780077021120954">Berg</translation>
+<translation id="5391532827096253100">Jou verbinding aan hierdie werf is nie veilig nie. Werfinligting</translation>
 <translation id="5556459405103347317">Herlaai</translation>
 <translation id="5596627076506792578">Meer opsies</translation>
 <translation id="5860033963881614850">Af</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Maak toe</translation>
 <translation id="6042308850641462728">Meer</translation>
 <translation id="6165508094623778733">Kom meer te wete</translation>
+<translation id="6206551242102657620">Verbinding is veilig. Werfinligting</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />-opsies</translation>
 <translation id="6527303717912515753">Deel</translation>
 <translation id="6746124502594467657">Skuif af</translation>
 <translation id="6818926723028410516">Kies items</translation>
 <translation id="6910211073230771657">Uitgevee</translation>
 <translation id="6945221475159498467">Kies</translation>
+<translation id="6963642900430330478">Hierdie bladsy is gevaarlik. Werfinligting</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 gekies}other{# gekies}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> gekies. Opsies is naby aan die bokant van die skerm beskikbaar</translation>

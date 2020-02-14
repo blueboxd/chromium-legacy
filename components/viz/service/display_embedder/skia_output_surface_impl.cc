@@ -198,12 +198,21 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
                                     const gfx::ColorSpace& color_space,
                                     gfx::BufferFormat format,
                                     bool use_stencil) {
+  Reshape(size, device_scale_factor, color_space, format, use_stencil, false);
+}
+
+void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
+                                    float device_scale_factor,
+                                    const gfx::ColorSpace& color_space,
+                                    gfx::BufferFormat format,
+                                    bool use_stencil,
+                                    bool was_forced) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!size.IsEmpty());
 
-  if (initialize_waitable_event_) {
-    initialize_waitable_event_->Wait();
-    initialize_waitable_event_.reset();
+  if (reshape_waitable_event_) {
+    reshape_waitable_event_->Wait();
+    reshape_waitable_event_.reset();
   }
 
   // SetDrawRectangle() will need to be called at the new size.
@@ -215,27 +224,43 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
     damage = gfx::Rect(size);
 
   SkSurfaceCharacterization* characterization = nullptr;
+  bool need_wait_for_gpu_thread = true;
+
   if (characterization_.isValid()) {
+    // TODO(vasilyt): We temporary keep old code for linux to not interferee
+    // with M81. Remove this after.
+#if defined(OS_LINUX)
     if (color_space != color_space_) {
       characterization_ =
           characterization_.createColorSpace(color_space.ToSkColorSpace());
-      color_space_ = color_space;
     }
 
     if (size != size_) {
       characterization_ =
           characterization_.createResized(size.width(), size.height());
-      size_ = size;
     }
-    // TODO(kylechar): Update |characterization_| if |use_alpha| changes.
-    RecreateRootRecorder();
-  } else {
+    need_wait_for_gpu_thread = false;
+#else
+    if (!was_forced && color_space_ == color_space &&
+        format == reshape_format_) {
+      characterization_ =
+          characterization_.createResized(size.width(), size.height());
+      need_wait_for_gpu_thread = false;
+    }
+#endif
+  }
+
+  color_space_ = color_space;
+  size_ = size;
+  reshape_format_ = format;
+
+  if (need_wait_for_gpu_thread) {
     characterization = &characterization_;
-    initialize_waitable_event_ = std::make_unique<base::WaitableEvent>(
+    reshape_waitable_event_ = std::make_unique<base::WaitableEvent>(
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
-    size_ = size;
-    color_space_ = color_space;
+  } else {
+    RecreateRootRecorder();
   }
 
   // impl_on_gpu_ is released on the GPU thread by a posted task from
@@ -244,7 +269,7 @@ void SkiaOutputSurfaceImpl::Reshape(const gfx::Size& size,
                              base::Unretained(impl_on_gpu_.get()), size,
                              device_scale_factor, color_space, format,
                              use_stencil, pre_transform_, characterization,
-                             initialize_waitable_event_.get());
+                             reshape_waitable_event_.get());
   ScheduleGpuTask(std::move(task), {});
 }
 
@@ -278,9 +303,9 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintCurrentFrame() {
   // Make sure there is no unsubmitted PaintFrame or PaintRenderPass.
   DCHECK(!current_paint_);
 
-  if (initialize_waitable_event_) {
-    initialize_waitable_event_->Wait();
-    initialize_waitable_event_ = nullptr;
+  if (reshape_waitable_event_) {
+    reshape_waitable_event_->Wait();
+    reshape_waitable_event_ = nullptr;
     if (!characterization_.isValid()) {
       DLOG(ERROR) << "Reshape failed.";
       return nullptr;

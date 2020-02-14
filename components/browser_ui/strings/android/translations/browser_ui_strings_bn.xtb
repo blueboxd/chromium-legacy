@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">দেখান</translation>
 <translation id="5301954838959518834">ঠিক আছে, বুঝেছি</translation>
 <translation id="5317780077021120954">সেভ করুন</translation>
+<translation id="5391532827096253100">এই সাইটে আপনার কানেকশন নিরাপদ নয়। সাইটের তথ্য</translation>
 <translation id="5556459405103347317">রিলোড করুন</translation>
 <translation id="5596627076506792578">আরও বিকল্পগুলি</translation>
 <translation id="5860033963881614850">বন্ধ করুন</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">বন্ধ</translation>
 <translation id="6042308850641462728">আরও</translation>
 <translation id="6165508094623778733">আরও জানুন</translation>
+<translation id="6206551242102657620">কানেকশনটি নিরাপদ। সাইট তথ্য</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> এর বিকল্পগুলি</translation>
 <translation id="6527303717912515753">শেয়ার করুন</translation>
 <translation id="6746124502594467657">নিচে যান</translation>
 <translation id="6818926723028410516">আইটেম বেছে নিন</translation>
 <translation id="6910211073230771657">মোছা হয়েছে</translation>
 <translation id="6945221475159498467">নির্বাচন</translation>
+<translation id="6963642900430330478">এই পৃষ্ঠাটি বিপজ্জনক। সাইটের তথ্য</translation>
 <translation id="6965382102122355670">ঠিক আছে</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{১টি বেছে নেওয়া হয়েছে}one{#টি বেছে নেওয়া হয়েছে}other{#টি বেছে নেওয়া হয়েছে}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> বেছে নেওয়া হয়েছে।  স্ক্রিনের উপরে বিকল্পগুলি পাওয়া যাবে</translation>

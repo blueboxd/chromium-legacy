@@ -39,6 +39,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_menu_source_type.h"
@@ -2032,6 +2033,12 @@ void WebViewImpl::DidAttachLocalMainFrame() {
 
   MainFrameImpl()->GetFrame()->WasAttachedAsLocalMainFrame();
 
+  MainFrameImpl()
+      ->GetFrame()
+      ->GetRemoteNavigationAssociatedInterfaces()
+      ->GetInterface(
+          local_main_frame_host_remote_.BindNewEndpointAndPassReceiver());
+
   if (does_composite_) {
     WebWidgetClient* widget_client =
         MainFrameImpl()->FrameWidgetImpl()->Client();
@@ -2051,6 +2058,7 @@ void WebViewImpl::DidDetachLocalMainFrame() {
   // The WebWidgetClient that generated the |scoped_defer_main_frame_update_|
   // for a local main frame is going away.
   scoped_defer_main_frame_update_ = nullptr;
+  local_main_frame_host_remote_.reset();
 }
 
 WebLocalFrame* WebViewImpl::FocusedFrame() {
@@ -3056,7 +3064,8 @@ void WebViewImpl::PageScaleFactorChanged() {
   MainFrameImpl()->FrameWidgetImpl()->Client()->SetPageScaleStateAndLimits(
       viewport.Scale(), viewport.IsPinchGestureActive(),
       MinimumPageScaleFactor(), MaximumPageScaleFactor());
-  AsView().client->PageScaleFactorChanged(viewport.Scale());
+
+  local_main_frame_host_remote_->ScaleFactorChanged(viewport.Scale());
 
   if (dev_tools_emulator_->HasViewportOverride()) {
     TransformationMatrix device_emulation_transform =

@@ -44,6 +44,7 @@
 ../../../third_party/protobuf/python/google/protobuf/symbol_database.py
 ../../../third_party/protobuf/python/google/protobuf/text_encoding.py
 ../../../third_party/protobuf/python/google/protobuf/text_format.py
+../../../third_party/six/src/six.py
 ../../gn_helpers.py
 compile_resources.py
 proto/Configuration_pb2.py

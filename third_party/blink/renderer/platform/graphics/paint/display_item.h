@@ -165,7 +165,7 @@ class PLATFORM_EXPORT DisplayItem {
         fragment_(0),
         is_cacheable_(client.IsCacheable()),
         is_tombstone_(false),
-        is_copied_from_cached_subsequence_(false) {
+        is_moved_from_cached_subsequence_(false) {
     // |derived_size| must fit in |derived_size_|.
     // If it doesn't, enlarge |derived_size_| and fix this assert.
     SECURITY_DCHECK(derived_size < (1 << 7));
@@ -268,11 +268,11 @@ class PLATFORM_EXPORT DisplayItem {
   bool IsCacheable() const { return is_cacheable_; }
   void SetUncacheable() { is_cacheable_ = false; }
 
-  bool IsCopiedFromCachedSubsequence() const {
-    return is_copied_from_cached_subsequence_;
+  bool IsMovedFromCachedSubsequence() const {
+    return is_moved_from_cached_subsequence_;
   }
-  void SetCopiedFromCachedSubsequence(bool b) {
-    is_copied_from_cached_subsequence_ = b;
+  void SetMovedFromCachedSubsequence(bool b) {
+    is_moved_from_cached_subsequence_ = b;
   }
 
   virtual bool Equals(const DisplayItem& other) const {
@@ -319,7 +319,7 @@ class PLATFORM_EXPORT DisplayItem {
   unsigned fragment_ : 14;
   unsigned is_cacheable_ : 1;
   unsigned is_tombstone_ : 1;
-  unsigned is_copied_from_cached_subsequence_ : 1;
+  unsigned is_moved_from_cached_subsequence_ : 1;
 };
 
 inline bool operator==(const DisplayItem::Id& a, const DisplayItem::Id& b) {

@@ -60,12 +60,10 @@ sk_sp<SkImage> SkiaHelper::ApplyImageFilter(GrContext* context,
 }
 
 sk_sp<SkColorFilter> SkiaHelper::MakeOverdrawColorFilter() {
-  // TODO(xing.xu) : handle this in CPU mode, the R and B should be
-  // switched in CPU mode. (http://crbug.com/896969)
-  static const SkPMColor colors[SkOverdrawColorFilter::kNumColors] = {
-      0x00000000, 0x00000000, 0x2fff0000, 0x2f00ff00, 0x3f0000ff, 0x7f0000ff,
+  static const SkColor colors[SkOverdrawColorFilter::kNumColors] = {
+      0x00000000, 0x00000000, 0x2f0000ff, 0x2f00ff00, 0x3fff0000, 0x7fff0000,
   };
-  return SkOverdrawColorFilter::Make(colors);
+  return SkOverdrawColorFilter::MakeWithSkColors(colors);
 }
 
 sk_sp<SkImageFilter> SkiaHelper::BuildOpacityFilter(float opacity) {

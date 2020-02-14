@@ -14,6 +14,9 @@ set_sources_assignment_filter([])
 
 jumbo_component("compositor") {
   sources = [
+    "animation_metrics_recorder.cc",
+    "animation_metrics_recorder.h",
+    "animation_metrics_reporter.h",
     "callback_layer_animation_observer.cc",
     "callback_layer_animation_observer.h",
     "canvas_painter.cc",

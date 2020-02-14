@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Mostra</translation>
 <translation id="5301954838959518834">D'acord</translation>
 <translation id="5317780077021120954">Desa</translation>
+<translation id="5391532827096253100">La connexió amb aquest lloc web no és segura. Informació del lloc web</translation>
 <translation id="5556459405103347317">Torna a carregar</translation>
 <translation id="5596627076506792578">Més opcions</translation>
 <translation id="5860033963881614850">Desactivat</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Tanca</translation>
 <translation id="6042308850641462728">Més</translation>
 <translation id="6165508094623778733">Més informació</translation>
+<translation id="6206551242102657620">La connexió és segura. Informació del lloc web</translation>
 <translation id="6216432067784365534">Opcions per a <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Comparteix</translation>
 <translation id="6746124502594467657">Mou avall</translation>
 <translation id="6818926723028410516">Selecciona elements</translation>
 <translation id="6910211073230771657">Suprimit</translation>
 <translation id="6945221475159498467">Selecciona</translation>
+<translation id="6963642900430330478">Aquesta pàgina és perillosa. Informació del lloc web</translation>
 <translation id="6965382102122355670">D'acord</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 seleccionat}other{# seleccionats}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> elements seleccionats. Hi ha opcions disponibles a prop de la part superior de la pantalla.</translation>

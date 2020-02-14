@@ -3165,25 +3165,23 @@ void QuicStreamFactoryTestBase::TestOnNetworkMadeDefaultNonMigratableStream(
                                          packet_num++, false, 1, 1, 1));
   } else {
     if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
-      // TLS1.3 supports multiple packet number space, so a proactive ack is no
-      // longer sent.
       if (VersionUsesHttp3(version_.transport_version)) {
         socket_data.AddWrite(
             SYNCHRONOUS,
-            client_maker_.MakeDataRstAndConnectionClosePacket(
+            client_maker_.MakeDataRstAckAndConnectionClosePacket(
                 packet_num++, false, GetQpackDecoderStreamId(),
                 StreamCancellationQpackDecoderInstruction(0),
                 GetNthClientInitiatedBidirectionalStreamId(0),
-                quic::QUIC_STREAM_CANCELLED,
+                quic::QUIC_STREAM_CANCELLED, 1, 1, 1,
                 quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
                 "net error"));
       } else {
         socket_data.AddWrite(
             SYNCHRONOUS,
-            client_maker_.MakeRstAndConnectionClosePacket(
+            client_maker_.MakeRstAckAndConnectionClosePacket(
                 packet_num++, false,
                 GetNthClientInitiatedBidirectionalStreamId(0),
-                quic::QUIC_STREAM_CANCELLED,
+                quic::QUIC_STREAM_CANCELLED, 1, 1, 1,
                 quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
                 "net error"));
       }
@@ -5602,25 +5600,23 @@ void QuicStreamFactoryTestBase::TestMigrateSessionEarlyNonMigratableStream(
                                          packet_num++, false, 1, 1, 1));
   } else {
     if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
-      // TLS1.3 supports multiple packet number. So a proactive ack is no longer
-      // sent.
       if (VersionUsesHttp3(version_.transport_version)) {
         socket_data.AddWrite(
             SYNCHRONOUS,
-            client_maker_.MakeDataRstAndConnectionClosePacket(
+            client_maker_.MakeDataRstAckAndConnectionClosePacket(
                 packet_num++, false, GetQpackDecoderStreamId(),
                 StreamCancellationQpackDecoderInstruction(0),
                 GetNthClientInitiatedBidirectionalStreamId(0),
-                quic::QUIC_STREAM_CANCELLED,
+                quic::QUIC_STREAM_CANCELLED, 1, 1, 1,
                 quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
                 "net error"));
       } else {
         socket_data.AddWrite(
             SYNCHRONOUS,
-            client_maker_.MakeRstAndConnectionClosePacket(
+            client_maker_.MakeRstAckAndConnectionClosePacket(
                 packet_num++, false,
                 GetNthClientInitiatedBidirectionalStreamId(0),
-                quic::QUIC_STREAM_CANCELLED,
+                quic::QUIC_STREAM_CANCELLED, 1, 1, 1,
                 quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS,
                 "net error"));
       }

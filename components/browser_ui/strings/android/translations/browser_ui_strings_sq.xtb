@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Shfaq</translation>
 <translation id="5301954838959518834">Në rregull, kuptova.</translation>
 <translation id="5317780077021120954">Ruaj</translation>
+<translation id="5391532827096253100">Lidhja jote me këtë faqe nuk është e sigurt. Informacioni i faqes</translation>
 <translation id="5556459405103347317">Ringarko</translation>
 <translation id="5596627076506792578">Më shumë opsione</translation>
 <translation id="5860033963881614850">Çaktivizuar</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Mbyll</translation>
 <translation id="6042308850641462728">Më shumë</translation>
 <translation id="6165508094623778733">Mëso më shumë</translation>
+<translation id="6206551242102657620">Lidhja është e sigurt. Informacioni i faqes</translation>
 <translation id="6216432067784365534">Opsionet për <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Ndaj</translation>
 <translation id="6746124502594467657">Lëviz poshtë</translation>
 <translation id="6818926723028410516">Zgjidh artikujt</translation>
 <translation id="6910211073230771657">Fshirë</translation>
 <translation id="6945221475159498467">Përzgjidhe</translation>
+<translation id="6963642900430330478">Kjo faqe është e rrezikshme. Informacioni i faqes</translation>
 <translation id="6965382102122355670">Në rregull</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 i zgjedhur}other{# të zgjedhur}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> të zgjedhura. Opsionet ofrohen pranë kreut të ekranit</translation>

@@ -26,6 +26,9 @@ void RecordResult(ResultType result_type, const base::TimeDelta duration);
 // fetch finish and user clicks.
 void RecordClick(ResultType result_type, const base::TimeDelta duration);
 
+// Record selected text length to learn about usage pattern.
+void RecordSelectedTextLength(int length);
+
 }  // namespace quick_answers
 }  // namespace chromeos
 

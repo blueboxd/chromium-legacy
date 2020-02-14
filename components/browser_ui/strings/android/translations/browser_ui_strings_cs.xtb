@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Zobrazit</translation>
 <translation id="5301954838959518834">Dobře, rozumím</translation>
 <translation id="5317780077021120954">Uložit</translation>
+<translation id="5391532827096253100">Spojení s tímto webem není zabezpečené. Informace o webu</translation>
 <translation id="5556459405103347317">Načíst znovu</translation>
 <translation id="5596627076506792578">Další možnosti</translation>
 <translation id="5860033963881614850">Vypnuto</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Zavřít</translation>
 <translation id="6042308850641462728">Více</translation>
 <translation id="6165508094623778733">Další informace</translation>
+<translation id="6206551242102657620">Připojení je zabezpečené. Informace o webu</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> – možnosti</translation>
 <translation id="6527303717912515753">Sdílet</translation>
 <translation id="6746124502594467657">Posunout dolů</translation>
 <translation id="6818926723028410516">Výběr položek</translation>
 <translation id="6910211073230771657">Smazáno</translation>
 <translation id="6945221475159498467">Vybrat</translation>
+<translation id="6963642900430330478">Tato stránka je nebezpečná. Informace o webu</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Vybráno: 1}few{Vybráno: #}many{Vybráno: #}other{Vybráno: #}}</translation>
 <translation id="7087918508125750058">Vybrané položky: <ph name="ITEM_COUNT" />. Možnosti jsou k dispozici u horního okraje obrazovky</translation>

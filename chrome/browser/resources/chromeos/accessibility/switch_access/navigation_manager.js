@@ -6,10 +6,6 @@
  * This class handles navigation amongst the elements onscreen.
  */
 class NavigationManager {
-  /** @param {!chrome.automation.AutomationNode} desktop */
-  static initialize(desktop) {
-    NavigationManager.instance = new NavigationManager(desktop);
-  }
 
   /**
    * @param {!chrome.automation.AutomationNode} desktop
@@ -43,37 +39,7 @@ class NavigationManager {
     this.init_();
   }
 
-  // -------------------------------------------------------
-  // |                 Public Methods                      |
-  // -------------------------------------------------------
-
-  /**
-   * Enters |this.node_|.
-   */
-  enterGroup() {
-    if (!this.node_.isGroup()) {
-      return;
-    }
-
-    SwitchAccessMetrics.recordMenuAction('EnterGroup');
-
-    const newGroup = this.node_.asRootNode();
-    if (newGroup) {
-      this.groupStack_.push(this.group_);
-      this.setGroup_(newGroup);
-    }
-  }
-
-  /**
-   * Puts focus on the virtual keyboard, if the current node is a text input.
-   * TODO(cbug/946190): Handle the case where the user has not enabled the
-   *     onscreen keyboard.
-   */
-  enterKeyboard() {
-    const keyboard = KeyboardRootNode.buildTree(this.desktop_);
-    this.node_.performAction(SAConstants.MenuAction.OPEN_KEYBOARD);
-    this.jumpTo_(keyboard);
-  }
+  // =============== Static Methods ==============
 
   /**
    * Open the Switch Access menu for the currently highlighted node. If there
@@ -81,18 +47,24 @@ class NavigationManager {
    * is selected.
    */
   static enterMenu() {
-    if (!NavigationManager.instance) {
-      return;
-    }
-    const menuManager = NavigationManager.instance.menuManager_;
-    const currentNode = NavigationManager.instance.node_;
-
-    const didEnter = menuManager.enter(currentNode);
+    const navigator = NavigationManager.instance;
+    const didEnter = navigator.menuManager_.enter(navigator.node_);
 
     // If the menu does not or cannot open, select the current node.
     if (!didEnter) {
-      NavigationManager.instance.selectCurrentNode();
+      navigator.selectCurrentNode();
     }
+  }
+
+  /**
+   * Forces the current node to be |node|.
+   * Should only be called by subclasses of SARootNode and
+   *    only when they are focused.
+   * @param {!SAChildNode} node
+   */
+  static forceFocusedNode(node) {
+    const navigator = NavigationManager.instance;
+    navigator.setNode_(node);
   }
 
   /**
@@ -114,14 +86,16 @@ class NavigationManager {
     return desktopRoot;
   }
 
+  /** @param {!chrome.automation.AutomationNode} desktop */
+  static initialize(desktop) {
+    NavigationManager.instance = new NavigationManager(desktop);
+  }
+
   /**
    * Move to the previous interesting node.
    */
   static moveBackward() {
     const navigator = NavigationManager.instance;
-    if (!navigator) {
-      return;
-    }
 
     if (navigator.menuManager_.moveBackward()) {
       // The menu navigation is handled separately. If we are in the menu, do
@@ -137,9 +111,6 @@ class NavigationManager {
    */
   static moveForward() {
     const navigator = NavigationManager.instance;
-    if (!navigator) {
-      return;
-    }
 
     if (navigator.onMoveForwardForTesting_) {
       navigator.onMoveForwardForTesting_();
@@ -160,9 +131,6 @@ class NavigationManager {
    */
   static moveToValidNode() {
     const navigator = NavigationManager.instance;
-    if (!navigator) {
-      return;
-    }
 
     const nodeIsValid = navigator.node_.isValidAndVisible();
     const groupIsValid = navigator.group_.isValidGroup();
@@ -205,12 +173,39 @@ class NavigationManager {
    */
   static refreshFocusRings() {
     const navigator = NavigationManager.instance;
-    if (!navigator) {
-      return;
-    }
 
     navigator.focusRingManager_.setFocusNodes(
         navigator.node_, navigator.group_);
+  }
+
+  // =============== Instance Methods ==============
+
+  /**
+   * Enters |this.node_|.
+   */
+  enterGroup() {
+    if (!this.node_.isGroup()) {
+      return;
+    }
+
+    SwitchAccessMetrics.recordMenuAction('EnterGroup');
+
+    const newGroup = this.node_.asRootNode();
+    if (newGroup) {
+      this.groupStack_.push(this.group_);
+      this.setGroup_(newGroup);
+    }
+  }
+
+  /**
+   * Puts focus on the virtual keyboard, if the current node is a text input.
+   * TODO(cbug/946190): Handle the case where the user has not enabled the
+   *     onscreen keyboard.
+   */
+  enterKeyboard() {
+    const keyboard = KeyboardRootNode.buildTree(this.desktop_);
+    this.node_.performAction(SAConstants.MenuAction.OPEN_KEYBOARD);
+    this.jumpTo_(keyboard);
   }
 
   /**
@@ -242,23 +237,7 @@ class NavigationManager {
     }
   }
 
-  /**
-   * Forces the current node to be |node|.
-   * Should only be called by subclasses of SARootNode and
-   *    only when they are focused.
-   * @param {!SAChildNode} node
-   */
-  static forceFocusedNode(node) {
-    const navigator = NavigationManager.instance;
-    if (!navigator) {
-      return;
-    }
-    navigator.setNode_(node);
-  }
-
-  // -------------------------------------------------------
-  // |                 Event Handlers                      |
-  // -------------------------------------------------------
+  // =============== Event Handlers ==============
 
   /**
    * Sets up the connection between the menuPanel and menuManager.
@@ -307,9 +286,7 @@ class NavigationManager {
     }
   }
 
-  // -------------------------------------------------------
-  // |                 Private Methods                     |
-  // -------------------------------------------------------
+  // =============== Private Methods ==============
 
   /**
    * Create a stack of the groups the specified node is in, and set

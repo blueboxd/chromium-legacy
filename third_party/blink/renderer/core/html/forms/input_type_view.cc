@@ -210,4 +210,8 @@ void ClickHandlingState::Trace(Visitor* visitor) {
   EventDispatchHandlingState::Trace(visitor);
 }
 
+String InputTypeView::RawValue() const {
+  return g_empty_string;
+}
+
 }  // namespace blink

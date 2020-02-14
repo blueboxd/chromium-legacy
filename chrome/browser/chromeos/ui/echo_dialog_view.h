@@ -60,10 +60,6 @@ class EchoDialogView : public views::DialogDelegateView,
   // The dialog will have only Cancel button.
   void InitForDisabledEcho();
 
-  // views::DialogDelegate overrides.
-  bool Cancel() override;
-  bool Accept() override;
-
   // views::WidgetDelegate overrides.
   ui::ModalType GetModalType() const override;
   bool ShouldShowWindowTitle() const override;

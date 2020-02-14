@@ -24,7 +24,11 @@ import java.util.ArrayList;
 public class QrCodeDialog extends DialogFragment {
     private ArrayList<QrCodeDialogTab> mTabs;
 
-    /** The QrCodeDialog constructor. */
+    /**
+     * The QrCodeDialog constructor.
+     * TODO(tgupta): This causes an NPE when the user moves away from Chrome
+     * and comes back. Fix this issue.
+     */
     public QrCodeDialog() {}
 
     /**

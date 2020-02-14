@@ -4,10 +4,14 @@
 
 package org.chromium.chrome.browser.share.qrcode.scan_tab;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.hardware.Camera;
 import android.hardware.Camera.ErrorCallback;
 import android.hardware.Camera.PreviewCallback;
+import android.net.Uri;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -22,6 +26,7 @@ import org.chromium.ui.widget.ButtonCompat;
  */
 class QrCodeScanView {
     public interface PermissionPrompter { void promptForCameraPermission(); }
+    public interface PermissionPromptAllowedChecker { Boolean canPromptForPermission(); }
 
     private final Context mContext;
     private final FrameLayout mView;
@@ -33,6 +38,7 @@ class QrCodeScanView {
     private CameraPreview mCameraPreview;
     private View mPermissionsView;
     private View mCameraErrorView;
+    private View mOpenSettingsView;
 
     /**
      * The QrCodeScanView constructor.
@@ -45,14 +51,11 @@ class QrCodeScanView {
         mContext = context;
         mCameraPreviewCallback = cameraCallback;
         mView = new FrameLayout(context);
+        mOpenSettingsView = createOpenSettingsView(context);
         mView.setLayoutParams(
                 new FrameLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
         mPermissionsView = createPermissionView(context, permissionPrompter);
         mCameraErrorView = createCameraErrorView(context);
-    }
-
-    public View getView() {
-        return mView;
     }
 
     private View createPermissionView(Context context, PermissionPrompter permissionPrompter) {
@@ -80,16 +83,56 @@ class QrCodeScanView {
     private final ErrorCallback mCameraErrorCallback = new ErrorCallback() {
         @Override
         public void onError(int error, Camera camera) {
+            int stringResource;
+            switch (error) {
+                case Camera.CAMERA_ERROR_EVICTED:
+                case Camera.CAMERA_ERROR_SERVER_DIED:
+                case CameraPreview.CAMERA_IN_USE_ERROR:
+                    stringResource = org.chromium.chrome.R.string.qr_code_in_use_camera_error;
+                    break;
+                case CameraPreview.NO_CAMERA_FOUND_ERROR:
+                    stringResource = org.chromium.chrome.R.string.qr_code_no_camera_error;
+                    break;
+                case CameraPreview.CAMERA_DISABLED_ERROR:
+                    stringResource = org.chromium.chrome.R.string.qr_code_disabled_camera_error;
+                    break;
+                default:
+                    stringResource = org.chromium.chrome.R.string.qr_code_hardware_camera_error;
+            }
             if (mCameraPreview != null) {
                 mCameraPreview.stopCamera();
                 mCameraPreview = null;
             }
-            // TODO(ehsankia): Adjust error message given error code.
-            String errorString = mContext.getResources().getString(
-                    org.chromium.chrome.R.string.qr_code_in_use_camera_error);
+
+            String errorString = mContext.getResources().getString(stringResource);
             displayCameraErrorDialog(errorString);
         }
     };
+
+    public View getView() {
+        return mView;
+    }
+
+    /**
+     * Creates a view that opens the settings page for the app and allows the user to
+     * to update permissions including give the app camera permission.
+     */
+    private View createOpenSettingsView(Context context) {
+        View openSettingsView = (View) LayoutInflater.from(context).inflate(
+                org.chromium.chrome.browser.share.qrcode.R.layout.qrcode_open_settings_layout, null,
+                false);
+
+        ButtonCompat cameraPermissionPrompt = openSettingsView.findViewById(
+                org.chromium.chrome.browser.share.qrcode.R.id.open_settings_button);
+        cameraPermissionPrompt.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent openSettingsIntent = getAppInfoIntent(context.getPackageName());
+                ((Activity) context).startActivity(openSettingsIntent);
+            }
+        });
+        return openSettingsView;
+    }
 
     /**
      * Sets camera if possible.
@@ -104,13 +147,30 @@ class QrCodeScanView {
             return;
         }
         mHasCameraPermission = hasCameraPermission;
+        updateView();
+    }
+
+    /**
+     * Update the view based on the latest environment:
+     * - app is in the foreground
+     * - user has given camera permission
+     * - user can be prompted for camera permission
+     */
+    private void updateView() {
+        // The scan tab is not in the foreground so don't do any rendering.
+        if (!mIsOnForeground) {
+            return;
+        }
+
         // Check that the camera permission has changed and that it is now set to true.
-        if (hasCameraPermission) {
+        if (mHasCameraPermission && mCameraPreview == null) {
             setCameraPreview();
-        } else {
-            // TODO(tgupta): Check that the user can be prompted. If not, show the error
-            // screen instead.
+        } else if (mHasCameraPermission && mCameraPreview != null) {
+            updateCameraPreviewState();
+        } else if (mCanPromptForPermission) {
             displayPermissionDialog();
+        } else {
+            displayOpenSettingsDialog();
         }
     }
 
@@ -118,23 +178,26 @@ class QrCodeScanView {
      * Checks whether Chrome can prompt the user for Camera permission. Updates the view accordingly
      * to let the user know if the permission has been permanently denied.
      *
-     * @param canPromptForPermission
+     * @param canPromptForPermission Indicates whether the user can be prompted for camera
+     * permission
      */
     public void canPromptForPermissionChanged(Boolean canPromptForPermission) {
-        if (mCanPromptForPermission != canPromptForPermission && !canPromptForPermission) {
-            // User chose the "don't ask again option, display the appropriate message
-            // TODO (tgupta): Update this message
-        }
+        mCanPromptForPermission = canPromptForPermission;
+        updateView();
     }
 
     /**
      * Applies changes necessary to camera preview.
      *
-     * @param isOnForeground Indicates whether this component UI is current on foreground.
+     * @param isOnForeground Indicates whether this component UI is currently on foreground.
      */
     public void onForegroundChanged(Boolean isOnForeground) {
         mIsOnForeground = isOnForeground;
-        updateCameraPreviewState();
+        if (!mIsOnForeground && mCameraPreview != null) {
+            mCameraPreview.stopCamera();
+        } else {
+            updateView();
+        }
     }
 
     /** Creates and sets the camera preview. */
@@ -161,7 +224,7 @@ class QrCodeScanView {
             return;
         }
 
-        if (mIsOnForeground) {
+        if (mIsOnForeground && mHasCameraPermission) {
             mCameraPreview.startCamera();
         } else {
             mCameraPreview.stopCamera();
@@ -185,5 +248,21 @@ class QrCodeScanView {
 
         mView.removeAllViews();
         mView.addView(mCameraErrorView);
+    }
+
+    /**
+     * Displays the open settings dialog.
+     */
+    private void displayOpenSettingsDialog() {
+        mView.removeAllViews();
+        mView.addView(mOpenSettingsView);
+    }
+    /**
+     * Returns an Intent to show the App Info page for the current app.
+     */
+    private Intent getAppInfoIntent(String packageName) {
+        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+        intent.setData(new Uri.Builder().scheme("package").opaquePart(packageName).build());
+        return intent;
     }
 }

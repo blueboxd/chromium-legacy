@@ -24,7 +24,7 @@ class ASH_EXPORT ShelfBubble : public views::BubbleDialogDelegateView,
  public:
   ShelfBubble(views::View* anchor,
               ShelfAlignment alignment,
-              SkColor background_co0lor);
+              SkColor background_color);
   ~ShelfBubble() override;
 
   // views::BubbleDialogDelegateView

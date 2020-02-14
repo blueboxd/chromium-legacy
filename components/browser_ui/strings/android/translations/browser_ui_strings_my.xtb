@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">ပြရန်</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5317780077021120954">သိမ်းရန်</translation>
+<translation id="5391532827096253100">ဤဝဘ်ဆိုက်သို့ သင်၏ချိတ်ဆက်မှုသည် လုံခြုံမှုမရှိပါ။ ဝဘ်ဆိုက် အချက်အလက်</translation>
 <translation id="5556459405103347317">ပြန်တင်ရန်</translation>
 <translation id="5596627076506792578">ပိုမို ရွေးချယ်စရာများ</translation>
 <translation id="5860033963881614850">ပိတ်ထား</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">ပိတ်ရန်</translation>
 <translation id="6042308850641462728">နောက်ထပ်</translation>
 <translation id="6165508094623778733">ပိုမိုလေ့လာရန်</translation>
+<translation id="6206551242102657620">ချိတ်ဆက်မှုသည် လုံခြုံပါသည်။ ဝဘ်ဆိုက် အချက်အလက်</translation>
 <translation id="6216432067784365534">ရွေးစရာ <ph name="NAME_OF_LIST_ITEM" /> ခု</translation>
 <translation id="6527303717912515753">မျှဝေရန်</translation>
 <translation id="6746124502594467657">အောက်သို့ရွှေ့ပါ</translation>
 <translation id="6818926723028410516">စာရင်းမှ ရွေးရန်</translation>
 <translation id="6910211073230771657">ဖျက်ပြီး</translation>
 <translation id="6945221475159498467">ရွေးရန်</translation>
+<translation id="6963642900430330478">ဤစာမျက်နှာသည် အန္တရာယ်ရှိသည်။ ဝဘ်ဆိုက် အချက်အလက်</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{၁ ခု ရွေးချယ်ထားပါသည်}other{# ခု ရွေးချယ်ထားပါသည်}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> ခု ရွေးထားသည်။ မျက်နှာပြင်၏ ထိပ်နားတွင် ရွေးချယ်စရာများ ရှိသည်</translation>

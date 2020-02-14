@@ -4750,7 +4750,7 @@
 <translation id="8687958770985542440">重新启用 Web Components v0 API 直至 M84。</translation>
 <translation id="8693243869659262736">使用内置 DNS 客户端</translation>
 <translation id="8698286761337647563">用于指定提前多少天通知密码快要到期的 SAML 用户</translation>
-<translation id="8701288965900240388">让您能够设置是否允许网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件。您既可允许所有网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件，也可禁止所有网站自动运行该插件。
+<translation id="8701288965900240388">让您能够设置是否允许网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件。您可以允许或禁止所有网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件。
 
           选中“点击运行”选项会允许 <ph name="FLASH_PLUGIN_NAME" /> 插件运行，但用户必须点击该插件才能启动它。
 

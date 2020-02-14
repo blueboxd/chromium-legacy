@@ -1029,12 +1029,23 @@ class MetaBuildWrapper(object):
     # because in python 3 vpython will no longer have its current 'viral'
     # qualities and will require explicit usage to opt in to.
     prefix = getattr(sys, "real_prefix", sys.prefix)
-    python_exe = ('%s\\bin\\python.exe' if self.platform.startswith('win') else
-                  '%s/bin/python') % prefix
-    if os.path.isfile(python_exe):
-      cmd.append('--script-executable=%s' % python_exe)
+    python_exe = 'python.exe' if self.platform.startswith('win') else 'python'
+    # The value of prefix varies. Sometimes it extends to include the bin/
+    # directory of the python install such that prefix/python is the intepreter,
+    # and other times prefix/bin/python is the interpreter. Therefore we need
+    # to check both. Also, it is safer to check prefix/bin first because there
+    # have been previous installs where prefix/bin/python was the real binary
+    # and prefix/python was actually vpython-native.
+    possible_python_locations = [
+        os.path.join(prefix, 'bin', python_exe),
+        os.path.join(prefix, python_exe),
+    ]
+    for p in possible_python_locations:
+      if os.path.isfile(p):
+        cmd.append('--script-executable=%s' % python_exe)
+        break
     else:
-      self.Print('python interpreter not under %s/bin' % prefix)
+      self.Print('python interpreter not under %s' % prefix)
 
     ret, output, _ = self.Run(cmd)
     if ret:
@@ -1298,8 +1309,8 @@ class MetaBuildWrapper(object):
       # these will lead to incorrect incremental builds if their directory
       # contents change. Do not add to this list.
       # TODO(https://crbug.com/912946): Remove this if statement.
-      if ((is_msan and f == 'instrumented_libraries_prebuilt/') or
-          f == 'mr_extension/' or # https://crbug.com/997947
+      if ((is_msan and f == 'instrumented_libraries_prebuilt/')
+          or f == 'mr_extension/' or  # https://crbug.com/997947
           f.startswith('nacl_test_data/') or
           f.startswith('ppapi_nacl_tests_libs/') or
           (is_cros and f in (  # https://crbug.com/1002509
@@ -1310,17 +1321,17 @@ class MetaBuildWrapper(object):
               'resources/chromeos/accessibility/chromevox/',
               'resources/chromeos/accessibility/select_to_speak/',
               'test_data/chrome/browser/resources/chromeos/accessibility/'
-                  'autoclick/',
+              'autoclick/',
               'test_data/chrome/browser/resources/chromeos/accessibility/'
-                  'chromevox/',
+              'chromevox/',
               'test_data/chrome/browser/resources/chromeos/accessibility/'
-                  'select_to_speak/',
-          )) or
-          (is_mac and f in (  # https://crbug.com/1000667
+              'select_to_speak/',
+          )) or (is_mac and f in (  # https://crbug.com/1000667
               'AlertNotificationService.xpc/',
               'Chromium Framework.framework/',
               'Chromium Helper.app/',
               'Chromium.app/',
+              'ChromiumUpdater.app/',
               'Content Shell.app/',
               'Google Chrome Framework.framework/',
               'Google Chrome Helper (GPU).app/',
@@ -1328,7 +1339,7 @@ class MetaBuildWrapper(object):
               'Google Chrome Helper (Renderer).app/',
               'Google Chrome Helper.app/',
               'Google Chrome.app/',
-              'GoogleUpdate.app/',
+              'GoogleUpdater.app/',
               'blink_deprecated_test_plugin.plugin/',
               'blink_test_plugin.plugin/',
               'corb_test_plugin.plugin/',

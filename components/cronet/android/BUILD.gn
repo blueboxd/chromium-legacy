@@ -434,6 +434,7 @@ android_library("cronet_sample_apk_java") {
     ":package_api_java",
     ":package_impl_native_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:com_android_support_support_annotations_java",
   ]
 }
 
@@ -515,6 +516,7 @@ java_prebuilt("package_impl_native_java") {
     "//third_party/android_deps:android_support_v4_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
+  jar_excluded_patterns = [ "androidx/*/R*" ]
 }
 
 android_java_prebuilt("package_impl_util_java") {
@@ -1076,7 +1078,6 @@ if (!is_component_build) {
       "//third_party/netty4:netty_all_java",
     ]
 
-    enable_multidex = false
     if (!is_java_debug) {
       proguard_enabled = true
 

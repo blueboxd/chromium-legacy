@@ -7,10 +7,12 @@ found in the LICENSE file.
 <meta
   name="viewport"
   content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1">
+<title>Max Pay test</title>
 <body>
   <button onclick="confirm()">confirm</button>
   <button onclick="cancel()">cancel</button>
   <button onclick="fail()">fail</button>
+  <button onclick="abort()">abort</button>
   <div>Messages:</div>
   <pre id="log"></pre>
 </body>
@@ -40,6 +42,12 @@ function fail() {
   return 'failed';
 }
 
+function abort() {
+  navigator.serviceWorker.controller.postMessage('abort');
+  updateLogView('abort is invoked.');
+  return 'aborted';
+}
+
 function cancel() {
   navigator.serviceWorker.controller.postMessage('cancel');
   updateLogView('cancel is invoked.');
@@ -57,7 +65,7 @@ window.onload = function() {
 
 navigator.serviceWorker.addEventListener('message', (evt) => {
   if (!evt.data) {
-    updateLogView('Received an empty message');
+    updateLogView('Received an empty message.');
     return;
   }
 

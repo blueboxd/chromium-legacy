@@ -204,6 +204,13 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // after a timeout.
   void SignalCanFetchUnmaskDetails();
 
+  // Additionlly authorizes the card with FIDO. It also delays the form filling.
+  // It should only be called when registering a new card or opting-in from
+  // Android.
+  void AdditionallyPerformFidoAuth(
+      const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response,
+      base::Value request_options);
+
   // The current form of authentication in progress.
   UnmaskAuthFlowType unmask_auth_flow_type_ = UnmaskAuthFlowType::kNone;
 

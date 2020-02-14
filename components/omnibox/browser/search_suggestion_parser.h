@@ -262,6 +262,7 @@ class SearchSuggestionParser {
 
   typedef std::vector<SuggestResult> SuggestResults;
   typedef std::vector<NavigationResult> NavigationResults;
+  typedef std::vector<base::Value> ExperimentStats;
 
   // A simple structure bundling most of the information (including
   // both SuggestResults and NavigationResults) returned by a call to
@@ -301,6 +302,10 @@ class SearchSuggestionParser {
 
     // If the active suggest field trial (if any) has triggered.
     bool field_trial_triggered;
+
+    // The list of experiment stats which needs to be logged to SearchboxStats
+    // as part of a GWS experiment, if any.
+    ExperimentStats experiment_stats;
 
     // If the relevance values of the results are from the server.
     bool relevances_from_server;

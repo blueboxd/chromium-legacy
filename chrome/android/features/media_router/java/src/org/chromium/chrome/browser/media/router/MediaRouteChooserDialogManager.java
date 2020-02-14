@@ -14,10 +14,11 @@ import android.support.v7.app.MediaRouteChooserDialog;
 import android.support.v7.app.MediaRouteChooserDialogFragment;
 import android.support.v7.media.MediaRouteSelector;
 import android.support.v7.media.MediaRouter;
-import android.support.v7.mediarouter.R;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+
+import androidx.mediarouter.R;
 
 /**
  * Manages the dialog responsible for selecting a {@link MediaSink}.

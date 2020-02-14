@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5301954838959518834">Entendido</translation>
 <translation id="5317780077021120954">Gardar</translation>
+<translation id="5391532827096253100">A túa conexión a este sitio non é segura. Información do sitio</translation>
 <translation id="5556459405103347317">Volver cargar</translation>
 <translation id="5596627076506792578">Máis opcións</translation>
 <translation id="5860033963881614850">Non</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Pechar</translation>
 <translation id="6042308850641462728">Máis</translation>
 <translation id="6165508094623778733">Máis información</translation>
+<translation id="6206551242102657620">A conexión é segura. Información do sitio</translation>
 <translation id="6216432067784365534">Opcións de <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Compartir</translation>
 <translation id="6746124502594467657">Mover cara abaixo</translation>
 <translation id="6818926723028410516">Selecciona elementos</translation>
 <translation id="6910211073230771657">Eliminado</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
+<translation id="6963642900430330478">Esta páxina é perigosa. Información do sitio</translation>
 <translation id="6965382102122355670">Aceptar</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 elemento seleccionado}other{# elementos seleccionados}}</translation>
 <translation id="7087918508125750058">Elementos seleccionados: <ph name="ITEM_COUNT" />. Hai opcións dispoñibles na parte superior da pantalla</translation>

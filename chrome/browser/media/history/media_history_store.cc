@@ -14,6 +14,7 @@
 #include "chrome/browser/media/history/media_history_session_images_table.h"
 #include "chrome/browser/media/history/media_history_session_table.h"
 #include "content/public/browser/media_player_watch_time.h"
+#include "services/media_session/public/cpp/media_image.h"
 #include "services/media_session/public/cpp/media_position.h"
 #include "sql/statement.h"
 #include "url/origin.h"
@@ -58,7 +59,7 @@ class MediaHistoryStoreInternal
   sql::Database* DB();
 
   // Returns a flag indicating whether the origin id was created successfully.
-  bool CreateOriginId(const std::string& origin);
+  bool CreateOriginId(const url::Origin& origin);
 
   void SavePlayback(const content::MediaPlayerWatchTime& watch_time);
 
@@ -73,7 +74,8 @@ class MediaHistoryStoreInternal
   void SavePlaybackSession(
       const GURL& url,
       const media_session::MediaMetadata& metadata,
-      const base::Optional<media_session::MediaPosition>& position);
+      const base::Optional<media_session::MediaPosition>& position,
+      const std::vector<media_session::MediaImage>& artwork);
 
   base::Optional<MediaHistoryStore::MediaPlaybackSessionList>
   GetPlaybackSessions(unsigned int num_sessions,
@@ -133,7 +135,7 @@ void MediaHistoryStoreInternal::SavePlayback(
     return;
   }
 
-  auto origin = watch_time.origin.spec();
+  auto origin = url::Origin::Create(watch_time.origin);
 
   if (!(CreateOriginId(origin) && playback_table_->SavePlayback(watch_time))) {
     DB()->RollbackTransaction();
@@ -209,7 +211,7 @@ sql::InitStatus MediaHistoryStoreInternal::InitializeTables() {
   return status;
 }
 
-bool MediaHistoryStoreInternal::CreateOriginId(const std::string& origin) {
+bool MediaHistoryStoreInternal::CreateOriginId(const url::Origin& origin) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   if (!initialization_successful_)
     return false;
@@ -306,7 +308,8 @@ int MediaHistoryStoreInternal::GetTableRowCount(const std::string& table_name) {
 void MediaHistoryStoreInternal::SavePlaybackSession(
     const GURL& url,
     const media_session::MediaMetadata& metadata,
-    const base::Optional<media_session::MediaPosition>& position) {
+    const base::Optional<media_session::MediaPosition>& position,
+    const std::vector<media_session::MediaImage>& artwork) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
   if (!initialization_successful_)
     return;
@@ -317,12 +320,37 @@ void MediaHistoryStoreInternal::SavePlaybackSession(
   }
 
   auto origin = url::Origin::Create(url);
-  if (CreateOriginId(origin.Serialize()) &&
-      session_table_->SavePlaybackSession(url, origin, metadata, position)) {
-    DB()->CommitTransaction();
-  } else {
+  if (!CreateOriginId(origin)) {
     DB()->RollbackTransaction();
+    return;
   }
+
+  auto session_id =
+      session_table_->SavePlaybackSession(url, origin, metadata, position);
+  if (!session_id) {
+    DB()->RollbackTransaction();
+    return;
+  }
+
+  for (auto& image : artwork) {
+    auto image_id = images_table_->SaveOrGetImage(image.src, image.type);
+    if (!image_id) {
+      DB()->RollbackTransaction();
+      return;
+    }
+
+    // If we do not have any sizes associated with the image we should save a
+    // link with a null size. Otherwise, we should save a link for each size.
+    if (image.sizes.empty()) {
+      session_images_table_->LinkImage(*session_id, *image_id, base::nullopt);
+    } else {
+      for (auto& size : image.sizes) {
+        session_images_table_->LinkImage(*session_id, *image_id, size);
+      }
+    }
+  }
+
+  DB()->CommitTransaction();
 }
 
 base::Optional<MediaHistoryStore::MediaPlaybackSessionList>
@@ -333,7 +361,14 @@ MediaHistoryStoreInternal::GetPlaybackSessions(
   if (!initialization_successful_)
     return base::nullopt;
 
-  return session_table_->GetPlaybackSessions(num_sessions, std::move(filter));
+  auto sessions =
+      session_table_->GetPlaybackSessions(num_sessions, std::move(filter));
+
+  for (auto& session : *sessions) {
+    session->artwork = session_images_table_->GetImagesForSession(session->id);
+  }
+
+  return sessions;
 }
 
 void MediaHistoryStoreInternal::RazeAndClose() {
@@ -355,6 +390,10 @@ MediaHistoryStore::MediaHistoryStore(
 }
 
 MediaHistoryStore::~MediaHistoryStore() {}
+
+MediaHistoryStore::MediaPlaybackSession::MediaPlaybackSession() = default;
+
+MediaHistoryStore::MediaPlaybackSession::~MediaPlaybackSession() = default;
 
 void MediaHistoryStore::SavePlayback(
     const content::MediaPlayerWatchTime& watch_time) {
@@ -422,13 +461,14 @@ void MediaHistoryStore::GetMediaHistoryPlaybackRowsForDebug(
 void MediaHistoryStore::SavePlaybackSession(
     const GURL& url,
     const media_session::MediaMetadata& metadata,
-    const base::Optional<media_session::MediaPosition>& position) {
+    const base::Optional<media_session::MediaPosition>& position,
+    const std::vector<media_session::MediaImage>& artwork) {
   if (!db_->initialization_successful_)
     return;
 
   db_->db_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&MediaHistoryStoreInternal::SavePlaybackSession,
-                                db_, url, metadata, position));
+                                db_, url, metadata, position, artwork));
 }
 
 void MediaHistoryStore::GetPlaybackSessions(

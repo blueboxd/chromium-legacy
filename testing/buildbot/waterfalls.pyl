@@ -1502,17 +1502,6 @@
   {
     'name': 'chromium.fyi',
     'machines': {
-      'Linux Builder Goma Canary': {
-        'mixins': [
-          'linux-xenial',
-        ],
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_gtests',
-        },
-      },
       'Linux Ozone Tester (Wayland)': {
         'args': [ '--ozone-platform=wayland' ],
         'mixins': [
@@ -1543,31 +1532,6 @@
           'isolated_scripts': 'skia_renderer_isolated_scripts',
         },
       },
-      'Mac Builder (dbg) Goma Canary': {
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_mac_gtests',
-        },
-      },
-      'Mac Builder (dbg) Goma Canary (clobber)': {
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_mac_gtests',
-        },
-      },
-      'Mac Builder Goma Canary': {
-        'additional_compile_targets': [
-          'all',
-          'pdf_fuzzers',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_mac_gtests',
-        },
-      },
       'Mac Builder Next': {
         'additional_compile_targets': [
           'all',
@@ -1575,8 +1539,8 @@
       },
       'Mac10.14 Tests': {
         'mixins': [
-            'mac_10.14',
-            'no_gpu',
+          'mac_10.14',
+          'no_gpu',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
@@ -1673,23 +1637,6 @@
         },
         'use_swarming': False,
       },
-      'Win Builder (dbg) Goma Canary': {
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_gtests',
-        },
-      },
-      'Win Builder Goma Canary': {
-        'additional_compile_targets': [
-          'all',
-          'pdf_fuzzers',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_gtests',
-        },
-      },
       'Win10 Tests x64 1803': {
         'mixins': [
           'x86-64',
@@ -1699,28 +1646,6 @@
           'gtest_tests': 'chromium_win_gtests',
           'isolated_scripts': 'chromium_win_rel_isolated_scripts',
         },
-      },
-      'Win7 Builder (dbg) Goma Canary': {
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_gtests',
-        },
-      },
-      'Win7 Builder Goma Canary': {
-        'additional_compile_targets': [
-          'all',
-          'pdf_fuzzers',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_gtests',
-        },
-      },
-      'android-archive-dbg-goma-canary': {
-        'additional_compile_targets': [
-          'all',
-        ],
       },
       'android-code-coverage': {
         'mixins': [
@@ -1760,29 +1685,6 @@
         'test_suites': {
           'gtest_tests': 'network_service_android_gtests',
         },
-      },
-      # Note:
-      # chromeos-amd64-generic-rel-goma-* builders mirror targets of
-      # chromeos-amd64-generic-rel.
-      'chromeos-amd64-generic-rel-goma-canary': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-      },
-      'chromeos-amd64-generic-rel-goma-latest': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-      },
-      'chromeos-amd64-generic-rel-goma-rbe-canary': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
-      },
-      'chromeos-amd64-generic-rel-goma-rbe-latest': {
-        'additional_compile_targets': [
-          'chromiumos_preflight',
-        ],
       },
       'chromeos-amd64-generic-rel-vm-tests': {
         'additional_compile_targets': [
@@ -1878,7 +1780,7 @@
       'ios-simulator-code-coverage': {
         'test_suites': {
           'gtest_tests': 'ios_code_coverage_gtests',
-        }
+        },
       },
       'ios-simulator-cr-recipe': {
         'mixins': [
@@ -1888,34 +1790,12 @@
           'xcode_parallelization',
         ],
         'test_suites': {
-          'gtest_tests': 'ios_simulator_cr_recipe_gtests'
-        }
+          'gtest_tests': 'ios_simulator_cr_recipe_gtests',
+        },
       },
       'linux-annotator-rel': {
         'test_suites': {
           'scripts': 'test_traffic_annotation_auditor_script',
-        }
-      },
-      'linux-archive-rel-goma-canary': {
-        'mixins': [
-          'linux-xenial',
-        ],
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_gtests',
-        },
-      },
-      'linux-archive-rel-goma-canary-localoutputcache': {
-        'mixins': [
-          'linux-xenial',
-        ],
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_gtests',
         },
       },
       'linux-bfcache-debug': {
@@ -1941,12 +1821,12 @@
       },
       'linux-blink-cors-rel': {
         'mixins': [
-          'linux-xenial'
+          'linux-xenial',
         ],
         'test_suites': {
           'gtest_tests': 'blink_cors_gtests',
-          'isolated_scripts': 'chromium_webkit_isolated_scripts'
-        }
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
       },
       'linux-blink-heap-concurrent-marking-tsan-rel': {
         'mixins': [
@@ -1957,7 +1837,7 @@
         },
         'gtest_args': [
           '--enable-features=BlinkHeapConcurrentMarking',
-        ]
+        ],
       },
       'linux-blink-heap-verification': {
         'mixins': [
@@ -1990,11 +1870,11 @@
       },
       'linux-chromium-tests-staging-builder': {
         'additional_compile_targets': [
-          'all'
+          'all',
         ],
         'test_suites': {
           'scripts': 'check_network_annotations_script',
-        }
+        },
       },
       'linux-chromium-tests-staging-tests': {
         'mixins': [
@@ -2032,26 +1912,6 @@
           'isolated_scripts': 'wpt_web_tests',
         },
       },
-      'mac-archive-rel-goma-canary': {
-        'additional_compile_targets': [
-          # Due to disk shortage, we build 'chrome' instead of 'all'.
-          # See crbug.com/899425
-          'chrome',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_mac_gtests',
-        },
-      },
-      'mac-archive-rel-goma-canary-localoutputcache': {
-        'additional_compile_targets': [
-          # Due to disk shortage, we build 'chrome' instead of 'all'.
-          # See crbug.com/825536
-          'chrome',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_mac_gtests',
-        },
-      },
       'mac-code-coverage': {
         'mixins': [
           'code-coverage',
@@ -2064,20 +1924,20 @@
       },
       'mac-hermetic-upgrade-rel': {
         'additional_compile_targets': [
-          'all'
+          'all',
         ],
       },
       'mac-mojo-rel': {
         'mixins': [
-            'mac_10.13',
-            'no_gpu',
+          'mac_10.13',
+          'no_gpu',
         ],
       },
       'mac-osxbeta-rel': {
         'mixins': [
-            'intel_iris_5100',
-            'limited_capacity_bot',
-            'mac_10.15_beta',
+          'intel_iris_5100',
+          'limited_capacity_bot',
+          'mac_10.15_beta',
         ],
         'test_suites': {
           'gtest_tests': 'chromium_mac_gtests',
@@ -2093,7 +1953,7 @@
             { # This should match Mac10.10 Tests on chromium.mac.
               'gpu': 'none',
               'os': 'Mac-10.10.5',
-            }
+            },
           ],
         },
       },
@@ -2106,7 +1966,7 @@
             { # This should match Mac10.10 Tests on chromium.mac.
               'gpu': 'none',
               'os': 'Mac-10.11.6',
-            }
+            },
           ],
         },
       },
@@ -2120,7 +1980,7 @@
               'gpu': '8086:0a2e',
               'hidpi': '0',
               'os': 'Mac-10.12.6',
-            }
+            },
           ],
         },
       },
@@ -2152,7 +2012,7 @@
               'hidpi': '1',
               'os': 'Mac-10.13.6',
               'pool': 'chromium.tests.gpu',
-            }
+            },
           ],
         },
       },
@@ -2176,7 +2036,7 @@
       'win-annotator-rel': {
         'test_suites': {
           'scripts': 'test_traffic_annotation_auditor_script',
-        }
+        },
       },
       'win10-blink-rel-dummy': {
         'swarming': {
@@ -2197,14 +2057,6 @@
         ],
         'test_suites': {
           'gtest_tests': 'chromium_win_gtests',
-        }
-      },
-      'win32-archive-rel-goma-canary-localoutputcache': {
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_gtests',
         },
       },
       'win7-blink-rel-dummy': {
@@ -2328,6 +2180,159 @@
         },
       },
       'CrWinGomaStaging': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_gtests',
+        },
+      },
+    },
+  },
+  {
+    'name': 'chromium.goma.fyi',
+    'machines': {
+      'Linux Builder Goma Canary': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_gtests',
+        },
+      },
+      'Mac Builder (dbg) Goma Canary': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_mac_gtests',
+        },
+      },
+      'Mac Builder (dbg) Goma Canary (clobber)': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_mac_gtests',
+        },
+      },
+      'Mac Builder Goma Canary': {
+        'additional_compile_targets': [
+          'all',
+          'pdf_fuzzers',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_mac_gtests',
+        },
+      },
+      'Win Builder (dbg) Goma Canary': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_gtests',
+        },
+      },
+      'Win Builder Goma Canary': {
+        'additional_compile_targets': [
+          'all',
+          'pdf_fuzzers',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_gtests',
+        },
+      },
+      'Win7 Builder (dbg) Goma Canary': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_gtests',
+        },
+      },
+      'Win7 Builder Goma Canary': {
+        'additional_compile_targets': [
+          'all',
+          'pdf_fuzzers',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_gtests',
+        },
+      },
+      'android-archive-dbg-goma-canary': {
+        'additional_compile_targets': [
+          'all',
+        ],
+      },
+      # Note:
+      # chromeos-amd64-generic-rel-goma-* builders mirror targets of
+      # chromeos-amd64-generic-rel.
+      'chromeos-amd64-generic-rel-goma-canary': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
+      'chromeos-amd64-generic-rel-goma-latest': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
+      'chromeos-amd64-generic-rel-goma-rbe-canary': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
+      'chromeos-amd64-generic-rel-goma-rbe-latest': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
+      'linux-archive-rel-goma-canary': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_gtests',
+        },
+      },
+      'linux-archive-rel-goma-canary-localoutputcache': {
+        'additional_compile_targets': [
+          'all',
+        ],
+        'mixins': [
+          'linux-xenial',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_gtests',
+        },
+      },
+      'mac-archive-rel-goma-canary': {
+        'additional_compile_targets': [
+          # Due to disk shortage, we build 'chrome' instead of 'all'.
+          # See crbug.com/899425
+          'chrome',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_mac_gtests',
+        },
+      },
+      'mac-archive-rel-goma-canary-localoutputcache': {
+        'additional_compile_targets': [
+          # Due to disk shortage, we build 'chrome' instead of 'all'.
+          # See crbug.com/825536
+          'chrome',
+        ],
+        'test_suites': {
+          'gtest_tests': 'goma_mac_gtests',
+        },
+      },
+      'win32-archive-rel-goma-canary-localoutputcache': {
         'additional_compile_targets': [
           'all',
         ],

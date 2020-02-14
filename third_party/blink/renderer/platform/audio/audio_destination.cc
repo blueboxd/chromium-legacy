@@ -67,7 +67,6 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
                                    const WebAudioLatencyHint& latency_hint,
                                    base::Optional<float> context_sample_rate)
     : number_of_output_channels_(number_of_output_channels),
-      play_state_(PlayState::kStopped),
       fifo_(
           std::make_unique<PushPullFIFO>(number_of_output_channels, kFIFOSize)),
       output_bus_(AudioBus::Create(number_of_output_channels,
@@ -76,7 +75,8 @@ AudioDestination::AudioDestination(AudioIOCallback& callback,
       render_bus_(AudioBus::Create(number_of_output_channels,
                                    audio_utilities::kRenderQuantumFrames)),
       callback_(callback),
-      frames_elapsed_(0) {
+      frames_elapsed_(0),
+      device_state_(DeviceState::kStopped) {
   // Create WebAudioDevice. blink::WebAudioDevice is designed to support the
   // local input (e.g. loopback from OS audio system), but Chromium's media
   // renderer does not support it currently. Thus, we use zero for the number
@@ -208,6 +208,16 @@ void AudioDestination::RequestRender(size_t frames_requested,
                "frames_to_render", frames_to_render, "timestamp (s)",
                delay_timestamp);
 
+  MutexTryLocker locker(state_change_lock_);
+
+  // The state might be changing by ::Stop() call. If the state is locked, do
+  // not touch the below.
+  if (!locker.Locked())
+    return;
+
+  if (device_state_ != DeviceState::kRunning)
+    return;
+
   metric_reporter_.BeginTrace();
 
   frames_elapsed_ -= std::min(frames_elapsed_, prior_frames_skipped);
@@ -252,64 +262,72 @@ void AudioDestination::RequestRender(size_t frames_requested,
 
 void AudioDestination::Start() {
   DCHECK(IsMainThread());
+  TRACE_EVENT0("webaudio", "AudioDestination::Start");
 
-  // Start the "audio device" after the rendering thread is ready.
-  if (web_audio_device_ && play_state_ == PlayState::kStopped) {
-    TRACE_EVENT0("webaudio", "AudioDestination::Start");
-    web_audio_device_->Start();
-    play_state_ = PlayState::kPlaying;
-  }
+  if (device_state_ != DeviceState::kStopped)
+    return;
+  web_audio_device_->Start();
+  SetDeviceState(DeviceState::kRunning);
 }
 
 void AudioDestination::StartWithWorkletTaskRunner(
     scoped_refptr<base::SingleThreadTaskRunner> worklet_task_runner) {
   DCHECK(IsMainThread());
+  DCHECK_EQ(worklet_task_runner_, nullptr);
+  TRACE_EVENT0("webaudio", "AudioDestination::StartWithWorkletTaskRunner");
 
-  if (web_audio_device_ && play_state_ == PlayState::kStopped) {
-    TRACE_EVENT0("webaudio", "AudioDestination::Start");
-    worklet_task_runner_ = std::move(worklet_task_runner);
-    web_audio_device_->Start();
-    play_state_ = PlayState::kPlaying;
-  }
+  if (device_state_ != DeviceState::kStopped)
+    return;
+  worklet_task_runner_ = std::move(worklet_task_runner);
+  web_audio_device_->Start();
+  SetDeviceState(DeviceState::kRunning);
 }
 
 void AudioDestination::Stop() {
   DCHECK(IsMainThread());
+  TRACE_EVENT0("webaudio", "AudioDestination::Stop");
 
-  // This assumes stopping the "audio device" is synchronous and dumping the
-  // rendering thread is safe after that.
-  if (web_audio_device_ && play_state_ != PlayState::kStopped) {
-    TRACE_EVENT0("webaudio", "AudioDestination::Stop");
-    web_audio_device_->Stop();
-    worklet_task_runner_ = nullptr;
-    play_state_ = PlayState::kStopped;
-  }
+  if (device_state_ == DeviceState::kStopped)
+    return;
+  web_audio_device_->Stop();
+
+  // Resetting |worklet_task_runner_| here is safe because
+  // AudioDestination::Render() won't be called after WebAudioDevice::Stop()
+  // call above.
+  worklet_task_runner_ = nullptr;
+
+  SetDeviceState(DeviceState::kStopped);
 }
 
 void AudioDestination::Pause() {
   DCHECK(IsMainThread());
-  if (web_audio_device_ && play_state_ == PlayState::kPlaying) {
-    web_audio_device_->Pause();
-    play_state_ = PlayState::kPaused;
-  }
+  TRACE_EVENT0("webaudio", "AudioDestination::Pause");
+
+  if (device_state_ != DeviceState::kRunning)
+    return;
+  web_audio_device_->Pause();
+  SetDeviceState(DeviceState::kPaused);
 }
 
 void AudioDestination::Resume() {
   DCHECK(IsMainThread());
-  if (web_audio_device_ && play_state_ == PlayState::kPaused) {
-    web_audio_device_->Resume();
-    play_state_ = PlayState::kPlaying;
-  }
+  TRACE_EVENT0("webaudio", "AudioDestination::Resume");
+
+  if (device_state_ != DeviceState::kPaused)
+    return;
+  web_audio_device_->Resume();
+  SetDeviceState(DeviceState::kRunning);
+}
+
+bool AudioDestination::IsPlaying() {
+  DCHECK(IsMainThread());
+  MutexLocker locker(state_change_lock_);
+  return device_state_ == DeviceState::kRunning;
 }
 
 uint32_t AudioDestination::CallbackBufferSize() const {
   DCHECK(IsMainThread());
   return callback_buffer_size_;
-}
-
-bool AudioDestination::IsPlaying() {
-  DCHECK(IsMainThread());
-  return play_state_ == PlayState::kPlaying;
 }
 
 int AudioDestination::FramesPerBuffer() const {
@@ -355,4 +373,11 @@ void AudioDestination::ProvideResamplerInput(int resampler_frame_delay,
   callback_.Render(dest, audio_utilities::kRenderQuantumFrames,
                    output_position_, metric_reporter_.GetMetric());
 }
+
+void AudioDestination::SetDeviceState(DeviceState state) {
+  DCHECK(IsMainThread());
+  MutexLocker locker(state_change_lock_);
+  device_state_ = state;
+}
+
 }  // namespace blink

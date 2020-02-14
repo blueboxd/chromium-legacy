@@ -102,9 +102,14 @@
 // callback.
 #include "chromecast/browser/accessibility/accessibility_manager.h"
 #include "chromecast/browser/cast_display_configurator.h"
+#include "chromecast/browser/devtools/cast_ui_devtools.h"
 #include "chromecast/graphics/cast_screen.h"
 #include "chromecast/graphics/cast_window_manager_aura.h"
 #include "chromecast/media/service/cast_renderer.h"  // nogncheck
+#if !defined(OS_FUCHSIA)
+#include "components/ui_devtools/devtools_server.h"  // nogncheck
+#include "components/ui_devtools/switches.h"         // nogncheck
+#endif
 #include "components/viz/service/display/overlay_strategy_underlay_cast.h"  // nogncheck
 #include "ui/display/screen.h"
 #include "ui/views/views_delegate.h"  // nogncheck
@@ -566,6 +571,19 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 #endif
 
 #if defined(USE_AURA)
+
+#if !defined(OS_FUCHSIA)
+  // Start UI devtools if enabled.
+  // Note that this must happen before the window tree host is created by the
+  // window manager.
+  if (::ui_devtools::UiDevToolsServer::IsUiDevToolsEnabled(
+          ::ui_devtools::switches::kEnableUiDevTools)) {
+    // Starts the UI Devtools server for browser Aura UI
+    ui_devtools_ = std::make_unique<CastUIDevTools>(
+        cast_content_browser_client_->GetSystemNetworkContext());
+  }
+#endif
+
   window_manager_ = std::make_unique<CastWindowManagerAura>(
       CAST_IS_DEBUG_BUILD() ||
       GetSwitchValueBoolean(switches::kEnableInput, false));

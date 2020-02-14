@@ -47,7 +47,7 @@ defaults.triggered_by.set(['master-gitiles-trigger'])
 def fyi_goma_canary_builder(*, name, **kwargs):
   return builder(
       name = name,
-      mastername = 'chromium.fyi',
+      mastername = 'chromium.goma.fyi',
       execution_timeout = 10 * time.hour,
       **kwargs
   )
@@ -149,7 +149,7 @@ def fyi_goma_rbe_canary_builder(
       name = name,
       execution_timeout = 10 * time.hour,
       goma_backend = goma_backend,
-      mastername = 'chromium.fyi',
+      mastername = 'chromium.goma.fyi',
       os = os,
       **kwargs
   )
@@ -207,7 +207,7 @@ fyi_goma_rbe_canary_builder(
 def fyi_goma_latest_client_builder(*, name, os=os.LINUX_DEFAULT, **kwargs):
   return builder(
       name = name,
-      mastername = 'chromium.fyi',
+      mastername = 'chromium.goma.fyi',
       execution_timeout = 10 * time.hour,
       os = os,
       **kwargs
@@ -307,7 +307,7 @@ def fyi_goma_rbe_latest_client_builder(
       name = name,
       execution_timeout = 10 * time.hour,
       goma_backend = goma_backend,
-      mastername = 'chromium.fyi',
+      mastername = 'chromium.goma.fyi',
       os = os,
       **kwargs
   )

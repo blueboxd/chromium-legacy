@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">הצגה</translation>
 <translation id="5301954838959518834">בסדר, הבנתי</translation>
 <translation id="5317780077021120954">שמור</translation>
+<translation id="5391532827096253100">החיבור שלך לאתר הזה לא מאובטח. פרטי האתר</translation>
 <translation id="5556459405103347317">ניסיון טעינה נוסף</translation>
 <translation id="5596627076506792578">אפשרויות נוספות</translation>
 <translation id="5860033963881614850">כבוי</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">סגור</translation>
 <translation id="6042308850641462728">עוד</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
+<translation id="6206551242102657620">החיבור מאובטח. פרטי האתר</translation>
 <translation id="6216432067784365534">אפשרויות בשביל <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">שיתוף</translation>
 <translation id="6746124502594467657">הזז למטה</translation>
 <translation id="6818926723028410516">בחירת פריטים</translation>
 <translation id="6910211073230771657">נמחק</translation>
 <translation id="6945221475159498467">בחירה</translation>
+<translation id="6963642900430330478">הדף הזה מסוכן. פרטי האתר</translation>
 <translation id="6965382102122355670">אישור</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{נבחר אחד}two{נבחרו #}many{נבחרו #}other{נבחרו #}}</translation>
 <translation id="7087918508125750058">נבחרו <ph name="ITEM_COUNT" />. האפשרויות מוצגות בחלק העליון של המסך</translation>

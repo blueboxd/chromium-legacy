@@ -378,8 +378,11 @@ class SharedIsolateFactory {
         // and not V8, so tune down V8 to use as little memory as possible.
         static const char kOptimizeForSize[] = "--optimize_for_size";
         v8::V8::SetFlagsFromString(kOptimizeForSize, strlen(kOptimizeForSize));
-        static const char kNoOpt[] = "--noopt";
-        v8::V8::SetFlagsFromString(kNoOpt, strlen(kNoOpt));
+
+        // Running v8 in jitless mode allows dynamic code to be disabled in the
+        // process.
+        static const char kJitless[] = "--jitless";
+        v8::V8::SetFlagsFromString(kJitless, strlen(kJitless));
 
         // WebAssembly isn't encountered during resolution, so reduce the
         // potential attack surface.

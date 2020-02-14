@@ -74,14 +74,14 @@ using password_manager::metrics_util::LogLeakDialogTypeAndDismissalReason;
   LogLeakDialogTypeAndDismissalReason(self.leakType, self.dismissReason);
 }
 
-#pragma mark - PasswordBreachConsumerDelegate
+#pragma mark - ConfirmationAlertActionHandler
 
-- (void)passwordBreachDone {
+- (void)confirmationAlertDone {
   self.dismissReason = LeakDialogDismissalReason::kClickedOk;
   [self.presenter stop];
 }
 
-- (void)passwordBreachPrimaryAction {
+- (void)confirmationAlertPrimaryAction {
   // Opening a new tab already stops the presentation in the presenter.
   // No need to send |stop|.
   self.dismissReason = LeakDialogDismissalReason::kClickedCheckPasswords;
@@ -90,7 +90,7 @@ using password_manager::metrics_util::LogLeakDialogTypeAndDismissalReason;
   [self.dispatcher openURLInNewTab:newTabCommand];
 }
 
-- (void)passwordBreachLearnMoreAction {
+- (void)confirmationAlertLearnMoreAction {
   [self.presenter presentLearnMore];
 }
 

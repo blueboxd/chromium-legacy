@@ -1238,10 +1238,10 @@
                  file="chromeos/personalization_page/wallpaper_browser_proxy.js"
                  type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_METRICS_RECORDER_HTML"
-                 file="chromeos/metrics_recorder/metrics_recorder.html"
+                 file="chromeos/metrics_recorder.html"
                  type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_METRICS_RECORDER_JS"
-                 file="chromeos/metrics_recorder/metrics_recorder.js"
+                 file="chromeos/metrics_recorder.js"
                  type="chrome_html" />
     </structures>
   </release>

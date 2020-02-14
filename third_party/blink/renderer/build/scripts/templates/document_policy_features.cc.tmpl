@@ -6,8 +6,9 @@
 #include "base/no_destructor.h"
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/feature_policy/policy_value.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.h"
 #include "third_party/blink/public/mojom/feature_policy/policy_value.mojom.h"
+#include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom.h"
+
 
 namespace blink {
 
@@ -15,7 +16,7 @@ const DocumentPolicyFeatureInfoMap& GetDocumentPolicyFeatureInfoMap() {
   static const base::NoDestructor<DocumentPolicyFeatureInfoMap> feature_info_map({
     {%- for feature in features %}
       {
-        mojom::FeaturePolicyFeature::k{{feature.name}},
+        mojom::DocumentPolicyFeature::k{{feature.name}},
         {
           "{{feature.document_policy_name}}",
           "{{feature.value_name}}",

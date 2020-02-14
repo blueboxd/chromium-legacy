@@ -392,7 +392,7 @@ bool GraphicsLayer::PaintWithoutCommit(
 
   GraphicsContext context(GetPaintController(), disabled_mode, nullptr);
   DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
-  GetPaintController().UpdateCurrentPaintChunkProperties(base::nullopt,
+  GetPaintController().UpdateCurrentPaintChunkProperties(nullptr,
                                                          layer_state_->state);
 
   previous_interest_rect_ = *interest_rect;

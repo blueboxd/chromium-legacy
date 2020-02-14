@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/updateable_sequenced_task_runner.h"
+#include "chrome/browser/media/history/media_history_origin_table.h"
 #include "content/public/browser/media_player_watch_time.h"
 #include "sql/statement.h"
 
@@ -72,7 +73,8 @@ bool MediaHistoryPlaybackTable::SavePlayback(
                          "?, ?, ?, ?, ?)",
                          kTableName)
           .c_str()));
-  statement.BindString(0, watch_time.origin.spec());
+  statement.BindString(0, MediaHistoryOriginTable::GetOriginForStorage(
+                              url::Origin::Create(watch_time.origin)));
   statement.BindString(1, watch_time.url.spec());
   statement.BindInt64(2, watch_time.cumulative_watch_time.InSeconds());
   statement.BindInt(3, watch_time.has_video);

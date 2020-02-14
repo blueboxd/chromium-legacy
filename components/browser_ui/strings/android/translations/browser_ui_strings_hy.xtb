@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Ցույց տալ</translation>
 <translation id="5301954838959518834">Պարզ է</translation>
 <translation id="5317780077021120954">Պահել</translation>
+<translation id="5391532827096253100">Կայքին կապակցումը պաշտպանված չէ: Տեղեկություններ կայքի մասին:</translation>
 <translation id="5556459405103347317">Վերաբեռնել</translation>
 <translation id="5596627076506792578">Լրացուցիչ ընտրանքներ</translation>
 <translation id="5860033963881614850">Անջատ.</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Փակել</translation>
 <translation id="6042308850641462728">Ավելին</translation>
 <translation id="6165508094623778733">Իմանալ ավելին</translation>
+<translation id="6206551242102657620">Կապակցումը պաշտպանված չէ: Տեղեկություններ կայքի մասին:</translation>
 <translation id="6216432067784365534">Ընտրանքներ՝ <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Կիսվել</translation>
 <translation id="6746124502594467657">Տեղափոխել վար</translation>
 <translation id="6818926723028410516">Ընտրեք տարրեր</translation>
 <translation id="6910211073230771657">Ջնջված</translation>
 <translation id="6945221475159498467">Ընտրել</translation>
+<translation id="6963642900430330478">Այս կայքը վտանգավոր է: Տեղեկություններ կայքի մասին:</translation>
 <translation id="6965382102122355670">Եղավ</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 ընտրված տարր}one{# selected}other{# ընտրված տարր}}</translation>
 <translation id="7087918508125750058">Ընտրված է <ph name="ITEM_COUNT" /> տարր։ Ընտրանքները հասանելի են էկրանի վերին հատվածում</translation>

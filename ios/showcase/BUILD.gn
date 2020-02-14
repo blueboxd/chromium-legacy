@@ -29,7 +29,6 @@ group("features") {
     "//ios/showcase/content_suggestions",
     "//ios/showcase/infobars",
     "//ios/showcase/omnibox_popup",
-    "//ios/showcase/payments",
     "//ios/showcase/recent_tabs",
     "//ios/showcase/settings",
     "//ios/showcase/tab_grid",

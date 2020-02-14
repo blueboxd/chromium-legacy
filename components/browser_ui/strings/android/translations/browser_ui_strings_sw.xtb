@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Onyesha</translation>
 <translation id="5301954838959518834">Sawa, nimeelewa</translation>
 <translation id="5317780077021120954">Hifadhi</translation>
+<translation id="5391532827096253100">Muunganisho wako kwenye tovuti hii si salama. Maelezo ya tovuti</translation>
 <translation id="5556459405103347317">Pakia upya</translation>
 <translation id="5596627076506792578">Chaguo zaidi</translation>
 <translation id="5860033963881614850">Kimezimwa</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Funga</translation>
 <translation id="6042308850641462728">Zaidi</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
+<translation id="6206551242102657620">Muunganisho ni salama. Maelezo ya tovuti</translation>
 <translation id="6216432067784365534">Chaguo za <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Shiriki</translation>
 <translation id="6746124502594467657">Songa chini</translation>
 <translation id="6818926723028410516">Chagua vipengee</translation>
 <translation id="6910211073230771657">Imeondolewa</translation>
 <translation id="6945221475159498467">Chagua</translation>
+<translation id="6963642900430330478">Ukurasa huu ni hatari. Maelezo ya tovuti</translation>
 <translation id="6965382102122355670">Sawa</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 imechaguliwa}other{# vimechaguliwa}}</translation>
 <translation id="7087918508125750058">Imechagua <ph name="ITEM_COUNT" />. Chaguo zinapatikana karibu na sehemu ya juu ya skrini</translation>

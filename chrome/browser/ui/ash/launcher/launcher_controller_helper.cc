@@ -27,10 +27,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
-#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/extension_enable_flow.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/extensions/bookmark_app_util.h"
 #include "chrome/common/chrome_features.h"
@@ -38,14 +35,10 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
-#include "extensions/common/extension_set.h"
 #include "net/base/url_util.h"
-#include "ui/display/types/display_constants.h"
-#include "ui/events/event_constants.h"
 
 namespace {
 
@@ -94,17 +87,6 @@ const extensions::Extension* GetExtensionByID(Profile* profile,
                                               const std::string& id) {
   return extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
       id, extensions::ExtensionRegistry::EVERYTHING);
-}
-
-std::string GetSourceFromAppListSource(ash::ShelfLaunchSource source) {
-  switch (source) {
-    case ash::LAUNCH_FROM_APP_LIST:
-      return std::string(extension_urls::kLaunchSourceAppList);
-    case ash::LAUNCH_FROM_APP_LIST_SEARCH:
-      return std::string(extension_urls::kLaunchSourceAppListSearch);
-    default:
-      return std::string();
-  }
 }
 
 }  // namespace
@@ -201,81 +183,16 @@ void LauncherControllerHelper::LaunchApp(const ash::ShelfID& id,
   }
 
   const std::string& app_id = id.app_id;
-  if (base::FeatureList::IsEnabled(features::kAppServiceShelf)) {
-    apps::AppServiceProxy* proxy =
-        apps::AppServiceProxyFactory::GetForProfile(profile_);
-    DCHECK(proxy);
-    proxy->Launch(app_id, event_flags, apps::mojom::LaunchSource::kFromShelf,
-                  display_id);
-    return;
-  }
-
-  const ArcAppListPrefs* arc_prefs = GetArcAppListPrefs();
-  if (arc_prefs && arc_prefs->IsRegistered(app_id)) {
-    arc::LaunchApp(profile_, app_id, event_flags,
-                   arc::UserInteractionType::APP_STARTED_FROM_SHELF,
-                   display_id);
-    return;
-  }
-
-  crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile_);
-  if (registry_service && registry_service->IsCrostiniShelfAppId(app_id)) {
-    // This expects a valid app list id, which is fine as we only get here for
-    // shelf entries associated with an actual app and not arbitrary Crostini
-    // windows.
-    crostini::LaunchCrostiniApp(profile_, app_id, display_id);
-    return;
-  }
-
-  // |extension| could be null when it is being unloaded for updating.
-  const extensions::Extension* extension = GetExtensionByID(profile_, app_id);
-  if (!extension)
-    return;
-
-  if (!extensions::util::IsAppLaunchableWithoutEnabling(app_id, profile_)) {
-    // Do nothing if there is already a running enable flow.
-    if (extension_enable_flow_)
-      return;
-
-    extension_enable_flow_.reset(
-        new ExtensionEnableFlow(profile_, app_id, this));
-    extension_enable_flow_->StartForNativeWindow(nullptr);
-    return;
-  }
-
-  // The app will be created for the currently active profile.
-  apps::AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
-      profile_, extension, event_flags,
-      apps::mojom::AppLaunchSource::kSourceAppLauncher, display_id);
-  if ((source == ash::LAUNCH_FROM_APP_LIST ||
-       source == ash::LAUNCH_FROM_APP_LIST_SEARCH) &&
-      app_id == extensions::kWebStoreAppId) {
-    // Get the corresponding source string.
-    std::string source_value = GetSourceFromAppListSource(source);
-
-    // Set an override URL to include the source.
-    GURL extension_url = extensions::AppLaunchInfo::GetFullLaunchURL(extension);
-    params.override_url = net::AppendQueryParameter(
-        extension_url, extension_urls::kWebstoreSourceField, source_value);
-  }
-  params.launch_id = id.launch_id;
-
-  apps::LaunchService::Get(profile_)->OpenApplication(params);
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile_);
+  DCHECK(proxy);
+  proxy->Launch(app_id, event_flags, apps::mojom::LaunchSource::kFromShelf,
+                display_id);
+  return;
 }
 
 ArcAppListPrefs* LauncherControllerHelper::GetArcAppListPrefs() const {
   return ArcAppListPrefs::Get(profile_);
-}
-
-void LauncherControllerHelper::ExtensionEnableFlowFinished() {
-  LaunchApp(ash::ShelfID(extension_enable_flow_->extension_id()),
-            ash::LAUNCH_FROM_UNKNOWN, ui::EF_NONE, display::kInvalidDisplayId);
-  extension_enable_flow_.reset();
-}
-
-void LauncherControllerHelper::ExtensionEnableFlowAborted(bool user_initiated) {
-  extension_enable_flow_.reset();
 }
 
 bool LauncherControllerHelper::IsValidIDForArcApp(

@@ -7,6 +7,8 @@
 
 #include "components/viz/common/viz_common_export.h"
 
+#include "build/build_config.h"
+
 namespace gfx {
 class Rect;
 class RRectF;
@@ -16,6 +18,11 @@ class QuadF;
 namespace viz {
 
 VIZ_COMMON_EXPORT bool PreferRGB565ResourcesForDisplay();
+
+#if defined(OS_ANDROID)
+VIZ_COMMON_EXPORT bool AlwaysUseWideColorGamut();
+#endif
+
 // This takes a gfx::Rect and a clip region quad in the same space,
 // and returns a quad with the same proportions in the space -0.5->0.5.
 VIZ_COMMON_EXPORT bool GetScaledRegion(const gfx::Rect& rect,

@@ -299,6 +299,7 @@ void ZeroSuggestProvider::Stop(bool clear_cached_results,
     // match relevance.
     results_.suggest_results.clear();
     results_.navigation_results.clear();
+    results_.experiment_stats.clear();
     current_query_.clear();
     current_title_.clear();
     most_visited_urls_.clear();

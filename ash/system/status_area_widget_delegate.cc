@@ -217,10 +217,23 @@ void StatusAreaWidgetDelegate::UpdateLayout() {
 }
 
 void StatusAreaWidgetDelegate::ChildPreferredSizeChanged(View* child) {
+  const gfx::Size current_size = size();
+  const gfx::Size new_size = GetPreferredSize();
+  if (new_size == current_size)
+    return;
   // Need to resize the window when trays or items are added/removed.
   StatusAreaWidgetDelegateAnimationSettings settings(layer());
   UpdateWidgetSize();
-  shelf_->shelf_layout_manager()->LayoutShelf(/*animate=*/false);
+
+  // The shelf only needs a re-layout if this widget has changed size in
+  // the primary dimension. No re-layout is needed for changes in the cross
+  // dimension.
+  bool should_relayout_shelf = (shelf_->IsHorizontalAlignment() &&
+                                new_size.width() != current_size.width()) ||
+                               (!shelf_->IsHorizontalAlignment() &&
+                                new_size.height() != current_size.height());
+  if (should_relayout_shelf)
+    shelf_->shelf_layout_manager()->LayoutShelf(/*animate=*/false);
 }
 
 void StatusAreaWidgetDelegate::ChildVisibilityChanged(View* child) {

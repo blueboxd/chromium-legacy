@@ -16,7 +16,6 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/fuchsia/startup_context.h"
 #include "base/macros.h"
-#include "fuchsia/base/agent_manager.h"
 #include "fuchsia/fidl/chromium/cast/cpp/fidl.h"
 #include "fuchsia/runners/cast/cast_component.h"
 #include "fuchsia/runners/common/web_content_runner.h"

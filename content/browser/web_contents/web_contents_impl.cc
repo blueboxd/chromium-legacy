@@ -867,8 +867,6 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHostImpl* render_view_host,
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(WebContentsImpl, message, render_view_host)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_PageScaleFactorChanged,
-                        OnPageScaleFactorChanged)
     IPC_MESSAGE_HANDLER(
         ViewHostMsg_NotifyTextAutosizerPageInfoChangedInLocalMainFrame,
         OnTextAutosizerPageInfoChanged)
@@ -4961,7 +4959,7 @@ void WebContentsImpl::OnGoToEntryAtOffset(RenderFrameHostImpl* source,
   }
 }
 
-void WebContentsImpl::OnPageScaleFactorChanged(RenderViewHostImpl* source,
+void WebContentsImpl::OnPageScaleFactorChanged(RenderFrameHostImpl* source,
                                                float page_scale_factor) {
 #if !defined(OS_ANDROID)
   // While page scale factor is used on mobile, this PageScaleFactorIsOne logic
@@ -4975,7 +4973,8 @@ void WebContentsImpl::OnPageScaleFactorChanged(RenderViewHostImpl* source,
 
     if (host_zoom_map) {
       host_zoom_map->SetPageScaleFactorIsOneForView(
-          source->GetProcess()->GetID(), source->GetRoutingID(),
+          source->GetProcess()->GetID(),
+          source->GetRenderViewHost()->GetRoutingID(),
           page_scale_factor_is_one_);
     }
   }

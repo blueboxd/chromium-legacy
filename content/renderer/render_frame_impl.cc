@@ -1416,6 +1416,12 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
 
   render_widget->InitForMainFrame(std::move(show_callback), web_frame_widget,
                                   params->visual_properties.screen_info);
+
+  // The WebFrame created here was already attached to the Page as its
+  // main frame, and the WebFrameWidget has been initialized, so we can call
+  // WebViewImpl's DidAttachLocalMainFrame().
+  render_view->webview()->DidAttachLocalMainFrame();
+
   // The RenderWidget should start with valid VisualProperties, including a
   // non-zero size. While RenderWidget would not normally receive IPCs and
   // thus would not get VisualProperty updates while the frame is provisional,
@@ -1423,11 +1429,6 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
   // renderer, and that update comes as part of the CreateFrame message.
   // TODO(crbug.com/419087): This could become part of RenderWidget Init.
   render_widget->OnUpdateVisualProperties(params->visual_properties);
-
-  // The WebFrame created here was already attached to the Page as its
-  // main frame, and the WebFrameWidget has been initialized, so we can call
-  // WebViewImpl's DidAttachLocalMainFrame().
-  render_view->webview()->DidAttachLocalMainFrame();
 
   render_frame->render_widget_ = render_widget.get();
   render_frame->owned_render_widget_ = std::move(render_widget);

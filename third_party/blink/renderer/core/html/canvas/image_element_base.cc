@@ -78,20 +78,21 @@ bool ImageElementBase::WouldTaintOrigin() const {
 }
 
 FloatSize ImageElementBase::ElementSize(
-    const FloatSize& default_object_size) const {
+    const FloatSize& default_object_size,
+    const RespectImageOrientationEnum respect_orientation) const {
   ImageResourceContent* image_content = CachedImage();
   if (!image_content || !image_content->HasImage())
     return FloatSize();
   Image* image = image_content->GetImage();
   if (auto* svg_image = DynamicTo<SVGImage>(image))
     return svg_image->ConcreteObjectSize(default_object_size);
-  return FloatSize(image->Size(LayoutObject::ShouldRespectImageOrientation(
-      GetElement().GetLayoutObject())));
+  return FloatSize(image->Size(respect_orientation));
 }
 
 FloatSize ImageElementBase::DefaultDestinationSize(
-    const FloatSize& default_object_size) const {
-  return ElementSize(default_object_size);
+    const FloatSize& default_object_size,
+    const RespectImageOrientationEnum respect_orientation) const {
+  return ElementSize(default_object_size, respect_orientation);
 }
 
 bool ImageElementBase::IsAccelerated() const {
@@ -114,8 +115,10 @@ IntSize ImageElementBase::BitmapSourceSize() const {
   ImageResourceContent* image = CachedImage();
   if (!image)
     return IntSize();
-  return image->IntrinsicSize(LayoutObject::ShouldRespectImageOrientation(
-      GetElement().GetLayoutObject()));
+  // This method is called by ImageBitmap when creating and cropping the image.
+  // Return un-oriented size because the cropping must happen before
+  // orienting.
+  return image->IntrinsicSize(kDoNotRespectImageOrientation);
 }
 
 ScriptPromise ImageElementBase::CreateImageBitmap(
@@ -173,6 +176,11 @@ Image::ImageDecodingMode ImageElementBase::GetDecodingModeForPainting(
       decoding_mode_ == Image::ImageDecodingMode::kUnspecifiedDecode)
     return Image::ImageDecodingMode::kSyncDecode;
   return decoding_mode_;
+}
+
+RespectImageOrientationEnum ImageElementBase::RespectImageOrientation() const {
+  return LayoutObject::ShouldRespectImageOrientation(
+      GetElement().GetLayoutObject());
 }
 
 }  // namespace blink

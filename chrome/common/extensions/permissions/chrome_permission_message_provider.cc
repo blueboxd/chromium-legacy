@@ -106,18 +106,6 @@ void ChromePermissionMessageProvider::AddAPIPermissions(
     PermissionIDSet* permission_ids) const {
   for (const APIPermission* permission : permissions.apis())
     permission_ids->InsertAll(permission->GetPermissions());
-
-  // A special hack: The warning message for declarativeWebRequest
-  // permissions speaks about blocking parts of pages, which is a
-  // subset of what the "<all_urls>" access allows. Therefore we
-  // display only the "<all_urls>" warning message if both permissions
-  // are required.
-  // TODO(treib): The same should apply to other permissions that are implied by
-  // "<all_urls>" (aka APIPermission::kHostsAll), such as kTab. This would
-  // happen automatically if we didn't differentiate between API/Manifest/Host
-  // permissions here.
-  if (permissions.ShouldWarnAllHosts())
-    permission_ids->erase(APIPermission::kDeclarativeWebRequest);
 }
 
 void ChromePermissionMessageProvider::AddManifestPermissions(
@@ -161,11 +149,19 @@ bool ChromePermissionMessageProvider::IsAPIOrManifestPrivilegeIncrease(
   AddAPIPermissions(granted_permissions, &granted_ids);
   AddManifestPermissions(granted_permissions, &granted_ids);
 
+  // <all_urls> is processed as APIPermission::kHostsAll and should be included
+  // when checking permission messages.
+  if (granted_permissions.ShouldWarnAllHosts())
+    granted_ids.insert(APIPermission::kHostsAll);
+
   // We compare |granted_ids| against the set of permissions that would be
   // granted if the requested permissions are allowed.
   PermissionIDSet potential_total_ids = granted_ids;
   AddAPIPermissions(requested_permissions, &potential_total_ids);
   AddManifestPermissions(requested_permissions, &potential_total_ids);
+
+  if (requested_permissions.ShouldWarnAllHosts())
+    potential_total_ids.insert(APIPermission::kHostsAll);
 
   // For M62, we added a new permission ID for new tab page overrides. Consider
   // the addition of this permission to not result in a privilege increase for

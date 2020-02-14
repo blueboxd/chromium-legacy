@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script src="../resources/runner.js"></script>
+<script src="resources/canvas_runner.js"></script>
+<script>
+// With deferral enabled we can get a lot of resource thrash when intermediate
+// canvases and contexts are created, updated and drawn to a target canvas
+// multiple times in a tight loop.
+// See crbug.com/1030108
+
+// We're more likely to see regressions with large canvases
+const size = 1024;
+
+const targetCanvas = document.createElement("canvas");
+targetCanvas.width = targetCanvas.height = size;
+document.body.appendChild(targetCanvas);
+const targetCtx = targetCanvas.getContext("2d");
+
+const intermediateCanvas = document.createElement("canvas");
+intermediateCanvas.width = intermediateCanvas.height = size;
+const intermediateCtx = intermediateCanvas.getContext("2d");
+
+function rand(range) {
+  return Math.floor(Math.random() * range);
+}
+
+function randomColor() {
+  return "rgba(" + rand(255) + "," + rand(255) + "," + rand(255)  + "," + rand(255) + ")";
+}
+
+function makeAndFillCanvasWithRandomColor(i) {
+  intermediateCtx.fillStyle = randomColor();
+  intermediateCtx.fillRect(0, 0, intermediateCanvas.width, intermediateCanvas.height);
+
+  targetCtx.drawImage(intermediateCanvas, 0, 0);
+}
+
+function doRun() {
+  // Make and fill many canvases
+  for (let i = 0; i < 50; i++) {
+    makeAndFillCanvasWithRandomColor(i);
+  }
+}
+
+window.onload = function () {
+  CanvasRunner.start({
+    description: "This benchmark tests the performance of creating many intermediate canvases and drawing them onto a target canvas in a tight loop",
+    doRun: doRun});
+}
+
+</script>
+</body>
+</html>

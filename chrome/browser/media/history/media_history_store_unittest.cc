@@ -19,6 +19,7 @@
 #include "content/public/browser/media_player_watch_time.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "services/media_session/public/cpp/media_image.h"
 #include "services/media_session/public/cpp/media_metadata.h"
 #include "services/media_session/public/cpp/media_position.h"
 #include "sql/database.h"
@@ -225,9 +226,11 @@ TEST_F(MediaHistoryStoreUnitTest, UrlShouldBeUniqueForSessions) {
 
   // Save a couple of sessions on different URLs.
   GetMediaHistoryStore()->SavePlaybackSession(
-      url_a, media_session::MediaMetadata(), base::nullopt);
+      url_a, media_session::MediaMetadata(), base::nullopt,
+      std::vector<media_session::MediaImage>());
   GetMediaHistoryStore()->SavePlaybackSession(
-      url_b, media_session::MediaMetadata(), base::nullopt);
+      url_b, media_session::MediaMetadata(), base::nullopt,
+      std::vector<media_session::MediaImage>());
 
   // Wait until the sessions have finished saving.
   content::RunAllTasksUntilIdle();
@@ -245,7 +248,8 @@ TEST_F(MediaHistoryStoreUnitTest, UrlShouldBeUniqueForSessions) {
 
   // Save a session on the first URL.
   GetMediaHistoryStore()->SavePlaybackSession(
-      url_a, media_session::MediaMetadata(), base::nullopt);
+      url_a, media_session::MediaMetadata(), base::nullopt,
+      std::vector<media_session::MediaImage>());
 
   // Wait until the sessions have finished saving.
   content::RunAllTasksUntilIdle();

@@ -6,7 +6,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/feature_policy/document_policy_features.h"
-#include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom.h"
+#include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom.h"
 
 namespace blink {
 namespace {
@@ -19,7 +19,7 @@ DocumentPolicy::FeatureState FeatureState(
     std::vector<std::pair<int32_t, T>> literal) {
   DocumentPolicy::FeatureState result;
   for (const auto& entry : literal) {
-    result.insert({static_cast<mojom::FeaturePolicyFeature>(entry.first),
+    result.insert({static_cast<mojom::DocumentPolicyFeature>(entry.first),
                    PolicyValue(entry.second)});
   }
   return result;
@@ -48,8 +48,8 @@ TEST_F(DocumentPolicyTest, MergeFeatureState) {
 // policy specifies a value for a feature and incoming policy is missing value
 // for that feature.
 TEST_F(DocumentPolicyTest, IsPolicyCompatible) {
-  mojom::FeaturePolicyFeature feature =
-      mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages;
+  mojom::DocumentPolicyFeature feature =
+      mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages;
   double default_policy_value =
       GetDocumentPolicyFeatureInfoMap().at(feature).default_value.DoubleValue();
   // Cap the default_policy_value, as it can be INF.

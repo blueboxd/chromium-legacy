@@ -3528,6 +3528,21 @@ ShadowRoot& Element::CreateAndAttachShadowRoot(ShadowRootType type) {
   return *shadow_root;
 }
 
+void Element::AttachDeclarativeShadowRoot(HTMLTemplateElement* template_element,
+                                          ShadowRootType type) {
+  DCHECK(template_element);
+  DCHECK(type == ShadowRootType::kOpen || type == ShadowRootType::kClosed);
+  if (!CanAttachShadowRoot()) {
+    // TODO(masonfreed): Eventually, this should be a DOMException.
+    LOG(ERROR) << "Invalid shadow root host element";
+    return;
+  }
+  ShadowRoot* shadow_root = &AttachShadowRootInternal(
+      type, /*delegates_focus=*/false, /*manual_slotting=*/false);
+  shadow_root->appendChild(template_element->content());
+  template_element->remove();
+}
+
 ShadowRoot* Element::GetShadowRoot() const {
   return HasRareData() ? GetElementRareData()->GetShadowRoot() : nullptr;
 }

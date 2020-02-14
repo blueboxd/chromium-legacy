@@ -26527,6 +26527,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="3162" label="TrustedTypesAllowDuplicates"/>
   <int value="3163" label="V8ArrayPrototypeHasElements"/>
   <int value="3164" label="V8ObjectPrototypeHasElements"/>
+  <int value="3165" label="DisallowDocumentAccess"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -37709,6 +37710,7 @@ from previous Chrome versions.
   <int value="-1184480269" label="LsdPermissionPrompt:enabled"/>
   <int value="-1183321008" label="ImeDecoderWithSandbox:disabled"/>
   <int value="-1183009666" label="OfflinePagesLimitlessPrefetching:disabled"/>
+  <int value="-1182777927" label="ShareButtonInTopToolbar:enabled"/>
   <int value="-1178350793" label="RemoteCopyReceiver:disabled"/>
   <int value="-1177802205" label="enable-hosted-app-quit-notification"/>
   <int value="-1176748003"
@@ -38658,6 +38660,7 @@ from previous Chrome versions.
   <int value="-15879016"
       label="OmniboxUIExperimentUnboldSuggestionText:disabled"/>
   <int value="-13918890" label="disable-download-notification"/>
+  <int value="-12225998" label="ShareButtonInTopToolbar:disabled"/>
   <int value="-11260186" label="enable-offline-pages-as-saved-pages"/>
   <int value="-10709540"
       label="OmniboxUIExperimentHideSuggestionUrlScheme:enabled"/>
@@ -52864,6 +52867,9 @@ Called by update_net_trust_anchors.py.-->
   <int value="76954" label="kRelatedNewsVideoCard"/>
   <int value="76955" label="kRelatedPageCard"/>
   <int value="76958" label="kRelatedYoutubeVideoCard"/>
+  <int value="77131" label="kRoot"/>
+  <int value="87972" label="kRelatedPageList"/>
+  <int value="87973" label="kRelatedNewsTimelineList"/>
 </enum>
 
 <enum name="ProbeResult">

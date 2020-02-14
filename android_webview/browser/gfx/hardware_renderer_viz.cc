@@ -63,7 +63,8 @@ class HardwareRendererViz::OnViz : public viz::DisplayClient {
                         const viz::SurfaceId& child_id,
                         float device_scale_factor,
                         const gfx::ColorSpace& color_space,
-                        ChildFrame* child_frame);
+                        ChildFrame* child_frame,
+                        bool force_reshape);
   void PostDrawOnViz(viz::FrameTimingDetailsMap* timing_details);
 
   // viz::DisplayClient overrides.
@@ -140,7 +141,8 @@ void HardwareRendererViz::OnViz::DrawAndSwapOnViz(
     const viz::SurfaceId& child_id,
     float device_scale_factor,
     const gfx::ColorSpace& color_space,
-    ChildFrame* child_frame) {
+    ChildFrame* child_frame,
+    bool force_reshape) {
   TRACE_EVENT1("android_webview", "HardwareRendererViz::DrawAndSwap",
                "child_id", child_id.ToString());
   DCHECK_CALLED_ON_VALID_THREAD(viz_thread_checker_);
@@ -224,6 +226,8 @@ void HardwareRendererViz::OnViz::DrawAndSwapOnViz(
   without_gpu_->support()->SubmitCompositorFrame(
       root_id_allocation_.local_surface_id(), std::move(frame));
   display_->Resize(viewport);
+  if (force_reshape)
+    display_->ForceReshapeOnNextDraw();
   display_->DrawAndSwap(base::TimeTicks::Now());
 }
 
@@ -341,11 +345,16 @@ void HardwareRendererViz::DrawAndSwap(HardwareRendererDrawParams* params) {
   output_surface_provider_.shared_context_state()
       ->PessimisticallyResetGrContext();
 
+  bool using_fbo0 =
+      output_surface_provider_.gl_surface()->GetBackingFramebufferObject() == 0;
+  bool force_reshape = was_fbo0_ != using_fbo0;
+  was_fbo0_ = using_fbo0;
+
   VizCompositorThreadRunnerWebView::GetInstance()->ScheduleOnVizAndBlock(
       base::BindOnce(&HardwareRendererViz::OnViz::DrawAndSwapOnViz,
                      base::Unretained(on_viz_.get()), viewport, clip, transform,
                      viewport, surface_id_, device_scale_factor_,
-                     params->color_space, child_frame_.get()));
+                     params->color_space, child_frame_.get(), force_reshape));
 
   output_surface_provider_.gl_surface()->MaybeDidPresent(
       gfx::PresentationFeedback(base::TimeTicks::Now(), base::TimeDelta(),

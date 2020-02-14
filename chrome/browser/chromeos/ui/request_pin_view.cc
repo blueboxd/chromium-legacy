@@ -59,11 +59,6 @@ void RequestPinView::ContentsChanged(views::Textfield* sender,
   DialogModelChanged();
 }
 
-bool RequestPinView::Cancel() {
-  // Destructor will be called after this which notifies the callback.
-  return true;
-}
-
 bool RequestPinView::Accept() {
   if (!textfield_->GetEnabled())
     return true;

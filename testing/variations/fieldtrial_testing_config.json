@@ -1148,6 +1148,45 @@
             ]
         }
     ],
+    "BackForwardCache": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledForSpecificDomain",
+                    "params": {
+                        "TimeToLiveInBackForwardCacheInSeconds": "180",
+                        "allowed_websites": "https://domain1.org,https://domain2.org",
+                        "geolocation_supported": "true",
+                        "service_worker_supported": "true"
+                    },
+                    "enable_features": [
+                        "BackForwardCache"
+                    ]
+                }
+            ]
+        }
+    ],
+    "BackForwardCacheMemoryControls": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "memory_threshold_for_back_forward_cache_in_mb": "1"
+                    },
+                    "enable_features": [
+                        "BackForwardCacheMemoryControls"
+                    ]
+                }
+            ]
+        }
+    ],
     "BlinkLayoutNG": [
         {
             "platforms": [
@@ -4668,25 +4707,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PassiveEventListenersDueToFling"
-                    ]
-                }
-            ]
-        }
-    ],
-    "PassiveMixedContentWarning": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "PassiveMixedContentWarning"
                     ]
                 }
             ]

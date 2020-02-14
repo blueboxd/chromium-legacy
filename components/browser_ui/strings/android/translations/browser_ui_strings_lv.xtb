@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Rādīt</translation>
 <translation id="5301954838959518834">Labi, sapratu</translation>
 <translation id="5317780077021120954">Saglabāt</translation>
+<translation id="5391532827096253100">Savienojums ar šo vietni nav drošs. Vietnes informācija</translation>
 <translation id="5556459405103347317">Pārlādēt</translation>
 <translation id="5596627076506792578">Citas opcijas</translation>
 <translation id="5860033963881614850">Izsl.</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Aizvērt</translation>
 <translation id="6042308850641462728">Vairāk</translation>
 <translation id="6165508094623778733">Uzziniet vairāk</translation>
+<translation id="6206551242102657620">Savienojums ir drošs. Vietnes informācija</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: iespējas</translation>
 <translation id="6527303717912515753">Kopīgot</translation>
 <translation id="6746124502594467657">Pārvietot uz leju</translation>
 <translation id="6818926723028410516">Vienumu atlase</translation>
 <translation id="6910211073230771657">Dzēsts</translation>
 <translation id="6945221475159498467">Atlasīt</translation>
+<translation id="6963642900430330478">Šī lapa ir bīstama. Vietnes informācija</translation>
 <translation id="6965382102122355670">Labi</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Atlasīts 1 vienums}zero{Atlasīti # vienumi}one{Atlasīts # vienums}other{Atlasīti # vienumi}}</translation>
 <translation id="7087918508125750058">Atlasīti vienumi: <ph name="ITEM_COUNT" />. Opcijas ir pieejamas ekrāna augšdaļā.</translation>

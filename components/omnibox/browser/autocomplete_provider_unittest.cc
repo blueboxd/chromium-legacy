@@ -20,6 +20,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
+#include "base/test/values_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_input.h"
@@ -28,6 +29,7 @@
 #include "components/omnibox/browser/keyword_provider.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/search_provider.h"
+#include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/open_from_clipboard/fake_clipboard_recent_content.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/template_url.h"
@@ -299,6 +301,13 @@ class AutocompleteProviderTest : public testing::Test {
       metrics::OmniboxEventProto::PageClassification classification) {
     controller_->input_.current_page_classification_ = classification;
   }
+  void add_zero_suggest_provider_experiment_stat(
+      const base::Value& experiment_stat) {
+    auto& experiment_stats =
+        const_cast<SearchSuggestionParser::ExperimentStats&>(
+            controller_->zero_suggest_provider_->experiment_stats());
+    experiment_stats.push_back(experiment_stat.Clone());
+  }
 
   AutocompleteResult result_;
 
@@ -423,7 +432,8 @@ void AutocompleteProviderTest::ResetControllerWithKeywordAndSearchProviders() {
   ASSERT_NE(0, keyword_turl->id());
 
   ResetControllerWithType(AutocompleteProvider::TYPE_KEYWORD |
-                          AutocompleteProvider::TYPE_SEARCH);
+                          AutocompleteProvider::TYPE_SEARCH |
+                          AutocompleteProvider::TYPE_ZERO_SUGGEST);
 }
 
 void AutocompleteProviderTest::ResetControllerWithKeywordProvider() {
@@ -811,6 +821,20 @@ TEST_F(AutocompleteProviderTest, GetDestinationURL) {
   EXPECT_TRUE(search_provider_field_trial_triggered_in_session());
   url = GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
   EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j1j4&", url.path());
+
+  // Test experiment stats set.
+  add_zero_suggest_provider_experiment_stat(
+      base::test::ParseJson(R"json({"2":"0:67","4":10001})json"));
+  url = GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
+  EXPECT_EQ("//aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j1j4.10001i0,67&",
+            url.path());
+  add_zero_suggest_provider_experiment_stat(
+      base::test::ParseJson(R"json({"2":"54:67","4":10001})json"));
+  url = GetDestinationURL(match, base::TimeDelta::FromMilliseconds(2456));
+  EXPECT_EQ(
+      "//"
+      "aqs=chrome.0.69i57j69i58j5l2j0l3j69i59.2456j1j4.10001i0,67j10001i54,67&",
+      url.path());
 }
 
 TEST_F(AutocompleteProviderTest, ClassifyAllMatchesInString) {

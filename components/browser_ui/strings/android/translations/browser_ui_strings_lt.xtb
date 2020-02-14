@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Rodyti</translation>
 <translation id="5301954838959518834">Gerai, supratau</translation>
 <translation id="5317780077021120954">Išsaugoti</translation>
+<translation id="5391532827096253100">Ryšys su šia svetaine nėra saugus. Svetainės informacija</translation>
 <translation id="5556459405103347317">Įkelti iš naujo</translation>
 <translation id="5596627076506792578">Daugiau parinkčių</translation>
 <translation id="5860033963881614850">Išjungta</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Uždaryti</translation>
 <translation id="6042308850641462728">Daugiau</translation>
 <translation id="6165508094623778733">Sužinokite daugiau</translation>
+<translation id="6206551242102657620">Ryšys yra saugus. Svetainės informacija</translation>
 <translation id="6216432067784365534">„<ph name="NAME_OF_LIST_ITEM" />“ parinktys</translation>
 <translation id="6527303717912515753">Bendrinti</translation>
 <translation id="6746124502594467657">Perkelti žemyn</translation>
 <translation id="6818926723028410516">Pasirinkite elementus</translation>
 <translation id="6910211073230771657">Ištrintas</translation>
 <translation id="6945221475159498467">Pasirinkti</translation>
+<translation id="6963642900430330478">Šis puslapis yra pavojingas. Svetainės informacija</translation>
 <translation id="6965382102122355670">Gerai</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Pasirinktas 1 elementas}one{Pasirinktas # elementas}few{Pasirinkti # elementai}many{Pasirinkta # elemento}other{Pasirinkta # elementų}}</translation>
 <translation id="7087918508125750058">Pasirinkta: <ph name="ITEM_COUNT" />. Parinktys pasiekiamos netoli ekrano viršaus</translation>

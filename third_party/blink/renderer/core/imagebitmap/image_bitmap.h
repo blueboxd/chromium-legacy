@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
+#include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -111,8 +112,8 @@ class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
                                                AccelerationHint,
                                                const FloatSize&) override;
   bool WouldTaintOrigin() const override { return !image_->OriginClean(); }
-  void AdjustDrawRects(FloatRect* src_rect, FloatRect* dst_rect) const override;
-  FloatSize ElementSize(const FloatSize&) const override;
+  FloatSize ElementSize(const FloatSize&,
+                        const RespectImageOrientationEnum) const override;
   bool IsImageBitmap() const override { return true; }
   bool IsAccelerated() const override;
 

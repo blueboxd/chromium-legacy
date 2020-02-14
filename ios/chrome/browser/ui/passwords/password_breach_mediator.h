@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 
 #include "components/password_manager/core/browser/leak_detection_dialog_utils.h"
-#import "ios/chrome/browser/ui/passwords/password_breach_action_handler.h"
+#import "ios/chrome/common/ui/confirmation_alert/confirmation_alert_action_handler.h"
 
 class GURL;
 
@@ -17,7 +17,7 @@ class GURL;
 @protocol PasswordBreachPresenter;
 
 // Manages the state and interactions of the consumer.
-@interface PasswordBreachMediator : NSObject <PasswordBreachActionHandler>
+@interface PasswordBreachMediator : NSObject <ConfirmationAlertActionHandler>
 
 - (instancetype)initWithConsumer:(id<PasswordBreachConsumer>)consumer
                        presenter:(id<PasswordBreachPresenter>)presenter

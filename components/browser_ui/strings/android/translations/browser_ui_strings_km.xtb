@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">បង្ហាញ</translation>
 <translation id="5301954838959518834">យល់ព្រម ខ្ញុំយល់ហើយ</translation>
 <translation id="5317780077021120954">រក្សាទុក</translation>
+<translation id="5391532827096253100">ការតភ្ជាប់​របស់អ្នក​ជាមួយគេហទំព័រ​នេះមិនមាន​សុវត្ថិភាពទេ។ ព័ត៌មាន​អំពីគេហទំព័រ</translation>
 <translation id="5556459405103347317">ដំណើរការឡើងវិញ</translation>
 <translation id="5596627076506792578">ជម្រើសច្រើនទៀត</translation>
 <translation id="5860033963881614850">បិទ</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">បិទ</translation>
 <translation id="6042308850641462728">ច្រើនទៀត</translation>
 <translation id="6165508094623778733">ស្វែងយល់​បន្ថែម</translation>
+<translation id="6206551242102657620">ការតភ្ជាប់​មាន​សុវត្ថិភាព។ ព័ត៌មាន​អំពីគេហទំព័រ</translation>
 <translation id="6216432067784365534">ជម្រើស <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">ចែករំលែក</translation>
 <translation id="6746124502594467657">រំកិលចុះ</translation>
 <translation id="6818926723028410516">ជ្រើសរើសធាតុ</translation>
 <translation id="6910211073230771657">បានលុប</translation>
 <translation id="6945221475159498467">ជ្រើសរើស</translation>
+<translation id="6963642900430330478">គេហទំព័រនេះ​មានគ្រោះថ្នាក់។ ព័ត៌មានអំពី​គេហទំព័រ</translation>
 <translation id="6965382102122355670">យល់ព្រម</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{បានជ្រើសរើស 1}other{បានជ្រើសរើស #}}</translation>
 <translation id="7087918508125750058">បានជ្រើស​រើស <ph name="ITEM_COUNT" />។ ជម្រើស​មាននៅក្បែរ​ផ្នែកខាងលើ​អេក្រង់</translation>

@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/color_chooser_popup_ui_controller.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -99,7 +100,6 @@ void ColorChooserPopupUIController::WriteColorPickerDocument(
       "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
   data->Append(ChooserResourceLoader::GetPickerCommonStyleSheet());
   data->Append(ChooserResourceLoader::GetColorPickerStyleSheet());
-
   PagePopupClient::AddString(
       "</style></head><body>\n"
       "<div id='main'>Loading...</div><script>\n"
@@ -110,6 +110,10 @@ void ColorChooserPopupUIController::WriteColorPickerDocument(
   AddProperty("anchorRectInScreen", anchor_rect_in_screen, data);
   AddProperty("zoomFactor", ScaledZoomFactor(), data);
   AddProperty("shouldShowColorSuggestionPicker", false, data);
+#if defined(OS_MACOSX)
+  AddProperty("isBorderTransparent", features::IsFormControlsRefreshEnabled(),
+              data);
+#endif
   PagePopupClient::AddString("};\n", data);
   data->Append(ChooserResourceLoader::GetPickerCommonJS());
   data->Append(ChooserResourceLoader::GetColorPickerJS());
@@ -131,9 +135,6 @@ void ColorChooserPopupUIController::WriteColorSuggestionPickerDocument(
       "<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);
   data->Append(ChooserResourceLoader::GetPickerCommonStyleSheet());
   data->Append(ChooserResourceLoader::GetColorSuggestionPickerStyleSheet());
-  if (features::IsFormControlsRefreshEnabled())
-    data->Append(ChooserResourceLoader::GetColorPickerStyleSheet());
-
   PagePopupClient::AddString(
       "</style></head><body>\n"
       "<div id='main'>Loading...</div><script>\n"
@@ -152,6 +153,10 @@ void ColorChooserPopupUIController::WriteColorSuggestionPickerDocument(
   AddProperty("shouldShowColorSuggestionPicker", true, data);
   AddProperty("isFormControlsRefreshEnabled",
               features::IsFormControlsRefreshEnabled(), data);
+#if defined(OS_MACOSX)
+  AddProperty("isBorderTransparent", features::IsFormControlsRefreshEnabled(),
+              data);
+#endif
   PagePopupClient::AddString("};\n", data);
   data->Append(ChooserResourceLoader::GetPickerCommonJS());
   data->Append(ChooserResourceLoader::GetColorSuggestionPickerJS());

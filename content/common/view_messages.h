@@ -223,10 +223,6 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_RequestPpapiBrokerPermission,
 IPC_MESSAGE_ROUTED1(ViewHostMsg_TakeFocus,
                     bool /* reverse */)
 
-// Sent when the renderer changes its page scale factor.
-IPC_MESSAGE_ROUTED1(ViewHostMsg_PageScaleFactorChanged,
-                    float /* page_scale_factor */)
-
 IPC_MESSAGE_ROUTED1(
     ViewHostMsg_NotifyTextAutosizerPageInfoChangedInLocalMainFrame,
     blink::WebTextAutosizerPageInfo /* page_info */)

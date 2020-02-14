@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_SCOPED_PAINT_CHUNK_PROPERTIES_H_
 
 #include "base/macros.h"
-#include "base/optional.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -26,8 +25,8 @@ class ScopedPaintChunkProperties {
                              DisplayItem::Type type)
       : paint_controller_(paint_controller),
         previous_properties_(paint_controller.CurrentPaintChunkProperties()) {
-    paint_controller_.UpdateCurrentPaintChunkProperties(
-        PaintChunk::Id(client, type), properties);
+    PaintChunk::Id id(client, type);
+    paint_controller_.UpdateCurrentPaintChunkProperties(&id, properties);
   }
 
   // Use new transform state, and keep the current other properties.
@@ -69,7 +68,7 @@ class ScopedPaintChunkProperties {
     // ScopedPaintChunkProperties. The painter should create another scope of
     // paint properties with new id, or the new chunk will use the id of the
     // first display item as its id.
-    paint_controller_.UpdateCurrentPaintChunkProperties(base::nullopt,
+    paint_controller_.UpdateCurrentPaintChunkProperties(nullptr,
                                                         previous_properties_);
   }
 

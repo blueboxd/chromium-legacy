@@ -11,6 +11,8 @@ source_set("overlays") {
     "overlay_container_coordinator.mm",
     "overlay_coordinator_factory+initialization.h",
     "overlay_coordinator_factory.mm",
+    "overlay_presentation_context_fullscreen_disabler.h",
+    "overlay_presentation_context_fullscreen_disabler.mm",
     "overlay_presentation_context_impl.h",
     "overlay_presentation_context_impl.mm",
     "overlay_request_ui_state.h",
@@ -89,6 +91,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "overlay_container_coordinator_unittest.mm",
+    "overlay_presentation_context_fullscreen_disabler_unittest.mm",
     "overlay_request_mediator_unittest.mm",
     "overlay_request_mediator_util_unittest.mm",
     "overlay_request_ui_state_unittest.mm",

@@ -470,7 +470,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   std::unique_ptr<EvictionTilePriorityQueue> BuildEvictionQueue(
       TreePriority tree_priority) override;
   void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) override;
-  const gfx::ColorSpace& GetRasterColorSpace() const override;
+  gfx::ColorSpace GetRasterColorSpace(
+      gfx::ContentColorUsage content_color_usage) const override;
   void RequestImplSideInvalidationForCheckerImagedTiles() override;
   size_t GetFrameIndexForImage(const PaintImage& paint_image,
                                WhichTree tree) const override;
@@ -1042,8 +1043,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   //    happen explicitly via. synchronous calls to appropriate functions).
   // This is usually turned on only in some tests (e.g. web-tests).
   const bool is_synchronous_single_threaded_;
-
-  const gfx::ColorSpace default_color_space_ = gfx::ColorSpace::CreateSRGB();
 
   viz::ClientResourceProvider resource_provider_;
 

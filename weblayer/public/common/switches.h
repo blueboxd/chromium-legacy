@@ -7,6 +7,7 @@
 
 namespace switches {
 
+extern const char kWebLayerTestMode[];
 extern const char kWebLayerUserDataDir[];
 extern const char kWebLayerFakePermissions[];
 

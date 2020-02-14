@@ -73,6 +73,7 @@ void CountWASamplesProcessedForRate(base::Optional<float> sample_rate) {
 
   scoped_refptr<AudioDestination> destination = AudioDestination::Create(
       callback, channel_count, latency_hint, sample_rate);
+  destination->Start();
 
   Vector<float> channels[channel_count];
   WebVector<float*> dest_data(static_cast<size_t>(channel_count));

@@ -68,9 +68,10 @@ class CanvasResourceProviderBitmap : public CanvasResourceProvider {
     return nullptr;  // Does not support direct compositing
   }
 
-  scoped_refptr<StaticBitmapImage> Snapshot() override {
+  scoped_refptr<StaticBitmapImage> Snapshot(
+      const ImageOrientation& orientation) override {
     TRACE_EVENT0("blink", "CanvasResourceProviderBitmap::Snapshot");
-    return SnapshotInternal();
+    return SnapshotInternal(orientation);
   }
 
   sk_sp<SkSurface> CreateSkSurface() const override {
@@ -250,7 +251,8 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     return resource;
   }
 
-  scoped_refptr<StaticBitmapImage> Snapshot() override {
+  scoped_refptr<StaticBitmapImage> Snapshot(
+      const ImageOrientation& orientation) override {
     TRACE_EVENT0("blink", "CanvasResourceProviderSharedImage::Snapshot");
     if (!IsValid())
       return nullptr;
@@ -259,7 +261,7 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
     // rendering results visible on the GpuMemoryBuffer while we return cpu
     // memory, rendererd to by skia, here.
     if (!is_accelerated_)
-      return SnapshotInternal();
+      return SnapshotInternal(orientation);
 
     if (!cached_snapshot_) {
       EndWriteAccess();
@@ -504,7 +506,7 @@ class CanvasResourceProviderPassThrough final : public CanvasResourceProvider {
     return nullptr;
   }
 
-  scoped_refptr<StaticBitmapImage> Snapshot() override {
+  scoped_refptr<StaticBitmapImage> Snapshot(const ImageOrientation&) override {
     auto resource = GetImportedResource();
     if (IsGpuContextLost() || !resource)
       return nullptr;
@@ -568,7 +570,7 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
     return resource_;
   }
 
-  scoped_refptr<StaticBitmapImage> Snapshot() override {
+  scoped_refptr<StaticBitmapImage> Snapshot(const ImageOrientation&) override {
     TRACE_EVENT0("blink", "CanvasResourceProviderSwapChain::Snapshot");
 
     // Use ProduceCanvasResource to ensure any queued commands are flushed and
@@ -1073,13 +1075,15 @@ void CanvasResourceProvider::ReleaseLockedImages() {
     canvas_image_provider_->ReleaseLockedImages();
 }
 
-scoped_refptr<StaticBitmapImage> CanvasResourceProvider::SnapshotInternal() {
+scoped_refptr<StaticBitmapImage> CanvasResourceProvider::SnapshotInternal(
+    const ImageOrientation& orientation) {
   if (!IsValid())
     return nullptr;
 
   auto paint_image = MakeImageSnapshot();
   DCHECK(!paint_image.GetSkImage()->isTextureBacked());
-  return UnacceleratedStaticBitmapImage::Create(std::move(paint_image));
+  return UnacceleratedStaticBitmapImage::Create(std::move(paint_image),
+                                                orientation);
 }
 
 cc::PaintImage CanvasResourceProvider::MakeImageSnapshot() {

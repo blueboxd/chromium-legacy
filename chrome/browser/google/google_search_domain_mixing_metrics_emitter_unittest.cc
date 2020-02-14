@@ -136,7 +136,11 @@ TEST_F(GoogleSearchDomainMixingMetricsEmitterTest, WaitsUntilNeeded) {
             task_environment_.NextMainThreadPendingTaskDelay());
 }
 
-TEST_F(GoogleSearchDomainMixingMetricsEmitterTest, EmitsMetricsOnStart) {
+// Disabled pending deletion, see https://crbug.com/1040458
+// This test takes several seconds of CPU time to run because it simulates a
+// month worth of history expiration running, which happens every 300 seconds.
+TEST_F(GoogleSearchDomainMixingMetricsEmitterTest,
+       DISABLED_EmitsMetricsOnStart) {
   // Metrics were computed up to 4am on Jan 1st.
   base::Time last_metrics_time;
   ASSERT_TRUE(

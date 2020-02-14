@@ -179,13 +179,8 @@ class StorageHandler::IndexedDBObserver
       base::WeakPtr<StorageHandler> owner_storage_handler)
       : owner_(owner_storage_handler), receiver_(this) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    if (!owner_storage_handler)
-      return;
-    auto& control =
-        owner_storage_handler->storage_partition_->GetIndexedDBControl();
-    mojo::PendingRemote<storage::mojom::IndexedDBObserver> remote;
-    receiver_.Bind(remote.InitWithNewPipeAndPassReceiver());
-    control.AddObserver(std::move(remote));
+
+    ReconnectObserver();
   }
 
   ~IndexedDBObserver() override { DCHECK_CURRENTLY_ON(BrowserThread::UI); }
@@ -227,6 +222,24 @@ class StorageHandler::IndexedDBObserver
   }
 
  private:
+  void ReconnectObserver() {
+    DCHECK(!receiver_.is_bound());
+    if (!owner_)
+      return;
+
+    auto& control = owner_->storage_partition_->GetIndexedDBControl();
+    mojo::PendingRemote<storage::mojom::IndexedDBObserver> remote;
+    receiver_.Bind(remote.InitWithNewPipeAndPassReceiver());
+    receiver_.set_disconnect_handler(base::BindOnce(
+        [](IndexedDBObserver* observer) {
+          // If this observer disconnects because IndexedDB or the storage
+          // service goes away, reconnect again.
+          observer->ReconnectObserver();
+        },
+        this));
+    control.AddObserver(std::move(remote));
+  }
+
   base::flat_set<url::Origin> origins_;
   base::WeakPtr<StorageHandler> owner_;
   mojo::Receiver<storage::mojom::IndexedDBObserver> receiver_;

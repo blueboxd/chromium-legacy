@@ -173,10 +173,6 @@ class WebViewClient {
 
   // Zoom ----------------------------------------------------------------
 
-  // Informs the browser that the page scale has changed and/or a pinch gesture
-  // has started or ended.
-  virtual void PageScaleFactorChanged(float page_scale_factor) {}
-
   // Informs the browser that page metrics relevant to Blink's TextAutosizer
   // have changed, so that they can be shared with other renderers. Only called
   // in the renderer hosting the local main frame. The browser will share this

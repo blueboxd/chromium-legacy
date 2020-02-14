@@ -58,6 +58,8 @@ class MultipleFieldsTemporalInputTypeView final
   ~MultipleFieldsTemporalInputTypeView() override;
   void Trace(Visitor*) override;
 
+  String RawValue() const override;
+
  private:
   // DateTimeEditElement::EditControlOwner functions
   void DidBlurFromControl(mojom::blink::FocusType) final;

@@ -47,9 +47,6 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
 
   aura::Window* GetWindow();
 
-  // Returns the root window on which this item is shown.
-  aura::Window* root_window() { return root_window_; }
-
   // Returns true if |target| is contained in this OverviewItem.
   bool Contains(const aura::Window* target) const;
 
@@ -216,6 +213,9 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
   void OnPostWindowStateTypeChange(WindowState* window_state,
                                    WindowStateType old_type) override;
 
+  // Returns the root window on which this item is shown.
+  aura::Window* root_window() { return root_window_; }
+
   const gfx::RectF& target_bounds() const { return target_bounds_; }
 
   views::Widget* item_widget() { return item_widget_.get(); }
@@ -224,11 +224,11 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
 
   OverviewGrid* overview_grid() { return overview_grid_; }
 
-  bool should_use_spawn_animation() const {
-    return should_use_spawn_animation_;
-  }
   void set_should_use_spawn_animation(bool value) {
     should_use_spawn_animation_ = value;
+  }
+  bool should_use_spawn_animation() const {
+    return should_use_spawn_animation_;
   }
 
   void set_should_animate_when_entering(bool should_animate) {
@@ -249,16 +249,16 @@ class ASH_EXPORT OverviewItem : public views::ButtonListener,
     should_restack_on_animation_end_ = val;
   }
 
-  bool animating_to_close() const { return animating_to_close_; }
   void set_animating_to_close(bool val) { animating_to_close_ = val; }
+  bool animating_to_close() const { return animating_to_close_; }
 
   void set_disable_mask(bool disable) { disable_mask_ = disable; }
+
+  void set_activate_on_unminimized(bool val) { activate_on_unminimized_ = val; }
 
   void set_unclipped_size(base::Optional<gfx::Size> unclipped_size) {
     unclipped_size_ = unclipped_size;
   }
-
-  void set_activate_on_unminimized(bool val) { activate_on_unminimized_ = val; }
 
   gfx::Rect GetShadowBoundsForTesting();
   RoundedLabelWidget* cannot_snap_widget_for_testing() {

@@ -64,6 +64,9 @@ class PLATFORM_EXPORT PaintArtifact final : public RefCounted<PaintArtifact> {
       wtf_size_t index) const {
     return FindChunkInVectorByDisplayItemIndex(PaintChunks(), index);
   }
+  Vector<PaintChunk>::iterator FindChunkByDisplayItemIndex(wtf_size_t index) {
+    return FindChunkInVectorByDisplayItemIndex(PaintChunks(), index);
+  }
 
   // Returns the approximate memory usage, excluding memory likely to be
   // shared with the embedder after copying to cc::DisplayItemList.

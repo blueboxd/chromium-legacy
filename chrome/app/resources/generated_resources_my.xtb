@@ -2369,7 +2369,7 @@
 <translation id="4244238649050961491">နောက်ထပ် စတိုင်လက်စ်အက်ပ်များကို ရှာဖွေရန်</translation>
 <translation id="424726838611654458">အမြဲတမ်း Adobe Reader ထဲမှာ ဖွင့်ရန်</translation>
 <translation id="4247901771970415646"><ph name="USERNAME" /> သို့ စင့်ခ်လုပ်၍မရပါ</translation>
-<translation id="4248098802131000011">ဒေတာပေါက်ကြားမှုများနှင့် အခြားသော လုံခြုံရေးကိစ္စရပ်များမရှိနေစရန် သင့်စကားဝှက်ကို လုံခြုံအောင် ထိန်းသိမ်းပါ</translation>
+<translation id="4248098802131000011">ဒေတာပေါက်ကြားမှုများနှင့် အခြားသော လုံခြုံရေးပြဿနာများမရှိစေရန် သင့်စကားဝှက်ကို လုံခြုံအောင် ထိန်းသိမ်းပါ</translation>
 <translation id="4249248555939881673">ကွန်ရက် ချိတ်ဆက်မှုအတွက် စောင့်နေ...</translation>
 <translation id="4249373718504745892">ဒီစာမျက်နှာကို သင်၏ ကင်မရာကို ရယူသုံးမရအောင် ပိတ်ဆို့ထားသည်။</translation>
 <translation id="424963718355121712">အက်ပ်များကို ၎င်းတို့အကျိုးသက်ရောက်မှုရှိသည့် ဆာဗာပင်ရင်းက ဝန်ဆောင်ပေးရမည်</translation>
@@ -2507,7 +2507,7 @@
 <translation id="4459169140545916303">ပြီးခဲ့သော <ph name="DEVICE_LAST_ACTIVATED_TIME" /> ရက်က အသုံးပြုထားသည်</translation>
 <translation id="4460014764210899310">အုပ်စု ဖွဲ့မထားပါ</translation>
 <translation id="4462159676511157176">စိတ်ကြိုက်အမည် ဆာဗာများ</translation>
-<translation id="4465236939126352372"><ph name="APP_NAME" /> အတွက် <ph name="TIME" /> အချိန်ကန့်သတ်ချက် သတ်မှတ်ထားသည်</translation>
+<translation id="4465236939126352372"><ph name="APP_NAME" /> အတွက် အချိန် <ph name="TIME" /> ကန့်သတ်ထားသည်</translation>
 <translation id="4465725236958772856">ကွန်ရက် <ph name="NETWORK_COUNT" /> ခုအနက်မှ <ph name="NETWORK_INDEX" />၊ <ph name="NETWORK_NAME" />၊ သင့် 'စီမံခန့်ခွဲသူ' က ကြီးကြပ်ထားသည်၊ ချိတ်ဆက်ရန်</translation>
 <translation id="4469477701382819144">စိတ်အနှောင့်အယှက်ဖြစ်စေသော (သို့) အထင်အမြင်မှားစေသော ကြော်ငြာများကို ပြသည့် ဝဘ်ဆိုက်များကို ပိတ်ထားသည်</translation>
 <translation id="4469762931504673593"><ph name="ORIGIN" /> က <ph name="FOLDERNAME" /> ထဲရှိ ဖိုင်များကို တည်းဖြတ်နိုင်သည်</translation>

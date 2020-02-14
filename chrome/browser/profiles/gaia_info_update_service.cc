@@ -94,17 +94,12 @@ void GAIAInfoUpdateService::Update(const AccountInfo& info) {
                             base::UTF16ToUTF8(hosted_domain));
 
   if (info.picture_url == kNoPictureURLFound) {
-    entry->SetGAIAPicture(gfx::Image());
+    entry->SetGAIAPicture(std::string(), gfx::Image());
   } else if (!info.account_image.IsEmpty()) {
-    if (info.account_image.ToSkBitmap()->width() !=
-        signin::kAccountInfoImageSize) {
-      // All newly downloaded images should be of
-      // |signin::kAccountInfoImageSize| size.
-      return;
-    }
     // Only set the image if it is not empty, to avoid clearing the image if we
     // fail to download it on one of the 24 hours interval to refresh the data.
-    entry->SetGAIAPicture(info.account_image);
+    entry->SetGAIAPicture(info.last_downloaded_image_url_with_size,
+                          info.account_image);
   }
 }
 
@@ -125,7 +120,7 @@ void GAIAInfoUpdateService::ClearProfileEntry() {
   gaia_id_of_profile_attribute_entry_ = "";
   entry->SetGAIAName(base::string16());
   entry->SetGAIAGivenName(base::string16());
-  entry->SetGAIAPicture(gfx::Image());
+  entry->SetGAIAPicture(std::string(), gfx::Image());
   // Unset the cached URL.
   profile_prefs_->ClearPref(prefs::kGoogleServicesHostedDomain);
 }

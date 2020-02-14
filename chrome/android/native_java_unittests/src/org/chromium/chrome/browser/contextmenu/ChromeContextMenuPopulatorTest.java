@@ -20,8 +20,10 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.CalledByNativeJavaTest;
 import org.chromium.blink_public.common.ContextMenuDataMediaType;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator.ContextMenuMode;
 import org.chromium.chrome.browser.contextmenu.ContextMenuParams.PerformanceClass;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.share.ShareDelegate;
@@ -48,6 +50,8 @@ public class ChromeContextMenuPopulatorTest {
     private TemplateUrlService mTemplateUrlService;
     @Mock
     private ShareDelegate mShareDelegate;
+    @Mock
+    private ExternalAuthUtils mExternalAuthUtils;
 
     private ChromeContextMenuPopulator mPopulator;
 
@@ -77,10 +81,11 @@ public class ChromeContextMenuPopulatorTest {
     }
 
     private void initializePopulator(@ContextMenuMode int mode) {
-        mPopulator = Mockito.spy(
-                new ChromeContextMenuPopulator(mItemDelegate, () -> mShareDelegate, mode));
+        mPopulator = Mockito.spy(new ChromeContextMenuPopulator(
+                mItemDelegate, () -> mShareDelegate, mode, mExternalAuthUtils));
         doReturn(mTemplateUrlService).when(mPopulator).getTemplateUrlService();
         doReturn(false).when(mPopulator).shouldTriggerEphemeralTabHelpUi();
+        doReturn(true).when(mExternalAuthUtils).isGoogleSigned(IntentHandler.PACKAGE_GSA);
     }
 
     private void checkMenuOptions(ContextMenuParams params, int[]... tabs) {

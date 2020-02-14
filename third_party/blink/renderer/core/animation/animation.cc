@@ -454,8 +454,10 @@ void Animation::PostCommit(double timeline_time) {
   }
 }
 
-bool Animation::HasLowerCompositeOrdering(const Animation* animation1,
-                                          const Animation* animation2) {
+bool Animation::HasLowerCompositeOrdering(
+    const Animation* animation1,
+    const Animation* animation2,
+    CompareAnimationsOrdering compare_animation_type) {
   AnimationClassPriority priority1 = AnimationPriority(animation1);
   AnimationClassPriority priority2 = AnimationPriority(animation2);
   if (priority1 != priority2)
@@ -476,9 +478,15 @@ bool Animation::HasLowerCompositeOrdering(const Animation* animation1,
     Element* target1 = effect1->target();
     Element* target2 = effect2->target();
 
+    // The tree position comparison would take a longer time, thus affec the
+    // performance. We only do it when it comes to getAnimation.
     if (*target1 != *target2) {
-      return target1->compareDocumentPosition(target2) &
-             Node::kDocumentPositionFollowing;
+      if (compare_animation_type == CompareAnimationsOrdering::kTreeOrder) {
+        return target1->compareDocumentPosition(target2) &
+               Node::kDocumentPositionFollowing;
+      } else {
+        return target1 < target2;
+      }
     }
 
     // A pseudo-element has a higher composite ordering than its originating

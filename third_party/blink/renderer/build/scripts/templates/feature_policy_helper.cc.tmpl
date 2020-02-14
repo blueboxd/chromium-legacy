@@ -32,7 +32,7 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
   DEFINE_STATIC_LOCAL(FeatureNameMap, default_feature_name_map, ());
   if (default_feature_name_map.IsEmpty()) {
     {% for feature in feature_policy_features %}
-    {% if not feature.depends_on or feature.name in origin_trial_dependency_map %}
+    {% if not feature.depends_on or feature.name in fp_origin_trial_dependency_map %}
     default_feature_name_map.Set(k{{feature.name}}PolicyName,
                                  mojom::FeaturePolicyFeature::k{{feature.name}});
     {% endif %}
@@ -49,18 +49,18 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
   return default_feature_name_map;
 }
 
-const FeatureSet& GetAvailableDocumentPolicyFeatures() {
-  DEFINE_STATIC_LOCAL(FeatureSet, features, ());
+const DocumentPolicyFeatureSet& GetAvailableDocumentPolicyFeatures() {
+  DEFINE_STATIC_LOCAL(DocumentPolicyFeatureSet, features, ());
   if (features.IsEmpty()) {
     {% for feature in document_policy_features %}
-    {% if not feature.depends_on or feature.name in origin_trial_dependency_map %}
-    features.insert(mojom::FeaturePolicyFeature::k{{feature.name}});
+    {% if not feature.depends_on or feature.name in dp_origin_trial_dependency_map %}
+    features.insert(mojom::DocumentPolicyFeature::k{{feature.name}});
     {% endif %}
     {% endfor %}
     {% for runtime_feature_name, dependent_features in runtime_to_document_policy_map.items() | sort %}
     if (RuntimeEnabledFeatures::{{runtime_feature_name}}Enabled()) {
       {% for feature in dependent_features %}
-      features.insert(mojom::FeaturePolicyFeature::k{{feature}});
+      features.insert(mojom::DocumentPolicyFeature::k{{feature}});
       {% endfor %}
     }
     {% endfor %}
@@ -72,7 +72,7 @@ const FeatureSet& GetAvailableDocumentPolicyFeatures() {
 // i.e. the feature is considered enabled by origin trial.
 bool DisabledByOriginTrial(const String& feature_name,
                            FeatureContext* feature_context) {
-  {% for feature_name, dependencies in origin_trial_dependency_map.items() | sort %}
+  {% for feature_name, dependencies in fp_origin_trial_dependency_map.items() | sort %}
   if (feature_name == k{{feature_name}}PolicyName) {
     return
     {%- for dependency in dependencies %}
@@ -84,10 +84,10 @@ bool DisabledByOriginTrial(const String& feature_name,
   return false;
 }
 
-bool DisabledByOriginTrial(mojom::blink::FeaturePolicyFeature feature,
+bool DisabledByOriginTrial(mojom::blink::DocumentPolicyFeature feature,
                            FeatureContext* feature_context) {
-  {% for feature_name, dependencies in origin_trial_dependency_map.items() | sort %}
-  if (feature == mojom::FeaturePolicyFeature::k{{feature_name}}) {
+  {% for feature_name, dependencies in dp_origin_trial_dependency_map.items() | sort %}
+  if (feature == mojom::DocumentPolicyFeature::k{{feature_name}}) {
     return
     {%- for dependency in dependencies %}
     {%- if not loop.first %} &&{% endif %}

@@ -27,9 +27,6 @@ class ScriptState;
 class ScriptValue;
 class SerializedScriptValue;
 
-const base::Feature kIndexedDBLargeValueWrapping{
-    "IndexedDBLargeValueWrapping", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Logic for serializing V8 values for storage in IndexedDB.
 //
 // An IDBValueWrapper instance drives the serialization of a single V8 value to

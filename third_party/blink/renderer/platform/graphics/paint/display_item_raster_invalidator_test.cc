@@ -461,25 +461,27 @@ TEST_P(DisplayItemRasterInvalidatorTest, SwapOrderCrossingChunks) {
   auto container2_properties = DefaultPaintChunkProperties();
   container2_properties.SetEffect(*container2_effect);
 
-  GetPaintController().UpdateCurrentPaintChunkProperties(
-      PaintChunk::Id(container1, kBackgroundType), container1_properties);
+  PaintChunk::Id container1_id(container1, kBackgroundType);
+  PaintChunk::Id container2_id(container2, kBackgroundType);
+  GetPaintController().UpdateCurrentPaintChunkProperties(&container1_id,
+                                                         container1_properties);
   DrawRect(context, container1, kBackgroundType, FloatRect(100, 100, 100, 100));
   DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
-  GetPaintController().UpdateCurrentPaintChunkProperties(
-      PaintChunk::Id(container2, kBackgroundType), container2_properties);
+  GetPaintController().UpdateCurrentPaintChunkProperties(&container2_id,
+                                                         container2_properties);
   DrawRect(context, container2, kBackgroundType, FloatRect(100, 200, 100, 100));
   DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
   GenerateRasterInvalidations();
 
   // Move content2 into container1, without invalidation.
   invalidator_.SetTracksRasterInvalidations(true);
-  GetPaintController().UpdateCurrentPaintChunkProperties(
-      PaintChunk::Id(container1, kBackgroundType), container1_properties);
+  GetPaintController().UpdateCurrentPaintChunkProperties(&container1_id,
+                                                         container1_properties);
   DrawRect(context, container1, kBackgroundType, FloatRect(100, 100, 100, 100));
   DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
   DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
-  GetPaintController().UpdateCurrentPaintChunkProperties(
-      PaintChunk::Id(container2, kBackgroundType), container2_properties);
+  GetPaintController().UpdateCurrentPaintChunkProperties(&container2_id,
+                                                         container2_properties);
   DrawRect(context, container2, kBackgroundType, FloatRect(100, 200, 100, 100));
 
   EXPECT_THAT(GenerateRasterInvalidations(),

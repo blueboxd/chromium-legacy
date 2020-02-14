@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chrome_content_browser_client.h"
 
-#include <array>
 #include <map>
 #include <set>
 #include <utility>
@@ -258,6 +257,7 @@
 #include "components/variations/variations_http_header_provider.h"
 #include "components/variations/variations_switches.h"
 #include "components/version_info/version_info.h"
+#include "components/viz/common/viz_utils.h"
 #include "content/public/browser/browser_child_process_host.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/browser_ppapi_host.h"
@@ -396,7 +396,6 @@
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
 #include "base/android/application_status_listener.h"
-#include "base/android/build_info.h"
 #include "chrome/android/features/dev_ui/buildflags.h"
 #include "chrome/android/modules/extra_icu/provider/module_provider.h"
 #include "chrome/browser/android/app_hooks.h"
@@ -881,26 +880,6 @@ float GetDeviceScaleAdjustment() {
   float ratio = static_cast<float>(minWidth - kWidthForMinFSM) /
                 (kWidthForMaxFSM - kWidthForMinFSM);
   return ratio * (kMaxFSM - kMinFSM) + kMinFSM;
-}
-
-bool UseDisplayWideColorGamut() {
-  auto compute_use_display_wide_color_gamut = []() {
-    const char* current_model =
-        base::android::BuildInfo::GetInstance()->model();
-    const std::array<std::string, 2> enabled_models = {
-        std::string{"Pixel 4"}, std::string{"Pixel 4 XL"}};
-    for (const std::string& model : enabled_models) {
-      if (model == current_model)
-        return true;
-    }
-
-    return false;
-  };
-
-  // As it takes some work to compute this, cache the result.
-  static base::NoDestructor<bool> is_wide_color_gamut_enabled(
-      compute_use_display_wide_color_gamut());
-  return *is_wide_color_gamut_enabled;
 }
 #endif  // defined(OS_ANDROID)
 
@@ -3591,6 +3570,7 @@ base::string16 ChromeContentBrowserClient::GetAppContainerSidForSandboxType(
     case service_manager::SandboxType::kPrintCompositor:
     case service_manager::SandboxType::kAudio:
     case service_manager::SandboxType::kSoda:
+    case service_manager::SandboxType::kProxyResolver:
       // Should never reach here.
       CHECK(0);
       return base::string16();
@@ -5363,7 +5343,7 @@ ui::AXMode ChromeContentBrowserClient::GetAXModeForBrowserContext(
 #if defined(OS_ANDROID)
 content::ContentBrowserClient::WideColorGamutHeuristic
 ChromeContentBrowserClient::GetWideColorGamutHeuristic() {
-  if (UseDisplayWideColorGamut() ||
+  if (viz::AlwaysUseWideColorGamut() ||
       base::FeatureList::IsEnabled(features::kDynamicColorGamut)) {
     return WideColorGamutHeuristic::kUseDisplay;
   }

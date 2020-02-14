@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/debug/activity_tracker.h"
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
@@ -76,6 +77,19 @@ NOINLINE void MaybeDumpWithoutCrashing(
   base::debug::Alias(&messages_enqueued);
   base::debug::Alias(&messages_dequeued);
   base::debug::Alias(&messages_written);
+
+  // Also record the data for extended crash reporting.
+  base::debug::ScopedActivity scoped_activity;
+  auto& user_data = scoped_activity.user_data();
+  user_data.SetUint("total_quota_used", total_quota_used);
+  user_data.SetUint("local_quota_used", local_quota_used);
+  user_data.SetBool("had_message_pipe", had_message_pipe);
+  user_data.SetUint("seconds_since_construction", seconds_since_construction);
+  user_data.SetUint("average_write_rate_per_second",
+                static_cast<uint64_t>(average_write_rate_per_second));
+  user_data.SetUint("messages_enqueued", messages_enqueued);
+  user_data.SetUint("messages_dequeued", messages_dequeued);
+  user_data.SetUint("messages_enqueued", messages_enqueued);
 
   // This is happening because the user of the interface implicated on the crash
   // stack has queued up an unreasonable number of messages, namely

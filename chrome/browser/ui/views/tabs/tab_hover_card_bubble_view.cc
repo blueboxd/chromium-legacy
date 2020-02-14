@@ -691,7 +691,7 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
   } else {
     domain_url = tab->data().last_committed_url;
     title = tab->data().title;
-    alert_state_ = tab->data().alert_state;
+    alert_state_ = Tab::GetAlertStateToShow(tab->data().alert_state);
   }
   base::string16 domain;
   if (domain_url.SchemeIsFile()) {

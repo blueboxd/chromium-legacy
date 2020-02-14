@@ -4,24 +4,24 @@
 
 # Every fragment must have an empty constructor, so it can be instantiated when
 # restoring its activity's state.
--keep public class org.chromium.chrome.browser.** extends android.support.v4.app.Fragment {
+-keep public class org.chromium.chrome.browser.** extends androidx.fragment.app.Fragment {
   public <init>();
 }
 
 # Referenced by android.support.v7.preference.PreferenceInflater
--keep public class android.support.v14.preference.SwitchPreference {}
+-keep public class androidx.preference.SwitchPreference {}
 
 # Inflated via reflection
--keep public class android.support.v7.preference.Preference {
+-keep public class androidx.preference.Preference {
     public <init>(android.content.Context, android.util.AttributeSet);
 }
--keep public class android.support.v7.preference.PreferenceScreen {
+-keep public class androidx.preference.PreferenceScreen {
     public <init>(android.content.Context, android.util.AttributeSet);
 }
--keep public class android.support.v7.preference.PreferenceCategory {
+-keep public class androidx.preference.PreferenceCategory {
     public <init>(android.content.Context, android.util.AttributeSet);
 }
--keep public class android.support.v7.preference.ListPreference {
+-keep public class androidx.preference.ListPreference {
     public <init>(android.content.Context, android.util.AttributeSet);
 }
 

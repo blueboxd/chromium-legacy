@@ -50,11 +50,6 @@ class PlatformVerificationDialog : public views::DialogDelegateView,
                              const base::string16& domain,
                              ConsentCallback callback);
 
-  // views::DialogDelegate:
-  bool Cancel() override;
-  bool Accept() override;
-  bool Close() override;
-
   // views::WidgetDelegate:
   ui::ModalType GetModalType() const override;
 

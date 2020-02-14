@@ -352,6 +352,12 @@ def main():
       '--debug', action='store_true', help='Enable debug logging')
   args = parser.parse_args()
 
+  print("""WARNING: Temporary manual edits have been made to
+        //third_party/android_deps/BUILD.gn to support the androidx migration.
+        This script will overwrite them, so you will need to revert them
+        afterwards.
+        E.g. by running: git checkout HEAD -p https://crbug.com/896775""")
+
   # Determine Chromium source tree.
   chromium_src = args.chromium_dir
   if not chromium_src:

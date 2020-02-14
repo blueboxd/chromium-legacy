@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">表示</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5317780077021120954">保存</translation>
+<translation id="5391532827096253100">このサイトへの接続は保護されていません。サイト情報</translation>
 <translation id="5556459405103347317">再読み込み</translation>
 <translation id="5596627076506792578">その他のオプション</translation>
 <translation id="5860033963881614850">オフ</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="6042308850641462728">もっと見る</translation>
 <translation id="6165508094623778733">詳細</translation>
+<translation id="6206551242102657620">接続は保護されています。サイト情報</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> のオプション</translation>
 <translation id="6527303717912515753">共有</translation>
 <translation id="6746124502594467657">下に移動</translation>
 <translation id="6818926723028410516">アイテムを選択</translation>
 <translation id="6910211073230771657">削除済み</translation>
 <translation id="6945221475159498467">選択</translation>
+<translation id="6963642900430330478">このページは危険です。サイト情報</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 件のアイテムを選択済み}other{# 件のアイテムを選択済み}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> 件選択されています。オプションは画面上部にあります</translation>

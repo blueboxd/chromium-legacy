@@ -35,14 +35,7 @@ TabRendererData TabRendererData::FromTabInModel(TabStripModel* model,
   data.show_icon = data.pinned || favicon::ShouldDisplayFavicon(contents);
   data.blocked = model->IsTabBlocked(index);
   data.should_hide_throbber = tab_ui_helper->ShouldHideThrobber();
-
-  // TODO(crbug.com/1004983): provide all current alerts in
-  // TabRendererData. Consumers that can only display 1 should handle
-  // this themselves.
-  auto alerts = chrome::GetTabAlertStatesForContents(contents);
-  data.alert_state =
-      alerts.empty() ? base::Optional<TabAlertState>() : alerts[0];
-
+  data.alert_state = chrome::GetTabAlertStatesForContents(contents);
   return data;
 }
 

@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">نمایش</translation>
 <translation id="5301954838959518834">بله، متوجه شدم</translation>
 <translation id="5317780077021120954">ذخیره</translation>
+<translation id="5391532827096253100">اتصال شما به این سایت امن نیست. اطلاعات سایت</translation>
 <translation id="5556459405103347317">تازه‌سازی</translation>
 <translation id="5596627076506792578">گزینه‌های بیشتر</translation>
 <translation id="5860033963881614850">خاموش</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">بستن</translation>
 <translation id="6042308850641462728">بیشتر</translation>
 <translation id="6165508094623778733">بیشتر بدانید</translation>
+<translation id="6206551242102657620">اتصال امن است. اطلاعات سایت</translation>
 <translation id="6216432067784365534">گزینه‌های <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">اشتراک‌گذاری</translation>
 <translation id="6746124502594467657">انتقال به پایین</translation>
 <translation id="6818926723028410516">انتخاب موارد</translation>
 <translation id="6910211073230771657">حذف شد</translation>
 <translation id="6945221475159498467">انتخاب</translation>
+<translation id="6963642900430330478">این صفحه خطرناک است. اطلاعات سایت</translation>
 <translation id="6965382102122355670">قبول</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{۱ مورد انتخاب شد}one{# مورد انتخاب شد}other{# مورد انتخاب شد}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> مورد انتخاب شد.  گزینه‌ها در نزدیکی بالای صفحه دردسترس است</translation>

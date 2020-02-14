@@ -65,6 +65,7 @@ class ElementRareData;
 class ExceptionState;
 class FloatQuad;
 class FloatSize;
+class HTMLTemplateElement;
 class Image;
 class InputDeviceCapabilities;
 class Locale;
@@ -573,6 +574,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // createShadowRoot() is used without any parameters from JavaScript.
   ShadowRoot* createShadowRoot(ExceptionState&);
   ShadowRoot* attachShadow(const ShadowRootInit*, ExceptionState&);
+
+  void AttachDeclarativeShadowRoot(HTMLTemplateElement* template_element,
+                                   ShadowRootType type);
 
   ShadowRoot& CreateV0ShadowRootForTesting() {
     return CreateShadowRootInternal();

@@ -3998,6 +3998,10 @@ The site does NOT gain access to the camera. The camera images are only visible 
         Please enable your camera to scan a QR code
       </message>
 
+      <message name="IDS_QR_CODE_OPEN_SETTINGS_DESCRIPTION" desc="Text on QR code sharing tab indicating that user needs to open settings to give camera permission.">
+        To scan a QR code, change your settings so that Chrome can use your camera
+      </message>
+
       <message name="IDS_QR_CODE_PERMISSION_CONTINUE_LABEL" desc="Text on button on QR code sharing tab triggering camera permission dialog.">
         Continue
       </message>
@@ -4016,6 +4020,10 @@ The site does NOT gain access to the camera. The camera images are only visible 
 
       <message name="IDS_QR_CODE_HARDWARE_CAMERA_ERROR" desc="Error text shown when the camera cannot start due to a hardware error.">
         Can't open your camera. Something went wrong.
+      </message>
+
+      <message name="IDS_QR_CODE_OPEN_SETTINGS_LABEL" desc="Text on button on QR code sharing tab triggering Android settings.">
+        Open Settings
       </message>
 
       <!-- Chime DFM module strings -->

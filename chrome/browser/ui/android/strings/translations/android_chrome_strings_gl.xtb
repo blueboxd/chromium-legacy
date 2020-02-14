@@ -281,6 +281,7 @@
 <translation id="3137521801621304719">Sae do modo de incógnito</translation>
 <translation id="3140134512074889489">Activa a cámara para escanear un código QR</translation>
 <translation id="3143515551205905069">Cancelar sincronización</translation>
+<translation id="314939179385989105">Páxina de inicio de Chrome</translation>
 <translation id="3157842584138209013">Comproba a cantidade de datos que aforraches a través do botón Máis opcións</translation>
 <translation id="3166827708714933426">Atallos da ventá e da pestana</translation>
 <translation id="3181954750937456830">Navegación segura (protección para ti e o teu dispositivo contra os sitios perigosos)</translation>
@@ -571,7 +572,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="534295439873310000">Dispositivos con NFC</translation>
 <translation id="5357811892247919462">Recibiuse unha pestana</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> pestana aberta, toca para cambiar de pestana}other{<ph name="OPEN_TABS_MANY" /> pestanas abertas, toca para cambiar de pestana}}</translation>
-<translation id="5391532827096253100">A túa conexión a este sitio non é segura. Información do sitio</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(e 1 máis)}other{(e # máis)}}</translation>
 <translation id="5400569084694353794">Ao utilizar esta aplicación, aceptas as <ph name="BEGIN_LINK1" />Condicións de servizo<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de privacidade<ph name="END_LINK2" /> de Chrome.</translation>
 <translation id="5403592356182871684">Nomes</translation>
@@ -688,7 +688,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="6194112207524046168">Para permitir que Chrome acceda á túa cámara, actívaa tamén en <ph name="BEGIN_LINK" />Configuración de Android<ph name="END_LINK" />.</translation>
 <translation id="6196640612572343990">Bloquear cookies de terceiros</translation>
 <translation id="6201345951596836663">Copiouse a ligazón</translation>
-<translation id="6206551242102657620">A conexión é segura. Información do sitio</translation>
 <translation id="6210748933810148297">Non es <ph name="EMAIL" />?</translation>
 <translation id="6221633008163990886">Desbloquea a pantalla para exportar os teus contrasinais</translation>
 <translation id="6232535412751077445">Se activas a opción Do Not Track, incluirase unha solicitude no teu tráfico de navegación. O efecto producido depende de se o sitio web responde á solicitude e da interpretación desta.
@@ -727,6 +726,7 @@ Mantén premida calquera palabra para buscala. Axusta a selección para refinar 
 <translation id="6437478888915024427">Información sobre a páxina</translation>
 <translation id="6441734959916820584">O nome é demasiado longo</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# imaxe}other{# imaxes}}</translation>
+<translation id="6447558397796644647">Non se puido atopar o marcador. Comproba a ortografía ou engade un marcador novo.</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6461962085415701688">Non se puido abrir o ficheiro</translation>
 <translation id="6464977750820128603">Podes ver os sitios que visitas en Chrome e definirlles temporizadores.\n\nGoogle obtén información sobre os sitios para os que estableces temporizadores e sobre a duración da túa visita. Estes datos utilízanse para mellorar Benestar dixital.</translation>
@@ -794,7 +794,6 @@ Mantén premida calquera palabra para buscala. Axusta a selección para refinar 
 <translation id="6914783257214138813">Todas as persoas que poidan ver o ficheiro exportado tamén poderán ver os teus contrasinais.</translation>
 <translation id="6942665639005891494">Cambia a localización de descarga predeterminada en calquera momento usando a opción do menú Configuración</translation>
 <translation id="6945221475159498467">Seleccionar</translation>
-<translation id="6963642900430330478">Esta páxina é perigosa. Información do sitio</translation>
 <translation id="6963766334940102469">Eliminar marcadores</translation>
 <translation id="6979737339423435258">Desde sempre</translation>
 <translation id="6981982820502123353">Accesibilidade</translation>
@@ -802,6 +801,7 @@ Mantén premida calquera palabra para buscala. Axusta a selección para refinar 
 <translation id="6990079615885386641">Descarga a aplicación en Google Play Store: <ph name="APP_ACTION" /></translation>
 <translation id="6992289844737586249">Pregunta antes de permitir que os sitios utilicen o teu micrófono (recomendado)</translation>
 <translation id="6995899638241819463">Avisarte se os teus contrasinais están en risco debido a unha violación da seguranza dos datos</translation>
+<translation id="7000754031042624318">Desactivouse na configuración de Android</translation>
 <translation id="7015203776128479407">A configuración da sincronización inicial non finalizou. A sincronización está desactivada.</translation>
 <translation id="7016516562562142042">Permitido para o motor de busca actual</translation>
 <translation id="7022756207310403729">Abrir no navegador</translation>

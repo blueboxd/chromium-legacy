@@ -82,9 +82,8 @@ gfx::Image ReadBitmap(const base::FilePath& image_path) {
 
 // Writes |data| to disk and takes ownership of the pointer. On successful
 // completion, it runs |callback|.
-void SaveBitmap(std::unique_ptr<ImageData> data,
-                const base::FilePath& image_path,
-                const base::Closure& callback) {
+bool SaveBitmap(std::unique_ptr<ImageData> data,
+                const base::FilePath& image_path) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
@@ -92,16 +91,15 @@ void SaveBitmap(std::unique_ptr<ImageData> data,
   base::FilePath dir = image_path.DirName();
   if (!base::DirectoryExists(dir) && !base::CreateDirectory(dir)) {
     LOG(ERROR) << "Failed to create parent directory.";
-    return;
+    return false;
   }
 
   if (base::WriteFile(image_path, reinterpret_cast<char*>(&(*data)[0]),
                       data->size()) == -1) {
     LOG(ERROR) << "Failed to save image to file.";
-    return;
+    return false;
   }
-
-  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, callback);
+  return true;
 }
 
 void RunCallbackIfFileMissing(const base::FilePath& file_path,
@@ -369,7 +367,8 @@ void ProfileAttributesStorage::SaveAvatarImageAtPath(
     const base::FilePath& profile_path,
     gfx::Image image,
     const std::string& key,
-    const base::FilePath& image_path) {
+    const base::FilePath& image_path,
+    base::OnceClosure callback) {
   cached_avatar_images_[key] = image;
 
   std::unique_ptr<ImageData> data(new ImageData);
@@ -390,12 +389,11 @@ void ProfileAttributesStorage::SaveAvatarImageAtPath(
   if (data->empty()) {
     LOG(ERROR) << "Failed to PNG encode the image.";
   } else {
-    base::Closure callback =
-        base::Bind(&ProfileAttributesStorage::OnAvatarPictureSaved, AsWeakPtr(),
-                   key, profile_path);
-    file_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&SaveBitmap, std::move(data), image_path, callback));
+    base::PostTaskAndReplyWithResult(
+        file_task_runner_.get(), FROM_HERE,
+        base::BindOnce(&SaveBitmap, std::move(data), image_path),
+        base::BindOnce(&ProfileAttributesStorage::OnAvatarPictureSaved,
+                       AsWeakPtr(), key, profile_path, std::move(callback)));
   }
 }
 
@@ -405,6 +403,15 @@ void ProfileAttributesStorage::OnAvatarPictureLoaded(
     gfx::Image image) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   cached_avatar_images_loading_[key] = false;
+  if (cached_avatar_images_.count(key)) {
+    if (!cached_avatar_images_[key].IsEmpty() || image.IsEmpty()) {
+      // If GAIA picture is not empty that means that it has been set with the
+      // most up-to-date value while the picture was being loaded from disk.
+      // If GAIA picture is empty and the image loaded from disk is also empty
+      // then there is no need to update.
+      return;
+    }
+  }
 
   // Even if the image is empty (e.g. because decoding failed), place it in the
   // cache to avoid reloading it again.
@@ -415,8 +422,15 @@ void ProfileAttributesStorage::OnAvatarPictureLoaded(
 
 void ProfileAttributesStorage::OnAvatarPictureSaved(
     const std::string& file_name,
-    const base::FilePath& profile_path) const {
+    const base::FilePath& profile_path,
+    base::OnceClosure callback,
+    bool success) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!success)
+    return;
+
+  if (callback)
+    std::move(callback).Run();
 
   NotifyOnProfileHighResAvatarLoaded(profile_path);
 }

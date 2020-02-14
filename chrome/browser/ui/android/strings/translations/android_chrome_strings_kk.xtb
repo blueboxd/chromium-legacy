@@ -572,7 +572,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="534295439873310000">NFC функциясы бар құрылғылар</translation>
 <translation id="5357811892247919462">Қойынды алынды.</translation>
 <translation id="5368958499335451666">{OPEN_TABS,plural, =1{<ph name="OPEN_TABS_ONE" /> қойынды ашық тұр, қойындыларды ауыстыру үшін түртіңіз.}other{<ph name="OPEN_TABS_MANY" /> қойынды ашық тұр, қойындыларды ауыстыру үшін түртіңіз.}}</translation>
-<translation id="5391532827096253100">Бұл сайтпен байланысыңыз қорғалмаған. Сайт ақпараты</translation>
 <translation id="5394307150471348411">{DETAIL_COUNT,plural, =1{(Тағы 1)}other{(Тағы #)}}</translation>
 <translation id="5400569084694353794">Бұл қолданбаны пайдалану арқылы Chrome <ph name="BEGIN_LINK1" />қызмет көрсету шарттары<ph name="END_LINK1" /> мен <ph name="BEGIN_LINK2" />құпиялылық туралы хабарлама<ph name="END_LINK2" /> талаптарына келісесіз.</translation>
 <translation id="5403592356182871684">Атаулары</translation>
@@ -689,7 +688,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6194112207524046168">Chrome браузері камераны пайдалануы үшін, оны <ph name="BEGIN_LINK" />Android параметрлерінде<ph name="END_LINK" /> де қосыңыз.</translation>
 <translation id="6196640612572343990">Үшінші тарап cookie файлдарын бөгеу</translation>
 <translation id="6201345951596836663">Сілтеме көшірілді.</translation>
-<translation id="6206551242102657620">Байланыс қорғалған. Сайт ақпараты</translation>
 <translation id="6210748933810148297"><ph name="EMAIL" /> емес пе?</translation>
 <translation id="6221633008163990886">Құпия сөздерді экспорттау үшін құлпын ашыңыз</translation>
 <translation id="6232535412751077445">"Бақыламау" опциясын қосқанда, шолу трафигінде сұрау қамтылады. Нәтиже веб-сайттың сұрауға жауап беруіне және сұраудың қалай түсіндірілуіне байланысты.
@@ -796,7 +794,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="6914783257214138813">Құпия сөз экспортталған құпия сөздер файлын көре алатын кез келген адамға қолжетімді болады.</translation>
 <translation id="6942665639005891494">"Параметрлер" мәзірі опциясын пайдаланып, әдепкі жүктеп алу орнын кез келген уақытта өзгертіңіз</translation>
 <translation id="6945221475159498467">Таңдау</translation>
-<translation id="6963642900430330478">Бұл бет қауіпті. Сайт ақпараты</translation>
 <translation id="6963766334940102469">Бетбелгілерді жою</translation>
 <translation id="6979737339423435258">Барлық уақыт</translation>
 <translation id="6981982820502123353">Арнайы мүмкіндіктер</translation>

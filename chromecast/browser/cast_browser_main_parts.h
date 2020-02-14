@@ -42,6 +42,9 @@ class WaylandServerController;
 #if defined(USE_AURA)
 class CastWindowManagerAura;
 class CastScreen;
+namespace shell {
+class CastUIDevTools;
+}  // namespace shell
 #else
 class CastWindowManager;
 #endif  // #if defined(USE_AURA)
@@ -129,6 +132,11 @@ class CastBrowserMainParts : public content::BrowserMainParts {
 #if defined(OS_LINUX) && defined(USE_OZONE)
   std::unique_ptr<WaylandServerController> wayland_server_controller_;
 #endif
+
+#if defined(USE_AURA) && !defined(OS_FUCHSIA)
+  // Only used when running with --enable-ui-devtools.
+  std::unique_ptr<CastUIDevTools> ui_devtools_;
+#endif  // defined(USE_AURA) && !defined(OS_FUCHSIA)
 
   bool run_message_loop_ = true;
 

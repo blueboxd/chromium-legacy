@@ -1034,7 +1034,9 @@ TEST_F(AnimationAnimationTestNoCompositing, AttachedAnimations) {
 TEST_F(AnimationAnimationTestNoCompositing, HasLowerCompositeOrdering) {
   Animation* animation1 = timeline->Play(nullptr);
   Animation* animation2 = timeline->Play(nullptr);
-  EXPECT_TRUE(Animation::HasLowerCompositeOrdering(animation1, animation2));
+  EXPECT_TRUE(Animation::HasLowerCompositeOrdering(
+      animation1, animation2,
+      Animation::CompareAnimationsOrdering::kPointerOrder));
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, PlayAfterCancel) {

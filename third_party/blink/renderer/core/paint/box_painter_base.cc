@@ -373,16 +373,6 @@ FloatRect ComputeSubsetForBackground(const FloatRect& phase_and_size,
                    subset.Height() / scale.Height());
 }
 
-FloatRect CorrectSrcRectForImageOrientation(BitmapImage* image,
-                                            FloatRect original_rect) {
-  ImageOrientation orientation = image->CurrentFrameOrientation();
-  DCHECK(orientation != kDefaultImageOrientation);
-  AffineTransform forward_map =
-      orientation.TransformFromDefault(original_rect.Size());
-  AffineTransform inverse_map = forward_map.Inverse();
-  return inverse_map.MapRect(original_rect);
-}
-
 // The unsnapped_subset_size should be the target painting area implied by the
 //   content, without any snapping applied. It is necessary to correctly
 //   compute the subset of the source image to paint into the destination.
@@ -446,8 +436,8 @@ void DrawTiledBackground(GraphicsContext& context,
     // the rotated space in order to position and size the background. Undo the
     // src rect rotation if necessary.
     if (respect_orientation && !image->HasDefaultOrientation()) {
-      visible_src_rect = CorrectSrcRectForImageOrientation(ToBitmapImage(image),
-                                                           visible_src_rect);
+      visible_src_rect =
+          image->CorrectSrcRectForImageOrientation(visible_src_rect);
     }
 
     context.DrawImage(image, Image::kSyncDecode, snapped_paint_rect,
@@ -589,10 +579,8 @@ inline bool PaintFastBottomLayer(Node* node,
   // to be in the unrotated image space, but we have computed it here in the
   // rotated space in order to position and size the background. Undo the src
   // rect rotation if necessaary.
-  if (info.respect_image_orientation && !image->HasDefaultOrientation()) {
-    src_rect =
-        CorrectSrcRectForImageOrientation(ToBitmapImage(image), src_rect);
-  }
+  if (info.respect_image_orientation && !image->HasDefaultOrientation())
+    src_rect = image->CorrectSrcRectForImageOrientation(src_rect);
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                "data",

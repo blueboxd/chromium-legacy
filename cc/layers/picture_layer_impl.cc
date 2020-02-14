@@ -683,13 +683,24 @@ void PictureLayerImpl::UpdateRasterSource(
 
     // If the MSAA sample count has changed, we need to re-raster the complete
     // layer.
-    if (raster_source_ && raster_source_->GetDisplayItemList() &&
-        raster_source->GetDisplayItemList() &&
-        layer_tree_impl()->GetMSAASampleCountForRaster(
-            raster_source_->GetDisplayItemList()) !=
+    if (raster_source_) {
+      const auto& current_display_item_list =
+          raster_source_->GetDisplayItemList();
+      const auto& new_display_item_list = raster_source->GetDisplayItemList();
+      if (current_display_item_list && new_display_item_list) {
+        bool needs_full_invalidation =
             layer_tree_impl()->GetMSAASampleCountForRaster(
-                raster_source->GetDisplayItemList())) {
-      new_invalidation->Union(gfx::Rect(raster_source->GetSize()));
+                current_display_item_list) !=
+            layer_tree_impl()->GetMSAASampleCountForRaster(
+                new_display_item_list);
+        needs_full_invalidation |=
+            current_display_item_list->discardable_image_map()
+                .contains_only_srgb_images() !=
+            new_display_item_list->discardable_image_map()
+                .contains_only_srgb_images();
+        if (needs_full_invalidation)
+          new_invalidation->Union(gfx::Rect(raster_source->GetSize()));
+      }
     }
   }
 

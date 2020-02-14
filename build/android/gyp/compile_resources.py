@@ -599,10 +599,9 @@ def _CompileDeps(aapt2_path, dep_subdirs, temp_dir):
 
     jetify_dir = os.path.join(partials_dir, 'jetify')
     build_utils.MakeDirectory(jetify_dir)
-    # TODO (bjoyce): Enable when androidx is ready.
-    # working_jetify_path = os.path.join(jetify_dir, 'jetify_' + partial_path)
-    # jetified_dep = _JetifyArchive(dep_path, working_jetify_path)
-    # dep_path = jetified_dep
+    working_jetify_path = os.path.join(jetify_dir, 'jetify_' + partial_path)
+    jetified_dep = _JetifyArchive(dep_path, working_jetify_path)
+    dep_path = jetified_dep
 
     compile_command = (
         partial_compile_command + ['--dir', dep_path, '-o', partial_path])

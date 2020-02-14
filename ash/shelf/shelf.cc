@@ -30,6 +30,7 @@
 #include "ash/wm/work_area_insets.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "ui/compositor/animation_metrics_reporter.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 

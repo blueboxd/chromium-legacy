@@ -84,8 +84,8 @@ MockCryptoClientStream::~MockCryptoClientStream() {}
 
 void MockCryptoClientStream::OnHandshakeMessage(
     const CryptoHandshakeMessage& message) {
-  CloseConnectionWithDetails(QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE,
-                             "Forced mock failure");
+  OnUnrecoverableError(QUIC_CRYPTO_MESSAGE_AFTER_HANDSHAKE_COMPLETE,
+                       "Forced mock failure");
 }
 
 bool MockCryptoClientStream::CryptoConnect() {

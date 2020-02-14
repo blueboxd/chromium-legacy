@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="gl">
+<translation id="1009046985747440431">Preme a frecha cara arriba ou cara abaixo para desprazarte e Intro para activar a opción</translation>
 <translation id="1011903154582639569">Busca unha tecla e levanta o dedo para escribir</translation>
 <translation id="1012173283529841972">Elemento da lista</translation>
 <translation id="1013742170491673792">srched</translation>
@@ -14,7 +15,9 @@
 <translation id="106222400312645156">rwhdr</translation>
 <translation id="1065552602950927991">Entrada non válida</translation>
 <translation id="1066085461259044485">Verde bosque</translation>
+<translation id="1087148255821848488">Estilo de pantalla actual: intercalado</translation>
 <translation id="1087788677726983142">Ocultar filtros de emisión de eventos</translation>
+<translation id="1088402100970133699">Non hai ningún elemento de lista anterior</translation>
 <translation id="1114836634143403764">Suxestión</translation>
 <translation id="1120743664840974483">{"a": "asa", "b": "bravo", "c": "chuvia", "d": "delta", "e": "eco", "f": "flor", "g": "golf", "h": "hotel", "i": "india", "j": "jazz","k": "karaoke", "l": "lima", "m": "moto", "n": "novembro", "o": "óscar","p": "papa", "q": "queixo", "r": "romeo", "s": "serra", "t": "tango", "u": "uniforme", "v": "víctor", "w": "web","x": "xabaril", "y": "yin", "z": "zapato"}</translation>
 <translation id="1120938014254001895">Pasa dous dedos cara arriba</translation>
@@ -30,6 +33,7 @@
 <translation id="1197088940767939838">Laranxa</translation>
 <translation id="1201402288615127009">Seguinte</translation>
 <translation id="1206619573307042055">marquesiña</translation>
+<translation id="1207086294218137981">Non hai ningunha cabeceira posterior de nivel 4</translation>
 <translation id="1213216066620407844">ChromeVox, a voz de Chrome</translation>
 <translation id="1225437811932752266">Parabéns! Xa aprendiches os conceptos básicos para utilizar ChromeVox correctamente. Lembra que podes abrir o menú de comandos de ChromeVox en calquera momento, tan só tes que premer a tecla de busca + Punto. Para obter aínda máis información sobre ChromeVox e Chrome OS, consulta os seguintes artigos.
 Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer clic nel.</translation>
@@ -40,8 +44,11 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="1243477406442346359">Azul purpúreo claro</translation>
 <translation id="1246424317317450637">Negra</translation>
 <translation id="1251750620252348585">Seguinte título de nivel 6</translation>
+<translation id="1268366246392928616">Non hai ningunha expresión matemática anterior</translation>
 <translation id="1275718070701477396">Seleccionado</translation>
+<translation id="1277589437867411124">Non hai ningún formulario</translation>
 <translation id="1291286136605998134">Botón de activación/desactivación</translation>
+<translation id="1294202217346877070">Non hai ningunha áncora anterior</translation>
 <translation id="1299774449519412690">Azul celeste claro</translation>
 <translation id="1303806948938513162">Toca con 4 dedos para acceder aos menús de ChromeVox</translation>
 <translation id="1321576897702511272">Oculta a axuda de ChromeVox</translation>
@@ -49,6 +56,7 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="1331702245475014624"><ph name="INDEX" /> de <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">dicir caracteres e palabras</translation>
 <translation id="1334570596456017464">Subíndice</translation>
+<translation id="133801305381959373">Non hai ningún campo de texto editable posterior</translation>
 <translation id="1339428534620983148">Columna de táboa anterior</translation>
 <translation id="1342835525016946179">artigo</translation>
 <translation id="1346059596910821859">Consello</translation>
@@ -77,6 +85,7 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="1546370775711804143">Barra de desprazamento</translation>
 <translation id="1555130319947370107">Azul</translation>
 <translation id="1559739829547075274">Navega cara atrás</translation>
+<translation id="1565432156062359693">Non hai ningunha lista posterior</translation>
 <translation id="1571643229714746283">Xa podes usar ChromeVox</translation>
 <translation id="158493514907962286">Decembro</translation>
 <translation id="1594072653727561613">mnu</translation>
@@ -84,11 +93,13 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="161042844686301425">Ciano</translation>
 <translation id="1611168825862729585">Cabeceira de columna:</translation>
 <translation id="1611649489706141841">adiante</translation>
+<translation id="1612960140435400149">Non hai ningún campo de formulario posterior</translation>
 <translation id="1613476421962910979">Earcons activados</translation>
 <translation id="1616111909442424068">Trigo</translation>
 <translation id="1618597272655350600">Anuncia unha descrición completa da posición actual</translation>
 <translation id="1627222324347828322">Branco pantasma</translation>
 <translation id="1630688379087270943">Indicar cursiva:</translation>
+<translation id="1637708931433488456">Non hai ningún elemento posterior que non sexa unha ligazón</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{maior que}other{# signos maior que}}</translation>
 <translation id="1653266918374749391">Título de nivel 3 anterior</translation>
 <translation id="1657616855184033958">Mostrar filtros de emisión de eventos</translation>
@@ -105,6 +116,7 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="1722567105086139392">Ligazón</translation>
 <translation id="1727806147743597030">ftr</translation>
 <translation id="174268867904053074">Seguinte gráfico</translation>
+<translation id="1752708997038853212">Pon unha consulta de busca</translation>
 <translation id="1756785467854861272">Maxenta escuro</translation>
 <translation id="1765245556747822181">Pasa o dedo cara arriba</translation>
 <translation id="1781173782405573156">Tecla de acceso directo</translation>
@@ -127,15 +139,19 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="1914424852593176649">Tamaño <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678">Comando: <ph name="DOT" /></translation>
 <translation id="1923956950274750765">Orquídea intermedio</translation>
+<translation id="1928932365747995741">Non hai ningún campo de texto editable anterior</translation>
 <translation id="1954623340234317532">Control da semana do ano</translation>
 <translation id="1964135212174907577">Seguinte obxecto</translation>
 <translation id="1969092762068865084">Xullo</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
+<translation id="1982529757455190616">Non hai ningún punto de salto anterior</translation>
 <translation id="1990932729021763163">Cabeceira de fila:</translation>
 <translation id="2002895034995108595">Restablecer mapa de teclado actual</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{paréntese de apertura}other{# parénteses de apertura}}</translation>
 <translation id="2009187674653301682">Non é un superíndice</translation>
 <translation id="2010555995361223825">Menús de ChromeVox</translation>
+<translation id="203030071582665758">Non hai ningunha cabeceira anterior de nivel 4</translation>
+<translation id="2045055672832940894">Non hai ningún control anterior</translation>
 <translation id="2045490512405922022">non marcada</translation>
 <translation id="2063539687800151747">Epígrafe</translation>
 <translation id="207477615537953741">Semántica desactivada</translation>
@@ -160,11 +176,13 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="2220529011494928058">Informar dun problema</translation>
 <translation id="2223693656926968778">Realizar a acción no elemento actual</translation>
 <translation id="224426591676115802">Non hai voz dispoñible en <ph name="LANGUAGE" /></translation>
+<translation id="2247700577781885251">Saíndo do modo de aprendizaxe</translation>
 <translation id="225732394367814946">Fala máis rápido</translation>
 <translation id="2267538686624070261">Saíndo da palabra con erros de ortografía</translation>
 <translation id="2267945578749931355">Seguinte carácter</translation>
 <translation id="2278490101488436824">Pasa tres dedos cara á esquerda</translation>
 <translation id="2281234842553884450">Control desprazable anterior</translation>
+<translation id="2305942658236913680">Non hai ningunha cabeceira posterior</translation>
 <translation id="2311237334957139798">Cambia á granularidade anterior</translation>
 <translation id="2314393392395134769">Non é unha subscrición</translation>
 <translation id="2318372665160196757">Principal</translation>
@@ -197,9 +215,12 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="2525706221823668172">Atallos de teclado de Chromebook</translation>
 <translation id="2549392850788122959">Restableceuse <ph name="KEY" />.</translation>
 <translation id="2553108862507765288">erro gramatical</translation>
+<translation id="2564726732032738475">Non hai máis resultados</translation>
 <translation id="257674075312929031">Grupo</translation>
 <translation id="2582407057977008361">Aparte</translation>
+<translation id="2583123579994033088">Saíndo da grade</translation>
 <translation id="2592212930811759050">Toca dúas veces para comezar a editar</translation>
+<translation id="2594420797397883935">No hai ningún elemento anterior que non sexa unha ligazón</translation>
 <translation id="2598495320872286378">Erro gramatical</translation>
 <translation id="2614981083756825552">Deseño ML matemático</translation>
 <translation id="2624431853467395961">Abrir o modo de aprendizaxe</translation>
@@ -222,8 +243,11 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2732718972699418926">a.m.</translation>
+<translation id="2737898226590637227">Non hai ningún punto de referencia de ARIA posterior</translation>
 <translation id="2749275490991666823">Marcado</translation>
 <translation id="27527859628328957">Saltar ao seguinte elemento enfocable</translation>
+<translation id="2756452585631602151">Pon unha etiqueta personalizada</translation>
+<translation id="2766299274563946262">Non hai ningunha cela á esquerda</translation>
 <translation id="2770781857296573485">Entrar en exploración de grupo</translation>
 <translation id="2777845298774924149">Saíu</translation>
 <translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
@@ -233,6 +257,7 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="2811019999044652585">Para saltar a outras partes da pantalla como as barras de ferramentas ou a bandexa do sistema, preme Control + tecla de avance. Nos Chromebooks, a tecla de avance está xusto enriba do número 2.</translation>
 <translation id="2811204574343810641">Fila</translation>
 <translation id="2841013758207633010">Hora</translation>
+<translation id="2843432675592278677">Non hai ningún punto de referencia de ARIA anterior</translation>
 <translation id="2843814945404750166">Verde oliva escuro</translation>
 <translation id="2843837985843789981">Grupo anterior</translation>
 <translation id="2844995807198708617">Menú contextual</translation>
@@ -245,9 +270,11 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="2885764457467528513">{COUNT,plural, =1{minuto}other{minutos}}</translation>
 <translation id="2894654529758326923">Información</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{chave de apertura}other{# chaves de apertura}}</translation>
+<translation id="2909584066358367921">Non hai ningún botón posterior</translation>
 <translation id="2911433807131383493">Abrir titorial de ChromeVox</translation>
 <translation id="2912405967290226587">Pasa tres dedos cara á dereita</translation>
 <translation id="2932083475399492303">Alternar tipo de liña entre estrutural ou deseño</translation>
+<translation id="2937799153569150791">Non hai ningunha cabeceira posterior de nivel 3</translation>
 <translation id="2942710183375260152">Azul lousa escuro</translation>
 <translation id="2943596527105977722">Amarelo dourado escuro</translation>
 <translation id="2964026537669811554">Grupo de títulos</translation>
@@ -280,6 +307,7 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="3104705064753753826">alrt dlg</translation>
 <translation id="3109724472072898302">Contraído</translation>
 <translation id="3112457281078985179">Para activar ou desactivar ChromeVox, usa Control + Alt + Z.</translation>
+<translation id="3128896337293924532">Non hai ningunha etiqueta blockquote posterior</translation>
 <translation id="3134461040845705080">rdonly</translation>
 <translation id="3137663468179739624">Verde oliva</translation>
 <translation id="3138767756593758860">Mostra a lista de marcadores</translation>
@@ -292,6 +320,8 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="316542773973815724">Navegación</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{espazo}other{# espazos}}</translation>
 <translation id="3179119189286472195">Sen vincular</translation>
+<translation id="320041337977930740">Cambiar estilo da pantalla para intercalar o texto</translation>
+<translation id="3208346789712025453">Non hai ningún control posterior</translation>
 <translation id="320961988183078793">introduciu <ph name="TYPE" /></translation>
 <translation id="321072937702597574">Orquídea</translation>
 <translation id="3218691001991391708">pegar <ph name="TEXT" />.</translation>
@@ -304,6 +334,8 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="3241638166094654466">Celas en cada liña:</translation>
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3260949043575829030">Anterior elemento similar</translation>
+<translation id="3270069636408109001">Non hai ningunha táboa posterior</translation>
+<translation id="3273791280096244679">Gardar etiqueta</translation>
 <translation id="3286372614333682499">vertical</translation>
 <translation id="3286390186030710347">Control desprazable</translation>
 <translation id="3300348286427369683">Compatibilidade con texto enriquecido. ChromeVox admite campos con texto enriquecido, mesmo comandos de salto, desprazamento de cursor en dispositivos braille, seleccións etc.</translation>
@@ -317,6 +349,8 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="3323447499041942178">Caixa de texto</translation>
 <translation id="3324983252691184275">Carmesí</translation>
 <translation id="3338224621010291843">Control desprazable de <ph name="VALUE" /> <ph name="NAME" /></translation>
+<translation id="3345360775039279114">Agora ChromeVox está inactivo</translation>
+<translation id="3346780868293545834">Utilizar o rato para cambiar o elemento focalizado</translation>
 <translation id="335581015389089642">Voz</translation>
 <translation id="3356951775008366684">Anuncia a pronunciación fonética dunha palabra</translation>
 <translation id="3359142382821736686">seprtr</translation>
@@ -325,8 +359,11 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="3389259863310851658">Campo de formulario anterior</translation>
 <translation id="3392045790598181549"><ph name="NAME" />, elemento do menú</translation>
 <translation id="3393605254399152980">Arrastra un dedo para escoitar o que tocas</translation>
+<translation id="3399215457750029150">Non hai máis elementos semellantes</translation>
 <translation id="3406283310380167331">Mostra unha lista de formas</translation>
 <translation id="3414400929511680526">Azul Alice</translation>
+<translation id="3418936350470374046">Non hai ningunha cela abaixo</translation>
+<translation id="3426155011797552211">Activar/desactivar ChromeVox clásico</translation>
 <translation id="344800400831402066">Marrón Perú</translation>
 <translation id="3457000393508828486">Premido parcialmente</translation>
 <translation id="3458865416877308321"><ph name="NAME" />: desactivado</translation>
@@ -341,11 +378,13 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="3492609944033322585">{COUNT,plural, =1{corchete de peche}other{# corchetes de peche}}</translation>
 <translation id="3494946239022273294">mnuitm</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{signo de interrogación}other{# signos de interrogación}}</translation>
+<translation id="3501862755841696979">Non hai ningunha ligazón</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{acento circunflexo}other{# acentos circunflexos}}</translation>
 <translation id="352577523970648069">Un campo de texto editable</translation>
 <translation id="3538907380453898475">lstdscr</translation>
 <translation id="3549141990712742152">cortar <ph name="TEXT" />.</translation>
 <translation id="3549680091535286226">Toca con 2 dedos para deter a voz temporalmente</translation>
+<translation id="3564729643041517261">Estilo de pantalla actual: en paralelo</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, caixa de verificación non marcada</translation>
 <translation id="3589661172894441357">Glosario</translation>
 <translation id="3591784666823501596">Azul real</translation>
@@ -363,6 +402,7 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="3687295507293856493">Fai unha suposición na cabeceira da columna da cela actual</translation>
 <translation id="3692274950075847560">B:<ph name="RESULT" /></translation>
 <translation id="370367311675896712">Riscado</translation>
+<translation id="3704037000573066734">Preme a tecla de busca+A, J para ir aos detalles</translation>
 <translation id="3712520970944678024">Voz de control</translation>
 <translation id="371302509916403935">Subliñado</translation>
 <translation id="3716845769494773620">Múltiples liñas</translation>
@@ -376,10 +416,13 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="3810838688059735925">Vídeo</translation>
 <translation id="3813387282697781382">Coral claro</translation>
 <translation id="3816633764618089385">Seguinte ficheiro multimedia</translation>
+<translation id="3838966660807147922">Colocar cursor entre os caracteres ao editar texto (como en Mac OS X)</translation>
 <translation id="385383972552776628">Abrir páxina de opcións</translation>
 <translation id="3856075812838139784">Só lectura</translation>
 <translation id="3857141338659865495">Turquesa intermedio</translation>
+<translation id="3870295413168340326">Non hai ningunha cabeceira anterior de nivel 3</translation>
 <translation id="3887576927692165210">ed</translation>
+<translation id="3888566098798982329">Non hai máis elementos diferentes</translation>
 <translation id="3897092660631435901">Menú</translation>
 <translation id="3907138069015388678">lstgrd</translation>
 <translation id="3909320334364316587">Cabeceira anterior de nivel 6</translation>
@@ -392,6 +435,7 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="394953087167197343">Indicar erro ortográfico:</translation>
 <translation id="3962990492275676168">Comeza a ler a partir da localización actual</translation>
 <translation id="3970951409746498040">Marrón area</translation>
+<translation id="398295518268580432">Elemento similar anterior</translation>
 <translation id="3989324057180830702">tgl btn</translation>
 <translation id="3991317907213946254">Mocasín</translation>
 <translation id="4002709828007663583">Orquídea escuro</translation>
@@ -428,17 +472,21 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="42164919740161077">Azul cadete</translation>
 <translation id="4218529045364428769">{COUNT,plural, =1{guión}other{# guións}}</translation>
 <translation id="421884353938374759">selector de cor</translation>
+<translation id="4221012616705981690">Non hai ningunha lista anterior</translation>
 <translation id="4221071177874897997">Indicar grosa:</translation>
 <translation id="4229646983878045487">data e hora</translation>
 <translation id="4230834257931120629">Gris lousa claro</translation>
 <translation id="4231102694147661229">Activar opcións para programadores</translation>
+<translation id="423428485095722850">Preme a tecla de busca e a barra de espazo para activar/desactivar a opción</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" />, grao <ph name="GRADE" /></translation>
 <translation id="4246217262268234757">Azul aceiro</translation>
 <translation id="4253168017788158739">Nota</translation>
 <translation id="4254798249533888099">Árbore</translation>
 <translation id="4255943572433203166">Utiliza as opcións seguintes para personalizar ChromeVox. Os cambios aplícanse de inmediato.</translation>
+<translation id="4257525771875631676">Non hai ningunha áncora posterior</translation>
 <translation id="4271220233568730077">Seguinte expresión matemática</translation>
 <translation id="4275397969489577657">Activar rexistro de emisión de eventos</translation>
+<translation id="4278486392851938658">Non hai ningunha ligazón visitada anterior</translation>
 <translation id="4281245629646759298">Amarelo claro</translation>
 <translation id="4289540628985791613">Descrición xeral</translation>
 <translation id="4300318234632215983">Anuncia o URL asociado a unha ligazón</translation>
@@ -461,15 +509,26 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="4479068155583208887">Ladrillo</translation>
 <translation id="4482330759234983253">Táboa anterior</translation>
 <translation id="4491109536499578614">Imaxe</translation>
+<translation id="4493933053716737069">Non hai ningún artigo anterior</translation>
 <translation id="4505167975768625962">Inserción</translation>
 <translation id="4511186779140817916">Améndoa pálido</translation>
+<translation id="451510441928265982">Non hai ningunha cabeceira anterior de nivel 2</translation>
 <translation id="4517854969512651305">Aumentar o valor</translation>
 <translation id="4529987814483543472">Mapa de teclas clásico</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barra}other{# barras}}</translation>
 <translation id="4537277403911487429">Seguinte elemento similar</translation>
 <translation id="4547556996012970016">Seguinte título de nivel 5</translation>
 <translation id="4562381607973973258">Cabeceira</translation>
+<translation id="4573990688012173948">Formato de texto
+        <ph name="FONT_SIZE_STRING" />
+        <ph name="COLOR_STRING" />
+        <ph name="BOLD_STRING" />
+        <ph name="ITALIC_STRING" />
+        <ph name="UNDERLINE_STRING" />
+        <ph name="LINE_THROUGH_STRING" />
+        <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="4591507479202817876">, seleccionado</translation>
+<translation id="4594534924594958364">Elemento diferente anterior</translation>
 <translation id="4597532268155981612">formulario</translation>
 <translation id="4597896406374528575">Abril</translation>
 <translation id="4601367666219428522">táb <ph name="TABLENAME" /> <ph name="TABLEROWS" />x<ph name="TABLECOLS" /></translation>
@@ -493,10 +552,13 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="4763480195061959176">vídeo</translation>
 <translation id="4764692524839457597">predeterminado</translation>
 <translation id="4772771694153161212">Texto sen subliñado</translation>
+<translation id="4785388431077919785">Pechouse Buscar na páxina</translation>
+<translation id="4786285211967466855">Non hai ningunha cabeceira anterior de nivel 1</translation>
 <translation id="4787577491510559358">Anuncia o formato do elemento actual</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Desconectar</translation>
 <translation id="481165870889056555">Indica o título da páxina actual</translation>
+<translation id="4813110703341685753">Non hai ningún salto</translation>
 <translation id="4815668758102003883">Turquesa pálido</translation>
 <translation id="4826415162591436065">Navega cara adiante</translation>
 <translation id="4826604887384865800">Seguinte salto</translation>
@@ -507,19 +569,23 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="4844625982113518938">Preme calquera tecla para saber o seu nome. Ctrl + W pecha o modo de aprendizaxe.</translation>
 <translation id="4846428657345567687">Dámosche a benvida a ChromeVox!</translation>
 <translation id="4848993367330139335">tmr</translation>
+<translation id="4854380505292502090">Non hai ningún widget multimedia anterior</translation>
 <translation id="4862744964787595316">Texto sen grosa</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Activa o rexistro TTS</translation>
 <translation id="4886524826165775965"><ph name="INDEX" />/<ph name="TOTAL" /></translation>
 <translation id="4892105484979139179">Ciano escuro</translation>
 <translation id="489907760999452556">Ligazón interna</translation>
+<translation id="4911349081560453449">Non hai ningunha caixa de verificación anterior</translation>
 <translation id="4915087353619183190">Iniciando o modo de aprendizaxe. Fai un xesto táctil ou ben preme unha tecla dunha liña de braille ou dun teclado qwerty para obter información sobre esta función. Preme Control + W ou Esc para saír.</translation>
 <translation id="492295894462528572">Limiar</translation>
 <translation id="495170559598752135">Accións</translation>
 <translation id="4953585991029886728">Edita texto</translation>
 <translation id="4954534434583049121">Cita en bloque anterior</translation>
+<translation id="4967543208652787610">Preme Intro para aceptar, Esc para cancelar, a frecha cara abaixo para dirixirte ao elemento posterior e a frecha cara arriba para dirixirte ao elemento anterior</translation>
 <translation id="4973717656530883744">Mín. <ph name="X" /></translation>
 <translation id="4973762002207131920">Cambiado a <ph name="KEY" />.</translation>
+<translation id="4974612477719259470">Non hai ningún botón anterior</translation>
 <translation id="4975416682604111799">milisegundos</translation>
 <translation id="4979404613699303341">Botón anterior</translation>
 <translation id="4982773647088557172"><ph name="VALUE" />, <ph name="NAME" />, caixa de lista</translation>
@@ -529,6 +595,7 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="4994420463726586413">Anuncia o estado actual da batería</translation>
 <translation id="4996716799442435517">Visual</translation>
 <translation id="4997282455736854877"><ph name="NAME" /> (botón de opción seleccionado)</translation>
+<translation id="5011664330025416377">Preme a tecla de busca e a barra de espazo para activar a opción</translation>
 <translation id="501473567976723023">Xaneiro</translation>
 <translation id="5020651427400641814">Activar rexistro de voz</translation>
 <translation id="5041394372352067729">Move a liña braille á parte superior da páxina</translation>
@@ -551,9 +618,13 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="5138912041966667164">Azul lousa intermedio</translation>
 <translation id="5140016802771803559">Púrpura Rebecca</translation>
 <translation id="5158275234811857234">Portada</translation>
+<translation id="5170206230005240598">Subtítulos en braille: activados</translation>
 <translation id="517143700877085897">, non seleccionado</translation>
+<translation id="5177546608148437145">Personaliza os atallos do teclado para os comandos usados con frecuencia escribíndoos nos campos correspondentes a continuación</translation>
 <translation id="5183440668879371625">Liña anterior en braille</translation>
+<translation id="5184585361753914100">Mostrar o contexto dun elemento antes doutra información, como o seu nome</translation>
 <translation id="5189244881767082992">Liña</translation>
+<translation id="5193883032494788230">Mellorar sitios específicos (como a Busca de Google)</translation>
 <translation id="5203930734796605961"><ph name="KEY" /> xa está asignado a un comando.</translation>
 <translation id="5205493599117157272">Lista <ph name="TYPE" />.</translation>
 <translation id="5263034204789987535">Barba de millo</translation>
@@ -570,6 +641,7 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="5330443287809544590"><ph name="NAME" /> (ligazón)</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Ligazón de retroceso</translation>
+<translation id="5355014376930441909">Non hai ningunha sección posterior</translation>
 <translation id="536031132345979795">Retrocede durante a lectura continua</translation>
 <translation id="5368000168321181111">Iconas auditivas desactivadas</translation>
 <translation id="5368505757342402527">Completouse o <ph name="PROGRESS" /> % da descarga de <ph name="FILE_NAME" />. Tempo restante: <ph name="TIME" /> <ph name="UNITS" />.</translation>
@@ -582,6 +654,7 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="5444587279251314700">(activa)</translation>
 <translation id="5446809554778706307">Non hai ningún elemento seleccionado. Preme Ctrl+T para abrir unha nova pestana.</translation>
 <translation id="5451268436205074266">puntos <ph name="DOT" /></translation>
+<translation id="5452267669091857717">Non hai ningunha cabeceira posterior de nivel 1</translation>
 <translation id="5455441614648621694">Complementario</translation>
 <translation id="5462510922370980473">Lista de páxinas</translation>
 <translation id="549602578321198708">Palabra</translation>
@@ -590,7 +663,9 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="551361796444814639">Azul intermedio</translation>
 <translation id="552195134157544755">Botón de opción</translation>
 <translation id="5534303576632885660">hdr</translation>
+<translation id="5536840902105301299">Non se encontrou ningunha táboa</translation>
 <translation id="5539820223028224601">Gris pálido</translation>
+<translation id="5549179427201066174">Activa/desactiva os comentarios de son (iconas auditivas)</translation>
 <translation id="556042886152191864">Botón</translation>
 <translation id="5561345396546889625">Seguinte lista</translation>
 <translation id="5562645715554321347">hdnggrp</translation>
@@ -615,10 +690,13 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="5682113568322255809">Punto de referencia</translation>
 <translation id="5683155931978483559">Caixa de verificación anterior</translation>
 <translation id="5684277895745049190">Lista</translation>
+<translation id="570138335948847274">Cambiar ChromeVox a activo ou inactivo</translation>
 <translation id="5703716265115423771">baixa o volume</translation>
+<translation id="5704453877234251104">Preme a frecha cara arriba ou cara abaixo se queres ver as opcións para completar automaticamente o texto</translation>
 <translation id="5709192780268610569">Non hai descrición longa</translation>
 <translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">Seguinte columna da táboa</translation>
+<translation id="5712530945736290890">Non hai ningunha táboa</translation>
 <translation id="571866080859340309">Explorando grupos</translation>
 <translation id="5725079927589231571">Azul aceiro claro</translation>
 <translation id="5732189279857692565">Este é o segundo título. Para continuar, preme Buscar + H ou Buscar + Maiúsculas + H</translation>
@@ -629,7 +707,10 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="5805940204952508776">Toca con dous dedos</translation>
 <translation id="5819072574982403430">Elemento da árbore</translation>
 <translation id="5822819874379903994">Turquesa escuro</translation>
+<translation id="5824976764713185207">Ler páxina automaticamente cando remate de cargar</translation>
 <translation id="5826479389509458994">fila <ph name="ROW" /> columna <ph name="COL" /></translation>
+<translation id="5833044594931167190">Non hai ningún punto de referencia ARIA</translation>
+<translation id="5842625257683688671">Non hai ningún gráfico posterior</translation>
 <translation id="5847883414085148048">Dedicatoria</translation>
 <translation id="5850707923114094062">Desplázase cara atrás</translation>
 <translation id="5851548754964597211">Lista de pestanas</translation>
@@ -638,6 +719,7 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="5869546221129391014">Grade</translation>
 <translation id="5876817486144482042">Baixar volume da voz</translation>
 <translation id="5878908838135392163">Azul po</translation>
+<translation id="588108970619830498">Restablecéronse os valores predeterminados da configuración da síntese de voz</translation>
 <translation id="5891934789323004067">Táboa</translation>
 <translation id="5899860758576822363">Baixar o volume de reprodución cando ChromeVox estea falando</translation>
 <translation id="5901630391730855834">Amarelo</translation>
@@ -648,6 +730,7 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="5948123859135882163">Alterna a interpretación das expresións matemáticas entre estruturais e semánticas</translation>
 <translation id="5955304353782037793">aplicación</translation>
 <translation id="5956928062748260866">Diálogo</translation>
+<translation id="5961639938291964703">Utiliza as teclas de frecha cara arriba e abaixo para navegar ou escribe o que queiras buscar</translation>
 <translation id="5963413905009737549">Sección</translation>
 <translation id="5968607524793740041">Mostra o menú contextual</translation>
 <translation id="597121107011153418">{COUNT,plural, =1{con # elemento}other{con # elementos}}</translation>
@@ -662,6 +745,8 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="6037602951055904232">Despraza cara adiante</translation>
 <translation id="6044160928851315051">Escurece a pantalla</translation>
 <translation id="6082768461603900813">Navegación básica</translation>
+<translation id="609281021724813947">Non hai ningún control desprazable anterior</translation>
+<translation id="6095514649509181044">Non se distingue entre maiúsculas e minúsculas</translation>
 <translation id="6118126368611144850">Aplicacións Android para Chrome. Se tes Play Store no dispositivo, bota unha ollada a ChromeVox coas aplicacións Android. Descarga Google Chrome Canary desde Play Store e proba a compatibilidade experimental.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6122013438240733403">btn</translation>
@@ -669,8 +754,10 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="6132506484792346370">Unha caixa de lista ou unha caixa de combinación</translation>
 <translation id="6142308968191113180">Título 4</translation>
 <translation id="6150023170003443621">Verde amarelado</translation>
+<translation id="6156755592608846750">Fin da cela</translation>
 <translation id="6158882249329863701">fila <ph name="TABLECELLROWINDEX" /> columna <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">medidor</translation>
+<translation id="6166362019018438352">Subtítulos en braille: desactivados</translation>
 <translation id="6169420925157477918">Imaxe con descrición longa</translation>
 <translation id="6186305613600865047">Salta á parte inferior da páxina</translation>
 <translation id="6187190722927752226">Augamariña</translation>
@@ -681,15 +768,18 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="6254901459154107917">Seguinte área de texto editable</translation>
 <translation id="6259464875943891919">Saíuse de <ph name="TYPE" />.</translation>
 <translation id="6282062888058716985">nav</translation>
+<translation id="6304851457627491382">Saíches da caixa de diálogo</translation>
 <translation id="6305702903308659374">Manter o volume de reprodución aínda que ChromeVox estea falando</translation>
 <translation id="6307969636681130414">Premido</translation>
 <translation id="6315652249189065725">Abrir o menú de atallos de teclado</translation>
+<translation id="6320690422100602757">Non hai ningún elemento de lista posterior</translation>
 <translation id="6322856989298155004">Sons</translation>
 <translation id="6324551002951139333">Detectouse un erro gramatical</translation>
 <translation id="6325241889020214828">copiar <ph name="TEXT" />.</translation>
 <translation id="6348657800373377022">Caixa de combinación</translation>
 <translation id="6348869651006731065">Gris claro</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{viñeta}other{# viñetas}}</translation>
+<translation id="6357433033180746873">Non hai ningunha cela á dereita</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Título anterior</translation>
 <translation id="6376999910001533545">Granate</translation>
@@ -708,6 +798,7 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="6493991254603208962">Reduce o brillo</translation>
 <translation id="6501595918865591267">Turquesa</translation>
 <translation id="6508059270146105198">Move a liña braille á parte inferior da páxina</translation>
+<translation id="6512238863305721975">Cela baleira</translation>
 <translation id="6521550811716689390">Violeta escuro</translation>
 <translation id="6536157907112457272">Liño</translation>
 <translation id="6536864053412760904">Token de Math ML</translation>
@@ -718,6 +809,7 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="6579990219486187401">Rosa claro</translation>
 <translation id="6583174818554398774">Cambia á granularidade seguinte</translation>
 <translation id="6609828810966525877">Descubre máis xestos no modo de aprendizaxe e no Centro de axuda de Chromebook</translation>
+<translation id="6622161592949949545">Non estás no modo de táboa</translation>
 <translation id="6628427060004938651">Parte</translation>
 <translation id="6637586476836377253">rexistro</translation>
 <translation id="6657128831881431364">Barra de progreso</translation>
@@ -732,6 +824,8 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6714813999819678458">Título de nivel 2 anterior</translation>
 <translation id="6716505898850596801">Teclas do modificador</translation>
+<translation id="6720808010210697990">Non estás nunha táboa</translation>
+<translation id="6730312624811567147">Usa as teclas de busca e frecha cara á esquerda ou á dereita para acceder a Inicio ou Fin. Usa as teclas de busca, Control e frecha cara á esquerda ou á dereita para acceder a Control. Inicio ou Fin. Usa as teclas de busca e frecha cara arriba ou abaixo para retroceder ou avanzar pola páxina</translation>
 <translation id="6734854816611871228"><ph name="VALUE" />, caixa de combinación</translation>
 <translation id="6735257939857578167">con <ph name="NUM" /> elementos</translation>
 <translation id="6736510033526053669">pestana creada</translation>
@@ -748,12 +842,14 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="6859876496651143278">Pasa o dedo cara á esquerda</translation>
 <translation id="6865519907510167493">Palabra con erros de ortografía</translation>
 <translation id="688976158310523235">Menú de busca</translation>
+<translation id="6894148351896207544">Di a data e a hora actuais</translation>
 <translation id="6897341342232909480">Mover cara á esquerda</translation>
 <translation id="6901540140423170855">data</translation>
 <translation id="6910211073230771657">Eliminado</translation>
 <translation id="6910969481785184048">Activar, desactivar e deter</translation>
 <translation id="6919104639734799681">Mostra a lista de táboas</translation>
 <translation id="6949846980769640811">Augamariña intermedio</translation>
+<translation id="6951482098621102657">Non hai ningunha cabeceira posterior de nivel 5</translation>
 <translation id="6955705049214951590">Rosa neboento</translation>
 <translation id="699159175332639490">Buscar + O + W</translation>
 <translation id="6994042831499278539">Referencia do glosario</translation>
@@ -776,6 +872,8 @@ Para avanzar entre as pestanas abertas, utiliza Control + Tab.
 Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
 <translation id="7051308646573997571">Coral</translation>
 <translation id="7062635574500127092">Verde azulado</translation>
+<translation id="7074412385073481360">Simula a saída dunha liña braille actualizable no panel de
+        ChromeVox, situado na parte superior da pantalla</translation>
 <translation id="7086377898680121060">Aumenta o brillo</translation>
 <translation id="7088743565397416204">Toca dúas veces para activar o elemento destacado</translation>
 <translation id="7091296112653361280">Branco navajo</translation>
@@ -789,12 +887,15 @@ Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
 <translation id="7143034430156387447">Alterna entre o braille de 6 e 8 puntos</translation>
 <translation id="7143207342074048698">Conectando</translation>
 <translation id="7153618581592392745">Lavanda</translation>
+<translation id="7157095268991842805">Ampliada</translation>
 <translation id="7157306005867877619">Resumo</translation>
 <translation id="7161771961008409533">Botón emerxente</translation>
 <translation id="7167657087543110">dicir caracteres</translation>
 <translation id="7170733337935166589">Avanza durante a lectura continua</translation>
 <translation id="7173102181852295013">Azul medianoite</translation>
+<translation id="717574717447196690">Saíndo da táboa</translation>
 <translation id="7203150201908454328">Ampliado</translation>
+<translation id="7209751026933045237">Non hai ningún control desprazable posterior</translation>
 <translation id="7210211103303402262">minutos</translation>
 <translation id="7217912842225915592">+ <ph name="NUM" /></translation>
 <translation id="7218782500591078391">Amarelo dourado</translation>
@@ -804,15 +905,19 @@ Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
 <translation id="72393384879519786">Título</translation>
 <translation id="7240858705033280249">Saltar aos detalles</translation>
 <translation id="7241683698754534149">Abre unha descrición longa nunha pestana nova</translation>
+<translation id="7244947685630430863">Non hai ningún gráfico anterior</translation>
 <translation id="7248671827512403053">Aplicación</translation>
 <translation id="725969808843520477">Seguinte botón de opción</translation>
 <translation id="7261612856573623172">Voz da síntese de voz do sistema</translation>
 <translation id="7269119382257320590">Sen puntuación</translation>
+<translation id="7271278495464744706">Activar descricións detalladas</translation>
 <translation id="7273174640290488576">En branco</translation>
 <translation id="7274770952766771364">Referencia de nota</translation>
+<translation id="7275004401821193978">Non hai ningunha caixa de combinación anterior</translation>
 <translation id="7285387653379749618">Táboas</translation>
 <translation id="7289186959554153431">Título 3</translation>
 <translation id="7292195267473691167"><ph name="LOCALE" /> (<ph name="VARIANT" />)</translation>
+<translation id="7308519659008003150">Non hai ningún campo de formulario anterior</translation>
 <translation id="731121099745151312">tritm</translation>
 <translation id="7322388933135261569">Febreiro</translation>
 <translation id="7332592614823088566">Fila <ph name="ROWINDEX" /> de <ph name="ROWTOTAL" />, columna <ph name="COLINDEX" /> de <ph name="COLTOTAL" /></translation>
@@ -836,9 +941,11 @@ Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
 <translation id="7518543783849163354">Para que ChromeVox deixe de falar temporalmente, preme a tecla Control.</translation>
 <translation id="7532613204005497612">Xuño</translation>
 <translation id="7533226154149229506">Amarelo dourado claro</translation>
+<translation id="7543255924852002459">Descartar etiqueta</translation>
 <translation id="7552432549459840808">Atallos útiles de Chrome</translation>
 <translation id="7569983096843329377">Negro</translation>
 <translation id="7579911500627256166">punto <ph name="DOT" /></translation>
+<translation id="7595446402663080101">Non hai ningunha táboa anterior</translation>
 <translation id="7596131838331109045">Salmón claro</translation>
 <translation id="7596919493010894443">selección borrada</translation>
 <translation id="7604026522577407655">Vai ao inicio da columna actual</translation>
@@ -861,9 +968,14 @@ Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
 <translation id="7685589220304187312">tlbar</translation>
 <translation id="7693840228159394336">Botón de opción anterior</translation>
 <translation id="7701196182766842984">autolst</translation>
+<translation id="7714340021005120797">Non hai ningunha caixa de combinación posterior</translation>
+<translation id="7731785449856576010">Non hai ningún widget multimedia posterior</translation>
+<translation id="773906353055481349">Preme a tecla de busca+Ctrl+Alt coas frechas para desprazarte polas celas</translation>
+<translation id="7750184816513382104">Distínguese entre maiúsculas e minúsculas</translation>
 <translation id="7763537600611320912">Iniciouse a descarga de <ph name="FILE_NAME" /></translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, caixa de texto de contrasinal</translation>
 <translation id="7776293189010177726">Abre menús de ChromeVox</translation>
+<translation id="7799302833060027366">Preme cara arriba, abaixo, á esquerda ou á dereita para explorar a expresión matemática</translation>
 <translation id="7800558923657349506">Epílogo</translation>
 <translation id="7805247615045262757">navegación predeterminada</translation>
 <translation id="7805768142964895445">Estado</translation>
@@ -871,17 +983,20 @@ Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
 <translation id="7819187121850078213">pestana <ph name="TITLE" /> da ventá</translation>
 <translation id="7828956995407538686">Outubro</translation>
 <translation id="7839679365527550018">Palabra anterior</translation>
+<translation id="7851132556376253786">Non hai ningún artigo posterior</translation>
 <translation id="7851816175263618915">Algúns signos de puntuación</translation>
 <translation id="7870596830398826354">Árbore ML matemática</translation>
 <translation id="7871691770940645922">Visualización de braille virtual</translation>
 <translation id="7882421473871500483">Marrón</translation>
 <translation id="78826985582142166">sldr</translation>
 <translation id="7895896691902835279">Ligazón descoñecida</translation>
+<translation id="7913106023953875143">Non hai ningunha cabeceira posterior de nivel 2</translation>
 <translation id="7927711904086083099">Non seleccionado</translation>
 <translation id="7935627501098484003">Control da hora</translation>
 <translation id="7939428177581522200">engadidos á selección</translation>
 <translation id="794091007957014205">{COUNT,plural, =1{arroba}other{ # signos de arroba}}</translation>
 <translation id="7942349550061667556">Vermello</translation>
+<translation id="7948364528129376623">Non hai ningunha ligazón visitada posterior</translation>
 <translation id="7965147473449754028">pechouse o menú</translation>
 <translation id="7968340748835037139">Verde escuro</translation>
 <translation id="7972507042926081808">Chocolate</translation>
@@ -890,6 +1005,7 @@ Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{comiña}other{# comiñas}}</translation>
 <translation id="8017588669690167134">Desactiva a fala</translation>
 <translation id="801990297710781303">Nota ao pé</translation>
+<translation id="8028833145828956995">Podes utilizar ChromeVox coa pantalla táctil</translation>
 <translation id="8033827949643255796">seleccionados</translation>
 <translation id="8035962149453661158">máx.:<ph name="X" /></translation>
 <translation id="8037651341025652929">Conclusión</translation>
@@ -978,6 +1094,7 @@ Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
         "vi": "Vietnamita",
         "zh": "Chinés",
         "zh_TW": "Chinés (han tradicional)"}</translation>
+<translation id="8058636807889143711">Non hai ningunha expresión matemática posterior</translation>
 <translation id="8065607967589909823">A selección é</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8076492880354921740">Pestanas</translation>
@@ -985,22 +1102,28 @@ Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
 <translation id="8096975275316362544">Verde menta</translation>
 <translation id="8098587210054821856">Gris lousa</translation>
 <translation id="8121539003537428024">Activar todos os filtros de eventos</translation>
+<translation id="8126386426083591964">Non hai ningunha cabeceira anterior de nivel 5</translation>
 <translation id="812886159861361726">Detívose a descarga de <ph name="FILE_NAME" /></translation>
+<translation id="8129445297241948503">Non hai ningunha cela arriba</translation>
 <translation id="8138880386467279117">Tocar</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{guión baixo}other{# guións baixos}}</translation>
 <translation id="8179976553408161302">Intro</translation>
+<translation id="8182552736960088316">Non hai ningunha etiqueta blockquote anterior</translation>
 <translation id="8184828902145951186">fila</translation>
 <translation id="8186185314313222077">alterna a pantalla completa</translation>
 <translation id="8199231515320852133">Anuncia as cabeceiras da cela actual</translation>
 <translation id="8202174735952881587">Azul celeste</translation>
 <translation id="820469951249669083">Ir á fila seguinte</translation>
 <translation id="8205922869661890178">Abre a páxina de rexistro para programadores</translation>
+<translation id="8212109599554677485">Cambiar estilo da pantalla para mostrar o texto en paralelo</translation>
 <translation id="8215202828671303819">Selección múltiple</translation>
 <translation id="8249864170673238087"><ph name="COLOR" />, <ph name="OPACITY_PERCENTAGE" /> % de opacidade.</translation>
 <translation id="826825447994856889">Introdución</translation>
+<translation id="827266600368092403">Inicia ou finaliza a selección</translation>
 <translation id="827422111966801947">Índigo</translation>
 <translation id="8276439074553447000">Salta ao elemento enfocable anterior</translation>
 <translation id="8283603667300770666">Seguinte campo do formulario</translation>
+<translation id="8310185481635255431">Non hai ningunha ligazón posterior</translation>
 <translation id="831207808878314375">Definición</translation>
 <translation id="8313653172105209786">dir</translation>
 <translation id="8316881042119029234">Encaixe antigo</translation>
@@ -1015,9 +1138,12 @@ Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
 <translation id="8430049249787218991">mnubr</translation>
 <translation id="8446884382197647889">Máis información</translation>
 <translation id="8455868257606149352">Máx. <ph name="X" /></translation>
+<translation id="8457542835502295883">Non hai ningún punto de salto posterior</translation>
 <translation id="84575901236241018">ten clave de acceso, <ph name="KEY" /></translation>
 <translation id="8463645336674919227">Saíndo do erro gramatical</translation>
+<translation id="847040613207937740">Non hai ningunha caixa de verificación posterior</translation>
 <translation id="847154984256717791">ocupado</translation>
+<translation id="8473540203671727883">Pronunciar texto ao pasar por encima o punteiro do rato</translation>
 <translation id="8476408756881832830">Pausar a reprodución cando ChromeVox estea falando</translation>
 <translation id="8476508772960940536">vista xeral da ventá</translation>
 <translation id="8503360654911991865">Reduce a granularidade da navegación</translation>
@@ -1032,10 +1158,12 @@ Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
 <translation id="858006550102277544">Comentario</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Seguinte elemento da lista</translation>
+<translation id="8591343418134616947">Non hai ningunha cabeceira anterior de nivel 6</translation>
 <translation id="860150890330522909">Caixa de verificación <ph name="NAME" /> marcada</translation>
 <translation id="8603071050456974042">Panel de ChromeVox</translation>
 <translation id="8606621670302093223">Control da data</translation>
 <translation id="8613709718990529335">Crema de marisco</translation>
+<translation id="8625173877182443267">Non hai ningunha cabeceira posterior de nivel 6</translation>
 <translation id="8628186274519446680">Tomate</translation>
 <translation id="8631359288236106450">seleccionáronse <ph name="COUNT" /> elementos</translation>
 <translation id="8638532244051952400">Anuncia as coordenadas de cela actuais</translation>
@@ -1047,6 +1175,7 @@ Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
 <translation id="867187640362843212">Título 5</translation>
 <translation id="8696284982970258155">Verde primavera pastel</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{barra vertical}other{# barras verticais}}</translation>
+<translation id="8731479400585463771">Elemento diferente posterior</translation>
 <translation id="8735450637152821465">Iniciar selección</translation>
 <translation id="8743786158317878347">insire contido estruturado, como táboas</translation>
 <translation id="8747966237988593539">Lista ordenada</translation>
@@ -1054,6 +1183,7 @@ Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
 <translation id="875769700429317857">Finalizou a descarga de <ph name="FILE_NAME" /></translation>
 <translation id="8767968232364267681">Seguinte título de nivel 4</translation>
 <translation id="8770473310765924354">permite saír de contido estruturado, como táboas</translation>
+<translation id="8779057862865475116">Non hai ningunha ligazón anterior</translation>
 <translation id="8791025954632646584">Semántica activada</translation>
 <translation id="8796411681063377102">Título de nivel 3 seguinte</translation>
 <translation id="8808582214901541005">Marzo</translation>
@@ -1068,11 +1198,15 @@ Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
 <translation id="8900148057318340779">Clave de prefixo</translation>
 <translation id="8908714597367957477">colhdr</translation>
 <translation id="8931936695772494138">Cabeceiras baleiras</translation>
+<translation id="8933434366189817061">Elemento similar posterior</translation>
 <translation id="8937112856099038376">intlnk</translation>
 <translation id="8940925288729953902">Teclas modificadoras</translation>
 <translation id="8943282376843390568">Verde lima</translation>
 <translation id="8946628535652548639">f<ph name="TABLECELLROWINDEX" />c<ph name="TABLECELLCOLUMNINDEX" /></translation>
+<translation id="8952400011684167587">Non hai ningún botón de opción anterior</translation>
 <translation id="8957142051395645063">Anunciar</translation>
+<translation id="896035116006462153">Para utilizar os comandos de braille ampliados, vai a Accesibilidade (dispoñible na bandexa de estado) e activa o teclado en pantalla</translation>
+<translation id="8970172509886453271">Non hai ningunha sección anterior</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Borrar</translation>
 <translation id="900114243503212879">ficheiro</translation>
@@ -1080,7 +1214,9 @@ Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
 <translation id="9043969572162476692"><ph name="NUM" />%</translation>
 <translation id="9061884144798498064">Selecciona unha táboa de braille de 8 puntos:</translation>
 <translation id="9065283790526219006">máis compoñente emerxente</translation>
+<translation id="9065912140022662363">Non hai ningún botón de opción posterior</translation>
 <translation id="9067522039955793016">Salto de páxina</translation>
+<translation id="9073511731393676210">Non hai ningunha cabeceira anterior</translation>
 <translation id="9074824103975499138">Realiza buscas nos menús de ChromeVox</translation>
 <translation id="9077213568694924680">eliminado da selección</translation>
 <translation id="9077305471618729969">Verde mariño claro</translation>
@@ -1089,6 +1225,7 @@ Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
 <translation id="9108589040018540527">scbr</translation>
 <translation id="911476240645808512">{COUNT,plural, =1{porcentaxe}other{# porcentaxes}}</translation>
 <translation id="9115913704608474258">Novembro</translation>
+<translation id="912759640994130978">Cambia o mapa do teclado actual seleccionando unha das opcións da lista que aparece a continuación</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9133928141873682933">Caqui</translation>
 <translation id="9149560530563164529">sctn</translation>
@@ -1099,10 +1236,12 @@ Para abrir o menú do navegador Chrome, preme Alt + F.</translation>
 <translation id="9160096769946561184">Vai ao final da columna actual</translation>
 <translation id="9173115498289768110">Volume: <ph name="PERCENT" /> por cento</translation>
 <translation id="9192904702577636854">Marquesiña</translation>
+<translation id="9205282956404529648">Escribe para completar automaticamente o texto</translation>
 <translation id="9208241857935108694">Branco antigo</translation>
 <translation id="9220679313820249046">Vermello alaranxado</translation>
 <translation id="9223032053830369045">Vermello escuro</translation>
 <translation id="923331726185079994">Actualizouse ChromeVox</translation>
+<translation id="932892745999655330">Non hai ningunha cabeceira</translation>
 <translation id="93384979447910801">Verde mariño escuro</translation>
 <translation id="948171205378458592">Reduce a velocidade da fala</translation>
 <translation id="958854023026327378">Pasa o dedo cara abaixo</translation>

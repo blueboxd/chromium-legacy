@@ -5,12 +5,23 @@
 #ifndef CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_SESSION_IMAGES_TABLE_H_
 #define CHROME_BROWSER_MEDIA_HISTORY_MEDIA_HISTORY_SESSION_IMAGES_TABLE_H_
 
+#include <vector>
+
 #include "chrome/browser/media/history/media_history_table_base.h"
 #include "sql/init_status.h"
+#include "url/gurl.h"
 
 namespace base {
 class UpdateableSequencedTaskRunner;
 }  // namespace base
+
+namespace media_session {
+struct MediaImage;
+}  // namespace media_session
+
+namespace gfx {
+class Size;
+}  // namespace gfx
 
 namespace media_history {
 
@@ -31,6 +42,15 @@ class MediaHistorySessionImagesTable : public MediaHistoryTableBase {
 
   // MediaHistoryTableBase:
   sql::InitStatus CreateTableIfNonExistent() override;
+
+  // Saves the link and returns whether it was successful.
+  bool LinkImage(const int64_t session_id,
+                 const int64_t image_id,
+                 const base::Optional<gfx::Size> size);
+
+  // Gets all the images for a session.
+  std::vector<media_session::MediaImage> GetImagesForSession(
+      const int64_t session_id);
 };
 
 }  // namespace media_history

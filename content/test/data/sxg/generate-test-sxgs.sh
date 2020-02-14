@@ -222,6 +222,22 @@ gen-signedexchange \
   -o test.example.org_fr_variant.sxg \
   -miRecordSize 100
 
+# Generate the signed exchange with CSP.
+gen-signedexchange \
+  -version 1b3 \
+  -uri https://test.example.org/test/ \
+  -status 200 \
+  -content test.html \
+  -certificate prime256v1-sha256.public.pem \
+  -certUrl https://cert.example.org/cert.msg \
+  -validityUrl https://test.example.org/resource.validity.msg \
+  -privateKey prime256v1.key \
+  -date $signature_date \
+  -expire 168h \
+  -responseHeader "content-security-policy: frame-ancestors 'none'" \
+  -o test.example.org_csp.sxg \
+  -miRecordSize 100
+
 echo "Update the test signatures in "
 echo "signed_exchange_signature_verifier_unittest.cc with the followings:"
 echo "===="

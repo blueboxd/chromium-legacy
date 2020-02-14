@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuPopulator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
+import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
@@ -48,7 +49,8 @@ public class TabbedModeTabDelegateFactory implements TabDelegateFactory {
     @Override
     public ContextMenuPopulator createContextMenuPopulator(Tab tab) {
         return new ChromeContextMenuPopulator(new TabContextMenuItemDelegate(tab),
-                mShareDelegateSupplier, ChromeContextMenuPopulator.ContextMenuMode.NORMAL);
+                mShareDelegateSupplier, ChromeContextMenuPopulator.ContextMenuMode.NORMAL,
+                ExternalAuthUtils.getInstance());
     }
 
     @Override

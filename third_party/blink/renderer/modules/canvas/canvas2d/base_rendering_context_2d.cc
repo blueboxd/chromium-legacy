@@ -995,11 +995,12 @@ void BaseRenderingContext2D::drawImage(
       ToImageSourceInternal(image_source, exception_state);
   if (!image_source_internal)
     return;
+  RespectImageOrientationEnum respect_orientation = RespectImageOrientation();
   FloatSize default_object_size(Width(), Height());
-  FloatSize source_rect_size =
-      image_source_internal->ElementSize(default_object_size);
-  FloatSize dest_rect_size =
-      image_source_internal->DefaultDestinationSize(default_object_size);
+  FloatSize source_rect_size = image_source_internal->ElementSize(
+      default_object_size, respect_orientation);
+  FloatSize dest_rect_size = image_source_internal->DefaultDestinationSize(
+      default_object_size, respect_orientation);
   drawImage(script_state, image_source_internal, 0, 0, source_rect_size.Width(),
             source_rect_size.Height(), x, y, dest_rect_size.Width(),
             dest_rect_size.Height(), exception_state);
@@ -1018,8 +1019,8 @@ void BaseRenderingContext2D::drawImage(
   if (!image_source_internal)
     return;
   FloatSize default_object_size(this->Width(), this->Height());
-  FloatSize source_rect_size =
-      image_source_internal->ElementSize(default_object_size);
+  FloatSize source_rect_size = image_source_internal->ElementSize(
+      default_object_size, RespectImageOrientation());
   drawImage(script_state, image_source_internal, 0, 0, source_rect_size.Width(),
             source_rect_size.Height(), x, y, width, height, exception_state);
 }
@@ -1118,9 +1119,19 @@ void BaseRenderingContext2D::DrawImageInternal(cc::PaintCanvas* c,
   }
 
   if (!image_source->IsVideoElement()) {
+    // We always use the image-orientation property on the canvas element
+    // because the alternative would result in complex rules depending on
+    // the source of the image.
+    RespectImageOrientationEnum respect_orientation = RespectImageOrientation();
+    FloatRect corrected_src_rect = src_rect;
+    if (respect_orientation == kRespectImageOrientation &&
+        !image->HasDefaultOrientation()) {
+      corrected_src_rect = image->CorrectSrcRectForImageOrientation(src_rect);
+    }
     image_flags.setAntiAlias(ShouldDrawImageAntialiased(dst_rect));
-    image->Draw(c, image_flags, dst_rect, src_rect, kRespectImageOrientation,
-                Image::kDoNotClampImageToSourceRect, Image::kSyncDecode);
+    image->Draw(c, image_flags, dst_rect, corrected_src_rect,
+                respect_orientation, Image::kDoNotClampImageToSourceRect,
+                Image::kSyncDecode);
   } else {
     c->save();
     c->clipRect(dst_rect);
@@ -1198,12 +1209,11 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
 
   FloatRect src_rect = NormalizeRect(FloatRect(fsx, fsy, fsw, fsh));
   FloatRect dst_rect = NormalizeRect(FloatRect(fdx, fdy, fdw, fdh));
-  FloatSize image_size = image_source->ElementSize(default_object_size);
+  FloatSize image_size =
+      image_source->ElementSize(default_object_size, RespectImageOrientation());
 
   ClipRectsToImageRect(FloatRect(FloatPoint(), image_size), &src_rect,
                        &dst_rect);
-
-  image_source->AdjustDrawRects(&src_rect, &dst_rect);
 
   if (src_rect.IsEmpty())
     return;
@@ -1402,7 +1412,10 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
       exception_state.ThrowDOMException(
           DOMExceptionCode::kInvalidStateError,
           String::Format("The canvas %s is 0.",
-                         image_source->ElementSize(default_object_size).Width()
+                         image_source
+                                 ->ElementSize(default_object_size,
+                                               RespectImageOrientation())
+                                 .Width()
                              ? "height"
                              : "width"));
       return nullptr;

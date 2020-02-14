@@ -42,8 +42,8 @@ class MediaHistorySessionTable : public MediaHistoryTableBase {
   // MediaHistoryTableBase:
   sql::InitStatus CreateTableIfNonExistent() override;
 
-  // Returns a flag indicating whether the session was created successfully.
-  bool SavePlaybackSession(
+  // Returns the ID of the session if it was created successfully.
+  base::Optional<int64_t> SavePlaybackSession(
       const GURL& url,
       const url::Origin& origin,
       const media_session::MediaMetadata& metadata,

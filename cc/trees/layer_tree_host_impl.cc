@@ -1808,14 +1808,21 @@ void LayerTreeHostImpl::SetIsLikelyToRequireADraw(
   is_likely_to_require_a_draw_ = is_likely_to_require_a_draw;
 }
 
-const gfx::ColorSpace& LayerTreeHostImpl::GetRasterColorSpace() const {
-  const gfx::ColorSpace* result = nullptr;
+gfx::ColorSpace LayerTreeHostImpl::GetRasterColorSpace(
+    gfx::ContentColorUsage content_color_usage) const {
+  constexpr gfx::ColorSpace srgb = gfx::ColorSpace::CreateSRGB();
+
+  if (settings_.prefer_raster_in_srgb &&
+      content_color_usage == gfx::ContentColorUsage::kSRGB)
+    return srgb;
+
+  gfx::ColorSpace result;
   // The pending tree will have the most recently updated color space, so
   // prefer that.
   if (pending_tree_) {
-    result = &pending_tree_->raster_color_space();
+    result = pending_tree_->raster_color_space();
   } else if (active_tree_) {
-    result = &active_tree_->raster_color_space();
+    result = active_tree_->raster_color_space();
   }
 
   // If we are likely to software composite the resource, we use sRGB because
@@ -1824,10 +1831,10 @@ const gfx::ColorSpace& LayerTreeHostImpl::GetRasterColorSpace() const {
   // (not specifying a color space indicates that no color conversion is
   // required).
   if (!layer_tree_frame_sink_ || !layer_tree_frame_sink_->context_provider() ||
-      !result || !result->IsValid()) {
-    result = &default_color_space_;
+      !result.IsValid()) {
+    result = srgb;
   }
-  return *result;
+  return result;
 }
 
 void LayerTreeHostImpl::RequestImplSideInvalidationForCheckerImagedTiles() {
@@ -3372,8 +3379,11 @@ void LayerTreeHostImpl::QueueImageDecode(int request_id,
                image.GetKeyForFrame(PaintImage::kDefaultFrameIndex).ToString());
   // Optimistically specify the current raster color space, since we assume that
   // it won't change.
+  auto content_color_usage = image.isSRGB()
+                                 ? gfx::ContentColorUsage::kSRGB
+                                 : gfx::ContentColorUsage::kWideColorGamut;
   tile_manager_.decoded_image_tracker().QueueImageDecode(
-      image, GetRasterColorSpace(),
+      image, GetRasterColorSpace(content_color_usage),
       base::BindOnce(&LayerTreeHostImpl::ImageDecodeFinished,
                      weak_factory_.GetWeakPtr(), request_id));
   tile_manager_.checker_image_tracker().DisallowCheckeringForImage(image);

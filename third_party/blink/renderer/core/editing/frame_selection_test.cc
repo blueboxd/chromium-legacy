@@ -147,7 +147,7 @@ TEST_F(FrameSelectionTest, PaintCaretShouldNotLayout) {
   {
     GraphicsContext context(*paint_controller);
     paint_controller->UpdateCurrentPaintChunkProperties(
-        root_paint_chunk_id_, PropertyTreeState::Root());
+        &root_paint_chunk_id_, PropertyTreeState::Root());
     Selection().PaintCaret(context, PhysicalOffset());
   }
   paint_controller->CommitNewDisplayItems();

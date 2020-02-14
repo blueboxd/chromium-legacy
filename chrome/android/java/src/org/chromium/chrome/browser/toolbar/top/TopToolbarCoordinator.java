@@ -622,10 +622,12 @@ public class TopToolbarCoordinator implements Toolbar {
      *                        clicked.
      * @param image The drawable to display for the button.
      * @param contentDescriptionResId The resource id of the content description for the button.
+     * @param useTint Whether tint should be automatically applied to the button.
      */
     public void enableExperimentalButton(View.OnClickListener onClickListener, Drawable image,
-            @StringRes int contentDescriptionResId) {
-        mToolbarLayout.enableExperimentalButton(onClickListener, image, contentDescriptionResId);
+            @StringRes int contentDescriptionResId, boolean useTint) {
+        mToolbarLayout.enableExperimentalButton(
+                onClickListener, image, contentDescriptionResId, useTint);
     }
 
     /**
@@ -679,7 +681,8 @@ public class TopToolbarCoordinator implements Toolbar {
             mStartSurfaceToolbarCoordinator.showIdentityDiscButton(
                     onClickListener, image, contentDescriptionResId);
         }
-        enableExperimentalButton(onClickListener, image, contentDescriptionResId);
+        enableExperimentalButton(
+                onClickListener, image, contentDescriptionResId, /*useTint= */ false);
     }
 
     /**

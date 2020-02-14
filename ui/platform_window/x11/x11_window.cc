@@ -589,13 +589,13 @@ void X11Window::DispatchUiEvent(ui::Event* event, XEvent* xev) {
     event = last_motion.get();
   }
 
-  // If after CoalescePendingMotionEvents the type of xev is resolved
-  // to UNKNOWN, don't dispatch the event. TODO(804418): investigate
-  // why ColescePendingMotionEvents can include mouse wheel events as
-  // well. Investigation showed that events on Linux are checked with
-  // cmt-device path, and can include DT_CMT_SCROLL_ data. See more
-  // discussion in https://crrev.com/c/853953
-  if (event->type() != ui::ET_UNKNOWN) {
+  // If after CoalescePendingMotionEvents the type of xev is resolved to
+  // UNKNOWN, i.e: xevent translation returns nullptr, don't dispatch the
+  // event. TODO(804418): investigate why ColescePendingMotionEvents can
+  // include mouse wheel events as well. Investigation showed that events on
+  // Linux are checked with cmt-device path, and can include DT_CMT_SCROLL_
+  // data. See more discussion in https://crrev.com/c/853953
+  if (event) {
 #if defined(USE_OZONE)
     DispatchEventFromNativeUiEvent(
         event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,

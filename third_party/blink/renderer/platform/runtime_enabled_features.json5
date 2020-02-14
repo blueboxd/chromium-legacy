@@ -572,6 +572,10 @@
       status: "stable",
     },
     {
+      name: "DeclarativeShadowDOM",
+      status: "test",
+    },
+    {
       name: "DecodeJpeg420ImagesToYUV",
       status: "test",
     },
@@ -851,6 +855,10 @@
     },
     {
       name: "InertAttribute",
+      status: "experimental",
+    },
+    {
+      name: "InputElementRawValue",
       status: "experimental",
     },
     {

@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Kuva</translation>
 <translation id="5301954838959518834">Selge, sain aru</translation>
 <translation id="5317780077021120954">Salvesta</translation>
+<translation id="5391532827096253100">Teie ühendus selle saidiga ei ole turvaline. Saidi teave</translation>
 <translation id="5556459405103347317">Laadi uuesti</translation>
 <translation id="5596627076506792578">Rohkem valikuid</translation>
 <translation id="5860033963881614850">Väljas</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Sulge</translation>
 <translation id="6042308850641462728">Rohkem</translation>
 <translation id="6165508094623778733">Lisateave</translation>
+<translation id="6206551242102657620">Ühendus on turvaline. Saidi teave</translation>
 <translation id="6216432067784365534">Üksuse <ph name="NAME_OF_LIST_ITEM" /> valikud</translation>
 <translation id="6527303717912515753">Jaga</translation>
 <translation id="6746124502594467657">Liiguta alla</translation>
 <translation id="6818926723028410516">Valige üksused</translation>
 <translation id="6910211073230771657">Kustutatud</translation>
 <translation id="6945221475159498467">Vali</translation>
+<translation id="6963642900430330478">See leht on ohtlik. Saidi teave</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 on valitud}other{# on valitud}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> on valitud.  Valikud on saadaval ekraanikuva ülaosas</translation>

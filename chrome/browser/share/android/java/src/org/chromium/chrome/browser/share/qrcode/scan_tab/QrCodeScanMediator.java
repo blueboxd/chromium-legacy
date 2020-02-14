@@ -60,9 +60,7 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
         mPropertyModel = propertyModel;
         mPermissionDelegate = new ActivityAndroidPermissionDelegate(
                 new WeakReference<Activity>((Activity) mContext));
-        mPropertyModel.set(QrCodeScanViewProperties.HAS_CAMERA_PERMISSION, hasCameraPermission());
-        mPropertyModel.set(
-                QrCodeScanViewProperties.CAN_PROMPT_FOR_PERMISSION, canPromptForPermission());
+        updatePermissionSettings();
         mDetector = new BarcodeDetector.Builder(context).build();
         mNavigationObserver = observer;
         mTabCreator = tabCreator;
@@ -75,9 +73,16 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
                 == PackageManager.PERMISSION_GRANTED;
     }
 
-    /** Returns whether the user has granted camera permissions. */
+    /** Returns whether the user can be prompted for camera permissions. */
     private Boolean canPromptForPermission() {
         return mPermissionDelegate.canRequestPermission(permission.CAMERA);
+    }
+
+    /** Updates the permission settings with the latest values. */
+    private void updatePermissionSettings() {
+        mPropertyModel.set(
+                QrCodeScanViewProperties.CAN_PROMPT_FOR_PERMISSION, canPromptForPermission());
+        mPropertyModel.set(QrCodeScanViewProperties.HAS_CAMERA_PERMISSION, hasCameraPermission());
     }
 
     /**
@@ -86,6 +91,13 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
      * @param isOnForeground Indicates whether this component UI is current on foreground.
      */
     public void setIsOnForeground(boolean isOnForeground) {
+        // If the app is in the foreground, the permissions need to be checked again to ensure
+        // the user is seeing the right thing.
+        if (isOnForeground) {
+            updatePermissionSettings();
+        }
+        // This is intentionally done last so that the view is updated according to the latest
+        // permissions.
         mPropertyModel.set(QrCodeScanViewProperties.IS_ON_FOREGROUND, isOnForeground);
     }
 
@@ -104,11 +116,14 @@ public class QrCodeScanMediator implements Camera.PreviewCallback {
                 if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     mPropertyModel.set(QrCodeScanViewProperties.HAS_CAMERA_PERMISSION, true);
                 } else {
-                    mPropertyModel.set(QrCodeScanViewProperties.HAS_CAMERA_PERMISSION, false);
+                    // The order in which these fields are important because it causes updates to
+                    // the view. CanPromptForPermission must be updated first so that it doesn't
+                    // cause the view to be updated twice creating a flicker effect.
                     if (!mPermissionDelegate.canRequestPermission(permission.CAMERA)) {
                         mPropertyModel.set(
                                 QrCodeScanViewProperties.CAN_PROMPT_FOR_PERMISSION, false);
                     }
+                    mPropertyModel.set(QrCodeScanViewProperties.HAS_CAMERA_PERMISSION, false);
                 }
             }
         };

@@ -216,6 +216,9 @@ class TimePicker extends HTMLElement {
     super();
 
     this.className = TimePicker.ClassName;
+    if (global.params.isBorderTransparent) {
+      this.style.borderColor = 'transparent';
+    }
     this.initializeFromConfig_(config);
 
     this.timeColumns_ = new TimeColumns(this);

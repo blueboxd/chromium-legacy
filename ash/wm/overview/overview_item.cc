@@ -253,58 +253,6 @@ void OverviewItem::PrepareForOverview() {
   prepared_for_overview_ = true;
 }
 
-void OverviewItem::SlideWindowIn() {
-  // This only gets called if we see the home launcher on enter (all windows are
-  // minimized).
-  DCHECK(transform_window_.IsMinimized());
-
-  // The mask and shadow will be shown when animation ends. Update the mask
-  // after starting the animation since starting the animation lets the
-  // controller know we are in starting animation.
-  FadeInWidgetAndMaybeSlideOnEnter(item_widget_.get(),
-                                   OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
-                                   /*slide=*/true, /*observe=*/true);
-  UpdateRoundedCornersAndShadow();
-}
-
-std::unique_ptr<ui::ScopedLayerAnimationSettings>
-OverviewItem::UpdateYPositionAndOpacity(
-    float new_grid_y,
-    float opacity,
-    OverviewSession::UpdateAnimationSettingsCallback callback) {
-  aura::Window::Windows windows = GetWindowsForHomeGesture();
-  std::unique_ptr<ui::ScopedLayerAnimationSettings> settings_to_observe;
-  for (auto* window : windows) {
-    ui::Layer* layer = window->layer();
-    std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
-    if (!callback.is_null()) {
-      settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
-          layer->GetAnimator());
-      callback.Run(settings.get());
-    }
-    layer->SetOpacity(opacity);
-
-    float initial_y = 0.f;
-    if (translation_y_map_.contains(window))
-      initial_y = translation_y_map_[window];
-
-    // Alter the y-translation. Offset by the window location relative to the
-    // grid.
-    gfx::Transform transform = layer->transform();
-    transform.matrix().setFloat(1, 3, initial_y - new_grid_y);
-    layer->SetTransform(transform);
-
-    if (settings)
-      settings_to_observe = std::move(settings);
-  }
-
-  return settings_to_observe;
-}
-
-void OverviewItem::UpdateItemContentViewForMinimizedWindow() {
-  overview_item_view_->RefreshPreviewView();
-}
-
 float OverviewItem::GetItemScale(const gfx::Size& size) {
   gfx::SizeF inset_size(size.width(), size.height() - 2 * kWindowMargin);
   return ScopedOverviewTransformWindow::GetItemScale(
@@ -648,6 +596,58 @@ void OverviewItem::ScaleUpSelectedItem(OverviewAnimationType animation_type) {
   SetBounds(scaled_bounds, animation_type);
 }
 
+void OverviewItem::SlideWindowIn() {
+  // This only gets called if we see the home launcher on enter (all windows are
+  // minimized).
+  DCHECK(transform_window_.IsMinimized());
+
+  // The mask and shadow will be shown when animation ends. Update the mask
+  // after starting the animation since starting the animation lets the
+  // controller know we are in starting animation.
+  FadeInWidgetAndMaybeSlideOnEnter(item_widget_.get(),
+                                   OVERVIEW_ANIMATION_ENTER_FROM_HOME_LAUNCHER,
+                                   /*slide=*/true, /*observe=*/true);
+  UpdateRoundedCornersAndShadow();
+}
+
+std::unique_ptr<ui::ScopedLayerAnimationSettings>
+OverviewItem::UpdateYPositionAndOpacity(
+    float new_grid_y,
+    float opacity,
+    OverviewSession::UpdateAnimationSettingsCallback callback) {
+  aura::Window::Windows windows = GetWindowsForHomeGesture();
+  std::unique_ptr<ui::ScopedLayerAnimationSettings> settings_to_observe;
+  for (auto* window : windows) {
+    ui::Layer* layer = window->layer();
+    std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
+    if (!callback.is_null()) {
+      settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
+          layer->GetAnimator());
+      callback.Run(settings.get());
+    }
+    layer->SetOpacity(opacity);
+
+    float initial_y = 0.f;
+    if (translation_y_map_.contains(window))
+      initial_y = translation_y_map_[window];
+
+    // Alter the y-translation. Offset by the window location relative to the
+    // grid.
+    gfx::Transform transform = layer->transform();
+    transform.matrix().setFloat(1, 3, initial_y - new_grid_y);
+    layer->SetTransform(transform);
+
+    if (settings)
+      settings_to_observe = std::move(settings);
+  }
+
+  return settings_to_observe;
+}
+
+void OverviewItem::UpdateItemContentViewForMinimizedWindow() {
+  overview_item_view_->RefreshPreviewView();
+}
+
 bool OverviewItem::IsDragItem() {
   return overview_session_->window_drag_controller() &&
          overview_session_->window_drag_controller()->item() == this;
@@ -837,6 +837,54 @@ OverviewAnimationType OverviewItem::GetExitTransformAnimationType() {
                                       : OVERVIEW_ANIMATION_RESTORE_WINDOW_ZERO;
 }
 
+void OverviewItem::HandleGestureEventForTabletModeLayout(
+    ui::GestureEvent* event) {
+  const gfx::PointF location = event->details().bounding_box_f().CenterPoint();
+  switch (event->type()) {
+    case ui::ET_SCROLL_FLING_START:
+      if (IsDragItem()) {
+        HandleFlingStartEvent(location, event->details().velocity_x(),
+                              event->details().velocity_y());
+      } else {
+        overview_grid()->grid_event_handler()->OnGestureEvent(event);
+      }
+      break;
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      if (std::abs(event->details().scroll_y_hint()) >
+          std::abs(event->details().scroll_x_hint())) {
+        HandlePressEvent(location, /*from_touch_gesture=*/true);
+      } else {
+        overview_grid()->grid_event_handler()->OnGestureEvent(event);
+      }
+      break;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      if (IsDragItem())
+        HandleDragEvent(location);
+      else
+        overview_grid()->grid_event_handler()->OnGestureEvent(event);
+      break;
+    case ui::ET_GESTURE_SCROLL_END:
+      if (IsDragItem())
+        HandleReleaseEvent(location);
+      else
+        overview_grid()->grid_event_handler()->OnGestureEvent(event);
+      break;
+    case ui::ET_GESTURE_LONG_PRESS:
+      HandlePressEvent(location, /*from_touch_gesture=*/true);
+      HandleLongPressEvent(location);
+      break;
+    case ui::ET_GESTURE_TAP:
+      overview_session_->SelectWindow(this);
+      break;
+    case ui::ET_GESTURE_END:
+      HandleGestureEndEvent();
+      break;
+    default:
+      overview_grid()->grid_event_handler()->OnGestureEvent(event);
+      break;
+  }
+}
+
 void OverviewItem::HandleMouseEvent(const ui::MouseEvent& event) {
   const gfx::PointF screen_location = event.target()->GetScreenLocationF(event);
   switch (event.type()) {
@@ -886,54 +934,6 @@ void OverviewItem::HandleGestureEvent(ui::GestureEvent* event) {
       HandleGestureEndEvent();
       break;
     default:
-      break;
-  }
-}
-
-void OverviewItem::HandleGestureEventForTabletModeLayout(
-    ui::GestureEvent* event) {
-  const gfx::PointF location = event->details().bounding_box_f().CenterPoint();
-  switch (event->type()) {
-    case ui::ET_SCROLL_FLING_START:
-      if (IsDragItem()) {
-        HandleFlingStartEvent(location, event->details().velocity_x(),
-                              event->details().velocity_y());
-      } else {
-        overview_grid()->grid_event_handler()->OnGestureEvent(event);
-      }
-      break;
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-      if (std::abs(event->details().scroll_y_hint()) >
-          std::abs(event->details().scroll_x_hint())) {
-        HandlePressEvent(location, /*from_touch_gesture=*/true);
-      } else {
-        overview_grid()->grid_event_handler()->OnGestureEvent(event);
-      }
-      break;
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      if (IsDragItem())
-        HandleDragEvent(location);
-      else
-        overview_grid()->grid_event_handler()->OnGestureEvent(event);
-      break;
-    case ui::ET_GESTURE_SCROLL_END:
-      if (IsDragItem())
-        HandleReleaseEvent(location);
-      else
-        overview_grid()->grid_event_handler()->OnGestureEvent(event);
-      break;
-    case ui::ET_GESTURE_LONG_PRESS:
-      HandlePressEvent(location, /*from_touch_gesture=*/true);
-      HandleLongPressEvent(location);
-      break;
-    case ui::ET_GESTURE_TAP:
-      overview_session_->SelectWindow(this);
-      break;
-    case ui::ET_GESTURE_END:
-      HandleGestureEndEvent();
-      break;
-    default:
-      overview_grid()->grid_event_handler()->OnGestureEvent(event);
       break;
   }
 }
@@ -1307,6 +1307,17 @@ void OverviewItem::AnimateOpacity(float opacity,
   }
 }
 
+void OverviewItem::StartDrag() {
+  aura::Window* widget_window = item_widget_->GetNativeWindow();
+  aura::Window* window = GetWindow();
+  if (widget_window && widget_window->parent() == window->parent()) {
+    // TODO(xdai): This might not work if there is an always on top window.
+    // See crbug.com/733760.
+    widget_window->parent()->StackChildAtTop(window);
+    widget_window->parent()->StackChildBelow(widget_window, window);
+  }
+}
+
 void OverviewItem::HandlePressEvent(const gfx::PointF& location_in_screen,
                                     bool from_touch_gesture) {
   // We allow switching finger while dragging, but do not allow dragging two
@@ -1365,17 +1376,6 @@ void OverviewItem::HandleGestureEndEvent() {
   // stacking order on the next reposition.
   set_should_restack_on_animation_end(true);
   overview_session_->ResetDraggedWindowGesture();
-}
-
-void OverviewItem::StartDrag() {
-  aura::Window* widget_window = item_widget_->GetNativeWindow();
-  aura::Window* window = GetWindow();
-  if (widget_window && widget_window->parent() == window->parent()) {
-    // TODO(xdai): This might not work if there is an always on top window.
-    // See crbug.com/733760.
-    widget_window->parent()->StackChildAtTop(window);
-    widget_window->parent()->StackChildBelow(widget_window, window);
-  }
 }
 
 aura::Window::Windows OverviewItem::GetWindowsForHomeGesture() {

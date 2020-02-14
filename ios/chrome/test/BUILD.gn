@@ -308,6 +308,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/web_state_list/web_usage_enabler:unit_tests",
     "//ios/chrome/browser/webui:unit_tests",
     "//ios/chrome/common:unit_tests",
+    "//ios/chrome/common/ui/util:unit_tests",
     "//ios/chrome/content_widget_extension:unit_tests",
     "//ios/chrome/search_widget_extension:unit_tests",
     "//ios/testing:http_server_bundle_data",

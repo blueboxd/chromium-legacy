@@ -414,6 +414,12 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Gets the GpuMemoryBuffer backing the VideoFrame.
   gfx::GpuMemoryBuffer* GetGpuMemoryBuffer() const;
 
+  // Returns true if the video frame was created with the given parameters.
+  bool IsSameAllocation(VideoPixelFormat format,
+                        const gfx::Size& coded_size,
+                        const gfx::Rect& visible_rect,
+                        const gfx::Size& natural_size) const;
+
   // Returns the color space of this frame's content.
   gfx::ColorSpace ColorSpace() const;
   void set_color_space(const gfx::ColorSpace& color_space) {

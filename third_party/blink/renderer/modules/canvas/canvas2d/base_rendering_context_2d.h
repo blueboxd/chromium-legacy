@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_path.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_rendering_context_2d_state.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_style.h"
+#include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 
 namespace blink {
 class CanvasImageSource;
@@ -222,6 +223,8 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
     return false;
   }
   virtual bool CanCreateCanvas2dResourceProvider() const = 0;
+
+  virtual RespectImageOrientationEnum RespectImageOrientation() const = 0;
 
   virtual bool ParseColorOrCurrentColor(Color&,
                                         const String& color_string) const = 0;

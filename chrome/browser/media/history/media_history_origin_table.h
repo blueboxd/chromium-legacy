@@ -9,11 +9,18 @@
 #include "chrome/browser/media/history/media_history_table_base.h"
 #include "sql/init_status.h"
 
+namespace url {
+class Origin;
+}  // namespace url
+
 namespace media_history {
 
 class MediaHistoryOriginTable : public MediaHistoryTableBase {
  public:
   static const char kTableName[];
+
+  // Returns the origin as a string for storage.
+  static std::string GetOriginForStorage(const url::Origin& origin);
 
  private:
   friend class MediaHistoryStoreInternal;
@@ -26,10 +33,10 @@ class MediaHistoryOriginTable : public MediaHistoryTableBase {
   sql::InitStatus CreateTableIfNonExistent() override;
 
   // Returns a flag indicating whether the origin id was created successfully.
-  bool CreateOriginId(const std::string& origin);
+  bool CreateOriginId(const url::Origin& origin);
 
   // Returns a flag indicating whether watchtime was increased successfully.
-  bool IncrementAggregateAudioVideoWatchTime(const std::string& origin,
+  bool IncrementAggregateAudioVideoWatchTime(const url::Origin& origin,
                                              const base::TimeDelta& time);
 
   DISALLOW_COPY_AND_ASSIGN(MediaHistoryOriginTable);

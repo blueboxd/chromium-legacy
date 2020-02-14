@@ -11,8 +11,11 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/media/history/media_history_images_table.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
+#include "chrome/browser/media/history/media_history_session_images_table.h"
+#include "chrome/browser/media/history/media_history_session_table.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -64,11 +67,16 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest {
     return content::ExecuteScript(GetWebContents(), "setMediaMetadata();");
   }
 
+  bool SetMediaMetadataWithArtwork() {
+    return content::ExecuteScript(GetWebContents(),
+                                  "setMediaMetadataWithArtwork();");
+  }
+
   bool FinishPlaying() {
     return content::ExecuteScript(GetWebContents(), "finishPlaying();");
   }
 
-  std::vector<MediaHistoryStore::MediaPlaybackSession> GetPlaybackSessionsSync(
+  MediaHistoryStore::MediaPlaybackSessionList GetPlaybackSessionsSync(
       int max_sessions) {
     return GetPlaybackSessionsSync(
         max_sessions, base::BindRepeating([](const base::TimeDelta& duration,
@@ -77,11 +85,11 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest {
         }));
   }
 
-  std::vector<MediaHistoryStore::MediaPlaybackSession> GetPlaybackSessionsSync(
+  MediaHistoryStore::MediaPlaybackSessionList GetPlaybackSessionsSync(
       int max_sessions,
       MediaHistoryStore::GetPlaybackSessionsFilter filter) {
     base::RunLoop run_loop;
-    std::vector<MediaHistoryStore::MediaPlaybackSession> out;
+    MediaHistoryStore::MediaPlaybackSessionList out;
 
     GetMediaHistoryStore()->GetPlaybackSessions(
         max_sessions, std::move(filter),
@@ -96,6 +104,20 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest {
     return out;
   }
 
+  mojom::MediaHistoryStatsPtr GetStatsSync() {
+    base::RunLoop run_loop;
+    mojom::MediaHistoryStatsPtr stats_out;
+
+    GetMediaHistoryStore()->GetMediaHistoryStats(
+        base::BindLambdaForTesting([&](mojom::MediaHistoryStatsPtr stats) {
+          stats_out = std::move(stats);
+          run_loop.Quit();
+        }));
+
+    run_loop.Run();
+    return stats_out;
+  }
+
   media_session::MediaMetadata GetExpectedMetadata() {
     media_session::MediaMetadata expected_metadata =
         GetExpectedDefaultMetadata();
@@ -103,6 +125,59 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest {
     expected_metadata.artist = base::ASCIIToUTF16("Test Footage");
     expected_metadata.album = base::ASCIIToUTF16("The Chrome Collection");
     return expected_metadata;
+  }
+
+  std::vector<media_session::MediaImage> GetExpectedArtwork() {
+    std::vector<media_session::MediaImage> images;
+
+    {
+      media_session::MediaImage image;
+      image.src = embedded_test_server()->GetURL("/artwork-96.png");
+      image.sizes.push_back(gfx::Size(96, 96));
+      image.type = base::ASCIIToUTF16("image/png");
+      images.push_back(image);
+    }
+
+    {
+      media_session::MediaImage image;
+      image.src = embedded_test_server()->GetURL("/artwork-128.png");
+      image.sizes.push_back(gfx::Size(128, 128));
+      image.type = base::ASCIIToUTF16("image/png");
+      images.push_back(image);
+    }
+
+    {
+      media_session::MediaImage image;
+      image.src = embedded_test_server()->GetURL("/artwork-big.jpg");
+      image.sizes.push_back(gfx::Size(192, 192));
+      image.sizes.push_back(gfx::Size(256, 256));
+      image.type = base::ASCIIToUTF16("image/jpg");
+      images.push_back(image);
+    }
+
+    {
+      media_session::MediaImage image;
+      image.src = embedded_test_server()->GetURL("/artwork-any.jpg");
+      image.sizes.push_back(gfx::Size(0, 0));
+      image.type = base::ASCIIToUTF16("image/jpg");
+      images.push_back(image);
+    }
+
+    {
+      media_session::MediaImage image;
+      image.src = embedded_test_server()->GetURL("/artwork-notype.jpg");
+      image.sizes.push_back(gfx::Size(0, 0));
+      images.push_back(image);
+    }
+
+    {
+      media_session::MediaImage image;
+      image.src = embedded_test_server()->GetURL("/artwork-nosize.jpg");
+      image.type = base::ASCIIToUTF16("image/jpg");
+      images.push_back(image);
+    }
+
+    return images;
   }
 
   media_session::MediaMetadata GetExpectedDefaultMetadata() {
@@ -150,9 +225,10 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest,
                        RecordMediaSession_OnNavigate_Incomplete) {
   EXPECT_TRUE(SetupPageAndStartPlaying(GetTestURL()));
-  EXPECT_TRUE(SetMediaMetadata());
+  EXPECT_TRUE(SetMediaMetadataWithArtwork());
 
-  media_session::MediaMetadata expected_metadata = GetExpectedMetadata();
+  auto expected_metadata = GetExpectedMetadata();
+  auto expected_artwork = GetExpectedArtwork();
 
   {
     media_session::test::MockMediaSessionMojoObserver observer(
@@ -160,6 +236,9 @@ IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest,
     observer.WaitForState(
         media_session::mojom::MediaSessionInfo::SessionState::kActive);
     observer.WaitForExpectedMetadata(expected_metadata);
+    observer.WaitForExpectedImagesOfType(
+        media_session::mojom::MediaSessionImageType::kArtwork,
+        expected_artwork);
   }
 
   SimulateNavigationToCommit();
@@ -167,13 +246,24 @@ IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest,
   // Verify the session in the database.
   auto sessions = GetPlaybackSessionsSync(1);
   EXPECT_EQ(1u, sessions.size());
-  EXPECT_EQ(GetTestURL(), sessions[0].url);
-  EXPECT_EQ(kTestClipDuration, sessions[0].duration);
-  EXPECT_LT(base::TimeDelta(), sessions[0].position);
-  EXPECT_EQ(expected_metadata.title, sessions[0].metadata.title);
-  EXPECT_EQ(expected_metadata.artist, sessions[0].metadata.artist);
-  EXPECT_EQ(expected_metadata.album, sessions[0].metadata.album);
-  EXPECT_EQ(expected_metadata.source_title, sessions[0].metadata.source_title);
+  EXPECT_EQ(GetTestURL(), sessions[0]->url);
+  EXPECT_EQ(kTestClipDuration, sessions[0]->duration);
+  EXPECT_LT(base::TimeDelta(), sessions[0]->position);
+  EXPECT_EQ(expected_metadata.title, sessions[0]->metadata.title);
+  EXPECT_EQ(expected_metadata.artist, sessions[0]->metadata.artist);
+  EXPECT_EQ(expected_metadata.album, sessions[0]->metadata.album);
+  EXPECT_EQ(expected_metadata.source_title, sessions[0]->metadata.source_title);
+  EXPECT_EQ(expected_artwork, sessions[0]->artwork);
+
+  {
+    // Check the tables have the expected number of records
+    mojom::MediaHistoryStatsPtr stats = GetStatsSync();
+    EXPECT_EQ(1, stats->table_row_counts[MediaHistoryOriginTable::kTableName]);
+    EXPECT_EQ(1, stats->table_row_counts[MediaHistorySessionTable::kTableName]);
+    EXPECT_EQ(
+        7, stats->table_row_counts[MediaHistorySessionImagesTable::kTableName]);
+    EXPECT_EQ(6, stats->table_row_counts[MediaHistoryImagesTable::kTableName]);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest,
@@ -195,13 +285,14 @@ IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest,
   // Verify the session in the database.
   auto sessions = GetPlaybackSessionsSync(1);
   EXPECT_EQ(1u, sessions.size());
-  EXPECT_EQ(GetTestURL(), sessions[0].url);
-  EXPECT_EQ(kTestClipDuration, sessions[0].duration);
-  EXPECT_LT(base::TimeDelta(), sessions[0].position);
-  EXPECT_EQ(expected_metadata.title, sessions[0].metadata.title);
-  EXPECT_EQ(expected_metadata.artist, sessions[0].metadata.artist);
-  EXPECT_EQ(expected_metadata.album, sessions[0].metadata.album);
-  EXPECT_EQ(expected_metadata.source_title, sessions[0].metadata.source_title);
+  EXPECT_EQ(GetTestURL(), sessions[0]->url);
+  EXPECT_EQ(kTestClipDuration, sessions[0]->duration);
+  EXPECT_LT(base::TimeDelta(), sessions[0]->position);
+  EXPECT_EQ(expected_metadata.title, sessions[0]->metadata.title);
+  EXPECT_EQ(expected_metadata.artist, sessions[0]->metadata.artist);
+  EXPECT_EQ(expected_metadata.album, sessions[0]->metadata.album);
+  EXPECT_EQ(expected_metadata.source_title, sessions[0]->metadata.source_title);
+  EXPECT_TRUE(sessions[0]->artwork.empty());
 }
 
 IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest,
@@ -235,7 +326,7 @@ IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest,
                   const base::TimeDelta& position) { return true; }));
 
     EXPECT_EQ(1u, sessions.size());
-    EXPECT_EQ(GetTestURL(), sessions[0].url);
+    EXPECT_EQ(GetTestURL(), sessions[0]->url);
   }
 }
 
@@ -266,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest, GetPlaybackSessions) {
   {
     // Start a session.
     EXPECT_TRUE(SetupPageAndStartPlaying(GetTestURL()));
-    EXPECT_TRUE(SetMediaMetadata());
+    EXPECT_TRUE(SetMediaMetadataWithArtwork());
 
     media_session::test::MockMediaSessionMojoObserver observer(
         *GetMediaSession());
@@ -294,15 +385,15 @@ IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest, GetPlaybackSessions) {
     // Get the two most recent playback sessions and check they are in order.
     auto sessions = GetPlaybackSessionsSync(2);
     EXPECT_EQ(2u, sessions.size());
-    EXPECT_EQ(GetTestAltURL(), sessions[0].url);
-    EXPECT_EQ(GetTestURL(), sessions[1].url);
+    EXPECT_EQ(GetTestAltURL(), sessions[0]->url);
+    EXPECT_EQ(GetTestURL(), sessions[1]->url);
   }
 
   {
     // Get the last playback session.
     auto sessions = GetPlaybackSessionsSync(1);
     EXPECT_EQ(1u, sessions.size());
-    EXPECT_EQ(GetTestAltURL(), sessions[0].url);
+    EXPECT_EQ(GetTestAltURL(), sessions[0]->url);
   }
 
   {
@@ -327,16 +418,16 @@ IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest, GetPlaybackSessions) {
     // playback.
     auto sessions = GetPlaybackSessionsSync(3);
     EXPECT_EQ(2u, sessions.size());
-    EXPECT_EQ(GetTestURL(), sessions[0].url);
-    EXPECT_EQ(GetTestAltURL(), sessions[1].url);
+    EXPECT_EQ(GetTestURL(), sessions[0]->url);
+    EXPECT_EQ(GetTestAltURL(), sessions[1]->url);
 
-    EXPECT_EQ(kTestClipDuration, sessions[0].duration);
-    EXPECT_EQ(4, sessions[0].position.InSeconds());
-    EXPECT_EQ(expected_default_metadata.title, sessions[0].metadata.title);
-    EXPECT_EQ(expected_default_metadata.artist, sessions[0].metadata.artist);
-    EXPECT_EQ(expected_default_metadata.album, sessions[0].metadata.album);
+    EXPECT_EQ(kTestClipDuration, sessions[0]->duration);
+    EXPECT_EQ(4, sessions[0]->position.InSeconds());
+    EXPECT_EQ(expected_default_metadata.title, sessions[0]->metadata.title);
+    EXPECT_EQ(expected_default_metadata.artist, sessions[0]->metadata.artist);
+    EXPECT_EQ(expected_default_metadata.album, sessions[0]->metadata.album);
     EXPECT_EQ(expected_default_metadata.source_title,
-              sessions[0].metadata.source_title);
+              sessions[0]->metadata.source_title);
   }
 
   {
@@ -358,7 +449,7 @@ IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest, GetPlaybackSessions) {
     // because playback has completed for that URL.
     auto sessions = GetPlaybackSessionsSync(4);
     EXPECT_EQ(1u, sessions.size());
-    EXPECT_EQ(GetTestAltURL(), sessions[0].url);
+    EXPECT_EQ(GetTestAltURL(), sessions[0]->url);
   }
 
   {
@@ -380,9 +471,76 @@ IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest, GetPlaybackSessions) {
     // it is incomplete again.
     auto sessions = GetPlaybackSessionsSync(2);
     EXPECT_EQ(2u, sessions.size());
-    EXPECT_EQ(GetTestURL(), sessions[0].url);
-    EXPECT_EQ(GetTestAltURL(), sessions[1].url);
+    EXPECT_EQ(GetTestURL(), sessions[0]->url);
+    EXPECT_EQ(GetTestAltURL(), sessions[1]->url);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(MediaHistoryBrowserTest,
+                       SaveImagesWithDifferentSessions) {
+  auto expected_metadata = GetExpectedMetadata();
+  auto expected_artwork = GetExpectedArtwork();
+
+  {
+    // Start a session.
+    EXPECT_TRUE(SetupPageAndStartPlaying(GetTestURL()));
+    EXPECT_TRUE(SetMediaMetadataWithArtwork());
+
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+    observer.WaitForState(
+        media_session::mojom::MediaSessionInfo::SessionState::kActive);
+    observer.WaitForExpectedMetadata(expected_metadata);
+    observer.WaitForExpectedImagesOfType(
+        media_session::mojom::MediaSessionImageType::kArtwork,
+        expected_artwork);
+  }
+
+  SimulateNavigationToCommit();
+
+  std::vector<media_session::MediaImage> expected_alt_artwork;
+
+  {
+    media_session::MediaImage image;
+    image.src = embedded_test_server()->GetURL("/artwork-96.png");
+    image.sizes.push_back(gfx::Size(96, 96));
+    image.type = base::ASCIIToUTF16("image/png");
+    expected_alt_artwork.push_back(image);
+  }
+
+  {
+    media_session::MediaImage image;
+    image.src = embedded_test_server()->GetURL("/artwork-alt.png");
+    image.sizes.push_back(gfx::Size(128, 128));
+    image.type = base::ASCIIToUTF16("image/png");
+    expected_alt_artwork.push_back(image);
+  }
+
+  {
+    // Start a second session on a different URL.
+    EXPECT_TRUE(SetupPageAndStartPlaying(GetTestAltURL()));
+    EXPECT_TRUE(content::ExecuteScript(GetWebContents(),
+                                       "setMediaMetadataWithAltArtwork();"));
+
+    media_session::test::MockMediaSessionMojoObserver observer(
+        *GetMediaSession());
+    observer.WaitForState(
+        media_session::mojom::MediaSessionInfo::SessionState::kActive);
+    observer.WaitForExpectedMetadata(expected_metadata);
+    observer.WaitForExpectedImagesOfType(
+        media_session::mojom::MediaSessionImageType::kArtwork,
+        expected_alt_artwork);
+  }
+
+  SimulateNavigationToCommit();
+
+  // Verify the session in the database.
+  auto sessions = GetPlaybackSessionsSync(2);
+  EXPECT_EQ(2u, sessions.size());
+  EXPECT_EQ(GetTestAltURL(), sessions[0]->url);
+  EXPECT_EQ(expected_alt_artwork, sessions[0]->artwork);
+  EXPECT_EQ(GetTestURL(), sessions[1]->url);
+  EXPECT_EQ(expected_artwork, sessions[1]->artwork);
 }
 
 }  // namespace media_history

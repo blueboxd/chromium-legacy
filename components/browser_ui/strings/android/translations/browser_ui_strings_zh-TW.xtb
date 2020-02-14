@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">顯示</translation>
 <translation id="5301954838959518834">好，我知道了</translation>
 <translation id="5317780077021120954">儲存</translation>
+<translation id="5391532827096253100">你與這個網站的連線不安全。網站資訊</translation>
 <translation id="5556459405103347317">重新載入</translation>
 <translation id="5596627076506792578">更多選項</translation>
 <translation id="5860033963881614850">關閉</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">關閉</translation>
 <translation id="6042308850641462728">更多</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
+<translation id="6206551242102657620">已建立安全連線。網站資訊</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />選項</translation>
 <translation id="6527303717912515753">分享</translation>
 <translation id="6746124502594467657">下移</translation>
 <translation id="6818926723028410516">選取項目</translation>
 <translation id="6910211073230771657">已刪除</translation>
 <translation id="6945221475159498467">選取</translation>
+<translation id="6963642900430330478">這個網頁不安全。網站資訊</translation>
 <translation id="6965382102122355670">確定</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{已選取 1 個項目}other{已選取 # 個項目}}</translation>
 <translation id="7087918508125750058">已選取 <ph name="ITEM_COUNT" /> 個項目。選項位於畫面頂端</translation>

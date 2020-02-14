@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Паказаць</translation>
 <translation id="5301954838959518834">OK</translation>
 <translation id="5317780077021120954">Захаваць</translation>
+<translation id="5391532827096253100">Ваша падключэнне да гэтага сайта небяспечнае. Звесткі пра сайт</translation>
 <translation id="5556459405103347317">Перазагрузіць</translation>
 <translation id="5596627076506792578">Дадатковыя параметры</translation>
 <translation id="5860033963881614850">Выключана</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Закрыць</translation>
 <translation id="6042308850641462728">Яшчэ</translation>
 <translation id="6165508094623778733">Даведацца больш</translation>
+<translation id="6206551242102657620">Падключэнне бяспечнае. Звесткі пра сайт</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" />: параметры</translation>
 <translation id="6527303717912515753">Абагуліць</translation>
 <translation id="6746124502594467657">Перамясціць ніжэй</translation>
 <translation id="6818926723028410516">Выберыце элементы</translation>
 <translation id="6910211073230771657">Выдалена</translation>
 <translation id="6945221475159498467">Выбраць</translation>
+<translation id="6963642900430330478">Гэта старонка небяспечная. Звесткі пра сайт</translation>
 <translation id="6965382102122355670">ОК</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Выбраны 1 элемент}one{Выбраны # элемент}few{Выбрана # элементы}many{Выбрана # элементаў}other{Выбрана # элемента}}</translation>
 <translation id="7087918508125750058">Выбрана: <ph name="ITEM_COUNT" />.  Параметры знаходзяцца ўверсе экрана</translation>

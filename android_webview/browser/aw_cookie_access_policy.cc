@@ -13,7 +13,8 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/websocket_handshake_request_info.h"
 #include "net/base/net_errors.h"
-#include "net/base/static_cookie_policy.h"
+#include "net/cookies/site_for_cookies.h"
+#include "net/cookies/static_cookie_policy.h"
 #include "url/gurl.h"
 
 using base::AutoLock;
@@ -60,20 +61,22 @@ bool AwCookieAccessPolicy::GetShouldAcceptThirdPartyCookies(
   return io_thread_client->ShouldAcceptThirdPartyCookies();
 }
 
-bool AwCookieAccessPolicy::AllowCookies(const GURL& url,
-                                        const GURL& first_party,
-                                        int render_process_id,
-                                        int render_frame_id) {
+bool AwCookieAccessPolicy::AllowCookies(
+    const GURL& url,
+    const net::SiteForCookies& site_for_cookies,
+    int render_process_id,
+    int render_frame_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   bool third_party = GetShouldAcceptThirdPartyCookies(
       render_process_id, render_frame_id,
       content::RenderFrameHost::kNoFrameTreeNodeId);
-  return CanAccessCookies(url, first_party, third_party);
+  return CanAccessCookies(url, site_for_cookies, third_party);
 }
 
-bool AwCookieAccessPolicy::CanAccessCookies(const GURL& url,
-                                            const GURL& site_for_cookies,
-                                            bool accept_third_party_cookies) {
+bool AwCookieAccessPolicy::CanAccessCookies(
+    const GURL& url,
+    const net::SiteForCookies& site_for_cookies,
+    bool accept_third_party_cookies) {
   if (!accept_cookies_)
     return false;
 

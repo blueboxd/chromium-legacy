@@ -200,6 +200,9 @@ SuggestionPicker.prototype._layout = function() {
   if (this._config.isLocaleRTL)
     this._element.classList.add('locale-rtl');
   this._containerElement = createElement('ul', 'suggestion-list');
+  if (global.params.isBorderTransparent) {
+    this._containerElement.style.borderColor = 'transparent';
+  }
   this._containerElement.addEventListener(
       'click', this._handleEntryClick.bind(this), false);
   for (var i = 0; i < this._config.suggestionValues.length; ++i) {

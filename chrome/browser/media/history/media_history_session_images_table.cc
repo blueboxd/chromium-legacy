@@ -9,7 +9,9 @@
 #include "chrome/browser/media/history/media_history_images_table.h"
 #include "chrome/browser/media/history/media_history_session_table.h"
 #include "chrome/browser/media/history/media_history_store.h"
+#include "services/media_session/public/cpp/media_image.h"
 #include "sql/statement.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace media_history {
 
@@ -76,6 +78,87 @@ sql::InitStatus MediaHistorySessionImagesTable::CreateTableIfNonExistent() {
   }
 
   return sql::INIT_OK;
+}
+
+bool MediaHistorySessionImagesTable::LinkImage(
+    const int64_t session_id,
+    const int64_t image_id,
+    const base::Optional<gfx::Size> size) {
+  DCHECK_LT(0, DB()->transaction_nesting());
+  if (!CanAccessDatabase())
+    return false;
+
+  DCHECK(session_id);
+  DCHECK(image_id);
+
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE, base::StringPrintf("INSERT INTO %s "
+                                        "(session_id, image_id, width, height) "
+                                        "VALUES (?, ?, ?, ?)",
+                                        kTableName)
+                         .c_str()));
+  statement.BindInt64(0, session_id);
+  statement.BindInt64(1, image_id);
+
+  if (size.has_value()) {
+    statement.BindInt(2, size->width());
+    statement.BindInt(3, size->height());
+  } else {
+    statement.BindNull(2);
+    statement.BindNull(3);
+  }
+
+  return statement.Run();
+}
+
+std::vector<media_session::MediaImage>
+MediaHistorySessionImagesTable::GetImagesForSession(const int64_t session_id) {
+  std::vector<media_session::MediaImage> images;
+  if (!CanAccessDatabase())
+    return images;
+
+  sql::Statement statement(DB()->GetCachedStatement(
+      SQL_FROM_HERE,
+      base::StringPrintf(
+          "SELECT width, height, url, mime_type, image_id FROM %s "
+          "INNER JOIN %s on %s.id = %s.image_id "
+          "WHERE session_id = ? "
+          "ORDER BY image_id ASC",
+          kTableName, MediaHistoryImagesTable::kTableName,
+          MediaHistoryImagesTable::kTableName, kTableName)
+          .c_str()));
+  statement.BindInt64(0, session_id);
+
+  base::Optional<media_session::MediaImage> current;
+  while (statement.Step()) {
+    GURL url(statement.ColumnString(2));
+
+    // If the current image does not have the same URL then it is a different
+    // image and we should add it to the vector and reset it.
+    if (current.has_value() && current->src != url) {
+      images.push_back(*current);
+      current.reset();
+    }
+
+    // If we don't have a current image then create one.
+    if (!current.has_value()) {
+      current = media_session::MediaImage();
+      current->src = url;
+      current->type = statement.ColumnString16(3);
+    }
+
+    // Add the size to the current image.
+    if (statement.GetColumnType(0) == sql::ColumnType::kInteger &&
+        statement.GetColumnType(1) == sql::ColumnType::kInteger) {
+      current->sizes.push_back(
+          gfx::Size(statement.ColumnInt(0), statement.ColumnInt(1)));
+    }
+  }
+
+  if (current)
+    images.push_back(*current);
+
+  return images;
 }
 
 }  // namespace media_history

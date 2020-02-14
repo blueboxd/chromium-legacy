@@ -23,14 +23,23 @@ namespace blink {
 
 class PLATFORM_EXPORT StaticBitmapImage : public Image {
  public:
-  static scoped_refptr<StaticBitmapImage> Create(PaintImage);
-  static scoped_refptr<StaticBitmapImage> Create(sk_sp<SkData> data,
-                                                 const SkImageInfo&);
+  // The ImageOrientation should be derived from the source of the image data.
+  static scoped_refptr<StaticBitmapImage> Create(
+      PaintImage,
+      ImageOrientation = kDefaultImageOrientation);
+  static scoped_refptr<StaticBitmapImage> Create(
+      sk_sp<SkData> data,
+      const SkImageInfo&,
+      ImageOrientation = kDefaultImageOrientation);
+
+  StaticBitmapImage(ImageOrientation orientation) : orientation_(orientation) {}
 
   bool IsStaticBitmapImage() const override { return true; }
 
   // Methods overridden by all sub-classes
   ~StaticBitmapImage() override = default;
+
+  IntSize SizeRespectingOrientation() const override;
 
   virtual scoped_refptr<StaticBitmapImage> ConvertToColorSpace(
       sk_sp<SkColorSpace>,
@@ -76,6 +85,16 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
   bool OriginClean() const { return is_origin_clean_; }
   void SetOriginClean(bool flag) { is_origin_clean_ = flag; }
 
+  // StaticBitmapImage needs to store the orientation of the image itself,
+  // because the underlying representations do not. If the bitmap represents
+  // a non-default orientation it must be explicitly given in the constructor.
+  ImageOrientation CurrentFrameOrientation() const override {
+    return orientation_;
+  }
+  bool HasDefaultOrientation() const override {
+    return orientation_ == kDefaultImageOrientation;
+  }
+
   static base::CheckedNumeric<size_t> GetSizeInBytes(
       const IntRect& rect,
       const CanvasColorParams& color_params);
@@ -95,7 +114,14 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
                   const FloatRect&,
                   const FloatRect&,
                   ImageClampingMode,
+                  RespectImageOrientationEnum,
                   const PaintImage&);
+
+  // The image orientation is stored here because it is only available when the
+  // static image is created and the underlying representations do not store
+  // the information. The property is set at construction based on the source of
+  // the image data.
+  ImageOrientation orientation_ = kDefaultImageOrientation;
 
   // The following property is here because the SkImage API doesn't expose the
   // info. It is applied to both UnacceleratedStaticBitmapImage and

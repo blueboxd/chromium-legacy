@@ -24,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -119,6 +120,7 @@ import org.chromium.ui.test.util.DisableAnimationsTestRule;
     /**
      * Tests that CookieControlsView updates on navigations.
      */
+    @DisabledTest(message = "https://crbug.com/1052395")
     @Test
     @MediumTest
     public void testUpdate() {

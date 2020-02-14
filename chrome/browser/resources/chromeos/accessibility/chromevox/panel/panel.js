@@ -11,6 +11,7 @@ goog.provide('Panel');
 goog.require('AnnotationsUI');
 goog.require('BackgroundKeyboardHandler');
 goog.require('BrailleCommandData');
+goog.require('ChromeVoxState');
 goog.require('EventSourceType');
 goog.require('GestureCommandData');
 goog.require('ISearchUI');
@@ -43,6 +44,12 @@ Panel = class {
    * Initialize the panel.
    */
   static init() {
+    // Called directly for initialization. In the background page context,
+    // |Background| subclasses |ChromeVoxState| (who's constructor is called as
+    // part of |Background| construction).
+    new ChromeVoxState();
+    UserAnnotationHandler.init();
+
     /** @type {Element} @private */
     Panel.speechContainer_ = $('speech-container');
 

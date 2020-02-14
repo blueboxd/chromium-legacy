@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Göstərin</translation>
 <translation id="5301954838959518834">Ok, anladım</translation>
 <translation id="5317780077021120954">Yadda saxlayın</translation>
+<translation id="5391532827096253100">Bu sayta bağlantınız güvənli deyil. Sayt barədə məlumat</translation>
 <translation id="5556459405103347317">Yenidən yükləyin</translation>
 <translation id="5596627076506792578">Əlavə seçimlər</translation>
 <translation id="5860033963881614850">Deaktiv</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Qapat</translation>
 <translation id="6042308850641462728">Daha çox</translation>
 <translation id="6165508094623778733">Ətraflı öyrənin</translation>
+<translation id="6206551242102657620">Bağlantınız güvənlidir. Sayt barədə məlumat</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> Seçimləri</translation>
 <translation id="6527303717912515753">Paylaşın</translation>
 <translation id="6746124502594467657">Aşağı köçürün</translation>
 <translation id="6818926723028410516">Element seçin</translation>
 <translation id="6910211073230771657">Silinib</translation>
 <translation id="6945221475159498467">Seçin</translation>
+<translation id="6963642900430330478">Bu səhifə təhlükəlidir. Sayt barədə məlumat</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 element seçildi}other{# element seçildi}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> seçildi. Seçimlər ekranın yuxarısında əlçatandır</translation>

@@ -30,7 +30,7 @@ PaintRecordBuilder::PaintRecordBuilder(
   }
 
   paint_controller_->UpdateCurrentPaintChunkProperties(
-      base::nullopt, PropertyTreeState::Root());
+      nullptr, PropertyTreeState::Root());
 
   context_ = std::make_unique<GraphicsContext>(
       *paint_controller_, disabled_mode, metafile, tracker);

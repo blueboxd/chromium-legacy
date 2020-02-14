@@ -5,9 +5,15 @@
 #include "components/viz/common/viz_utils.h"
 
 #include "base/system/sys_info.h"
-#include "build/build_config.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/rrect_f.h"
+
+#if defined(OS_ANDROID)
+#include <array>
+
+#include "base/android/build_info.h"
+#include "base/no_destructor.h"
+#endif
 
 namespace viz {
 
@@ -17,6 +23,28 @@ bool PreferRGB565ResourcesForDisplay() {
 #endif
   return false;
 }
+
+#if defined(OS_ANDROID)
+bool AlwaysUseWideColorGamut() {
+  auto compute_always_use_wide_color_gamut = []() {
+    const char* current_model =
+        base::android::BuildInfo::GetInstance()->model();
+    const std::array<std::string, 2> enabled_models = {
+        std::string{"Pixel 4"}, std::string{"Pixel 4 XL"}};
+    for (const std::string& model : enabled_models) {
+      if (model == current_model)
+        return true;
+    }
+
+    return false;
+  };
+
+  // As it takes some work to compute this, cache the result.
+  static base::NoDestructor<bool> is_always_use_wide_color_gamut_enabled(
+      compute_always_use_wide_color_gamut());
+  return *is_always_use_wide_color_gamut_enabled;
+}
+#endif
 
 bool GetScaledRegion(const gfx::Rect& rect,
                      const gfx::QuadF* clip,

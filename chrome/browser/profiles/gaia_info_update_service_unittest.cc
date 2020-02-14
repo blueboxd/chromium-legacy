@@ -245,7 +245,7 @@ TEST_F(GAIAInfoUpdateServiceTest, ClearGaiaInfoOnStartup) {
   entry->SetGAIAName(base::UTF8ToUTF16("foo"));
   entry->SetGAIAGivenName(base::UTF8ToUTF16("Pat Foo"));
   gfx::Image gaia_picture = gfx::test::CreateImage(256, 256);
-  entry->SetGAIAPicture(gaia_picture);
+  entry->SetGAIAPicture("GAIA_IMAGE_URL_WITH_SIZE", gaia_picture);
 
   // Verify that creating the GAIAInfoUpdateService resets the GAIA related
   // profile attributes if the profile no longer has a primary account and that

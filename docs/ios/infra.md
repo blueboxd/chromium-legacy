@@ -83,24 +83,20 @@ executed in parallel.
 Try bots are bots which test proposed patches which are not yet committed.
 
 Request [try job access] in order to trigger try jobs against your patch. The
-relevant try bots for an iOS patch are `ios-device`, `ios-device-xcode-clang`,
-`ios-simulator`, and `ios-simulator-xcode-clang`. These bots can be found on
-the Mac-specific [try server]. A try job is said to succeed when the build
-passes (i.e. when the bot successfully compiles and tests the patch).
+relevant try bots for an iOS patch are `ios-device` and `ios-simulator`. These
+bots can be found on the Mac-specific [try server]. A try job is said to succeed
+when the build passes (i.e. when the bot successfully compiles and tests the
+patch).
 
-`ios-device` and `ios-device-xcode-clang` both compile for the iOS device
-architecture (ARM), and neither run any tests. A build is considered successful
-so long as compilation is successful.
+`ios-device` compiles for the iOS device architecture (ARM) and runs no tests.
+A build is considered successful so long as compilation is successful.
 
-`ios-simulator` and `ios-simulator-xcode-clang` both compile for the iOS
-simulator architecture (x86), and run tests in the iOS [simulator]. A build is
-considered successful when both compilation and all configured test succeed.
+`ios-simulator` compiles for the iOS simulator architecture (x86), and runs
+tests in the iOS [simulator]. A build is considered successful when both
+compilation and all configured tests succeed.
 
 `ios-device` and `ios-simulator` both compile using the version of [clang]
 defined by the `CLANG_REVISION` in the Chromium tree.
-
-`ios-device-xcode-clang` and `ios-simulator-xcode-clang` both compile using the
-version of clang that ships with Xcode.
 
 ### Scheduling try jobs using buildbucket
 

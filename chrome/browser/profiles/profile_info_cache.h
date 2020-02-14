@@ -91,7 +91,10 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   // Will be removed SOON with ProfileInfoCache tests. Do not use!
   void SetAvatarIconOfProfileAtIndex(size_t index, size_t icon_index);
-  void SetGAIAPictureOfProfileAtIndex(size_t index, gfx::Image image);
+  void SetGAIAPictureOfProfileAtIndex(size_t index,
+                                      const std::string& image_url_with_size,
+                                      gfx::Image image);
+
   void SetIsUsingGAIAPictureOfProfileAtIndex(size_t index, bool value);
   void SetProfileIsUsingDefaultAvatarAtIndex(size_t index, bool value);
 
@@ -128,6 +131,8 @@ class ProfileInfoCache : public ProfileInfoInterface,
                            DownloadHighResAvatarTest);
   FRIEND_TEST_ALL_PREFIXES(ProfileInfoCacheTest,
                            MigrateLegacyProfileNamesAndRecomputeIfNeeded);
+  FRIEND_TEST_ALL_PREFIXES(ProfileInfoCacheTest, PersistGAIAPicture);
+  FRIEND_TEST_ALL_PREFIXES(ProfileInfoCacheTest, EmptyGAIAInfo);
 
   const base::DictionaryValue* GetInfoForProfileAtIndex(size_t index) const;
   // Saves the profile info to a cache.
@@ -150,6 +155,20 @@ class ProfileInfoCache : public ProfileInfoInterface,
   // Download and high-res avatars used by the profiles.
   void DownloadAvatars();
 
+  std::string GetLastDownloadedGAIAPictureUrlWithSizeOfProfileAtIndex(
+      size_t index) const;
+
+  void SetLastDownloadedGAIAPictureUrlWithSizeOfProfileAtIndex(
+      size_t index,
+      const std::string& image_url_with_size);
+
+  bool ShouldUpdateGAIAPictureOfProfileAtIndex(
+      size_t index,
+      const std::string& old_file_name,
+      const std::string& key,
+      const std::string& image_url_with_size,
+      bool image_is_empty) const;
+
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   void LoadGAIAPictureIfNeeded();
   // Migrate any legacy profile names ("First user", "Default Profile") to
@@ -162,6 +181,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
 
   std::vector<std::string> keys_;
   const base::FilePath user_data_dir_;
+  base::WeakPtrFactory<ProfileInfoCache> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoCache);
 };

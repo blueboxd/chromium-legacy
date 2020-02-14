@@ -31,9 +31,16 @@ namespace updater {
 namespace setup {
 
 namespace {
-
-constexpr base::FilePath::CharType kUpdaterFolder[] =
-    FILE_PATH_LITERAL("Google/GoogleUpdate/");
+const base::FilePath GetUpdateFolderName() {
+  return base::FilePath(COMPANY_SHORTNAME_STRING)
+      .AppendASCII(PRODUCT_FULLNAME_STRING);
+}
+const base::FilePath GetUpdaterAppName() {
+  return base::FilePath(PRODUCT_FULLNAME_STRING ".app");
+}
+const base::FilePath GetUpdaterAppExecutablePath() {
+  return base::FilePath("Contents/MacOS").AppendASCII(PRODUCT_FULLNAME_STRING);
+}
 
 void ThreadPoolStart() {
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("UpdaterSetup");
@@ -83,12 +90,12 @@ void TerminateUpdaterSetupMain() {
 bool CopyBundle() {
   // Copy bundle to "~/Library/Google/GoogleUpdate".
   const base::FilePath dest_path =
-      base::mac::GetUserLibraryPath().Append(kUpdaterFolder);
+      base::mac::GetUserLibraryPath().Append(GetUpdateFolderName());
 
   base::FilePath this_executable_path;
   base::PathService::Get(base::FILE_EXE, &this_executable_path);
-  const base::FilePath src_path = this_executable_path.DirName().Append(
-      FILE_PATH_LITERAL("GoogleUpdate.app"));
+  const base::FilePath src_path =
+      this_executable_path.DirName().Append(GetUpdaterAppName());
 
   if (!base::CopyDirectory(src_path, dest_path, true)) {
     LOG(ERROR) << "Copying app to ~/Library failed";
@@ -100,7 +107,7 @@ bool CopyBundle() {
 bool DeleteInstallFolder() {
   // Delete the install folder - "~/Library/Google/GoogleUpdate".
   const base::FilePath dest_path =
-      base::mac::GetUserLibraryPath().Append(kUpdaterFolder);
+      base::mac::GetUserLibraryPath().Append(GetUpdateFolderName());
 
   if (!base::DeleteFileRecursively(dest_path)) {
     LOG(ERROR) << "Deleting " << dest_path << " failed";
@@ -110,8 +117,10 @@ bool DeleteInstallFolder() {
 }
 
 base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateCheckLaunchDName() {
-  return base::ScopedCFTypeRef<CFStringRef>(CFStringCreateCopy(
-      kCFAllocatorDefault, CFSTR("com.google.GoogleUpdate.check")));
+  std::string launchd_name = MAC_BUNDLE_IDENTIFIER_STRING;
+  launchd_name.append(".check");
+  return base::ScopedCFTypeRef<CFStringRef>(
+      base::SysUTF8ToCFStringRef(launchd_name), base::scoped_policy::RETAIN);
 }
 
 base::scoped_nsobject<NSString> GetGoogleUpdateCheckLaunchDLabel() {
@@ -125,12 +134,11 @@ base::scoped_nsobject<NSString> GetGoogleUpdateCheckMachName() {
       base::mac::CFToNSCast(CopyGoogleUpdateCheckLaunchDName()));
   return base::scoped_nsobject<NSString>(
       [name stringByAppendingFormat:@".%lu",
-                                    [GetGoogleUpdateCheckLaunchDLabel() hash]],
-      base::scoped_policy::RETAIN);
+                                    [GetGoogleUpdateCheckLaunchDLabel() hash]]);
 }
 
 base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateCheckLaunchdPlist(
-    base::FilePath* updater_path) {
+    const base::FilePath* updater_path) {
   // See the man page for launchd.plist.
   NSDictionary* launchd_plist = @{
     @LAUNCH_JOBKEY_LABEL : GetGoogleUpdateCheckLaunchDLabel(),
@@ -154,11 +162,11 @@ bool CreateLaunchdItems() {
                                                 base::BlockingType::MAY_BLOCK);
   base::ScopedCFTypeRef<CFStringRef> name(CopyGoogleUpdateCheckLaunchDName());
 
-  base::FilePath updater_path =
+  const base::FilePath updater_path =
       base::mac::GetUserLibraryPath()
-          .Append(kUpdaterFolder)
-          .Append(FILE_PATH_LITERAL("GoogleUpdate.app"))
-          .Append(FILE_PATH_LITERAL("Contents/MacOS/GoogleUpdate"));
+          .Append(GetUpdateFolderName())
+          .Append(GetUpdaterAppName())
+          .Append(GetUpdaterAppExecutablePath());
 
   base::ScopedCFTypeRef<CFDictionaryRef> plist(
       CreateGoogleUpdateCheckLaunchdPlist(&updater_path));

@@ -266,6 +266,18 @@ cast_source_set("browser") {
       "//chromecast/ui:media_control_ui",
       "//ui/views:views",
     ]
+
+    if (!is_fuchsia) {
+      sources += [
+        "devtools/cast_ui_devtools.cc",
+        "devtools/cast_ui_devtools.h",
+      ]
+
+      deps += [
+        "//components/ui_devtools",
+        "//components/ui_devtools/views",
+      ]
+    }
   }
 
   if (!is_fuchsia) {

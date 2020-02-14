@@ -299,7 +299,8 @@ scoped_refptr<StaticBitmapImage> FlipImageVertically(
                        &writable_pixels[top_last_element],
                        &writable_pixels[bottom_first_element]);
     }
-    return StaticBitmapImage::Create(std::move(image_pixels), info);
+    return StaticBitmapImage::Create(std::move(image_pixels), info,
+                                     input->CurrentFrameOrientation());
   }
 
   // Since we are allowed to premul the input image if needed, we can use Skia
@@ -320,7 +321,7 @@ scoped_refptr<StaticBitmapImage> FlipImageVertically(
   cc::PaintFlags paint;
   paint.setBlendMode(SkBlendMode::kSrc);
   canvas->drawImage(input->PaintImageForCurrentFrame(), 0, 0, &paint);
-  return resource_provider->Snapshot();
+  return resource_provider->Snapshot(input->CurrentFrameOrientation());
 }
 
 scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
@@ -350,7 +351,7 @@ scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
     paint.setBlendMode(SkBlendMode::kSrc);
     resource_provider->Canvas()->drawImage(image->PaintImageForCurrentFrame(),
                                            0, 0, &paint);
-    return resource_provider->Snapshot();
+    return resource_provider->Snapshot(image->CurrentFrameOrientation());
   }
 
   // To unpremul, read back the pixels.
@@ -367,7 +368,8 @@ scoped_refptr<StaticBitmapImage> GetImageWithAlphaDisposition(
   bool read_successful =
       skia_image->readPixels(info, writable_pixels, image_row_bytes, 0, 0);
   DCHECK(read_successful);
-  return StaticBitmapImage::Create(std::move(dst_pixels), info);
+  return StaticBitmapImage::Create(std::move(dst_pixels), info,
+                                   image->CurrentFrameOrientation());
 }
 
 scoped_refptr<StaticBitmapImage> ScaleImage(
@@ -393,7 +395,7 @@ scoped_refptr<StaticBitmapImage> ScaleImage(
           SkRect::MakeWH(parsed_options.resize_width,
                          parsed_options.resize_height),
           &paint, cc::PaintCanvas::kStrict_SrcRectConstraint);
-      return resource_provider->Snapshot();
+      return resource_provider->Snapshot(image->CurrentFrameOrientation());
     }
   }
 
@@ -418,7 +420,8 @@ scoped_refptr<StaticBitmapImage> ScaleImage(
                               resized_pixmap.rowBytes());
   if (!resized_sk_image)
     return nullptr;
-  return UnacceleratedStaticBitmapImage::Create(resized_sk_image);
+  return UnacceleratedStaticBitmapImage::Create(
+      resized_sk_image, image->CurrentFrameOrientation());
 }
 
 scoped_refptr<StaticBitmapImage> ApplyColorSpaceConversion(
@@ -511,12 +514,13 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
                            src_rect.Height()),
           SkRect::MakeWH(src_rect.Width(), src_rect.Height()), &paint,
           cc::PaintCanvas::kStrict_SrcRectConstraint);
-      result = resource_provider->Snapshot();
+      result = resource_provider->Snapshot(image->CurrentFrameOrientation());
     } else {
       result = UnacceleratedStaticBitmapImage::Create(
           cc::PaintImageBuilder::WithCopy(std::move(paint_image))
               .make_subset(src_rect)
-              .TakePaintImage());
+              .TakePaintImage(),
+          image->CurrentFrameOrientation());
     }
   }
 
@@ -630,11 +634,11 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
       if (!skia_image)
         return;
     }
-
-    static_input = UnacceleratedStaticBitmapImage::Create(skia_image);
+    static_input = UnacceleratedStaticBitmapImage::Create(
+        skia_image, input->CurrentFrameOrientation());
   } else {
     static_input = UnacceleratedStaticBitmapImage::Create(
-        input->PaintImageForCurrentFrame());
+        input->PaintImageForCurrentFrame(), input->CurrentFrameOrientation());
   }
 
   image_ = CropImageAndApplyColorSpaceConversion(std::move(static_input),
@@ -1117,11 +1121,10 @@ scoped_refptr<Image> ImageBitmap::GetSourceImageForCanvas(
   return GetImageWithAlphaDisposition(std::move(image_), kPremultiplyAlpha);
 }
 
-void ImageBitmap::AdjustDrawRects(FloatRect* src_rect,
-                                  FloatRect* dst_rect) const {}
-
-FloatSize ImageBitmap::ElementSize(const FloatSize&) const {
-  return FloatSize(width(), height());
+FloatSize ImageBitmap::ElementSize(
+    const FloatSize&,
+    const RespectImageOrientationEnum respect_orientation) const {
+  return FloatSize(image_->Size(respect_orientation));
 }
 
 }  // namespace blink

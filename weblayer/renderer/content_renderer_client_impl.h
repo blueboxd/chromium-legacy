@@ -34,6 +34,7 @@ class ContentRendererClientImpl : public content::ContentRendererClient {
   std::unique_ptr<content::URLLoaderThrottleProvider>
   CreateURLLoaderThrottleProvider(
       content::URLLoaderThrottleProviderType provider_type) override;
+  void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() override;
 
  private:
 #if defined(OS_ANDROID)

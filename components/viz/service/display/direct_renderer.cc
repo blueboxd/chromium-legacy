@@ -247,6 +247,10 @@ void DirectRenderer::DecideRenderPassAllocationsForFrame(
   UpdateRenderPassTextures(render_passes_in_draw_order, render_passes_in_frame);
 }
 
+void DirectRenderer::ForceReshapeOnNextDraw() {
+  force_reshape_ = true;
+}
+
 void DirectRenderer::DrawFrame(
     RenderPassList* render_passes_in_draw_order,
     float device_scale_factor,
@@ -376,7 +380,7 @@ void DirectRenderer::DrawFrame(
       device_scale_factor != reshape_device_scale_factor_ ||
       frame_color_space != reshape_color_space_ ||
       frame_buffer_format != reshape_buffer_format_ ||
-      use_stencil != reshape_use_stencil_) {
+      use_stencil != reshape_use_stencil_ || force_reshape_) {
     reshape_surface_size_ = device_viewport_size;
     reshape_device_scale_factor_ = device_scale_factor;
     reshape_color_space_ = frame_color_space;
@@ -384,7 +388,9 @@ void DirectRenderer::DrawFrame(
     reshape_use_stencil_ = overdraw_feedback_;
     output_surface_->Reshape(reshape_surface_size_,
                              reshape_device_scale_factor_, reshape_color_space_,
-                             *reshape_buffer_format_, reshape_use_stencil_);
+                             *reshape_buffer_format_, reshape_use_stencil_,
+                             force_reshape_);
+    force_reshape_ = false;
 #if defined(OS_MACOSX)
     // For Mac, all render passes will be promoted to CALayer, the redraw full
     // frame is for the main surface only.

@@ -22,13 +22,6 @@ float SystemSuggestedFontSizeMultiplier(UIContentSizeCategory category,
                                         UIContentSizeCategory min_category,
                                         UIContentSizeCategory max_category);
 
-// Returns an UIFont* calculated by |style| and
-// min(|currentCategory|,|maxCategory|).
-UIFont* PreferredFontForTextStyleWithMaxCategory(
-    UIFontTextStyle style,
-    UIContentSizeCategory currentCategory,
-    UIContentSizeCategory maxCategory);
-
 // ********************
 // Specific cases utils
 // ********************

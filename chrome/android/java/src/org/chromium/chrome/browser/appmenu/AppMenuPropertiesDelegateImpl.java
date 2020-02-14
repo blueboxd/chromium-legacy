@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.settings.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.share.ShareUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -75,6 +76,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     private @Nullable Callback<OverviewModeBehavior> mOverviewModeSupplierCallback;
     private Callback<BookmarkBridge> mBookmarkBridgeSupplierCallback;
     private boolean mUpdateMenuItemVisible;
+    private ShareUtils mShareUtils;
     @IntDef({MenuGroup.INVALID, MenuGroup.PAGE_MENU, MenuGroup.OVERVIEW_MODE_MENU,
             MenuGroup.START_SURFACE_MODE_MENU, MenuGroup.TABLET_EMPTY_MODE_MENU})
     private @interface MenuGroup {
@@ -128,6 +130,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         mBookmarkBridgeSupplier = bookmarkBridgeSupplier;
         mBookmarkBridgeSupplierCallback = (bookmarkBridge) -> mBookmarkBridge = bookmarkBridge;
         mBookmarkBridgeSupplier.addObserver(mBookmarkBridgeSupplierCallback);
+        mShareUtils = new ShareUtils();
     }
 
     @Override
@@ -250,12 +253,14 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                             && hasMoreThanOneTab);
 
             // Don't allow either "chrome://" pages or interstitial pages to be shared.
-            boolean isChromeOrInterstitialPage =
-                    isChromeScheme || ((TabImpl) currentTab).isShowingInterstitialPage();
-            menu.findItem(R.id.share_row_menu_id).setVisible(!isChromeOrInterstitialPage);
+            menu.findItem(R.id.share_row_menu_id)
+                    .setVisible(mShareUtils.shouldEnableShare(currentTab));
 
             ShareHelper.configureDirectShareMenuItem(
                     mContext, menu.findItem(R.id.direct_share_menu_id));
+
+            boolean isChromeOrInterstitialPage =
+                    isChromeScheme || ((TabImpl) currentTab).isShowingInterstitialPage();
 
             menu.findItem(R.id.paint_preview_capture_id)
                     .setVisible(CachedFeatureFlags.isPaintPreviewTestEnabled()

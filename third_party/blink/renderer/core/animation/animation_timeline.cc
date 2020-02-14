@@ -29,6 +29,15 @@ void AnimationTimeline::AnimationDetached(Animation* animation) {
     outdated_animation_count_--;
 }
 
+bool CompareAnimations(const Member<Animation>& left,
+                       const Member<Animation>& right) {
+  // This uses pointer order comparision because it is less expensive and
+  // element order doesn't affect the animation result(http://crbug.com/1047316)
+  return Animation::HasLowerCompositeOrdering(
+      left.Get(), right.Get(),
+      Animation::CompareAnimationsOrdering::kPointerOrder);
+}
+
 double AnimationTimeline::currentTime(bool& is_null) {
   base::Optional<base::TimeDelta> result = CurrentTimeInternal();
 
@@ -82,8 +91,7 @@ void AnimationTimeline::ServiceAnimations(TimingUpdateReason reason) {
   for (Animation* animation : animations_needing_update_)
     animations.push_back(animation);
 
-  std::sort(animations.begin(), animations.end(),
-            Animation::HasLowerCompositeOrdering);
+  std::sort(animations.begin(), animations.end(), CompareAnimations);
 
   for (Animation* animation : animations) {
     if (!animation->Update(reason))
@@ -144,8 +152,7 @@ void AnimationTimeline::RemoveReplacedAnimations() {
 
     // By processing in decreasing order by priority, we can perform a single
     // pass for discovery of replaced properties.
-    std::sort(animations->begin(), animations->end(),
-              Animation::HasLowerCompositeOrdering);
+    std::sort(animations->begin(), animations->end(), CompareAnimations);
     PropertyHandleSet replaced_properties;
     for (auto anim_it = animations->rbegin(); anim_it != animations->rend();
          anim_it++) {

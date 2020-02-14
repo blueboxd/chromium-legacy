@@ -424,6 +424,10 @@ class ColorPicker extends HTMLElement {
   constructor(initialColor) {
     super();
 
+    if (global.params.isBorderTransparent) {
+      this.style.borderColor = 'transparent';
+    }
+
     this.selectedColor_ = initialColor;
     this.colorWhenOpened_ = initialColor;
 

@@ -23,7 +23,7 @@ bool PaintChunker::IsInInitialState() const {
 #endif
 
 void PaintChunker::UpdateCurrentPaintChunkProperties(
-    const base::Optional<PaintChunk::Id>& chunk_id,
+    const PaintChunk::Id* chunk_id,
     const PropertyTreeState& properties) {
   // If properties are the same, continue to use the previously set
   // |next_chunk_id_| because the id of the outer painting is likely to be
@@ -42,6 +42,12 @@ void PaintChunker::ForceNewChunk() {
   // Always use a new chunk id for a force chunk which may be for a subsequence
   // which needs the chunk id to be independence with previous chunks.
   next_chunk_id_ = base::nullopt;
+}
+
+void PaintChunker::AppendByMoving(PaintChunk&& chunk) {
+  wtf_size_t next_chunk_begin_index =
+      chunks_.IsEmpty() ? 0 : LastChunk().end_index;
+  chunks_.emplace_back(next_chunk_begin_index, std::move(chunk));
 }
 
 bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {

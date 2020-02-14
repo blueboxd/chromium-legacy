@@ -76,6 +76,12 @@ class ZeroSuggestProvider : public BaseSearchProvider {
     current_page_classification_ = classification;
   }
 
+  // Returns the list of experiment stats corresponding to the latest |results_|
+  // to be logged to SearchboxStats as part of a GWS experiment, if any.
+  const SearchSuggestionParser::ExperimentStats& experiment_stats() const {
+    return results_.experiment_stats;
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest, TypeOfResultToRun);
   FRIEND_TEST_ALL_PREFIXES(ZeroSuggestProviderTest,

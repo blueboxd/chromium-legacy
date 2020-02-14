@@ -3239,7 +3239,7 @@
 <translation id="554517032089923082">GTC</translation>
 <translation id="5546865291508181392">கண்டுபிடி</translation>
 <translation id="5548159762883465903">{NUM_OTHER_TABS,plural, =0{"<ph name="TAB_TITLE" />"}=1{"<ph name="TAB_TITLE" />" மேலும் ஒரு தாவல்}other{"<ph name="TAB_TITLE" />" மேலும் # தாவல்கள்}}</translation>
-<translation id="5549467165017213645">தளங்கள் சேமித்த <ph name="TOTAL_USAGE" /> தரவை இது அழிக்கும்.</translation>
+<translation id="5549467165017213645">தளங்கள் மற்றும் நிறுவப்பட்ட ஆப்ஸ் சேமித்த <ph name="TOTAL_USAGE" /> தரவை இது அழிக்கும்.</translation>
 <translation id="5551573675707792127">கீபோர்டு மற்றும் உரை உள்ளீடு</translation>
 <translation id="5553089923092577885">சான்றிதழ் கொள்கை மேப்பிங்ஸ்</translation>
 <translation id="5554489410841842733">நீட்டிப்பானது நடப்பு பக்கத்தில் செயல்படும்போது இந்த ஐகான் தெரியும்.</translation>

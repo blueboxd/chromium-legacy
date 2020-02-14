@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Afișează</translation>
 <translation id="5301954838959518834">OK, am înțeles</translation>
 <translation id="5317780077021120954">Salvează</translation>
+<translation id="5391532827096253100">Conexiunea la acest site nu este sigură. Informații despre site</translation>
 <translation id="5556459405103347317">Reîncarcă</translation>
 <translation id="5596627076506792578">Mai multe opțiuni</translation>
 <translation id="5860033963881614850">Dezactivat</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Închide</translation>
 <translation id="6042308850641462728">Mai multe</translation>
 <translation id="6165508094623778733">Află mai multe</translation>
+<translation id="6206551242102657620">Conexiunea este sigură. Informații despre site</translation>
 <translation id="6216432067784365534">Opțiuni pentru <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Trimite</translation>
 <translation id="6746124502594467657">Mutați în jos</translation>
 <translation id="6818926723028410516">Selectează elementele</translation>
 <translation id="6910211073230771657">Șters</translation>
 <translation id="6945221475159498467">Selectează</translation>
+<translation id="6963642900430330478">Această pagină este periculoasă. Informații despre site</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 selectat}few{# selectate}other{# selectate}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> selectate.  Opțiunile sunt disponibile în partea de sus a ecranului</translation>

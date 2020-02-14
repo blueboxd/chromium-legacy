@@ -166,6 +166,10 @@ class Tab : public gfx::AnimationDelegate,
       const base::string16& title,
       base::Optional<TabAlertState> alert_state);
 
+  // Returns an alert state to be shown among given alert states.
+  static base::Optional<TabAlertState> GetAlertStateToShow(
+      const std::vector<TabAlertState>& alert_states);
+
  private:
   class TabCloseButtonObserver;
   friend class AlertIndicatorTest;

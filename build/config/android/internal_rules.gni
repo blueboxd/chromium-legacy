@@ -204,6 +204,15 @@ template("write_build_config") {
         rebase_path(invoker.java_resources_jar, root_build_dir),
       ]
     }
+    if (defined(invoker.skip_jetify) && invoker.skip_jetify) {
+      args += [ "--skip-jetify" ]
+    }
+    if (defined(invoker.jetified_jar_path)) {
+      args += [
+        "--jetified-jar-path",
+        rebase_path(invoker.jetified_jar_path, root_build_dir),
+      ]
+    }
     if (defined(invoker.annotation_processor_deps)) {
       _processor_configs = []
       foreach(_processor_dep, invoker.annotation_processor_deps) {
@@ -1489,7 +1498,7 @@ if (enable_java_templates) {
   #    coverage data.
   #  jar_excluded_patterns: Optional list of .class file patterns to exclude
   #    from the final .jar file.
-  #  jar_included_patterns: OPtional list of .class file patterns to include
+  #  jar_included_patterns: Optional list of .class file patterns to include
   #    in the final .jar file. jar_excluded_patterns take precedence over this.
   #  skip_jetify: A boolean on whether to skip jetifying or not.
   #  strip_resource_classes:
@@ -1525,9 +1534,6 @@ if (enable_java_templates) {
     _desugar = defined(invoker.supports_android) && invoker.supports_android
     _jacoco_instrument = invoker.jacoco_instrument
     _skip_jetify = defined(invoker.skip_jetify) && invoker.skip_jetify
-
-    # TODO(bjoyce): Remove once Androidx with jetifying lands.
-    not_needed([ "_skip_jetify" ])
 
     _enable_bytecode_rewriter =
         _enable_assert || _enable_custom_resources || _enable_thread_annotations
@@ -1567,6 +1573,44 @@ if (enable_java_templates) {
 
     _deps = []
     _previous_output_jar = _input_jar_path
+
+    if (!_skip_jetify) {
+      _jetify_target = "${target_name}__jetify"
+      _jetify_input_jar = _previous_output_jar
+      _jetify_output_jar = "$target_out_dir/$target_name-jetified.jar"
+
+      action(_jetify_target) {
+        script = "//build/android/gyp/jetify_jar.py"
+        deps = _deps
+        if (defined(invoker.deps)) {
+          deps += invoker.deps
+        }
+        _jetify_jar_path =
+            "//third_party/jetifier_standalone/bin/jetifier-standalone"
+        _jetify_config_path =
+            "//third_party/jetifier_standalone/config/ignore_R.config"
+
+        inputs = [
+          _jetify_input_jar,
+          _jetify_jar_path,
+        ]
+        outputs = [ _jetify_output_jar ]
+        args = [
+          "--input-path",
+          rebase_path(invoker.input_jar_path, root_build_dir),
+          "--output-path",
+          rebase_path(_jetify_output_jar, root_build_dir),
+          "--jetify-path",
+          rebase_path(_jetify_jar_path, root_build_dir),
+          "--jetify-config-path",
+          rebase_path(_jetify_config_path, root_build_dir),
+        ]
+      }
+
+      _deps = []
+      _deps = [ ":$_jetify_target" ]
+      _previous_output_jar = _jetify_output_jar
+    }
 
     if (_enable_bytecode_rewriter) {
       _java_bytecode_rewriter_target = "${target_name}__bytecode_rewrite"
@@ -1656,7 +1700,7 @@ if (enable_java_templates) {
 
           # Temporarily using java_full_interface_classpath until classpath validation of targets
           # is implemented, see http://crbug.com/885273
-          "--classpath=@FileArg($_rebased_build_config:deps_info:javac_full_interface_classpath)",
+          "--classpath=@FileArg($_rebased_build_config:deps_info:jetified_full_jar_classpath)",
           "--bootclasspath=@FileArg($_rebased_build_config:android:sdk_interface_jars)",
           "--depfile",
           rebase_path(depfile, root_build_dir),
@@ -3141,6 +3185,8 @@ if (enable_java_templates) {
         _accumulated_deps += [ "//third_party/android_sdk:android_sdk_java" ]
       }
     }
+    _jetified_jar_path =
+        "$target_out_dir/${target_name}__process_prebuilt-jetified.jar"
 
     # Define build_config_deps which will be a list of targets required to
     # build the _build_config.
@@ -3200,7 +3246,9 @@ if (enable_java_templates) {
       }
       build_config = _build_config
       is_prebuilt = _is_prebuilt
+      jetified_jar_path = _jetified_jar_path
       possible_config_deps = _accumulated_deps
+      skip_jetify = defined(invoker.skip_jetify) && invoker.skip_jetify
       if (defined(apk_under_test)) {
         possible_config_deps += [ apk_under_test ]
       }

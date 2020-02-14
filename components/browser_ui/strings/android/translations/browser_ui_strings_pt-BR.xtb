@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Mostrar</translation>
 <translation id="5301954838959518834">Ok, entendi</translation>
 <translation id="5317780077021120954">Salvar</translation>
+<translation id="5391532827096253100">Sua conexão com este site não é segura. Informações do site</translation>
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="5596627076506792578">Mais opções</translation>
 <translation id="5860033963881614850">Desativado</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6042308850641462728">Mais</translation>
 <translation id="6165508094623778733">Saiba mais</translation>
+<translation id="6206551242102657620">A conexão é segura. Informações do site</translation>
 <translation id="6216432067784365534">Opções de <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Compartilhar</translation>
 <translation id="6746124502594467657">Mover para baixo</translation>
 <translation id="6818926723028410516">Selecionar itens</translation>
 <translation id="6910211073230771657">Excluído</translation>
 <translation id="6945221475159498467">Selecionar</translation>
+<translation id="6963642900430330478">Esta página é perigosa. Informações do site</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 selecionado}one{# selecionado}other{# selecionados}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> itens selecionados. Opções disponíveis perto da parte superior da tela</translation>

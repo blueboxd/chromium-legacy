@@ -34,7 +34,8 @@ double CSSStyleImageValue::intrinsicRatio(bool& is_null) const {
 }
 
 FloatSize CSSStyleImageValue::ElementSize(
-    const FloatSize& default_object_size) const {
+    const FloatSize& default_object_size,
+    const RespectImageOrientationEnum) const {
   bool not_used;
   return FloatSize(intrinsicWidth(not_used), intrinsicHeight(not_used));
 }

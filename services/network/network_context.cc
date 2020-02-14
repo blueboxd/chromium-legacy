@@ -81,6 +81,7 @@
 #include "services/network/proxy_config_service_mojo.h"
 #include "services/network/proxy_lookup_request.h"
 #include "services/network/proxy_resolving_socket_factory_mojo.h"
+#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/quic_transport.h"
@@ -1242,6 +1243,15 @@ void NetworkContext::VerifyCertForSignedExchange(
 
   if (result != net::ERR_IO_PENDING)
     OnCertVerifyForSignedExchangeComplete(cert_verify_id, result);
+}
+
+void NetworkContext::ParseContentSecurityPolicy(
+    const GURL& base_url,
+    const scoped_refptr<net::HttpResponseHeaders>& headers,
+    ParseContentSecurityPolicyCallback callback) {
+  std::vector<mojom::ContentSecurityPolicyPtr> policy;
+  AddContentSecurityPolicyFromHeaders(*headers, base_url, &policy);
+  std::move(callback).Run(std::move(policy));
 }
 
 void NetworkContext::NotifyExternalCacheHit(

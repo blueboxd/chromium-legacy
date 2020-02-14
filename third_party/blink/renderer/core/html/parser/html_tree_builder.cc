@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_element.h"
@@ -909,10 +910,38 @@ bool HTMLTreeBuilder::ProcessTemplateEndTag(AtomicHTMLToken* token) {
   tree_.GenerateImpliedEndTags();
   if (!tree_.CurrentStackItem()->HasTagName(html_names::kTemplateTag))
     ParseError(token);
-  tree_.OpenElements()->PopUntilPopped(html_names::kTemplateTag);
+  tree_.OpenElements()->PopUntil(html_names::kTemplateTag.LocalName());
+  HTMLStackItem* template_stack_item =
+      tree_.OpenElements()->TopRecord()->StackItem();
+  tree_.OpenElements()->Pop();
+  HTMLStackItem* shadow_host_stack_item =
+      tree_.OpenElements()->TopRecord()->StackItem();
   tree_.ActiveFormattingElements()->ClearToLastMarker();
   template_insertion_modes_.pop_back();
   ResetInsertionModeAppropriately();
+  if (RuntimeEnabledFeatures::DeclarativeShadowDOMEnabled() &&
+      template_stack_item && template_stack_item->IsElementNode() &&
+      shadow_host_stack_item && shadow_host_stack_item->IsElementNode()) {
+    // TODO(masonfreed): Add a use counter here.
+    HTMLTemplateElement* template_element =
+        DynamicTo<HTMLTemplateElement>(template_stack_item->GetElement());
+    DCHECK(template_element);
+    Element* shadow_host = shadow_host_stack_item->GetElement();
+    DCHECK(shadow_host);
+    const auto& shadow_mode =
+        template_element->FastGetAttribute(html_names::kShadowrootAttr);
+    if (shadow_mode != g_null_atom) {
+      bool is_open = EqualIgnoringASCIICase(shadow_mode, "open");
+      if (is_open || EqualIgnoringASCIICase(shadow_mode, "closed")) {
+        shadow_host->AttachDeclarativeShadowRoot(
+            template_element,
+            is_open ? ShadowRootType::kOpen : ShadowRootType::kClosed);
+      } else {
+        // TODO(masonfreed): eventually, console warning here.
+        LOG(ERROR) << "Invalid shadowroot value " << shadow_mode;
+      }
+    }
+  }
   return true;
 }
 

@@ -1006,6 +1006,17 @@ gfx::GpuMemoryBuffer* VideoFrame::GetGpuMemoryBuffer() const {
                         : gpu_memory_buffer_.get();
 }
 
+bool VideoFrame::IsSameAllocation(VideoPixelFormat format,
+                                  const gfx::Size& coded_size,
+                                  const gfx::Rect& visible_rect,
+                                  const gfx::Size& natural_size) const {
+  // CreateFrameInternal() changes coded_size to new_coded_size. Match that
+  // behavior here.
+  const gfx::Size new_coded_size = DetermineAlignedSize(format, coded_size);
+  return this->format() == format && this->coded_size() == new_coded_size &&
+         visible_rect_ == visible_rect && natural_size_ == natural_size;
+}
+
 gfx::ColorSpace VideoFrame::ColorSpace() const {
   return color_space_;
 }

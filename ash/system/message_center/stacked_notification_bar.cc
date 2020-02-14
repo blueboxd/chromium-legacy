@@ -118,6 +118,7 @@ class StackedNotificationBar::StackedNotificationBarIcon
   }
 
   ~StackedNotificationBarIcon() override {
+    StopObserving();
     if (is_animating_out())
       layer()->GetAnimator()->StopAnimating();
   }

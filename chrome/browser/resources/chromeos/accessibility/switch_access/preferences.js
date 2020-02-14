@@ -6,9 +6,13 @@
  * Class to manage user preferences.
  */
 class SwitchAccessPreferences {
+  // =============== Static Methods ==============
+
   static initialize() {
     SwitchAccessPreferences.instance = new SwitchAccessPreferences();
   }
+
+  // =============== Private Methods ==============
 
   /** @private */
   constructor() {
@@ -20,6 +24,47 @@ class SwitchAccessPreferences {
     this.preferences_ = new Map();
 
     this.init_();
+  }
+
+  /**
+   * Get the boolean value for the given name, or |null| if the value is not a
+   * boolean or does not exist.
+   *
+   * @param  {SAConstants.Preference} name
+   * @return {boolean|null}
+   * @private
+   */
+  getBoolean_(name) {
+    const pref = this.preferences_.get(name);
+    if (pref && pref.type === chrome.settingsPrivate.PrefType.BOOLEAN) {
+      return /** @type {boolean} */ (pref.value);
+    } else {
+      return null;
+    }
+  }
+
+  /**
+   * Get the number value for the given name, or |null| if the value is not a
+   * number or does not exist.
+   *
+   * @param {SAConstants.Preference} name
+   * @return {number|null}
+   * @private
+   */
+  getNumber_(name) {
+    const pref = this.preferences_.get(name);
+    if (pref && pref.type === chrome.settingsPrivate.PrefType.NUMBER) {
+      return /** @type {number} */ (pref.value);
+    }
+    return null;
+  }
+
+  /** @private */
+  init_() {
+    chrome.settingsPrivate.onPrefsChanged.addListener(
+        this.updateFromSettings_.bind(this));
+    chrome.settingsPrivate.getAllPrefs(
+        (prefs) => this.updateFromSettings_(prefs, true /* isFirstLoad */));
   }
 
   /**
@@ -64,47 +109,6 @@ class SwitchAccessPreferences {
     if (isFirstLoad) {
       this.onInitialLoadComplete_();
     }
-  }
-
-  /** @private */
-  init_() {
-    chrome.settingsPrivate.onPrefsChanged.addListener(
-        this.updateFromSettings_.bind(this));
-    chrome.settingsPrivate.getAllPrefs(
-        (prefs) => this.updateFromSettings_(prefs, true /* isFirstLoad */));
-  }
-
-  /**
-   * Get the boolean value for the given name, or |null| if the value is not a
-   * boolean or does not exist.
-   *
-   * @param  {SAConstants.Preference} name
-   * @return {boolean|null}
-   * @private
-   */
-  getBoolean_(name) {
-    const pref = this.preferences_.get(name);
-    if (pref && pref.type === chrome.settingsPrivate.PrefType.BOOLEAN) {
-      return /** @type {boolean} */ (pref.value);
-    } else {
-      return null;
-    }
-  }
-
-  /**
-   * Get the number value for the given name, or |null| if the value is not a
-   * number or does not exist.
-   *
-   * @param {SAConstants.Preference} name
-   * @return {number|null}
-   * @private
-   */
-  getNumber_(name) {
-    const pref = this.preferences_.get(name);
-    if (pref && pref.type === chrome.settingsPrivate.PrefType.NUMBER) {
-      return /** @type {number} */ (pref.value);
-    }
-    return null;
   }
 
   /**

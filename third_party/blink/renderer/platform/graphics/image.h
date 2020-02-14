@@ -110,12 +110,11 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
 
   virtual IntSize Size() const = 0;
   IntSize Size(RespectImageOrientationEnum);
+  virtual IntSize SizeRespectingOrientation() const { return Size(); }
   virtual FloatSize SizeAsFloat() const { return FloatSize(Size()); }
   IntRect Rect() const { return IntRect(IntPoint(), Size()); }
   int width() const { return Size().Width(); }
   int height() const { return Size().Height(); }
-
-  virtual bool HasDefaultOrientation() const { return true; }
 
   virtual bool GetHotSpot(IntPoint&) const { return false; }
 
@@ -205,6 +204,19 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   }
 
   virtual PaintImage PaintImageForCurrentFrame() = 0;
+
+  virtual bool HasDefaultOrientation() const { return true; }
+
+  // Most image types have the default orientation. Only bitmap derived image
+  // types need to override this method.
+  virtual ImageOrientation CurrentFrameOrientation() const {
+    return kDefaultImageOrientation;
+  }
+
+  // Correct the src rect (rotate and maybe translate it) to account for a
+  // non-default image orientation. The image must have non-default orientation
+  // to call this method.
+  FloatRect CorrectSrcRectForImageOrientation(FloatRect) const;
 
   enum ImageClampingMode {
     kClampImageToSourceRect,

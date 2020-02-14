@@ -15,9 +15,8 @@ import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
+import org.chromium.chrome.browser.share.ShareUtils;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
-import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.ui.widget.ChromeImageButton;
 
 /**
@@ -36,6 +35,9 @@ class ShareButton extends ChromeImageButton implements TintObserver {
     /** The {@link OvervieModeObserver} observing the OverviewModeBehavior  */
     private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
 
+    /** A collection of sharing utility functions.*/
+    private ShareUtils mShareUtils;
+
     public ShareButton(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -45,6 +47,8 @@ class ShareButton extends ChromeImageButton implements TintObserver {
                 setEnabled(false);
             }
         };
+
+        mShareUtils = new ShareUtils();
     }
 
     void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
@@ -89,14 +93,7 @@ class ShareButton extends ChromeImageButton implements TintObserver {
     }
 
     public void updateButtonEnabledState(Tab tab) {
-        if (tab == null) {
-            setEnabled(false);
-            return;
-        }
-        final String url = tab.getUrlString();
-        final boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
-                || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
-        final boolean isEnabled = !isChromeScheme && !((TabImpl) tab).isShowingInterstitialPage();
+        final boolean isEnabled = mShareUtils.shouldEnableShare(tab);
         setEnabled(isEnabled);
     }
 

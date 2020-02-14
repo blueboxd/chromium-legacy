@@ -34,10 +34,12 @@ class PLATFORM_EXPORT PaintChunker final {
   const PropertyTreeState& CurrentPaintChunkProperties() const {
     return current_properties_;
   }
-  void UpdateCurrentPaintChunkProperties(const base::Optional<PaintChunk::Id>&,
+  void UpdateCurrentPaintChunkProperties(const PaintChunk::Id*,
                                          const PropertyTreeState&);
 
   void ForceNewChunk();
+
+  void AppendByMoving(PaintChunk&&);
 
   // Returns true if a new chunk is created.
   bool IncrementDisplayItemIndex(const DisplayItem&);

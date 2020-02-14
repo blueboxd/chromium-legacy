@@ -11,6 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "services/network/public/mojom/content_security_policy.mojom-forward.h"
 
 namespace net {
 class HttpResponseHeaders;
@@ -56,6 +57,9 @@ class CONTENT_EXPORT AncestorThrottle : public NavigationThrottle {
       bool is_response_check);
   void ParseError(const std::string& value, HeaderDisposition disposition);
   void ConsoleError(HeaderDisposition disposition);
+  NavigationThrottle::ThrottleAction EvaluateContentSecurityPolicy(
+      std::vector<network::mojom::ContentSecurityPolicyPtr>
+          content_security_policy);
 
   // Parses an 'X-Frame-Options' header. If the result is either CONFLICT
   // or INVALID, |header_value| will be populated with the value which caused

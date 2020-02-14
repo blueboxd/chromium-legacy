@@ -401,7 +401,7 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                  const gfx::Rect& initial_rect,
                                  bool user_gesture) {}
 
-  // Notifies that mixed content was displayed or ran.
+  // Notified that mixed content was displayed or ran.
   virtual void DidDisplayInsecureContent() {}
   virtual void DidContainInsecureFormAction() {}
   // The main frame document element is ready. This happens when the document
@@ -432,11 +432,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // should not be asked to create a RenderFrame.
   virtual bool IsBeingDestroyed();
 
-  // Notifies that the render frame started loading a subresource.
+  // Notified that the render frame started loading a subresource.
   virtual void SubresourceResponseStarted(const GURL& url,
                                           net::CertStatus cert_status) {}
 
-  // Notifies that the render finished loading a subresource for the frame
+  // Notified that the render finished loading a subresource for the frame
   // associated with |render_frame_host|.
   virtual void ResourceLoadComplete(
       RenderFrameHost* render_frame_host,
@@ -546,6 +546,10 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
       const ui::ClipboardFormatType& data_type,
       const std::string& data,
       IsClipboardPasteAllowedCallback callback);
+
+  // Notified when the main frame adjusts the page scale.
+  virtual void OnPageScaleFactorChanged(RenderFrameHostImpl* source,
+                                        float page_scale_factor) {}
 
   // Return true if we have seen a recent orientation change, which is used to
   // decide if we should consume user activation when entering fullscreen.

@@ -283,7 +283,7 @@ TEST_F(BrowserViewTest, DISABLED_AccessibleWindowTitle) {
 
   Tab* tab = browser_view()->tabstrip()->tab_at(0);
   TabRendererData start_media;
-  start_media.alert_state = TabAlertState::AUDIO_PLAYING;
+  start_media.alert_state = {TabAlertState::AUDIO_PLAYING};
   tab->SetData(std::move(start_media));
   EXPECT_EQ(SubBrowserName("about:blank - Audio playing - %s"),
             browser_view()->GetAccessibleWindowTitleForChannelAndProfile(

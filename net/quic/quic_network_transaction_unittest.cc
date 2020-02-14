@@ -6688,19 +6688,10 @@ TEST_P(QuicNetworkTransactionTest, RetryAfterAsyncNoBufferSpace) {
   socket_data.AddWrite(SYNCHRONOUS,
                        ConstructClientAckPacket(packet_num++, 2, 1, 1));
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
-    // TLS1.3 supports multiple packet number space, so the ack is no longer
-    // sent.
-    socket_data.AddWrite(
-        SYNCHRONOUS,
-        client_maker_.MakeConnectionClosePacket(
-            packet_num++, false, quic::QUIC_CONNECTION_CANCELLED, "net error"));
-  } else {
     socket_data.AddWrite(SYNCHRONOUS,
                          client_maker_.MakeAckAndConnectionClosePacket(
                              packet_num++, false, 2, 1, 1,
                              quic::QUIC_CONNECTION_CANCELLED, "net error", 0));
-  }
 
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
@@ -6738,19 +6729,10 @@ TEST_P(QuicNetworkTransactionTest, RetryAfterSynchronousNoBufferSpace) {
   socket_data.AddWrite(SYNCHRONOUS,
                        ConstructClientAckPacket(packet_num++, 2, 1, 1));
   socket_data.AddRead(SYNCHRONOUS, ERR_IO_PENDING);  // No more data to read
-  if (version_.handshake_protocol == quic::PROTOCOL_TLS1_3) {
-    // TLS1.3 supports multiple packet number space, so the ack is no longer
-    // sent.
-    socket_data.AddWrite(
-        SYNCHRONOUS,
-        client_maker_.MakeConnectionClosePacket(
-            packet_num++, false, quic::QUIC_CONNECTION_CANCELLED, "net error"));
-  } else {
     socket_data.AddWrite(SYNCHRONOUS,
                          client_maker_.MakeAckAndConnectionClosePacket(
                              packet_num++, false, 2, 1, 1,
                              quic::QUIC_CONNECTION_CANCELLED, "net error", 0));
-  }
 
   socket_data.AddSocketDataToFactory(&socket_factory_);
 

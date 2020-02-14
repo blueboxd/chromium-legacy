@@ -110,13 +110,12 @@ static void RecordForeignLayerInternal(
   base::Optional<PropertyTreeState> previous_properties;
   if (properties) {
     previous_properties.emplace(paint_controller.CurrentPaintChunkProperties());
-    paint_controller.UpdateCurrentPaintChunkProperties(base::nullopt,
-                                                       *properties);
+    paint_controller.UpdateCurrentPaintChunkProperties(nullptr, *properties);
   }
   paint_controller.CreateAndAppend<ForeignLayerDisplayItem>(
       client, type, std::move(layer), offset, json_client);
   if (properties) {
-    paint_controller.UpdateCurrentPaintChunkProperties(base::nullopt,
+    paint_controller.UpdateCurrentPaintChunkProperties(nullptr,
                                                        *previous_properties);
   }
 }

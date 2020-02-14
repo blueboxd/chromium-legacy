@@ -3,18 +3,62 @@
     min-width: 800px;
   }
 
+  :host {
+    --border-width: 1px;
+  }
+
+  div[slot=title] {
+    align-items: center;
+    display: flex;
+    flex-direction: row;
+    height: 80px;
+    padding: 0;
+  }
+
   div[slot=body] {
     color: var(--cr-primary-text-color);
     display: flex;
     flex-direction: row;
-    min-height: 423px;
-    padding-inline-start: 0;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  #menuContainer,
+  #pagesContainer {
+    overflow: hidden;
+  }
+
+  #leftTitleSpacer,
+  #menuContainer {
+    flex-basis: 232px;
+  }
+
+  #title,
+  #pagesContainer {
+    flex-grow: 1;
+  }
+
+  #menu,
+  #pages {
+    height: calc(100% - 2 * var(--border-width));
+    overflow: auto;
+  }
+
+  #pages > iron-pages {
+    min-height: 389px;
+  }
+
+  div[scroll-border] {
+    border-bottom: var(--border-width) solid var(--ntp-border-color);
+  }
+
+  div[scroll-border]:not([show]) {
+    --ntp-border-color: transparent;
   }
 
   #menu {
     display: flex;
     flex-direction: column;
-    margin-inline-end: 40px;
   }
 
   .menu-item {
@@ -24,6 +68,7 @@
     cursor: pointer;
     display: flex;
     flex-direction: row;
+    flex-shrink: 0;
     font-size: 14px;
     height: 32px;
     margin-bottom: 16px;
@@ -74,44 +119,49 @@
   #themesIcon {
     -webkit-mask-image: url(icons/colors.svg);
   }
-
-  #pages {
-    align-items: center;
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-  }
 </style>
 <cr-dialog id="dialog" show-on-attach>
+  <div slot="title">
+    <div id="leftTitleSpacer"></div>
+    <div id="title">$i18n{customizeThisPage}</div>
+  </div>
   <!-- TODO(crbug.com/1040256): Currently, the sidebar scrolls in sync with the
        page content area. Fix, so that the page content can scroll
        separately. -->
   <div slot="body">
-    <iron-selector id="menu" selected-attribute="selected"
-        attr-for-selected="page-name" selected="{{selectedPage_}}"
-        on-keydown="onMenuItemKeyDown_">
-      <div class="menu-item" page-name="backgrounds" tabindex="0">
-        <div id="backgroundsIcon" class="menu-item-icon"></div>
-        $i18n{backgroundsMenuItem}
+    <div id="menuContainer">
+      <div id="menu">
+        <iron-selector selected-attribute="selected"
+            attr-for-selected="page-name" selected="{{selectedPage_}}"
+            on-keydown="onMenuItemKeyDown_">
+          <div class="menu-item" page-name="backgrounds" tabindex="0">
+            <div id="backgroundsIcon" class="menu-item-icon"></div>
+            $i18n{backgroundsMenuItem}
+          </div>
+          <div class="menu-item" page-name="shortcuts" tabindex="0">
+            <div id="shortcutsIcon" class="menu-item-icon"></div>
+            $i18n{shortcutsMenuItem}
+          </div>
+          <div class="menu-item" page-name="themes" tabindex="0">
+            <div id="themesIcon" class="menu-item-icon"></div>
+            $i18n{themesMenuItem}
+          </div>
+        </iron-selector>
       </div>
-      <div class="menu-item" page-name="shortcuts" tabindex="0">
-        <div id="shortcutsIcon" class="menu-item-icon"></div>
-        $i18n{shortcutsMenuItem}
+    </div>
+    <div id="pagesContainer">
+      <div id="pages">
+        <iron-pages selected="[[selectedPage_]]" attr-for-selected="page-name">
+          <!-- TODO(crbug.com/1032328): Add support for selecting background
+               image. -->
+          <div page-name="backgrounds">backgrounds</div>
+          <ntp-customize-shortcuts page-name="shortcuts">
+          </ntp-customize-shortcuts>
+          <ntp-customize-themes page-name="themes" theme="[[theme]]">
+          </ntp-customize-themes>
+        </iron-pages>
       </div>
-      <div class="menu-item" page-name="themes" tabindex="0">
-        <div id="themesIcon" class="menu-item-icon"></div>
-        $i18n{themesMenuItem}
-      </div>
-    </iron-selector>
-    <iron-pages id="pages" selected="[[selectedPage_]]"
-        attr-for-selected="page-name">
-      <!-- TODO(crbug.com/1032328): Add support for selecting background
-           image. -->
-      <div page-name="backgrounds">backgrounds</div>
-      <ntp-customize-shortcuts page-name="shortcuts"></ntp-customize-shortcuts>
-      <ntp-customize-themes page-name="themes" theme="[[theme]]">
-      </ntp-customize-themes>
-    </iron-pages>
+    </div>
   </div>
   <div slot="button-container">
     <cr-button class="cancel-button" on-click="onCancelClick_">

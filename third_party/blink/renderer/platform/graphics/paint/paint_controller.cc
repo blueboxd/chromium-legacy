@@ -202,24 +202,13 @@ void PaintController::EndSubsequence(const DisplayItemClient& client,
   new_cached_subsequences_.insert(&client, SubsequenceMarkers(start, end));
 }
 
-void PaintController::ProcessNewItem(DisplayItem& display_item) {
+void PaintController::DidAppendItem(DisplayItem& display_item) {
   DCHECK(!construction_disabled_);
-
-  if (IsSkippingCache() && usage_ == kMultiplePaints) {
-    display_item.Client().Invalidate(PaintInvalidationReason::kUncacheable);
-    display_item.SetUncacheable();
-  }
-
-  bool chunk_added = new_paint_chunks_.IncrementDisplayItemIndex(display_item);
+  if (usage_ == kTransient)
+    return;
 
 #if DCHECK_IS_ON()
-  if (chunk_added && CurrentPaintChunk().is_cacheable) {
-    AddToIndicesByClientMap(CurrentPaintChunk().id.client,
-                            new_paint_chunks_.LastChunkIndex(),
-                            new_paint_chunk_indices_by_client_);
-  }
-
-  if (usage_ == kMultiplePaints && display_item.IsCacheable()) {
+  if (display_item.IsCacheable()) {
     auto index = FindMatchingItemFromIndex(display_item.GetId(),
                                            new_display_item_indices_by_client_,
                                            new_display_item_list_);
@@ -234,13 +223,20 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
                             new_display_item_list_.size() - 1,
                             new_display_item_indices_by_client_);
   }
-#else  // DCHECK_IS_ON()
-  std::ignore = chunk_added;
 #endif
 
-  if (usage_ == kMultiplePaints &&
-      RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
     CheckUnderInvalidation();
+}
+
+void PaintController::ProcessNewItem(DisplayItem& display_item) {
+  if (IsSkippingCache() && usage_ == kMultiplePaints) {
+    display_item.Client().Invalidate(PaintInvalidationReason::kUncacheable);
+    display_item.SetUncacheable();
+  }
+
+  if (new_paint_chunks_.IncrementDisplayItemIndex(display_item))
+    DidAppendChunk();
 
   if (!frame_first_paints_.back().first_painted && display_item.IsDrawing() &&
       // Here we ignore all document-background paintings because we don't
@@ -251,12 +247,24 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
       display_item.DrawsContent()) {
     SetFirstPainted();
   }
+
+  DidAppendItem(display_item);
 }
 
 DisplayItem& PaintController::MoveItemFromCurrentListToNewList(
     wtf_size_t index) {
   return new_display_item_list_.AppendByMoving(
       current_paint_artifact_->GetDisplayItemList()[index]);
+}
+
+void PaintController::DidAppendChunk() {
+#if DCHECK_IS_ON()
+  if (CurrentPaintChunk().is_cacheable) {
+    AddToIndicesByClientMap(CurrentPaintChunk().id.client,
+                            new_paint_chunks_.LastChunkIndex(),
+                            new_paint_chunk_indices_by_client_);
+  }
+#endif
 }
 
 void PaintController::InvalidateAll() {
@@ -277,6 +285,34 @@ bool PaintController::CacheIsAllInvalid() const {
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   DCHECK(!cache_is_all_invalid_ || current_paint_artifact_->IsEmpty());
   return cache_is_all_invalid_;
+}
+
+void PaintController::UpdateCurrentPaintChunkProperties(
+    const PaintChunk::Id* id,
+    const PropertyTreeState& properties) {
+  if (id) {
+    PaintChunk::Id id_with_fragment(*id, current_fragment_);
+    new_paint_chunks_.UpdateCurrentPaintChunkProperties(&id_with_fragment,
+                                                        properties);
+    CheckDuplicatePaintChunkId(id_with_fragment);
+  } else {
+    new_paint_chunks_.UpdateCurrentPaintChunkProperties(nullptr, properties);
+  }
+}
+
+void PaintController::ForceNewChunk(const DisplayItemClient& client,
+                                    DisplayItem::Type type) {
+  new_paint_chunks_.ForceNewChunk();
+  PaintChunk::Id id(client, type, current_fragment_);
+  CheckDuplicatePaintChunkId(id);
+  new_paint_chunks_.UpdateCurrentPaintChunkProperties(
+      &id, CurrentPaintChunkProperties());
+}
+
+void PaintController::AppendChunkByMoving(PaintChunk&& chunk) {
+  CheckDuplicatePaintChunkId(chunk.id);
+  new_paint_chunks_.AppendByMoving(std::move(chunk));
+  DidAppendChunk();
 }
 
 bool PaintController::ClientCacheIsValid(
@@ -408,10 +444,9 @@ void PaintController::CopyCachedSubsequence(wtf_size_t begin_index,
   auto* cached_chunk =
       current_paint_artifact_->FindChunkByDisplayItemIndex(begin_index);
   DCHECK(cached_chunk != current_paint_artifact_->PaintChunks().end());
+  DCHECK_EQ(begin_index, cached_chunk->begin_index);
   auto properties_before_subsequence =
       new_paint_chunks_.CurrentPaintChunkProperties();
-  UpdateCurrentPaintChunkPropertiesUsingIdWithFragment(
-      cached_chunk->id, cached_chunk->properties.GetPropertyTreeState());
 
   for (auto current_index = begin_index; current_index < end_index;
        ++current_index) {
@@ -422,11 +457,9 @@ void PaintController::CopyCachedSubsequence(wtf_size_t begin_index,
 #endif
 
     if (current_index == cached_chunk->end_index) {
+      AppendChunkByMoving(std::move(*cached_chunk));
       ++cached_chunk;
       DCHECK(cached_chunk != current_paint_artifact_->PaintChunks().end());
-      new_paint_chunks_.ForceNewChunk();
-      UpdateCurrentPaintChunkPropertiesUsingIdWithFragment(
-          cached_chunk->id, cached_chunk->properties.GetPropertyTreeState());
     }
 
 #if DCHECK_IS_ON()
@@ -442,10 +475,8 @@ void PaintController::CopyCachedSubsequence(wtf_size_t begin_index,
 #endif
 
     auto& item = MoveItemFromCurrentListToNewList(current_index);
-    item.SetCopiedFromCachedSubsequence(true);
-    ProcessNewItem(item);
-    DCHECK((!CurrentPaintChunk().is_cacheable && !cached_chunk->is_cacheable) ||
-           CurrentPaintChunk().Matches(*cached_chunk));
+    item.SetMovedFromCachedSubsequence(true);
+    DidAppendItem(item);
   }
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
@@ -454,9 +485,9 @@ void PaintController::CopyCachedSubsequence(wtf_size_t begin_index,
   } else {
     // Restore properties and force new chunk for any trailing display items
     // after the cached subsequence without new properties.
+    AppendChunkByMoving(std::move(*cached_chunk));
     new_paint_chunks_.ForceNewChunk();
-    UpdateCurrentPaintChunkProperties(base::nullopt,
-                                      properties_before_subsequence);
+    UpdateCurrentPaintChunkProperties(nullptr, properties_before_subsequence);
   }
 }
 
@@ -529,7 +560,7 @@ void PaintController::FinishCycle() {
       }
       for (const auto& item : current_paint_artifact_->GetDisplayItemList()) {
         const auto& client = item.Client();
-        if (item.IsCopiedFromCachedSubsequence()) {
+        if (item.IsMovedFromCachedSubsequence()) {
           // We don't need to validate the clients of a display item that is
           // copied from a cached subsequence, because it should be already
           // valid. See http://crbug.com/1050090 for more details.
@@ -545,6 +576,13 @@ void PaintController::FinishCycle() {
       }
       for (const auto& chunk : current_paint_artifact_->PaintChunks()) {
         const auto& client = chunk.id.client;
+        if (chunk.is_moved_from_cached_subsequence) {
+#if DCHECK_IS_ON()
+          DCHECK(client.IsAlive());
+          DCHECK(client.IsValid() || !client.IsCacheable());
+#endif
+          continue;
+        }
         if (client.IsCacheable())
           client.Validate();
       }
@@ -733,8 +771,8 @@ FrameFirstPaint PaintController::EndFrame(const void* frame) {
   return result;
 }
 
-#if DCHECK_IS_ON()
 void PaintController::CheckDuplicatePaintChunkId(const PaintChunk::Id& id) {
+#if DCHECK_IS_ON()
   if (IsSkippingCache())
     return;
 
@@ -753,8 +791,8 @@ void PaintController::CheckDuplicatePaintChunkId(const PaintChunk::Id& id) {
       }
     }
   }
-}
 #endif
+}
 
 size_t PaintController::sum_num_items_ = 0;
 size_t PaintController::sum_num_cached_items_ = 0;

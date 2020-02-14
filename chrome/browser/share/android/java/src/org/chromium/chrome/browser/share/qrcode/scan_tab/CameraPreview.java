@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.share.qrcode.scan_tab;
 
+import android.app.admin.DevicePolicyManager;
 import android.content.Context;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
@@ -18,6 +19,12 @@ import org.chromium.ui.display.DisplayAndroid;
 /** CameraPreview class controls camera and camera previews. */
 public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
     private static final String THREAD_NAME = "CameraHandlerThread";
+
+    // Extra enums for communicating camera failure modes in the error callback.
+    protected static final int NO_CAMERA_FOUND_ERROR = 1000;
+    protected static final int CAMERA_DISABLED_ERROR = 1001;
+    protected static final int CAMERA_IN_USE_ERROR = 1002;
+    protected static final int CAMERA_FAILED_ERROR = 1003;
 
     private final Context mContext;
     private final Camera.PreviewCallback mPreviewCallback;
@@ -102,7 +109,7 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
 
             mCamera.startPreview();
         } catch (Exception e) {
-            mErrorCallback.onError(Camera.CAMERA_ERROR_UNKNOWN, mCamera);
+            mErrorCallback.onError(CAMERA_FAILED_ERROR, mCamera);
         }
     }
 
@@ -179,9 +186,22 @@ public class CameraPreview extends SurfaceView implements SurfaceHolder.Callback
         try {
             camera = Camera.open(cameraId);
         } catch (RuntimeException e) {
-            mErrorCallback.onError(Camera.CAMERA_ERROR_UNKNOWN, null);
+            int error = CAMERA_IN_USE_ERROR;
+            if (cameraId == -1) {
+                error = NO_CAMERA_FOUND_ERROR;
+            } else if (isCameraDisabledByPolicy()) {
+                error = CAMERA_DISABLED_ERROR;
+            }
+            mErrorCallback.onError(error, null);
         }
         return camera;
+    }
+
+    /** Checks whether the device administrator has disabled the camera. */
+    private boolean isCameraDisabledByPolicy() {
+        DevicePolicyManager devicePolicyManager =
+                (DevicePolicyManager) mContext.getSystemService(Context.DEVICE_POLICY_SERVICE);
+        return devicePolicyManager.getCameraDisabled(null);
     }
 
     /** SurfaceHolder.Callback implementation. */

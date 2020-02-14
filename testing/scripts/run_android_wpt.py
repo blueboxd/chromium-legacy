@@ -133,6 +133,10 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
       "0.25",
     ])
 
+    # Lets weblayer know it's running in test mode.
+    if self.options.product == 'android_weblayer':
+      rest_args.extend(["--binary-arg=--run-web-tests"])
+
     # Default to the apk's package name for chrome_android
     if not self.options.package_name:
       if self.options.product == 'chrome_android':

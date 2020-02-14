@@ -41,6 +41,27 @@ struct PLATFORM_EXPORT PaintChunk {
     DCHECK_GT(end_index, begin_index);
   }
 
+  // Move a paint chunk from a cached subsequence.
+  PaintChunk(wtf_size_t begin, PaintChunk&& other)
+      : begin_index(begin),
+        end_index(begin + other.size()),
+        id(other.id),
+        properties(other.properties),
+        hit_test_data(std::move(other.hit_test_data)),
+        bounds(other.bounds),
+        drawable_bounds(other.drawable_bounds),
+        outset_for_raster_effects(other.outset_for_raster_effects),
+        safe_opaque_background_color(other.safe_opaque_background_color),
+        known_to_be_opaque(other.known_to_be_opaque),
+        is_cacheable(other.is_cacheable),
+        client_is_just_created(false),
+        is_moved_from_cached_subsequence(true) {
+#if DCHECK_IS_ON()
+    DCHECK(other.id.client.IsAlive());
+    DCHECK(!other.id.client.IsJustCreated());
+#endif
+  }
+
   wtf_size_t size() const {
     DCHECK_GT(end_index, begin_index);
     return end_index - begin_index;
@@ -114,6 +135,7 @@ struct PLATFORM_EXPORT PaintChunk {
   // The following fields are put here to avoid memory gap.
   bool is_cacheable;
   bool client_is_just_created;
+  bool is_moved_from_cached_subsequence = false;
 };
 
 inline bool ChunkLessThanIndex(const PaintChunk& chunk, wtf_size_t index) {

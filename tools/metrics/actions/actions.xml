@@ -12868,7 +12868,7 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="MobileNewTabOpened">
+<action name="MobileNewTabOpened" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -13042,6 +13042,12 @@ should be able to be added at any place in this file.
 <action name="MobileNTPShowHistory">
   <owner>justincohen@chromium.org</owner>
   <description>The user tapped the history icon on the NTP.</description>
+</action>
+
+<action name="MobileNTPShowMostVisited" not_user_triggered="true">
+  <owner>gambard@chromium.org</owner>
+  <owner>justincohen@chromium.org</owner>
+  <description>New Tab Page presented Most Visited website tiles.</description>
 </action>
 
 <action name="MobileNTPShown">
@@ -13786,13 +13792,13 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="MobileTabGridEntered">
+<action name="MobileTabGridEntered" not_user_triggered="true">
   <owner>edchin@chromium.org</owner>
   <owner>marq@chromium.org</owner>
   <description>User entered the iOS tab grid (from anywhere).</description>
 </action>
 
-<action name="MobileTabGridExited">
+<action name="MobileTabGridExited" not_user_triggered="true">
   <owner>edchin@chromium.org</owner>
   <owner>marq@chromium.org</owner>
   <description>User exited the iOS tab grid (by any means).</description>
@@ -13881,7 +13887,7 @@ should be able to be added at any place in this file.
   <description>User long-pressed on the tab strip tab grid button.</description>
 </action>
 
-<action name="MobileTabSwitched">
+<action name="MobileTabSwitched" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -13971,6 +13977,13 @@ should be able to be added at any place in this file.
   <description>
     The user has tapped on search bottom toolbar, which will focus the omnibox.
     iOS only.
+  </description>
+</action>
+
+<action name="MobileToolbarShareButtonTap">
+  <owner>jeffreycohen@chromium.org</owner>
+  <description>
+    User pressed the toolbar's button to open the share menu. Android only.
   </description>
 </action>
 
@@ -14080,6 +14093,12 @@ should be able to be added at any place in this file.
   <description>
     The user tapped on the top toolbar's new tab button.
   </description>
+</action>
+
+<action name="MobileTopToolbarShareButton">
+  <owner>jeffreycohen@chromium.org</owner>
+  <owner>tgupta@chromium.org</owner>
+  <description>The user tapped on the top toolbar's share button.</description>
 </action>
 
 <action name="MobileTopToolbarShowMenu">
@@ -14486,7 +14505,8 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="NewTabPage_ContentSuggestions_ArticlesUsage">
+<action name="NewTabPage_ContentSuggestions_ArticlesUsage"
+    not_user_triggered="true">
   <owner>markusheintz@chromium.org</owner>
   <description>
     Counts the usage of the &quot;Articles for you&quot; section on the New Tab

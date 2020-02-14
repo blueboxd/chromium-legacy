@@ -3638,7 +3638,7 @@
     The Linux container didn't start. Please try again.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_CONFIGURE_CONTAINER_ERROR" desc="Text shown in the Crostini installer dialog when the container fails to be configured inside the VM">
-    The was an error while configuring Linux. Contact your administrator.
+    There was an error while configuring Linux. Contact your administrator.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_SETUP_CONTAINER_ERROR" desc="Text shown in the Crostini installer dialog when the container fails to be set up inside the VM">
     The Linux container setup did not complete. Please try again.

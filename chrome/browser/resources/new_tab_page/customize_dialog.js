@@ -43,6 +43,49 @@ class CustomizeDialogElement extends PolymerElement {
     super();
     /** @private {newTabPage.mojom.PageHandlerRemote} */
     this.pageHandler_ = BrowserProxy.getInstance().handler;
+    /** @private {!Array<!IntersectionObserver>} */
+    this.intersectionObservers_ = [];
+  }
+
+  /** @override */
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.intersectionObservers_.forEach(observer => {
+      observer.disconnect();
+    });
+    this.intersectionObservers_ = [];
+  }
+
+  /** @override */
+  ready() {
+    super.ready();
+
+    ['menu', 'pages'].forEach(id => {
+      const container = this.$[id];
+      const topProbe = document.createElement('div');
+      container.prepend(topProbe);
+      const bottomProbe = document.createElement('div');
+      container.append(bottomProbe);
+      const topBorder = document.createElement('div');
+      topBorder.toggleAttribute('scroll-border', true);
+      container.parentNode.insertBefore(topBorder, container);
+      const bottomBorder = document.createElement('div');
+      bottomBorder.toggleAttribute('scroll-border', true);
+      container.parentNode.insertBefore(bottomBorder, container.nextSibling);
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(({target, intersectionRatio}) => {
+          const show = intersectionRatio === 0;
+          if (target === topProbe) {
+            topBorder.toggleAttribute('show', show);
+          } else if (target === bottomProbe) {
+            bottomBorder.toggleAttribute('show', show);
+          }
+        });
+      }, {root: container});
+      observer.observe(topProbe);
+      observer.observe(bottomProbe);
+      this.intersectionObservers_.push(observer);
+    });
   }
 
   /** @private */

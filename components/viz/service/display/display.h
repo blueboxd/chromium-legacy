@@ -113,6 +113,7 @@ class VIZ_SERVICE_EXPORT Display : public DisplaySchedulerClient,
   void SetLocalSurfaceId(const LocalSurfaceId& id, float device_scale_factor);
   void SetVisible(bool visible);
   void Resize(const gfx::Size& new_size);
+  void ForceReshapeOnNextDraw();
 
   // Stop drawing until Resize() is called with a new size. If the display
   // hasn't drawn a frame at the current size *and* it's possible to immediately

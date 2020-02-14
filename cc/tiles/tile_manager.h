@@ -30,6 +30,7 @@
 #include "cc/tiles/tile_draw_info.h"
 #include "cc/tiles/tile_manager_settings.h"
 #include "cc/tiles/tile_task_manager.h"
+#include "ui/gfx/display_color_spaces.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -80,7 +81,8 @@ class CC_EXPORT TileManagerClient {
   virtual void SetIsLikelyToRequireADraw(bool is_likely_to_require_a_draw) = 0;
 
   // Requests the color space into which tiles should be rasterized.
-  virtual const gfx::ColorSpace& GetRasterColorSpace() const = 0;
+  virtual gfx::ColorSpace GetRasterColorSpace(
+      gfx::ContentColorUsage content_color_usage) const = 0;
 
   // Requests that a pending tree be scheduled to invalidate content on the
   // pending on active tree. This is currently used when tiles that are
@@ -206,7 +208,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
           resource_pool_->AcquireResource(
               tiles[i]->desired_texture_size(),
               raster_buffer_provider_->GetResourceFormat(),
-              client_->GetRasterColorSpace());
+              client_->GetRasterColorSpace(gfx::ContentColorUsage::kSRGB));
       raster_buffer_provider_->AcquireBufferForRaster(
           resource, 0, 0,
           /*depends_on_at_raster_decodes=*/false,

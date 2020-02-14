@@ -3663,8 +3663,9 @@ TEST_F(URLLoaderTest, ClientAuthCertificateWithInvalidSignature) {
 TEST_F(URLLoaderTest, BlockAllCookies) {
   MockNetworkServiceClient network_service_client;
 
-  GURL site_for_cookies("http://www.example.com.test/");
-  GURL first_party_url(site_for_cookies);
+  GURL first_party_url("http://www.example.com.test/");
+  net::SiteForCookies site_for_cookies =
+      net::SiteForCookies::FromUrl(first_party_url);
   GURL third_party_url("http://www.some.other.origin.test/");
 
   ResourceRequest request = CreateResourceRequest("GET", first_party_url);
@@ -3690,8 +3691,9 @@ TEST_F(URLLoaderTest, BlockAllCookies) {
 TEST_F(URLLoaderTest, BlockOnlyThirdPartyCookies) {
   MockNetworkServiceClient network_service_client;
 
-  GURL site_for_cookies("http://www.example.com.test/");
-  GURL first_party_url(site_for_cookies);
+  GURL first_party_url("http://www.example.com.test/");
+  net::SiteForCookies site_for_cookies =
+      net::SiteForCookies::FromUrl(first_party_url);
   GURL third_party_url("http://www.some.other.origin.test/");
 
   ResourceRequest request = CreateResourceRequest("GET", first_party_url);
@@ -3718,8 +3720,9 @@ TEST_F(URLLoaderTest, BlockOnlyThirdPartyCookies) {
 TEST_F(URLLoaderTest, AllowAllCookies) {
   MockNetworkServiceClient network_service_client;
 
-  GURL site_for_cookies("http://www.example.com.test/");
-  GURL first_party_url(site_for_cookies);
+  GURL first_party_url("http://www.example.com.test/");
+  net::SiteForCookies site_for_cookies =
+      net::SiteForCookies::FromUrl(first_party_url);
   GURL third_party_url("http://www.some.other.origin.test/");
 
   ResourceRequest request = CreateResourceRequest("GET", first_party_url);

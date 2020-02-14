@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">দেখুৱাওক</translation>
 <translation id="5301954838959518834">ঠিক আছে, বুজি পালোঁ</translation>
 <translation id="5317780077021120954">ছেভ কৰক</translation>
+<translation id="5391532827096253100">এই ছাইটলৈ থকা আপোনাৰ সংযোগ সুৰক্ষিত নহয়। ছাইটৰ তথ্য</translation>
 <translation id="5556459405103347317">পুনৰ ল’ড কৰক</translation>
 <translation id="5596627076506792578">অধিক বিকল্প</translation>
 <translation id="5860033963881614850">অফ আছে</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">বন্ধ কৰক</translation>
 <translation id="6042308850641462728">অধিক</translation>
 <translation id="6165508094623778733">অধিক জানক</translation>
+<translation id="6206551242102657620">সংযোগটো নিৰাপদ। ছাইটৰ তথ্য</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> বিকল্প</translation>
 <translation id="6527303717912515753">শ্বেয়াৰ কৰক</translation>
 <translation id="6746124502594467657">তললৈ নিয়ক</translation>
 <translation id="6818926723028410516">বস্তু বাছনি কৰক</translation>
 <translation id="6910211073230771657">মচা হ’ল</translation>
 <translation id="6945221475159498467">বাছনি কৰক</translation>
+<translation id="6963642900430330478">এই পৃষ্ঠাটো বিপজ্জনক। ছাইটৰ তথ্য</translation>
 <translation id="6965382102122355670">ঠিক আছে</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{১টা বস্তু বাছনি কৰা হ’ল}one{#টা বস্তু বাছনি কৰা হ’ল}other{#টা বস্তু বাছনি কৰা হ’ল}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" />টা বাছনি কৰা হ’ল।  স্ক্ৰীণৰ ওপৰৰ অংশত কাষত থকা বিকল্পসমূহ</translation>

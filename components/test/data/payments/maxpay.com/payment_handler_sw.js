@@ -12,6 +12,10 @@ self.addEventListener('canmakepayment', (evt) => {
   evt.respondWith(true);
 });
 
+self.addEventListener('abortpayment', (evt) => {
+  evt.respondWith(true);
+});
+
 self.addEventListener('message', (evt) => {
   // Sent from the Payment app.
   if (evt.data === 'confirm') {
@@ -23,7 +27,7 @@ self.addEventListener('message', (evt) => {
   } else if (evt.data === 'cancel') {
     paymentRequestResponder({methodName, details: {status: 'unknown'}});
     return;
-  } else if (evt.data === 'app_is_ready') {
+  } else if (evt.data === 'app_is_ready' || evt.data === 'abort') {
     paymentRequestEvent.changePaymentMethod(methodName, {
       status: evt.data,
     });

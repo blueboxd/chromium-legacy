@@ -10,10 +10,6 @@
 #include "base/logging.h"
 #include "base/scoped_observer.h"
 #import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/overlays/public/overlay_presenter.h"
-#import "ios/chrome/browser/overlays/public/overlay_presenter_observer.h"
-#import "ios/chrome/browser/ui/fullscreen/animated_scoped_fullscreen_disabler.h"
-#import "ios/chrome/browser/ui/fullscreen/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/overlays/overlay_container_view_controller.h"
 #import "ios/chrome/browser/ui/overlays/overlay_presentation_context_impl.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -22,67 +18,8 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-// Observer that disables fullscreen while overlays are presented.
-class OverlayContainerFullscreenDisabler {
- public:
-  OverlayContainerFullscreenDisabler(Browser* browser, OverlayModality modality)
-      : fullscreen_disabler_(
-            FullscreenController::FromBrowserState(browser->GetBrowserState()),
-            OverlayPresenter::FromBrowser(browser, modality)) {}
-  ~OverlayContainerFullscreenDisabler() = default;
-  OverlayContainerFullscreenDisabler(
-      OverlayContainerFullscreenDisabler& disabler) = delete;
-
- private:
-  // Helper object that disables fullscreen when overlays are presented.
-  class FullscreenDisabler : public OverlayPresenterObserver {
-   public:
-    FullscreenDisabler(FullscreenController* fullscreen_controller,
-                       OverlayPresenter* overlay_presenter)
-        : fullscreen_controller_(fullscreen_controller),
-          scoped_observer_(this) {
-      DCHECK(fullscreen_controller_);
-      DCHECK(overlay_presenter);
-      scoped_observer_.Add(overlay_presenter);
-    }
-    ~FullscreenDisabler() override = default;
-
-   private:
-    // OverlayPresenterObserver:
-    void WillShowOverlay(OverlayPresenter* presenter,
-                         OverlayRequest* request) override {
-      disabler_ = std::make_unique<AnimatedScopedFullscreenDisabler>(
-          fullscreen_controller_);
-      disabler_->StartAnimation();
-    }
-
-    void DidHideOverlay(OverlayPresenter* presenter,
-                        OverlayRequest* request) override {
-      disabler_ = nullptr;
-    }
-
-    void OverlayPresenterDestroyed(OverlayPresenter* presenter) override {
-      scoped_observer_.Remove(presenter);
-      disabler_ = nullptr;
-    }
-
-    // The FullscreenController being disabled.
-    FullscreenController* fullscreen_controller_ = nullptr;
-    // The animated disabler.
-    std::unique_ptr<AnimatedScopedFullscreenDisabler> disabler_;
-    ScopedObserver<OverlayPresenter, OverlayPresenterObserver> scoped_observer_;
-  };
-
-  FullscreenDisabler fullscreen_disabler_;
-};
-}  // namespace
-
 @interface OverlayContainerCoordinator () <
-    OverlayContainerViewControllerDelegate> {
-  // Helper object that disables fullscreen whenever an overlay is presented.
-  std::unique_ptr<OverlayContainerFullscreenDisabler> fullscreen_disabler_;
-}
+    OverlayContainerViewControllerDelegate>
 // Whether the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;
 // The presentation context used by OverlayPresenter to drive presentation for
@@ -131,8 +68,6 @@ class OverlayContainerFullscreenDisabler {
   AddSameConstraints(containerView, self.baseViewController.view);
   [_viewController didMoveToParentViewController:self.baseViewController];
   self.presentationContext->SetCoordinator(self);
-  fullscreen_disabler_ = std::make_unique<OverlayContainerFullscreenDisabler>(
-      self.browser, self.modality);
 }
 
 - (void)stop {
@@ -145,7 +80,6 @@ class OverlayContainerFullscreenDisabler {
   [_viewController.view removeFromSuperview];
   [_viewController removeFromParentViewController];
   _viewController = nil;
-  fullscreen_disabler_ = nullptr;
 }
 
 #pragma mark - OverlayContainerViewControllerDelegate

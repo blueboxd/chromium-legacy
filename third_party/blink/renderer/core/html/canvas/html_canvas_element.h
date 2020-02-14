@@ -203,7 +203,8 @@ class CORE_EXPORT HTMLCanvasElement final
                                                AccelerationHint,
                                                const FloatSize&) override;
   bool WouldTaintOrigin() const override;
-  FloatSize ElementSize(const FloatSize&) const override;
+  FloatSize ElementSize(const FloatSize&,
+                        const RespectImageOrientationEnum) const override;
   bool IsCanvasElement() const override { return true; }
   bool IsOpaque() const override;
   bool IsAccelerated() const override;
@@ -301,6 +302,11 @@ class CORE_EXPORT HTMLCanvasElement final
   // SurfaceLayerBridge() or RenderingContext(), or nullptr if the canvas is not
   // composited.
   cc::Layer* ContentsCcLayer() const;
+
+  // Return the image orientation setting from the layout object, if available.
+  // In the absence of a layout object, kRespectImageOrientation will be
+  // returned.
+  RespectImageOrientationEnum RespectImageOrientation() const;
 
  protected:
   void DidMoveToNewDocument(Document& old_document) override;

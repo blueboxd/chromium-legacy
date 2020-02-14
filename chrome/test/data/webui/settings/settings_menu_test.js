@@ -8,6 +8,12 @@ cr.define('settings_menu', function() {
   let settingsMenu = null;
 
   suite('SettingsMenu', function() {
+    suiteSetup(function() {
+      loadTimeData.overrideValues({
+        privacySettingsRedesignEnabled: true,
+      });
+    });
+
     setup(function() {
       PolymerTest.clearBody();
       settingsMenu = document.createElement('settings-menu');
@@ -157,6 +163,35 @@ cr.define('settings_menu', function() {
 
       // Now, the menu items should be hidden.
       assertPageVisibility(true);
+    });
+
+    test('safetyCheckInMenu', function() {
+      Polymer.dom.flush();
+      assertTrue(!!settingsMenu.$$('#safetyCheck'));
+    });
+  });
+
+  suite('SettingsMenuPrivacyRedesignFlagOff', function() {
+    suiteSetup(function() {
+      loadTimeData.overrideValues({
+        privacySettingsRedesignEnabled: false,
+      });
+    });
+
+    setup(function() {
+      PolymerTest.clearBody();
+      settingsMenu = document.createElement('settings-menu');
+      settingsMenu.pageVisibility = settings.pageVisibility;
+      document.body.appendChild(settingsMenu);
+    });
+
+    teardown(function() {
+      settingsMenu.remove();
+    });
+
+    test('safetyCheckNotInMenu', function() {
+      Polymer.dom.flush();
+      assertFalse(!!settingsMenu.$$('#safetyCheck'));
     });
   });
 });

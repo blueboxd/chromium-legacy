@@ -100,9 +100,9 @@ AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
     std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
   return base::AdoptRef(new AcceleratedStaticBitmapImage(
       mailbox, sync_token, shared_image_texture_id, sk_image_info,
-      texture_target, is_origin_top_left, std::move(context_provider_wrapper),
-      context_thread_ref, std::move(context_task_runner),
-      std::move(release_callback)));
+      texture_target, is_origin_top_left, kDefaultImageOrientation,
+      std::move(context_provider_wrapper), context_thread_ref,
+      std::move(context_task_runner), std::move(release_callback)));
 }
 
 AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
@@ -112,11 +112,13 @@ AcceleratedStaticBitmapImage::AcceleratedStaticBitmapImage(
     const SkImageInfo& sk_image_info,
     GLenum texture_target,
     bool is_origin_top_left,
+    const ImageOrientation& orientation,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     base::PlatformThreadRef context_thread_ref,
     scoped_refptr<base::SingleThreadTaskRunner> context_task_runner,
     std::unique_ptr<viz::SingleReleaseCallback> release_callback)
-    : mailbox_(mailbox),
+    : StaticBitmapImage(orientation),
+      mailbox_(mailbox),
       sk_image_info_(sk_image_info),
       texture_target_(texture_target),
       is_origin_top_left_(is_origin_top_left),
@@ -146,7 +148,7 @@ scoped_refptr<StaticBitmapImage>
 AcceleratedStaticBitmapImage::MakeUnaccelerated() {
   CreateImageFromMailboxIfNeeded();
   return UnacceleratedStaticBitmapImage::Create(
-      sk_image_->makeNonTextureImage());
+      sk_image_->makeNonTextureImage(), orientation_);
 }
 
 bool AcceleratedStaticBitmapImage::CopyToTexture(
@@ -209,13 +211,14 @@ PaintImage AcceleratedStaticBitmapImage::PaintImageForCurrentFrame() {
       .TakePaintImage();
 }
 
-void AcceleratedStaticBitmapImage::Draw(cc::PaintCanvas* canvas,
-                                        const cc::PaintFlags& flags,
-                                        const FloatRect& dst_rect,
-                                        const FloatRect& src_rect,
-                                        RespectImageOrientationEnum,
-                                        ImageClampingMode image_clamping_mode,
-                                        ImageDecodingMode decode_mode) {
+void AcceleratedStaticBitmapImage::Draw(
+    cc::PaintCanvas* canvas,
+    const cc::PaintFlags& flags,
+    const FloatRect& dst_rect,
+    const FloatRect& src_rect,
+    RespectImageOrientationEnum should_respect_image_orientation,
+    ImageClampingMode image_clamping_mode,
+    ImageDecodingMode decode_mode) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto paint_image = PaintImageForCurrentFrame();
   if (!paint_image)
@@ -227,7 +230,8 @@ void AcceleratedStaticBitmapImage::Draw(cc::PaintCanvas* canvas,
                       .TakePaintImage();
   }
   StaticBitmapImage::DrawHelper(canvas, flags, dst_rect, src_rect,
-                                image_clamping_mode, paint_image);
+                                image_clamping_mode,
+                                should_respect_image_orientation, paint_image);
 }
 
 bool AcceleratedStaticBitmapImage::IsValid() const {
@@ -402,7 +406,7 @@ AcceleratedStaticBitmapImage::ConvertToColorSpace(
   }
 
   provider->Canvas()->drawImage(PaintImageForCurrentFrame(), 0, 0, nullptr);
-  return provider->Snapshot();
+  return provider->Snapshot(orientation_);
 }
 
 }  // namespace blink

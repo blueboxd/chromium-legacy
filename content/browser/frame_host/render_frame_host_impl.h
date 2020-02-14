@@ -230,6 +230,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public service_manager::mojom::InterfaceProvider,
       public blink::mojom::LocalFrameHost,
       public network::CSPContext,
+      public blink::mojom::LocalMainFrameHost,
       public ui::AXActionHandler {
  public:
   using AXTreeSnapshotCallback =
@@ -322,6 +323,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       blink::mojom::SuddenTerminationDisablerType disabler_type) override;
   bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature) override;
   bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature,
+                        blink::PolicyValue threshold_value) override;
+  bool IsFeatureEnabled(blink::mojom::DocumentPolicyFeature feature) override;
+  bool IsFeatureEnabled(blink::mojom::DocumentPolicyFeature feature,
                         blink::PolicyValue threshold_value) override;
   void ViewSource() override;
   mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>
@@ -1393,6 +1397,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
                               RunBeforeUnloadConfirmCallback callback) override;
   void Are3DAPIsBlocked(Are3DAPIsBlockedCallback callback) override;
 
+  // blink::LocalMainFrameHost overrides:
+  void ScaleFactorChanged(float scale) override;
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -2297,7 +2304,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   mojo::AssociatedRemote<blink::mojom::LocalFrame> local_frame_;
 
   // Holder of Mojo connection with the LocalMainFrame in Blink. This
-  // remote will be valid when the frame is a swapped in main frame.
+  // remote will be valid when the frame is the active main frame.
   mojo::AssociatedRemote<blink::mojom::LocalMainFrame> local_main_frame_;
 
   // Holds a NavigationRequest when it's about to commit, ie. after
@@ -2364,6 +2371,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   mojo::AssociatedRemote<mojom::FrameNavigationControl> navigation_control_;
   mojo::AssociatedReceiver<blink::mojom::LocalFrameHost>
       local_frame_host_receiver_{this};
+
+  // This receiver should only be valid when the frame is a swapped in main
+  // frame.
+  mojo::AssociatedReceiver<blink::mojom::LocalMainFrameHost>
+      local_main_frame_host_receiver_{this};
 
   // If this is true then this object was created in response to a renderer
   // initiated request. Init() will be called, and until then navigation

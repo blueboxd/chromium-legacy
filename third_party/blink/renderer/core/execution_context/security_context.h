@@ -34,6 +34,7 @@
 #include "services/network/public/mojom/ip_address_space.mojom-blink-forward.h"
 #include "third_party/blink/public/common/feature_policy/document_policy.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
+#include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
@@ -166,6 +167,10 @@ class CORE_EXPORT SecurityContext {
       mojom::blink::FeaturePolicyFeature,
       PolicyValue threshold_value,
       base::Optional<mojom::FeaturePolicyDisposition>* = nullptr) const;
+
+  bool IsFeatureEnabled(mojom::blink::DocumentPolicyFeature) const;
+  bool IsFeatureEnabled(mojom::blink::DocumentPolicyFeature,
+                        PolicyValue threshold_value) const;
 
  protected:
   mojom::blink::WebSandboxFlags sandbox_flags_;

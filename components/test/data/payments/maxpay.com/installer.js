@@ -90,7 +90,11 @@ function launchAndWaitUntilReady( // eslint-disable-line no-unused-vars
       [{supportedMethods: methodName, data: {url}}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '0.01'}}});
     request.onpaymentmethodchange = (event) => {
-      appReadyResolver(event.methodDetails.status);
+      const status = event.methodDetails.status;
+      if (status === 'abort') {
+        request.abort();
+      }
+      appReadyResolver(status);
     };
     resultPromise = request.show();
     updateLogView('launched and waiting until app gets ready.');

@@ -4,11 +4,16 @@
 
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
+#include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/content_mock_cert_verifier.h"
+#include "content/public/test/signed_exchange_browser_test_helper.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
+#include "content/test/content_browser_test_utils_internal.h"
 #include "net/base/escape.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -25,18 +30,14 @@ namespace {
 class AncestorThrottleTest : public ContentBrowserTest,
                              public ::testing::WithParamInterface<bool> {
  public:
-  AncestorThrottleTest() {}
-
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    ContentBrowserTest::SetUpCommandLine(command_line);
-
+  AncestorThrottleTest() {
     if (GetParam()) {
       feature_list_.InitAndEnableFeature(
           network::features::kOutOfBlinkFrameAncestors);
     }
   }
 
+ protected:
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -133,7 +134,61 @@ IN_PROC_BROWSER_TEST_P(AncestorThrottleTest, Response204CSP) {
   // Not crashing means that the test succeeded.
 }
 
+class AncestorThrottleSXGTest : public AncestorThrottleTest {
+ public:
+  AncestorThrottleSXGTest() { net::EmbeddedTestServer::RegisterTestCerts(); }
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    AncestorThrottleTest::SetUpCommandLine(command_line);
+    mock_cert_verifier_.SetUpCommandLine(command_line);
+  }
+
+  void SetUp() override {
+    sxg_test_helper_.SetUp();
+    AncestorThrottleTest::SetUp();
+  }
+
+  void SetUpInProcessBrowserTestFixture() override {
+    AncestorThrottleTest::SetUpInProcessBrowserTestFixture();
+    mock_cert_verifier_.SetUpInProcessBrowserTestFixture();
+  }
+
+  void TearDownOnMainThread() override {
+    sxg_test_helper_.TearDownOnMainThread();
+    AncestorThrottleTest::TearDownOnMainThread();
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    mock_cert_verifier_.TearDownInProcessBrowserTestFixture();
+    AncestorThrottleTest::TearDownInProcessBrowserTestFixture();
+  }
+
+ protected:
+  ContentMockCertVerifier mock_cert_verifier_;
+  SignedExchangeBrowserTestHelper sxg_test_helper_;
+};
+
+IN_PROC_BROWSER_TEST_P(AncestorThrottleSXGTest, SXGWithCSP) {
+  sxg_test_helper_.InstallMockCert(mock_cert_verifier_.mock_cert_verifier());
+  sxg_test_helper_.InstallMockCertChainInterceptor();
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+
+  EXPECT_TRUE(NavigateToURL(
+      web_contents, embedded_test_server()->GetURL("/page_with_iframe.html")));
+
+  GURL url = embedded_test_server()->GetURL("/sxg/test.example.org_csp.sxg");
+  FrameTreeNode* iframe_node =
+      web_contents->GetFrameTree()->root()->child_at(0);
+  NavigateFrameToURL(iframe_node, url);
+  EXPECT_TRUE(
+      iframe_node->current_frame_host()->GetLastCommittedOrigin().opaque());
+}
+
 INSTANTIATE_TEST_SUITE_P(All, AncestorThrottleTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All, AncestorThrottleSXGTest, ::testing::Bool());
 
 }  // namespace
 

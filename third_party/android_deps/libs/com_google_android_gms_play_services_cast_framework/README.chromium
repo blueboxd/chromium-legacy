@@ -10,4 +10,4 @@ Description:
 
 
 Local Modifications:
-No modifications.
+-Added androidx.annotaitons.keep to proguard to assist with androidx migration.

@@ -141,6 +141,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     protected View mUrlActionContainer;
     protected ImageView mToolbarShadow;
     private @Nullable ImageButton mExperimentalButton;
+    private boolean mExperimentalButtonUsesTint;
 
     private ObjectAnimator mTabSwitcherModeAnimation;
     private ObjectAnimator mDelayedTabSwitcherModeAnimation;
@@ -1681,6 +1682,10 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             }
         }
 
+        if (mExperimentalButton != null && mExperimentalButtonUsesTint) {
+            ApiCompatibilityUtils.setImageTintList(mExperimentalButton, tint);
+        }
+
         // TODO(amaralp): Have the LocationBar listen to tint changes.
         if (mLocationBar != null) mLocationBar.updateVisualsForState();
 
@@ -2564,7 +2569,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
 
     @Override
     void enableExperimentalButton(OnClickListener onClickListener, Drawable image,
-            @StringRes int contentDescriptionResId) {
+            @StringRes int contentDescriptionResId, boolean useTint) {
         if (mExperimentalButton == null) {
             ViewStub viewStub = findViewById(R.id.experimental_button_stub);
             mExperimentalButton = (ImageButton) viewStub.inflate();
@@ -2585,6 +2590,11 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         mExperimentalButton.setImageDrawable(image);
         mExperimentalButton.setContentDescription(
                 getContext().getResources().getString(contentDescriptionResId));
+
+        mExperimentalButtonUsesTint = useTint;
+        if (mExperimentalButtonUsesTint) {
+            ApiCompatibilityUtils.setImageTintList(mExperimentalButton, getTint());
+        }
         mExperimentalButtonLayoutListener = () -> requestLayoutHostUpdateForExperimentalButton();
         if (mTabSwitcherState == STATIC_TAB) {
             if (!mUrlFocusChangeInProgress && !urlHasFocus()) {
@@ -2619,7 +2629,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     }
 
     @Override
-    View getExperimentalButtonView() {
+    @VisibleForTesting
+    public View getExperimentalButtonView() {
         return mExperimentalButton;
     }
 

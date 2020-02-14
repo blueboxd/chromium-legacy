@@ -161,7 +161,7 @@ struct NetworkServiceParams {
 [EnableIf=is_chromeos]
 struct LoggingSettings {
   uint32 logging_dest;
-  handle log_file_descriptor;
+  handle<platform> log_file_descriptor;
 };
 
 // Browser interface to the network service.

@@ -5,14 +5,14 @@
 # Help R8 to remove debug related coded. All of these static constants are
 # initialized to: Log.isLoggable(DEBUG, TAG).
 
--assumevalues class android.support.v7.app.MediaRouteControllerDialogFragment {
+-assumevalues class androidx.mediarouter.app.MediaRouteControllerDialogFragment {
   static boolean USE_SUPPORT_DYNAMIC_GROUP return false;
 }
 
--assumevalues class android.support.v7.media.MediaRouter {
+-assumevalues class androidx.mediarouter.media.MediaRouter {
   static boolean DEBUG return false;
 }
 
--assumevalues class android.support.v7.media.RegisteredMediaRouteProvider {
+-assumevalues class androidx.mediarouter.media.RegisteredMediaRouteProvider {
   static boolean DEBUG return false;
 }

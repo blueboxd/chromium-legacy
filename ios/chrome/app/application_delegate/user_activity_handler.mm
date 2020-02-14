@@ -90,12 +90,6 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
 
     if (startupParams)
       webpageURL = net::NSURLWithGURL([startupParams externalURL]);
-
-    // Don't call continueUserActivityURL if the completePaymentRequest flag
-    // is set since the startup parameters need to be handled in
-    // -handleStartupParametersWithTabOpener:
-    if (startupParams && startupParams.completePaymentRequest)
-      return YES;
   } else if (spotlight::IsSpotlightAvailable() &&
              [userActivity.activityType
                  isEqualToString:CSSearchableItemActionType]) {
@@ -272,13 +266,6 @@ NSString* const kShortcutQRScanner = @"OpenQRScanner";
     // synchronously.
     [startupInformation setStartupParameters:nil];
   } else {
-    // Depending on the startup parameters the user may need to stay on the
-    // current tab rather than open a new one in order to complete a Payment
-    // Request. This attempts to complete any Payment Request instances on
-    // the current tab, and returns if successful.
-    if ([tabOpener shouldCompletePaymentRequestOnCurrentTab:startupInformation])
-      return;
-
     // TODO(crbug.com/935019): Exacly the same copy of this code is present in
     // +[URLOpener
     // openURL:applicationActive:options:tabOpener:startupInformation:]

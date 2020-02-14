@@ -120,6 +120,8 @@ class ProofVerifierChromium::Job {
                        const std::string& signature,
                        const std::string& cert);
 
+  bool ShouldAllowUnknownRootForHost(const std::string& hostname);
+
   // Proof verifier to notify when this jobs completes.
   ProofVerifierChromium* proof_verifier_;
 
@@ -390,6 +392,15 @@ int ProofVerifierChromium::Job::DoVerifyCert(int result) {
       &cert_verifier_request_, net_log_);
 }
 
+bool ProofVerifierChromium::Job::ShouldAllowUnknownRootForHost(
+    const std::string& hostname) {
+  if (base::Contains(proof_verifier_->hostnames_to_allow_unknown_roots_, "")) {
+    return true;
+  }
+  return base::Contains(proof_verifier_->hostnames_to_allow_unknown_roots_,
+                        hostname);
+}
+
 int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
   base::UmaHistogramSparse("Net.QuicSession.CertVerificationResult", -result);
   cert_verifier_request_.reset();
@@ -504,8 +515,7 @@ int ProofVerifierChromium::Job::DoVerifyCertComplete(int result) {
 
   if (result == OK &&
       !verify_details_->cert_verify_result.is_issued_by_known_root &&
-      !base::Contains(proof_verifier_->hostnames_to_allow_unknown_roots_,
-                      hostname_)) {
+      !ShouldAllowUnknownRootForHost(hostname_)) {
     result = ERR_QUIC_CERT_ROOT_NOT_KNOWN;
   }
 

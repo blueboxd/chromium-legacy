@@ -9,12 +9,13 @@
 #include "base/process/process.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/updater/updater_version.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_WIN)
 #define EXECUTABLE_EXTENSION ".exe"
 #else
-#define EXECUTABLE_EXTENSION ""
+#define EXECUTABLE_EXTENSION ".app"
 #endif
 
 // Tests the updater process returns 0 when run with --test argument.
@@ -28,10 +29,11 @@ TEST(UpdaterTest, UpdaterExitCode) {
           FILE_PATH_LITERAL("updater" EXECUTABLE_EXTENSION));
 #elif defined(OS_MACOSX)
       this_executable_path.DirName()
-          .Append(FILE_PATH_LITERAL("GoogleUpdate.app"))
+          .Append(
+              FILE_PATH_LITERAL(PRODUCT_FULLNAME_STRING EXECUTABLE_EXTENSION))
           .Append(FILE_PATH_LITERAL("Contents"))
           .Append(FILE_PATH_LITERAL("MacOS"))
-          .Append(FILE_PATH_LITERAL("GoogleUpdate"));
+          .Append(FILE_PATH_LITERAL(PRODUCT_FULLNAME_STRING));
 #else
       "";
 #endif

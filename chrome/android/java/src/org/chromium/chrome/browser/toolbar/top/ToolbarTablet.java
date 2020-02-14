@@ -23,6 +23,7 @@ import android.view.ViewStub;
 import android.widget.ImageButton;
 
 import androidx.annotation.StringRes;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordUserAction;
@@ -76,6 +77,7 @@ public class ToolbarTablet extends ToolbarLayout
     private boolean mToolbarButtonsVisible;
     private ImageButton[] mToolbarButtons;
     private ImageButton mExperimentalButton;
+    private boolean mExperimentalButtonUsesTint;
 
     private NavigationPopup mNavigationPopup;
 
@@ -384,6 +386,10 @@ public class ToolbarTablet extends ToolbarLayout
         ApiCompatibilityUtils.setImageTintList(mSaveOfflineButton, tint);
         ApiCompatibilityUtils.setImageTintList(mReloadButton, tint);
         mAccessibilitySwitcherButton.setUseLightDrawables(useLight);
+
+        if (mExperimentalButton != null && mExperimentalButtonUsesTint) {
+            ApiCompatibilityUtils.setImageTintList(mExperimentalButton, tint);
+        }
     }
 
     @Override
@@ -563,11 +569,17 @@ public class ToolbarTablet extends ToolbarLayout
 
     @Override
     void enableExperimentalButton(OnClickListener onClickListener, Drawable image,
-            @StringRes int contentDescriptionResId) {
+            @StringRes int contentDescriptionResId, boolean useTint) {
         if (mExperimentalButton == null) {
             ViewStub viewStub = findViewById(R.id.experimental_button_stub);
             mExperimentalButton = (ImageButton) viewStub.inflate();
         }
+
+        mExperimentalButtonUsesTint = useTint;
+        if (mExperimentalButtonUsesTint) {
+            ApiCompatibilityUtils.setImageTintList(mExperimentalButton, getTint());
+        }
+
         mExperimentalButton.setOnClickListener(onClickListener);
         mExperimentalButton.setImageDrawable(image);
         mExperimentalButton.setContentDescription(
@@ -591,7 +603,8 @@ public class ToolbarTablet extends ToolbarLayout
     }
 
     @Override
-    View getExperimentalButtonView() {
+    @VisibleForTesting
+    public View getExperimentalButtonView() {
         return mExperimentalButton;
     }
 

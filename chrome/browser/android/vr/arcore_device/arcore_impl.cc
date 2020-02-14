@@ -397,6 +397,8 @@ std::vector<float> ArCoreImpl::TransformDisplayUvCoords(
 }
 
 mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
+  TRACE_EVENT0("gpu", "ArCoreImpl Update");
+
   DCHECK(IsOnGlThread());
   DCHECK(arcore_session_.is_valid());
   DCHECK(arcore_frame_.is_valid());
@@ -404,7 +406,10 @@ mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
 
   ArStatus status;
 
+  TRACE_EVENT_BEGIN0("gpu", "ArCore Update");
   status = ArSession_update(arcore_session_.get(), arcore_frame_.get());
+  TRACE_EVENT_END0("gpu", "ArCore Update");
+
   if (status != AR_SUCCESS) {
     DLOG(ERROR) << "ArSession_update failed: " << status;
     *camera_updated = false;
@@ -443,6 +448,10 @@ mojom::VRPosePtr ArCoreImpl::Update(bool* camera_updated) {
 
   ArCamera_getDisplayOrientedPose(arcore_session_.get(), arcore_camera.get(),
                                   arcore_pose.get());
+
+  TRACE_EVENT_BEGIN0("gpu", "ArCorePlaneManager Update");
+  plane_manager_->Update(arcore_frame_.get());
+  TRACE_EVENT_END0("gpu", "ArCorePlaneManager Update");
 
   return GetMojomVRPoseFromArPose(arcore_session_.get(), arcore_pose.get());
 }
@@ -543,7 +552,7 @@ void ArCoreImpl::ForEachArCoreAnchor(FunctionType fn) {
 
 mojom::XRPlaneDetectionDataPtr ArCoreImpl::GetDetectedPlanesData() {
   TRACE_EVENT0("gpu", __FUNCTION__);
-  return plane_manager_->GetDetectedPlanesData(arcore_frame_.get());
+  return plane_manager_->GetDetectedPlanesData();
 }
 
 mojom::XRAnchorsDataPtr ArCoreImpl::GetAnchorsData() {

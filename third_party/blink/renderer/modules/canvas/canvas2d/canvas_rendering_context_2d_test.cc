@@ -69,7 +69,8 @@ class FakeImageSource : public CanvasImageSource {
                                                const FloatSize&) override;
 
   bool WouldTaintOrigin() const override { return false; }
-  FloatSize ElementSize(const FloatSize&) const override {
+  FloatSize ElementSize(const FloatSize&,
+                        const RespectImageOrientationEnum) const override {
     return FloatSize(size_);
   }
   bool IsOpaque() const override { return is_opaque_; }
@@ -328,8 +329,9 @@ class FakeCanvasResourceProvider : public CanvasResourceProvider {
   sk_sp<SkSurface> CreateSkSurface() const override {
     return sk_sp<SkSurface>();
   }
-  scoped_refptr<StaticBitmapImage> Snapshot() override {
-    return SnapshotInternal();
+  scoped_refptr<StaticBitmapImage> Snapshot(
+      const ImageOrientation& orientation) override {
+    return SnapshotInternal(orientation);
   }
 
  private:

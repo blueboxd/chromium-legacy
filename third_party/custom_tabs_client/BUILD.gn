@@ -35,6 +35,7 @@ android_apk("custom_tabs_client_example_apk") {
     ":custom_tabs_support_java",
     "//third_party/android_deps:android_arch_lifecycle_common_java",
     "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:com_android_support_appcompat_v7_java",
     "//third_party/android_deps:com_android_support_support_annotations_java",
   ]
   chromium_code = false
@@ -83,7 +84,11 @@ android_library("custom_tabs_support_java") {
   ]
   deps = [
     ":custom_tabs_support_resources",
-    "//third_party/android_deps:android_support_v7_appcompat_java",
+
+    # TODO (bjoyce): Restore to android_support_v7_appcompat_java once source
+    # files are manually written to androidx crbug.com/1047843.
+    # "//third_party/android_deps:android_support_v7_appcompat_java",
+    "//third_party/android_deps:com_android_support_appcompat_v7_java_orig",
     "//third_party/android_deps:com_android_support_collections_java",
     "//third_party/android_deps:com_android_support_interpolator_java",
     "//third_party/android_deps:com_android_support_support_annotations_java",

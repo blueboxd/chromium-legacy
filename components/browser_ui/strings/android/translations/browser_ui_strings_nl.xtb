@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Weergeven</translation>
 <translation id="5301954838959518834">OK, begrepen</translation>
 <translation id="5317780077021120954">Opslaan</translation>
+<translation id="5391532827096253100">Je verbinding met deze site is niet beveiligd. Site-informatie</translation>
 <translation id="5556459405103347317">Opnieuw laden</translation>
 <translation id="5596627076506792578">Meer opties</translation>
 <translation id="5860033963881614850">Uit</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Sluiten</translation>
 <translation id="6042308850641462728">Meer</translation>
 <translation id="6165508094623778733">Meer informatie</translation>
+<translation id="6206551242102657620">De verbinding is beveiligd. Site-informatie</translation>
 <translation id="6216432067784365534">Opties voor <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Delen</translation>
 <translation id="6746124502594467657">Omlaag</translation>
 <translation id="6818926723028410516">Items selecteren</translation>
 <translation id="6910211073230771657">Verwijderd</translation>
 <translation id="6945221475159498467">Selecteren</translation>
+<translation id="6963642900430330478">Deze pagina is gevaarlijk. Site-informatie</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 geselecteerd}other{# geselecteerd}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> geselecteerd. Opties beschikbaar bovenaan het scherm.</translation>

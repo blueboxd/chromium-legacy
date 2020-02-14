@@ -3146,6 +3146,7 @@ void Document::Shutdown() {
 
   CancelPendingJavaScriptUrls();
   http_refresh_scheduler_->Cancel();
+  CancelFormSubmissions();
 
   if (Platform::Current()->IsThreadedAnimationEnabled() &&
       GetSettings()->GetAcceleratedCompositingEnabled()) {
@@ -8088,6 +8089,7 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(mime_handler_view_before_unload_event_listener_);
   visitor->Trace(element_explicitly_set_attr_elements_map_);
   visitor->Trace(display_lock_activation_observer_);
+  visitor->Trace(form_to_pending_submission_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
@@ -8567,17 +8569,21 @@ void Document::ClearUseCounterForTesting(mojom::WebFeature feature) {
 }
 
 void Document::ScheduleFormSubmission(HTMLFormElement* form_element) {
-  form_to_pending_submission_[form_element] = PostCancellableTask(
-      *GetFrame()->GetFrameScheduler()->GetTaskRunner(
-          TaskType::kDOMManipulation),
-      FROM_HERE,
-      WTF::Bind(&Document::ExecuteFormSubmission, WrapWeakPersistent(this),
-                WrapWeakPersistent(form_element)));
+  form_to_pending_submission_.insert(
+      form_element,
+      PostCancellableTask(
+          *GetFrame()->GetFrameScheduler()->GetTaskRunner(
+              TaskType::kDOMManipulation),
+          FROM_HERE,
+          WTF::Bind(&Document::ExecuteFormSubmission, WrapWeakPersistent(this),
+                    WrapPersistent(form_element))));
 }
 
 void Document::ExecuteFormSubmission(HTMLFormElement* form_element) {
-  form_to_pending_submission_.erase(form_element);
-  form_element->SubmitForm();
+  if (form_element) {
+    form_to_pending_submission_.erase(form_element);
+    form_element->SubmitForm();
+  }
 }
 
 void Document::CancelFormSubmissions() {

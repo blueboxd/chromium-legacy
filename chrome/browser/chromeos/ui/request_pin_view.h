@@ -59,7 +59,6 @@ class RequestPinView final : public views::DialogDelegateView,
                        const base::string16& new_contents) override;
 
   // views::DialogDelegate
-  bool Cancel() override;
   bool Accept() override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   views::View* GetInitiallyFocusedView() override;

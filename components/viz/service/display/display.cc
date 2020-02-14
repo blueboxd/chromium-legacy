@@ -1024,4 +1024,8 @@ base::ScopedClosureRunner Display::GetCacheBackBufferCb() {
   return output_surface_->GetCacheBackBufferCb();
 }
 
+void Display::ForceReshapeOnNextDraw() {
+  renderer_->ForceReshapeOnNextDraw();
+}
+
 }  // namespace viz

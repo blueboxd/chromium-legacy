@@ -965,8 +965,12 @@ bool HistoryService::Init(
       base::BindRepeating(base::IgnoreResult(&HistoryService::ScheduleDBTask),
                           base::Unretained(this)));
 
-  if (visit_delegate_ && !visit_delegate_->Init(this))
+  if (visit_delegate_ && !visit_delegate_->Init(this)) {
+    // This is rare enough that it's worth logging.
+    LOG(WARNING) << "HistoryService::Init() failed by way of "
+                    "VisitDelegate::Init failing";
     return false;
+  }
 
   if (history_client_)
     history_client_->OnHistoryServiceCreated(this);

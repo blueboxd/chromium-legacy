@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">표시</translation>
 <translation id="5301954838959518834">확인</translation>
 <translation id="5317780077021120954">저장</translation>
+<translation id="5391532827096253100">이 사이트와의 연결은 안전하지 않습니다. 사이트 정보</translation>
 <translation id="5556459405103347317">새로고침</translation>
 <translation id="5596627076506792578">옵션 더보기</translation>
 <translation id="5860033963881614850">사용 안함</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">닫기</translation>
 <translation id="6042308850641462728">더보기</translation>
 <translation id="6165508094623778733">자세히 알아보기</translation>
+<translation id="6206551242102657620">이 사이트와의 연결은 안전합니다. 사이트 정보</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> 옵션</translation>
 <translation id="6527303717912515753">공유</translation>
 <translation id="6746124502594467657">아래로 이동</translation>
 <translation id="6818926723028410516">항목 선택</translation>
 <translation id="6910211073230771657">삭제됨</translation>
 <translation id="6945221475159498467">선택</translation>
+<translation id="6963642900430330478">이 페이지는 위험합니다. 사이트 정보</translation>
 <translation id="6965382102122355670">확인</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1개 선택됨}other{#개 선택됨}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" />개 선택됨. 화면 상단에서 옵션 선택 가능</translation>

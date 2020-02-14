@@ -22,6 +22,7 @@
 #include "cc/base/devtools_instrumentation.h"
 #include "cc/base/histograms.h"
 #include "cc/layers/picture_layer_impl.h"
+#include "cc/paint/display_item_list.h"
 #include "cc/raster/paint_worklet_image_provider.h"
 #include "cc/raster/playback_image_provider.h"
 #include "cc/raster/raster_buffer.h"
@@ -352,6 +353,17 @@ class DidFinishRunningAllTilesTask : public TileTask {
   CompletionCb completion_cb_;
 };
 
+gfx::ContentColorUsage GetContentColorUsageForPrioritizedTile(
+    const PrioritizedTile& prioritized_tile) {
+  // TODO(cblume,ccameron): Add support for HDR.
+  bool contains_only_srgb_images = prioritized_tile.raster_source()
+                                       ->GetDisplayItemList()
+                                       ->discardable_image_map()
+                                       .contains_only_srgb_images();
+  return contains_only_srgb_images ? gfx::ContentColorUsage::kSRGB
+                                   : gfx::ContentColorUsage::kWideColorGamut;
+}
+
 }  // namespace
 
 RasterTaskCompletionStats::RasterTaskCompletionStats()
@@ -679,8 +691,6 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
   MemoryUsage memory_usage(resource_pool_->memory_usage_bytes(),
                            resource_pool_->resource_count());
 
-  gfx::ColorSpace raster_color_space = client_->GetRasterColorSpace();
-
   std::unique_ptr<RasterTilePriorityQueue> raster_priority_queue(
       client_->BuildRasterQueue(global_state_.tree_priority,
                                 RasterTilePriorityQueue::Type::ALL));
@@ -720,6 +730,11 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
       work_to_schedule.tiles_to_process_for_images.push_back(prioritized_tile);
       continue;
     }
+
+    auto content_color_usage =
+        GetContentColorUsageForPrioritizedTile(prioritized_tile);
+    const gfx::ColorSpace raster_color_space =
+        client_->GetRasterColorSpace(content_color_usage);
 
     // Tiles in the raster queue should either require raster or decode for
     // checker-images. If this tile does not need raster, process it only to
@@ -799,8 +814,8 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
     } else {
       // Creating the raster task here will acquire resources, but
       // this resource usage has already been accounted for above.
-      auto raster_task = CreateRasterTask(
-          prioritized_tile, client_->GetRasterColorSpace(), &work_to_schedule);
+      auto raster_task = CreateRasterTask(prioritized_tile, raster_color_space,
+                                          &work_to_schedule);
       if (!raster_task) {
         continue;
       }
@@ -835,6 +850,11 @@ TileManager::PrioritizedWorkToSchedule TileManager::AssignGpuMemoryToTiles() {
 
       if (!prioritized_tile.should_decode_checkered_images_for_tile())
         continue;
+
+      auto content_color_usage =
+          GetContentColorUsageForPrioritizedTile(prioritized_tile);
+      gfx::ColorSpace raster_color_space =
+          client_->GetRasterColorSpace(content_color_usage);
 
       Tile* tile = prioritized_tile.tile();
       if (tile->draw_info().is_checker_imaged() ||
@@ -973,8 +993,6 @@ void TileManager::ScheduleTasks(PrioritizedWorkToSchedule work_to_schedule) {
 
   graph_.Reset();
 
-  gfx::ColorSpace raster_color_space = client_->GetRasterColorSpace();
-
   scoped_refptr<TileTask> required_for_activation_done_task =
       CreateTaskSetFinishedTask(
           &TileManager::DidFinishRunningTileTasksRequiredForActivation);
@@ -1028,6 +1046,11 @@ void TileManager::ScheduleTasks(PrioritizedWorkToSchedule work_to_schedule) {
       work_to_schedule.tiles_to_process_for_images;
   std::vector<DrawImage> new_locked_images;
   for (const PrioritizedTile& prioritized_tile : tiles_to_process_for_images) {
+    auto content_color_usage =
+        GetContentColorUsageForPrioritizedTile(prioritized_tile);
+    gfx::ColorSpace raster_color_space =
+        client_->GetRasterColorSpace(content_color_usage);
+
     std::vector<DrawImage> sync_decoded_images;
     std::vector<PaintImage> checkered_images;
     PartitionImagesForCheckering(prioritized_tile, raster_color_space,
@@ -1143,7 +1166,7 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   if (UsePartialRaster(msaa_sample_count) && tile->invalidated_id()) {
     resource = resource_pool_->TryAcquireResourceForPartialRaster(
         tile->id(), tile->invalidated_content_rect(), tile->invalidated_id(),
-        &invalidated_rect);
+        &invalidated_rect, raster_color_space);
   }
 
   bool partial_tile_decode = false;

@@ -215,8 +215,7 @@ bool NetworkServiceNetworkDelegate::OnCanGetCookies(
 
   URLLoader* url_loader = URLLoader::ForRequest(request);
   if (url_loader)
-    return url_loader->AllowCookies(
-        request.url(), request.site_for_cookies().RepresentativeUrl());
+    return url_loader->AllowCookies(request.url(), request.site_for_cookies());
 #if !defined(OS_IOS)
   WebSocket* web_socket = WebSocket::ForRequest(request);
   if (web_socket)
@@ -241,8 +240,7 @@ bool NetworkServiceNetworkDelegate::OnCanSetCookie(
     return false;
   URLLoader* url_loader = URLLoader::ForRequest(request);
   if (url_loader)
-    return url_loader->AllowCookies(
-        request.url(), request.site_for_cookies().RepresentativeUrl());
+    return url_loader->AllowCookies(request.url(), request.site_for_cookies());
 #if !defined(OS_IOS)
   WebSocket* web_socket = WebSocket::ForRequest(request);
   if (web_socket)

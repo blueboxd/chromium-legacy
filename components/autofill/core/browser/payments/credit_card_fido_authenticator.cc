@@ -363,6 +363,11 @@ void CreditCardFIDOAuthenticator::OnDidGetAssertion(
     // Treat failure to perform user verification as a strong signal not to
     // offer opt-in in the future.
     if (current_flow_ == OPT_IN_WITH_CHALLENGE_FLOW) {
+#if defined(OS_ANDROID)
+      // For Android, even if GetAssertion fails for opting-in, we still report
+      // success to |requester_| to fill the form with the fetched card info.
+      requester_->OnFidoAuthorizationComplete(/*did_succeed=*/true);
+#endif  // defined(OS_ANDROID)
       GetOrCreateFidoAuthenticationStrikeDatabase()->AddStrikes(
           FidoAuthenticationStrikeDatabase::
               kStrikesToAddWhenUserVerificationFailsOnOptInAttempt);
@@ -386,10 +391,17 @@ void CreditCardFIDOAuthenticator::OnDidGetAssertion(
   } else {
     DCHECK(current_flow_ == FOLLOWUP_AFTER_CVC_AUTH_FLOW ||
            current_flow_ == OPT_IN_WITH_CHALLENGE_FLOW);
-    // The user facing portion of the authorization is complete, which should be
-    // reported so that the form can be filled if in the FOLLOWUP_AFTER_CVC
-    // flow.
-    if (current_flow_ == FOLLOWUP_AFTER_CVC_AUTH_FLOW)
+    // The user-facing portion of the authorization is complete, which should be
+    // reported so that the form can be filled.
+    bool should_respond_to_requester =
+        (current_flow_ == FOLLOWUP_AFTER_CVC_AUTH_FLOW);
+#if defined(OS_ANDROID)
+    // For Android, opt-in flow (OPT_IN_WITH_CHALLENGE_FLOW) also delays form
+    // filling.
+    should_respond_to_requester |=
+        (current_flow_ == OPT_IN_WITH_CHALLENGE_FLOW);
+#endif
+    if (should_respond_to_requester)
       requester_->OnFidoAuthorizationComplete(/*did_succeed=*/true);
 
     base::Value response = base::Value(base::Value::Type::DICTIONARY);

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/media/history/media_history_contents_observer.h"
 
+#include "base/stl_util.h"
 #include "chrome/browser/media/history/media_history_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -46,6 +47,7 @@ void MediaHistoryContentsObserver::DidFinishNavigation(
 
   cached_position_.reset();
   cached_metadata_.reset();
+  cached_artwork_.clear();
   has_been_active_ = false;
   frozen_ = false;
   current_url_ = navigation_handle->GetURL();
@@ -79,6 +81,21 @@ void MediaHistoryContentsObserver::MediaSessionMetadataChanged(
   cached_metadata_ = metadata;
 }
 
+void MediaHistoryContentsObserver::MediaSessionImagesChanged(
+    const base::flat_map<media_session::mojom::MediaSessionImageType,
+                         std::vector<media_session::MediaImage>>& images) {
+  if (frozen_)
+    return;
+
+  if (base::Contains(images,
+                     media_session::mojom::MediaSessionImageType::kArtwork)) {
+    cached_artwork_ =
+        images.at(media_session::mojom::MediaSessionImageType::kArtwork);
+  } else {
+    cached_artwork_.clear();
+  }
+}
+
 void MediaHistoryContentsObserver::MediaSessionPositionChanged(
     const base::Optional<media_session::MediaPosition>& position) {
   if (!position.has_value() || frozen_)
@@ -96,7 +113,7 @@ void MediaHistoryContentsObserver::MaybeCommitMediaSession() {
   }
 
   service_->GetMediaHistoryStore()->SavePlaybackSession(
-      current_url_, *cached_metadata_, cached_position_);
+      current_url_, *cached_metadata_, cached_position_, cached_artwork_);
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(MediaHistoryContentsObserver)

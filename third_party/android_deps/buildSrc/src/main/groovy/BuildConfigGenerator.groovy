@@ -261,6 +261,10 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  jar_excluded_patterns = ["META-INF/proguard/*"]\n')
                 break
             case 'androidx_core_core':
+                sb.append('  ignore_proguard_configs = true\n')
+                // Target has AIDL, but we don't support it yet: http://crbug.com/644439
+                sb.append('  ignore_aidl = true\n')
+                break
             case 'androidx_media_media':
             case 'androidx_versionedparcelable_versionedparcelable':
             case 'com_android_support_support_compat':
@@ -292,14 +296,18 @@ class BuildConfigGenerator extends DefaultTask {
                 break
             case 'android_arch_lifecycle_runtime':
             case 'android_arch_lifecycle_viewmodel':
+            case 'androidx_lifecycle_lifecycle_runtime':
+            case 'androidx_lifecycle_lifecycle_viewmodel':
                 sb.append('  # https://crbug.com/887942#c1\n')
                 sb.append('  ignore_proguard_configs = true\n')
                 break
             case 'com_android_support_coordinatorlayout':
+            case 'androidx_coordinatorlayout_coordinatorlayout':
                 sb.append('  # https:crbug.com/954584\n')
                 sb.append('  ignore_proguard_configs = true\n')
                 break
             case 'com_android_support_design':
+            case 'com_google_android_material_material':
                 // Reduce binary size. https:crbug.com/954584
                 sb.append('  ignore_proguard_configs = true\n')
                 break
@@ -347,6 +355,7 @@ class BuildConfigGenerator extends DefaultTask {
                 sb.append('  # Target needs to exclude *xmlpull* files as already included in Android SDK.\n')
                 sb.append('  jar_excluded_patterns = [ "*xmlpull*" ]\n')
                 break
+            case 'androidx_preference_preference':
             case 'com_android_support_preference_v7':
                 // Replace broad library -keep rules with a more limited set in
                 // chrome/android/java/proguard.flags instead.

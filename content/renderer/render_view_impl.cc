@@ -1879,14 +1879,6 @@ void RenderViewImpl::OnSetInsidePortal(bool inside_portal) {
   webview()->SetInsidePortal(inside_portal);
 }
 
-void RenderViewImpl::PageScaleFactorChanged(float page_scale_factor) {
-  if (!webview())
-    return;
-
-  Send(new ViewHostMsg_PageScaleFactorChanged(GetRoutingID(),
-                                              page_scale_factor));
-}
-
 void RenderViewImpl::DidUpdateTextAutosizerPageInfo(
     const blink::WebTextAutosizerPageInfo& page_info) {
   DCHECK(webview()->MainFrame()->IsWebLocalFrame());

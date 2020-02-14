@@ -208,7 +208,7 @@ class TabTest : public ChromeViewsTestBase {
     // Tab size and TabRendererData state.
     if (tab.data_.pinned) {
       EXPECT_EQ(1, VisibleIconCount(tab));
-      if (tab.data_.alert_state) {
+      if (tab.data_.alert_state.size()) {
         EXPECT_FALSE(tab.showing_icon_);
         EXPECT_TRUE(tab.showing_alert_indicator_);
       } else {
@@ -225,7 +225,7 @@ class TabTest : public ChromeViewsTestBase {
           EXPECT_FALSE(tab.showing_alert_indicator_);
           break;
         case 2:
-          if (tab.data_.alert_state) {
+          if (tab.data_.alert_state.size()) {
             EXPECT_FALSE(tab.showing_icon_);
             EXPECT_TRUE(tab.showing_alert_indicator_);
           } else {
@@ -235,14 +235,14 @@ class TabTest : public ChromeViewsTestBase {
           break;
         default:
           EXPECT_EQ(3, VisibleIconCount(tab));
-          EXPECT_TRUE(tab.data_.alert_state);
+          EXPECT_FALSE(tab.data_.alert_state.empty());
           break;
       }
     } else {  // Tab not active and not pinned tab.
       switch (VisibleIconCount(tab)) {
         case 1:
           EXPECT_FALSE(tab.showing_close_button_);
-          if (!tab.data_.alert_state) {
+          if (tab.data_.alert_state.empty()) {
             EXPECT_FALSE(tab.showing_alert_indicator_);
             EXPECT_TRUE(tab.showing_icon_);
           } else {
@@ -252,14 +252,14 @@ class TabTest : public ChromeViewsTestBase {
           break;
         case 2:
           EXPECT_TRUE(tab.showing_icon_);
-          if (tab.data_.alert_state)
+          if (tab.data_.alert_state.size())
             EXPECT_TRUE(tab.showing_alert_indicator_);
           else
             EXPECT_FALSE(tab.showing_alert_indicator_);
           break;
         default:
           EXPECT_EQ(3, VisibleIconCount(tab));
-          EXPECT_TRUE(tab.data_.alert_state);
+          EXPECT_FALSE(tab.data_.alert_state.empty());
       }
     }
 
@@ -482,7 +482,10 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
 
         data.pinned = is_pinned_tab;
         controller.set_active_tab(is_active_tab);
-        data.alert_state = alert_state;
+        if (alert_state)
+          data.alert_state = {alert_state.value()};
+        else
+          data.alert_state.clear();
         tab.SetData(data);
         StopFadeAnimationIfNecessary(tab);
 
@@ -535,16 +538,18 @@ TEST_F(TabTest, TooltipProvidedByTab) {
   // should include a description of the alert state when the indicator is
   // present.
   for (int i = 0; i < 2; ++i) {
-    data.alert_state = (i == 0 ? base::Optional<TabAlertState>()
-                               : TabAlertState::AUDIO_PLAYING);
+    data.alert_state =
+        (i == 0 ? std::vector<TabAlertState>()
+                : std::vector<TabAlertState>({TabAlertState::AUDIO_PLAYING}));
+    const auto alert_state_to_show = Tab::GetAlertStateToShow(data.alert_state);
     SCOPED_TRACE(::testing::Message()
                  << "Tab with alert indicator state "
-                 << (data.alert_state
-                         ? static_cast<int>(data.alert_state.value())
+                 << (alert_state_to_show
+                         ? static_cast<int>(alert_state_to_show.value())
                          : -1));
     tab.SetData(data);
     const base::string16 expected_tooltip =
-        Tab::GetTooltipText(data.title, data.alert_state);
+        Tab::GetTooltipText(data.title, alert_state_to_show);
 
     for (auto j = tab.children().begin(); j != tab.children().end(); ++j) {
       if (!strcmp((*j)->GetClassName(), "TabCloseButton"))
@@ -727,7 +732,7 @@ TEST_F(TabTest, FaviconDoesntMoveWhenShowingAlertIndicator) {
     views::View* icon = GetTabIcon(tab);
     int icon_x = icon->x();
     TabRendererData data;
-    data.alert_state = TabAlertState::AUDIO_PLAYING;
+    data.alert_state = {TabAlertState::AUDIO_PLAYING};
     tab.SetData(data);
     EXPECT_EQ(icon_x, icon->x());
   }
@@ -808,7 +813,7 @@ TEST_F(TabTest, ExtraAlertPaddingNotShownOnSmallActiveTab) {
   Tab tab(&controller);
   widget.GetContentsView()->AddChildView(&tab);
   TabRendererData data;
-  data.alert_state = TabAlertState::AUDIO_PLAYING;
+  data.alert_state = {TabAlertState::AUDIO_PLAYING};
   tab.SetData(data);
 
   tab.SetBounds(0, 0, 200, 50);
@@ -881,7 +886,7 @@ TEST_F(AlertIndicatorTest, ShowsAndHidesAlertIndicator) {
   EXPECT_FALSE(showing_close_button(media_tab));
 
   TabRendererData start_media;
-  start_media.alert_state = TabAlertState::AUDIO_PLAYING;
+  start_media.alert_state = {TabAlertState::AUDIO_PLAYING};
   start_media.pinned = media_tab->data().pinned;
   media_tab->SetData(std::move(start_media));
 
@@ -891,7 +896,6 @@ TEST_F(AlertIndicatorTest, ShowsAndHidesAlertIndicator) {
   EXPECT_FALSE(showing_close_button(media_tab));
 
   TabRendererData stop_media;
-  stop_media.alert_state = base::nullopt;
   stop_media.pinned = media_tab->data().pinned;
   media_tab->SetData(std::move(stop_media));
 

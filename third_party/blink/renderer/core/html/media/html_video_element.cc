@@ -646,7 +646,9 @@ bool HTMLVideoElement::WouldTaintOrigin() const {
   return !IsMediaDataCorsSameOrigin();
 }
 
-FloatSize HTMLVideoElement::ElementSize(const FloatSize&) const {
+FloatSize HTMLVideoElement::ElementSize(
+    const FloatSize&,
+    const RespectImageOrientationEnum) const {
   return FloatSize(videoWidth(), videoHeight());
 }
 

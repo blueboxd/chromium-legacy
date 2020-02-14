@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ui/util/dynamic_type_util.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "ios/chrome/common/ui/util/dynamic_type_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -56,20 +57,6 @@ float SystemSuggestedFontSizeMultiplier(UIContentSizeCategory category,
   return std::min(
       max_multiplier,
       std::max(min_multiplier, SystemSuggestedFontSizeMultiplier(category)));
-}
-
-UIFont* PreferredFontForTextStyleWithMaxCategory(
-    UIFontTextStyle style,
-    UIContentSizeCategory currentCategory,
-    UIContentSizeCategory maxCategory) {
-  NSComparisonResult result =
-      UIContentSizeCategoryCompareToCategory(currentCategory, maxCategory);
-  UIContentSizeCategory category =
-      result == NSOrderedDescending ? maxCategory : currentCategory;
-  return [UIFont preferredFontForTextStyle:style
-             compatibleWithTraitCollection:
-                 [UITraitCollection
-                     traitCollectionWithPreferredContentSizeCategory:category]];
 }
 
 UIFont* LocationBarSteadyViewFont(UIContentSizeCategory currentCategory) {

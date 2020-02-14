@@ -17,7 +17,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/network_service_util.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
 namespace logging {
@@ -53,13 +52,13 @@ void SymlinkSetUp(const base::CommandLine& command_line,
   if (content::IsOutOfProcessNetworkService()) {
     auto logging_settings = network::mojom::LoggingSettings::New();
     logging_settings->logging_dest = settings.logging_dest;
-    const int log_file_descriptor = fileno(logging::DuplicateLogFILE());
-    if (log_file_descriptor < 0) {
+    base::ScopedFD log_file_descriptor(fileno(logging::DuplicateLogFILE()));
+    if (log_file_descriptor.get() < 0) {
       DLOG(WARNING) << "Unable to duplicate log file handle";
       return;
     }
     logging_settings->log_file_descriptor =
-        mojo::WrapPlatformFile(log_file_descriptor);
+        mojo::PlatformHandle(std::move(log_file_descriptor));
     content::GetNetworkService()->ReinitializeLogging(
         std::move(logging_settings));
   }

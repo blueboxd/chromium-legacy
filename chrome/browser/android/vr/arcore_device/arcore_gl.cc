@@ -347,10 +347,9 @@ void ArCoreGl::GetFrameData(
     should_update_display_geometry_ = false;
   }
 
-  TRACE_EVENT_BEGIN0("gpu", "ArCore Update");
   bool camera_updated = false;
   mojom::VRPosePtr pose = arcore_->Update(&camera_updated);
-  TRACE_EVENT_END0("gpu", "ArCore Update");
+
   if (!camera_updated) {
     DVLOG(1) << "arcore_->Update() failed";
     std::move(callback).Run(nullptr);

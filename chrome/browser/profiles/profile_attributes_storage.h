@@ -145,7 +145,8 @@ class ProfileAttributesStorage
   void SaveAvatarImageAtPath(const base::FilePath& profile_path,
                              gfx::Image image,
                              const std::string& key,
-                             const base::FilePath& image_path);
+                             const base::FilePath& image_path,
+                             base::OnceClosure callback);
 
   PrefService* const prefs_;
   mutable std::unordered_map<base::FilePath::StringType,
@@ -187,7 +188,9 @@ class ProfileAttributesStorage
   // Called when the picture given by |file_name| has been saved to disk. Used
   // both for the GAIA profile picture and the high res avatar files.
   void OnAvatarPictureSaved(const std::string& file_name,
-                            const base::FilePath& profile_path) const;
+                            const base::FilePath& profile_path,
+                            base::OnceClosure callback,
+                            bool success) const;
 
   // Notifies observers.
   void NotifyOnProfileHighResAvatarLoaded(

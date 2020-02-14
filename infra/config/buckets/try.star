@@ -181,6 +181,9 @@ try_.chromium_android_builder(
     cores = 16,
     goma_jobs = goma.jobs.J300,
     ssd = True,
+    tryjob = try_.job(
+        experiment_percentage = 100,
+    ),
 )
 
 try_.chromium_android_builder(
@@ -814,10 +817,6 @@ try_.chromium_mac_ios_builder(
 )
 
 try_.chromium_mac_ios_builder(
-    name = 'ios-device-xcode-clang',
-)
-
-try_.chromium_mac_ios_builder(
     name = 'ios-simulator-cr-recipe',
     executable = 'recipe:chromium_trybot',
     properties = {
@@ -854,10 +853,6 @@ try_.chromium_mac_ios_builder(
             '.+/[+]/ios/.+',
         ],
     ),
-)
-
-try_.chromium_mac_ios_builder(
-    name = 'ios-simulator-xcode-clang',
 )
 
 try_.chromium_mac_ios_builder(

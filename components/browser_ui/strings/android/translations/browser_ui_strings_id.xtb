@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Tampilkan</translation>
 <translation id="5301954838959518834">Oke, mengerti</translation>
 <translation id="5317780077021120954">Simpan</translation>
+<translation id="5391532827096253100">Sambungan ke situs ini tidak aman. Informasi situs</translation>
 <translation id="5556459405103347317">Muat ulang</translation>
 <translation id="5596627076506792578">Opsi lainnya</translation>
 <translation id="5860033963881614850">Nonaktif</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Tutup</translation>
 <translation id="6042308850641462728">Lainnya</translation>
 <translation id="6165508094623778733">Pelajari lebih lanjut</translation>
+<translation id="6206551242102657620">Sambungan aman. Informasi situs</translation>
 <translation id="6216432067784365534">Opsi <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Bagikan</translation>
 <translation id="6746124502594467657">Berpindah ke bawah</translation>
 <translation id="6818926723028410516">Pilih item</translation>
 <translation id="6910211073230771657">Dihapus</translation>
 <translation id="6945221475159498467">Pilih</translation>
+<translation id="6963642900430330478">Halaman ini berbahaya. Informasi situs</translation>
 <translation id="6965382102122355670">Oke</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 dipilih}other{# dipilih}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> dipilih. Opsi yang tersedia di dekat bagian atas layar</translation>

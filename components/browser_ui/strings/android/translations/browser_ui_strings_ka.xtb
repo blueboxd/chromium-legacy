@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">ჩვენება</translation>
 <translation id="5301954838959518834">კარგი, გასაგებია</translation>
 <translation id="5317780077021120954">შენახვა</translation>
+<translation id="5391532827096253100">თქვენი კავშირი ამ საიტთან არ არის დაცული. საიტის ინფორმაცია.</translation>
 <translation id="5556459405103347317">ხელახლა ჩატვირთვა</translation>
 <translation id="5596627076506792578">დამატებითი ვარიანტები</translation>
 <translation id="5860033963881614850">გამორთვა</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">დახურვა</translation>
 <translation id="6042308850641462728">სხვა</translation>
 <translation id="6165508094623778733">შეიტყვეთ მეტი</translation>
+<translation id="6206551242102657620">კავშირი დაცულია. საიტის ინფორმაცია.</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> — ვარიანტები</translation>
 <translation id="6527303717912515753">გაზიარება</translation>
 <translation id="6746124502594467657">გადაადგილება ქვემოთ</translation>
 <translation id="6818926723028410516">აირჩიეთ ერთეულები</translation>
 <translation id="6910211073230771657">წაშლილი</translation>
 <translation id="6945221475159498467">არჩევა</translation>
+<translation id="6963642900430330478">ეს გვერდი სახიფათოა. საიტის ინფორმაცია.</translation>
 <translation id="6965382102122355670">კარგი</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{არჩეულია 1}other{არჩეულია #}}</translation>
 <translation id="7087918508125750058">არჩეულია <ph name="ITEM_COUNT" />. ვარიანტები ხელმისაწვდომია ეკრანის ზედა ნაწილთან</translation>

@@ -144,7 +144,7 @@
 <translation id="1964135212174907577">Дараах обьект</translation>
 <translation id="1969092762068865084">Долдугаар сар</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
-<translation id="1982529757455190616">Өмнөх хайлтын хэсэг алга байна</translation>
+<translation id="1982529757455190616">Өмнөх үсрэлтийн цэг алга байна</translation>
 <translation id="1990932729021763163">Мөрний толгой:</translation>
 <translation id="2002895034995108595">Гаралтын төхөөрөмжийг дахин тохируулах</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{ зүүн талын хаалт}other{ # зүүн талын хаалтнууд}}</translation>
@@ -552,13 +552,13 @@
 <translation id="4763480195061959176">видео</translation>
 <translation id="4764692524839457597">өгөгдмөл</translation>
 <translation id="4772771694153161212">Доогуур нь зураагүй байна</translation>
-<translation id="4785388431077919785">Хайлтын хуудсаас гарсан</translation>
+<translation id="4785388431077919785">Хайлтын хуудаснаас гарсан</translation>
 <translation id="4786285211967466855">Өмнөх 1-р түвшний гарчиг алга байна</translation>
 <translation id="4787577491510559358">Одоо байгаа зүйлийн форматчлалыг зарлах</translation>
 <translation id="479989351350248267">хайлт</translation>
 <translation id="4804818685124855865">Таслах</translation>
 <translation id="481165870889056555">Тухайн хуудсын нэрийг зарла</translation>
-<translation id="4813110703341685753">Хайлтын хэсэг алга байна</translation>
+<translation id="4813110703341685753">Үсрэлт байхгүй байна</translation>
 <translation id="4815668758102003883">Бүдэг оюу ногоон</translation>
 <translation id="4826415162591436065">Цааш нь үргэлжүүлэх</translation>
 <translation id="4826604887384865800">Дараагийнх руу шилжих</translation>
@@ -582,7 +582,7 @@
 <translation id="495170559598752135">Авах арга хэмжээ</translation>
 <translation id="4953585991029886728">Текстийг засварлах</translation>
 <translation id="4954534434583049121">Өмнөх block quote</translation>
-<translation id="4967543208652787610">Цуцлахыг зөвшөөрөх эсвэл гарахын тулд enter дээр, дараах руу очих бол доошоо, өмнөх рүү очих бол дээшээ товч дээр дарна уу</translation>
+<translation id="4967543208652787610">Зөвшөөрөх бол enter дээр эсвэл цуцлах бол escape дээр, дараах руу очих бол доошоо, өмнөх рүү очих бол дээшээ товч дээр дарна уу</translation>
 <translation id="4973717656530883744">Мин <ph name="X" /></translation>
 <translation id="4973762002207131920"><ph name="KEY" />-руу шилжсэн.</translation>
 <translation id="4974612477719259470">Өмнөх товчлуур алга байна</translation>
@@ -746,7 +746,7 @@
 <translation id="6044160928851315051">Дэлгэцийг бараан болгох</translation>
 <translation id="6082768461603900813">Үндсэн шилжилт</translation>
 <translation id="609281021724813947">Өмнөх слайдер алга байна</translation>
-<translation id="6095514649509181044">Үсгийн том, жижиг бичиглэлийг алгасах</translation>
+<translation id="6095514649509181044">Үсгийн том, жижгийг үл хэрэгсэх</translation>
 <translation id="6118126368611144850">Chrome-н Андройд апп. Хэрэв таны төхөөрөмжид Play Store байвал Андройд аппаар ChromeVox-г туршиж үзээрэй. Play Store-с Google Chrome Canary-г татаж туршилтын дэмжлэгийг ашиглаж үзнэ үү.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6122013438240733403">btn</translation>
@@ -825,7 +825,7 @@
 <translation id="6714813999819678458">Өмнөх 2-р түвшний гарчиг</translation>
 <translation id="6716505898850596801">Өөрчлөгч түлхүүрүүд</translation>
 <translation id="6720808010210697990">Хүснэгт дотор бус</translation>
-<translation id="6730312624811567147">Нүүр эсвэл төгсгөл рүү очих бол хайлтын зүүн эсвэл баруун, нүүр эсвэл төгсгөлийг хянах бол хайлтын хяналтын зүүн эсвэл баруун, хуудсыг дээшлүүлж, доошлуулах бол хайлтын дээш эсвэл доош чиглэлтэй товчлуурыг тус бүр ашиглана уу</translation>
+<translation id="6730312624811567147">Home эсвэл End товчлуурын оронд Search товчлуурыг зүүн эсвэл баруун товчлууртай, Control товчлуурыг Home эсвэл End товчлууртай хамт хэрэглэхийн оронд Search болон Control товчлууруудыг зүүн эсвэл баруун товчлууртай, Page Up эсвэл Page Down товчлуурын оронд Search товчлуурыг дээш эсвэл доош товчлууртай хамт хэрэглэнэ</translation>
 <translation id="6734854816611871228"><ph name="VALUE" /> , ComboBox</translation>
 <translation id="6735257939857578167"><ph name="NUM" /> зүйлтэй</translation>
 <translation id="6736510033526053669">Үүссэн цонх</translation>

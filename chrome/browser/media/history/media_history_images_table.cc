@@ -27,8 +27,7 @@ sql::InitStatus MediaHistoryImagesTable::CreateTableIfNonExistent() {
       DB()->Execute(base::StringPrintf("CREATE TABLE IF NOT EXISTS %s("
                                        "id INTEGER PRIMARY KEY AUTOINCREMENT,"
                                        "url TEXT NOT NULL UNIQUE,"
-                                       "mime_type TEXT,"
-                                       "last_updated_time_s BIGINT NOT NULL)",
+                                       "mime_type TEXT)",
                                        kTableName)
                         .c_str());
 
@@ -39,6 +38,57 @@ sql::InitStatus MediaHistoryImagesTable::CreateTableIfNonExistent() {
   }
 
   return sql::INIT_OK;
+}
+
+base::Optional<int64_t> MediaHistoryImagesTable::SaveOrGetImage(
+    const GURL& url,
+    const base::string16& mime_type) {
+  DCHECK_LT(0, DB()->transaction_nesting());
+  if (!CanAccessDatabase())
+    return base::nullopt;
+
+  {
+    // First we should try and save the image in the database. It will not save
+    // if we already have this image in the DB.
+    sql::Statement statement(DB()->GetCachedStatement(
+        SQL_FROM_HERE, base::StringPrintf("INSERT OR IGNORE INTO %s "
+                                          "(url, mime_type) VALUES (?, ?)",
+                                          kTableName)
+                           .c_str()));
+    statement.BindString(0, url.spec());
+    statement.BindString16(1, mime_type);
+
+    if (!statement.Run())
+      return base::nullopt;
+  }
+
+  // If the insert is successful and we have store an image row then we should
+  // return the last insert id.
+  if (DB()->GetLastChangeCount() == 1) {
+    auto id = DB()->GetLastInsertRowId();
+    if (id)
+      return id;
+
+    NOTREACHED();
+  }
+
+  DCHECK_EQ(0, DB()->GetLastChangeCount());
+
+  {
+    // If we did not save the image then we need to find the ID of the image.
+    sql::Statement statement(DB()->GetCachedStatement(
+        SQL_FROM_HERE,
+        base::StringPrintf("SELECT id FROM %s WHERE url = ?", kTableName)
+            .c_str()));
+    statement.BindString(0, url.spec());
+
+    while (statement.Step()) {
+      return statement.ColumnInt64(0);
+    }
+  }
+
+  NOTREACHED();
+  return base::nullopt;
 }
 
 }  // namespace media_history

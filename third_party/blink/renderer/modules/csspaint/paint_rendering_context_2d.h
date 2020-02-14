@@ -84,6 +84,11 @@ class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
   bool CanCreateCanvas2dResourceProvider() const final { return false; }
   bool IsAccelerated() const final { return false; }
 
+  // CSS Paint doesn't have any notion of image orientation.
+  RespectImageOrientationEnum RespectImageOrientation() const final {
+    return kRespectImageOrientation;
+  }
+
   DOMMatrix* getTransform() final;
   void resetTransform() final;
 

@@ -175,16 +175,6 @@ luci.console_view(
             short_name = 'non',
         ),
         luci.console_view_entry(
-            builder = 'ci/ios-device-xcode-clang',
-            category = 'chromium.mac|ios|xcode',
-            short_name = 'dev',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/ios-simulator-xcode-clang',
-            category = 'chromium.mac|ios|xcode',
-            short_name = 'sim',
-        ),
-        luci.console_view_entry(
             builder = 'ci/Linux Builder',
             category = 'chromium.linux|release',
             short_name = 'bld',

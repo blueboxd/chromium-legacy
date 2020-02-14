@@ -243,7 +243,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2732718972699418926">AM</translation>
-<translation id="2737898226590637227">Nessun punto di riferimento ARIA successivo</translation>
+<translation id="2737898226590637227">Nessun landmark ARIA successivo</translation>
 <translation id="2749275490991666823">Selezionato</translation>
 <translation id="27527859628328957">Passa a elemento attivabile successivo</translation>
 <translation id="2756452585631602151">Inserisci un'etichetta personalizzata</translation>
@@ -257,7 +257,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="2811019999044652585">Per passare ad altre parti dello schermo, ad esempio alle barre degli strumenti o alla barra delle applicazioni, premi CTRL + Avanti. Sul Chromebook il tasto Avanti si trova subito sopra il tasto con il numero 2.</translation>
 <translation id="2811204574343810641">Riga</translation>
 <translation id="2841013758207633010">Ora</translation>
-<translation id="2843432675592278677">Nessun punto di riferimento ARIA precedente</translation>
+<translation id="2843432675592278677">Nessun landmark ARIA precedente</translation>
 <translation id="2843814945404750166">Verde oliva scuro</translation>
 <translation id="2843837985843789981">Gruppo precedente</translation>
 <translation id="2844995807198708617">Menu contestuale</translation>
@@ -709,7 +709,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="5822819874379903994">Turchese scuro</translation>
 <translation id="5824976764713185207">Leggi automaticamente la pagina al termine del caricamento</translation>
 <translation id="5826479389509458994">riga <ph name="ROW" /> colonna <ph name="COL" /></translation>
-<translation id="5833044594931167190">Nessun punto di riferimento ARIA</translation>
+<translation id="5833044594931167190">Nessun landmark ARIA</translation>
 <translation id="5842625257683688671">Nessuna immagine successiva</translation>
 <translation id="5847883414085148048">Dedica</translation>
 <translation id="5850707923114094062">Panoramica in avanti</translation>

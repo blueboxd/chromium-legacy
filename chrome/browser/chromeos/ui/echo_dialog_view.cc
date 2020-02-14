@@ -40,6 +40,7 @@ namespace chromeos {
 EchoDialogView::EchoDialogView(EchoDialogListener* listener,
                                const EchoDialogView::Params& params)
     : listener_(listener) {
+  DCHECK(listener_);
   learn_more_button_ =
       DialogDelegate::SetExtraView(CreateLearnMoreButton(this));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::ECHO);
@@ -61,6 +62,11 @@ EchoDialogView::EchoDialogView(EchoDialogListener* listener,
         l10n_util::GetStringUTF16(IDS_ECHO_CONSENT_DISMISS_BUTTON));
     InitForDisabledEcho();
   }
+
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      &EchoDialogListener::OnAccept, base::Unretained(listener_)));
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      &EchoDialogListener::OnCancel, base::Unretained(listener_)));
 }
 
 EchoDialogView::~EchoDialogView() = default;
@@ -102,22 +108,6 @@ void EchoDialogView::InitForDisabledEcho() {
   SetBorderAndLabel(std::move(label), font_list);
 }
 
-bool EchoDialogView::Cancel() {
-  if (listener_) {
-    listener_->OnCancel();
-    listener_ = nullptr;
-  }
-  return true;
-}
-
-bool EchoDialogView::Accept() {
-  if (listener_) {
-    listener_->OnAccept();
-    listener_ = nullptr;
-  }
-  return true;
-}
-
 ui::ModalType EchoDialogView::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
@@ -132,8 +122,7 @@ bool EchoDialogView::ShouldShowCloseButton() const {
 
 void EchoDialogView::ButtonPressed(views::Button* sender,
                                    const ui::Event& event) {
-  if (!listener_ || sender != learn_more_button_)
-    return;
+  DCHECK(sender == learn_more_button_);
   listener_->OnMoreInfoLinkClicked();
 }
 

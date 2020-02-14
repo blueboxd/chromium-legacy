@@ -172,7 +172,8 @@ TEST(WebRequestConditionTest, NoUrlAttributes) {
 
   WebRequestInfoInitParams params;
   params.url = GURL("https://www.example.com");
-  params.site_for_cookies = GURL("https://www.example.com");
+  params.site_for_cookies =
+      net::SiteForCookies::FromUrl(GURL("https://www.example.com"));
   WebRequestInfo https_request_info(std::move(params));
 
   // 1. A non-empty condition without UrlFilter attributes is fulfilled iff its

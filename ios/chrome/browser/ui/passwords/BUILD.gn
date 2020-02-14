@@ -5,7 +5,6 @@
 source_set("passwords") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "password_breach_action_handler.h",
     "password_breach_constants.h",
     "password_breach_constants.mm",
     "password_breach_consumer.h",
@@ -30,6 +29,7 @@ source_set("passwords") {
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/colors",
+    "//ios/chrome/common/ui/confirmation_alert",
     "//ios/chrome/common/ui_util",
     "//ui/base",
   ]

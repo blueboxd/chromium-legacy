@@ -155,6 +155,8 @@ class CORE_EXPORT HTMLInputElement
   bool IsValidValue(const String&) const;
   bool HasDirtyValue() const;
 
+  String rawValue() const;
+
   String SanitizeValue(const String&) const;
 
   String LocalizeValue(const String&) const;

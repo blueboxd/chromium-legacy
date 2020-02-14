@@ -112,8 +112,31 @@ PaintArtifact::PaintArtifact() : display_item_list_(0) {}
 PaintArtifact::PaintArtifact(DisplayItemList display_items,
                              Vector<PaintChunk> chunks)
     : display_item_list_(std::move(display_items)), chunks_(std::move(chunks)) {
-  for (auto& chunk : chunks_)
+  for (auto& chunk : chunks_) {
+    if (chunk.is_moved_from_cached_subsequence) {
+#if DCHECK_IS_ON()
+      auto old_bounds = chunk.bounds;
+      auto old_drawable_bounds = chunk.drawable_bounds;
+      auto old_outset_for_raster_effects = chunk.outset_for_raster_effects;
+      auto old_hit_test_data = std::move(chunk.hit_test_data);
+      auto old_known_to_be_opaque = chunk.known_to_be_opaque;
+      auto old_safe_opaque_background_color =
+          chunk.safe_opaque_background_color;
+      ComputeChunkDerivedData(display_item_list_, chunk);
+      DCHECK_EQ(old_bounds, chunk.bounds);
+      DCHECK_EQ(old_drawable_bounds, chunk.drawable_bounds);
+      DCHECK_EQ(old_outset_for_raster_effects, chunk.outset_for_raster_effects);
+      DCHECK((!old_hit_test_data && !chunk.hit_test_data) ||
+             (old_hit_test_data && chunk.hit_test_data &&
+              *old_hit_test_data == *chunk.hit_test_data));
+      DCHECK_EQ(old_known_to_be_opaque, chunk.known_to_be_opaque);
+      DCHECK_EQ(old_safe_opaque_background_color,
+                chunk.safe_opaque_background_color);
+#endif
+      continue;
+    }
     ComputeChunkDerivedData(display_item_list_, chunk);
+  }
 }
 
 PaintArtifact::~PaintArtifact() = default;

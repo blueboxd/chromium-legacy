@@ -2602,6 +2602,10 @@ const char kSetMarketUrlForTestingDescription[] =
     "When enabled, sets the market URL for use in testing the update menu "
     "item.";
 
+const char kShareButtonInTopToolbarName[] = "Share Button In Top Toolbar";
+const char kShareButtonInTopToolbarDescription[] =
+    "Enables UI to initiate sharing from the top toolbar";
+
 const char kShoppingAssistName[] = "Shopping assist exploration";
 const char kShoppingAssistDescription[] =
     "Show some shopping assistance when available";

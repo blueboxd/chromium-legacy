@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Прикажи</translation>
 <translation id="5301954838959518834">Важи</translation>
 <translation id="5317780077021120954">Сачувај</translation>
+<translation id="5391532827096253100">Веза са овим сајтом није безбедна. Информације о сајту</translation>
 <translation id="5556459405103347317">Учитај поново</translation>
 <translation id="5596627076506792578">Још опција</translation>
 <translation id="5860033963881614850">Искључено</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Затвори</translation>
 <translation id="6042308850641462728">Још</translation>
 <translation id="6165508094623778733">Сазнајте више</translation>
+<translation id="6206551242102657620">Веза је безбедна. Информације о сајту</translation>
 <translation id="6216432067784365534">Опције ставке <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Дели</translation>
 <translation id="6746124502594467657">Премести надоле</translation>
 <translation id="6818926723028410516">Изаберите ставке</translation>
 <translation id="6910211073230771657">Избрисано</translation>
 <translation id="6945221475159498467">Изабери</translation>
+<translation id="6963642900430330478">Ова страница је опасна. Информације о сајту</translation>
 <translation id="6965382102122355670">Потврди</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Изабрано: 1}one{Изабрано: #}few{Изабрано: #}other{Изабрано: #}}</translation>
 <translation id="7087918508125750058">Изабрали сте <ph name="ITEM_COUNT" />. Опције су доступне при врху екрана</translation>

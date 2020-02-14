@@ -7,6 +7,7 @@
 
 #include "chrome/browser/media/history/media_history_table_base.h"
 #include "sql/init_status.h"
+#include "url/gurl.h"
 
 namespace base {
 class UpdateableSequencedTaskRunner;
@@ -29,6 +30,10 @@ class MediaHistoryImagesTable : public MediaHistoryTableBase {
 
   // MediaHistoryTableBase:
   sql::InitStatus CreateTableIfNonExistent() override;
+
+  // Saves the image or gets the image ID if it is already in the database.
+  base::Optional<int64_t> SaveOrGetImage(const GURL& url,
+                                         const base::string16& mime_type);
 };
 
 }  // namespace media_history

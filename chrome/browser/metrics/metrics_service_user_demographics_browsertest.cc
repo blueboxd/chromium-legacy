@@ -114,7 +114,9 @@ class MetricsServiceUserDemographicsBrowserTest
   DISALLOW_COPY_AND_ASSIGN(MetricsServiceUserDemographicsBrowserTest);
 };
 
+// Disabled on Android: https://crbug.com/1052440
 // TODO(crbug/1016118): Add the remaining test cases.
+#if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_P(MetricsServiceUserDemographicsBrowserTest,
                        AddSyncedUserBirthYearAndGenderToProtoData) {
   test::DemographicsTestParams param = GetParam();
@@ -161,6 +163,7 @@ IN_PROC_BROWSER_TEST_P(MetricsServiceUserDemographicsBrowserTest,
 
   test_profile_harness->service()->GetUserSettings()->SetSyncRequested(false);
 }
+#endif // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 // Cannot test for the enabled feature on Chrome OS because there are always

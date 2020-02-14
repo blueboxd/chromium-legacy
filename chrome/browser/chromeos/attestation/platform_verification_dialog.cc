@@ -106,6 +106,18 @@ PlatformVerificationDialog::PlatformVerificationDialog(
       views::LayoutProvider::Get()->GetDialogInsetsForContentType(
           views::TEXT, views::TEXT)));
 
+  auto run_callback = [](PlatformVerificationDialog* dialog,
+                         ConsentResponse response) {
+    std::move(dialog->callback_).Run(response);
+  };
+
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      run_callback, base::Unretained(this), CONSENT_RESPONSE_ALLOW));
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      run_callback, base::Unretained(this), CONSENT_RESPONSE_DENY));
+  DialogDelegate::set_close_callback(base::BindOnce(
+      run_callback, base::Unretained(this), CONSENT_RESPONSE_NONE));
+
   // Explanation string.
   views::Label* label = new views::Label(l10n_util::GetStringFUTF16(
       IDS_PLATFORM_VERIFICATION_DIALOG_HEADLINE, domain_));
@@ -113,26 +125,6 @@ PlatformVerificationDialog::PlatformVerificationDialog(
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   AddChildView(label);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PLATFORM_VERIFICATION);
-}
-
-bool PlatformVerificationDialog::Cancel() {
-  // This method is called when user clicked "Block" button.
-  std::move(callback_).Run(CONSENT_RESPONSE_DENY);
-  return true;
-}
-
-bool PlatformVerificationDialog::Accept() {
-  // This method is called when user clicked "Allow" button.
-  std::move(callback_).Run(CONSENT_RESPONSE_ALLOW);
-  return true;
-}
-
-bool PlatformVerificationDialog::Close() {
-  // This method is called when user clicked "x" or pressed "Esc" to dismiss the
-  // dialog, the permission request is canceled, or when the tab containing this
-  // dialog is closed.
-  std::move(callback_).Run(CONSENT_RESPONSE_NONE);
-  return true;
 }
 
 ui::ModalType PlatformVerificationDialog::GetModalType() const {

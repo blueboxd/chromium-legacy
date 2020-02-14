@@ -143,11 +143,6 @@ _INTEGRATION_NEGATIVE_FILTER = [
     'ChromeDriverTest.testWindowMaximize',
     # LaunchApp is an obsolete API.
     'ChromeExtensionsCapabilityTest.testCanLaunchApp',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2278
-    # The following test uses the obsolete LaunchApp API, and is thus excluded.
-    # TODO(johnchen@chromium.org): Investigate feasibility of re-writing the
-    # test case without using LaunchApp.
-    'ChromeExtensionsCapabilityTest.testCanInspectBackgroundPage',
     # PerfTest takes a long time, requires extra setup, and adds little value
     # to integration testing.
     'PerfTest.*',
@@ -323,6 +318,16 @@ class ChromeDriverBaseTest(unittest.TestCase):
   def CreateDriver(self, server_url=None, download_dir=None, **kwargs):
     if server_url is None:
       server_url = _CHROMEDRIVER_SERVER_URL
+
+    if (not _ANDROID_PACKAGE_KEY and 'debugger_address' not in kwargs and
+          '_MINIDUMP_PATH' in globals()):
+      # Environment required for minidump not supported on Android
+      # minidumpPath will fail parsing if debugger_address is set
+      if 'experimental_options' in kwargs:
+        if 'minidumpPath' not in kwargs['experimental_options']:
+          kwargs['experimental_options']['minidumpPath'] = _MINIDUMP_PATH
+      else:
+        kwargs['experimental_options'] = {'minidumpPath': _MINIDUMP_PATH}
 
     android_package = None
     android_activity = None
@@ -1237,6 +1242,16 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
     if not _ANDROID_PACKAGE_KEY:
       self.assertRaises(chromedriver.InvalidArgument,
                                   elem.SendKeys, "/blah/blah/blah")
+
+  def testSendKeysToNonTypeableInputElement(self):
+    self._driver.Load("about:blank")
+    self._driver.ExecuteScript(
+         "document.body.innerHTML = '<input type=\"color\">';")
+    elem = self._driver.FindElement('tag name', 'input');
+    input_value = '#7fffd4'
+    elem.SendKeys(input_value)
+    value = elem.GetProperty('value')
+    self.assertEquals(input_value, value)
 
   def testGetElementAttribute(self):
     self._driver.Load(self.GetHttpUrlForFile(
@@ -3532,23 +3547,18 @@ class ChromeExtensionsCapabilityTest(ChromeDriverBaseTestWithWebServer):
     self.assertEqual('It works!', body_element.GetText())
 
   def testCanInspectBackgroundPage(self):
-    app_path = os.path.join(_TEST_DATA_DIR, 'test_app')
-    extension_path = os.path.join(_TEST_DATA_DIR, 'all_frames')
+    crx = os.path.join(_TEST_DATA_DIR, 'ext_bg_page.crx')
     driver = self.CreateDriver(
-        chrome_switches=['load-extension=%s' % app_path],
+        chrome_extensions=[self._PackExtension(crx)],
         experimental_options={'windowTypes': ['background_page']})
-    old_handles = driver.GetWindowHandles()
-    driver.LaunchApp('gegjcdcfeiojglhifpmibkadodekakpc')
-    new_window_handle = self.WaitForNewWindow(
-        driver, old_handles, check_closed_windows=False)
     handles = driver.GetWindowHandles()
     for handle in handles:
       driver.SwitchToWindow(handle)
       if driver.GetCurrentUrl() == 'chrome-extension://' \
-          'gegjcdcfeiojglhifpmibkadodekakpc/_generated_background_page.html':
+          'nibbphkelpaohebejnbojjalikodckih/_generated_background_page.html':
         self.assertEqual(42, driver.ExecuteScript('return magic;'))
         return
-    self.fail("couldn't find generated background page for test app")
+    self.fail("couldn't find generated background page for test extension")
 
   def testIFrameWithExtensionsSource(self):
     crx_path = os.path.join(_TEST_DATA_DIR, 'frames_extension.crx')
@@ -4330,6 +4340,12 @@ if __name__ == '__main__':
 
   if options.replayable and not options.log_path:
     parser.error('Need path specified when replayable log set to true.')
+
+  # When running in commit queue & waterfall, minidump will need to write to
+  # same directory as log, so use the same path
+  global _MINIDUMP_PATH
+  if options.log_path:
+    _MINIDUMP_PATH = os.path.dirname(options.log_path)
 
   global _CHROMEDRIVER_BINARY
   _CHROMEDRIVER_BINARY = util.GetAbsolutePathOfUserPath(options.chromedriver)

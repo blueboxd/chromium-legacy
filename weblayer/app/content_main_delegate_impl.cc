@@ -125,6 +125,8 @@ bool ContentMainDelegateImpl::BasicStartupComplete(int* exit_code) {
   cl->AppendSwitch(switches::kDisableMediaSessionAPI);
 #endif
   DisableFeaturesIfNotSet({
+    // TODO(crbug.com/1025619): remove |features::kWebPayments| once WebLayer
+    // supports WebPayments.
     ::features::kWebPayments, ::features::kWebAuth, ::features::kSmsReceiver,
         ::features::kWebXr,
 #if defined(OS_ANDROID)

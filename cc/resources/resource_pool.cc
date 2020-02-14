@@ -200,7 +200,8 @@ ResourcePool::TryAcquireResourceForPartialRaster(
     uint64_t new_content_id,
     const gfx::Rect& new_invalidated_rect,
     uint64_t previous_content_id,
-    gfx::Rect* total_invalidated_rect) {
+    gfx::Rect* total_invalidated_rect,
+    const gfx::ColorSpace& raster_color_space) {
   DCHECK(new_content_id);
   DCHECK(previous_content_id);
   *total_invalidated_rect = gfx::Rect();
@@ -213,6 +214,9 @@ ResourcePool::TryAcquireResourceForPartialRaster(
   for (auto it = unused_resources_.begin(); it != unused_resources_.end();
        ++it) {
     PoolResource* resource = it->get();
+    if (resource->color_space() != raster_color_space)
+      continue;
+
     if (resource->content_id() == previous_content_id) {
       UpdateResourceContentIdAndInvalidation(resource, new_content_id,
                                              new_invalidated_rect);

@@ -63,7 +63,8 @@ UserAnnotationHandler = class {
    */
   static setAnnotationForIdentifier(identifier, annotation) {
     const url = identifier.pageUrl;
-    if (!UserAnnotationHandler.instance.enabled || !url) {
+    if (!UserAnnotationHandler.instance ||
+        !UserAnnotationHandler.instance.enabled || !url) {
       return;
     }
 

@@ -157,6 +157,7 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
       const SkImageInfo& sk_image_info,
       GLenum texture_target,
       bool is_origin_top_left,
+      const ImageOrientation& orientation,
       base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
       base::PlatformThreadRef context_thread_ref,
       scoped_refptr<base::SingleThreadTaskRunner> context_task_runner,

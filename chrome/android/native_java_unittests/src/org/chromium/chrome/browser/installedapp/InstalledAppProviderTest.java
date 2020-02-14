@@ -787,7 +787,8 @@ public class InstalledAppProviderTest {
     }
 
     /** Android app has a "site" field missing certain parts of the URI (scheme, host, port). */
-    @CalledByNativeJavaTest
+    // Disabled test: https://crbug.com/1052429
+    //@CalledByNativeJavaTest
     public void testAssetStatementSiteMissingParts() throws Exception {
         RelatedApplication manifestRelatedApps[] = new RelatedApplication[] {
                 createRelatedApplication(PLATFORM_ANDROID, PACKAGE_NAME_1, null)};

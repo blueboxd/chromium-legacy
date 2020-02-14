@@ -245,6 +245,16 @@ DWORD WINAPI BrokerServicesBase::TargetEventsThread(PVOID param) {
       // that jobs can send and some of them depend on the job attributes set.
       JobTracker* tracker = reinterpret_cast<JobTracker*>(key);
 
+      // Processes may be added to a job after the process count has
+      // reached zero, leading us to manipulate a freed JobTracker
+      // object or job handle (as the key is no longer valid). We
+      // therefore check if the tracker has already been deleted.
+      if (std::find_if(jobs.begin(), jobs.end(), [&](auto&& p) -> bool {
+            return p.get() == tracker;
+          }) == jobs.end()) {
+        CHECK(false);
+      }
+
       switch (events) {
         case JOB_OBJECT_MSG_ACTIVE_PROCESS_ZERO: {
           // The job object has signaled that the last process associated

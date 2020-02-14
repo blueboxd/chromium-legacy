@@ -865,9 +865,10 @@ public abstract class ToolbarLayout
      * @param onClickListener The {@link OnClickListener} to be called when the button is clicked.
      * @param image The drawable to display for the button.
      * @param contentDescriptionResId The resource id of the content description for the button.
+     * @param useTint Whether tint should be automatically applied to the button.
      */
     void enableExperimentalButton(OnClickListener onClickListener, Drawable image,
-            @StringRes int contentDescriptionResId) {}
+            @StringRes int contentDescriptionResId, boolean useTint) {}
 
     /**
      * Updates image displayed on experimental button.
@@ -882,7 +883,8 @@ public abstract class ToolbarLayout
     /**
      * @return Experimental button view.
      */
-    View getExperimentalButtonView() {
+    @VisibleForTesting
+    public View getExperimentalButtonView() {
         return null;
     }
 

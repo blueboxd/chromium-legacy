@@ -727,6 +727,7 @@ html element input
     property name
     property pattern
     property placeholder
+    property rawValue
     property readOnly
     property reportValidity
     property required

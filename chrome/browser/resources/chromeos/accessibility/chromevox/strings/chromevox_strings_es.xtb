@@ -44,7 +44,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="1243477406442346359">Azul aciano</translation>
 <translation id="1246424317317450637">Negrita</translation>
 <translation id="1251750620252348585">Siguiente encabezado de nivel 6</translation>
-<translation id="1268366246392928616">No hay expresiones matemáticas anteriores</translation>
+<translation id="1268366246392928616">No hay ninguna expresión matemática anterior</translation>
 <translation id="1275718070701477396">Seleccionado</translation>
 <translation id="1277589437867411124">No hay formularios</translation>
 <translation id="1291286136605998134">Botón activar/desactivar</translation>
@@ -151,7 +151,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="2009187674653301682">Sin superíndice</translation>
 <translation id="2010555995361223825">Menús de ChromeVox</translation>
 <translation id="203030071582665758">No hay ningún título de nivel 4 anterior</translation>
-<translation id="2045055672832940894">No hay controles anteriores</translation>
+<translation id="2045055672832940894">No hay ningún control anterior</translation>
 <translation id="2045490512405922022">sin seleccionar</translation>
 <translation id="2063539687800151747">Epígrafe</translation>
 <translation id="207477615537953741">Semántica desactivada</translation>
@@ -321,7 +321,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="3172700825913348768">{COUNT,plural, =1{espacio}other{# espacios}}</translation>
 <translation id="3179119189286472195">Sin enlace</translation>
 <translation id="320041337977930740">Cambiar el estilo de presentación al formato intercalado</translation>
-<translation id="3208346789712025453">No hay controles posteriores</translation>
+<translation id="3208346789712025453">No hay ningún control posterior</translation>
 <translation id="320961988183078793">se ha introducido <ph name="TYPE" />.</translation>
 <translation id="321072937702597574">Orquídea</translation>
 <translation id="3218691001991391708">pegar <ph name="TEXT" />.</translation>
@@ -402,7 +402,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="3687295507293856493">Intenta detectar el encabezado de la columna de la celda actual</translation>
 <translation id="3692274950075847560">B:<ph name="RESULT" /></translation>
 <translation id="370367311675896712">Tachado</translation>
-<translation id="3704037000573066734">Pulsa la tecla de búsqueda + A, J para desplazarte a los detalles</translation>
+<translation id="3704037000573066734">Mantén pulsada la tecla de búsqueda mientras pulsas A y J para desplazarte a los detalles</translation>
 <translation id="3712520970944678024">Control de voz</translation>
 <translation id="371302509916403935">Subrayado</translation>
 <translation id="3716845769494773620">Multilínea</translation>
@@ -509,7 +509,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="4479068155583208887">Rojo ladrillo</translation>
 <translation id="4482330759234983253">Tabla anterior</translation>
 <translation id="4491109536499578614">Imagen</translation>
-<translation id="4493933053716737069">No hay artículos anteriores</translation>
+<translation id="4493933053716737069">No hay ningún artículo anterior</translation>
 <translation id="4505167975768625962">Inserción</translation>
 <translation id="4511186779140817916">Blanco almendra</translation>
 <translation id="451510441928265982">No hay ningún título de nivel 2 anterior</translation>
@@ -569,7 +569,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="4844625982113518938">Pulsa cualquier tecla para oír su nombre. Si quieres salir del modo de aprendizaje, pulsa Ctrl+W.</translation>
 <translation id="4846428657345567687">Te damos la bienvenida a ChromeVox.</translation>
 <translation id="4848993367330139335">tmr</translation>
-<translation id="4854380505292502090">No hay widgets multimedia anteriores</translation>
+<translation id="4854380505292502090">No hay ningún widget multimedia anterior</translation>
 <translation id="4862744964787595316">Sin negrita</translation>
 <translation id="4866956062845190338">rdmnuitm</translation>
 <translation id="4867316986324544967">Habilita registro de síntesis de voz</translation>
@@ -641,7 +641,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="5330443287809544590"><ph name="NAME" />, enlace</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">Enlace de retroceso</translation>
-<translation id="5355014376930441909">No hay más secciones</translation>
+<translation id="5355014376930441909">No hay ninguna sección posterior</translation>
 <translation id="536031132345979795">Retrocede durante una lectura continua</translation>
 <translation id="5368000168321181111">Sonido desactivado</translation>
 <translation id="5368505757342402527">Se ha completado un <ph name="PROGRESS" />​% de la descarga de <ph name="FILE_NAME" />. Tiempo restante para la descarga: <ph name="TIME" /> <ph name="UNITS" /></translation>
@@ -809,7 +809,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="6579990219486187401">Rosa claro</translation>
 <translation id="6583174818554398774">Cambiar a granularidad siguiente</translation>
 <translation id="6609828810966525877">Descubre más gestos en el modo de aprendizaje y en el Centro de Ayuda de Chromebook</translation>
-<translation id="6622161592949949545">No en modo tabla</translation>
+<translation id="6622161592949949545">No estás en modo tabla</translation>
 <translation id="6628427060004938651">Parte</translation>
 <translation id="6637586476836377253">registro</translation>
 <translation id="6657128831881431364">Barra de progreso</translation>
@@ -824,7 +824,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6714813999819678458">Encabezado anterior de nivel 2</translation>
 <translation id="6716505898850596801">Teclas modificadoras</translation>
-<translation id="6720808010210697990">No está dentro de la tabla</translation>
+<translation id="6720808010210697990">No estás dentro de la tabla</translation>
 <translation id="6730312624811567147">Usa la tecla de búsqueda + flecha izquierda o derecha para Inicio o Fin; la tecla de búsqueda + Control + flecha izquierda o derecha para Control, Inicio o Fin; y la tecla de búsqueda + flecha hacia arriba o hacia abajo para Re Pág o Av Pág</translation>
 <translation id="6734854816611871228"><ph name="VALUE" />, cuadro combinado</translation>
 <translation id="6735257939857578167">con <ph name="NUM" /> elementos</translation>
@@ -842,7 +842,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="6859876496651143278">Desliza un dedo hacia la izquierda</translation>
 <translation id="6865519907510167493">Error ortográfico</translation>
 <translation id="688976158310523235">Menú de búsqueda</translation>
-<translation id="6894148351896207544">Di la fecha y la hora actuales</translation>
+<translation id="6894148351896207544">Dice la fecha y la hora actuales</translation>
 <translation id="6897341342232909480">Se desplaza a la izquierda</translation>
 <translation id="6901540140423170855">fecha</translation>
 <translation id="6910211073230771657">Eliminado</translation>
@@ -905,7 +905,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="72393384879519786">Título</translation>
 <translation id="7240858705033280249">Ir a Detalles</translation>
 <translation id="7241683698754534149">Abre descripción larga en una pestaña nueva</translation>
-<translation id="7244947685630430863">No hay ningún gráfico anterior</translation>
+<translation id="7244947685630430863">No hay ningún elemento gráfico anterior</translation>
 <translation id="7248671827512403053">Aplicación</translation>
 <translation id="725969808843520477">Siguiente botón de opción</translation>
 <translation id="7261612856573623172">Nombre de la síntesis de voz del sistema</translation>
@@ -969,7 +969,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="7693840228159394336">Botón de opción anterior</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">No hay ningún cuadro combinado posterior</translation>
-<translation id="7731785449856576010">No hay más widgets multimedia</translation>
+<translation id="7731785449856576010">No hay ningún widget multimedia posterior</translation>
 <translation id="773906353055481349">Pulsa la tecla de búsqueda + Ctrl + Alt con las flechas para desplazarte por las celdas</translation>
 <translation id="7750184816513382104">Se distingue entre mayúsculas y minúsculas</translation>
 <translation id="7763537600611320912">Se ha iniciado la descarga de <ph name="FILE_NAME" /></translation>
@@ -983,7 +983,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="7819187121850078213">ventana, <ph name="TITLE" />, pestaña</translation>
 <translation id="7828956995407538686">Octubre</translation>
 <translation id="7839679365527550018">Palabra anterior</translation>
-<translation id="7851132556376253786">No hay más artículos</translation>
+<translation id="7851132556376253786">No hay ningún artículo posterior</translation>
 <translation id="7851816175263618915">Algunos signos de puntuación</translation>
 <translation id="7870596830398826354">Árbol de MathML</translation>
 <translation id="7871691770940645922">Pantalla braille virtual</translation>
@@ -1094,7 +1094,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
         "vi": "Vietnamita",
         "zh": "Chino",
         "zh_TW": "Chino (tradicional de los han)"}</translation>
-<translation id="8058636807889143711">No hay más expresiones matemáticas</translation>
+<translation id="8058636807889143711">No hay ninguna expresión matemática posterior</translation>
 <translation id="8065607967589909823">Has seleccionado</translation>
 <translation id="8066678206530322333">Banner</translation>
 <translation id="8076492880354921740">Pestañas</translation>
@@ -1205,8 +1205,8 @@ Para abrir el menú del navegador Chrome, pulsa Alt + F.</translation>
 <translation id="8946628535652548639">f<ph name="TABLECELLROWINDEX" />c<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8952400011684167587">No hay ningún botón de selección anterior</translation>
 <translation id="8957142051395645063">Anunciar</translation>
-<translation id="896035116006462153">Habilita el teclado en pantalla en la bandeja de estado, una función de accesibilidad para utilizar comandos braille ampliados</translation>
-<translation id="8970172509886453271">No hay secciones anteriores</translation>
+<translation id="896035116006462153">Habilita el teclado en pantalla en la bandeja de estado, para utilizar comandos braille ampliados</translation>
+<translation id="8970172509886453271">No hay ninguna sección anterior</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Dejar de recordar</translation>
 <translation id="900114243503212879">file</translation>

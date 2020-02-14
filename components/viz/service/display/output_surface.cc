@@ -87,4 +87,13 @@ gpu::Mailbox OutputSurface::GetOverlayMailbox() const {
   return gpu::Mailbox();
 }
 
+void OutputSurface::Reshape(const gfx::Size& size,
+                            float device_scale_factor,
+                            const gfx::ColorSpace& color_space,
+                            gfx::BufferFormat format,
+                            bool use_stencil,
+                            bool forced) {
+  DCHECK(!forced);
+  Reshape(size, device_scale_factor, color_space, format, use_stencil);
+}
 }  // namespace viz

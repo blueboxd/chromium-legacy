@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">காண்பி</translation>
 <translation id="5301954838959518834">சரி, புரிந்தது</translation>
 <translation id="5317780077021120954">சேமி</translation>
+<translation id="5391532827096253100">இந்தத் தளத்திற்கான இணைப்பு பாதுகாப்பானதல்ல. தளத் தகவல்</translation>
 <translation id="5556459405103347317">மீண்டும் ஏற்று</translation>
 <translation id="5596627076506792578">கூடுதல் விருப்பங்கள்</translation>
 <translation id="5860033963881614850">ஆஃப்</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">மூடு</translation>
 <translation id="6042308850641462728">மேலும்</translation>
 <translation id="6165508094623778733">மேலும் அறிக</translation>
+<translation id="6206551242102657620">பாதுகாப்பான இணைப்பு. தளத் தகவல்</translation>
 <translation id="6216432067784365534"><ph name="NAME_OF_LIST_ITEM" /> விருப்பத்தேர்வுகள்</translation>
 <translation id="6527303717912515753">பகிர்</translation>
 <translation id="6746124502594467657">கீழே நகர்த்து</translation>
 <translation id="6818926723028410516">பட்டியலிலிருந்து தேர்ந்தெடுக்கவும்</translation>
 <translation id="6910211073230771657">நீக்கப்பட்டது</translation>
 <translation id="6945221475159498467">தேர்ந்தெடு</translation>
+<translation id="6963642900430330478">இந்தப் பக்கம் ஆபத்தானது. தளத் தகவல்</translation>
 <translation id="6965382102122355670">சரி</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 தேர்ந்தெடுக்கப்பட்டது}other{# தேர்ந்தெடுக்கப்பட்டன}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> தேர்ந்தெடுக்கப்பட்டன.  திரையின் மேற்பகுதிக்கு அருகில், விருப்பங்கள் உள்ளன</translation>

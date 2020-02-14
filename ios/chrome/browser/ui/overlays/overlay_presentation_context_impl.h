@@ -11,6 +11,7 @@
 #include "ios/chrome/browser/overlays/public/overlay_modality.h"
 #import "ios/chrome/browser/overlays/public/overlay_presentation_context.h"
 #import "ios/chrome/browser/overlays/public/overlay_user_data.h"
+#import "ios/chrome/browser/ui/overlays/overlay_presentation_context_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_ui_state.h"
@@ -139,6 +140,8 @@ class OverlayPresentationContextImpl : public OverlayPresentationContext {
   // The delegate used to intercept presentation/dismissal events from
   // OverlayRequestCoordinators.
   OverlayRequestCoordinatorDelegateImpl coordinator_delegate_;
+  // The fullscreen disabler helper.
+  OverlayContainerFullscreenDisabler fullscreen_disabler_;
   // The coordinator factory that provides the UI for the overlays at this
   // modality.
   OverlayRequestCoordinatorFactory* coordinator_factory_ = nil;

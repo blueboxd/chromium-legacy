@@ -74,10 +74,6 @@
 #include "net/android/http_auth_negotiate_android.h"
 #endif
 
-#if defined(OS_CHROMEOS)
-#include "mojo/public/cpp/system/platform_handle.h"
-#endif
-
 namespace network {
 
 namespace {
@@ -414,14 +410,8 @@ void NetworkService::DeregisterNetworkContext(NetworkContext* network_context) {
 void NetworkService::ReinitializeLogging(mojom::LoggingSettingsPtr settings) {
   logging::LoggingSettings logging_settings;
   logging_settings.logging_dest = settings->logging_dest;
-  int log_file_descriptor = -1;
-  if (mojo::UnwrapPlatformFile(std::move(settings->log_file_descriptor),
-                               &log_file_descriptor) != MOJO_RESULT_OK ||
-      log_file_descriptor < 0) {
-    LOG(ERROR) << "Failed to read new log file handle";
-    return;
-  }
-  logging_settings.log_file = fdopen(log_file_descriptor, "a");
+  base::ScopedFD log_file_descriptor = settings->log_file_descriptor.TakeFD();
+  logging_settings.log_file = fdopen(log_file_descriptor.release(), "a");
   if (!logging_settings.log_file) {
     LOG(ERROR) << "Failed to open new log file handle";
     return;

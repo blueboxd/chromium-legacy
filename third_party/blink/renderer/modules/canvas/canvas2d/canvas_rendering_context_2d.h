@@ -176,6 +176,8 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   bool CanCreateCanvas2dResourceProvider() const final;
 
+  RespectImageOrientationEnum RespectImageOrientation() const final;
+
   bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
 
   cc::PaintCanvas* GetOrCreatePaintCanvas() final;

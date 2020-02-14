@@ -33,8 +33,9 @@ enum class SessionInitStatus {
   SESSION_ALREADY_EXISTS
 };
 
-typedef base::Callback<void(const std::string& session_id,
-                            SessionInitStatus* status)> SessionInitializedCB;
+using SessionInitializedCB =
+    base::OnceCallback<void(const std::string& session_id,
+                            SessionInitStatus* status)>;
 
 // Special class for resolving a new session promise. Resolving a new session
 // promise returns the session ID (as a string), but the blink promise needs
@@ -49,7 +50,7 @@ class MEDIA_BLINK_EXPORT NewSessionCdmResultPromise
       const blink::WebContentDecryptionModuleResult& result,
       const std::string& key_system_uma_prefix,
       const std::string& uma_name,
-      const SessionInitializedCB& new_session_created_cb,
+      SessionInitializedCB new_session_created_cb,
       const std::vector<SessionInitStatus>& expected_statuses);
   ~NewSessionCdmResultPromise() override;
 

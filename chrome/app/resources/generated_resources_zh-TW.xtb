@@ -20,6 +20,7 @@
 <translation id="1017280919048282932">新增至字典(&amp;A)</translation>
 <translation id="1018656279737460067">已取消</translation>
 <translation id="1023873740278604399">請稍微移動你的手指，讓系統擷取完整的指紋。</translation>
+<translation id="1026655690966755180">新增通訊埠</translation>
 <translation id="1026822031284433028">載入圖片</translation>
 <translation id="1029317248976101138">縮放</translation>
 <translation id="1030706264415084469"><ph name="URL" /> 要求在你的裝置上永久儲存大量資料</translation>
@@ -153,7 +154,7 @@
 <translation id="1201402288615127009">繼續</translation>
 <translation id="1202596434010270079">Kiosk 應用程式已更新，請移除 USB 隨身碟。</translation>
 <translation id="120368089816228251">音符</translation>
-<translation id="1203942045716040624">共用工作程式：<ph name="SCRIPT_URL" /></translation>
+<translation id="1203942045716040624">共享 Worker：<ph name="SCRIPT_URL" /></translation>
 <translation id="1205489148908752564">讀取及變更使用者許可清單</translation>
 <translation id="1206407435587370571">探索你的 Chromebook</translation>
 <translation id="1209796539517632982">自動名稱伺服器</translation>
@@ -419,6 +420,7 @@
 <translation id="1572876035008611720">請輸入您的電子郵件</translation>
 <translation id="1576594961618857597">預設的白色顯示圖片</translation>
 <translation id="1578558981922970608">強制關閉</translation>
+<translation id="1580179297662343964">這個擴充功能包含兒童不宜的內容，因此已遭到封鎖。</translation>
 <translation id="1581962803218266616">在 Finder 中顯示</translation>
 <translation id="1582955169539260415">刪除 [<ph name="FINGERPRINT_NAME" />]</translation>
 <translation id="1584990664401018068">您所使用的 Wi-Fi 網路 (<ph name="NETWORK_ID" />) 可能需要驗證。</translation>
@@ -1386,6 +1388,7 @@
 <translation id="2870560284913253234">網站</translation>
 <translation id="2870909136778269686">更新中…</translation>
 <translation id="2871813825302180988">已有人在這個裝置上使用這個帳戶。</translation>
+<translation id="287205682142673348">通訊埠轉送</translation>
 <translation id="287286579981869940">新增 <ph name="PROVIDER_NAME" />...</translation>
 <translation id="2872961005593481000">關閉</translation>
 <translation id="2874939134665556319">上一首曲目</translation>
@@ -2364,6 +2367,7 @@
 <translation id="4244238649050961491">尋找其他觸控筆應用程式</translation>
 <translation id="424726838611654458">一律在 Adobe Reader 中開啟</translation>
 <translation id="4247901771970415646">無法與 <ph name="USERNAME" /> 同步</translation>
+<translation id="4248098802131000011">確保密碼安全，避免發生資料侵害或其他安全性問題</translation>
 <translation id="4249248555939881673">正在等待網路連線...</translation>
 <translation id="4249373718504745892">系統已封鎖這個網頁存取你的攝影機和麥克風。</translation>
 <translation id="424963718355121712">應用程式的安裝來源應與應用程式影響所及的主機相同</translation>
@@ -2501,6 +2505,7 @@
 <translation id="4459169140545916303">上次使用時間：<ph name="DEVICE_LAST_ACTIVATED_TIME" /> 天前</translation>
 <translation id="4460014764210899310">取消分組</translation>
 <translation id="4462159676511157176">自訂名稱伺服器</translation>
+<translation id="4465236939126352372">已為「<ph name="APP_NAME" />」設定 <ph name="TIME" />的時間限制</translation>
 <translation id="4465725236958772856">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" />，由系統管理員管理，連線</translation>
 <translation id="4469477701382819144">已封鎖干擾性或誤導性的網站廣告</translation>
 <translation id="4469762931504673593"><ph name="ORIGIN" /> 可以編輯「<ph name="FOLDERNAME" />」中的檔案</translation>
@@ -2623,6 +2628,7 @@
 <translation id="4641539339823703554">Chrome 無法設定系統時間。請檢查下方的時間，並視需要予以修正。</translation>
 <translation id="4643612240819915418">在新分頁中開啟影片(&amp;O)</translation>
 <translation id="4645676300727003670">保留(&amp;K)</translation>
+<translation id="4646675363240786305">通訊埠</translation>
 <translation id="4647090755847581616">關閉分頁(&amp;C)</translation>
 <translation id="4647697156028544508">請輸入「<ph name="DEVICE_NAME" />」的 PIN：</translation>
 <translation id="4648491805942548247">權限不足</translation>
@@ -2815,6 +2821,7 @@
 <translation id="492299503953721473">移除 Android 應用程式</translation>
 <translation id="4923279099980110923">是，我願意協助</translation>
 <translation id="4924352752174756392">12 倍</translation>
+<translation id="4925320384394644410">你的通訊埠會顯示在這裡</translation>
 <translation id="4925542575807923399">這個帳戶的管理員要求此帳戶必需是多重登入工作階段中第一個登入的帳戶。</translation>
 <translation id="4927753642311223124">這裡沒有任何通知訊息，以後再來看看吧！</translation>
 <translation id="4929386379796360314">列印目的地</translation>
@@ -3477,6 +3484,7 @@
 <translation id="5863445608433396414">啟用偵錯功能</translation>
 <translation id="5864195618110239517">使用計量付費連線</translation>
 <translation id="5864471791310927901">DHCP 查閱失敗</translation>
+<translation id="5865508026715185451">「<ph name="APP_NAME" />」即將暫停</translation>
 <translation id="586567932979200359">你正在透過磁碟映像執行 <ph name="PRODUCT_NAME" />。你可以直接在電腦上安裝程式，往後無需透過磁碟映像即可直接執行，而且能隨時使用最新的版本。</translation>
 <translation id="5865733239029070421">自動將使用統計資料和當機報告傳送給 Google</translation>
 <translation id="5866557323934807206">清除這些設定 (下次造訪時不使用這些設定)</translation>
@@ -3521,6 +3529,7 @@
     <ph name="LINE_BREAK" />
     這張圖片會顯示在 Chromebook 的登入畫面和鎖定畫面中。</translation>
 <translation id="5925147183566400388">憑證實務作業基準指標</translation>
+<translation id="592815705005983377">調整及管理磁碟空間大小</translation>
 <translation id="592880897588170157">下載 PDF 檔案，而不自動在 Chrome 中開啟</translation>
 <translation id="5931146425219109062">讀取及變更你造訪過的網站上的所有資料</translation>
 <translation id="5932124097031739492">已成功升級 Linux。</translation>
@@ -3641,6 +3650,7 @@
 <translation id="6080689532560039067">請檢查你的系統時間</translation>
 <translation id="6082651258230788217">顯示在工具列中</translation>
 <translation id="608531959444400877"><ph name="WINDOW_TITLE" /> - 屬於未命名群組</translation>
+<translation id="6085886413119427067">判斷如何透過安全連線連上網站</translation>
 <translation id="6086846494333236931">由您的管理員安裝</translation>
 <translation id="6087960857463881712">好看的臉蛋</translation>
 <translation id="6091761513005122595">已成功共用掛接的裝置。</translation>
@@ -3986,6 +3996,7 @@
 <translation id="6584878029876017575">Microsoft 永久簽署</translation>
 <translation id="6586451623538375658">調換滑鼠主按鈕</translation>
 <translation id="6586604979641883411">升級 Linux 至少需要 <ph name="REQUIRED_SPACE" /> 的可用磁碟空間。請在裝置上釋出一些空間，然後再試一次。</translation>
+<translation id="6588043302623806746">使用安全 DNS</translation>
 <translation id="6590458744723262880">重新命名資料夾</translation>
 <translation id="6592267180249644460">WebRTC 記錄擷取時間：<ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">已擷取你的指紋</translation>
@@ -4028,6 +4039,7 @@
 <translation id="665061930738760572">在新視窗中開啟(&amp;N)</translation>
 <translation id="6651237644330755633">信任這個用於識別網站的憑證</translation>
 <translation id="6651823585377804376">下載的檔案包含惡意軟體。</translation>
+<translation id="6653184508164114047">調整及管理磁碟空間大小</translation>
 <translation id="665355505818177700">只有 x86_64 平台支援 Chrome <ph name="MS_AD_NAME" /> 整合，採用 ARM 或 x86 平台的 Chromebook 不支援這項功能。</translation>
 <translation id="6655190889273724601">開發人員模式</translation>
 <translation id="6655458902729017087">隱藏帳戶</translation>
@@ -4515,7 +4527,7 @@
 <translation id="7328699668338161242">Google 助理已能成功辨識你的聲音</translation>
 <translation id="7328867076235380839">按鍵組合無效</translation>
 <translation id="7329154610228416156">由於設定使用的網址 (<ph name="BLOCKED_URL" />) 不安全，導致登入失敗。請與您的管理員聯絡。</translation>
-<translation id="7332053360324989309">專用工作程式：<ph name="SCRIPT_URL" /></translation>
+<translation id="7332053360324989309">專有 Worker：<ph name="SCRIPT_URL" /></translation>
 <translation id="7334190995941642545">目前無法使用 Smart Lock，請稍後再試。</translation>
 <translation id="7334274148831027933">啟用停駐放大鏡</translation>
 <translation id="7335974957018254119">使用拼字檢查的語言：</translation>
@@ -4946,6 +4958,7 @@
 <translation id="7903742244674067440">您儲存了這些憑證授權單位的識別憑證</translation>
 <translation id="7903925330883316394">公用程式：<ph name="UTILITY_TYPE" /></translation>
 <translation id="7904094684485781019">這個帳戶的管理員已禁止多重登入。</translation>
+<translation id="7904526211178107182">將 Linux 通訊埠提供給網路上的其他裝置使用。</translation>
 <translation id="7908378463497120834">很抱歉，你的外部儲存裝置上至少有一個分割區無法掛載。</translation>
 <translation id="7909969815743704077">已在無痕模式中下載</translation>
 <translation id="7910768399700579500">新增資料夾(&amp;N)</translation>
@@ -5536,6 +5549,7 @@
 <translation id="8719653885894320876">「<ph name="PLUGIN_NAME" />」下載失敗</translation>
 <translation id="8720200012906404956">正在尋找行動網路。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="8720816553731218127">安裝時屬性的初始化作業已逾時。</translation>
+<translation id="8721586345635311197">在可用情況下，使用目前的服務供應商</translation>
 <translation id="8722912030556880711">傳送使用狀況與診斷資料。這個裝置目前會自動將診斷資料以及裝置和應用程式的使用狀況資料傳送給 Google。這些資料將有助於系統和應用程式提高穩定性及做出其他改善。部分匯總資料還能夠為 Google 應用程式和合作夥伴 (例如 Android 開發人員) 提供幫助。如果你的「其他網路和應用程式活動」設定為開啟，系統可能會將這些資料儲存到你的 Google 帳戶。<ph name="BEGIN_LINK2" />瞭解詳情<ph name="END_LINK2" /></translation>
 <translation id="8724405322205516354">當你看到這個圖示時，請使用你的指紋來驗證身分或核准購物交易。</translation>
 <translation id="8724409975248965964">指紋新增成功</translation>
@@ -5545,6 +5559,7 @@
 <translation id="8726206820263995930">從伺服器擷取政策設定時發生錯誤：<ph name="CLIENT_ERROR" />。</translation>
 <translation id="8727154974495727220">「<ph name="DEVICE_TYPE" />」設定完成後，只要按下 Google 助理按鈕或說出「Ok Google」，就能隨時取得各項協助。如要進行變更，請前往 Google 助理的設定頁面。</translation>
 <translation id="8730621377337864115">完成</translation>
+<translation id="8731787661154643562">通訊埠號碼</translation>
 <translation id="8732030010853991079">按一下這個圖示，即可使用這項擴充功能。</translation>
 <translation id="8732212173949624846">讀取及變更你已登入的所有裝置上的瀏覽記錄</translation>
 <translation id="8732844209475700754">更多與隱私權、安全性和資料收集相關的設定</translation>

@@ -8,6 +8,12 @@
 suite('SettingsBasicPage', function() {
   let page = null;
 
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      privacySettingsRedesignEnabled: true,
+    });
+  });
+
   setup(function() {
     PolymerTest.clearBody();
     page = document.createElement('settings-basic-page');
@@ -19,8 +25,10 @@ suite('SettingsBasicPage', function() {
   });
 
   test('basic pages', function() {
-    const sections =
-        ['appearance', 'onStartup', 'people', 'search', 'autofill', 'privacy'];
+    const sections = [
+      'appearance', 'onStartup', 'people', 'search', 'autofill', 'safetyCheck',
+      'privacy'
+    ];
     if (!cr.isChromeOS) {
       sections.push('defaultBrowser');
     }
@@ -31,5 +39,30 @@ suite('SettingsBasicPage', function() {
       const sectionElement = page.$$(`settings-section[section=${section}]`);
       assertTrue(!!sectionElement);
     }
+  });
+});
+
+suite('SettingsBasicPagePrivacyRedesignFlagOff', function() {
+  let page = null;
+
+  suiteSetup(function() {
+    loadTimeData.overrideValues({
+      privacySettingsRedesignEnabled: false,
+    });
+  });
+
+  setup(function() {
+    PolymerTest.clearBody();
+    page = document.createElement('settings-basic-page');
+    document.body.appendChild(page);
+  });
+
+  test('load page', function() {
+    // This will fail if there are any asserts or errors in the Settings page.
+  });
+
+  test('safetyCheckNotInBasicPage', function() {
+    Polymer.dom.flush();
+    assertFalse(!!page.$$('settings-section[section=safetyCheck'));
   });
 });

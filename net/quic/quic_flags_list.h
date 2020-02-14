@@ -134,7 +134,7 @@ QUIC_FLAG(
     false)
 
 // If true, QuicEpollClock::Now() will monotonically increase.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_monotonic_epoll_clock, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_monotonic_epoll_clock, true)
 
 // If true, enables the BBS4 and BBS5 connection options, which reduce BBR's
 // pacing rate in STARTUP as more losses occur as a fraction of CWND.
@@ -252,12 +252,6 @@ QUIC_FLAG(int32_t, FLAGS_quic_bbr2_default_startup_full_loss_count, 8)
 // upon high loss.
 QUIC_FLAG(double, FLAGS_quic_bbr2_default_inflight_hi_headroom, 0.01)
 
-// If true, QUIC connection close packet will be sent at all available
-// encryption levels.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_close_all_encryptions_levels2,
-          false)
-
 // If true, disable QUIC version Q043.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_q043, false)
 
@@ -288,11 +282,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_sanitize_ack_delay, true)
 
 // If true, frames will be hold in an optimized wrapper data structure.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_interval_deque, true)
-
-// If true, QUIC BBRv2 will cut inflight_hi gradually upon loss from PROBE_UP.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_bbr2_cut_inflight_hi_gradually,
-          true)
 
 // If true, the QUIC dispatcher will drop INITIAL packets that are too small.
 QUIC_FLAG(bool,
@@ -394,7 +383,7 @@ QUIC_FLAG(
 // is sent.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_batch_writer_flush_after_mtu_probe,
-          false)
+          true)
 
 // If true, QuicConnection will check MTU_DISCOVERY_FRAME in
 // nonretransmittable_frames to see if a packet is a MTU probe.
@@ -410,4 +399,9 @@ QUIC_FLAG(bool,
 // is bundled with ACKs sent after the PTO fires.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bundle_retransmittable_with_pto_ack,
+          false)
+// If true, use QuicClock::Now() as the source of packet receive time instead of
+// WallNow().
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_use_quic_time_for_received_timestamp2,
           false)

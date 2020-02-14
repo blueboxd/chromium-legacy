@@ -485,6 +485,8 @@ crbug.com/934545 [ android android-chromium qualcomm-adreno-(tm)-418 ] conforman
 crbug.com/610951 [ android qualcomm-adreno-(tm)-418 ] conformance/uniforms/uniform-samplers-test.html [ Skip ]
 crbug.com/914631 [ android qualcomm-adreno-(tm)-418 passthrough ] conformance/limits/gl-max-texture-dimensions.html [ RetryOnFailure ]
 crbug.com/951628 [ android qualcomm-adreno-(tm)-418 no-passthrough ] conformance/rendering/blending.html [ Failure ]
+# This test is skipped because it is crashing.
+crbug.com/1052344 [ android qualcomm-adreno-(tm)-418 ] conformance/context/context-release-upon-reload.html [ Skip ]
 
 # Nexus 6 (Adreno 420) and 6P (Adreno 430)
 crbug.com/499555 [ android qualcomm-adreno-(tm)-420 ] conformance/context/context-attributes-alpha-depth-stencil-antialias.html [ Failure ]

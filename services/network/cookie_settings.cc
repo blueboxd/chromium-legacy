@@ -10,8 +10,8 @@
 #include "base/strings/string_split.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "net/base/net_errors.h"
-#include "net/base/static_cookie_policy.h"
 #include "net/cookies/cookie_util.h"
+#include "net/cookies/static_cookie_policy.h"
 #include "services/network/public/cpp/features.h"
 
 namespace network {

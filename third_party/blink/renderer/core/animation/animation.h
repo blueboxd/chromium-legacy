@@ -94,6 +94,12 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
     kDefaultPriority
   };
 
+  // kTreeOrder uses the order in the DOM to determine animations' relative
+  // position.
+  // kPointerOrder simply compares Element pointers and determine animations'
+  // relative position.
+  enum CompareAnimationsOrdering { kTreeOrder, kPointerOrder };
+
   static Animation* Create(AnimationEffect*,
                            AnimationTimeline*,
                            ExceptionState& = ASSERT_NO_EXCEPTION);
@@ -241,8 +247,10 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
 
   int CompositorGroup() const { return compositor_group_; }
 
-  static bool HasLowerCompositeOrdering(const Animation* animation1,
-                                        const Animation* animation2);
+  static bool HasLowerCompositeOrdering(
+      const Animation* animation1,
+      const Animation* animation2,
+      CompareAnimationsOrdering compare_animation_type);
 
   bool EffectSuppressed() const override { return effect_suppressed_; }
   void SetEffectSuppressed(bool);

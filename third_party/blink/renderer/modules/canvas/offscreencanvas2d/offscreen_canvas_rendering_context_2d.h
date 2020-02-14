@@ -100,6 +100,11 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   CanvasResourceProvider* GetOrCreateCanvasResourceProvider() const;
   CanvasResourceProvider* GetCanvasResourceProvider() const;
 
+  // Offscreen canvas doesn't have any notion of image orientation.
+  RespectImageOrientationEnum RespectImageOrientation() const final {
+    return kRespectImageOrientation;
+  }
+
   bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
 
   cc::PaintCanvas* GetOrCreatePaintCanvas() final { return GetPaintCanvas(); }

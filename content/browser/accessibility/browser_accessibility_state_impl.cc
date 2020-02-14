@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
@@ -231,6 +232,16 @@ void BrowserAccessibilityStateImpl::AddAccessibilityModeFlags(ui::AXMode mode) {
       WebContentsImpl::GetAllWebContents();
   for (size_t i = 0; i < web_contents_vector.size(); ++i)
     web_contents_vector[i]->AddAccessibilityMode(accessibility_mode_);
+
+  // Add a crash key with the ax_mode, to enable searching for top crashes that
+  // occur when accessibility is turned on. This adds it for the browser
+  // process, and elsewhere the same key is added to renderer processes.
+  static auto* ax_mode_crash_key = base::debug::AllocateCrashKeyString(
+      "ax_mode", base::debug::CrashKeySize::Size64);
+  if (ax_mode_crash_key) {
+    base::debug::SetCrashKeyString(ax_mode_crash_key,
+                                   accessibility_mode_.ToString());
+  }
 }
 
 void BrowserAccessibilityStateImpl::RemoveAccessibilityModeFlags(

@@ -83,5 +83,6 @@ void ProfileAvatarDownloader::OnFetchComplete(const GURL& url,
   // Decode the downloaded bitmap. Ownership of the image is taken by |cache_|.
   callback_.Run(gfx::Image::CreateFrom1xBitmap(*bitmap),
                 profiles::GetDefaultAvatarIconFileNameAtIndex(icon_index_),
-                profiles::GetPathOfHighResAvatarAtIndex(icon_index_));
+                profiles::GetPathOfHighResAvatarAtIndex(icon_index_),
+                base::OnceClosure());
 }

@@ -48,11 +48,6 @@ enum class ApplicationModeForTabOpening { NORMAL, INCOGNITO, CURRENT };
 - (ProceduralBlock)completionBlockForTriggeringAction:
     (NTPTabOpeningPostOpeningAction)action;
 
-// Attempts to complete a Payment Request flow with a payment response from a
-// a third party app. Returns whether or not this operation was successful.
-- (BOOL)shouldCompletePaymentRequestOnCurrentTab:
-    (id<StartupInformation>)startupInformation;
-
 // Whether the |URL| is already opened, in regular mode.
 - (BOOL)URLIsOpenedInRegularMode:(const GURL&)URL;
 

@@ -11,37 +11,41 @@ suite('NewTabPageCustomizeDialogFocusTest', () => {
   /** @type {!CustomizeDialogElement} */
   let customizeDialog;
 
-  setup(async () => {
+  setup(() => {
     PolymerTest.clearBody();
 
     customizeDialog = document.createElement('ntp-customize-dialog');
     document.body.appendChild(customizeDialog);
-    await flushTasks();
+    return flushTasks();
   });
 
-  test('space selects focused menu item', async () => {
+  test('space selects focused menu item', () => {
     // Arrange.
     const menuItem = customizeDialog.shadowRoot.querySelector(
-        '.menu-item[page-name="themes"');
+        '.menu-item[page-name=themes]');
     menuItem.focus();
 
     // Act.
     keydown(menuItem, ' ');
 
     // Assert.
-    assertEquals(customizeDialog.$.menu.selected, 'themes');
+    const selector = customizeDialog.$.menu.querySelector('iron-selector');
+    assertTrue(!!selector);
+    assertEquals('themes', selector.selected);
   });
 
-  test('enter selects focused menu item', async () => {
+  test('enter selects focused menu item', () => {
     // Arrange.
     const menuItem = customizeDialog.shadowRoot.querySelector(
-        '.menu-item[page-name="shortcuts"');
+        '.menu-item[page-name=shortcuts]');
     menuItem.focus();
 
     // Act.
     keydown(menuItem, 'Enter');
 
     // Assert.
-    assertEquals(customizeDialog.$.menu.selected, 'shortcuts');
+    const selector = customizeDialog.$.menu.querySelector('iron-selector');
+    assertTrue(!!selector);
+    assertEquals('shortcuts', selector.selected);
   });
 });

@@ -40,6 +40,8 @@ const std::set<std::string> inputControlTypes = {
     "password",       "date",   "month", "week",  "time",
     "datetime-local", "number", "range", "color", "file"};
 
+const std::set<std::string> nontypeableControlTypes = {"color"};
+
 namespace {
 
 Status FocusToElement(
@@ -419,8 +421,8 @@ Status ExecuteSendKeysToElement(Session* session,
     return status;
   const base::ListValue* key_list;
   base::ListValue key_list_local;
+  const base::Value* text = nullptr;
   if (session->w3c_compliant) {
-    const base::Value* text;
     if (!params.Get("text", &text) || !text->is_string())
       return Status(kInvalidArgument, "'text' must be a string");
     key_list_local.Set(0, std::make_unique<base::Value>(text->Clone()));
@@ -444,6 +446,8 @@ Status ExecuteSendKeysToElement(Session* session,
   if (get_element_type->GetAsString(&element_type))
     element_type = base::ToLowerASCII(element_type);
   bool is_file = element_type == "file";
+  bool is_nontypeable = nontypeableControlTypes.find(element_type) !=
+                        nontypeableControlTypes.end();
 
   if (is_input && is_file) {
     if (session->strict_file_interactability) {
@@ -495,6 +499,23 @@ Status ExecuteSendKeysToElement(Session* session,
     std::unique_ptr<base::DictionaryValue> element(CreateElement(element_id));
     return web_view->SetFileInputFiles(session->GetCurrentFrameId(), *element,
                                        paths, multiple);
+  } else if (session->w3c_compliant && is_input && is_nontypeable) {
+    // Special handling for non-typeable inputs is only included in W3C Spec
+    // The Spec calls for returning element not interactable if the element
+    // has no value property, but this is included for all input elements, so
+    // no check is needed here.
+
+    // text is set only when session.w3c_compliant, so confirm here
+    DCHECK(text != nullptr);
+    base::ListValue args;
+    args.Append(CreateElement(element_id));
+    args.AppendString(text->GetString());
+    std::unique_ptr<base::Value> result;
+    // Set value to text as given by user; if this does not match the defined
+    // format for the input type, results are not defined
+    return web_view->CallFunction(session->GetCurrentFrameId(),
+                                  "(element, text) => element.value = text",
+                                  args, &result);
   } else {
     std::unique_ptr<base::Value> get_content_editable;
     base::ListValue args;

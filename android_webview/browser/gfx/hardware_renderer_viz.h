@@ -38,6 +38,9 @@ class HardwareRendererViz : public HardwareRenderer {
 
   viz::SurfaceId surface_id_;
 
+  // If last draw surface fbo id was zero or not.
+  bool was_fbo0_ = false;
+
   // Used to create viz::OutputSurface and gl::GLSurface
   OutputSurfaceProviderWebview output_surface_provider_;
 

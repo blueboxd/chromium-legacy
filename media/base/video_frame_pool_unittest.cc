@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <memory>
+#include <tuple>
 
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/video_frame_pool.h"
@@ -12,7 +13,8 @@
 
 namespace media {
 
-class VideoFramePoolTest : public ::testing::TestWithParam<VideoPixelFormat> {
+class VideoFramePoolTest
+    : public ::testing::TestWithParam<std::tuple<VideoPixelFormat, gfx::Size>> {
  public:
   VideoFramePoolTest() : pool_(new VideoFramePool()) {
     // Seed test clock with some dummy non-zero value to avoid confusion with
@@ -22,8 +24,8 @@ class VideoFramePoolTest : public ::testing::TestWithParam<VideoPixelFormat> {
   }
 
   scoped_refptr<VideoFrame> CreateFrame(VideoPixelFormat format,
+                                        const gfx::Size& coded_size,
                                         int timestamp_ms) {
-    gfx::Size coded_size(320,240);
     gfx::Rect visible_rect(coded_size);
     gfx::Size natural_size(coded_size);
 
@@ -34,7 +36,13 @@ class VideoFramePoolTest : public ::testing::TestWithParam<VideoPixelFormat> {
     EXPECT_EQ(format, frame->format());
     EXPECT_EQ(base::TimeDelta::FromMilliseconds(timestamp_ms),
               frame->timestamp());
-    EXPECT_EQ(coded_size, frame->coded_size());
+    if (format == PIXEL_FORMAT_ARGB) {
+      EXPECT_EQ(coded_size.width(), frame->coded_size().width());
+      EXPECT_EQ(coded_size.height(), frame->coded_size().height());
+    } else {
+      EXPECT_EQ((coded_size.width() + 1) & ~1, frame->coded_size().width());
+      EXPECT_EQ((coded_size.height() + 1) & ~1, frame->coded_size().height());
+    }
     EXPECT_EQ(visible_rect, frame->visible_rect());
     EXPECT_EQ(natural_size, frame->natural_size());
 
@@ -51,34 +59,44 @@ class VideoFramePoolTest : public ::testing::TestWithParam<VideoPixelFormat> {
 };
 
 TEST_P(VideoFramePoolTest, FrameInitializedAndZeroed) {
-  scoped_refptr<VideoFrame> frame = CreateFrame(GetParam(), 10);
+  scoped_refptr<VideoFrame> frame =
+      CreateFrame(std::get<0>(GetParam()), std::get<1>(GetParam()), 10);
 
   // Verify that frame is initialized with zeros.
   for (size_t i = 0; i < VideoFrame::NumPlanes(frame->format()); ++i)
     EXPECT_EQ(0, frame->data(i)[0]);
 }
 
-INSTANTIATE_TEST_SUITE_P(All,
-                         VideoFramePoolTest,
-                         testing::Values(PIXEL_FORMAT_I420,
-                                         PIXEL_FORMAT_NV12,
-                                         PIXEL_FORMAT_ARGB));
-
-TEST_F(VideoFramePoolTest, SimpleFrameReuse) {
-  scoped_refptr<VideoFrame> frame = CreateFrame(PIXEL_FORMAT_I420, 10);
+TEST_P(VideoFramePoolTest, FrameReuse) {
+  scoped_refptr<VideoFrame> frame =
+      CreateFrame(std::get<0>(GetParam()), std::get<1>(GetParam()), 10);
   const uint8_t* old_y_data = frame->data(VideoFrame::kYPlane);
 
   // Clear frame reference to return the frame to the pool.
   frame.reset();
 
   // Verify that the next frame from the pool uses the same memory.
-  scoped_refptr<VideoFrame> new_frame = CreateFrame(PIXEL_FORMAT_I420, 20);
+  scoped_refptr<VideoFrame> new_frame =
+      CreateFrame(std::get<0>(GetParam()), std::get<1>(GetParam()), 20);
   EXPECT_EQ(old_y_data, new_frame->data(VideoFrame::kYPlane));
 }
 
+INSTANTIATE_TEST_SUITE_P(All,
+                         VideoFramePoolTest,
+                         ::testing::Combine(testing::Values(PIXEL_FORMAT_I420,
+                                                            PIXEL_FORMAT_NV12,
+                                                            PIXEL_FORMAT_ARGB),
+                                            testing::Values(gfx::Size(320, 240),
+                                                            gfx::Size(321, 240),
+                                                            gfx::Size(320, 241),
+                                                            gfx::Size(321,
+                                                                      241))));
+
 TEST_F(VideoFramePoolTest, SimpleFormatChange) {
-  scoped_refptr<VideoFrame> frame_a = CreateFrame(PIXEL_FORMAT_I420, 10);
-  scoped_refptr<VideoFrame> frame_b = CreateFrame(PIXEL_FORMAT_I420, 10);
+  scoped_refptr<VideoFrame> frame_a =
+      CreateFrame(PIXEL_FORMAT_I420, gfx::Size(320, 240), 10);
+  scoped_refptr<VideoFrame> frame_b =
+      CreateFrame(PIXEL_FORMAT_I420, gfx::Size(320, 240), 10);
 
   // Clear frame references to return the frames to the pool.
   frame_a.reset();
@@ -89,12 +107,14 @@ TEST_F(VideoFramePoolTest, SimpleFormatChange) {
 
   // Verify that requesting a frame with a different format causes the pool
   // to get drained.
-  scoped_refptr<VideoFrame> new_frame = CreateFrame(PIXEL_FORMAT_I420A, 10);
+  scoped_refptr<VideoFrame> new_frame =
+      CreateFrame(PIXEL_FORMAT_I420A, gfx::Size(320, 240), 10);
   CheckPoolSize(0u);
 }
 
 TEST_F(VideoFramePoolTest, FrameValidAfterPoolDestruction) {
-  scoped_refptr<VideoFrame> frame = CreateFrame(PIXEL_FORMAT_I420, 10);
+  scoped_refptr<VideoFrame> frame =
+      CreateFrame(PIXEL_FORMAT_I420, gfx::Size(320, 240), 10);
 
   // Destroy the pool.
   pool_.reset();
@@ -106,8 +126,10 @@ TEST_F(VideoFramePoolTest, FrameValidAfterPoolDestruction) {
 }
 
 TEST_F(VideoFramePoolTest, StaleFramesAreExpired) {
-  scoped_refptr<VideoFrame> frame_1 = CreateFrame(PIXEL_FORMAT_I420, 10);
-  scoped_refptr<VideoFrame> frame_2 = CreateFrame(PIXEL_FORMAT_I420, 10);
+  scoped_refptr<VideoFrame> frame_1 =
+      CreateFrame(PIXEL_FORMAT_I420, gfx::Size(320, 240), 10);
+  scoped_refptr<VideoFrame> frame_2 =
+      CreateFrame(PIXEL_FORMAT_I420, gfx::Size(320, 240), 10);
   EXPECT_NE(frame_1.get(), frame_2.get());
   CheckPoolSize(0u);
 

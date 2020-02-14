@@ -685,6 +685,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       const ui::ClipboardFormatType& data_type,
       const std::string& data,
       IsClipboardPasteAllowedCallback callback) override;
+  void OnPageScaleFactorChanged(RenderFrameHostImpl* source,
+                                float page_scale_factor) override;
   bool HasSeenRecentScreenOrientationChange() override;
   void DidChangeScreenOrientation() override;
 
@@ -1365,8 +1367,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnUpdateZoomLimits(RenderViewHostImpl* source,
                           int minimum_percent,
                           int maximum_percent);
-  void OnPageScaleFactorChanged(RenderViewHostImpl* source,
-                                float page_scale_factor);
   void OnTextAutosizerPageInfoChanged(
       RenderViewHostImpl* source,
       const blink::WebTextAutosizerPageInfo& page_info);

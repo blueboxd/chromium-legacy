@@ -417,8 +417,11 @@ void ProfileAttributesEntry::SetGAIAGivenName(const base::string16& name) {
     profile_info_cache_->NotifyIfProfileNamesHaveChanged();
 }
 
-void ProfileAttributesEntry::SetGAIAPicture(gfx::Image image) {
-  profile_info_cache_->SetGAIAPictureOfProfileAtIndex(profile_index(), image);
+void ProfileAttributesEntry::SetGAIAPicture(
+    const std::string& image_url_with_size,
+    gfx::Image image) {
+  profile_info_cache_->SetGAIAPictureOfProfileAtIndex(
+      profile_index(), image_url_with_size, image);
 }
 
 void ProfileAttributesEntry::SetIsUsingGAIAPicture(bool value) {

@@ -29,6 +29,7 @@ include_rules = [
   "+components/services/heap_profiling/public/mojom",
   "+components/services/heap_profiling/public/cpp/settings.h",
   "+components/storage_monitor",
+  "+components/ui_devtools",
   "+components/user_prefs",
   "+components/variations/net",
   "+components/version_info",

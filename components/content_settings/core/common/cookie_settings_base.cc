@@ -11,8 +11,8 @@
 #include "build/build_config.h"
 #include "components/content_settings/core/common/features.h"
 #include "net/base/net_errors.h"
-#include "net/base/static_cookie_policy.h"
 #include "net/cookies/cookie_util.h"
+#include "net/cookies/static_cookie_policy.h"
 #include "url/gurl.h"
 
 namespace content_settings {
@@ -20,7 +20,8 @@ namespace {
 bool IsThirdPartyRequest(const GURL& url, const GURL& site_for_cookies) {
   net::StaticCookiePolicy policy(
       net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES);
-  return policy.CanAccessCookies(url, site_for_cookies) != net::OK;
+  return policy.CanAccessCookies(
+             url, net::SiteForCookies::FromUrl(site_for_cookies)) != net::OK;
 }
 }  // namespace
 

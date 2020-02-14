@@ -1703,19 +1703,11 @@ ci.mac_ios_builder(
 )
 
 ci.mac_ios_builder(
-    name = 'ios-device-xcode-clang',
-)
-
-ci.mac_ios_builder(
     name = 'ios-simulator-full-configs',
 )
 
 ci.mac_ios_builder(
     name = 'ios-simulator-noncq',
-)
-
-ci.mac_ios_builder(
-    name = 'ios-simulator-xcode-clang',
 )
 
 

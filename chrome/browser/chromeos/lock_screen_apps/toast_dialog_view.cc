@@ -41,8 +41,9 @@ constexpr int kDialogTitleMarginEndDp = 0;
 
 ToastDialogView::ToastDialogView(const base::string16& app_name,
                                  base::OnceClosure dismissed_callback)
-    : app_name_(app_name), dismissed_callback_(std::move(dismissed_callback)) {
+    : app_name_(app_name) {
   DialogDelegate::set_buttons(ui::DIALOG_BUTTON_NONE);
+  DialogDelegate::set_close_callback(std::move(dismissed_callback));
 
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::LOCK_SCREEN_NOTE_APP_TOAST);
@@ -94,12 +95,6 @@ ui::ModalType ToastDialogView::GetModalType() const {
 base::string16 ToastDialogView::GetWindowTitle() const {
   return l10n_util::GetStringFUTF16(IDS_LOCK_SCREEN_NOTE_APP_TOAST_DIALOG_TITLE,
                                     app_name_);
-}
-
-bool ToastDialogView::Close() {
-  if (!dismissed_callback_.is_null())
-    std::move(dismissed_callback_).Run();
-  return true;
 }
 
 void ToastDialogView::AddedToWidget() {

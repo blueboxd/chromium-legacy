@@ -418,6 +418,7 @@ bool SearchSuggestionParser::ParseSuggestResults(
   // 5th element: Optional key-value pairs from the Suggest server.
   const base::ListValue* types = nullptr;
   const base::ListValue* relevances = nullptr;
+  const base::ListValue* experiment_stats = nullptr;
   const base::ListValue* suggestion_details = nullptr;
   const base::ListValue* subtype_identifiers = nullptr;
   const base::DictionaryValue* extras = nullptr;
@@ -437,6 +438,17 @@ bool SearchSuggestionParser::ParseSuggestResults(
     results->field_trial_triggered = false;
     extras->GetBoolean("google:fieldtrialtriggered",
                        &results->field_trial_triggered);
+
+    results->experiment_stats.clear();
+    if (extras->GetList("google:experimentstats", &experiment_stats) &&
+        experiment_stats) {
+      for (size_t index = 0; index < experiment_stats->GetSize(); index++) {
+        const base::Value* experiment_stat = nullptr;
+        if (experiment_stats->Get(index, &experiment_stat) && experiment_stat) {
+          results->experiment_stats.push_back(experiment_stat->Clone());
+        }
+      }
+    }
 
     const base::DictionaryValue* client_data = nullptr;
     if (extras->GetDictionary("google:clientdata", &client_data) && client_data)

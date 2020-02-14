@@ -26,16 +26,6 @@ luci.console_view(
             short_name = 'non',
         ),
         luci.console_view_entry(
-            builder = 'ci/ios-device-xcode-clang',
-            category = 'chromium.mac|xcode',
-            short_name = 'dev',
-        ),
-        luci.console_view_entry(
-            builder = 'ci/ios-simulator-xcode-clang',
-            category = 'chromium.mac|xcode',
-            short_name = 'sim',
-        ),
-        luci.console_view_entry(
             builder = 'ci/ios13-sdk-device',
             category = 'chromium.fyi|13',
             short_name = 'dev',

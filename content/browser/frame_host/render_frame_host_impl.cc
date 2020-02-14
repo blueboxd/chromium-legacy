@@ -195,6 +195,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
+#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
@@ -3264,6 +3265,10 @@ void RenderFrameHostImpl::Are3DAPIsBlocked(Are3DAPIsBlockedCallback callback) {
   std::move(callback).Run(blocked);
 }
 
+void RenderFrameHostImpl::ScaleFactorChanged(float scale) {
+  delegate_->OnPageScaleFactorChanged(this, scale);
+}
+
 void RenderFrameHostImpl::RequestTextSurroundingSelection(
     blink::mojom::LocalFrame::GetTextSurroundingSelectionCallback callback,
     int max_length) {
@@ -3360,21 +3365,24 @@ bool RenderFrameHostImpl::IsFeatureEnabled(
 bool RenderFrameHostImpl::IsFeatureEnabled(
     blink::mojom::FeaturePolicyFeature feature,
     blink::PolicyValue threshold_value) {
-  // Use Document Policy to determine feature availability, but only if all of
-  // the following are true:
-  // * The DocumentPolicy RuntimeEnabledFeature is not disabled,
-  // * Document policy has been set on this object, and
-  // * Document policy infrastructure actually supports the feature.
-  // If any of those are false, assume true (enabled) here. Otherwise, check
-  // this object's policy.
-  bool document_policy_result =
-      !base::FeatureList::IsEnabled(features::kDocumentPolicy) ||
-      !document_policy_ || !document_policy_->IsFeatureSupported(feature) ||
-      document_policy_->IsFeatureEnabled(feature, threshold_value);
-
-  return document_policy_result && feature_policy_ &&
+  return feature_policy_ &&
          feature_policy_->IsFeatureEnabledForOrigin(
              feature, GetLastCommittedOrigin(), threshold_value);
+}
+
+bool RenderFrameHostImpl::IsFeatureEnabled(
+    blink::mojom::DocumentPolicyFeature feature) {
+  blink::mojom::PolicyValueType feature_type =
+      blink::GetDocumentPolicyFeatureInfoMap().at(feature).default_value.Type();
+  return IsFeatureEnabled(
+      feature, blink::PolicyValue::CreateMaxPolicyValue(feature_type));
+}
+
+bool RenderFrameHostImpl::IsFeatureEnabled(
+    blink::mojom::DocumentPolicyFeature feature,
+    blink::PolicyValue threshold_value) {
+  return document_policy_ &&
+         document_policy_->IsFeatureEnabled(feature, threshold_value);
 }
 
 void RenderFrameHostImpl::ViewSource() {
@@ -5953,6 +5961,18 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
             std::make_unique<ActiveURLMessageFilter>(impl));
       },
       base::Unretained(this)));
+
+  if (frame_tree_node_->IsMainFrame()) {
+    associated_registry_->AddInterface(base::BindRepeating(
+        [](RenderFrameHostImpl* impl,
+           mojo::PendingAssociatedReceiver<blink::mojom::LocalMainFrameHost>
+               receiver) {
+          impl->local_main_frame_host_receiver_.Bind(std::move(receiver));
+          impl->local_main_frame_host_receiver_.SetFilter(
+              std::make_unique<ActiveURLMessageFilter>(impl));
+        },
+        base::Unretained(this)));
+  }
   RegisterMojoInterfaces();
   mojo::PendingRemote<mojom::FrameFactory> frame_factory;
   GetProcess()->BindReceiver(frame_factory.InitWithNewPipeAndPassReceiver());

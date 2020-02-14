@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Sýna</translation>
 <translation id="5301954838959518834">Ég skil</translation>
 <translation id="5317780077021120954">Vista</translation>
+<translation id="5391532827096253100">Tenging þín við þetta vefsvæði er ekki örugg. Upplýsingar um vefsvæði</translation>
 <translation id="5556459405103347317">Endurhlaða</translation>
 <translation id="5596627076506792578">Fleiri valkostir</translation>
 <translation id="5860033963881614850">Slökkt</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Loka</translation>
 <translation id="6042308850641462728">Meira</translation>
 <translation id="6165508094623778733">Frekari upplýsingar</translation>
+<translation id="6206551242102657620">Örugg tenging. Upplýsingar um vefsvæði</translation>
 <translation id="6216432067784365534">Valkostir fyrir <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Deila</translation>
 <translation id="6746124502594467657">Færa niður</translation>
 <translation id="6818926723028410516">Veldu atriði</translation>
 <translation id="6910211073230771657">Eytt</translation>
 <translation id="6945221475159498467">Velja</translation>
+<translation id="6963642900430330478">Þessi síða er hættuleg. Upplýsingar um vefsvæði</translation>
 <translation id="6965382102122355670">Í lagi</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 valið}one{# valið}other{# valin}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> valin.  Valkostir eru ofarlega á skjánum</translation>

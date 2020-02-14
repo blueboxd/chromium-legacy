@@ -49,12 +49,6 @@
   return nil;
 }
 
-- (BOOL)shouldCompletePaymentRequestOnCurrentTab:
-    (id<StartupInformation>)startupInformation {
-  // Stub.
-  return NO;
-}
-
 - (BOOL)URLIsOpenedInRegularMode:(const GURL&)URL {
   return NO;
 }

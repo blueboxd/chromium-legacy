@@ -3254,6 +3254,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "share-button-in-top-toolbar",
+    "owners": ["jeffreycohen"],
+    "expiry_milestone": 83
+  },
+  {
     "name": "shared-clipboard-receiver",
     "owners": [ "//chrome/browser/sharing/OWNERS" ],
     "expiry_milestone": 82

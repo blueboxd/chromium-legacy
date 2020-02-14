@@ -22,6 +22,7 @@
 <translation id="5300589172476337783">Hiển thị</translation>
 <translation id="5301954838959518834">Ok</translation>
 <translation id="5317780077021120954">Lưu</translation>
+<translation id="5391532827096253100">Kết nối của bạn tới trang web này không an toàn. Thông tin trang web</translation>
 <translation id="5556459405103347317">Tải lại</translation>
 <translation id="5596627076506792578">Tùy chọn khác</translation>
 <translation id="5860033963881614850">Tắt</translation>
@@ -30,12 +31,14 @@
 <translation id="6040143037577758943">Đóng</translation>
 <translation id="6042308850641462728">Xem thêm</translation>
 <translation id="6165508094623778733">Tìm hiểu thêm</translation>
+<translation id="6206551242102657620">Kết nối an toàn. Thông tin trang web</translation>
 <translation id="6216432067784365534">Tùy chọn <ph name="NAME_OF_LIST_ITEM" /></translation>
 <translation id="6527303717912515753">Chia sẻ</translation>
 <translation id="6746124502594467657">Di chuyển xuống</translation>
 <translation id="6818926723028410516">Chọn mục</translation>
 <translation id="6910211073230771657">Đã xóa</translation>
 <translation id="6945221475159498467">Chọn</translation>
+<translation id="6963642900430330478">Trang này nguy hiểm. Thông tin trang web</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Đã chọn 1 mục}other{Đã chọn # mục}}</translation>
 <translation id="7087918508125750058">Đã chọn <ph name="ITEM_COUNT" /> mục. Bạn có thể sử dụng các tùy chọn ở gần đầu màn hình</translation>

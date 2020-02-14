@@ -5,6 +5,7 @@
 # Do not add any imports to non-//build directories here.
 # Some projects (e.g. V8) do not have non-build directories DEPS'ed in.
 
+import("//build/config/android/channel.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/internal_rules.gni")
 import("//build/config/clang/clang.gni")
@@ -2335,6 +2336,7 @@ if (enable_java_templates) {
 
     _proguard_enabled =
         defined(invoker.proguard_enabled) && invoker.proguard_enabled
+
     if (!_is_bundle_module && _proguard_enabled) {
       _proguard_mapping_path = "$_final_apk_path.mapping"
     }
@@ -2931,6 +2933,7 @@ if (enable_java_templates) {
           forward_variables_from(invoker, [ "proguard_jar_path" ])
           deps += _deps + [ ":$_compile_resources_target" ]
           proguard_mapping_path = _proguard_mapping_path
+          proguard_sourcefile_suffix = "$android_channel-$_version_code"
         } else {
           input_dex_filearg =
               "@FileArg(${_rebased_build_config}:final_dex:all_dex_files)"
@@ -4396,6 +4399,8 @@ if (enable_java_templates) {
   #    verify_proguard_flags: Enables verification of expected merged proguard
   #      flags based on a golden file.
   #
+  #    version_code: Optional. Version code of the target.
+  #
   #    is_multi_abi: If true will add a library placeholder for the missing ABI
   #      if either the primary or the secondary ABI has no native libraries set.
   #
@@ -4415,6 +4420,19 @@ if (enable_java_templates) {
     _uses_static_library = defined(invoker.static_library_provider)
     _proguard_enabled =
         defined(invoker.proguard_enabled) && invoker.proguard_enabled
+
+    if (defined(invoker.version_code)) {
+      _version_code = invoker.version_code
+    } else {
+      _version_code = android_default_version_code
+    }
+
+    if (android_override_version_code != "") {
+      _version_code = android_override_version_code
+    }
+
+    # Prevent "unused variable".
+    not_needed([ "_version_code" ])
 
     _bundle_base_path = "$root_build_dir/apks"
     if (defined(invoker.bundle_base_path)) {
@@ -4618,15 +4636,16 @@ if (enable_java_templates) {
               "/java/$_target_name.proguard_flags.expected"
         }
         dex(_sync_dex_target) {
-          enable_multidex = _enable_multidex
-          proguard_enabled = true
-          proguard_mapping_path = _proguard_mapping_path
           forward_variables_from(invoker,
                                  [
                                    "failed_proguard_expectation_file",
                                    "proguard_jar_path",
                                    "min_sdk_version",
                                  ])
+          enable_multidex = _enable_multidex
+          proguard_enabled = true
+          proguard_mapping_path = _proguard_mapping_path
+          proguard_sourcefile_suffix = "$android_channel-$_version_code"
           build_config = _build_config
 
           if (_verify_proguard_flags) {

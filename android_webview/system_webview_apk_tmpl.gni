@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//android_webview/variables.gni")
-import("//base/android/proguard/proguard.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/locales.gni")

@@ -54,8 +54,13 @@ crbug.com/835821 external/wpt/beacon/beacon-basic-blob.html [ Failure ]
 crbug.com/835821 external/wpt/beacon/beacon-basic-blobMax.html [ Failure ]
 crbug.com/835821 external/wpt/beacon/beacon-cors.sub.window.html [ Failure ]
 crbug.com/835821 external/wpt/beacon/beacon-navigate.html [ Failure ]
+crbug.com/835821 external/wpt/beacon/beacon-preflight-failure.sub.window.html [ Failure ]
 crbug.com/835821 external/wpt/beacon/beacon-redirect.window.html [ Failure ]
 crbug.com/835821 external/wpt/fetch/api/basic/keepalive.html [ Failure ]
 crbug.com/835821 http/tests/sendbeacon/beacon-blob-with-non-simple-type.html [ Failure ]
 crbug.com/835821 virtual/omt-worker-fetch/external/wpt/fetch/api/basic/keepalive.html [ Failure ]
 crbug.com/835821 virtual/stable/http/tests/sendbeacon/beacon-blob-with-non-simple-type.html [ Failure ]
+
+# Following tests were added for m82 and Blink CORS does not pay attentions for them.
+crbug.com/906850 external/wpt/mixed-content/gen/top.http-rp/opt-in/sharedworker-classic/same-https.swap-scheme.https.html [ Failure ]
+crbug.com/906850 external/wpt/mixed-content/gen/top.http-rp/opt-in/sharedworker-module/same-https.swap-scheme.https.html [ Failure ]

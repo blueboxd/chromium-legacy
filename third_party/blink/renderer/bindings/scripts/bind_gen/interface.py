@@ -3284,10 +3284,6 @@ def generate_interface(interface):
 
 
 def generate_interfaces(web_idl_database):
-    interface = web_idl_database.find("MemoryInfo")
-    generate_interface(interface)
-    return
-
     # multiprocessing.cpu_count()
     pool = multiprocessing.Pool(8)
     pool.map_async(generate_interface, web_idl_database.interfaces).get(3600)

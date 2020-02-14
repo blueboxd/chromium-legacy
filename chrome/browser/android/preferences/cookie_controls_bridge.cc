@@ -6,6 +6,9 @@
 
 #include <memory>
 #include "chrome/android/chrome_jni_headers/CookieControlsBridge_jni.h"
+#include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/profiles/profile_android.h"
+#include "components/content_settings/core/browser/cookie_settings.h"
 
 using base::android::JavaParamRef;
 
@@ -47,11 +50,29 @@ void CookieControlsBridge::OnBlockedCookiesCountChanged(int blocked_cookies) {
       env, jobject_, blocked_cookies_.value_or(0));
 }
 
+void CookieControlsBridge::SetThirdPartyCookieBlockingEnabledForSite(
+    JNIEnv* env,
+    bool block_cookies) {
+  controller_->OnCookieBlockingEnabledForSite(block_cookies);
+}
+
+void CookieControlsBridge::OnUiClosing(JNIEnv* env) {
+  controller_->OnUiClosing();
+}
+
 CookieControlsBridge::~CookieControlsBridge() = default;
 
 void CookieControlsBridge::Destroy(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj) {
   delete this;
+}
+
+jboolean JNI_CookieControlsBridge_IsCookieControlsEnabled(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jprofile) {
+  Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
+  return CookieSettingsFactory::GetForProfile(profile)
+      ->IsCookieControlsEnabled();
 }
 
 static jlong JNI_CookieControlsBridge_Init(

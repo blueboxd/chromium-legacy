@@ -37,10 +37,10 @@ CookieControlsController::CookieControlsController(
                           base::Unretained(this)));
 }
 
-CookieControlsController::~CookieControlsController() {}
+CookieControlsController::~CookieControlsController() = default;
 
-void CookieControlsController::OnBubbleUiClosing(
-    content::WebContents* web_contents) {
+void CookieControlsController::OnUiClosing() {
+  auto* web_contents = GetWebContents();
   if (should_reload_ && web_contents && !web_contents->IsBeingDestroyed())
     web_contents->GetController().Reload(content::ReloadType::NORMAL, true);
   should_reload_ = false;

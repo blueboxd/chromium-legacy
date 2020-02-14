@@ -60,6 +60,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/menu_list_inner_element.h"
 #include "third_party/blink/renderer/core/html/forms/popup_menu.h"
+#include "third_party/blink/renderer/core/html/forms/select_type.h"
 #include "third_party/blink/renderer/core/html/html_hr_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -107,6 +108,8 @@ HTMLSelectElement::HTMLSelectElement(Document& document)
       is_autofilled_by_preview_(false),
       index_to_select_on_cancel_(-1),
       popup_is_visible_(false) {
+  // Make sure SelectType is created after initializing |uses_menu_list_|.
+  select_type_ = SelectType::Create(*this);
   SetHasCustomStyleCallbacks();
   EnsureUserAgentShadowRoot();
 }
@@ -1089,40 +1092,7 @@ void HTMLSelectElement::SelectOption(HTMLOptionElement* element,
       SetActiveSelectionEnd(element);
   }
 
-  // Need to update last_on_change_option_ before
-  // LayoutMenuList::UpdateFromElement.
-  bool should_dispatch_events = false;
-  if (UsesMenuList()) {
-    should_dispatch_events = (flags & kDispatchInputAndChangeEventFlag) &&
-                             last_on_change_option_ != element;
-    last_on_change_option_ = element;
-  }
-
-  // For the menu list case, this is what makes the selected element appear.
-  UpdateMenuListLabel(UpdateFromElement());
-  // PopupMenu::UpdateFromElement() posts an O(N) task.
-  if (PopupIsVisible() && should_update_popup)
-    popup_->UpdateFromElement(PopupMenu::kBySelectionChange);
-
-  ScrollToSelection();
-  SetNeedsValidityCheck();
-
-  if (UsesMenuList()) {
-    if (should_dispatch_events) {
-      DispatchInputEvent();
-      DispatchChangeEvent();
-    }
-    if (LayoutObject* layout_object = GetLayoutObject()) {
-      // Need to check UsesMenuList() again because event handlers might
-      // change the status.
-      if (UsesMenuList()) {
-        // DidUpdateMenuListActiveOption() is O(N) because of
-        // HTMLOptionElement::index().
-        DidUpdateMenuListActiveOption(element);
-      }
-    }
-  }
-
+  select_type_->DidSelectOption(element, flags, should_update_popup);
   NotifyFormStateChanged();
 
   if (LocalFrame::HasTransientUserActivation(GetDocument().GetFrame()) &&
@@ -1983,6 +1953,7 @@ void HTMLSelectElement::Trace(Visitor* visitor) {
   visitor->Trace(active_selection_end_);
   visitor->Trace(option_to_scroll_to_);
   visitor->Trace(suggested_option_);
+  visitor->Trace(select_type_);
   visitor->Trace(popup_);
   visitor->Trace(popup_updater_);
   HTMLFormControlElementWithState::Trace(visitor);
@@ -2290,6 +2261,7 @@ void HTMLSelectElement::CloneNonAttributePropertiesFrom(
 
 void HTMLSelectElement::ChangeRendering() {
   UpdateUsesMenuList();
+  select_type_ = SelectType::Create(*this);
   if (!InActiveDocument())
     return;
   // TODO(futhark): SetForceReattachLayoutTree() should be the correct way to

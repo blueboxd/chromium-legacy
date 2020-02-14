@@ -1411,7 +1411,17 @@ void RenderWidgetHostViewAndroid::ShowInternal() {
     }
   }
 
-  host()->WasShown(base::nullopt /* record_tab_switch_time_request */);
+  auto content_to_visible_start_state = TakeRecordContentToVisibleTimeRequest();
+
+  // Only when page is restored from back-forward cache, record content to
+  // visible time and for this case no need to check for saved frames to
+  // record ContentToVisibleTime.
+  bool show_reason_bfcache_restore =
+      content_to_visible_start_state
+          ? content_to_visible_start_state->show_reason_bfcache_restore
+          : false;
+  host()->WasShown(show_reason_bfcache_restore ? content_to_visible_start_state
+                                               : base::nullopt);
 
   if (delegated_frame_host_) {
     delegated_frame_host_->WasShown(

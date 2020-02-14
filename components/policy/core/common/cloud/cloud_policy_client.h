@@ -264,13 +264,6 @@ class POLICY_EXPORT CloudPolicyClient {
   virtual void UploadRealtimeReport(base::Value report,
                                     StatusCallback callback);
 
-  // Uploads a report on the status of app push-installs. The client must be in
-  // a registered state. The |callback| will be called when the operation
-  // completes.
-  virtual void UploadAppInstallReport(
-      const enterprise_management::AppInstallReportRequest* app_install_report,
-      StatusCallback callback);
-
   // Cancels the pending app push-install status report upload, if an.
   virtual void CancelAppInstallReportUpload();
 

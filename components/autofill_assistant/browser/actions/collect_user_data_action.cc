@@ -718,6 +718,8 @@ void CollectUserDataAction::OnGetUserData(
           processed_action_proto_->mutable_collect_user_data_result()
               ->mutable_model());
     }
+    processed_action_proto_->mutable_collect_user_data_result()
+        ->set_shown_to_user(shown_to_user_);
   }
 
   EndAction(succeed ? ClientStatus(ACTION_APPLIED)

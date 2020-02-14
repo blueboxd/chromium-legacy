@@ -174,9 +174,10 @@ struct KeySystemConfigSelector::SelectionRequest {
   std::string key_system;
   blink::WebVector<blink::WebMediaKeySystemConfiguration>
       candidate_configurations;
-  base::Callback<void(const blink::WebMediaKeySystemConfiguration&,
-                      const CdmConfig&)> succeeded_cb;
-  base::Closure not_supported_cb;
+  base::OnceCallback<void(const blink::WebMediaKeySystemConfiguration&,
+                          const CdmConfig&)>
+      succeeded_cb;
+  base::OnceClosure not_supported_cb;
   bool was_permission_requested = false;
   bool is_permission_granted = false;
 };
@@ -895,9 +896,9 @@ void KeySystemConfigSelector::SelectConfig(
     const blink::WebString& key_system,
     const blink::WebVector<blink::WebMediaKeySystemConfiguration>&
         candidate_configurations,
-    base::Callback<void(const blink::WebMediaKeySystemConfiguration&,
-                        const CdmConfig&)> succeeded_cb,
-    base::Closure not_supported_cb) {
+    base::OnceCallback<void(const blink::WebMediaKeySystemConfiguration&,
+                            const CdmConfig&)> succeeded_cb,
+    base::OnceClosure not_supported_cb) {
   // Continued from requestMediaKeySystemAccess(), step 6, from
   // https://w3c.github.io/encrypted-media/#requestmediakeysystemaccess
   //
@@ -905,7 +906,7 @@ void KeySystemConfigSelector::SelectConfig(
   //     agent, reject promise with a NotSupportedError. String comparison
   //     is case-sensitive.
   if (!key_system.ContainsOnlyASCII()) {
-    not_supported_cb.Run();
+    std::move(not_supported_cb).Run();
     return;
   }
 
@@ -913,7 +914,7 @@ void KeySystemConfigSelector::SelectConfig(
 
   std::string key_system_ascii = key_system.Ascii();
   if (!key_systems_->IsSupportedKeySystem(key_system_ascii)) {
-    not_supported_cb.Run();
+    std::move(not_supported_cb).Run();
     return;
   }
 
@@ -935,7 +936,7 @@ void KeySystemConfigSelector::SelectConfig(
   // Therefore, always support Clear Key key system and only check settings for
   // other key systems.
   if (!is_encrypted_media_enabled && !IsClearKey(key_system_ascii)) {
-    not_supported_cb.Run();
+    std::move(not_supported_cb).Run();
     return;
   }
 
@@ -944,8 +945,8 @@ void KeySystemConfigSelector::SelectConfig(
   std::unique_ptr<SelectionRequest> request(new SelectionRequest());
   request->key_system = key_system_ascii;
   request->candidate_configurations = candidate_configurations;
-  request->succeeded_cb = succeeded_cb;
-  request->not_supported_cb = not_supported_cb;
+  request->succeeded_cb = std::move(succeeded_cb);
+  request->not_supported_cb = std::move(not_supported_cb);
   SelectConfigInternal(std::move(request));
 }
 
@@ -997,13 +998,14 @@ void KeySystemConfigSelector::SelectConfigInternal(
              EmeFeatureRequirement::kRequired);
         cdm_config.use_hw_secure_codecs =
             config_state.AreHwSecureCodecsRequired();
-        request->succeeded_cb.Run(accumulated_configuration, cdm_config);
+        std::move(request->succeeded_cb)
+            .Run(accumulated_configuration, cdm_config);
         return;
     }
   }
 
   // 6.4. Reject promise with a NotSupportedError.
-  request->not_supported_cb.Run();
+  std::move(request->not_supported_cb).Run();
 }
 
 void KeySystemConfigSelector::OnPermissionResult(

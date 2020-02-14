@@ -4,7 +4,6 @@
 
 import("//android_webview/variables.gni")
 import("//base/android/linker/config.gni")
-import("//base/android/proguard/proguard.gni")
 import("//build/config/android/extract_unwind_tables.gni")
 import("//build/config/android/rules.gni")
 import("//build/config/compiler/compiler.gni")

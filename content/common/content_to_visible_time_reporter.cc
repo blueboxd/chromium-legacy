@@ -50,6 +50,19 @@ void ReportUnOccludedMetric(const base::TimeTicks requested_time,
   UMA_HISTOGRAM_TIMES("Aura.WebContentsWindowUnOccludedTime", delta);
 }
 
+void RecordBackForwardCacheRestoreMetric(
+    const base::TimeTicks requested_time,
+    const gfx::PresentationFeedback& feedback) {
+  const base::TimeDelta delta = feedback.timestamp - requested_time;
+  // Histogram to record the content to visible duration after restoring a page
+  // from back-forward cache. Here min, max bucket size are same as the
+  // "PageLoad.PaintTiming.NavigationToFirstContentfulPaint" metric.
+  base::UmaHistogramCustomTimes(
+      "BackForwardCache.Restore.NavigationToFirstPaint", delta,
+      base::TimeDelta::FromMilliseconds(10), base::TimeDelta::FromMinutes(10),
+      100);
+}
+
 }  // namespace
 
 RecordContentToVisibleTimeRequest::RecordContentToVisibleTimeRequest() =
@@ -66,12 +79,14 @@ RecordContentToVisibleTimeRequest::RecordContentToVisibleTimeRequest(
     base::Optional<bool> destination_is_loaded,
     base::Optional<bool> destination_is_frozen,
     bool show_reason_tab_switching,
-    bool show_reason_unoccluded)
+    bool show_reason_unoccluded,
+    bool show_reason_bfcache_restore)
     : event_start_time(event_start_time),
       destination_is_loaded(destination_is_loaded),
       destination_is_frozen(destination_is_frozen),
       show_reason_tab_switching(show_reason_tab_switching),
-      show_reason_unoccluded(show_reason_unoccluded) {}
+      show_reason_unoccluded(show_reason_unoccluded),
+      show_reason_bfcache_restore(show_reason_bfcache_restore) {}
 
 void RecordContentToVisibleTimeRequest::UpdateRequest(
     const RecordContentToVisibleTimeRequest& other) {
@@ -84,6 +99,7 @@ void RecordContentToVisibleTimeRequest::UpdateRequest(
 
   show_reason_tab_switching |= other.show_reason_tab_switching;
   show_reason_unoccluded |= other.show_reason_unoccluded;
+  show_reason_bfcache_restore |= other.show_reason_bfcache_restore;
 }
 
 ContentToVisibleTimeReporter::ContentToVisibleTimeReporter() = default;
@@ -100,17 +116,6 @@ ContentToVisibleTimeReporter::TabWasShown(
   DCHECK(!tab_switch_start_state_);
   DCHECK(render_widget_visibility_request_timestamp_.is_null());
 
-  if (tab_switch_start_state_) {
-    // TabWasShown() is called multiple times without the tab being hidden in
-    // between. This shouldn't happen per the DCHECK above. Dump without
-    // crashing to gather more information for https://crbug.com/981757.
-    //
-    // TODO(fdoray): This code should be removed no later than August 30, 2019.
-    // https://crbug.com/981757
-    base::debug::DumpWithoutCrashing();
-    weak_ptr_factory_.InvalidateWeakPtrs();
-  }
-
   has_saved_frames_ = has_saved_frames;
   tab_switch_start_state_ = start_state;
   render_widget_visibility_request_timestamp_ =
@@ -121,8 +126,8 @@ ContentToVisibleTimeReporter::TabWasShown(
   return base::BindOnce(
       &ContentToVisibleTimeReporter::RecordHistogramsAndTraceEvents,
       weak_ptr_factory_.GetWeakPtr(), false /* is_incomplete */,
-      start_state.show_reason_tab_switching,
-      start_state.show_reason_unoccluded);
+      start_state.show_reason_tab_switching, start_state.show_reason_unoccluded,
+      start_state.show_reason_bfcache_restore);
 }
 
 void ContentToVisibleTimeReporter::TabWasHidden() {
@@ -130,6 +135,7 @@ void ContentToVisibleTimeReporter::TabWasHidden() {
     RecordHistogramsAndTraceEvents(true /* is_incomplete */,
                                    true /* show_reason_tab_switching */,
                                    false /* show_reason_unoccluded */,
+                                   false /* show_reason_bfcache_restore */,
                                    gfx::PresentationFeedback::Failure());
     weak_ptr_factory_.InvalidateWeakPtrs();
   }
@@ -139,10 +145,19 @@ void ContentToVisibleTimeReporter::RecordHistogramsAndTraceEvents(
     bool is_incomplete,
     bool show_reason_tab_switching,
     bool show_reason_unoccluded,
+    bool show_reason_bfcache_restore,
     const gfx::PresentationFeedback& feedback) {
   DCHECK(tab_switch_start_state_);
   DCHECK(!render_widget_visibility_request_timestamp_.is_null());
-  DCHECK(show_reason_unoccluded || show_reason_tab_switching);
+  // If the DCHECK fail, make sure RenderWidgetHostImpl::WasShown was triggered
+  // for recording the event.
+  DCHECK(show_reason_bfcache_restore || show_reason_unoccluded ||
+         show_reason_tab_switching);
+
+  if (show_reason_bfcache_restore) {
+    RecordBackForwardCacheRestoreMetric(
+        tab_switch_start_state_->event_start_time, feedback);
+  }
 
   if (show_reason_unoccluded) {
     ReportUnOccludedMetric(tab_switch_start_state_->event_start_time, feedback);

@@ -1208,6 +1208,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/page_info/CertificateChainHelper.java",
   "java/src/org/chromium/chrome/browser/page_info/CertificateViewer.java",
   "java/src/org/chromium/chrome/browser/page_info/ConnectionInfoPopup.java",
+  "java/src/org/chromium/chrome/browser/page_info/CookieControlsView.java",
   "java/src/org/chromium/chrome/browser/page_info/PageInfoController.java",
   "java/src/org/chromium/chrome/browser/page_info/PageInfoDialog.java",
   "java/src/org/chromium/chrome/browser/page_info/PageInfoView.java",

@@ -572,7 +572,8 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnOriginatorClientItemId() {
     // without deduplication, which is the case for all datatypes except
     // bookmarks, as well as bookmarks created before 2015, when the item ID was
     // not globally unique across clients.
-    if (!base::IsValidGUID(candidate.entity.originator_client_item_id)) {
+    if (!base::IsValidGUIDOutputString(
+            candidate.entity.originator_client_item_id)) {
       pending_updates_.push_back(std::move(candidate));
       continue;
     }

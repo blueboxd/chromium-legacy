@@ -267,7 +267,7 @@ void CookieControlsBubbleView::WindowClosing() {
   if (this_bubble)
     g_instance = nullptr;
 
-  controller_->OnBubbleUiClosing(web_contents());
+  controller_->OnUiClosing();
 }
 
 void CookieControlsBubbleView::OnDialogAccepted() {

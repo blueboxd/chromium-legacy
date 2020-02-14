@@ -380,10 +380,10 @@ class KeySystemConfigSelectorTest : public testing::Test {
 
     key_system_config_selector.SelectConfig(
         key_system_, configs_,
-        base::BindRepeating(&KeySystemConfigSelectorTest::OnSucceeded,
-                            base::Unretained(this)),
-        base::BindRepeating(&KeySystemConfigSelectorTest::OnNotSupported,
-                            base::Unretained(this)));
+        base::BindOnce(&KeySystemConfigSelectorTest::OnSucceeded,
+                       base::Unretained(this)),
+        base::BindOnce(&KeySystemConfigSelectorTest::OnNotSupported,
+                       base::Unretained(this)));
   }
 
   void SelectConfigReturnsConfig() {

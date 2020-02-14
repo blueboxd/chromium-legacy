@@ -79,6 +79,14 @@ class Union(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
 
         for idl_type in flattened_members:
             idl_type.apply_to_all_composing_elements(collect_primary_component)
+        # Make this union type look defined in 'modules' if the union type is
+        # used in 'modules' in order to keep the backward compatibility with
+        # the old bindings generator.
+        for idl_type in union_types:
+            filepath = idl_type.debug_info.location.filepath
+            if filepath.startswith('third_party/blink/renderer/modules/'):
+                from .composition_parts import Component
+                components.add(Component('modules'))
 
         # TODO(peria, yukishiino): Produce unique union names.  Trying to
         # produce the names compatible to the old bindings generator for the
@@ -86,12 +94,17 @@ class Union(WithIdentifier, WithCodeGeneratorInfo, WithComponent,
         #
         # type_names = sorted(
         #     [idl_type.type_name for idl_type in flattened_members])
-        type_names = [
-            idl_type.type_name for idl_type in union_types[0].member_types
-        ]
-        if does_include_nullable_type:
-            type_names.append('Null')
-        identifier = Identifier('Or'.join(type_names))
+        def backward_compatible_member_name(idl_type):
+            name = idl_type.unwrap().type_name
+            if name == 'StringTreatNullAs':
+                return 'StringTreatNullAsEmptyString'
+            else:
+                return name
+
+        identifier = Identifier('Or'.join([
+            backward_compatible_member_name(idl_type)
+            for idl_type in union_types[0].member_types
+        ]))
 
         WithIdentifier.__init__(self, identifier)
         WithCodeGeneratorInfo.__init__(self, readonly=True)

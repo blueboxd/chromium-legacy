@@ -89,7 +89,7 @@ std::string ComputeGuidFromBytes(base::span<const uint8_t> bytes) {
 std::string InferGuidForLegacyBookmark(
     const std::string& originator_cache_guid,
     const std::string& originator_client_item_id) {
-  DCHECK(!base::IsValidGUID(originator_client_item_id));
+  DCHECK(!base::IsValidGUIDOutputString(originator_client_item_id));
 
   const std::string unique_tag =
       base::StrCat({originator_cache_guid, originator_client_item_id});
@@ -99,7 +99,7 @@ std::string InferGuidForLegacyBookmark(
   static_assert(base::kSHA1Length >= 16, "16 bytes needed to infer GUID");
 
   const std::string guid = ComputeGuidFromBytes(base::make_span(hash));
-  DCHECK(base::IsValidGUID(guid));
+  DCHECK(base::IsValidGUIDOutputString(guid));
   return guid;
 }
 
@@ -196,7 +196,8 @@ void AdaptGuidForBookmark(const sync_pb::SyncEntity& update_entity,
   // Otherwise, we leave the field empty.
   if (specifics->bookmark().has_guid()) {
     LogGuidSource(BookmarkGuidSource::kSpecifics);
-  } else if (base::IsValidGUID(update_entity.originator_client_item_id())) {
+  } else if (base::IsValidGUIDOutputString(
+                 update_entity.originator_client_item_id())) {
     specifics->mutable_bookmark()->set_guid(
         update_entity.originator_client_item_id());
     LogGuidSource(BookmarkGuidSource::kValidOCII);

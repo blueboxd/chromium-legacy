@@ -37514,10 +37514,12 @@ from previous Chrome versions.
   <int value="-1391728260" label="ContextualSearchDefinitions:enabled"/>
   <int value="-1391693054"
       label="ContentSuggestionsFaviconsFromNewServer:disabled"/>
+  <int value="-1391645613" label="ImeMozcProto:enabled"/>
   <int value="-1390331361"
       label="SyncPseudoUSSHistoryDeleteDirectives:enabled"/>
   <int value="-1388817073" label="OmniboxReverseAnswers:disabled"/>
   <int value="-1386966873" label="disable-mac-views-native-app-windows"/>
+  <int value="-1386790338" label="ImeMozcProto:disabled"/>
   <int value="-1385221197"
       label="AllowSignedHTTPExchangeCertsWithoutExtension:enabled"/>
   <int value="-1384426209" label="SharingDeviceRegistration:disabled"/>

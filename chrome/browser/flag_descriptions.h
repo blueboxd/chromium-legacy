@@ -2011,6 +2011,9 @@ extern const char kImeInputLogicFstDescription[];
 extern const char kImeInputLogicHmmName[];
 extern const char kImeInputLogicHmmDescription[];
 
+extern const char kImeMozcProtoName[];
+extern const char kImeMozcProtoDescription[];
+
 extern const char kImeNativeDecoderName[];
 extern const char kImeNativeDecoderDescription[];
 

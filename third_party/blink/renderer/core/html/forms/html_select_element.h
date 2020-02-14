@@ -47,6 +47,7 @@ class HTMLOptionElementOrHTMLOptGroupElement;
 class HTMLElementOrLong;
 class LayoutUnit;
 class PopupMenu;
+class SelectType;
 
 class CORE_EXPORT HTMLSelectElement final
     : public HTMLFormControlElementWithState,
@@ -333,12 +334,16 @@ class CORE_EXPORT HTMLSelectElement final
   mutable bool should_recalc_list_items_;
   bool is_autofilled_by_preview_;
 
+  Member<SelectType> select_type_;
   class PopupUpdater;
   Member<PopupUpdater> popup_updater_;
   Member<PopupMenu> popup_;
   int index_to_select_on_cancel_;
   bool popup_is_visible_;
 
+  friend class ListBoxSelectType;
+  friend class MenuListSelectType;
+  friend class SelectType;
   FRIEND_TEST_ALL_PREFIXES(HTMLSelectElementTest, FirstSelectableOption);
   FRIEND_TEST_ALL_PREFIXES(HTMLSelectElementTest, LastSelectableOption);
   FRIEND_TEST_ALL_PREFIXES(HTMLSelectElementTest, NextSelectableOption);

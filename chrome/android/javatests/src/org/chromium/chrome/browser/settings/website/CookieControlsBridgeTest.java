@@ -39,7 +39,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 @EnableFeatures(ChromeFeatureList.IMPROVED_COOKIE_CONTROLS)
 public class CookieControlsBridgeTest {
-    private class TestCallbackHandler implements CookieControlsBridge.CookieControlsView {
+    private class TestCallbackHandler implements CookieControlsBridge.CookieControlsObserver {
         private CallbackHelper mHelper;
 
         public TestCallbackHandler(CallbackHelper helper) {

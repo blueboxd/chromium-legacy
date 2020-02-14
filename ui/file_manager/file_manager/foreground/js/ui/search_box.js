@@ -8,9 +8,10 @@
 class SearchBox extends cr.EventTarget {
   /**
    * @param {!Element} element Root element of the search box.
+   * @param {!Element} searchWrapper Wrapper element around the buttons and box.
    * @param {!Element} searchButton Search button.
    */
-  constructor(element, searchButton) {
+  constructor(element, searchWrapper, searchButton) {
     super();
 
     /**
@@ -25,6 +26,12 @@ class SearchBox extends cr.EventTarget {
      * @type {!Element}
      */
     this.element = element;
+
+    /**
+     * Search wrapper.
+     * @type {!Element}
+     */
+    this.searchWrapper = searchWrapper;
 
     /**
      * Search button.
@@ -112,6 +119,7 @@ class SearchBox extends cr.EventTarget {
       return;
     }
     this.element.classList.toggle('has-cursor', true);
+    this.searchWrapper.classList.toggle('has-cursor', true);
     this.autocompleteList.attachToInput(this.inputElement);
     this.updateStyles_();
     this.searchButtonToggleRipple_.activated = true;
@@ -125,6 +133,8 @@ class SearchBox extends cr.EventTarget {
   onBlur_() {
     this.element.classList.toggle('has-cursor', false);
     this.element.classList.toggle('hide-pending', true);
+    this.searchWrapper.classList.toggle('has-cursor', false);
+    this.searchWrapper.classList.toggle('hide-pending', true);
     this.autocompleteList.detach();
     this.updateStyles_();
     this.searchButtonToggleRipple_.activated = false;
@@ -139,11 +149,13 @@ class SearchBox extends cr.EventTarget {
       // If the search box was waiting to hide, but we clicked on it, don't.
       if (event.target === this.inputElement) {
         this.element.classList.toggle('hide-pending', false);
+        this.searchWrapper.classList.toggle('hide-pending', false);
         this.onFocus_();
       } else {
         // When input has any text we keep it displayed with current search.
         this.inputElement.disabled = this.inputElement.value.length == 0;
         this.element.classList.toggle('hide-pending', false);
+        this.searchWrapper.classList.toggle('hide-pending', false);
       }
     }
   }
@@ -164,6 +176,7 @@ class SearchBox extends cr.EventTarget {
     this.inputElement.blur();
     this.inputElement.disabled = this.inputElement.value.length == 0;
     this.element.classList.toggle('hide-pending', false);
+    this.searchWrapper.classList.toggle('hide-pending', false);
   }
 
   /**

@@ -33,20 +33,6 @@
   <body aria-label="$i18n{FILEMANAGER_APP_NAME}" tabindex="-1">
     <custom-style>
       <style>
-        #search-box cr-input {
-          --cr-input-background-color: transparent;
-          --cr-input-border-bottom: 1px solid rgba(255, 255, 255, 0.5);
-          --cr-input-border-radius: 0;
-          --cr-input-error-display: none;
-          --cr-input-padding-end: 20px;
-          --cr-input-padding-start: 0;
-          --cr-input-placeholder-color: rgba(255, 255, 255, 0.5);
-          display: inline-block;
-          transition: width 200ms ease;
-          vertical-align: middle;
-          width: 0;
-        }
-
         .dialog-footer cr-input {
           --cr-input-border-bottom: 1px solid var(--paper-grey-800);
           --cr-input-border-radius: 0;
@@ -386,18 +372,20 @@
           <files-ripple></files-ripple>
           <div class="icon"></div>
         </cr-button>
-        <cr-button id="search-button" class="icon-button menu-button" tabindex="13"
-                aria-label="$i18n{SEARCH_TEXT_LABEL}"
-                has-tooltip>
-          <files-toggle-ripple></files-toggle-ripple>
-          <div class="icon"></div>
-        </cr-button>
-        <div id="search-box">
-          <cr-input type="search" tabindex="14" disabled
-              aria-label="$i18n{SEARCH_TEXT_LABEL}" placeholder="$i18n{SEARCH_TEXT_LABEL}">
-            <cr-button class="clear" slot="suffix" tabindex="14"
-              aria-label="$i18n{SEARCH_CLEAR_LABEL}" has-tooltip></cr-button>
-          </cr-input>
+        <div id="search-wrapper">
+          <cr-button id="search-button" class="icon-button menu-button" tabindex="13"
+                  aria-label="$i18n{SEARCH_TEXT_LABEL}"
+                  has-tooltip>
+            <files-toggle-ripple></files-toggle-ripple>
+            <div class="icon"></div>
+          </cr-button>
+          <div id="search-box">
+            <cr-input type="search" tabindex="14" disabled
+                aria-label="$i18n{SEARCH_TEXT_LABEL}" placeholder="$i18n{SEARCH_TEXT_LABEL}">
+              <cr-button class="clear" slot="suffix" tabindex="14"
+                aria-label="$i18n{SEARCH_CLEAR_LABEL}" has-tooltip></cr-button>
+            </cr-input>
+          </div>
         </div>
         <cr-button id="refresh-button" class="icon-button menu-button" tabindex="15" hidden
                 aria-label="$i18n{REFRESH_BUTTON_LABEL}"

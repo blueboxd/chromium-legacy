@@ -303,7 +303,10 @@ TEST_F(CollectUserDataActionTest, SelectLogin) {
                   Property(&ProcessedActionProto::status, ACTION_APPLIED),
                   Property(&ProcessedActionProto::collect_user_data_result,
                            Property(&CollectUserDataResultProto::login_payload,
-                                    "payload"))))));
+                                    "payload")),
+                  Property(&ProcessedActionProto::collect_user_data_result,
+                           Property(&CollectUserDataResultProto::shown_to_user,
+                                    true))))));
   CollectUserDataAction action(&mock_action_delegate_, action_proto);
   action.ProcessAction(callback_.Get());
 }
@@ -331,7 +334,10 @@ TEST_F(CollectUserDataActionTest, LoginChoiceAutomaticIfNoOtherOptions) {
                   Property(&ProcessedActionProto::status, ACTION_APPLIED),
                   Property(&ProcessedActionProto::collect_user_data_result,
                            Property(&CollectUserDataResultProto::login_payload,
-                                    "guest"))))));
+                                    "guest")),
+                  Property(&ProcessedActionProto::collect_user_data_result,
+                           Property(&CollectUserDataResultProto::shown_to_user,
+                                    false))))));
   CollectUserDataAction action(&mock_action_delegate_, action_proto);
   action.ProcessAction(callback_.Get());
 }

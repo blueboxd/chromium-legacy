@@ -26,6 +26,11 @@ class CookieControlsBridge : public CookieControlsView {
   // Called by the Java counterpart when it is getting garbage collected.
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
+  void SetThirdPartyCookieBlockingEnabledForSite(JNIEnv* env,
+                                                 bool block_cookies);
+
+  void OnUiClosing(JNIEnv* env);
+
   // CookieControlsView:
   void OnStatusChanged(CookieControlsController::Status status,
                        int blocked_cookies) override;

@@ -534,6 +534,9 @@ message CollectUserDataResultProto {
   optional int32 date_range_end_timeslot = 14;
   // The values obtained from the additional sections.
   repeated ModelProto.ModelValue additional_sections_values = 15;
+  // Indicates whether the UI was shown to the user. This can be false if
+  // only the login section was requested and the choice was implicitly made.
+  optional bool shown_to_user = 16;
 
   reserved 7, 8;
 }

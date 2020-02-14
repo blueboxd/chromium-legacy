@@ -161,6 +161,7 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         public boolean openOnlineButtonShown = true;
         public boolean previewUIShown = true;
         public boolean separatorShown = true;
+        public boolean cookieControlsShown = true;
 
         public Runnable urlTitleClickCallback;
         public Runnable urlTitleLongClickCallback;
@@ -203,6 +204,7 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
     private final TextView mPreviewStaleTimestamp;
     private final TextView mPreviewLoadOriginal;
     private final LinearLayout mPermissionsList;
+    private final CookieControlsView mCookieControlsView;
     private final View mSeparator;
     private final Button mInstantAppButton;
     private final Button mSiteSettingsButton;
@@ -221,6 +223,8 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         mPreviewStaleTimestamp = (TextView) findViewById(R.id.page_info_stale_preview_timestamp);
         mPreviewLoadOriginal = (TextView) findViewById(R.id.page_info_preview_load_original);
         mPermissionsList = (LinearLayout) findViewById(R.id.page_info_permissions_list);
+        mCookieControlsView =
+                (CookieControlsView) findViewById(R.id.page_info_cookie_controls_view);
         mSeparator = (View) findViewById(R.id.page_info_separator);
         mInstantAppButton = (Button) findViewById(R.id.page_info_instant_app_button);
         mSiteSettingsButton = (Button) findViewById(R.id.page_info_site_settings_button);
@@ -258,6 +262,11 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         if (!TextUtils.isEmpty(params.previewStaleTimestamp)) {
             mPreviewStaleTimestamp.setText(params.previewStaleTimestamp);
         }
+        initializePageInfoViewChild(mCookieControlsView, params.cookieControlsShown, 0f, null);
+    }
+
+    public CookieControlsView getCookieControlsView() {
+        return mCookieControlsView;
     }
 
     public void setPermissions(List<PermissionParams> permissionParamsList) {
@@ -363,7 +372,7 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
      * Create a list of all the views which we want to individually fade in.
      */
     private List<View> collectAnimatableViews() {
-        List<View> animatableViews = new ArrayList<View>();
+        List<View> animatableViews = new ArrayList<>();
         animatableViews.add(mUrlTitle);
         animatableViews.add(mConnectionSummary);
         animatableViews.add(mConnectionMessage);
@@ -376,6 +385,7 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
             animatableViews.add(mPermissionsList.getChildAt(i));
         }
         animatableViews.add(mSiteSettingsButton);
+        animatableViews.add(mCookieControlsView);
 
         return animatableViews;
     }

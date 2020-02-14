@@ -554,29 +554,6 @@ void CloudPolicyClient::UploadRealtimeReport(base::Value report,
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
 }
 
-void CloudPolicyClient::UploadAppInstallReport(
-    const em::AppInstallReportRequest* app_install_report,
-    StatusCallback callback) {
-  CHECK(is_registered());
-  DCHECK(app_install_report);
-
-  std::unique_ptr<DMServerJobConfiguration> config = std::make_unique<
-      DMServerJobConfiguration>(
-      DeviceManagementService::JobConfiguration::TYPE_UPLOAD_APP_INSTALL_REPORT,
-      this,
-      /*critical=*/false, DMAuth::FromDMToken(dm_token_),
-      /*oauth_token=*/base::nullopt,
-      base::BindOnce(&CloudPolicyClient::OnReportUploadCompleted,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-
-  *config->request()->mutable_app_install_report_request() =
-      *app_install_report;
-
-  CancelAppInstallReportUpload();
-  request_jobs_.push_back(service_->CreateJob(std::move(config)));
-  app_install_report_request_job_ = request_jobs_.back().get();
-}
-
 void CloudPolicyClient::CancelAppInstallReportUpload() {
   if (app_install_report_request_job_) {
     RemoveJob(app_install_report_request_job_);

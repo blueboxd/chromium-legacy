@@ -114,10 +114,10 @@ void WebEncryptedMediaClientImpl::RequestMediaKeySystemAccess(
 
   key_system_config_selector_.SelectConfig(
       request.KeySystem(), request.SupportedConfigurations(),
-      base::Bind(&WebEncryptedMediaClientImpl::OnRequestSucceeded,
-                 weak_factory_.GetWeakPtr(), request),
-      base::Bind(&WebEncryptedMediaClientImpl::OnRequestNotSupported,
-                 weak_factory_.GetWeakPtr(), request));
+      base::BindOnce(&WebEncryptedMediaClientImpl::OnRequestSucceeded,
+                     weak_factory_.GetWeakPtr(), request),
+      base::BindOnce(&WebEncryptedMediaClientImpl::OnRequestNotSupported,
+                     weak_factory_.GetWeakPtr(), request));
 }
 
 void WebEncryptedMediaClientImpl::CreateCdm(

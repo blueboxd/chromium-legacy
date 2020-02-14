@@ -180,7 +180,8 @@ IN_PROC_BROWSER_TEST_F(RenderWidgetHostViewChildFrameTest,
   child_rwh_impl->WasShown(RecordContentToVisibleTimeRequest{
       base::TimeTicks::Now(), /* destination_is_loaded */ true,
       /* destination_is_frozen */ false, /* show_reason_tab_switching */ true,
-      /* show_reason_unoccluded */ false});
+      /* show_reason_unoccluded */ false,
+      /* show_reason_bfcache_restore */ false});
   // Force the child to submit a new frame.
   ASSERT_TRUE(ExecuteScript(root->child_at(0)->current_frame_host(),
                             "document.write('Force a new frame.');"));

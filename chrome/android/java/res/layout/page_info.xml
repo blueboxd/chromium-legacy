@@ -105,6 +105,14 @@
         android:paddingEnd="@dimen/page_info_popup_padding_sides" >
     </LinearLayout>
 
+    <org.chromium.chrome.browser.page_info.CookieControlsView
+        android:id="@+id/page_info_cookie_controls_view"
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:paddingTop="12dp"
+        android:paddingStart="@dimen/page_info_popup_padding_sides"
+        android:paddingEnd="@dimen/page_info_popup_padding_sides"/>
+
     <org.chromium.ui.widget.ButtonCompat
         android:id="@+id/page_info_site_settings_button"
         android:layout_width="wrap_content"

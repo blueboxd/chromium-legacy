@@ -43,8 +43,8 @@ class CookieControlsController {
   // Called when the web_contents has changed.
   void Update(content::WebContents* web_contents);
 
-  // Called when CookieControlsBubbleView is closing.
-  void OnBubbleUiClosing(content::WebContents* web_contents);
+  // Called when CookieControlsView is closing.
+  void OnUiClosing();
 
   // Called when the user clicks on the button to enable/disable cookie
   // blocking.

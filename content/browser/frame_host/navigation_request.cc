@@ -2510,7 +2510,8 @@ void NavigationRequest::CommitNavigation() {
             frame_tree_node_->navigator()->GetController());
 
     std::unique_ptr<BackForwardCacheImpl::Entry> restored_bfcache_entry =
-        controller->GetBackForwardCache().RestoreEntry(nav_entry_id_);
+        controller->GetBackForwardCache().RestoreEntry(nav_entry_id_,
+                                                       NavigationStart());
 
     if (!restored_bfcache_entry) {
       // The only time restored_bfcache_entry can be nullptr here, is if the
@@ -2528,10 +2529,6 @@ void NavigationRequest::CommitNavigation() {
     // Transfer ownership of this NavigationRequest to the restored
     // RenderFrameHost.
     frame_tree_node_->TransferNavigationRequestOwnership(GetRenderFrameHost());
-
-    // Capture the navigation start timestamp to dispatch to the page when the
-    // navigation is committed.
-    restored_bfcache_entry->restore_navigation_start = NavigationStart();
 
     // Move the restored BackForwardCache Entry into RenderFrameHostManager, in
     // preparation for committing.

@@ -79,6 +79,7 @@ template("chrome_bundle") {
                              "static_library_provider",
                              "static_library_synchronized_proguard",
                              "verify_proguard_flags",
+                             "version_code",
                            ])
     command_line_flags_file = "chrome-command-line"
     proguard_enabled = !is_java_debug

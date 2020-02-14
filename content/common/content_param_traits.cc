@@ -497,6 +497,7 @@ void ParamTraits<content::RecordContentToVisibleTimeRequest>::Write(
   WriteParam(m, p.destination_is_frozen);
   WriteParam(m, p.show_reason_tab_switching);
   WriteParam(m, p.show_reason_unoccluded);
+  WriteParam(m, p.show_reason_bfcache_restore);
 }
 
 bool ParamTraits<content::RecordContentToVisibleTimeRequest>::Read(
@@ -507,7 +508,8 @@ bool ParamTraits<content::RecordContentToVisibleTimeRequest>::Read(
       !ReadParam(m, iter, &r->destination_is_loaded) ||
       !ReadParam(m, iter, &r->destination_is_frozen) ||
       !ReadParam(m, iter, &r->show_reason_tab_switching) ||
-      !ReadParam(m, iter, &r->show_reason_unoccluded)) {
+      !ReadParam(m, iter, &r->show_reason_unoccluded) ||
+      !ReadParam(m, iter, &r->show_reason_bfcache_restore)) {
     return false;
   }
 

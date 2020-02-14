@@ -42,9 +42,9 @@ class MEDIA_BLINK_EXPORT KeySystemConfigSelector {
       const blink::WebString& key_system,
       const blink::WebVector<blink::WebMediaKeySystemConfiguration>&
           candidate_configurations,
-      base::Callback<void(const blink::WebMediaKeySystemConfiguration&,
-                          const CdmConfig&)> succeeded_cb,
-      base::Closure not_supported_cb);
+      base::OnceCallback<void(const blink::WebMediaKeySystemConfiguration&,
+                              const CdmConfig&)> succeeded_cb,
+      base::OnceClosure not_supported_cb);
 
   using IsSupportedMediaTypeCB =
       base::RepeatingCallback<bool(const std::string& container_mime_type,

@@ -165,7 +165,7 @@ std::string ComputeGuidFromBytes(base::span<const uint8_t> bytes) {
 std::string InferGuidForLegacyBookmark(
     const std::string& originator_cache_guid,
     const std::string& originator_client_item_id) {
-  DCHECK(!base::IsValidGUID(originator_client_item_id));
+  DCHECK(!base::IsValidGUIDOutputString(originator_client_item_id));
 
   const std::string unique_tag =
       base::StrCat({originator_cache_guid, originator_client_item_id});
@@ -175,7 +175,7 @@ std::string InferGuidForLegacyBookmark(
   static_assert(base::kSHA1Length >= 16, "16 bytes needed to infer GUID");
 
   const std::string guid = ComputeGuidFromBytes(base::make_span(hash));
-  DCHECK(base::IsValidGUID(guid));
+  DCHECK(base::IsValidGUIDOutputString(guid));
   return guid;
 }
 
@@ -193,7 +193,8 @@ sync_pb::EntitySpecifics CreateSpecificsFromBookmarkNode(
   }
 
   DCHECK(!node->guid().empty());
-  DCHECK(base::IsValidGUID(node->guid())) << "Actual: " << node->guid();
+  DCHECK(base::IsValidGUIDOutputString(node->guid()))
+      << "Actual: " << node->guid();
 
   if (include_guid) {
     bm_specifics->set_guid(node->guid());
@@ -247,7 +248,7 @@ const bookmarks::BookmarkNode* CreateBookmarkNodeFromSpecifics(
   DCHECK(parent);
   DCHECK(model);
   DCHECK(favicon_service);
-  DCHECK(base::IsValidGUID(specifics.guid()));
+  DCHECK(base::IsValidGUIDOutputString(specifics.guid()));
 
   bookmarks::BookmarkNode::MetaInfoMap metainfo =
       GetBookmarkMetaInfo(specifics);
@@ -284,7 +285,7 @@ void UpdateBookmarkNodeFromSpecifics(
   // resolving any conflict in GUID. Either GUIDs are the same, or the GUID in
   // specifics is invalid, and hence we can ignore it.
   DCHECK(specifics.guid() == node->guid() ||
-         !base::IsValidGUID(specifics.guid()) ||
+         !base::IsValidGUIDOutputString(specifics.guid()) ||
          !base::FeatureList::IsEnabled(
              switches::kUpdateBookmarkGUIDWithNodeReplacement));
 
@@ -308,7 +309,7 @@ const bookmarks::BookmarkNode* ReplaceBookmarkNodeGUID(
     return node;
   }
   const bookmarks::BookmarkNode* new_node;
-  DCHECK(base::IsValidGUID(guid));
+  DCHECK(base::IsValidGUIDOutputString(guid));
 
   if (node->guid() == guid) {
     // Nothing to do.
@@ -340,7 +341,7 @@ bool IsValidBookmarkSpecifics(const sync_pb::BookmarkSpecifics& specifics,
     LogInvalidSpecifics(InvalidBookmarkSpecificsError::kEmptySpecifics);
     is_valid = false;
   }
-  if (!base::IsValidGUID(specifics.guid())) {
+  if (!base::IsValidGUIDOutputString(specifics.guid())) {
     DLOG(ERROR) << "Invalid bookmark: invalid GUID in the specifics.";
     LogInvalidSpecifics(InvalidBookmarkSpecificsError::kInvalidGUID);
     is_valid = false;
@@ -382,7 +383,7 @@ bool IsValidBookmarkSpecifics(const sync_pb::BookmarkSpecifics& specifics,
 bool HasExpectedBookmarkGuid(const sync_pb::BookmarkSpecifics& specifics,
                              const std::string& originator_cache_guid,
                              const std::string& originator_client_item_id) {
-  DCHECK(base::IsValidGUID(specifics.guid()));
+  DCHECK(base::IsValidGUIDOutputString(specifics.guid()));
 
   if (originator_client_item_id.empty()) {
     // This could be a future bookmark with a client tag instead of an
@@ -391,7 +392,7 @@ bool HasExpectedBookmarkGuid(const sync_pb::BookmarkSpecifics& specifics,
     return true;
   }
 
-  if (base::IsValidGUID(originator_client_item_id)) {
+  if (base::IsValidGUIDOutputString(originator_client_item_id)) {
     return specifics.guid() == originator_client_item_id;
   }
 

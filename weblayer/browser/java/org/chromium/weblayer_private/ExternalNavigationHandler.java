@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.provider.Browser;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -35,8 +34,8 @@ public class ExternalNavigationHandler {
                     + ".*");
 
     @CalledByNative
-    private static boolean shouldOverrideUrlLoading(
-            String url, boolean hasUserGesture, boolean isRedirect, boolean isMainFrame) {
+    private static boolean shouldOverrideUrlLoading(TabImpl tab, String url, boolean hasUserGesture,
+            boolean isRedirect, boolean isMainFrame) {
         // Check for regular URIs that WebLayer supports by itself.
         // TODO(blundell): Port over WebViewBrowserActivity's
         // isSpecializedHandlerAvailable() check that checks whether there's an app for handling
@@ -75,7 +74,11 @@ public class ExternalNavigationHandler {
             selector.setComponent(null);
         }
 
-        Context context = ContextUtils.getApplicationContext();
+        Context context = tab.getBrowser().getContext();
+
+        if (context == null) {
+            return false;
+        }
 
         // Pass the package name as application ID so that the intent from the
         // same application can be opened in the same tab.

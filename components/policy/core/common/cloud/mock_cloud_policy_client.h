@@ -66,9 +66,6 @@ class MockCloudPolicyClient : public CloudPolicyClient {
                     const enterprise_management::SessionStatusReportRequest*,
                     const enterprise_management::ChildStatusReportRequest*,
                     StatusCallback&));
-  MOCK_METHOD2(UploadAppInstallReport,
-               void(const enterprise_management::AppInstallReportRequest*,
-                    StatusCallback callback));
   MOCK_METHOD0(CancelAppInstallReportUpload, void(void));
   void UpdateGcmId(const std::string& id, StatusCallback callback) override {
     UpdateGcmId_(id, callback);

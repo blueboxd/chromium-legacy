@@ -169,8 +169,8 @@ class NavigationModelFakeItem extends NavigationModelItem {
 class NavigationListModel extends cr.EventTarget {
   /**
    * @param {!VolumeManager} volumeManager VolumeManager instance.
-   * @param {(!cr.ui.ArrayDataModel|!FolderShortcutsDataModel)}
-   *     shortcutListModel The list of folder shortcut.
+   * @param {!FolderShortcutsDataModel} shortcutListModel The list of folder
+   *     shortcut.
    * @param {NavigationModelFakeItem} recentModelItem Recent folder.
    * @param {!DirectoryModel} directoryModel
    * @param {!AndroidAppListModel} androidAppListModel
@@ -187,7 +187,7 @@ class NavigationListModel extends cr.EventTarget {
     this.volumeManager_ = volumeManager;
 
     /**
-     * @private {(!cr.ui.ArrayDataModel|!FolderShortcutsDataModel)}
+     * @private {!FolderShortcutsDataModel}
      * @const
      */
     this.shortcutListModel_ = shortcutListModel;

@@ -40,6 +40,8 @@ import org.chromium.chrome.browser.previews.PreviewsAndroidBridge;
 import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.website.ContentSettingValues;
+import org.chromium.chrome.browser.settings.website.CookieControlsBridge;
+import org.chromium.chrome.browser.settings.website.CookieControlsControllerStatus;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
@@ -71,8 +73,9 @@ import java.util.Date;
 /**
  * Java side of Android implementation of the page info UI.
  */
-public class PageInfoController
-        implements ModalDialogProperties.Controller, SystemSettingsActivityRequiredListener {
+public class PageInfoController implements ModalDialogProperties.Controller,
+                                           SystemSettingsActivityRequiredListener,
+                                           CookieControlsBridge.CookieControlsObserver {
     @IntDef({OpenedFromSource.MENU, OpenedFromSource.TOOLBAR, OpenedFromSource.VR})
     @Retention(RetentionPolicy.SOURCE)
     public @interface OpenedFromSource {
@@ -144,6 +147,9 @@ public class PageInfoController
     // task is pending.
     private Runnable mPendingRunAfterDismissTask;
 
+    // Bridge updating the CookieControlsView when cookie settings change.
+    private CookieControlsBridge mBridge;
+
     /**
      * Creates the PageInfoController, but does not display it. Also initializes the corresponding
      * C++ object and saves a pointer to it.
@@ -155,7 +161,7 @@ public class PageInfoController
      * @param offlinePageState         State of the WebContents showing offline page.
      * @param previewPageState         State of the WebContents showing the preview.
      * @param publisher                The name of the content publisher, if any.
-     * @param offlinePageLoadUrlDelegate      {@link offlinePageLoadUrlDelegate}
+     * @param offlinePageLoadUrlDelegate      {@link OfflinePageLoadUrlDelegate}
      *         defined by the caller.
      */
     protected PageInfoController(ChromeActivity activity, WebContents webContents,
@@ -167,6 +173,7 @@ public class PageInfoController
         mSecurityLevel = securityLevel;
         mOfflinePageState = offlinePageState;
         mPreviewPageState = previewPageState;
+        Profile profile = Profile.fromWebContents(webContents);
         PageInfoViewParams viewParams = new PageInfoViewParams();
 
         if (mOfflinePageState != OfflinePageState.NOT_OFFLINE_PAGE) {
@@ -207,7 +214,7 @@ public class PageInfoController
         if (mSecurityLevel == ConnectionSecurityLevel.SECURE) {
             OmniboxUrlEmphasizer.EmphasizeComponentsResponse emphasizeResponse =
                     OmniboxUrlEmphasizer.parseForEmphasizeComponents(
-                            Profile.fromWebContents(webContents), displayUrlBuilder.toString());
+                            profile, displayUrlBuilder.toString());
             if (emphasizeResponse.schemeLength > 0) {
                 displayUrlBuilder.setSpan(
                         new TextAppearanceSpan(activity, R.style.TextAppearance_RobotoMediumStyle),
@@ -216,12 +223,11 @@ public class PageInfoController
         }
 
         final boolean useDarkColors = !activity.getNightModeStateProvider().isInNightMode();
-        OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, activity.getResources(),
-                Profile.fromWebContents(webContents), mSecurityLevel, mIsInternalPage,
-                useDarkColors, /*emphasizeScheme=*/true);
+        OmniboxUrlEmphasizer.emphasizeUrl(displayUrlBuilder, activity.getResources(), profile,
+                mSecurityLevel, mIsInternalPage, useDarkColors, /*emphasizeScheme=*/true);
         viewParams.url = displayUrlBuilder;
-        viewParams.urlOriginLength = OmniboxUrlEmphasizer.getOriginEndIndex(
-                displayUrlBuilder.toString(), Profile.fromWebContents(webContents));
+        viewParams.urlOriginLength =
+                OmniboxUrlEmphasizer.getOriginEndIndex(displayUrlBuilder.toString(), profile);
 
         if (SiteSettingsHelper.isSiteSettingsAvailable(webContents)) {
             viewParams.siteSettingsButtonClickCallback = () -> {
@@ -231,8 +237,10 @@ public class PageInfoController
                     SiteSettingsHelper.showSiteSettings(activity, mFullUrl);
                 });
             };
+            viewParams.cookieControlsShown = CookieControlsBridge.isCookieControlsEnabled(profile);
         } else {
             viewParams.siteSettingsButtonShown = false;
+            viewParams.cookieControlsShown = false;
         }
 
         initPreviewUiParams(activity, viewParams);
@@ -272,6 +280,14 @@ public class PageInfoController
         if (isSheet(activity)) mView.setBackgroundColor(Color.WHITE);
         mPermissionParamsListBuilder = new PermissionParamsListBuilder(
                 activity, mWindowAndroid, mFullUrl, this, mView::setPermissions);
+
+        mBridge = new CookieControlsBridge(this, webContents);
+        CookieControlsView.CookieControlsParams cookieControlsParams =
+                new CookieControlsView.CookieControlsParams();
+        cookieControlsParams.onUiClosingCallback = mBridge::onUiClosing;
+        cookieControlsParams.onCheckedChangedCallback =
+                mBridge::setThirdPartyCookieBlockingEnabledForSite;
+        mView.getCookieControlsView().setParams(cookieControlsParams);
 
         // This needs to come after other member initialization.
         mNativePageInfoController = PageInfoControllerJni.get().init(this, mWebContents);
@@ -584,6 +600,16 @@ public class PageInfoController
         new PageInfoController(activity, webContents, securityLevel, offlinePageUrl,
                 offlinePageCreationDate, offlinePageState, previewPageState, contentPublisher,
                 offlinePageLoadUrlDelegate);
+    }
+
+    @Override
+    public void onCookieBlockingStatusChanged(int status) {
+        mView.getCookieControlsView().setCookieBlockingStatus(status);
+    }
+
+    @Override
+    public void onBlockedCookiesCountChanged(@CookieControlsControllerStatus int blockedCookies) {
+        mView.getCookieControlsView().setBlockedCookiesCount(blockedCookies);
     }
 
     @NativeMethods

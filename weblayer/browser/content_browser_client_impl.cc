@@ -540,7 +540,8 @@ bool ContentBrowserClientImpl::ShouldOverrideUrlLoading(
       base::android::ConvertUTF16ToJavaString(env, url);
 
   *ignore_navigation = Java_ExternalNavigationHandler_shouldOverrideUrlLoading(
-      env, jurl, has_user_gesture, is_redirect, is_main_frame);
+      env, TabImpl::FromWebContents(web_contents)->GetJavaTab(), jurl,
+      has_user_gesture, is_redirect, is_main_frame);
 
   if (base::android::HasException(env)) {
     // Tell the chromium message loop to not perform any tasks after the

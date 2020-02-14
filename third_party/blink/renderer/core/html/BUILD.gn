@@ -247,6 +247,8 @@ blink_core_sources("html") {
     "forms/reset_input_type.h",
     "forms/search_input_type.cc",
     "forms/search_input_type.h",
+    "forms/select_type.cc",
+    "forms/select_type.h",
     "forms/slider_thumb_element.cc",
     "forms/slider_thumb_element.h",
     "forms/spin_button_element.cc",

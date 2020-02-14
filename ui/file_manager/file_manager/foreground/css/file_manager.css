@@ -470,7 +470,7 @@ body[type='open-multi-file'].check-select .dialog-header {
 
 .dialog-header.files-ng cr-button {
   --hover-bg-color: rgba(0, 0, 0, 4%);
-  --ink-color: var(--google-grey-700);
+  --ink-color: rgba(0, 0, 0, 88%);
   --text-color: currentColor;
   border: 1px solid transparent;
   border-radius: 18px;
@@ -595,6 +595,32 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
   -webkit-mask-repeat: no-repeat;
   background-color: currentColor;
   background-image: none;
+}
+
+.dialog-header #search-wrapper {
+  display: flex;
+}
+
+.dialog-header #search-box cr-input {
+  --cr-input-background-color: transparent;
+  --cr-input-border-radius: 0;
+  --cr-input-error-display: none;
+  --cr-input-padding-end: 20px;
+  --cr-input-padding-start: 0;
+  display: inline-block;
+  transition: width 200ms ease;
+  vertical-align: middle;
+  width: 0;
+}
+
+.dialog-header:not(.files-ng) #search-box cr-input {
+  --cr-input-border-bottom: 1px solid rgba(255, 255, 255, 50%);
+  --cr-input-placeholder-color: rgba(255, 255, 255, 50%);
+}
+
+.dialog-header.files-ng #search-box cr-input {
+  --cr-input-border-bottom: 1px solid rgba(0, 0, 0, 50%);
+  --cr-input-placeholder-color: rgba(0, 0, 0, 50%);
 }
 
 .dialog-header:not(.files-ng) #search-button > .icon {

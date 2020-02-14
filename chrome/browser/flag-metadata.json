@@ -1192,6 +1192,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "enable-cros-ime-mozc-proto",
+    "owners": [ "essential-inputs-team@google.com" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "enable-cros-ime-native-decoder",
     "owners": [ "essential-inputs-team@google.com" ],
     "expiry_milestone": 85

@@ -443,8 +443,8 @@ function testUpdateSubElementsFromListSections() {
   const shortcutListModel = new MockFolderShortcutDataModel([]);
   const androidAppListModel = createFakeAndroidAppListModel(['android:app1']);
   const treeModel = new NavigationListModel(
-      volumeManager, shortcutListModel, recentItem, directoryModel,
-      androidAppListModel);
+      volumeManager, shortcutListModel.asFolderShortcutsDataModel(), recentItem,
+      directoryModel, androidAppListModel);
   const myFilesItem = treeModel.item(0);
   const driveItem = treeModel.item(1);
   const androidAppItem = treeModel.item(2);

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//chrome/android/channel.gni")
+import("//build/config/android/channel.gni")
 import("//weblayer/variables.gni")
 
 declare_args() {

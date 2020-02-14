@@ -10,11 +10,24 @@ import difflib
 from util import build_utils
 
 
+def _SkipOmitted(line):
+  """
+  Skip lines that are to be intentionally omitted from the expectations file.
+
+  This is required when the file to be compared against expectations contains
+  a line that changes from build to build because - for instance - it contains
+  version information.
+  """
+  if line.endswith('# OMIT FROM EXPECTATIONS\n'):
+    return '# THIS LINE WAS OMITTED\n'
+  return line
+
+
 def DiffFileContents(expected_path, actual_path):
   """Check file contents for equality and return the diff or None."""
   with open(expected_path) as f_expected, open(actual_path) as f_actual:
     expected_lines = f_expected.readlines()
-    actual_lines = f_actual.readlines()
+    actual_lines = [_SkipOmitted(line) for line in f_actual]
 
   if expected_lines == actual_lines:
     return None

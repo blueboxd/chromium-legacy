@@ -193,6 +193,7 @@ js_library("mock_directory_model") {
 js_library("mock_folder_shortcut_data_model") {
   testonly = true
   deps = [
+    ":folder_shortcuts_data_model",
     "//ui/file_manager/file_manager/common/js:mock_entry",
     "//ui/webui/resources/js/cr/ui:array_data_model",
   ]

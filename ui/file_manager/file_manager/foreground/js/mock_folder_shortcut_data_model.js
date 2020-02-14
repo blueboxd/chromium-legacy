@@ -9,6 +9,22 @@
  */
 class MockFolderShortcutDataModel extends cr.ui.ArrayDataModel {
   /**
+   * @param {!Array} array
+   */
+  constructor(array) {
+    super(array);
+  }
+
+  /**
+   * @return {!FolderShortcutsDataModel}
+   * @public
+   */
+  asFolderShortcutsDataModel() {
+    const instance = /** @type {!Object} */ (this);
+    return /** @type {!FolderShortcutsDataModel} */ (instance);
+  }
+
+  /**
    * Mock function for FolderShortcutDataModel.compare().
    * @param {MockEntry} a First parameter to be compared.
    * @param {MockEntry} b Second parameter to be compared with.

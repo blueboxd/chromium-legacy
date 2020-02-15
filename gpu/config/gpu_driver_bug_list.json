@@ -3521,6 +3521,11 @@
       "os": {
         "type": "linux"
       },
+      "driver_vendor": "Mesa",
+      "driver_version": {
+        "op": "<",
+        "value": "19.3.5"
+      },
       "vendor_id": "0x1002",
       "disabled_extensions": [
         "GL_EXT_memory_object_fd",

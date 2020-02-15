@@ -171,11 +171,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '05676f7bc238f667de848dfd37b4aa3c01b69efb',
+  'skia_revision': 'b7ceaa8efd2b50e001aa993593dcf001c306c9ff',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'd8c8ba85588daae682c61abd952ffa37cb16c26b',
+  'v8_revision': '676acee7ecba80849a77ca869458f7313b06d50b',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -183,7 +183,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '12a36dd9ea4af84964e025320372556c39e60c5f',
+  'angle_revision': '798a83759956b49525478abb0bb83628fa973e9f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -1513,7 +1513,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@3db5c03ac2cdaf882696b7946d2f9c6c593d6da5',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b15b7e551c39649e6252049f9e601c014002d889',
     'condition': 'checkout_src_internal',
   },
 

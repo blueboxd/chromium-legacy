@@ -59,6 +59,13 @@ class ChromeAppBrowserProxy {
   getI18nMessage(name, substitutions = undefined) {
     return chrome.i18n.getMessage(name, substitutions);
   }
+
+  /** @override */
+  addOnLockChangeListener(callback) {
+    chrome.idle.onStateChanged.addListener((newState) => {
+      callback(newState === 'locked');
+    });
+  }
 }
 
 export const browserProxy = new ChromeAppBrowserProxy();

@@ -6,6 +6,7 @@ import {
   BackgroundOps,  // eslint-disable-line no-unused-vars
   ForegroundOps,  // eslint-disable-line no-unused-vars
 } from './background_ops.js';
+import {browserProxy} from './browser_proxy/browser_proxy.js';
 import {Intent} from './intent.js';
 import {PerfEvent, PerfLogger} from './perf.js';
 
@@ -175,8 +176,9 @@ class CCAWindow {
           this.perfLogger_.start(PerfEvent.LAUNCHING_FROM_WINDOW_CREATION);
           this.appWindow_ = appWindow;
           this.appWindow_.onClosed.addListener(() => {
-            chrome.storage.local.set({maximized: appWindow.isMaximized()});
-            chrome.storage.local.set({fullscreen: appWindow.isFullscreen()});
+            browserProxy.localStorageSet({maximized: appWindow.isMaximized()});
+            browserProxy.localStorageSet(
+                {fullscreen: appWindow.isFullscreen()});
             this.state_ = WindowState.CLOSED;
             if (this.intent_ !== null && !this.intent_.done) {
               this.intent_.cancel();

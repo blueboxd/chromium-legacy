@@ -178,8 +178,8 @@ export class Camera extends View {
         .forEach((btn) => btn.addEventListener('click', () => this.endTake_()));
 
     // Monitor the states to stop camera when locked/minimized.
-    chrome.idle.onStateChanged.addListener((newState) => {
-      this.locked_ = (newState === 'locked');
+    browserProxy.addOnLockChangeListener((isLocked) => {
+      this.locked_ = isLocked;
       if (this.locked_) {
         this.start();
       }

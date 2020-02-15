@@ -8,3 +8,11 @@
 
 /** @type {string|undefined} */
 chrome.runtime.Manifest.prototype.version_name;
+
+/**
+ * @typedef {{
+ *   get: function(Array<string>, function(Object)),
+ *   set: function(string, ?),
+ * }}
+ */
+chrome.chromeosInfoPrivate;

@@ -42,10 +42,8 @@ js_type_check("closure_compile_module") {
   is_polymer3 = true
   deps = [
     ":pref_util.m",
-
-    # TODO(crbug.com/1026426): Fix and enable.
-    #":prefs.m",
-    #":prefs_behavior.m",
+    ":prefs.m",
+    ":prefs_behavior.m",
     ":prefs_types.m",
   ]
 }
@@ -62,18 +60,21 @@ js_library("prefs.m") {
   sources =
       [ "$root_gen_dir/chrome/browser/resources/settings/prefs/prefs.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":pref_util.m",
+    ":prefs_types.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
+  externs_list = [ "$externs_path/settings_private.js" ]
   extra_deps = [ ":prefs_module" ]
+  extra_sources = [ "$interfaces_path/settings_private_interface.js" ]
 }
 
 js_library("prefs_behavior.m") {
   sources = [
     "$root_gen_dir/chrome/browser/resources/settings/prefs/prefs_behavior.m.js",
   ]
-  deps = [
-    # TODO: Fill those in.
-  ]
+  deps = [ "//ui/webui/resources/js:assert.m" ]
+  externs_list = [ "$externs_path/settings_private.js" ]
   extra_deps = [ ":modulize" ]
 }
 
@@ -95,6 +96,10 @@ polymer_modulizer("prefs") {
   js_file = "prefs.js"
   html_file = "prefs.html"
   html_type = "dom-module"
+  auto_imports = [
+    "ui/webui/resources/html/assert.html|assert",
+    "chrome/browser/resources/settings/prefs/prefs_types.html|CrSettingsPrefs",
+  ]
 }
 
 js_modulizer("modulize") {

@@ -2,15 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {FakeSettingsPrivatePref} from 'chrome://test/settings/fake_settings_private.m.js';
+// clang-format on
+
 /**
- * @type {Array<{pref: settings.FakeSettingsPrivate.Pref,
+ * @type {Array<{pref: settings.FakeSettingsPrivatePref,
  *               nextValues: Array<*>}>}
  * Test cases containing preference data. Each test case has a pref with an
  * initial value, and two "next" values used to change the pref. Intentionally,
  * for a given pref, not every "next" value is different from the previous
  * value; this tests what happens when stale changes are reported.
  */
-const prefsTestCases = [
+/* #export */ const prefsTestCases = [
   {
     pref: {
       key: 'top_level_pref',

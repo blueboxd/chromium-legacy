@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {browserProxy} from './browser_proxy/browser_proxy.js';
 // eslint-disable-next-line no-unused-vars
 import {Intent} from './intent.js';
 import * as state from './state.js';
@@ -48,23 +49,12 @@ const ga = (function() {
       }
     });
   };
-  const initBuilder = () => {
-    return new Promise((resolve) => {
-             try {
-               chrome.chromeosInfoPrivate.get(
-                   ['board'], (values) => resolve(values['board']));
-             } catch (e) {
-               resolve('');
-             }
-           })
-        .then((board) => {
-          const boardName = /^(x86-)?(\w*)/.exec(board)[0];
-          const match = navigator.appVersion.match(/CrOS\s+\S+\s+([\d.]+)/);
-          const osVer = match ? match[1] : '';
-          base = analytics.EventBuilder.builder()
-                     .dimen(1, boardName)
-                     .dimen(2, osVer);
-        });
+  const initBuilder = async () => {
+    const board = await browserProxy.getBoard();
+    const boardName = /^(x86-)?(\w*)/.exec(board)[0];
+    const match = navigator.appVersion.match(/CrOS\s+\S+\s+([\d.]+)/);
+    const osVer = match ? match[1] : '';
+    base = analytics.EventBuilder.builder().dimen(1, boardName).dimen(2, osVer);
   };
 
   return Promise.all([getConfig(), checkEnabled(), initBuilder()])

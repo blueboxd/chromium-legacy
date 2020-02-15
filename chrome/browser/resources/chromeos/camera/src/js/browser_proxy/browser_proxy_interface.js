@@ -33,4 +33,30 @@ export class BrowserProxy {
    * @param {function()=} callback
    */
   localStorageRemove(items, callback) {}
+
+  /**
+   * @return {!Promise<boolean>}
+   * @abstract
+   */
+  async checkMigrated() {}
+
+  /**
+   * @return {!Promise}
+   * @abstract
+   */
+  async doneMigrate() {}
+
+  /**
+   * @return {!Promise<string>}
+   * @abstract
+   */
+  async getBoard() {}
+
+  /**
+   * @param {string} name
+   * @param {Array<string>|string=} substitutions
+   * @return {string}
+   * @abstract
+   */
+  getI18nMessage(name, substitutions = undefined) {}
 }

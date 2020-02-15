@@ -21,7 +21,7 @@
  *   reset: (boolean|undefined),
  * }}
  */
-let PageVisibility;
+/* #export */ let PageVisibility;
 
 /**
  * @typedef {{

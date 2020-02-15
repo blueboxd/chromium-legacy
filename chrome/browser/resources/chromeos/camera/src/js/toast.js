@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {browserProxy} from './browser_proxy/browser_proxy.js';
 import {assertInstanceof} from './chrome_util.js';
 import * as util from './util.js';
 
@@ -17,7 +18,7 @@ function update(message, spoken) {
       assertInstanceof(document.querySelector('#toast'), HTMLElement);
   util.animateCancel(element);  // Cancel the active toast if any.
   element.textContent = '';     // Force to reiterate repeated messages.
-  element.textContent = chrome.i18n.getMessage(message) || message;
+  element.textContent = browserProxy.getI18nMessage(message) || message;
 
   element.classList.toggle('spoken', spoken);
   util.animateOnce(element, () => element.textContent = '');

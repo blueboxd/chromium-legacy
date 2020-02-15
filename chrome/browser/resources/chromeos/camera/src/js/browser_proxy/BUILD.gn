@@ -9,10 +9,14 @@ js_type_check("closure_compile") {
 }
 
 js_library("browser_proxy") {
+  deps = [ "..:chrome_util" ]
   sources = [
     "browser_proxy.js",
     "browser_proxy_interface.js",
     "webui_browser_proxy.js",
   ]
-  externs_list = [ "$externs_path/chrome_extensions.js" ]
+  externs_list = [
+    "../externs/chrome.js",
+    "$externs_path/chrome_extensions.js",
+  ]
 }

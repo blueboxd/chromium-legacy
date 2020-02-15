@@ -21,6 +21,7 @@ settings_namespace_rewrites = [
   "settings.routes|routes",
   "settings.SearchEnginesBrowserProxy|SearchEnginesBrowserProxy",
   "settings.StartupUrlsPageBrowserProxy|StartupUrlsPageBrowserProxy",
+  "settings.RouteObserverBehavior|RouteObserverBehavior",
 
   "action_link.m.js|action_link.js",
 

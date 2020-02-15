@@ -172,8 +172,8 @@ TEST_F('CrExtensionsItemsTest', 'SourceIndicator', function() {
   this.runMochaTest(extension_item_tests.TestNames.SourceIndicator);
 });
 
-TEST_F('CrExtensionsItemsTest', 'EnableToggleAndButton', function() {
-  this.runMochaTest(extension_item_tests.TestNames.EnableToggleAndButton);
+TEST_F('CrExtensionsItemsTest', 'EnableToggle', function() {
+  this.runMochaTest(extension_item_tests.TestNames.EnableToggle);
 });
 
 TEST_F('CrExtensionsItemsTest', 'RemoveButton', function() {

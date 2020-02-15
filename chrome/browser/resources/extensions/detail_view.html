@@ -184,11 +184,6 @@
             disabled$="[[!isEnableToggleEnabled_(data.*)]]"
             hidden$="[[!showEnableToggle_(data.*)]]">
         </cr-toggle>
-        <cr-button id="enableButton"
-            on-click="onEnableButtonClick_"
-            hidden$="[[!showEnableButton_(data.*)]]">
-          $i18n{enableButton}
-        </cr-button>
       </div>
     </div>
     <div id="warnings" hidden$="[[!hasWarnings_(data.*)]]">

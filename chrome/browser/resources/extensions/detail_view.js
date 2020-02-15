@@ -228,11 +228,7 @@ Polymer({
   /** @private */
   onEnableToggleChange_() {
     this.delegate.setItemEnabled(this.data.id, this.$.enableToggle.checked);
-  },
-
-  /** @private */
-  onEnableButtonClick_() {
-    this.delegate.setItemEnabled(this.data.id, true);
+    this.$.enableToggle.checked = this.isEnabled_();
   },
 
   /**
@@ -405,14 +401,5 @@ Polymer({
     // detail view, because the repair button appears just beneath it.
     return enableControl === EnableControl.ENABLE_TOGGLE ||
         enableControl === EnableControl.REPAIR;
-  },
-
-  /**
-   * Returns true if the enable button should be shown.
-   * @return {boolean}
-   * @private
-   */
-  showEnableButton_() {
-    return getEnableControl(this.data) === EnableControl.ENABLE_BUTTON;
   },
 });

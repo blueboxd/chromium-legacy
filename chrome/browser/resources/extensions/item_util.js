@@ -22,7 +22,6 @@ export const SourceType = {
 export const EnableControl = {
   RELOAD: 'RELOAD',
   REPAIR: 'REPAIR',
-  ENABLE_BUTTON: 'ENABLE_BUTTON',
   ENABLE_TOGGLE: 'ENABLE_TOGGLE',
 };
 
@@ -181,10 +180,6 @@ export function getEnableControl(data) {
   }
   if (data.disableReasons.corruptInstall) {
     return EnableControl.REPAIR;
-  }
-  if (data.disableReasons.custodianApprovalRequired &&
-      userCanChangeEnablement(data)) {
-    return EnableControl.ENABLE_BUTTON;
   }
   return EnableControl.ENABLE_TOGGLE;
 }

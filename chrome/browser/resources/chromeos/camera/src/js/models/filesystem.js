@@ -262,19 +262,9 @@ export function initialize(promptMigrate) {
         {ackMigratePictures: 0},
         (values) => resolve(values.ackMigratePictures >= 1));
   });
-  const checkMigrated = new Promise((resolve) => {
-    if (chrome.chromeosInfoPrivate) {
-      chrome.chromeosInfoPrivate.get(
-          ['cameraMediaConsolidated'],
-          (values) => resolve(values['cameraMediaConsolidated']));
-    } else {
-      resolve(false);
-    }
-  });
   const ackMigrate = () =>
       browserProxy.localStorageSet({ackMigratePictures: 1});
-  const doneMigrate = () => chrome.chromeosInfoPrivate &&
-      chrome.chromeosInfoPrivate.set('cameraMediaConsolidated', true);
+  const doneMigrate = () => browserProxy.doneMigrate();
 
   return Promise
       .all([
@@ -282,7 +272,7 @@ export function initialize(promptMigrate) {
         initInternalTempDir(),
         initExternalDir(),
         checkAcked,
-        checkMigrated,
+        browserProxy.checkMigrated(),
       ])
       .then((results) => {
         let /** boolean */ acked;

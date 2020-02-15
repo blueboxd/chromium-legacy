@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {browserProxy} from './browser_proxy/browser_proxy.js';
 import {ChromeHelper} from './mojo/chrome_helper.js';
 import * as tooltip from './tooltip.js';
 import {Resolution} from './type.js';
@@ -291,7 +292,7 @@ export function openHelp() {
 export function setupI18nElements(rootElement) {
   const getElements = (attr) => rootElement.querySelectorAll('[' + attr + ']');
   const getMessage = (element, attr) =>
-      chrome.i18n.getMessage(element.getAttribute(attr));
+      browserProxy.getI18nMessage(element.getAttribute(attr));
   const setAriaLabel = (element, attr) =>
       element.setAttribute('aria-label', getMessage(element, attr));
 

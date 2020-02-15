@@ -2,6 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {CrSettingsPrefs} from 'chrome://settings/settings.js';
+// #import {FakeSettingsPrivate} from 'chrome://test/settings/fake_settings_private.m.js';
+// #import {prefsTestCases} from 'chrome://test/settings/prefs_test_cases.m.js';
+// clang-format on
+
 /** @fileoverview Suite of tests for settings-prefs. */
 cr.define('settings_prefs', function() {
   /**
@@ -172,4 +178,6 @@ cr.define('settings_prefs', function() {
       assertPrefsSet(1);
     });
   });
+
+  // #cr_define_end
 });

@@ -2302,7 +2302,13 @@ config("symbols") {
       if (is_win_fastlink && !use_lld) {
         cflags += [ "-fstandalone-debug" ]
       } else {
-        cflags += [ "-fno-standalone-debug" ]
+        # Use constructor debug mode. This option reduces debug info more than
+        # -fno-standalone-debug by emitting class type information only when
+        # constructors are emitted.
+        cflags += [
+          "-Xclang",
+          "-debug-info-kind=constructor",
+        ]
       }
     }
   } else {
@@ -2341,6 +2347,14 @@ config("symbols") {
     # gcc nacl is is_nacl && !is_clang, pnacl and nacl-clang are && is_clang.
     if (!is_nacl || is_clang) {
       cflags += [ "-g2" ]
+    }
+
+    if (is_clang && !is_nacl && (!is_chromeos || default_toolchain !=
+                                                 "//build/toolchain/cros:target")) {
+      cflags += [
+        "-Xclang",
+        "-debug-info-kind=constructor",
+      ]
     }
 
     if (use_debug_fission && !is_nacl && !is_android) {

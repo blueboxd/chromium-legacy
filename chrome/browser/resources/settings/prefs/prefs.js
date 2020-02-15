@@ -13,7 +13,6 @@
  */
 
 (function() {
-'use strict';
 
 /**
  * Checks whether two values are recursively equal. Only compares serializable

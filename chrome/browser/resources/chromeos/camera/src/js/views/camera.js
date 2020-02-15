@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {browserProxy} from '../browser_proxy/browser_proxy.js';
 import {assert} from '../chrome_util.js';
-import {PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
-        VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
+import {
+  PhotoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
+  VideoConstraintsPreferrer,  // eslint-disable-line no-unused-vars
 } from '../device/constraints_preferrer.js';
 // eslint-disable-next-line no-unused-vars
 import {DeviceInfoUpdater} from '../device/device_info_updater.js';
@@ -21,10 +23,12 @@ import * as state from '../state.js';
 import * as toast from '../toast.js';
 import {Mode} from '../type.js';
 import * as util from '../util.js';
+
 import {Layout} from './camera/layout.js';
-import {Modes,
-        PhotoResult,  // eslint-disable-line no-unused-vars
-        VideoResult,  // eslint-disable-line no-unused-vars
+import {
+  Modes,
+  PhotoResult,  // eslint-disable-line no-unused-vars
+  VideoResult,  // eslint-disable-line no-unused-vars
 } from './camera/modes.js';
 import {Options} from './camera/options.js';
 import {Preview} from './camera/preview.js';
@@ -450,7 +454,7 @@ export class Camera extends View {
               this.activeDeviceId_ = currentId;
               const info = await this.infoUpdater_.getDeviceInfo(currentId);
               if (info !== null) {
-                toast.speak(chrome.i18n.getMessage(
+                toast.speak(browserProxy.getI18nMessage(
                     'status_msg_camera_switched', info.label));
               }
               return;

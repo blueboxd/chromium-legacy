@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {browserProxy} from '../browser_proxy/browser_proxy.js';
 import {assertString} from '../chrome_util.js';
 import {View, ViewName} from './view.js';
 
@@ -37,7 +38,7 @@ export class Warning extends View {
         break;
     }
     document.querySelector('#error-msg').textContent =
-        chrome.i18n.getMessage(message);
+        browserProxy.getI18nMessage(message);
   }
 
   /**

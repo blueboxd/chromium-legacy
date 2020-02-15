@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as util from '../chrome_util.js';
 // eslint-disable-next-line no-unused-vars
 import {BrowserProxy} from './browser_proxy_interface.js';
 
@@ -33,6 +34,30 @@ class ChromeAppBrowserProxy {
   /** @override */
   localStorageRemove(items, callback) {
     chrome.storage.local.remove(items, callback);
+  }
+
+  /** @override */
+  async checkMigrated() {
+    const values = await util.promisify(chrome.chromeosInfoPrivate.get)(
+        ['cameraMediaConsolidated']);
+    return values['cameraMediaConsolidated'];
+  }
+
+  /** @override */
+  async doneMigrate() {
+    chrome.chromeosInfoPrivate.set('cameraMediaConsolidated', true);
+  }
+
+  /** @override */
+  async getBoard() {
+    const values =
+        await util.promisify(chrome.chromeosInfoPrivate.get)(['board']);
+    return values['board'];
+  }
+
+  /** @override */
+  getI18nMessage(name, substitutions = undefined) {
+    return chrome.i18n.getMessage(name, substitutions);
   }
 }
 

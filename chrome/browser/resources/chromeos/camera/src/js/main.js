@@ -97,7 +97,7 @@ export class App {
 
     document.body.addEventListener('keydown', this.onKeyPressed_.bind(this));
 
-    document.title = chrome.i18n.getMessage('name');
+    document.title = browserProxy.getI18nMessage('name');
     util.setupI18nElements(document.body);
     this.setupToggles_();
 
@@ -178,7 +178,7 @@ export class App {
     filesystem
         .initialize(() => {
           // Prompt to migrate pictures if needed.
-          const message = chrome.i18n.getMessage('migrate_pictures_msg');
+          const message = browserProxy.getI18nMessage('migrate_pictures_msg');
           return nav
               .open(ViewName.MESSAGE_DIALOG, {message, cancellable: false})
               .then((acked) => {

@@ -2,8 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import {FakeChromeEvent} from 'chrome://test/fake_chrome_event.m.js';
+// clang-format on
+
 /** @fileoverview Fake implementation of chrome.settingsPrivate for testing. */
 cr.define('settings', function() {
+  /**
+   * @type {Array<{key: string,
+   *               type: chrome.settingsPrivate.PrefType,
+   *               values: !Array<*>}>}
+   */
+  /* #export */ let FakeSettingsPrivatePref;
+
   /**
    * Creates a deep copy of the object.
    * @param {!Object} obj
@@ -19,8 +30,8 @@ cr.define('settings', function() {
    * FakeSettingsPrivate to settings-prefs#initialize().
    * @implements {SettingsPrivate}
    */
-  class FakeSettingsPrivate {
-    /** @param {Array<!settings.FakeSettingsPrivate.Pref>=} opt_initialPrefs */
+  /* #export */ class FakeSettingsPrivate {
+    /** @param {Array<!settings.FakeSettingsPrivatePref>=} opt_initialPrefs */
     constructor(opt_initialPrefs) {
       this.disallowSetPref_ = false;
       this.failNextSetPref_ = false;
@@ -128,12 +139,9 @@ cr.define('settings', function() {
     }
   }
 
-  return {FakeSettingsPrivate: FakeSettingsPrivate};
+  // #cr_define_end
+  return {
+    FakeSettingsPrivate: FakeSettingsPrivate,
+    FakeSettingsPrivatePref: FakeSettingsPrivatePref,
+  };
 });
-
-/**
- * @type {Array<{key: string,
- *               type: chrome.settingsPrivate.PrefType,
- *               values: !Array<*>}>}
- */
-settings.FakeSettingsPrivate.Pref;

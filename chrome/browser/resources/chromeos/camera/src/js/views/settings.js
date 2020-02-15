@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 // eslint-disable-next-line no-unused-vars
+import {browserProxy} from '../browser_proxy/browser_proxy.js';
 import {assertInstanceof} from '../chrome_util.js';
 // eslint-disable-next-line no-unused-vars
 import {Camera3DeviceInfo} from '../device/camera3_device_info.js';
@@ -359,11 +360,11 @@ export class ResolutionSettings extends BaseSettings {
     if (resolutions.some(
             (findR) => !findR.equals(r) && r.aspectRatioEquals(findR) &&
                 toMegapixel(r) === toMegapixel(findR))) {
-      return chrome.i18n.getMessage(
+      return browserProxy.getI18nMessage(
           'label_detail_photo_resolution',
           [r.width / d, r.height / d, r.width, r.height, toMegapixel(r)]);
     } else {
-      return chrome.i18n.getMessage(
+      return browserProxy.getI18nMessage(
           'label_photo_resolution',
           [r.width / d, r.height / d, toMegapixel(r)]);
     }
@@ -376,7 +377,7 @@ export class ResolutionSettings extends BaseSettings {
    * @private
    */
   videoOptTextTempl_(r) {
-    return chrome.i18n.getMessage(
+    return browserProxy.getI18nMessage(
         'label_video_resolution', [r.height, r.width].map(String));
   }
 

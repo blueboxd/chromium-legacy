@@ -99,3 +99,14 @@ export function assertBoolean(value, optMessage) {
   }
   return /** @type {boolean} */ (value);
 }
+
+/**
+ * Wraps a function with completion callback as a Promise.
+ * @param {function(...*)} func The last parameter of the function should be a
+ *     completion callback.
+ * @return {function(...*): Promise}
+ */
+export function promisify(func) {
+  return (...args) =>
+             new Promise((resolve) => func(...args, (val) => resolve(val)));
+}

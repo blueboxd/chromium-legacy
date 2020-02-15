@@ -22,6 +22,7 @@
 #include "components/services/storage/dom_storage/local_storage_impl.h"
 #include "components/services/storage/dom_storage/session_storage_impl.h"
 #include "components/services/storage/public/cpp/constants.h"
+#include "components/services/storage/public/mojom/partition.mojom.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -37,8 +38,6 @@
 
 namespace content {
 namespace {
-
-const char kSessionStorageDirectory[] = "Session Storage";
 
 void AdaptSessionStorageUsageInfo(
     DOMStorageContext::GetSessionStorageUsageCallback callback,
@@ -117,64 +116,14 @@ class DOMStorageContextWrapper::StoragePolicyObserver
 };
 
 scoped_refptr<DOMStorageContextWrapper> DOMStorageContextWrapper::Create(
-    const base::FilePath& profile_path,
-    const base::FilePath& local_partition_path,
+    storage::mojom::Partition* partition,
     storage::SpecialStoragePolicy* special_storage_policy) {
-  base::FilePath data_path;
-  const bool is_profile_persistent = !profile_path.empty();
-  if (is_profile_persistent)
-    data_path = profile_path.Append(local_partition_path);
-
-  auto mojo_task_runner =
-      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
-
-  // TODO(https://crbug.com/1000959): These should be bound in an instance of
-  // the Storage Service. For now we bind them alone on the IO thread because
-  // that's where the implementation has effectively lived for some time.
   mojo::Remote<storage::mojom::SessionStorageControl> session_storage_control;
+  partition->BindSessionStorageControl(
+      session_storage_control.BindNewPipeAndPassReceiver());
   mojo::Remote<storage::mojom::LocalStorageControl> local_storage_control;
-  mojo_task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          [](const base::FilePath& storage_root, bool is_profile_persistent,
-             mojo::PendingReceiver<storage::mojom::SessionStorageControl>
-                 session_storage_receiver,
-             mojo::PendingReceiver<storage::mojom::LocalStorageControl>
-                 local_storage_receiver) {
-            // Deletes itself on shutdown completion.
-            new storage::SessionStorageImpl(
-                storage_root,
-                base::CreateSequencedTaskRunner(
-                    {base::ThreadPool(), base::MayBlock(),
-                     base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
-                base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
-#if defined(OS_ANDROID)
-                // On Android there is no support for session storage restoring,
-                // and since the restoring code is responsible for database
-                // cleanup, we must manually delete the old database here before
-                // we open it.
-                storage::SessionStorageImpl::BackingMode::kClearDiskStateOnOpen,
-#else
-                is_profile_persistent
-                    ? storage::SessionStorageImpl::BackingMode ::
-                          kRestoreDiskState
-                    : storage::SessionStorageImpl::BackingMode::kNoDisk,
-#endif
-                std::string(kSessionStorageDirectory),
-                std::move(session_storage_receiver));
-            new storage::LocalStorageImpl(
-                storage_root,
-                base::CreateSingleThreadTaskRunner({BrowserThread::IO}),
-                base::CreateSequencedTaskRunner(
-                    {base::ThreadPool(), base::MayBlock(),
-                     base::TaskPriority::USER_BLOCKING,
-                     base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
-                std::move(local_storage_receiver));
-          },
-          data_path, is_profile_persistent,
-          session_storage_control.BindNewPipeAndPassReceiver(),
-          local_storage_control.BindNewPipeAndPassReceiver()));
-
+  partition->BindLocalStorageControl(
+      local_storage_control.BindNewPipeAndPassReceiver());
   auto wrapper = base::WrapRefCounted(new DOMStorageContextWrapper(
       std::move(session_storage_control), std::move(local_storage_control),
       special_storage_policy));

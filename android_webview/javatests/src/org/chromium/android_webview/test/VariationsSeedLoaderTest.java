@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import static org.chromium.android_webview.test.OnlyRunIn.ProcessMode.SINGLE_PROCESS;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.test.filters.MediumTest;
@@ -20,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.VariationsSeedLoader;
 import org.chromium.android_webview.common.AwSwitches;
+import org.chromium.android_webview.common.variations.VariationsServiceMetricsHelper;
 import org.chromium.android_webview.common.variations.VariationsUtils;
 import org.chromium.android_webview.test.services.MockVariationsSeedServer;
 import org.chromium.android_webview.test.util.VariationsTestUtils;
@@ -153,6 +155,12 @@ public class VariationsSeedLoaderTest {
         VariationsTestUtils.deleteSeeds();
     }
 
+    private void assertSingleRecordInHistogram(String histogramName, int expectedValue) {
+        Assert.assertEquals(1, RecordHistogram.getHistogramTotalCountForTesting(histogramName));
+        Assert.assertEquals(
+                1, RecordHistogram.getHistogramValueCountForTesting(histogramName, expectedValue));
+    }
+
     private void assertNoAppSeedRequestStateValues() {
         Assert.assertEquals(0,
                 RecordHistogram.getHistogramTotalCountForTesting(
@@ -161,12 +169,8 @@ public class VariationsSeedLoaderTest {
 
     private void assertSingleAppSeedRequestStateValue(
             @VariationsSeedLoader.AppSeedRequestState int state) {
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramTotalCountForTesting(
-                        VariationsSeedLoader.APP_SEED_REQUEST_STATE_HISTOGRAM_NAME));
-        Assert.assertEquals(1,
-                RecordHistogram.getHistogramValueCountForTesting(
-                        VariationsSeedLoader.APP_SEED_REQUEST_STATE_HISTOGRAM_NAME, state));
+        assertSingleRecordInHistogram(
+                VariationsSeedLoader.APP_SEED_REQUEST_STATE_HISTOGRAM_NAME, state);
     }
 
     // Test the case that:
@@ -439,6 +443,27 @@ public class VariationsSeedLoaderTest {
             Assert.assertTrue("Seed file should be requested", seedRequested);
         } finally {
             VariationsTestUtils.deleteSeeds();
+        }
+    }
+
+    // Tests that metrics passed from the service get recorded to histograms.
+    @Test
+    @MediumTest
+    public void testRecordMetricsFromService() throws Exception {
+        try {
+            RecordHistogram.setDisabledForTests(false);
+
+            VariationsServiceMetricsHelper metrics =
+                    VariationsServiceMetricsHelper.fromBundle(new Bundle());
+            metrics.setSeedFetchTime(3);
+            MockVariationsSeedServer.setMetricsBundle(metrics.toBundle());
+
+            runTestLoaderBlocking();
+
+            assertSingleRecordInHistogram(
+                    VariationsSeedLoader.DOWNLOAD_JOB_FETCH_TIME_HISTOGRAM_NAME, 3);
+        } finally {
+            MockVariationsSeedServer.setMetricsBundle(null);
         }
     }
 }

@@ -271,6 +271,7 @@ android_library("chrome_java") {
     "//chrome/browser/ui/android/native_page:java",
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/util:java",
+    "//chrome/browser/xsurface:java",
     "//chrome/lib/lifecycle/public/android:java",
     "//components/autofill/android:autofill_java",
     "//components/autofill_assistant/browser:proto_java",

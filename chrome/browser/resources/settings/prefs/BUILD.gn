@@ -25,7 +25,6 @@ js_library("prefs") {
     ":pref_util",
     ":prefs_behavior",
     ":prefs_types",
-    "//ui/webui/resources/js:cr",
   ]
   externs_list = [ "$externs_path/settings_private.js" ]
   extra_sources = [ "$interfaces_path/settings_private_interface.js" ]

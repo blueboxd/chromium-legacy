@@ -32,6 +32,7 @@ class StorageServiceImpl : public mojom::StorageService {
   const auto& partitions() const { return partitions_; }
 
   // mojom::StorageService implementation:
+  void EnableAggressiveDomStorageFlushing() override;
   void BindPartition(const base::Optional<base::FilePath>& path,
                      mojo::PendingReceiver<mojom::Partition> receiver) override;
 

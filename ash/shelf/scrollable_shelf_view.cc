@@ -55,10 +55,6 @@ constexpr int kArrowButtonGroupWidth =
 // ignored.
 constexpr int kGestureFlingVelocityThreshold = 1000;
 
-// The mouse wheel event (including touchpad scrolling) with the main axis
-// offset smaller than the threshold will be ignored.
-constexpr int KScrollOffsetThreshold = 20;
-
 // Horizontal size of the tap areafor the overflow arrow button.
 constexpr int kArrowButtonTapAreaHorizontal = 32;
 
@@ -1573,12 +1569,8 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
 void ScrollableShelfView::HandleMouseWheelEvent(ui::MouseWheelEvent* event) {
   // Note that the scrolling from touchpad is propagated as mouse wheel event.
 
-  // When shelf is horizontally aligned, the mouse wheel event may be handled
-  // by AppList.
   if (!ShouldHandleScroll(gfx::Vector2dF(event->x_offset(), event->y_offset()),
-                          /*is_gesture_fling=*/false) &&
-      GetShelf()->IsHorizontalAlignment()) {
-    GetShelf()->ProcessMouseWheelEvent(event, /*from_touchpad=*/false);
+                          /*is_gesture_fling=*/false)) {
     return;
   }
 

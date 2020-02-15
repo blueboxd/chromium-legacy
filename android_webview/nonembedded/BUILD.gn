@@ -80,7 +80,7 @@ android_library("services_java") {
     "//android_webview:common_crash_java",
     "//android_webview:common_java",
     "//android_webview:common_platform_services_java",
-    "//android_webview:common_variations_utils_java",
+    "//android_webview:common_variations_java",
     "//base:base_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/minidump_uploader:minidump_uploader_java",

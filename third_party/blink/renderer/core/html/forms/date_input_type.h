@@ -60,6 +60,7 @@ class DateInputType final : public BaseTemporalInputType {
                      bool has_hour,
                      bool has_minute,
                      bool has_second) const override;
+  String AriaRoleForPickerIndicator() const override;
 };
 
 }  // namespace blink

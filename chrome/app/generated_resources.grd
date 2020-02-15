@@ -9090,16 +9090,15 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </if>
 
       <!-- WebXr permissions -->
-      <!-- TODO(crbug.com/1041009): Finalize WebXr Permissions strings -->
       <message name="IDS_VR_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site that wants to use VR. Follows a prompt: 'This site would like to:">
-        Access Virtual Reality devices and data
+        Use virtual reality devices and data
       </message>
       <message name="IDS_AR_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site that wants to use AR. Follows a prompt: 'This site would like to:">
         Track camera position and map your room
       </message>
       <if expr="is_android">
         <message name="IDS_VR_INFOBAR_TEXT" desc="Text requesting permission for a site to use VR">
-          <ph name="URL">$1<ex>google.com</ex></ph> wants to be able to start virtual reality sessions
+          <ph name="URL">$1<ex>google.com</ex></ph> wants to use your virtual reality device and data
         </message>
         <message name="IDS_AR_INFOBAR_TEXT" desc="Text requesting permission for a site to use AR">
           <ph name="URL">$1<ex>google.com</ex></ph> wants to track camera position and map your room

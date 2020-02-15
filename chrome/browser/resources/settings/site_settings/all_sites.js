@@ -497,7 +497,8 @@ Polymer({
         const messageId = isInstalled ?
             'siteSettingsOriginDeleteConfirmationInstalled' :
             'siteSettingsOriginDeleteConfirmation';
-        return loadTimeData.substituteString(this.i18n(messageId), origin);
+        return loadTimeData.substituteString(
+            this.i18n(messageId), this.originRepresentation(origin));
       } else {
         // Clear SiteGroup
         let messageId;
@@ -513,8 +514,10 @@ Polymer({
         } else {
           messageId = 'siteSettingsSiteGroupDeleteConfirmationNew';
         }
-        return loadTimeData.substituteString(
-            this.i18n(messageId), this.actionMenuModel_.item.etldPlus1);
+        const displayName = this.actionMenuModel_.item.etldPlus1 ||
+            this.originRepresentation(
+                this.actionMenuModel_.item.origins[0].origin);
+        return loadTimeData.substituteString(this.i18n(messageId), displayName);
       }
     } else {
       // Storage Pressure UI disabled
@@ -539,11 +542,13 @@ Polymer({
     if (this.actionMenuModel_.actionScope === 'origin') {
       return loadTimeData.substituteString(
           this.i18n('siteSettingsSiteResetConfirmation'),
-          this.actionMenuModel_.origin);
+          this.originRepresentation(this.actionMenuModel_.origin));
     }
     return loadTimeData.substituteString(
         this.i18n('siteSettingsSiteGroupResetConfirmation'),
-        this.actionMenuModel_.item.etldPlus1);
+        this.actionMenuModel_.item.etldPlus1 ||
+            this.originRepresentation(
+                this.actionMenuModel_.item.origins[0].origin));
   },
   /**
    * Get the appropriate label for the clear all data confirmation

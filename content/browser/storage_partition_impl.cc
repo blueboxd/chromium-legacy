@@ -25,10 +25,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/syslog_logging.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequence_local_storage_slot.h"
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
+#include "components/services/storage/public/mojom/storage_service.mojom.h"
+#include "components/services/storage/storage_service_impl.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/blob_storage/blob_registry_wrapper.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
@@ -64,6 +67,7 @@
 #include "content/public/browser/native_file_system_entry_factory.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/permission_controller.h"
+#include "content/public/browser/service_process_host.h"
 #include "content/public/browser/session_storage_usage_info.h"
 #include "content/public/browser/storage_notification_service.h"
 #include "content/public/browser/storage_usage_info.h"
@@ -71,6 +75,8 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
@@ -85,7 +91,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "storage/browser/blob/blob_registry_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/database/database_tracker.h"
@@ -111,6 +116,50 @@ namespace content {
 namespace {
 
 const storage::QuotaSettings* g_test_quota_settings;
+
+mojo::Remote<storage::mojom::StorageService>& GetStorageServiceRemote() {
+  // NOTE: This use of sequence-local storage is only to ensure that the Remote
+  // only lives as long as the UI-thread sequence, since the UI-thread sequence
+  // may be torn down and reinitialized e.g. between unit tests.
+  static base::NoDestructor<base::SequenceLocalStorageSlot<
+      mojo::Remote<storage::mojom::StorageService>>>
+      remote_slot;
+  return remote_slot->GetOrCreateValue();
+}
+
+void RunInProcessStorageService(
+    mojo::PendingReceiver<storage::mojom::StorageService> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  static base::NoDestructor<base::SequenceLocalStorageSlot<
+      std::unique_ptr<storage::StorageServiceImpl>>>
+      service_storage_slot;
+  service_storage_slot->GetOrCreateValue() =
+      std::make_unique<storage::StorageServiceImpl>(std::move(receiver));
+}
+
+storage::mojom::StorageService* GetStorageService() {
+  mojo::Remote<storage::mojom::StorageService>& remote =
+      GetStorageServiceRemote();
+  if (!remote) {
+    if (base::FeatureList::IsEnabled(features::kStorageServiceOutOfProcess)) {
+      remote = ServiceProcessHost::Launch<storage::mojom::StorageService>(
+          ServiceProcessHost::Options()
+              .WithSandboxType(SandboxType::kNoSandbox)
+              .WithDisplayName("Storage Service")
+              .Pass());
+    } else {
+      base::PostTask(FROM_HERE, {BrowserThread::IO},
+                     base::BindOnce(&RunInProcessStorageService,
+                                    remote.BindNewPipeAndPassReceiver()));
+    }
+
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableAggressiveDOMStorageFlushing)) {
+      remote->EnableAggressiveDomStorageFlushing();
+    }
+  }
+  return remote.get();
+}
 
 // A callback to create a URLLoaderFactory that is used in tests.
 StoragePartitionImpl::CreateNetworkFactoryCallback&
@@ -1324,8 +1373,8 @@ void StoragePartitionImpl::Initialize() {
       browser_context_->GetSpecialStoragePolicy(), quota_manager_proxy.get());
 
   dom_storage_context_ = DOMStorageContextWrapper::Create(
-      is_in_memory_ ? base::FilePath() : browser_context_->GetPath(),
-      relative_partition_path_, browser_context_->GetSpecialStoragePolicy());
+      GetStorageServicePartition(),
+      browser_context_->GetSpecialStoragePolicy());
 
   idle_manager_ = std::make_unique<IdleManager>();
   lock_manager_ = std::make_unique<LockManager>();
@@ -2379,6 +2428,19 @@ void StoragePartitionImpl::WaitForCodeCacheShutdownForTesting() {
 
 BrowserContext* StoragePartitionImpl::browser_context() const {
   return browser_context_;
+}
+
+storage::mojom::Partition* StoragePartitionImpl::GetStorageServicePartition() {
+  if (!remote_partition_) {
+    base::Optional<base::FilePath> storage_path;
+    if (!is_in_memory_) {
+      storage_path =
+          browser_context_->GetPath().Append(relative_partition_path_);
+    }
+    GetStorageService()->BindPartition(
+        storage_path, remote_partition_.BindNewPipeAndPassReceiver());
+  }
+  return remote_partition_.get();
 }
 
 mojo::ReceiverId StoragePartitionImpl::Bind(

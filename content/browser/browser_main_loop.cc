@@ -808,13 +808,6 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
       base::trace_event::CPUFreqMonitor::GetInstance());
 #endif
 
-  if (parsed_command_line_.HasSwitch(
-          switches::kEnableAggressiveDOMStorageFlushing)) {
-    TRACE_EVENT0("startup",
-                 "BrowserMainLoop::Subsystem:EnableAggressiveCommitDelay");
-    storage::StorageAreaImpl::EnableAggressiveCommitDelay();
-  }
-
   // Enable memory-infra dump providers.
   InitSkiaEventTracer();
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(

@@ -18,7 +18,7 @@ source_set("accessory") {
     "//ios/chrome/browser/ui/toolbar/public:constants",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/colors",
-    "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui/util",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

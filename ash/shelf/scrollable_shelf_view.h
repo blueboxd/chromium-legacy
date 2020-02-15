@@ -129,6 +129,10 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Padding at the two ends of the shelf.
   static constexpr int kEndPadding = 4;
 
+  // The mouse wheel event (including touchpad scrolling) with the main axis
+  // offset smaller than the threshold will be ignored.
+  static constexpr int KScrollOffsetThreshold = 20;
+
  private:
   class GradientLayerDelegate;
   class ScrollableShelfArrowView;

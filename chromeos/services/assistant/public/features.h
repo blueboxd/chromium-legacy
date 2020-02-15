@@ -132,6 +132,9 @@ bool IsProactiveSuggestionsShowRichEntryPointEnabled();
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
 bool IsProactiveSuggestionsSuppressDuplicatesEnabled();
 
+COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC)
+bool IsResponseProcessingV2Enabled();
+
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsRoutinesEnabled();
 
 COMPONENT_EXPORT(ASSISTANT_SERVICE_PUBLIC) bool IsScreenContextQueryEnabled();

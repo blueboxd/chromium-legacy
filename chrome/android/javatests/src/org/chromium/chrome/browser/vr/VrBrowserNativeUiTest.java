@@ -49,10 +49,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=LogJsConsoleMessages"})
 @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
 public class VrBrowserNativeUiTest {
-    // We need to make sure the port is constant, otherwise the URL changes between test runs, which
-    // is really bad for image diff tests. There's nothing special about this port other than that
-    // it shouldn't be in use by anything.
-    private static final int SERVER_PORT = 39558;
 
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
@@ -64,9 +60,6 @@ public class VrBrowserNativeUiTest {
             new RenderTestRule("components/test/data/vr_browser_ui/render_tests");
 
     private VrBrowserTestFramework mVrBrowserTestFramework;
-
-    private static final String TEST_PAGE_2D_URL =
-            VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
 
     @Before
     public void setUp() {
@@ -93,7 +86,8 @@ public class VrBrowserNativeUiTest {
     @Test
     @MediumTest
     public void testUrlOnNonNativeUi() throws IllegalArgumentException {
-        mVrTestRule.loadUrl(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(mVrBrowserTestFramework.getUrlForFile("test_navigation_2d_page"),
+                PAGE_LOAD_TIMEOUT_S);
         Assert.assertTrue("URL is not being show for non-native page",
                 TestVrShellDelegate.isDisplayingUrlForTesting());
     }
@@ -105,10 +99,8 @@ public class VrBrowserNativeUiTest {
     @Test
     @MediumTest
     public void testPaymentRequest() {
-        // We can't request payment on file:// URLs, so use a local server.
-        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                mVrBrowserTestFramework.getEmbeddedServerUrlForHtmlTestFile("test_payment_request"),
-                PAGE_LOAD_TIMEOUT_S);
+        mVrBrowserTestFramework.loadFileAndAwaitInitialization(
+                "test_payment_request", PAGE_LOAD_TIMEOUT_S);
         // Set up an observer so we'll know if the payment request is shown.
         AtomicBoolean requestShown = new AtomicBoolean(false);
         PaymentRequestObserverForTest observer = new PaymentRequestObserverForTest() {
@@ -306,6 +298,9 @@ public class VrBrowserNativeUiTest {
     @LargeTest
     @Feature({"Browser", "RenderTest"})
     public void testKeyboardAppearsOnUrlBarClick() throws InterruptedException, IOException {
+        // Render tests need to ensure that they are always run on the same port.
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
+
         NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
         // For whatever reason, the laser has a lot of random noise (not visible to an actual user)
         // when the keyboard is present on certain OS/hardware configurations (currently known to
@@ -334,6 +329,9 @@ public class VrBrowserNativeUiTest {
     @LargeTest
     @Feature({"Browser", "RenderTest"})
     public void testOverflowMenuAppears() throws InterruptedException, IOException {
+        // Render tests need to ensure that they are always run on the same port.
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
+
         // TODO(https://crbug.com/930840): Remove this when the weird gradient behavior is fixed.
         mRenderTestRule.setPixelDiffThreshold(2);
         NativeUiUtils.clickElementAndWaitForUiQuiescence(
@@ -349,6 +347,9 @@ public class VrBrowserNativeUiTest {
     @LargeTest
     @Feature({"Browser", "RenderTest"})
     public void testDataUrlEmphasis() throws InterruptedException, IOException {
+        // Render tests need to ensure that they are always run on the same port.
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
+
         NativeUiUtils.enableMockedInput();
         mVrTestRule.loadUrl("data:,Hello%2C%20World!", PAGE_LOAD_TIMEOUT_S);
         NativeUiUtils.waitForUiQuiescence();
@@ -363,8 +364,11 @@ public class VrBrowserNativeUiTest {
     @LargeTest
     @Feature({"Browser", "RenderTest"})
     public void testFileUrlEmphasis() throws InterruptedException, IOException {
+        // Render tests need to ensure that they are always run on the same port.
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
+
         NativeUiUtils.enableMockedInput();
-        mVrTestRule.loadUrl(VrBrowserTestFramework.getFileUrlForHtmlTestFile("2d_permission_page"),
+        mVrTestRule.loadUrl(XrTestFramework.getFileUrlForHtmlTestFile("2d_permission_page"),
                 PAGE_LOAD_TIMEOUT_S);
         NativeUiUtils.waitForUiQuiescence();
         RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,
@@ -379,10 +383,12 @@ public class VrBrowserNativeUiTest {
     @Feature({"Browser", "RenderTest"})
     public void testRepositionBarDoesNotAppearWithKeyboardOpen()
             throws InterruptedException, TimeoutException, IOException {
+        // Render tests need to ensure that they are always run on the same port.
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
+
         // Use the mock keyboard so it doesn't show, reducing the chance of flakes due to AA.
         NativeUiUtils.enableMockedKeyboard();
-        mVrTestRule.loadUrl(
-                VrBrowserTestFramework.getFileUrlForHtmlTestFile("generic_text_entry_page"),
+        mVrTestRule.loadUrl(mVrBrowserTestFramework.getUrlForFile("generic_text_entry_page"),
                 PAGE_LOAD_TIMEOUT_S);
         NativeUiUtils.clickContentNode(
                 "textfield", new PointF(), 1 /* numClicks */, mVrBrowserTestFramework);
@@ -404,6 +410,9 @@ public class VrBrowserNativeUiTest {
     @LargeTest
     @Feature({"Browser", "RenderTest"})
     public void testUrlBarHovering() throws InterruptedException, IOException {
+        // Render tests need to ensure that they are always run on the same port.
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
+
         testUrlBarHoveringImpl(false);
     }
 
@@ -415,6 +424,9 @@ public class VrBrowserNativeUiTest {
     @LargeTest
     @Feature({"Browser", "RenderTest"})
     public void testUrlBarHoveringIncognito() throws InterruptedException, IOException {
+        // Render tests need to ensure that they are always run on the same port.
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
+
         mVrBrowserTestFramework.openIncognitoTab("about:blank");
         testUrlBarHoveringImpl(true);
     }
@@ -453,6 +465,9 @@ public class VrBrowserNativeUiTest {
     @LargeTest
     @Feature({"Browser", "RenderTest"})
     public void testOverflowMenuHovering() throws InterruptedException, IOException {
+        // Render tests need to ensure that they are always run on the same port.
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
+
         testOverflowMenuHoveringImpl(false);
     }
 
@@ -464,6 +479,9 @@ public class VrBrowserNativeUiTest {
     @LargeTest
     @Feature({"Browser", "RenderTest"})
     public void testOverflowMenuHoveringIncognito() throws InterruptedException, IOException {
+        // Render tests need to ensure that they are always run on the same port.
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
+
         mVrBrowserTestFramework.openIncognitoTab("about:blank");
         testOverflowMenuHoveringImpl(true);
     }
@@ -521,6 +539,9 @@ public class VrBrowserNativeUiTest {
     @MediumTest
     @Feature({"Browser", "RenderTest"})
     public void testSuggestionHovering() throws InterruptedException, IOException {
+        // Render tests need to ensure that they are always run on the same port.
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
+
         // Input some text to get suggestions.
         NativeUiUtils.enableMockedKeyboard();
         NativeUiUtils.clickElementAndWaitForUiQuiescence(UserFriendlyElementName.URL, new PointF());
@@ -595,10 +616,10 @@ public class VrBrowserNativeUiTest {
     @MediumTest
     @Feature({"Browser", "RenderTest"})
     public void testScrollResizing() throws InterruptedException, IOException {
-        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                VrBrowserTestFramework.getFileUrlForHtmlTestFile(
-                        "test_content_resizing_does_not_affect_webpage"),
-                PAGE_LOAD_TIMEOUT_S);
+        // Render tests need to ensure that they are always run on the same port.
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
+        mVrBrowserTestFramework.loadFileAndAwaitInitialization(
+                "test_content_resizing_does_not_affect_webpage", PAGE_LOAD_TIMEOUT_S);
         mVrBrowserTestFramework.executeStepAndWait("stepGetInitialDimensions()");
         resizeContentWindowToMinimum();
         RenderTestUtils.dumpAndCompare(
@@ -616,8 +637,9 @@ public class VrBrowserNativeUiTest {
     @Feature({"Browser", "RenderTest"})
     public void testOverflowAndKeyboardFollowContentQuad()
             throws InterruptedException, TimeoutException, IOException {
-        mVrTestRule.loadUrl(
-                VrBrowserTestFramework.getFileUrlForHtmlTestFile("generic_text_entry_page"),
+        // Render tests need to ensure that they are always run on the same port.
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
+        mVrTestRule.loadUrl(mVrBrowserTestFramework.getUrlForFile("generic_text_entry_page"),
                 PAGE_LOAD_TIMEOUT_S);
         // Drag the content quad up and to the left.
         NativeUiUtils.selectRepositionBar();
@@ -646,10 +668,8 @@ public class VrBrowserNativeUiTest {
     @MediumTest
     @CommandLineFlags.Add({"enable-features=WebXR"})
     public void testRAFsFireWhileRepositioning() {
-        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                VrBrowserTestFramework.getFileUrlForHtmlTestFile(
-                        "test_rafs_fire_while_repositioning"),
-                PAGE_LOAD_TIMEOUT_S);
+        mVrBrowserTestFramework.loadFileAndAwaitInitialization(
+                "test_rafs_fire_while_repositioning", PAGE_LOAD_TIMEOUT_S);
         NativeUiUtils.selectRepositionBar();
         mVrBrowserTestFramework.executeStepAndWait("stepCheckForRafs()");
         mVrBrowserTestFramework.endTest();
@@ -663,10 +683,10 @@ public class VrBrowserNativeUiTest {
     @Feature({"Browser", "RenderTest"})
     public void testRepositionBarDoesNotAppearWithPermissionPromptVisible()
             throws InterruptedException, IOException {
-        // We don't need to actually accept the prompt, so we don't need to use the local server.
-        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                VrBrowserTestFramework.getFileUrlForHtmlTestFile("2d_permission_page"),
-                PAGE_LOAD_TIMEOUT_S);
+        // Render tests need to ensure that they are always run on the same port.
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
+        mVrBrowserTestFramework.loadFileAndAwaitInitialization(
+                "2d_permission_page", PAGE_LOAD_TIMEOUT_S);
         NativeUiUtils.enableMockedInput();
         NativeUiUtils.waitForUiQuiescence();
         NativeUiUtils.performActionAndWaitForUiQuiescence(() -> {
@@ -752,9 +772,8 @@ public class VrBrowserNativeUiTest {
     @MediumTest
     public void testVoiceInputUnavailableIfSiteUsingMicrophone() throws InterruptedException {
         NativeUiUtils.enableMockedInput();
-        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                mVrBrowserTestFramework.getEmbeddedServerUrlForHtmlTestFile("2d_permission_page"),
-                PAGE_LOAD_TIMEOUT_S);
+        mVrBrowserTestFramework.loadFileAndAwaitInitialization(
+                "2d_permission_page", PAGE_LOAD_TIMEOUT_S);
         // Wait for any residual animations from navigating.
         NativeUiUtils.waitForUiQuiescence();
         // Display and accept the permission.
@@ -786,7 +805,9 @@ public class VrBrowserNativeUiTest {
     @MediumTest
     @Feature({"Browser", "RenderTest"})
     public void testSecurityTokenOnHttp() throws InterruptedException, IOException {
-        mVrTestRule.getEmbeddedTestServerRule().setServerPort(SERVER_PORT);
+        // Render tests need to ensure that they are always run on the same port.
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
+        mVrTestRule.getEmbeddedTestServerRule().setServerUsesHttps(false);
         testSecurityTokenImpl("security_token_http");
     }
 
@@ -797,8 +818,8 @@ public class VrBrowserNativeUiTest {
     @MediumTest
     @Feature({"Browser", "RenderTest"})
     public void testSecurityTokenOnHttps() throws InterruptedException, IOException {
-        mVrTestRule.getEmbeddedTestServerRule().setServerPort(SERVER_PORT);
-        mVrTestRule.getEmbeddedTestServerRule().setServerUsesHttps(true);
+        // Render tests need to ensure that they are always run on the same port.
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
         testSecurityTokenImpl("security_token_https");
     }
 
@@ -810,8 +831,9 @@ public class VrBrowserNativeUiTest {
     @MediumTest
     @Feature({"Browser", "RenderTest"})
     public void testSecurityTokenOnHttpsBadCertificate() throws InterruptedException, IOException {
-        mVrTestRule.getEmbeddedTestServerRule().setServerPort(SERVER_PORT);
-        mVrTestRule.getEmbeddedTestServerRule().setServerUsesHttps(true);
+        // The test framework ensures that the server defaults to https, but we still need to ensure
+        // the proper port, and to set the invalid cert.
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
         mVrTestRule.getEmbeddedTestServerRule().setCertificateType(ServerCertificate.CERT_EXPIRED);
         testSecurityTokenImpl("security_token_https_bad_cert");
     }
@@ -819,8 +841,7 @@ public class VrBrowserNativeUiTest {
     private void testSecurityTokenImpl(String identifier) throws InterruptedException, IOException {
         NativeUiUtils.enableMockedInput();
         mVrTestRule.loadUrl(
-                mVrBrowserTestFramework.getEmbeddedServerUrlForHtmlTestFile("2d_permission_page"),
-                PAGE_LOAD_TIMEOUT_S);
+                mVrBrowserTestFramework.getUrlForFile("2d_permission_page"), PAGE_LOAD_TIMEOUT_S);
         // Wait for any residual animations from loading to go away.
         NativeUiUtils.waitForUiQuiescence();
         RenderTestUtils.dumpAndCompare(NativeUiUtils.FRAME_BUFFER_SUFFIX_BROWSER_UI,

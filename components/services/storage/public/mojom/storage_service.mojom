@@ -10,6 +10,10 @@ import "mojo/public/mojom/base/file_path.mojom";
 // The main interface into the Storage Service. The browser maintains a single
 // global connection to this interface.
 interface StorageService {
+  // Enables more aggressive flushing of DOM Storage data to disk in order to
+  // minimize chance of data loss.
+  EnableAggressiveDomStorageFlushing();
+
   // Binds a new Partition endpoint.
   //
   // |path| if non-null must be an absolute path, and it identifies a persistent

@@ -16,7 +16,7 @@ rootWebArea
 ++++++++++spinButton name='AM/PM' value='AM' valueForRange=1.00 minValueForRange=1.00 maxValueForRange=2.00
 ++++++++++++staticText name='AM'
 ++++++++++++++inlineTextBox name='AM'
-++++++popUpButton name='Show date picker'
+++++++popUpButton name='Show time picker'
 ++++inputTime inputType='time' name='Breakfast' value='00:00:00'
 ++++++genericContainer
 ++++++++genericContainer
@@ -33,4 +33,4 @@ rootWebArea
 ++++++++++spinButton name='AM/PM Breakfast' value='AM' valueForRange=1.00 minValueForRange=1.00 maxValueForRange=2.00
 ++++++++++++staticText name='AM'
 ++++++++++++++inlineTextBox name='AM'
-++++++popUpButton name='Show date picker'
+++++++popUpButton name='Show time picker'

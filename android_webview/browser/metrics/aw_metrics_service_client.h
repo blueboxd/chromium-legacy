@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "android_webview/browser/lifecycle/webview_app_state_observer.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
 #include "base/no_destructor.h"
@@ -88,7 +89,8 @@ enum class BackfillInstallDate {
 // the sample, it then calls MetricsService::Start(). If consent was not
 // granted, MaybeStartMetrics() instead clears the client ID, if any.
 
-class AwMetricsServiceClient : public ::metrics::AndroidMetricsServiceClient {
+class AwMetricsServiceClient : public ::metrics::AndroidMetricsServiceClient,
+                               public WebViewAppStateObserver {
   friend class base::NoDestructor<AwMetricsServiceClient>;
 
  public:
@@ -99,6 +101,9 @@ class AwMetricsServiceClient : public ::metrics::AndroidMetricsServiceClient {
 
   // metrics::MetricsServiceClient
   int32_t GetProduct() override;
+
+  // WebViewAppStateObserver
+  void OnAppStateChanged(WebViewAppStateObserver::State state) override;
 
   // metrics::AndroidMetricsServiceClient:
   void InitInternal() override;
@@ -112,6 +117,8 @@ class AwMetricsServiceClient : public ::metrics::AndroidMetricsServiceClient {
   std::string GetAppPackageNameInternal() override;
 
  private:
+  bool app_in_foreground_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(AwMetricsServiceClient);
 };
 

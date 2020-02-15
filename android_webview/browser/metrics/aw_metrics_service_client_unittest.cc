@@ -11,13 +11,13 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_switches.h"
 #include "components/prefs/testing_pref_service.h"
-#include "content/public/browser/notification_service.h"
+#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_content_client_initializer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace android_webview {
@@ -86,9 +86,7 @@ std::unique_ptr<TestClient> CreateAndInitTestClient(PrefService* prefs) {
 
 class AwMetricsServiceClientTest : public testing::Test {
  public:
-  AwMetricsServiceClientTest()
-      : task_runner_(new base::TestSimpleTaskRunner),
-        notification_service_(content::NotificationService::Create()) {
+  AwMetricsServiceClientTest() : task_runner_(new base::TestSimpleTaskRunner) {
     // Required by MetricsService.
     base::SetRecordActionTaskRunner(task_runner_);
   }
@@ -96,14 +94,22 @@ class AwMetricsServiceClientTest : public testing::Test {
  protected:
   ~AwMetricsServiceClientTest() override {}
 
- private:
-  base::test::TaskEnvironment task_environment_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  void SetUp() override {
+    test_content_client_initializer_ =
+        std::make_unique<content::TestContentClientInitializer>();
+  }
 
-  // AwMetricsServiceClient::RegisterForNotifications() requires the
-  // NotificationService to be up and running. Initialize it here, throw away
-  // the value because we don't need it directly.
-  std::unique_ptr<content::NotificationService> notification_service_;
+  void TearDown() override {
+    base::RunLoop().RunUntilIdle();
+    test_content_client_initializer_.reset();
+  }
+
+  content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<content::TestContentClientInitializer>
+      test_content_client_initializer_;
+
+ private:
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(AwMetricsServiceClientTest);
 };

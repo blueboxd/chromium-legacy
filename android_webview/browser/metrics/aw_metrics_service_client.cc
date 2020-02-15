@@ -7,6 +7,7 @@
 #include <jni.h>
 #include <cstdint>
 
+#include "android_webview/browser/lifecycle/aw_contents_lifecycle_notifier.h"
 #include "android_webview/browser/metrics/aw_stability_metrics_provider.h"
 #include "android_webview/browser_jni_headers/AwMetricsServiceClient_jni.h"
 #include "android_webview/common/aw_features.h"
@@ -131,6 +132,7 @@ void AwMetricsServiceClient::InitInternal() {
 }
 
 void AwMetricsServiceClient::OnMetricsStart() {
+  AwContentsLifecycleNotifier::GetInstance().AddObserver(this);
   SetReportingEnabledDateIfNotSet(pref_service());
 }
 
@@ -140,6 +142,36 @@ double AwMetricsServiceClient::GetPackageNameLimitRate() {
 
 bool AwMetricsServiceClient::ShouldWakeMetricsService() {
   return base::FeatureList::IsEnabled(features::kWebViewWakeMetricsService);
+}
+
+void AwMetricsServiceClient::OnAppStateChanged(
+    WebViewAppStateObserver::State state) {
+  // To match MetricsService's expectation,
+  // - does nothing if no WebView has ever been created.
+  // - starts notifying MetricsService once a WebView is created and the app
+  //   is foreground.
+  // - consolidates the other states other than kForeground into background.
+  // - avoids the duplicated notification.
+  if (state == WebViewAppStateObserver::State::kDestroyed &&
+      !AwContentsLifecycleNotifier::GetInstance()
+           .has_aw_contents_ever_created()) {
+    return;
+  }
+
+  bool foreground = state == WebViewAppStateObserver::State::kForeground;
+
+  if (foreground == app_in_foreground_)
+    return;
+
+  app_in_foreground_ = foreground;
+  if (app_in_foreground_) {
+    GetMetricsService()->OnAppEnterForeground();
+  } else {
+    // TODO(https://crbug.com/1052392): Turn on the background recording.
+    // Not recording in background, this matches Chrome's behavior.
+    GetMetricsService()->OnAppEnterBackground(
+        /* keep_recording_in_background = false */);
+  }
 }
 
 void AwMetricsServiceClient::RegisterAdditionalMetricsProviders(

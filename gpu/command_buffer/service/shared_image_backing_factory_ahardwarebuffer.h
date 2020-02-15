@@ -59,6 +59,7 @@ class GPU_GLES2_EXPORT SharedImageBackingFactoryAHB
       uint32_t usage) override;
   bool CanImportGpuMemoryBuffer(
       gfx::GpuMemoryBufferType memory_buffer_type) override;
+  bool IsFormatSupported(viz::ResourceFormat format);
 
  private:
   bool ValidateUsage(uint32_t usage,

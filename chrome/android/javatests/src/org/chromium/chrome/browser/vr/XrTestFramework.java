@@ -62,6 +62,11 @@ public abstract class XrTestFramework {
     public static final int POLL_TIMEOUT_LONG_MS = 10000;
     public static final boolean DEBUG_LOGS = false;
 
+    // We need to make sure the port is constant, otherwise the URL changes between test runs, which
+    // is really bad for image diff tests. There's nothing special about this port other than that
+    // it shouldn't be in use by anything.
+    public static final int SERVER_PORT = 39558;
+
     // The "3" corresponds to the "Mobile Bookmarks" folder - omitting a particular folder
     // automatically redirects to that folder, and not having it in the URL causes issues with the
     // URL we expect to be loaded being different than the actual URL.
@@ -392,27 +397,33 @@ public abstract class XrTestFramework {
      */
     public XrTestFramework(ChromeActivityTestRule rule) {
         mRule = rule;
+
+        // WebXr requires HTTPS, so configure the server to by default use it.
+        mRule.getEmbeddedTestServerRule().setServerUsesHttps(true);
     }
 
     /**
-     * Gets the URL that loads the given test file from the embedded test server.
+     * Gets the URL that loads the given test file from the embedded test server
+     * Note that because sessions may cause permissions prompts to appear, this
+     * uses the embedded server, as granting permissions to file:// URLs results
+     * in DCHECKs.
      *
      * @param testName The name of the test whose file will be retrieved.
      */
-    public String getEmbeddedServerUrlForHtmlTestFile(String testName) {
+    public String getUrlForFile(String testName) {
         return mRule.getTestServer().getURL("/" + TEST_DIR + "/html/" + testName + ".html");
     }
 
     /**
-     * Loads the given URL with the given timeout then waits for JavaScript to
-     * signal that it's ready for testing.
+     * Loads the given file on an embedded server with the given timeout then
+     * waits for JavaScript to signal that it's ready for testing.
      *
-     * @param url The URL of the page to load.
+     * @param file The name of the page to load.
      * @param timeoutSec The timeout of the page load in seconds.
      * @return The return value of ChromeActivityTestRule.loadUrl().
      */
-    public int loadUrlAndAwaitInitialization(String url, int timeoutSec) {
-        int result = mRule.loadUrl(url, timeoutSec);
+    public int loadFileAndAwaitInitialization(String url, int timeoutSec) {
+        int result = mRule.loadUrl(getUrlForFile(url), timeoutSec);
         Assert.assertTrue("Timed out waiting for JavaScript test initialization",
                 pollJavaScriptBoolean("isInitializationComplete()", POLL_TIMEOUT_LONG_MS,
                         mRule.getWebContents()));

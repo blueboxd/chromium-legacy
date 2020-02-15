@@ -1083,6 +1083,8 @@ TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {
 
   // Use a non-default port to verify the display name does not strip this off.
   const std::string google("https://www.google.com:183");
+  const std::string expected_display_name("www.google.com:183");
+
   ContentSettingSourceSetter source_setter(profile(),
                                            ContentSettingsType::NOTIFICATIONS);
 
@@ -1095,7 +1097,7 @@ TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {
 
   // Test Chrome built-in defaults are marked as default.
   handler()->HandleGetOriginPermissions(&get_origin_permissions_args);
-  ValidateOrigin(google, google, google, CONTENT_SETTING_ASK,
+  ValidateOrigin(google, google, expected_display_name, CONTENT_SETTING_ASK,
                  site_settings::SiteSettingSource::kDefault, 1U);
 
   base::ListValue default_value_args;
@@ -1105,7 +1107,7 @@ TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {
   handler()->HandleSetDefaultValueForContentType(&default_value_args);
   // A user-set global default should also show up as default.
   handler()->HandleGetOriginPermissions(&get_origin_permissions_args);
-  ValidateOrigin(google, google, google, CONTENT_SETTING_BLOCK,
+  ValidateOrigin(google, google, expected_display_name, CONTENT_SETTING_BLOCK,
                  site_settings::SiteSettingSource::kDefault, 3U);
 
   base::ListValue set_notification_pattern_args;
@@ -1119,7 +1121,7 @@ TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {
       &set_notification_pattern_args);
   // A user-set pattern should not show up as default.
   handler()->HandleGetOriginPermissions(&get_origin_permissions_args);
-  ValidateOrigin(google, google, google, CONTENT_SETTING_ALLOW,
+  ValidateOrigin(google, google, expected_display_name, CONTENT_SETTING_ALLOW,
                  site_settings::SiteSettingSource::kPreference, 5U);
 
   base::ListValue set_notification_origin_args;
@@ -1133,20 +1135,20 @@ TEST_F(SiteSettingsHandlerTest, DefaultSettingSource) {
       &set_notification_origin_args);
   // A user-set per-origin permission should not show up as default.
   handler()->HandleGetOriginPermissions(&get_origin_permissions_args);
-  ValidateOrigin(google, google, google, CONTENT_SETTING_BLOCK,
+  ValidateOrigin(google, google, expected_display_name, CONTENT_SETTING_BLOCK,
                  site_settings::SiteSettingSource::kPreference, 7U);
 
   // Enterprise-policy set defaults should not show up as default.
   source_setter.SetPolicyDefault(CONTENT_SETTING_ALLOW);
   handler()->HandleGetOriginPermissions(&get_origin_permissions_args);
-  ValidateOrigin(google, google, google, CONTENT_SETTING_ALLOW,
+  ValidateOrigin(google, google, expected_display_name, CONTENT_SETTING_ALLOW,
                  site_settings::SiteSettingSource::kPolicy, 8U);
 }
 
 TEST_F(SiteSettingsHandlerTest, GetAndSetOriginPermissions) {
   const std::string origin_with_port("https://www.example.com:443");
   // The display name won't show the port if it's default for that scheme.
-  const std::string origin("https://www.example.com");
+  const std::string origin("www.example.com");
   base::ListValue get_args;
   get_args.AppendString(kCallbackId);
   get_args.AppendString(origin_with_port);

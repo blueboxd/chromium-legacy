@@ -7,7 +7,7 @@
 [
     Exposed=(Window,Worker),
     SecureContext,
-    RuntimeEnabled=ShapeDetection
+    RuntimeEnabled=FaceDetector
 ] interface FaceDetector {
     [CallWith=ExecutionContext, MeasureAs=ShapeDetection_FaceDetectorConstructor] constructor(optional FaceDetectorOptions faceDetectorOptions = {});
     [CallWith=ScriptState, MeasureAs=ShapeDetectionAPI] Promise<sequence<DetectedFace>> detect(ImageBitmapSource image);

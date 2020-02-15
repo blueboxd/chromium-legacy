@@ -185,7 +185,7 @@ GLuint ExternalVkImageGLRepresentationShared::ImportVkSemaphoreIntoGL(
 #if defined(OS_FUCHSIA)
   NOTIMPLEMENTED_LOG_ONCE();
   return 0;
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) || defined(OS_ANDROID)
   if (handle.vk_handle_type() !=
       VK_EXTERNAL_SEMAPHORE_HANDLE_TYPE_OPAQUE_FD_BIT) {
     DLOG(ERROR) << "Importing semaphore handle of unexpected type:"
@@ -200,7 +200,7 @@ GLuint ExternalVkImageGLRepresentationShared::ImportVkSemaphoreIntoGL(
                                 fd.release());
 
   return gl_semaphore;
-#else  // !defined(OS_FUCHSIA) && !defined(OS_LINUX)
+#else  // !defined(OS_FUCHSIA) && !defined(OS_LINUX) && !defined(OS_ANDROID)
 #error Unsupported OS
 #endif
 }

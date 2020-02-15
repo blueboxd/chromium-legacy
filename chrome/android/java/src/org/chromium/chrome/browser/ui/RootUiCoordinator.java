@@ -284,11 +284,6 @@ public class RootUiCoordinator
             return false;
         }
 
-        if (mActivity.getEphemeralTabCoordinator() != null
-                && mActivity.getEphemeralTabCoordinator().isOpened()) {
-            return false;
-        }
-
         // Do not show the menu if we are in find in page view.
         if (mFindToolbarManager != null && mFindToolbarManager.isShowing()
                 && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity)) {
@@ -461,6 +456,10 @@ public class RootUiCoordinator
                 if (mActivity.getContextualSearchManager() != null) {
                     mActivity.getContextualSearchManager().hideContextualSearch(
                             OverlayPanel.StateChangeReason.UNKNOWN);
+                }
+                if (mActivity.getEphemeralTabCoordinator() != null
+                        && mActivity.getEphemeralTabCoordinator().isOpened()) {
+                    mActivity.getEphemeralTabCoordinator().close();
                 }
             }
 

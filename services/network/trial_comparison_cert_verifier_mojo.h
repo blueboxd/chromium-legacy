@@ -72,6 +72,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TrialComparisonCertVerifierMojo
       bool require_rev_checking_local_anchors,
       bool enable_sha1_local_anchors,
       bool disable_symantec_enforcement,
+      const std::string& stapled_ocsp,
+      const std::string& sct_list,
       const net::CertVerifyResult& primary_result,
       const net::CertVerifyResult& trial_result);
 

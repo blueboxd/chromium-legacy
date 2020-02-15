@@ -17,7 +17,7 @@
   }
 
   let numVideosRendered = 0;
-  function waitForRender(time, dict) {
+  function waitForRender() {
     if(++numVideosRendered == 2)
       testRunner.notifyDone();
   }
@@ -50,21 +50,28 @@
     response = await fetch('/media/resources/media-source/webm/test-v-128k-640x480-30fps-10kfr.webm');
     let videoData480p = await response.arrayBuffer();
 
-    // Set up the first video with content of a single size.
+    // Queue a requestAnimationFrame() before appending buffers in order not to
+    // miss any frames.
     let singleSizeVideo = document.getElementById('single_size');
-    let ss_sourceBuffer = await setupMse(singleSizeVideo, 'video/webm; codecs="vp8"');
-    await appendBuffer(ss_sourceBuffer, videoData240p);
     singleSizeVideo.requestAnimationFrame(waitForRender);
 
-    // Setup the second video with a single size for 1 second, followed by a larger size for 2 additional seconds.
+    // Set up the first video with content of a single size.
+    let ss_sourceBuffer = await setupMse(singleSizeVideo, 'video/webm; codecs="vp8"');
+    await appendBuffer(ss_sourceBuffer, videoData240p);
+
+
+    // Wait for a frame of the first size to be painted. Then seek beyond the first size.
     let mixedSizeVideo = document.getElementById('mixed_size');
+    mixedSizeVideo.requestAnimationFrame(_=> {
+      mixedSizeVideo.requestAnimationFrame(waitForRender);
+      mixedSizeVideo.currentTime = 2;
+    });
+
+    // Setup the second video with a single size for 1 second, followed by a larger size for 2 additional seconds.
     let ms_sourceBuffer = await setupMse(mixedSizeVideo, 'video/webm; codecs="vp8"');
     await appendBuffer(ms_sourceBuffer, videoData240p);
     ms_sourceBuffer.timestampOffset = 1;
     await appendBuffer(ms_sourceBuffer, videoData480p);
 
-    // Seek the second video beyond the first size.
-    mixedSizeVideo.currentTime = 2;
-    mixedSizeVideo.requestAnimationFrame(waitForRender);
   })();
 </script>

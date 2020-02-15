@@ -231,6 +231,10 @@
       status: "stable",
     },
     {
+      name: "BarcodeDetector",
+      status: "stable",
+    },
+    {
       name: "BidiCaretAffinity",
     },
     {
@@ -597,10 +601,6 @@
       status: "experimental",
     },
     {
-      name: "DiscardInputToMovingIframes",
-      status: "stable",
-    },
-    {
       name: "DisplayCutoutAPI",
       settable_from_internals: true,
     },
@@ -705,6 +705,10 @@
     },
     {
       name: "ExtraWebGLVideoTextureMetadata",
+    },
+    {
+      name: "FaceDetector",
+      status: "experimental",
     },
     {
       name: "FallbackCursorMode",
@@ -1583,10 +1587,6 @@
       status: "experimental",
     },
     {
-      name: "ShapeDetection",
-      status: "experimental",
-    },
-    {
       name: "SharedArrayBuffer",
       status: "stable",
     },
@@ -1648,6 +1648,10 @@
     {
       name: "SurfaceEmbeddingFeatures",
       status: "stable",
+    },
+    {
+      name: "TextDetector",
+      status: "experimental",
     },
     {
       name: "TextFragmentIdentifiers",

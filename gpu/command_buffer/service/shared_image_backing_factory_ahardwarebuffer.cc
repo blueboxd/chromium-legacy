@@ -1128,6 +1128,14 @@ bool SharedImageBackingFactoryAHB::CanImportGpuMemoryBuffer(
   return memory_buffer_type == gfx::ANDROID_HARDWARE_BUFFER;
 }
 
+bool SharedImageBackingFactoryAHB::IsFormatSupported(
+    viz::ResourceFormat format) {
+  DCHECK_GE(format, 0);
+  DCHECK_LE(format, viz::RESOURCE_FORMAT_MAX);
+
+  return format_info_[format].ahb_supported;
+}
+
 SharedImageBackingFactoryAHB::FormatInfo::FormatInfo() = default;
 SharedImageBackingFactoryAHB::FormatInfo::~FormatInfo() = default;
 

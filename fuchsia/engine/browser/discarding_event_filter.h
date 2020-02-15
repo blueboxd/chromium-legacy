@@ -22,12 +22,9 @@ class DiscardingEventFilter : public ui::EventRewriter {
 
  private:
   // ui::EventRewriter overrides.
-  ui::EventRewriteStatus RewriteEvent(
+  ui::EventDispatchDetails RewriteEvent(
       const ui::Event& event,
-      std::unique_ptr<ui::Event>* rewritten_event) override;
-  ui::EventRewriteStatus NextDispatchEvent(
-      const ui::Event& last_event,
-      std::unique_ptr<ui::Event>* new_event) override;
+      const Continuation continuation) override;
 
   // When set, all incoming events will be discarded before they are
   // delivered to their sink.

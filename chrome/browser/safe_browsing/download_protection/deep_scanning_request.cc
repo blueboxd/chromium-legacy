@@ -184,6 +184,7 @@ void DeepScanningRequest::Start() {
       item_, /*read_immediately=*/true,
       base::BindOnce(&DeepScanningRequest::OnScanComplete,
                      weak_ptr_factory_.GetWeakPtr()));
+  request->set_filename(item_->GetTargetFilePath().BaseName().AsUTF8Unsafe());
 
   Profile* profile = Profile::FromBrowserContext(
       content::DownloadItemUtils::GetBrowserContext(item_));

@@ -456,7 +456,7 @@ void OverviewWindowDragController::ContinueNormalDrag(
 
       float value = 0.f;
       if (centerpoint.y() < desks_bar_bounds_.y() ||
-          centerpoint.y() > desks_bar_bounds_.y()) {
+          centerpoint.y() > desks_bar_bounds_.bottom()) {
         // Coming vertically, this is the main use case. This is a ratio of the
         // distance from |centerpoint| to the closest edge of |desk_bar_bounds|
         // to the distance from |shrink_bounds| to |desk_bar_bounds|.
@@ -483,7 +483,7 @@ void OverviewWindowDragController::ContinueNormalDrag(
     UpdateDragIndicatorsAndOverviewGrid(location_in_screen);
     // The newly updated indicator state may cause the desks widget to be pushed
     // down to make room for the top splitview guidance indicator when in
-    // portrait mode.
+    // portrait orientation in tablet mode.
     overview_grid->MaybeUpdateDesksWidgetBounds();
   }
   if (AreMultiDisplayOverviewAndSplitViewEnabled()) {

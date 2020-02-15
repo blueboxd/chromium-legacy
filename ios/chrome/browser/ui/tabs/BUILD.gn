@@ -61,7 +61,7 @@ source_set("tabs") {
     "//ios/chrome/common",
     "//ios/chrome/common:common_extension",
     "//ios/chrome/common/colors",
-    "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui/util",
     "//ios/third_party/material_components_ios",
     "//ios/web",
     "//ui/base",

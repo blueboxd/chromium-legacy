@@ -142,9 +142,6 @@ MouseEventWithHitTestResults PerformMouseEventHitTest(
 
 bool ShouldDiscardEventTargetingFrame(const WebInputEvent& event,
                                       const LocalFrame& frame) {
-  if (!RuntimeEnabledFeatures::DiscardInputToMovingIframesEnabled())
-    return false;
-
   // There are two different mechanisms for tracking whether an iframe has moved
   // recently, for OOPIF and in-process iframes. For OOPIF's, frame movement is
   // tracked in the browser process using hit test data, and it's propagated

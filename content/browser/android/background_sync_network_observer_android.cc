@@ -22,10 +22,6 @@ BackgroundSyncNetworkObserverAndroid::Observer::Create(
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   scoped_refptr<BackgroundSyncNetworkObserverAndroid::Observer> observer(
       new BackgroundSyncNetworkObserverAndroid::Observer(callback));
-  RunOrPostTaskOnThread(
-      FROM_HERE, BrowserThread::UI,
-      base::BindOnce(&BackgroundSyncNetworkObserverAndroid::Observer::Init,
-                     observer));
   return observer;
 }
 
@@ -71,14 +67,25 @@ BackgroundSyncNetworkObserverAndroid::BackgroundSyncNetworkObserverAndroid(
     base::RepeatingClosure network_changed_callback)
     : BackgroundSyncNetworkObserver(std::move(network_changed_callback)) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-
-  observer_ = Observer::Create(base::BindRepeating(
-      &BackgroundSyncNetworkObserverAndroid::OnConnectionChanged,
-      weak_ptr_factory_.GetWeakPtr()));
 }
 
 BackgroundSyncNetworkObserverAndroid::~BackgroundSyncNetworkObserverAndroid() {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+}
+
+void BackgroundSyncNetworkObserverAndroid::Init() {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  observer_ = Observer::Create(base::BindRepeating(
+      &BackgroundSyncNetworkObserverAndroid::OnConnectionChanged,
+      weak_ptr_factory_.GetWeakPtr()));
+  if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
+    observer_->Init();
+  } else {
+    RunOrPostTaskOnThread(
+        FROM_HERE, BrowserThread::UI,
+        base::BindOnce(&BackgroundSyncNetworkObserverAndroid::Observer::Init,
+                       observer_));
+  }
 }
 
 void BackgroundSyncNetworkObserverAndroid::RegisterWithNetworkConnectionTracker(

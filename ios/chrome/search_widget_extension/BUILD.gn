@@ -64,7 +64,7 @@ source_set("search_widget") {
     "//ios/chrome/common:common_extension",
     "//ios/chrome/common/app_group",
     "//ios/chrome/common/app_group:command",
-    "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui/util",
   ]
 
   libs = [

@@ -11,6 +11,7 @@ source_set("metrics") {
   ]
   deps = [
     "//android_webview:browser_jni_headers",
+    "//android_webview/browser/lifecycle",
     "//android_webview/common",
     "//base",
     "//components/embedder_support/android/metrics",

@@ -31,7 +31,7 @@ source_set("cells") {
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/table_view/cells:cells_constants",
     "//ios/chrome/common/colors",
-    "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui/util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/signin",
     "//ui/base",

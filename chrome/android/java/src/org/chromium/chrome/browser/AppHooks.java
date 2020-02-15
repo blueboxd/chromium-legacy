@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.browser;
 
-import android.app.Notification;
-import android.app.Service;
-import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.view.View;
@@ -56,6 +53,7 @@ import org.chromium.chrome.browser.ui.ImmersiveModeManager;
 import org.chromium.chrome.browser.usage_stats.DigitalWellbeingClient;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
 import org.chromium.chrome.browser.webauth.Fido2ApiHandler;
+import org.chromium.chrome.browser.xsurface.SurfaceAdapterFactory;
 import org.chromium.components.browser_ui.widget.FeatureHighlightProvider;
 import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.components.signin.AccountManagerDelegate;
@@ -264,22 +262,6 @@ public abstract class AppHooks {
     }
 
     /**
-     * Upgrades a service from background to foreground after calling
-     * {@link Service#startForegroundService(Intent)}.
-     * @param service The service to be foreground.
-     * @param id The notification id.
-     * @param notification The notification attached to the foreground service.
-     * @param foregroundServiceType The type of foreground service. Must be a subset of the
-     *                              foreground service types defined in AndroidManifest.xml.
-     *                              Use 0 if no foregroundServiceType attribute is defined.
-     */
-    public void startForeground(
-            Service service, int id, Notification notification, int foregroundServiceType) {
-        // TODO(xingliu): Add appropriate foregroundServiceType to manifest when we have new sdk.
-        service.startForeground(id, notification);
-    }
-
-    /**
      * @return A callback that will be run each time an offline page is saved in the custom tabs
      * namespace.
      */
@@ -395,5 +377,13 @@ public abstract class AppHooks {
      */
     public TrustedVaultClient.Backend createSyncTrustedVaultClientBackend() {
         return new TrustedVaultClient.EmptyBackend();
+    }
+
+    /**
+     * Returns a new {@link SurfaceAdapterFactory} if the xsurface implementation is included in the
+     * apk. Otherwise null is returned.
+     */
+    public @Nullable SurfaceAdapterFactory createExternalSurfaceAdapterFactory() {
+        return null;
     }
 }

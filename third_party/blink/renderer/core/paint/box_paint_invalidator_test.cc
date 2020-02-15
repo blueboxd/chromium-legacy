@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/paint_and_raster_invalidation_test.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/core/paint/paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -18,11 +19,11 @@
 
 namespace blink {
 
-class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
+using ::testing::UnorderedElementsAre;
+
+class BoxPaintInvalidatorTest : public PaintAndRasterInvalidationTest {
  public:
-  BoxPaintInvalidatorTest()
-      : PaintControllerPaintTest(
-            MakeGarbageCollected<SingleChildLocalFrameClient>()) {}
+  BoxPaintInvalidatorTest() = default;
 
  protected:
   PaintInvalidationReason ComputePaintInvalidationReason(
@@ -69,8 +70,13 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
     target.setAttribute(
         html_names::kStyleAttr,
         target.getAttribute(html_names::kStyleAttr) + "; width: 200px");
-    GetDocument().View()->UpdateLifecycleToCompositingInputsClean(
-        DocumentUpdateReason::kTest);
+    if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+      GetDocument().View()->UpdateLifecycleToLayoutClean(
+          DocumentUpdateReason::kTest);
+    } else {
+      GetDocument().View()->UpdateLifecycleToCompositingInputsClean(
+          DocumentUpdateReason::kTest);
+    }
     // Simulate that PaintInvalidator updates visual rect.
     box.GetMutableForPainting().SetVisualRect(
         IntRect(visual_rect.Location(), RoundedIntSize(box.Size())));
@@ -241,15 +247,37 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonOtherCases) {
   target.setAttribute(html_names::kStyleAttr, "filter: blur(5px)");
   ExpectFullPaintInvalidationOnGeometryChange("With filter");
 
-  target.setAttribute(html_names::kStyleAttr, "outline: 2px solid blue");
-  ExpectFullPaintInvalidationOnGeometryChange("With outline");
-
   target.setAttribute(html_names::kStyleAttr, "box-shadow: inset 3px 2px");
   ExpectFullPaintInvalidationOnGeometryChange("With box-shadow");
 
   target.setAttribute(html_names::kStyleAttr,
                       "clip-path: circle(50% at 0 50%)");
   ExpectFullPaintInvalidationOnGeometryChange("With clip-path");
+}
+
+TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonOutline) {
+  SetUpHTML();
+  auto& target = *GetDocument().getElementById("target");
+  auto* object = target.GetLayoutObject();
+
+  GetDocument().View()->SetTracksRasterInvalidations(true);
+  target.setAttribute(html_names::kStyleAttr, "outline: 2px solid blue;");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  object, object->DebugName(), IntRect(0, 0, 72, 142),
+                  PaintInvalidationReason::kStyle}));
+  GetDocument().View()->SetTracksRasterInvalidations(false);
+
+  GetDocument().View()->SetTracksRasterInvalidations(true);
+  target.setAttribute(html_names::kStyleAttr,
+                      "outline: 2px solid blue; width: 100px;");
+  UpdateAllLifecyclePhasesForTest();
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  object, object->DebugName(), IntRect(0, 0, 122, 142),
+                  PaintInvalidationReason::kGeometry}));
+  GetDocument().View()->SetTracksRasterInvalidations(false);
 }
 
 TEST_P(BoxPaintInvalidatorTest, InvalidateHitTestOnCompositingStyleChange) {

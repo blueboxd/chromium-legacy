@@ -184,6 +184,14 @@ void ContentBrowserClientImpl::AppendExtraCommandLineSwitches(
     command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
                                    kCommonSwitchNames,
                                    base::size(kCommonSwitchNames));
+
+    const bool running_tests =
+        base::CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kWebLayerTestMode);
+    if (running_tests) {
+      command_line->AppendSwitch(
+          switches::kEnableExperimentalWebPlatformFeatures);
+    }
   }
 }
 

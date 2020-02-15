@@ -435,14 +435,14 @@
       {
         "name": "onSelectToSpeakStateChangeRequested",
         "type": "function",
-        "description": "Called when Chrome OS wants to change the Select-to-Speak state, between selecting with the mouse, speaking, and inactive.",
+        "description": "Fired when Chrome OS wants to change the Select-to-Speak state, between selecting with the mouse, speaking, and inactive.",
         "parameters": [],
         "platforms": ["chromeos"]
       },
       {
         "name": "onSwitchAccessCommand",
         "type": "function",
-        "description": "Called when Chrome OS has received a key event corresponding to a Switch Access command.",
+        "description": "Fired when Chrome OS has received a key event corresponding to a Switch Access command.",
         "parameters": [
           {
             "name": "command",
@@ -454,7 +454,7 @@
       {
         "name": "onAnnounceForAccessibility",
         "type": "function",
-        "description": "Called when an internal component within accessibility wants to force speech output for an accessibility extension. Do not use without approval from accessibility owners.",
+        "description": "Fired when an internal component within accessibility wants to force speech output for an accessibility extension. Do not use without approval from accessibility owners.",
         "parameters": [
           {
             "name": "announceText",
@@ -468,7 +468,7 @@
       {
         "name": "findScrollableBoundsForPoint",
         "type": "function",
-        "description": "Called when an internal component within accessibility wants to find the nearest scrolling container at a given screen coordinate. Used in Automatic Clicks.",
+        "description": "Fired when an internal component within accessibility wants to find the nearest scrolling container at a given screen coordinate. Used in Automatic Clicks.",
         "parameters": [
           {
             "name": "x",
@@ -479,6 +479,19 @@
             "name": "y",
             "type": "number",
             "description": "Y screen coordinate of the point."
+          }
+        ],
+        "platforms": ["chromeos"]
+      },
+      {
+        "name": "onCustomSpokenFeedbackToggled",
+        "type": "function",
+        "description": "Fired when a custom spoken feedback on the active window gets enabled or disabled. Called from ARC++ accessibility.",
+        "parameters": [
+          {
+            "name": "enabled",
+            "type": "boolean",
+            "description": "True if the active window implements custom spoken feedback features."
           }
         ],
         "platforms": ["chromeos"]

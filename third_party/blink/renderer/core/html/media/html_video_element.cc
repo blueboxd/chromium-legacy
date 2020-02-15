@@ -394,6 +394,8 @@ void HTMLVideoElement::OnLoadFinished() {
                            WrapWeakPersistent(this)));
     lazy_load_intersection_observer_->observe(this);
   }
+
+  UpdatePictureInPictureAvailability();
 }
 
 void HTMLVideoElement::PaintCurrentFrame(

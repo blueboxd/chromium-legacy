@@ -6,6 +6,7 @@ include_rules = [
   "+chrome/browser/settings/android",
   "+chrome/browser/ui/android/native_page",
   "+chrome/browser/util/android/java",
+  "+chrome/browser/xsurface/android",
   "+components/browser_ui/modaldialog/android",
   "+components/browser_ui/util/android",
   "+components/browser_ui/widget/android",

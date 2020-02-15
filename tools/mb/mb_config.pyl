@@ -20,10 +20,10 @@
       'chromeos-betty-pi-arc-chrome': 'cros_chrome_sdk_include_unwind_tables',
       'chromeos-eve-chrome': 'cros_chrome_sdk_include_unwind_tables',
       'chromeos-kevin-chrome': 'cros_chrome_sdk_include_unwind_tables',
-      'linux-chromeos-chrome': 'official_goma_chromeos_minimal_symbols_include_unwind_tables',
       # Don't include unwind tables for the remaining three builders since
       # they monitor binary size growth, which may be affected by the tables.
       'linux-chrome': 'official_goma',
+      'linux-chromeos-chrome': 'official_goma_chromeos',
       'mac-chrome': 'official_goma',
       'win-chrome': 'official_goma_x86',
     },
@@ -756,7 +756,7 @@
       'chromeos-kevin-chrome': 'cros_chrome_sdk_include_unwind_tables',
       'chromeos-kevin-compile-chrome': 'cros_chrome_sdk_include_unwind_tables',
       'linux-chrome': 'official_goma',
-      'linux-chromeos-chrome': 'official_goma_chromeos_minimal_symbols_include_unwind_tables',
+      'linux-chromeos-chrome': 'official_goma_chromeos_include_unwind_tables',
       'win_chrome_official': 'official_goma_x86',
       'win-celab-try-rel': 'official_celab_release_bot',
     },
@@ -1866,9 +1866,12 @@
       'official', 'goma', 'no_gnome_keyring',
     ],
 
-    'official_goma_chromeos_minimal_symbols_include_unwind_tables': [
-      'official', 'goma', 'chromeos', 'minimal_symbols',
-      'include_unwind_tables',
+    'official_goma_chromeos': [
+      'official', 'goma', 'chromeos',
+    ],
+
+    'official_goma_chromeos_include_unwind_tables': [
+      'official', 'goma', 'chromeos', 'include_unwind_tables',
     ],
 
     'official_goma_minimal_symbols_android': [

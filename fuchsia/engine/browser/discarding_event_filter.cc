@@ -8,22 +8,10 @@ DiscardingEventFilter::DiscardingEventFilter() = default;
 
 DiscardingEventFilter::~DiscardingEventFilter() = default;
 
-ui::EventRewriteStatus DiscardingEventFilter::RewriteEvent(
+ui::EventDispatchDetails DiscardingEventFilter::RewriteEvent(
     const ui::Event& event,
-    std::unique_ptr<ui::Event>* rewritten_event) {
+    const Continuation continuation) {
   if (discard_events_)
-    return ui::EventRewriteStatus::EVENT_REWRITE_DISCARD;
-  else
-    return ui::EventRewriteStatus::EVENT_REWRITE_CONTINUE;
-}
-
-ui::EventRewriteStatus DiscardingEventFilter::NextDispatchEvent(
-    const ui::Event& last_event,
-    std::unique_ptr<ui::Event>* new_event) {
-  // Never invoked because RewriteEvent() does not return
-  // EVENT_REWRITE_DISPATCH_ANOTHER. Refer to the EventRewriter base class'
-  // comments for more information on this API quirk.
-  NOTREACHED();
-
-  return ui::EventRewriteStatus::EVENT_REWRITE_DISPATCH_ANOTHER;
+    return DiscardEvent(continuation);
+  return SendEvent(continuation, &event);
 }

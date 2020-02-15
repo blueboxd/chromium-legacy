@@ -312,21 +312,21 @@ chrome.accessibilityPrivate.onTwoFingerTouchStart;
 chrome.accessibilityPrivate.onTwoFingerTouchStop;
 
 /**
- * Called when Chrome OS wants to change the Select-to-Speak state, between
+ * Fired when Chrome OS wants to change the Select-to-Speak state, between
  * selecting with the mouse, speaking, and inactive.
  * @type {!ChromeEvent}
  */
 chrome.accessibilityPrivate.onSelectToSpeakStateChangeRequested;
 
 /**
- * Called when Chrome OS has received a key event corresponding to a Switch
+ * Fired when Chrome OS has received a key event corresponding to a Switch
  * Access command.
  * @type {!ChromeEvent}
  */
 chrome.accessibilityPrivate.onSwitchAccessCommand;
 
 /**
- * Called when an internal component within accessibility wants to force speech
+ * Fired when an internal component within accessibility wants to force speech
  * output for an accessibility extension. Do not use without approval from
  * accessibility owners.
  * @type {!ChromeEvent}
@@ -334,9 +334,16 @@ chrome.accessibilityPrivate.onSwitchAccessCommand;
 chrome.accessibilityPrivate.onAnnounceForAccessibility;
 
 /**
- * Called when an internal component within accessibility wants to find the
+ * Fired when an internal component within accessibility wants to find the
  * nearest scrolling container at a given screen coordinate. Used in Automatic
  * Clicks.
  * @type {!ChromeEvent}
  */
 chrome.accessibilityPrivate.findScrollableBoundsForPoint;
+
+/**
+ * Fired when a custom spoken feedback on the active window gets enabled or
+ * disabled. Called from ARC++ accessibility.
+ * @type {!ChromeEvent}
+ */
+chrome.accessibilityPrivate.onCustomSpokenFeedbackToggled;

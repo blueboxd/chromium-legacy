@@ -7,7 +7,7 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/passwords/password_breach_presenter.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
-#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

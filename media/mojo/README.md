@@ -335,7 +335,7 @@ these services (e.g. to handle navigation).
 In `MediaInterfaceProxy`, when we request `media::mojom::InterfaceFactory` in
 the `MediaService` or `CdmService`, we call `GetFrameServices()` to configure
 which secure auxiliary services are exposed to the remote components over the
-separate `service_manager::mojom::InterfaceProvider`.
+separate `blink::mojom::BrowserInterfaceBroker`.
 
 Currently only the remote CDM needs secure auxiliary services. This is a list of
 currently supported services:

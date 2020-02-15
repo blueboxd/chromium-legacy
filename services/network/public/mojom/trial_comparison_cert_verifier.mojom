@@ -63,7 +63,8 @@ interface TrialComparisonCertVerifierReportClient {
   SendTrialReport(
       string hostname, X509Certificate cert, bool enable_rev_checking,
       bool require_rev_checking_local_anchors, bool enable_sha1_local_anchors,
-      bool disable_symantec_enforcement, CertVerifyResult primary_result,
+      bool disable_symantec_enforcement, array<uint8> stapled_ocsp,
+      array<uint8> sct_list, CertVerifyResult primary_result,
       CertVerifyResult trial_result, CertVerifierDebugInfo debug_info);
 };
 

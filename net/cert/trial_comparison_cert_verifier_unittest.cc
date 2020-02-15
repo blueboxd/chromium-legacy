@@ -229,6 +229,8 @@ struct TrialReportInfo {
                   bool require_rev_checking_local_anchors,
                   bool enable_sha1_local_anchors,
                   bool disable_symantec_enforcement,
+                  const std::string& stapled_ocsp,
+                  const std::string& sct_list,
                   const CertVerifyResult& primary_result,
                   const CertVerifyResult& trial_result)
       : hostname(hostname),
@@ -237,6 +239,8 @@ struct TrialReportInfo {
         require_rev_checking_local_anchors(require_rev_checking_local_anchors),
         enable_sha1_local_anchors(enable_sha1_local_anchors),
         disable_symantec_enforcement(disable_symantec_enforcement),
+        stapled_ocsp(stapled_ocsp),
+        sct_list(sct_list),
         primary_result(primary_result),
         trial_result(trial_result) {}
 
@@ -246,6 +250,8 @@ struct TrialReportInfo {
   bool require_rev_checking_local_anchors;
   bool enable_sha1_local_anchors;
   bool disable_symantec_enforcement;
+  std::string stapled_ocsp;
+  std::string sct_list;
   CertVerifyResult primary_result;
   CertVerifyResult trial_result;
 };
@@ -257,12 +263,15 @@ void RecordTrialReport(std::vector<TrialReportInfo>* reports,
                        bool require_rev_checking_local_anchors,
                        bool enable_sha1_local_anchors,
                        bool disable_symantec_enforcement,
+                       const std::string& stapled_ocsp,
+                       const std::string& sct_list,
                        const CertVerifyResult& primary_result,
                        const CertVerifyResult& trial_result) {
-  TrialReportInfo report(
-      hostname, unverified_cert, enable_rev_checking,
-      require_rev_checking_local_anchors, enable_sha1_local_anchors,
-      disable_symantec_enforcement, primary_result, trial_result);
+  TrialReportInfo report(hostname, unverified_cert, enable_rev_checking,
+                         require_rev_checking_local_anchors,
+                         enable_sha1_local_anchors,
+                         disable_symantec_enforcement, stapled_ocsp, sct_list,
+                         primary_result, trial_result);
   reports->push_back(report);
 }
 
@@ -727,8 +736,7 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierOkSecondaryError) {
   verifier.set_trial_allowed(true);
 
   CertVerifier::RequestParams params(leaf_cert_1_, "127.0.0.1", /*flags=*/0,
-                                     /*ocsp_response=*/std::string(),
-                                     /*sct_list=*/std::string());
+                                     "ocsp", "sct");
   CertVerifyResult result;
   TestCompletionCallback callback;
   std::unique_ptr<CertVerifier::Request> request;
@@ -755,6 +763,8 @@ TEST_F(TrialComparisonCertVerifierTest, PrimaryVerifierOkSecondaryError) {
   EXPECT_TRUE(report.trial_result.verified_cert->EqualsIncludingChain(
       cert_chain_1_.get()));
   EXPECT_TRUE(report.unverified_cert->EqualsIncludingChain(leaf_cert_1_.get()));
+  EXPECT_EQ("ocsp", report.stapled_ocsp);
+  EXPECT_EQ("sct", report.sct_list);
 
   EXPECT_EQ(1, verify_proc1->num_verifications());
   EXPECT_EQ(1, verify_proc2->num_verifications());
@@ -1377,6 +1387,7 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedDuringTrialReport) {
               const scoped_refptr<X509Certificate>& unverified_cert,
               bool enable_rev_checking, bool require_rev_checking_local_anchors,
               bool enable_sha1_local_anchors, bool disable_symantec_enforcement,
+              const std::string& stapled_ocsp, const std::string& sct_list,
               const net::CertVerifyResult& primary_result,
               const net::CertVerifyResult& trial_result) {
             // During processing of a report, delete the underlying verifier.

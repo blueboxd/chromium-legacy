@@ -246,11 +246,13 @@ BrailleDisplayManager = class {
       textColumnCount: newState.textColumnCount || 0
     };
     if (newState.available) {
-      processDisplayState(newState);
       // Update the dimensions of the virtual braille captions display to those
       // of a real physical display when one is plugged in.
+      processDisplayState(newState);
+      localStorage['menuBrailleCommands'] = true;
     } else {
       BrailleCaptionsBackground.getVirtualDisplayState(processDisplayState);
+      localStorage['menuBrailleCommands'] = false;
     }
   }
 

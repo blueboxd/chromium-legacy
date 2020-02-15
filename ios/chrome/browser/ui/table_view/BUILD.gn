@@ -67,7 +67,7 @@ source_set("presentation") {
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/resources:menu_shadow",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui/util",
   ]
 }
 

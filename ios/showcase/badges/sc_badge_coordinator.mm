@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/ui/badges/badge_view_controller.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/named_guide_util.h"
-#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/showcase/badges/sc_badge_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

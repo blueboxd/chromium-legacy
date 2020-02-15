@@ -12,6 +12,10 @@
 #import "ios/net/protocol_handler_util.h"
 #include "ios/web/public/favicon/favicon_url.h"
 #import "ios/web/public/navigation/navigation_context.h"
+#import "ios/web/public/navigation/navigation_item.h"
+#import "ios/web/public/navigation/navigation_manager.h"
+#include "ios/web/public/security/security_style.h"
+#include "ios/web/public/security/ssl_status.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -28,12 +32,16 @@ bool IsNptUrl(const GURL& url) {
 const char kBreadcrumbDidStartNavigation[] = "StartNav";
 const char kBreadcrumbDidFinishNavigation[] = "FinishNav";
 const char kBreadcrumbPageLoaded[] = "PageLoad";
+const char kBreadcrumbDidChangeVisibleSecurityState[] = "SecurityChange";
+
+const char kBreadcrumbAuthenticationBroken[] = "#broken";
+const char kBreadcrumbDownload[] = "#download";
+const char kBreadcrumbMixedContent[] = "#mixed";
 const char kBreadcrumbNtpNavigation[] = "#ntp";
+const char kBreadcrumbPageLoadFailure[] = "#failure";
+const char kBreadcrumbPageLoadSuccess[] = "#success";
 const char kBreadcrumbRendererInitiatedByUser[] = "#renderer-user";
 const char kBreadcrumbRendererInitiatedByScript[] = "#renderer-script";
-const char kBreadcrumbPageLoadSuccess[] = "#success";
-const char kBreadcrumbPageLoadFailure[] = "#failure";
-const char kBreadcrumbDownload[] = "#download";
 
 BreadcrumbManagerTabHelper::BreadcrumbManagerTabHelper(web::WebState* web_state)
     : web_state_(web_state) {
@@ -140,7 +148,26 @@ void BreadcrumbManagerTabHelper::PageLoaded(
 
 void BreadcrumbManagerTabHelper::DidChangeVisibleSecurityState(
     web::WebState* web_state) {
-  LogEvent("DidChangeVisibleSecurityState");
+  web::NavigationItem* visible_item =
+      web_state->GetNavigationManager()->GetVisibleItem();
+  if (!visible_item) {
+    return;
+  }
+
+  std::vector<std::string> event;
+  const web::SSLStatus& ssl = visible_item->GetSSL();
+  if (ssl.content_status & web::SSLStatus::DISPLAYED_INSECURE_CONTENT) {
+    event.push_back(kBreadcrumbMixedContent);
+  }
+
+  if (ssl.security_style == web::SECURITY_STYLE_AUTHENTICATION_BROKEN) {
+    event.push_back(kBreadcrumbAuthenticationBroken);
+  }
+
+  if (!event.empty()) {
+    event.insert(event.begin(), kBreadcrumbDidChangeVisibleSecurityState);
+    LogEvent(base::JoinString(event, " "));
+  }
 }
 
 void BreadcrumbManagerTabHelper::RenderProcessGone(web::WebState* web_state) {

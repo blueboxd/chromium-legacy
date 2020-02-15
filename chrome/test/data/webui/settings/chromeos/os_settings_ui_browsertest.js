@@ -252,6 +252,18 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
       settings.Router.getInstance().navigateTo(settings.routes.POWER);
       assertEquals(userActionRecorder.navigationCount, 1);
     });
+
+    test('userActionBlurEvent', function() {
+      assertEquals(userActionRecorder.pageBlurCount, 0);
+      ui.fire('blur');
+      assertEquals(userActionRecorder.pageBlurCount, 1);
+    });
+
+    test('userActionFocusEvent', function() {
+      assertEquals(userActionRecorder.pageFocusCount, 0);
+      ui.fire('focus');
+      assertEquals(userActionRecorder.pageFocusCount, 1);
+    });
   });
 
   mocha.run();

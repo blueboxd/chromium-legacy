@@ -36,7 +36,6 @@ media_perftests,"crouleau@chromium.org, dalecurtis@chromium.org",Internals>Media
 memory.desktop,erikchen@chromium.org,,,
 net_perftests,net-dev@chromium.org,Internals>Network,,
 octane,hablich@chromium.org,Blink>JavaScript,,
-passthrough_command_buffer_perftests,net-dev@chromium.org,Internals>Network,,
 performance_browser_tests,miu@chromium.org,Internals>Media>ScreenCapture,,
 power.desktop,brucedawson@chromium.org,,https://bit.ly/power-benchmarks,
 rasterize_and_record_micro.partial_invalidation,"pdr@chromium.org, wangxianzhu@chromium.org, vmpstr@chromium.org",Internals>Compositing>Rasterization,https://bit.ly/rasterize-and-record-benchmark,
@@ -69,6 +68,5 @@ v8.browsing_desktop-future,"mythria@chromium.org, ulan@chromium.org",Blink>JavaS
 v8.browsing_mobile,"mythria@chromium.org, ulan@chromium.org",Blink>JavaScript,,"2018,2019,emerging_market,health_check,images,infinite_scroll,international,javascript_heavy"
 v8.browsing_mobile-future,"mythria@chromium.org, ulan@chromium.org",Blink>JavaScript,,"2018,2019,emerging_market,health_check,images,infinite_scroll,international,javascript_heavy"
 v8.runtime_stats.top_25,"mythria@chromium.org, ulan@chromium.org",Blink>JavaScript,,"cold,hot,warm"
-validating_command_buffer_perftests,"piman@chromium.org, chrome-gpu-perf-owners@chromium.org",Internals>GPU,,
 views_perftests,tapted@chromium.org,Internals>Views,,
 webrtc,"qiangchen@chromium.org, mbonadei@chromium.org, phoglund@chromium.org",Blink>WebRTC,http://bit.ly/webrtc-benchmark,"datachannel,getusermedia,pauseplay,smoothness,stress,videoConstraints"

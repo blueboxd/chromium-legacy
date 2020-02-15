@@ -20,6 +20,7 @@ import android.view.inputmethod.InputConnection;
 
 import org.junit.Assert;
 
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content.browser.ViewEventSinkImpl;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
@@ -143,10 +144,13 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
         return mConnectionFactory;
     }
 
-    void fullyLoadUrl(final String url) {
+    void fullyLoadUrl(final String url) throws Exception {
+        CallbackHelper done = mCallbackContainer.getOnFirstVisuallyNonEmptyPaintHelper();
+        int currentCallCount = done.getCallCount();
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { getActivity().getActiveShell().loadUrl(url); });
         waitForActiveShellToBeDoneLoading();
+        done.waitForCallback(currentCallCount);
     }
 
     void clearEventLogs() throws Exception {

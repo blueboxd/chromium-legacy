@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/elements/activity_overlay_view_controller.h"
 
 #import "ios/chrome/browser/ui/material_components/activity_indicator.h"
-#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

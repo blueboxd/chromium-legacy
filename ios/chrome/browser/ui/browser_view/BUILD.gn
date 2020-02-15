@@ -165,7 +165,7 @@ source_set("browser_view") {
     "//ios/chrome/browser/webui",
     "//ios/chrome/common",
     "//ios/chrome/common/colors",
-    "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui/util",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/ui",
     "//ios/public/provider/chrome/browser/voice",

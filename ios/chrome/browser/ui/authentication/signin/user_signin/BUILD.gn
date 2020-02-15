@@ -16,7 +16,7 @@ source_set("user_signin") {
     "//ios/chrome/browser/ui/authentication/unified_consent",
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/common/colors",
-    "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui/util",
   ]
   public_deps =
       [ "//ios/chrome/browser/ui/authentication/signin:signin_headers" ]

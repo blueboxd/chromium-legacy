@@ -4,6 +4,7 @@
 
 #include "services/network/trial_comparison_cert_verifier_mojo.h"
 
+#include "base/containers/span.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "net/cert/cert_verify_proc.h"
@@ -26,6 +27,8 @@ struct ReceivedReport {
   bool require_rev_checking_local_anchors;
   bool enable_sha1_local_anchors;
   bool disable_symantec_enforcement;
+  std::vector<uint8_t> stapled_ocsp;
+  std::vector<uint8_t> sct_list;
   net::CertVerifyResult primary_result;
   net::CertVerifyResult trial_result;
   network::mojom::CertVerifierDebugInfoPtr debug_info;
@@ -48,6 +51,8 @@ class FakeReportClient
       bool require_rev_checking_local_anchors,
       bool enable_sha1_local_anchors,
       bool disable_symantec_enforcement,
+      const std::vector<uint8_t>& stapled_ocsp,
+      const std::vector<uint8_t>& sct_list,
       const net::CertVerifyResult& primary_result,
       const net::CertVerifyResult& trial_result,
       network::mojom::CertVerifierDebugInfoPtr debug_info) override {
@@ -59,6 +64,8 @@ class FakeReportClient
         require_rev_checking_local_anchors;
     report.enable_sha1_local_anchors = enable_sha1_local_anchors;
     report.disable_symantec_enforcement = disable_symantec_enforcement;
+    report.stapled_ocsp = stapled_ocsp;
+    report.sct_list = sct_list;
     report.primary_result = primary_result;
     report.trial_result = trial_result;
     report.debug_info = std::move(debug_info);
@@ -143,7 +150,8 @@ TEST(TrialComparisonCertVerifierMojoTest, SendReportDebugInfo) {
       true, {}, std::move(report_client_remote), nullptr, nullptr);
 
   tccvm.OnSendTrialReport("example.com", unverified_cert, false, false, false,
-                          false, primary_result, trial_result);
+                          false, "stapled ocsp", "sct list", primary_result,
+                          trial_result);
 
   report_client.WaitForReport();
 
@@ -155,6 +163,10 @@ TEST(TrialComparisonCertVerifierMojoTest, SendReportDebugInfo) {
       chain1->EqualsIncludingChain(report.primary_result.verified_cert.get()));
   EXPECT_TRUE(
       chain2->EqualsIncludingChain(report.trial_result.verified_cert.get()));
+  EXPECT_EQ("stapled ocsp", std::string(report.stapled_ocsp.begin(),
+                                        report.stapled_ocsp.end()));
+  EXPECT_EQ("sct list",
+            std::string(report.sct_list.begin(), report.sct_list.end()));
 
   ASSERT_TRUE(report.debug_info);
 #if defined(OS_MACOSX) && !defined(OS_IOS)

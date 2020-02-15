@@ -213,6 +213,7 @@ ChromeVoxPrefs.DEFAULT_PREFS = {
   'focusFollowsMouse': false,
   'granularity': undefined,
   'languageSwitching': false,
+  'menuBrailleCommands': false,
   'numberReadingStyle': 'asWords',
   'position': '{}',
   'siteSpecificEnhancements': true,

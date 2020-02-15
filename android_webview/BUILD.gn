@@ -451,7 +451,7 @@ android_library("browser_java") {
     ":common_crash_java",
     ":common_java",
     ":common_platform_services_java",
-    ":common_variations_utils_java",
+    ":common_variations_java",
     ":resources",
     "//android_webview/nonembedded:system_webview_manifest",
     "//base:base_java",
@@ -497,8 +497,11 @@ android_library("browser_java") {
   min_sdk_version = 21
 }
 
-android_library("common_variations_utils_java") {
-  sources = [ "java/src/org/chromium/android_webview/common/variations/VariationsUtils.java" ]
+android_library("common_variations_java") {
+  sources = [
+    "java/src/org/chromium/android_webview/common/variations/VariationsServiceMetricsHelper.java",
+    "java/src/org/chromium/android_webview/common/variations/VariationsUtils.java",
+  ]
   deps = [
     "//android_webview/proto:aw_variations_seed_proto_java",
     "//base:base_java",
@@ -577,6 +580,7 @@ android_aidl("common_aidl") {
     "java/src/org/chromium/android_webview/common/services/ICrashReceiverService.aidl",
     "java/src/org/chromium/android_webview/common/services/IDeveloperUiService.aidl",
     "java/src/org/chromium/android_webview/common/services/IVariationsSeedServer.aidl",
+    "java/src/org/chromium/android_webview/common/services/IVariationsSeedServerCallback.aidl",
   ]
 }
 

@@ -180,7 +180,13 @@ void FullscreenModel::SetScrollViewIsScrolling(bool scrolling) {
   if (scrolling_ == scrolling)
     return;
   scrolling_ = scrolling;
-  if (!scrolling_) {
+  if (scrolling_) {
+    // Notify observers that the scroll event has begun.
+    ScopedIncrementer scroll_started_incrementer(&observer_callback_count_);
+    for (auto& observer : observers_) {
+      observer.FullscreenModelScrollEventStarted(this);
+    }
+  } else {
     // Stop ignoring the current scroll.
     ignoring_current_scroll_ = false;
     // Notify observers that the scroll event has ended.
@@ -208,10 +214,6 @@ void FullscreenModel::SetScrollViewIsDragging(bool dragging) {
     return;
   dragging_ = dragging;
   if (dragging_) {
-    ScopedIncrementer scroll_started_incrementer(&observer_callback_count_);
-    for (auto& observer : observers_) {
-      observer.FullscreenModelScrollEventStarted(this);
-    }
     // Update the base offset for each new scroll event.
     UpdateBaseOffset();
     // Re-rendering events are ignored during scrolls since disabling the model

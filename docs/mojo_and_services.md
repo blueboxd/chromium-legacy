@@ -729,45 +729,11 @@ renderered content, installed extensions in the renderer, *etc.* For this
 reason, interface brokering decisions are increasingly being made by the
 browser.
 
-There are two ways this is done: the Deprecated way and the New way.
+#### Interface Brokers
 
-#### The Deprecated Way: InterfaceProvider
-
-This is built on the concept of **interface filters** and the
-**`InterfaceProvider`** interface. It is **deprecated** and new features should
-use [The New Way](#The-New-Way_Interface-Brokers) instead. This section only
-briefly covers practical usage in Chromium.
-
-The `content_browser` manifest exposes capabilities on a few named interface
-filters, the main one being `"navigation:frame"`. There are others scoped to
-different worker contexts, *e.g.* `"navigation:service_worker"`.
-`RenderProcessHostImpl` or `RenderFrameHostImpl` sets up an `InterfaceProvider`
-for each known execution context in the corresponding renderer, filtered through
-the Service Manager according to one of the named filters.
-
-The practical result of all this means the interface must be listed in the
-`content_browser` manifest under the
-`ExposeInterfaceFilterCapability_Deprecated("navigation:frame", "renderer", ...)`
-entry, and a corresponding interface request handler must be registered with the
-host's `registry_` in
-[`RenderFrameHostImpl::RegisterMojoInterfaces`](https://cs.chromium.org/chromium/src/content/browser/frame_host/render_frame_host_impl.cc?rcl=0a23c78c57ecb2405837155aa0a0def7b5ba9c22&l=3971)
-
-Similarly for worker contexts, an interface must be exposed by the `"renderer"`
-capability on the corresponding interface filter
-(*e.g.*, `"navigation:shared_worker"`) and a request handler must be registered
-within
-[`RendererInterfaceBinders::InitializeParameterizedBinderRegistry`](https://cs.chromium.org/chromium/src/content/browser/renderer_interface_binders.cc?rcl=0a23c78c57ecb2405837155aa0a0def7b5ba9c22&l=116).
-
-The best way to understand all of this after reading this section is to look at
-the linked code above and examine a few examples. They are fairly repetitive.
-For additional convenience, here is also a link to the `content_browser`
-[manifest](https://cs.chromium.org/chromium/src/content/public/app/content_browser_manifest.cc).
-
-#### The New Way: Interface Brokers
-
-Rather than the confusing spaghetti of interface filter logic, we now define an
-explicit mojom interface with a persistent connection between a renderer's
-frame object and the corresponding `RenderFrameHostImpl` in the browser process.
+We define an explicit mojom interface with a persistent connection
+between a renderer's frame object and the corresponding
+`RenderFrameHostImpl` in the browser process.
 This interface is called
 [`BrowserInterfaceBroker`](https://cs.chromium.org/chromium/src/third_party/blink/public/mojom/browser_interface_broker.mojom?rcl=09aa5ae71649974cae8ad4f889d7cd093637ccdb&l=11)
 and is fairly easy to work with: you add a new method on `RenderFrameHostImpl`:
@@ -792,6 +758,7 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 }
 ```
 
+TODO: add information about workers and embedders.
 
 ### Exposing Browser Interfaces to Render Processes
 

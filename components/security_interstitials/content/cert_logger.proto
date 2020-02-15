@@ -275,4 +275,11 @@ message TrialVerificationInfo {
 
   // Debug information from CertVerifyProcMac (if it was the primary verifier).
   optional MacPlatformDebugInfo mac_platform_debug_info = 10;
+
+  // DER encoded stapled OCSP response, if present.
+  optional bytes stapled_ocsp = 11;
+
+  // DER encoded SignedCertificateTimestampList from the TLS extension, if
+  // present.
+  optional bytes sct_list = 12;
 }

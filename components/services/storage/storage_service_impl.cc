@@ -4,6 +4,7 @@
 
 #include "components/services/storage/storage_service_impl.h"
 
+#include "components/services/storage/dom_storage/storage_area_impl.h"
 #include "components/services/storage/partition_impl.h"
 
 namespace storage {
@@ -13,6 +14,10 @@ StorageServiceImpl::StorageServiceImpl(
     : receiver_(this, std::move(receiver)) {}
 
 StorageServiceImpl::~StorageServiceImpl() = default;
+
+void StorageServiceImpl::EnableAggressiveDomStorageFlushing() {
+  StorageAreaImpl::EnableAggressiveCommitDelay();
+}
 
 void StorageServiceImpl::BindPartition(
     const base::Optional<base::FilePath>& path,

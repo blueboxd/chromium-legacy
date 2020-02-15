@@ -52,11 +52,6 @@
 - (void)setDecelerating:(BOOL)decelerating {
   if (_decelerating == decelerating)
     return;
-  // If the scroll view is starting to decelerate after a drag, it is expected
-  // that this property is set before |dragging| is reset to NO.  This ensures
-  // that the broadcasted |scrolling| property does not quickly flip to NO when
-  // drag events finish.
-  DCHECK(!decelerating || self.dragging);
   _decelerating = decelerating;
   [self updateIsScrolling];
 }

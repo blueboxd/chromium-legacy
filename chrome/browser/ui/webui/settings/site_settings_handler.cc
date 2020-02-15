@@ -148,7 +148,7 @@ void AddExceptionsGrantedByHostedApps(
 
 base::flat_set<web_app::AppId> GetInstalledApps(
     Profile* profile,
-    web_app::AppRegistrar& registrar) {
+    const web_app::AppRegistrar& registrar) {
   auto apps = registrar.GetAppIds();
   base::flat_set<std::string> installed;
   for (auto app : apps) {
@@ -225,7 +225,7 @@ void ConvertSiteGroupMapToListValue(
     const std::set<std::string>& origin_permission_set,
     base::Value* list_value,
     Profile* profile,
-    web_app::AppRegistrar& registrar) {
+    const web_app::AppRegistrar& registrar) {
   DCHECK_EQ(base::Value::Type::LIST, list_value->type());
   DCHECK(profile);
   base::flat_set<web_app::AppId> installed_apps =
@@ -799,7 +799,8 @@ base::Value SiteSettingsHandler::PopulateCookiesAndUsageData(Profile* profile) {
       const std::string& origin = origin_info.FindKey("origin")->GetString();
       const auto& size_info_it = origin_size_map.find(origin);
       if (size_info_it != origin_size_map.end())
-        origin_info.SetKey("usage", base::Value(double(size_info_it->second)));
+        origin_info.SetKey(
+            "usage", base::Value(static_cast<double>(size_info_it->second)));
       GURL origin_url(origin);
       const auto& origin_cookie_num_it =
           origin_cookie_map.find(origin_url.host());

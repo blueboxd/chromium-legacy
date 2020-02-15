@@ -2137,17 +2137,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperIncognitoTest, HttpErrorPage) {
   EXPECT_EQ(security_state::NONE, helper->GetSecurityLevel());
 }
 
-// TODO(https://crbug.com/1012507): Fix and re-enable this test. Modifying
-// FeatureList mid-browsertest is unsafe.
-IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
-                       DISABLED_MarkHttpAsWarningAndDangerousOnFormEdits) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      security_state::features::kMarkHttpAsFeature,
-      {{security_state::features::kMarkHttpAsFeatureParameterName,
-        security_state::features::
-            kMarkHttpAsParameterWarningAndDangerousOnFormEdits}});
-
+IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithFormsDangerous,
+                       MarkHttpAsWarningAndDangerousOnFormEdits) {
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   SecurityStateTabHelper* helper =
@@ -2162,18 +2153,6 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
                                  "/textinput/focus_input_on_load.html"));
 
   EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
-
-  {
-    // Ensure that the security level remains Dangerous in the
-    // kMarkHttpAsDangerous configuration.
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeatureWithParameters(
-        security_state::features::kMarkHttpAsFeature,
-        {{security_state::features::kMarkHttpAsFeatureParameterName,
-          security_state::features::kMarkHttpAsParameterDangerous}});
-
-    EXPECT_EQ(security_state::DANGEROUS, helper->GetSecurityLevel());
-  }
 
   // Type one character into the focused input control and wait for a security
   // state change.

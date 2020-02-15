@@ -24,6 +24,10 @@ class CONTENT_EXPORT BackgroundSyncNetworkObserver
 
   ~BackgroundSyncNetworkObserver() override;
 
+  // Does nothing in this class, but can be overridden to do some work
+  // separately from the constructor.
+  virtual void Init() {}
+
   // Enable or disable notifications coming from the NetworkConnectionTracker.
   // (For preventing flakes in tests)
   static void SetIgnoreNetworkChangesForTests(bool ignore);

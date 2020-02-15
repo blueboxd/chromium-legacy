@@ -362,7 +362,8 @@ void TrialComparisonCertVerifier::Job::Finish(
         params_.hostname(), params_.certificate(), config_.enable_rev_checking,
         config_.require_rev_checking_local_anchors,
         config_.enable_sha1_local_anchors, config_.disable_symantec_enforcement,
-        primary_result_, trial_result_);
+        params_.ocsp_response(), params_.sct_list(), primary_result_,
+        trial_result_);
   }
 
   if (weak_this) {

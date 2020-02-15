@@ -11,7 +11,7 @@ source_set("favicon") {
   ]
   deps = [
     "//base",
-    "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui/util",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

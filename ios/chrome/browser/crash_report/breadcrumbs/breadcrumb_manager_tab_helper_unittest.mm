@@ -10,8 +10,10 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_manager_keyed_service_factory.h"
+#include "ios/web/public/security/ssl_status.h"
 #import "ios/web/public/test/error_test_util.h"
 #import "ios/web/public/test/fakes/fake_navigation_context.h"
+#import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -337,5 +339,48 @@ TEST_F(BreadcrumbManagerTabHelperTest, NavigationError) {
       << events.back();
   EXPECT_NE(std::string::npos, events.back().find(net::ErrorToShortString(
                                    net::ERR_INTERNET_DISCONNECTED)))
+      << events.back();
+}
+
+// Tests changes in security states.
+TEST_F(BreadcrumbManagerTabHelperTest, DidChangeVisibleSecurityState) {
+  BreadcrumbManagerTabHelper::CreateForWebState(&first_web_state_);
+  auto navigation_manager = std::make_unique<web::TestNavigationManager>();
+  web::TestNavigationManager* navigation_manager_ptr = navigation_manager.get();
+  first_web_state_.SetNavigationManager(std::move(navigation_manager));
+  ASSERT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
+
+  // Empty navigation manager.
+  first_web_state_.OnVisibleSecurityStateChanged();
+  ASSERT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
+
+  // Default navigation item.
+  auto visible_item = web::NavigationItem::Create();
+  navigation_manager_ptr->SetVisibleItem(visible_item.get());
+  first_web_state_.OnVisibleSecurityStateChanged();
+  ASSERT_EQ(0ul, breadcrumb_service_->GetEvents(0).size());
+
+  // Mixed content.
+  web::SSLStatus& status = visible_item->GetSSL();
+  status.content_status = web::SSLStatus::DISPLAYED_INSECURE_CONTENT;
+  first_web_state_.OnVisibleSecurityStateChanged();
+  std::list<std::string> events = breadcrumb_service_->GetEvents(0);
+  ASSERT_EQ(1ul, events.size());
+  EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbMixedContent))
+      << events.back();
+  EXPECT_EQ(std::string::npos,
+            events.back().find(kBreadcrumbAuthenticationBroken))
+      << events.back();
+
+  // Broken authentication.
+  status.content_status = web::SSLStatus::NORMAL_CONTENT;
+  status.security_style = web::SECURITY_STYLE_AUTHENTICATION_BROKEN;
+  first_web_state_.OnVisibleSecurityStateChanged();
+  events = breadcrumb_service_->GetEvents(0);
+  ASSERT_EQ(2ul, events.size());
+  EXPECT_EQ(std::string::npos, events.back().find(kBreadcrumbMixedContent))
+      << events.back();
+  EXPECT_NE(std::string::npos,
+            events.back().find(kBreadcrumbAuthenticationBroken))
       << events.back();
 }

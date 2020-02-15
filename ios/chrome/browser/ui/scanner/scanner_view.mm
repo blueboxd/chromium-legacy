@@ -11,7 +11,7 @@
 #import "ios/chrome/browser/ui/scanner/preview_overlay_view.h"
 #import "ios/chrome/browser/ui/scanner/video_preview_view.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"

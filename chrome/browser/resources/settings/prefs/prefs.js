@@ -266,6 +266,31 @@ Polymer({
   },
 
   /**
+   * Builds an object structure for the provided |path| within |prefsObject|,
+   * ensuring that names that already exist are not overwritten. For example:
+   * "a.b.c" -> a = {};a.b={};a.b.c={};
+   * @param {string} path Path to the new pref value.
+   * @param {*} value The value to expose at the end of the path.
+   * @param {Object} prefsObject The prefs object to add the path to.
+   * @private
+   */
+  updatePrefPath_(path, value, prefsObject) {
+    const parts = path.split('.');
+    let cur = prefsObject;
+
+    for (let part; parts.length && (part = parts.shift());) {
+      if (!parts.length) {
+        // last part, set the value.
+        cur[part] = value;
+      } else if (part in cur) {
+        cur = cur[part];
+      } else {
+        cur = cur[part] = {};
+      }
+    }
+  },
+
+  /**
    * Updates the prefs model with the given prefs.
    * @param {!Array<!chrome.settingsPrivate.PrefObject>} newPrefs
    * @private
@@ -280,7 +305,7 @@ Polymer({
 
       if (!deepEqual(this.get(newPrefObj.key, prefs), newPrefObj)) {
         // Add the pref to |prefs|.
-        cr.exportPath(newPrefObj.key, newPrefObj, prefs);
+        this.updatePrefPath_(newPrefObj.key, newPrefObj, prefs);
         // If this.prefs already exists, notify listeners of the change.
         if (prefs == this.prefs) {
           this.notifyPath('prefs.' + newPrefObj.key, newPrefObj);

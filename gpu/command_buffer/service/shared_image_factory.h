@@ -25,6 +25,7 @@ class VulkanContextProvider;
 }  // namespace viz
 
 namespace gpu {
+class ExternalVkImageFactory;
 class GpuDriverBugWorkarounds;
 class ImageFactory;
 class MailboxManager;
@@ -114,6 +115,7 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   bool IsSharedBetweenThreads(uint32_t usage);
   SharedImageBackingFactory* GetFactoryByUsage(
       uint32_t usage,
+      viz::ResourceFormat format,
       bool* allow_legacy_mailbox,
       gfx::GpuMemoryBufferType gmb_type = gfx::EMPTY_BUFFER);
   MailboxManager* mailbox_manager_;
@@ -135,6 +137,13 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   // Used for creating shared image which can be shared between GL, Vulkan and
   // D3D12.
   std::unique_ptr<SharedImageBackingFactory> interop_backing_factory_;
+
+#if defined(OS_ANDROID)
+  // On android we have two interop factory which is |interop_backing_factory_|
+  // and |external_vk_image_factory_| and we choose one of those
+  // based on the format it supports.
+  std::unique_ptr<ExternalVkImageFactory> external_vk_image_factory_;
+#endif
 
   // Non-null if compositing with SkiaRenderer.
   std::unique_ptr<raster::WrappedSkImageFactory> wrapped_sk_image_factory_;

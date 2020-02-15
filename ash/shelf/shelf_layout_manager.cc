@@ -888,11 +888,11 @@ void ShelfLayoutManager::SetChildBounds(aura::Window* child,
                                         const gfx::Rect& requested_bounds) {
   WmDefaultLayoutManager::SetChildBounds(child, requested_bounds);
   // We may contain other widgets (such as frame maximize bubble) but they don't
-  // effect the layout in anyway.
+  // affect the layout in anyway.
   if (!updating_bounds_ &&
       ((shelf_widget_->GetNativeWindow() == child) ||
        (shelf_widget_->status_area_widget()->GetNativeWindow() == child))) {
-    LayoutShelf();
+    LayoutShelf(/*animate=*/true);
   }
 }
 

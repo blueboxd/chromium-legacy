@@ -30,6 +30,7 @@
 #if (defined(USE_X11) || defined(OS_FUCHSIA)) && BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/command_buffer/service/external_vk_image_factory.h"
 #elif defined(OS_ANDROID) && BUILDFLAG(ENABLE_VULKAN)
+#include "gpu/command_buffer/service/external_vk_image_factory.h"
 #include "gpu/command_buffer/service/shared_image_backing_factory_ahardwarebuffer.h"
 #elif defined(OS_MACOSX)
 #include "gpu/command_buffer/service/shared_image_backing_factory_iosurface.h"
@@ -99,6 +100,10 @@ SharedImageFactory::SharedImageFactory(
   }
 #elif defined(OS_ANDROID) && BUILDFLAG(ENABLE_VULKAN)
   // For Android
+  if (using_vulkan_) {
+    external_vk_image_factory_ =
+        std::make_unique<ExternalVkImageFactory>(context_state);
+  }
   interop_backing_factory_ = std::make_unique<SharedImageBackingFactoryAHB>(
       workarounds, gpu_feature_info, context_state);
 #elif defined(OS_MACOSX)
@@ -149,7 +154,7 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
                                            const gfx::ColorSpace& color_space,
                                            uint32_t usage) {
   bool allow_legacy_mailbox = false;
-  auto* factory = GetFactoryByUsage(usage, &allow_legacy_mailbox);
+  auto* factory = GetFactoryByUsage(usage, format, &allow_legacy_mailbox);
   if (!factory)
     return false;
   auto backing = factory->CreateSharedImage(
@@ -206,7 +211,9 @@ bool SharedImageFactory::CreateSharedImage(const Mailbox& mailbox,
   // TODO(piman): depending on handle.type, choose platform-specific backing
   // factory, e.g. SharedImageBackingFactoryAHB.
   bool allow_legacy_mailbox = false;
-  auto* factory = GetFactoryByUsage(usage, &allow_legacy_mailbox, handle.type);
+  auto resource_format = viz::GetResourceFormat(format);
+  auto* factory = GetFactoryByUsage(usage, resource_format,
+                                    &allow_legacy_mailbox, handle.type);
   if (!factory)
     return false;
   auto backing =
@@ -350,6 +357,7 @@ bool SharedImageFactory::IsSharedBetweenThreads(uint32_t usage) {
 
 SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
     uint32_t usage,
+    viz::ResourceFormat format,
     bool* allow_legacy_mailbox,
     gfx::GpuMemoryBufferType gmb_type) {
   if (backing_factory_for_testing_)
@@ -418,6 +426,21 @@ SharedImageBackingFactory* SharedImageFactory::GetFactoryByUsage(
       return nullptr;
     }
 
+#if defined(OS_ANDROID)
+    // On android, we sometime choose VkImage based backing factory as an
+    // interop if the format is not supported by the AHB backing factory.
+    auto* ahb_backing_factory = static_cast<SharedImageBackingFactoryAHB*>(
+        interop_backing_factory_.get());
+    if (!ahb_backing_factory->IsFormatSupported(format) &&
+        external_vk_image_factory_) {
+      if (share_between_threads) {
+        LOG(FATAL) << "ExternalVkImageFactory currently do not support "
+                      "cross-thread usage.";
+      }
+      *allow_legacy_mailbox = false;
+      return external_vk_image_factory_.get();
+    }
+#endif
     return interop_backing_factory_.get();
   }
 

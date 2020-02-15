@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/time_input_type.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/date_time_fields_state.h"
@@ -171,6 +172,10 @@ bool TimeInputType::IsValidFormat(bool has_year,
                                   bool has_minute,
                                   bool has_second) const {
   return has_hour && has_minute && has_ampm;
+}
+
+String TimeInputType::AriaRoleForPickerIndicator() const {
+  return GetLocale().QueryString(IDS_AX_CALENDAR_SHOW_TIME_PICKER);
 }
 
 }  // namespace blink

@@ -3,15 +3,7 @@
 # found in the LICENSE file.
 
 source_set("ui_util") {
-  sources = [
-    "constraints_ui_util.h",
-    "constraints_ui_util.mm",
-    "image_util.h",
-    "image_util.mm",
-  ]
-  deps = [
-    "//base",
-    "//ui/gfx:resize_image_dimensions",
-  ]
   configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [ "constraints_ui_util.h" ]
+  deps = [ "//ios/chrome/common/ui/util" ]
 }

@@ -69,6 +69,7 @@ class BaseTemporalInputType : public InputType {
                              bool has_hour,
                              bool has_minute,
                              bool has_second) const = 0;
+  virtual String AriaRoleForPickerIndicator() const = 0;
 
  protected:
   BaseTemporalInputType(HTMLInputElement& element) : InputType(element) {}

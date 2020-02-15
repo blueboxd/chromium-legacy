@@ -1,84 +1,15 @@
 {
     "0": {
-        "benchmarks": {
-            "blink_perf.accessibility": {
-                "abridged": false
-            },
-            "blink_perf.bindings": {
-                "abridged": false
-            },
-            "blink_perf.canvas": {
-                "end": 25,
-                "abridged": false
-            }
-        }
+        "benchmarks": {}
     },
     "1": {
-        "benchmarks": {
-            "blink_perf.canvas": {
-                "begin": 25,
-                "abridged": false
-            },
-            "blink_perf.css": {
-                "abridged": false
-            },
-            "blink_perf.dom": {
-                "abridged": false
-            },
-            "blink_perf.events": {
-                "abridged": false
-            },
-            "blink_perf.image_decoder": {
-                "end": 6,
-                "abridged": false
-            }
-        }
+        "benchmarks": {}
     },
     "2": {
-        "benchmarks": {
-            "blink_perf.image_decoder": {
-                "begin": 6,
-                "abridged": false
-            },
-            "blink_perf.owp_storage": {
-                "abridged": false
-            },
-            "blink_perf.paint": {
-                "abridged": false
-            },
-            "blink_perf.parser": {
-                "abridged": false
-            },
-            "blink_perf.shadow_dom": {
-                "end": 24,
-                "abridged": false
-            }
-        }
+        "benchmarks": {}
     },
     "3": {
         "benchmarks": {
-            "blink_perf.shadow_dom": {
-                "begin": 24,
-                "abridged": false
-            },
-            "blink_perf.svg": {
-                "abridged": false
-            },
-            "dromaeo": {
-                "abridged": false
-            },
-            "dummy_benchmark.noisy_benchmark_1": {
-                "abridged": false
-            },
-            "dummy_benchmark.stable_benchmark_1": {
-                "abridged": false
-            },
-            "jetstream": {
-                "abridged": false
-            },
-            "kraken": {
-                "abridged": false
-            },
             "loading.mobile": {
                 "end": 15,
                 "abridged": false
@@ -119,43 +50,11 @@
             "loading.mobile": {
                 "begin": 86,
                 "abridged": false
-            },
-            "media.mobile": {
-                "abridged": false
-            },
-            "octane": {
-                "abridged": false
-            },
-            "rasterize_and_record_micro.partial_invalidation": {
-                "abridged": false
-            },
-            "rasterize_and_record_micro.top_25": {
-                "end": 11,
-                "abridged": false
             }
         }
     },
     "7": {
         "benchmarks": {
-            "rasterize_and_record_micro.top_25": {
-                "begin": 11,
-                "abridged": false
-            },
-            "rendering.mobile": {
-                "abridged": true
-            },
-            "speedometer": {
-                "abridged": false
-            },
-            "speedometer-future": {
-                "abridged": false
-            },
-            "speedometer2": {
-                "abridged": false
-            },
-            "speedometer2-future": {
-                "abridged": false
-            },
             "startup.mobile": {
                 "end": 1,
                 "abridged": false
@@ -206,50 +105,21 @@
             "system_health.common_mobile": {
                 "begin": 99,
                 "abridged": false
-            },
-            "system_health.memory_mobile": {
-                "end": 8,
-                "abridged": true
             }
         }
     },
     "13": {
-        "benchmarks": {
-            "system_health.memory_mobile": {
-                "begin": 8,
-                "end": 23,
-                "abridged": true
-            }
-        }
+        "benchmarks": {}
     },
     "14": {
         "benchmarks": {
-            "system_health.memory_mobile": {
-                "begin": 23,
-                "abridged": true
-            },
             "system_health.webview_startup": {
-                "abridged": false
-            },
-            "tracing.tracing_with_background_memory_infra": {
-                "end": 7,
                 "abridged": false
             }
         }
     },
     "15": {
-        "benchmarks": {
-            "tracing.tracing_with_background_memory_infra": {
-                "begin": 7,
-                "abridged": false
-            },
-            "v8.browsing_mobile": {
-                "abridged": true
-            },
-            "webrtc": {
-                "abridged": false
-            }
-        },
+        "benchmarks": {},
         "executables": {
             "tracing_perftests": {
                 "path": "tracing_perftests"

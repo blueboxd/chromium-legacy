@@ -596,6 +596,10 @@ const base::Feature kSpareRendererForSitePerProcess{
 const base::Feature kStoragePressureUI{"StoragePressureUI",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the out-of-process Storage Service.
+const base::Feature kStorageServiceOutOfProcess{
+    "StorageServiceOutOfProcess", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether site isolation should use origins instead of scheme and
 // eTLD+1.
 const base::Feature kStrictOriginIsolation{"StrictOriginIsolation",

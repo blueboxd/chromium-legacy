@@ -285,12 +285,11 @@
     <message name="IDS_PAGE_INFO_TYPE_NFC" desc="The label used for the NFC permission controls in the Page Info popup.">
       NFC devices
     </message>
-      <!-- TODO(crbug.com/1041009): Finalize WebXr Permissions strings -->
     <message name="IDS_PAGE_INFO_TYPE_VR" desc="The label used for the VR permission controls in the Page Info popup.">
-      Virtual Reality
+      Virtual reality
     </message>
     <message name="IDS_PAGE_INFO_TYPE_AR" desc="The label used for the AR permission controls in the Page Info popup.">
-      Augmented Reality
+      Augmented reality
     </message>
     <!-- TODO(crbug.com/716303): A few permissions are missing here. -->
 

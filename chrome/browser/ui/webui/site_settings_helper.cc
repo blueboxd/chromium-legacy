@@ -11,6 +11,7 @@
 
 #include "base/feature_list.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/hid/hid_chooser_context.h"
@@ -30,6 +31,7 @@
 #include "components/permissions/permission_result.h"
 #include "components/prefs/pref_service.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "components/url_formatter/url_formatter.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/constants.h"
 #include "url/origin.h"
@@ -426,9 +428,14 @@ std::string GetDisplayNameForGURL(
   if (!display_name.empty())
     return display_name;
 
-  // Note that using Serialize() here will chop off default port numbers and
-  // percent encode the origin.
-  return origin.Serialize();
+  auto url_16 = url_formatter::FormatUrl(
+      url,
+      url_formatter::kFormatUrlOmitDefaults |
+          url_formatter::kFormatUrlOmitHTTPS |
+          url_formatter::kFormatUrlOmitTrailingSlashOnBareHostname,
+      net::UnescapeRule::NONE, nullptr, nullptr, nullptr);
+  auto url_string = base::UTF16ToUTF8(url_16);
+  return url_string;
 }
 
 // If the given |pattern| represents an individual origin or extension, retrieve

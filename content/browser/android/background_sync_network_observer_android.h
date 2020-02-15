@@ -30,6 +30,9 @@ class BackgroundSyncNetworkObserverAndroid
 
   ~BackgroundSyncNetworkObserverAndroid() override;
 
+  // Creates and initializes the Observer (below) instance.
+  void Init() override;
+
   // This class lives on the UI thread and mediates all access to the Java
   // BackgroundSyncNetworkObserver, which it creates and owns. It is in turn
   // owned by the BackgroundSyncNetworkObserverAndroid.
@@ -39,6 +42,7 @@ class BackgroundSyncNetworkObserverAndroid
    public:
     static scoped_refptr<BackgroundSyncNetworkObserverAndroid::Observer> Create(
         base::RepeatingCallback<void(network::mojom::ConnectionType)> callback);
+    void Init();
 
     // Called from BackgroundSyncNetworkObserver.java over JNI whenever the
     // connection type changes. This updates the current connection type seen by
@@ -56,7 +60,6 @@ class BackgroundSyncNetworkObserverAndroid
 
     explicit Observer(
         base::RepeatingCallback<void(network::mojom::ConnectionType)> callback);
-    void Init();
     ~Observer();
 
     // This callback is to be run on the IO thread whenever the connection type
@@ -71,7 +74,8 @@ class BackgroundSyncNetworkObserverAndroid
   void RegisterWithNetworkConnectionTracker(
       network::NetworkConnectionTracker* network_connection_tracker) override;
 
-  // Accessed on UI Thread
+  // Accessed on UI Thread.
+  // Null until Init() is called.
   scoped_refptr<Observer> observer_;
 
   base::WeakPtrFactory<BackgroundSyncNetworkObserverAndroid> weak_ptr_factory_{

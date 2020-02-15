@@ -374,8 +374,8 @@ TEST(ErrorReportTest, TrialDebugInfo) {
   debug_info->trial_der_verification_time = "it's just a string";
 
   CertificateErrorReport report("example.com", *unverified_cert, false, false,
-                                false, false, primary_result, trial_result,
-                                std::move(debug_info));
+                                false, false, "ocsp", "sct", primary_result,
+                                trial_result, std::move(debug_info));
   std::string serialized_report;
   ASSERT_TRUE(report.Serialize(&serialized_report));
   chrome_browser_ssl::CertLoggerRequest parsed;
@@ -384,6 +384,10 @@ TEST(ErrorReportTest, TrialDebugInfo) {
   ASSERT_TRUE(parsed.features_info().has_trial_verification_info());
   const chrome_browser_ssl::TrialVerificationInfo& trial_info =
       parsed.features_info().trial_verification_info();
+  ASSERT_TRUE(trial_info.has_stapled_ocsp());
+  EXPECT_EQ("ocsp", trial_info.stapled_ocsp());
+  ASSERT_TRUE(trial_info.has_sct_list());
+  EXPECT_EQ("sct", trial_info.sct_list());
 
 #if defined(OS_MACOSX)
   ASSERT_TRUE(trial_info.has_mac_platform_debug_info());

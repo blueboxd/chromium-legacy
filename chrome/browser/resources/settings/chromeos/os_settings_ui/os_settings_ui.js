@@ -209,10 +209,21 @@ Polymer({
       scrollToTop(e.detail.bottom - this.$.container.clientHeight)
           .then(e.detail.callback);
     });
+
+    // Window event listeners will not fire when settings first starts.
+    // Blur events before the first focus event do not matter.
+    if (document.hasFocus()) {
+      settings.recordPageFocus();
+    }
+
+    window.addEventListener('focus', settings.recordPageFocus);
+    window.addEventListener('blur', settings.recordPageBlur);
   },
 
   /** @override */
   detached() {
+    window.removeEventListener('focus', settings.recordPageFocus);
+    window.removeEventListener('blur', settings.recordPageBlur);
     settings.Router.getInstance().resetRouteForTesting();
   },
 

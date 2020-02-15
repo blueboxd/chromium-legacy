@@ -2076,6 +2076,8 @@ bool LocalFrameView::UpdateLifecycleToCompositingCleanPlusScrolling(
 // TODO(schenney): Pass a LifecycleUpdateReason in here
 bool LocalFrameView::UpdateLifecycleToCompositingInputsClean(
     DocumentUpdateReason reason) {
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
+    return UpdateAllLifecyclePhasesExceptPaint(reason);
   return GetFrame().LocalFrameRoot().View()->UpdateLifecyclePhases(
       DocumentLifecycle::kCompositingInputsClean, reason);
 }
@@ -2393,7 +2395,18 @@ bool LocalFrameView::RunCompositingLifecyclePhase(
     SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
                              LocalFrameUkmAggregator::kCompositing);
     layout_view->Compositor()->UpdateIfNeededRecursive(target_state);
-  } else {
+  }
+
+  return target_state > DocumentLifecycle::kCompositingClean;
+}
+
+bool LocalFrameView::RunPrePaintLifecyclePhase(
+    DocumentLifecycle::LifecycleState target_state) {
+  TRACE_EVENT0("blink,benchmark", "LocalFrameView::RunPrePaintLifecyclePhase");
+
+  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // TODO(pdr): This descendant dependent treewalk should be integrated into
+    // the prepaint tree walk.
 #if DCHECK_IS_ON()
     SetIsUpdatingDescendantDependentFlags(true);
 #endif
@@ -2405,13 +2418,6 @@ bool LocalFrameView::RunCompositingLifecyclePhase(
     SetIsUpdatingDescendantDependentFlags(false);
 #endif
   }
-
-  return target_state > DocumentLifecycle::kCompositingClean;
-}
-
-bool LocalFrameView::RunPrePaintLifecyclePhase(
-    DocumentLifecycle::LifecycleState target_state) {
-  TRACE_EVENT0("blink,benchmark", "LocalFrameView::RunPrePaintLifecyclePhase");
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPrePaint);

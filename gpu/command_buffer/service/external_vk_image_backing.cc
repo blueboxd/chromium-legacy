@@ -35,7 +35,7 @@
 #include "gpu/vulkan/fuchsia/vulkan_fuchsia_ext.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 #define GL_DEDICATED_MEMORY_OBJECT_EXT 0x9581
 #define GL_TEXTURE_TILING_EXT 0x9580
 #define GL_TILING_TYPES_EXT 0x9583
@@ -665,7 +665,7 @@ ExternalVkImageBacking::ProduceDawn(SharedImageManager* manager,
 }
 
 GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   GrVkImageInfo image_info;
   bool result = backend_texture_.getVkImageInfo(&image_info);
   DCHECK(result);
@@ -717,7 +717,7 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
 #elif defined(OS_FUCHSIA)
   NOTIMPLEMENTED_LOG_ONCE();
   return 0;
-#else  // !defined(OS_LINUX) && !defined(OS_FUCHSIA)
+#else  // !defined(OS_LINUX) && !defined(OS_FUCHSIA) && !defined(OS_ANDROID)
 #error Unsupported OS
 #endif
 }
@@ -731,7 +731,7 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
     return nullptr;
   }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   if (!texture_) {
     GLuint texture_service_id = ProduceGLTextureInternal();
     if (!texture_service_id)
@@ -762,7 +762,7 @@ ExternalVkImageBacking::ProduceGLTexture(SharedImageManager* manager,
 #elif defined(OS_FUCHSIA)
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
-#else  // !defined(OS_LINUX) && !defined(OS_FUCHSIA)
+#else  // !defined(OS_LINUX) && !defined(OS_FUCHSIA) && !defined(OS_ANDROID)
 #error Unsupported OS
 #endif
 }
@@ -777,7 +777,7 @@ ExternalVkImageBacking::ProduceGLTexturePassthrough(
     return nullptr;
   }
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   if (!texture_passthrough_) {
     GLuint texture_service_id = ProduceGLTextureInternal();
     if (!texture_service_id)
@@ -797,7 +797,7 @@ ExternalVkImageBacking::ProduceGLTexturePassthrough(
 #elif defined(OS_FUCHSIA)
   NOTIMPLEMENTED_LOG_ONCE();
   return nullptr;
-#else  // !defined(OS_LINUX) && !defined(OS_FUCHSIA)
+#else  // !defined(OS_LINUX) && !defined(OS_FUCHSIA) && !defined(OS_ANDROID)
 #error Unsupported OS
 #endif
 }
@@ -815,7 +815,7 @@ ExternalVkImageBacking::ProduceSkia(
                                                              tracker);
 }
 
-#ifdef OS_LINUX
+#if defined(OS_LINUX) || defined(OS_ANDROID)
 int ExternalVkImageBacking::GetMemoryFd(const GrVkImageInfo& image_info) {
   VkMemoryGetFdInfoKHR get_fd_info;
   get_fd_info.sType = VK_STRUCTURE_TYPE_MEMORY_GET_FD_INFO_KHR;

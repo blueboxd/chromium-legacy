@@ -34,6 +34,8 @@ jumbo_source_set("utility") {
 
   deps = [
     "//base",
+    "//components/services/storage",
+    "//components/services/storage/public/mojom",
     "//content:export",
     "//content/child",
     "//content/public/child:child_sources",

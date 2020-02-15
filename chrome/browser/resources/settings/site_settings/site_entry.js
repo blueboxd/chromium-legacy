@@ -165,18 +165,7 @@ Polymer({
       // Fall back onto using the host of the first origin, if no eTLD+1 name
       // was computed.
     }
-    return this.originRepresentation_(siteGroup.origins[0]);
-  },
-
-  /**
-   * Returns a user-friendly name for the origin.
-   * @param {OriginInfo} origin
-   * @return {string} The user-friendly name.
-   * @private
-   */
-  originRepresentation_(origin) {
-    const url = this.toUrl(origin.origin);
-    return url.host;
+    return this.originRepresentation(siteGroup.origins[0].origin);
   },
 
   /**

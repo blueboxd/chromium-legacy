@@ -749,6 +749,10 @@ IndexedDBFactoryImpl::GetOrOpenOriginFactory(
                      origin);
 
     if (disk_full) {
+      context_->IOTaskRunner()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&storage::QuotaManagerProxy::NotifyWriteFailed,
+                         context_->quota_manager_proxy(), origin));
       return {IndexedDBOriginStateHandle(), s,
               IndexedDBDatabaseError(
                   blink::mojom::IDBException::kQuotaError,
@@ -985,6 +989,12 @@ void IndexedDBFactoryImpl::OnDatabaseError(const url::Origin& origin,
                                      base::ASCIIToUTF16(status.ToString()));
     HandleBackingStoreCorruption(origin, error);
   } else {
+    if (status.IsIOError()) {
+      context_->IOTaskRunner()->PostTask(
+          FROM_HERE,
+          base::BindOnce(&storage::QuotaManagerProxy::NotifyWriteFailed,
+                         context_->quota_manager_proxy(), origin));
+    }
     HandleBackingStoreFailure(origin);
   }
 }

@@ -68,6 +68,8 @@ void TrialComparisonCertVerifierMojo::OnSendTrialReport(
     bool require_rev_checking_local_anchors,
     bool enable_sha1_local_anchors,
     bool disable_symantec_enforcement,
+    const std::string& stapled_ocsp,
+    const std::string& sct_list,
     const net::CertVerifyResult& primary_result,
     const net::CertVerifyResult& trial_result) {
   network::mojom::CertVerifierDebugInfoPtr debug_info =
@@ -117,8 +119,10 @@ void TrialComparisonCertVerifierMojo::OnSendTrialReport(
   report_client_->SendTrialReport(
       hostname, unverified_cert, enable_rev_checking,
       require_rev_checking_local_anchors, enable_sha1_local_anchors,
-      disable_symantec_enforcement, primary_result, trial_result,
-      std::move(debug_info));
+      disable_symantec_enforcement,
+      std::vector<uint8_t>(stapled_ocsp.begin(), stapled_ocsp.end()),
+      std::vector<uint8_t>(sct_list.begin(), sct_list.end()), primary_result,
+      trial_result, std::move(debug_info));
 }
 
 }  // namespace network

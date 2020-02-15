@@ -88,6 +88,7 @@ constexpr base::Feature kChromeOSAssistantDogfood{
 
 constexpr char kServersideDogfoodExperimentId[] = "20347368";
 constexpr char kServersideOpenAppExperimentId[] = "39651593";
+constexpr char kServersideResponseProcessingV2ExperimentId[] = "1793869";
 
 constexpr char kNextTrackClientOp[] = "media.NEXT";
 constexpr char kPauseTrackClientOp[] = "media.PAUSE";
@@ -1606,8 +1607,13 @@ void AssistantManagerServiceImpl::FillServerExperimentIds(
     server_experiment_ids->emplace_back(kServersideDogfoodExperimentId);
   }
 
-  if (base::FeatureList::IsEnabled(assistant::features::kAssistantAppSupport))
+  if (base::FeatureList::IsEnabled(features::kAssistantAppSupport))
     server_experiment_ids->emplace_back(kServersideOpenAppExperimentId);
+
+  if (features::IsResponseProcessingV2Enabled()) {
+    server_experiment_ids->emplace_back(
+        kServersideResponseProcessingV2ExperimentId);
+  }
 }
 
 void AssistantManagerServiceImpl::RecordQueryResponseTypeUMA() {

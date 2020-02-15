@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.vr.jsdialog;
 import static org.chromium.chrome.browser.vr.XrTestFramework.PAGE_LOAD_TIMEOUT_S;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.browser.vr.XrTestFramework.POLL_TIMEOUT_SHORT_MS;
+import static org.chromium.chrome.browser.vr.XrTestFramework.SERVER_PORT;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
 import android.support.test.filters.MediumTest;
@@ -54,10 +55,11 @@ public class VrBrowserJavaScriptModalDialogTest {
     @Before
     public void setUp() {
         mActivity = mActivityTestRule.getActivity();
+        // Need to ensure that the SERVER_PORT used is fixed for RenderTests
+        mActivityTestRule.getEmbeddedTestServerRule().setServerPort(SERVER_PORT);
         mVrBrowserTestFramework = new VrBrowserTestFramework(mActivityTestRule);
-        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                VrBrowserTestFramework.getFileUrlForHtmlTestFile("2d_permission_page"),
-                PAGE_LOAD_TIMEOUT_S);
+        mVrBrowserTestFramework.loadFileAndAwaitInitialization(
+                "2d_permission_page", PAGE_LOAD_TIMEOUT_S);
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
         NativeUiUtils.enableMockedInput();
         // Wait for any residual animations from entering VR to finish so that they don't get caught

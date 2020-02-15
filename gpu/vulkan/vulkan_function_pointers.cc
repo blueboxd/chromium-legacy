@@ -803,7 +803,7 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
   }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) || defined(OS_ANDROID)
   if (gfx::HasExtension(enabled_extensions,
                         VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME)) {
     vkGetMemoryFdKHRFn = reinterpret_cast<PFN_vkGetMemoryFdKHR>(
@@ -823,7 +823,7 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
       return false;
     }
   }
-#endif  // defined(OS_LINUX)
+#endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(OS_FUCHSIA)
   if (gfx::HasExtension(enabled_extensions,

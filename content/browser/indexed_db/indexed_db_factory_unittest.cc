@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <memory>
 #include <utility>
 
 #include "base/auto_reset.h"
@@ -11,6 +12,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -23,6 +25,7 @@
 #include "components/services/storage/indexed_db/leveldb/fake_leveldb_factory.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom-test-utils.h"
+#include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -39,6 +42,7 @@
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
+#include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
@@ -53,11 +57,6 @@ namespace content {
 
 namespace {
 
-base::FilePath CreateAndReturnTempDir(base::ScopedTempDir* temp_dir) {
-  CHECK(temp_dir->CreateUniqueTempDir());
-  return temp_dir->GetPath();
-}
-
 void CreateAndBindTransactionPlaceholder(
     base::WeakPtr<IndexedDBTransaction> transaction) {}
 
@@ -66,17 +65,22 @@ void CreateAndBindTransactionPlaceholder(
 class IndexedDBFactoryTest : public testing::Test {
  public:
   IndexedDBFactoryTest()
-      : task_environment_(std::make_unique<BrowserTaskEnvironment>()),
-        quota_manager_proxy_(
-            base::MakeRefCounted<storage::MockQuotaManagerProxy>(nullptr,
-                                                                 nullptr)) {}
+      : task_environment_(std::make_unique<BrowserTaskEnvironment>()) {}
 
   explicit IndexedDBFactoryTest(
       std::unique_ptr<BrowserTaskEnvironment> task_environment)
-      : task_environment_(std::move(task_environment)),
-        quota_manager_proxy_(
-            base::MakeRefCounted<storage::MockQuotaManagerProxy>(nullptr,
-                                                                 nullptr)) {}
+      : task_environment_(std::move(task_environment)) {}
+
+  void SetUp() override {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    quota_policy_ = base::MakeRefCounted<storage::MockSpecialStoragePolicy>();
+    quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
+        false /*is_incognito*/, temp_dir_.GetPath(),
+        base::ThreadTaskRunnerHandle::Get().get(), quota_policy_.get());
+
+    quota_manager_proxy_ = base::MakeRefCounted<storage::MockQuotaManagerProxy>(
+        quota_manager_.get(), base::ThreadTaskRunnerHandle::Get().get());
+  }
 
   void TearDown() override {
     quota_manager_proxy_->SimulateQuotaManagerDestroyed();
@@ -118,11 +122,12 @@ class IndexedDBFactoryTest : public testing::Test {
     if (temp_dir_.IsValid())
       ASSERT_TRUE(temp_dir_.Delete());
     IndexedDBClassFactory::Get()->SetLevelDBFactoryForTesting(nullptr);
+    quota_manager_.reset();
   }
 
   void SetupContext() {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
-        CreateAndReturnTempDir(&temp_dir_),
+        temp_dir_.GetPath(),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(),
         base::DefaultClock::GetInstance(),
         /*blob_storage_context=*/mojo::NullRemote(),
@@ -144,7 +149,7 @@ class IndexedDBFactoryTest : public testing::Test {
 
   void SetupContextWithFactories(LevelDBFactory* factory, base::Clock* clock) {
     context_ = base::MakeRefCounted<IndexedDBContextImpl>(
-        CreateAndReturnTempDir(&temp_dir_),
+        temp_dir_.GetPath(),
         /*special_storage_policy=*/nullptr, quota_manager_proxy_.get(), clock,
         /*blob_storage_context=*/mojo::NullRemote(),
         /*native_file_system_context=*/mojo::NullRemote(),
@@ -221,10 +226,14 @@ class IndexedDBFactoryTest : public testing::Test {
     return handle.origin_state();
   }
 
+  storage::MockQuotaManager* quota_manager() { return quota_manager_.get(); }
+
  private:
   std::unique_ptr<BrowserTaskEnvironment> task_environment_;
 
   base::ScopedTempDir temp_dir_;
+  scoped_refptr<storage::MockSpecialStoragePolicy> quota_policy_;
+  scoped_refptr<storage::MockQuotaManager> quota_manager_;
   scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<IndexedDBContextImpl> context_;
 
@@ -741,6 +750,29 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
       std::move(create_transaction_callback));
   factory()->Open(name, std::move(connection), origin, context()->data_path());
   EXPECT_TRUE(callbacks->error_called());
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(1U, quota_manager()->write_error_tracker().size());
+  EXPECT_EQ(origin, quota_manager()->write_error_tracker().begin()->first);
+  EXPECT_EQ(1, quota_manager()->write_error_tracker().begin()->second);
+}
+
+TEST_F(IndexedDBFactoryTest, NotifyQuotaOnDatabaseError) {
+  SetupContext();
+  const Origin origin = Origin::Create(GURL("www.example.com"));
+  factory()->OnDatabaseError(origin,
+                             leveldb::Status::Corruption("Corrupted stuff."),
+                             "Corrupted stuff.");
+  base::RunLoop().RunUntilIdle();
+  // Quota should not be notified unless the status is IOError.
+  ASSERT_EQ(0U, quota_manager()->write_error_tracker().size());
+
+  factory()->OnDatabaseError(origin, leveldb::Status::IOError("Disk is full."),
+                             "Disk is full.");
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1U, quota_manager()->write_error_tracker().size());
+  EXPECT_EQ(origin, quota_manager()->write_error_tracker().begin()->first);
+  EXPECT_EQ(1, quota_manager()->write_error_tracker().begin()->second);
 }
 
 class ErrorCallbacks : public MockIndexedDBCallbacks {

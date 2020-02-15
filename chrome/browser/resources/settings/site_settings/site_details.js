@@ -205,7 +205,8 @@ Polymer({
           // The displayName won't change, so just use the first
           // exception.
           assert(exceptionList.length > 0);
-          this.pageTitle = exceptionList[0].displayName;
+          this.pageTitle =
+              this.originRepresentation(exceptionList[0].displayName);
         });
   },
 

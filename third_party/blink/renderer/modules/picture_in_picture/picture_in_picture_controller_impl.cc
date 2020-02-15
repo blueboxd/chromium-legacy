@@ -52,11 +52,11 @@ PictureInPictureControllerImpl& PictureInPictureControllerImpl::From(
 }
 
 bool PictureInPictureControllerImpl::PictureInPictureEnabled() const {
-  return IsDocumentAllowed() == Status::kEnabled;
+  return IsDocumentAllowed(/*report_failure=*/true) == Status::kEnabled;
 }
 
 PictureInPictureController::Status
-PictureInPictureControllerImpl::IsDocumentAllowed() const {
+PictureInPictureControllerImpl::IsDocumentAllowed(bool report_failure) const {
   DCHECK(GetSupplementable());
 
   // If document has been detached from a frame, return kFrameDetached status.
@@ -75,7 +75,8 @@ PictureInPictureControllerImpl::IsDocumentAllowed() const {
   if (RuntimeEnabledFeatures::PictureInPictureAPIEnabled() &&
       !GetSupplementable()->IsFeatureEnabled(
           blink::mojom::blink::FeaturePolicyFeature::kPictureInPicture,
-          ReportOptions::kReportOnFailure)) {
+          report_failure ? ReportOptions::kReportOnFailure
+                         : ReportOptions::kDoNotReport)) {
     return Status::kDisabledByFeaturePolicy;
   }
 
@@ -98,13 +99,19 @@ PictureInPictureControllerImpl::VerifyElementAndOptions(
     }
   }
 
-  return IsElementAllowed(element);
+  return IsElementAllowed(element, /*report_failure=*/true);
 }
 
 PictureInPictureController::Status
 PictureInPictureControllerImpl::IsElementAllowed(
     const HTMLElement& element) const {
-  PictureInPictureController::Status status = IsDocumentAllowed();
+  return IsElementAllowed(element, /*report_failure=*/false);
+}
+
+PictureInPictureController::Status
+PictureInPictureControllerImpl::IsElementAllowed(const HTMLElement& element,
+                                                 bool report_failure) const {
+  PictureInPictureController::Status status = IsDocumentAllowed(report_failure);
   if (status != Status::kEnabled)
     return status;
 
@@ -199,7 +206,7 @@ void PictureInPictureControllerImpl::OnEnteredPictureInPicture(
       mojo::Remote<mojom::blink::PictureInPictureSession>(
           std::move(session_remote));
 
-  if (IsElementAllowed(*element) != Status::kEnabled) {
+  if (IsElementAllowed(*element, /*report_failure=*/true) != Status::kEnabled) {
     if (resolver) {
       resolver->Reject(MakeGarbageCollected<DOMException>(
           DOMExceptionCode::kInvalidStateError, ""));
@@ -334,7 +341,8 @@ bool PictureInPictureControllerImpl::IsEnterAutoPictureInPictureAllowed()
     return false;
 
   // Allow if video is allowed to enter Picture-in-Picture.
-  return (IsElementAllowed(*AutoPictureInPictureElement()) == Status::kEnabled);
+  return (IsElementAllowed(*AutoPictureInPictureElement(),
+                           /*report_failure=*/true) == Status::kEnabled);
 }
 
 bool PictureInPictureControllerImpl::IsExitAutoPictureInPictureAllowed() const {

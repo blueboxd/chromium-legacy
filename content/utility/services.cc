@@ -9,6 +9,8 @@
 #include "base/no_destructor.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/services/storage/public/mojom/storage_service.mojom.h"
+#include "components/services/storage/storage_service_impl.h"
 #include "content/public/utility/content_utility_client.h"
 #include "content/public/utility/utility_thread.h"
 #include "media/media_buildflags.h"
@@ -142,6 +144,11 @@ auto RunDataDecoder(
       std::move(receiver));
 }
 
+auto RunStorageService(
+    mojo::PendingReceiver<storage::mojom::StorageService> receiver) {
+  return std::make_unique<storage::StorageServiceImpl>(std::move(receiver));
+}
+
 auto RunTracing(
     mojo::PendingReceiver<tracing::mojom::TracingService> receiver) {
   return std::make_unique<tracing::TracingService>(std::move(receiver));
@@ -161,13 +168,18 @@ mojo::ServiceFactory& GetIOThreadServiceFactory() {
 }
 
 mojo::ServiceFactory& GetMainThreadServiceFactory() {
+  // clang-format off
   static base::NoDestructor<mojo::ServiceFactory> factory{
     RunAudio,
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-        RunCdmService,
+    RunCdmService,
 #endif
-        RunDataDecoder, RunTracing, RunVideoCapture,
+    RunDataDecoder,
+    RunStorageService,
+    RunTracing,
+    RunVideoCapture,
   };
+  // clang-format on
   return *factory;
 }
 

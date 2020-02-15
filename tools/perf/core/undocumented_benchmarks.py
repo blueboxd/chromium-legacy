@@ -19,7 +19,6 @@ UNDOCUMENTED_BENCHMARKS = {
   'memory.desktop',
   'net_perftests',
   'octane',
-  'passthrough_command_buffer_perftests',
   'performance_browser_tests',
   'speedometer',
   'speedometer-future',
@@ -35,6 +34,5 @@ UNDOCUMENTED_BENCHMARKS = {
   'v8.browsing_mobile',
   'v8.browsing_mobile-future',
   'v8.runtime_stats.top_25',
-  'validating_command_buffer_perftests',
   'views_perftests',
 }

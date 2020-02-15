@@ -12,6 +12,7 @@ import android.app.job.JobParameters;
 import android.app.job.JobScheduler;
 import android.app.job.JobWorkItem;
 import android.content.ComponentName;
+import android.content.Context;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
 
@@ -22,6 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.common.AwSwitches;
+import org.chromium.android_webview.common.variations.VariationsServiceMetricsHelper;
 import org.chromium.android_webview.common.variations.VariationsUtils;
 import org.chromium.android_webview.services.AwVariationsSeedFetcher;
 import org.chromium.android_webview.test.util.VariationsTestUtils;
@@ -44,9 +46,11 @@ import java.util.concurrent.TimeoutException;
 @OnlyRunIn(SINGLE_PROCESS)
 public class AwVariationsSeedFetcherTest {
     private static final int JOB_ID = TaskIds.WEBVIEW_VARIATIONS_SEED_FETCH_JOB_ID;
+    private static final long DOWNLOAD_DURATION = 10;
+    private static final long START_TIME = 100;
 
-    // A mock JobScheduler which only holds one job, and never does anything with it.
-    private class MockJobScheduler extends JobScheduler {
+    // A test JobScheduler which only holds one job, and never does anything with it.
+    private class TestJobScheduler extends JobScheduler {
         public JobInfo mJob;
 
         public void clear() {
@@ -101,33 +105,56 @@ public class AwVariationsSeedFetcherTest {
         }
     }
 
-    // A mock VariationsSeedFetcher which doesn't actually download seeds, but verifies the request
+    // A test VariationsSeedFetcher which doesn't actually download seeds, but verifies the request
     // parameters.
-    private class MockFetcher extends VariationsSeedFetcher {
-        public CallbackHelper helper = new CallbackHelper();
-
+    private class TestVariationsSeedFetcher extends VariationsSeedFetcher {
         @Override
         public SeedInfo downloadContent(@VariationsSeedFetcher.VariationsPlatform int platform,
                 String restrictMode, String milestone, String channel) {
             Assert.assertEquals(VariationsSeedFetcher.VariationsPlatform.ANDROID_WEBVIEW, platform);
             Assert.assertTrue(Integer.parseInt(milestone) > 0);
-            helper.notifyCalled();
+            mClock.timestamp += DOWNLOAD_DURATION;
             return null;
         }
     }
 
-    private MockJobScheduler mScheduler = new MockJobScheduler();
-    private MockFetcher mDownloader = new MockFetcher();
+    // A fake clock instance with a controllable timestamp.
+    private class TestClock implements AwVariationsSeedFetcher.Clock {
+        public long timestamp;
+
+        @Override
+        public long currentTimeMillis() {
+            return timestamp;
+        }
+    }
+
+    // A test AwVariationsSeedFetcher that doesn't call JobFinished.
+    private class TestAwVariationsSeedFetcher extends AwVariationsSeedFetcher {
+        public CallbackHelper helper = new CallbackHelper();
+
+        // p is null in this test. Don't actually call JobService.jobFinished.
+        @Override
+        protected void jobFinished(JobParameters p) {
+            helper.notifyCalled();
+        }
+    }
+
+    private TestJobScheduler mScheduler = new TestJobScheduler();
+    private TestVariationsSeedFetcher mDownloader = new TestVariationsSeedFetcher();
+    private TestClock mClock = new TestClock();
+    private Context mContext;
 
     @Before
     public void setUp() throws IOException {
         AwVariationsSeedFetcher.setMocks(mScheduler, mDownloader);
         VariationsTestUtils.deleteSeeds();
+        mContext = ContextUtils.getApplicationContext();
     }
 
     @After
     public void tearDown() throws IOException {
         AwVariationsSeedFetcher.setMocks(null, null);
+        AwVariationsSeedFetcher.setTestClock(null);
         VariationsTestUtils.deleteSeeds();
     }
 
@@ -250,19 +277,35 @@ public class AwVariationsSeedFetcherTest {
     @SmallTest
     public void testFetch() throws IOException, TimeoutException {
         try {
-            AwVariationsSeedFetcher fetcher = new AwVariationsSeedFetcher() {
-                // p is null in this test. Don't actually call JobService.jobFinished.
-                @Override
-                protected void jobFinished(JobParameters p) {}
-            };
-            int downloads = mDownloader.helper.getCallCount();
+            TestAwVariationsSeedFetcher fetcher = new TestAwVariationsSeedFetcher();
             fetcher.onStartJob(null);
-            mDownloader.helper.waitForCallback(
-                    "Timeout out waiting for AwVariationsSeedFetcher to call downloadContent",
-                    downloads);
+            fetcher.helper.waitForCallback(
+                    "Timeout out waiting for AwVariationsSeedFetcher to call downloadContent", 0);
             File stamp = VariationsUtils.getStampFile();
             Assert.assertTrue("AwVariationsSeedFetcher should have updated stamp file " + stamp,
                     stamp.exists());
+        } finally {
+            VariationsTestUtils.deleteSeeds(); // Remove the stamp file.
+        }
+    }
+
+    // Tests that metrics are written to SharedPreferences when there's no previous data.
+    @Test
+    @MediumTest
+    public void testMetricsWrittenToPrefsWithoutPreviousData()
+            throws IOException, TimeoutException {
+        try {
+            AwVariationsSeedFetcher.setTestClock(mClock);
+            mClock.timestamp = START_TIME;
+
+            TestAwVariationsSeedFetcher fetcher = new TestAwVariationsSeedFetcher();
+            fetcher.onStartJob(null);
+            fetcher.helper.waitForCallback(
+                    "Timeout out waiting for AwVariationsSeedFetcher to call downloadContent", 0);
+
+            VariationsServiceMetricsHelper metrics =
+                    VariationsServiceMetricsHelper.fromVariationsSharedPreferences(mContext);
+            Assert.assertEquals(DOWNLOAD_DURATION, metrics.getSeedFetchTime());
         } finally {
             VariationsTestUtils.deleteSeeds(); // Remove the stamp file.
         }

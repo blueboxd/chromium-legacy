@@ -446,7 +446,7 @@ const base::Feature kDownloadFileProvider{"DownloadFileProvider",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDownloadNotificationBadge{
-    "DownloadNotificationBadge", base::FEATURE_DISABLED_BY_DEFAULT};
+    "DownloadNotificationBadge", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDownloadRename{"DownloadRename",
                                     base::FEATURE_ENABLED_BY_DEFAULT};

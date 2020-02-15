@@ -207,7 +207,9 @@ DeepScanningDialogDelegate::FileSourceRequest::FileSourceRequest(
     BinaryUploadService::Callback callback)
     : Request(std::move(callback)),
       delegate_(delegate),
-      path_(std::move(path)) {}
+      path_(std::move(path)) {
+  set_filename(path_.BaseName().AsUTF8Unsafe());
+}
 
 void DeepScanningDialogDelegate::FileSourceRequest::GetRequestData(
     DataCallback callback) {

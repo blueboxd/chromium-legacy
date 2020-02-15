@@ -379,6 +379,10 @@ void BinaryUploadService::Request::set_request_token(const std::string& token) {
   deep_scanning_request_.set_request_token(token);
 }
 
+void BinaryUploadService::Request::set_filename(const std::string& filename) {
+  deep_scanning_request_.set_filename(filename);
+}
+
 void BinaryUploadService::Request::FinishRequest(
     Result result,
     DeepScanningClientResponse response) {

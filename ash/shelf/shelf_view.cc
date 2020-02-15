@@ -678,12 +678,6 @@ void ShelfView::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
-void ShelfView::OnScrollEvent(ui::ScrollEvent* event) {
-  shelf_->ProcessScrollEvent(event);
-  if (!event->handled())
-    views::View::OnScrollEvent(event);
-}
-
 views::FocusTraversable* ShelfView::GetPaneFocusTraversable() {
   // ScrollableShelfView should handles the focus traversal if the flag
   // is enabled.

@@ -66,7 +66,8 @@ PanelMenuItem = class {
     shortcut.textContent = menuItemShortcut;
     this.element.appendChild(shortcut);
 
-    if (localStorage['brailleCaptions'] === String(true)) {
+    if (localStorage['brailleCaptions'] === String(true) ||
+        localStorage['menuBrailleCommands'] === String(true)) {
       const braille = document.createElement('td');
       braille.className = 'menu-item-shortcut';
       braille.textContent = menuItemBraille;

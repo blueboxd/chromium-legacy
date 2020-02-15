@@ -27,12 +27,11 @@
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace storage {
 class SpecialStoragePolicy;
+namespace mojom {
+class Partition;
+}
 }
 
 namespace content {
@@ -60,10 +59,8 @@ class CONTENT_EXPORT DOMStorageContextWrapper
     PURGE_AGGRESSIVE,
   };
 
-  // If |profile_path| is empty, nothing will be saved to disk.
   static scoped_refptr<DOMStorageContextWrapper> Create(
-      const base::FilePath& profile_path,
-      const base::FilePath& local_partition_path,
+      storage::mojom::Partition* partition,
       storage::SpecialStoragePolicy* special_storage_policy);
 
   DOMStorageContextWrapper(

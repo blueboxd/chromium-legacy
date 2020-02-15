@@ -95,6 +95,9 @@ void FullscreenMediator::FullscreenModelToolbarHeightsUpdated(
                                                  model_->min_toolbar_insets(),
                                                  model_->max_toolbar_insets());
   }
+  // Changes in the toolbar heights modifies the visible viewport so the WebView
+  // needs to be resized as needed.
+  [resizer_ updateForCurrentState];
 }
 
 void FullscreenMediator::FullscreenModelProgressUpdated(

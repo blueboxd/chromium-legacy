@@ -46,16 +46,6 @@ using ash::ArcNotificationSurfaceManager;
 
 namespace {
 
-exo::Surface* GetArcSurface(const aura::Window* window) {
-  if (!window)
-    return nullptr;
-
-  exo::Surface* arc_surface = exo::Surface::AsSurface(window);
-  if (!arc_surface)
-    arc_surface = exo::GetShellMainSurface(window);
-  return arc_surface;
-}
-
 void DispatchFocusChange(arc::mojom::AccessibilityNodeInfoData* node_data,
                          Profile* profile) {
   chromeos::AccessibilityManager* accessibility_manager =
@@ -421,6 +411,12 @@ void ArcAccessibilityHelperBridge::OnNotificationStateChanged(
   }
 }
 
+void ArcAccessibilityHelperBridge::OnToggleNativeChromeVoxArcSupport(
+    bool enabled) {
+  native_chromevox_enabled_ = enabled;
+  DispatchCustomSpokenFeedbackToggled(!enabled);
+}
+
 void ArcAccessibilityHelperBridge::OnAction(
     const ui::AXActionData& data) const {
   DCHECK(data.target_node_id);
@@ -524,6 +520,26 @@ void ArcAccessibilityHelperBridge::OnNotificationSurfaceAdded(
   }
 }
 
+void ArcAccessibilityHelperBridge::OnWindowActivated(
+    ActivationReason reason,
+    aura::Window* gained_active,
+    aura::Window* lost_active) {
+  if (gained_active == lost_active)
+    return;
+
+  UpdateWindowProperties(gained_active);
+
+  // Transitioning with ARC and non-ARC window may need to dispatch
+  // ToggleNativeChromeVoxArcSupport event.
+  //  - When non-ChromeVox ARC window becomes inactive, dispatch |true|.
+  //  - When non-ChromeVox ARC window becomes active, dispatch |false|.
+  bool lost_arc = arc::IsArcAppWindow(lost_active);
+  bool gained_arc = arc::IsArcAppWindow(gained_active);
+  bool talkback_enabled = !native_chromevox_enabled_;
+  if (talkback_enabled && lost_arc != gained_arc)
+    DispatchCustomSpokenFeedbackToggled(gained_arc);
+}
+
 void ArcAccessibilityHelperBridge::InvokeUpdateEnabledFeatureForTesting() {
   UpdateEnabledFeature();
 }
@@ -575,16 +591,6 @@ void ArcAccessibilityHelperBridge::UpdateCaptionSettings() const {
     return;
 
   instance->SetCaptionStyle(std::move(caption_style));
-}
-
-void ArcAccessibilityHelperBridge::OnWindowActivated(
-    ActivationReason reason,
-    aura::Window* gained_active,
-    aura::Window* lost_active) {
-  if (gained_active == lost_active)
-    return;
-
-  UpdateWindowProperties(gained_active);
 }
 
 void ArcAccessibilityHelperBridge::OnActionResult(const ui::AXActionData& data,
@@ -691,15 +697,12 @@ void ArcAccessibilityHelperBridge::UpdateEnabledFeature() {
 
 void ArcAccessibilityHelperBridge::UpdateWindowProperties(
     aura::Window* window) {
-  if (!window)
+  if (!arc::IsArcAppWindow(window))
     return;
 
-  if (!GetArcSurface(window))
-    return;
-
-  // First, do a lookup for the task id associated with this app. There should
-  // always be a valid entry.
   int32_t task_id = arc::GetWindowTaskId(window);
+  if (task_id == kNoTaskId)
+    return;
 
   // Do a lookup for the tree source. A tree source may not exist because the
   // app isn't whitelisted Android side or no data has been received for the
@@ -868,6 +871,20 @@ void ArcAccessibilityHelperBridge::HandleFilterTypeAllEvent(
     DispatchFocusChange(
         tree_source->GetFromId(event_data->source_id)->GetNode(), profile_);
   }
+}
+
+void ArcAccessibilityHelperBridge::DispatchCustomSpokenFeedbackToggled(
+    bool enabled) const {
+  std::unique_ptr<base::ListValue> event_args(
+      extensions::api::accessibility_private::OnCustomSpokenFeedbackToggled::
+          Create(enabled));
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
+      extensions::events::
+          ACCESSIBILITY_PRIVATE_ON_CUSTOM_SPOKEN_FEEDBACK_TOGGLED,
+      extensions::api::accessibility_private::OnCustomSpokenFeedbackToggled::
+          kEventName,
+      std::move(event_args)));
+  GetEventRouter()->BroadcastEvent(std::move(event));
 }
 
 AXTreeSourceArc* ArcAccessibilityHelperBridge::CreateFromKey(TreeKey key) {

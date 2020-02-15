@@ -59,6 +59,8 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/login/login_handler.h"
+#include "chrome/browser/ui/login/login_handler_test_utils.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/saml_challenge_key_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
@@ -156,6 +158,13 @@ constexpr char kNonSAMLUserGaiaId[] = "frank-gaia";
 constexpr char kIdPHost[] = "login.corp.example.com";
 constexpr char kAdditionalIdPHost[] = "login2.corp.example.com";
 
+// The header that the server returns in a HTTP response to ask the client to
+// authenticate.
+constexpr char kAuthenticateResponseHeader[] = "WWW-Authenticate";
+
+// The response header that the client sends to transfer HTTP auth credentials.
+constexpr char kAuthorizationRequestHeader[] = "Authorization";
+
 constexpr char kSAMLIdPCookieName[] = "saml";
 constexpr char kSAMLIdPCookieValue1[] = "value-1";
 constexpr char kSAMLIdPCookieValue2[] = "value-2";
@@ -237,6 +246,7 @@ class FakeSamlIdp {
   void SetLoginAuthHTMLTemplate(const std::string& template_file);
   void SetRefreshURL(const GURL& refresh_url);
   void SetCookieValue(const std::string& cookie_value);
+  void SetRequireHttpBasicAuth(bool require_http_basic_auth);
   void SetSamlResponseFile(const std::string& xml_file);
   bool IsLastChallengeResponseExists() const;
   const std::string& GetLastChallengeResponse() const;
@@ -245,6 +255,20 @@ class FakeSamlIdp {
       const net::test_server::HttpRequest& request);
 
  private:
+  // Enumerates requests that this FakeSamlIdp may get.
+  enum class RequestType {
+    // Not a known request.
+    kUnknown,
+    kLogin,
+    kLoginAuth,
+    kLoginWithDeviceAttestation,
+    kLoginCheckDeviceAnswer
+  };
+
+  // Returns the RequestType that corresponds to |url|, or RequestType::Unknown
+  // if this is not a request for the FakeSamlIdp.
+  RequestType ParseRequestTypeFromRequestPath(const GURL& request_url) const;
+
   std::unique_ptr<HttpResponse> BuildResponseForLogin(
       const HttpRequest& request,
       const GURL& request_url);
@@ -280,6 +304,8 @@ class FakeSamlIdp {
   GURL refresh_url_;
   std::string cookie_value_;
   std::string saml_response_{"fake_response"};
+
+  bool require_http_basic_auth_ = false;
 
   base::Optional<std::string> challenge_response_;
 
@@ -336,32 +362,65 @@ void FakeSamlIdp::SetCookieValue(const std::string& cookie_value) {
   cookie_value_ = cookie_value;
 }
 
+void FakeSamlIdp::SetRequireHttpBasicAuth(bool require_http_basic_auth) {
+  require_http_basic_auth_ = require_http_basic_auth;
+}
+
 std::unique_ptr<net::test_server::HttpResponse> FakeSamlIdp::HandleRequest(
     const net::test_server::HttpRequest& request) {
   // The scheme and host of the URL is actually not important but required to
   // get a valid GURL in order to parse |request.relative_url|.
   GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
+  const RequestType request_type = ParseRequestTypeFromRequestPath(request_url);
+
+  if (request_type == RequestType::kUnknown) {
+    // Ignore this request. Note that another handler may still care.
+    LOG(INFO) << "Request is ignored by FakeSamlIdp: " << request.GetURL();
+    return std::unique_ptr<HttpResponse>();
+  }
+
+  // For HTTP Basic Auth, we don't care to check the credentials, just
+  // if some credentials were provided. If not, respond with an authentication
+  // request that should make the browser pop up a credentials entry UI.
+  if (require_http_basic_auth_ &&
+      !base::Contains(request.headers, kAuthorizationRequestHeader)) {
+    auto http_response =
+        std::make_unique<net::test_server::BasicHttpResponse>();
+    http_response->set_code(net::HTTP_UNAUTHORIZED);
+    http_response->AddCustomHeader(kAuthenticateResponseHeader,
+                                   "Basic realm=\"test realm\"");
+    return http_response;
+  }
+
+  switch (request_type) {
+    case RequestType::kLogin:
+      return BuildResponseForLogin(request, request_url);
+    case RequestType::kLoginAuth:
+      return BuildResponseForLoginAuth(request, request_url);
+    case RequestType::kLoginWithDeviceAttestation:
+      return BuildResponseForLoginWithDeviceAttestation(request, request_url);
+    case RequestType::kLoginCheckDeviceAnswer:
+      return BuildResponseForCheckDeviceAnswer(request, request_url);
+    case RequestType::kUnknown:
+      NOTREACHED();
+      return std::unique_ptr<HttpResponse>();
+  }
+}
+
+FakeSamlIdp::RequestType FakeSamlIdp::ParseRequestTypeFromRequestPath(
+    const GURL& request_url) const {
   std::string request_path = request_url.path();
 
-  if (request_path == login_url_.path()) {
-    return BuildResponseForLogin(request, request_url);
-  }
+  if (request_path == login_url_.path())
+    return RequestType::kLogin;
+  if (request_path == login_auth_path_)
+    return RequestType::kLoginAuth;
+  if (request_path == login_with_device_attest_url_.path())
+    return RequestType::kLoginWithDeviceAttestation;
+  if (request_path == login_check_device_answer_url_.path())
+    return RequestType::kLoginCheckDeviceAnswer;
 
-  if (request_path == login_auth_path_) {
-    return BuildResponseForLoginAuth(request, request_url);
-  }
-
-  if (request_path == login_with_device_attest_url_.path()) {
-    return BuildResponseForLoginWithDeviceAttestation(request, request_url);
-  }
-
-  if (request_path == login_check_device_answer_url_.path()) {
-    return BuildResponseForCheckDeviceAnswer(request, request_url);
-  }
-
-  // All other requests can be ignored.
-  LOG(WARNING) << "Request is ignored by FakeSamlIdp: " << request.GetURL();
-  return std::unique_ptr<HttpResponse>();
+  return RequestType::kUnknown;
 }
 
 std::unique_ptr<HttpResponse> FakeSamlIdp::BuildResponseForLogin(
@@ -695,6 +754,64 @@ IN_PROC_BROWSER_TEST_F(SamlTest, SamlUI) {
 
   // Saml flow is gone.
   test::OobeJS().ExpectHiddenPath({"gaia-signin", "saml-notice-container"});
+}
+
+// The SAML IdP requires HTTP Protocol-level authentication (Basic in this
+// case).
+IN_PROC_BROWSER_TEST_F(SamlTest, IdpRequiresHttpAuth) {
+  fake_saml_idp()->SetRequireHttpBasicAuth(true);
+  fake_saml_idp()->SetLoginHTMLTemplate("saml_api_login.html");
+  fake_saml_idp()->SetLoginAuthHTMLTemplate("saml_api_login_auth.html");
+
+  // This is not calling StartSamlAndWaitForIdpPageLoad because it has
+  // to wait for the auth credentials entry dialog in between. Also, only load
+  // the gaia page first so we can get a pointer to the gaia frame's
+  // WebContents.
+  WaitForGaiaPageLoad();
+
+  content::WebContents* gaia_frame_web_contents =
+      signin::GetAuthFrameWebContents(GetLoginUI()->GetWebContents(),
+                                      gaia_frame_parent_);
+  content::NavigationController* gaia_frame_navigation_controller =
+      &(gaia_frame_web_contents->GetController());
+
+  // Start observing before initiating SAML sign-in.
+  content::DOMMessageQueue message_queue;
+  LoginPromptBrowserTestObserver login_prompt_observer;
+  login_prompt_observer.Register(content::Source<content::NavigationController>(
+      gaia_frame_navigation_controller));
+  WindowedAuthNeededObserver auth_needed_waiter(
+      gaia_frame_navigation_controller);
+
+  SetupAuthFlowChangeListener();
+  LoginDisplayHost::default_host()
+      ->GetOobeUI()
+      ->GetView<GaiaScreenHandler>()
+      ->ShowSigninScreenForTest(saml_test_users::kFirstUserCorpExampleComEmail,
+                                "", "[]");
+
+  auth_needed_waiter.Wait();
+  ASSERT_FALSE(login_prompt_observer.handlers().empty());
+  LoginHandler* handler = *login_prompt_observer.handlers().begin();
+  // Note that the actual credentials don't matter because |fake_saml_idp()|
+  // doesn't check those (only that something has been provided).
+  handler->SetAuth(base::UTF8ToUTF16("user"), base::UTF8ToUTF16("pwd"));
+
+  // Now the SAML sign-in form should actually load.
+  std::string message;
+  do {
+    ASSERT_TRUE(message_queue.WaitForMessage(&message));
+  } while (message != "\"SamlLoaded\"");
+
+  // Fill-in the SAML IdP form and submit.
+  SigninFrameJS().TypeIntoPath("fake_user", {"Email"});
+  SigninFrameJS().TypeIntoPath("not_the_password", {"Dummy"});
+  SigninFrameJS().TypeIntoPath("actual_password", {"Password"});
+
+  SigninFrameJS().TapOn("Submit");
+
+  // Login should finish login and a session should start.
+  test::WaitForPrimaryUserSessionStart();
 }
 
 // Tests the sign-in flow when the credentials passing API is used.

@@ -122,7 +122,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     }
 
     /**
-     * Checks if the preview tab is in open state.
+     * Checks if the preview tab is in open (peek) state.
      */
     public boolean isOpened() {
         return mOpened;
@@ -200,7 +200,10 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
         }
     }
 
-    private void onCloseButtonClick() {
+    /**
+     * Close the ephemeral tab.
+     */
+    public void close() {
         mBottomSheetController.hideContent(mSheetContent, /* animate= */ true);
     }
 
@@ -215,7 +218,7 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
 
     private EphemeralTabSheetContent createSheetContent() {
         mSheetContent = new EphemeralTabSheetContent(mActivity, this::openInNewTab,
-                this::onToolbarClick, this::onCloseButtonClick, getMaxSheetHeight());
+                this::onToolbarClick, this::close, getMaxSheetHeight());
 
         mActivity.getWindow().getDecorView().addOnLayoutChangeListener(this);
         return mSheetContent;

@@ -678,7 +678,7 @@ public class ImeTest {
         }));
     }
 
-    private void reloadPage() {
+    private void reloadPage() throws Exception {
         // Reload the page, then focus will be lost and keyboard should be hidden.
         mRule.fullyLoadUrl(mRule.getWebContents().getLastCommittedUrl());
     }

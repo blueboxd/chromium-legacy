@@ -53,6 +53,7 @@ class OverlayPresentationContext {
   // |presentation_callback| must be called when the UI is finished being
   // presented. |dismissal_callback| must be stored and called whenever the UI
   // is finished being dismissed for user interaction, hiding, or cancellation.
+  // Must only be called when CanShowUIForRequest() returns true for |request|.
   virtual void ShowOverlayUI(OverlayPresenter* presenter,
                              OverlayRequest* request,
                              OverlayPresentationCallback presentation_callback,
@@ -63,6 +64,7 @@ class OverlayPresentationContext {
   // serialized so that the state can be restored if shown again.  When hiding
   // an overlay, the presented UI must be dismissed, and the overlay's
   // dismissal callback must must be executed upon the dismissal's completion.
+  // Must only be called when |request| is displayed within the context.
   virtual void HideOverlayUI(OverlayPresenter* presenter,
                              OverlayRequest* request) = 0;
 

@@ -46,10 +46,6 @@ import java.io.IOException;
 Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-features=LogJsConsoleMessages"})
 @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM_OR_STANDALONE)
 public class VrBrowserDialogTest {
-    // We need to make sure the port is constant, otherwise the URL changes between test runs, which
-    // is really bad for image diff tests. There's nothing special about this port other than that
-    // it shouldn't be in use by anything.
-    private static final int SERVER_PORT = 39558;
 
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
@@ -64,8 +60,10 @@ public class VrBrowserDialogTest {
 
     @Before
     public void setUp() {
+        // Need to ensure that the SERVER_PORT used is fixed for RenderTests
+        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
+
         mVrBrowserTestFramework = new VrBrowserTestFramework(mVrTestRule);
-        mVrTestRule.getEmbeddedTestServerRule().setServerPort(SERVER_PORT);
 
         // Notifications on O+ are handled via Android Notification Channels, and thus can cause
         // tests to be non-hermetic. Clear any existing channel before starting the test in case
@@ -84,18 +82,15 @@ public class VrBrowserDialogTest {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             PermissionInfo notificationSettings =
                     new PermissionInfo(PermissionInfo.Type.NOTIFICATION,
-                            "http://127.0.0.1:" + String.valueOf(SERVER_PORT), null, false);
+                            "https://127.0.0.1:" + String.valueOf(XrTestFramework.SERVER_PORT),
+                            null, false);
             PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
                     () -> notificationSettings.setContentSetting(ContentSettingValues.DEFAULT));
         }
     }
 
     private void navigateAndDisplayPermissionPrompt(String page, final String promptCommand) {
-        // Trying to grant permissions on file:// URLs ends up hitting DCHECKS, so load from a local
-        // server instead.
-        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                mVrBrowserTestFramework.getEmbeddedServerUrlForHtmlTestFile(page),
-                PAGE_LOAD_TIMEOUT_S);
+        mVrBrowserTestFramework.loadFileAndAwaitInitialization(page, PAGE_LOAD_TIMEOUT_S);
 
         // Display the given permission prompt.
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);

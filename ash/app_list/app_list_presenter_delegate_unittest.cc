@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <memory>
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/app_list_presenter_impl.h"
 #include "ash/app_list/app_list_util.h"
@@ -23,6 +24,7 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/app_list/views/test/apps_grid_view_test_api.h"
+#include "ash/home_screen/home_screen_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/test/keyboard_test_util.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
@@ -2870,16 +2872,6 @@ class AppListPresenterDelegateHomeLauncherTest
     GetAppListTestHelper()->WaitUntilIdle();
   }
 
-  void PressHomeButton() {
-    HomeButton* const home_button =
-        GetPrimaryShelf()->navigation_widget()->GetHomeButton();
-    auto* gen = GetEventGenerator();
-    gfx::Point click_point = home_button->GetBoundsInScreen().CenterPoint();
-    gen->MoveMouseTo(click_point);
-    gen->ClickLeftButton();
-    GetAppListTestHelper()->WaitUntilIdle();
-  }
-
   void TapHomeButton(int64_t display_id) {
     HomeButton* const home_button =
         Shell::GetRootWindowControllerWithDisplayId(display_id)
@@ -2889,6 +2881,20 @@ class AppListPresenterDelegateHomeLauncherTest
     gfx::Point tap_point = home_button->GetBoundsInScreen().CenterPoint();
     GetEventGenerator()->GestureTapDownAndUp(tap_point);
     GetAppListTestHelper()->WaitUntilIdle();
+  }
+
+  // Ensures transition to home screen in tablet mode (where home button is not
+  // always shown).
+  void GoHome() {
+    const int64_t primary_display_id = GetPrimaryDisplay().id();
+    // If home button is not expected to be shown, use
+    // HomeScreenController::GoHome() directly, otherwise tap on the primary
+    // screen home button.
+    if (!Shell::Get()->shelf_config()->shelf_controls_shown()) {
+      Shell::Get()->home_screen_controller()->GoHome(primary_display_id);
+      return;
+    }
+    TapHomeButton(primary_display_id);
   }
 
   SplitViewController* split_view_controller() {
@@ -3361,6 +3367,12 @@ TEST_P(AppListPresenterDelegateHomeLauncherTest,
   GetAppListTestHelper()->CheckVisibility(true);
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 
+  // Enable accessibility feature that forces home button to be shown even with
+  // kHideShelfControlsInTabletMode enabled.
+  // TODO(https://crbug.com/1050544) Use the a11y feature specific to showing
+  // navigation buttons in tablet mode once it lands.
+  Shell::Get()->accessibility_controller()->SetAutoclickEnabled(true);
+
   // Enter text in the searchbox, the app list should transition to fullscreen
   // search.
   ui::test::EventGenerator* generator = GetEventGenerator();
@@ -3369,7 +3381,7 @@ TEST_P(AppListPresenterDelegateHomeLauncherTest,
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenSearch);
 
   // Tap home button - verify that home goes back to showing the apps page.
-  PressHomeButton();
+  TapHomeButton(GetPrimaryDisplay().id());
 
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 }
@@ -3438,8 +3450,8 @@ TEST_P(AppListPresenterDelegateHomeLauncherTest,
   GetAppListTestHelper()->CheckVisibility(true);
 }
 
-// Tests that the home button will minimize all windows.
-TEST_P(AppListPresenterDelegateHomeLauncherTest, HomeButtonMinimizeAllWindows) {
+// Tests that going home will minimize all windows.
+TEST_P(AppListPresenterDelegateHomeLauncherTest, GoingHomeMinimizesAllWindows) {
   // Show app list in tablet mode. Maximize all windows.
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
@@ -3463,8 +3475,7 @@ TEST_P(AppListPresenterDelegateHomeLauncherTest, HomeButtonMinimizeAllWindows) {
   auto ordering =
       Shell::Get()->mru_window_tracker()->BuildWindowForCycleList(kActiveDesk);
 
-  // Press home button.
-  PressHomeButton();
+  GoHome();
   EXPECT_TRUE(state1->IsMinimized());
   EXPECT_TRUE(state2->IsMinimized());
   EXPECT_TRUE(state3->IsMinimized());
@@ -3476,8 +3487,8 @@ TEST_P(AppListPresenterDelegateHomeLauncherTest, HomeButtonMinimizeAllWindows) {
   EXPECT_TRUE(std::equal(ordering.begin(), ordering.end(), new_order.begin()));
 }
 
-// Tests that the home button will end split view mode.
-TEST_P(AppListPresenterDelegateHomeLauncherTest, HomeButtonEndSplitViewMode) {
+// Tests that going home will end split view mode.
+TEST_P(AppListPresenterDelegateHomeLauncherTest, GoingHomeEndsSplitViewMode) {
   // Show app list in tablet mode. Enter split view mode.
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
@@ -3485,14 +3496,13 @@ TEST_P(AppListPresenterDelegateHomeLauncherTest, HomeButtonEndSplitViewMode) {
   split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
 
-  // Press home button.
-  PressHomeButton();
+  GoHome();
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   GetAppListTestHelper()->CheckVisibility(true);
 }
 
-// Tests that the home button will end overview mode.
-TEST_P(AppListPresenterDelegateHomeLauncherTest, HomeButtonEndOverviewMode) {
+// Tests that going home will end overview mode.
+TEST_P(AppListPresenterDelegateHomeLauncherTest, GoingHomeEndOverviewMode) {
   // Show app list in tablet mode. Enter overview mode.
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
@@ -3501,16 +3511,15 @@ TEST_P(AppListPresenterDelegateHomeLauncherTest, HomeButtonEndOverviewMode) {
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
-  // Press home button.
-  PressHomeButton();
+  GoHome();
   EXPECT_FALSE(overview_controller->InOverviewSession());
   GetAppListTestHelper()->CheckVisibility(true);
 }
 
-// Tests that the home button will end overview and split view mode if both are
+// Tests that going home will end overview and split view mode if both are
 // active (e.g. one side of the split view contains overview).
 TEST_P(AppListPresenterDelegateHomeLauncherTest,
-       HomeButtonEndSplitViewModeWithOverview) {
+       GoingHomeEndsSplitViewModeWithOverview) {
   // Show app list in tablet mode. Enter split view mode.
   EnableTabletMode(true);
   GetAppListTestHelper()->CheckVisibility(true);
@@ -3526,8 +3535,7 @@ TEST_P(AppListPresenterDelegateHomeLauncherTest,
   EXPECT_TRUE(split_view_controller()->InSplitViewMode());
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
-  // Press home button.
-  PressHomeButton();
+  GoHome();
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
   EXPECT_FALSE(overview_controller->InOverviewSession());
 

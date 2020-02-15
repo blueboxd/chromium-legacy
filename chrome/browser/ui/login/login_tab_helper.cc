@@ -155,16 +155,17 @@ void LoginTabHelper::HandleCredentials(
   url_for_login_handler_ = GURL();
 
   if (credentials.has_value()) {
+    content::StoragePartition* storage_partition =
+        content::BrowserContext::GetStoragePartition(
+            web_contents()->GetBrowserContext(),
+            web_contents()->GetSiteInstance());
     // Pass a weak pointer for the callback, as the WebContents (and thus this
     // LoginTabHelper) could be destroyed while the network service is
     // processing the new cache entry.
-    content::BrowserContext::GetDefaultStoragePartition(
-        web_contents()->GetBrowserContext())
-        ->GetNetworkContext()
-        ->AddAuthCacheEntry(challenge_, network_isolation_key_,
-                            credentials.value(),
-                            base::BindOnce(&LoginTabHelper::Reload,
-                                           weak_ptr_factory_.GetWeakPtr()));
+    storage_partition->GetNetworkContext()->AddAuthCacheEntry(
+        challenge_, network_isolation_key_, credentials.value(),
+        base::BindOnce(&LoginTabHelper::Reload,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Once credentials have been provided, in the case of proxy auth where the

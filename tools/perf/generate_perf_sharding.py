@@ -365,6 +365,7 @@ def _DescheduleBenchmark(args):
   for b in builders:
     benchmarks_to_keep = set(
         benchmark.Name() for benchmark in b.benchmarks_to_run)
+    executables_to_keep = set(executable.name for executable in b.executables)
     with open(b.shards_map_file_path, 'r') as f:
       if not os.path.exists(b.shards_map_file_path):
         continue
@@ -376,6 +377,10 @@ def _DescheduleBenchmark(args):
         for benchmark in benchmarks.keys():
           if benchmark not in benchmarks_to_keep:
             del benchmarks[benchmark]
+        executables = shard_map.get('executables', dict())
+        for executable in executables.keys():
+          if executable not in executables_to_keep:
+            del executables[executable]
     os.remove(b.shards_map_file_path)
     _DumpJson(shards_map, b.shards_map_file_path)
   print('done.')

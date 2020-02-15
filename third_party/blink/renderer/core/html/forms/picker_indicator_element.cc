@@ -184,7 +184,8 @@ void PickerIndicatorElement::DidNotifySubtreeInsertionsToDocument() {
   setAttribute(html_names::kRoleAttr, "button");
   setAttribute(
       html_names::kAriaLabelAttr,
-      AtomicString(GetLocale().QueryString(IDS_AX_CALENDAR_SHOW_DATE_PICKER)));
+      AtomicString(
+          this->picker_indicator_owner_->AriaRoleForPickerIndicator()));
 }
 
 void PickerIndicatorElement::Trace(Visitor* visitor) {

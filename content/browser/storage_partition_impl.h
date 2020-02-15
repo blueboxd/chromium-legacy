@@ -18,6 +18,7 @@
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
+#include "components/services/storage/public/mojom/partition.mojom.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_sync/background_sync_context_impl.h"
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
@@ -282,6 +283,10 @@ class CONTENT_EXPORT StoragePartitionImpl
   // Can return nullptr while |this| is being destroyed.
   BrowserContext* browser_context() const;
 
+  // Returns the interface used to control the corresponding remote Partition in
+  // the Storage Service.
+  storage::mojom::Partition* GetStorageServicePartition();
+
   // Called by each renderer process for each StoragePartitionService interface
   // it binds in the renderer process. Returns the id of the created receiver.
   mojo::ReceiverId Bind(
@@ -435,6 +440,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   // querying its path abd BrowserContext is allowed.
   bool initialized_ = false;
 
+  mojo::Remote<storage::mojom::Partition> remote_partition_;
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;
   scoped_refptr<storage::QuotaManager> quota_manager_;
   scoped_refptr<ChromeAppCacheService> appcache_service_;

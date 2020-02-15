@@ -25,8 +25,8 @@ source_set("ntp_tile_views") {
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/colors",
     "//ios/chrome/common/favicon",
+    "//ios/chrome/common/ui/util",
     "//ios/chrome/common/ui/util:dynamic_type_util",
-    "//ios/chrome/common/ui_util",
     "//ios/third_party/material_components_ios",
   ]
 }

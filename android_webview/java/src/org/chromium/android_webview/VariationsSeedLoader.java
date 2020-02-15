@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
@@ -19,7 +20,9 @@ import androidx.annotation.VisibleForTesting;
 
 import org.chromium.android_webview.common.AwSwitches;
 import org.chromium.android_webview.common.services.IVariationsSeedServer;
+import org.chromium.android_webview.common.services.IVariationsSeedServerCallback;
 import org.chromium.android_webview.common.services.ServiceNames;
+import org.chromium.android_webview.common.variations.VariationsServiceMetricsHelper;
 import org.chromium.android_webview.common.variations.VariationsUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -90,12 +93,16 @@ public class VariationsSeedLoader {
     @VisibleForTesting
     public static final String APP_SEED_REQUEST_STATE_HISTOGRAM_NAME =
             "Variations.AppSeedRequestState";
+    @VisibleForTesting
+    public static final String DOWNLOAD_JOB_FETCH_TIME_HISTOGRAM_NAME =
+            "Variations.DownloadJobFetchTime";
     private static final String SEED_LOAD_BLOCKING_TIME_HISTOGRAM_NAME =
             "Variations.SeedLoadBlockingTime";
     // This metric is also written by VariationsSeedStore::LoadSeed and is used by other platforms.
     private static final String SEED_LOAD_RESULT_HISTOGRAM_NAME = "Variations.SeedLoadResult";
 
     private SeedLoadAndUpdateRunnable mRunnable;
+    private SeedServerCallback mSeedServerCallback = new SeedServerCallback();
 
     // UMA histogram values for the result of checking if the app needs a new variations seed.
     // Keep in sync with AppSeedRequestState enum in enums.xml.
@@ -286,7 +293,7 @@ public class VariationsSeedLoader {
             try {
                 if (mNewSeedFd.getFd() >= 0) {
                     IVariationsSeedServer.Stub.asInterface(service).getSeed(
-                            mNewSeedFd, mOldSeedDate);
+                            mNewSeedFd, mOldSeedDate, mSeedServerCallback);
                 }
             } catch (RemoteException e) {
                 Log.e(TAG, "Faild requesting seed", e);
@@ -298,6 +305,19 @@ public class VariationsSeedLoader {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {}
+    }
+
+    private class SeedServerCallback extends IVariationsSeedServerCallback.Stub {
+        @Override
+        public void reportVariationsServiceMetrics(Bundle metricsBundle) {
+            VariationsServiceMetricsHelper metrics =
+                    VariationsServiceMetricsHelper.fromBundle(metricsBundle);
+            if (metrics.hasSeedFetchTime()) {
+                TimesHistogramSample histogram =
+                        new TimesHistogramSample(DOWNLOAD_JOB_FETCH_TIME_HISTOGRAM_NAME);
+                histogram.record(metrics.getSeedFetchTime());
+            }
+        }
     }
 
     private SeedInfo getSeedBlockingAndLog() {

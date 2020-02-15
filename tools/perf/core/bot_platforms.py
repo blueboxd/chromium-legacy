@@ -171,6 +171,8 @@ class PerfSuite(object):
     if isinstance(configs, PerfSuite):
       configs = configs.Frozenset()
     for config in configs:
+      if isinstance(config, str):
+        config = _GetBenchmarkConfig(config)
       if config.name in self._configs:
         raise ValueError('Cannot have duplicate benchmarks/executables.')
       self._configs[config.name] = config
@@ -330,23 +332,14 @@ _WIN_10_LOW_END_BENCHMARK_CONFIGS = PerfSuite(
     ])
 _WIN_10_LOW_END_HP_CANDIDATE_BENCHMARK_CONFIGS = PerfSuite(
     [_GetBenchmarkConfig('v8.browsing_desktop')])
-_WIN_7_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
-    'rendering.desktop',
-    'jetstream2',
-    'blink_perf.display_locking',
-    'v8.runtime_stats.top_25',
+_WIN_7_BENCHMARK_CONFIGS = PerfSuite([
+    'loading.desktop',
+]).Abridge([
+    'loading.desktop',
 ])
-_WIN_7_EXECUTABLE_CONFIGS = frozenset([
-    _LOAD_LIBRARY_PERF_TESTS, _COMPONENTS_PERFTESTS, _MEDIA_PERFTESTS])
-_WIN_7_GPU_BENCHMARK_CONFIGS = PerfSuite(OFFICIAL_BENCHMARK_CONFIGS).Remove([
-    'jetstream2',
-    'blink_perf.display_locking',
-    'v8.runtime_stats.top_25',
-])
-_WIN_7_GPU_EXECUTABLE_CONFIGS = frozenset([
-    _LOAD_LIBRARY_PERF_TESTS, _ANGLE_PERFTESTS, _MEDIA_PERFTESTS,
-    _PASSTHROUGH_COMMAND_BUFFER_PERFTESTS,
-    _VALIDATING_COMMAND_BUFFER_PERFTESTS])
+_WIN_7_GPU_BENCHMARK_CONFIGS = PerfSuite(['rendering.desktop']).Abridge(
+    ['rendering.desktop'])
+_WIN_7_GPU_EXECUTABLE_CONFIGS = frozenset([_ANGLE_PERFTESTS])
 _ANDROID_GO_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('system_health.memory_mobile'),
     _GetBenchmarkConfig('system_health.common_mobile'),
@@ -359,21 +352,12 @@ _ANDROID_GO_WEBVIEW_BENCHMARK_CONFIGS = _ANDROID_GO_BENCHMARK_CONFIGS
 # Note that Nexus 5 bot capacity is very low, so we must severely limit
 # the benchmarks that we run on it and abridge large benchmarks in order
 # to run them on it. See crbug.com/1030840 for details.
-_ANDROID_NEXUS_5_BENCHMARK_CONFIGS = PerfSuite(
-    OFFICIAL_BENCHMARK_CONFIGS
-).Remove([
-    'blink_perf.display_locking',
-    'jetstream2',
-    'blink_perf.layout',
-    'v8.browsing_mobile-future',
-]).Abridge([
-    'rendering.mobile',
-    # TODO(crbug.com/1039851): Abridge common_mobile after we make
-    # a better abridged story set for it:
-    #'system_health.common_mobile',
-    'system_health.memory_mobile',
-    'v8.browsing_mobile'
-])
+_ANDROID_NEXUS_5_BENCHMARK_CONFIGS = PerfSuite([
+    'loading.mobile',
+    'startup.mobile',
+    'system_health.common_mobile',
+    'system_health.webview_startup',
+]).Abridge(['loading.mobile', 'startup.mobile', 'system_health.common_mobile'])
 _ANDROID_NEXUS_5_EXECUTABLE_CONFIGS = frozenset([
     _TRACING_PERFTESTS, _COMPONENTS_PERFTESTS, _GPU_PERFTESTS])
 _ANDROID_NEXUS_5X_WEBVIEW_BENCHMARK_CONFIGS = PerfSuite(
@@ -454,9 +438,7 @@ WIN_10 = PerfPlatform(
     'Windows Intel HD 630 towers, Core i7-7700 3.6 GHz, 16GB RAM,'
     ' Intel Kaby Lake HD Graphics 630', _WIN_10_BENCHMARK_CONFIGS,
     26, 'win', executables=_WIN_10_EXECUTABLE_CONFIGS)
-WIN_7 = PerfPlatform(
-    'Win 7 Perf', 'N/A', _WIN_7_BENCHMARK_CONFIGS,
-    4, 'win', executables=_WIN_7_EXECUTABLE_CONFIGS)
+WIN_7 = PerfPlatform('Win 7 Perf', 'N/A', _WIN_7_BENCHMARK_CONFIGS, 4, 'win')
 WIN_7_GPU = PerfPlatform(
     'Win 7 Nvidia GPU Perf', 'N/A', _WIN_7_GPU_BENCHMARK_CONFIGS,
     4, 'win', executables=_WIN_7_GPU_EXECUTABLE_CONFIGS)

@@ -21,11 +21,23 @@ extern const char kBreadcrumbDidFinishNavigation[];
 // Name of PageLoaded event (see WebStateObserver::PageLoaded).
 extern const char kBreadcrumbPageLoaded[];
 
+// Name of DidChangeVisibleSecurityState event
+// (see WebStateObserver::DidChangeVisibleSecurityState).
+extern const char kBreadcrumbDidChangeVisibleSecurityState[];
+
 // Constants below represent metadata for breadcrumb events.
+
+// Appended to |kBreadcrumbDidChangeVisibleSecurityState| event if page has bad
+// SSL cert.
+extern const char kBreadcrumbAuthenticationBroken[];
 
 // Appended to |kBreadcrumbDidFinishNavigation| event if
 // navigation is a download.
 extern const char kBreadcrumbDownload[];
+
+// Appended to |kBreadcrumbDidChangeVisibleSecurityState| event if page has
+// passive mixed content (f.e. an http served image on https served page).
+extern const char kBreadcrumbMixedContent[];
 
 // Appended to |kBreadcrumbPageLoaded| event if page load has
 // failed.

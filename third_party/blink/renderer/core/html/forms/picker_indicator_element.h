@@ -37,8 +37,6 @@
 
 namespace blink {
 
-class HTMLInputElement;
-
 class PickerIndicatorElement final : public HTMLDivElement,
                                      public DateTimeChooserClient {
   USING_GARBAGE_COLLECTED_MIXIN(PickerIndicatorElement);
@@ -56,6 +54,7 @@ class PickerIndicatorElement final : public HTMLDivElement,
     virtual Element& PickerOwnerElement() const = 0;
     virtual bool SetupDateTimeChooserParameters(DateTimeChooserParameters&) = 0;
     virtual void DidEndChooser() = 0;
+    virtual String AriaRoleForPickerIndicator() const = 0;
   };
 
   PickerIndicatorElement(Document&, PickerIndicatorOwner&);
@@ -82,8 +81,6 @@ class PickerIndicatorElement final : public HTMLDivElement,
   bool IsPickerIndicatorElement() const override;
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void DidNotifySubtreeInsertionsToDocument() override;
-
-  HTMLInputElement* HostInput();
 
   Member<PickerIndicatorOwner> picker_indicator_owner_;
   Member<DateTimeChooser> chooser_;

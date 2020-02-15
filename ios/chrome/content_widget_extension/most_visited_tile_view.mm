@@ -7,7 +7,7 @@
 #import <NotificationCenter/NotificationCenter.h>
 
 #import "ios/chrome/common/favicon/favicon_view.h"
-#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

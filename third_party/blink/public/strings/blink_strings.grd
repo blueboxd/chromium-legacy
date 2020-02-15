@@ -288,6 +288,19 @@ below:
       <message name="IDS_AX_CALENDAR_SHOW_DATE_PICKER" desc="Accessible description of a button to show a calendar from a date input field.">
         Show date picker
       </message>
+      <message name="IDS_AX_CALENDAR_SHOW_DATE_TIME_LOCAL_PICKER" desc="Accessible description of a button to show a calendar and time chooser from a datetime-local input field.">
+        Show local date and time picker
+      </message>
+      <message name="IDS_AX_CALENDAR_SHOW_MONTH_PICKER" desc="Accessible description of a button to show a calendar from a month input field.">
+        Show month picker
+      </message>
+      <message name="IDS_AX_CALENDAR_SHOW_TIME_PICKER" desc="Accessible description of a button to show a time chooser from a time input field.">
+        Show time picker
+      </message>
+      <message name="IDS_AX_CALENDAR_SHOW_WEEK_PICKER" desc="Accessible description of a button to show a calendar from a week input field.">
+        Show week picker
+      </message>
+
       <message name="IDS_AX_CALENDAR_SHOW_MONTH_SELECTOR" desc="Accessible description of a button to show month selection panel in a calendar picker.">
         Show month selection panel
       </message>

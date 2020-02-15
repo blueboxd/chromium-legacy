@@ -51,7 +51,7 @@ source_set("web") {
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui/util",
     "//ios/net",
     "//ios/web",
     "//ios/web/common",
@@ -73,7 +73,7 @@ source_set("page_placeholder") {
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui/util",
     "//ios/net",
     "//ios/web",
   ]

@@ -47,7 +47,6 @@ import devil_chromium
 from devil import devil_env
 from devil.android import apk_helper
 from devil.android import device_utils
-from devil.android import flag_changer
 from devil.android.tools import system_app
 from devil.android.tools import webview_app
 
@@ -65,16 +64,8 @@ WEBLAYER_SUPPORT_PKG = 'org.chromium.weblayer.support'
 HOST_RESOLVER_ARGS = ['--host-resolver-rules=MAP nonexistent.*.test ~NOTFOUND,'
                       ' MAP *.test 127.0.0.1']
 
-# WebLayer has popup protection enabled by default that prevents
-# chromedriver from opening test windows.
-DISABLE_POPUP_ARGS = ['--disable-popup-blocking']
-
-# Browsers on debug and eng devices read command-line-flags from special files
-# during startup.
-FLAGS_FILE_MAP = {'android_weblayer': 'weblayer-command-line',
-                  'android_webview': 'webview-command-line',
-                  'chrome_android': 'chrome-command-line'}
-
+# List of supported products.
+PRODUCTS = ['android_weblayer', 'android_webview', 'chrome_android']
 
 class PassThroughArgs(argparse.Action):
   pass_through_args = []
@@ -162,6 +153,8 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     return rest_args
 
   def add_extra_arguments(self, parser):
+    # TODO: |pass_through_args| are broke and need to be supplied by way of
+    # --binary-arg".
     class BinaryPassThroughArgs(PassThroughArgs):
       pass_through_args = self.pass_through_binary_args
     class WPTPassThroughArgs(PassThroughArgs):
@@ -178,7 +171,7 @@ class WPTAndroidAdapter(common.BaseIsolatedScriptArgsAdapter):
     parser.add_argument('--test-type', default='testharness',
                         help='Specify to experiment with other test types.'
                         ' Currently only the default is expected to work.')
-    parser.add_argument('--product', choices = FLAGS_FILE_MAP.keys(),
+    parser.add_argument('--product', choices=PRODUCTS,
                         required=True)
     parser.add_argument('--apk', help='Apk to install during test.  Defaults to'
                         ' the on-device WebView provider or Chrome.')
@@ -348,25 +341,17 @@ def main():
   # sharding support via swarming infra.
   device = device_utils.DeviceUtils.HealthyDevices()[0]
 
-  flags_file = FLAGS_FILE_MAP[adapter.options.product]
-  all_flags = HOST_RESOLVER_ARGS + adapter.pass_through_binary_args
-  if adapter.options.product == 'android_weblayer':
-    all_flags += DISABLE_POPUP_ARGS
-  logger.info('Setting flags in ' + flags_file + ' to: ' + str(all_flags))
-  flags = flag_changer.CustomCommandLineFlags(device, flags_file, all_flags)
-
   # WPT setup for chrome and webview requires that PATH contains adb.
   platform_tools_path = os.path.dirname(devil_env.config.FetchPath('adb'))
   os.environ['PATH'] = ':'.join([platform_tools_path] +
                                 os.environ['PATH'].split(':'))
 
-  with flags:
-    if adapter.options.product == 'android_weblayer':
-      run_android_weblayer(device, adapter)
-    elif adapter.options.product == 'android_webview':
-      run_android_webview(device, adapter)
-    elif adapter.options.product == 'chrome_android':
-      run_chrome_android(device, adapter)
+  if adapter.options.product == 'android_weblayer':
+    run_android_weblayer(device, adapter)
+  elif adapter.options.product == 'android_webview':
+    run_android_webview(device, adapter)
+  elif adapter.options.product == 'chrome_android':
+    run_chrome_android(device, adapter)
 
 
 if __name__ == '__main__':

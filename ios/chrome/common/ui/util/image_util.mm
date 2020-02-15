@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/common/ui_util/image_util.h"
+#import "ios/chrome/common/ui/util/image_util.h"
 
 #include "ui/gfx/image/resize_image_dimensions.h"
 

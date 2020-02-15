@@ -20768,6 +20768,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="450" label="BLUETOOTH_PRIVATE_ON_DEVICE_ADDRESS_CHANGED"/>
   <int value="451"
       label="PASSWORDS_PRIVATE_ON_ACCOUNT_STORAGE_OPT_IN_STATE_CHANGED"/>
+  <int value="452"
+      label="ACCESSIBILITY_PRIVATE_ON_CUSTOM_SPOKEN_FEEDBACK_TOGGLED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">

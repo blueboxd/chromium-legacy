@@ -88,14 +88,12 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
                                                NetworkChangeNotifierAutoDetect.Observer,
                                                DownloadServiceDelegate, ProfileManager.Observer {
     private static final String TAG = "DownloadService";
-    private static final String DOWNLOAD_DIRECTORY = "Download";
     private static final String DOWNLOAD_RETRY_COUNT_FILE_NAME = "DownloadRetryCount";
     private static final String DOWNLOAD_MANUAL_RETRY_SUFFIX = ".Manual";
     private static final String DOWNLOAD_TOTAL_RETRY_SUFFIX = ".Total";
     private static final long UPDATE_DELAY_MILLIS = 1000;
     // Wait 10 seconds to resume all downloads, so that we won't impact tab loading.
     private static final long RESUME_DELAY_MILLIS = 10000;
-    private static final int UNKNOWN_DOWNLOAD_STATUS = -1;
     public static final long UNKNOWN_BYTES_RECEIVED = -1;
 
     private static final Set<String> sFirstSeenDownloadIds = new HashSet<String>();
@@ -163,7 +161,7 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
      * Interface to intercept download request to Android DownloadManager. This is implemented by
      * tests so that we don't need to actually enqueue a download into the Android DownloadManager.
      */
-    static interface DownloadManagerRequestInterceptor {
+    interface DownloadManagerRequestInterceptor {
         void interceptDownloadRequest(DownloadItem item, boolean notifyComplete);
     }
 
@@ -781,15 +779,6 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
         entry.lastBytesReceived = bytesReceived;
         return true;
     }
-    /**
-     * Sets the download handler for OMA downloads, for testing purpose.
-     *
-     * @param omaDownloadHandler Download handler for OMA contents.
-     */
-    @VisibleForTesting
-    protected void setOMADownloadHandler(OMADownloadHandler omaDownloadHandler) {
-        mOMADownloadHandler = omaDownloadHandler;
-    }
 
     /** See {@link DownloadManagerBridge.enqueueNewDownload}. */
     public void enqueueNewDownload(final DownloadItem item, boolean notifyCompleted) {
@@ -918,23 +907,6 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
                                 : ExternalNavigationDelegateImpl.resolveIntent(intent, true);
     }
 
-    /**
-     * Return whether a download item can be resolved to any activity.
-     * @param filePath The file path for the download.
-     * @param mimeType The mime type of the download
-     * @param systemDownloadId They download ID generated from the android DownloadManager.
-     * @return True, if the download can be handled by an activity, false otherwise
-     */
-    public static boolean canResolveDownload(
-            String filePath, String mimeType, long systemDownloadId) {
-        assert !ThreadUtils.runningOnUiThread();
-        if (MimeUtils.isOMADownloadDescription(mimeType)) return true;
-
-        Intent intent = getLaunchIntentForDownload(filePath, systemDownloadId,
-                DownloadManagerService.isSupportedMimeType(mimeType), null, null, mimeType);
-        return intent != null && ExternalNavigationDelegateImpl.resolveIntent(intent, true);
-    }
-
     /** See {@link #openDownloadedContent(Context, String, boolean, boolean, String, long)}. */
     protected void openDownloadedContent(final DownloadInfo downloadInfo, final long downloadId,
             @DownloadOpenSource int source) {
@@ -1013,15 +985,6 @@ public class DownloadManagerService implements DownloadController.DownloadNotifi
             Toast.makeText(ContextUtils.getApplicationContext(), failureMessage, Toast.LENGTH_SHORT)
                     .show();
         }
-    }
-
-    /**
-     * Set the DownloadSnackbarController for testing purpose.
-     */
-    @VisibleForTesting
-    protected void setDownloadSnackbarController(
-            DownloadSnackbarController downloadSnackbarController) {
-        mDownloadSnackbarController = downloadSnackbarController;
     }
 
     /**

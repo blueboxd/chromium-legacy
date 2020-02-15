@@ -58,6 +58,8 @@ class TrialComparisonCertVerifierController
       bool require_rev_checking_local_anchors,
       bool enable_sha1_local_anchors,
       bool disable_symantec_enforcement,
+      const std::vector<uint8_t>& stapled_ocsp,
+      const std::vector<uint8_t>& sct_list,
       const net::CertVerifyResult& primary_result,
       const net::CertVerifyResult& trial_result,
       network::mojom::CertVerifierDebugInfoPtr debug_info) override;

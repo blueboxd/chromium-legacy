@@ -122,6 +122,21 @@ const SiteSettingsBehaviorImpl = {
   },
 
   /**
+   * Returns a user-friendly name for the origin.
+   * @param {string} origin
+   * @return {string} The user-friendly name.
+   * @protected
+   */
+  originRepresentation(origin) {
+    try {
+      const url = this.toUrl(origin);
+      return url ? (url.host || url.origin) : '';
+    } catch (error) {
+      return '';
+    }
+  },
+
+  /**
    * Convert an exception (received from the C++ handler) to a full
    * SiteException.
    * @param {!RawSiteException} exception The raw site exception from C++.

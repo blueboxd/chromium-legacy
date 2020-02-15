@@ -94,6 +94,18 @@ ChromeVoxBrailleDisplayManagerUnitTest = class extends ChromeVoxUnitTestBase {
   assertGroupsValid(groups, expected) {
     assertEquals(JSON.stringify(groups), JSON.stringify(expected));
   }
+
+  /**
+   * Simulates an onDisplayStateChanged event.
+   * @param {{available: boolean, textRowCount: (number|undefined),
+   *     textColumnCount: (number|undefined)}}
+   */
+  simulateOnDisplayStateChanged(event) {
+    const listener =
+        chrome.brailleDisplayPrivate.onDisplayStateChanged.getListener();
+    assertNotEquals(null, listener);
+    listener(event);
+  }
 };
 
 /** @override */
@@ -374,4 +386,19 @@ TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'RandB_Random', function() {
   const groups = BrailleCaptionsBackground.groupBrailleAndText(
       translated, text, mapping, offsets);
   this.assertGroupsValid(groups, expected);
+});
+
+/**
+ * Tests that braille-related preferences are updated upon connecting and
+ * disconnecting a braille display.
+ */
+TEST_F('ChromeVoxBrailleDisplayManagerUnitTest', 'UpdatePrefs', function() {
+  this.addFakeApi();
+  this.displayState = {available: false};
+  const manager = new BrailleDisplayManager(this.translatorManager);
+  assertEquals('false', localStorage['menuBrailleCommands']);
+  this.simulateOnDisplayStateChanged({available: true});
+  assertEquals('true', localStorage['menuBrailleCommands']);
+  this.simulateOnDisplayStateChanged({available: false});
+  assertEquals('false', localStorage['menuBrailleCommands']);
 });

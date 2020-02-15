@@ -16,7 +16,7 @@ source_set("alert_view") {
     "//ios/chrome/browser/ui/presenters",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common/colors",
-    "//ios/chrome/common/ui_util",
+    "//ios/chrome/common/ui/util",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]

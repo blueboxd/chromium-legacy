@@ -129,19 +129,14 @@ void OverlayPresentationContextImpl::HideOverlayUI(OverlayPresenter* presenter,
                                                    OverlayRequest* request) {
   DCHECK_EQ(presenter_, presenter);
   DCHECK_EQ(request_, request);
+  DCHECK(CanShowUIForRequest(request));
 
   OverlayRequestUIState* state = GetRequestUIState(request_);
   DCHECK(state->has_callback());
 
-  if (coordinator_) {
-    // If the request's UI is presented by the coordinator, dismiss it.  The
-    // presented request will be reset when the dismissal animation finishes.
-    DismissPresentedUI(OverlayDismissalReason::kHiding);
-  } else {
-    // Simulate dismissal if there is no container coordinator.
-    state->set_dismissal_reason(OverlayDismissalReason::kHiding);
-    OverlayUIWasDismissed();
-  }
+  // Hide the overlay UI.  The presented request will be reset when the
+  // dismissal animation finishes.
+  DismissPresentedUI(OverlayDismissalReason::kHiding);
 }
 
 void OverlayPresentationContextImpl::CancelOverlayUI(
@@ -163,15 +158,7 @@ void OverlayPresentationContextImpl::CancelOverlayUI(
     return;
   }
 
-  // If the current request is being cancelled (e.g. for WebState closures) when
-  // there is no coordinator, simulate a dismissal.
-  if (!coordinator_) {
-    DCHECK_EQ(request_, request);
-    state->set_dismissal_reason(OverlayDismissalReason::kCancellation);
-    state->OverlayUIWasDismissed();
-    return;
-  }
-
+  DCHECK(CanShowUIForRequest(request));
   DismissPresentedUI(OverlayDismissalReason::kCancellation);
 }
 
@@ -199,10 +186,11 @@ void OverlayPresentationContextImpl::SetRequest(OverlayRequest* request) {
 
   request_ = request;
 
-  // The UI state should be created before resetting the presented request.
-  DCHECK(!request_ || GetRequestUIState(request_));
-
-  ShowUIForPresentedRequest();
+  if (request_) {
+    // The UI state should be created before resetting the presented request.
+    DCHECK(GetRequestUIState(request_));
+    ShowUIForPresentedRequest();
+  }
 }
 
 OverlayRequestUIState* OverlayPresentationContextImpl::GetRequestUIState(
@@ -247,11 +235,11 @@ void OverlayPresentationContextImpl::UpdateForCoordinator(
 #pragma mark Presentation and Dismissal helpers
 
 void OverlayPresentationContextImpl::ShowUIForPresentedRequest() {
-  OverlayRequestUIState* state = GetRequestUIState(request_);
-  if (!state || !coordinator_)
-    return;
+  DCHECK(request_);
+  DCHECK(CanShowUIForRequest(request_));
 
   // Create the coordinator if necessary.
+  OverlayRequestUIState* state = GetRequestUIState(request_);
   UIViewController* container_view_controller = coordinator_.viewController;
   OverlayRequestCoordinator* overlay_coordinator = state->coordinator();
   if (!overlay_coordinator ||
@@ -280,7 +268,6 @@ void OverlayPresentationContextImpl::DismissPresentedUI(
     OverlayDismissalReason reason) {
   OverlayRequestUIState* state = GetRequestUIState(request_);
   DCHECK(state);
-  DCHECK(coordinator_);
   DCHECK(state->coordinator());
 
   state->set_dismissal_reason(reason);

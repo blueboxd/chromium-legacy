@@ -644,12 +644,6 @@ GTEST_BENCHMARKS = {
         'Internals>SequenceManager',
         ('https://chromium.googlesource.com/chromium/src/+/HEAD/base/' +
          'README.md#performance-testing')),
-    'validating_command_buffer_perftests': BenchmarkMetadata(
-        'piman@chromium.org, chrome-gpu-perf-owners@chromium.org',
-        'Internals>GPU'),
-    'passthrough_command_buffer_perftests': BenchmarkMetadata(
-        'net-dev@chromium.org',
-        'Internals>Network'),
     'net_perftests': BenchmarkMetadata(
         'net-dev@chromium.org',
         'Internals>Network'),

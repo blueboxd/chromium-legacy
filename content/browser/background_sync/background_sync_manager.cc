@@ -744,6 +744,8 @@ void BackgroundSyncManager::InitDidGetControllerParameters(
     return;
   }
 
+  network_observer_->Init();
+
   GetDataFromBackend(
       kBackgroundSyncUserDataKey,
       base::BindOnce(&BackgroundSyncManager::InitDidGetDataFromBackend,

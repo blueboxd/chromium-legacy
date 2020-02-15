@@ -82,14 +82,10 @@ public class VrBrowserNavigationTest {
     private WebXrVrTestFramework mWebXrVrTestFramework;
     private VrBrowserTestFramework mVrBrowserTestFramework;
 
-    private static final String TEST_PAGE_2D_URL =
-            VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page");
-    private static final String TEST_PAGE_2D_2_URL =
-            VrBrowserTestFramework.getFileUrlForHtmlTestFile("test_navigation_2d_page2");
-    private static final String TEST_PAGE_WEBXR_URL =
-            WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_navigation_webxr_page");
-    private static final String TEST_PAGE_WEBXR_2_URL =
-            WebXrVrTestFramework.getFileUrlForHtmlTestFile("test_navigation_webxr_page2");
+    private static final String TEST_PAGE_2D_FILE = "test_navigation_2d_page";
+    private static final String TEST_PAGE_2D_2_FILE = "test_navigation_2d_page2";
+    private static final String TEST_PAGE_WEBXR_FILE = "test_navigation_webxr_page";
+    private static final String TEST_PAGE_WEBXR_2_FILE = "test_navigation_webxr_page2";
 
     @IntDef({Page.PAGE_2D, Page.PAGE_2D_2, Page.PAGE_WEBXR})
     @Retention(RetentionPolicy.SOURCE)
@@ -97,6 +93,7 @@ public class VrBrowserNavigationTest {
         int PAGE_2D = 0;
         int PAGE_2D_2 = 1;
         int PAGE_WEBXR = 2;
+        int PAGE_WEBXR_2 = 3;
     }
 
     @IntDef({PresentationMode.NON_PRESENTING, PresentationMode.PRESENTING})
@@ -120,17 +117,23 @@ public class VrBrowserNavigationTest {
         VrBrowserTransitionUtils.forceEnterVrBrowserOrFail(POLL_TIMEOUT_LONG_MS);
     }
 
-    private String getUrl(@Page int page) {
+    private String getFile(@Page int page) {
         switch (page) {
             case Page.PAGE_2D:
-                return TEST_PAGE_2D_URL;
+                return TEST_PAGE_2D_FILE;
             case Page.PAGE_2D_2:
-                return TEST_PAGE_2D_2_URL;
+                return TEST_PAGE_2D_2_FILE;
             case Page.PAGE_WEBXR:
-                return TEST_PAGE_WEBXR_URL;
+                return TEST_PAGE_WEBXR_FILE;
+            case Page.PAGE_WEBXR_2:
+                return TEST_PAGE_WEBXR_2_FILE;
             default:
                 throw new UnsupportedOperationException("Don't know page type " + page);
         }
+    }
+
+    private String getUrl(@Page int page) {
+        return mVrBrowserTestFramework.getUrlForFile(getFile(page));
     }
 
     /**
@@ -173,8 +176,8 @@ public class VrBrowserNavigationTest {
     @Test
     @MediumTest
     public void test2dTo2d() throws TimeoutException {
-        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+        mVrBrowserTestFramework.loadFileAndAwaitInitialization(
+                TEST_PAGE_2D_FILE, PAGE_LOAD_TIMEOUT_S);
 
         navigateTo(Page.PAGE_2D_2);
 
@@ -216,7 +219,7 @@ public class VrBrowserNavigationTest {
 
     private void impl2dToWeb(@Page int page, WebXrVrTestFramework framework)
             throws TimeoutException {
-        framework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+        framework.loadFileAndAwaitInitialization(TEST_PAGE_2D_FILE, PAGE_LOAD_TIMEOUT_S);
 
         navigateTo(page);
 
@@ -237,7 +240,7 @@ public class VrBrowserNavigationTest {
 
     private void impl2dFullscreenToWeb(@Page int page, WebXrVrTestFramework framework)
             throws TimeoutException {
-        framework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+        framework.loadFileAndAwaitInitialization(TEST_PAGE_2D_FILE, PAGE_LOAD_TIMEOUT_S);
         enterFullscreenOrFail(framework.getCurrentWebContents());
 
         navigateTo(page);
@@ -258,7 +261,7 @@ public class VrBrowserNavigationTest {
 
     private void webTo2dImpl(@Page int page, WebXrVrTestFramework framework)
             throws TimeoutException {
-        framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
+        framework.loadFileAndAwaitInitialization(getFile(page), PAGE_LOAD_TIMEOUT_S);
 
         navigateTo(Page.PAGE_2D);
 
@@ -278,7 +281,7 @@ public class VrBrowserNavigationTest {
 
     private void webToWebImpl(@Page int page, WebXrVrTestFramework framework)
             throws TimeoutException {
-        framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
+        framework.loadFileAndAwaitInitialization(getFile(page), PAGE_LOAD_TIMEOUT_S);
 
         navigateTo(page);
 
@@ -299,7 +302,7 @@ public class VrBrowserNavigationTest {
 
     private void webPresentingTo2dImpl(@Page int page, WebXrVrTestFramework framework)
             throws TimeoutException {
-        framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
+        framework.loadFileAndAwaitInitialization(getFile(page), PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
 
         navigateTo(Page.PAGE_2D);
@@ -321,7 +324,7 @@ public class VrBrowserNavigationTest {
 
     private void webPresentingToWebImpl(@Page int page, WebXrVrTestFramework framework)
             throws TimeoutException {
-        framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
+        framework.loadFileAndAwaitInitialization(getFile(page), PAGE_LOAD_TIMEOUT_S);
         framework.enterSessionWithUserGestureOrFail();
 
         navigateTo(page);
@@ -343,7 +346,7 @@ public class VrBrowserNavigationTest {
 
     private void webFullscreenTo2dImpl(@Page int page, WebXrVrTestFramework framework)
             throws TimeoutException {
-        framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
+        framework.loadFileAndAwaitInitialization(getFile(page), PAGE_LOAD_TIMEOUT_S);
         enterFullscreenOrFail(framework.getCurrentWebContents());
 
         navigateTo(Page.PAGE_2D);
@@ -365,7 +368,7 @@ public class VrBrowserNavigationTest {
 
     private void webFullscreenToWebImpl(@Page int page, WebXrVrTestFramework framework)
             throws TimeoutException {
-        framework.loadUrlAndAwaitInitialization(getUrl(page), PAGE_LOAD_TIMEOUT_S);
+        framework.loadFileAndAwaitInitialization(getFile(page), PAGE_LOAD_TIMEOUT_S);
         enterFullscreenOrFail(framework.getCurrentWebContents());
 
         navigateTo(page);
@@ -514,12 +517,12 @@ public class VrBrowserNavigationTest {
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testNativeNavigationAndInteraction() throws IllegalArgumentException {
         for (String url : NATIVE_URLS_OF_INTEREST) {
-            mTestRule.loadUrl(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+            mTestRule.loadUrl(getUrl(Page.PAGE_2D), PAGE_LOAD_TIMEOUT_S);
             mTestRule.loadUrl(url, PAGE_LOAD_TIMEOUT_S);
             ClickUtils.mouseSingleClickView(InstrumentationRegistry.getInstrumentation(),
                     mTestRule.getActivity().getWindow().getDecorView().getRootView());
         }
-        mTestRule.loadUrl(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+        mTestRule.loadUrl(getUrl(Page.PAGE_2D), PAGE_LOAD_TIMEOUT_S);
     }
 
     /**
@@ -529,8 +532,8 @@ public class VrBrowserNavigationTest {
     @MediumTest
     public void testRendererKilledInFullscreenStaysInVr()
             throws IllegalArgumentException, TimeoutException {
-        mVrBrowserTestFramework.loadUrlAndAwaitInitialization(
-                TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+        mVrBrowserTestFramework.loadFileAndAwaitInitialization(
+                TEST_PAGE_2D_FILE, PAGE_LOAD_TIMEOUT_S);
         enterFullscreenOrFail(mVrBrowserTestFramework.getCurrentWebContents());
 
         final Tab tab = mTestRule.getActivity().getActivityTab();
@@ -542,7 +545,7 @@ public class VrBrowserNavigationTest {
         mVrBrowserTestFramework.simulateRendererKilled();
 
         TestThreadUtils.runOnUiThreadBlocking(() -> tab.reload());
-        ChromeTabUtils.waitForTabPageLoaded(tab, TEST_PAGE_2D_URL);
+        ChromeTabUtils.waitForTabPageLoaded(tab, getUrl(Page.PAGE_2D));
         ChromeTabUtils.waitForInteractable(tab);
 
         assertState(mVrBrowserTestFramework.getCurrentWebContents(), Page.PAGE_2D,
@@ -557,14 +560,14 @@ public class VrBrowserNavigationTest {
     @MediumTest
     public void testIncognitoMaintainsSeparateHistoryStack() throws InterruptedException {
         // Test non-Incognito's forward/back.
-        mTestRule.loadUrl(TEST_PAGE_2D_URL);
-        mTestRule.loadUrl(TEST_PAGE_2D_2_URL);
+        mTestRule.loadUrl(getUrl(Page.PAGE_2D));
+        mTestRule.loadUrl(getUrl(Page.PAGE_2D_2));
         VrBrowserTransitionUtils.navigateBack();
         ChromeTabUtils.waitForTabPageLoaded(
-                mTestRule.getActivity().getActivityTab(), TEST_PAGE_2D_URL);
+                mTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_2D));
         VrBrowserTransitionUtils.navigateForward();
         ChromeTabUtils.waitForTabPageLoaded(
-                mTestRule.getActivity().getActivityTab(), TEST_PAGE_2D_2_URL);
+                mTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_2D_2));
 
         // Open up an Incognito tab.
         NativeUiUtils.clickElementAndWaitForUiQuiescence(
@@ -576,18 +579,18 @@ public class VrBrowserNavigationTest {
         // Test Incognito's forward/back.
         // TODO(https://crbug.com/868506): Remove the waitForTabPageLoaded calls after the loadUrl
         // calls once the issue with Incognito loadUrl reporting page load too quickly is fixed.
-        mTestRule.loadUrl(TEST_PAGE_WEBXR_2_URL);
+        mTestRule.loadUrl(getUrl(Page.PAGE_WEBXR_2));
         ChromeTabUtils.waitForTabPageLoaded(
-                mTestRule.getActivity().getActivityTab(), TEST_PAGE_WEBXR_2_URL);
-        mTestRule.loadUrl(TEST_PAGE_WEBXR_URL);
+                mTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_WEBXR_2));
+        mTestRule.loadUrl(getUrl(Page.PAGE_WEBXR));
         ChromeTabUtils.waitForTabPageLoaded(
-                mTestRule.getActivity().getActivityTab(), TEST_PAGE_WEBXR_URL);
+                mTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_WEBXR));
         VrBrowserTransitionUtils.navigateBack();
         ChromeTabUtils.waitForTabPageLoaded(
-                mTestRule.getActivity().getActivityTab(), TEST_PAGE_WEBXR_2_URL);
+                mTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_WEBXR_2));
         VrBrowserTransitionUtils.navigateForward();
         ChromeTabUtils.waitForTabPageLoaded(
-                mTestRule.getActivity().getActivityTab(), TEST_PAGE_WEBXR_URL);
+                mTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_WEBXR));
 
         // Exit Incognito.
         NativeUiUtils.clickElementAndWaitForUiQuiescence(
@@ -595,16 +598,16 @@ public class VrBrowserNavigationTest {
         NativeUiUtils.clickElementAndWaitForUiQuiescence(
                 UserFriendlyElementName.CLOSE_INCOGNITO_TABS, new PointF());
         CriteriaHelper.pollUiThread(() -> {
-            return mTestRule.getWebContents().getVisibleUrlString().equals(TEST_PAGE_2D_2_URL);
+            return mTestRule.getWebContents().getVisibleUrlString().equals(getUrl(Page.PAGE_2D_2));
         }, "Did not successfully exit Incognito mode");
 
         // Ensure that non-Incognito's forward/back was unaffected by Incognito.
         VrBrowserTransitionUtils.navigateBack();
         ChromeTabUtils.waitForTabPageLoaded(
-                mTestRule.getActivity().getActivityTab(), TEST_PAGE_2D_URL);
+                mTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_2D));
         VrBrowserTransitionUtils.navigateForward();
         ChromeTabUtils.waitForTabPageLoaded(
-                mTestRule.getActivity().getActivityTab(), TEST_PAGE_2D_2_URL);
+                mTestRule.getActivity().getActivityTab(), getUrl(Page.PAGE_2D_2));
     }
 
     /**

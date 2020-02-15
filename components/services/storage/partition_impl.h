@@ -18,6 +18,8 @@
 
 namespace storage {
 
+class LocalStorageImpl;
+class SessionStorageImpl;
 class StorageServiceImpl;
 
 // A PartitionImpl instance exclusively owns an isolated storage partition
@@ -45,6 +47,10 @@ class PartitionImpl : public mojom::Partition {
   void BindOriginContext(
       const url::Origin& origin,
       mojo::PendingReceiver<mojom::OriginContext> receiver) override;
+  void BindSessionStorageControl(
+      mojo::PendingReceiver<mojom::SessionStorageControl> receiver) override;
+  void BindLocalStorageControl(
+      mojo::PendingReceiver<mojom::LocalStorageControl> receiver) override;
 
  private:
   friend class OriginContextImpl;
@@ -56,6 +62,10 @@ class PartitionImpl : public mojom::Partition {
   const base::Optional<base::FilePath> path_;
   mojo::ReceiverSet<mojom::Partition> receivers_;
   std::map<url::Origin, std::unique_ptr<OriginContextImpl>> origin_contexts_;
+
+  // These objects own themselves.
+  SessionStorageImpl* session_storage_;
+  LocalStorageImpl* local_storage_;
 
   DISALLOW_COPY_AND_ASSIGN(PartitionImpl);
 };

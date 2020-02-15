@@ -4,6 +4,7 @@
 
 package org.chromium.content_public.browser.test.util;
 
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
@@ -18,12 +19,14 @@ public class TestWebContentsObserver extends WebContentsObserver {
     private final OnPageStartedHelper mOnPageStartedHelper;
     private final OnPageFinishedHelper mOnPageFinishedHelper;
     private final OnReceivedErrorHelper mOnReceivedErrorHelper;
+    private final CallbackHelper mOnFirstVisuallyNonEmptyPaintHelper;
 
     public TestWebContentsObserver(WebContents webContents) {
         super(webContents);
         mOnPageStartedHelper = new OnPageStartedHelper();
         mOnPageFinishedHelper = new OnPageFinishedHelper();
         mOnReceivedErrorHelper = new OnReceivedErrorHelper();
+        mOnFirstVisuallyNonEmptyPaintHelper = new CallbackHelper();
     }
 
     public OnPageStartedHelper getOnPageStartedHelper() {
@@ -36,6 +39,10 @@ public class TestWebContentsObserver extends WebContentsObserver {
 
     public OnReceivedErrorHelper getOnReceivedErrorHelper() {
         return mOnReceivedErrorHelper;
+    }
+
+    public CallbackHelper getOnFirstVisuallyNonEmptyPaintHelper() {
+        return mOnFirstVisuallyNonEmptyPaintHelper;
     }
 
     /**
@@ -60,5 +67,11 @@ public class TestWebContentsObserver extends WebContentsObserver {
     public void didFailLoad(boolean isMainFrame, int errorCode, String failingUrl) {
         super.didFailLoad(isMainFrame, errorCode, failingUrl);
         mOnReceivedErrorHelper.notifyCalled(errorCode, "Error " + errorCode, failingUrl);
+    }
+
+    @Override
+    public void didFirstVisuallyNonEmptyPaint() {
+        super.didFirstVisuallyNonEmptyPaint();
+        mOnFirstVisuallyNonEmptyPaintHelper.notifyCalled();
     }
 }

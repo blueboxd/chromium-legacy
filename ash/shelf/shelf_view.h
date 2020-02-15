@@ -182,7 +182,6 @@ class ASH_EXPORT ShelfView : public views::AccessiblePaneView,
   FocusTraversable* GetPaneFocusTraversable() override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnScrollEvent(ui::ScrollEvent* event) override;
   const char* GetClassName() const override;
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

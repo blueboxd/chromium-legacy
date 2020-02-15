@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 18
+// Next MinVersion: 19
 
 module arc.mojom;
 
@@ -412,7 +412,7 @@ union AccessibilityWindowKey {
 
 // Interface for Android communicating to Chrome.
 // Deprecated method IDs: 0
-// Next method ID: 3
+// Next method ID: 4
 interface AccessibilityHelperHost {
   // OnAccessibilityEvent is called when a converted Android accessibility event
   // is sent from Android.
@@ -422,6 +422,10 @@ interface AccessibilityHelperHost {
   // changed, e.g. surface for a notification is created.
   [MinVersion=10] OnNotificationStateChanged@2(
       string notification_key, AccessibilityNotificationStateType state);
+
+  // OnToggleNativeChromeVoxArcSupport is called when state of ChromeVox native
+  // ARC support gets changed.
+  [MinVersion=18] OnToggleNativeChromeVoxArcSupport@3(bool enabled);
 };
 
 // Interface for communicating to Android.

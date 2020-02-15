@@ -19,7 +19,7 @@
 #import "ios/chrome/browser/ui/open_in/open_in_controller_testing.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/web/public/thread/web_thread.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"

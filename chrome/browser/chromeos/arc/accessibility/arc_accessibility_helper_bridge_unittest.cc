@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <utility>
 
+#include "ash/public/cpp/app_types.h"
 #include "ash/system/message_center/arc/arc_notification_constants.h"
 #include "ash/system/message_center/arc/arc_notification_content_view.h"
 #include "ash/system/message_center/arc/arc_notification_surface.h"
@@ -17,6 +18,7 @@
 #include "ash/system/message_center/arc/mock_arc_notification_surface.h"
 #include "base/command_line.h"
 #include "base/observer_list.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
@@ -31,14 +33,18 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/test_event_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/public/activation_change_observer.h"
+#include "ui/wm/public/wm_public_export.h"
 
 using ash::ArcNotificationItem;
 using ash::ArcNotificationSurface;
@@ -57,7 +63,9 @@ constexpr char kNotificationKey[] = "unit.test.notification";
 
 class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
  public:
-  class TestArcAccessibilityHelperBridge : public ArcAccessibilityHelperBridge {
+  class TestArcAccessibilityHelperBridge
+      : public ArcAccessibilityHelperBridge,
+        public extensions::TestEventRouter::EventObserver {
    public:
     TestArcAccessibilityHelperBridge(content::BrowserContext* browser_context,
                                      ArcBridgeService* arc_bridge_service)
@@ -66,6 +74,9 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
           event_router_(
               extensions::CreateAndUseTestEventRouter(browser_context)) {
       window_->Init(ui::LAYER_NOT_DRAWN);
+      window_->SetProperty(aura::client::kAppType,
+                           static_cast<int>(ash::AppType::ARC_APP));
+      event_router_->AddEventObserver(this);
     }
 
     ~TestArcAccessibilityHelperBridge() override { window_.reset(); }
@@ -87,13 +98,23 @@ class ArcAccessibilityHelperBridgeTest : public ChromeViewsTestBase {
       filter_type_for_test_ = filter_type;
     }
 
+    // TestEventRouter::EventObserver
+    void OnBroadcastEvent(const extensions::Event& event) override {
+      last_event = event.DeepCopy();
+    }
+
+    void OnDispatchEventToExtension(const std::string& extension_id,
+                                    const extensions::Event& event) override {}
+
+    std::unique_ptr<aura::Window> window_;
+    std::unique_ptr<extensions::Event> last_event;
+
    private:
     aura::Window* GetActiveWindow() override { return window_.get(); }
     extensions::EventRouter* GetEventRouter() const override {
       return event_router_;
     }
 
-    std::unique_ptr<aura::Window> window_;
     extensions::TestEventRouter* const event_router_;
     arc::mojom::AccessibilityFilterType filter_type_for_test_ =
         arc::mojom::AccessibilityFilterType::ALL;
@@ -302,9 +323,13 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TaskAndAXTreeLifecycle) {
 }
 
 TEST_F(ArcAccessibilityHelperBridgeTest, EventAnnouncement) {
+  const char* const event_name = extensions::api::accessibility_private::
+      OnAnnounceForAccessibility::kEventName;
+
   TestArcAccessibilityHelperBridge* helper_bridge =
       accessibility_helper_bridge();
-  std::vector<std::string> text({"Str"});
+  const std::string announce_text = "announcement text.";
+  std::vector<std::string> text({announce_text});
   auto event = arc::mojom::AccessibilityEventData::New();
   event->event_type = arc::mojom::AccessibilityEventType::ANNOUNCEMENT;
   event->eventText =
@@ -312,9 +337,67 @@ TEST_F(ArcAccessibilityHelperBridgeTest, EventAnnouncement) {
 
   helper_bridge->OnAccessibilityEvent(event.Clone());
 
-  ASSERT_EQ(1, helper_bridge->GetEventCount(
-                   extensions::api::accessibility_private::
-                       OnAnnounceForAccessibility::kEventName));
+  ASSERT_EQ(1, helper_bridge->GetEventCount(event_name));
+  ASSERT_EQ(event_name, helper_bridge->last_event->event_name);
+  base::Value::ConstListView arg =
+      helper_bridge->last_event->event_args->GetList()[0].GetList();
+  ASSERT_EQ(1U, arg.size());
+  ASSERT_EQ(announce_text, arg[0].GetString());
+}
+
+TEST_F(ArcAccessibilityHelperBridgeTest, ToggleTalkBack) {
+  const char* const event_name = extensions::api::accessibility_private::
+      OnCustomSpokenFeedbackToggled::kEventName;
+
+  TestArcAccessibilityHelperBridge* helper_bridge =
+      accessibility_helper_bridge();
+  helper_bridge->SetActiveWindowId("org.chromium.arc.1");
+  ASSERT_EQ(0, helper_bridge->GetEventCount(event_name));
+
+  // Enable TalkBack.
+  std::unique_ptr<aura::WindowTracker> window_tracker =
+      std::make_unique<aura::WindowTracker>();
+  window_tracker->Add(helper_bridge->window_.get());
+  helper_bridge->OnSetNativeChromeVoxArcSupportProcessed(
+      std::move(window_tracker), false, true);
+  helper_bridge->OnToggleNativeChromeVoxArcSupport(false);
+
+  ASSERT_EQ(1, helper_bridge->GetEventCount(event_name));
+  ASSERT_EQ(event_name, helper_bridge->last_event->event_name);
+  ASSERT_TRUE(helper_bridge->last_event->event_args->GetList()[0].GetBool());
+
+  std::unique_ptr<aura::Window> non_arc_window =
+      std::make_unique<aura::Window>(nullptr);
+  non_arc_window->Init(ui::LAYER_NOT_DRAWN);
+
+  // Switch to non-ARC window.
+  helper_bridge->OnWindowActivated(
+      wm::ActivationChangeObserver::ActivationReason::INPUT_EVENT,
+      non_arc_window.get(), helper_bridge->window_.get());
+
+  ASSERT_EQ(2, helper_bridge->GetEventCount(event_name));
+  ASSERT_EQ(event_name, helper_bridge->last_event->event_name);
+  ASSERT_FALSE(helper_bridge->last_event->event_args->GetList()[0].GetBool());
+
+  // Switch back to ARC.
+  helper_bridge->OnWindowActivated(
+      wm::ActivationChangeObserver::ActivationReason::INPUT_EVENT,
+      helper_bridge->window_.get(), non_arc_window.get());
+
+  ASSERT_EQ(3, helper_bridge->GetEventCount(event_name));
+  ASSERT_EQ(event_name, helper_bridge->last_event->event_name);
+  ASSERT_TRUE(helper_bridge->last_event->event_args->GetList()[0].GetBool());
+
+  // Disable TalkBack.
+  window_tracker.reset(new aura::WindowTracker());
+  window_tracker->Add(helper_bridge->window_.get());
+  helper_bridge->OnSetNativeChromeVoxArcSupportProcessed(
+      std::move(window_tracker), true, true);
+  helper_bridge->OnToggleNativeChromeVoxArcSupport(true);
+
+  ASSERT_EQ(4, helper_bridge->GetEventCount(event_name));
+  ASSERT_EQ(event_name, helper_bridge->last_event->event_name);
+  ASSERT_FALSE(helper_bridge->last_event->event_args->GetList()[0].GetBool());
 }
 
 // Accessibility event and surface creation/removal are sent in different

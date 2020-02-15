@@ -4,10 +4,13 @@
 
 package org.chromium.chromecast.shell;
 
+import android.annotation.TargetApi;
 import android.content.Context;
+import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.media.audiopolicy.AudioPolicy;
 import android.os.Build;
+import android.os.Build.VERSION_CODES;
 import android.support.annotation.Nullable;
 
 import androidx.annotation.VisibleForTesting;
@@ -124,6 +127,11 @@ public class CastAudioManager {
 
     public void unregisterAudioPolicyAsync(AudioPolicy audioPolicy) {
         mInternal.unregisterAudioPolicyAsync(audioPolicy);
+    }
+
+    @TargetApi(VERSION_CODES.M)
+    public AudioDeviceInfo[] getDevices(int flags) {
+        return mInternal.getDevices(flags);
     }
 
     // TODO(sanfin): Do not expose this. All needed AudioManager methods can be adapted with

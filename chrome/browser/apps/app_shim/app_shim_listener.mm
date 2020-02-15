@@ -4,6 +4,7 @@
 
 #include "chrome/browser/apps/app_shim/app_shim_listener.h"
 
+#import <Foundation/Foundation.h>
 #include <unistd.h>
 
 #include "base/bind.h"
@@ -95,6 +96,9 @@ void AppShimListener::InitOnBackgroundThread() {
 
 void AppShimListener::OnClientConnected(mojo::PlatformChannelEndpoint endpoint,
                                         base::ProcessId peer_pid) {
+  // TODO(https://crbug.com/1052131): Remove NSLog logging, and move to an
+  // internal debugging URL.
+  NSLog(@"AppShim: Connection received from pid %d", peer_pid);
   base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
       ->PostTask(
           FROM_HERE,

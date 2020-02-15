@@ -1310,7 +1310,7 @@ TEST_P(GcpGaiaCredentialBaseCloudMappingTest,
                       IDS_EMPTY_ACCESS_TOKEN_BASE));
 }
 
-// Empty samAccountName or localAccountInfo is returned via admin sdk.
+// Empty AD_accounts or Local_Windows_accounts is returned via admin sdk.
 TEST_P(GcpGaiaCredentialBaseCloudMappingTest,
        GetSerialization_NoUserNameFoundFromAdminSdk) {
   // Set token result a valid access token.
@@ -1340,7 +1340,7 @@ TEST_P(GcpGaiaCredentialBaseCloudMappingTest,
   EXPECT_EQ(2ul, fake_os_user_manager()->GetUserCount());
 }
 
-// Call to the admin sdk to fetch samAccountName or localAccountInfo failed.
+// Call to the admin sdk to fetch AD_accounts or Local_Windows_accounts failed.
 TEST_P(GcpGaiaCredentialBaseCloudMappingTest,
        GetSerialization_CallToAdminSdkFailed) {
   // Set token result a valid access token.
@@ -1410,7 +1410,7 @@ void GcpGaiaCredentialBaseAdScenariosTest::SetUp() {
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred_));
 }
 
-// Customer configured invalid samAccountName.
+// Customer configured invalid AD_accounts.
 TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
        GetSerialization_WithAD_InvalidADUPNConfigured) {
   // Add the user as a domain joined user.
@@ -1433,7 +1433,7 @@ TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
 
   // Invalid configuration in admin sdk. Don't set the username.
   std::string admin_sdk_response = base::StringPrintf(
-      "{\"customSchemas\": {\"employeeData\": {\"samAccountName\":"
+      "{\"customSchemas\": {\"Enhanced_desktop_security\": {\"AD_accounts\":"
       " \"%ls/\"}}}",
       domain_name);
   fake_http_url_fetcher_factory()->SetFakeResponse(
@@ -1488,7 +1488,7 @@ TEST_F(GcpGaiaCredentialBaseAdScenariosTest,
 
   // Set valid response from admin sdk.
   std::string admin_sdk_response = base::StringPrintf(
-      "{\"customSchemas\": {\"employeeData\": {\"samAccountName\":"
+      "{\"customSchemas\": {\"Enhanced_desktop_security\": {\"AD_accounts\":"
       " \"%ls/%ls\"}}}",
       domain_name, user_name);
   fake_http_url_fetcher_factory()->SetFakeResponse(
@@ -1585,7 +1585,8 @@ TEST_F(GcpGaiaCredentialBaseCloudLocalAccountTest,
 
   // Invalid configuration in admin sdk. Don't set the username.
   std::string admin_sdk_response = base::StringPrintf(
-      "{\"customSchemas\": {\"employeeData\": {\"localAccountInfo\":"
+      "{\"customSchemas\": {\"Enhanced_desktop_security\": "
+      "{\"Local_Windows_accounts\":"
       " \"un:abcd\"}}}");
   fake_http_url_fetcher_factory()->SetFakeResponse(
       GURL(get_cd_user_url_.c_str()), FakeWinHttpUrlFetcher::Headers(),
@@ -1632,11 +1633,12 @@ TEST_F(GcpGaiaCredentialBaseCloudLocalAccountTest, MultipleLocalAccountInfo) {
 
   const wchar_t another_user_name[] = L"another_local_user";
 
-  // Set valid response from admin sdk with localAccountInfo containing
+  // Set valid response from admin sdk with Local_Windows_accounts containing
   // one mapping with "serial_number" in it and another one without
   // serial number.
   admin_sdk_response = base::StringPrintf(
-      "{\"customSchemas\": {\"employeeData\": {\"localAccountInfo\":"
+      "{\"customSchemas\": {\"Enhanced_desktop_security\": "
+      "{\"Local_Windows_accounts\":"
       "[{ \"value\": \"un:%ls,sn:%ls\" },{ \"value\": \"un:%ls\"}]}}}",
       user_name, serial_number.c_str(), another_user_name);
   fake_http_url_fetcher_factory()->SetFakeResponse(
@@ -1703,11 +1705,12 @@ TEST_F(GcpGaiaCredentialBaseCloudLocalAccountTest,
   const wchar_t another_user_name1[] = L"another_local_user_1";
   const wchar_t another_user_name2[] = L"another_local_user_2";
 
-  // Set valid response from admin sdk with localAccountInfo containing
+  // Set valid response from admin sdk with Local_Windows_accounts containing
   // multiple mappings with matching "serial_number" in it and another
   // one without serial number.
   admin_sdk_response = base::StringPrintf(
-      "{\"customSchemas\": {\"employeeData\": {\"localAccountInfo\":"
+      "{\"customSchemas\": {\"Enhanced_desktop_security\": "
+      "{\"Local_Windows_accounts\":"
       "[{ \"value\": \"un:%ls,sn:%ls\" },{ \"value\": \"un:%ls,sn:%ls\" },{ "
       " \"value\": \"un:%ls\" }]}}}",
       another_user_name1, serial_number.c_str(), another_user_name2,
@@ -1765,11 +1768,12 @@ TEST_F(GcpGaiaCredentialBaseCloudLocalAccountTest,
   const wchar_t another_user_name1[] = L"another_local_user_1";
   const wchar_t another_user_name2[] = L"another_local_user_2";
 
-  // Set valid response from admin sdk with localAccountInfo containing
+  // Set valid response from admin sdk with Local_Windows_accounts containing
   // multiple mappings with matching "serial_number" in it and multiple
   // mappings without serial number.
   admin_sdk_response = base::StringPrintf(
-      "{\"customSchemas\": {\"employeeData\": {\"localAccountInfo\":"
+      "{\"customSchemas\": {\"Enhanced_desktop_security\": "
+      "{\"Local_Windows_accounts\":"
       "[{ \"value\": \"un:%ls,sn:%ls\" },{ \"value\": \"un:%ls,sn:%ls\" },{ "
       " \"value\": \"un:%ls\" },{ \"value\": \"un:%ls\"}]}}}",
       another_user_name1, serial_number.c_str(), another_user_name2,
@@ -1829,13 +1833,15 @@ TEST_P(GaiaCredentialBaseCloudLocalAccountSuccessTest, SerialNumber) {
   if (set_serial_number) {
     // Set valid response from admin sdk.
     admin_sdk_response = base::StringPrintf(
-        "{\"customSchemas\": {\"employeeData\": {\"localAccountInfo\":"
+        "{\"customSchemas\": {\"Enhanced_desktop_security\": "
+        "{\"Local_Windows_accounts\":"
         "[{ \"value\": \"un:%ls,sn:%ls\"}]}}}",
         user_name, serial_number.c_str());
   } else {
     // Set valid response from admin sdk.
     admin_sdk_response = base::StringPrintf(
-        "{\"customSchemas\": {\"employeeData\": {\"localAccountInfo\":"
+        "{\"customSchemas\": {\"Enhanced_desktop_security\": "
+        "{\"Local_Windows_accounts\":"
         "[{ \"value\": \"un:%ls\"}]}}}",
         user_name);
   }
@@ -1906,7 +1912,8 @@ TEST_P(GaiaCredentialBaseCDUsernameSuccessTest, AnyUsername) {
 
   // Set valid response from admin sdk.
   std::string admin_sdk_response = base::StringPrintf(
-      "{\"customSchemas\": {\"employeeData\": {\"localAccountInfo\":"
+      "{\"customSchemas\": {\"Enhanced_desktop_security\": "
+      "{\"Local_Windows_accounts\":"
       "[{ \"value\": \"un:%ls\"}]}}}",
       user_name);
 
@@ -1971,7 +1978,8 @@ TEST_P(GaiaCredentialBaseCDSerialNumberFailureTest, InvalidSerialNumber) {
 
   // Set valid response from admin sdk.
   std::string admin_sdk_response = base::StringPrintf(
-      "{\"customSchemas\": {\"employeeData\": {\"localAccountInfo\":"
+      "{\"customSchemas\": {\"Enhanced_desktop_security\": "
+      "{\"Local_Windows_accounts\":"
       "[{ \"value\": \"un:%ls,sn:%ls\"}]}}}",
       user_name, serial_number);
 

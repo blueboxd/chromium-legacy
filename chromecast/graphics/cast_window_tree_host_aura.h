@@ -13,8 +13,7 @@ namespace chromecast {
 class CastWindowTreeHostAura : public aura::WindowTreeHostPlatform {
  public:
   CastWindowTreeHostAura(bool enable_input,
-                         ui::PlatformWindowInitProperties properties,
-                         bool use_external_frame_control = false);
+                         ui::PlatformWindowInitProperties properties);
   ~CastWindowTreeHostAura() override;
 
   // aura::WindowTreeHostPlatform implementation:

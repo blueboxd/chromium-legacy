@@ -30,12 +30,8 @@ namespace aura {
 class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
                                            public ui::PlatformWindowDelegate {
  public:
-  // See Compositor() for details on |trace_environment_name|.
-  explicit WindowTreeHostPlatform(
-      ui::PlatformWindowInitProperties properties,
-      std::unique_ptr<Window> = nullptr,
-      const char* trace_environment_name = nullptr,
-      bool use_external_begin_frame_control = false);
+  explicit WindowTreeHostPlatform(ui::PlatformWindowInitProperties properties,
+                                  std::unique_ptr<Window> = nullptr);
   ~WindowTreeHostPlatform() override;
 
   // WindowTreeHost:

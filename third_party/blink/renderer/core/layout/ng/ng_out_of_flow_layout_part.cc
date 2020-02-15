@@ -291,22 +291,22 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
                                         inline_geometry);
     }
   }
-  // Fetch start/end fragment info.
-  container_builder_->ComputeInlineContainerFragments(
-      &inline_container_fragments);
+
+  // Fetch the inline start/end fragment geometry.
+  if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
+    container_builder_->ComputeInlineContainerGeometry(
+        &inline_container_fragments);
+  } else {
+    container_builder_->ComputeInlineContainerGeometryFromFragmentTree(
+        &inline_container_fragments);
+  }
+
   LogicalSize container_builder_size = container_builder_->Size();
   PhysicalSize container_builder_physical_size =
       ToPhysicalSize(container_builder_size, writing_mode_);
-  // Translate start/end fragments into ContainingBlockInfo.
+  // Transform the start/end fragments into a ContainingBlockInfo.
   for (auto& block_info : inline_container_fragments) {
-    // Variables needed to describe ContainingBlockInfo
-    const ComputedStyle* inline_cb_style = block_info.key->Style();
-    LogicalSize inline_cb_size;
-    LogicalOffset container_offset;
-
     DCHECK(block_info.value.has_value());
-    DCHECK(inline_cb_style);
-    NGBoxStrut inline_cb_borders = ComputeBordersForInline(*inline_cb_style);
 
     // The calculation below determines the size of the inline containing block
     // rect.
@@ -360,7 +360,11 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
     //
     // Note in cases [2a, 2b] we don't allow a "negative" containing block size,
     // we clamp negative sizes to zero.
+    const ComputedStyle* inline_cb_style = block_info.key->Style();
+    DCHECK(inline_cb_style);
+
     TextDirection container_direction = default_containing_block_.direction;
+    NGBoxStrut inline_cb_borders = ComputeBordersForInline(*inline_cb_style);
 
     bool is_same_direction =
         container_direction == inline_cb_style->Direction();
@@ -401,13 +405,14 @@ void NGOutOfFlowLayoutPart::ComputeInlineContainingBlocks(
     // Step 3 - determine the logical rectangle.
 
     // Determine the logical size of the containing block.
-    inline_cb_size = {end_offset.inline_offset - start_offset.inline_offset,
-                      end_offset.block_offset - start_offset.block_offset};
+    LogicalSize inline_cb_size = {
+        end_offset.inline_offset - start_offset.inline_offset,
+        end_offset.block_offset - start_offset.block_offset};
     DCHECK_GE(inline_cb_size.inline_size, LayoutUnit());
     DCHECK_GE(inline_cb_size.block_size, LayoutUnit());
 
     // Set the container padding-box offset.
-    container_offset = start_offset;
+    LogicalOffset container_offset = start_offset;
 
     containing_blocks_map_.insert(
         block_info.key,

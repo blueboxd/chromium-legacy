@@ -77,6 +77,68 @@ void GatherInlineContainerFragmentsFromLinebox(
   }
 }
 
+void GatherInlineContainerFragmentsFromItems(
+    const Vector<std::unique_ptr<NGFragmentItem>>& items,
+    NGBoxFragmentBuilder::InlineContainingBlockMap* inline_containing_block_map,
+    HashMap<const LayoutObject*, LineBoxPair>* containing_linebox_map) {
+  const NGPhysicalLineBoxFragment* linebox = nullptr;
+  for (const auto& item : items) {
+    // Track the current linebox.
+    if (const NGPhysicalLineBoxFragment* current_linebox =
+            item->LineBoxFragment()) {
+      linebox = current_linebox;
+      continue;
+    }
+
+    // We only care about inlines which have generated a box fragment.
+    const NGPhysicalBoxFragment* box = item->BoxFragment();
+    if (!box)
+      continue;
+
+    // The key for the inline is the continuation root if it exists.
+    const LayoutObject* key = box->GetLayoutObject();
+    if (key->IsLayoutInline() && key->GetNode())
+      key = key->ContinuationRoot();
+
+    // See if we need the containing block information for this inline.
+    auto it = inline_containing_block_map->find(key);
+    if (it == inline_containing_block_map->end())
+      continue;
+
+    base::Optional<NGBoxFragmentBuilder::InlineContainingBlockGeometry>&
+        containing_block_geometry = it->value;
+    LineBoxPair& containing_lineboxes =
+        containing_linebox_map->insert(key, LineBoxPair{nullptr, nullptr})
+            .stored_value->value;
+    DCHECK(containing_block_geometry.has_value() ||
+           !containing_lineboxes.first);
+
+    PhysicalRect fragment_rect = item->RectInContainerBlock();
+    if (containing_lineboxes.first == linebox) {
+      // Unite the start rect with the fragment's rect.
+      containing_block_geometry->start_fragment_union_rect.Unite(fragment_rect);
+    } else if (!containing_lineboxes.first) {
+      DCHECK(!containing_lineboxes.second);
+      // This is the first linebox we've encountered, initialize the containing
+      // block geometry.
+      containing_lineboxes.first = linebox;
+      containing_lineboxes.second = linebox;
+      containing_block_geometry =
+          NGBoxFragmentBuilder::InlineContainingBlockGeometry{fragment_rect,
+                                                              fragment_rect};
+    }
+
+    if (containing_lineboxes.second == linebox) {
+      // Unite the end rect with the fragment's rect.
+      containing_block_geometry->end_fragment_union_rect.Unite(fragment_rect);
+    } else if (!linebox->IsEmptyLineBox()) {
+      // We've found a new "end" linebox,  update the containing block geometry.
+      containing_lineboxes.second = linebox;
+      containing_block_geometry->end_fragment_union_rect = fragment_rect;
+    }
+  }
+}
+
 }  // namespace
 
 void NGBoxFragmentBuilder::AddBreakBeforeChild(
@@ -242,10 +304,7 @@ scoped_refptr<const NGLayoutResult> NGBoxFragmentBuilder::Abort(
       NGLayoutResult::NGBoxFragmentBuilderPassKey(), status, this));
 }
 
-// Computes the geometry required for any inline containing blocks.
-// |inline_containing_block_map| is a map whose keys specify which inline
-// containing block geometry is required.
-void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
+void NGBoxFragmentBuilder::ComputeInlineContainerGeometryFromFragmentTree(
     InlineContainingBlockMap* inline_containing_block_map) {
   if (inline_containing_block_map->IsEmpty())
     return;
@@ -298,6 +357,54 @@ void NGBoxFragmentBuilder::ComputeInlineContainerFragments(
         }
       }
     }
+  }
+}
+
+void NGBoxFragmentBuilder::ComputeInlineContainerGeometry(
+    InlineContainingBlockMap* inline_containing_block_map) {
+  if (inline_containing_block_map->IsEmpty())
+    return;
+
+  // This function requires that we have the final size of the fragment set
+  // upon the builder.
+  DCHECK_GE(InlineSize(), LayoutUnit());
+  DCHECK_GE(BlockSize(), LayoutUnit());
+
+#if DCHECK_IS_ON()
+  // Make sure all entries are a continuation root.
+  for (const auto& entry : *inline_containing_block_map)
+    DCHECK_EQ(entry.key, entry.key->ContinuationRoot());
+#endif
+
+  HashMap<const LayoutObject*, LineBoxPair> containing_linebox_map;
+
+  if (items_builder_) {
+    // To access the items correctly we need to convert them to the physical
+    // coordinate space.
+    GatherInlineContainerFragmentsFromItems(
+        items_builder_->Items(GetWritingMode(), Direction(),
+                              ToPhysicalSize(Size(), GetWritingMode())),
+        inline_containing_block_map, &containing_linebox_map);
+    return;
+  }
+
+  // If we have children which are anonymous block, we might contain split
+  // inlines, this can occur in the following example:
+  // <div>
+  //    Some text <span style="position: relative;">text
+  //    <div>block</div>
+  //    text </span> text.
+  // </div>
+  for (const auto& child : children_) {
+    if (!child.fragment->IsAnonymousBlock())
+      continue;
+
+    const auto* items = To<NGPhysicalBoxFragment>(*child.fragment).Items();
+    if (!items)
+      continue;
+
+    GatherInlineContainerFragmentsFromItems(
+        items->Items(), inline_containing_block_map, &containing_linebox_map);
   }
 }
 

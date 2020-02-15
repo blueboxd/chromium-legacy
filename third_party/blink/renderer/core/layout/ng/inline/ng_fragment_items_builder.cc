@@ -30,8 +30,8 @@ void NGFragmentItemsBuilder::SetCurrentLine(
 void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
                                      const LogicalOffset& offset) {
   DCHECK_EQ(items_.size(), offsets_.size());
-#if DCHECK_IS_ON()
   DCHECK(!is_converted_to_physical_);
+#if DCHECK_IS_ON()
   DCHECK_EQ(current_line_fragment_, &line);
 #endif
 
@@ -65,6 +65,7 @@ void NGFragmentItemsBuilder::AddLine(const NGPhysicalLineBoxFragment& line,
 
 void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
   DCHECK_EQ(items_.size(), offsets_.size());
+  DCHECK(!is_converted_to_physical_);
 
   for (Child* child_iter = child_begin; child_iter != child_end;) {
     Child& child = *child_iter;
@@ -134,6 +135,8 @@ void NGFragmentItemsBuilder::AddItems(Child* child_begin, Child* child_end) {
 void NGFragmentItemsBuilder::AddListMarker(
     const NGPhysicalBoxFragment& marker_fragment,
     const LogicalOffset& offset) {
+  DCHECK(!is_converted_to_physical_);
+
   // Resolved direction matters only for inline items, and outside list markers
   // are not inline.
   const TextDirection resolved_direction = TextDirection::kLtr;
@@ -142,15 +145,22 @@ void NGFragmentItemsBuilder::AddListMarker(
   offsets_.push_back(offset);
 }
 
+const Vector<std::unique_ptr<NGFragmentItem>>& NGFragmentItemsBuilder::Items(
+    WritingMode writing_mode,
+    TextDirection direction,
+    const PhysicalSize& outer_size) {
+  ConvertToPhysical(writing_mode, direction, outer_size);
+  return items_;
+}
+
 // Convert internal logical offsets to physical. Items are kept with logical
 // offset until outer box size is determined.
 void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
                                                TextDirection direction,
                                                const PhysicalSize& outer_size) {
   CHECK_EQ(items_.size(), offsets_.size());
-#if DCHECK_IS_ON()
-  DCHECK(!is_converted_to_physical_);
-#endif
+  if (is_converted_to_physical_)
+    return;
 
   // Children of lines have line-relative offsets. Use line-writing mode to
   // convert their logical offsets.
@@ -189,9 +199,7 @@ void NGFragmentItemsBuilder::ConvertToPhysical(WritingMode writing_mode,
     }
   }
 
-#if DCHECK_IS_ON()
   is_converted_to_physical_ = true;
-#endif
 }
 
 void NGFragmentItemsBuilder::ToFragmentItems(WritingMode writing_mode,

@@ -157,13 +157,15 @@ void AppShimController::FindOrLaunchChrome() {
   }
 
   // Otherwise, launch Chrome.
+  base::FilePath chrome_bundle_path = base::mac::OuterBundlePath();
+  LOG(INFO) << "Launching " << chrome_bundle_path.value();
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   command_line.AppendSwitch(switches::kSilentLaunch);
   command_line.AppendSwitchPath(switches::kUserDataDir, params_.user_data_dir);
-  chrome_launched_by_app_.reset(base::mac::OpenApplicationWithPath(
-                                    base::mac::OuterBundlePath(), command_line,
-                                    NSWorkspaceLaunchNewInstance),
-                                base::scoped_policy::RETAIN);
+  chrome_launched_by_app_.reset(
+      base::mac::OpenApplicationWithPath(chrome_bundle_path, command_line,
+                                         NSWorkspaceLaunchNewInstance),
+      base::scoped_policy::RETAIN);
   if (!chrome_launched_by_app_)
     LOG(FATAL) << "Failed to launch Chrome.";
 }
@@ -179,6 +181,7 @@ AppShimController::FindChromeFromSingletonLock(
   if (!ParseProcessSingletonLock(lock_symlink_path, &hostname, &pid)) {
     // This indicates that there is no Chrome process running (or that has been
     // running long enough to get the lock).
+    LOG(INFO) << "Singleton lock not found at " << lock_symlink_path.value();
     return base::scoped_nsobject<NSRunningApplication>();
   }
 
@@ -230,8 +233,8 @@ void AppShimController::PollForChromeReady(
 
   // Poll to see if the mojo channel is ready. Of note is that we don't actually
   // verify that |endpoint| is connected to |chrome_to_connect_to_|.
-  mojo::PlatformChannelEndpoint endpoint;
   {
+    mojo::PlatformChannelEndpoint endpoint;
     NSString* browser_bundle_id =
         base::mac::ObjCCast<NSString>([[NSBundle mainBundle]
             objectForInfoDictionaryKey:app_mode::kBrowserBundleIDKey]);
@@ -241,10 +244,11 @@ void AppShimController::PollForChromeReady(
         app_mode::kAppShimBootstrapNameFragment,
         base::MD5String(params_.user_data_dir.value()).c_str());
     endpoint = ConnectToBrowser(server_name);
-  }
-  if (endpoint.is_valid()) {
-    SendBootstrapOnShimConnected(std::move(endpoint));
-    return;
+    if (endpoint.is_valid()) {
+      LOG(INFO) << "Connected to " << server_name;
+      SendBootstrapOnShimConnected(std::move(endpoint));
+      return;
+    }
   }
 
   // Otherwise, try again after a brief delay.
@@ -327,6 +331,7 @@ void AppShimController::SendBootstrapOnShimConnected(
       std::move(host_receiver_), std::move(app_shim_info),
       base::BindOnce(&AppShimController::OnShimConnectedResponse,
                      base::Unretained(this)));
+  LOG(INFO) << "Sent OnShimConnected";
 }
 
 void AppShimController::SetUpMenu() {
@@ -343,7 +348,7 @@ void AppShimController::BootstrapChannelError(uint32_t custom_reason,
   // OnShimConnected is received.
   if (init_state_ == InitState::kHasReceivedOnShimConnectedResponse)
     return;
-  LOG(ERROR) << "Channel error custom_reason:" << custom_reason
+  LOG(ERROR) << "Bootstrap Channel error custom_reason:" << custom_reason
              << " description: " << description;
   [NSApp terminate:nil];
 }
@@ -358,6 +363,7 @@ void AppShimController::ChannelError(uint32_t custom_reason,
 void AppShimController::OnShimConnectedResponse(
     chrome::mojom::AppShimLaunchResult result,
     mojo::PendingReceiver<chrome::mojom::AppShim> app_shim_receiver) {
+  LOG(INFO) << "Received OnShimConnected.";
   DCHECK_EQ(init_state_, InitState::kHasSentOnShimConnected);
   init_state_ = InitState::kHasReceivedOnShimConnectedResponse;
 

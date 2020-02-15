@@ -4,6 +4,7 @@
 
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 
+#include <CoreFoundation/CoreFoundation.h>
 #include <Security/Security.h>
 
 #include <algorithm>

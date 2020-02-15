@@ -84,9 +84,9 @@ constexpr int kHttpTimeout = 3000;  // in milliseconds
 // Names of keys used to fetch the custom attributes from google admin sdk
 // users directory api.
 constexpr char kKeyCustomSchemas[] = "customSchemas";
-constexpr char kKeyEmployeeData[] = "employeeData";
-constexpr char kKeySamAccountName[] = "samAccountName";
-constexpr char kKeyLocalAccountInfo[] = "localAccountInfo";
+constexpr char kKeyEnhancedDesktopSecurity[] = "Enhanced_desktop_security";
+constexpr char kKeyADAccounts[] = "AD_accounts";
+constexpr char kKeyLocalWindowsAccounts[] = "Local_Windows_accounts";
 
 base::string16 GetEmailDomains() {
   std::vector<wchar_t> email_domains(16);
@@ -168,11 +168,12 @@ HRESULT GetExistingAccountMappingFromCD(
 
   *sam_account_name = SearchForKeyInStringDictUTF8(
       cd_user_response_json_string,
-      {kKeyCustomSchemas, kKeyEmployeeData, kKeySamAccountName});
+      {kKeyCustomSchemas, kKeyEnhancedDesktopSecurity, kKeyADAccounts});
 
   hr = SearchForListInStringDictUTF8(
       "value", cd_user_response_json_string,
-      {kKeyCustomSchemas, kKeyEmployeeData, kKeyLocalAccountInfo},
+      {kKeyCustomSchemas, kKeyEnhancedDesktopSecurity,
+       kKeyLocalWindowsAccounts},
       local_account_names);
 
   if (FAILED(hr)) {

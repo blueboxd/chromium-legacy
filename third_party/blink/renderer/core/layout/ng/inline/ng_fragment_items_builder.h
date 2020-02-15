@@ -59,10 +59,18 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   void AddListMarker(const NGPhysicalBoxFragment& marker_fragment,
                      const LogicalOffset& offset);
 
+  // Converts the |NGFragmentItem| vector to the physical coordinate space and
+  // returns the result. This should only be used for determining the inline
+  // containing block geometry for OOF-positioned nodes.
+  //
+  // Once this method has been called, new items cannot be added.
+  const Vector<std::unique_ptr<NGFragmentItem>>&
+  Items(WritingMode, TextDirection, const PhysicalSize& outer_size);
+
   // Build a |NGFragmentItems|. The builder cannot build twice because data set
   // to this builder may be cleared.
-  void ToFragmentItems(WritingMode writing_mode,
-                       TextDirection direction,
+  void ToFragmentItems(WritingMode,
+                       TextDirection,
                        const PhysicalSize& outer_size,
                        void* data);
 
@@ -84,10 +92,10 @@ class CORE_EXPORT NGFragmentItemsBuilder {
   ChildList current_line_;
 
   bool has_floating_descendants_for_paint_ = false;
+  bool is_converted_to_physical_ = false;
 
 #if DCHECK_IS_ON()
   const NGPhysicalLineBoxFragment* current_line_fragment_ = nullptr;
-  bool is_converted_to_physical_ = false;
 #endif
 
   friend class NGFragmentItems;

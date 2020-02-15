@@ -159,6 +159,10 @@ class CORE_EXPORT NGPhysicalBoxFragment final
     return has_borders_ ? address + 1 : address;
   }
 
+#if DCHECK_IS_ON()
+  void CheckIntegrity() const;
+#endif
+
   LayoutUnit baseline_;
   NGLink children_[];
   // borders and padding come from after |children_| if they are not zero.

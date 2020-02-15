@@ -73,6 +73,7 @@ int LoadFrameworkAndStart(int argc, char** argv) {
     base::FilePath app_data_dir = base::mac::NSStringToFilePath([app_bundle
         objectForInfoDictionaryKey:app_mode::kCrAppModeUserDataDirKey]);
     base::FilePath user_data_dir = app_data_dir.DirName().DirName().DirName();
+    LOG(INFO) << "Using user data dir " << user_data_dir.value();
     CHECK(!user_data_dir.empty());
 
     // If the version file does not exist, |cr_version_str| will be empty and
@@ -87,8 +88,12 @@ int LoadFrameworkAndStart(int argc, char** argv) {
     if (!cr_version_str.empty()) {
       NSArray* existing_chrome = [NSRunningApplication
           runningApplicationsWithBundleIdentifier:cr_bundle_id];
-      if ([existing_chrome count] == 0)
+      if ([existing_chrome count] == 0) {
+        LOG(INFO) << "Disregarding framework version from symlink";
         cr_version_str.clear();
+      } else {
+        LOG(INFO) << "Framework version from symlink " << cr_version_str;
+      }
     }
 
     // ** 3: Read information from the Chrome bundle.
@@ -126,6 +131,7 @@ int LoadFrameworkAndStart(int argc, char** argv) {
 
     // ** 5: Open the framework.
     StartFun ChromeAppModeStart = NULL;
+    LOG(INFO) << "Loading framework " << framework_dylib_path.value();
     void* cr_dylib = dlopen(framework_dylib_path.value().c_str(), RTLD_LAZY);
     if (cr_dylib) {
       // Find the entry point.

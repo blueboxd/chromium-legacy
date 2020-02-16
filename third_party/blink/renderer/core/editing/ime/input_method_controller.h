@@ -193,7 +193,7 @@ class CORE_EXPORT InputMethodController final
   WebTextInputMode InputModeOfFocusedElement() const;
 
   // Implements |DocumentShutdownObserver|.
-  void ContextDestroyed(Document*) final;
+  void OnDocumentShutdown() final;
 
   enum class TypingContinuation;
 

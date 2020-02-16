@@ -46,17 +46,6 @@ TEST(NativeValueTraitsImplTest, IDLInterface) {
   EXPECT_EQ(nullptr, internals);
 }
 
-TEST(NativeValueTraitsImplTest, IDLCallbackFunction) {
-  V8TestingScope scope;
-  DummyExceptionStateForTesting exception_state;
-  v8::Local<v8::Function> function =
-      v8::Function::New(scope.GetContext(), nullptr).ToLocalChecked();
-  ASSERT_DEATH_IF_SUPPORTED(
-      NativeValueTraits<V8TestSequenceCallback>::NativeValue(
-          scope.GetIsolate(), function, exception_state),
-      "");
-}
-
 TEST(NativeValueTraitsImplTest, IDLRecord) {
   V8TestingScope scope;
   {

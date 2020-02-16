@@ -20,7 +20,9 @@
 namespace blink {
 
 class CallbackFunctionBase;
+class CallbackInterfaceBase;
 class EventListener;
+class FlexibleArrayBufferView;
 class ScriptWrappable;
 struct WrapperTypeInfo;
 
@@ -832,13 +834,107 @@ struct NativeValueTraits<
   static T* NativeValue(v8::Isolate* isolate,
                         v8::Local<v8::Value> value,
                         ExceptionState& exception_state) {
-    // Not implemented because of no use case so far.
-    CHECK(false)
-        // Emit a message so that NativeValueTraitsImplTest.IDLCallbackFunction
-        // test can confirm that it's hitting this specific failure. i.e.
-        // the template resolution is working as expected.
-        << "NativeValueTraits<CallbackFunctionBase>::NativeValue "
-        << "is not yet implemented.";
+    if (value->IsFunction())
+      return T::Create(value.As<v8::Function>());
+    exception_state.ThrowTypeError("The given value is not a function.");
+    return nullptr;
+  }
+
+  static T* ArgumentValue(v8::Isolate* isolate,
+                          int argument_index,
+                          v8::Local<v8::Value> value,
+                          ExceptionState& exception_state) {
+    if (value->IsFunction())
+      return T::Create(value.As<v8::Function>());
+    exception_state.ThrowTypeError(
+        ExceptionMessages::ArgumentNotOfType(argument_index, "Function"));
+    return nullptr;
+  }
+};
+
+template <typename T>
+struct NativeValueTraits<
+    IDLNullable<T>,
+    typename std::enable_if_t<std::is_base_of<CallbackFunctionBase, T>::value>>
+    : public NativeValueTraitsBase<IDLNullable<T>> {
+  static T* NativeValue(v8::Isolate* isolate,
+                        v8::Local<v8::Value> value,
+                        ExceptionState& exception_state) {
+    if (value->IsFunction())
+      return T::Create(value.As<v8::Function>());
+    if (value->IsNullOrUndefined())
+      return nullptr;
+    exception_state.ThrowTypeError("The given value is not a function.");
+    return nullptr;
+  }
+
+  static T* ArgumentValue(v8::Isolate* isolate,
+                          int argument_index,
+                          v8::Local<v8::Value> value,
+                          ExceptionState& exception_state) {
+    if (value->IsFunction())
+      return T::Create(value.As<v8::Function>());
+    if (value->IsNullOrUndefined())
+      return nullptr;
+    exception_state.ThrowTypeError(
+        ExceptionMessages::ArgumentNotOfType(argument_index, "Function"));
+    return nullptr;
+  }
+};
+
+// Callback interface types
+template <typename T>
+struct NativeValueTraits<
+    T,
+    typename std::enable_if_t<std::is_base_of<CallbackInterfaceBase, T>::value>>
+    : public NativeValueTraitsBase<T*> {
+  static T* NativeValue(v8::Isolate* isolate,
+                        v8::Local<v8::Value> value,
+                        ExceptionState& exception_state) {
+    if (value->IsObject())
+      return T::Create(value.As<v8::Object>());
+    exception_state.ThrowTypeError("The given value is not an object.");
+    return nullptr;
+  }
+
+  static T* ArgumentValue(v8::Isolate* isolate,
+                          int argument_index,
+                          v8::Local<v8::Value> value,
+                          ExceptionState& exception_state) {
+    if (value->IsObject())
+      return T::Create(value.As<v8::Object>());
+    exception_state.ThrowTypeError(
+        ExceptionMessages::ArgumentNotOfType(argument_index, "Object"));
+    return nullptr;
+  }
+};
+
+template <typename T>
+struct NativeValueTraits<
+    IDLNullable<T>,
+    typename std::enable_if_t<std::is_base_of<CallbackInterfaceBase, T>::value>>
+    : public NativeValueTraitsBase<IDLNullable<T>> {
+  static T* NativeValue(v8::Isolate* isolate,
+                        v8::Local<v8::Value> value,
+                        ExceptionState& exception_state) {
+    if (value->IsObject())
+      return T::Create(value.As<v8::Object>());
+    if (value->IsNullOrUndefined())
+      return nullptr;
+    exception_state.ThrowTypeError("The given value is not an object.");
+    return nullptr;
+  }
+
+  static T* ArgumentValue(v8::Isolate* isolate,
+                          int argument_index,
+                          v8::Local<v8::Value> value,
+                          ExceptionState& exception_state) {
+    if (value->IsObject())
+      return T::Create(value.As<v8::Object>());
+    if (value->IsNullOrUndefined())
+      return nullptr;
+    exception_state.ThrowTypeError(
+        ExceptionMessages::ArgumentNotOfType(argument_index, "Object"));
     return nullptr;
   }
 };

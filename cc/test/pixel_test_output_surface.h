@@ -35,7 +35,6 @@ class PixelTestOutputSurface : public viz::OutputSurface {
   void SwapBuffers(viz::OutputSurfaceFrame frame) override;
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
-  gfx::BufferFormat GetOverlayBufferFormat() const override;
   uint32_t GetFramebufferCopyTextureFormat() override;
   unsigned UpdateGpuFence() override;
   void SetUpdateVSyncParametersCallback(

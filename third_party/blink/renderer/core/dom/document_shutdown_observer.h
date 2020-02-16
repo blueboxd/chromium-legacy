@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_DOCUMENT_SHUTDOWN_OBSERVER_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -17,17 +17,25 @@ class Document;
 // Note: this functionality is also provided by SynchronousMutationObserver,
 // but if you don't need to respond to the other events handled by that class,
 // using this class is more efficient.
-class CORE_EXPORT DocumentShutdownObserver
-    : public LifecycleObserver<Document, DocumentShutdownObserver> {
+class CORE_EXPORT DocumentShutdownObserver : public GarbageCollectedMixin {
  public:
   // Called when detaching document.
-  virtual void ContextDestroyed(Document*);
+  virtual void OnDocumentShutdown() = 0;
+
+  // Call before clearing an observer list.
+  void ObserverListWillBeCleared();
+
+  Document* GetDocument() const { return document_; }
+  void SetDocument(Document*);
+
+  void Trace(Visitor* visitor) override;
 
  protected:
-  DocumentShutdownObserver();
+  DocumentShutdownObserver() = default;
+  explicit DocumentShutdownObserver(Document* document);
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(DocumentShutdownObserver);
+  WeakMember<Document> document_;
 };
 
 }  // namespace blink

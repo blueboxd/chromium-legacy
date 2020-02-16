@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/page/drag_controller.h"
 #include "third_party/blink/renderer/core/page/drag_state.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -1207,7 +1208,7 @@ void MouseEventManager::SetMousePressNode(Node* node) {
 }
 
 void MouseEventManager::SetClickElement(Element* element) {
-  SetContext(element ? element->ownerDocument() : nullptr);
+  SetDocument(element ? element->ownerDocument() : nullptr);
   click_element_ = element;
   mouse_down_element_ = element;
 }

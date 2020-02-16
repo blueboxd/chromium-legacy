@@ -94,10 +94,6 @@ unsigned PixelTestOutputSurface::GetOverlayTextureId() const {
   return 0;
 }
 
-gfx::BufferFormat PixelTestOutputSurface::GetOverlayBufferFormat() const {
-  return gfx::BufferFormat::RGBX_8888;
-}
-
 uint32_t PixelTestOutputSurface::GetFramebufferCopyTextureFormat() {
   // This format will work if the |context_provider| has an RGB or RGBA
   // framebuffer. For now assume tests do not want/care about alpha in

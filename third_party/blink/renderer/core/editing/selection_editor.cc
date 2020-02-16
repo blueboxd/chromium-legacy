@@ -69,8 +69,8 @@ void SelectionEditor::Dispose() {
 }
 
 Document& SelectionEditor::GetDocument() const {
-  DCHECK(LifecycleContext());
-  return *LifecycleContext();
+  DCHECK(SynchronousMutationObserver::GetDocument());
+  return *SynchronousMutationObserver::GetDocument();
 }
 
 VisibleSelection SelectionEditor::ComputeVisibleSelectionInDOMTree() const {
@@ -164,16 +164,17 @@ void SelectionEditor::DidFinishDOMMutation() {
 
 void SelectionEditor::DidAttachDocument(Document* document) {
   DCHECK(document);
-  DCHECK(!LifecycleContext()) << LifecycleContext();
+  DCHECK(!SynchronousMutationObserver::GetDocument())
+      << SynchronousMutationObserver::GetDocument();
 #if DCHECK_IS_ON()
   style_version_for_dom_tree_ = static_cast<uint64_t>(-1);
   style_version_for_flat_tree_ = static_cast<uint64_t>(-1);
 #endif
   ClearVisibleSelection();
-  SetContext(document);
+  SetDocument(document);
 }
 
-void SelectionEditor::ContextDestroyed(Document*) {
+void SelectionEditor::OnDocumentShutdown() {
   Dispose();
 #if DCHECK_IS_ON()
   style_version_for_dom_tree_ = static_cast<uint64_t>(-1);

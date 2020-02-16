@@ -61,7 +61,6 @@ class VIZ_SERVICE_EXPORT GLOutputSurfaceBufferQueue
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gpu::Mailbox GetOverlayMailbox() const override;
-  gfx::BufferFormat GetOverlayBufferFormat() const override;
 
   // GLOutputSurface:
   void DidReceiveSwapBuffersAck(const gfx::SwapResponse& response) override;

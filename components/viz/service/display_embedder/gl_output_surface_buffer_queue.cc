@@ -210,13 +210,6 @@ gpu::Mailbox GLOutputSurfaceBufferQueue::GetOverlayMailbox() const {
   return last_bound_mailbox_;
 }
 
-gfx::BufferFormat GLOutputSurfaceBufferQueue::GetOverlayBufferFormat() const {
-  // TODO(ccameron): Remove GetOverlayBufferFormat from all OutputSurface
-  // sub-classes.
-  NOTREACHED();
-  return buffer_queue_->buffer_format();
-}
-
 void GLOutputSurfaceBufferQueue::DidReceiveSwapBuffersAck(
     const gfx::SwapResponse& response) {
   bool force_swap = false;

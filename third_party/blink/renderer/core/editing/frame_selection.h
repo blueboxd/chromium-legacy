@@ -129,7 +129,7 @@ class CORE_EXPORT FrameSelection final
   explicit FrameSelection(LocalFrame&);
   ~FrameSelection();
 
-  bool IsAvailable() const { return LifecycleContext(); }
+  bool IsAvailable() const;
   // You should not call |document()| when |!isAvailable()|.
   Document& GetDocument() const;
   LocalFrame* GetFrame() const { return frame_; }
@@ -308,7 +308,7 @@ class CORE_EXPORT FrameSelection final
   void MoveRangeSelectionInternal(const SelectionInDOMTree&, TextGranularity);
 
   // Implementation of |SynchronousMutationObserver| member functions.
-  void ContextDestroyed(Document*) final;
+  void OnDocumentShutdown() final;
   void NodeChildrenWillBeRemoved(ContainerNode&) final;
   void NodeWillBeRemoved(Node&) final;
 

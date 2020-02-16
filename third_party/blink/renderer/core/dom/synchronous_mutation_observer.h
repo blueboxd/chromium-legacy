@@ -5,9 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SYNCHRONOUS_MUTATION_OBSERVER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_SYNCHRONOUS_MUTATION_OBSERVER_H_
 
-#include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
@@ -34,8 +33,7 @@ class Text;
 //  - SelectionController
 //  - Range set
 //  - NodeIterator set
-class CORE_EXPORT SynchronousMutationObserver
-    : public LifecycleObserver<Document, SynchronousMutationObserver> {
+class CORE_EXPORT SynchronousMutationObserver : public GarbageCollectedMixin {
  public:
   // TODO(yosin): We will have following member functions:
   //  - dataWillBeChanged(const CharacterData&);
@@ -44,21 +42,21 @@ class CORE_EXPORT SynchronousMutationObserver
   //  - didRemoveText(Node*, unsigned offset, unsigned length);
 
   // Called after child nodes changed.
-  virtual void DidChangeChildren(const ContainerNode&);
+  virtual void DidChangeChildren(const ContainerNode&) {}
 
   // Called after characters in |nodeToBeRemoved| is appended into |mergedNode|.
   // |oldLength| holds length of |mergedNode| before merge.
   virtual void DidMergeTextNodes(
       const Text& merged_node,
       const NodeWithIndex& node_to_be_removed_with_index,
-      unsigned old_length);
+      unsigned old_length) {}
 
   // Called just after node tree |root| is moved to new document.
-  virtual void DidMoveTreeToNewDocument(const Node& root);
+  virtual void DidMoveTreeToNewDocument(const Node& root) {}
 
   // Called when |Text| node is split, next sibling |oldNode| contains
   // characters after split point.
-  virtual void DidSplitTextNode(const Text& old_node);
+  virtual void DidSplitTextNode(const Text& old_node) {}
 
   // Called when |CharacterData| is updated at |offset|, |oldLength| is a
   // number of deleted character and |newLength| is a number of added
@@ -66,22 +64,30 @@ class CORE_EXPORT SynchronousMutationObserver
   virtual void DidUpdateCharacterData(CharacterData*,
                                       unsigned offset,
                                       unsigned old_length,
-                                      unsigned new_length);
+                                      unsigned new_length) {}
 
   // Called before removing container node.
-  virtual void NodeChildrenWillBeRemoved(ContainerNode&);
+  virtual void NodeChildrenWillBeRemoved(ContainerNode&) {}
 
   // Called before removing node.
-  virtual void NodeWillBeRemoved(Node&);
+  virtual void NodeWillBeRemoved(Node&) {}
 
   // Called when detaching document.
-  virtual void ContextDestroyed(Document*) {}
+  virtual void OnDocumentShutdown() {}
+
+  // Call before clearing an observer list.
+  void ObserverListWillBeCleared();
+
+  Document* GetDocument() const { return document_; }
+  void SetDocument(Document*);
+
+  void Trace(Visitor*) override;
 
  protected:
-  SynchronousMutationObserver();
+  SynchronousMutationObserver() = default;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SynchronousMutationObserver);
+  WeakMember<Document> document_;
 };
 
 }  // namespace blink

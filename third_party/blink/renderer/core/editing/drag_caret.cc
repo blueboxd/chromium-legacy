@@ -66,7 +66,7 @@ void DragCaret::SetCaretPosition(const PositionWithAffinity& position) {
   Document* document = nullptr;
   if (Node* node = position_.AnchorNode()) {
     document = &node->GetDocument();
-    SetContext(document);
+    SetDocument(document);
   }
 }
 

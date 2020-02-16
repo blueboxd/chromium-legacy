@@ -150,7 +150,7 @@ DocumentMarkerController::DocumentMarkerController(Document& document)
 void DocumentMarkerController::Clear() {
   markers_.clear();
   possibly_existing_marker_types_ = DocumentMarker::MarkerTypes();
-  SetContext(nullptr);
+  SetDocument(nullptr);
 }
 
 void DocumentMarkerController::AddSpellingMarker(const EphemeralRange& range,
@@ -308,7 +308,7 @@ void DocumentMarkerController::AddMarkerToNode(const Text& text,
   DCHECK_GE(text.length(), new_marker->EndOffset());
   possibly_existing_marker_types_ = possibly_existing_marker_types_.Add(
       DocumentMarker::MarkerTypes(new_marker->GetType()));
-  SetContext(document_);
+  SetDocument(document_);
 
   Member<MarkerLists>& markers =
       markers_.insert(&text, nullptr).stored_value->value;
@@ -411,7 +411,7 @@ void DocumentMarkerController::RemoveMarkersInternal(
     markers_.erase(&text);
     if (markers_.IsEmpty()) {
       possibly_existing_marker_types_ = DocumentMarker::MarkerTypes();
-      SetContext(nullptr);
+      SetDocument(nullptr);
     }
   }
 
@@ -867,7 +867,7 @@ void DocumentMarkerController::RemoveMarkersOfTypes(
 
   if (PossiblyHasMarkers(DocumentMarker::MarkerTypes::AllBut(marker_types)))
     return;
-  SetContext(nullptr);
+  SetDocument(nullptr);
 }
 
 void DocumentMarkerController::RemoveMarkersFromList(
@@ -913,7 +913,7 @@ void DocumentMarkerController::RemoveMarkersFromList(
     markers_.erase(iterator);
     if (markers_.IsEmpty()) {
       possibly_existing_marker_types_ = DocumentMarker::MarkerTypes();
-      SetContext(nullptr);
+      SetDocument(nullptr);
     }
   }
 }

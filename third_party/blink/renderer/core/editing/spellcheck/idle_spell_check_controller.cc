@@ -212,10 +212,10 @@ void IdleSpellCheckController::Invoke(IdleDeadline* deadline) {
 }
 
 void IdleSpellCheckController::DidAttachDocument(Document* document) {
-  SetContext(document);
+  SetDocument(document);
 }
 
-void IdleSpellCheckController::ContextDestroyed(Document*) {
+void IdleSpellCheckController::OnDocumentShutdown() {
   Deactivate();
 }
 

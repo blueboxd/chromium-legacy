@@ -85,10 +85,6 @@ bool FakeOutputSurface::HasExternalStencilTest() const {
   return has_external_stencil_test_;
 }
 
-gfx::BufferFormat FakeOutputSurface::GetOverlayBufferFormat() const {
-  return gfx::BufferFormat::RGBX_8888;
-}
-
 bool FakeOutputSurface::IsDisplayedAsOverlayPlane() const {
   return overlay_texture_id_ != 0;
 }

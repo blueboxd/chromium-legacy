@@ -112,9 +112,13 @@ const DisplayItemClient& FrameSelection::CaretDisplayItemClientForTesting()
   return frame_caret_->GetDisplayItemClient();
 }
 
+bool FrameSelection::IsAvailable() const {
+  return SynchronousMutationObserver::GetDocument();
+}
+
 Document& FrameSelection::GetDocument() const {
-  DCHECK(LifecycleContext());
-  return *LifecycleContext();
+  DCHECK(IsAvailable());
+  return *SynchronousMutationObserver::GetDocument();
 }
 
 VisibleSelection FrameSelection::ComputeVisibleSelectionInDOMTree() const {
@@ -486,10 +490,10 @@ bool FrameSelection::IsHidden() const {
 void FrameSelection::DidAttachDocument(Document* document) {
   DCHECK(document);
   selection_editor_->DidAttachDocument(document);
-  SetContext(document);
+  SetDocument(document);
 }
 
-void FrameSelection::ContextDestroyed(Document* document) {
+void FrameSelection::OnDocumentShutdown() {
   granularity_ = TextGranularity::kCharacter;
 
   layout_selection_->OnDocumentShutdown();

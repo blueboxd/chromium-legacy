@@ -121,10 +121,6 @@ unsigned ParentOutputSurface::GetOverlayTextureId() const {
   return 0;
 }
 
-gfx::BufferFormat ParentOutputSurface::GetOverlayBufferFormat() const {
-  return gfx::BufferFormat::RGBX_8888;
-}
-
 unsigned ParentOutputSurface::UpdateGpuFence() {
   return 0;
 }

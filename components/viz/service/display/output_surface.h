@@ -151,9 +151,6 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   // Returns the |mailbox| corresponding to the main image's overlay.
   virtual gpu::Mailbox GetOverlayMailbox() const;
 
-  // Get the format for the main image's overlay.
-  virtual gfx::BufferFormat GetOverlayBufferFormat() const = 0;
-
   // TODO(vasilyt): Merge two Reshape versions into one.
   virtual void Reshape(const gfx::Size& size,
                        float device_scale_factor,

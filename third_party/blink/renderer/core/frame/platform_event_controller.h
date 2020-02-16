@@ -14,6 +14,8 @@
 
 namespace blink {
 
+class Document;
+
 // Base controller class for registering controllers with a dispatcher.
 // It watches page visibility and calls stopUpdating when page is not visible.
 // It provides a DidUpdateData() callback method which is called when new data

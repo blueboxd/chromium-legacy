@@ -107,11 +107,6 @@ unsigned FakeSkiaOutputSurface::GetOverlayTextureId() const {
   return 0;
 }
 
-gfx::BufferFormat FakeSkiaOutputSurface::GetOverlayBufferFormat() const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return gfx::BufferFormat::RGBX_8888;
-}
-
 bool FakeSkiaOutputSurface::HasExternalStencilTest() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return false;

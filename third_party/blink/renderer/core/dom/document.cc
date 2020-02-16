@@ -3203,8 +3203,18 @@ void Document::Shutdown() {
   frame_->GetEventHandlerRegistry().DocumentDetached(*this);
 
   // Signal destruction to mutation observers.
-  DocumentShutdownNotifier::NotifyContextDestroyed();
-  SynchronousMutationNotifier::NotifyContextDestroyed();
+  document_shutdown_observer_list_.ForEachObserver(
+      [](DocumentShutdownObserver* observer) {
+        observer->OnDocumentShutdown();
+        observer->ObserverListWillBeCleared();
+      });
+  document_shutdown_observer_list_.Clear();
+  synchronous_mutation_observer_list_.ForEachObserver(
+      [](SynchronousMutationObserver* observer) {
+        observer->OnDocumentShutdown();
+        observer->ObserverListWillBeCleared();
+      });
+  synchronous_mutation_observer_list_.Clear();
 
   cookie_jar_ = nullptr;  // Not accessible after navigated away.
   fetcher_->ClearContext();
@@ -5381,7 +5391,10 @@ void Document::DidMoveTreeToNewDocument(const Node& root) {
     for (Range* range : ranges)
       range->UpdateOwnerDocumentIfNeeded();
   }
-  NotifyMoveTreeToNewDocument(root);
+  synchronous_mutation_observer_list_.ForEachObserver(
+      [&](SynchronousMutationObserver* observer) {
+        observer->DidMoveTreeToNewDocument(root);
+      });
 }
 
 void Document::NodeChildrenWillBeRemoved(ContainerNode& container) {
@@ -5397,7 +5410,10 @@ void Document::NodeChildrenWillBeRemoved(ContainerNode& container) {
       ni->NodeWillBeRemoved(n);
   }
 
-  NotifyNodeChildrenWillBeRemoved(container);
+  synchronous_mutation_observer_list_.ForEachObserver(
+      [&](SynchronousMutationObserver* observer) {
+        observer->NodeChildrenWillBeRemoved(container);
+      });
 
   if (ContainsV1ShadowTree()) {
     for (Node& n : NodeTraversal::ChildrenOf(container))
@@ -5415,13 +5431,34 @@ void Document::NodeWillBeRemoved(Node& n) {
       range->FixupRemovedNodeAcrossShadowBoundary(n);
   }
 
-  NotifyNodeWillBeRemoved(n);
+  synchronous_mutation_observer_list_.ForEachObserver(
+      [&](SynchronousMutationObserver* observer) {
+        observer->NodeWillBeRemoved(n);
+      });
 
   if (ContainsV1ShadowTree())
     n.CheckSlotChangeBeforeRemoved();
 
   if (n.InActiveDocument())
     GetStyleEngine().NodeWillBeRemoved(n);
+}
+
+void Document::NotifyUpdateCharacterData(CharacterData* character_data,
+                                         unsigned offset,
+                                         unsigned old_length,
+                                         unsigned new_length) {
+  synchronous_mutation_observer_list_.ForEachObserver(
+      [&](SynchronousMutationObserver* observer) {
+        observer->DidUpdateCharacterData(character_data, offset, old_length,
+                                         new_length);
+      });
+}
+
+void Document::NotifyChangeChildren(const ContainerNode& container) {
+  synchronous_mutation_observer_list_.ForEachObserver(
+      [&](SynchronousMutationObserver* observer) {
+        observer->DidChangeChildren(container);
+      });
 }
 
 void Document::DidInsertText(const CharacterData& text,
@@ -5448,7 +5485,11 @@ void Document::DidMergeTextNodes(const Text& merged_node,
       range->DidMergeTextNodes(node_to_be_removed_with_index, old_length);
   }
 
-  NotifyMergeTextNodes(merged_node, node_to_be_removed_with_index, old_length);
+  synchronous_mutation_observer_list_.ForEachObserver(
+      [&](SynchronousMutationObserver* observer) {
+        observer->DidMergeTextNodes(merged_node, node_to_be_removed_with_index,
+                                    old_length);
+      });
 
   // FIXME: This should update markers for spelling and grammar checking.
 }
@@ -5457,7 +5498,10 @@ void Document::DidSplitTextNode(const Text& old_node) {
   for (Range* range : ranges_)
     range->DidSplitTextNode(old_node);
 
-  NotifySplitTextNode(old_node);
+  synchronous_mutation_observer_list_.ForEachObserver(
+      [&](SynchronousMutationObserver* observer) {
+        observer->DidSplitTextNode(old_node);
+      });
 
   // FIXME: This should update markers for spelling and grammar checking.
 }
@@ -8087,6 +8131,8 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(find_in_page_root_);
   visitor->Trace(computed_node_mapping_);
   visitor->Trace(mime_handler_view_before_unload_event_listener_);
+  visitor->Trace(document_shutdown_observer_list_);
+  visitor->Trace(synchronous_mutation_observer_list_);
   visitor->Trace(element_explicitly_set_attr_elements_map_);
   visitor->Trace(display_lock_activation_observer_);
   visitor->Trace(form_to_pending_submission_);
@@ -8094,8 +8140,6 @@ void Document::Trace(Visitor* visitor) {
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
   ExecutionContext::Trace(visitor);
-  DocumentShutdownNotifier::Trace(visitor);
-  SynchronousMutationNotifier::Trace(visitor);
 }
 
 void Document::RecordUkmOutliveTimeAfterShutdown(int outlive_time_count) {

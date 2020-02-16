@@ -48,14 +48,12 @@
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
 #include "third_party/blink/renderer/core/dom/document_encoding_data.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
-#include "third_party/blink/renderer/core/dom/document_shutdown_notifier.h"
 #include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/dom/live_node_list_registry.h"
 #include "third_party/blink/renderer/core/dom/qualified_name.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
-#include "third_party/blink/renderer/core/dom/synchronous_mutation_notifier.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/text_link_colors.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
@@ -67,6 +65,7 @@
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/heap_observer_list.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -279,8 +278,6 @@ class CORE_EXPORT Document : public ContainerNode,
                              public virtual UseCounter,
                              public virtual FeaturePolicyParserDelegate,
                              private ExecutionContext,
-                             public DocumentShutdownNotifier,
-                             public SynchronousMutationNotifier,
                              public Supplementable<Document> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Document);
@@ -1742,6 +1739,20 @@ class CORE_EXPORT Document : public ContainerNode,
   void ScheduleFormSubmission(HTMLFormElement* form_element);
   void CancelFormSubmissions();
 
+  HeapObserverList<DocumentShutdownObserver>& DocumentShutdownObserverList() {
+    return document_shutdown_observer_list_;
+  }
+  HeapObserverList<SynchronousMutationObserver>&
+  SynchronousMutationObserverList() {
+    return synchronous_mutation_observer_list_;
+  }
+
+  void NotifyUpdateCharacterData(CharacterData* character_data,
+                                 unsigned offset,
+                                 unsigned old_length,
+                                 unsigned new_length);
+  void NotifyChangeChildren(const ContainerNode& container);
+
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
 
@@ -2281,6 +2292,11 @@ class CORE_EXPORT Document : public ContainerNode,
 
   HeapHashMap<WeakMember<Element>, Member<ExplicitlySetAttrElementsMap>>
       element_explicitly_set_attr_elements_map_;
+
+  HeapObserverList<DocumentShutdownObserver> document_shutdown_observer_list_;
+
+  HeapObserverList<SynchronousMutationObserver>
+      synchronous_mutation_observer_list_;
 
   Member<IntersectionObserver> display_lock_activation_observer_;
 

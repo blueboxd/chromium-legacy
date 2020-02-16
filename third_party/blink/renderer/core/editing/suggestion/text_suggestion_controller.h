@@ -46,6 +46,9 @@ class CORE_EXPORT TextSuggestionController final
   void OnSuggestionMenuClosed();
   void SuggestionMenuTimeoutCallback(size_t max_number_of_suggestions);
 
+  // DocumentShutdownObserver methods:
+  void OnDocumentShutdown() override {}
+
   void Trace(Visitor*) override;
 
  private:

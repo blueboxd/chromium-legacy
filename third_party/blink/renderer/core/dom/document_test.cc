@@ -142,11 +142,11 @@ class TestSynchronousMutationObserver
     void Trace(Visitor* visitor) { visitor->Trace(node_); }
   };
 
-  TestSynchronousMutationObserver(Document&);
+  explicit TestSynchronousMutationObserver(Document&);
   virtual ~TestSynchronousMutationObserver() = default;
 
-  int CountContextDestroyedCalled() const {
-    return context_destroyed_called_counter_;
+  int CountOnDocumentShutdownCalled() const {
+    return on_document_shutdown_called_counter_;
   }
 
   const HeapVector<Member<const ContainerNode>>& ChildrenChangedNodes() const {
@@ -183,7 +183,7 @@ class TestSynchronousMutationObserver
 
  private:
   // Implement |SynchronousMutationObserver| member functions.
-  void ContextDestroyed(Document*) final;
+  void OnDocumentShutdown() final;
   void DidChangeChildren(const ContainerNode&) final;
   void DidMergeTextNodes(const Text&, const NodeWithIndex&, unsigned) final;
   void DidMoveTreeToNewDocument(const Node& root) final;
@@ -195,7 +195,7 @@ class TestSynchronousMutationObserver
   void NodeChildrenWillBeRemoved(ContainerNode&) final;
   void NodeWillBeRemoved(Node&) final;
 
-  int context_destroyed_called_counter_ = 0;
+  int on_document_shutdown_called_counter_ = 0;
   HeapVector<Member<const ContainerNode>> children_changed_nodes_;
   HeapVector<Member<MergeTextNodesRecord>> merge_text_nodes_records_;
   HeapVector<Member<const Node>> move_tree_to_new_document_nodes_;
@@ -209,11 +209,11 @@ class TestSynchronousMutationObserver
 
 TestSynchronousMutationObserver::TestSynchronousMutationObserver(
     Document& document) {
-  SetContext(&document);
+  SetDocument(&document);
 }
 
-void TestSynchronousMutationObserver::ContextDestroyed(Document*) {
-  ++context_destroyed_called_counter_;
+void TestSynchronousMutationObserver::OnDocumentShutdown() {
+  ++on_document_shutdown_called_counter_;
 }
 
 void TestSynchronousMutationObserver::DidChangeChildren(
@@ -275,30 +275,30 @@ class TestDocumentShutdownObserver
   USING_GARBAGE_COLLECTED_MIXIN(TestDocumentShutdownObserver);
 
  public:
-  TestDocumentShutdownObserver(Document&);
+  explicit TestDocumentShutdownObserver(Document&);
   virtual ~TestDocumentShutdownObserver() = default;
 
-  int CountContextDestroyedCalled() const {
-    return context_destroyed_called_counter_;
+  int CountOnDocumentShutdownCalled() const {
+    return on_document_shutdown_called_counter_;
   }
 
   void Trace(Visitor*) override;
 
  private:
   // Implement |DocumentShutdownObserver| member functions.
-  void ContextDestroyed(Document*) final;
+  void OnDocumentShutdown() final;
 
-  int context_destroyed_called_counter_ = 0;
+  int on_document_shutdown_called_counter_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(TestDocumentShutdownObserver);
 };
 
 TestDocumentShutdownObserver::TestDocumentShutdownObserver(Document& document) {
-  SetContext(&document);
+  SetDocument(&document);
 }
 
-void TestDocumentShutdownObserver::ContextDestroyed(Document*) {
-  ++context_destroyed_called_counter_;
+void TestDocumentShutdownObserver::OnDocumentShutdown() {
+  ++on_document_shutdown_called_counter_;
 }
 
 void TestDocumentShutdownObserver::Trace(Visitor* visitor) {
@@ -656,8 +656,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
   auto& observer =
       *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
 
-  EXPECT_EQ(GetDocument(), observer.LifecycleContext());
-  EXPECT_EQ(0, observer.CountContextDestroyedCalled());
+  EXPECT_EQ(GetDocument(), observer.GetDocument());
+  EXPECT_EQ(0, observer.CountOnDocumentShutdownCalled());
 
   Element* div_node = GetDocument().CreateRawElement(html_names::kDivTag);
   GetDocument().body()->AppendChild(div_node);
@@ -683,8 +683,8 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
   EXPECT_EQ(div_node, observer.RemovedChildrenNodes()[0]);
 
   GetDocument().Shutdown();
-  EXPECT_EQ(nullptr, observer.LifecycleContext());
-  EXPECT_EQ(1, observer.CountContextDestroyedCalled());
+  EXPECT_EQ(nullptr, observer.GetDocument());
+  EXPECT_EQ(1, observer.CountOnDocumentShutdownCalled());
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifieAppendChild) {
@@ -831,12 +831,12 @@ TEST_F(DocumentTest, DocumentShutdownNotifier) {
   auto& observer =
       *MakeGarbageCollected<TestDocumentShutdownObserver>(GetDocument());
 
-  EXPECT_EQ(GetDocument(), observer.LifecycleContext());
-  EXPECT_EQ(0, observer.CountContextDestroyedCalled());
+  EXPECT_EQ(GetDocument(), observer.GetDocument());
+  EXPECT_EQ(0, observer.CountOnDocumentShutdownCalled());
 
   GetDocument().Shutdown();
-  EXPECT_EQ(nullptr, observer.LifecycleContext());
-  EXPECT_EQ(1, observer.CountContextDestroyedCalled());
+  EXPECT_EQ(nullptr, observer.GetDocument());
+  EXPECT_EQ(1, observer.CountOnDocumentShutdownCalled());
 }
 
 TEST_F(DocumentTest, AttachExecutionContext) {

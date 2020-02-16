@@ -91,10 +91,6 @@ unsigned SoftwareOutputSurface::GetOverlayTextureId() const {
   return 0;
 }
 
-gfx::BufferFormat SoftwareOutputSurface::GetOverlayBufferFormat() const {
-  return gfx::BufferFormat::RGBX_8888;
-}
-
 bool SoftwareOutputSurface::HasExternalStencilTest() const {
   return false;
 }

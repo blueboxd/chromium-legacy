@@ -197,7 +197,7 @@ TextSuggestionController::TextSuggestionController(LocalFrame& frame)
 
 void TextSuggestionController::DidAttachDocument(Document* document) {
   DCHECK(document);
-  SetContext(document);
+  SetDocument(document);
 }
 
 bool TextSuggestionController::IsMenuOpen() const {
@@ -525,11 +525,11 @@ void TextSuggestionController::CallMojoShowTextSuggestionMenu(
 
 Document& TextSuggestionController::GetDocument() const {
   DCHECK(IsAvailable());
-  return *LifecycleContext();
+  return *DocumentShutdownObserver::GetDocument();
 }
 
 bool TextSuggestionController::IsAvailable() const {
-  return LifecycleContext();
+  return DocumentShutdownObserver::GetDocument();
 }
 
 LocalFrame& TextSuggestionController::GetFrame() const {

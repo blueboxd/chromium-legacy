@@ -33,10 +33,6 @@ unsigned OutputSurfaceUnified::GetOverlayTextureId() const {
   return 0;
 }
 
-gfx::BufferFormat OutputSurfaceUnified::GetOverlayBufferFormat() const {
-  return gfx::BufferFormat::RGBX_8888;
-}
-
 bool OutputSurfaceUnified::HasExternalStencilTest() const {
   return false;
 }

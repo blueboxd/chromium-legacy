@@ -91,7 +91,7 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   void PageVisibilityChanged() override;
 
   // Implementation of DocumentShutdownObserver.
-  void ContextDestroyed(Document*) override;
+  void OnDocumentShutdown() override;
 
   void Trace(Visitor*) override;
 

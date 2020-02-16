@@ -397,12 +397,12 @@ InputMethodController::InputMethodController(LocalFrame& frame)
 InputMethodController::~InputMethodController() = default;
 
 bool InputMethodController::IsAvailable() const {
-  return LifecycleContext();
+  return DocumentShutdownObserver::GetDocument();
 }
 
 Document& InputMethodController::GetDocument() const {
   DCHECK(IsAvailable());
-  return *LifecycleContext();
+  return *DocumentShutdownObserver::GetDocument();
 }
 
 bool InputMethodController::HasComposition() const {
@@ -426,7 +426,7 @@ void InputMethodController::Clear() {
       DocumentMarker::MarkerTypes::Composition());
 }
 
-void InputMethodController::ContextDestroyed(Document*) {
+void InputMethodController::OnDocumentShutdown() {
   Clear();
   composition_range_ = nullptr;
   active_edit_context_ = nullptr;
@@ -434,7 +434,7 @@ void InputMethodController::ContextDestroyed(Document*) {
 
 void InputMethodController::DidAttachDocument(Document* document) {
   DCHECK(document);
-  SetContext(document);
+  SetDocument(document);
 }
 
 void InputMethodController::SelectComposition() const {

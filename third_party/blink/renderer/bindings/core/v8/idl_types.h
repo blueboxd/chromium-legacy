@@ -193,12 +193,12 @@ struct IDLRecord final : public IDLBase {
 };
 
 // Nullable types
-template <typename InnerType>
+template <typename T>
 struct IDLNullable final : public IDLBase {
   using ImplType = std::conditional_t<
-      NativeValueTraits<InnerType>::has_null_value,
-      typename NativeValueTraits<InnerType>::ImplType,
-      base::Optional<typename NativeValueTraits<InnerType>::ImplType>>;
+      NativeValueTraits<T>::has_null_value,
+      typename NativeValueTraits<T>::ImplType,
+      base::Optional<typename NativeValueTraits<T>::ImplType>>;
 };
 
 // Date

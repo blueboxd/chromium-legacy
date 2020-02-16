@@ -375,7 +375,7 @@ void PictureInPictureControllerImpl::PageVisibilityChanged() {
   }
 }
 
-void PictureInPictureControllerImpl::ContextDestroyed(Document*) {
+void PictureInPictureControllerImpl::OnDocumentShutdown() {
   picture_in_picture_service_.reset();
   session_observer_receiver_.reset();
 }
@@ -414,6 +414,7 @@ PictureInPictureControllerImpl::PictureInPictureControllerImpl(
     Document& document)
     : PictureInPictureController(document),
       PageVisibilityObserver(document.GetPage()),
+      DocumentShutdownObserver(&document),
       session_observer_receiver_(this) {}
 
 bool PictureInPictureControllerImpl::EnsureService() {

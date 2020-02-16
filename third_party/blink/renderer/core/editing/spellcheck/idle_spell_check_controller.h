@@ -70,12 +70,12 @@ class CORE_EXPORT IdleSpellCheckController final
   LocalFrame& GetFrame() const { return *frame_; }
 
   // Returns whether there is an active document to work on.
-  bool IsAvailable() const { return LifecycleContext(); }
+  bool IsAvailable() const { return DocumentShutdownObserver::GetDocument(); }
 
   // Return the document to work on. Callable only when IsAvailable() is true.
   Document& GetDocument() const {
     DCHECK(IsAvailable());
-    return *LifecycleContext();
+    return *DocumentShutdownObserver::GetDocument();
   }
 
   // Returns whether spell checking is globally enabled.
@@ -96,7 +96,7 @@ class CORE_EXPORT IdleSpellCheckController final
   void ColdModeInvocation(IdleDeadline*);
 
   // Implements |DocumentShutdownObserver|.
-  void ContextDestroyed(Document*) final;
+  void OnDocumentShutdown() final;
 
   void DisposeIdleCallback();
 

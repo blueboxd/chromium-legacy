@@ -2257,7 +2257,6 @@ class MockOutputSurface : public OutputSurface {
   void SwapBuffers(OutputSurfaceFrame frame) override { SwapBuffers_(frame); }
   MOCK_CONST_METHOD0(IsDisplayedAsOverlayPlane, bool());
   MOCK_CONST_METHOD0(GetOverlayTextureId, unsigned());
-  MOCK_CONST_METHOD0(GetOverlayBufferFormat, gfx::BufferFormat());
   MOCK_CONST_METHOD0(HasExternalStencilTest, bool());
   MOCK_METHOD0(ApplyExternalStencil, void());
   MOCK_METHOD1(SetUpdateVSyncParametersCallback,

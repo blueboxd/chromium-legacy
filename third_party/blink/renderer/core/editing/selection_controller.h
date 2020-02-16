@@ -120,7 +120,7 @@ class CORE_EXPORT SelectionController final
   // Implements |DocumentShutdownObserver|.
   // TODO(yosin): We should relocate |original_base_in_flat_tree_| when DOM tree
   // changed.
-  void ContextDestroyed(Document*) final;
+  void OnDocumentShutdown() final;
 
   bool HandleSingleClick(const MouseEventWithHitTestResults&);
   bool HandleDoubleClick(const MouseEventWithHitTestResults&);

@@ -10,7 +10,11 @@
 ../../build/scripts/blinkbuild/__init__.py
 ../../build/scripts/blinkbuild/name_style_converter.py
 generate_high_entropy_list.py
+idl_definitions.py
+idl_types.py
 utilities.py
+v8_globals.py
+v8_utilities.py
 web_idl/__init__.py
 web_idl/argument.py
 web_idl/ast_group.py

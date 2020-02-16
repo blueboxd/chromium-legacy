@@ -223,7 +223,7 @@ action_with_pydeps("generate_high_entropy_list") {
   web_idl_database = web_idl_database_outputs[0]
 
   inputs = [ web_idl_database ]
-  output_data_file = "${bindings_output_dir}/high_entropy_list.txt"
+  output_data_file = "${root_build_dir}/high_entropy_list.csv"
   outputs = [ output_data_file ]
 
   args = [

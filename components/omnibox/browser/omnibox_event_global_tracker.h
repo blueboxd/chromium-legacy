@@ -25,7 +25,7 @@ struct OmniboxLog;
 // forwards the event to its registered observers.
 class OmniboxEventGlobalTracker {
  public:
-  typedef base::Callback<void(OmniboxLog*)> OnURLOpenedCallback;
+  typedef base::RepeatingCallback<void(OmniboxLog*)> OnURLOpenedCallback;
 
   // Returns the instance of OmniboxEventGlobalTracker.
   static OmniboxEventGlobalTracker* GetInstance();

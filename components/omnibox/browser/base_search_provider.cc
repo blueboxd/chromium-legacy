@@ -39,12 +39,12 @@
 // personalized suggestions.
 class SuggestionDeletionHandler {
  public:
-  typedef base::Callback<void(bool, SuggestionDeletionHandler*)>
+  typedef base::OnceCallback<void(bool, SuggestionDeletionHandler*)>
       DeletionCompletedCallback;
 
   SuggestionDeletionHandler(AutocompleteProviderClient* client,
                             const std::string& deletion_url,
-                            const DeletionCompletedCallback& callback);
+                            DeletionCompletedCallback callback);
 
   ~SuggestionDeletionHandler();
 
@@ -62,8 +62,8 @@ class SuggestionDeletionHandler {
 SuggestionDeletionHandler::SuggestionDeletionHandler(
     AutocompleteProviderClient* client,
     const std::string& deletion_url,
-    const DeletionCompletedCallback& callback)
-    : callback_(callback) {
+    DeletionCompletedCallback callback)
+    : callback_(std::move(callback)) {
   GURL url(deletion_url);
   DCHECK(url.is_valid());
 
@@ -127,7 +127,7 @@ void SuggestionDeletionHandler::OnURLLoadComplete(
   const bool ok = source->NetError() == net::OK &&
                   (source->ResponseInfo() && source->ResponseInfo()->headers &&
                    source->ResponseInfo()->headers->response_code() == 200);
-  callback_.Run(ok, this);
+  std::move(callback_).Run(ok, this);
 }
 
 // BaseSearchProvider ---------------------------------------------------------
@@ -221,8 +221,8 @@ void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
   if (!match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey).empty()) {
     deletion_handlers_.push_back(std::make_unique<SuggestionDeletionHandler>(
         client(), match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey),
-        base::BindRepeating(&BaseSearchProvider::OnDeletionComplete,
-                            base::Unretained(this))));
+        base::BindOnce(&BaseSearchProvider::OnDeletionComplete,
+                       base::Unretained(this))));
   }
 
   const TemplateURL* template_url =

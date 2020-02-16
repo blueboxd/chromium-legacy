@@ -63,7 +63,7 @@ class RTCVoidRequestImpl final : public RTCVoidRequest,
   void RequestFailed(const webrtc::RTCError&) override;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

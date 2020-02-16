@@ -74,10 +74,10 @@ class CryptoResultImpl::Resolver final : public ScriptPromiseResolver {
   Resolver(ScriptState* script_state, CryptoResultImpl* result)
       : ScriptPromiseResolver(script_state), result_(result) {}
 
-  void ContextDestroyed(ExecutionContext* destroyed_context) override {
+  void ContextDestroyed() override {
     result_->Cancel();
     result_ = nullptr;
-    ScriptPromiseResolver::ContextDestroyed(destroyed_context);
+    ScriptPromiseResolver::ContextDestroyed();
   }
 
   void Trace(Visitor* visitor) override {

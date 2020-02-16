@@ -60,7 +60,7 @@ class DOMPluginArray final : public ScriptWrappable,
 
  private:
   PluginData* GetPluginData() const;
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   HeapVector<Member<DOMPlugin>> dom_plugins_;
 };

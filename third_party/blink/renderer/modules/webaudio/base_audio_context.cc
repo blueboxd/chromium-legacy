@@ -193,7 +193,7 @@ void BaseAudioContext::ContextLifecycleStateChanged(
     destination()->GetAudioDestinationHandler().Pause();
 }
 
-void BaseAudioContext::ContextDestroyed(ExecutionContext*) {
+void BaseAudioContext::ContextDestroyed() {
   destination()->GetAudioDestinationHandler().ContextDestroyed();
   Uninitialize();
 }

@@ -68,7 +68,7 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
   ExecutionContext* GetExecutionContext() const override;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

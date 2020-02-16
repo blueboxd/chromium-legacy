@@ -288,8 +288,7 @@ void ImageBitmapFactories::ImageBitmapLoader::RejectPromise(
   factory_->DidFinishLoading(this);
 }
 
-void ImageBitmapFactories::ImageBitmapLoader::ContextDestroyed(
-    ExecutionContext*) {
+void ImageBitmapFactories::ImageBitmapLoader::ContextDestroyed() {
   if (loader_)
     factory_->DidFinishLoading(this);
   loader_.reset();

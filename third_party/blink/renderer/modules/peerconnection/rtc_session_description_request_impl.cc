@@ -90,7 +90,7 @@ void RTCSessionDescriptionRequestImpl::RequestFailed(
   Clear();
 }
 
-void RTCSessionDescriptionRequestImpl::ContextDestroyed(ExecutionContext*) {
+void RTCSessionDescriptionRequestImpl::ContextDestroyed() {
   Clear();
 }
 

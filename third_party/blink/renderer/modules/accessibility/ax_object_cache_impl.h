@@ -340,7 +340,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void PostNotificationsAfterLayout(Document*);
 
   // ContextLifecycleObserver overrides.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // Get the currently focused Node element.
   Node* FocusedElement();

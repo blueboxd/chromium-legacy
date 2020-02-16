@@ -117,7 +117,7 @@ class MODULES_EXPORT UserMediaRequest final
   bool IsSecureContextUse(String& error_message);
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

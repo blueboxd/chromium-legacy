@@ -375,7 +375,7 @@ void PictureInPictureControllerImpl::PageVisibilityChanged() {
   }
 }
 
-void PictureInPictureControllerImpl::OnDocumentShutdown() {
+void PictureInPictureControllerImpl::ContextDestroyed() {
   picture_in_picture_service_.reset();
   session_observer_receiver_.reset();
 }
@@ -407,14 +407,14 @@ void PictureInPictureControllerImpl::Trace(Visitor* visitor) {
   visitor->Trace(picture_in_picture_window_);
   PictureInPictureController::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
-  DocumentShutdownObserver::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 PictureInPictureControllerImpl::PictureInPictureControllerImpl(
     Document& document)
     : PictureInPictureController(document),
       PageVisibilityObserver(document.GetPage()),
-      DocumentShutdownObserver(&document),
+      ContextLifecycleObserver(&document),
       session_observer_receiver_(this) {}
 
 bool PictureInPictureControllerImpl::EnsureService() {

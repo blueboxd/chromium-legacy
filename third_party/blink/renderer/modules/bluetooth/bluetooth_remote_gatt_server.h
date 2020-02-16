@@ -36,7 +36,7 @@ class BluetoothRemoteGATTServer
   BluetoothRemoteGATTServer(ExecutionContext*, BluetoothDevice*);
 
   // ContextLifecycleObserver:
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // mojom::blink::WebBluetoothServerClient:
   void GATTServerDisconnected() override;

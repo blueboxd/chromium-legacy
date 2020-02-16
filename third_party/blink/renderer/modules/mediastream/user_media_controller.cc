@@ -48,7 +48,7 @@ UserMediaClient* UserMediaController::Client() {
   return client_;
 }
 
-void UserMediaController::ContextDestroyed(ExecutionContext*) {
+void UserMediaController::ContextDestroyed() {
   if (!client_)
     return;
   client_->ContextDestroyed();

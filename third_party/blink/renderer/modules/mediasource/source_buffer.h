@@ -104,7 +104,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // EventTarget interface
   ExecutionContext* GetExecutionContext() const override;

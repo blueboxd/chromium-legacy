@@ -392,7 +392,7 @@ class CORE_EXPORT HTMLMediaElement
 
   // ContextLifecycleStateObserver functions.
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   virtual void UpdateDisplayState() {}
   virtual void OnPlay() {}

@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/layout/ng/custom/pending_layout_registry.h"
 #include "third_party/blink/renderer/core/workers/worklet.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
 

@@ -256,7 +256,7 @@ void ImageDownloaderImpl::Trace(Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-void ImageDownloaderImpl::ContextDestroyed(ExecutionContext*) {
+void ImageDownloaderImpl::ContextDestroyed() {
   for (const auto& fetcher : image_fetchers_) {
     // Will run callbacks with an empty image vector.
     fetcher->Dispose();

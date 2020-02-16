@@ -1244,7 +1244,7 @@ void XR::AddedEventListener(const AtomicString& event_type,
   }
 }
 
-void XR::ContextDestroyed(ExecutionContext*) {
+void XR::ContextDestroyed() {
   Dispose(DisposeType::kContextDestroyed);
 }
 

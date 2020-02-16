@@ -131,7 +131,7 @@ LocalFrame* Geolocation::GetFrame() const {
   return GetDocument() ? GetDocument()->GetFrame() : nullptr;
 }
 
-void Geolocation::ContextDestroyed(ExecutionContext*) {
+void Geolocation::ContextDestroyed() {
   StopTimers();
   one_shots_.clear();
   watchers_->Clear();

@@ -58,13 +58,7 @@ int64_t SysInfo::AmountOfTotalDiskSpace(const FilePath& path) {
 
 // static
 std::string SysInfo::OperatingSystemVersion() {
-  char result[64] = {};
-  zx_status_t status = zx_system_get_version(result, sizeof(result));
-  if (status != ZX_OK) {
-    ZX_DLOG(WARNING, status) << "zx_system_get_version";
-    return std::string();
-  }
-  return result;
+  return zx_system_get_version_string();
 }
 
 // static

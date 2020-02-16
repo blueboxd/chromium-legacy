@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
 #include "chrome/browser/chromeos/crostini/crostini_simple_types.h"
+#include "chrome/browser/chromeos/crostini/crostini_types.mojom.h"
 
 namespace extensions {
 

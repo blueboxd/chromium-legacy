@@ -60,7 +60,7 @@ class CORE_EXPORT PausableScriptExecutor final
 
   void Run();
   void RunAsync(BlockingOption);
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

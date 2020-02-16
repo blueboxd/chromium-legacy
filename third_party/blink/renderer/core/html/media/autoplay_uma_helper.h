@@ -44,7 +44,7 @@ class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
   explicit AutoplayUmaHelper(HTMLMediaElement*);
   ~AutoplayUmaHelper() override;
 
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void OnAutoplayInitiated(AutoplaySource);
 

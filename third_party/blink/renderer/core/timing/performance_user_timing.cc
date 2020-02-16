@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/timing/performance_user_timing.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_performance_mark_options.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/timing/performance_mark.h"
 #include "third_party/blink/renderer/core/timing/performance_measure.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"

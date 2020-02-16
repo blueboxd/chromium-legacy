@@ -145,7 +145,7 @@ class TestSynchronousMutationObserver
   explicit TestSynchronousMutationObserver(Document&);
   virtual ~TestSynchronousMutationObserver() = default;
 
-  int CountOnDocumentShutdownCalled() const {
+  int CountContextDestroyedCalled() const {
     return on_document_shutdown_called_counter_;
   }
 
@@ -183,7 +183,7 @@ class TestSynchronousMutationObserver
 
  private:
   // Implement |SynchronousMutationObserver| member functions.
-  void OnDocumentShutdown() final;
+  void ContextDestroyed() final;
   void DidChangeChildren(const ContainerNode&) final;
   void DidMergeTextNodes(const Text&, const NodeWithIndex&, unsigned) final;
   void DidMoveTreeToNewDocument(const Node& root) final;
@@ -212,7 +212,7 @@ TestSynchronousMutationObserver::TestSynchronousMutationObserver(
   SetDocument(&document);
 }
 
-void TestSynchronousMutationObserver::OnDocumentShutdown() {
+void TestSynchronousMutationObserver::ContextDestroyed() {
   ++on_document_shutdown_called_counter_;
 }
 
@@ -267,42 +267,6 @@ void TestSynchronousMutationObserver::Trace(Visitor* visitor) {
   visitor->Trace(split_text_nodes_);
   visitor->Trace(updated_character_data_records_);
   SynchronousMutationObserver::Trace(visitor);
-}
-
-class TestDocumentShutdownObserver
-    : public GarbageCollected<TestDocumentShutdownObserver>,
-      public DocumentShutdownObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(TestDocumentShutdownObserver);
-
- public:
-  explicit TestDocumentShutdownObserver(Document&);
-  virtual ~TestDocumentShutdownObserver() = default;
-
-  int CountOnDocumentShutdownCalled() const {
-    return on_document_shutdown_called_counter_;
-  }
-
-  void Trace(Visitor*) override;
-
- private:
-  // Implement |DocumentShutdownObserver| member functions.
-  void OnDocumentShutdown() final;
-
-  int on_document_shutdown_called_counter_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestDocumentShutdownObserver);
-};
-
-TestDocumentShutdownObserver::TestDocumentShutdownObserver(Document& document) {
-  SetDocument(&document);
-}
-
-void TestDocumentShutdownObserver::OnDocumentShutdown() {
-  ++on_document_shutdown_called_counter_;
-}
-
-void TestDocumentShutdownObserver::Trace(Visitor* visitor) {
-  DocumentShutdownObserver::Trace(visitor);
 }
 
 class MockDocumentValidationMessageClient
@@ -657,7 +621,7 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
       *MakeGarbageCollected<TestSynchronousMutationObserver>(GetDocument());
 
   EXPECT_EQ(GetDocument(), observer.GetDocument());
-  EXPECT_EQ(0, observer.CountOnDocumentShutdownCalled());
+  EXPECT_EQ(0, observer.CountContextDestroyedCalled());
 
   Element* div_node = GetDocument().CreateRawElement(html_names::kDivTag);
   GetDocument().body()->AppendChild(div_node);
@@ -684,7 +648,7 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
 
   GetDocument().Shutdown();
   EXPECT_EQ(nullptr, observer.GetDocument());
-  EXPECT_EQ(1, observer.CountOnDocumentShutdownCalled());
+  EXPECT_EQ(1, observer.CountContextDestroyedCalled());
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifieAppendChild) {
@@ -825,18 +789,6 @@ TEST_F(DocumentTest, SynchronousMutationNotifierUpdateCharacterData) {
   EXPECT_EQ(6u, observer.UpdatedCharacterDataRecords()[3]->offset_);
   EXPECT_EQ(4u, observer.UpdatedCharacterDataRecords()[3]->old_length_);
   EXPECT_EQ(3u, observer.UpdatedCharacterDataRecords()[3]->new_length_);
-}
-
-TEST_F(DocumentTest, DocumentShutdownNotifier) {
-  auto& observer =
-      *MakeGarbageCollected<TestDocumentShutdownObserver>(GetDocument());
-
-  EXPECT_EQ(GetDocument(), observer.GetDocument());
-  EXPECT_EQ(0, observer.CountOnDocumentShutdownCalled());
-
-  GetDocument().Shutdown();
-  EXPECT_EQ(nullptr, observer.GetDocument());
-  EXPECT_EQ(1, observer.CountOnDocumentShutdownCalled());
 }
 
 TEST_F(DocumentTest, AttachExecutionContext) {

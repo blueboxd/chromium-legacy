@@ -184,7 +184,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
   bool HasPendingActivity() const final;
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   double playbackRate() const;
   void setPlaybackRate(double, ExceptionState& = ASSERT_NO_EXCEPTION);

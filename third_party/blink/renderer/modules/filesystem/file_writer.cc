@@ -67,7 +67,7 @@ const AtomicString& FileWriter::InterfaceName() const {
   return event_target_names::kFileWriter;
 }
 
-void FileWriter::ContextDestroyed(ExecutionContext*) {
+void FileWriter::ContextDestroyed() {
   Dispose();
 }
 

@@ -10,8 +10,6 @@ blink_core_sources("execution_context") {
     "agent.h",
     "agent_metrics_collector.cc",
     "agent_metrics_collector.h",
-    "context_lifecycle_notifier.cc",
-    "context_lifecycle_notifier.h",
     "context_lifecycle_observer.cc",
     "context_lifecycle_observer.h",
     "context_lifecycle_state_observer.cc",

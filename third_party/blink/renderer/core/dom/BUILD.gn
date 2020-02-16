@@ -62,8 +62,6 @@ blink_core_sources("dom") {
     "document_parser_client.h",
     "document_parser_timing.cc",
     "document_parser_timing.h",
-    "document_shutdown_observer.cc",
-    "document_shutdown_observer.h",
     "document_statistics_collector.cc",
     "document_statistics_collector.h",
     "document_timing.cc",

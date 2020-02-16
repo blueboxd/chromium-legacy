@@ -48,7 +48,6 @@
 #include "third_party/blink/renderer/core/dom/create_element_flags.h"
 #include "third_party/blink/renderer/core/dom/document_encoding_data.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
-#include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/dom/live_node_list_registry.h"
@@ -1739,9 +1738,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void ScheduleFormSubmission(HTMLFormElement* form_element);
   void CancelFormSubmissions();
 
-  HeapObserverList<DocumentShutdownObserver>& DocumentShutdownObserverList() {
-    return document_shutdown_observer_list_;
-  }
   HeapObserverList<SynchronousMutationObserver>&
   SynchronousMutationObserverList() {
     return synchronous_mutation_observer_list_;
@@ -2292,8 +2288,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   HeapHashMap<WeakMember<Element>, Member<ExplicitlySetAttrElementsMap>>
       element_explicitly_set_attr_elements_map_;
-
-  HeapObserverList<DocumentShutdownObserver> document_shutdown_observer_list_;
 
   HeapObserverList<SynchronousMutationObserver>
       synchronous_mutation_observer_list_;

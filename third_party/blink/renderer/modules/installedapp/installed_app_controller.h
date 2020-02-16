@@ -61,7 +61,7 @@ class MODULES_EXPORT InstalledAppController final
       mojom::blink::ManifestPtr manifest);
 
   // Inherited from ContextLifecycleObserver.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // Callback from the InstalledAppProvider mojo service.
   void OnFilterInstalledApps(std::unique_ptr<AppInstalledCallbacks>,

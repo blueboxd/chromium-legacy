@@ -109,7 +109,7 @@ void BatteryManager::ContextLifecycleStateChanged(
   }
 }
 
-void BatteryManager::ContextDestroyed(ExecutionContext*) {
+void BatteryManager::ContextDestroyed() {
   has_event_listener_ = false;
   battery_property_ = nullptr;
   StopUpdating();

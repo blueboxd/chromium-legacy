@@ -17,7 +17,6 @@ class SingleThreadTaskRunner;
 
 namespace blink {
 class Document;
-class ExecutionContext;
 class WebSchedulingTaskQueue;
 
 class MODULES_EXPORT DOMTaskSignal final : public AbortSignal,
@@ -32,7 +31,7 @@ class MODULES_EXPORT DOMTaskSignal final : public AbortSignal,
   // task_signal.idl
   AtomicString priority();
 
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void SignalPriorityChange(WebSchedulingPriority);
   base::SingleThreadTaskRunner* GetTaskRunner();

@@ -493,10 +493,10 @@ void FrameSelection::DidAttachDocument(Document* document) {
   SetDocument(document);
 }
 
-void FrameSelection::OnDocumentShutdown() {
+void FrameSelection::ContextDestroyed() {
   granularity_ = TextGranularity::kCharacter;
 
-  layout_selection_->OnDocumentShutdown();
+  layout_selection_->ContextDestroyed();
 
   frame_->GetEditor().ClearTypingStyle();
 }

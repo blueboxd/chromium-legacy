@@ -29,7 +29,7 @@ class CORE_EXPORT FetchManager final : public GarbageCollected<FetchManager>,
                       FetchRequestData*,
                       AbortSignal*,
                       ExceptionState&);
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

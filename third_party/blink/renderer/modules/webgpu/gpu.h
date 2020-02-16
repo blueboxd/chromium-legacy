@@ -35,7 +35,7 @@ class GPU final : public ScriptWrappable, public ContextLifecycleObserver {
   void Trace(Visitor* visitor) override;
 
   // ContextLifecycleObserver overrides
-  void ContextDestroyed(ExecutionContext* execution_context) override;
+  void ContextDestroyed() override;
 
   // gpu.idl
   ScriptPromise requestAdapter(ScriptState* script_state,

@@ -62,7 +62,7 @@
 namespace blink {
 
 SelectionController::SelectionController(LocalFrame& frame)
-    : DocumentShutdownObserver(frame.GetDocument()),
+    : ContextLifecycleObserver(frame.GetDocument()),
       frame_(&frame),
       mouse_down_may_start_select_(false),
       mouse_down_was_single_click_in_selection_(false),
@@ -72,7 +72,7 @@ SelectionController::SelectionController(LocalFrame& frame)
 void SelectionController::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(original_base_in_flat_tree_);
-  DocumentShutdownObserver::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 namespace {
@@ -168,7 +168,7 @@ Document& SelectionController::GetDocument() const {
   return *frame_->GetDocument();
 }
 
-void SelectionController::OnDocumentShutdown() {
+void SelectionController::ContextDestroyed() {
   original_base_in_flat_tree_ = PositionInFlatTreeWithAffinity();
 }
 
@@ -831,7 +831,7 @@ void SelectionController::SetNonDirectionalSelectionIfNeeded(
   if (adjusted_selection.Base() != base.GetPosition() ||
       adjusted_selection.Extent() != extent.GetPosition()) {
     original_base_in_flat_tree_ = base;
-    SetDocument(&GetDocument());
+    SetExecutionContext(GetDocument().ToExecutionContext());
     builder.SetBaseAndExtent(adjusted_selection.Base(),
                              adjusted_selection.Extent());
   } else if (original_base.IsNotNull()) {

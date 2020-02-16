@@ -138,7 +138,7 @@ void DisplayLockContext::Dispose() {
   state_ = kUnlocked;
 }
 
-void DisplayLockContext::ContextDestroyed(ExecutionContext*) {
+void DisplayLockContext::ContextDestroyed() {
   FinishUpdateResolver(kReject, rejection_names::kExecutionContextDestroyed);
   state_ = kUnlocked;
 }

@@ -69,7 +69,7 @@ class CookieStore final : public EventTargetWithInlineData,
   void Trace(Visitor* visitor) override;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // EventTargetWithInlineData
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change, kChange)

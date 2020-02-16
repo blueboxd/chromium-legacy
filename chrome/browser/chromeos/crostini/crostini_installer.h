@@ -9,9 +9,9 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_installer_types.mojom-forward.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer_ui_delegate.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_types.mojom-forward.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 class Profile;

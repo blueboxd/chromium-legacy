@@ -77,7 +77,7 @@ void RTCVoidRequestImpl::RequestFailed(const webrtc::RTCError& error) {
   Clear();
 }
 
-void RTCVoidRequestImpl::ContextDestroyed(ExecutionContext*) {
+void RTCVoidRequestImpl::ContextDestroyed() {
   Clear();
 }
 

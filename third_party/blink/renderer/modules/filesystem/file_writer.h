@@ -79,7 +79,7 @@ class FileWriter final : public EventTargetWithInlineData,
   void DoCancel() override;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // ScriptWrappable
   bool HasPendingActivity() const final;

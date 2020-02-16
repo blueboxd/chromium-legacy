@@ -357,7 +357,7 @@ class MODULES_EXPORT RTCPeerConnection final
   ExecutionContext* GetExecutionContext() const override;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // ScriptWrappable
   // We keep the this object alive until either stopped or closed.

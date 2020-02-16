@@ -98,7 +98,7 @@ void GPU::Trace(Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-void GPU::ContextDestroyed(ExecutionContext* execution_context) {
+void GPU::ContextDestroyed() {
   dawn_control_client_->Destroy();
 }
 

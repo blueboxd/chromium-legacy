@@ -78,7 +78,7 @@ class MODULES_EXPORT WebSocketStream final
                 const String& /* reason */) override;
 
   // Implementation of ContextLifecycleObserver.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // Implementation of ActiveScriptWrappable.
   bool HasPendingActivity() const override;

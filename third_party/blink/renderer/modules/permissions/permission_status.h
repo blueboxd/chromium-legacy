@@ -56,7 +56,7 @@ class PermissionStatus final : public EventTargetWithInlineData,
 
   // ContextLifecycleStateObserver implementation.
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   String state() const;
 

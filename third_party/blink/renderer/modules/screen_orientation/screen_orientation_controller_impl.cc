@@ -214,7 +214,7 @@ bool ScreenOrientationControllerImpl::MaybeHasActiveLock() const {
   return active_lock_;
 }
 
-void ScreenOrientationControllerImpl::ContextDestroyed(ExecutionContext*) {
+void ScreenOrientationControllerImpl::ContextDestroyed() {
   screen_orientation_service_.reset();
   active_lock_ = false;
 }

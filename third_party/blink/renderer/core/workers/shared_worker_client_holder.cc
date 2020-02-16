@@ -135,7 +135,7 @@ void SharedWorkerClientHolder::Connect(
           blob_url_token.PassPipe(), mojom::blink::BlobURLToken::Version_));
 }
 
-void SharedWorkerClientHolder::ContextDestroyed(ExecutionContext*) {
+void SharedWorkerClientHolder::ContextDestroyed() {
   DCHECK(IsMainThread());
   // Close mojo connections which will signal disinterest in the associated
   // shared worker.

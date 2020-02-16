@@ -187,7 +187,7 @@ void NDEFReader::OnMojoConnectionError() {
   OnError("WebNFC feature is unavailable.");
 }
 
-void NDEFReader::ContextDestroyed(ExecutionContext*) {
+void NDEFReader::ContextDestroyed() {
   // If |resolver_| has already settled this rejection is silently ignored.
   if (resolver_) {
     resolver_->Reject(MakeGarbageCollected<DOMException>(

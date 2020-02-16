@@ -28,11 +28,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_CONTEXT_LIFECYCLE_OBSERVER_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/platform/lifecycle_observer.h"
 
 namespace blink {
 
+class ExecutionContext;
 class Document;
 class LocalDOMWindow;
 class LocalFrame;
@@ -101,14 +101,17 @@ class CORE_EXPORT ContextClient : public GarbageCollectedMixin {
 // ContextLifecycleStateObserver).
 //
 // If none of the above applies, prefer the simpler ContextClient.
-class CORE_EXPORT ContextLifecycleObserver
-    : public LifecycleObserver<ExecutionContext, ContextLifecycleObserver> {
+class CORE_EXPORT ContextLifecycleObserver : public GarbageCollectedMixin {
  public:
-  virtual void ContextDestroyed(ExecutionContext*) {}
+  virtual void ContextDestroyed() {}
+
+  // Call before clearing an observer list.
+  void ObserverListWillBeCleared();
 
   // Returns the execution context until it is detached.
   // From then on, returns null instead.
-  ExecutionContext* GetExecutionContext() const { return LifecycleContext(); }
+  ExecutionContext* GetExecutionContext() const { return execution_context_; }
+  virtual void SetExecutionContext(ExecutionContext*);
 
   // If associated with a live document, returns the associated frame.
   // Returns null otherwise.
@@ -121,17 +124,20 @@ class CORE_EXPORT ContextLifecycleObserver
 
   Type ObserverType() const { return observer_type_; }
 
+  void Trace(Visitor*) override;
+
  protected:
+  ContextLifecycleObserver();
   // TODO(crbug.com/1029822): This is a shim to enable migrating
   // ExecutionContext to LocalDOMWindow.
   explicit ContextLifecycleObserver(Document*, Type type = kGenericType);
 
   explicit ContextLifecycleObserver(ExecutionContext* execution_context,
-                                    Type type = kGenericType)
-      : LifecycleObserver(execution_context), observer_type_(type) {}
+                                    Type type = kGenericType);
 
  private:
   Type observer_type_;
+  WeakMember<ExecutionContext> execution_context_;
 };
 
 // DOMWindowClient is a helper to associate an object with a LocalDOMWindow.

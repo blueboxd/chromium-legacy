@@ -55,7 +55,7 @@ class MODULES_EXPORT PresentationAvailability final
 
   // ContextLifecycleStateObserver implementation.
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // PageVisibilityObserver implementation.
   void PageVisibilityChanged() override;

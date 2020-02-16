@@ -80,7 +80,7 @@ class MODULES_EXPORT PresentationController
 
  private:
   // Implementation of ContextLifecycleObserver.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // mojom::blink::PresentationController implementation.
   void OnScreenAvailabilityUpdated(const KURL&,

@@ -103,7 +103,7 @@ class MODULES_EXPORT SpeechRecognition final
   bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // PageVisibilityObserver
   void PageVisibilityChanged() override;

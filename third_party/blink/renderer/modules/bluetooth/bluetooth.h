@@ -57,7 +57,7 @@ class Bluetooth final : public EventTargetWithInlineData,
   void Trace(Visitor*) override;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(advertisementreceived, kAdvertisementreceived)
 

@@ -267,7 +267,7 @@ void NativeFileSystemUnderlyingSink::Trace(Visitor* visitor) {
   visitor->Trace(pending_operation_);
 }
 
-void NativeFileSystemUnderlyingSink::ContextDestroyed(ExecutionContext*) {
+void NativeFileSystemUnderlyingSink::ContextDestroyed() {
   writer_remote_.reset();
 }
 

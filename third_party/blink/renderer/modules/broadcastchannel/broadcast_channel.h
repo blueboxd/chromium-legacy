@@ -53,7 +53,7 @@ class BroadcastChannel final : public EventTargetWithInlineData,
   bool HasPendingActivity() const override;
 
   // ContextLifecycleObserver:
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

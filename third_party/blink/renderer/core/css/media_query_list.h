@@ -80,7 +80,7 @@ class CORE_EXPORT MediaQueryList final
   bool HasPendingActivity() const final;
 
   // From ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;

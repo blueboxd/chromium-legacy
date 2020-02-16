@@ -53,7 +53,7 @@ class CORE_EXPORT EventQueue final : public GarbageCollected<EventQueue>,
   bool RemoveEvent(Event&);
   void DispatchEvent(Event*);
 
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
   void Close(ExecutionContext*);
   void DoCancelAllEvents(ExecutionContext*);
 

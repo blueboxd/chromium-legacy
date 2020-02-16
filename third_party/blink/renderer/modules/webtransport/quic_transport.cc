@@ -313,7 +313,7 @@ void QuicTransport::OnIncomingStreamClosed(uint32_t stream_id,
   stream->OnIncomingStreamClosed(fin_received);
 }
 
-void QuicTransport::ContextDestroyed(ExecutionContext* execution_context) {
+void QuicTransport::ContextDestroyed() {
   DVLOG(1) << "QuicTransport::ContextDestroyed() this=" << this;
   Dispose();
 }

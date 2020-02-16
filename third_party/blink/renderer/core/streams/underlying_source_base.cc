@@ -56,7 +56,7 @@ ScriptValue UnderlyingSourceBase::type(ScriptState* script_state) const {
                      v8::Undefined(script_state->GetIsolate()));
 }
 
-void UnderlyingSourceBase::ContextDestroyed(ExecutionContext*) {
+void UnderlyingSourceBase::ContextDestroyed() {
   if (controller_) {
     controller_->NoteHasBeenCanceled();
     controller_.Clear();

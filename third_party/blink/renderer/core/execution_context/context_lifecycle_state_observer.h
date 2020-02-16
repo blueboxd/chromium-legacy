@@ -72,7 +72,7 @@ class CORE_EXPORT ContextLifecycleStateObserver
   virtual void ContextLifecycleStateChanged(
       mojom::FrameLifecycleState state) = 0;
 
-  void DidMoveToNewExecutionContext(ExecutionContext*);
+  void SetExecutionContext(ExecutionContext*) override;
 
  protected:
   virtual ~ContextLifecycleStateObserver();

@@ -36,7 +36,7 @@ class Serial final : public EventTargetWithInlineData,
   const AtomicString& InterfaceName() const override;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // Web-exposed interfaces
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect, kConnect)

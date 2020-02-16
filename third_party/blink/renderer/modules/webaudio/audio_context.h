@@ -45,7 +45,7 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   void Trace(Visitor*) override;
 
   // For ContextLifeCycleObserver
-  void ContextDestroyed(ExecutionContext*) final;
+  void ContextDestroyed() final;
   bool HasPendingActivity() const override;
 
   ScriptPromise closeContext(ScriptState*, ExceptionState&);

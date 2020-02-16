@@ -66,7 +66,7 @@ bool WakeLockSentinel::HasPendingActivity() const {
   return manager_ && HasEventListeners();
 }
 
-void WakeLockSentinel::ContextDestroyed(ExecutionContext*) {
+void WakeLockSentinel::ContextDestroyed() {
   // Release all event listeners so that HasPendingActivity() does not return
   // true forever once a listener has been added to the object.
   RemoveAllEventListeners();

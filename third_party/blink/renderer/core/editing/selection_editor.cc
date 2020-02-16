@@ -174,7 +174,7 @@ void SelectionEditor::DidAttachDocument(Document* document) {
   SetDocument(document);
 }
 
-void SelectionEditor::OnDocumentShutdown() {
+void SelectionEditor::ContextDestroyed() {
   Dispose();
 #if DCHECK_IS_ON()
   style_version_for_dom_tree_ = static_cast<uint64_t>(-1);

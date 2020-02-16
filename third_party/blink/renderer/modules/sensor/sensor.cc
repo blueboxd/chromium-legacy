@@ -191,7 +191,7 @@ void Sensor::InitSensorProxyIfNeeded() {
     sensor_proxy_ = provider->CreateSensorProxy(type_, document->GetPage());
 }
 
-void Sensor::ContextDestroyed(ExecutionContext*) {
+void Sensor::ContextDestroyed() {
   if (!IsIdleOrErrored())
     Deactivate();
 

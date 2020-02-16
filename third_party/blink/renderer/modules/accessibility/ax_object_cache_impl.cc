@@ -1887,7 +1887,7 @@ void AXObjectCacheImpl::DidFinishLifecycleUpdate(const LocalFrameView& view) {
   }
 }
 
-void AXObjectCacheImpl::ContextDestroyed(ExecutionContext*) {
+void AXObjectCacheImpl::ContextDestroyed() {
   permission_service_.reset();
   permission_observer_receiver_.reset();
 }

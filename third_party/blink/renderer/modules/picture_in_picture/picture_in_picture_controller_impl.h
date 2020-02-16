@@ -10,7 +10,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom-blink.h"
-#include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -33,7 +33,7 @@ class TreeScope;
 class MODULES_EXPORT PictureInPictureControllerImpl
     : public PictureInPictureController,
       public PageVisibilityObserver,
-      public DocumentShutdownObserver,
+      public ContextLifecycleObserver,
       public blink::mojom::blink::PictureInPictureSessionObserver {
   USING_GARBAGE_COLLECTED_MIXIN(PictureInPictureControllerImpl);
 
@@ -90,8 +90,8 @@ class MODULES_EXPORT PictureInPictureControllerImpl
   // Implementation of PageVisibilityObserver.
   void PageVisibilityChanged() override;
 
-  // Implementation of DocumentShutdownObserver.
-  void OnDocumentShutdown() override;
+  // Implementation of ContextLifecycleObserver.
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

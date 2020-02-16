@@ -37,11 +37,11 @@ void MIDIAccessInitializer::Dispose() {
   permission_service_.reset();
 }
 
-void MIDIAccessInitializer::ContextDestroyed(ExecutionContext* context) {
+void MIDIAccessInitializer::ContextDestroyed() {
   dispatcher_.reset();
   permission_service_.reset();
 
-  ScriptPromiseResolver::ContextDestroyed(context);
+  ScriptPromiseResolver::ContextDestroyed();
 }
 
 ScriptPromise MIDIAccessInitializer::Start() {

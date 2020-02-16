@@ -49,7 +49,7 @@ class CORE_EXPORT VideoWakeLock final : public NativeEventListener,
 
   // ContextLifecycleStateObserver
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   bool active_for_tests() const { return active_; }
 

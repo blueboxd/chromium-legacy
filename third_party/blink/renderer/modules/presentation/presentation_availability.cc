@@ -84,7 +84,7 @@ void PresentationAvailability::ContextLifecycleStateChanged(
     SetState(State::kSuspended);
 }
 
-void PresentationAvailability::ContextDestroyed(ExecutionContext*) {
+void PresentationAvailability::ContextDestroyed() {
   SetState(State::kInactive);
 }
 

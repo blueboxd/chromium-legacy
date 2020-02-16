@@ -91,7 +91,7 @@ class CORE_EXPORT DragController final
   static FloatRect ClippedSelection(const LocalFrame&);
 
   // ContextLifecycleObserver.
-  void ContextDestroyed(ExecutionContext*) final;
+  void ContextDestroyed() final;
 
   void Trace(Visitor*) final;
 

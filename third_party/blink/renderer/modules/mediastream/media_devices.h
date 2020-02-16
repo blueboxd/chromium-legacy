@@ -65,7 +65,7 @@ class MODULES_EXPORT MediaDevices final
   bool HasPendingActivity() const override;
 
   // ContextLifecycleObserver overrides.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // mojom::blink::MediaDevicesListener implementation.
   void OnDevicesChanged(mojom::blink::MediaDeviceType,

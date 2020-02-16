@@ -117,7 +117,7 @@ bool MojoInterfaceInterceptor::HasPendingActivity() const {
   return started_;
 }
 
-void MojoInterfaceInterceptor::ContextDestroyed(ExecutionContext*) {
+void MojoInterfaceInterceptor::ContextDestroyed() {
   stop();
 }
 

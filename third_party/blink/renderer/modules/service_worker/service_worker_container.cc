@@ -196,7 +196,7 @@ ServiceWorkerContainer::~ServiceWorkerContainer() {
   DCHECK(!provider_);
 }
 
-void ServiceWorkerContainer::ContextDestroyed(ExecutionContext*) {
+void ServiceWorkerContainer::ContextDestroyed() {
   if (provider_) {
     provider_->SetClient(nullptr);
     provider_ = nullptr;

@@ -1196,7 +1196,7 @@ void HTMLCanvasElement::PageVisibilityChanged() {
     DiscardResourceProvider();
 }
 
-void HTMLCanvasElement::ContextDestroyed(ExecutionContext*) {
+void HTMLCanvasElement::ContextDestroyed() {
   if (context_)
     context_->Stop();
 }
@@ -1215,7 +1215,7 @@ void HTMLCanvasElement::LayoutObjectDestroyed() {
 }
 
 void HTMLCanvasElement::DidMoveToNewDocument(Document& old_document) {
-  ContextLifecycleObserver::SetContext(GetDocument().ToExecutionContext());
+  SetExecutionContext(GetDocument().ToExecutionContext());
   SetPage(GetDocument().GetPage());
   HTMLElement::DidMoveToNewDocument(old_document);
 }

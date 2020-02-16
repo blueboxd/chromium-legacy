@@ -116,7 +116,7 @@ bool ImageCapture::HasPendingActivity() const {
   return GetExecutionContext() && HasEventListeners();
 }
 
-void ImageCapture::ContextDestroyed(ExecutionContext*) {
+void ImageCapture::ContextDestroyed() {
   RemoveAllEventListeners();
   service_requests_.clear();
   DCHECK(!HasEventListeners());

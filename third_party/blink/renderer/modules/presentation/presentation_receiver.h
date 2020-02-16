@@ -66,7 +66,7 @@ class MODULES_EXPORT PresentationReceiver final
   static void RecordOriginTypeAccess(ExecutionContext&);
 
   // ContextLifecycleObserver implementation.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   Member<ConnectionListProperty> connection_list_property_;
   Member<PresentationConnectionList> connection_list_;

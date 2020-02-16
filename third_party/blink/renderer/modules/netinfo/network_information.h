@@ -54,7 +54,7 @@ class NetworkInformation final
   bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver overrides.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

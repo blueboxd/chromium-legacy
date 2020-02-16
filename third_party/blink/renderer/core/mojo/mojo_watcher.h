@@ -40,7 +40,7 @@ class MojoWatcher final : public ScriptWrappable,
   bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) final;
+  void ContextDestroyed() final;
 
  private:
   friend class V8MojoWatcher;

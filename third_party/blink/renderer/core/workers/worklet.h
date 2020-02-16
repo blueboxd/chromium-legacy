@@ -42,7 +42,7 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
                           ExceptionState&);
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // Returns true if there is ongoing module loading tasks. BaseAudioContext
   // uses this check to keep itself alive until pending tasks are resolved.

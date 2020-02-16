@@ -351,7 +351,7 @@ void EventSource::AbortConnectionAttempt() {
   DispatchEvent(*Event::Create(event_type_names::kError));
 }
 
-void EventSource::ContextDestroyed(ExecutionContext*) {
+void EventSource::ContextDestroyed() {
   close();
 }
 

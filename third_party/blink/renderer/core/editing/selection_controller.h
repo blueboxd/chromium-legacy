@@ -30,7 +30,6 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/text_granularity.h"
@@ -44,7 +43,7 @@ class LocalFrame;
 
 class CORE_EXPORT SelectionController final
     : public GarbageCollected<SelectionController>,
-      public DocumentShutdownObserver {
+      public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(SelectionController);
 
  public:
@@ -117,10 +116,10 @@ class CORE_EXPORT SelectionController final
 
   FrameSelection& Selection() const;
 
-  // Implements |DocumentShutdownObserver|.
+  // Implements |ContextLifecycleObserver|.
   // TODO(yosin): We should relocate |original_base_in_flat_tree_| when DOM tree
   // changed.
-  void OnDocumentShutdown() final;
+  void ContextDestroyed() final;
 
   bool HandleSingleClick(const MouseEventWithHitTestResults&);
   bool HandleDoubleClick(const MouseEventWithHitTestResults&);

@@ -29,7 +29,7 @@ class MODULES_EXPORT CSSAnimationWorklet final
 
   explicit CSSAnimationWorklet(Document*);
 
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

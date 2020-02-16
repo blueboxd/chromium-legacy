@@ -52,7 +52,7 @@ class USB final : public EventTargetWithInlineData,
   const AtomicString& InterfaceName() const override;
 
   // ContextLifecycleObserver overrides.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   USBDevice* GetOrCreateDevice(device::mojom::blink::UsbDeviceInfoPtr);
 

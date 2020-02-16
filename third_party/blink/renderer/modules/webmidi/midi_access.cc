@@ -202,7 +202,7 @@ void MIDIAccess::SendMIDIData(unsigned port_index,
   dispatcher_->SendMIDIData(port_index, data, length, time_stamp);
 }
 
-void MIDIAccess::ContextDestroyed(ExecutionContext*) {
+void MIDIAccess::ContextDestroyed() {
   dispatcher_.reset();
 }
 

@@ -105,7 +105,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   };
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
   ExecutionContext* GetExecutionContext() const override;
 
   // ScriptWrappable

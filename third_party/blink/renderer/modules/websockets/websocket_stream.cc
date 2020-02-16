@@ -570,7 +570,7 @@ void WebSocketStream::DidClose(
   }
 }
 
-void WebSocketStream::ContextDestroyed(ExecutionContext*) {
+void WebSocketStream::ContextDestroyed() {
   DVLOG(1) << "WebSocketStream " << this << " ContextDestroyed()";
   if (channel_) {
     if (common_.GetState() == WebSocketCommon::kOpen) {

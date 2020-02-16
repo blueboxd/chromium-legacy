@@ -57,7 +57,7 @@ class UserMediaController final : public GarbageCollected<UserMediaController>,
   bool HasRequestedUserMedia();
 
   // ContextLifecycleObserver implementation.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   static UserMediaController* From(LocalFrame* frame) {
     return Supplement<LocalFrame>::From<UserMediaController>(frame);

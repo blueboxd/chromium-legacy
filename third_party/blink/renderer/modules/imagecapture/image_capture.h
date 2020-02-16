@@ -52,7 +52,7 @@ class MODULES_EXPORT ImageCapture final
   bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   MediaStreamTrack* videoStreamTrack() const { return stream_track_.Get(); }
 

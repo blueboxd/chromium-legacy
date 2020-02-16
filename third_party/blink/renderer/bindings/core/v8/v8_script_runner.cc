@@ -334,7 +334,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::RunCompiledScript(
   if (GetMicrotasksScopeDepth(isolate, microtask_queue) > kMaxRecursionDepth)
     return ThrowStackOverflowExceptionIfNeeded(isolate, microtask_queue);
 
-  CHECK(!context->IsIteratingOverObservers());
+  CHECK(!context->ContextLifecycleObserverList().IsIteratingOverObservers());
 
   // Run the script and keep track of the current recursion depth.
   v8::MaybeLocal<v8::Value> result;
@@ -413,7 +413,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallAsConstructor(
   if (depth >= kMaxRecursionDepth)
     return ThrowStackOverflowExceptionIfNeeded(isolate, microtask_queue);
 
-  CHECK(!context->IsIteratingOverObservers());
+  CHECK(!context->ContextLifecycleObserverList().IsIteratingOverObservers());
 
   if (ScriptForbiddenScope::IsScriptForbidden()) {
     ThrowScriptForbiddenException(isolate);
@@ -466,7 +466,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::CallFunction(
   if (depth >= kMaxRecursionDepth)
     return ThrowStackOverflowExceptionIfNeeded(isolate, microtask_queue);
 
-  CHECK(!context->IsIteratingOverObservers());
+  CHECK(!context->ContextLifecycleObserverList().IsIteratingOverObservers());
 
   if (ScriptForbiddenScope::IsScriptForbidden()) {
     ThrowScriptForbiddenException(isolate);

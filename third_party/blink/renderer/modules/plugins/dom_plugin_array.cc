@@ -148,7 +148,7 @@ void DOMPluginArray::UpdatePluginData() {
   }
 }
 
-void DOMPluginArray::ContextDestroyed(ExecutionContext*) {
+void DOMPluginArray::ContextDestroyed() {
   dom_plugins_.clear();
 }
 

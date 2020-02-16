@@ -90,7 +90,7 @@ class MODULES_EXPORT MIDIAccessInitializer : public ScriptPromiseResolver,
   ExecutionContext* GetExecutionContext() const;
   ScriptPromise Start();
 
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void StartSession();
 

@@ -44,7 +44,7 @@ class Lock final : public ScriptWrappable, public ContextLifecycleObserver {
   String mode() const;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // The lock is held until the passed promise resolves. When it is released,
   // the passed resolver is invoked with the promise's result.

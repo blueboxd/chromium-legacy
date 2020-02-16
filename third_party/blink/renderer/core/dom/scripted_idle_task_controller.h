@@ -83,7 +83,7 @@ class CORE_EXPORT ScriptedIdleTaskController
   void CancelCallback(CallbackId);
 
   // ContextLifecycleStateObserver interface.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
 
   void CallbackFired(CallbackId,

@@ -597,8 +597,8 @@ class Document::NetworkStateObserver final
     probe::NetworkStateChanged(document->GetFrame(), on_line);
   }
 
-  void ContextDestroyed(ExecutionContext* context) override {
-    UnregisterAsObserver(context);
+  void ContextDestroyed() override {
+    UnregisterAsObserver(GetExecutionContext());
   }
 
   void UnregisterAsObserver(ExecutionContext* context) {
@@ -3203,15 +3203,9 @@ void Document::Shutdown() {
   frame_->GetEventHandlerRegistry().DocumentDetached(*this);
 
   // Signal destruction to mutation observers.
-  document_shutdown_observer_list_.ForEachObserver(
-      [](DocumentShutdownObserver* observer) {
-        observer->OnDocumentShutdown();
-        observer->ObserverListWillBeCleared();
-      });
-  document_shutdown_observer_list_.Clear();
   synchronous_mutation_observer_list_.ForEachObserver(
       [](SynchronousMutationObserver* observer) {
-        observer->OnDocumentShutdown();
+        observer->ContextDestroyed();
         observer->ObserverListWillBeCleared();
       });
   synchronous_mutation_observer_list_.Clear();
@@ -8131,7 +8125,6 @@ void Document::Trace(Visitor* visitor) {
   visitor->Trace(find_in_page_root_);
   visitor->Trace(computed_node_mapping_);
   visitor->Trace(mime_handler_view_before_unload_event_listener_);
-  visitor->Trace(document_shutdown_observer_list_);
   visitor->Trace(synchronous_mutation_observer_list_);
   visitor->Trace(element_explicitly_set_attr_elements_map_);
   visitor->Trace(display_lock_activation_observer_);

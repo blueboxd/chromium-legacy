@@ -63,7 +63,7 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
                        const IDBDatabaseMetadata&) override;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) final;
+  void ContextDestroyed() final;
 
   // EventTarget
   const AtomicString& InterfaceName() const override;

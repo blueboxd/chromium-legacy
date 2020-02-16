@@ -67,7 +67,7 @@ void PermissionStatus::ContextLifecycleStateChanged(
     StopListening();
 }
 
-void PermissionStatus::ContextDestroyed(ExecutionContext*) {
+void PermissionStatus::ContextDestroyed() {
   StopListening();
 }
 

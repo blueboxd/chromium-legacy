@@ -43,7 +43,7 @@ class CORE_EXPORT UnderlyingSourceBase
 
   // ContextLifecycleObserver
   // TODO(ricea): Is this still useful?
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
  protected:
   explicit UnderlyingSourceBase(ScriptState* script_state)

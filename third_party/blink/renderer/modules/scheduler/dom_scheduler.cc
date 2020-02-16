@@ -48,7 +48,7 @@ DOMScheduler::DOMScheduler(Document* document)
   CreateGlobalTaskQueues(document);
 }
 
-void DOMScheduler::ContextDestroyed(ExecutionContext* context) {
+void DOMScheduler::ContextDestroyed() {
   global_task_queues_.clear();
 }
 

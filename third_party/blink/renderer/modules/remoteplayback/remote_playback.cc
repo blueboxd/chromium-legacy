@@ -244,7 +244,7 @@ bool RemotePlayback::HasPendingActivity() const {
          prompt_promise_resolver_;
 }
 
-void RemotePlayback::ContextDestroyed(ExecutionContext*) {
+void RemotePlayback::ContextDestroyed() {
   CleanupConnections();
 }
 

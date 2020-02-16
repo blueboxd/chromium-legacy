@@ -535,7 +535,7 @@ void InteractiveDetector::OnTimeToInteractiveDetected() {
   }
 }
 
-void InteractiveDetector::ContextDestroyed(ExecutionContext*) {
+void InteractiveDetector::ContextDestroyed() {
   LongTaskDetector::Instance().UnregisterObserver(this);
 }
 

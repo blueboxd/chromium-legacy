@@ -82,7 +82,7 @@ class CORE_EXPORT SharedWorkerClientHolder final
                mojom::blink::WorkerOptionsPtr options);
 
   // Overrides ContextLifecycleObserver.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor* visitor) override;
 

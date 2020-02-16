@@ -193,7 +193,7 @@ class CORE_EXPORT HTMLCanvasElement final
                  const SkIRect& damage_rect) override;
 
   // ContextLifecycleObserver and PageVisibilityObserver implementation
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // PageVisibilityObserver implementation
   void PageVisibilityChanged() override;

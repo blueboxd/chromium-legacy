@@ -105,7 +105,7 @@ class MediaKeySession final
   bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

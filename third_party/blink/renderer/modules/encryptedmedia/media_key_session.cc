@@ -1032,7 +1032,7 @@ bool MediaKeySession::HasPendingActivity() const {
          (media_keys_ && !is_closing_or_closed_);
 }
 
-void MediaKeySession::ContextDestroyed(ExecutionContext*) {
+void MediaKeySession::ContextDestroyed() {
   // Stop the CDM from firing any more events for this session.
   session_.reset();
   is_closing_or_closed_ = true;

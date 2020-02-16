@@ -58,7 +58,7 @@ class MojoInterfaceInterceptor final
   bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) final;
+  void ContextDestroyed() final;
 
  private:
   void OnInterfaceRequest(mojo::ScopedMessagePipeHandle);

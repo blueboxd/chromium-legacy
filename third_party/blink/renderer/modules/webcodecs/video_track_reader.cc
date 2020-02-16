@@ -71,9 +71,7 @@ class VideoTrackReadableStreamSource final : public UnderlyingSourceBase,
     return ScriptPromise::CastUndefined(script_state);
   }
 
-  void ContextDestroyed(ExecutionContext* context) override {
-    DisconnectFromTrack();
-  }
+  void ContextDestroyed() override { DisconnectFromTrack(); }
 
   void Close() {
     if (Controller())

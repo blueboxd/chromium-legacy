@@ -892,7 +892,7 @@ ScriptPromise FetchManager::Fetch(ScriptState* script_state,
   return promise;
 }
 
-void FetchManager::ContextDestroyed(ExecutionContext*) {
+void FetchManager::ContextDestroyed() {
   for (auto& loader : loaders_)
     loader->Dispose();
 }

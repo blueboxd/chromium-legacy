@@ -96,7 +96,7 @@ class ServiceWorkerRegistration final
 
  private:
   // ContextLifecycleObserver overrides.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // Implements mojom::blink::ServiceWorkerRegistrationObject.
   void SetServiceWorkerObjects(

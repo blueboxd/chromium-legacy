@@ -183,7 +183,7 @@ void WakeLock::DidReceivePermissionResponse(WakeLockType type,
   manager->AcquireWakeLock(resolver);
 }
 
-void WakeLock::ContextDestroyed(ExecutionContext*) {
+void WakeLock::ContextDestroyed() {
   // https://w3c.github.io/wake-lock/#handling-document-loss-of-full-activity
   // 1. Let document be the responsible document of the current settings object.
   // 2. Let screenRecord be the platform wake lock's state record associated

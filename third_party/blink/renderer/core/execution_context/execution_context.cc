@@ -100,13 +100,45 @@ ExecutionContext* ExecutionContext::ForRelevantRealm(
 }
 
 void ExecutionContext::SetLifecycleState(mojom::FrameLifecycleState state) {
+  DCHECK(lifecycle_state_ != state);
   lifecycle_state_ = state;
-  NotifyContextLifecycleStateChanged(state);
+  context_lifecycle_observer_list_.ForEachObserver(
+      [&](ContextLifecycleObserver* observer) {
+        if (observer->ObserverType() !=
+            ContextLifecycleObserver::kStateObjectType)
+          return;
+        ContextLifecycleStateObserver* state_observer =
+            static_cast<ContextLifecycleStateObserver*>(observer);
+#if DCHECK_IS_ON()
+        DCHECK_EQ(state_observer->GetExecutionContext(), this);
+        DCHECK(state_observer->UpdateStateIfNeededCalled());
+#endif
+        state_observer->ContextLifecycleStateChanged(state);
+      });
 }
 
 void ExecutionContext::NotifyContextDestroyed() {
   is_context_destroyed_ = true;
-  ContextLifecycleNotifier::NotifyContextDestroyed();
+  context_lifecycle_observer_list_.ForEachObserver(
+      [](ContextLifecycleObserver* observer) {
+        observer->ContextDestroyed();
+        observer->ObserverListWillBeCleared();
+      });
+  context_lifecycle_observer_list_.Clear();
+}
+
+unsigned ExecutionContext::ContextLifecycleStateObserverCountForTesting()
+    const {
+  DCHECK(!context_lifecycle_observer_list_.IsIteratingOverObservers());
+  unsigned lifecycle_state_observers = 0;
+  context_lifecycle_observer_list_.ForEachObserver(
+      [&](ContextLifecycleObserver* observer) {
+        if (observer->ObserverType() !=
+            ContextLifecycleObserver::kStateObjectType)
+          return;
+        lifecycle_state_observers++;
+      });
+  return lifecycle_state_observers;
 }
 
 void ExecutionContext::AddConsoleMessageImpl(mojom::ConsoleMessageSource source,
@@ -291,7 +323,7 @@ void ExecutionContext::Trace(Visitor* visitor) {
   visitor->Trace(agent_);
   visitor->Trace(origin_trial_context_);
   visitor->Trace(timers_);
-  ContextLifecycleNotifier::Trace(visitor);
+  visitor->Trace(context_lifecycle_observer_list_);
   ConsoleLogger::Trace(visitor);
   Supplementable<ExecutionContext>::Trace(visitor);
 }

@@ -97,7 +97,7 @@ bool BroadcastChannel::HasPendingActivity() const {
   return receiver_.is_bound() && HasEventListeners(event_type_names::kMessage);
 }
 
-void BroadcastChannel::ContextDestroyed(ExecutionContext*) {
+void BroadcastChannel::ContextDestroyed() {
   close();
 }
 

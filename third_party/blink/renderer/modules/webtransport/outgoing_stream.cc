@@ -140,7 +140,7 @@ void OutgoingStream::Reset() {
   ErrorStreamAbortAndReset(IsLocalAbort(false));
 }
 
-void OutgoingStream::ContextDestroyed(ExecutionContext*) {
+void OutgoingStream::ContextDestroyed() {
   DVLOG(1) << "OutgoingStream::ContextDestroyed() this=" << this;
 
   ResetPipe();

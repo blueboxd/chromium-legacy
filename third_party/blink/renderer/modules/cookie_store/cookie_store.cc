@@ -329,7 +329,7 @@ void CookieStore::Trace(Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-void CookieStore::ContextDestroyed(ExecutionContext* execution_context) {
+void CookieStore::ContextDestroyed() {
   StopObserving();
   backend_.reset();
 }

@@ -92,7 +92,7 @@ class MODULES_EXPORT ServiceWorkerContainer final
 
   void startMessages();
 
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // WebServiceWorkerProviderClient implementation.
   void SetController(WebServiceWorkerObjectInfo,

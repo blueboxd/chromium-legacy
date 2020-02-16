@@ -72,7 +72,7 @@ bool MediaQueryList::HasPendingActivity() const {
          (listeners_.size() || HasEventListeners(event_type_names::kChange));
 }
 
-void MediaQueryList::ContextDestroyed(ExecutionContext*) {
+void MediaQueryList::ContextDestroyed() {
   listeners_.clear();
   RemoveAllEventListeners();
 }

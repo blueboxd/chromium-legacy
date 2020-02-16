@@ -598,7 +598,7 @@ bool IDBRequest::HasPendingActivity() const {
   return has_pending_activity_ && GetExecutionContext();
 }
 
-void IDBRequest::ContextDestroyed(ExecutionContext*) {
+void IDBRequest::ContextDestroyed() {
   if (ready_state_ == PENDING) {
     ready_state_ = kEarlyDeath;
     if (queue_item_)

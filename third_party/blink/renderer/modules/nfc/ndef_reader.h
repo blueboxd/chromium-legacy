@@ -57,7 +57,7 @@ class MODULES_EXPORT NDEFReader : public EventTargetWithInlineData,
 
  private:
   // ContextLifecycleObserver overrides.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Abort(ScriptPromiseResolver*);
 

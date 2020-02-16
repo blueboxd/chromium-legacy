@@ -69,8 +69,8 @@ void IDBOpenDBRequest::Trace(Visitor* visitor) {
   IDBRequest::Trace(visitor);
 }
 
-void IDBOpenDBRequest::ContextDestroyed(ExecutionContext* destroyed_context) {
-  IDBRequest::ContextDestroyed(destroyed_context);
+void IDBOpenDBRequest::ContextDestroyed() {
+  IDBRequest::ContextDestroyed();
   if (database_callbacks_)
     database_callbacks_->DetachWebCallbacks();
 }

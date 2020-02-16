@@ -117,10 +117,10 @@ class MODULES_EXPORT BaseAudioContext
 
   // Document notification
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
   bool HasPendingActivity() const override;
 
-  // Cannnot be called from the audio thread.
+  // Cannot be called from the audio thread.
   AudioDestinationNode* destination() const;
 
   size_t CurrentSampleFrame() const {

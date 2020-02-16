@@ -48,7 +48,7 @@ class MODULES_EXPORT WakeLockSentinel final
   bool HasPendingActivity() const override;
 
   // ContextLifecycleObserver overrides.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
  private:
   friend class WakeLockManager;

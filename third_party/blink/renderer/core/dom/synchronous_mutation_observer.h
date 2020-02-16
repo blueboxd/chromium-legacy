@@ -20,8 +20,8 @@ class Text;
 // synchronously. If you want to observe DOM tree mutation asynchronously see
 // MutationObserver Web API.
 // Note: if you only need to observe Document shutdown,
-// DocumentShutdownObserver provides this same functionality more efficiently
-// (since it doesn't observe the other events).
+// ContextLifecycleObserver::ContextDestroyed provides this same functionality
+// more efficiently (since it doesn't observe the other events).
 //
 // TODO(yosin): Following classes should be derived from this class to
 // simplify Document class.
@@ -73,7 +73,7 @@ class CORE_EXPORT SynchronousMutationObserver : public GarbageCollectedMixin {
   virtual void NodeWillBeRemoved(Node&) {}
 
   // Called when detaching document.
-  virtual void OnDocumentShutdown() {}
+  virtual void ContextDestroyed() {}
 
   // Call before clearing an observer list.
   void ObserverListWillBeCleared();

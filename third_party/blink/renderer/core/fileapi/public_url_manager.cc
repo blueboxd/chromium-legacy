@@ -30,6 +30,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/url_registry.h"
 #include "third_party/blink/renderer/platform/blob/blob_data.h"
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
@@ -146,7 +147,7 @@ void PublicURLManager::Resolve(
   url_store_->ResolveForNavigation(url, std::move(token_receiver));
 }
 
-void PublicURLManager::ContextDestroyed(ExecutionContext*) {
+void PublicURLManager::ContextDestroyed() {
   if (is_stopped_)
     return;
 

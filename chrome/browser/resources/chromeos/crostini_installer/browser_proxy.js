@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
-import './crostini_installer_types.mojom-lite.js';
+import './crostini_types.mojom-lite.js';
 import './crostini_installer.mojom-lite.js';
 
 import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';

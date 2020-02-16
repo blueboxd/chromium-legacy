@@ -189,7 +189,7 @@ bool MediaDevices::HasPendingActivity() const {
   return receiver_.is_bound();
 }
 
-void MediaDevices::ContextDestroyed(ExecutionContext*) {
+void MediaDevices::ContextDestroyed() {
   if (stopped_)
     return;
 

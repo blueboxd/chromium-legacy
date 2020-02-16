@@ -51,7 +51,7 @@ class ServiceWorkerRegistrationNotifications final
                                          ServiceWorkerRegistration*);
 
   // ContextLifecycleObserver interface.
-  void ContextDestroyed(ExecutionContext* context) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor* visitor) override;
 

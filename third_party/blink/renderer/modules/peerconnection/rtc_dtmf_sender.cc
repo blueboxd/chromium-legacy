@@ -177,7 +177,7 @@ ExecutionContext* RTCDTMFSender::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
-void RTCDTMFSender::ContextDestroyed(ExecutionContext*) {
+void RTCDTMFSender::ContextDestroyed() {
   stopped_ = true;
   handler_->SetClient(nullptr);
 }

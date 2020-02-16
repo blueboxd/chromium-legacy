@@ -549,10 +549,10 @@ Fullscreen::Fullscreen(Document& document)
 Fullscreen::~Fullscreen() = default;
 
 Document* Fullscreen::GetDocument() {
-  return Document::From(LifecycleContext());
+  return Document::From(GetExecutionContext());
 }
 
-void Fullscreen::ContextDestroyed(ExecutionContext*) {
+void Fullscreen::ContextDestroyed() {
   pending_requests_.clear();
   pending_exits_.clear();
 }

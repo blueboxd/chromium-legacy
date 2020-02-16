@@ -41,7 +41,7 @@ class NativeFileSystemWriter final : public ScriptWrappable,
   ScriptPromise close(ScriptState*, ExceptionState&);
 
   void Trace(Visitor*) override;
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
  private:
   class StreamWriterClient;

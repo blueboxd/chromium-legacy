@@ -138,7 +138,7 @@ class CORE_EXPORT DisplayLockContext final
   void Dispose();
 
   // ContextLifecycleObserver overrides.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // Set which reasons activate, as a mask of DisplayLockActivationReason enums.
   void SetActivatable(uint16_t activatable_mask);

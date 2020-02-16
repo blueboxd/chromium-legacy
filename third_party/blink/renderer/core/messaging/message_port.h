@@ -101,7 +101,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver implementation.
-  void ContextDestroyed(ExecutionContext*) override { close(); }
+  void ContextDestroyed() override { close(); }
 
   void setOnmessage(EventListener* listener) {
     SetAttributeEventListener(event_type_names::kMessage, listener);

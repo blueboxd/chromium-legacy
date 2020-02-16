@@ -126,7 +126,7 @@ class MODULES_EXPORT RemotePlayback final
   bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver implementation.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // Adjusts the internal state of |this| after a playback state change.
   void StateChanged(mojom::blink::PresentationConnectionState);

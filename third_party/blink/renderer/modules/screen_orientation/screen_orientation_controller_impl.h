@@ -58,7 +58,7 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
   static WebScreenOrientationType ComputeOrientation(const IntRect&, uint16_t);
 
   // Inherited from ContextLifecycleObserver and PageVisibilityObserver.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
   void PageVisibilityChanged() override;
 
   void UpdateOrientation();

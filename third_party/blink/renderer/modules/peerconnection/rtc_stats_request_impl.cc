@@ -64,7 +64,7 @@ void RTCStatsRequestImpl::RequestSucceeded(RTCStatsResponseBase* response) {
   Clear();
 }
 
-void RTCStatsRequestImpl::ContextDestroyed(ExecutionContext*) {
+void RTCStatsRequestImpl::ContextDestroyed() {
   Clear();
 }
 

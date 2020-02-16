@@ -143,7 +143,7 @@ void AutoplayUmaHelper::DidMoveToNewDocument(Document& old_document) {
   if (!ShouldListenToContextDestroyed())
     return;
 
-  SetContext(element_->GetDocument().ToExecutionContext());
+  SetExecutionContext(element_->GetDocument().ToExecutionContext());
 }
 
 void AutoplayUmaHelper::
@@ -193,7 +193,7 @@ void AutoplayUmaHelper::HandlePauseEvent() {
   MaybeStopRecordingMutedVideoOffscreenDuration();
 }
 
-void AutoplayUmaHelper::ContextDestroyed(ExecutionContext*) {
+void AutoplayUmaHelper::ContextDestroyed() {
   HandleContextDestroyed();
 }
 
@@ -214,7 +214,7 @@ void AutoplayUmaHelper::MaybeStartRecordingMutedVideoPlayMethodBecomeVisible() {
               OnIntersectionChangedForMutedVideoPlayMethodBecomeVisible,
           WrapWeakPersistent(this)));
   muted_video_play_method_intersection_observer_->observe(element_);
-  SetContext(element_->GetDocument().ToExecutionContext());
+  SetExecutionContext(element_->GetDocument().ToExecutionContext());
 }
 
 void AutoplayUmaHelper::MaybeStopRecordingMutedVideoPlayMethodBecomeVisible(
@@ -248,7 +248,7 @@ void AutoplayUmaHelper::MaybeStartRecordingMutedVideoOffscreenDuration() {
               WrapWeakPersistent(this)));
   muted_video_offscreen_duration_intersection_observer_->observe(element_);
   element_->addEventListener(event_type_names::kPause, this, false);
-  SetContext(element_->GetDocument().ToExecutionContext());
+  SetExecutionContext(element_->GetDocument().ToExecutionContext());
 }
 
 void AutoplayUmaHelper::MaybeStopRecordingMutedVideoOffscreenDuration() {
@@ -276,8 +276,12 @@ void AutoplayUmaHelper::MaybeStopRecordingMutedVideoOffscreenDuration() {
 }
 
 void AutoplayUmaHelper::MaybeUnregisterContextDestroyedObserver() {
-  if (!ShouldListenToContextDestroyed()) {
-    SetContext(nullptr);
+  // TODO(keishi): Remove IsIteratingOverObservers() check when
+  // HeapObserverList() supports removal while iterating.
+  if (!ShouldListenToContextDestroyed() && !GetExecutionContext()
+                                                ->ContextLifecycleObserverList()
+                                                .IsIteratingOverObservers()) {
+    SetExecutionContext(nullptr);
   }
 }
 

@@ -105,8 +105,8 @@ void EventQueue::DispatchEvent(Event* event) {
     target->DispatchEvent(*event);
 }
 
-void EventQueue::ContextDestroyed(ExecutionContext* context) {
-  Close(context);
+void EventQueue::ContextDestroyed() {
+  Close(GetExecutionContext());
 }
 
 void EventQueue::Close(ExecutionContext* context) {

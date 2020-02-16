@@ -66,7 +66,7 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   ScriptPromise pull(ScriptState*) override;
   ScriptPromise Cancel(ScriptState*, ScriptValue reason) override;
   bool HasPendingActivity() const override;
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // BytesConsumer::Client
   void OnStateChange() override;

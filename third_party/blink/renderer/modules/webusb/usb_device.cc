@@ -554,7 +554,7 @@ ScriptPromise USBDevice::reset(ScriptState* script_state) {
   return promise;
 }
 
-void USBDevice::ContextDestroyed(ExecutionContext*) {
+void USBDevice::ContextDestroyed() {
   device_.reset();
   device_requests_.clear();
 }

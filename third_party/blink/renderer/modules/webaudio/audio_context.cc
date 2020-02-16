@@ -546,7 +546,7 @@ void AudioContext::RecordAutoplayMetrics() {
   }
 }
 
-void AudioContext::ContextDestroyed(ExecutionContext*) {
+void AudioContext::ContextDestroyed() {
   Uninitialize();
 }
 

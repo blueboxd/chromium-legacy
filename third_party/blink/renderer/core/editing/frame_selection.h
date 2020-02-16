@@ -308,7 +308,7 @@ class CORE_EXPORT FrameSelection final
   void MoveRangeSelectionInternal(const SelectionInDOMTree&, TextGranularity);
 
   // Implementation of |SynchronousMutationObserver| member functions.
-  void OnDocumentShutdown() final;
+  void ContextDestroyed() final;
   void NodeChildrenWillBeRemoved(ContainerNode&) final;
   void NodeWillBeRemoved(Node&) final;
 

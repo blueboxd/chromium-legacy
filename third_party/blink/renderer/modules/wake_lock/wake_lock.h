@@ -26,7 +26,6 @@ class String;
 
 namespace blink {
 
-class ExecutionContext;
 class ExceptionState;
 class ScriptState;
 class WakeLockManager;
@@ -58,7 +57,7 @@ class MODULES_EXPORT WakeLock final : public ScriptWrappable,
                                     mojom::blink::PermissionStatus);
 
   // ContextLifecycleObserver implementation
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // PageVisibilityObserver implementation
   void PageVisibilityChanged() override;

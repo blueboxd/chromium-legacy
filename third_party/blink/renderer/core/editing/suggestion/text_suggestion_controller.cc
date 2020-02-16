@@ -197,7 +197,7 @@ TextSuggestionController::TextSuggestionController(LocalFrame& frame)
 
 void TextSuggestionController::DidAttachDocument(Document* document) {
   DCHECK(document);
-  SetDocument(document);
+  SetExecutionContext(document->ToExecutionContext());
 }
 
 bool TextSuggestionController::IsMenuOpen() const {
@@ -243,7 +243,7 @@ void TextSuggestionController::HandlePotentialSuggestionTap(
 
 void TextSuggestionController::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
-  DocumentShutdownObserver::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 void TextSuggestionController::ReplaceActiveSuggestionRange(
@@ -525,11 +525,11 @@ void TextSuggestionController::CallMojoShowTextSuggestionMenu(
 
 Document& TextSuggestionController::GetDocument() const {
   DCHECK(IsAvailable());
-  return *DocumentShutdownObserver::GetDocument();
+  return *Document::From(GetExecutionContext());
 }
 
 bool TextSuggestionController::IsAvailable() const {
-  return DocumentShutdownObserver::GetDocument();
+  return GetExecutionContext();
 }
 
 LocalFrame& TextSuggestionController::GetFrame() const {

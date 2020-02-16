@@ -118,7 +118,7 @@ const KURL& PrerenderHandle::Url() const {
   return url_;
 }
 
-void PrerenderHandle::ContextDestroyed(ExecutionContext*) {
+void PrerenderHandle::ContextDestroyed() {
   // A PrerenderHandle is not removed from LifecycleNotifier::m_observers until
   // the next GC runs. Thus contextDestroyed() can be called for a
   // PrerenderHandle that is already cancelled (and thus detached). In that

@@ -30,7 +30,7 @@ AnimationWorklet* CSSAnimationWorklet::animationWorklet(
 // => ThreadedWorkletMessagingProxy
 // => Document
 // => ... => window
-void CSSAnimationWorklet::ContextDestroyed(ExecutionContext*) {
+void CSSAnimationWorklet::ContextDestroyed() {
   animation_worklet_ = nullptr;
 }
 

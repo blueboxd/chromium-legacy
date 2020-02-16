@@ -34,6 +34,7 @@ class PLATFORM_EXPORT HeapObserverList {
 
   // Determine whether a particular observer is in the list.
   bool HasObserver(ObserverType* observer) const {
+    DCHECK(!IsIteratingOverObservers());
     return observers_.Contains(observer);
   }
 

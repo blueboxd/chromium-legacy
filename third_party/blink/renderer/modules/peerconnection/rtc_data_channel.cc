@@ -448,7 +448,7 @@ ExecutionContext* RTCDataChannel::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
-void RTCDataChannel::ContextDestroyed(ExecutionContext*) {
+void RTCDataChannel::ContextDestroyed() {
   Dispose();
   stopped_ = true;
   state_ = webrtc::DataChannelInterface::kClosed;

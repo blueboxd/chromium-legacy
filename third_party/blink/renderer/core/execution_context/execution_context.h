@@ -41,12 +41,12 @@
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/sanitize_script_errors.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser_delegate.h"
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap_observer_list.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/loader/fetch/console_logger.h"
 #include "third_party/blink/renderer/platform/loader/fetch/https_state.h"
@@ -80,6 +80,7 @@ class SecurityContextInit;
 class SecurityOrigin;
 class ScriptState;
 class TrustedTypePolicyFactory;
+class ContextLifecycleObserver;
 
 enum class TaskType : unsigned char;
 
@@ -117,8 +118,7 @@ enum class SecureContextMode { kInsecureContext, kSecureContext };
 // Document's inheritance of ExecutionContext to be hidden, while still allowing
 // Document to inherit from some of ExecutionContext's parent classes publicly.
 class CORE_EXPORT ExecutionContext
-    : public ContextLifecycleNotifier,
-      public Supplementable<ExecutionContext>,
+    : public Supplementable<ExecutionContext>,
       public virtual ConsoleLogger,
       public virtual UseCounter,
       public virtual FeaturePolicyParserDelegate {
@@ -221,7 +221,7 @@ class CORE_EXPORT ExecutionContext
   virtual void RemoveURLFromMemoryCache(const KURL&);
 
   void SetLifecycleState(mojom::FrameLifecycleState);
-  void NotifyContextDestroyed() override;
+  void NotifyContextDestroyed();
 
   using ConsoleLogger::AddConsoleMessage;
 
@@ -336,6 +336,11 @@ class CORE_EXPORT ExecutionContext
 
   String addressSpaceForBindings() const;
 
+  HeapObserverList<ContextLifecycleObserver>& ContextLifecycleObserverList() {
+    return context_lifecycle_observer_list_;
+  }
+  unsigned ContextLifecycleStateObserverCountForTesting() const;
+
  protected:
   ExecutionContext(v8::Isolate* isolate, const SecurityContextInit&);
   ~ExecutionContext() override;
@@ -377,6 +382,8 @@ class CORE_EXPORT ExecutionContext
   Member<OriginTrialContext> origin_trial_context_;
 
   DOMTimerCoordinator timers_;
+
+  HeapObserverList<ContextLifecycleObserver> context_lifecycle_observer_list_;
 
   // Counter that keeps track of how many window interaction calls are allowed
   // for this ExecutionContext. Callers are expected to call

@@ -89,7 +89,7 @@ class MIDIPort : public EventTargetWithInlineData,
   bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
  protected:
   MIDIPort(MIDIAccess*,

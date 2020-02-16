@@ -79,7 +79,7 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   probe::AsyncTaskId* async_task_id() { return &async_task_id_; }
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // ScriptWrappable
   bool HasPendingActivity() const final;

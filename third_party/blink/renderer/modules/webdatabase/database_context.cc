@@ -125,7 +125,7 @@ void DatabaseContext::Trace(Visitor* visitor) {
 // To do this, we stop the database and let everything shutdown naturally
 // because the database closing process may still make use of this context.
 // It is not safe to just delete the context here.
-void DatabaseContext::ContextDestroyed(ExecutionContext*) {
+void DatabaseContext::ContextDestroyed() {
   StopDatabases();
   DatabaseManager::Manager().UnregisterDatabaseContext(this);
 }

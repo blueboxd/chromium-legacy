@@ -49,7 +49,7 @@ void ParentExecutionContextTaskRunners::Trace(Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-void ParentExecutionContextTaskRunners::ContextDestroyed(ExecutionContext*) {
+void ParentExecutionContextTaskRunners::ContextDestroyed() {
   MutexLocker lock(mutex_);
   for (auto& entry : task_runners_)
     entry.value = Thread::Current()->GetTaskRunner();

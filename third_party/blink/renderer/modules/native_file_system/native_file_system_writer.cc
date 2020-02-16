@@ -269,7 +269,7 @@ void NativeFileSystemWriter::CloseComplete(
   writer_remote_.reset();
 }
 
-void NativeFileSystemWriter::ContextDestroyed(ExecutionContext*) {
+void NativeFileSystemWriter::ContextDestroyed() {
   writer_remote_.reset();
 }
 

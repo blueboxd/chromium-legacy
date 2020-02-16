@@ -61,7 +61,7 @@ void DOMTimer::RemoveByID(ExecutionContext* context, int timeout_id) {
                        inspector_timer_remove_event::Data(context, timeout_id));
   // Eagerly unregister as ExecutionContext observer.
   if (timer)
-    timer->ClearContext();
+    timer->SetExecutionContext(nullptr);
 }
 
 DOMTimer::DOMTimer(ExecutionContext* context,
@@ -118,7 +118,7 @@ void DOMTimer::Stop() {
   TimerBase::Stop();
 }
 
-void DOMTimer::ContextDestroyed(ExecutionContext*) {
+void DOMTimer::ContextDestroyed() {
   Stop();
 }
 
@@ -171,7 +171,7 @@ void DOMTimer::Fired() {
 
   execution_context->Timers()->SetTimerNestingLevel(0);
   // Eagerly unregister as ExecutionContext observer.
-  ClearContext();
+  SetExecutionContext(nullptr);
 }
 
 void DOMTimer::Trace(Visitor* visitor) {

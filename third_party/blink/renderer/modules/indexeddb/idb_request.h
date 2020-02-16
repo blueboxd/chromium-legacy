@@ -293,7 +293,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // EventTarget
   const AtomicString& InterfaceName() const override;

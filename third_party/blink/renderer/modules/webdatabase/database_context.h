@@ -52,7 +52,7 @@ class DatabaseContext final : public GarbageCollected<DatabaseContext>,
   void Trace(Visitor*) override;
 
   // For life-cycle management (inherited from ContextLifecycleObserver):
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   DatabaseContext* Backend();
   DatabaseThread* GetDatabaseThread();

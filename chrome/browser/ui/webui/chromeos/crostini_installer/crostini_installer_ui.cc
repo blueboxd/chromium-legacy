@@ -136,7 +136,7 @@ CrostiniInstallerUI::CrostiniInstallerUI(content::WebUI* web_ui)
                           IDR_CROSTINI_INSTALLER_BROWSER_PROXY_JS);
   source->AddResourcePath("crostini_installer.mojom-lite.js",
                           IDR_CROSTINI_INSTALLER_MOJO_LITE_JS);
-  source->AddResourcePath("crostini_installer_types.mojom-lite.js",
+  source->AddResourcePath("crostini_types.mojom-lite.js",
                           IDR_CROSTINI_INSTALLER_TYPES_MOJO_LITE_JS);
   source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
   source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);

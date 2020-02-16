@@ -185,7 +185,7 @@ const AtomicString& USB::InterfaceName() const {
   return event_target_names::kUSB;
 }
 
-void USB::ContextDestroyed(ExecutionContext*) {
+void USB::ContextDestroyed() {
   service_.reset();
   get_devices_requests_.clear();
   get_permission_requests_.clear();

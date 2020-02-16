@@ -47,7 +47,7 @@ class LockManager final : public ScriptWrappable,
 
   // Terminate all outstanding requests when the context is destroyed, since
   // this can unblock requests by other contexts.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // Called by a lock when it is released. The lock is dropped from the
   // |held_locks_| list. Held locks are tracked until explicitly released (or

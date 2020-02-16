@@ -867,7 +867,7 @@ bool MediaSource::HasPendingActivity() const {
          added_to_registry_counter_ > 0;
 }
 
-void MediaSource::ContextDestroyed(ExecutionContext*) {
+void MediaSource::ContextDestroyed() {
   if (!IsClosed())
     SetReadyState(ClosedKeyword());
   web_media_source_.reset();

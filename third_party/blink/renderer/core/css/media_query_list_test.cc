@@ -29,7 +29,7 @@ TEST(MediaQueryListTest, CrashInStop) {
       MakeGarbageCollected<MediaQueryMatcher>(*document),
       MediaQuerySet::Create());
   list->AddListener(MakeGarbageCollected<TestListener>());
-  list->ContextDestroyed(document->ToExecutionContext());
+  list->ContextDestroyed();
   // This test passes if it's not crashed.
 }
 

@@ -243,7 +243,7 @@ void NativeFileSystemDirectoryHandle::RequestPermissionImpl(
   mojo_ptr_->RequestPermission(writable, std::move(callback));
 }
 
-void NativeFileSystemDirectoryHandle::ContextDestroyed(ExecutionContext*) {
+void NativeFileSystemDirectoryHandle::ContextDestroyed() {
   mojo_ptr_.reset();
 }
 

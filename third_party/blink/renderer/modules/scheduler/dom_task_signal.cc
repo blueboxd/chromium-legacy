@@ -33,7 +33,7 @@ AtomicString DOMTaskSignal::priority() {
   return WebSchedulingPriorityToString(priority_);
 }
 
-void DOMTaskSignal::ContextDestroyed(ExecutionContext*) {
+void DOMTaskSignal::ContextDestroyed() {
   web_scheduling_task_queue_.reset();
 }
 

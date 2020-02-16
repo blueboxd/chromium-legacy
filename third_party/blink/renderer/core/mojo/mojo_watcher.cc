@@ -59,7 +59,7 @@ bool MojoWatcher::HasPendingActivity() const {
   return handle_.is_valid();
 }
 
-void MojoWatcher::ContextDestroyed(ExecutionContext*) {
+void MojoWatcher::ContextDestroyed() {
   cancel();
 }
 

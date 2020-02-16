@@ -98,7 +98,7 @@ class MediaKeys : public ScriptWrappable,
   // ContextLifecycleObserver implementation.
   // FIXME: This class could derive from ContextLifecycleObserver
   // again (http://crbug.com/483722).
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // ScriptWrappable implementation.
   bool HasPendingActivity() const final;

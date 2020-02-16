@@ -56,7 +56,7 @@ class RTCStatsRequestImpl final : public RTCStatsRequest,
   void RequestSucceeded(RTCStatsResponseBase*) override;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

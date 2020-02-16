@@ -37,8 +37,7 @@ VideoWakeLock::VideoWakeLock(HTMLVideoElement& video)
 }
 
 void VideoWakeLock::ElementDidMoveToNewDocument() {
-  ContextLifecycleStateObserver::DidMoveToNewExecutionContext(
-      VideoElement().GetDocument().ToExecutionContext());
+  SetExecutionContext(VideoElement().GetDocument().ToExecutionContext());
 }
 
 void VideoWakeLock::PageVisibilityChanged() {
@@ -79,7 +78,7 @@ void VideoWakeLock::ContextLifecycleStateChanged(mojom::FrameLifecycleState) {
   Update();
 }
 
-void VideoWakeLock::ContextDestroyed(ExecutionContext*) {
+void VideoWakeLock::ContextDestroyed() {
   Update();
 }
 

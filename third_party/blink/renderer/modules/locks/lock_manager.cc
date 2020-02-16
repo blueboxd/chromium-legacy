@@ -423,7 +423,7 @@ void LockManager::Trace(Visitor* visitor) {
   visitor->Trace(held_locks_);
 }
 
-void LockManager::ContextDestroyed(ExecutionContext*) {
+void LockManager::ContextDestroyed() {
   for (auto request : pending_requests_)
     request->Cancel();
   pending_requests_.clear();

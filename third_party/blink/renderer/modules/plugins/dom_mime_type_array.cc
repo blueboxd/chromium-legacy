@@ -120,7 +120,7 @@ void DOMMimeTypeArray::UpdatePluginData() {
   }
 }
 
-void DOMMimeTypeArray::ContextDestroyed(ExecutionContext*) {
+void DOMMimeTypeArray::ContextDestroyed() {
   dom_mime_types_.clear();
 }
 

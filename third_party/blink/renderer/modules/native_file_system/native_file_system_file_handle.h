@@ -34,7 +34,7 @@ class NativeFileSystemFileHandle final : public NativeFileSystemHandle {
   mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken> Transfer()
       override;
 
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   mojom::blink::NativeFileSystemFileHandle* MojoHandle() {
     return mojo_ptr_.get();

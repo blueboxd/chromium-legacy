@@ -430,7 +430,7 @@ void MediaKeys::Trace(Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-void MediaKeys::ContextDestroyed(ExecutionContext*) {
+void MediaKeys::ContextDestroyed() {
   timer_.Stop();
   pending_actions_.clear();
 

@@ -571,7 +571,7 @@ ExecutionContext* RTCIceTransport::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
-void RTCIceTransport::ContextDestroyed(ExecutionContext*) {
+void RTCIceTransport::ContextDestroyed() {
   Close(CloseReason::kContextDestroyed);
 }
 

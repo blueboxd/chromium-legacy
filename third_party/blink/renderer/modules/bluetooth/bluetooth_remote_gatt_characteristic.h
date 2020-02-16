@@ -58,7 +58,7 @@ class BluetoothRemoteGATTCharacteristic final
       const WTF::Vector<uint8_t>& value) override;
 
   // ContextLifecycleObserver interface.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // USING_PRE_FINALIZER interface.
   // Called before the object gets garbage collected.

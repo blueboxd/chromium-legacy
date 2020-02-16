@@ -325,10 +325,16 @@ class WebAssociatedURLLoaderImpl::Observer final
 
   void Dispose() {
     parent_ = nullptr;
-    ClearContext();
+    // TODO(keishi): Remove IsIteratingOverObservers() check when
+    // HeapObserverList() supports removal while iterating.
+    if (!GetExecutionContext()
+             ->ContextLifecycleObserverList()
+             .IsIteratingOverObservers()) {
+      SetExecutionContext(nullptr);
+    }
   }
 
-  void ContextDestroyed(ExecutionContext*) override {
+  void ContextDestroyed() override {
     if (parent_)
       parent_->DocumentDestroyed();
   }
@@ -393,7 +399,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
   // ClientAdapterDone gets called between creating the loader and
   // calling LoadAsynchronously.
   if (observer_) {
-    task_runner = Document::From(observer_->LifecycleContext())
+    task_runner = Document::From(observer_->GetExecutionContext())
                       ->GetTaskRunner(TaskType::kInternalLoading);
   } else {
     task_runner = Thread::Current()->GetTaskRunner();
@@ -438,7 +444,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     }
 
     if (observer_) {
-      Document& document = Document::From(*observer_->LifecycleContext());
+      Document& document = Document::From(*observer_->GetExecutionContext());
       loader_ = MakeGarbageCollected<ThreadableLoader>(
           *document.ToExecutionContext(), client_adapter_,
           resource_loader_options);

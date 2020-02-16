@@ -496,7 +496,7 @@ ExecutionContext* DOMWebSocket::GetExecutionContext() const {
   return ContextLifecycleStateObserver::GetExecutionContext();
 }
 
-void DOMWebSocket::ContextDestroyed(ExecutionContext*) {
+void DOMWebSocket::ContextDestroyed() {
   NETWORK_DVLOG(1) << "WebSocket " << this << " contextDestroyed()";
   event_queue_->ContextDestroyed();
   if (channel_) {

@@ -46,7 +46,7 @@ class CacheStorage final : public ScriptWrappable,
 
   bool HasPendingActivity() const override;
   void Trace(Visitor*) override;
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
  private:
   ScriptPromise MatchImpl(ScriptState*,

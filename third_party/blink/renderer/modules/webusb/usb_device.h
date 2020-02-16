@@ -96,7 +96,7 @@ class USBDevice : public ScriptWrappable, public ContextLifecycleObserver {
   ScriptPromise reset(ScriptState*);
 
   // ContextLifecycleObserver interface.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

@@ -96,7 +96,7 @@ class XR final : public EventTargetWithInlineData,
   const AtomicString& InterfaceName() const override;
 
   // ContextLifecycleObserver overrides.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
   void Trace(Visitor*) override;
 
   // FocusChangedObserver overrides.

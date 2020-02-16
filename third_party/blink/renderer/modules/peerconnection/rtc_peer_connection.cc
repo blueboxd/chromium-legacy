@@ -3176,7 +3176,7 @@ ExecutionContext* RTCPeerConnection::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
-void RTCPeerConnection::ContextDestroyed(ExecutionContext*) {
+void RTCPeerConnection::ContextDestroyed() {
   ReleasePeerConnectionHandler();
 }
 

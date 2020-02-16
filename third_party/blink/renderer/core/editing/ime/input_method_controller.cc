@@ -397,12 +397,12 @@ InputMethodController::InputMethodController(LocalFrame& frame)
 InputMethodController::~InputMethodController() = default;
 
 bool InputMethodController::IsAvailable() const {
-  return DocumentShutdownObserver::GetDocument();
+  return GetExecutionContext();
 }
 
 Document& InputMethodController::GetDocument() const {
   DCHECK(IsAvailable());
-  return *DocumentShutdownObserver::GetDocument();
+  return *Document::From(GetExecutionContext());
 }
 
 bool InputMethodController::HasComposition() const {
@@ -426,7 +426,7 @@ void InputMethodController::Clear() {
       DocumentMarker::MarkerTypes::Composition());
 }
 
-void InputMethodController::OnDocumentShutdown() {
+void InputMethodController::ContextDestroyed() {
   Clear();
   composition_range_ = nullptr;
   active_edit_context_ = nullptr;
@@ -434,7 +434,7 @@ void InputMethodController::OnDocumentShutdown() {
 
 void InputMethodController::DidAttachDocument(Document* document) {
   DCHECK(document);
-  SetDocument(document);
+  SetExecutionContext(document->ToExecutionContext());
 }
 
 void InputMethodController::SelectComposition() const {
@@ -1621,7 +1621,7 @@ void InputMethodController::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(composition_range_);
   visitor->Trace(active_edit_context_);
-  DocumentShutdownObserver::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

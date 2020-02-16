@@ -231,7 +231,7 @@ class CORE_EXPORT HTMLVideoElement final
   friend class VideoFillingViewportTest;
 
   // ContextLifecycleStateObserver functions.
-  void ContextDestroyed(ExecutionContext*) final;
+  void ContextDestroyed() final;
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
   LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;

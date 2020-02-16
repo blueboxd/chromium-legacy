@@ -107,7 +107,7 @@ class MODULES_EXPORT ServiceWorker final
  private:
   // ContextLifecycleStateObserver overrides.
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState state) override;
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   bool was_stopped_;
   const KURL url_;

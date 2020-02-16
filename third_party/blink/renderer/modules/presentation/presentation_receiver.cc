@@ -113,7 +113,7 @@ void PresentationReceiver::RegisterConnection(
   connection_list_->AddConnection(connection);
 }
 
-void PresentationReceiver::ContextDestroyed(ExecutionContext*) {
+void PresentationReceiver::ContextDestroyed() {
   presentation_receiver_receiver_.reset();
   presentation_service_remote_.reset();
 }

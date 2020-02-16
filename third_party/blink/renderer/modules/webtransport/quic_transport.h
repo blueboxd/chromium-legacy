@@ -27,7 +27,6 @@
 namespace blink {
 
 class ExceptionState;
-class ExecutionContext;
 class ReadableStream;
 class ReadableStreamDefaultControllerWithScriptScope;
 class ScriptPromiseResolver;
@@ -79,7 +78,7 @@ class MODULES_EXPORT QuicTransport final
   void OnIncomingStreamClosed(uint32_t stream_id, bool fin_received) override;
 
   // Implementation of ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) final;
+  void ContextDestroyed() final;
 
   // Implementation of ActiveScriptWrappable
   bool HasPendingActivity() const final;

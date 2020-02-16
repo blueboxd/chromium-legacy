@@ -476,7 +476,7 @@ const AtomicString& Notification::InterfaceName() const {
   return event_target_names::kNotification;
 }
 
-void Notification::ContextDestroyed(ExecutionContext* context) {
+void Notification::ContextDestroyed() {
   listener_receiver_.reset();
 
   state_ = State::kClosed;

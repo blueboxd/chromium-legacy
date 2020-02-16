@@ -146,7 +146,7 @@ class MODULES_EXPORT RTCIceTransport final
   ExecutionContext* GetExecutionContext() const override;
 
   // ContextLifecycleObserver overrides.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // ActiveScriptWrappable overrides.
   bool HasPendingActivity() const final;

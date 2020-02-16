@@ -92,7 +92,7 @@ class BodyStreamBuffer::LoaderClient final
   }
 
  private:
-  void ContextDestroyed(ExecutionContext*) override { buffer_->StopLoading(); }
+  void ContextDestroyed() override { buffer_->StopLoading(); }
 
   Member<BodyStreamBuffer> buffer_;
   Member<FetchDataLoader::Client> client_;
@@ -323,9 +323,9 @@ bool BodyStreamBuffer::HasPendingActivity() const {
   return loader_;
 }
 
-void BodyStreamBuffer::ContextDestroyed(ExecutionContext* destroyed_context) {
+void BodyStreamBuffer::ContextDestroyed() {
   CancelConsumer();
-  UnderlyingSourceBase::ContextDestroyed(destroyed_context);
+  UnderlyingSourceBase::ContextDestroyed();
 }
 
 base::Optional<bool> BodyStreamBuffer::IsStreamReadable(

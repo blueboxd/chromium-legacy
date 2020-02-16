@@ -1162,7 +1162,7 @@ PaymentRequest::PaymentRequest(
 #endif
 }
 
-void PaymentRequest::ContextDestroyed(ExecutionContext*) {
+void PaymentRequest::ContextDestroyed() {
   ClearResolversAndCloseMojoConnection();
 }
 

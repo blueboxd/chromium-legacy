@@ -71,7 +71,7 @@ class PrerenderHandle final : public GarbageCollected<PrerenderHandle>,
   const KURL& Url() const;
 
   // ContextLifecycleObserver:
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // mojom::blink::PrerenderHandleClient:
   void OnPrerenderStart() override;

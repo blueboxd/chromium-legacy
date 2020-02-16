@@ -132,7 +132,7 @@ void PresentationController::OnDefaultPresentationStarted(
                    std::move(result->connection_receiver));
 }
 
-void PresentationController::ContextDestroyed(ExecutionContext*) {
+void PresentationController::ContextDestroyed() {
   presentation_controller_receiver_.reset();
 }
 

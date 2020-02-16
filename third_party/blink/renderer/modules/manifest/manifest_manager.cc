@@ -259,7 +259,7 @@ void ManifestManager::BindReceiver(
   receivers_.Add(this, std::move(receiver));
 }
 
-void ManifestManager::ContextDestroyed(ExecutionContext*) {
+void ManifestManager::ContextDestroyed() {
   if (fetcher_)
     fetcher_->Cancel();
 

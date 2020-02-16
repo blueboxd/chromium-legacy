@@ -85,7 +85,7 @@ class MIDIAccess final : public EventTargetWithInlineData,
   bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // MIDIDispatcher::Client
   void DidAddInputPort(const String& id,

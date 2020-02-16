@@ -71,7 +71,7 @@ class RTCSessionDescriptionRequestImpl final
   void RequestFailed(const webrtc::RTCError& error) override;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

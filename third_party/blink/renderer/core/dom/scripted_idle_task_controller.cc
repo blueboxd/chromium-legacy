@@ -228,7 +228,7 @@ void ScriptedIdleTaskController::RunCallback(
   idle_tasks_.erase(id);
 }
 
-void ScriptedIdleTaskController::ContextDestroyed(ExecutionContext*) {
+void ScriptedIdleTaskController::ContextDestroyed() {
   idle_tasks_.clear();
 }
 

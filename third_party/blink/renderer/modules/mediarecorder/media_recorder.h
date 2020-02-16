@@ -72,7 +72,7 @@ class MODULES_EXPORT MediaRecorder
   ExecutionContext* GetExecutionContext() const override;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext* context) override;
+  void ContextDestroyed() override;
 
   // ScriptWrappable
   bool HasPendingActivity() const final { return !stopped_; }

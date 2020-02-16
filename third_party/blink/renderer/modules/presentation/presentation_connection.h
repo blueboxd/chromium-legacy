@@ -97,7 +97,7 @@ class PresentationConnection : public EventTargetWithInlineData,
                           RegisteredEventListener&) override;
 
   // ContextLifecycleObserver implementation.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // ContextLifecycleStateObserver implementation.
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState state) override;

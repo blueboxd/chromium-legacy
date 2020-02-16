@@ -42,7 +42,7 @@ class ImageDownloaderImpl final : public GarbageCollected<ImageDownloaderImpl>,
   void Trace(Visitor*) override;
 
   // OverContextLifecycleObserver overrides.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
  private:
   // ImageDownloader implementation. Request to asynchronously download an

@@ -120,7 +120,7 @@ String Lock::ModeToString(mojom::blink::LockMode mode) {
   return g_empty_string;
 }
 
-void Lock::ContextDestroyed(ExecutionContext* context) {
+void Lock::ContextDestroyed() {
   ReleaseIfHeld();
 }
 

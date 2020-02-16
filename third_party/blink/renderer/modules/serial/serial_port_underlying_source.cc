@@ -49,10 +49,9 @@ ScriptPromise SerialPortUnderlyingSource::Cancel(ScriptState* script_state,
   return ScriptPromise::CastUndefined(script_state);
 }
 
-void SerialPortUnderlyingSource::ContextDestroyed(
-    ExecutionContext* execution_context) {
+void SerialPortUnderlyingSource::ContextDestroyed() {
   Close();
-  UnderlyingSourceBase::ContextDestroyed(execution_context);
+  UnderlyingSourceBase::ContextDestroyed();
 }
 
 void SerialPortUnderlyingSource::SignalErrorImmediately(

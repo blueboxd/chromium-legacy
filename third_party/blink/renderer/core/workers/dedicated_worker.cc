@@ -270,7 +270,7 @@ BeginFrameProviderParams DedicatedWorker::CreateBeginFrameProviderParams() {
   return begin_frame_provider_params;
 }
 
-void DedicatedWorker::ContextDestroyed(ExecutionContext*) {
+void DedicatedWorker::ContextDestroyed() {
   DCHECK(GetExecutionContext()->IsContextThread());
   if (classic_script_loader_)
     classic_script_loader_->Cancel();

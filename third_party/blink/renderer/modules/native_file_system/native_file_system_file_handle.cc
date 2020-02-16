@@ -139,7 +139,7 @@ NativeFileSystemFileHandle::Transfer() {
   return result;
 }
 
-void NativeFileSystemFileHandle::ContextDestroyed(ExecutionContext*) {
+void NativeFileSystemFileHandle::ContextDestroyed() {
   mojo_ptr_.reset();
 }
 

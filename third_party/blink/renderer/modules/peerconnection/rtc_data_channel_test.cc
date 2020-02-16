@@ -325,7 +325,7 @@ TEST_F(RTCDataChannelTest, SendAfterContextDestroyed) {
       pc.get());
   webrtc_channel->ChangeState(webrtc::DataChannelInterface::kOpen);
 
-  channel->ContextDestroyed(nullptr);
+  channel->ContextDestroyed();
 
   String message(std::string(100, 'A').c_str());
   DummyExceptionStateForTesting exception_state;
@@ -344,7 +344,7 @@ TEST_F(RTCDataChannelTest, CloseAfterContextDestroyed) {
       pc.get());
   webrtc_channel->ChangeState(webrtc::DataChannelInterface::kOpen);
 
-  channel->ContextDestroyed(nullptr);
+  channel->ContextDestroyed();
   channel->close();
   EXPECT_EQ(String::FromUTF8("closed"), channel->readyState());
 }

@@ -567,7 +567,7 @@ void BackgroundFetchManager::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
 }
 
-void BackgroundFetchManager::ContextDestroyed(ExecutionContext* context) {
+void BackgroundFetchManager::ContextDestroyed() {
   for (const auto& loader : loaders_) {
     if (loader)
       loader->Stop();

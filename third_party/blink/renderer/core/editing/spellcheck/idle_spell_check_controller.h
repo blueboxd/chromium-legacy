@@ -6,9 +6,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_SPELLCHECK_IDLE_SPELL_CHECK_CONTROLLER_H_
 
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/dom/document_shutdown_observer.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
+#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
@@ -29,7 +29,7 @@ class SpellCheckRequester;
 // See design doc for details: https://goo.gl/zONC3v
 class CORE_EXPORT IdleSpellCheckController final
     : public GarbageCollected<IdleSpellCheckController>,
-      public DocumentShutdownObserver {
+      public ContextLifecycleObserver {
   DISALLOW_COPY_AND_ASSIGN(IdleSpellCheckController);
   USING_GARBAGE_COLLECTED_MIXIN(IdleSpellCheckController);
 
@@ -70,12 +70,12 @@ class CORE_EXPORT IdleSpellCheckController final
   LocalFrame& GetFrame() const { return *frame_; }
 
   // Returns whether there is an active document to work on.
-  bool IsAvailable() const { return DocumentShutdownObserver::GetDocument(); }
+  bool IsAvailable() const { return GetExecutionContext(); }
 
   // Return the document to work on. Callable only when IsAvailable() is true.
   Document& GetDocument() const {
     DCHECK(IsAvailable());
-    return *DocumentShutdownObserver::GetDocument();
+    return *Document::From(GetExecutionContext());
   }
 
   // Returns whether spell checking is globally enabled.
@@ -95,8 +95,8 @@ class CORE_EXPORT IdleSpellCheckController final
   void ColdModeTimerFired(TimerBase*);
   void ColdModeInvocation(IdleDeadline*);
 
-  // Implements |DocumentShutdownObserver|.
-  void OnDocumentShutdown() final;
+  // Implements |ContextLifecycleObserver|.
+  void ContextDestroyed() final;
 
   void DisposeIdleCallback();
 

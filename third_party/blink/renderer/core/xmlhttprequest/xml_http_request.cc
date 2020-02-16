@@ -2019,7 +2019,7 @@ void XMLHttpRequest::HandleDidTimeout() {
                      expected_length);
 }
 
-void XMLHttpRequest::ContextDestroyed(ExecutionContext*) {
+void XMLHttpRequest::ContextDestroyed() {
   Dispose();
 
   // In case we are in the middle of send() function, unset the send flag to

@@ -122,7 +122,7 @@ class MODULES_EXPORT PaymentRequest final
   void OnConnectionError();
 
   // LifecycleObserver:
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // payments::mojom::blink::PaymentRequestClient:
   void OnPaymentMethodChange(const String& method_name,

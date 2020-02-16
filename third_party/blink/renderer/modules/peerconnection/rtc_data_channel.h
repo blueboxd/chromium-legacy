@@ -99,7 +99,7 @@ class MODULES_EXPORT RTCDataChannel final
   ExecutionContext* GetExecutionContext() const override;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // ScriptWrappable
   bool HasPendingActivity() const override;

@@ -266,7 +266,7 @@ ScriptPromise HIDDevice::receiveFeatureReport(ScriptState* script_state,
   return promise;
 }
 
-void HIDDevice::ContextDestroyed(ExecutionContext*) {
+void HIDDevice::ContextDestroyed() {
   connection_.reset();
   device_requests_.clear();
   receiver_.reset();

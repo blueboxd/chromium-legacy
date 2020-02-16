@@ -411,7 +411,7 @@ void PresentationConnection::AddedEventListener(
   }
 }
 
-void PresentationConnection::ContextDestroyed(ExecutionContext*) {
+void PresentationConnection::ContextDestroyed() {
   CloseConnection();
 }
 

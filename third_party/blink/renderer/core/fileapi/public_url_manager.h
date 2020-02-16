@@ -69,7 +69,7 @@ class CORE_EXPORT PublicURLManager final
   void Resolve(const KURL&, mojo::PendingReceiver<mojom::blink::BlobURLToken>);
 
   // ContextLifecycleObserver interface.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

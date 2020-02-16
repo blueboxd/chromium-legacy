@@ -1751,7 +1751,8 @@ unsigned Internals::mediaKeySessionCount() {
 unsigned Internals::contextLifecycleStateObserverObjectCount(
     Document* document) {
   DCHECK(document);
-  return document->ToExecutionContext()->ContextLifecycleStateObserverCount();
+  return document->ToExecutionContext()
+      ->ContextLifecycleStateObserverCountForTesting();
 }
 
 static unsigned EventHandlerCount(

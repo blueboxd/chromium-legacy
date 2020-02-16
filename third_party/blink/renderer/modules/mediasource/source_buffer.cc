@@ -1163,7 +1163,7 @@ bool SourceBuffer::HasPendingActivity() const {
          (async_event_queue_ && async_event_queue_->HasPendingEvents());
 }
 
-void SourceBuffer::ContextDestroyed(ExecutionContext*) {
+void SourceBuffer::ContextDestroyed() {
   append_buffer_async_task_handle_.Cancel();
   remove_async_task_handle_.Cancel();
   updating_ = false;

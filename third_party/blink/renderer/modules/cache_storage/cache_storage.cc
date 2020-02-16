@@ -511,7 +511,7 @@ bool CacheStorage::IsAllowed(ScriptState* script_state) {
   return allowed_.value();
 }
 
-void CacheStorage::ContextDestroyed(ExecutionContext*) {
+void CacheStorage::ContextDestroyed() {
   cache_storage_remote_.reset();
 }
 

@@ -1398,7 +1398,7 @@ bool Animation::HasPendingActivity() const {
          (!finished_ && HasEventListeners(event_type_names::kFinish));
 }
 
-void Animation::ContextDestroyed(ExecutionContext*) {
+void Animation::ContextDestroyed() {
   finished_ = true;
   pending_finished_event_ = nullptr;
   pending_cancelled_event_ = nullptr;

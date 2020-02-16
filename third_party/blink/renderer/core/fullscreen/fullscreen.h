@@ -104,7 +104,7 @@ class CORE_EXPORT Fullscreen final : public GarbageCollected<Fullscreen>,
   static void ElementRemoved(Element&);
 
   // ContextLifecycleObserver:
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

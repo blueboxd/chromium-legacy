@@ -155,9 +155,8 @@ void PausableScriptExecutor::CreateAndRun(
   executor->Run();
 }
 
-void PausableScriptExecutor::ContextDestroyed(
-    ExecutionContext* destroyed_context) {
-  ContextLifecycleObserver::ContextDestroyed(destroyed_context);
+void PausableScriptExecutor::ContextDestroyed() {
+  ContextLifecycleObserver::ContextDestroyed();
 
   if (callback_) {
     // Though the context is (about to be) destroyed, the callback is invoked
@@ -252,7 +251,13 @@ void PausableScriptExecutor::ExecuteAndDestroySelf() {
 
 void PausableScriptExecutor::Dispose() {
   // Remove object as a ContextLifecycleObserver.
-  ContextLifecycleObserver::ClearContext();
+  // TODO(keishi): Remove IsIteratingOverObservers() check when
+  // HeapObserverList() supports removal while iterating.
+  if (!GetExecutionContext()
+           ->ContextLifecycleObserverList()
+           .IsIteratingOverObservers()) {
+    SetExecutionContext(nullptr);
+  }
   task_handle_.Cancel();
 }
 

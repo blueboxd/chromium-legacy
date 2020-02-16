@@ -69,7 +69,7 @@ class MODULES_EXPORT VibrationController final
 
  private:
   // Inherited from ContextLifecycleObserver.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // Inherited from PageVisibilityObserver.
   void PageVisibilityChanged() override;

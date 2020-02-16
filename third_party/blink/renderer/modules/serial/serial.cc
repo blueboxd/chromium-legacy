@@ -51,7 +51,7 @@ const AtomicString& Serial::InterfaceName() const {
   return event_target_names::kSerial;
 }
 
-void Serial::ContextDestroyed(ExecutionContext*) {
+void Serial::ContextDestroyed() {
   for (auto& entry : port_cache_)
     entry.value->ContextDestroyed();
 }

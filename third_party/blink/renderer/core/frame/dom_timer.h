@@ -64,7 +64,7 @@ class CORE_EXPORT DOMTimer final : public GarbageCollected<DOMTimer>,
   ~DOMTimer() override;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // Pre finalizer is needed to promptly stop this Timer object.
   // Otherwise timer events might fire at an object that's slated for

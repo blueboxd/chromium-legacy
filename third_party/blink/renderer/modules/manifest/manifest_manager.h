@@ -72,7 +72,7 @@ class MODULES_EXPORT ManifestManager : public GarbageCollected<ManifestManager>,
                               const mojom::blink::ManifestDebugInfo*)>;
 
   // From ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void RequestManifestImpl(InternalRequestManifestCallback callback);
 

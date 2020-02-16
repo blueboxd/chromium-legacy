@@ -49,7 +49,7 @@ class NativeFileSystemDirectoryHandle final : public NativeFileSystemHandle {
     return mojo_ptr_.get();
   }
 
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
  private:
   void QueryPermissionImpl(

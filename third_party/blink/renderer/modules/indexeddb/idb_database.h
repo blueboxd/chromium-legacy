@@ -134,7 +134,7 @@ class MODULES_EXPORT IDBDatabase final
   bool HasPendingActivity() const final;
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // EventTarget
   const AtomicString& InterfaceName() const override;

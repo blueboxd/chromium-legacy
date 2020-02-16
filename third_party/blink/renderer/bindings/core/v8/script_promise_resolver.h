@@ -77,7 +77,7 @@ class CORE_EXPORT ScriptPromiseResolver
   }
 
   // ContextLifecycleObserver implementation.
-  void ContextDestroyed(ExecutionContext*) override { Detach(); }
+  void ContextDestroyed() override { Detach(); }
 
   // Calling this function makes the resolver release its internal resources.
   // That means the associated promise will never be resolved or rejected

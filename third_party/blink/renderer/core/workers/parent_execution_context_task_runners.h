@@ -52,7 +52,7 @@ class CORE_EXPORT ParentExecutionContextTaskRunners final
                                     WTF::IntHash<TaskType>,
                                     TaskTypeTraits>;
 
-  void ContextDestroyed(ExecutionContext*) LOCKS_EXCLUDED(mutex_) override;
+  void ContextDestroyed() LOCKS_EXCLUDED(mutex_) override;
 
   Mutex mutex_;
   TaskRunnerHashMap task_runners_ GUARDED_BY(mutex_);

@@ -178,7 +178,7 @@ void VibrationController::DidCancel() {
   timer_do_vibrate_.StartOneShot(base::TimeDelta(), FROM_HERE);
 }
 
-void VibrationController::ContextDestroyed(ExecutionContext*) {
+void VibrationController::ContextDestroyed() {
   Cancel();
 
   // If the document context was destroyed, never call the mojo service again.

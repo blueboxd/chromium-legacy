@@ -71,7 +71,7 @@ class MODULES_EXPORT OutgoingStream
   bool HasPendingActivity() const final { return writing_aborted_resolver_; }
 
   // Implementation of ContextLifecycleObserver.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

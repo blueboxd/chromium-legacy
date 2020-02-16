@@ -23,7 +23,6 @@ class BackgroundFetchIconLoader;
 class BackgroundFetchOptions;
 class BackgroundFetchRegistration;
 class ExceptionState;
-class ExecutionContext;
 class RequestOrUSVStringOrRequestOrUSVStringSequence;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -56,7 +55,7 @@ class MODULES_EXPORT BackgroundFetchManager final
   void Trace(Visitor* visitor) override;
 
   // ContextLifecycleObserver interface
-  void ContextDestroyed(ExecutionContext* context) override;
+  void ContextDestroyed() override;
 
  private:
   friend class BackgroundFetchManagerTest;

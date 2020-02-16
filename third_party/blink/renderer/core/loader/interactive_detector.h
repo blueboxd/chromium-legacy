@@ -121,7 +121,7 @@ class CORE_EXPORT InteractiveDetector
                            base::TimeTicks processing_start);
 
   // ContextLifecycleObserver
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

@@ -19,7 +19,6 @@ namespace blink {
 
 class DOMTask;
 class ExceptionState;
-class ExecutionContext;
 class SchedulerPostTaskOptions;
 class ScriptValue;
 class V8Function;
@@ -54,7 +53,7 @@ class MODULES_EXPORT DOMScheduler : public ScriptWrappable,
   void OnTaskStarted(DOMTask*);
   void OnTaskCompleted(DOMTask*);
 
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
 

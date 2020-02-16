@@ -63,7 +63,7 @@ IdleSpellCheckController::~IdleSpellCheckController() = default;
 void IdleSpellCheckController::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(cold_mode_requester_);
-  DocumentShutdownObserver::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 IdleSpellCheckController::IdleSpellCheckController(LocalFrame& frame)
@@ -212,10 +212,10 @@ void IdleSpellCheckController::Invoke(IdleDeadline* deadline) {
 }
 
 void IdleSpellCheckController::DidAttachDocument(Document* document) {
-  SetDocument(document);
+  SetExecutionContext(document->ToExecutionContext());
 }
 
-void IdleSpellCheckController::OnDocumentShutdown() {
+void IdleSpellCheckController::ContextDestroyed() {
   Deactivate();
 }
 

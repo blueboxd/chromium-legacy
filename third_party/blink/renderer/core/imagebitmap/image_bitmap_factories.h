@@ -144,7 +144,7 @@ class ImageBitmapFactories final
     void ResolvePromiseOnOriginalThread(sk_sp<SkImage>);
 
     // ContextLifecycleObserver
-    void ContextDestroyed(ExecutionContext*) override;
+    void ContextDestroyed() override;
 
     // FileReaderLoaderClient
     void DidStartLoading() override {}

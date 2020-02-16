@@ -184,7 +184,7 @@ ExecutionContext* SpeechRecognition::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
-void SpeechRecognition::ContextDestroyed(ExecutionContext*) {
+void SpeechRecognition::ContextDestroyed() {
   controller_ = nullptr;
   receiver_.reset();
   session_.reset();

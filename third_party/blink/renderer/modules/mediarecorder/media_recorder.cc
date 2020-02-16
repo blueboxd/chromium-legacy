@@ -337,7 +337,7 @@ ExecutionContext* MediaRecorder::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
-void MediaRecorder::ContextDestroyed(ExecutionContext*) {
+void MediaRecorder::ContextDestroyed() {
   if (stopped_)
     return;
 

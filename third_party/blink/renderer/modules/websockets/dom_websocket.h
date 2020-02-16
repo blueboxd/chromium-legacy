@@ -128,7 +128,7 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   ExecutionContext* GetExecutionContext() const override;
 
   // ContextLifecycleStateObserver functions.
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
 
   // ScriptWrappable functions.

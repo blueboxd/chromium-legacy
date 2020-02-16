@@ -56,7 +56,7 @@ InstalledAppController::InstalledAppController(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
       ContextLifecycleObserver(frame.GetDocument()) {}
 
-void InstalledAppController::ContextDestroyed(ExecutionContext*) {
+void InstalledAppController::ContextDestroyed() {
   provider_.reset();
 }
 

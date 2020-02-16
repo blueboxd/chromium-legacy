@@ -176,7 +176,7 @@ bool ServiceWorker::HasPendingActivity() const {
 void ServiceWorker::ContextLifecycleStateChanged(
     mojom::FrameLifecycleState state) {}
 
-void ServiceWorker::ContextDestroyed(ExecutionContext*) {
+void ServiceWorker::ContextDestroyed() {
   was_stopped_ = true;
 }
 

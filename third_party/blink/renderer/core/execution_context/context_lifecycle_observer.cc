@@ -39,14 +39,47 @@ void ContextClient::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
 }
 
+ContextLifecycleObserver::ContextLifecycleObserver()
+    : observer_type_(kGenericType) {}
+
 ContextLifecycleObserver::ContextLifecycleObserver(Document* document,
                                                    Type type)
-    : LifecycleObserver(document ? document->ToExecutionContext() : nullptr),
-      observer_type_(type) {}
+    : ContextLifecycleObserver(
+          document ? document->ToExecutionContext() : nullptr,
+          type) {}
+
+ContextLifecycleObserver::ContextLifecycleObserver(
+    ExecutionContext* execution_context,
+    Type type)
+    : observer_type_(type) {
+  SetExecutionContext(execution_context);
+}
+
+void ContextLifecycleObserver::ObserverListWillBeCleared() {
+  execution_context_ = nullptr;
+}
+
+void ContextLifecycleObserver::SetExecutionContext(
+    ExecutionContext* execution_context) {
+  if (execution_context == execution_context_)
+    return;
+
+  if (execution_context_)
+    execution_context_->ContextLifecycleObserverList().RemoveObserver(this);
+
+  execution_context_ = execution_context;
+
+  if (execution_context_)
+    execution_context_->ContextLifecycleObserverList().AddObserver(this);
+}
 
 LocalFrame* ContextLifecycleObserver::GetFrame() const {
   auto* document = Document::DynamicFrom(GetExecutionContext());
   return document ? document->GetFrame() : nullptr;
+}
+
+void ContextLifecycleObserver::Trace(Visitor* visitor) {
+  visitor->Trace(execution_context_);
 }
 
 DOMWindowClient::DOMWindowClient(LocalDOMWindow* window)

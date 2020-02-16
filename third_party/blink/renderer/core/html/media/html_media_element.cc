@@ -594,8 +594,7 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
   // load event from within the destructor.
   old_document.DecrementLoadEventDelayCount();
 
-  ContextLifecycleStateObserver::DidMoveToNewExecutionContext(
-      GetDocument().ToExecutionContext());
+  SetExecutionContext(GetDocument().ToExecutionContext());
   HTMLElement::DidMoveToNewDocument(old_document);
 }
 
@@ -3601,8 +3600,8 @@ void HTMLMediaElement::ContextLifecycleStateChanged(
   }
 }
 
-void HTMLMediaElement::ContextDestroyed(ExecutionContext*) {
-  DVLOG(3) << "contextDestroyed(" << (void*)this << ")";
+void HTMLMediaElement::ContextDestroyed() {
+  DVLOG(3) << "contextDestroyed(" << static_cast<void*>(this) << ")";
 
   // Close the async event queue so that no events are enqueued.
   CancelPendingEventsAndCallbacks();

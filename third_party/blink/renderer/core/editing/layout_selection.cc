@@ -804,7 +804,7 @@ void LayoutSelection::Commit() {
   paint_range_ = new_range.paint_range;
 }
 
-void LayoutSelection::OnDocumentShutdown() {
+void LayoutSelection::ContextDestroyed() {
   has_pending_selection_ = false;
   paint_range_->start_node = nullptr;
   paint_range_->start_offset = base::nullopt;

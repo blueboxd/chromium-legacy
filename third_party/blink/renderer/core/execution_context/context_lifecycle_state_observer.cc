@@ -61,7 +61,7 @@ void ContextLifecycleStateObserver::UpdateStateIfNeeded() {
 #endif
   if (ExecutionContext* context = GetExecutionContext()) {
 #if DCHECK_IS_ON()
-    DCHECK(context->Contains(this));
+    DCHECK(context->ContextLifecycleObserverList().HasObserver(this));
 #endif
     mojom::FrameLifecycleState pause_state = context->ContextPauseState();
     if (pause_state != mojom::FrameLifecycleState::kRunning)
@@ -69,12 +69,12 @@ void ContextLifecycleStateObserver::UpdateStateIfNeeded() {
   }
 }
 
-void ContextLifecycleStateObserver::DidMoveToNewExecutionContext(
+void ContextLifecycleStateObserver::SetExecutionContext(
     ExecutionContext* context) {
-  SetContext(context);
+  ContextLifecycleObserver::SetExecutionContext(context);
 
   if (context->IsContextDestroyed()) {
-    ContextDestroyed(context);
+    ContextDestroyed();
     return;
   }
   ContextLifecycleStateChanged(context->ContextPauseState());

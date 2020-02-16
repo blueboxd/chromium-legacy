@@ -58,7 +58,7 @@ class DOMMimeTypeArray final : public ScriptWrappable,
 
  private:
   PluginData* GetPluginData() const;
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   HeapVector<Member<DOMMimeType>> dom_mime_types_;
 };

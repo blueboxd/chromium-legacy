@@ -136,9 +136,9 @@ void HTMLVideoElement::RemovedFrom(ContainerNode& insertion_point) {
   OnBecamePersistentVideo(false);
 }
 
-void HTMLVideoElement::ContextDestroyed(ExecutionContext* context) {
+void HTMLVideoElement::ContextDestroyed() {
   custom_controls_fullscreen_detector_->ContextDestroyed();
-  HTMLMediaElement::ContextDestroyed(context);
+  HTMLMediaElement::ContextDestroyed();
 }
 
 bool HTMLVideoElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {

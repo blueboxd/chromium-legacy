@@ -49,7 +49,7 @@ class CORE_EXPORT ModuleRecordResolverImpl final
                                 ExceptionState&) final;
 
   // Implements ContextLifecycleObserver:
-  void ContextDestroyed(ExecutionContext*) final;
+  void ContextDestroyed() final;
 
   // Corresponds to the spec concept "referencingModule.[[HostDefined]]".
   // crbug.com/725816 : ModuleRecord contains strong ref to v8::Module thus we

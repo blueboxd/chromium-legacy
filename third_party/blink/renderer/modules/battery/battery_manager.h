@@ -58,7 +58,7 @@ class BatteryManager final : public EventTargetWithInlineData,
 
   // ContextLifecycleState implementation.
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   // ScriptWrappable implementation.
   bool HasPendingActivity() const final;

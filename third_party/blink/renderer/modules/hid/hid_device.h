@@ -70,7 +70,7 @@ class MODULES_EXPORT HIDDevice
   ScriptPromise receiveFeatureReport(ScriptState*, uint8_t report_id);
 
   // ContextLifecycleObserver:
-  void ContextDestroyed(ExecutionContext*) override;
+  void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
   void Dispose();

@@ -418,7 +418,7 @@ ExecutionContext* Bluetooth::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
-void Bluetooth::ContextDestroyed(ExecutionContext*) {
+void Bluetooth::ContextDestroyed() {
   client_receivers_.Clear();
 }
 

@@ -89,14 +89,12 @@ class BackButtonNode extends SAChildNode {
 
   /** @override */
   performAction(action) {
-    if (action !== SAConstants.MenuAction.SELECT) {
-      return false;
-    }
-
-    if (BackButtonNode.automationNode_) {
+    if (action === SAConstants.MenuAction.SELECT &&
+        BackButtonNode.automationNode_) {
       BackButtonNode.automationNode_.doDefault();
+      return SAConstants.ActionResponse.CLOSE_MENU;
     }
-    return true;
+    return SAConstants.ActionResponse.NO_ACTION_TAKEN;
   }
 
   // ================= Debug methods =================

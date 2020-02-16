@@ -643,7 +643,8 @@ class MenuManager {
     }
 
     // Otherwise, ask the node to perform the action itself.
-    if (this.menuOriginNode_.performAction(action)) {
+    if (this.menuOriginNode_.performAction(action) ===
+        SAConstants.ActionResponse.CLOSE_MENU) {
       this.exit();
     }
   }

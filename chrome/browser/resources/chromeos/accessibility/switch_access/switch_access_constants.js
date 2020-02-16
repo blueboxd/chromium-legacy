@@ -41,6 +41,16 @@ const SAConstants = {
   // =========================== Enums ===========================
 
   /**
+   * When an action is performed, how the menu should respond.
+   * @enum {number}
+   */
+  ActionResponse: {
+    NO_ACTION_TAKEN: -1,
+    CLOSE_MENU: 0,
+    REMAIN_OPEN: 1,
+  },
+
+  /**
    * The types of error or unexpected state that can be encountered by Switch
    * Access.
    * These values are persisted to logs and should not be renumbered or re-used.

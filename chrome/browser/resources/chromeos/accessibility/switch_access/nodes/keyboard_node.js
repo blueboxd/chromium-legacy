@@ -45,15 +45,13 @@ class KeyboardNode extends NodeWrapper {
 
   /** @override */
   performAction(action) {
-    if (this.isGroup()) {
-      return false;
+    if (this.isGroup() || action !== SAConstants.MenuAction.SELECT) {
+      return SAConstants.ActionResponse.NO_ACTION_TAKEN;
     }
-    if (action !== SAConstants.MenuAction.SELECT) {
-      return false;
-    }
+
     const keyLocation = this.location;
     if (!keyLocation) {
-      return false;
+      return SAConstants.ActionResponse.NO_ACTION_TAKEN;
     }
 
     // doDefault() does nothing on Virtual Keyboard buttons, so we must
@@ -62,7 +60,7 @@ class KeyboardNode extends NodeWrapper {
     EventHelper.simulateMouseClick(
         center.x, center.y, SAConstants.VK_KEY_PRESS_DURATION_MS);
 
-    return true;
+    return SAConstants.ActionResponse.CLOSE_MENU;
   }
 
   // ================= Static methods =================

@@ -111,7 +111,7 @@ class GroupNode extends SAChildNode {
 
   /** @override */
   performAction(action) {
-    return true;
+    return SAConstants.ActionResponse.NO_ACTION_TAKEN;
   }
 
   // ================= Static methods =================

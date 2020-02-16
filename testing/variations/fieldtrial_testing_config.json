@@ -768,10 +768,11 @@
             ],
             "experiments": [
                 {
-                    "name": "RejectBirthyearAsCompany",
+                    "name": "RejectBirthyearAndSocialTitleAsCompany_20200210",
                     "enable_features": [
                         "AutofillEnableCompanyName",
-                        "AutofillRejectCompanyBirthyear"
+                        "AutofillRejectCompanyBirthyear",
+                        "AutofillRejectCompanySocialTitle"
                     ]
                 }
             ]

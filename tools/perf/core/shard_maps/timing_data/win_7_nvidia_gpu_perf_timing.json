@@ -4,7 +4,7 @@
         "name": "rendering.desktop/animometer_webgl_attrib_arrays"
     },
     {
-        "duration": "18.0",
+        "duration": "17.0",
         "name": "rendering.desktop/balls_javascript_canvas"
     },
     {
@@ -16,7 +16,7 @@
         "name": "rendering.desktop/chip_tune"
     },
     {
-        "duration": "18.0",
+        "duration": "17.0",
         "name": "rendering.desktop/css_value_type_shadow"
     },
     {
@@ -24,15 +24,15 @@
         "name": "rendering.desktop/fill_shapes"
     },
     {
-        "duration": "28.0",
+        "duration": "27.0",
         "name": "rendering.desktop/ie_chalkboard"
     },
     {
-        "duration": "17.0",
+        "duration": "18.0",
         "name": "rendering.desktop/main_30fps_impl_60fps"
     },
     {
-        "duration": "21.0",
+        "duration": "20.0",
         "name": "rendering.desktop/new_tilings"
     },
     {

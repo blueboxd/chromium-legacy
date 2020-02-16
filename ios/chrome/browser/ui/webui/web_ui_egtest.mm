@@ -43,10 +43,10 @@ GURL WebUIPageUrlWithHost(const std::string& host) {
   return GURL(base::StringPrintf("%s://%s", kChromeUIScheme, host.c_str()));
 }
 
-// Waits for omnibox text to equal (if |exactMatch|) or contain (else) |URL|
+// Waits for omnibox text to equal (if |exact_match|) or contain (else) |URL|
 // and returns true if it was found or false on timeout. Strips trailing URL
 // slash if present as the omnibox does not display them.
-bool WaitForOmniboxURLString(std::string URL, bool exactMatch = true) {
+bool WaitForOmniboxURLString(std::string URL, bool exact_match = true) {
   const std::string trimmed_URL =
       base::TrimString(URL, "/", TrimPositions::TRIM_TRAILING).as_string();
 
@@ -55,7 +55,7 @@ bool WaitForOmniboxURLString(std::string URL, bool exactMatch = true) {
   return base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^{
         NSError* error = nil;
-        if (exactMatch) {
+        if (exact_match) {
           [[EarlGrey selectElementWithMatcher:OmniboxText(trimmed_URL)]
               assertWithMatcher:grey_notNil()
                           error:&error];

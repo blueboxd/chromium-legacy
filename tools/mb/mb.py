@@ -1029,23 +1029,12 @@ class MetaBuildWrapper(object):
     # because in python 3 vpython will no longer have its current 'viral'
     # qualities and will require explicit usage to opt in to.
     prefix = getattr(sys, "real_prefix", sys.prefix)
-    python_exe = 'python.exe' if self.platform.startswith('win') else 'python'
-    # The value of prefix varies. Sometimes it extends to include the bin/
-    # directory of the python install such that prefix/python is the intepreter,
-    # and other times prefix/bin/python is the interpreter. Therefore we need
-    # to check both. Also, it is safer to check prefix/bin first because there
-    # have been previous installs where prefix/bin/python was the real binary
-    # and prefix/python was actually vpython-native.
-    possible_python_locations = [
-        os.path.join(prefix, 'bin', python_exe),
-        os.path.join(prefix, python_exe),
-    ]
-    for p in possible_python_locations:
-      if os.path.isfile(p):
-        cmd.append('--script-executable=%s' % python_exe)
-        break
+    python_exe = ('%s\\bin\\python.exe' if self.platform.startswith('win') else
+                  '%s/bin/python') % prefix
+    if os.path.isfile(python_exe):
+      cmd.append('--script-executable=%s' % python_exe)
     else:
-      self.Print('python interpreter not under %s' % prefix)
+      self.Print('python interpreter not under %s/bin' % prefix)
 
     ret, output, _ = self.Run(cmd)
     if ret:

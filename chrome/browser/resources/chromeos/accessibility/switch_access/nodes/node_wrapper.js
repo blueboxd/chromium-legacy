@@ -31,12 +31,7 @@ class NodeWrapper extends SAChildNode {
   /** @override */
   get actions() {
     const actions = [];
-    if (SwitchAccessPredicate.isTextInput(this.baseNode_)) {
-      actions.push(SAConstants.MenuAction.OPEN_KEYBOARD);
-      actions.push(SAConstants.MenuAction.DICTATION);
-    } else {
-      actions.push(SAConstants.MenuAction.SELECT);
-    }
+    actions.push(SAConstants.MenuAction.SELECT);
 
     const ancestor = this.getScrollableAncestor_();
     if (ancestor.scrollable) {
@@ -141,45 +136,38 @@ class NodeWrapper extends SAChildNode {
   performAction(action) {
     let ancestor;
     switch (action) {
-      case SAConstants.MenuAction.OPEN_KEYBOARD:
-        this.baseNode_.focus();
-        return true;
       case SAConstants.MenuAction.SELECT:
         this.baseNode_.doDefault();
-        return true;
-      case SAConstants.MenuAction.DICTATION:
-        chrome.accessibilityPrivate.toggleDictation();
-        return true;
       case SAConstants.MenuAction.SCROLL_DOWN:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
           ancestor.scrollDown(() => {});
         }
-        return true;
+        return SAConstants.ActionResponse.CLOSE_MENU;
       case SAConstants.MenuAction.SCROLL_UP:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
           ancestor.scrollUp(() => {});
         }
-        return true;
+        return SAConstants.ActionResponse.CLOSE_MENU;
       case SAConstants.MenuAction.SCROLL_RIGHT:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
           ancestor.scrollRight(() => {});
         }
-        return true;
+        return SAConstants.ActionResponse.CLOSE_MENU;
       case SAConstants.MenuAction.SCROLL_LEFT:
         ancestor = this.getScrollableAncestor_();
         if (ancestor.scrollable) {
           ancestor.scrollLeft(() => {});
         }
-        return true;
+        return SAConstants.ActionResponse.CLOSE_MENU;
       default:
         if (Object.values(chrome.automation.ActionType).includes(action)) {
           this.baseNode_.performStandardAction(
               /** @type {chrome.automation.ActionType} */ (action));
         }
-        return true;
+        return SAConstants.ActionResponse.CLOSE_MENU;
     }
   }
 
@@ -205,6 +193,10 @@ class NodeWrapper extends SAChildNode {
    * @return {!NodeWrapper}
    */
   static create(baseNode, parent) {
+    if (SwitchAccessPredicate.isTextInput(baseNode)) {
+      return new EditableTextNode(baseNode, parent);
+    }
+
     switch (baseNode.role) {
       case chrome.automation.RoleType.TAB:
         return TabNode.create(baseNode, parent);

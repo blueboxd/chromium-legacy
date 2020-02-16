@@ -1,110 +1,114 @@
 [
     {
-        "duration": "46.0",
+        "duration": "29.0",
         "name": "loading.mobile/Dramaq"
     },
     {
-        "duration": "38.0",
+        "duration": "25.0",
         "name": "loading.mobile/Facebook"
     },
     {
-        "duration": "30.0",
+        "duration": "25.0",
         "name": "loading.mobile/FranceTVInfo"
     },
     {
-        "duration": "30.0",
+        "duration": "23.0",
         "name": "loading.mobile/GoogleIndia"
     },
     {
-        "duration": "34.0",
+        "duration": "30.0",
         "name": "loading.mobile/Hongkiat"
     },
     {
-        "duration": "34.0",
+        "duration": "27.0",
         "name": "loading.mobile/LocalMoxie"
     },
     {
-        "duration": "218.0",
+        "duration": "144.0",
         "name": "startup.mobile/cct:coldish:bbc"
     },
     {
-        "duration": "263.0",
+        "duration": "222.0",
         "name": "startup.mobile/intent:coldish:bbc"
     },
     {
-        "duration": "230.0",
+        "duration": "183.0",
         "name": "startup.mobile/intent:warm:bbc"
     },
     {
-        "duration": "4.0",
+        "duration": "8.0",
         "name": "startup.mobile/maps_pwa:with_http_cache"
     },
     {
-        "duration": "56.0",
+        "duration": "43.0",
         "name": "system_health.common_mobile/background:media:imgur:2019"
     },
     {
-        "duration": "52.0",
+        "duration": "42.0",
         "name": "system_health.common_mobile/background:search:google:2019"
     },
     {
-        "duration": "138.0",
+        "duration": "52.0",
+        "name": "system_health.common_mobile/background:tools:gmail:2019"
+    },
+    {
+        "duration": "77.0",
         "name": "system_health.common_mobile/browse:media:youtube:2019"
     },
     {
-        "duration": "240.0",
+        "duration": "135.0",
         "name": "system_health.common_mobile/browse:news:cnn:2018"
     },
     {
-        "duration": "76.0",
+        "duration": "55.0",
         "name": "system_health.common_mobile/browse:news:qq:2019"
     },
     {
-        "duration": "139.0",
+        "duration": "76.0",
         "name": "system_health.common_mobile/browse:shopping:avito:2019"
     },
     {
-        "duration": "35.0",
+        "duration": "33.0",
         "name": "system_health.common_mobile/load:chrome:blank"
     },
     {
-        "duration": "43.0",
+        "duration": "31.0",
         "name": "system_health.common_mobile/load:games:bubbles:2019"
     },
     {
-        "duration": "31.0",
+        "duration": "34.0",
         "name": "system_health.common_mobile/load:games:lazors"
     },
     {
-        "duration": "59.0",
+        "duration": "39.0",
         "name": "system_health.common_mobile/load:games:spychase:2018"
     },
     {
-        "duration": "37.0",
+        "duration": "32.0",
         "name": "system_health.common_mobile/load:media:google_images:2018"
     },
     {
-        "duration": "58.0",
+        "duration": "39.0",
         "name": "system_health.common_mobile/load:media:imgur:2018"
     },
     {
-        "duration": "46.0",
+        "duration": "32.0",
         "name": "system_health.common_mobile/load:media:youtube:2018"
     },
     {
-        "duration": "62.0",
+        "duration": "41.0",
         "name": "system_health.common_mobile/load:news:irctc:2019"
     },
     {
-        "duration": "92.0",
+        "duration": "58.0",
         "name": "system_health.common_mobile/load:news:nytimes:2019"
     },
     {
-        "duration": "42.0",
+        "duration": "34.0",
         "name": "system_health.common_mobile/load:news:reddit:2019"
     },
     {
-        "duration": "46.0",
+        "duration": "32.0",
         "name": "system_health.common_mobile/load:news:washingtonpost:2019"
     },
     {
@@ -112,19 +116,19 @@
         "name": "system_health.common_mobile/load:search:baidu:2018"
     },
     {
-        "duration": "46.0",
+        "duration": "33.0",
         "name": "system_health.common_mobile/load:search:ebay:2018"
     },
     {
-        "duration": "39.0",
+        "duration": "30.0",
         "name": "system_health.common_mobile/load:search:taobao:2019"
     },
     {
-        "duration": "32.0",
+        "duration": "30.0",
         "name": "system_health.common_mobile/load:tools:docs:2019"
     },
     {
-        "duration": "38.0",
+        "duration": "32.0",
         "name": "system_health.common_mobile/load:tools:stackoverflow:2018"
     },
     {

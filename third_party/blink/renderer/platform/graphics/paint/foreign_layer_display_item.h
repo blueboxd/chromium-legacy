@@ -75,7 +75,7 @@ PLATFORM_EXPORT void RecordForeignLayer(
     DisplayItem::Type type,
     scoped_refptr<cc::Layer> layer,
     const FloatPoint& offset,
-    const base::Optional<PropertyTreeState>& = base::nullopt);
+    const PropertyTreeState* properties = nullptr);
 
 // Records a graphics layer into a GraphicsContext.
 PLATFORM_EXPORT void RecordGraphicsLayerAsForeignLayer(

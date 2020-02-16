@@ -2633,7 +2633,7 @@ static void CollectDrawableLayersForLayerListRecursively(
             context, *layer, DisplayItem::kForeignLayerContentsWrapper,
             contents_layer,
             FloatPoint(layer->GetContentsOffsetFromTransformNode()),
-            layer->GetContentsPropertyTreeState());
+            &layer->GetContentsPropertyTreeState());
       });
 }
 

@@ -322,7 +322,7 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
     property_tree_state.SetEffect(Effect());
     RecordForeignLayer(context, debug_name_client,
                        DisplayItem::kForeignLayerLinkHighlight, layer,
-                       bounding_rect.Location(), property_tree_state);
+                       bounding_rect.Location(), &property_tree_state);
   }
 
   DCHECK_EQ(index, fragments_.size());

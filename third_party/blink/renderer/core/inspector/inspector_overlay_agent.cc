@@ -237,7 +237,7 @@ class InspectorOverlayAgent::InspectorPageOverlayDelegate final
                           ("InspectorOverlay"));
       RecordForeignLayer(graphics_context, debug_name_client,
                          DisplayItem::kForeignLayerDevToolsOverlay, layer_,
-                         FloatPoint(), PropertyTreeState::Root());
+                         FloatPoint(), &PropertyTreeState::Root());
       return;
     }
 

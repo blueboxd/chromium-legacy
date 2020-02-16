@@ -93,14 +93,13 @@ void ForeignLayerDisplayItem::PropertiesAsJSON(JSONObject& json) const {
 }
 #endif
 
-static void RecordForeignLayerInternal(
-    GraphicsContext& context,
-    const DisplayItemClient& client,
-    DisplayItem::Type type,
-    scoped_refptr<cc::Layer> layer,
-    const FloatPoint& offset,
-    const LayerAsJSONClient* json_client,
-    const base::Optional<PropertyTreeState>& properties) {
+static void RecordForeignLayerInternal(GraphicsContext& context,
+                                       const DisplayItemClient& client,
+                                       DisplayItem::Type type,
+                                       scoped_refptr<cc::Layer> layer,
+                                       const FloatPoint& offset,
+                                       const LayerAsJSONClient* json_client,
+                                       const PropertyTreeState* properties) {
   PaintController& paint_controller = context.GetPaintController();
   if (paint_controller.DisplayItemConstructionIsDisabled())
     return;
@@ -125,7 +124,7 @@ void RecordForeignLayer(GraphicsContext& context,
                         DisplayItem::Type type,
                         scoped_refptr<cc::Layer> layer,
                         const FloatPoint& offset,
-                        const base::Optional<PropertyTreeState>& properties) {
+                        const PropertyTreeState* properties) {
   RecordForeignLayerInternal(context, client, type, std::move(layer), offset,
                              nullptr, properties);
 }
@@ -143,7 +142,7 @@ void RecordGraphicsLayerAsForeignLayer(GraphicsContext& context,
   RecordForeignLayerInternal(
       context, graphics_layer, type, graphics_layer.CcLayer(),
       FloatPoint(graphics_layer.GetOffsetFromTransformNode()), &graphics_layer,
-      graphics_layer.GetPropertyTreeState());
+      &graphics_layer.GetPropertyTreeState());
 }
 
 }  // namespace blink

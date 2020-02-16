@@ -51,6 +51,9 @@ public class TopToolbarCoordinator implements Toolbar {
         void onUrlExpansionPercentageChanged(float percentage);
     }
 
+    public static final int TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS = 200;
+    public static final int TAB_SWITCHER_MODE_GTS_ANIMATION_DURATION_MS = 150;
+
     private final ToolbarLayout mToolbarLayout;
 
     /**

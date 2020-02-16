@@ -51,6 +51,34 @@ def _is_none_or_str(arg):
     return arg is None or isinstance(arg, str)
 
 
+def backward_compatible_api_func(cg_context):
+    """
+    Returns the Blink function name compatible with the old bindings generator.
+    """
+    assert isinstance(cg_context, CodeGenContext)
+
+    name = (cg_context.member_like.code_generator_info.property_implemented_as
+            or cg_context.member_like.identifier
+            or cg_context.property_.identifier)
+
+    if cg_context.attribute_get:
+        # modules/webaudio/biquad_filter_node.idl has readonly attribute "Q"
+        # and somehow it's implemented as "q" in Blink.
+        if name == "Q":
+            name = "q"
+
+    if cg_context.attribute_set:
+        tokens = name_style.raw.tokenize(name)
+        if tokens[0] in ("IDL", "css", "xml"):
+            tokens[0] = tokens[0].upper()
+        else:
+            tokens[0] = tokens[0].capitalize()
+        tokens.insert(0, "set")
+        name = "".join(tokens)
+
+    return name
+
+
 def callback_function_name(cg_context, overload_index=None):
     assert isinstance(cg_context, CodeGenContext)
 
@@ -469,11 +497,7 @@ def _make_blink_api_call(code_node, cg_context, num_of_args=None):
     if cg_context.may_throw_exception:
         arguments.append("${exception_state}")
 
-    func_name = (code_generator_info.property_implemented_as
-                 or name_style.api_func(cg_context.member_like.identifier
-                                        or cg_context.property_.identifier))
-    if cg_context.attribute_set:
-        func_name = name_style.api_func("set", func_name)
+    func_name = backward_compatible_api_func(cg_context)
     if cg_context.constructor:
         func_name = "Create"
     if "Reflect" in ext_attrs:  # [Reflect]

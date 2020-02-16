@@ -165,9 +165,6 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
      */
     private static final float MINIMUM_LOAD_PROGRESS = 0.05f;
 
-    public static final int TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS = 200;
-    public static final int TAB_SWITCHER_MODE_GTS_ANIMATION_DURATION_MS = 150;
-
     private final IncognitoStateProvider mIncognitoStateProvider;
     private final TabCountProvider mTabCountProvider;
     private final ThemeColorProvider mTabThemeColorProvider;

@@ -14,7 +14,7 @@ xxx_f(format_string, *args, **kwargs):
     The name is formatted with the given format string and arguments.
 """
 
-from blinkbuild.name_style_converter import NameStyleConverter
+from blinkbuild import name_style_converter
 
 
 def api_func(*args):
@@ -162,21 +162,27 @@ class raw(object):
     This class is pretending to be a module.
     """
 
+    _NameStyleConverter = name_style_converter.NameStyleConverter
+
     def __init__(self):
         assert False
 
     @staticmethod
+    def tokenize(name):
+        return name_style_converter.tokenize_name(name)
+
+    @staticmethod
     def snake_case(name):
-        return NameStyleConverter(name).to_snake_case()
+        return raw._NameStyleConverter(name).to_snake_case()
 
     @staticmethod
     def upper_camel_case(name):
-        return NameStyleConverter(name).to_upper_camel_case()
+        return raw._NameStyleConverter(name).to_upper_camel_case()
 
     @staticmethod
     def lower_camel_case(name):
-        return NameStyleConverter(name).to_lower_camel_case()
+        return raw._NameStyleConverter(name).to_lower_camel_case()
 
     @staticmethod
     def macro_case(name):
-        return NameStyleConverter(name).to_macro_case()
+        return raw._NameStyleConverter(name).to_macro_case()

@@ -23,12 +23,16 @@ def blink_class_name(idl_definition):
     if class_name:
         return class_name
 
+    assert idl_definition.identifier[0].isupper()
+    # Do not apply |name_style.class_| in order to respect the original name
+    # (Web spec'ed name) as much as possible.  For example, |interface EXTsRGB|
+    # is implemented as |class EXTsRGB|, not as |ExtSRgb| nor |ExtsRgb|.
     if isinstance(idl_definition,
                   (web_idl.CallbackFunction, web_idl.CallbackInterface,
                    web_idl.Enumeration)):
-        return name_style.class_("v8", idl_definition.identifier)
+        return "V8{}".format(idl_definition.identifier)
     else:
-        return name_style.class_(idl_definition.identifier)
+        return idl_definition.identifier
 
 
 def v8_bridge_class_name(idl_definition):
@@ -37,7 +41,10 @@ def v8_bridge_class_name(idl_definition):
     """
     assert isinstance(idl_definition, (web_idl.Namespace, web_idl.Interface))
 
-    return name_style.class_("v8", idl_definition.identifier)
+    assert idl_definition.identifier[0].isupper()
+    # Do not apply |name_style.class_| due to the same reason as
+    # |blink_class_name|.
+    return "V8{}".format(idl_definition.identifier)
 
 
 def blink_type_info(idl_type):

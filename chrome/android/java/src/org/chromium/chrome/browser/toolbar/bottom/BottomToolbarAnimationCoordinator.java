@@ -16,7 +16,7 @@ import android.view.ViewGroup.MarginLayoutParams;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
-import org.chromium.chrome.browser.toolbar.ToolbarManager;
+import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class BottomToolbarAnimationCoordinator extends EmptyOverviewModeObserver {
     private static final long DURATION =
-            ToolbarManager.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS;
+            TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS;
 
     /** The browsing mode bottom toolbar component */
     private final BrowsingModeBottomToolbarCoordinator mBrowsingModeCoordinator;

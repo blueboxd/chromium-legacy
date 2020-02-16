@@ -14,10 +14,10 @@ import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarPropert
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IDENTITY_DISC_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.INCOGNITO_STATE_PROVIDER;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.INCOGNITO_SWITCHER_VISIBLE;
+import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IN_START_SURFACE_MODE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IS_INCOGNITO;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.LOGO_IS_VISIBLE;
-import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.MENU_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_BUTTON_AT_LEFT;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_BUTTON_IS_VISIBLE;
 import static org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.NEW_TAB_CLICK_HANDLER;
@@ -58,7 +58,6 @@ class StartSurfaceToolbarMediator {
 
     StartSurfaceToolbarMediator(PropertyModel model) {
         mPropertyModel = model;
-        mPropertyModel.set(MENU_IS_VISIBLE, true);
         mOverviewModeState = OverviewModeState.NOT_SHOWN;
     }
 
@@ -129,15 +128,18 @@ class StartSurfaceToolbarMediator {
     }
 
     void setStartSurfaceMode(boolean inStartSurfaceMode) {
-        mPropertyModel.set(IS_VISIBLE, inStartSurfaceMode);
+        mPropertyModel.set(IN_START_SURFACE_MODE, inStartSurfaceMode);
+    }
+
+    void setStartSurfaceToolbarVisibility(boolean shouldShowStartSurfaceToolbar) {
+        if (!mPropertyModel.get(IN_START_SURFACE_MODE)) {
+            return;
+        }
+        mPropertyModel.set(IS_VISIBLE, shouldShowStartSurfaceToolbar);
     }
 
     void setIncognitoStateProvider(IncognitoStateProvider provider) {
         mPropertyModel.set(INCOGNITO_STATE_PROVIDER, provider);
-    }
-
-    void setStartSurfaceToolbarVisibility(boolean shouldShowStartSurfaceToolbar) {
-        mPropertyModel.set(IS_VISIBLE, shouldShowStartSurfaceToolbar);
     }
 
     void onAccessibilityStatusChanged(boolean enabled) {

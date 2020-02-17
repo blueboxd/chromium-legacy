@@ -33,15 +33,6 @@ enum class RemoveCompromisedCredentialsReason {
 
 // Represents information about the particular compromised credentials.
 struct CompromisedCredentials {
-  CompromisedCredentials(std::string signon_realm,
-                         base::string16 username,
-                         base::Time create_time,
-                         CompromiseType compromise_type)
-      : signon_realm(std::move(signon_realm)),
-        username(std::move(username)),
-        create_time(create_time),
-        compromise_type(compromise_type) {}
-
   // The signon_realm of the website where the credentials were compromised.
   std::string signon_realm;
   // The value of the compromised username.

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/extras/sqlite/sqlite_trust_token_persister.h"
+#include "services/network/trust_tokens/sqlite_trust_token_persister.h"
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequenced_task_runner.h"
 #include "components/sqlite_proto/key_value_data.h"
-#include "net/extras/sqlite/trust_token_database_owner.h"
-#include "net/trust_tokens/proto/storage.pb.h"
+#include "services/network/trust_tokens/proto/storage.pb.h"
+#include "services/network/trust_tokens/trust_token_database_owner.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
-namespace net {
+namespace network {
 
 namespace {
 std::string ToKey(const url::Origin& issuer, const url::Origin& toplevel) {
@@ -133,4 +133,4 @@ void SQLiteTrustTokenPersister::SetIssuerToplevelPairConfig(
   data->UpdateData(ToKey(issuer, toplevel), *config);
 }
 
-}  // namespace net
+}  // namespace network

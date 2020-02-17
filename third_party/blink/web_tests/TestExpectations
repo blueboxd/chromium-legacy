@@ -2814,6 +2814,9 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-004.html [ Fail
 crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-set/image-set-rendering.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-set/image-set-rendering.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-images/image-set/image-set-rendering.html [ Failure ]
 crbug.com/626703 [ Linux ] virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/gap-002-lr.html [ Failure ]
 crbug.com/626703 [ Mac ] virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/gap-002-lr.html [ Failure ]
 crbug.com/626703 [ Win ] virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/gap-002-lr.html [ Failure ]
@@ -6295,8 +6298,6 @@ crbug.com/1006759 http/tests/devtools/modules-load-source.js [ Pass Failure ]
 
 # Failing document policy tests
 crbug.com/993790 external/wpt/document-policy/required-policy/separate-document-policies.html [ Failure ]
-crbug.com/993790 external/wpt/document-policy/font-display/font-display-document-policy-01.tentative.html [ Failure ]
-crbug.com/993790 http/tests/images/document-policy-unoptimized-lossless-images.php [ Failure ]
 
 # Temporary suppression to allow devtools-frontend changes
 crbug.com/1029489 http/tests/devtools/elements/elements-linkify-attributes.js [ Pass Failure Timeout ]
@@ -6404,7 +6405,6 @@ crbug.com/1041973 virtual/web-components-v0-disabled/external/wpt/html/semantics
 # Disabled for landing devtools changes
 crbug.com/1030746 http/tests/devtools/sources/debugger-ui/sourcemap-src-not-loaded.js [ Pass Failure ]
 crbug.com/1030746 http/tests/devtools/network/load-resource-for-frontend.js [ Pass Failure ]
-crbug.com/1050756 http/tests/devtools/copy-network-request.js [ Pass Failure ]
 
 # Disable for landing devtools changes
 crbug.com/1006759 http/tests/devtools/console/argument-hints.js [ Pass Failure ]

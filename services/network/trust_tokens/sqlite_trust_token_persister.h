@@ -2,25 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_EXTRAS_SQLITE_SQLITE_TRUST_TOKEN_PERSISTER_H_
-#define NET_EXTRAS_SQLITE_SQLITE_TRUST_TOKEN_PERSISTER_H_
+#ifndef SERVICES_NETWORK_TRUST_TOKENS_SQLITE_TRUST_TOKEN_PERSISTER_H_
+#define SERVICES_NETWORK_TRUST_TOKENS_SQLITE_TRUST_TOKEN_PERSISTER_H_
 
 #include <memory>
 
-#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/task/task_traits.h"
 #include "components/sqlite_proto/key_value_data.h"
-#include "net/extras/sqlite/trust_token_database_owner.h"
-#include "net/trust_tokens/proto/storage.pb.h"
-#include "net/trust_tokens/trust_token_persister.h"
+#include "services/network/trust_tokens/proto/storage.pb.h"
+#include "services/network/trust_tokens/trust_token_database_owner.h"
+#include "services/network/trust_tokens/trust_token_persister.h"
 #include "sql/database.h"
 
 namespace base {
 class SequencedTaskRunner;
 }  // namespace base
 
-namespace net {
+namespace network {
 
 // An SQLiteTrustTokenPersister implements low-level get and put operations on
 // Trust Tokens types by managing a collection of tables in an underlying SQLite
@@ -28,8 +27,7 @@ namespace net {
 //
 // It uses the //components/sqlite_proto database management
 // utility to avoid dealing with too much database logic directly.
-class COMPONENT_EXPORT(NET_EXTRAS) SQLiteTrustTokenPersister
-    : public TrustTokenPersister {
+class SQLiteTrustTokenPersister : public TrustTokenPersister {
  public:
   // Constructs a SQLiteTrustTokenPersister backed by |database_owner|.
   explicit SQLiteTrustTokenPersister(
@@ -84,6 +82,6 @@ class COMPONENT_EXPORT(NET_EXTRAS) SQLiteTrustTokenPersister
   std::unique_ptr<TrustTokenDatabaseOwner> database_owner_;
 };
 
-}  // namespace net
+}  // namespace network
 
-#endif  // NET_EXTRAS_SQLITE_SQLITE_TRUST_TOKEN_PERSISTER_H_
+#endif  // SERVICES_NETWORK_TRUST_TOKENS_SQLITE_TRUST_TOKEN_PERSISTER_H_

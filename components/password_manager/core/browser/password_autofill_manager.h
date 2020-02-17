@@ -16,6 +16,7 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
+#include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "ui/gfx/image/image.h"
 
@@ -158,6 +159,12 @@ class PasswordAutofillManager : public autofill::AutofillPopupDelegate {
   // unavailable a fallback globe icon is used. The request to the favicon
   // store is canceled on navigation.
   void OnFaviconReady(const favicon_base::FaviconImageResult& result);
+
+  // Checks the result of the reauth triggered by UnlockAccountStoreAfterReauth
+  // and either unlocks the account store if the reauth succeeded or resets the
+  // suggestions to show the unlock button again.
+  void OnReauthCompleted(
+      PasswordManagerClient::ReauthSucceeded reauth_succeeded);
 
   std::unique_ptr<autofill::PasswordFormFillData> fill_data_;
 

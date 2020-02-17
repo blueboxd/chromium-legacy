@@ -2,26 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_EXTRAS_SQLITE_TRUST_TOKEN_DATABASE_OWNER_H_
-#define NET_EXTRAS_SQLITE_TRUST_TOKEN_DATABASE_OWNER_H_
+#ifndef SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_DATABASE_OWNER_H_
+#define SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_DATABASE_OWNER_H_
 
-#include "base/component_export.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "components/sqlite_proto/key_value_data.h"
 #include "components/sqlite_proto/key_value_table.h"
 #include "components/sqlite_proto/proto_table_manager.h"
-#include "net/trust_tokens/proto/storage.pb.h"
+#include "services/network/trust_tokens/proto/storage.pb.h"
 
-namespace net {
+namespace network {
 
 // A TrustTokenDatabaseOwner does two things:
 // 1. It constructs and initializes an SQLite database, delegating some of this
 // work to the //components/sqlite_proto library.
 // 2. It provides, via the sqlite_proto::KeyValueData interface, access to a
 // number of tables in the database that it owns.
-class COMPONENT_EXPORT(NET_EXTRAS) TrustTokenDatabaseOwner final {
+class TrustTokenDatabaseOwner final {
  public:
   // Constructs and asynchronously initializes a new TrustTokenDatabaseOwner,
   // calling |on_done_initializing| with an owning pointer to the constructed
@@ -114,6 +113,6 @@ class COMPONENT_EXPORT(NET_EXTRAS) TrustTokenDatabaseOwner final {
   SEQUENCE_CHECKER(sequence_checker_);
 };
 
-}  // namespace net
+}  // namespace network
 
-#endif  // NET_EXTRAS_SQLITE_TRUST_TOKEN_DATABASE_OWNER_H_
+#endif  // SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_DATABASE_OWNER_H_

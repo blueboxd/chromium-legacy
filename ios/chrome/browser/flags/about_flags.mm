@@ -52,7 +52,6 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/crash_report/breadcrumbs/features.h"
-#include "ios/chrome/browser/crash_report/crash_report_flags.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/find_in_page/features.h"
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
@@ -220,29 +219,6 @@ const FeatureEntry::FeatureVariation
          base::size(kOmniboxUIMaxAutocompleteMatches10), nullptr},
         {"12 matches", kOmniboxUIMaxAutocompleteMatches12,
          base::size(kOmniboxUIMaxAutocompleteMatches12), nullptr}};
-
-const FeatureEntry::FeatureParam kDetectMainThreadFreezeTimeout3s[] = {
-    {crash_report::kDetectMainThreadFreezeParameterName,
-     crash_report::kDetectMainThreadFreezeParameter3s}};
-const FeatureEntry::FeatureParam kDetectMainThreadFreezeTimeout5s[] = {
-    {crash_report::kDetectMainThreadFreezeParameterName,
-     crash_report::kDetectMainThreadFreezeParameter5s}};
-const FeatureEntry::FeatureParam kDetectMainThreadFreezeTimeout7s[] = {
-    {crash_report::kDetectMainThreadFreezeParameterName,
-     crash_report::kDetectMainThreadFreezeParameter7s}};
-const FeatureEntry::FeatureParam kDetectMainThreadFreezeTimeout9s[] = {
-    {crash_report::kDetectMainThreadFreezeParameterName,
-     crash_report::kDetectMainThreadFreezeParameter9s}};
-
-const FeatureEntry::FeatureVariation kDetectMainThreadFreezeVariations[] = {
-    {"3s", kDetectMainThreadFreezeTimeout3s,
-     base::size(kDetectMainThreadFreezeTimeout3s), nullptr},
-    {"5s", kDetectMainThreadFreezeTimeout5s,
-     base::size(kDetectMainThreadFreezeTimeout5s), nullptr},
-    {"7s", kDetectMainThreadFreezeTimeout7s,
-     base::size(kDetectMainThreadFreezeTimeout7s), nullptr},
-    {"9s", kDetectMainThreadFreezeTimeout9s,
-     base::size(kDetectMainThreadFreezeTimeout9s), nullptr}};
 
 const FeatureEntry::FeatureParam
     kAutofillUseMobileLabelDisambiguationShowAll[] = {
@@ -414,20 +390,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          omnibox::kUIExperimentMaxAutocompleteMatches,
          kOmniboxUIMaxAutocompleteMatchesVariations,
          "OmniboxUIMaxAutocompleteVariations")},
-    {"enable-breakpad-upload-no-delay",
-     flag_descriptions::kBreakpadNoDelayInitialUploadName,
-     flag_descriptions::kBreakpadNoDelayInitialUploadDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(crash_report::kBreakpadNoDelayInitialUpload)},
     {"non-modal-dialogs", flag_descriptions::kNonModalDialogsName,
      flag_descriptions::kNonModalDialogsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(dialogs::kNonModalDialogs)},
-    {"detect-main-thread-freeze",
-     flag_descriptions::kDetectMainThreadFreezeName,
-     flag_descriptions::kDetectMainThreadFreezeDescription, flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(crash_report::kDetectMainThreadFreeze,
-                                    kDetectMainThreadFreezeVariations,
-                                    "DetectMainThreadFreeze")},
     {"infobar-ui-reboot", flag_descriptions::kInfobarUIRebootName,
      flag_descriptions::kInfobarUIRebootDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kIOSInfobarUIReboot)},

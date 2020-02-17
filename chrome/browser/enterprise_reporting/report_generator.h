@@ -54,8 +54,8 @@ class ReportGenerator {
 
 #if defined(OS_CHROMEOS)
   // Collect the Android application information installed on primary profile,
-  // and append it to |basic_request_|.
-  virtual void AppendAndroidAppInfos();
+  // and set it to |basic_request_|.
+  virtual void SetAndroidAppInfos();
 #endif
 
  private:

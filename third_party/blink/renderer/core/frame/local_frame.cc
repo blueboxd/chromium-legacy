@@ -814,7 +814,9 @@ PositionWithAffinity LocalFrame::PositionForPoint(
     const PhysicalOffset& frame_point) {
   HitTestLocation location(frame_point);
   HitTestResult result = GetEventHandler().HitTestResultAtLocation(location);
-  Node* node = result.InnerNodeOrImageMapImage();
+  Node* node = result.InnerPossiblyPseudoNode();
+  if (node && !node->IsPseudoElement())
+    node = result.InnerNodeOrImageMapImage();
   if (!node)
     return PositionWithAffinity();
   LayoutObject* layout_object = node->GetLayoutObject();

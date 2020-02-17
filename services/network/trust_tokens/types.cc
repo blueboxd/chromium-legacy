@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/trust_tokens/types.h"
+#include "services/network/trust_tokens/types.h"
 #include "base/time/time.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "url/origin.h"
 
-namespace net {
+namespace network {
 namespace internal {
 
 base::Optional<base::Time> StringToTime(base::StringPiece my_string) {
@@ -23,4 +23,4 @@ std::string TimeToString(base::Time my_time) {
 }
 
 }  // namespace internal
-}  // namespace net
+}  // namespace network

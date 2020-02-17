@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TRUST_TOKENS_TRUST_TOKEN_PERSISTER_H_
-#define NET_TRUST_TOKENS_TRUST_TOKEN_PERSISTER_H_
+#ifndef SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_PERSISTER_H_
+#define SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_PERSISTER_H_
 
 #include <memory>
 
 #include "url/origin.h"
 
-namespace net {
+namespace network {
 
 class TrustTokenIssuerConfig;
 class TrustTokenToplevelConfig;
@@ -47,6 +47,6 @@ class TrustTokenPersister {
       std::unique_ptr<TrustTokenIssuerToplevelPairConfig> config) = 0;
 };
 
-}  // namespace net
+}  // namespace network
 
-#endif  // NET_TRUST_TOKENS_TRUST_TOKEN_PERSISTER_H_
+#endif  // SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_PERSISTER_H_

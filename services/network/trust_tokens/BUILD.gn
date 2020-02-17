@@ -7,23 +7,19 @@ import("//third_party/protobuf/proto_library.gni")
 source_set("trust_tokens") {
   visibility = [
     ":tests",
-    "//net/*",
-    "//services/network/",
-  ]
-
-  public = [ "trust_token_store.h" ]
-
-  friend = [
-    ":tests",
-    "//net:extras",  # Friend //net:extras so that SQLiteTrustTokenPersister
-                     # can implement TrustTokenPersister.
+    "//services/network:network_service",
   ]
 
   sources = [
     "in_memory_trust_token_persister.cc",
     "in_memory_trust_token_persister.h",
+    "sqlite_trust_token_persister.cc",
+    "sqlite_trust_token_persister.h",
+    "trust_token_database_owner.cc",
+    "trust_token_database_owner.h",
     "trust_token_persister.h",
     "trust_token_store.cc",
+    "trust_token_store.h",
     "types.cc",
     "types.h",
   ]
@@ -31,6 +27,8 @@ source_set("trust_tokens") {
   deps = [
     ":storage_proto",
     "//base",
+    "//components/sqlite_proto",
+    "//sql",
     "//url",
   ]
 
@@ -41,18 +39,20 @@ source_set("tests") {
   testonly = true
 
   sources = [
+    "sqlite_trust_token_persister_unittest.cc",
+    "trust_token_database_owner_unittest.cc",
     "trust_token_persister_unittest.cc",
     "trust_token_store_unittest.cc",
     "types_unittest.cc",
   ]
 
   deps = [
-    ":public_proto",
     ":storage_proto",
     ":trust_tokens",
     "//base",
     "//base/test:test_support",
-    "//net:extras",  # for SQLiteTrustTokenPersister
+    "//components/sqlite_proto",
+    "//net",
     "//testing/gmock",
     "//testing/gtest",
     "//url",
@@ -60,20 +60,19 @@ source_set("tests") {
 }
 
 # public.proto contains datatypes intended
-# to be exposed to //net consumers.
+# to be exposed to Trust Tokens consumers.
 proto_library("public_proto") {
   sources = [ "proto/public.proto" ]
+
+  extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
 # storage.proto contains datatypes internal
 # to the implementation of Trust Token state
 # persistent storage.
 proto_library("storage_proto") {
-  visibility = [
-    ":trust_tokens",
-    ":tests",
-    "//net:extras",
-  ]
   sources = [ "proto/storage.proto" ]
   deps = [ ":public_proto" ]
+
+  extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }

@@ -23,7 +23,7 @@
 
       function step2(node) {
         TestRunner.domDebuggerModel.setDOMBreakpoint(
-            node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
+            node, Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified);
         TestRunner.addResult(
             'Set \'Subtree Modified\' DOM breakpoint on rootElement.');
         TestRunner.reloadPage(step3);
@@ -50,7 +50,7 @@
             'Test that \'Subtree Modified\' breakpoint on author shadow root is hit when appending a child.');
         TestRunner.domDebuggerModel.setDOMBreakpoint(
             authorShadowRoot,
-            SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
+            Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified);
         TestRunner.addResult(
             'Set \'Subtree Modified\' DOM breakpoint on author shadow root.');
         TestRunner.evaluateInPageWithTimeout(
@@ -70,7 +70,7 @@
             'Test that shadow DOM breakpoints are persisted between page reloads.');
         TestRunner.domDebuggerModel.setDOMBreakpoint(
             outerElement,
-            SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
+            Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified);
         TestRunner.addResult(
             'Set \'Subtree Modified\' DOM breakpoint on outerElement.');
         TestRunner.reloadPage(step2);

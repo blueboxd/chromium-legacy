@@ -60,7 +60,7 @@ class MEDIA_BLINK_EXPORT WatchTimeReporter : base::PowerObserver {
  public:
   using DisplayType = blink::WebMediaPlayer::DisplayType;
   using GetMediaTimeCB = base::RepeatingCallback<base::TimeDelta(void)>;
-  using GetPipelineStatsCB = base::Callback<PipelineStatistics(void)>;
+  using GetPipelineStatsCB = base::RepeatingCallback<PipelineStatistics(void)>;
 
   // Constructor for the reporter; all requested metadata should be fully known
   // before attempting construction as incorrect values will result in the wrong

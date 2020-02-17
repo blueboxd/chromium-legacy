@@ -16,17 +16,26 @@ namespace {
 bool g_add_gtest_failure_on_timeout = false;
 }
 
-ScopedRunLoopTimeout::ScopedRunLoopTimeout(TimeDelta timeout)
+ScopedRunLoopTimeout::ScopedRunLoopTimeout(const Location& from_here,
+                                           TimeDelta timeout)
     : nested_timeout_(RunLoop::GetTimeoutForCurrentThread()) {
   DCHECK_GT(timeout, TimeDelta());
   run_timeout_.timeout = timeout;
 
   if (g_add_gtest_failure_on_timeout) {
     run_timeout_.on_timeout = base::BindRepeating(
-        []() { GTEST_FAIL() << "RunLoop::Run() timed out."; });
+        [](const Location& from_here) {
+          GTEST_FAIL_AT(from_here.file_name(), from_here.line_number())
+              << "RunLoop::Run() timed out.";
+        },
+        from_here);
   } else {
     run_timeout_.on_timeout = base::BindRepeating(
-        []() { LOG(FATAL) << "RunLoop::Run() timed out."; });
+        [](const Location& from_here) {
+          logging::LogMessage(from_here.file_name(), from_here.line_number(),
+                              "RunLoop::Run() timed out.");
+        },
+        from_here);
   }
 
   RunLoop::SetTimeoutForCurrentThread(&run_timeout_);

@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -780,7 +781,7 @@ TEST_F(ThroughputAnalyzerTest, TestThroughputWithNetworkRequestsOverlap) {
 // when taking an observation is more than 1.
 TEST_F(ThroughputAnalyzerTest, TestThroughputWithMultipleNetworkRequests) {
   const base::test::ScopedRunLoopTimeout increased_run_timeout(
-      TestTimeouts::action_max_timeout());
+      FROM_HERE, TestTimeouts::action_max_timeout());
 
   const base::TickClock* tick_clock = base::DefaultTickClock::GetInstance();
   TestNetworkQualityEstimator network_quality_estimator;

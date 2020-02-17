@@ -261,7 +261,7 @@ class WebRtcMediaStreamTrackAdapterMapStressTest
     : public WebRtcMediaStreamTrackAdapterMapTest {
  public:
   WebRtcMediaStreamTrackAdapterMapStressTest()
-      : increased_run_timeout_(TestTimeouts::action_max_timeout()) {}
+      : increased_run_timeout_(FROM_HERE, TestTimeouts::action_max_timeout()) {}
 
   void RunStressTest(size_t iterations) {
     base::RunLoop run_loop;

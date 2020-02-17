@@ -143,7 +143,7 @@ MultibufferDataSource::MultibufferDataSource(
   DCHECK(url_data_.get());
   url_data_->Use();
   url_data_->OnRedirect(
-      base::Bind(&MultibufferDataSource::OnRedirect, weak_ptr_));
+      base::BindOnce(&MultibufferDataSource::OnRedirect, weak_ptr_));
 }
 
 MultibufferDataSource::~MultibufferDataSource() {
@@ -242,7 +242,7 @@ void MultibufferDataSource::OnRedirect(
 
   if (url_data_) {
     url_data_->OnRedirect(
-        base::Bind(&MultibufferDataSource::OnRedirect, weak_ptr_));
+        base::BindOnce(&MultibufferDataSource::OnRedirect, weak_ptr_));
 
     if (init_cb_) {
       CreateResourceLoader(0, kPositionNotSpecified);

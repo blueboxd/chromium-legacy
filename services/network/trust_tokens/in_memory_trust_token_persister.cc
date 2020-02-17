@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/trust_tokens/in_memory_trust_token_persister.h"
+#include "services/network/trust_tokens/in_memory_trust_token_persister.h"
 
-namespace net {
+namespace network {
 
 InMemoryTrustTokenPersister::InMemoryTrustTokenPersister() = default;
 InMemoryTrustTokenPersister::~InMemoryTrustTokenPersister() = default;
@@ -56,4 +56,4 @@ void InMemoryTrustTokenPersister::SetIssuerToplevelPairConfig(
       std::move(config);
 }
 
-}  // namespace net
+}  // namespace network

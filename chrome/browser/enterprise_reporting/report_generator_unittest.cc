@@ -344,6 +344,18 @@ TEST_F(ReportGeneratorTest, ReportArcAppInChromeOS) {
   em::AndroidAppInfo app_info2 = request->android_app_infos(0);
   EXPECT_EQ(kArcAppName2, app_info2.app_name());
 
+  // Generate the Arc application information again and make sure the report
+  // remains the same.
+  requests = GenerateRequests();
+  EXPECT_EQ(1u, requests.size());
+
+  request = requests.front().get();
+  EXPECT_EQ(2, request->android_app_infos_size());
+  app_info1 = request->android_app_infos(1);
+  EXPECT_EQ(kArcAppName1, app_info1.app_name());
+  app_info2 = request->android_app_infos(0);
+  EXPECT_EQ(kArcAppName2, app_info2.app_name());
+
   arc_app_test.TearDown();
 }
 

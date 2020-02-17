@@ -190,6 +190,7 @@ public abstract class ChromeFeatureList {
     public static final String BOOKMARKS_SHOW_IN_FOLDER = "BookmarksShowInFolder";
     public static final String CAPTIVE_PORTAL_CERTIFICATE_LIST = "CaptivePortalCertificateList";
     public static final String CCT_BACKGROUND_TAB = "CCTBackgroundTab";
+    public static final String CCT_CLIENT_DATA_HEADER = "CCTClientDataHeader";
     public static final String CCT_INCOGNITO = "CCTIncognito";
     public static final String CCT_MODULE = "CCTModule";
     public static final String CCT_MODULE_CACHE = "CCTModuleCache";

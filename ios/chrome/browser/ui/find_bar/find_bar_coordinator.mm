@@ -78,6 +78,8 @@
   }
   [self.findBarController findBarViewWillHide];
   [self.presenter dismissAnimated:animated];
+
+  self.mediator = nil;
 }
 
 - (void)showAnimated:(BOOL)animated shouldFocus:(BOOL)shouldFocus {

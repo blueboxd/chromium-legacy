@@ -321,7 +321,7 @@ void AssistantTestMixin::TearDownOnMainThread() {
 
 void AssistantTestMixin::StartAssistantAndWaitForReady(
     base::TimeDelta wait_timeout) {
-  const base::test::ScopedRunLoopTimeout run_timeout(wait_timeout);
+  const base::test::ScopedRunLoopTimeout run_timeout(FROM_HERE, wait_timeout);
 
   // Note: You might be tempted to call this function from SetUpOnMainThread(),
   // but that will not work as the Assistant service can not start until
@@ -354,7 +354,7 @@ void AssistantTestMixin::SendTextQuery(const std::string& query) {
 void AssistantTestMixin::ExpectCardResponse(
     const std::string& expected_response,
     base::TimeDelta wait_timeout) {
-  const base::test::ScopedRunLoopTimeout run_timeout(wait_timeout);
+  const base::test::ScopedRunLoopTimeout run_timeout(FROM_HERE, wait_timeout);
   CardResponseWaiter waiter(test_api_->ui_element_container(),
                             {expected_response});
   waiter.RunUntilResponseReceived();
@@ -369,7 +369,7 @@ void AssistantTestMixin::ExpectTextResponse(
 void AssistantTestMixin::ExpectAnyOfTheseTextResponses(
     const std::vector<std::string>& expected_responses,
     base::TimeDelta wait_timeout) {
-  const base::test::ScopedRunLoopTimeout run_timeout(wait_timeout);
+  const base::test::ScopedRunLoopTimeout run_timeout(FROM_HERE, wait_timeout);
   TextResponseWaiter waiter(test_api_->ui_element_container(),
                             expected_responses);
   waiter.RunUntilResponseReceived();

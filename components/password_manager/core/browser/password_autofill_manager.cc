@@ -41,8 +41,10 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_state/core/security_state.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -243,6 +245,18 @@ std::vector<autofill::Suggestion> ReplaceUnlockButtonWithLoadingIndicator(
   return new_suggestions;
 }
 
+std::vector<autofill::Suggestion> ReplaceLoaderWithUnlock(
+    base::span<const autofill::Suggestion> suggestions) {
+  std::vector<autofill::Suggestion> new_suggestions;
+  new_suggestions.reserve(suggestions.size());
+  for (const auto& suggestion : suggestions) {
+    if (suggestion.frontend_id != autofill::POPUP_ITEM_ID_LOADING_SPINNER)
+      new_suggestions.push_back(suggestion);
+  }
+  new_suggestions.push_back(CreateAccountStorageOptInEntry());
+  return new_suggestions;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -305,10 +319,20 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
     }
   } else if (identifier ==
              autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN) {
+    signin::IdentityManager* identity_manager =
+        password_client_->GetIdentityManager();
+    if (!identity_manager)
+      return;
+    CoreAccountId account_id = identity_manager->GetPrimaryAccountId(
+        signin::ConsentLevel::kNotRequired);
+    if (account_id.empty())
+      return;
     UpdatePopup(ReplaceUnlockButtonWithLoadingIndicator(
         autofill_client_->GetPopupSuggestions()));
     autofill_client_->PinPopupViewUntilUpdate();
-    password_client_->GetPasswordFeatureManager()->SetAccountStorageOptIn(true);
+    password_client_->TriggerReauthForAccount(
+        account_id, base::BindOnce(&PasswordAutofillManager::OnReauthCompleted,
+                                   weak_ptr_factory_.GetWeakPtr()));
     return;  // Do not hide the popup while loading data.
   } else {
     metrics_util::LogPasswordDropdownItemSelected(
@@ -596,6 +620,15 @@ void PasswordAutofillManager::OnFaviconReady(
     const favicon_base::FaviconImageResult& result) {
   if (!result.image.IsEmpty())
     page_favicon_ = result.image;
+}
+
+void PasswordAutofillManager::OnReauthCompleted(
+    PasswordManagerClient::ReauthSucceeded reauth_succeeded) {
+  if (reauth_succeeded) {
+    password_client_->GetPasswordFeatureManager()->SetAccountStorageOptIn(true);
+    return;
+  }
+  UpdatePopup(ReplaceLoaderWithUnlock(autofill_client_->GetPopupSuggestions()));
 }
 
 }  //  namespace password_manager

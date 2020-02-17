@@ -4,7 +4,7 @@
 
 syntax = "proto2";
 
-package net;
+package network;
 
 option optimize_for = LITE_RUNTIME;
 

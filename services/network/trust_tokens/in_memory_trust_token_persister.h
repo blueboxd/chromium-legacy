@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TRUST_TOKENS_IN_MEMORY_TRUST_TOKEN_PERSISTER_H_
-#define NET_TRUST_TOKENS_IN_MEMORY_TRUST_TOKEN_PERSISTER_H_
+#ifndef SERVICES_NETWORK_TRUST_TOKENS_IN_MEMORY_TRUST_TOKEN_PERSISTER_H_
+#define SERVICES_NETWORK_TRUST_TOKENS_IN_MEMORY_TRUST_TOKEN_PERSISTER_H_
 
 #include <map>
 #include <memory>
 #include <utility>
 
-#include "net/trust_tokens/proto/public.pb.h"
-#include "net/trust_tokens/proto/storage.pb.h"
-#include "net/trust_tokens/trust_token_persister.h"
+#include "services/network/trust_tokens/proto/public.pb.h"
+#include "services/network/trust_tokens/proto/storage.pb.h"
+#include "services/network/trust_tokens/trust_token_persister.h"
 #include "url/origin.h"
 
-namespace net {
+namespace network {
 
 // An InMemoryTrustTokenPersister stores Trust Tokens state during its lifetime,
 // but does not write it through to a backend. It is suitable for use in tests
@@ -53,6 +53,6 @@ class InMemoryTrustTokenPersister : public TrustTokenPersister {
       issuer_toplevel_pair_configs_;
 };
 
-}  // namespace net
+}  // namespace network
 
-#endif  // NET_TRUST_TOKENS_IN_MEMORY_TRUST_TOKEN_PERSISTER_H_
+#endif  // SERVICES_NETWORK_TRUST_TOKENS_IN_MEMORY_TRUST_TOKEN_PERSISTER_H_

@@ -23,7 +23,6 @@ source_set("crash_report") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
-    ":flags",
     "//base",
     "//components/crash/core/common",
     "//components/upload_list",
@@ -33,14 +32,6 @@ source_set("crash_report") {
     "//ios/web",
     "//third_party/breakpad:client",
   ]
-}
-
-source_set("flags") {
-  sources = [
-    "crash_report_flags.cc",
-    "crash_report_flags.h",
-  ]
-  deps = [ "//base" ]
 }
 
 source_set("crash_report_internal") {

@@ -9,6 +9,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/lazy_instance.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_pump.h"
@@ -384,6 +385,7 @@ TaskEnvironment::TaskEnvironment(
       run_loop_timeout_(mock_time_domain_
                             ? nullptr
                             : std::make_unique<ScopedRunLoopTimeout>(
+                                  FROM_HERE,
                                   TestTimeouts::action_timeout())) {
   CHECK(!base::ThreadTaskRunnerHandle::IsSet());
   // If |subclass_creates_default_taskrunner| is true then initialization is

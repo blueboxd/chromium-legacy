@@ -106,10 +106,6 @@ void AddExtensions(const extensions::ExtensionSet& extensions,
     AddPermission(extension.get(), extension_info);
     AddHostPermission(extension.get(), extension_info);
     extension_info->set_from_webstore(extension->from_webstore());
-    if (extension->is_app()) {
-      extension_info->set_app_launch_url(
-          extensions::AppLaunchInfo::GetFullLaunchURL(extension.get()).spec());
-    }
   }
 }
 

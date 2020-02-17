@@ -14,16 +14,11 @@
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-namespace storage {
-class QuotaManager;
-}  // namespace storage
-
 namespace content {
 
 class WebTestMessageFilter : public BrowserMessageFilter {
  public:
-  WebTestMessageFilter(int render_process_id,
-                       storage::QuotaManager* quota_manager);
+  explicit WebTestMessageFilter(int render_process_id);
 
  private:
   friend struct content::BrowserThread::DeleteOnThread<
@@ -38,14 +33,11 @@ class WebTestMessageFilter : public BrowserMessageFilter {
       const IPC::Message& message) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  void OnSetDatabaseQuota(int quota);
   void OnInitiateCaptureDump(bool capture_navigation_history,
                              bool capture_pixels);
   void OnSetFilePathForMockFileDialog(const base::FilePath& path);
 
   int render_process_id_;
-
-  scoped_refptr<storage::QuotaManager> quota_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestMessageFilter);
 };

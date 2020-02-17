@@ -85,9 +85,9 @@ void LeakDetectionDelegate::OnLeakDetectionDone(bool is_leaked,
   if (base::FeatureList::IsEnabled(
           password_manager::features::kPasswordCheck) &&
       is_leaked) {
-    password_store->AddCompromisedCredentials(
-        CompromisedCredentials(GetSignonRealm(url), username, base::Time::Now(),
-                               CompromiseType::kLeaked));
+    password_store->AddCompromisedCredentials({GetSignonRealm(url), username,
+                                               base::Time::Now(),
+                                               CompromiseType::kLeaked});
   }
 
   if (is_leaked) {

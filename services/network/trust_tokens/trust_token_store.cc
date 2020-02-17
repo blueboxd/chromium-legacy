@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/trust_tokens/trust_token_store.h"
+#include "services/network/trust_tokens/trust_token_store.h"
 
 #include <memory>
 #include <utility>
 
 #include "base/optional.h"
-#include "net/trust_tokens/proto/public.pb.h"
-#include "net/trust_tokens/proto/storage.pb.h"
-#include "net/trust_tokens/types.h"
+#include "services/network/trust_tokens/in_memory_trust_token_persister.h"
+#include "services/network/trust_tokens/proto/public.pb.h"
+#include "services/network/trust_tokens/proto/storage.pb.h"
+#include "services/network/trust_tokens/types.h"
 #include "third_party/protobuf/src/google/protobuf/repeated_field.h"
 
-namespace net {
+namespace network {
 
 namespace {
 // Until the underlying BoringSSL functionality is implemented to extract
@@ -309,4 +310,4 @@ TrustTokenStore::RetrieveNonstaleRedemptionRecord(
   return config->signed_redemption_record();
 }
 
-}  // namespace net
+}  // namespace network

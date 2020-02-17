@@ -20,6 +20,7 @@ import androidx.annotation.IntDef;
 import org.chromium.android_webview.safe_browsing.AwSafeBrowsingConfigHelper;
 import org.chromium.android_webview.settings.ForceDarkBehavior;
 import org.chromium.android_webview.settings.ForceDarkMode;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
@@ -145,7 +146,7 @@ public class AwSettings {
     // Not accessed by the native side.
     private boolean mBlockNetworkLoads;  // Default depends on permission of embedding APK.
     private boolean mAllowContentUrlAccess = true;
-    private boolean mAllowFileUrlAccess = true;
+    private boolean mAllowFileUrlAccess;
     private int mCacheMode = WebSettings.LOAD_DEFAULT;
     private boolean mShouldFocusFirstNode = true;
     private boolean mGeolocationEnabled = true;
@@ -290,6 +291,8 @@ public class AwSettings {
             mAllowGeolocationOnInsecureOrigins = allowGeolocationOnInsecureOrigins;
             mDoNotUpdateSelectionOnMutatingSelectionRange =
                     doNotUpdateSelectionOnMutatingSelectionRange;
+
+            mAllowFileUrlAccess = !BuildInfo.targetsAtLeastR();
         }
         // Defer initializing the native side until a native WebContents instance is set.
     }

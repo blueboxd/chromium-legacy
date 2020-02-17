@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "build/build_config.h"
+#include "chrome/browser/signin/reauth_result.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/password_manager/content/browser/content_credential_manager.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
@@ -49,6 +50,7 @@ class ChromeBiometricAuthenticator;
 class PasswordGenerationPopupObserver;
 class PasswordGenerationPopupControllerImpl;
 class Profile;
+struct CoreAccountId;
 
 namespace autofill {
 namespace password_generation {
@@ -130,6 +132,9 @@ class ChromePasswordManagerClient
   void NotifyUserCredentialsWereLeaked(
       password_manager::CredentialLeakType leak_type,
       const GURL& origin) override;
+  void TriggerReauthForAccount(
+      const CoreAccountId& account_id,
+      base::OnceCallback<void(ReauthSucceeded)> reauth_callback) override;
   bool IsIsolationForPasswordSitesEnabled() const override;
 
   PrefService* GetPrefs() const override;

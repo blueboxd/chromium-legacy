@@ -126,20 +126,20 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
   void set_is_cors_cross_origin(bool is_cors_cross_origin);
   void set_has_access_control();
 
-  // A redirect has occured (or we've found a better UrlData for the same
+  // A redirect has occurred (or we've found a better UrlData for the same
   // resource).
   void RedirectTo(const scoped_refptr<UrlData>& to);
 
-  // Fail, tell all clients that a failure has occured.
+  // Fail, tell all clients that a failure has occurred.
   void Fail();
 
-  // Callback for receving notifications when a redirect occurs.
-  typedef base::Callback<void(const scoped_refptr<UrlData>&)> RedirectCB;
+  // Callback for receiving notifications when a redirect occurs.
+  using RedirectCB = base::OnceCallback<void(const scoped_refptr<UrlData>&)>;
 
   // Register a callback to be called when a redirect occurs.
   // Callbacks are cleared when a redirect occurs, so clients must call
   // OnRedirect again if they wish to continue receiving callbacks.
-  void OnRedirect(const RedirectCB& cb);
+  void OnRedirect(RedirectCB cb);
 
   // Returns true it is valid to keep using this to access cached data.
   // A single media player instance may choose to ignore this for resources
@@ -215,8 +215,6 @@ class MEDIA_BLINK_EXPORT UrlData : public base::RefCounted<UrlData> {
 
   ResourceMultiBuffer multibuffer_;
   std::vector<RedirectCB> redirect_callbacks_;
-
-  std::vector<base::OnceClosure> waiting_load_callbacks_;
 
   base::ThreadChecker thread_checker_;
   DISALLOW_COPY_AND_ASSIGN(UrlData);

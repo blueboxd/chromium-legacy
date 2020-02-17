@@ -610,7 +610,7 @@ void PrinterJobHandlerTest::BeginTest(int timeout_seconds) {
   active_run_loop_quit_closure_ = run_loop.QuitWhenIdleClosure();
 
   base::test::ScopedRunLoopTimeout run_timeout(
-      base::TimeDelta::FromSeconds(timeout_seconds));
+      FROM_HERE, base::TimeDelta::FromSeconds(timeout_seconds));
   run_loop.Run();
 }
 

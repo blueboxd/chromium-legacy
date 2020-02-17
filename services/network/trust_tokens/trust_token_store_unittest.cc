@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/trust_tokens/trust_token_store.h"
+#include "services/network/trust_tokens/trust_token_store.h"
 
 #include <memory>
 #include <utility>
@@ -10,9 +10,9 @@
 #include "base/bind.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
-#include "net/trust_tokens/in_memory_trust_token_persister.h"
-#include "net/trust_tokens/proto/public.pb.h"
-#include "net/trust_tokens/proto/storage.pb.h"
+#include "services/network/trust_tokens/in_memory_trust_token_persister.h"
+#include "services/network/trust_tokens/proto/public.pb.h"
+#include "services/network/trust_tokens/proto/storage.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -21,7 +21,7 @@
 using ::testing::ElementsAre;
 using ::testing::Optional;
 
-namespace net {
+namespace network {
 namespace trust_tokens {
 
 namespace {
@@ -537,4 +537,4 @@ TEST(TrustTokenStore, DoesNotReturnStaleRedemptionRecord) {
 }
 
 }  // namespace trust_tokens
-}  // namespace net
+}  // namespace network

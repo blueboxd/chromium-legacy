@@ -29,17 +29,13 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "storage/browser/quota/quota_manager.h"
 #include "url/origin.h"
 
 namespace content {
 
-WebTestMessageFilter::WebTestMessageFilter(
-    int render_process_id,
-    storage::QuotaManager* quota_manager)
+WebTestMessageFilter::WebTestMessageFilter(int render_process_id)
     : BrowserMessageFilter(WebTestMsgStart),
-      render_process_id_(render_process_id),
-      quota_manager_(quota_manager) {
+      render_process_id_(render_process_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -62,26 +58,12 @@ WebTestMessageFilter::OverrideTaskRunnerForMessage(
 bool WebTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebTestMessageFilter, message)
-    IPC_MESSAGE_HANDLER(WebTestHostMsg_SetDatabaseQuota, OnSetDatabaseQuota)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_InitiateCaptureDump,
                         OnInitiateCaptureDump)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
   return handled;
-}
-
-void WebTestMessageFilter::OnSetDatabaseQuota(int quota) {
-  DCHECK(quota >= 0 || quota == test_runner::kDefaultDatabaseQuota);
-  if (quota == test_runner::kDefaultDatabaseQuota) {
-    // Reset quota to settings with a zero refresh interval to force
-    // QuotaManager to refresh settings immediately.
-    storage::QuotaSettings default_settings;
-    default_settings.refresh_interval = base::TimeDelta();
-    quota_manager_->SetQuotaSettings(default_settings);
-  } else {
-    quota_manager_->SetQuotaSettings(storage::GetHardCodedSettings(quota));
-  }
 }
 
 void WebTestMessageFilter::OnInitiateCaptureDump(

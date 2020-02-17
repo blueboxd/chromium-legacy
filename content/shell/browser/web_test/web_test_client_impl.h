@@ -21,6 +21,7 @@ class NetworkContext;
 
 namespace storage {
 class DatabaseTracker;
+class QuotaManager;
 }  // namespace storage
 
 namespace content {
@@ -32,11 +33,13 @@ namespace content {
 class WebTestClientImpl : public mojom::WebTestClient {
  public:
   static void Create(int render_process_id,
+                     storage::QuotaManager* quota_manager,
                      storage::DatabaseTracker* database_tracker,
                      network::mojom::NetworkContext* network_context,
                      mojo::PendingReceiver<mojom::WebTestClient> receiver);
 
   WebTestClientImpl(int render_process_id,
+                    storage::QuotaManager* quota_manager,
                     storage::DatabaseTracker* database_tracker,
                     network::mojom::NetworkContext* network_context);
   ~WebTestClientImpl() override;
@@ -65,6 +68,7 @@ class WebTestClientImpl : public mojom::WebTestClient {
       base::Value changed_web_test_runtime_flags) override;
   void DeleteAllCookies() override;
   void ClearAllDatabases() override;
+  void SetDatabaseQuota(int32_t quota) override;
   void GetWritableDirectory(GetWritableDirectoryCallback callback) override;
   void RegisterIsolatedFileSystem(
       const std::vector<base::FilePath>& absolute_filenames,
@@ -73,6 +77,7 @@ class WebTestClientImpl : public mojom::WebTestClient {
 
   int render_process_id_;
 
+  scoped_refptr<storage::QuotaManager> quota_manager_;
   scoped_refptr<storage::DatabaseTracker> database_tracker_;
 
   mojo::Remote<network::mojom::CookieManager> cookie_manager_;

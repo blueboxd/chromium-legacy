@@ -68,6 +68,7 @@ INTERFACE_H_INCLUDES = frozenset([
 ])
 INTERFACE_CPP_INCLUDES = frozenset([
     'base/memory/scoped_refptr.h',
+    'bindings/core/v8/native_value_traits_impl.h',
     'bindings/core/v8/v8_dom_configuration.h',
     'core/execution_context/execution_context.h',
     'platform/scheduler/public/cooperative_scheduling_manager.h',

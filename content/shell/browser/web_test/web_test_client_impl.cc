@@ -10,8 +10,10 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/task/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/content_index_context.h"
@@ -29,6 +31,7 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "storage/browser/database/database_tracker.h"
 #include "storage/browser/file_system/isolated_context.h"
+#include "storage/browser/quota/quota_manager.h"
 
 namespace content {
 
@@ -56,25 +59,44 @@ ContentIndexContext* GetContentIndexContext(const url::Origin& origin) {
   return storage_partition->GetContentIndexContext();
 }
 
+void SetDatabaseQuotaOnIOThread(
+    scoped_refptr<storage::QuotaManager> quota_manager,
+    int32_t quota) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(quota >= 0 || quota == test_runner::kDefaultDatabaseQuota);
+  if (quota == test_runner::kDefaultDatabaseQuota) {
+    // Reset quota to settings with a zero refresh interval to force
+    // QuotaManager to refresh settings immediately.
+    storage::QuotaSettings default_settings;
+    default_settings.refresh_interval = base::TimeDelta();
+    quota_manager->SetQuotaSettings(default_settings);
+  } else {
+    quota_manager->SetQuotaSettings(storage::GetHardCodedSettings(quota));
+  }
+}
+
 }  // namespace
 
 // static
 void WebTestClientImpl::Create(
     int render_process_id,
+    storage::QuotaManager* quota_manager,
     storage::DatabaseTracker* database_tracker,
     network::mojom::NetworkContext* network_context,
     mojo::PendingReceiver<mojom::WebTestClient> receiver) {
   mojo::MakeSelfOwnedReceiver(
-      std::make_unique<WebTestClientImpl>(render_process_id, database_tracker,
-                                          network_context),
+      std::make_unique<WebTestClientImpl>(render_process_id, quota_manager,
+                                          database_tracker, network_context),
       std::move(receiver));
 }
 
 WebTestClientImpl::WebTestClientImpl(
     int render_process_id,
+    storage::QuotaManager* quota_manager,
     storage::DatabaseTracker* database_tracker,
     network::mojom::NetworkContext* network_context)
     : render_process_id_(render_process_id),
+      quota_manager_(quota_manager),
       database_tracker_(database_tracker) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   network_context->GetCookieManager(
@@ -256,6 +278,12 @@ void WebTestClientImpl::ClearAllDatabases() {
                                                 net::CompletionOnceCallback());
           },
           database_tracker_));
+}
+
+void WebTestClientImpl::SetDatabaseQuota(int32_t quota) {
+  base::PostTask(
+      FROM_HERE, {content::BrowserThread::IO},
+      base::BindOnce(&SetDatabaseQuotaOnIOThread, quota_manager_, quota));
 }
 
 }  // namespace content

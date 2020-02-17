@@ -716,6 +716,44 @@ TEST_F(KerberosCredentialsManagerTest, UpdateEnabledFromPrefKerberosEnabled) {
   EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
 }
 
+// No password is deleted when prefs::kKerberosRememberPasswordEnabled is turned
+// on.
+TEST_F(KerberosCredentialsManagerTest,
+       UpdateRememberPasswordEnabledFromPrefEnabled) {
+  client_test_interface()->StartRecordingFunctionCalls();
+
+  SetPref(prefs::kKerberosRememberPasswordEnabled, base::Value(true));
+
+  // Checks that ClearAccounts() was not called on KerberosClient.
+  const std::string calls =
+      client_test_interface()->StopRecordingAndGetRecordedFunctionCalls();
+  EXPECT_TRUE(calls.empty());
+}
+
+// All unmanaged passwords are deleted when
+// prefs::kKerberosRememberPasswordEnabled is turned off.
+TEST_F(KerberosCredentialsManagerTest,
+       UpdateRememberPasswordEnabledFromPrefDisabled) {
+  mgr_->AddAccountAndAuthenticate(kPrincipal, kUnmanaged, kPassword,
+                                  kRememberPassword, kConfig, kAllowExisting,
+                                  GetResultCallback());
+  mgr_->AddAccountAndAuthenticate(kOtherPrincipal, kManaged, kPassword,
+                                  kRememberPassword, kConfig, kAllowExisting,
+                                  GetResultCallback());
+
+  WaitAndVerifyResult({kerberos::ERROR_NONE, kerberos::ERROR_NONE},
+                      kOneNotification, kTwoAccounts);
+
+  SetPref(prefs::kKerberosRememberPasswordEnabled, base::Value(false));
+
+  Accounts accounts = ListAccounts();
+  ASSERT_EQ(2u, accounts.size());
+  EXPECT_FALSE(accounts[0].is_managed());
+  EXPECT_FALSE(accounts[0].password_was_remembered());
+  EXPECT_TRUE(accounts[1].is_managed());
+  EXPECT_TRUE(accounts[1].password_was_remembered());
+}
+
 // TODO(https://crbug.com/952251): Add more tests
 // - ClearAccounts
 //     + Normalization like in AddAccountAndAuthenticate
@@ -754,9 +792,6 @@ TEST_F(KerberosCredentialsManagerTest, UpdateEnabledFromPrefKerberosEnabled) {
 //     signal
 //     + Calls kerberos_ticket_expiry_notification::Show() if the active
 //       principal matches.
-// - UpdateRememberPasswordEnabledFromPref()
-//     + Gets called then prefs::kKerberosRememberPasswordEnabled changes.
-//     + If it's switched off, all remembered unmanaged passwords are removed.
 // - UpdateAddAccountsAllowedFromPref()
 //     + Gets called then prefs::kKerberosAddAccountsAllowed changes.
 //     + If it's switched off, all unmanaged accounts are removed.

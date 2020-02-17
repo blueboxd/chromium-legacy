@@ -20,7 +20,7 @@
       ElementsTestRunner.nodeWithId('elementToRemove', step2);
 
       function step2(node) {
-        TestRunner.domDebuggerModel.setDOMBreakpoint(node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.NodeRemoved);
+        TestRunner.domDebuggerModel.setDOMBreakpoint(node, Protocol.DOMDebugger.DOMBreakpointType.NodeRemoved);
         TestRunner.addResult('Set NodeRemoved DOM breakpoint.');
         node.removeNode(next);
       }
@@ -31,7 +31,7 @@
       ElementsTestRunner.nodeWithId('rootElement', step2);
 
       function step2(node) {
-        TestRunner.domDebuggerModel.setDOMBreakpoint(node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+        TestRunner.domDebuggerModel.setDOMBreakpoint(node, Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
         TestRunner.addResult('Set AttributeModified DOM breakpoint.');
         node.setAttribute('title', 'a title', next);
       }

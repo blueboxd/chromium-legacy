@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FEATURE_POLICY_FEATURE_POLICY_HELPER_H_
 
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/mojom/feature_policy/document_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy_feature.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -16,9 +15,8 @@
 namespace blink {
 
 using FeatureNameMap = HashMap<String, mojom::blink::FeaturePolicyFeature>;
-using DocumentPolicyFeatureSet =
-    HashSet<mojom::blink::DocumentPolicyFeature,
-            IntHash<mojom::blink::DocumentPolicyFeature>>;
+using FeatureSet = HashSet<mojom::blink::FeaturePolicyFeature,
+                           IntHash<mojom::blink::FeaturePolicyFeature>>;
 
 class FeatureContext;
 
@@ -32,17 +30,15 @@ const FeatureNameMap& GetDefaultFeatureNameMap();
 // for the Document-Policy HTTP header and the <iframe> "policy" attribute, as
 // well as the features which will be recognized by the document or iframe
 // policy object.
-const DocumentPolicyFeatureSet& GetAvailableDocumentPolicyFeatures();
+const FeatureSet& GetAvailableDocumentPolicyFeatures();
 
-// Returns true if this FeaturePolicyFeature is currently disabled by an origin
-// trial (it is origin trial controlled, and the origin trial is not enabled).
-// The first String param should be a name of FeaturePolicyFeature.
+// Returns true if this feature is currently disabled by an origin trial (it is
+// origin trial controlled, and the origin trial is not enabled).
 bool DisabledByOriginTrial(const String&, FeatureContext*);
 
-// Returns true if this DocumentPolicyFeature is currently disabled by an origin
-// trial (it is origin trial controlled, and the origin trial is not enabled).
-bool DisabledByOriginTrial(mojom::blink::DocumentPolicyFeature,
-                           FeatureContext*);
+// Returns true if this feature is currently disabled by an origin trial (it is
+// origin trial controlled, and the origin trial is not enabled).
+bool DisabledByOriginTrial(mojom::blink::FeaturePolicyFeature, FeatureContext*);
 
 }  // namespace blink
 

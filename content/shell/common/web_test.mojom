@@ -60,6 +60,11 @@ interface WebTestClient {
   // Clears all WebSQL databases.
   ClearAllDatabases();
 
+  // Sets WebSQL quota size. If |quota| is the same to kDefaultDatabaseQuota,
+  // this resets quota to settings with a zero refresh interval to force
+  // QuotaManager to refresh settings immediately.
+  SetDatabaseQuota(int32 quota);
+
   // Returns the absolute path to a directory this test can write data in. This
   // returns the path to a fresh empty directory for each test that calls this
   // method, but repeatedly calling this from the same test will return the same

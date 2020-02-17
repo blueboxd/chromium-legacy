@@ -322,10 +322,6 @@ class CORE_EXPORT ExecutionContext
       ReportOptions report_on_failure = ReportOptions::kDoNotReport,
       const String& message = g_empty_string,
       const String& source_file = g_empty_string) const;
-  bool IsFeatureEnabled(mojom::blink::DocumentPolicyFeature) const;
-  bool IsFeatureEnabled(mojom::blink::DocumentPolicyFeature,
-                        PolicyValue threshold_value) const;
-
   virtual void CountPotentialFeaturePolicyViolation(
       mojom::blink::FeaturePolicyFeature) const {}
   virtual void ReportFeaturePolicyViolation(

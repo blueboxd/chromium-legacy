@@ -42,7 +42,7 @@ base::Optional<std::string> DocumentPolicy::Serialize(
   net::structured_headers::List root;
   root.reserve(policy.size());
 
-  std::vector<std::pair<mojom::DocumentPolicyFeature, PolicyValue>>
+  std::vector<std::pair<mojom::FeaturePolicyFeature, PolicyValue>>
       sorted_policy(policy.begin(), policy.end());
   std::sort(sorted_policy.begin(), sorted_policy.end(),
             [](const auto& a, const auto& b) {
@@ -117,7 +117,7 @@ DocumentPolicy::FeatureState DocumentPolicy::MergeFeatureState(
 }
 
 bool DocumentPolicy::IsFeatureEnabled(
-    mojom::DocumentPolicyFeature feature) const {
+    mojom::FeaturePolicyFeature feature) const {
   mojom::PolicyValueType feature_type =
       GetDocumentPolicyFeatureInfoMap().at(feature).default_value.Type();
   return IsFeatureEnabled(feature,
@@ -125,22 +125,22 @@ bool DocumentPolicy::IsFeatureEnabled(
 }
 
 bool DocumentPolicy::IsFeatureEnabled(
-    mojom::DocumentPolicyFeature feature,
+    mojom::FeaturePolicyFeature feature,
     const PolicyValue& threshold_value) const {
   return GetFeatureValue(feature) >= threshold_value;
 }
 
 PolicyValue DocumentPolicy::GetFeatureValue(
-    mojom::DocumentPolicyFeature feature) const {
+    mojom::FeaturePolicyFeature feature) const {
   return internal_feature_state_[static_cast<size_t>(feature)];
 }
 
 bool DocumentPolicy::IsFeatureSupported(
-    mojom::DocumentPolicyFeature feature) const {
+    mojom::FeaturePolicyFeature feature) const {
   // TODO(iclelland): Generate this switch block
   switch (feature) {
-    case mojom::DocumentPolicyFeature::kFontDisplay:
-    case mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages:
+    case mojom::FeaturePolicyFeature::kFontDisplay:
+    case mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages:
       return true;
     default:
       return false;

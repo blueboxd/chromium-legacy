@@ -53,12 +53,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerParams {
   // Returns true if load will deferred. False if it will run immediately.
   using DeferLoadCB = base::RepeatingCallback<bool(base::OnceClosure)>;
 
-  // Callback to obtain the media ContextProvider.
-  // Requires being called on the media thread.
-  // The argument callback is also called on the media thread as a reply.
-  using ContextProviderCB =
-      base::Callback<void(base::Callback<void(viz::ContextProvider*)>)>;
-
   // Callback to tell V8 about the amount of memory used by the WebMediaPlayer
   // instance.  The input parameter is the delta in bytes since the last call to
   // AdjustAllocatedMemoryCB and the return value is the total number of bytes

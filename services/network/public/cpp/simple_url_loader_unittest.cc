@@ -230,7 +230,7 @@ class SimpleLoaderTestHelper : public SimpleURLLoaderStreamConsumer {
         // Some of the bots run tests quite slowly, and the default timeout is
         // too short for them for some of the heavier weight tests.
         // See https://crbug.com/1046745 and https://crbug.com/1035127.
-        TestTimeouts::action_max_timeout());
+        FROM_HERE, TestTimeouts::action_max_timeout());
     run_loop_.Run();
   }
 

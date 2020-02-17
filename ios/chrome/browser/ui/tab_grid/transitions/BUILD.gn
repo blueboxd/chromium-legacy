@@ -18,6 +18,8 @@ source_set("transitions") {
     "legacy_tab_to_grid_animator.mm",
     "reduced_motion_animator.h",
     "reduced_motion_animator.mm",
+    "tab_grid_transition_handler.h",
+    "tab_grid_transition_handler.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]

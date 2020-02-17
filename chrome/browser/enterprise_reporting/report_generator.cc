@@ -45,7 +45,7 @@ void ReportGenerator::SetMaximumReportSizeForTesting(size_t size) {
 
 void ReportGenerator::CreateBasicRequest() {
 #if defined(OS_CHROMEOS)
-  AppendAndroidAppInfos();
+  SetAndroidAppInfos();
 #else
   basic_request_.set_computer_name(this->GetMachineName());
   basic_request_.set_os_user_name(GetOSUserName());
@@ -84,7 +84,9 @@ std::string ReportGenerator::GetSerialNumber() {
 
 #if defined(OS_CHROMEOS)
 
-void ReportGenerator::AppendAndroidAppInfos() {
+void ReportGenerator::SetAndroidAppInfos() {
+  basic_request_.clear_android_app_infos();
+
   // Android application is only supported for primary profile.
   Profile* primary_profile =
       g_browser_process->profile_manager()->GetPrimaryUserProfile();

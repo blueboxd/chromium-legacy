@@ -109,7 +109,7 @@ constexpr base::TimeDelta kConcurrentMarkingStepDuration =
 //
 // TODO(omerkatz): kNumberOfMarkingTasks should be set heuristically
 // instead of a constant.
-constexpr uint8_t kNumberOfConcurrentMarkingTasks = 1u;
+constexpr uint8_t kNumberOfConcurrentMarkingTasks = 3u;
 
 constexpr size_t kMaxTerminationGCLoops = 20;
 

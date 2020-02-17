@@ -1101,6 +1101,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                                         completion:nil];
   }
   [self.bubblePresenter userEnteredTabSwitcher];
+
+  // TODO(crbug.com/1052818): These should not be necessary once the
+  // coordinators are moved up to BrowserCoordinator.
+  [self.findBarCoordinator stop];
+  [self.textZoomCoordinator stop];
 }
 
 - (void)presentBubblesIfEligible {

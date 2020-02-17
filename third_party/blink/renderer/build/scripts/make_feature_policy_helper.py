@@ -29,17 +29,15 @@ class FeaturePolicyFeatureWriter(json5_generator.Writer):
                 runtime_features.append(feature)
 
         origin_trials_set = origin_trials(runtime_features)
-        fp_origin_trial_dependency_map = defaultdict(list)
-        dp_origin_trial_dependency_map = defaultdict(list)
+        origin_trial_dependency_map = defaultdict(list)
         runtime_to_feature_policy_map = defaultdict(list)
         runtime_to_document_policy_map = defaultdict(list)
         for feature in feature_policy_features + document_policy_features:
             for dependency in feature['depends_on']:
                 if str(dependency) in origin_trials_set:
-                    if feature['feature_policy_name']:
-                        fp_origin_trial_dependency_map[feature['name']].append(dependency)
-                    else:
-                        dp_origin_trial_dependency_map[feature['name']].append(dependency)
+                    deps = origin_trial_dependency_map[feature['name']]
+                    if dependency not in deps:
+                        deps.append(dependency)
                 else:
                     if feature['feature_policy_name']:
                         runtime_to_feature_policy_map[dependency].append(feature['name'])
@@ -52,8 +50,7 @@ class FeaturePolicyFeatureWriter(json5_generator.Writer):
                 'input_files': self._input_files,
                 'feature_policy_features': feature_policy_features,
                 'document_policy_features': document_policy_features,
-                'fp_origin_trial_dependency_map': fp_origin_trial_dependency_map,
-                'dp_origin_trial_dependency_map': dp_origin_trial_dependency_map,
+                'origin_trial_dependency_map': origin_trial_dependency_map,
                 'runtime_to_feature_policy_map': runtime_to_feature_policy_map,
                 'runtime_to_document_policy_map': runtime_to_document_policy_map
             }),

@@ -5,6 +5,7 @@
 #ifndef BASE_TEST_SCOPED_RUN_LOOP_TIMEOUT_H_
 #define BASE_TEST_SCOPED_RUN_LOOP_TIMEOUT_H_
 
+#include "base/location.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
 
@@ -54,7 +55,7 @@ FORWARD_DECLARE_TEST(TaskEnvironmentTest, SetsDefaultRunTimeout);
 
 class ScopedRunLoopTimeout {
  public:
-  ScopedRunLoopTimeout(TimeDelta timeout);
+  ScopedRunLoopTimeout(const Location& from_here, TimeDelta timeout);
   ~ScopedRunLoopTimeout();
 
   ScopedRunLoopTimeout(const ScopedRunLoopTimeout&) = delete;

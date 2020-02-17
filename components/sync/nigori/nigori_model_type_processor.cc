@@ -220,14 +220,9 @@ void NigoriModelTypeProcessor::OnSyncStopping(
     }
 
     case syncer::CLEAR_METADATA: {
-      // The bridge is responsible for deleting all data and metadata upon
-      // disabling sync.
-      bridge_->ApplyDisableSyncChanges();
+      ClearMetadataAndReset();
       model_ready_to_sync_ = false;
-      entity_.reset();
-      model_type_state_ = sync_pb::ModelTypeState();
-      model_type_state_.mutable_progress_marker()->set_data_type_id(
-          sync_pb::EntitySpecifics::kNigoriFieldNumber);
+
       // The model is still ready to sync (with the same |bridge_|) and same
       // sync metadata.
       ModelReadyToSync(bridge_, NigoriMetadataBatch());
@@ -423,8 +418,8 @@ void NigoriModelTypeProcessor::ConnectIfReady() {
   if (!model_type_state_.has_cache_guid()) {
     model_type_state_.set_cache_guid(activation_request_.cache_guid);
   } else if (model_type_state_.cache_guid() != activation_request_.cache_guid) {
-    // TODO(mamir): implement error handling in case of cache GUID mismatch.
-    NOTIMPLEMENTED();
+    ClearMetadataAndReset();
+    DCHECK(model_ready_to_sync_);
   }
 
   // Cache GUID verification earlier above guarantees the user is the same.
@@ -454,6 +449,16 @@ void NigoriModelTypeProcessor::NudgeForCommitIfNeeded() const {
   if (entity_->RequiresCommitRequest()) {
     worker_->NudgeForCommit();
   }
+}
+
+void NigoriModelTypeProcessor::ClearMetadataAndReset() {
+  // The bridge is responsible for deleting all data and metadata upon
+  // disabling sync.
+  bridge_->ApplyDisableSyncChanges();
+  entity_.reset();
+  model_type_state_ = sync_pb::ModelTypeState();
+  model_type_state_.mutable_progress_marker()->set_data_type_id(
+      sync_pb::EntitySpecifics::kNigoriFieldNumber);
 }
 
 }  // namespace syncer

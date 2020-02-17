@@ -36,53 +36,52 @@ const char* const kInvalidPolicies[] = {
                                                                    // tokens
 };
 
-// TODO(chenleihu): find a DocumentPolicyFeature name start with 'f' < c < 'n'
+// TODO(chenleihu): find a FeaturePolicyFeature name start with 'f' < c < 'n'
 // to further strengthen the test on proving "no-" prefix is not counted as part
 // of feature name for ordering.
 const std::pair<DocumentPolicy::FeatureState, std::string>
     kPolicySerializationTestCases[] = {
-        {{{blink::mojom::DocumentPolicyFeature::kFontDisplay,
+        {{{blink::mojom::FeaturePolicyFeature::kFontDisplay,
            PolicyValue(false)},
-          {blink::mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+          {blink::mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages,
            PolicyValue(1.0)}},
          "no-font-display-late-swap, unoptimized-lossless-images;bpp=1.0"},
         // Changing ordering of FeatureState element should not affect
         // serialization result.
-        {{{blink::mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+        {{{blink::mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages,
            PolicyValue(1.0)},
-          {blink::mojom::DocumentPolicyFeature::kFontDisplay,
+          {blink::mojom::FeaturePolicyFeature::kFontDisplay,
            PolicyValue(false)}},
          "no-font-display-late-swap, unoptimized-lossless-images;bpp=1.0"},
         // Flipping boolean-valued policy from false to true should not affect
         // result ordering of feature.
-        {{{blink::mojom::DocumentPolicyFeature::kFontDisplay,
-           PolicyValue(true)},
-          {blink::mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+        {{{blink::mojom::FeaturePolicyFeature::kFontDisplay, PolicyValue(true)},
+          {blink::mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages,
            PolicyValue(1.0)}},
          "font-display-late-swap, unoptimized-lossless-images;bpp=1.0"}};
 
 const std::pair<const char*, DocumentPolicy::FeatureState>
     kPolicyParseTestCases[] = {
         {"no-font-display-late-swap,unoptimized-lossless-images;bpp=1",
-         {{blink::mojom::DocumentPolicyFeature::kFontDisplay,
+         {{blink::mojom::FeaturePolicyFeature::kFontDisplay,
            PolicyValue(false)},
-          {blink::mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+          {blink::mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages,
            PolicyValue(1.0)}}},
         // White-space is allowed in some positions in structured-header.
         {"no-font-display-late-swap,   unoptimized-lossless-images;bpp=1",
-         {{blink::mojom::DocumentPolicyFeature::kFontDisplay,
+         {{blink::mojom::FeaturePolicyFeature::kFontDisplay,
            PolicyValue(false)},
-          {blink::mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+          {blink::mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages,
            PolicyValue(1.0)}}}};
 
 const DocumentPolicy::FeatureState kParsedPolicies[] = {
     {},  // An empty policy
-    {{mojom::DocumentPolicyFeature::kFontDisplay, PolicyValue(false)}},
-    {{mojom::DocumentPolicyFeature::kFontDisplay, PolicyValue(true)}},
-    {{mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+    {{mojom::FeaturePolicyFeature::kFontDisplay, PolicyValue(false)}},
+    {{mojom::FeaturePolicyFeature::kFontDisplay, PolicyValue(true)}},
+    {{mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages,
       PolicyValue(1.0)}},
-    {{mojom::DocumentPolicyFeature::kFontDisplay, PolicyValue(true)},
-     {mojom::DocumentPolicyFeature::kUnoptimizedLosslessImages,
+    {{mojom::FeaturePolicyFeature::kFontDisplay, PolicyValue(true)},
+     {mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages,
       PolicyValue(1.0)}}};
 
 // Serialize and then Parse the result of serialization should cancel each

@@ -90,7 +90,7 @@
 
       function step1(node) {
         TestRunner.domDebuggerModel.setDOMBreakpoint(
-            node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
+            node, Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified);
         TestRunner.evaluateInPageWithTimeout(
             'appendElement(\'rootElement\', \'childElement\')');
         SourcesTestRunner.waitUntilPausedAndDumpStackAndResume(next);

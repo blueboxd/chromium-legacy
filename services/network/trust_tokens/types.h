@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TRUST_TOKENS_TYPES_H_
-#define NET_TRUST_TOKENS_TYPES_H_
+#ifndef SERVICES_NETWORK_TRUST_TOKENS_TYPES_H_
+#define SERVICES_NETWORK_TRUST_TOKENS_TYPES_H_
 
 #include <string>
 
@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #include "url/origin.h"
 
-namespace net {
+namespace network {
 namespace internal {
 
 // types.h provides utility functions for Trust TrustTokens type conversion.
@@ -25,6 +25,6 @@ base::Optional<base::Time> StringToTime(base::StringPiece my_string);
 std::string TimeToString(base::Time my_time);
 
 }  // namespace internal
-}  // namespace net
+}  // namespace network
 
-#endif  // NET_TRUST_TOKENS_TYPES_H_
+#endif  // SERVICES_NETWORK_TRUST_TOKENS_TYPES_H_

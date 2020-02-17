@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/extras/sqlite/trust_token_database_owner.h"
+#include "services/network/trust_tokens/trust_token_database_owner.h"
 
 #include <memory>
 #include <string>
@@ -16,9 +16,9 @@
 #include "components/sqlite_proto/key_value_data.h"
 #include "components/sqlite_proto/key_value_table.h"
 #include "components/sqlite_proto/proto_table_manager.h"
-#include "net/trust_tokens/proto/storage.pb.h"
+#include "services/network/trust_tokens/proto/storage.pb.h"
 
-namespace net {
+namespace network {
 
 namespace {
 const char kIssuerTableName[] = "trust_tokens_issuer_config";
@@ -166,4 +166,4 @@ void TrustTokenDatabaseOwner::FinishInitializationOnMainSequence() {
   std::move(on_done_initializing_).Run(base::WrapUnique(this));
 }
 
-}  // namespace net
+}  // namespace network

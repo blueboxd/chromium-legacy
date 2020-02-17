@@ -1657,10 +1657,9 @@ void ChromePasswordProtectionService::PersistPhishedSavedPasswordCredential(
   }
   for (const std::string& domain : matching_domains) {
     password_store->AddCompromisedCredentials(
-        password_manager::CompromisedCredentials(
-            password_manager::GetSignonRealm(GURL(domain)),
-            base::ASCIIToUTF16(username), base::Time::Now(),
-            password_manager::CompromiseType::kPhished));
+        {password_manager::GetSignonRealm(GURL(domain)),
+         base::ASCIIToUTF16(username), base::Time::Now(),
+         password_manager::CompromiseType::kPhished});
   }
 }
 

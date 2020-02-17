@@ -119,8 +119,8 @@ void UrlData::RedirectTo(const scoped_refptr<UrlData>& url_data) {
 
   std::vector<RedirectCB> redirect_callbacks;
   redirect_callbacks.swap(redirect_callbacks_);
-  for (const RedirectCB& cb : redirect_callbacks) {
-    cb.Run(url_data);
+  for (RedirectCB& cb : redirect_callbacks) {
+    std::move(cb).Run(url_data);
   }
 }
 
@@ -129,14 +129,14 @@ void UrlData::Fail() {
   // Handled similar to a redirect.
   std::vector<RedirectCB> redirect_callbacks;
   redirect_callbacks.swap(redirect_callbacks_);
-  for (const RedirectCB& cb : redirect_callbacks) {
-    cb.Run(nullptr);
+  for (RedirectCB& cb : redirect_callbacks) {
+    std::move(cb).Run(nullptr);
   }
 }
 
-void UrlData::OnRedirect(const RedirectCB& cb) {
+void UrlData::OnRedirect(RedirectCB cb) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  redirect_callbacks_.push_back(cb);
+  redirect_callbacks_.push_back(std::move(cb));
 }
 
 void UrlData::Use() {

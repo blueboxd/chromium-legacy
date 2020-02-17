@@ -529,8 +529,8 @@ void SkiaOutputDeviceBufferQueue::DoFinishSwapBuffers(
     std::unique_ptr<gfx::GpuFence> gpu_fence) {
   DCHECK(!gpu_fence);
 
-  FinishSwapBuffers(result, size, latency_info);
   PageFlipComplete(image.get());
+  FinishSwapBuffers(result, size, latency_info);
 }
 
 bool SkiaOutputDeviceBufferQueue::Reshape(const gfx::Size& size,

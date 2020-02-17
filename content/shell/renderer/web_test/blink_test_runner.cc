@@ -283,7 +283,7 @@ void BlinkTestRunner::ClearAllDatabases() {
 }
 
 void BlinkTestRunner::SetDatabaseQuota(int quota) {
-  Send(new WebTestHostMsg_SetDatabaseQuota(routing_id(), quota));
+  GetWebTestClientRemote().SetDatabaseQuota(quota);
 }
 
 void BlinkTestRunner::SimulateWebNotificationClick(

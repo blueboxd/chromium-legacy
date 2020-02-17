@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/trust_tokens/types.h"
+#include "services/network/trust_tokens/types.h"
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Optional;
 
-namespace net {
+namespace network {
 namespace internal {
 
 // trust_tokens/types.h's TimeToString/StringToTime implementations are
@@ -29,4 +29,4 @@ TEST(TrustTokenTypes, TimeFromBadStringFails) {
 }
 
 }  // namespace internal
-}  // namespace net
+}  // namespace network

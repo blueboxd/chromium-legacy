@@ -611,7 +611,7 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
   if (!base::test::ScopedRunLoopTimeout::ExistsForCurrentThread()) {
     // TODO(https://crbug.com/918724): determine whether the timeout can be
     // reduced from action_max_timeout() to action_timeout().
-    scoped_run_timeout.emplace(TestTimeouts::action_max_timeout());
+    scoped_run_timeout.emplace(FROM_HERE, TestTimeouts::action_max_timeout());
   }
 
 #if defined(OS_POSIX)

@@ -58,6 +58,12 @@ void PasswordManagerClient::NotifyUserCredentialsWereLeaked(
     password_manager::CredentialLeakType leak_type,
     const GURL& origin) {}
 
+void PasswordManagerClient::TriggerReauthForAccount(
+    const CoreAccountId& account_id,
+    base::OnceCallback<void(ReauthSucceeded)> reauth_callback) {
+  std::move(reauth_callback).Run(ReauthSucceeded(false));
+}
+
 SyncState PasswordManagerClient::GetPasswordSyncState() const {
   return NOT_SYNCING;
 }

@@ -35,7 +35,7 @@ DocumentPolicyParser::ParseInternal(
     const String& policy_string,
     const DocumentPolicyNameFeatureMap& name_feature_map,
     const DocumentPolicyFeatureInfoMap& feature_info_map,
-    const DocumentPolicyFeatureSet& available_features) {
+    const FeatureSet& available_features) {
   auto root = net::structured_headers::ParseList(policy_string.Ascii());
   if (!root)
     return base::nullopt;
@@ -82,7 +82,7 @@ DocumentPolicyParser::ParseInternal(
         name_feature_map.end())  // Unrecognized feature name.
       return base::nullopt;
 
-    const mojom::blink::DocumentPolicyFeature feature =
+    const mojom::blink::FeaturePolicyFeature feature =
         name_feature_map.at(feature_name);
 
     // If feature is not available, i.e. not enabled, ignore the entry.

@@ -1305,7 +1305,7 @@ message ExtensionRequest {
 
 // Extension information.
 message Extension {
-  reserved 7;
+  reserved 7, 12;
 
   // ID of the installed app/extension for a Chrome app or extension.
   optional string id = 1;
@@ -1359,9 +1359,6 @@ message Extension {
 
   // The list of host based permissions the extension requires.
   repeated string host_permissions = 11;
-
-  // URL of the app, used by (legacy) packaged app and hosted app.
-  optional string app_launch_url = 12;
 
   // True if the extension comes from web store.
   optional bool from_webstore = 13;

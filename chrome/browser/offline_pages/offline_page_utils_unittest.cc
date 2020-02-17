@@ -13,6 +13,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/location.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -431,7 +432,7 @@ TEST_F(OfflinePageUtilsTest, TestGetCachedOfflinePageSizeNoPageInModel) {
   // TODO(https://crbug.com/1002762): Fix this test to run in < action_timeout()
   // on the Android bots.
   const base::test::ScopedRunLoopTimeout increased_run_timeout(
-      TestTimeouts::action_max_timeout());
+      FROM_HERE, TestTimeouts::action_max_timeout());
 #endif  // defined(OS_ANDROID)
 
   clock()->Advance(base::TimeDelta::FromHours(3));

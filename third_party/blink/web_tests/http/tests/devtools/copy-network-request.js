@@ -79,6 +79,7 @@
   await dumpRequest({':host': 'h', 'version': 'v'});
   await dumpRequest({'Cookie': '_x=fdsfs; aA=fdsfdsf; FOO=ID=BAR:BAZ=FOO:F=d:AO=21.212.2.212-:A=dsadas8d9as8d9a8sd9sa8d9a; AAA=117'});
   await dumpRequest({}, null, null, '|evilcommand|');
+  await dumpRequest({'Content-Type':'application/x-www-form-urlencoded'}, '@/etc/passwd');
 
   await dumpMultipleRequests([]);
   await dumpMultipleRequests([true]);

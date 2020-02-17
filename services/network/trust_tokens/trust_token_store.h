@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TRUST_TOKENS_TRUST_TOKEN_STORE_H_
-#define NET_TRUST_TOKENS_TRUST_TOKEN_STORE_H_
+#ifndef SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_STORE_H_
+#define SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_STORE_H_
 
 #include <memory>
 #include <string>
@@ -13,12 +13,12 @@
 #include "base/compiler_specific.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "net/trust_tokens/proto/public.pb.h"
-#include "net/trust_tokens/trust_token_persister.h"
-#include "net/trust_tokens/types.h"
+#include "services/network/trust_tokens/proto/public.pb.h"
+#include "services/network/trust_tokens/trust_token_persister.h"
+#include "services/network/trust_tokens/types.h"
 #include "url/origin.h"
 
-namespace net {
+namespace network {
 
 // A TrustTokenStore provides operations on persistent state necessary for
 // the various steps of the Trust TrustTokens protocol.
@@ -219,6 +219,6 @@ class TrustTokenStore {
   std::unique_ptr<RecordExpiryDelegate> record_expiry_delegate_;
 };
 
-}  // namespace net
+}  // namespace network
 
-#endif  // NET_TRUST_TOKENS_TRUST_TOKEN_STORE_H_
+#endif  // SERVICES_NETWORK_TRUST_TOKENS_TRUST_TOKEN_STORE_H_

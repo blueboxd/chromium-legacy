@@ -23,7 +23,7 @@
       function step2(node) {
         rootElement = node;
         TestRunner.domDebuggerModel.setDOMBreakpoint(
-            node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
+            node, Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified);
         TestRunner.addResult(
             'Set \'Subtree Modified\' DOM breakpoint on rootElement.');
         TestRunner.evaluateInPageWithTimeout(
@@ -38,7 +38,7 @@
           'Test that DOM breakpoint toggles properly using checkbox.');
       var breakpoint = TestRunner.domDebuggerModel.setDOMBreakpoint(
           rootElement,
-          SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+          Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
       TestRunner.addResult('Set DOM breakpoint.');
       const breakpointElement = pane._list._itemToElement.get(breakpoint);
       breakpointElement.firstElementChild.checkboxElement.click();
@@ -98,7 +98,7 @@
         SourcesTestRunner.captureStackTrace(frames);
         TestRunner.domDebuggerModel.removeDOMBreakpoint(
             rootElement,
-            SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
+            Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified);
         SourcesTestRunner.resumeExecution(next);
       }
     },
@@ -108,7 +108,7 @@
           'Test that \'Attribute Modified\' breakpoint is hit when modifying attribute.');
       TestRunner.domDebuggerModel.setDOMBreakpoint(
           rootElement,
-          SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+          Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
       TestRunner.addResult(
           'Set \'Attribute Modified\' DOM breakpoint on rootElement.');
       TestRunner.evaluateInPageWithTimeout(
@@ -119,7 +119,7 @@
       function step2(callFrames) {
         TestRunner.domDebuggerModel.removeDOMBreakpoint(
             rootElement,
-            SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+            Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
         next();
       }
     },
@@ -129,7 +129,7 @@
           'Test that \'Attribute Modified\' breakpoint is hit when modifying Attr node.');
       TestRunner.domDebuggerModel.setDOMBreakpoint(
           rootElement,
-          SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+          Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
       TestRunner.addResult(
           'Set \'Attribute Modified\' DOM breakpoint on rootElement.');
       TestRunner.evaluateInPageWithTimeout(
@@ -140,7 +140,7 @@
       function step2(callFrames) {
         TestRunner.domDebuggerModel.removeDOMBreakpoint(
             rootElement,
-            SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+            Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
         next();
       }
     },
@@ -150,7 +150,7 @@
           'Test that \'Attribute Modified\' breakpoint is hit when adding a new Attr node.');
       TestRunner.domDebuggerModel.setDOMBreakpoint(
           rootElement,
-          SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+          Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
       TestRunner.addResult(
           'Set \'Attribute Modified\' DOM breakpoint on rootElement.');
       TestRunner.evaluateInPageWithTimeout(
@@ -161,7 +161,7 @@
       function step2(callFrames) {
         TestRunner.domDebuggerModel.removeDOMBreakpoint(
             rootElement,
-            SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+            Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
         next();
       }
     },
@@ -171,7 +171,7 @@
           'Test that \'Attribute Modified\' breakpoint is hit when modifying style attribute.');
       TestRunner.domDebuggerModel.setDOMBreakpoint(
           rootElement,
-          SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+          Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
       TestRunner.addResult(
           'Set \'Attribute Modified\' DOM breakpoint on rootElement.');
       TestRunner.evaluateInPageWithTimeout(
@@ -182,7 +182,7 @@
       function step2(callFrames) {
         TestRunner.domDebuggerModel.removeDOMBreakpoint(
             rootElement,
-            SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+            Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
         next();
       }
     },
@@ -194,7 +194,7 @@
 
       function step2(node) {
         TestRunner.domDebuggerModel.setDOMBreakpoint(
-            node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.NodeRemoved);
+            node, Protocol.DOMDebugger.DOMBreakpointType.NodeRemoved);
         TestRunner.addResult(
             'Set \'Node Removed\' DOM breakpoint on elementToRemove.');
         TestRunner.evaluateInPageWithTimeout(

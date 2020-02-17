@@ -558,6 +558,35 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
 #endif  // defined(OS_ANDROID)
 }
 
+void ChromePasswordManagerClient::TriggerReauthForAccount(
+    const CoreAccountId& account_id,
+    base::OnceCallback<void(ReauthSucceeded)> reauth_callback) {
+#if defined(OS_ANDROID)
+  std::move(reauth_callback).Run(ReauthSucceeded(false));
+#else   // !defined(OS_ANDROID)
+  Browser* browser = chrome::FindBrowserWithProfile(profile_);
+  if (!browser) {
+    std::move(reauth_callback).Run(ReauthSucceeded(false));
+    return;
+  }
+  SigninViewController* signin_view_controller =
+      browser->signin_view_controller();
+  if (!signin_view_controller) {
+    std::move(reauth_callback).Run(ReauthSucceeded(false));
+    return;
+  }
+  signin_view_controller->ShowReauthPrompt(
+      browser, account_id,
+      base::BindOnce(
+          [](base::OnceCallback<void(ReauthSucceeded)> reauth_callback,
+             signin::ReauthResult result) {
+            std::move(reauth_callback)
+                .Run(ReauthSucceeded(result == signin::ReauthResult::kSuccess));
+          },
+          std::move(reauth_callback)));
+#endif  // defined(OS_ANDROID)
+}
+
 bool ChromePasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {
   // TODO(crbug.com/862989): Move the following function (and the feature) to
   // the password component. Then remove IsIsolationForPasswordsSitesEnabled()

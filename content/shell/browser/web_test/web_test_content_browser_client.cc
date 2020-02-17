@@ -145,10 +145,8 @@ WebTestContentBrowserClient::GetNextFakeBluetoothChooser() {
 void WebTestContentBrowserClient::RenderProcessWillLaunch(
     RenderProcessHost* host) {
   ShellContentBrowserClient::RenderProcessWillLaunch(host);
-  StoragePartition* partition =
-      BrowserContext::GetDefaultStoragePartition(browser_context());
-  host->AddFilter(
-      new WebTestMessageFilter(host->GetID(), partition->GetQuotaManager()));
+
+  host->AddFilter(new WebTestMessageFilter(host->GetID()));
 }
 
 void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
@@ -167,6 +165,7 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
       BrowserContext::GetDefaultStoragePartition(browser_context());
   registry->AddInterface(base::BindRepeating(&WebTestClientImpl::Create,
                                              render_process_host->GetID(),
+                                             partition->GetQuotaManager(),
                                              partition->GetDatabaseTracker(),
                                              partition->GetNetworkContext()),
                          ui_task_runner);

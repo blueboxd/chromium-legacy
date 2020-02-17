@@ -348,7 +348,7 @@ const base::Feature kBlinkHeapCompaction{"BlinkHeapCompaction",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 // Enables concurrently marking Blink's heap.
 const base::Feature kBlinkHeapConcurrentMarking{
-    "BlinkHeapConcurrentMarking", base::FEATURE_DISABLED_BY_DEFAULT};
+    "BlinkHeapConcurrentMarking", base::FEATURE_ENABLED_BY_DEFAULT};
 // Enables concurrently sweeping Blink's heap.
 const base::Feature kBlinkHeapConcurrentSweeping{
     "BlinkHeapConcurrentSweeping", base::FEATURE_ENABLED_BY_DEFAULT};

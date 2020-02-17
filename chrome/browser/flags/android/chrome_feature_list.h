@@ -31,6 +31,7 @@ extern const base::Feature kBookmarksShowInFolder;
 extern const base::Feature kCloseTabSuggestions;
 extern const base::Feature kCastDeviceFilter;
 extern const base::Feature kCCTBackgroundTab;
+extern const base::Feature kCCTClientDataHeader;
 extern const base::Feature kCCTExternalLinkHandling;
 extern const base::Feature kCCTIncognito;
 extern const base::Feature kCCTModule;

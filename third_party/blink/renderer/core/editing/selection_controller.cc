@@ -124,8 +124,9 @@ bool CanMouseDownStartSelect(Node* node) {
 PositionInFlatTreeWithAffinity PositionWithAffinityOfHitTestResult(
     const HitTestResult& hit_test_result) {
   return FromPositionInDOMTree<EditingInFlatTreeStrategy>(
-      hit_test_result.InnerNode()->GetLayoutObject()->PositionForPoint(
-          hit_test_result.LocalPoint()));
+      hit_test_result.InnerPossiblyPseudoNode()
+          ->GetLayoutObject()
+          ->PositionForPoint(hit_test_result.LocalPoint()));
 }
 
 DocumentMarker* SpellCheckMarkerAtPosition(
@@ -478,7 +479,7 @@ void SelectionController::UpdateSelectionForMouseDrag(
   if (!mouse_down_may_start_select_)
     return;
 
-  Node* target = hit_test_result.InnerNode();
+  Node* target = hit_test_result.InnerPossiblyPseudoNode();
   if (!target)
     return;
 
@@ -603,7 +604,7 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
     const HitTestResult& result,
     AppendTrailingWhitespace append_trailing_whitespace,
     SelectInputEventType select_input_event_type) {
-  Node* const inner_node = result.InnerNode();
+  Node* const inner_node = result.InnerPossiblyPseudoNode();
 
   if (!inner_node || !inner_node->GetLayoutObject() ||
       !inner_node->GetLayoutObject()->IsSelectable())
@@ -616,8 +617,8 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
   HitTestResult adjusted_hit_test_result = result;
   if (select_input_event_type == SelectInputEventType::kTouch &&
       result.GetImage()) {
-    adjusted_hit_test_result.SetNodeAndPosition(result.InnerNode(),
-                                                PhysicalOffset());
+    adjusted_hit_test_result.SetNodeAndPosition(
+        result.InnerPossiblyPseudoNode(), PhysicalOffset());
   }
 
   const PositionInFlatTreeWithAffinity pos =
@@ -682,7 +683,7 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
 void SelectionController::SelectClosestMisspellingFromHitTestResult(
     const HitTestResult& result,
     AppendTrailingWhitespace append_trailing_whitespace) {
-  Node* inner_node = result.InnerNode();
+  Node* inner_node = result.InnerPossiblyPseudoNode();
 
   if (!inner_node || !inner_node->GetLayoutObject())
     return;
@@ -872,7 +873,7 @@ void SelectionController::SetNonDirectionalSelectionIfNeeded(
 
 void SelectionController::SetCaretAtHitTestResult(
     const HitTestResult& hit_test_result) {
-  Node* inner_node = hit_test_result.InnerNode();
+  Node* inner_node = hit_test_result.InnerPossiblyPseudoNode();
   DCHECK(inner_node);
   const PositionInFlatTreeWithAffinity visible_hit_pos =
       CreateVisiblePosition(
@@ -1158,7 +1159,7 @@ bool SelectionController::HandleGestureLongPress(
   if (hit_test_result.IsLiveLink())
     return false;
 
-  Node* inner_node = hit_test_result.InnerNode();
+  Node* inner_node = hit_test_result.InnerPossiblyPseudoNode();
   inner_node->GetDocument().UpdateStyleAndLayoutTree();
   bool inner_node_is_selectable = HasEditableStyle(*inner_node) ||
                                   inner_node->IsTextNode() ||
@@ -1192,7 +1193,7 @@ void SelectionController::HandleGestureLongTap(
 }
 
 static bool HitTestResultIsMisspelled(const HitTestResult& result) {
-  Node* inner_node = result.InnerNode();
+  Node* inner_node = result.InnerPossiblyPseudoNode();
   if (!inner_node || !inner_node->GetLayoutObject())
     return false;
   PositionWithAffinity pos_with_affinity =

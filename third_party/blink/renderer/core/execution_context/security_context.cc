@@ -28,7 +28,6 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "services/network/public/mojom/ip_address_space.mojom-blink.h"
-#include "third_party/blink/public/common/feature_policy/document_policy_features.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -185,30 +184,27 @@ bool SecurityContext::IsFeatureEnabled(
     mojom::blink::FeaturePolicyFeature feature,
     PolicyValue threshold_value,
     base::Optional<mojom::FeaturePolicyDisposition>* disposition) const {
+  // Use Document Policy to determine feature availability, but only if all of
+  // the following are true:
+  // * The DocumentPolicy RuntimeEnabledFeature is not disabled,
+  // * Document policy has been set on this object, and
+  // * Document policy infrastructure actually supports the feature.
+  // If any of those are false, assume true (enabled) here. Otherwise, check
+  // this object's policy.
+  bool document_policy_result =
+      !RuntimeEnabledFeatures::DocumentPolicyEnabled() || !document_policy_ ||
+      !document_policy_->IsFeatureSupported(feature) ||
+      document_policy_->IsFeatureEnabled(feature, threshold_value);
+
   FeatureEnabledState state = GetFeatureEnabledState(feature, threshold_value);
   if (state == FeatureEnabledState::kEnabled)
-    return true;
+    return document_policy_result;
   if (disposition) {
     *disposition = (state == FeatureEnabledState::kReportOnly)
                        ? mojom::FeaturePolicyDisposition::kReport
                        : mojom::FeaturePolicyDisposition::kEnforce;
   }
-  return (state != FeatureEnabledState::kDisabled);
-}
-
-bool SecurityContext::IsFeatureEnabled(
-    mojom::blink::DocumentPolicyFeature feature) const {
-  return IsFeatureEnabled(
-      feature,
-      PolicyValue::CreateMaxPolicyValue(
-          GetDocumentPolicyFeatureInfoMap().at(feature).default_value.Type()));
-}
-
-bool SecurityContext::IsFeatureEnabled(
-    mojom::blink::DocumentPolicyFeature feature,
-    PolicyValue threshold_value) const {
-  DCHECK(document_policy_);
-  return document_policy_->IsFeatureEnabled(feature, threshold_value);
+  return (state != FeatureEnabledState::kDisabled) && document_policy_result;
 }
 
 FeatureEnabledState SecurityContext::GetFeatureEnabledState(

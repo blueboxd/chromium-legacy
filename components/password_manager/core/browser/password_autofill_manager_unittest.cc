@@ -54,6 +54,7 @@ const char kPasswordName[] = "password";
 
 const char kAliceUsername[] = "alice";
 const char kAlicePassword[] = "password";
+const char kAliceEmail[] = "alice@gmail.com";
 
 using autofill::PopupType;
 using autofill::Suggestion;
@@ -79,6 +80,8 @@ class AutofillPopupDelegate;
 namespace password_manager {
 
 namespace {
+
+using ReauthSucceeded = PasswordManagerClient::ReauthSucceeded;
 
 constexpr char kMainFrameUrl[] = "https://example.com/";
 constexpr char kDropdownSelectedHistogram[] =
@@ -108,17 +111,29 @@ class TestPasswordManagerClient : public StubPasswordManagerClient {
     return feature_manager_.get();
   }
 
+  signin::IdentityManager* GetIdentityManager() override {
+    return identity_test_env_.identity_manager();
+  }
+
+  signin::IdentityTestEnvironment& identity_test_env() {
+    return identity_test_env_;
+  }
+
   void SetAccountStorageOptIn(bool opt_in) {
     ON_CALL(*feature_manager_.get(), ShouldShowAccountStorageOptIn)
         .WillByDefault(Return(!opt_in));
   }
 
   MOCK_METHOD0(GeneratePassword, void());
+  MOCK_METHOD2(TriggerReauthForAccount,
+               void(const CoreAccountId&,
+                    base::OnceCallback<void(ReauthSucceeded)>));
   MOCK_METHOD0(GetFaviconService, favicon::FaviconService*());
   MOCK_METHOD1(NavigateToManagePasswordsPage, void(ManagePasswordsReferrer));
 
  private:
   MockPasswordManagerDriver driver_;
+  signin::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<MockPasswordFeatureManager> feature_manager_{
       new NiceMock<MockPasswordFeatureManager>};
   GURL main_frame_url_;
@@ -266,16 +281,16 @@ class PasswordAutofillManagerTest : public testing::Test {
 };
 
 TEST_F(PasswordAutofillManagerTest, FillSuggestion) {
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  InitializePasswordAutofillManager(client.get(), nullptr);
+  TestPasswordManagerClient client;
+  InitializePasswordAutofillManager(&client, nullptr);
 
-  EXPECT_CALL(*client->mock_driver(),
+  EXPECT_CALL(*client.mock_driver(),
               FillSuggestion(test_username_, test_password_));
   EXPECT_TRUE(
       password_autofill_manager_->FillSuggestionForTest(test_username_));
-  testing::Mock::VerifyAndClearExpectations(client->mock_driver());
+  testing::Mock::VerifyAndClearExpectations(client.mock_driver());
 
-  EXPECT_CALL(*client->mock_driver(), FillSuggestion(_, _)).Times(0);
+  EXPECT_CALL(*client.mock_driver(), FillSuggestion(_, _)).Times(0);
   EXPECT_FALSE(password_autofill_manager_->FillSuggestionForTest(
       base::ASCIIToUTF16(kInvalidUsername)));
 
@@ -285,16 +300,16 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestion) {
 }
 
 TEST_F(PasswordAutofillManagerTest, PreviewSuggestion) {
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  InitializePasswordAutofillManager(client.get(), nullptr);
+  TestPasswordManagerClient client;
+  InitializePasswordAutofillManager(&client, nullptr);
 
-  EXPECT_CALL(*client->mock_driver(),
+  EXPECT_CALL(*client.mock_driver(),
               PreviewSuggestion(test_username_, test_password_));
   EXPECT_TRUE(
       password_autofill_manager_->PreviewSuggestionForTest(test_username_));
-  testing::Mock::VerifyAndClearExpectations(client->mock_driver());
+  testing::Mock::VerifyAndClearExpectations(client.mock_driver());
 
-  EXPECT_CALL(*client->mock_driver(), PreviewSuggestion(_, _)).Times(0);
+  EXPECT_CALL(*client.mock_driver(), PreviewSuggestion(_, _)).Times(0);
   EXPECT_FALSE(password_autofill_manager_->PreviewSuggestionForTest(
       base::ASCIIToUTF16(kInvalidUsername)));
 
@@ -309,15 +324,14 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
   for (bool is_suggestion_on_password_field : {false, true}) {
     SCOPED_TRACE(testing::Message() << "is_suggestion_on_password_field = "
                                     << is_suggestion_on_password_field);
-    auto client = std::make_unique<TestPasswordManagerClient>();
-    auto autofill_client = std::make_unique<NiceMock<MockAutofillClient>>();
-    InitializePasswordAutofillManager(client.get(), autofill_client.get());
+    TestPasswordManagerClient client;
+    NiceMock<MockAutofillClient> autofill_client;
+    InitializePasswordAutofillManager(&client, &autofill_client);
 
     // Load filling and favicon data.
     autofill::PasswordFormFillData data = CreateTestFormFillData();
     favicon::MockFaviconService favicon_service;
-    EXPECT_CALL(*client, GetFaviconService())
-        .WillOnce(Return(&favicon_service));
+    EXPECT_CALL(client, GetFaviconService()).WillOnce(Return(&favicon_service));
     EXPECT_CALL(favicon_service, GetFaviconImageForPageURL(data.origin, _, _))
         .WillOnce(Invoke(RespondWithTestIcon));
     password_autofill_manager_->OnAddPasswordFillData(data);
@@ -325,7 +339,7 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
     // Show the popup and verify the suggestions.
     std::vector<Suggestion> suggestions;
     EXPECT_CALL(
-        *autofill_client,
+        autofill_client,
         ShowAutofillPopup(
             _, _,
             SuggestionVectorIdsAre(ElementsAreArray(RemoveShowAllBeforeLollipop(
@@ -345,11 +359,11 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
     EXPECT_TRUE(
         gfx::test::AreImagesEqual(suggestions[0].custom_icon, kTestFavicon));
 
-    EXPECT_CALL(*client->mock_driver(),
+    EXPECT_CALL(*client.mock_driver(),
                 FillSuggestion(test_username_, test_password_));
     // Accepting a suggestion should trigger a call to hide the popup.
     EXPECT_CALL(
-        *autofill_client,
+        autofill_client,
         HideAutofillPopup(autofill::PopupHidingReason::kAcceptSuggestion));
     base::HistogramTester histograms;
     password_autofill_manager_->DidAcceptSuggestion(
@@ -366,14 +380,14 @@ TEST_F(PasswordAutofillManagerTest, ExternalDelegatePasswordSuggestions) {
 
 // Test that the popup is updated once remote suggestions are unlocked.
 TEST_F(PasswordAutofillManagerTest, ShowUnlockButton) {
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<NiceMock<MockAutofillClient>>();
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
-  client->SetAccountStorageOptIn(false);
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
+  client.SetAccountStorageOptIn(false);
 
   // Show the popup and verify the suggestions.
   EXPECT_CALL(
-      *autofill_client,
+      autofill_client,
       ShowAutofillPopup(
           _, _,
           SuggestionVectorIdsAre(ElementsAreArray(RemoveShowAllBeforeLollipop(
@@ -388,24 +402,28 @@ TEST_F(PasswordAutofillManagerTest, ShowUnlockButton) {
 
 // Test that the popup is updated once remote suggestions are unlocked.
 TEST_F(PasswordAutofillManagerTest, ClickOnUnlockPutsPopupInWaitingState) {
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<NiceMock<MockAutofillClient>>();
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
-  client->SetAccountStorageOptIn(false);
-  testing::Mock::VerifyAndClearExpectations(autofill_client.get());
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
+  client.SetAccountStorageOptIn(false);
+  const CoreAccountId kAliceId = client.identity_test_env()
+                                     .SetUnconsentedPrimaryAccount(kAliceEmail)
+                                     .account_id;
+  testing::Mock::VerifyAndClearExpectations(&autofill_client);
 
   // Accepting a suggestion should trigger a call to update the popup. The first
   // update removes the unlock button
   EXPECT_CALL(
-      *autofill_client,
+      autofill_client,
       UpdatePopup(
           SuggestionVectorIdsAre(ElementsAreArray(RemoveShowAllBeforeLollipop(
               {autofill::POPUP_ITEM_ID_LOADING_SPINNER,
                autofill::POPUP_ITEM_ID_PASSWORD_ENTRY,
                autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY}))),
           PopupType::kPasswords));
-  EXPECT_CALL(*autofill_client, PinPopupViewUntilUpdate);
-  EXPECT_CALL(*autofill_client, GetPopupSuggestions())
+  EXPECT_CALL(autofill_client, PinPopupViewUntilUpdate);
+  EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _));
+  EXPECT_CALL(autofill_client, GetPopupSuggestions())
       .WillOnce(Return(CreateTestSuggestions(/*has_opt_in=*/true)));
   password_autofill_manager_->DidAcceptSuggestion(
       test_username_, autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN,
@@ -413,12 +431,84 @@ TEST_F(PasswordAutofillManagerTest, ClickOnUnlockPutsPopupInWaitingState) {
 }
 
 // Test that the popup is updated once remote suggestions are unlocked.
+TEST_F(PasswordAutofillManagerTest, FailedUnlockUpdatesPopup) {
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
+  client.SetAccountStorageOptIn(false);
+  const CoreAccountId kAliceId = client.identity_test_env()
+                                     .SetUnconsentedPrimaryAccount(kAliceEmail)
+                                     .account_id;
+  testing::Mock::VerifyAndClearExpectations(&autofill_client);
+  EXPECT_CALL(*client.GetPasswordFeatureManager(), SetAccountStorageOptIn)
+      .Times(0);
+
+  // Accepting a suggestion should trigger a call to update the popup.
+  // First the popup enters the waiting state.
+  EXPECT_CALL(autofill_client, GetPopupSuggestions)
+      .WillOnce(Return(CreateTestSuggestions(/*has_opt_in=*/true)));
+  EXPECT_CALL(autofill_client, UpdatePopup);
+
+  // As soon as the waiting state is pending, the next update resets the popup.
+  EXPECT_CALL(autofill_client, PinPopupViewUntilUpdate).WillOnce([&] {
+    testing::Mock::VerifyAndClear(&autofill_client);
+    EXPECT_CALL(autofill_client, GetPopupSuggestions)
+        .WillOnce(Return(CreateTestSuggestions(/*has_opt_in=*/false)));
+    EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _))
+        .WillOnce([](const auto& unused, auto reauth_callback) {
+          std::move(reauth_callback).Run(ReauthSucceeded(false));
+        });
+    EXPECT_CALL(
+        autofill_client,
+        UpdatePopup(
+            SuggestionVectorIdsAre(ElementsAreArray(RemoveShowAllBeforeLollipop(
+                {autofill::POPUP_ITEM_ID_PASSWORD_ENTRY,
+                 autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY,
+                 autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN}))),
+            PopupType::kPasswords));
+  });
+
+  password_autofill_manager_->DidAcceptSuggestion(
+      test_username_, autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN,
+      1);
+}
+
+// Test that the popup is updated once remote suggestions are unlocked.
+TEST_F(PasswordAutofillManagerTest, SuccessfullUnlockTriggersOptIn) {
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
+  client.SetAccountStorageOptIn(false);
+  const CoreAccountId kAliceId = client.identity_test_env()
+                                     .SetUnconsentedPrimaryAccount(kAliceEmail)
+                                     .account_id;
+  testing::Mock::VerifyAndClearExpectations(&autofill_client);
+
+  // Accepting a suggestion should trigger a call to update the popup.
+  EXPECT_CALL(autofill_client, GetPopupSuggestions)
+      .WillOnce(Return(CreateTestSuggestions(/*has_opt_in=*/true)));
+  EXPECT_CALL(autofill_client, UpdatePopup);
+  EXPECT_CALL(autofill_client, PinPopupViewUntilUpdate);
+
+  EXPECT_CALL(client, TriggerReauthForAccount(kAliceId, _))
+      .WillOnce([](const auto& id, auto reauth_callback) {
+        std::move(reauth_callback).Run(ReauthSucceeded(true));
+      });
+  EXPECT_CALL(*client.GetPasswordFeatureManager(),
+              SetAccountStorageOptIn(true));
+
+  password_autofill_manager_->DidAcceptSuggestion(
+      test_username_, autofill::POPUP_ITEM_ID_PASSWORD_ACCOUNT_STORAGE_OPTIN,
+      1);
+}
+
+// Test that the popup is updated once remote suggestions are unlocked.
 TEST_F(PasswordAutofillManagerTest, AddOnFillDataAfterUnlockPopuplatesPopup) {
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<NiceMock<MockAutofillClient>>();
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
-  client->SetAccountStorageOptIn(true);
-  testing::Mock::VerifyAndClearExpectations(autofill_client.get());
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
+  client.SetAccountStorageOptIn(true);
+  testing::Mock::VerifyAndClearExpectations(&autofill_client);
 
   // Once the data is loaded, an update fills the new passwords:
   autofill::PasswordFormFillData new_data = CreateTestFormFillData();
@@ -427,11 +517,11 @@ TEST_F(PasswordAutofillManagerTest, AddOnFillDataAfterUnlockPopuplatesPopup) {
   additional.realm = "https://foobarrealm.org";
   base::string16 additional_username(base::ASCIIToUTF16("bar.foo@example.com"));
   new_data.additional_logins[additional_username] = additional;
-  EXPECT_CALL(*autofill_client, GetPopupSuggestions())
+  EXPECT_CALL(autofill_client, GetPopupSuggestions())
       .Times(2)
       .WillRepeatedly(Return(CreateTestSuggestions(/*has_opt_in=*/false)));
   EXPECT_CALL(
-      *autofill_client,
+      autofill_client,
       UpdatePopup(
           SuggestionVectorIdsAre(ElementsAreArray(RemoveShowAllBeforeLollipop(
               {autofill::POPUP_ITEM_ID_PASSWORD_ENTRY,
@@ -444,9 +534,9 @@ TEST_F(PasswordAutofillManagerTest, AddOnFillDataAfterUnlockPopuplatesPopup) {
 // Test that OnShowPasswordSuggestions correctly matches the given FormFieldData
 // to the known PasswordFormFillData, and extracts the right suggestions.
 TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<NiceMock<MockAutofillClient>>();
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
 
   gfx::RectF element_bounds;
   autofill::PasswordFormFillData data = CreateTestFormFillData();
@@ -462,7 +552,7 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
   // verify that both the values and labels are filled correctly. The 'value'
   // should be the user name; the 'label' should be the realm.
   EXPECT_CALL(
-      *autofill_client,
+      autofill_client,
       ShowAutofillPopup(
           element_bounds, _,
           testing::AllOf(
@@ -476,7 +566,7 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
       base::i18n::RIGHT_TO_LEFT, base::string16(), 0, element_bounds);
 
   // Now simulate displaying suggestions matching "John".
-  EXPECT_CALL(*autofill_client,
+  EXPECT_CALL(autofill_client,
               ShowAutofillPopup(element_bounds, _,
                                 SuggestionVectorValuesAre(ElementsAreArray(
                                     GetSuggestionList({additional_username}))),
@@ -487,7 +577,7 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
 
   // Finally, simulate displaying all suggestions, without any prefix matching.
   EXPECT_CALL(
-      *autofill_client,
+      autofill_client,
       ShowAutofillPopup(
           element_bounds, _,
           SuggestionVectorValuesAre(ElementsAreArray(
@@ -502,9 +592,9 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
 // applications are displayed as the labels of suggestions on the UI (for
 // matches of all levels of preferredness).
 TEST_F(PasswordAutofillManagerTest, PrettifiedAndroidRealmsAreShownAsLabels) {
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<NiceMock<MockAutofillClient>>();
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
 
   autofill::PasswordFormFillData data;
   data.username_field.value = test_username_;
@@ -517,7 +607,7 @@ TEST_F(PasswordAutofillManagerTest, PrettifiedAndroidRealmsAreShownAsLabels) {
 
   password_autofill_manager_->OnAddPasswordFillData(data);
 
-  EXPECT_CALL(*autofill_client,
+  EXPECT_CALL(autofill_client,
               ShowAutofillPopup(_, _,
                                 SuggestionVectorLabelsAre(testing::AllOf(
                                     testing::Contains(base::ASCIIToUTF16(
@@ -531,9 +621,9 @@ TEST_F(PasswordAutofillManagerTest, PrettifiedAndroidRealmsAreShownAsLabels) {
 }
 
 TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<NiceMock<MockAutofillClient>>();
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
 
   gfx::RectF element_bounds;
   autofill::PasswordFormFillData data = CreateTestFormFillData();
@@ -545,7 +635,7 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
 
   password_autofill_manager_->OnAddPasswordFillData(data);
 
-  EXPECT_CALL(*autofill_client,
+  EXPECT_CALL(autofill_client,
               ShowAutofillPopup(element_bounds, _,
                                 SuggestionVectorValuesAre(ElementsAreArray(
                                     GetSuggestionList({test_username_}))),
@@ -563,9 +653,9 @@ TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
   features.InitAndEnableFeature(
       autofill::features::kAutofillTokenPrefixMatching);
 
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<NiceMock<MockAutofillClient>>();
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
 
   gfx::RectF element_bounds;
   autofill::PasswordFormFillData data;
@@ -582,7 +672,7 @@ TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
   password_autofill_manager_->OnAddPasswordFillData(data);
 
   EXPECT_CALL(
-      *autofill_client,
+      autofill_client,
       ShowAutofillPopup(
           element_bounds, _,
           SuggestionVectorValuesAre(testing::UnorderedElementsAreArray(
@@ -599,9 +689,9 @@ TEST_F(PasswordAutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
   features.InitAndEnableFeature(
       autofill::features::kAutofillTokenPrefixMatching);
 
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<NiceMock<MockAutofillClient>>();
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
 
   gfx::RectF element_bounds;
   autofill::PasswordFormFillData data;
@@ -617,7 +707,7 @@ TEST_F(PasswordAutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
 
   password_autofill_manager_->OnAddPasswordFillData(data);
 
-  EXPECT_CALL(*autofill_client, ShowAutofillPopup).Times(0);
+  EXPECT_CALL(autofill_client, ShowAutofillPopup).Times(0);
   password_autofill_manager_->OnShowPasswordSuggestions(
       base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("oo"), 0, element_bounds);
 }
@@ -631,9 +721,9 @@ TEST_F(PasswordAutofillManagerTest,
   features.InitAndEnableFeature(
       autofill::features::kAutofillTokenPrefixMatching);
 
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<NiceMock<MockAutofillClient>>();
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
 
   gfx::RectF element_bounds;
   autofill::PasswordFormFillData data;
@@ -649,7 +739,7 @@ TEST_F(PasswordAutofillManagerTest,
 
   password_autofill_manager_->OnAddPasswordFillData(data);
 
-  EXPECT_CALL(*autofill_client,
+  EXPECT_CALL(autofill_client,
               ShowAutofillPopup(element_bounds, _,
                                 SuggestionVectorValuesAre(ElementsAreArray(
                                     GetSuggestionList({additional_username}))),
@@ -669,9 +759,9 @@ TEST_F(PasswordAutofillManagerTest,
   features.InitAndEnableFeature(
       autofill::features::kAutofillTokenPrefixMatching);
 
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<NiceMock<MockAutofillClient>>();
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
 
   gfx::RectF element_bounds;
   autofill::PasswordFormFillData data;
@@ -688,7 +778,7 @@ TEST_F(PasswordAutofillManagerTest,
   password_autofill_manager_->OnAddPasswordFillData(data);
 
   EXPECT_CALL(
-      *autofill_client,
+      autofill_client,
       ShowAutofillPopup(
           element_bounds, _,
           SuggestionVectorValuesAre(ElementsAreArray(
@@ -701,37 +791,37 @@ TEST_F(PasswordAutofillManagerTest,
 
 TEST_F(PasswordAutofillManagerTest, PreviewAndFillEmptyUsernameSuggestion) {
   // Initialize PasswordAutofillManager with credentials without username.
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<NiceMock<MockAutofillClient>>();
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
   fill_data().username_field.value.clear();
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+  InitializePasswordAutofillManager(&client, &autofill_client);
 
   base::string16 no_username_string =
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_EMPTY_LOGIN);
 
   // Simulate that the user clicks on a username field.
-  EXPECT_CALL(*autofill_client, ShowAutofillPopup);
+  EXPECT_CALL(autofill_client, ShowAutofillPopup);
   gfx::RectF element_bounds;
   password_autofill_manager_->OnShowPasswordSuggestions(
       base::i18n::RIGHT_TO_LEFT, base::string16(),
       /*autoselect_first_suggestion=*/false, element_bounds);
 
   // Check that preview of the empty username works.
-  EXPECT_CALL(*client->mock_driver(),
+  EXPECT_CALL(*client.mock_driver(),
               PreviewSuggestion(base::string16(), test_password_));
   password_autofill_manager_->DidSelectSuggestion(no_username_string,
                                                   0 /*not used*/);
-  testing::Mock::VerifyAndClearExpectations(client->mock_driver());
+  testing::Mock::VerifyAndClearExpectations(client.mock_driver());
 
   // Check that fill of the empty username works.
-  EXPECT_CALL(*client->mock_driver(),
+  EXPECT_CALL(*client.mock_driver(),
               FillSuggestion(base::string16(), test_password_));
   EXPECT_CALL(
-      *autofill_client,
+      autofill_client,
       HideAutofillPopup(autofill::PopupHidingReason::kAcceptSuggestion));
   password_autofill_manager_->DidAcceptSuggestion(
       no_username_string, autofill::POPUP_ITEM_ID_PASSWORD_ENTRY, 1);
-  testing::Mock::VerifyAndClearExpectations(client->mock_driver());
+  testing::Mock::VerifyAndClearExpectations(client.mock_driver());
 }
 
 // Tests that the "Manage passwords" suggestion is shown along with the password
@@ -822,16 +912,16 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnPasswordField) {
 // Tests that the "Manage passwords" fallback shows up in non-password
 // fields of login forms.
 TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnNonPasswordField) {
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<NiceMock<MockAutofillClient>>();
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
 
   gfx::RectF element_bounds;
   autofill::PasswordFormFillData data = CreateTestFormFillData();
 
   password_autofill_manager_->OnAddPasswordFillData(data);
 
-  EXPECT_CALL(*autofill_client,
+  EXPECT_CALL(autofill_client,
               ShowAutofillPopup(element_bounds, _,
                                 SuggestionVectorValuesAre(ElementsAreArray(
                                     GetSuggestionList({test_username_}))),
@@ -843,12 +933,12 @@ TEST_F(PasswordAutofillManagerTest, ShowAllPasswordsOptionOnNonPasswordField) {
 
 TEST_F(PasswordAutofillManagerTest,
        MaybeShowPasswordSuggestionsWithGenerationNoCredentials) {
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<NiceMock<MockAutofillClient>>();
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
   password_autofill_manager_.reset(new PasswordAutofillManager(
-      client->mock_driver(), autofill_client.get(), client.get()));
+      client.mock_driver(), &autofill_client, &client));
 
-  EXPECT_CALL(*autofill_client, ShowAutofillPopup).Times(0);
+  EXPECT_CALL(autofill_client, ShowAutofillPopup).Times(0);
   gfx::RectF element_bounds;
   EXPECT_FALSE(
       password_autofill_manager_->MaybeShowPasswordSuggestionsWithGeneration(
@@ -859,15 +949,15 @@ TEST_F(PasswordAutofillManagerTest,
 TEST_F(PasswordAutofillManagerTest,
        MaybeShowPasswordSuggestionsWithGenerationSomeCredentials) {
   base::HistogramTester histograms;
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<NiceMock<MockAutofillClient>>();
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
 
   gfx::RectF element_bounds;
   autofill::PasswordFormFillData data = CreateTestFormFillData();
 
   favicon::MockFaviconService favicon_service;
-  EXPECT_CALL(*client, GetFaviconService()).WillOnce(Return(&favicon_service));
+  EXPECT_CALL(client, GetFaviconService()).WillOnce(Return(&favicon_service));
   EXPECT_CALL(favicon_service, GetFaviconImageForPageURL(data.origin, _, _));
   password_autofill_manager_->OnAddPasswordFillData(data);
 
@@ -875,7 +965,7 @@ TEST_F(PasswordAutofillManagerTest,
   base::string16 generation_string =
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_GENERATE_PASSWORD);
   EXPECT_CALL(
-      *autofill_client,
+      autofill_client,
       ShowAutofillPopup(
           element_bounds, base::i18n::RIGHT_TO_LEFT,
           AllOf(SuggestionVectorValuesAre(ElementsAreArray(
@@ -892,9 +982,9 @@ TEST_F(PasswordAutofillManagerTest,
       metrics_util::PasswordDropdownState::kStandardGenerate, 1);
 
   // Click "Generate password".
-  EXPECT_CALL(*client, GeneratePassword());
+  EXPECT_CALL(client, GeneratePassword());
   EXPECT_CALL(
-      *autofill_client,
+      autofill_client,
       HideAutofillPopup(autofill::PopupHidingReason::kAcceptSuggestion));
   password_autofill_manager_->DidAcceptSuggestion(
       base::string16(), autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY, 1);
@@ -905,15 +995,15 @@ TEST_F(PasswordAutofillManagerTest,
 
 TEST_F(PasswordAutofillManagerTest,
        MaybeShowPasswordSuggestionsWithOmittedCredentials) {
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<NiceMock<MockAutofillClient>>();
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
 
   gfx::RectF element_bounds;
   autofill::PasswordFormFillData data = CreateTestFormFillData();
 
   favicon::MockFaviconService favicon_service;
-  EXPECT_CALL(*client, GetFaviconService()).WillOnce(Return(&favicon_service));
+  EXPECT_CALL(client, GetFaviconService()).WillOnce(Return(&favicon_service));
   EXPECT_CALL(favicon_service, GetFaviconImageForPageURL(data.origin, _, _));
   password_autofill_manager_->OnAddPasswordFillData(data);
 
@@ -921,7 +1011,7 @@ TEST_F(PasswordAutofillManagerTest,
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_GENERATE_PASSWORD);
 
   EXPECT_CALL(
-      *autofill_client,
+      autofill_client,
       ShowAutofillPopup(
           element_bounds, base::i18n::RIGHT_TO_LEFT,
           AllOf(SuggestionVectorValuesAre(
@@ -940,9 +1030,9 @@ TEST_F(PasswordAutofillManagerTest, DisplayAccountSuggestionsIndicatorIcon) {
   base::test::ScopedFeatureList features;
   features.InitAndEnableFeature(features::kEnablePasswordsAccountStorage);
 
-  auto client = std::make_unique<TestPasswordManagerClient>();
-  auto autofill_client = std::make_unique<NiceMock<MockAutofillClient>>();
-  InitializePasswordAutofillManager(client.get(), autofill_client.get());
+  TestPasswordManagerClient client;
+  NiceMock<MockAutofillClient> autofill_client;
+  InitializePasswordAutofillManager(&client, &autofill_client);
 
   gfx::RectF element_bounds;
   autofill::PasswordFormFillData data;
@@ -953,7 +1043,7 @@ TEST_F(PasswordAutofillManagerTest, DisplayAccountSuggestionsIndicatorIcon) {
   password_autofill_manager_->OnAddPasswordFillData(data);
 
   std::vector<autofill::Suggestion> suggestions;
-  EXPECT_CALL(*autofill_client,
+  EXPECT_CALL(autofill_client,
               ShowAutofillPopup(element_bounds, _, _,
                                 /*autoselect_first_suggestion=*/false,
                                 PopupType::kPasswords, _))

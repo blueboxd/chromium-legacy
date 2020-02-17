@@ -17,9 +17,9 @@
 
   // Add Dom breakpoints and then test
   TestRunner.domDebuggerModel.setDOMBreakpoint(
-    rootElement, SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
+    rootElement, Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified);
   TestRunner.domDebuggerModel.setDOMBreakpoint(
-    rootElement, SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+    rootElement, Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
   TestRunner.addResult(
       'Test DOM breakpoint container with multiple breakpoints.');
 

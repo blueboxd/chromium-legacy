@@ -59,9 +59,8 @@ std::vector<CompromisedCredentials> StatementToCompromisedCredentials(
             GetColumnNumber(CompromisedCredentialsTableColumn::kCreateTime)))));
     CompromiseType compromise_type = static_cast<CompromiseType>(s->ColumnInt64(
         GetColumnNumber(CompromisedCredentialsTableColumn::kCompromiseType)));
-    results.push_back(CompromisedCredentials(std::move(signon_realm),
-                                             std::move(username), create_time,
-                                             compromise_type));
+    results.push_back({std::move(signon_realm), std::move(username),
+                       create_time, compromise_type});
   }
   return results;
 }

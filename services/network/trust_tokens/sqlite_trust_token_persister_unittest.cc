@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/extras/sqlite/sqlite_trust_token_persister.h"
+#include "services/network/trust_tokens/sqlite_trust_token_persister.h"
 
 #include <memory>
 
@@ -15,12 +15,12 @@
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sqlite_proto/key_value_data.h"
-#include "net/extras/sqlite/trust_token_database_owner.h"
+#include "services/network/trust_tokens/trust_token_database_owner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace net {
+namespace network {
 
 // This file contains tests specific to the SQLite persister. The class's basic
 // functionality is also covered by the parameterized test
@@ -84,4 +84,4 @@ TEST(SQLiteTrustTokenPersister, PutReinitializeAndGet) {
   base::DeleteFile(temp_path, false);
 }
 
-}  // namespace net
+}  // namespace network

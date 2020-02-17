@@ -20,7 +20,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/post_task.h"
 #include "ios/chrome/browser/chrome_paths.h"
-#include "ios/chrome/browser/crash_report/crash_report_flags.h"
 #import "ios/chrome/browser/crash_report/crash_report_user_application_state.h"
 #import "ios/chrome/browser/crash_report/main_thread_freeze_detector.h"
 
@@ -183,11 +182,8 @@ void SetUserEnabledUploading(bool uploading_enabled) {
 }
 
 void SetUploadingEnabled(bool enabled) {
-  if (enabled &&
-      [UIApplication sharedApplication].applicationState ==
-          UIApplicationStateInactive &&
-      !base::FeatureList::IsEnabled(
-          crash_report::kBreakpadNoDelayInitialUpload)) {
+  if (enabled && [UIApplication sharedApplication].applicationState ==
+                     UIApplicationStateInactive) {
     return;
   }
   if ([MainThreadFreezeDetector sharedInstance].canUploadBreakpadCrashReports) {

@@ -324,9 +324,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature) override;
   bool IsFeatureEnabled(blink::mojom::FeaturePolicyFeature feature,
                         blink::PolicyValue threshold_value) override;
-  bool IsFeatureEnabled(blink::mojom::DocumentPolicyFeature feature) override;
-  bool IsFeatureEnabled(blink::mojom::DocumentPolicyFeature feature,
-                        blink::PolicyValue threshold_value) override;
   void ViewSource() override;
   mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>
   PauseSubresourceLoading() override;

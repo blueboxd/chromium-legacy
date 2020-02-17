@@ -92,8 +92,8 @@ class ResourceMultiBufferDataProviderTest : public testing::Test {
     url_data_->set_etag(kEtag);
     DCHECK(url_data_);
     url_data_->OnRedirect(
-        base::Bind(&ResourceMultiBufferDataProviderTest::RedirectCallback,
-                   base::Unretained(this)));
+        base::BindOnce(&ResourceMultiBufferDataProviderTest::RedirectCallback,
+                       base::Unretained(this)));
 
     first_position_ = first_position;
 

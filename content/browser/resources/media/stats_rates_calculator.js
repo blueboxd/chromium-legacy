@@ -285,7 +285,12 @@ class CodecCalculator {
     // If mimeType is 'video/VP8' then codec is 'VP8'.
     const codec =
         codecStats.mimeType.substr(codecStats.mimeType.indexOf('/') + 1);
-    return codec + ' (payloadType: ' + codecStats.payloadType + ')';
+
+    let fmtpLine = '';
+    if (codecStats.sdpFmtpLine) {
+      fmtpLine = ', ' + codecStats.sdpFmtpLine;
+    }
+    return codec + ' (' + codecStats.payloadType + fmtpLine + ')';
   }
 }
 

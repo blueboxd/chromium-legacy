@@ -385,9 +385,9 @@ TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
 TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnRemoveLogin) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
-  CompromisedCredentials compromised_credentials(
+  CompromisedCredentials compromised_credentials = {
       kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
-      base::Time::FromTimeT(1), CompromiseType::kLeaked);
+      base::Time::FromTimeT(1), CompromiseType::kLeaked};
 
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
@@ -428,9 +428,9 @@ TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnRemoveLogin) {
 TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnLoginUpdated) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
-  CompromisedCredentials compromised_credentials(
+  CompromisedCredentials compromised_credentials = {
       kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
-      base::Time::FromTimeT(1), CompromiseType::kLeaked);
+      base::Time::FromTimeT(1), CompromiseType::kLeaked};
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
@@ -470,9 +470,9 @@ TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnLoginUpdated) {
 TEST_F(PasswordStoreTest, CompromisedCredentialsObserverOnLoginAdded) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
-  CompromisedCredentials compromised_credentials(
+  CompromisedCredentials compromised_credentials = {
       kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
-      base::Time::FromTimeT(1), CompromiseType::kLeaked);
+      base::Time::FromTimeT(1), CompromiseType::kLeaked};
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
@@ -513,9 +513,9 @@ TEST_F(PasswordStoreTest,
   feature_list.InitAndEnableFeature(features::kPasswordCheck);
   MockDatabaseCompromisedCredentialsObserver observer;
 
-  CompromisedCredentials compromised_credentials(
+  CompromisedCredentials compromised_credentials = {
       kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
-      base::Time::FromTimeT(1), CompromiseType::kLeaked);
+      base::Time::FromTimeT(1), CompromiseType::kLeaked};
 
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
@@ -540,9 +540,9 @@ TEST_F(PasswordStoreTest,
   feature_list.InitAndEnableFeature(features::kPasswordCheck);
   MockDatabaseCompromisedCredentialsObserver observer;
 
-  CompromisedCredentials compromised_credentials(
+  CompromisedCredentials compromised_credentials = {
       kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
-      base::Time::FromTimeT(1), CompromiseType::kLeaked);
+      base::Time::FromTimeT(1), CompromiseType::kLeaked};
 
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
@@ -574,9 +574,9 @@ TEST_F(PasswordStoreTest,
   feature_list.InitAndEnableFeature(features::kPasswordCheck);
   MockDatabaseCompromisedCredentialsObserver observer;
 
-  CompromisedCredentials compromised_credentials(
+  CompromisedCredentials compromised_credentials = {
       kTestWebRealm1, base::ASCIIToUTF16("username_value_1"),
-      base::Time::FromTimeT(1), CompromiseType::kLeaked);
+      base::Time::FromTimeT(1), CompromiseType::kLeaked};
 
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
@@ -1484,12 +1484,12 @@ TEST_F(PasswordStoreTest, ReportMetricsForNonSyncPassword) {
 TEST_F(PasswordStoreTest, GetAllCompromisedCredentials) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
-  CompromisedCredentials compromised_credentials(
+  CompromisedCredentials compromised_credentials = {
       "https://example.com/", base::ASCIIToUTF16("username"),
-      base::Time::FromTimeT(1), CompromiseType::kLeaked);
-  CompromisedCredentials compromised_credentials2(
+      base::Time::FromTimeT(1), CompromiseType::kLeaked};
+  CompromisedCredentials compromised_credentials2 = {
       "https://2.example.com/", base::ASCIIToUTF16("username2"),
-      base::Time::FromTimeT(2), CompromiseType::kLeaked);
+      base::Time::FromTimeT(2), CompromiseType::kLeaked};
 
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
@@ -1518,15 +1518,15 @@ TEST_F(PasswordStoreTest, GetAllCompromisedCredentials) {
 TEST_F(PasswordStoreTest, RemoveCompromisedCredentialsCreatedBetween) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(password_manager::features::kPasswordCheck);
-  CompromisedCredentials compromised_credentials1(
+  CompromisedCredentials compromised_credentials1 = {
       "https://example1.com/", base::ASCIIToUTF16("username1"),
-      base::Time::FromTimeT(100), CompromiseType::kLeaked);
-  CompromisedCredentials compromised_credentials2(
+      base::Time::FromTimeT(100), CompromiseType::kLeaked};
+  CompromisedCredentials compromised_credentials2 = {
       "https://2.example.com/", base::ASCIIToUTF16("username2"),
-      base::Time::FromTimeT(200), CompromiseType::kLeaked);
-  CompromisedCredentials compromised_credentials3(
+      base::Time::FromTimeT(200), CompromiseType::kLeaked};
+  CompromisedCredentials compromised_credentials3 = {
       "https://example3.com/", base::ASCIIToUTF16("username3"),
-      base::Time::FromTimeT(300), CompromiseType::kLeaked);
+      base::Time::FromTimeT(300), CompromiseType::kLeaked};
 
   scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);

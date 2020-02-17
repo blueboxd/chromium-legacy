@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pipeline.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_blend_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_color_state_descriptor.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_depth_stencil_state_descriptor.h"

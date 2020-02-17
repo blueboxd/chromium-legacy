@@ -180,18 +180,4 @@ TEST_F(ExtensionInfoTest, FromWebstoreFlag) {
   EXPECT_TRUE(info.extensions(1).from_webstore());
 }
 
-TEST_F(ExtensionInfoTest, AppLaunchURLTest) {
-  auto extension1 =
-      BuildExtension(kId, extensions::Manifest::UNPACKED, /*is_app=*/false);
-  auto extension2 =
-      BuildExtension(kId2, extensions::Manifest::UNPACKED, /*is_app=*/true);
-
-  em::ChromeUserProfileInfo info;
-  AppendExtensionInfoIntoProfileReport(profile(), &info);
-
-  EXPECT_EQ(2, info.extensions_size());
-  EXPECT_FALSE(info.extensions(0).has_app_launch_url());
-  EXPECT_EQ(kAppLaunchUrl, info.extensions(1).app_launch_url());
-}
-
 }  // namespace enterprise_reporting

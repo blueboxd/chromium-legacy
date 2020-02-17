@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/util/type_safety/strong_alias.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/credentials_filter.h"
@@ -44,6 +45,7 @@ namespace signin {
 class IdentityManager;
 }  // namespace signin
 
+struct CoreAccountId;
 class GURL;
 
 #if defined(ON_FOCUS_PING_ENABLED)
@@ -78,6 +80,7 @@ class PasswordManagerClient {
  public:
   using CredentialsCallback =
       base::Callback<void(const autofill::PasswordForm*)>;
+  using ReauthSucceeded = util::StrongAlias<class ReauthSucceededTag, bool>;
 
   PasswordManagerClient() {}
   virtual ~PasswordManagerClient() {}
@@ -230,6 +233,12 @@ class PasswordManagerClient {
   // Informs the embedder that user credentials were leaked.
   virtual void NotifyUserCredentialsWereLeaked(CredentialLeakType leak_type,
                                                const GURL& origin);
+
+  // Requests a reauth for the given |account_id| and triggers the
+  // |reauth_callback| with ReauthSucceeded(true) if reauthentication succeeded.
+  virtual void TriggerReauthForAccount(
+      const CoreAccountId& account_id,
+      base::OnceCallback<void(ReauthSucceeded)> reauth_callback);
 
   // Gets prefs associated with this embedder.
   virtual PrefService* GetPrefs() const = 0;

@@ -278,6 +278,10 @@ jumbo_component("network_service") {
     deps += [ "//sandbox/win:sandbox" ]
   }
 
+  if (!is_ios) {
+    deps += [ "//services/network/trust_tokens" ]
+  }
+
   defines = [ "IS_NETWORK_SERVICE_IMPL" ]
 
   if (trial_comparison_cert_verifier_supported) {
@@ -416,7 +420,10 @@ source_set("tests") {
   }
 
   if (!is_ios) {
-    deps += [ "//services/proxy_resolver:lib" ]
+    deps += [
+      "//services/network/trust_tokens:tests",
+      "//services/proxy_resolver:lib",
+    ]
   }
 }
 

@@ -206,7 +206,7 @@ TEST_P(SnapshotAuraTest, MAYBE_FullScreenWindow) {
   // TODO(https://crbug.com/1002716): Fix this test to run in < action_timeout()
   // on the Linux Debug & TSAN bots.
   const base::test::ScopedRunLoopTimeout increased_run_timeout(
-      TestTimeouts::action_max_timeout());
+      FROM_HERE, TestTimeouts::action_max_timeout());
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_WIN)

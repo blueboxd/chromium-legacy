@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_paging.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
+#import "ios/chrome/browser/ui/tab_grid/transitions/tab_grid_transition_handler.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
@@ -51,7 +52,10 @@
 // controller will present this.
 @property(nonatomic, strong) BVCContainerViewController* bvcContainer;
 // Transitioning delegate for the view controller.
-@property(nonatomic, strong) LegacyTabGridTransitionHandler* transitionHandler;
+@property(nonatomic, strong)
+    LegacyTabGridTransitionHandler* legacyTransitionHandler;
+// Handler for the transitions between the TabGrid and the Browser.
+@property(nonatomic, strong) TabGridTransitionHandler* transitionHandler;
 // Mediator for regular Tabs.
 @property(nonatomic, strong) TabGridMediator* regularTabsMediator;
 // Mediator for incognito Tabs.
@@ -144,10 +148,10 @@
       [[TabGridViewController alloc] init];
   baseViewController.dispatcher =
       static_cast<id<ApplicationCommands>>(self.dispatcher);
-  self.transitionHandler = [[LegacyTabGridTransitionHandler alloc] init];
-  self.transitionHandler.provider = baseViewController;
+  self.legacyTransitionHandler = [[LegacyTabGridTransitionHandler alloc] init];
+  self.legacyTransitionHandler.provider = baseViewController;
   baseViewController.modalPresentationStyle = UIModalPresentationCustom;
-  baseViewController.transitioningDelegate = self.transitionHandler;
+  baseViewController.transitioningDelegate = self.legacyTransitionHandler;
   baseViewController.tabPresentationDelegate = self;
   _baseViewController = baseViewController;
 
@@ -285,18 +289,20 @@
   if (self.bvcContainer) {
     if (base::FeatureList::IsEnabled(kContainedBVC)) {
       [self.baseViewController contentWillAppearAnimated:NO];
-      [self.bvcContainer willMoveToParentViewController:nil];
       self.baseViewController.childViewControllerForStatusBarStyle = nil;
 
-      // TODO(crbug.com/1038034): This should be part of the animation block.
-      [self.baseViewController setNeedsStatusBarAppearanceUpdate];
+      self.transitionHandler = [[TabGridTransitionHandler alloc]
+          initWithLayoutProvider:self.baseViewController];
+      [self.transitionHandler
+          transitionFromBrowser:self.bvcContainer
+                      toTabGrid:self.baseViewController
+                 withCompletion:^{
+                   self.bvcContainer = nil;
+                   [self.baseViewController contentDidAppear];
+                 }];
 
-      [self.bvcContainer.view removeFromSuperview];
-      [self.bvcContainer removeFromParentViewController];
-      self.bvcContainer = nil;
-      [self.baseViewController contentDidAppear];
     } else {
-      self.bvcContainer.transitioningDelegate = self.transitionHandler;
+      self.bvcContainer.transitioningDelegate = self.legacyTransitionHandler;
       self.bvcContainer = nil;
       BOOL animated = !self.animationsDisabledForTesting;
       [self.baseViewController dismissViewControllerAnimated:animated
@@ -328,7 +334,7 @@
   self.bvcContainer = [[BVCContainerViewController alloc] init];
   self.bvcContainer.modalPresentationStyle = UIModalPresentationFullScreen;
   self.bvcContainer.currentBVC = viewController;
-  self.bvcContainer.transitioningDelegate = self.transitionHandler;
+  self.bvcContainer.transitioningDelegate = self.legacyTransitionHandler;
   BOOL animated = !self.animationsDisabledForTesting;
   // Never animate if the launch mask is in place.
   if (self.launchMaskView)
@@ -349,18 +355,17 @@
   };
 
   if (base::FeatureList::IsEnabled(kContainedBVC)) {
-    [self.baseViewController addChildViewController:self.bvcContainer];
     self.baseViewController.childViewControllerForStatusBarStyle =
         self.bvcContainer.currentBVC;
 
-    self.bvcContainer.view.frame = self.baseViewController.view.bounds;
-    [self.baseViewController.view addSubview:self.bvcContainer.view];
+    self.transitionHandler = [[TabGridTransitionHandler alloc]
+        initWithLayoutProvider:self.baseViewController];
+    [self.transitionHandler transitionFromTabGrid:self.baseViewController
+                                        toBrowser:self.bvcContainer
+                                   withCompletion:^{
+                                     extendedCompletion();
+                                   }];
 
-    // TODO(crbug.com/1038034): This should be part of the animation block.
-    [self.baseViewController setNeedsStatusBarAppearanceUpdate];
-
-    [self.bvcContainer didMoveToParentViewController:self.baseViewController];
-    extendedCompletion();
   } else {
     [self.baseViewController presentViewController:self.bvcContainer
                                           animated:animated

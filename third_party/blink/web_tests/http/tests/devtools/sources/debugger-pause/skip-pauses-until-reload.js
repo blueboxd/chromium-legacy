@@ -36,11 +36,11 @@
     testRunner.logToStderr('didResolveNode');
     TestRunner.addResult('Set up DOM breakpoints.');
     TestRunner.domDebuggerModel.setDOMBreakpoint(
-        node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
+        node, Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified);
     TestRunner.domDebuggerModel.setDOMBreakpoint(
-        node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.AttributeModified);
+        node, Protocol.DOMDebugger.DOMBreakpointType.AttributeModified);
     TestRunner.domDebuggerModel.setDOMBreakpoint(
-        node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.NodeRemoved);
+        node, Protocol.DOMDebugger.DOMBreakpointType.NodeRemoved);
     setUpEventBreakpoints();
   }
 

@@ -561,6 +561,7 @@
                      completionHandler:(void (^)(BOOL))completion {
   self.repostFormCoordinator = [[RepostFormCoordinator alloc]
       initWithBaseViewController:self.viewController
+                         browser:self.browser
                   dialogLocation:location
                         webState:webState
                completionHandler:completion];

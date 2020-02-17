@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/extras/sqlite/trust_token_database_owner.h"
+#include "services/network/trust_tokens/trust_token_database_owner.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace net {
+namespace network {
 
 TEST(TrustTokenDatabaseOwner, Initializes) {
   base::test::TaskEnvironment env;
@@ -68,4 +68,4 @@ TEST(TrustTokenDatabaseOwner, StillInitializesOnDbOpenFailure) {
   env.RunUntilIdle();
 }
 
-}  // namespace net
+}  // namespace network

@@ -445,6 +445,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)[crostini::prefs::kCrostiniContainers] =
       settings_api::PrefType::PREF_TYPE_LIST;
+  (*s_whitelist)[crostini::prefs::kCrostiniPortForwarding] =
+      settings_api::PrefType::PREF_TYPE_LIST;
   (*s_whitelist)[guest_os::prefs::kGuestOSPathsSharedToVms] =
       settings_api::PrefType::PREF_TYPE_DICTIONARY;
 

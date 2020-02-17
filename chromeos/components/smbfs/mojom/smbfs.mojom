@@ -97,4 +97,8 @@ struct MountOptions {
 
   // Allow NTLM authentication.
   bool allow_ntlm = false;
+
+  // Skip attempting to connect to the share, and instead unconditionally mount
+  // the share.
+  bool skip_connect = false;
 };

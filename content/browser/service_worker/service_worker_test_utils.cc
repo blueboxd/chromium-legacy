@@ -388,7 +388,7 @@ CreateProviderHostForServiceWorkerContext(
       blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
   auto host = std::make_unique<ServiceWorkerProviderHost>(
       provider_info->host_remote.InitWithNewEndpointAndPassReceiver(),
-      base::WrapRefCounted(hosted_version), std::move(context));
+      hosted_version, std::move(context));
 
   host->CompleteStartWorkerPreparation(
       process_id,

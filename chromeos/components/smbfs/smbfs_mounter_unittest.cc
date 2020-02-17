@@ -289,6 +289,7 @@ TEST_F(SmbFsMounterTest, MountOptions) {
                                      options->password->length));
         EXPECT_EQ(password_buf, kPassword);
         EXPECT_TRUE(options->allow_ntlm);
+        EXPECT_FALSE(options->skip_connect);
 
         delegate_remote = std::move(delegate);
         std::move(callback).Run(mojom::MountError::kOk,
@@ -300,6 +301,49 @@ TEST_F(SmbFsMounterTest, MountOptions) {
   mount_options.workgroup = kWorkgroup;
   mount_options.password = kPassword;
   mount_options.allow_ntlm = true;
+  std::unique_ptr<SmbFsMounter> mounter = std::make_unique<TestSmbFsMounter>(
+      kSharePath, mount_options, &mock_delegate_, base::FilePath(kMountPath),
+      chromeos::MOUNT_ERROR_NONE,
+      mojo::Remote<mojom::SmbFsBootstrap>(
+          bootstrap_receiver.BindNewPipeAndPassRemote()));
+  mounter->Mount(callback);
+
+  run_loop.Run();
+}
+
+TEST_F(SmbFsMounterTest, MountOptions_SkipConnect) {
+  base::RunLoop run_loop;
+  auto callback =
+      base::BindLambdaForTesting([&run_loop](mojom::MountError mount_error,
+                                             std::unique_ptr<SmbFsHost> host) {
+        EXPECT_EQ(mount_error, mojom::MountError::kOk);
+        ASSERT_TRUE(host);
+        EXPECT_EQ(host->mount_path(), base::FilePath(kMountPath));
+        run_loop.Quit();
+      });
+
+  // Dummy Mojo bindings to satisfy lifetimes.
+  mojo::PendingRemote<mojom::SmbFsDelegate> delegate_remote;
+  TestSmbFsImpl mock_smbfs;
+  mojo::Receiver<mojom::SmbFs> smbfs_receiver(&mock_smbfs);
+
+  TestSmbFsBootstrapImpl mock_bootstrap;
+  mojo::Receiver<mojom::SmbFsBootstrap> bootstrap_receiver(&mock_bootstrap);
+  EXPECT_CALL(mock_bootstrap, MountShare(_, _, _))
+      .WillOnce([&delegate_remote, &smbfs_receiver](
+                    mojom::MountOptionsPtr options,
+                    mojo::PendingRemote<mojom::SmbFsDelegate> delegate,
+                    mojom::SmbFsBootstrap::MountShareCallback callback) {
+        EXPECT_EQ(options->share_path, kSharePath);
+        EXPECT_TRUE(options->skip_connect);
+
+        delegate_remote = std::move(delegate);
+        std::move(callback).Run(mojom::MountError::kOk,
+                                smbfs_receiver.BindNewPipeAndPassRemote());
+      });
+
+  SmbFsMounter::MountOptions mount_options;
+  mount_options.skip_connect = true;
   std::unique_ptr<SmbFsMounter> mounter = std::make_unique<TestSmbFsMounter>(
       kSharePath, mount_options, &mock_delegate_, base::FilePath(kMountPath),
       chromeos::MOUNT_ERROR_NONE,

@@ -346,6 +346,10 @@ class NATIVE_THEME_EXPORT NativeTheme {
     kColorId_ProminentButtonInkDropShadowColor,
     kColorId_ProminentButtonInkDropFillColor,
     kColorId_TextOnProminentButtonColor,
+    // ToggleButton
+    kColorId_ToggleButtonShadowColor,
+    kColorId_ToggleButtonTrackColorOff,
+    kColorId_ToggleButtonTrackColorOn,
     // MenuItem
     kColorId_EnabledMenuItemForegroundColor,
     kColorId_DisabledMenuItemForegroundColor,

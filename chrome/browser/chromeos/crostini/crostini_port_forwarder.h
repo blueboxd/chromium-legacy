@@ -81,6 +81,18 @@ class CrostiniPortForwarder : public KeyedService {
                   const Protocol& protocol_type,
                   ResultCallback result_callback);
 
+  // TODO(matterchen): For the two following methods, implement callback
+  // results.
+
+  // Deactivate all ports belong to the container_id and remove them from the
+  // preferences.
+  void RemoveAllPorts(const ContainerId& container_id);
+
+  // Deactivate all active ports belonging to the container_id and set their
+  // preference to inactive such that these ports will not be automatically
+  // re-forwarded on re-startup. This is called on container shutdown.
+  void DeactivateAllActivePorts(const ContainerId& container_id);
+
   size_t GetNumberOfForwardedPortsForTesting();
   base::Optional<base::Value> ReadPortPreferenceForTesting(
       const PortRuleKey& key);
@@ -95,7 +107,9 @@ class CrostiniPortForwarder : public KeyedService {
                            TryActivatePortPermissionBrokerClientFail);
 
   bool MatchPortRuleDict(const base::Value& dict, const PortRuleKey& key);
-  void SetPortPreferenceActiveState(const PortRuleKey& key, bool active);
+  bool SetPortPreferenceActiveState(const PortRuleKey& key, bool active);
+  bool MatchPortRuleContainerId(const base::Value& dict,
+                                const ContainerId& container_id);
   void AddNewPortPreference(const PortRuleKey& key, const std::string& label);
   bool RemovePortPreference(const PortRuleKey& key);
   base::Optional<base::Value> ReadPortPreference(const PortRuleKey& key);

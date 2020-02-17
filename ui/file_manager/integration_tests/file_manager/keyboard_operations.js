@@ -131,7 +131,7 @@ async function keyboardDeleteFolder(path, treeItem) {
       await setupAndWaitUntilReady(path, [ENTRIES.photos], [ENTRIES.photos]);
 
   // Expand the directory tree |treeItem|.
-  await expandRoot(appId, treeItem);
+  await expandTreeItem(appId, treeItem);
 
   // Check: the folder should be shown in the directory tree.
   await waitForDirectoryTreeItem(appId, 'photos');
@@ -198,7 +198,7 @@ async function testRenameFolder(path, treeItem) {
       await setupAndWaitUntilReady(path, [ENTRIES.photos], [ENTRIES.photos]);
 
   // Expand the directory tree |treeItem|.
-  await expandRoot(appId, treeItem);
+  await expandTreeItem(appId, treeItem);
 
   // Check: the photos folder should be shown in the directory tree.
   await waitForDirectoryTreeItem(appId, 'photos');

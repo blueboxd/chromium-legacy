@@ -190,10 +190,6 @@ class CORE_EXPORT HTMLSelectElement final
 
  private:
   const AtomicString& FormControlType() const override;
-  // Update style on style or selected OPTION change, and return text to be
-  // shown.
-  String UpdateFromElement();
-  void UpdateMenuListLabel(const String& label);
 
   bool MayTriggerVirtualKeyboard() const override;
 
@@ -259,7 +255,6 @@ class CORE_EXPORT HTMLSelectElement final
   void ParseMultipleAttribute(const AtomicString&);
   HTMLOptionElement* LastSelectedOption() const;
   void UpdateSelectedState(HTMLOptionElement*, bool multi, bool shift);
-  void DidUpdateMenuListActiveOption(HTMLOptionElement*);
   void MenuListDefaultEventHandler(Event&);
   void HandlePopupOpenKeyboardEvent(Event&);
   bool ShouldOpenPopupForKeyDownEvent(const KeyboardEvent&);
@@ -325,9 +320,7 @@ class CORE_EXPORT HTMLSelectElement final
   Member<HTMLOptionElement> option_to_scroll_to_;
   Member<HTMLOptionElement> suggested_option_;
   scoped_refptr<const ComputedStyle> option_style_;
-  int ax_menulist_last_active_index_ = -1;
   bool uses_menu_list_ = true;
-  bool has_updated_menulist_active_option_ = false;
   bool is_multiple_;
   bool is_in_non_contiguous_selection_;
   bool active_selection_state_;

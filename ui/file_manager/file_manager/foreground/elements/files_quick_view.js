@@ -182,6 +182,10 @@ const FilesQuickView = Polymer({
     // Set focus back to innerContent panel so that pressing space key next
     // closes Quick View.
     this.$.innerContentPanel.focus();
+
+    if (this.hasAttribute('files-ng')) {
+      this.metadataBoxActive = !this.metadataBoxActive;
+    }
   },
 
   /**

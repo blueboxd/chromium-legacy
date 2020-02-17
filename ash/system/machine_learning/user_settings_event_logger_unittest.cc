@@ -82,6 +82,12 @@ class UserSettingsEventLoggerTest : public AshTestBase {
         ukm::builders::UserSettingsEvent::kEntryName);
   }
 
+  // Brightness features are logged at the end of the timer delay.
+  void LogBrightnessAndWait(int previous_level, int current_level) {
+    logger_->LogBrightnessUkmEvent(previous_level, current_level);
+    task_environment_->FastForwardBy(kBrightnessDelay);
+  }
+
   UserSettingsEventLogger* logger_;
 
  private:
@@ -272,20 +278,20 @@ TEST_F(UserSettingsEventLoggerTest, TestLogVolumeEvent) {
   TestUkmRecorder::ExpectEntryMetric(entries[2], "IsPlayingAudio", false);
 }
 
-TEST_F(UserSettingsEventLoggerTest, TestLogBrightnessEvent) {
-  logger_->LogBrightnessUkmEvent(12, 29);
+TEST_F(UserSettingsEventLoggerTest, TestBrightnessFeatures) {
+  LogBrightnessAndWait(12, 29);
 
   // Enter fullscreen.
   logger_->OnFullscreenStateChanged(true, nullptr);
-  logger_->LogBrightnessUkmEvent(0, 0);
+  LogBrightnessAndWait(0, 0);
 
   // Exit fullscreen. |is_recently_fullscreen| should remain true for 5 minutes,
   // with 1 second given for leeway on either side.
   logger_->OnFullscreenStateChanged(false, nullptr);
-  FastForwardBySeconds(299);
-  logger_->LogBrightnessUkmEvent(0, 0);
+  FastForwardBySeconds(299 - kBrightnessDelay.InSeconds());
+  LogBrightnessAndWait(0, 0);
   FastForwardBySeconds(2);
-  logger_->LogBrightnessUkmEvent(0, 0);
+  LogBrightnessAndWait(0, 0);
 
   const auto& entries = GetUkmEntries();
   ASSERT_EQ(4ul, entries.size());
@@ -304,6 +310,29 @@ TEST_F(UserSettingsEventLoggerTest, TestLogBrightnessEvent) {
   TestUkmRecorder::ExpectEntryMetric(entries[1], "IsRecentlyFullscreen", true);
   TestUkmRecorder::ExpectEntryMetric(entries[2], "IsRecentlyFullscreen", true);
   TestUkmRecorder::ExpectEntryMetric(entries[3], "IsRecentlyFullscreen", false);
+}
+
+TEST_F(UserSettingsEventLoggerTest, TestBrightnessDelay) {
+  // Only log an event if there is a pause of |kBrightnessDelay|.
+  logger_->LogBrightnessUkmEvent(10, 11);
+  task_environment_->FastForwardBy(kBrightnessDelay / 2);
+  logger_->LogBrightnessUkmEvent(11, 12);
+  logger_->LogBrightnessUkmEvent(12, 13);
+  logger_->LogBrightnessUkmEvent(13, 14);
+  task_environment_->FastForwardBy(kBrightnessDelay / 2);
+  logger_->LogBrightnessUkmEvent(14, 15);
+  task_environment_->FastForwardBy(kBrightnessDelay);
+
+  const auto& entries = GetUkmEntries();
+  ASSERT_EQ(1ul, entries.size());
+
+  const auto* entry = entries[0];
+  TestUkmRecorder::ExpectEntryMetric(entry, "SettingId",
+                                     UserSettingsEvent::Event::BRIGHTNESS);
+  TestUkmRecorder::ExpectEntryMetric(entry, "SettingType",
+                                     UserSettingsEvent::Event::QUICK_SETTINGS);
+  TestUkmRecorder::ExpectEntryMetric(entry, "PreviousValue", 10);
+  TestUkmRecorder::ExpectEntryMetric(entry, "CurrentValue", 15);
 }
 
 }  // namespace ml

@@ -23,6 +23,13 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
                 const NGPhysicalBoxFragment& physical_fragment)
       : NGFragment(writing_mode, physical_fragment), direction_(direction) {}
 
+  base::Optional<LayoutUnit> FirstBaseline() const {
+    if (GetWritingMode() != physical_fragment_.Style().GetWritingMode())
+      return base::nullopt;
+
+    return To<NGPhysicalBoxFragment>(physical_fragment_).Baseline();
+  }
+
   // Returns the baseline for this fragment wrt. the parent writing mode. Will
   // return a null baseline if:
   //  - The fragment has no baseline.
@@ -30,6 +37,10 @@ class CORE_EXPORT NGBoxFragment final : public NGFragment {
   base::Optional<LayoutUnit> Baseline() const {
     if (GetWritingMode() != physical_fragment_.Style().GetWritingMode())
       return base::nullopt;
+
+    if (auto last_baseline =
+            To<NGPhysicalBoxFragment>(physical_fragment_).LastBaseline())
+      return last_baseline;
 
     return To<NGPhysicalBoxFragment>(physical_fragment_).Baseline();
   }

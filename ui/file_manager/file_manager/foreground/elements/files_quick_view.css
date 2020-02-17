@@ -68,6 +68,10 @@ cr-button:focus:not(:active) {
   width: 100%;
 }
 
+:host([files-ng]) #mainPanel {
+  top: 56px;
+}
+
 #contentPanel {
   background-color: transparent;
   display: flex;
@@ -133,6 +137,14 @@ cr-button:focus:not(:active) {
   opacity: 0.9;
   padding: 0;
   z-index: 1;
+}
+
+:host([files-ng]) #toolbar {
+  color: var(--google-grey-200);
+  font-family: 'Roboto Medium';
+  font-size: 14px;
+  height: 56px;
+  opacity: 1;
 }
 
 #file-path {

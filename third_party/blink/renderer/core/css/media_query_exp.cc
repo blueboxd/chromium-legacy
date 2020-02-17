@@ -258,28 +258,25 @@ MediaQueryExp::MediaQueryExp(const String& media_feature,
     : media_feature_(media_feature), exp_value_(exp_value) {}
 
 MediaQueryExp MediaQueryExp::Create(const String& media_feature,
-                                    CSSParserTokenRange& range) {
+                                    CSSParserTokenRange& range,
+                                    const CSSParserContext& context) {
   DCHECK(!media_feature.IsNull());
 
   MediaQueryExpValue exp_value;
   String lower_media_feature =
       AttemptStaticStringCreation(media_feature.LowerASCII());
 
-  // TODO(crbug.com/1047784): This is a fake CSSParserContext that only passes
-  // down the CSSParserMode. Plumb the real CSSParserContext through, so that
-  // web features can be counted correctly.
-  const CSSParserContext* fake_context = MakeGarbageCollected<CSSParserContext>(
-      kHTMLStandardMode, SecureContextMode::kInsecureContext);
+  CSSParserContext::ParserModeOverridingScope scope(context, kHTMLStandardMode);
 
   CSSPrimitiveValue* value =
-      css_property_parser_helpers::ConsumeInteger(range, *fake_context, 0);
+      css_property_parser_helpers::ConsumeInteger(range, context, 0);
   if (!value && !FeatureExpectingPositiveInteger(lower_media_feature) &&
       !FeatureWithAspectRatio(lower_media_feature)) {
-    value = css_property_parser_helpers::ConsumeNumber(range, *fake_context,
+    value = css_property_parser_helpers::ConsumeNumber(range, context,
                                                        kValueRangeNonNegative);
   }
   if (!value) {
-    value = css_property_parser_helpers::ConsumeLength(range, *fake_context,
+    value = css_property_parser_helpers::ConsumeLength(range, context,
                                                        kValueRangeNonNegative);
   }
   if (!value)
@@ -310,8 +307,7 @@ MediaQueryExp MediaQueryExp::Create(const String& media_feature,
     if (!css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range))
       return Invalid();
     CSSPrimitiveValue* denominator =
-        css_property_parser_helpers::ConsumePositiveInteger(range,
-                                                            *fake_context);
+        css_property_parser_helpers::ConsumePositiveInteger(range, context);
     if (!denominator)
       return Invalid();
 

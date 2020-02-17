@@ -51,7 +51,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost {
   ServiceWorkerProviderHost(
       mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
           host_receiver,
-      scoped_refptr<ServiceWorkerVersion> running_hosted_version,
+      ServiceWorkerVersion* running_hosted_version,
       base::WeakPtr<ServiceWorkerContextCore> context);
   ~ServiceWorkerProviderHost();
 
@@ -85,8 +85,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost {
   int worker_process_id_ = ChildProcessHost::kInvalidUniqueID;
 
   // The instance of service worker this provider hosts.
-  // TODO(https://crbug.com/931087): Change this to a rawptr.
-  const scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
+  // Raw pointer is safe because the version owns |this|.
+  ServiceWorkerVersion* const running_hosted_version_;
 
   BrowserInterfaceBrokerImpl<ServiceWorkerProviderHost,
                              const ServiceWorkerVersionInfo&>

@@ -19,6 +19,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/ui/echo_dialog_view.h"
+#include "chrome/browser/extensions/chrome_extension_function_details.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -142,21 +143,23 @@ EchoPrivateGetOobeTimestampFunction::EchoPrivateGetOobeTimestampFunction() {
 EchoPrivateGetOobeTimestampFunction::~EchoPrivateGetOobeTimestampFunction() {
 }
 
-bool EchoPrivateGetOobeTimestampFunction::RunAsync() {
+ExtensionFunction::ResponseAction EchoPrivateGetOobeTimestampFunction::Run() {
   base::PostTaskAndReplyWithResult(
       extensions::GetExtensionFileTaskRunner().get(), FROM_HERE,
       base::BindOnce(
           &EchoPrivateGetOobeTimestampFunction::GetOobeTimestampOnFileSequence,
           this),
-      base::BindOnce(&EchoPrivateGetOobeTimestampFunction::SendResponse, this));
-  return true;
+      base::BindOnce(&EchoPrivateGetOobeTimestampFunction::RespondWithResult,
+                     this));
+  return RespondLater();
 }
 
 // Get the OOBE timestamp from file /home/chronos/.oobe_completed.
 // The timestamp is used to determine when the user first activates the device.
 // If we can get the timestamp info, return it as yyyy-mm-dd, otherwise, return
 // an empty string.
-bool EchoPrivateGetOobeTimestampFunction::GetOobeTimestampOnFileSequence() {
+std::unique_ptr<base::Value>
+EchoPrivateGetOobeTimestampFunction::GetOobeTimestampOnFileSequence() {
   DCHECK(
       extensions::GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
 
@@ -171,8 +174,12 @@ bool EchoPrivateGetOobeTimestampFunction::GetOobeTimestampOnFileSequence() {
                                     ctime.month,
                                     ctime.day_of_month);
   }
-  SetResult(std::make_unique<base::Value>(timestamp));
-  return true;
+  return std::make_unique<base::Value>(timestamp);
+}
+
+void EchoPrivateGetOobeTimestampFunction::RespondWithResult(
+    std::unique_ptr<base::Value> result) {
+  Respond(OneArgument(std::move(result)));
 }
 
 EchoPrivateGetUserConsentFunction::EchoPrivateGetUserConsentFunction()
@@ -191,9 +198,9 @@ EchoPrivateGetUserConsentFunction::CreateForTest(
 
 EchoPrivateGetUserConsentFunction::~EchoPrivateGetUserConsentFunction() {}
 
-bool EchoPrivateGetUserConsentFunction::RunAsync() {
+ExtensionFunction::ResponseAction EchoPrivateGetUserConsentFunction::Run() {
   CheckRedeemOffersAllowed();
-  return true;
+  return RespondLater();
 }
 
 void EchoPrivateGetUserConsentFunction::OnAccept() {
@@ -205,7 +212,8 @@ void EchoPrivateGetUserConsentFunction::OnCancel() {
 }
 
 void EchoPrivateGetUserConsentFunction::OnMoreInfoLinkClicked() {
-  NavigateParams params(GetProfile(), GURL(kMoreInfoLink),
+  ChromeExtensionFunctionDetails details(this);
+  NavigateParams params(details.GetProfile(), GURL(kMoreInfoLink),
                         ui::PAGE_TRANSITION_LINK);
   // Open the link in a new window. The echo dialog is modal, so the current
   // window is useless until the dialog is closed.
@@ -238,8 +246,7 @@ void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(
   // Verify that the passed origin URL is valid.
   GURL service_origin = GURL(params->consent_requester.origin);
   if (!service_origin.is_valid()) {
-    error_ = "Invalid origin.";
-    SendResponse(false);
+    Respond(Error("Invalid origin."));
     return;
   }
 
@@ -249,8 +256,7 @@ void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(
 
     if (!web_contents || extensions::GetViewType(web_contents) !=
                              extensions::VIEW_TYPE_APP_WINDOW) {
-      error_ = "Not called from an app window - the tabId is required.";
-      SendResponse(false);
+      Respond(Error("Not called from an app window - the tabId is required."));
       return;
     }
   } else {
@@ -260,8 +266,7 @@ void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(
             *params->consent_requester.tab_id, browser_context(),
             false /*incognito_enabled*/, nullptr /*browser*/, &tab_strip,
             &web_contents, &tab_index)) {
-      error_ = "Tab not found.";
-      SendResponse(false);
+      Respond(Error("Tab not found."));
       return;
     }
 
@@ -269,8 +274,7 @@ void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(
     // window, so showing it for a request from an inactive tab could be
     // misleading/confusing to the user.
     if (tab_index != tab_strip->active_index()) {
-      error_ = "Consent requested from an inactive tab.";
-      SendResponse(false);
+      Respond(Error("Consent requested from an inactive tab."));
       return;
     }
   }
@@ -302,8 +306,7 @@ void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(
 void EchoPrivateGetUserConsentFunction::Finalize(bool consent) {
   // Consent should not be true if offers redeeming is disabled.
   CHECK(redeem_offers_allowed_ || !consent);
-  SetResult(std::make_unique<base::Value>(consent));
-  SendResponse(true);
+  Respond(OneArgument(std::make_unique<base::Value>(consent)));
 
   // Release the reference added in |OnRedeemOffersAllowedChecked|, before
   // showing the dialog.

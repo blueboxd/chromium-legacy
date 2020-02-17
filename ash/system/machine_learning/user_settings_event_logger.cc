@@ -186,13 +186,22 @@ void UserSettingsEventLogger::LogVolumeUkmEvent(const int previous_level,
 
 void UserSettingsEventLogger::LogBrightnessUkmEvent(const int previous_level,
                                                     const int current_level) {
+  if (!brightness_timer_.IsRunning()) {
+    previous_brightness_ = previous_level;
+  }
+  current_brightness_ = current_level;
+  brightness_timer_.Start(FROM_HERE, kBrightnessDelay, this,
+                          &UserSettingsEventLogger::OnBrightnessTimerEnded);
+}
+
+void UserSettingsEventLogger::OnBrightnessTimerEnded() {
   UserSettingsEvent settings_event;
   auto* const event = settings_event.mutable_event();
 
   event->set_setting_id(UserSettingsEvent::Event::BRIGHTNESS);
   event->set_setting_type(UserSettingsEvent::Event::QUICK_SETTINGS);
-  event->set_previous_value(previous_level);
-  event->set_current_value(current_level);
+  event->set_previous_value(previous_brightness_);
+  event->set_current_value(current_brightness_);
 
   settings_event.mutable_features()->set_is_recently_fullscreen(
       is_recently_fullscreen_);

@@ -122,11 +122,6 @@ public class ShareIntentTest {
         }
 
         @Override
-        public ChromeApplication getChromeApplication() {
-            return mActivity.getChromeApplication();
-        }
-
-        @Override
         public PackageManager getPackageManager() {
             return mActivity.getPackageManager();
         }

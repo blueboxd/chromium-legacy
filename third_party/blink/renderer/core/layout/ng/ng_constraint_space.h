@@ -76,7 +76,8 @@ enum NGPercentageStorage {
 enum class NGBaselineAlgorithmType {
   // Compute the baseline of the first line box.
   kFirstLine,
-  // Compute the baseline for when we are within an inline-block context.
+  // Compute the baseline(s) for when we are within an inline-block context. If
+  // the child is block-flow it will produce both the first, and last baselines.
   kInlineBlock
 };
 

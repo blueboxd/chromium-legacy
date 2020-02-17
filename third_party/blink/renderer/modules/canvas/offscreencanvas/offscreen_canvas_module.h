@@ -24,8 +24,8 @@ class MODULES_EXPORT OffscreenCanvasModule {
                          OffscreenCanvas&,
                          const String&,
                          const CanvasContextCreationAttributesModule*,
-                         ExceptionState&,
-                         OffscreenRenderingContext&);
+                         OffscreenRenderingContext&,
+                         ExceptionState&);
 };
 
 }  // namespace blink

@@ -183,8 +183,9 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 #endif
 
  protected:
-  friend class NGPhysicalContainerFragment;
+  friend class NGInlineLayoutStateStack;
   friend class NGLayoutResult;
+  friend class NGPhysicalContainerFragment;
 
   NGContainerFragmentBuilder(NGLayoutInputNode node,
                              scoped_refptr<const ComputedStyle> style,

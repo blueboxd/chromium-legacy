@@ -214,6 +214,7 @@ source_set("blink_headers") {
     "platform/web_input_event_result.h",
     "platform/web_insecure_request_policy.h",
     "platform/web_intrinsic_sizing_info.h",
+    "platform/web_isolate.h",
     "platform/web_isolated_world_ids.h",
     "platform/web_isolated_world_info.h",
     "platform/web_loading_hints_provider.h",

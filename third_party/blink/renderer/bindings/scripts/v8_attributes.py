@@ -400,10 +400,11 @@ def getter_context(interface, attribute, context):
     })
 
 def getter_expression(interface, attribute, context):
-    arguments = []
-    this_getter_base_name = getter_base_name(interface, attribute, arguments)
+    extra_arguments = []
+    this_getter_base_name = getter_base_name(interface, attribute, extra_arguments)
     getter_name = scoped_name(interface, attribute, this_getter_base_name)
 
+    arguments = []
     arguments.extend(v8_utilities.call_with_arguments(
         attribute.extended_attributes.get('CallWith')))
     # Members of IDL partial interface definitions are implemented in C++ as
@@ -412,6 +413,7 @@ def getter_expression(interface, attribute, context):
     if ('PartialInterfaceImplementedAs' in attribute.extended_attributes and
             not attribute.is_static):
         arguments.append('*impl')
+    arguments.extend(extra_arguments)
     if attribute.idl_type.is_explicit_nullable:
         arguments.append('is_null')
     if context['is_getter_raises_exception']:
@@ -567,7 +569,8 @@ def setter_expression(interface, attribute, context):
         extended_attributes.get('SetterCallWith') or
         extended_attributes.get('CallWith'))
 
-    this_setter_base_name = setter_base_name(interface, attribute, arguments)
+    extra_arguments = []
+    this_setter_base_name = setter_base_name(interface, attribute, extra_arguments)
     setter_name = scoped_name(interface, attribute, this_setter_base_name)
 
     # Members of IDL partial interface definitions are implemented in C++ as
@@ -576,6 +579,7 @@ def setter_expression(interface, attribute, context):
     if ('PartialInterfaceImplementedAs' in extended_attributes and
             not attribute.is_static):
         arguments.append('*impl')
+    arguments.extend(extra_arguments)
     idl_type = attribute.idl_type
     if idl_type.base_type == 'EventHandler':
         handler_type = 'kEventHandler'

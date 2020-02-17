@@ -39,6 +39,6 @@ typedef sequence<any> ObjectArray;
     // nullable in the spec.
     [Measure, RaisesException, CallWith=ScriptState] void executeSql(DOMString sqlStatement,
                                                                      optional ObjectArray? arguments,
-                                                                     optional SQLStatementCallback? callback,
-                                                                     optional SQLStatementErrorCallback? errorCallback);
+                                                                     optional SQLStatementCallback? callback = null,
+                                                                     optional SQLStatementErrorCallback? errorCallback = null);
 };

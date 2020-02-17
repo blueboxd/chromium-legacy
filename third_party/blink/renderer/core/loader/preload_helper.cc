@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/loader/resource/link_fetch_resource.h"
 #include "third_party/blink/renderer/core/loader/resource/script_resource.h"
 #include "third_party/blink/renderer/core/loader/subresource_integrity_helper.h"
+#include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/script_loader.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -91,10 +92,10 @@ bool IsSupportedType(ResourceType resource_type, const String& mime_type) {
 
 MediaValues* CreateMediaValues(
     Document& document,
-    const base::Optional<ViewportDescription>& viewport_description) {
+    const ViewportDescription* viewport_description) {
   MediaValues* media_values =
       MediaValues::CreateDynamicIfFrameExists(document.GetFrame());
-  if (viewport_description.has_value()) {
+  if (viewport_description) {
     FloatSize initial_viewport(media_values->DeviceWidth(),
                                media_values->DeviceHeight());
     PageScaleConstraints constraints = viewport_description->Resolve(
@@ -241,7 +242,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
     Document& document,
     const KURL& base_url,
     LinkCaller caller,
-    const base::Optional<ViewportDescription>& viewport_description,
+    const ViewportDescription* viewport_description,
     ParserDisposition parser_disposition) {
   if (!document.Loader() || !params.rel.IsLinkPreload())
     return nullptr;
@@ -365,7 +366,7 @@ Resource* PreloadHelper::PreloadIfNeeded(
 void PreloadHelper::ModulePreloadIfNeeded(
     const LinkLoadParameters& params,
     Document& document,
-    const base::Optional<ViewportDescription>& viewport_description,
+    const ViewportDescription* viewport_description,
     SingleModuleClient* client) {
   if (!document.Loader() || !params.rel.IsModulePreload())
     return;
@@ -557,10 +558,10 @@ void PreloadHelper::LoadLinksFromHeader(
     Document* document,
     CanLoadResources can_load_resources,
     MediaPreloadPolicy media_policy,
-    const base::Optional<ViewportDescription>& viewport_description,
+    const ViewportDescription* viewport_description,
     std::unique_ptr<AlternateSignedExchangeResourceInfo>
         alternate_resource_info,
-    base::Optional<base::UnguessableToken> recursive_prefetch_token) {
+    const base::UnguessableToken* recursive_prefetch_token) {
   if (header_value.IsEmpty())
     return;
   LinkHeaderSet header_set(header_value);
@@ -578,7 +579,7 @@ void PreloadHelper::LoadLinksFromHeader(
       // Only preload headers are expected to have a recursive prefetch token
       // In response to that token's existence, we treat the request as a
       // prefetch.
-      params.recursive_prefetch_token = recursive_prefetch_token;
+      params.recursive_prefetch_token = *recursive_prefetch_token;
       params.rel = LinkRelAttribute("prefetch");
     }
 

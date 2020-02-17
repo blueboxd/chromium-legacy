@@ -17,11 +17,19 @@ class SelectType : public GarbageCollected<SelectType> {
   // Creates an instance of a SelectType subclass depending on the current mode
   // of |select|.
   static SelectType* Create(HTMLSelectElement& select);
+  void WillBeDestroyed();
   virtual void Trace(Visitor* visitor);
 
   virtual void DidSelectOption(HTMLOptionElement* element,
                                HTMLSelectElement::SelectOptionFlags flags,
                                bool should_update_popup);
+
+  // Update style of text in the CSS box on style or selected OPTION change.
+  virtual void UpdateTextStyle();
+
+  // Update style of text in the CSS box on style or selected OPTION change,
+  // and update the text.
+  virtual void UpdateTextStyleAndContent();
 
   // TODO(crbug.com/1052232): Add more virtual functions.
 
@@ -29,6 +37,7 @@ class SelectType : public GarbageCollected<SelectType> {
   explicit SelectType(HTMLSelectElement& select);
 
   const Member<HTMLSelectElement> select_;
+  bool will_be_destroyed_ = false;
 
  private:
   SelectType(const SelectType&) = delete;

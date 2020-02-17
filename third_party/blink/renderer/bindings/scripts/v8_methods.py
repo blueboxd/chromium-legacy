@@ -351,16 +351,15 @@ def cpp_value(interface, method, number_of_arguments):
         else:
             cpp_arguments.append(variable_name)
 
-    if ('RaisesException' in method.extended_attributes or
-          (method.is_constructor and
-           has_extended_attribute_value(interface, 'RaisesException', 'Constructor'))):
-        cpp_arguments.append('exception_state')
-
     # If a method returns an IDL dictionary or union type, the return value is
     # passed as an argument to impl classes.
     idl_type = method.idl_type
     if idl_type and idl_type.use_output_parameter_for_result:
         cpp_arguments.append('result')
+
+    if ('RaisesException' in method.extended_attributes
+            or (method.is_constructor and has_extended_attribute_value(interface, 'RaisesException', 'Constructor'))):
+        cpp_arguments.append('exception_state')
 
     if method.name == 'Constructor':
         base_name = 'Create'

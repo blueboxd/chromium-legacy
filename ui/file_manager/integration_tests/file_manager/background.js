@@ -531,7 +531,7 @@ async function createShortcut(appId, directoryName) {
 }
 
 /**
- * Expands a tree item by clicking on its expand icon.
+ * Expands a single tree item by clicking on its expand icon.
  *
  * @param {string} appId Files app windowId.
  * @param {string} treeItem Query to the tree item that should be expanded.
@@ -539,12 +539,42 @@ async function createShortcut(appId, directoryName) {
  */
 async function expandTreeItem(appId, treeItem) {
   const expandIcon = treeItem + '> .tree-row[has-children=true] .expand-icon';
-  await remoteCall.waitForElement(appId, expandIcon);
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, [expandIcon]));
+  await remoteCall.waitAndClickElement(appId, expandIcon);
 
   const expandedSubtree = treeItem + '> .tree-children[expanded]';
   await remoteCall.waitForElement(appId, expandedSubtree);
+}
+
+/**
+ * Uses directory tree to expand each directory in the breadcrumbs path.
+ *
+ * @param {string} appId Files app windowId.
+ * @param {string} breadcrumbsPath Path based in the entry labels like:
+ *    /My files/Downloads/photos
+ * @return {Promise<string>} Promise fulfilled on success with the selector
+ *    query of the last directory expanded.
+ */
+async function recursiveExpand(appId, breadcrumbsPath) {
+  const paths = breadcrumbsPath.split('/').filter(path => path);
+  const hasChildren = ' > .tree-row[has-children=true]';
+
+  // Expand each directory in the breadcrumb.
+  let query = '#directory-tree';
+  for (const parentLabel of paths) {
+    // Wait for parent element to be displayed.
+    query += ` [entry-label="${parentLabel}"]`;
+    await remoteCall.waitForElement(appId, query);
+
+    // Only expand if element isn't expanded yet.
+    const elements = await remoteCall.callRemoteTestUtil(
+        'queryAllElements', appId, [query + '[expanded]']);
+    if (!elements.length) {
+      await remoteCall.waitForElement(appId, query + hasChildren);
+      await expandTreeItem(appId, query);
+    }
+  }
+
+  return query;
 }
 
 /**
@@ -560,7 +590,6 @@ async function expandTreeItem(appId, treeItem) {
  */
 async function navigateWithDirectoryTree(
     appId, breadcrumbsPath, shortcutToPath) {
-  const hasChildren = ' > .tree-row[has-children=true]';
 
   // Focus the directory tree.
   chrome.test.assertTrue(
@@ -568,24 +597,11 @@ async function navigateWithDirectoryTree(
           'focus', appId, ['#directory-tree']),
       'focus failed: #directory-tree');
 
-  const paths = breadcrumbsPath.split('/').filter(path => path);
+  const paths = breadcrumbsPath.split('/');
   const leaf = paths.pop();
 
   // Expand all parents of the leaf entry.
-  let query = '#directory-tree';
-  for (const parentLabel of paths) {
-    query += ` [entry-label="${parentLabel}"]`;
-    // Wait for parent element to be displayed.
-    await remoteCall.waitForElement(appId, query);
-
-    // Only expand if element isn't expanded yet.
-    const elements = await remoteCall.callRemoteTestUtil(
-        'queryAllElements', appId, [query + '[expanded]']);
-    if (!elements.length) {
-      await remoteCall.waitForElement(appId, query + hasChildren);
-      await expandTreeItem(appId, query);
-    }
-  }
+  let query = await recursiveExpand(appId, paths.join('/'));
 
   // Navigate to the final entry.
   query += ` [entry-label="${leaf}"]`;

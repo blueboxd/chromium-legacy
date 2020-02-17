@@ -364,7 +364,7 @@ void DocumentLoader::SetServiceWorkerNetworkProvider(
 }
 
 void DocumentLoader::DispatchLinkHeaderPreloads(
-    const base::Optional<ViewportDescription>& viewport,
+    const ViewportDescription* viewport,
     PreloadHelper::MediaPreloadPolicy media_policy) {
   DCHECK_GE(state_, kCommitted);
   PreloadHelper::LoadLinksFromHeader(
@@ -372,7 +372,7 @@ void DocumentLoader::DispatchLinkHeaderPreloads(
       GetResponse().CurrentRequestUrl(), *frame_, frame_->GetDocument(),
       PreloadHelper::kOnlyLoadResources, media_policy, viewport,
       nullptr /* alternate_resource_info */,
-      base::nullopt /* recursive_prefetch_token */);
+      nullptr /* recursive_prefetch_token */);
 }
 
 void DocumentLoader::DidChangePerformanceTiming() {
@@ -1233,9 +1233,8 @@ void DocumentLoader::StartLoadingInternal() {
       response_.HttpHeaderField(http_names::kLink),
       response_.CurrentRequestUrl(), *GetFrame(), nullptr,
       PreloadHelper::kDoNotLoadResources, PreloadHelper::kLoadAll,
-      base::nullopt /* viewport_description */,
-      nullptr /* alternate_resource_info */,
-      base::nullopt /* recursive_prefetch_token */);
+      nullptr /* viewport_description */, nullptr /* alternate_resource_info */,
+      nullptr /* recursive_prefetch_token */);
   if (!frame_->IsMainFrame() && response_.HasMajorCertificateErrors()) {
     MixedContentChecker::HandleCertificateError(
         GetFrame(), response_, mojom::RequestContextType::HYPERLINK);
@@ -1646,7 +1645,7 @@ void DocumentLoader::CreateParserPostCommit() {
 
   // Links with media values need more information (like viewport information).
   // This happens after the first chunk is parsed in HTMLDocumentParser.
-  DispatchLinkHeaderPreloads(base::nullopt /* viewport */,
+  DispatchLinkHeaderPreloads(nullptr /* viewport */,
                              PreloadHelper::kOnlyLoadNonMedia);
 
   if (!loading_url_as_javascript_ &&

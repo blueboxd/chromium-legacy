@@ -183,7 +183,7 @@ bool LinkLoader::LoadLink(const LinkLoadParameters& params,
 
   Resource* resource = PreloadHelper::PreloadIfNeeded(
       params, document, NullURL(), PreloadHelper::kLinkCalledFromMarkup,
-      base::nullopt /* viewport_description */,
+      nullptr /* viewport_description */,
       client_->IsLinkCreatedByParser() ? kParserInserted : kNotParserInserted);
   if (!resource) {
     resource = PreloadHelper::PrefetchIfNeeded(params, document);
@@ -192,7 +192,7 @@ bool LinkLoader::LoadLink(const LinkLoadParameters& params,
     finish_observer_ = MakeGarbageCollected<FinishObserver>(this, resource);
 
   PreloadHelper::ModulePreloadIfNeeded(
-      params, document, base::nullopt /* viewport_description */, this);
+      params, document, nullptr /* viewport_description */, this);
 
   if (const unsigned prerender_rel_types =
           PrerenderRelTypesFromRelAttribute(params.rel, document)) {

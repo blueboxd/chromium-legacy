@@ -570,7 +570,7 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id,
 
   return (color_scheme == ColorScheme::kPlatformHighContrast)
              ? GetPlatformHighContrastColor(color_id)
-             : GetAuraColor(color_id, this, color_scheme);
+             : NativeTheme::GetSystemColor(color_id, color_scheme);
 }
 
 SkColor NativeThemeWin::GetPlatformHighContrastColor(ColorId color_id) const {

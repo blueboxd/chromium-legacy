@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/parser/media_query_parser.h"
 
+#include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_tokenizer.h"
 #include "third_party/blink/renderer/core/media_type_names.h"
 
@@ -289,7 +290,10 @@ bool MediaQueryParser::IsMediaFeatureAllowedInMode(
 MediaQueryData::MediaQueryData()
     : restrictor_(MediaQuery::kNone),
       media_type_(media_type_names::kAll),
-      media_type_set_(false) {}
+      media_type_set_(false),
+      fake_context_(*MakeGarbageCollected<CSSParserContext>(
+          kHTMLStandardMode,
+          SecureContextMode::kInsecureContext)) {}
 
 void MediaQueryData::Clear() {
   restrictor_ = MediaQuery::kNone;
@@ -307,7 +311,8 @@ std::unique_ptr<MediaQuery> MediaQueryData::TakeMediaQuery() {
 }
 
 void MediaQueryData::AddExpression(CSSParserTokenRange& range) {
-  expressions_.push_back(MediaQueryExp::Create(media_feature_, range));
+  expressions_.push_back(
+      MediaQueryExp::Create(media_feature_, range, fake_context_));
 }
 
 bool MediaQueryData::LastExpressionValid() {

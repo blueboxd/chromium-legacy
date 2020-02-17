@@ -795,8 +795,6 @@ crbug.com/636993 external/wpt/css/css-text-decor/text-decoration-color.html [ Fa
 crbug.com/591099 css3/filters/composited-layer-child-bounds-after-composited-to-sw-shadow-change.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/boundary-shaping/boundary-shaping-009.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/hyphens/shy-styling-001.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-text/line-breaking/line-breaking-018.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-text/line-breaking/line-breaking-019.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/shaping/shaping-009.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/shaping/shaping-010.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/shaping/shaping-011.html [ Failure ]
@@ -840,10 +838,6 @@ crbug.com/591099 [ Win ] virtual/text-antialias/ellipsis-with-self-painting-laye
 
 # LayoutNG failures that needs to be triaged
 crbug.com/591099 virtual/text-antialias/selection/selection-rect-line-height-too-small.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-rhythm/line-height-step-basic-001.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-rhythm/line-height-step-boundary-001.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-rhythm/line-height-step-valign-001.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-rhythm/line-height-step-writing-mode-vrl-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-text/hyphens/hyphens-out-of-flow-002.html [ Failure ]
 crbug.com/591099 external/wpt/html/rendering/non-replaced-elements/the-fieldset-and-legend-elements/fieldset-vertical.html [ Failure ]
 crbug.com/591099 fast/css-intrinsic-dimensions/width-avoid-floats.html [ Failure ]
@@ -2160,6 +2154,21 @@ crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-sepa
 crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-014.html [ Skip ]
 crbug.com/991413 external/wpt/css/css-text/white-space/trailing-other-space-separators-break-spaces-015.html [ Skip ]
 
+# ZWJ fails only on Windows
+crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
+crbug.com/1012627 [ Win10 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
+
+# Follow up the spec change for out-of-flow
+crbug.com/1024331 external/wpt/css/css-text/line-breaking/line-breaking-016.html [ Failure ]
+crbug.com/1024331 external/wpt/css/css-text/line-breaking/line-breaking-017.html [ Failure ]
+crbug.com/1024331 external/wpt/css/css-text/line-breaking/line-breaking-018.html [ Failure ]
+crbug.com/1024331 external/wpt/css/css-text/line-breaking/line-breaking-019.html [ Failure ]
+
+# Follow up the spec change for U+2010, U+2013
+crbug.com/1052717 external/wpt/css/css-text/line-break/line-break-loose-hyphens-001.html [ Failure ]
+crbug.com/1052717 external/wpt/css/css-text/line-break/line-break-normal-hyphens-002.html [ Failure ]
+crbug.com/1052717 external/wpt/css/css-text/line-break/line-break-strict-hyphens-002.html [ Failure ]
+
 # Sheriff 2020-02-06
 # Flaking on Linux Leak
 crbug.com/1049599 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/events/overscroll-event-fired-to-element-with-overscroll-behavior.html [ Pass Failure Timeout ]
@@ -2783,8 +2792,6 @@ crbug.com/1029997 external/wpt/css/css-transforms/transform-scale-percent-001.ht
 
 crbug.com/1002514 external/wpt/web-share/share-sharePromise-internal-slot.https.html [ Failure Crash ]
 
-crbug.com/1012627 [ Win7 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
-
 crbug.com/1029514 external/wpt/html/semantics/embedded-content/the-video-element/resize-during-playback.html [ Pass Failure ]
 
 # css-pseudo-4 ::spelling-error and ::grammar-error not implemented
@@ -3023,16 +3030,7 @@ crbug.com/626703 [ Win ] virtual/omt-worker-fetch/external/wpt/workers/shared-wo
 crbug.com/626703 [ Linux ] external/wpt/workers/shared-worker-options-mismatch.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/workers/shared-worker-options-mismatch.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/workers/shared-worker-options-mismatch.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text/line-break/line-break-strict-hyphens-002.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-break/line-break-strict-hyphens-002.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text/line-break/line-break-strict-hyphens-002.html [ Failure ]
 crbug.com/626703 [ Retina ] virtual/sxg-subresource/external/wpt/signed-exchange/reporting/sxg-reporting-navigation-parse_error.tentative.html [ Timeout ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text/line-break/line-break-loose-hyphens-001.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-break/line-break-loose-hyphens-001.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text/line-break/line-break-loose-hyphens-001.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-text/line-break/line-break-normal-hyphens-002.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-text/line-break/line-break-normal-hyphens-002.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-text/line-break/line-break-normal-hyphens-002.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-fonts/variations/font-slant-1.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-fonts/variations/font-slant-1.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-fonts/variations/font-slant-1.html [ Failure ]
@@ -3165,7 +3163,6 @@ crbug.com/626703 external/wpt/webaudio/the-audio-api/processing-model/cycle-with
 crbug.com/626703 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-008.xhtml [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-008.xhtml [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-008.xhtml [ Failure ]
-crbug.com/626703 [ Win10 ] external/wpt/css/css-text/line-breaking/line-breaking-021.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-pan-x-child-pan-y_touch.html [ Timeout ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-inherit_child-none_touch.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text/word-break/word-break-keep-all-008.html [ Failure ]
@@ -3343,7 +3340,6 @@ crbug.com/626703 external/wpt/css/css-sizing/image-min-max-content-intrinsic-siz
 crbug.com/626703 external/wpt/xhr/event-readystatechange-loaded.any.worker.html [ Timeout Failure ]
 crbug.com/626703 virtual/omt-worker-fetch/external/wpt/xhr/event-readystatechange-loaded.any.worker.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-003.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-017.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-002.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-lists/li-list-item-counter.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-006.html [ Failure ]
@@ -3358,9 +3354,6 @@ crbug.com/626703 virtual/omt-worker-fetch/external/wpt/xhr/event-readystatechang
 crbug.com/626703 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-sizing/image-min-max-content-intrinsic-size-change-008.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-animations/animationevent-marker-pseudoelement.html [ Timeout ]
-crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-016.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-atomic-008.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-text/line-breaking/line-breaking-replaced-005.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-normal-keep-all-001.html [ Failure ]
 crbug.com/626703 [ Mac10.12 ] external/wpt/media-source/mediasource-config-change-webm-a-bitrate.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/embedded-content/media-elements/src_object_blob.html [ Timeout ]

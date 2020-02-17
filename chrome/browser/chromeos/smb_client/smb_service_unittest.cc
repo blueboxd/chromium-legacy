@@ -17,8 +17,12 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/chromeos/file_manager/fake_disk_mount_manager.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager.h"
+#include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_provided_file_system.h"
 #include "chrome/browser/chromeos/file_system_provider/fake_registry.h"
 #include "chrome/browser/chromeos/file_system_provider/icon_set.h"
@@ -26,14 +30,19 @@
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/components/smbfs/smbfs_host.h"
+#include "chromeos/components/smbfs/smbfs_mounter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_smb_provider_client.h"
+#include "chromeos/disks/disk_mount_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/browser_task_environment.h"
+#include "storage/browser/file_system/external_mount_points.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -58,6 +67,7 @@ constexpr char kTestDomain[] = "EXAMPLE.COM";
 constexpr char kSharePath[] = "\\\\server\\foobar";
 constexpr char kShareUrl[] = "smb://server/foobar";
 constexpr char kDisplayName[] = "My Share";
+constexpr char kMountPath[] = "/share/mount/path";
 
 constexpr char kTestADUser[] = "ad-test-user";
 constexpr char kTestADDomain[] = "foorbar.corp";
@@ -86,6 +96,23 @@ class MockSmbProviderClient : public chromeos::FakeSmbProviderClient {
               (override));
 };
 
+class MockSmbFsMounter : public smbfs::SmbFsMounter {
+ public:
+  MOCK_METHOD(void,
+              Mount,
+              (smbfs::SmbFsMounter::DoneCallback callback),
+              (override));
+};
+
+class MockSmbFsImpl : public smbfs::mojom::SmbFs {
+ public:
+  explicit MockSmbFsImpl(mojo::PendingReceiver<smbfs::mojom::SmbFs> pending)
+      : receiver_(this, std::move(pending)) {}
+
+ private:
+  mojo::Receiver<smbfs::mojom::SmbFs> receiver_;
+};
+
 // Gets a password from |password_fd|. The data has to be in the format of
 // "{password_length}{password}".
 std::string GetPassword(const base::ScopedFD& password_fd) {
@@ -101,6 +128,19 @@ std::string GetPassword(const base::ScopedFD& password_fd) {
   EXPECT_TRUE(
       base::ReadFromFD(password_fd.get(), &password[0], password_length));
   return password;
+}
+
+// Creates a new VolumeManager for tests.
+// By default, VolumeManager KeyedService is null for testing.
+std::unique_ptr<KeyedService> BuildVolumeManager(
+    content::BrowserContext* context) {
+  return std::make_unique<file_manager::VolumeManager>(
+      Profile::FromBrowserContext(context),
+      nullptr /* drive_integration_service */,
+      nullptr /* power_manager_client */,
+      chromeos::disks::DiskMountManager::GetInstance(),
+      nullptr /* file_system_provider_service */,
+      file_manager::VolumeManager::GetMtpStorageInfoCallback());
 }
 
 }  // namespace
@@ -528,6 +568,279 @@ TEST_F(SmbServiceTest, Premount) {
   // Because the mock is potentially leaked, expectations needs to be manually
   // verified.
   EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(mock_client_));
+}
+
+class SmbServiceWithSmbfsTest : public testing::Test {
+ protected:
+  SmbServiceWithSmbfsTest() {
+    scoped_feature_list_.InitWithFeatures({features::kSmbFs}, {});
+
+    profile_manager_ = std::make_unique<TestingProfileManager>(
+        TestingBrowserProcess::GetGlobal());
+    EXPECT_TRUE(profile_manager_->SetUp());
+
+    std::unique_ptr<FakeChromeUserManager> user_manager_temp =
+        std::make_unique<FakeChromeUserManager>();
+
+    profile_ = profile_manager_->CreateTestingProfile("test-user@example.com");
+    user_manager_temp->AddUser(
+        AccountId::FromUserEmail(profile_->GetProfileUserName()));
+
+    ad_profile_ = profile_manager_->CreateTestingProfile(
+        base::StrCat({kTestADUser, "@", kTestADDomain}));
+    user_manager_temp->AddUserWithAffiliationAndTypeAndProfile(
+        AccountId::AdFromUserEmailObjGuid(ad_profile_->GetProfileUserName(),
+                                          kTestADGuid),
+        false, user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY, ad_profile_);
+
+    // Run pending async tasks resulting from profile construction to ensure
+    // these are complete before the test begins.
+    base::RunLoop().RunUntilIdle();
+
+    user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
+        std::move(user_manager_temp));
+
+    // This isn't used, but still needs to exist.
+    chromeos::DBusThreadManager::GetSetterForTesting()->SetSmbProviderClient(
+        std::make_unique<FakeSmbProviderClient>());
+
+    // Takes ownership of |disk_mount_manager_|.
+    chromeos::disks::DiskMountManager::InitializeForTesting(
+        disk_mount_manager_);
+
+    mount_options_.display_name = kDisplayName;
+  }
+
+  ~SmbServiceWithSmbfsTest() override {}
+
+  void CreateService(TestingProfile* profile) {
+    SmbService::DisableShareDiscoveryForTesting();
+    file_manager::VolumeManagerFactory::GetInstance()->SetTestingFactory(
+        profile, base::BindRepeating(&BuildVolumeManager));
+
+    // Create smb service.
+    smb_service_ = std::make_unique<SmbService>(
+        profile, std::make_unique<base::SimpleTestTickClock>());
+  }
+
+  void WaitForSetupComplete() {
+    {
+      base::RunLoop run_loop;
+      smb_service_->OnSetupCompleteForTesting(run_loop.QuitClosure());
+      run_loop.Run();
+    }
+    {
+      // Share gathering needs to complete at least once before a share can be
+      // mounted.
+      base::RunLoop run_loop;
+      smb_service_->GatherSharesInNetwork(
+          base::DoNothing(),
+          base::BindLambdaForTesting(
+              [&run_loop](const std::vector<SmbUrl>& shares_gathered,
+                          bool done) {
+                if (done) {
+                  run_loop.Quit();
+                }
+              }));
+      run_loop.Run();
+    }
+  }
+
+  std::unique_ptr<chromeos::disks::MountPoint> MakeMountPoint(
+      const base::FilePath& path) {
+    return std::make_unique<chromeos::disks::MountPoint>(path,
+                                                         disk_mount_manager_);
+  }
+
+  content::BrowserTaskEnvironment task_environment_{
+      content::BrowserTaskEnvironment::REAL_IO_THREAD};
+  base::test::ScopedFeatureList scoped_feature_list_;
+  file_manager::FakeDiskMountManager* disk_mount_manager_ =
+      new file_manager::FakeDiskMountManager;
+
+  TestingProfile* profile_ = nullptr;     // Not owned.
+  TestingProfile* ad_profile_ = nullptr;  // Not owned.
+  std::unique_ptr<TestingProfileManager> profile_manager_;
+  std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
+  std::unique_ptr<SmbService> smb_service_;
+
+  chromeos::file_system_provider::MountOptions mount_options_;
+};
+
+TEST_F(SmbServiceWithSmbfsTest, Mount) {
+  CreateService(profile_);
+  WaitForSetupComplete();
+
+  mojo::Remote<smbfs::mojom::SmbFs> smbfs_remote;
+  MockSmbFsImpl smbfs_impl(smbfs_remote.BindNewPipeAndPassReceiver());
+  mojo::Remote<smbfs::mojom::SmbFsDelegate> smbfs_delegate_remote;
+
+  smbfs::SmbFsHost::Delegate* smbfs_host_delegate = nullptr;
+  std::unique_ptr<MockSmbFsMounter> mock_mounter =
+      std::make_unique<MockSmbFsMounter>();
+  smb_service_->SetSmbFsMounterCreationCallbackForTesting(
+      base::BindLambdaForTesting([&mock_mounter, &smbfs_host_delegate](
+                                     const std::string& share_path,
+                                     const std::string& mount_dir_name,
+                                     const SmbFsShare::MountOptions& options,
+                                     smbfs::SmbFsHost::Delegate* delegate)
+                                     -> std::unique_ptr<smbfs::SmbFsMounter> {
+        EXPECT_EQ(share_path, kShareUrl);
+        EXPECT_EQ(options.username, kTestUser);
+        EXPECT_TRUE(options.workgroup.empty());
+        EXPECT_EQ(options.password, kTestPassword);
+        EXPECT_EQ(options.allow_ntlm, true);
+        EXPECT_FALSE(options.kerberos_options);
+        smbfs_host_delegate = delegate;
+        return std::move(mock_mounter);
+      }));
+  EXPECT_CALL(*mock_mounter, Mount(_))
+      .WillOnce(
+          [this, &smbfs_host_delegate, &smbfs_remote,
+           &smbfs_delegate_remote](smbfs::SmbFsMounter::DoneCallback callback) {
+            std::move(callback).Run(
+                smbfs::mojom::MountError::kOk,
+                std::make_unique<smbfs::SmbFsHost>(
+                    MakeMountPoint(base::FilePath(kMountPath)),
+                    smbfs_host_delegate, std::move(smbfs_remote),
+                    smbfs_delegate_remote.BindNewPipeAndPassReceiver()));
+          });
+
+  base::RunLoop run_loop;
+  smb_service_->Mount(
+      mount_options_, base::FilePath(kSharePath), kTestUser, kTestPassword,
+      false /* use_chromad_kerberos */,
+      false /* should_open_file_manager_after_mount */,
+      false /* save_credentials */,
+      base::BindLambdaForTesting([&run_loop](SmbMountResult result) {
+        EXPECT_EQ(SmbMountResult::kSuccess, result);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+
+  // Expect that the filesystem mount path is registered.
+  std::vector<storage::MountPoints::MountPointInfo> mount_points;
+  storage::ExternalMountPoints::GetSystemInstance()->AddMountPointInfosTo(
+      &mount_points);
+  bool found = false;
+  for (const auto& info : mount_points) {
+    if (info.path == base::FilePath(kMountPath)) {
+      found = true;
+      break;
+    }
+  }
+  EXPECT_TRUE(found);
+}
+
+TEST_F(SmbServiceWithSmbfsTest, Mount_ActiveDirectory) {
+  CreateService(ad_profile_);
+  WaitForSetupComplete();
+
+  mojo::Remote<smbfs::mojom::SmbFs> smbfs_remote;
+  MockSmbFsImpl smbfs_impl(smbfs_remote.BindNewPipeAndPassReceiver());
+  mojo::Remote<smbfs::mojom::SmbFsDelegate> smbfs_delegate_remote;
+
+  smbfs::SmbFsHost::Delegate* smbfs_host_delegate = nullptr;
+  std::unique_ptr<MockSmbFsMounter> mock_mounter =
+      std::make_unique<MockSmbFsMounter>();
+  smb_service_->SetSmbFsMounterCreationCallbackForTesting(
+      base::BindLambdaForTesting([&mock_mounter, &smbfs_host_delegate](
+                                     const std::string& share_path,
+                                     const std::string& mount_dir_name,
+                                     const SmbFsShare::MountOptions& options,
+                                     smbfs::SmbFsHost::Delegate* delegate)
+                                     -> std::unique_ptr<smbfs::SmbFsMounter> {
+        EXPECT_EQ(share_path, kShareUrl);
+        // Username/workgroup/password are ignored when using Active
+        // Directory. Username/workgroup are derived from the account email
+        // address. Password is unused and dropped.
+        EXPECT_EQ(options.username, kTestADUser);
+        // Workgroup/domain is converted to upper-case.
+        EXPECT_EQ(options.workgroup, base::ToUpperASCII(kTestADDomain));
+        EXPECT_TRUE(options.password.empty());
+        EXPECT_EQ(options.allow_ntlm, true);
+        EXPECT_EQ(
+            options.kerberos_options->source,
+            smbfs::SmbFsMounter::KerberosOptions::Source::kActiveDirectory);
+        EXPECT_EQ(options.kerberos_options->identity, kTestADGuid);
+        smbfs_host_delegate = delegate;
+        return std::move(mock_mounter);
+      }));
+  EXPECT_CALL(*mock_mounter, Mount(_))
+      .WillOnce(
+          [this, &smbfs_host_delegate, &smbfs_remote,
+           &smbfs_delegate_remote](smbfs::SmbFsMounter::DoneCallback callback) {
+            std::move(callback).Run(
+                smbfs::mojom::MountError::kOk,
+                std::make_unique<smbfs::SmbFsHost>(
+                    MakeMountPoint(base::FilePath(kMountPath)),
+                    smbfs_host_delegate, std::move(smbfs_remote),
+                    smbfs_delegate_remote.BindNewPipeAndPassReceiver()));
+          });
+
+  base::RunLoop run_loop;
+  smb_service_->Mount(
+      mount_options_, base::FilePath(kSharePath),
+      base::StrCat({kTestUser, "@", kTestDomain}), kTestPassword,
+      true /* use_chromad_kerberos */,
+      false /* should_open_file_manager_after_mount */,
+      false /* save_credentials */,
+      base::BindLambdaForTesting([&run_loop](SmbMountResult result) {
+        EXPECT_EQ(SmbMountResult::kSuccess, result);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(SmbServiceWithSmbfsTest, PreconfiguredMount) {
+  const char kPremountPath[] = "smb://preconfigured/share";
+  const char kPreconfiguredShares[] =
+      R"([{"mode":"pre_mount","share_url":"\\\\preconfigured\\share"}])";
+  auto parsed_shares = base::JSONReader::Read(kPreconfiguredShares);
+  ASSERT_TRUE(parsed_shares);
+  profile_->GetPrefs()->Set(prefs::kNetworkFileSharesPreconfiguredShares,
+                            *parsed_shares);
+
+  CreateService(profile_);
+
+  mojo::Remote<smbfs::mojom::SmbFs> smbfs_remote;
+  MockSmbFsImpl smbfs_impl(smbfs_remote.BindNewPipeAndPassReceiver());
+  mojo::Remote<smbfs::mojom::SmbFsDelegate> smbfs_delegate_remote;
+
+  smbfs::SmbFsHost::Delegate* smbfs_host_delegate = nullptr;
+  std::unique_ptr<MockSmbFsMounter> mock_mounter =
+      std::make_unique<MockSmbFsMounter>();
+  smb_service_->SetSmbFsMounterCreationCallbackForTesting(
+      base::BindLambdaForTesting(
+          [&mock_mounter, &smbfs_host_delegate, kPremountPath](
+              const std::string& share_path, const std::string& mount_dir_name,
+              const SmbFsShare::MountOptions& options,
+              smbfs::SmbFsHost::Delegate* delegate)
+              -> std::unique_ptr<smbfs::SmbFsMounter> {
+            EXPECT_EQ(share_path, kPremountPath);
+            EXPECT_TRUE(options.username.empty());
+            EXPECT_TRUE(options.workgroup.empty());
+            EXPECT_TRUE(options.password.empty());
+            EXPECT_FALSE(options.kerberos_options);
+            smbfs_host_delegate = delegate;
+            return std::move(mock_mounter);
+          }));
+
+  base::RunLoop run_loop;
+  EXPECT_CALL(*mock_mounter, Mount(_))
+      .WillOnce([this, &smbfs_host_delegate, &smbfs_remote,
+                 &smbfs_delegate_remote,
+                 &run_loop](smbfs::SmbFsMounter::DoneCallback callback) {
+        std::move(callback).Run(
+            smbfs::mojom::MountError::kOk,
+            std::make_unique<smbfs::SmbFsHost>(
+                MakeMountPoint(base::FilePath(kMountPath)), smbfs_host_delegate,
+                std::move(smbfs_remote),
+                smbfs_delegate_remote.BindNewPipeAndPassReceiver()));
+        run_loop.Quit();
+      });
+
+  run_loop.Run();
 }
 
 }  // namespace smb_client

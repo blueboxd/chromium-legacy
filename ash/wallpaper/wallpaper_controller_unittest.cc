@@ -61,6 +61,8 @@ namespace {
 constexpr int kWallpaperId = kShellWindowId_WallpaperContainer;
 constexpr int kLockScreenWallpaperId =
     kShellWindowId_LockScreenWallpaperContainer;
+constexpr int kAlwaysOnTopWallpaperId =
+    kShellWindowId_AlwaysOnTopWallpaperContainer;
 
 constexpr char kDefaultSmallWallpaperName[] = "small.jpg";
 constexpr char kDefaultLargeWallpaperName[] = "large.jpg";
@@ -2583,7 +2585,8 @@ TEST_F(WallpaperControllerTest, AlwaysOnTopWallpaper) {
   RunAllTasksUntilIdle();
   EXPECT_EQ(1, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), DEFAULT);
-  EXPECT_EQ(kShellWindowId_WallpaperContainer, GetWallpaperContainerId());
+  EXPECT_EQ(1, ChildCountForContainer(kWallpaperId));
+  EXPECT_EQ(0, ChildCountForContainer(kAlwaysOnTopWallpaperId));
 
   // Show an always-on-top wallpaper.
   const base::FilePath image_path =
@@ -2593,8 +2596,8 @@ TEST_F(WallpaperControllerTest, AlwaysOnTopWallpaper) {
   RunAllTasksUntilIdle();
   EXPECT_EQ(2, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), ONE_SHOT);
-  EXPECT_EQ(kShellWindowId_AlwaysOnTopWallpaperContainer,
-            GetWallpaperContainerId());
+  EXPECT_EQ(0, ChildCountForContainer(kWallpaperId));
+  EXPECT_EQ(1, ChildCountForContainer(kAlwaysOnTopWallpaperId));
 
   // Subsequent wallpaper requests are ignored when the current wallpaper is
   // always-on-top.
@@ -2602,8 +2605,8 @@ TEST_F(WallpaperControllerTest, AlwaysOnTopWallpaper) {
   RunAllTasksUntilIdle();
   EXPECT_EQ(2, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), ONE_SHOT);
-  EXPECT_EQ(kShellWindowId_AlwaysOnTopWallpaperContainer,
-            GetWallpaperContainerId());
+  EXPECT_EQ(0, ChildCountForContainer(kWallpaperId));
+  EXPECT_EQ(1, ChildCountForContainer(kAlwaysOnTopWallpaperId));
 
   // The wallpaper reverts to the default after the always-on-top wallpaper is
   // removed.
@@ -2611,7 +2614,8 @@ TEST_F(WallpaperControllerTest, AlwaysOnTopWallpaper) {
   RunAllTasksUntilIdle();
   EXPECT_EQ(3, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), DEFAULT);
-  EXPECT_EQ(kShellWindowId_WallpaperContainer, GetWallpaperContainerId());
+  EXPECT_EQ(1, ChildCountForContainer(kWallpaperId));
+  EXPECT_EQ(0, ChildCountForContainer(kAlwaysOnTopWallpaperId));
 
   // Calling |RemoveAlwaysOnTopWallpaper| is a no-op when the current wallpaper
   // is not always-on-top.
@@ -2619,7 +2623,8 @@ TEST_F(WallpaperControllerTest, AlwaysOnTopWallpaper) {
   RunAllTasksUntilIdle();
   EXPECT_EQ(3, GetWallpaperCount());
   EXPECT_EQ(controller_->GetWallpaperType(), DEFAULT);
-  EXPECT_EQ(kShellWindowId_WallpaperContainer, GetWallpaperContainerId());
+  EXPECT_EQ(1, ChildCountForContainer(kWallpaperId));
+  EXPECT_EQ(0, ChildCountForContainer(kAlwaysOnTopWallpaperId));
 }
 
 namespace {

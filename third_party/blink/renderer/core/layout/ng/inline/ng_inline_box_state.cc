@@ -676,9 +676,16 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
     }
 
     if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled()) {
-      // |NGFragmentItems| has a flat list of all descendants, except OOF
-      // objects. Still creates |NGPhysicalBoxFragment|, but don't add children
-      // to it and keep them in the flat list.
+      // Propagate any OOF-positioned descendants from any atomic-inlines, etc.
+      if (child.layout_result) {
+        box.PropagateChildData(child.layout_result->PhysicalFragment(),
+                               child.rect.offset - rect.offset);
+      }
+
+      // |NGFragmentItems| has a flat list of all descendants, except
+      // OOF-positioned descendants.
+      // We still create a |NGPhysicalBoxFragment|, but don't add children to
+      // it and keep them in the flat list.
       continue;
     }
 

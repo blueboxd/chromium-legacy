@@ -122,11 +122,18 @@ void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
 }
 
 void NGLineBoxFragmentBuilder::PropagateChildrenData(ChildList& children) {
-  for (auto& child : children) {
+  for (unsigned index = 0; index < children.size(); ++index) {
+    auto& child = children[index];
     if (child.layout_result) {
       DCHECK(!child.fragment);
       PropagateChildData(child.layout_result->PhysicalFragment(),
                          child.Offset());
+
+      // Skip over any children, the information should have already been
+      // propagated into this layout result.
+      if (child.children_count)
+        index += child.children_count - 1;
+
       continue;
     }
     if (child.out_of_flow_positioned_box) {

@@ -123,38 +123,10 @@ async function createNewFolder(appId, initialEntrySet, selector) {
       'Actual text was: ' + elements[0].text);
 }
 
-/**
- * Expands the directory tree item given by |selector| (Downloads or Drive)
- * to reveal its subtree child items.
- *
- * @param {string} appId The Files app windowId.
- * @param {string} selector Downloads or Drive directory tree item selector.
- * @return {Promise} Promise fulfilled on success.
- */
-async function expandRoot(appId, selector) {
-  const expandIcon = selector + ' > .tree-row[has-children=true] .expand-icon';
-
-  // Wait for the subtree expand icon to appear.
-  await remoteCall.waitForElement(appId, expandIcon);
-
-  // Click the expand icon to expand the subtree.
-  chrome.test.assertTrue(await remoteCall.callRemoteTestUtil(
-      'fakeMouseClick', appId, [expandIcon]));
-
-  // Wait for the subtree to expand and display its children.
-  const expandedSubtree = selector + ' > .tree-children[expanded]';
-  const element = await remoteCall.waitForElement(appId, expandedSubtree);
-
-  // Verify expected subtree child item name.
-  if (element.text.indexOf('photos') === -1) {
-    chrome.test.fail('directory subtree child item "photos" not found');
-  }
-}
-
 testcase.selectCreateFolderDownloads = async () => {
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
-  await expandRoot(appId, TREEITEM_DOWNLOADS);
+  await recursiveExpand(appId, '/My files/Downloads');
   await selectFirstFileListItem(appId);
   await createNewFolder(appId, BASIC_LOCAL_ENTRY_SET, TREEITEM_DOWNLOADS);
 };
@@ -162,14 +134,14 @@ testcase.selectCreateFolderDownloads = async () => {
 testcase.createFolderDownloads = async () => {
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
-  await expandRoot(appId, TREEITEM_DOWNLOADS);
+  await recursiveExpand(appId, '/My files/Downloads');
   await createNewFolder(appId, BASIC_LOCAL_ENTRY_SET, TREEITEM_DOWNLOADS);
 };
 
 testcase.createFolderNestedDownloads = async () => {
   const appId = await setupAndWaitUntilReady(
       RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
-  await expandRoot(appId, TREEITEM_DOWNLOADS);
+  await recursiveExpand(appId, '/My files/Downloads');
   await remoteCall.navigateWithDirectoryTree(
       appId, '/Downloads/photos', 'My files/Downloads');
   await createNewFolder(appId, [], TREEITEM_DOWNLOADS);
@@ -178,6 +150,6 @@ testcase.createFolderNestedDownloads = async () => {
 testcase.createFolderDrive = async () => {
   const appId =
       await setupAndWaitUntilReady(RootPath.DRIVE, [], BASIC_DRIVE_ENTRY_SET);
-  await expandRoot(appId, TREEITEM_DRIVE);
+  await recursiveExpand(appId, '/Google Drive/My Drive');
   await createNewFolder(appId, BASIC_DRIVE_ENTRY_SET, TREEITEM_DRIVE);
 };

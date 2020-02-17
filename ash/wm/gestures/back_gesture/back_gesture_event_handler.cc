@@ -344,6 +344,17 @@ bool BackGestureEventHandler::CanStartGoingBack(
     return false;
   }
 
+  for (aura::Window* window = target; window; window = window->parent()) {
+    SkRegion* gesture_exclusion =
+        window->GetProperty(kSystemGestureExclusionKey);
+    if (gesture_exclusion) {
+      gfx::Point location_in_window = screen_location;
+      ::wm::ConvertPointFromScreen(window, &location_in_window);
+      if (gesture_exclusion->contains(location_in_window.x(), location_in_window.y()))
+        return false;
+    }
+  }
+
   gfx::Rect hit_bounds_in_screen(display::Screen::GetScreen()
                                      ->GetDisplayNearestWindow(target)
                                      .work_area());

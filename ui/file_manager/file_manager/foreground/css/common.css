@@ -90,6 +90,11 @@ cr-menu.chrome-menu > cr-menu-item[disabled] {
   pointer-events: none;
 }
 
+cr-menu.chrome-menu > cr-menu-item#volume-space-info[disabled] {
+  color: inherit;
+  pointer-events: none;
+}
+
 cr-menu.chrome-menu > cr-menu-item[disabled] > .icon.start {
   opacity: 0.20;
 }

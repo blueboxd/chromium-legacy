@@ -24,9 +24,9 @@ class HTMLIFrameElementPayments final
 
   HTMLIFrameElementPayments();
 
-  static bool FastHasAttribute(const QualifiedName&, const HTMLIFrameElement&);
-  static void SetBooleanAttribute(const QualifiedName&,
-                                  HTMLIFrameElement&,
+  static bool FastHasAttribute(const HTMLIFrameElement&, const QualifiedName&);
+  static void SetBooleanAttribute(HTMLIFrameElement&,
+                                  const QualifiedName&,
                                   bool);
   static HTMLIFrameElementPayments& From(HTMLIFrameElement&);
   static bool AllowPaymentRequest(HTMLIFrameElement&);

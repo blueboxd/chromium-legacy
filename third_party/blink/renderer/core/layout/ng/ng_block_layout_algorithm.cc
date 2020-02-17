@@ -2448,14 +2448,34 @@ void NGBlockLayoutAlgorithm::PropagateBaselineFromChild(
     NGLineHeightMetrics metrics = line_box.BaselineMetrics();
     DCHECK(!metrics.IsEmpty());
     LayoutUnit baseline =
-        Style().IsFlippedLinesWritingMode() ? metrics.descent : metrics.ascent;
-    container_builder_.SetBaseline(baseline + block_offset);
-  } else {
-    if (auto baseline = NGBoxFragment(ConstraintSpace().GetWritingMode(),
-                                      ConstraintSpace().Direction(),
-                                      To<NGPhysicalBoxFragment>(child))
-                            .Baseline())
-      container_builder_.SetBaseline(*baseline + block_offset);
+        block_offset + (Style().IsFlippedLinesWritingMode() ? metrics.descent
+                                                            : metrics.ascent);
+
+    if (!container_builder_.Baseline())
+      container_builder_.SetBaseline(baseline);
+
+    // Set the last baseline only if required.
+    if (ConstraintSpace().BaselineAlgorithmType() !=
+        NGBaselineAlgorithmType::kFirstLine)
+      container_builder_.SetLastBaseline(baseline);
+
+    return;
+  }
+
+  NGBoxFragment fragment(ConstraintSpace().GetWritingMode(),
+                         ConstraintSpace().Direction(),
+                         To<NGPhysicalBoxFragment>(child));
+
+  if (!container_builder_.Baseline()) {
+    if (auto baseline = fragment.FirstBaseline())
+      container_builder_.SetBaseline(block_offset + *baseline);
+  }
+
+  // Set the last baseline only if required.
+  if (ConstraintSpace().BaselineAlgorithmType() !=
+      NGBaselineAlgorithmType::kFirstLine) {
+    if (auto last_baseline = fragment.Baseline())
+      container_builder_.SetLastBaseline(block_offset + *last_baseline);
   }
 }
 
@@ -2470,8 +2490,8 @@ void NGBlockLayoutAlgorithm::FinalizeBaseline() {
   // When overflow is present (within an atomic-inline baseline context) we
   // should always use the block-end margin edge as the baseline.
   NGBoxStrut margins = ComputeMarginsForSelf(ConstraintSpace(), Style());
-  container_builder_.SetBaseline(container_builder_.BlockSize() +
-                                 margins.block_end);
+  container_builder_.SetLastBaseline(container_builder_.BlockSize() +
+                                     margins.block_end);
 }
 
 bool NGBlockLayoutAlgorithm::ResolveBfcBlockOffset(

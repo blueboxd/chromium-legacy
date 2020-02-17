@@ -333,7 +333,7 @@ void HTMLSelectElement::ParseAttribute(
       ChangeRendering();
       UpdateUserAgentShadowTree(*UserAgentShadowRoot());
       ResetToDefaultSelection();
-      UpdateMenuListLabel(UpdateFromElement());
+      select_type_->UpdateTextStyleAndContent();
       if (!UsesMenuList())
         SaveListboxActiveSelection();
     }
@@ -383,8 +383,8 @@ void HTMLSelectElement::OptionElementChildrenChanged(
     const HTMLOptionElement& option) {
   SetNeedsValidityCheck();
 
-  if (option.Selected() && UsesMenuList())
-    UpdateMenuListLabel(UpdateFromElement());
+  if (option.Selected())
+    select_type_->UpdateTextStyleAndContent();
   if (GetLayoutObject()) {
     if (AXObjectCache* cache =
             GetLayoutObject()->GetDocument().ExistingAXObjectCache())
@@ -927,7 +927,7 @@ void HTMLSelectElement::SetSuggestedOption(HTMLOptionElement* option) {
     return;
   suggested_option_ = option;
 
-  UpdateMenuListLabel(UpdateFromElement());
+  select_type_->UpdateTextStyleAndContent();
   if (GetLayoutObject())
     ScrollToOption(option);
   if (PopupIsVisible())
@@ -1242,7 +1242,7 @@ void HTMLSelectElement::RestoreFormControlState(const FormControlState& state) {
   }
 
   SetNeedsValidityCheck();
-  UpdateMenuListLabel(UpdateFromElement());
+  select_type_->UpdateTextStyleAndContent();
 }
 
 void HTMLSelectElement::ParseMultipleAttribute(const AtomicString& value) {
@@ -1263,7 +1263,7 @@ void HTMLSelectElement::ParseMultipleAttribute(const AtomicString& value) {
     else
       ResetToDefaultSelection();
   }
-  UpdateMenuListLabel(UpdateFromElement());
+  select_type_->UpdateTextStyleAndContent();
 }
 
 void HTMLSelectElement::AppendToFormData(FormData& form_data) {
@@ -1509,27 +1509,6 @@ void HTMLSelectElement::UpdateSelectedState(HTMLOptionElement* clicked_option,
 
   SetActiveSelectionEnd(clicked_option);
   UpdateListBoxSelection(!multi_select);
-}
-
-void HTMLSelectElement::DidUpdateMenuListActiveOption(
-    HTMLOptionElement* option) {
-  if (!GetDocument().ExistingAXObjectCache())
-    return;
-
-  int option_index = option ? option->index() : -1;
-  if (ax_menulist_last_active_index_ == option_index)
-    return;
-  ax_menulist_last_active_index_ = option_index;
-
-  // We skip sending accessiblity notifications for the very first option,
-  // otherwise we get extra focus and select events that are undesired.
-  if (!has_updated_menulist_active_option_) {
-    has_updated_menulist_active_option_ = true;
-    return;
-  }
-
-  GetDocument().ExistingAXObjectCache()->HandleUpdateActiveMenuOption(
-      GetLayoutObject(), option_index);
 }
 
 HTMLOptionElement* HTMLSelectElement::EventTargetOption(const Event& event) {
@@ -1966,7 +1945,7 @@ void HTMLSelectElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
   root.AppendChild(
       HTMLSlotElement::CreateUserAgentCustomAssignSlot(GetDocument()));
   UpdateUserAgentShadowTree(root);
-  UpdateMenuListLabel(UpdateFromElement());
+  select_type_->UpdateTextStyleAndContent();
 }
 
 void HTMLSelectElement::UpdateUserAgentShadowTree(ShadowRoot& root) {
@@ -2061,7 +2040,7 @@ void HTMLSelectElement::PopupDidHide() {
 
 void HTMLSelectElement::SetIndexToSelectOnCancel(int list_index) {
   index_to_select_on_cancel_ = list_index;
-  UpdateMenuListLabel(UpdateFromElement());
+  select_type_->UpdateTextStyleAndContent();
 }
 
 HTMLOptionElement* HTMLSelectElement::OptionToBeShown() const {
@@ -2142,17 +2121,17 @@ void HTMLSelectElement::DidRecalcStyle(const StyleRecalcChange change) {
   HTMLFormControlElementWithState::DidRecalcStyle(change);
   if (change.ReattachLayoutTree())
     return;
-  UpdateFromElement();
+  select_type_->UpdateTextStyle();
   if (PopupIsVisible())
     popup_->UpdateFromElement(PopupMenu::kByStyleChange);
 }
 
 void HTMLSelectElement::AttachLayoutTree(AttachContext& context) {
   HTMLFormControlElementWithState::AttachLayoutTree(context);
-  // The call to UpdateFromElement() needs to go after the call through
+  // The call to UpdateTextStyle() needs to go after the call through
   // to the base class's AttachLayoutTree() because that can sometimes do a
   // close on the LayoutObject.
-  UpdateFromElement();
+  select_type_->UpdateTextStyle();
 
   if (const ComputedStyle* style = GetComputedStyle()) {
     if (style->Visibility() != EVisibility::kHidden) {
@@ -2261,6 +2240,7 @@ void HTMLSelectElement::CloneNonAttributePropertiesFrom(
 
 void HTMLSelectElement::ChangeRendering() {
   UpdateUsesMenuList();
+  select_type_->WillBeDestroyed();
   select_type_ = SelectType::Create(*this);
   if (!InActiveDocument())
     return;
@@ -2270,85 +2250,6 @@ void HTMLSelectElement::ChangeRendering() {
   DetachLayoutTree();
   SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
                                              style_change_reason::kControl));
-
-  if (UsesMenuList()) {
-    ax_menulist_last_active_index_ = -1;
-    has_updated_menulist_active_option_ = false;
-  }
-}
-
-String HTMLSelectElement::UpdateFromElement() {
-  if (!UsesMenuList())
-    return String();
-
-  HTMLOptionElement* option = OptionToBeShown();
-  String text = g_empty_string;
-  option_style_ = nullptr;
-
-  if (IsMultiple()) {
-    unsigned selected_count = 0;
-    HTMLOptionElement* selected_option_element = nullptr;
-    for (auto* const option : GetOptionList()) {
-      if (option->Selected()) {
-        if (++selected_count == 1)
-          selected_option_element = option;
-      }
-    }
-
-    if (selected_count == 1) {
-      text = selected_option_element->TextIndentedToRespectGroupLabel();
-      option_style_ = selected_option_element->GetComputedStyle();
-    } else {
-      Locale& locale = GetLocale();
-      String localized_number_string =
-          locale.ConvertToLocalizedNumber(String::Number(selected_count));
-      text = locale.QueryString(IDS_FORM_SELECT_MENU_LIST_TEXT,
-                                localized_number_string);
-      DCHECK(!option_style_);
-    }
-  } else {
-    if (option) {
-      text = option->TextIndentedToRespectGroupLabel();
-      option_style_ = option->GetComputedStyle();
-    }
-  }
-
-  auto& inner_element = InnerElement();
-  const ComputedStyle* inner_style = inner_element.GetComputedStyle();
-  if (inner_style && option_style_ &&
-      ((option_style_->Direction() != inner_style->Direction() ||
-        option_style_->GetUnicodeBidi() != inner_style->GetUnicodeBidi()))) {
-    scoped_refptr<ComputedStyle> cloned_style =
-        ComputedStyle::Clone(*inner_style);
-    cloned_style->SetDirection(option_style_->Direction());
-    cloned_style->SetUnicodeBidi(option_style_->GetUnicodeBidi());
-    if (auto* inner_layout = inner_element.GetLayoutObject()) {
-      inner_layout->SetModifiedStyleOutsideStyleRecalc(
-          std::move(cloned_style), LayoutObject::ApplyStyleChanges::kYes);
-    } else {
-      inner_element.SetComputedStyle(std::move(cloned_style));
-    }
-  }
-  if (GetLayoutObject())
-    DidUpdateMenuListActiveOption(option);
-
-  return text.StripWhiteSpace();
-}
-
-void HTMLSelectElement::UpdateMenuListLabel(const String& label) {
-  if (!UsesMenuList())
-    return;
-  InnerElement().firstChild()->setNodeValue(label);
-  // LayoutMenuList::ControlClipRect() depends on the content box size of
-  // inner_element.
-  if (auto* box = GetLayoutBox()) {
-    box->SetNeedsPaintPropertyUpdate();
-    if (auto* layer = box->Layer())
-      layer->SetNeedsCompositingInputsUpdate();
-
-    if (auto* cache = GetDocument().ExistingAXObjectCache())
-      cache->TextChanged(box);
-  }
 }
 
 const ComputedStyle* HTMLSelectElement::OptionStyle() const {

@@ -17,7 +17,7 @@
   // From UnidirectionalStreamsTransport
   // TODO(ricea): Change this to Promise<SendStream> once the IDL compiler is
   // fixed. See https://crbug.com/1047113.
-  [CallWith=ScriptState, RaisesException] Promise<any>
+  [CallWith=ScriptState, RaisesException] Promise<SendStream>
       createSendStream();
 
   // From DatagramTransport mixin

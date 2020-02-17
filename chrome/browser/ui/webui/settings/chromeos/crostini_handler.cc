@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/crostini/crostini_installer.h"
+#include "chrome/browser/chromeos/crostini/crostini_port_forwarder.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
@@ -118,6 +119,10 @@ void CrostiniHandler::RegisterMessages() {
       base::BindRepeating(
           &CrostiniHandler::HandleCrostiniUpgraderDialogStatusRequest,
           weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "addCrostiniPortForward",
+      base::BindRepeating(&CrostiniHandler::HandleAddCrostiniPortForward,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CrostiniHandler::OnJavascriptAllowed() {
@@ -425,6 +430,37 @@ void CrostiniHandler::HandleCrostiniUpgraderDialogStatusRequest(
   bool is_open = crostini::CrostiniManager::GetForProfile(profile_)
                      ->GetCrostiniDialogStatus(crostini::DialogType::UPGRADER);
   OnCrostiniDialogStatusChanged(crostini::DialogType::UPGRADER, is_open);
+}
+
+void CrostiniHandler::HandleAddCrostiniPortForward(
+    const base::ListValue* args) {
+  CHECK_EQ(6U, args->GetSize());
+
+  std::string callback_id;
+  CHECK(args->GetString(0, &callback_id));
+  std::string vm_name;
+  CHECK(args->GetString(1, &vm_name));
+  std::string container_name;
+  CHECK(args->GetString(2, &container_name));
+  int port_number;
+  CHECK(args->GetInteger(3, &port_number));
+  int protocol_type;
+  CHECK(args->GetInteger(4, &protocol_type));
+  std::string label;
+  CHECK(args->GetString(5, &label));
+
+  crostini::CrostiniPortForwarder::GetForProfile(profile_)->AddPort(
+      crostini::ContainerId(std::move(vm_name), std::move(container_name)),
+      port_number,
+      static_cast<crostini::CrostiniPortForwarder::Protocol>(protocol_type),
+      std::move(label),
+      base::Bind(&CrostiniHandler::OnPortForwardComplete,
+                 weak_ptr_factory_.GetWeakPtr(), std::move(callback_id)));
+}
+
+void CrostiniHandler::OnPortForwardComplete(std::string callback_id,
+                                            bool success) {
+  ResolveJavascriptCallback(base::Value(callback_id), base::Value(success));
 }
 
 }  // namespace settings

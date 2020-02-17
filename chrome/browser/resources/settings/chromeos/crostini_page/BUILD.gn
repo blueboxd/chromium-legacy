@@ -11,6 +11,7 @@ js_type_check("closure_compile") {
     ":crostini_disk_resize",
     ":crostini_export_import",
     ":crostini_page",
+    ":crostini_port_forwarding",
     ":crostini_shared_paths",
     ":crostini_shared_usb_devices",
     ":crostini_subpage",

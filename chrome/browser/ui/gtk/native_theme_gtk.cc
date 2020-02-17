@@ -438,10 +438,8 @@ SkColor NativeThemeGtk::GetSystemColor(ColorId color_id,
   base::Optional<SkColor> color = color_cache_[color_id];
   if (!color) {
     color = SkColorFromColorId(color_id, this, color_scheme);
-    if (!color) {
-      color = ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-          color_id, color_scheme);
-    }
+    if (!color)
+      color = ui::NativeThemeBase::GetSystemColor(color_id, color_scheme);
     color_cache_[color_id] = color;
   }
   DCHECK(color);

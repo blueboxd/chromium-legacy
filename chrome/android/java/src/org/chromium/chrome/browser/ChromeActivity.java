@@ -1436,13 +1436,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     }
 
     /**
-     * @return A casted version of {@link #getApplication()}.
-     */
-    public ChromeApplication getChromeApplication() {
-        return (ChromeApplication) getApplication();
-    }
-
-    /**
      * Add the specified tab to bookmarks or allows to edit the bookmark if the specified tab is
      * already bookmarked. If a new bookmark is added, a snackbar will be shown.
      * @param tabToBookmark The tab that needs to be bookmarked.

@@ -58,6 +58,9 @@ class COMPONENT_EXPORT(SMBFS) SmbFsMounter {
 
     // Allow NTLM authentication to be used.
     bool allow_ntlm = false;
+
+    // Skip attempting to connect to the share.
+    bool skip_connect = false;
   };
 
   SmbFsMounter(const std::string& share_path,

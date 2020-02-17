@@ -174,7 +174,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
         blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
     version->provider_host_ = std::make_unique<ServiceWorkerProviderHost>(
         provider_info->host_remote.InitWithNewEndpointAndPassReceiver(),
-        version, context()->AsWeakPtr());
+        version.get(), context()->AsWeakPtr());
     return provider_info;
   }
 

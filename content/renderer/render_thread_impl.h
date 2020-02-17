@@ -60,6 +60,7 @@
 #include "third_party/blink/public/platform/scheduler/web_rail_mode_observer.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_connection_type.h"
+#include "third_party/blink/public/platform/web_isolate.h"
 #include "third_party/blink/public/web/web_memory_statistics.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -661,6 +662,8 @@ class CONTENT_EXPORT RenderThreadImpl
   mojo::AssociatedReceiver<mojom::Renderer> renderer_receiver_{this};
 
   mojo::AssociatedRemote<mojom::RenderMessageFilter> render_message_filter_;
+
+  std::unique_ptr<blink::WebIsolate> isolate_;
 
   RendererMemoryMetrics purge_and_suspend_memory_metrics_;
   bool needs_to_record_first_active_paint_;

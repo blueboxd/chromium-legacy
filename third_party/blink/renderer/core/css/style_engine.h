@@ -450,7 +450,8 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
       TreeScope& tree_scope,
       const HeapHashSet<Member<RuleSet>>& changed_rule_sets,
       unsigned changed_rule_flags,
-      InvalidationScope invalidation_scope);
+      InvalidationScope invalidation_scope,
+      bool rebuild_font_cache);
   void InvalidateInitialData();
 
   void UpdateViewport();
@@ -464,11 +465,14 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   const MediaQueryEvaluator& EnsureMediaQueryEvaluator();
   void UpdateStyleSheetList(TreeScope&);
 
-  void ClearFontCacheAndAddUserFonts();
+  // Returns true if any @font-face rules are added or removed.
+  bool ClearFontCacheAndAddUserFonts();
+
   void ClearKeyframeRules() { keyframes_rule_map_.clear(); }
   void ClearPropertyRules();
 
-  void AddUserFontFaceRules(const RuleSet&);
+  // Returns true if any @font-face rules are added.
+  bool AddUserFontFaceRules(const RuleSet&);
   void AddUserKeyframeRules(const RuleSet&);
   void AddUserKeyframeStyle(StyleRuleKeyframes*);
   void AddPropertyRules(const RuleSet&);

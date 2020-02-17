@@ -57,8 +57,8 @@ function wasmModuleFailed() {
 }
 
 /**
- * @param {{id:number, thumbnail:!ArrayBuffer, orientation:number,
- *          colorSpace: ColorSpace, ifd:?string}}
+ * @param {{id:number, thumbnail:!ArrayBuffer, mimeType:(string|undefined),
+ *     orientation:number, colorSpace: ColorSpace, ifd:?string}}
  *     data The data returned from the piex wasm module.
  * @constructor
  * @struct
@@ -75,6 +75,12 @@ function PiexLoaderResponse(data) {
    * @const
    */
   this.thumbnail = data.thumbnail;
+
+  /**
+   * @public {string}
+   * @const
+   */
+  this.mimeType = data.mimeType || 'image/jpeg';
 
   /**
    * @public {!ImageOrientation}
@@ -185,9 +191,8 @@ let PiexWasmPreviewImageMetadata;
  * else the source |preview| and/or |thumbnail| image metadata along with the
  * photographic |details| derived from the RAW image EXIF.
  *
- * FilesApp (and related) only use |preview| images. Preview images are JPEG.
- * The |thumbnail| images are small, lower-quality, JPEG or RGB format images
- * and are not currently used in FilesApp.
+ * The |preview| images are JPEG. The |thumbnail| images are smaller, lower-
+ * quality, JPEG or RGB format images.
  *
  * @typedef {{
  *  error:?string,
@@ -258,25 +263,19 @@ class ImageBuffer {
 
   /**
    * Returns the preview image data. If no preview image was found, returns
-   * an empty preview image.
+   * the thumbnail image.
    *
    * @param {!PiexWasmImageResult} result
    *
    * @throws {!Error} Data access security error.
    *
-   * @return {{id:number, thumbnail:!ArrayBuffer, orientation:number,
-   *          colorSpace: ColorSpace, ifd:?string}}
+   * @return {{id:number, thumbnail:!ArrayBuffer, mimeType:(string|undefined),
+   *          orientation:number, colorSpace: ColorSpace, ifd:?string}}
    */
   preview(result) {
     const preview = result.preview;
     if (!preview) {
-      return {
-        thumbnail: new ArrayBuffer(0),
-        colorSpace: ColorSpace.SRGB,
-        orientation: 1,
-        id: this.id,
-        ifd: null,
-      };
+      return this.thumbnail_(result);
     }
 
     const offset = preview.offset;
@@ -288,8 +287,150 @@ class ImageBuffer {
     const view = new Uint8Array(this.source.buffer, offset, length);
     return {
       thumbnail: new Uint8Array(view).buffer,
+      mimeType: 'image/jpeg',
       orientation: preview.orientation,
       colorSpace: preview.colorSpace,
+      ifd: this.details(result),
+      id: this.id,
+    };
+  }
+
+  /**
+   * Returns the thumbnail image. If no thumbnail image was found, returns
+   * an empty thumbnail image.
+   *
+   * @param {!PiexWasmImageResult} result
+   *
+   * @throws {!Error} Data access security error.
+   *
+   * @return {{id:number, thumbnail:!ArrayBuffer, mimeType:(string|undefined),
+   *          orientation:number, colorSpace: ColorSpace, ifd:?string}}
+   */
+  thumbnail_(result) {
+    const thumbnail = result.thumbnail;
+    if (!thumbnail) {
+      return {
+        thumbnail: new ArrayBuffer(0),
+        colorSpace: ColorSpace.SRGB,
+        orientation: 1,
+        id: this.id,
+        ifd: null,
+      };
+    }
+
+    if (thumbnail.format) {
+      return this.rgb_(result);
+    }
+
+    const offset = thumbnail.offset;
+    const length = thumbnail.length;
+    if (offset > this.length || (this.length - offset) < length) {
+      throw new Error('Thumbnail image access failed');
+    }
+
+    const view = new Uint8Array(this.source.buffer, offset, length);
+    return {
+      thumbnail: new Uint8Array(view).buffer,
+      mimeType: 'image/jpeg',
+      orientation: thumbnail.orientation,
+      colorSpace: thumbnail.colorSpace,
+      ifd: this.details(result),
+      id: this.id,
+    };
+  }
+
+  /**
+   * Returns the RGB thumbnail. If no RGB thumbnail was found, returns
+   * an empty thumbnail image.
+   *
+   * @param {!PiexWasmImageResult} result
+   *
+   * @throws {!Error} Data access security error.
+   *
+   * @return {{id:number, thumbnail:!ArrayBuffer, mimeType:(string|undefined),
+   *          orientation:number, colorSpace: ColorSpace, ifd:?string}}
+   */
+  rgb_(result) {
+    const thumbnail = result.thumbnail;
+    if (!thumbnail || thumbnail.format !== 1) {
+      return {
+        thumbnail: new ArrayBuffer(0),
+        colorSpace: ColorSpace.SRGB,
+        orientation: 1,
+        id: this.id,
+        ifd: null,
+      };
+    }
+
+    // Expect a width and height.
+    if (!thumbnail.width || !thumbnail.height) {
+      throw new Error('invalid image width or height');
+    }
+
+    const offset = thumbnail.offset;
+    const length = thumbnail.length;
+    if (offset > this.length || (this.length - offset) < length) {
+      throw new Error('Thumbnail image access failed');
+    }
+
+    const view = new Uint8Array(this.source.buffer, offset, length);
+
+    // Compute pixel row stride.
+    const rowPad = thumbnail.width & 3;
+    const rowStride = 3 * thumbnail.width + rowPad;
+
+    // Create bitmap image.
+    const pixelDataOffset = 14 + 40;
+    const fileSize = pixelDataOffset + rowStride * thumbnail.height;
+    const bitmap = new DataView(new ArrayBuffer(fileSize));
+
+    // BITMAPFILEHEADER 14 bytes.
+    bitmap.setUint8(0, 'B'.charCodeAt(0));
+    bitmap.setUint8(1, 'M'.charCodeAt(0));
+    bitmap.setUint32(2, fileSize /* bytes */, true);
+    bitmap.setUint32(6, /* Reserved */ 0, true);
+    bitmap.setUint32(10, pixelDataOffset, true);
+
+    // DIB BITMAPINFOHEADER 40 bytes.
+    bitmap.setUint32(14, /* HeaderSize */ 40, true);
+    bitmap.setInt32(18, thumbnail.width, true);
+    bitmap.setInt32(22, -thumbnail.height /* top-down DIB */, true);
+    bitmap.setInt16(26, /* ColorPlanes */ 1, true);
+    bitmap.setInt16(28, /* BitsPerPixel BI_RGB */ 24, true);
+    bitmap.setUint32(30, /* Compression: BI_RGB none */ 0, true);
+    bitmap.setUint32(34, /* ImageSize: 0 not compressed */ 0, true);
+    bitmap.setInt32(38, /* XPixelsPerMeter */ 0, true);
+    bitmap.setInt32(42, /* YPixelPerMeter */ 0, true);
+    bitmap.setUint32(46, /* TotalPalletColors */ 0, true);
+    bitmap.setUint32(50, /* ImportantColors */ 0, true);
+
+    // Write RGB row pixels in top-down DIB order.
+    let output = pixelDataOffset;
+    for (let i = 0, y = thumbnail.height; y > 0; --y) {
+      for (let x = thumbnail.width; x > 0; --x) {
+        const R = view[i++];
+        const G = view[i++];
+        const B = view[i++];
+        bitmap.setUint8(output++, B);  // B
+        bitmap.setUint8(output++, G);  // G
+        bitmap.setUint8(output++, R);  // R
+      }
+
+      switch (rowPad) {
+        case 3:
+          bitmap.setUint8(output++, 0);
+        case 2:
+          bitmap.setUint8(output++, 0);
+        case 1:
+          bitmap.setUint8(output++, 0);
+      }
+    }
+
+    return {
+      thumbnail: bitmap.buffer,
+      mimeType: 'image/bmp',
+      orientation: thumbnail.orientation,
+      colorSpace: thumbnail.colorSpace,
       ifd: this.details(result),
       id: this.id,
     };

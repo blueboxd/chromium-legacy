@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/native_theme/common_theme.h"
 
 namespace ui {
 
@@ -17,6 +18,11 @@ NativeTheme::ExtraParams::ExtraParams() {
 
 NativeTheme::ExtraParams::ExtraParams(const ExtraParams& other) {
   memcpy(this, &other, sizeof(*this));
+}
+
+SkColor NativeTheme::GetSystemColor(ColorId color_id,
+                                    ColorScheme color_scheme) const {
+  return GetAuraColor(color_id, this, color_scheme);
 }
 
 float NativeTheme::GetBorderRadiusForPart(Part part,

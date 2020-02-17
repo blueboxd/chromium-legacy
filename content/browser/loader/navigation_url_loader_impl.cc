@@ -956,36 +956,25 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          network::mojom::URLResponseHeadPtr head) override {
+    net::Error error = net::OK;
     if (!bypass_redirect_checks_ &&
         !IsSafeRedirectTarget(url_, redirect_info.new_url)) {
-      // Call CancelWithError instead of OnComplete so that if there is an
-      // intercepting URLLoaderFactory (created through the embedder's
-      // ContentBrowserClient::WillCreateURLLoaderFactory) it gets notified.
-      if (url_loader_) {
-        url_loader_->CancelWithError(
-            net::ERR_UNSAFE_REDIRECT,
-            base::StringPiece(base::NumberToString(net::ERR_UNSAFE_REDIRECT)));
-      } else {
-        OnComplete(
-            network::URLLoaderCompletionStatus(net::ERR_UNSAFE_REDIRECT));
-      }
-      return;
+      error = net::ERR_UNSAFE_REDIRECT;
+    } else if (--redirect_limit_ == 0) {
+      error = net::ERR_TOO_MANY_REDIRECTS;
     }
-
-    // Only decrement the redirect_limit_ when url_loader_ is there.
-    // It can be nullptr e.g. when SignedExchangeRequestHandler takes
-    // over and invokes a fake redirect (via MaybeCreateLoaderForResponse
-    // and SignedExchangeLoader::OnHTTPExchangeFound), crbug.com/994439.
-    if (url_loader_)
-      redirect_limit_--;
-
-    if (redirect_limit_ == 0) {
-      DCHECK(url_loader_);
-      // Call CancelWithError instead of OnComplete so that if there is an
-      // intercepting URLLoaderFactory it gets notified.
-      url_loader_->CancelWithError(
-          net::ERR_TOO_MANY_REDIRECTS,
-          base::StringPiece(base::NumberToString(net::ERR_TOO_MANY_REDIRECTS)));
+    if (error != net::OK) {
+      if (url_loader_) {
+        // Call CancelWithError instead of OnComplete so that if there is an
+        // intercepting URLLoaderFactory (created through the embedder's
+        // ContentBrowserClient::WillCreateURLLoaderFactory) it gets notified.
+        url_loader_->CancelWithError(
+            error, base::StringPiece(base::NumberToString(error)));
+      } else {
+        // TODO(crbug.com/1052242): Make sure ResetWithReason() is called on the
+        // original url_loader_.
+        OnComplete(network::URLLoaderCompletionStatus(error));
+      }
       return;
     }
 

@@ -248,6 +248,22 @@ SkColor GetAuraColor(NativeTheme::ColorId color_id,
     case NativeTheme::kColorId_ButtonBorderColor:
       return gfx::kGoogleGrey300;
 
+    // ToggleButton
+    case NativeTheme::kColorId_ToggleButtonShadowColor:
+      return SkColorSetA(
+          base_theme->GetSystemColor(NativeTheme::kColorId_LabelEnabledColor,
+                                     color_scheme),
+          0x99);
+    case ui::NativeTheme::kColorId_ToggleButtonTrackColorOff:
+    case ui::NativeTheme::kColorId_ToggleButtonTrackColorOn: {
+      const ui::NativeTheme::ColorId base_color_id =
+          color_id == ui::NativeTheme::kColorId_ToggleButtonTrackColorOff
+              ? ui::NativeTheme::kColorId_LabelEnabledColor
+              : ui::NativeTheme::kColorId_ProminentButtonColor;
+      return SkColorSetA(
+          base_theme->GetSystemColor(base_color_id, color_scheme), 0x66);
+    }
+
     // MenuItem
     case NativeTheme::kColorId_EnabledMenuItemForegroundColor:
     case NativeTheme::kColorId_SelectedMenuItemForegroundColor:

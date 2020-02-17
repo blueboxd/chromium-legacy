@@ -237,7 +237,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   };
   InitialScrollState& GetInitialScrollState() { return initial_scroll_state_; }
 
-  void DispatchLinkHeaderPreloads(const base::Optional<ViewportDescription>&,
+  void DispatchLinkHeaderPreloads(const ViewportDescription*,
                                   PreloadHelper::MediaPreloadPolicy);
 
   void SetServiceWorkerNetworkProvider(

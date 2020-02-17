@@ -109,6 +109,26 @@ class AssertNavigationHandleFlagObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(AssertNavigationHandleFlagObserver);
 };
 
+class FinishNavigationObserver : public WebContentsObserver {
+ public:
+  FinishNavigationObserver(WebContents* contents,
+                           base::OnceClosure done_closure)
+      : WebContentsObserver(contents), done_closure_(std::move(done_closure)) {}
+
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    error_code_ = navigation_handle->GetNetErrorCode();
+    std::move(done_closure_).Run();
+  }
+
+  const base::Optional<net::Error>& error_code() const { return error_code_; }
+
+ private:
+  base::OnceClosure done_closure_;
+  base::Optional<net::Error> error_code_;
+
+  DISALLOW_COPY_AND_ASSIGN(FinishNavigationObserver);
+};
+
 class MockContentBrowserClient final : public ContentBrowserClient {
  public:
   std::string GetAcceptLangs(BrowserContext* context) override {
@@ -1020,8 +1040,8 @@ class SignedExchangeAcceptHeaderBrowserTest
     https_server_.ServeFilesFromSourceDirectory("content/test/data");
     https_server_.RegisterRequestHandler(
         base::BindRepeating(&self::RedirectResponseHandler));
-    https_server_.RegisterRequestHandler(
-        base::BindRepeating(&self::FallbackSxgResponseHandler));
+    https_server_.RegisterRequestHandler(base::BindRepeating(
+        &self::FallbackSxgResponseHandler, base::Unretained(this)));
     https_server_.RegisterRequestMonitor(
         base::BindRepeating(&self::MonitorRequest, base::Unretained(this)));
     ASSERT_TRUE(https_server_.Start());
@@ -1118,14 +1138,18 @@ class SignedExchangeAcceptHeaderBrowserTest
 
   // Responds with a prologue-only signed exchange that triggers a fallback
   // redirect.
-  static std::unique_ptr<net::test_server::HttpResponse>
-  FallbackSxgResponseHandler(const net::test_server::HttpRequest& request) {
+  std::unique_ptr<net::test_server::HttpResponse> FallbackSxgResponseHandler(
+      const net::test_server::HttpRequest& request) {
     const std::string prefix = "/fallback_sxg?";
     if (!base::StartsWith(request.relative_url, prefix,
                           base::CompareCase::SENSITIVE)) {
       return std::unique_ptr<net::test_server::HttpResponse>();
     }
     std::string fallback_url(request.relative_url.substr(prefix.length()));
+    if (fallback_url.empty()) {
+      // If fallback URL is not specified, fallback to itself.
+      fallback_url = https_server_.GetURL(prefix).spec();
+    }
 
     std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
         new net::test_server::BasicHttpResponse);
@@ -1193,6 +1217,23 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
 
   CheckNavigationAcceptHeader({test_url});
   CheckFallbackAcceptHeader({fallback_url});
+}
+
+IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,
+                       FallbackRedirectLoop) {
+  if (!IsSignedExchangeEnabled())
+    return;
+
+  base::RunLoop run_loop;
+  FinishNavigationObserver finish_navigation_observer(shell()->web_contents(),
+                                                      run_loop.QuitClosure());
+  const GURL test_url = https_server_.GetURL("/fallback_sxg?");
+  EXPECT_FALSE(NavigateToURL(shell()->web_contents(), test_url));
+  run_loop.Run();
+  ASSERT_TRUE(finish_navigation_observer.error_code())
+      << "Unexpected navigation success: " << test_url;
+  EXPECT_EQ(net::ERR_TOO_MANY_REDIRECTS,
+            *finish_navigation_observer.error_code());
 }
 
 IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest,

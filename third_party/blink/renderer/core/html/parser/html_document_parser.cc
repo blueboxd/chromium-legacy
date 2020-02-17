@@ -340,7 +340,8 @@ void HTMLDocumentParser::EnqueueTokenizedChunk(
     // Note that on commit, the loader dispatched preloads for all the non-media
     // links.
     GetDocument()->Loader()->DispatchLinkHeaderPreloads(
-        chunk->viewport, PreloadHelper::kOnlyLoadMedia);
+        base::OptionalOrNullptr(chunk->viewport),
+        PreloadHelper::kOnlyLoadMedia);
     tried_loading_link_headers_ = true;
     if (GetDocument()->Loader()->GetPrefetchedSignedExchangeManager()) {
       // Link header preloads for prefetched signed exchanges won't be started

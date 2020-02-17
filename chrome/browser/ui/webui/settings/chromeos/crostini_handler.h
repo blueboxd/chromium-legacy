@@ -88,6 +88,10 @@ class CrostiniHandler : public ::settings::SettingsPageUIHandler,
   bool CheckEligibilityToChangeArcAdbSideloading() const;
   // Handle a request for the CrostiniUpgraderDialog status.
   void HandleCrostiniUpgraderDialogStatusRequest(const base::ListValue* args);
+  // Handles a request for forwarding a new port.
+  void HandleAddCrostiniPortForward(const base::ListValue* args);
+  // Callback of port forwarding requests.
+  void OnPortForwardComplete(std::string callback_id, bool success);
 
   Profile* profile_;
   // weak_ptr_factory_ should always be last member.

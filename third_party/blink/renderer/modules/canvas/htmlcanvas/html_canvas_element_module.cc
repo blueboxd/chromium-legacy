@@ -18,8 +18,8 @@ void HTMLCanvasElementModule::getContext(
     HTMLCanvasElement& canvas,
     const String& type,
     const CanvasContextCreationAttributesModule* attributes,
-    ExceptionState& exception_state,
-    RenderingContext& result) {
+    RenderingContext& result,
+    ExceptionState& exception_state) {
   if (canvas.SurfaceLayerBridge() && !canvas.LowLatencyEnabled()) {
     // The existence of canvas surfaceLayerBridge indicates that
     // HTMLCanvasElement.transferControlToOffscreen() has been called.

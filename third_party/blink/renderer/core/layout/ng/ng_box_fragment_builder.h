@@ -269,6 +269,13 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   void SetBaseline(LayoutUnit baseline) { baseline_ = baseline; }
   base::Optional<LayoutUnit> Baseline() const { return baseline_; }
 
+  // Sets the last baseline for this fragment.
+  void SetLastBaseline(LayoutUnit baseline) {
+    DCHECK_EQ(space_->BaselineAlgorithmType(),
+              NGBaselineAlgorithmType::kInlineBlock);
+    last_baseline_ = baseline;
+  }
+
   // The |NGFragmentItemsBuilder| for the inline formatting context of this box.
   NGFragmentItemsBuilder* ItemsBuilder() { return items_builder_; }
   void SetItemsBuilder(NGFragmentItemsBuilder* builder) {
@@ -345,6 +352,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   EBreakBetween previous_break_after_ = EBreakBetween::kAuto;
 
   base::Optional<LayoutUnit> baseline_;
+  base::Optional<LayoutUnit> last_baseline_;
   NGBorderEdges border_edges_;
 
   scoped_refptr<SerializedScriptValue> custom_layout_data_;

@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/chromeos/file_system_provider/mount_path_util.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
@@ -158,7 +159,11 @@ SmbService::SmbService(Profile* profile,
     return;
   }
 
-  CompleteSetup();
+  // Post a task to complete setup. This is to allow unit tests to perform
+  // expectations setup after constructing an instance. It also mirrors the
+  // behaviour when Kerberos is being used.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&SmbService::CompleteSetup, AsWeakPtr()));
 }
 
 SmbService::~SmbService() {
@@ -384,6 +389,7 @@ void SmbService::MountInternal(
     smbfs_options.workgroup = info.workgroup();
     smbfs_options.password = password;
     smbfs_options.allow_ntlm = IsNTLMAuthenticationEnabled();
+    smbfs_options.skip_connect = skip_connect;
     if (info.use_kerberos()) {
       if (user->IsActiveDirectoryUser()) {
         smbfs_options.kerberos_options =
@@ -405,6 +411,11 @@ void SmbService::MountInternal(
     std::unique_ptr<SmbFsShare> mount =
         std::make_unique<SmbFsShare>(profile_, info.share_url().ToString(),
                                      info.display_name(), smbfs_options);
+    if (smbfs_mounter_creation_callback_) {
+      mount->SetMounterCreationCallbackForTest(
+          smbfs_mounter_creation_callback_);
+    }
+
     SmbFsShare* raw_mount = mount.get();
     const std::string mount_id = mount->mount_id();
     smbfs_shares_[mount_id] = std::move(mount);
@@ -734,6 +745,11 @@ void SmbService::OnSetupCompleteForTesting(base::OnceClosure callback) {
     return;
   }
   setup_complete_callback_ = std::move(callback);
+}
+
+void SmbService::SetSmbFsMounterCreationCallbackForTesting(
+    SmbFsShare::MounterCreationCallback callback) {
+  smbfs_mounter_creation_callback_ = std::move(callback);
 }
 
 void SmbService::RegisterHostLocators() {

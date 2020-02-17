@@ -650,6 +650,21 @@
     <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_BUTTON_DESCRIPTION" desc="Accessibility label for the button to open a dialog to add a new port.">
       Add Port
     </message>
+    <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_TITLE" desc="Title for the add port dialog box.">
+      Add port number
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_PORT_DIALOG_LABEL" desc="Label for the text input of an optional label.">
+      Label (Optional)
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_TCP" desc="Label for the TCP protocol when forwarding ports.">
+      TCP
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_UDP" desc="Label for the UDP protocol when forwarding ports.">
+      UDP
+    </message>
+    <message name="IDS_SETTINGS_CROSTINI_PORT_FORWARDING_ADD_ERROR" desc="Description for the error when adding an invalid port.">
+      Error forwarding port
+    </message>
     <message name="IDS_SETTINGS_CROSTINI_DISK_RESIZE_TITLE" desc="The title of the settings section on which the user performs Crostini disk management operations such as resizing their disk." meaning="The title of the page where a user performs disk management operations.">
       Disk resizing &amp; management
     </message>

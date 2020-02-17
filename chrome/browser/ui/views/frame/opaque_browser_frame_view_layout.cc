@@ -546,7 +546,10 @@ void OpaqueBrowserFrameViewLayout::SetView(int id, views::View* view) {
       window_title_ = static_cast<views::Label*>(view);
       break;
     case VIEW_ID_WEB_APP_FRAME_TOOLBAR:
-      DCHECK_EQ(view->GetClassName(), WebAppFrameToolbarView::kViewClassName);
+      if (view) {
+        DCHECK_EQ(std::string(WebAppFrameToolbarView::kViewClassName),
+                  view->GetClassName());
+      }
       web_app_frame_toolbar_ = static_cast<WebAppFrameToolbarView*>(view);
       break;
     default:

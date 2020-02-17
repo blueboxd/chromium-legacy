@@ -132,6 +132,7 @@ void SmbFsMounter::OnMountDone(
   mount_options->username = options_.username;
   mount_options->workgroup = options_.workgroup;
   mount_options->allow_ntlm = options_.allow_ntlm;
+  mount_options->skip_connect = options_.skip_connect;
 
   if (options_.kerberos_options) {
     mojom::KerberosConfigPtr kerberos_config = mojom::KerberosConfig::New();

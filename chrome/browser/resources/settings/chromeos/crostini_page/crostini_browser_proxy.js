@@ -16,6 +16,14 @@ let CrostiniSharedPath;
 let CrostiniSharedUsbDevice;
 
 /**
+ * @typedef {{label: string,
+ *            port_number: number,
+ *            active: boolean,
+ *            protocol_type: number}}
+ */
+let CrostiniPortSetting;
+
+/**
  * @fileoverview A helper object used by the "Linux Apps" (Crostini) section
  * to install and uninstall Crostini.
  */
@@ -91,6 +99,18 @@ cr.define('settings', function() {
      * current upgrader dialog status
      */
     requestCrostiniUpgraderDialogStatus() {}
+
+    /**
+     * @param {string} vmName Name of vm to add port forwarding for.
+     * @param {string} containerName Name of container to add port forwarding
+     *     for.
+     * @param {string} portNumber Port number to start forwarding.
+     * @param {number} protocolIndex Protocol index for this port forward: {TCP
+     *     = 0, UDP = 1}
+     * @param {string} label Label for this port.
+     */
+    addCrostiniPortForward(
+        vmName, containerName, portNumber, protocolIndex, label) {}
   }
 
   /** @implements {settings.CrostiniBrowserProxy} */
@@ -168,6 +188,13 @@ cr.define('settings', function() {
     /** @override */
     requestCrostiniUpgraderDialogStatus() {
       chrome.send('requestCrostiniUpgraderDialogStatus');
+    }
+
+    addCrostiniPortForward(
+        vmName, containerName, portNumber, protocolIndex, label) {
+      return cr.sendWithPromise(
+          'addCrostiniPortForward', vmName, containerName, portNumber,
+          protocolIndex, label);
     }
   }
 

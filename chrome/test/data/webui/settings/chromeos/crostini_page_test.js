@@ -8,14 +8,16 @@ let crostiniPage = null;
 /** @type {?TestCrostiniBrowserProxy} */
 let crostiniBrowserProxy = null;
 
-function setCrostiniPrefs(enabled, opt_sharedPaths, opt_sharedUsbDevices) {
+function setCrostiniPrefs(
+    enabled, opt_sharedPaths, opt_sharedUsbDevices, opt_forwardedPorts) {
   crostiniPage.prefs = {
     crostini: {
       enabled: {value: enabled},
+      port_forwarding: {ports: {value: opt_forwardedPorts || []}},
     },
     guest_os: {
       paths_shared_to_vms: {value: opt_sharedPaths || {}},
-    }
+    },
   };
   crostiniBrowserProxy.sharedUsbDevices = opt_sharedUsbDevices || [];
   Polymer.dom.flush();
@@ -280,12 +282,109 @@ suite('CrostiniPageTests', function() {
           });
     });
 
-    test('PortForwarding', function() {
-      assertTrue(!!subpage.$$('#crostini-port-forwarding'));
-      subpage.$$('#crostini-port-forwarding').click();
-      return flushAsync().then(() => {
-        subpage = crostiniPage.$$('settings-crostini-port-forwarding');
-        assertTrue(!!subpage);
+    suite('SubPagePortForwarding', function() {
+      /** @type {?SettingsCrostiniPortForwarding} */
+      let subpage;
+      setup(function() {
+        setCrostiniPrefs(true, {}, [], [
+          {
+            'port_number': 5000,
+            'protocol_type': 0,
+            'label': 'Label1',
+            'active': true
+          },
+          {
+            'port_number': 5001,
+            'protocol_type': 1,
+            'label': 'Label2',
+            'active': false
+          },
+        ]);
+
+        return flushAsync()
+            .then(() => {
+              settings.Router.getInstance().navigateTo(
+                  settings.routes.CROSTINI_PORT_FORWARDING);
+              return flushAsync();
+            })
+            .then(() => {
+              subpage = crostiniPage.$$('settings-crostini-port-forwarding');
+              assertTrue(!!subpage);
+            });
+      });
+
+      test('Forwarded ports are shown', function() {
+        // Extra list item for the titles.
+        assertEquals(
+            3, subpage.shadowRoot.querySelectorAll('.list-item').length);
+      });
+
+      test('AddPortSuccess', function() {
+        return flushAsync()
+            .then(() => {
+              subpage = crostiniPage.$$('settings-crostini-port-forwarding');
+              subpage.$$('#addPort cr-button').click();
+              return flushAsync();
+            })
+            .then(() => {
+              subpage = subpage.$$('settings-crostini-add-port-dialog');
+              const portNumberInput = subpage.$$('#portNumberInput');
+              portNumberInput.value = '5000';
+              const portLabelInput = subpage.$$('#portLabelInput');
+              portLabelInput.value = 'Some Label';
+              subpage.$$('cr-dialog cr-button[id="continue"]').click();
+              assertEquals(
+                  1,
+                  crostiniBrowserProxy.getCallCount('addCrostiniPortForward'));
+            });
+      });
+
+      test('AddPortFail', function() {
+        return flushAsync()
+            .then(() => {
+              subpage = crostiniPage.$$('settings-crostini-port-forwarding');
+              subpage.$$('#addPort cr-button').click();
+              return flushAsync();
+            })
+            .then(() => {
+              subpage = subpage.$$('settings-crostini-add-port-dialog');
+              const portNumberInput = subpage.$$('#portNumberInput');
+              portNumberInput.value = 'INVALID_PORT_NUMBER';
+              const portLabelInput = subpage.$$('#portLabelInput');
+              portLabelInput.value = 'Some Label';
+              subpage.$$('cr-dialog cr-button[id="continue"]').click();
+              assertEquals(
+                  0,
+                  crostiniBrowserProxy.getCallCount('addCrostiniPortForward'));
+              portNumberInput.value = '65536';
+              subpage.$$('cr-dialog cr-button[id="continue"]').click();
+              assertEquals(
+                  0,
+                  crostiniBrowserProxy.getCallCount('addCrostiniPortForward'));
+              portNumberInput.value = '65535';
+              subpage.$$('cr-dialog cr-button[id="continue"]').click();
+              assertEquals(
+                  1,
+                  crostiniBrowserProxy.getCallCount('addCrostiniPortForward'));
+            });
+      });
+
+      test('AddPortCancel', function() {
+        return flushAsync()
+            .then(() => {
+              subpage = crostiniPage.$$('settings-crostini-port-forwarding');
+              subpage.$$('#addPort cr-button').click();
+              return flushAsync();
+            })
+            .then(() => {
+              subpage = subpage.$$('settings-crostini-add-port-dialog');
+              subpage.$$('cr-dialog cr-button[id="cancel"]').click();
+              return flushAsync();
+            })
+            .then(() => {
+              subpage = crostiniPage.$$('settings-crostini-port-forwarding');
+              assertTrue(!!subpage);
+            });
       });
     });
 

@@ -478,6 +478,16 @@ void ServiceWorkerVersion::StopWorker(base::OnceClosure callback) {
         return;
       }
       stop_callbacks_.push_back(std::move(callback));
+
+      // Protect |this| until Stop() correctly finished. Otherwise the
+      // |stop_callbacks_| might not be called. The destruction of |this| could
+      // happen before the message OnStopped() when the final
+      // ServiceWorkerObjectHost is destructed because of the termination.
+      // Note that this isn't necessary to be the final element of
+      // |stop_callbacks_| because there's another logic to protect |this| when
+      // calling |stop_callbacks_|.
+      stop_callbacks_.push_back(base::BindOnce(
+          [](scoped_refptr<content::ServiceWorkerVersion>) {}, protect));
       return;
     }
     case EmbeddedWorkerStatus::STOPPING:
@@ -1724,8 +1734,8 @@ void ServiceWorkerVersion::StartWorkerInternal() {
       blink::mojom::ServiceWorkerProviderInfoForStartWorker::New();
   DCHECK(!provider_host_);
   provider_host_ = std::make_unique<ServiceWorkerProviderHost>(
-      provider_info->host_remote.InitWithNewEndpointAndPassReceiver(),
-      base::WrapRefCounted(this), context());
+      provider_info->host_remote.InitWithNewEndpointAndPassReceiver(), this,
+      context());
 
   auto params = blink::mojom::EmbeddedWorkerStartParams::New();
   params->service_worker_version_id = version_id_;

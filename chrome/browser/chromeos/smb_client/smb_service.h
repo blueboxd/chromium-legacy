@@ -117,6 +117,12 @@ class SmbService : public KeyedService,
   // and is still enabled now.
   bool IsKerberosEnabledViaPolicy() const;
 
+  // Sets the mounter creation callback, which is passed to
+  // SmbFsShare::SetMounterCreationCallbackForTest() when a new SmbFs share is
+  // created.
+  void SetSmbFsMounterCreationCallbackForTesting(
+      SmbFsShare::MounterCreationCallback callback);
+
  private:
   friend class SmbServiceTest;
 
@@ -308,6 +314,7 @@ class SmbService : public KeyedService,
   std::unique_ptr<SmbKerberosCredentialsUpdater> smb_credentials_updater_;
 
   base::OnceClosure setup_complete_callback_;
+  SmbFsShare::MounterCreationCallback smbfs_mounter_creation_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SmbService);
 };

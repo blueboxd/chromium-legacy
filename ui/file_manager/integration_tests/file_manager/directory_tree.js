@@ -105,7 +105,7 @@
 
     // Open FilesApp on Downloads and expand the tree view of Downloads.
     const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, folders, []);
-    await expandRoot(appId, TREEITEM_DOWNLOADS);
+    await recursiveExpand(appId, '/My files/Downloads');
 
     // Verify the directory tree is not vertically scrolled.
     const directoryTree = '#directory-tree';
@@ -131,7 +131,7 @@
     // Open FilesApp on Downloads and expand the tree view of Downloads.
     const appId = await setupAndWaitUntilReady(
         RootPath.DOWNLOADS, BASIC_LOCAL_ENTRY_SET, []);
-    await expandRoot(appId, TREEITEM_DOWNLOADS);
+    await recursiveExpand(appId, '/My files/Downloads');
 
     // Verify the directory tree is not horizontally scrolled.
     const directoryTree = '#directory-tree';

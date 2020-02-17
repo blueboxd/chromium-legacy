@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_PRELOAD_HELPER_H_
 
 #include "base/optional.h"
-#include "third_party/blink/renderer/core/page/viewport_description.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 
 namespace blink {
@@ -16,6 +15,7 @@ class Document;
 class LocalFrame;
 class SingleModuleClient;
 struct LinkLoadParameters;
+struct ViewportDescription;
 
 // PreloadHelper is a helper class for preload, module preload, prefetch,
 // DNS prefetch, and preconnect triggered by <link> elements and "Link" HTTP
@@ -41,9 +41,9 @@ class PreloadHelper final {
       Document*,  // can be nullptr
       CanLoadResources,
       MediaPreloadPolicy,
-      const base::Optional<ViewportDescription>&,
+      const ViewportDescription*,  // can be nullptr
       std::unique_ptr<AlternateSignedExchangeResourceInfo>,
-      base::Optional<base::UnguessableToken>);
+      const base::UnguessableToken* /* can be nullptr */);
   static Resource* StartPreload(ResourceType,
                                 FetchParameters&,
                                 ResourceFetcher*);
@@ -67,11 +67,11 @@ class PreloadHelper final {
                                    Document&,
                                    const KURL& base_url,
                                    LinkCaller,
-                                   const base::Optional<ViewportDescription>&,
+                                   const ViewportDescription*,
                                    ParserDisposition);
   static void ModulePreloadIfNeeded(const LinkLoadParameters&,
                                     Document&,
-                                    const base::Optional<ViewportDescription>&,
+                                    const ViewportDescription*,
                                     SingleModuleClient*);
 
   static base::Optional<ResourceType> GetResourceTypeFromAsAttribute(

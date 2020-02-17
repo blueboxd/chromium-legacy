@@ -259,7 +259,7 @@ TEST_F(RemotePlaybackTest,
   remote_playback.prompt(scope.GetScriptState())
       .Then(resolve->Bind(), reject->Bind());
   HTMLMediaElementRemotePlayback::SetBooleanAttribute(
-      html_names::kDisableremoteplaybackAttr, *element, true);
+      *element, html_names::kDisableremoteplaybackAttr, true);
 
   // Runs pending promises.
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
@@ -299,7 +299,7 @@ TEST_F(RemotePlaybackTest, DisableRemotePlaybackCancelsAvailabilityCallbacks) {
       .Then(resolve->Bind(), reject->Bind());
 
   HTMLMediaElementRemotePlayback::SetBooleanAttribute(
-      html_names::kDisableremoteplaybackAttr, *element, true);
+      *element, html_names::kDisableremoteplaybackAttr, true);
 
   // Runs pending promises.
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());

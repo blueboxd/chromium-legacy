@@ -42,6 +42,7 @@
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
+#include "third_party/blink/renderer/platform/bindings/blink_isolate/blink_isolate.h"
 #include "third_party/blink/renderer/platform/bindings/parkable_string_manager.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache_memory_dump_provider.h"
@@ -131,6 +132,8 @@ namespace {
 
 class SimpleMainThread : public Thread {
  public:
+  SimpleMainThread() : isolate_(WebIsolate::Create()) {}
+
   // We rely on base::ThreadTaskRunnerHandle for tasks posted on the main
   // thread. The task runner handle may not be available on Blink's startup
   // (== on SimpleMainThread's construction), because some tests like
@@ -164,6 +167,7 @@ class SimpleMainThread : public Thread {
  private:
   bool IsSimpleMainThread() const override { return true; }
 
+  std::unique_ptr<WebIsolate> isolate_;
   scheduler::SimpleThreadScheduler scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner>
       main_thread_task_runner_for_testing_;

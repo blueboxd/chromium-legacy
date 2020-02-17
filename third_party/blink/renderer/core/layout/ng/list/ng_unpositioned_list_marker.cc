@@ -78,7 +78,7 @@ base::Optional<LayoutUnit> NGUnpositionedListMarker::ContentAlignmentBaseline(
   // https://github.com/w3c/csswg-drafts/issues/2417
   return NGBoxFragment(space.GetWritingMode(), space.Direction(),
                        To<NGPhysicalBoxFragment>(content))
-      .Baseline();
+      .FirstBaseline();
 }
 
 void NGUnpositionedListMarker::AddToBox(

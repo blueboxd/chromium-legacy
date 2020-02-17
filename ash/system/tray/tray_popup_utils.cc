@@ -151,26 +151,6 @@ class HighlightPathGenerator : public views::HighlightPathGenerator {
   const TrayPopupInkDropStyle ink_drop_style_;
 };
 
-class TrayToggleButton : public views::ToggleButton {
- public:
-  explicit TrayToggleButton(views::ButtonListener* listener)
-      : views::ToggleButton(listener) {
-    SetThumbColors(GetTrackBaseColor(true /*is_on*/),
-                   GetTrackBaseColor(false /*is_on*/));
-  }
-
- private:
-  // views::ToggleButton:
-  SkColor GetTrackBaseColor(bool is_on) const override {
-    AshColorProvider::ContentLayerType type =
-        is_on ? AshColorProvider::ContentLayerType::kProminentIconButton
-              : AshColorProvider::ContentLayerType::kTextPrimary;
-
-    return AshColorProvider::Get()->GetContentLayerColor(
-        type, AshColorProvider::AshColorMode::kDark);
-  }
-};
-
 }  // namespace
 
 TriView* TrayPopupUtils::CreateDefaultRowView() {
@@ -250,7 +230,17 @@ views::Slider* TrayPopupUtils::CreateSlider(views::SliderListener* listener) {
 views::ToggleButton* TrayPopupUtils::CreateToggleButton(
     views::ButtonListener* listener,
     int accessible_name_id) {
-  views::ToggleButton* toggle = new TrayToggleButton(listener);
+  constexpr SkColor kTrackAlpha = 0x66;
+  auto GetColor = [](bool is_on, SkAlpha alpha = SK_AlphaOPAQUE) {
+    AshColorProvider::ContentLayerType type =
+        is_on ? AshColorProvider::ContentLayerType::kProminentIconButton
+              : AshColorProvider::ContentLayerType::kTextPrimary;
+
+    return SkColorSetA(AshColorProvider::Get()->GetContentLayerColor(
+                           type, AshColorProvider::AshColorMode::kDark),
+                       alpha);
+  };
+  views::ToggleButton* toggle = new views::ToggleButton(listener);
   const gfx::Size toggle_size(toggle->GetPreferredSize());
   const int vertical_padding = (kMenuButtonSize - toggle_size.height()) / 2;
   const int horizontal_padding =
@@ -258,6 +248,10 @@ views::ToggleButton* TrayPopupUtils::CreateToggleButton(
   toggle->SetBorder(views::CreateEmptyBorder(
       gfx::Insets(vertical_padding, horizontal_padding)));
   toggle->SetAccessibleName(l10n_util::GetStringUTF16(accessible_name_id));
+  toggle->SetThumbOnColor(GetColor(true));
+  toggle->SetThumbOffColor(GetColor(false));
+  toggle->SetTrackOnColor(GetColor(true, kTrackAlpha));
+  toggle->SetTrackOffColor(GetColor(false, kTrackAlpha));
   return toggle;
 }
 

@@ -2553,4 +2553,37 @@ TEST_F(StyleEngineTest, InitialColorChange) {
             initial_style->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
+class ParameterizedStyleEngineTest
+    : public testing::WithParamInterface<bool>,
+      private ScopedCSSReducedFontLoadingInvalidationsForTest,
+      public StyleEngineTest {
+ public:
+  ParameterizedStyleEngineTest()
+      : ScopedCSSReducedFontLoadingInvalidationsForTest(GetParam()) {}
+};
+
+INSTANTIATE_TEST_SUITE_P(All, ParameterizedStyleEngineTest, testing::Bool());
+
+// https://crbug.com/1050564
+TEST_P(ParameterizedStyleEngineTest,
+       MediaAttributeChangeUpdatesFontCacheVersion) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      @font-face { font-family: custom-font; src: url(fake-font.woff); }
+    </style>
+    <style id=target>
+      .display-none { display: none; }
+    </style>
+    <div style="font-family: custom-font">foo</div>
+    <div class="display-none">bar</div>
+  )HTML");
+  UpdateAllLifecyclePhases();
+
+  Element* target = GetDocument().getElementById("target");
+  target->setAttribute(html_names::kMediaAttr, "print");
+
+  // Shouldn't crash.
+  UpdateAllLifecyclePhases();
+}
+
 }  // namespace blink

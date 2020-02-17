@@ -56,10 +56,10 @@ void CreateQuicTransportConnectorImpl(
 ServiceWorkerProviderHost::ServiceWorkerProviderHost(
     mojo::PendingAssociatedReceiver<blink::mojom::ServiceWorkerContainerHost>
         host_receiver,
-    scoped_refptr<ServiceWorkerVersion> running_hosted_version,
+    ServiceWorkerVersion* running_hosted_version,
     base::WeakPtr<ServiceWorkerContextCore> context)
     : provider_id_(NextProviderId()),
-      running_hosted_version_(std::move(running_hosted_version)),
+      running_hosted_version_(running_hosted_version),
       container_host_(std::make_unique<content::ServiceWorkerContainerHost>(
           blink::mojom::ServiceWorkerContainerType::kForServiceWorker,
           /*is_parent_frame_secure=*/true,
@@ -92,8 +92,7 @@ ServiceWorkerProviderHost::~ServiceWorkerProviderHost() {
 ServiceWorkerVersion* ServiceWorkerProviderHost::running_hosted_version()
     const {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
-  DCHECK(running_hosted_version_);
-  return running_hosted_version_.get();
+  return running_hosted_version_;
 }
 
 void ServiceWorkerProviderHost::CompleteStartWorkerPreparation(

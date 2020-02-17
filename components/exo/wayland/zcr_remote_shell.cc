@@ -573,6 +573,24 @@ void remote_surface_unset_pip_original_window(wl_client* client,
   widget->GetNativeWindow()->SetProperty(ash::kPipOriginalWindowKey, false);
 }
 
+void remote_surface_set_system_gesture_exclusion(wl_client* client,
+                                                 wl_resource* resource,
+                                                 wl_resource* region_resource) {
+  auto* widget = GetUserDataAs<ShellSurfaceBase>(resource)->GetWidget();
+  if (!widget) {
+    LOG(ERROR) << "no widget found for setting system gesture exclusion";
+    return;
+  }
+
+  if (region_resource) {
+    widget->GetNativeWindow()->SetProperty(
+        ash::kSystemGestureExclusionKey,
+        new SkRegion(*GetUserDataAs<SkRegion>(region_resource)));
+  } else {
+    widget->GetNativeWindow()->ClearProperty(ash::kSystemGestureExclusionKey);
+  }
+}
+
 const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_destroy,
     remote_surface_set_app_id,
@@ -621,7 +639,8 @@ const struct zcr_remote_surface_v1_interface remote_surface_implementation = {
     remote_surface_unblock_ime,
     remote_surface_set_accessibility_id,
     remote_surface_set_pip_original_window,
-    remote_surface_unset_pip_original_window};
+    remote_surface_unset_pip_original_window,
+    remote_surface_set_system_gesture_exclusion};
 
 ////////////////////////////////////////////////////////////////////////////////
 // notification_surface_interface:

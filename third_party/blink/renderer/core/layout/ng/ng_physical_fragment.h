@@ -377,6 +377,7 @@ class CORE_EXPORT NGPhysicalFragment
   unsigned is_legacy_layout_root_ : 1;
   unsigned is_painted_atomically_ : 1;
   unsigned has_baseline_ : 1;
+  unsigned has_last_baseline_ : 1;
 
   // The following bitfields are only to be used by NGPhysicalTextFragment
   // (it's defined here to save memory, since that class has no bitfields).

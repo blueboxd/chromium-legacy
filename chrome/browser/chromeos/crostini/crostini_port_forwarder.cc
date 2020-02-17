@@ -84,6 +84,15 @@ bool CrostiniPortForwarder::MatchPortRuleDict(const base::Value& dict,
          (container_name && *container_name == key.container_id.container_name);
 }
 
+bool CrostiniPortForwarder::MatchPortRuleContainerId(
+    const base::Value& dict,
+    const ContainerId& container_id) {
+  const std::string* vm_name = dict.FindStringKey(kPortVmNameKey);
+  const std::string* container_name = dict.FindStringKey(kPortContainerNameKey);
+  return (vm_name && *vm_name == container_id.vm_name) &&
+         (container_name && *container_name == container_id.container_name);
+}
+
 void CrostiniPortForwarder::AddNewPortPreference(const PortRuleKey& key,
                                                  const std::string& label) {
   PrefService* pref_service = profile_->GetPrefs();
@@ -114,7 +123,7 @@ bool CrostiniPortForwarder::RemovePortPreference(const PortRuleKey& key) {
   return all_ports->EraseListIter(it);
 }
 
-void CrostiniPortForwarder::SetPortPreferenceActiveState(const PortRuleKey& key,
+bool CrostiniPortForwarder::SetPortPreferenceActiveState(const PortRuleKey& key,
                                                          bool active) {
   PrefService* pref_service = profile_->GetPrefs();
   ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniPortForwarding);
@@ -122,8 +131,11 @@ void CrostiniPortForwarder::SetPortPreferenceActiveState(const PortRuleKey& key,
   auto it = std::find_if(
       all_ports->begin(), all_ports->end(),
       [&key, this](const auto& dict) { return MatchPortRuleDict(dict, key); });
-  DCHECK(it != all_ports->end());
+  if (it == all_ports->end()) {
+    return false;
+  }
   it->SetBoolKey(kPortActiveKey, active);
+  return true;
 }
 
 base::Optional<base::Value> CrostiniPortForwarder::ReadPortPreference(
@@ -279,14 +291,11 @@ void CrostiniPortForwarder::ActivatePort(const ContainerId& container_id,
       .container_id = container_id,
   };
 
-  base::Optional<base::Value> existing_port =
-      ReadPortPreference(existing_port_key);
-  if (!existing_port) {
+  if (!SetPortPreferenceActiveState(existing_port_key, true)) {
     LOG(ERROR) << "Trying to activate port not found in preferences.";
     std::move(result_callback).Run(false);
     return;
   }
-  SetPortPreferenceActiveState(existing_port_key, true);
   if (forwarded_ports_.find(existing_port_key) != forwarded_ports_.end()) {
     LOG(ERROR) << "Trying to activate already active port.";
     std::move(result_callback).Run(false);
@@ -313,14 +322,11 @@ void CrostiniPortForwarder::DeactivatePort(const ContainerId& container_id,
       .container_id = container_id,
   };
 
-  base::Optional<base::Value> existing_port =
-      ReadPortPreference(existing_port_key);
-  if (!existing_port) {
+  if (!SetPortPreferenceActiveState(existing_port_key, false)) {
     LOG(ERROR) << "Trying to deactivate port not found in preferences.";
     std::move(result_callback).Run(false);
     return;
   }
-  SetPortPreferenceActiveState(existing_port_key, false);
   base::OnceCallback<void(bool)> on_deactivate_port_completed =
       base::BindOnce(&CrostiniPortForwarder::OnRemoveOrDeactivatePortCompleted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(result_callback),
@@ -341,14 +347,11 @@ void CrostiniPortForwarder::RemovePort(const ContainerId& container_id,
       .container_id = container_id,
   };
 
-  base::Optional<base::Value> existing_port =
-      ReadPortPreference(existing_port_key);
-  if (!existing_port) {
+  if (!RemovePortPreference(existing_port_key)) {
     LOG(ERROR) << "Trying to remove port not found in preferences.";
     std::move(result_callback).Run(false);
     return;
   }
-  RemovePortPreference(existing_port_key);
   base::OnceCallback<void(bool)> on_remove_port_completed =
       base::BindOnce(&CrostiniPortForwarder::OnRemoveOrDeactivatePortCompleted,
                      weak_ptr_factory_.GetWeakPtr(), std::move(result_callback),
@@ -356,6 +359,61 @@ void CrostiniPortForwarder::RemovePort(const ContainerId& container_id,
 
   CrostiniPortForwarder::TryDeactivatePort(existing_port_key, container_id,
                                            std::move(on_remove_port_completed));
+}
+
+void CrostiniPortForwarder::DeactivateAllActivePorts(
+    const ContainerId& container_id) {
+  PrefService* pref_service = profile_->GetPrefs();
+  ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniPortForwarding);
+  base::ListValue* all_ports = update.Get();
+
+  for (auto& dict : *all_ports) {
+    if (MatchPortRuleContainerId(dict, container_id)) {
+      dict.SetBoolKey(kPortActiveKey, false);
+      base::Optional<int> port_number = dict.FindIntKey(kPortNumberKey);
+      base::Optional<int> protocol_type = dict.FindIntKey(kPortProtocolKey);
+      const std::string* input_ifname = dict.FindStringKey(kPortInterfaceKey);
+
+      PortRuleKey key = {
+          .port_number = port_number.value(),
+          .protocol_type = static_cast<Protocol>(protocol_type.value()),
+          .input_ifname = *input_ifname,
+          .container_id = container_id,
+      };
+
+      // Bypass the std::is_constructible check for base::BindOnce.
+      ResultCallback nothing_callback = base::DoNothing();
+      base::OnceCallback<void(bool)> on_deactivate_port_completed =
+          base::BindOnce(
+              &CrostiniPortForwarder::OnRemoveOrDeactivatePortCompleted,
+              weak_ptr_factory_.GetWeakPtr(), std::move(nothing_callback), key);
+      TryDeactivatePort(key, container_id,
+                        std::move(on_deactivate_port_completed));
+    }
+  }
+}
+
+void CrostiniPortForwarder::RemoveAllPorts(const ContainerId& container_id) {
+  PrefService* pref_service = profile_->GetPrefs();
+  ListPrefUpdate update(pref_service, crostini::prefs::kCrostiniPortForwarding);
+  update->EraseListValueIf([&container_id, this](const auto& dict) {
+    return MatchPortRuleContainerId(dict, container_id);
+  });
+
+  for (const auto& port : forwarded_ports_) {
+    if (port.first.container_id == container_id) {
+      TryDeactivatePort(port.first, container_id, base::DoNothing());
+    }
+  }
+
+  auto it = forwarded_ports_.begin();
+  while (it != forwarded_ports_.end()) {
+    if (it->first.container_id == container_id) {
+      it = forwarded_ports_.erase(it);
+    } else {
+      ++it;
+    }
+  }
 }
 
 size_t CrostiniPortForwarder::GetNumberOfForwardedPortsForTesting() {

@@ -12,6 +12,8 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/class_property.h"
 
+class SkRegion;
+
 namespace aura {
 class Window;
 template <typename T>
@@ -177,6 +179,11 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<std::string*>* const
 // A property key to store the type of a window's shelf item.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<int32_t>* const
     kShelfItemTypeKey;
+
+// A property key to store the system gesture exclusion region. From a point
+// inside the region, system gesture e.g. back gesture shouldn't be triggered.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkRegion*>* const
+    kSystemGestureExclusionKey;
 
 // A property key to store the address of the source window that the drag
 // originated from if the window is currently in tab-dragging process.

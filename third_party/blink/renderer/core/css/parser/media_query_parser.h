@@ -19,6 +19,7 @@
 namespace blink {
 
 class MediaQuerySet;
+class CSSParserContext;
 
 class MediaQueryData {
   STACK_ALLOCATED();
@@ -29,6 +30,10 @@ class MediaQueryData {
   ExpressionHeapVector expressions_;
   String media_feature_;
   bool media_type_set_;
+
+  // A fake CSSParserContext for use counter only.
+  // TODO(xiaochengh): Plumb the real CSSParserContext from the document.
+  const CSSParserContext& fake_context_;
 
  public:
   MediaQueryData();

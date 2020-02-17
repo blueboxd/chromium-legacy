@@ -671,17 +671,24 @@ void StyleEngine::DidDetach() {
   environment_variables_ = nullptr;
 }
 
-void StyleEngine::ClearFontCacheAndAddUserFonts() {
+bool StyleEngine::ClearFontCacheAndAddUserFonts() {
+  bool fonts_changed = false;
+
   if (font_selector_ &&
-      font_selector_->GetFontFaceCache()->ClearCSSConnected() && resolver_) {
-    resolver_->InvalidateMatchedPropertiesCache();
+      font_selector_->GetFontFaceCache()->ClearCSSConnected()) {
+    fonts_changed = true;
+    if (resolver_)
+      resolver_->InvalidateMatchedPropertiesCache();
   }
 
   // Rebuild the font cache with @font-face rules from user style sheets.
   for (unsigned i = 0; i < active_user_style_sheets_.size(); ++i) {
     DCHECK(active_user_style_sheets_[i].second);
-    AddUserFontFaceRules(*active_user_style_sheets_[i].second);
+    if (AddUserFontFaceRules(*active_user_style_sheets_[i].second))
+      fonts_changed = true;
   }
+
+  return fonts_changed;
 }
 
 void StyleEngine::UpdateGenericFontFamilySettings() {
@@ -1420,18 +1427,29 @@ unsigned GetRuleSetFlags(const HeapHashSet<Member<RuleSet>> rule_sets) {
   return flags;
 }
 
+bool NeedsFullRecalcForRuleSetChanges(TreeScope& tree_scope,
+                                      unsigned changed_rule_flags,
+                                      bool has_rebuilt_font_cache) {
+  if (changed_rule_flags & kFullRecalcRules)
+    return true;
+  if (!tree_scope.RootNode().IsDocumentNode())
+    return false;
+  return (changed_rule_flags & kFontFaceRules) || has_rebuilt_font_cache;
+}
+
 }  // namespace
 
 void StyleEngine::InvalidateForRuleSetChanges(
     TreeScope& tree_scope,
     const HeapHashSet<Member<RuleSet>>& changed_rule_sets,
     unsigned changed_rule_flags,
-    InvalidationScope invalidation_scope) {
+    InvalidationScope invalidation_scope,
+    bool has_rebuilt_font_cache) {
   if (tree_scope.GetDocument().HasPendingForcedStyleRecalc())
     return;
   if (!tree_scope.GetDocument().documentElement())
     return;
-  if (changed_rule_sets.IsEmpty())
+  if (changed_rule_sets.IsEmpty() && !has_rebuilt_font_cache)
     return;
 
   Element& invalidation_root =
@@ -1439,9 +1457,8 @@ void StyleEngine::InvalidateForRuleSetChanges(
   if (invalidation_root.GetStyleChangeType() == kSubtreeStyleChange)
     return;
 
-  if (changed_rule_flags & kFullRecalcRules ||
-      ((changed_rule_flags & kFontFaceRules) &&
-       tree_scope.RootNode().IsDocumentNode())) {
+  if (NeedsFullRecalcForRuleSetChanges(tree_scope, changed_rule_flags,
+                                       has_rebuilt_font_cache)) {
     invalidation_root.SetNeedsStyleRecalc(
         kSubtreeStyleChange,
         StyleChangeReasonForTracing::Create(
@@ -1449,6 +1466,8 @@ void StyleEngine::InvalidateForRuleSetChanges(
     return;
   }
 
+  if (changed_rule_sets.IsEmpty())
+    return;
   ScheduleInvalidationsForRuleSets(tree_scope, changed_rule_sets,
                                    invalidation_scope);
 }
@@ -1474,6 +1493,7 @@ void StyleEngine::ApplyUserRuleSetChanges(
   global_rule_set_->MarkDirty();
 
   unsigned changed_rule_flags = GetRuleSetFlags(changed_rule_sets);
+  bool has_rebuilt_font_cache = false;
   if (changed_rule_flags & kFontFaceRules) {
     if (ScopedStyleResolver* scoped_resolver =
             GetDocument().GetScopedStyleResolver()) {
@@ -1484,7 +1504,7 @@ void StyleEngine::ApplyUserRuleSetChanges(
       scoped_resolver->SetNeedsAppendAllSheets();
       MarkDocumentDirty();
     } else {
-      ClearFontCacheAndAddUserFonts();
+      has_rebuilt_font_cache = ClearFontCacheAndAddUserFonts();
     }
   }
 
@@ -1501,7 +1521,8 @@ void StyleEngine::ApplyUserRuleSetChanges(
   }
 
   InvalidateForRuleSetChanges(GetDocument(), changed_rule_sets,
-                              changed_rule_flags, kInvalidateAllScopes);
+                              changed_rule_flags, kInvalidateAllScopes,
+                              has_rebuilt_font_cache);
 }
 
 void StyleEngine::ApplyRuleSetChanges(
@@ -1549,8 +1570,9 @@ void StyleEngine::ApplyRuleSetChanges(
     }
   }
 
+  bool has_rebuilt_font_cache = false;
   if (rebuild_font_cache)
-    ClearFontCacheAndAddUserFonts();
+    has_rebuilt_font_cache = ClearFontCacheAndAddUserFonts();
 
   unsigned append_start_index = 0;
   if (scoped_resolver) {
@@ -1573,7 +1595,7 @@ void StyleEngine::ApplyRuleSetChanges(
   }
 
   InvalidateForRuleSetChanges(tree_scope, changed_rule_sets, changed_rule_flags,
-                              kInvalidateCurrentScope);
+                              kInvalidateCurrentScope, has_rebuilt_font_cache);
 }
 
 const MediaQueryEvaluator& StyleEngine::EnsureMediaQueryEvaluator() {
@@ -1723,9 +1745,9 @@ void StyleEngine::CollectMatchingUserRules(
   }
 }
 
-void StyleEngine::AddUserFontFaceRules(const RuleSet& rule_set) {
+bool StyleEngine::AddUserFontFaceRules(const RuleSet& rule_set) {
   if (!font_selector_)
-    return;
+    return false;
 
   const HeapVector<Member<StyleRuleFontFace>> font_face_rules =
       rule_set.FontFaceRules();
@@ -1735,6 +1757,7 @@ void StyleEngine::AddUserFontFaceRules(const RuleSet& rule_set) {
   }
   if (resolver_ && font_face_rules.size())
     resolver_->InvalidateMatchedPropertiesCache();
+  return font_face_rules.size();
 }
 
 void StyleEngine::AddUserKeyframeRules(const RuleSet& rule_set) {

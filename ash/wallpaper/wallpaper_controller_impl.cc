@@ -1210,6 +1210,7 @@ void WallpaperControllerImpl::ShowAlwaysOnTopWallpaper(
   const WallpaperInfo info = {
       std::string(), WallpaperLayout::WALLPAPER_LAYOUT_CENTER_CROPPED,
       WallpaperType::ONE_SHOT, base::Time::Now().LocalMidnight()};
+  ReparentWallpaper(GetWallpaperContainerId(locked_));
   ReadAndDecodeWallpaper(
       base::BindOnce(&WallpaperControllerImpl::OnAlwaysOnTopWallpaperDecoded,
                      weak_factory_.GetWeakPtr(), info),
@@ -1223,6 +1224,7 @@ void WallpaperControllerImpl::RemoveAlwaysOnTopWallpaper() {
   }
   is_always_on_top_wallpaper_ = false;
   reload_always_on_top_wallpaper_callback_.Reset();
+  ReparentWallpaper(GetWallpaperContainerId(locked_));
   ReloadWallpaper(/*clear_cache=*/false);
 }
 

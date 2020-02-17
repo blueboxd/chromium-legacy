@@ -72,6 +72,7 @@ import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
 import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable;
 import org.chromium.chrome.browser.toolbar.ToolbarColors;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.toolbar.bottom.BottomToolbarVariationManager;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansionObserver;
 import org.chromium.components.browser_ui.styles.ChromeColors;
@@ -1708,8 +1709,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
     private ObjectAnimator createEnterTabSwitcherModeAnimation() {
         ObjectAnimator enterAnimation =
                 ObjectAnimator.ofFloat(this, mTabSwitcherModePercentProperty, 1.f);
-        enterAnimation.setDuration(
-                TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS);
+        enterAnimation.setDuration(ToolbarManager.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS);
         enterAnimation.setInterpolator(Interpolators.LINEAR_INTERPOLATOR);
 
         return enterAnimation;
@@ -1719,7 +1719,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         ObjectAnimator exitAnimation =
                 ObjectAnimator.ofFloat(this, mTabSwitcherModePercentProperty, 0.f);
         exitAnimation.setDuration(animateNormalToolbar
-                        ? TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS
+                        ? ToolbarManager.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS
                         : TAB_SWITCHER_MODE_EXIT_FADE_ANIMATION_DURATION_MS);
         exitAnimation.setInterpolator(Interpolators.LINEAR_INTERPOLATOR);
         exitAnimation.addListener(new CancelAwareAnimatorListener() {

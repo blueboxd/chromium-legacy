@@ -15,11 +15,11 @@
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/external_install_options.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -57,7 +57,13 @@ const extensions::Extension*
 AndroidSmsAppSetupControllerImpl::PwaDelegate::GetPwaForUrl(
     const GURL& install_url,
     Profile* profile) {
-  return extensions::util::GetInstalledPwaForUrl(profile, install_url);
+  base::Optional<web_app::AppId> app_id =
+      web_app::FindInstalledAppWithUrlInScope(profile, install_url);
+
+  // TODO(crbug.com/1052709): Return app_id, avoid dependence on Extensions.
+  return app_id ? extensions::ExtensionRegistry::Get(profile)
+                      ->GetInstalledExtension(*app_id)
+                : nullptr;
 }
 
 network::mojom::CookieManager*

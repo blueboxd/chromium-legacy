@@ -5,8 +5,8 @@
 #include "chrome/browser/background_sync/periodic_background_sync_permission_context.h"
 
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -35,7 +35,7 @@ bool PeriodicBackgroundSyncPermissionContext::IsPwaInstalled(
       base::android::ConvertUTF8ToJavaString(env, url.spec());
   return Java_BackgroundSyncPwaDetector_isPwaInstalled(env, java_url);
 #else
-  return extensions::util::GetInstalledPwaForUrl(profile(), url);
+  return web_app::FindInstalledAppWithUrlInScope(profile(), url).has_value();
 #endif
 }
 

@@ -67,7 +67,7 @@ class CONTENT_EXPORT GeneratedCodeCache {
 
   // Returns the resource URL from the key. The key has the format prefix +
   // resource URL + separator + requesting origin. This function extracts and
-  // returns resource URL from the key.
+  // returns resource URL from the key, or the empty string if key is invalid.
   static std::string GetResourceURLFromKey(const std::string& key);
 
   // Creates a GeneratedCodeCache with the specified path and the maximum size.

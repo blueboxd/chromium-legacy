@@ -5,14 +5,15 @@
 #include "chrome/browser/chromeos/web_applications/system_web_app_integration_test.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,8 +33,12 @@ void SystemWebAppIntegrationTest::ExpectSystemWebAppValid(
     const GURL& url,
     const std::string& title) {
   Browser* app_browser = WaitForSystemAppInstallAndLaunch(app_type);
+  base::Optional<web_app::AppId> app_id =
+      web_app::FindInstalledAppWithUrlInScope(profile(), url);
+  // TODO(crbug.com/1052711): Avoid dependence on Extensions.
   const extensions::Extension* installed_app =
-      extensions::util::GetInstalledPwaForUrl(profile(), url);
+      extensions::ExtensionRegistry::Get(profile())->GetInstalledExtension(
+          *app_id);
 
   EXPECT_TRUE(GetManager().IsSystemWebApp(installed_app->id()));
   EXPECT_TRUE(installed_app->from_bookmark());

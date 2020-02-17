@@ -155,6 +155,43 @@ std::vector<AppId> AppRegistrar::FindAppsInScope(const GURL& scope) const {
   return in_scope;
 }
 
+base::Optional<AppId> AppRegistrar::FindInstalledAppWithUrlInScope(
+    const GURL& url,
+    bool window_only) const {
+  const std::string url_path = url.spec();
+
+  base::Optional<AppId> best_app_id;
+  size_t best_app_path_length = 0U;
+  bool best_app_is_shortcut = true;
+
+  for (const AppId& app_id : GetAppIds()) {
+    // TODO(crbug.com/910016): Treat shortcuts as PWAs.
+    bool app_is_shortcut = IsShortcutApp(app_id);
+    if (app_is_shortcut && !best_app_is_shortcut)
+      continue;
+
+    if (!IsLocallyInstalled(app_id))
+      continue;
+
+    if (window_only &&
+        GetAppEffectiveDisplayMode(app_id) == DisplayMode::kBrowser) {
+      continue;
+    }
+
+    const std::string app_path = GetAppScope(app_id).spec();
+
+    if ((app_path.size() > best_app_path_length ||
+         (best_app_is_shortcut && !app_is_shortcut)) &&
+        base::StartsWith(url_path, app_path, base::CompareCase::SENSITIVE)) {
+      best_app_id = app_id;
+      best_app_path_length = app_path.size();
+      best_app_is_shortcut = app_is_shortcut;
+    }
+  }
+
+  return best_app_id;
+}
+
 bool AppRegistrar::IsShortcutApp(const AppId& app_id) const {
   // TODO (crbug/910016): Make app scope always return a value and record this
   //  distinction in some other way.

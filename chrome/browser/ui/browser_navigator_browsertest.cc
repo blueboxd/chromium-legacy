@@ -27,6 +27,7 @@
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/web_application_info.h"
@@ -51,11 +52,6 @@
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
 #include "components/captive_portal/content/captive_portal_tab_helper.h"
-#endif
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-#include "chrome/browser/extensions/browsertest_util.h"
-#include "chrome/browser/web_applications/extensions/web_app_extension_shortcut.h"
 #endif
 
 using content::WebContents;
@@ -657,69 +653,6 @@ IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest, Disposition_NewWindow) {
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
   EXPECT_EQ(1, params.browser->tab_strip_model()->count());
 }
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-// This test verifies that navigating with "open_pwa_window_if_possible = true"
-// opens a new app window if there is an installed Bookmark App for the URL.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       AppInstalled_OpenAppWindowIfPossible_True) {
-
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = GetGoogleURL();
-  web_app_info.scope = GetGoogleURL();
-  web_app_info.open_as_window = true;
-  extensions::browsertest_util::InstallBookmarkApp(browser()->profile(),
-                                                   web_app_info);
-
-  NavigateParams params(MakeNavigateParams());
-  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  params.open_pwa_window_if_possible = true;
-  Navigate(&params);
-
-  EXPECT_NE(browser(), params.browser);
-  EXPECT_FALSE(params.browser->is_type_normal());
-  EXPECT_TRUE(params.browser->is_type_app());
-  EXPECT_TRUE(params.browser->is_trusted_source());
-}
-
-// This test verifies that navigating with "open_pwa_window_if_possible = false"
-// opens a new foreground tab even if there is an installed Bookmark App for the
-// URL.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       AppInstalled_OpenAppWindowIfPossible_False) {
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = GetGoogleURL();
-  web_app_info.scope = GetGoogleURL();
-  web_app_info.open_as_window = true;
-  extensions::browsertest_util::InstallBookmarkApp(browser()->profile(),
-                                                   web_app_info);
-
-  int num_tabs = browser()->tab_strip_model()->count();
-
-  NavigateParams params(MakeNavigateParams());
-  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  params.open_pwa_window_if_possible = false;
-  Navigate(&params);
-
-  EXPECT_EQ(browser(), params.browser);
-  EXPECT_EQ(++num_tabs, browser()->tab_strip_model()->count());
-}
-
-// This test verifies that navigating with "open_pwa_window_if_possible = true"
-// opens a new foreground tab when there is no app installed for the URL.
-IN_PROC_BROWSER_TEST_F(BrowserNavigatorTest,
-                       NoAppInstalled_OpenAppWindowIfPossible) {
-  int num_tabs = browser()->tab_strip_model()->count();
-
-  NavigateParams params(MakeNavigateParams());
-  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  params.open_pwa_window_if_possible = true;
-  Navigate(&params);
-
-  EXPECT_EQ(browser(), params.browser);
-  EXPECT_EQ(++num_tabs, browser()->tab_strip_model()->count());
-}
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 // This test verifies that a source tab to the left of the target tab can
 // be switched away from and closed. It verifies that if we close the

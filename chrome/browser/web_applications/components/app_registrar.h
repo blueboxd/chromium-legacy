@@ -117,6 +117,13 @@ class AppRegistrar {
   // Finds all apps that are installed under |scope|.
   std::vector<AppId> FindAppsInScope(const GURL& scope) const;
 
+  // Searches for the first locally installed app id in the registry for which
+  // the |url| is in scope. If |window_only| is specified, only apps that
+  // open in app windows will be considered.
+  base::Optional<AppId> FindInstalledAppWithUrlInScope(
+      const GURL& url,
+      bool window_only = false) const;
+
   // Returns whether the app is a shortcut app (as opposed to a PWA).
   bool IsShortcutApp(const AppId& app_id) const;
 

@@ -51,10 +51,6 @@
 
 namespace blink {
 
-inline static bool HasVerticalAppearance(HTMLInputElement* input) {
-  return input->ComputedStyleRef().EffectiveAppearance() == kSliderVerticalPart;
-}
-
 SliderThumbElement::SliderThumbElement(Document& document)
     : HTMLDivElement(document), in_drag_mode_(false) {
   SetHasCustomStyleCallbacks();
@@ -117,7 +113,7 @@ void SliderThumbElement::SetPositionFromPoint(const LayoutPoint& point) {
 
   PhysicalOffset point_in_track =
       track_box->AbsoluteToLocalPoint(PhysicalOffsetToBeNoop(point));
-  bool is_vertical = HasVerticalAppearance(input);
+  const bool is_vertical = !thumb_box->StyleRef().IsHorizontalWritingMode();
   bool is_left_to_right_direction =
       thumb_box->StyleRef().IsLeftToRightDirection();
   LayoutUnit track_size;
@@ -431,10 +427,9 @@ bool SliderContainerElement::CanSlide() {
       }
     }
   }
-  if ((sliding_direction_ == kVertical &&
-       slider_style->EffectiveAppearance() == kSliderHorizontalPart) ||
-      (sliding_direction_ == kHorizontal &&
-       slider_style->EffectiveAppearance() == kSliderVerticalPart)) {
+  bool is_horizontal = GetComputedStyle()->IsHorizontalWritingMode();
+  if ((sliding_direction_ == kVertical && is_horizontal) ||
+      (sliding_direction_ == kHorizontal && !is_horizontal)) {
     return false;
   }
   return true;
@@ -485,16 +480,6 @@ void SliderContainerElement::DidMoveToNewDocument(Document& old_document) {
 void SliderContainerElement::RemoveAllEventListeners() {
   Node::RemoveAllEventListeners();
   has_touch_event_handler_ = false;
-}
-
-scoped_refptr<ComputedStyle>
-SliderContainerElement::CustomStyleForLayoutObject() {
-  HTMLInputElement* input = HostInput();
-  DCHECK(input);
-  scoped_refptr<ComputedStyle> style = OriginalStyleForLayoutObject();
-  style->SetFlexDirection(HasVerticalAppearance(input) ? EFlexDirection::kColumn
-                                                       : EFlexDirection::kRow);
-  return style;
 }
 
 }  // namespace blink

@@ -57,14 +57,7 @@ bool UnsanitizedAtomic<T>::compare_exchange_weak(T& expected,
   return Base::compare_exchange_weak(expected, desired, succ_order, fail_order);
 }
 
-template class PLATFORM_EXPORT UnsanitizedAtomic<int8_t>;
-template class PLATFORM_EXPORT UnsanitizedAtomic<uint8_t>;
-template class PLATFORM_EXPORT UnsanitizedAtomic<int16_t>;
 template class PLATFORM_EXPORT UnsanitizedAtomic<uint16_t>;
-template class PLATFORM_EXPORT UnsanitizedAtomic<int32_t>;
-template class PLATFORM_EXPORT UnsanitizedAtomic<uint32_t>;
-template class PLATFORM_EXPORT UnsanitizedAtomic<int64_t>;
-template class PLATFORM_EXPORT UnsanitizedAtomic<uint64_t>;
 
 }  // namespace internal
 }  // namespace blink

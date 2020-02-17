@@ -274,27 +274,6 @@ const gfx::ImageSkia& GetDefaultExtensionIcon() {
       IDR_EXTENSION_DEFAULT_ICON);
 }
 
-const Extension* GetInstalledPwaForUrl(
-    content::BrowserContext* context,
-    const GURL& url,
-    base::Optional<LaunchContainer> launch_container_filter) {
-  const ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
-  for (scoped_refptr<const Extension> app :
-       ExtensionRegistry::Get(context)->enabled_extensions()) {
-    if (!app->from_bookmark())
-      continue;
-    if (!BookmarkAppIsLocallyInstalled(prefs, app.get()))
-      continue;
-    if (launch_container_filter &&
-        GetLaunchContainer(prefs, app.get()) != *launch_container_filter) {
-      continue;
-    }
-    if (UrlHandlers::CanBookmarkAppHandleUrl(app.get(), url))
-      return app.get();
-  }
-  return nullptr;
-}
-
 std::unique_ptr<const PermissionSet> GetInstallPromptPermissionSetForExtension(
     const Extension* extension,
     Profile* profile,

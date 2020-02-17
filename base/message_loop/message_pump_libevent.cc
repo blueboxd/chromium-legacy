@@ -204,44 +204,60 @@ void MessagePumpLibevent::Run(Delegate* delegate) {
 #if defined(OS_MACOSX)
     mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
-
+    // Do some work and see if the next task is ready right away.
     Delegate::NextWorkInfo next_work_info = delegate->DoSomeWork();
-    bool more_work_is_plausible = next_work_info.is_immediate();
+    bool immediate_work_available = next_work_info.is_immediate();
+
     if (!keep_running_)
       break;
 
+    // Process native events if any are ready. Do not block waiting for more.
     event_base_loop(event_base_, EVLOOP_NONBLOCK);
-    more_work_is_plausible |= processed_io_events_;
+
+    bool attempt_more_work = immediate_work_available || processed_io_events_;
     processed_io_events_ = false;
+
     if (!keep_running_)
       break;
 
-    if (more_work_is_plausible)
+    if (attempt_more_work)
       continue;
 
-    more_work_is_plausible = delegate->DoIdleWork();
+    attempt_more_work = delegate->DoIdleWork();
+
     if (!keep_running_)
       break;
 
-    if (more_work_is_plausible)
+    if (attempt_more_work)
       continue;
 
-    // EVLOOP_ONCE tells libevent to only block once,
-    // but to service all pending events when it wakes up.
-    if (next_work_info.delayed_run_time.is_max()) {
-      event_base_loop(event_base_, EVLOOP_ONCE);
-    } else {
+    bool did_set_timer = false;
+
+    // If there is delayed work.
+    DCHECK(!next_work_info.delayed_run_time.is_null());
+    if (!next_work_info.delayed_run_time.is_max()) {
       const TimeDelta delay = next_work_info.remaining_delay();
-      if (delay > TimeDelta()) {
-        struct timeval poll_tv;
-        poll_tv.tv_sec = delay.InSeconds();
-        poll_tv.tv_usec = delay.InMicroseconds() % Time::kMicrosecondsPerSecond;
-        event_set(timer_event.get(), -1, 0, timer_callback, event_base_);
-        event_base_set(event_base_, timer_event.get());
-        event_add(timer_event.get(), &poll_tv);
-        event_base_loop(event_base_, EVLOOP_ONCE);
-        event_del(timer_event.get());
-      }
+
+      // Setup a timer to break out of the event loop at the right time.
+      struct timeval poll_tv;
+      poll_tv.tv_sec = delay.InSeconds();
+      poll_tv.tv_usec = delay.InMicroseconds() % Time::kMicrosecondsPerSecond;
+      event_set(timer_event.get(), -1, 0, timer_callback, event_base_);
+      event_base_set(event_base_, timer_event.get());
+      event_add(timer_event.get(), &poll_tv);
+
+      did_set_timer = true;
+    }
+
+    // Block waiting for events and process all available upon waking up. This
+    // is conditionally interrupted to look for more work if we are aware of a
+    // delayed task that will need servicing.
+    event_base_loop(event_base_, EVLOOP_ONCE);
+
+    // We previously setup a timer to break out the event loop to look for more
+    // work. Now that we're here delete the event.
+    if (did_set_timer) {
+      event_del(timer_event.get());
     }
 
     if (!keep_running_)

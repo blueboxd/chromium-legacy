@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "components/captive_portal/core/buildflags.h"
@@ -66,7 +67,6 @@
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/apps/launch_service/app_utils.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -151,16 +151,11 @@ std::pair<Browser*, int> GetBrowserAndTabForDisposition(
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (params.open_pwa_window_if_possible) {
-    // TODO(crbug.com/966290): Support the new web apps system for PWAs and
-    // shortcut apps that does not use extensions. Use web_app::AppRegistrar
-    // and test with/without kDesktopPWAsWithoutExtensions flag enabled.
-    const extensions::Extension* app = extensions::util::GetInstalledPwaForUrl(
-        profile, params.url,
-        extensions::LaunchContainer::kLaunchContainerWindow);
-    if (app) {
-      DCHECK(app->is_app());
-      std::string app_name =
-          web_app::GenerateApplicationNameFromAppId(app->id());
+    base::Optional<web_app::AppId> app_id =
+        web_app::FindInstalledAppWithUrlInScope(profile, params.url,
+                                                /*window_only=*/true);
+    if (app_id) {
+      std::string app_name = web_app::GenerateApplicationNameFromAppId(*app_id);
       return {
           new Browser(Browser::CreateParams::CreateForApp(
               app_name,

@@ -42,6 +42,9 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -371,16 +374,25 @@ void ChromeNewWindowClient::OpenWebAppFromArc(const GURL& url) {
   if (!profile)
     return;
 
-  const extensions::Extension* extension =
-      extensions::util::GetInstalledPwaForUrl(
-          profile, url, extensions::LaunchContainer::kLaunchContainerWindow);
-  if (!extension) {
+  base::Optional<web_app::AppId> app_id =
+      web_app::FindInstalledAppWithUrlInScope(profile, url,
+                                              /*window_only=*/true);
+
+  if (!app_id) {
     OpenUrlFromArc(url);
     return;
   }
 
-  apps::AppLaunchParams params = CreateAppLaunchParamsUserContainer(
-      profile, extension, WindowOpenDisposition::NEW_WINDOW,
+  auto launch_container = apps::mojom::LaunchContainer::kLaunchContainerWindow;
+  if (web_app::WebAppProviderBase::GetProviderBase(profile)
+          ->registrar()
+          .GetAppEffectiveDisplayMode(*app_id) ==
+      blink::mojom::DisplayMode::kBrowser) {
+    launch_container = apps::mojom::LaunchContainer::kLaunchContainerTab;
+  }
+
+  apps::AppLaunchParams params = apps::AppLaunchParams(
+      *app_id, launch_container, WindowOpenDisposition::NEW_WINDOW,
       apps::mojom::AppLaunchSource::kSourceArc);
   params.override_url = url;
   content::WebContents* tab =

@@ -633,7 +633,7 @@ input[type="range" i] {
 input[type="range" i]::-webkit-slider-container, input[type="range" i]::-webkit-media-slider-container {
     -webkit-appearance: inherit; /* AutoAppearanceFor() should match to this. */
     flex: 1;
-    min-width: 0;
+    min-inline-size: 0;
     box-sizing: border-box;
     -webkit-user-modify: read-only !important;
     display: flex;
@@ -641,7 +641,7 @@ input[type="range" i]::-webkit-slider-container, input[type="range" i]::-webkit-
 
 input[type="range" i]::-webkit-slider-runnable-track {
     flex: 1;
-    min-width: 0;
+    min-inline-size: 0;
     -webkit-align-self: center;
 
     box-sizing: border-box;

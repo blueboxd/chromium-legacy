@@ -15,6 +15,8 @@ PASS Adding non-constructed stylesheet to AdoptedStyleSheets is not allowed when
 PASS Adding non-constructed stylesheet to AdoptedStyleSheets is not allowed when the owner document of the stylesheet and the AdoptedStyleSheets are in different document trees
 PASS CSSStyleSheet.replaceSync replaces stylesheet text synchronously
 PASS CSSStyleSheet.replaceSync correctly updates the style of its adopters synchronously
+FAIL Adopted sheets are ordered after non-adopted sheets in the shadow root assert_equals: expected "rgb(255, 255, 255)" but got "rgb(255, 0, 0)"
+FAIL Adopted sheets are ordered after non-adopted sheets in the document assert_equals: expected "rgb(255, 255, 255)" but got "rgb(255, 0, 0)"
 PASS CSSStyleSheet.replaceSync throws exception when there is import rule inside
 PASS Inserting an @import rule through insertRule on a constructed stylesheet throws an exception
 PASS CSSStyleSheet.replaceSync should not trigger any loads from @import rules
@@ -23,6 +25,7 @@ PASS CSSStyleSheet.replace returns rejected promise on failed imports
 PASS Cloning a shadow host will not clone shadow root, and also adoptedStyleSheets
 PASS Importing a shadow host will not copy shadow root, and also adoptedStyleSheets
 PASS Adopting a shadow host will empty adoptedStyleSheets if adopting to a different document
+PASS Adopting a shadow host's ancestor will empty adoptedStyleSheets if adopting to a different document
 PASS Forcing a style update after adding an adopted stylesheet on a disconnected shadow root should not crash.
 PASS Modifying an adopted stylesheet on a disconnected shadow root should not crash.
 Harness: the test ran to completion.

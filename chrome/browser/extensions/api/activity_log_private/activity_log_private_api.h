@@ -13,9 +13,9 @@
 #include "base/synchronization/lock.h"
 #include "chrome/browser/extensions/activity_log/activity_actions.h"
 #include "chrome/browser/extensions/activity_log/activity_log.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
@@ -65,7 +65,7 @@ void
 
 // The implementation of activityLogPrivate.getExtensionActivities
 class ActivityLogPrivateGetExtensionActivitiesFunction
-    : public ChromeAsyncExtensionFunction {
+    : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("activityLogPrivate.getExtensionActivities",
                              ACTIVITYLOGPRIVATE_GETEXTENSIONACTIVITIES)
@@ -74,7 +74,7 @@ class ActivityLogPrivateGetExtensionActivitiesFunction
   ~ActivityLogPrivateGetExtensionActivitiesFunction() override {}
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   void OnLookupCompleted(

@@ -488,19 +488,20 @@ struct TraceHashTableBackingInCollectionTrait {
       // If tracing concurrently, use a concurrent-safe version of
       // IsEmptyOrDeletedBucket (check performed on a local copy instead
       // of directly on the bucket).
-      if (is_concurrent &&
-          !HashTableHelper<Value, typename Table::ExtractorType,
-                           typename Table::KeyTraitsType>::
-              IsEmptyOrDeletedBucketSafe(array[i])) {
-        blink::TraceCollectionIfEnabled<WeakHandling, Value, Traits>::Trace(
-            visitor, &array[i]);
-        continue;
-      }
-      if (!HashTableHelper<Value, typename Table::ExtractorType,
-                           typename Table::KeyTraitsType>::
-              IsEmptyOrDeletedBucket(array[i])) {
-        blink::TraceCollectionIfEnabled<WeakHandling, Value, Traits>::Trace(
-            visitor, &array[i]);
+      if (is_concurrent) {
+        if (!HashTableHelper<Value, typename Table::ExtractorType,
+                             typename Table::KeyTraitsType>::
+                IsEmptyOrDeletedBucketSafe(array[i])) {
+          blink::TraceCollectionIfEnabled<WeakHandling, Value, Traits>::Trace(
+              visitor, &array[i]);
+        }
+      } else {
+        if (!HashTableHelper<Value, typename Table::ExtractorType,
+                             typename Table::KeyTraitsType>::
+                IsEmptyOrDeletedBucket(array[i])) {
+          blink::TraceCollectionIfEnabled<WeakHandling, Value, Traits>::Trace(
+              visitor, &array[i]);
+        }
       }
     }
     return false;

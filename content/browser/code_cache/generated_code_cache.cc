@@ -172,12 +172,15 @@ class BigIOBuffer : public net::IOBufferWithSize {
 
 std::string GeneratedCodeCache::GetResourceURLFromKey(const std::string& key) {
   constexpr size_t kPrefixStringLen = base::size(kPrefix) - 1;
-  // Only expect valid keys. All valid keys have a prefix and a separator.
-  DCHECK_GE(key.length(), kPrefixStringLen);
-  DCHECK_NE(key.find(kSeparator), std::string::npos);
+  // |key| may not have a prefix and separator (e.g. for deduplicated entries).
+  // In that case, return an empty string.
+  const size_t separator_index = key.find(kSeparator);
+  if (key.length() < kPrefixStringLen || separator_index == std::string::npos) {
+    return std::string();
+  }
 
   std::string resource_url =
-      key.substr(kPrefixStringLen, key.find(kSeparator) - kPrefixStringLen);
+      key.substr(kPrefixStringLen, separator_index - kPrefixStringLen);
   return resource_url;
 }
 

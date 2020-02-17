@@ -15,7 +15,7 @@
 #include "components/favicon_base/favicon_callback.h"
 #include "components/favicon_base/favicon_types.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/favicon/favicon_attributes.h"
+#import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "url/gurl.h"

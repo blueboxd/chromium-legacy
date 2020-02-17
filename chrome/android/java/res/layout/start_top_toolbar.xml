@@ -10,8 +10,7 @@
     android:id="@+id/tab_switcher_toolbar"
     android:layout_width="match_parent"
     android:layout_height="@dimen/toolbar_height_no_shadow"
-    android:clickable="true"
-    android:visibility="gone">
+    android:clickable="true" >
 
     <Switch
         android:id="@+id/incognito_switch"

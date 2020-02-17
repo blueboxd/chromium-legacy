@@ -2635,6 +2635,7 @@ crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-020
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vrl-in-htb-008.xht [ Failure ]
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vrl-in-htb-020.xht [ Failure ]
 
+crbug.com/630597 external/wpt/css/css-images/image-set/image-set-rendering.html [ Failure ]
 crbug.com/604875 external/wpt/css/css-images/tiled-gradients.html [ Failure ]
 
 crbug.com/808834 [ Linux ] external/wpt/css/css-pseudo/first-letter-001.html [ Failure ]
@@ -2814,9 +2815,6 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-004.html [ Fail
 crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
-crbug.com/626703 [ Linux ] external/wpt/css/css-images/image-set/image-set-rendering.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-images/image-set/image-set-rendering.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-images/image-set/image-set-rendering.html [ Failure ]
 crbug.com/626703 [ Linux ] virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/gap-002-lr.html [ Failure ]
 crbug.com/626703 [ Mac ] virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/gap-002-lr.html [ Failure ]
 crbug.com/626703 [ Win ] virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/gap-002-lr.html [ Failure ]

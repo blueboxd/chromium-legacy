@@ -51,22 +51,13 @@ inline static Decimal SliderPosition(HTMLInputElement* element) {
   return step_range.ProportionFromValue(step_range.ClampValue(old_value));
 }
 
-inline static bool HasVerticalAppearance(HTMLInputElement* input) {
-  DCHECK(input->GetLayoutObject());
-  if (!input->GetLayoutObject() || !input->GetLayoutObject()->Style())
-    return false;
-  const ComputedStyle& slider_style = input->GetLayoutObject()->StyleRef();
-  return slider_style.EffectiveAppearance() == kSliderVerticalPart;
-}
-
 void LayoutSliderContainer::ComputeLogicalHeight(
     LayoutUnit logical_height,
     LayoutUnit logical_top,
     LogicalExtentComputedValues& computed_values) const {
   auto* input = To<HTMLInputElement>(GetNode()->OwnerShadowHost());
-  bool is_vertical = HasVerticalAppearance(input);
 
-  if (input->GetLayoutObject()->IsSlider() && !is_vertical && input->list()) {
+  if (input->GetLayoutObject()->IsSlider() && input->list()) {
     int offset_from_center =
         LayoutTheme::GetTheme().SliderTickOffsetFromTrackCenter();
     LayoutUnit track_height;
@@ -87,8 +78,6 @@ void LayoutSliderContainer::ComputeLogicalHeight(
     LayoutBox::ComputeLogicalHeight(track_height, logical_top, computed_values);
     return;
   }
-  if (is_vertical)
-    logical_height = LayoutUnit(LayoutSlider::kDefaultTrackLength);
 
   // FIXME: The trackHeight should have been added before updateLogicalHeight
   // was called to avoid this hack.
@@ -97,9 +86,17 @@ void LayoutSliderContainer::ComputeLogicalHeight(
   LayoutBox::ComputeLogicalHeight(logical_height, logical_top, computed_values);
 }
 
+void LayoutSliderContainer::ComputeIntrinsicLogicalWidths(
+    LayoutUnit& min_logical_width,
+    LayoutUnit& max_logical_width) const {
+  max_logical_width = LayoutUnit(LayoutSlider::kDefaultTrackLength *
+                                 StyleRef().EffectiveZoom());
+  min_logical_width = max_logical_width;
+}
+
 void LayoutSliderContainer::UpdateLayout() {
   auto* input = To<HTMLInputElement>(GetNode()->OwnerShadowHost());
-  bool is_vertical = HasVerticalAppearance(input);
+  const bool is_vertical = !StyleRef().IsHorizontalWritingMode();
 
   Element* thumb_element = input->UserAgentShadowRoot()->getElementById(
       shadow_element_names::SliderThumb());
@@ -131,8 +128,7 @@ void LayoutSliderContainer::UpdateLayout() {
   LayoutUnit offset(percentage_offset * available_extent);
   LayoutPoint thumb_location = thumb->Location();
   if (is_vertical) {
-    thumb_location.SetY(thumb_location.Y() + track->ContentHeight() -
-                        thumb->Size().Height() - offset);
+    thumb_location.SetY(thumb_location.Y() - offset);
   } else if (StyleRef().IsLeftToRightDirection()) {
     thumb_location.SetX(thumb_location.X() + offset);
   } else {

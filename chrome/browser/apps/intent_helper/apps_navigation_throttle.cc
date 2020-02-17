@@ -12,7 +12,6 @@
 #include "base/optional.h"
 #include "chrome/browser/apps/intent_helper/intent_picker_auto_display_service.h"
 #include "chrome/browser/apps/intent_helper/page_transition_util.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +20,9 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
+#include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/chrome_features.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/browser/browser_context.h"
@@ -339,21 +341,27 @@ std::vector<IntentPickerAppInfo> AppsNavigationThrottle::FindPwaForUrl(
     std::vector<IntentPickerAppInfo> apps) {
   // Check if the current URL has an installed desktop PWA, and add that to
   // the list of apps if it exists.
-  const extensions::Extension* extension =
-      extensions::util::GetInstalledPwaForUrl(
-          web_contents->GetBrowserContext(), url,
-          extensions::LaunchContainer::kLaunchContainerWindow);
+  Profile* const profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
-  if (extension) {
-    auto* menu_manager =
-        extensions::MenuManager::Get(web_contents->GetBrowserContext());
+  base::Optional<web_app::AppId> app_id =
+      web_app::FindInstalledAppWithUrlInScope(profile, url,
+                                              /*window_only=*/true);
+  if (!app_id)
+    return apps;
 
-    // Prefer the web and place apps of type PWA before apps of type ARC.
-    // TODO(crbug.com/824598): deterministically sort this list.
-    apps.emplace(apps.begin(), PickerEntryType::kWeb,
-                 menu_manager->GetIconForExtension(extension->id()),
-                 extension->id(), extension->name());
-  }
+  // TODO(crbug.com/1052707): Use AppIconManager to read PWA icons.
+  auto* menu_manager =
+      extensions::MenuManager::Get(web_contents->GetBrowserContext());
+
+  // Prefer the web and place apps of type PWA before apps of type ARC.
+  // TODO(crbug.com/824598): deterministically sort this list.
+  apps.emplace(apps.begin(), PickerEntryType::kWeb,
+               menu_manager->GetIconForExtension(*app_id), *app_id,
+               web_app::WebAppProviderBase::GetProviderBase(profile)
+                   ->registrar()
+                   .GetAppShortName(*app_id));
+
   return apps;
 }
 

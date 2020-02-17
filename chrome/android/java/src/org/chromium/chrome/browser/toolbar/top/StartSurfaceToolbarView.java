@@ -11,7 +11,6 @@ import android.graphics.drawable.Drawable;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.ViewPropertyAnimator;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 
@@ -20,8 +19,6 @@ import androidx.annotation.StringRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.tab.TabFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider;
 import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.NewTabButton;
@@ -29,7 +26,6 @@ import org.chromium.chrome.browser.toolbar.top.StartSurfaceToolbarProperties.IPH
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.browser_ui.styles.ChromeColors;
-import org.chromium.components.browser_ui.widget.animation.Interpolators;
 import org.chromium.components.browser_ui.widget.textbubble.TextBubble;
 import org.chromium.ui.util.ColorUtils;
 
@@ -44,7 +40,6 @@ class StartSurfaceToolbarView extends RelativeLayout {
     private int mPrimaryColor;
     private ColorStateList mLightIconTint;
     private ColorStateList mDarkIconTint;
-    private ViewPropertyAnimator mVisibilityAnimator;
 
     private Rect mLogoRect = new Rect();
     private Rect mViewRect = new Rect();
@@ -56,6 +51,7 @@ class StartSurfaceToolbarView extends RelativeLayout {
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
+
         mNewTabButton = findViewById(R.id.new_tab_button);
         mIncognitoSwitch = findViewById(R.id.incognito_switch);
         mMenuButton = findViewById(R.id.menu_button_wrapper);
@@ -226,69 +222,6 @@ class StartSurfaceToolbarView extends RelativeLayout {
             textBubble.addOnDismissListener(() -> { iphContainer.dismissedCallback.run(); });
         }
         textBubble.show();
-    }
-
-    /**
-     * Start animation to show or hide toolbar from tab.
-     * @param showToolbar Whether or not toolbar should be shown or hidden.
-     * */
-    void setStartSurfaceMode(boolean showToolbar) {
-        startAnimation(showToolbar, true);
-    }
-
-    /**
-     * Start animation to show or hide toolbar.
-     * @param showToolbar Whether or not toolbar should be shown or hidden.
-     * */
-    void setToolbarVisibility(boolean showToolbar) {
-        startAnimation(showToolbar, false);
-    }
-
-    /**
-     * Start animation to show or hide toolbar.
-     * @param showToolbar Whether or not toolbar should be shown or hidden.
-     * @param tabAnimation Whether or not animation is from or to tab.
-     */
-    private void startAnimation(boolean showToolbar, boolean tabAnimation) {
-        if (mVisibilityAnimator != null) {
-            mVisibilityAnimator.cancel();
-            mVisibilityAnimator = null;
-        }
-
-        if ((showToolbar && (getVisibility() == View.VISIBLE))
-                || (!showToolbar && (getVisibility() == View.GONE))) {
-            return;
-        }
-
-        if (DeviceClassManager.enableAccessibilityLayout()) {
-            finishAnimation(showToolbar);
-            return;
-        }
-
-        setAlpha(showToolbar ? 0.0f : 1.0f);
-        setVisibility(View.VISIBLE);
-
-        boolean showZoomingAnimation =
-                tabAnimation && TabFeatureUtilities.isTabToGtsAnimationEnabled();
-        final long duration = showZoomingAnimation
-                ? TopToolbarCoordinator.TAB_SWITCHER_MODE_GTS_ANIMATION_DURATION_MS
-                : TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS;
-
-        mVisibilityAnimator =
-                animate()
-                        .alpha(showToolbar ? 1.0f : 0.0f)
-                        .setDuration(duration)
-                        .setStartDelay(showZoomingAnimation && showToolbar ? duration : 0)
-                        .setInterpolator(Interpolators.LINEAR_INTERPOLATOR)
-                        .withEndAction(() -> {
-                            finishAnimation(showToolbar);
-                            mVisibilityAnimator = null;
-                        });
-    }
-
-    private void finishAnimation(boolean showToolbar) {
-        setAlpha(1.0f);
-        setVisibility(showToolbar ? View.VISIBLE : View.GONE);
     }
 
     private void updatePrimaryColorAndTint(boolean isIncognito) {

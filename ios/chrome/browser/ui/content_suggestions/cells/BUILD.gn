@@ -20,7 +20,7 @@ source_set("cells") {
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
     "//ios/chrome/browser/ui/ntp_tile_views:constants",
-    "//ios/chrome/common/favicon",
+    "//ios/chrome/common/ui/favicon",
     "//ui/base",
     "//url",
   ]
@@ -65,7 +65,7 @@ source_set("cells_ui") {
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
     "//ios/chrome/common/colors",
-    "//ios/chrome/common/favicon",
+    "//ios/chrome/common/ui/favicon",
     "//ios/chrome/common/ui/util",
     "//ui/base",
   ]
@@ -90,7 +90,7 @@ source_set("unit_tests") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/favicon",
+    "//ios/chrome/common/ui/favicon",
     "//testing/gtest",
     "//third_party/ocmock",
     "//ui/base",

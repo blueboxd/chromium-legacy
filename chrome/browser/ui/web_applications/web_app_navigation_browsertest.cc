@@ -1,0 +1,88 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
+
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "ui/base/page_transition_types.h"
+#include "ui/base/window_open_disposition.h"
+#include "url/gurl.h"
+
+namespace web_app {
+
+class WebAppNavigationBrowserTest : public WebAppControllerBrowserTestBase {
+ public:
+  static GURL GetGoogleURL() { return GURL("http://www.google.com/"); }
+
+  NavigateParams MakeNavigateParams() const {
+    NavigateParams params(browser(), GetGoogleURL(), ui::PAGE_TRANSITION_LINK);
+    params.window_action = NavigateParams::SHOW_WINDOW;
+    return params;
+  }
+};
+
+// This test verifies that navigating with "open_pwa_window_if_possible = true"
+// opens a new app window if there is an installed Bookmark App for the URL.
+IN_PROC_BROWSER_TEST_P(WebAppNavigationBrowserTest,
+                       AppInstalled_OpenAppWindowIfPossible_True) {
+  InstallPWA(GetGoogleURL());
+
+  NavigateParams params(MakeNavigateParams());
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  params.open_pwa_window_if_possible = true;
+  Navigate(&params);
+
+  EXPECT_NE(browser(), params.browser);
+  EXPECT_FALSE(params.browser->is_type_normal());
+  EXPECT_TRUE(params.browser->is_type_app());
+  EXPECT_TRUE(params.browser->is_trusted_source());
+}
+
+// This test verifies that navigating with "open_pwa_window_if_possible = false"
+// opens a new foreground tab even if there is an installed Bookmark App for the
+// URL.
+IN_PROC_BROWSER_TEST_P(WebAppNavigationBrowserTest,
+                       AppInstalled_OpenAppWindowIfPossible_False) {
+  InstallPWA(GetGoogleURL());
+
+  int num_tabs = browser()->tab_strip_model()->count();
+
+  NavigateParams params(MakeNavigateParams());
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  params.open_pwa_window_if_possible = false;
+  Navigate(&params);
+
+  EXPECT_EQ(browser(), params.browser);
+  EXPECT_EQ(++num_tabs, browser()->tab_strip_model()->count());
+}
+
+// This test verifies that navigating with "open_pwa_window_if_possible = true"
+// opens a new foreground tab when there is no app installed for the URL.
+IN_PROC_BROWSER_TEST_P(WebAppNavigationBrowserTest,
+                       NoAppInstalled_OpenAppWindowIfPossible) {
+  int num_tabs = browser()->tab_strip_model()->count();
+
+  NavigateParams params(MakeNavigateParams());
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  params.open_pwa_window_if_possible = true;
+  Navigate(&params);
+
+  EXPECT_EQ(browser(), params.browser);
+  EXPECT_EQ(++num_tabs, browser()->tab_strip_model()->count());
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    WebAppNavigationBrowserTest,
+    ::testing::Values(ControllerType::kHostedAppController,
+                      ControllerType::kUnifiedControllerWithBookmarkApp,
+                      ControllerType::kUnifiedControllerWithWebApp),
+    ControllerTypeParamToString);
+
+}  // namespace web_app

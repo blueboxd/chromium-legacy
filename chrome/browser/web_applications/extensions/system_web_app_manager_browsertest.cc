@@ -15,7 +15,6 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
@@ -139,9 +138,10 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
   EXPECT_EQ(extensions::Manifest::EXTERNAL_COMPONENT, app->location());
 
   // The app should be a PWA.
-  EXPECT_EQ(extensions::util::GetInstalledPwaForUrl(
-                browser()->profile(), content::GetWebUIURL("test-system-app/")),
-            app);
+  base::Optional<AppId> app_id = web_app::FindInstalledAppWithUrlInScope(
+      browser()->profile(), content::GetWebUIURL("test-system-app/"));
+  DCHECK(app_id);
+  EXPECT_EQ(*app_id, app->id());
   EXPECT_TRUE(GetManager().IsSystemWebApp(app->id()));
 }
 

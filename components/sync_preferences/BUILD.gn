@@ -19,6 +19,7 @@ static_library("sync_preferences") {
 
   deps = [
     "//base",
+    "//components/policy/core/browser",
     "//components/pref_registry",
     "//components/prefs",
     "//components/sync",
@@ -26,10 +27,6 @@ static_library("sync_preferences") {
 
   if (is_chromeos) {
     deps += [ "//chromeos/constants" ]
-  }
-
-  if (!is_ios) {
-    deps += [ "//components/policy/core/browser" ]
   }
 }
 

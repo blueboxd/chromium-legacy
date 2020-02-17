@@ -133,6 +133,28 @@ constexpr char GeneratedCodeCacheTest::kInitialOrigin[];
 constexpr char GeneratedCodeCacheTest::kInitialData[];
 const size_t GeneratedCodeCacheTest::kMaxSizeInBytes;
 
+TEST_F(GeneratedCodeCacheTest, GetResourceURLFromKey) {
+  // These must be kept in sync with the values in generated_code_cache.cc.
+  constexpr char kPrefix[] = "_key";
+  constexpr char kSeparator[] = " \n";
+
+  // Test that we correctly extract the resource URL from a key.
+  std::string key(kPrefix);
+  key.append(kInitialUrl);
+  key.append(kSeparator);
+  key.append(kInitialOrigin);
+
+  EXPECT_EQ(GeneratedCodeCache::GetResourceURLFromKey(key), kInitialUrl);
+
+  // Invalid key formats should return the empty string.
+  ASSERT_TRUE(GeneratedCodeCache::GetResourceURLFromKey("").empty());
+  ASSERT_TRUE(GeneratedCodeCache::GetResourceURLFromKey("foobar").empty());
+  ASSERT_TRUE(
+      GeneratedCodeCache::GetResourceURLFromKey(
+          "43343250B630900F20597168708E14F17A6263F5251FCA10746EA7BDEA881085")
+          .empty());
+}
+
 TEST_F(GeneratedCodeCacheTest, CheckResponseTime) {
   GURL url(kInitialUrl);
   GURL origin_lock = GURL(kInitialOrigin);

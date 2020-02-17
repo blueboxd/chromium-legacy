@@ -22,7 +22,7 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/ui/content_suggestions/cells:cells_ui",
     "//ios/chrome/browser/ui/content_suggestions/identifier",
     "//ios/chrome/browser/ui/util",
-    "//ios/chrome/common/favicon",
+    "//ios/chrome/common/ui/favicon",
     "//ios/showcase/common",
     "//ui/base",
   ]

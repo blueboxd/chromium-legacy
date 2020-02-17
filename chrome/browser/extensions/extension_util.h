@@ -100,13 +100,6 @@ std::unique_ptr<base::DictionaryValue> GetExtensionInfo(
 const gfx::ImageSkia& GetDefaultExtensionIcon();
 const gfx::ImageSkia& GetDefaultAppIcon();
 
-// Finds the first PWA with |url| in its scope, returns nullptr if there are
-// none.
-const Extension* GetInstalledPwaForUrl(
-    content::BrowserContext* context,
-    const GURL& url,
-    base::Optional<LaunchContainer> launch_container_filter = base::nullopt);
-
 // Returns a PermissionSet configured with the permissions that should be
 // displayed in an extension installation prompt for the specified |extension|.
 std::unique_ptr<const PermissionSet> GetInstallPromptPermissionSetForExtension(

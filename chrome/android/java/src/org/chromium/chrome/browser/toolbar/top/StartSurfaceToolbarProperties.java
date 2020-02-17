@@ -55,8 +55,6 @@ class StartSurfaceToolbarProperties {
             new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel.WritableBooleanPropertyKey IS_VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey();
-    public static final PropertyModel.WritableBooleanPropertyKey IN_START_SURFACE_MODE =
-            new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel.WritableBooleanPropertyKey LOGO_IS_VISIBLE =
             new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel.WritableBooleanPropertyKey IS_INCOGNITO =
@@ -83,11 +81,10 @@ class StartSurfaceToolbarProperties {
     public static final PropertyModel.WritableBooleanPropertyKey NEW_TAB_BUTTON_AT_LEFT =
             new PropertyModel.WritableBooleanPropertyKey();
 
-    public static final PropertyKey[] ALL_KEYS =
-            new PropertyKey[] {APP_MENU_BUTTON_HELPER, NEW_TAB_CLICK_HANDLER, IS_VISIBLE,
-                    LOGO_IS_VISIBLE, IS_INCOGNITO, INCOGNITO_STATE_PROVIDER, ACCESSIBILITY_ENABLED,
-                    MENU_IS_VISIBLE, NEW_TAB_BUTTON_IS_VISIBLE, BUTTONS_CLICKABLE,
-                    INCOGNITO_SWITCHER_VISIBLE, NEW_TAB_BUTTON_AT_LEFT, IDENTITY_DISC_IS_VISIBLE,
-                    IDENTITY_DISC_CLICK_HANDLER, IDENTITY_DISC_IMAGE, IDENTITY_DISC_DESCRIPTION,
-                    IDENTITY_DISC_IPH, IN_START_SURFACE_MODE};
+    public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {APP_MENU_BUTTON_HELPER,
+            NEW_TAB_CLICK_HANDLER, IS_VISIBLE, LOGO_IS_VISIBLE, IS_INCOGNITO,
+            INCOGNITO_STATE_PROVIDER, ACCESSIBILITY_ENABLED, MENU_IS_VISIBLE,
+            NEW_TAB_BUTTON_IS_VISIBLE, BUTTONS_CLICKABLE, INCOGNITO_SWITCHER_VISIBLE,
+            NEW_TAB_BUTTON_AT_LEFT, IDENTITY_DISC_IS_VISIBLE, IDENTITY_DISC_CLICK_HANDLER,
+            IDENTITY_DISC_IMAGE, IDENTITY_DISC_DESCRIPTION, IDENTITY_DISC_IPH};
 }

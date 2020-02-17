@@ -4,6 +4,9 @@
 
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
 
+#include <algorithm>
+#include <cctype>
+
 #include "base/metrics/histogram_functions.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
@@ -30,6 +33,11 @@ namespace {
 // reducing the max length.
 constexpr int kSelectionTextMaxLength = 30;
 
+// Upper bound on digits in selected text to reduce false positives. This
+// matches the maximum number of digits in phone numbers according to E.164 and
+// showed a good tradeoff between false negatives vs. false positives.
+constexpr int kSelectionTextMaxDigits = 15;
+
 bool IsClickToCallEnabled(content::BrowserContext* browser_context) {
   // Check Chrome enterprise policy for Click to Call.
   Profile* profile = Profile::FromBrowserContext(browser_context);
@@ -55,6 +63,11 @@ base::Optional<std::string> ExtractPhoneNumberForClickToCall(
   DCHECK(!selection_text.empty());
 
   if (selection_text.size() > kSelectionTextMaxLength)
+    return base::nullopt;
+
+  int digits = std::count_if(selection_text.begin(), selection_text.end(),
+                             [](char c) { return std::isdigit(c); });
+  if (digits > kSelectionTextMaxDigits)
     return base::nullopt;
 
   if (!IsClickToCallEnabled(browser_context))

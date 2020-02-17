@@ -259,6 +259,9 @@ if (is_chromeos_device) {
       # crbug.com/1006681
       "crostini.GPUEnabledDownload",
       "crostini.SanityDownload",
+
+      # crbug.com/1051059
+      "security.SELinuxProcessesARC",
     ]
   }
 

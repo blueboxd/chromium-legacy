@@ -144,16 +144,14 @@ TEST_F(ClickToCallUtilsTest,
   // Check for spaces and dashes.
   expectations.emplace("call (+44) 987 654-3210 now", "(+44) 987 654-3210");
   // The first number is always returned.
-  expectations.emplace("9876543210 and 9999888877", "9876543210");
+  expectations.emplace("9876543210 and 12", "9876543210");
   // Spaces are allowed in between numbers.
   expectations.emplace("9 8 7 6 5 4 3 2 1 0", "9 8 7 6 5 4 3 2 1 0");
   // Two spaces in between.
   expectations.emplace("9  8 7 6 5  4 3 2 1 0", "9  8 7 6 5  4 3 2 1 0");
   // Non breaking spaces around number.
   expectations.emplace("\u00A09876543210\u00A0", "9876543210");
-  // Example for a credit card
-  expectations.emplace("4111 1111 1111 1111", "4111 1111 1111 1111");
-  // Chrome version string
+  // Chrome version string.
   expectations.emplace("78.0.3904.108", "78.0.3904.108");
 
   for (auto& expectation : expectations) {
@@ -171,9 +169,6 @@ TEST_F(ClickToCallUtilsTest,
 
   // Does not contain any number.
   invalid_selection_texts.push_back("Call me maybe");
-  // We only parse smaller text sizes to avoid performance impact on Chromium.
-  invalid_selection_texts.push_back(
-      "This is a huge text. It also contains a phone number 9876543210");
   // Although this is a valid number, its not caught by the regex.
   invalid_selection_texts.push_back("+44 1800-FLOWERS");
   // Number does not start as new word.
@@ -183,10 +178,30 @@ TEST_F(ClickToCallUtilsTest,
   // Number does not start as new word.
   invalid_selection_texts.push_back("Buy for $9876543210");
   // More than two spaces in between.
-  invalid_selection_texts.push_back("9   8   7   6   5   4    3   2   1     0");
+  invalid_selection_texts.push_back("9   8   7   6   5   4    3   2");
   // Space dash space formatting.
   invalid_selection_texts.push_back("999 - 999 - 9999");
 
   for (auto& text : invalid_selection_texts)
     ExpectClickToCallDisabledForSelectionText(text);
+}
+
+TEST_F(ClickToCallUtilsTest, SelectionText_Length) {
+  scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
+  // Expect text length of 30 to pass.
+  EXPECT_NE(base::nullopt, ExtractPhoneNumberForClickToCall(
+                               &profile_, " +1 2 3 4 5 6 7 8 9 0 1 2 3 45"));
+  // Expect text length of 31 to fail.
+  EXPECT_EQ(base::nullopt, ExtractPhoneNumberForClickToCall(
+                               &profile_, " +1 2 3 4 5 6 7 8 9 0 1 2 3 4 5"));
+}
+
+TEST_F(ClickToCallUtilsTest, SelectionText_Digits) {
+  scoped_feature_list_.InitAndEnableFeature(kClickToCallUI);
+  // Expect text with 15 digits to pass.
+  EXPECT_NE(base::nullopt,
+            ExtractPhoneNumberForClickToCall(&profile_, "+123456789012345"));
+  // Expect text with 16 digits to fail.
+  EXPECT_EQ(base::nullopt,
+            ExtractPhoneNumberForClickToCall(&profile_, "+1234567890123456"));
 }

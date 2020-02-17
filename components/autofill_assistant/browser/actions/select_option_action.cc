@@ -55,6 +55,7 @@ void SelectOptionAction::OnWaitForElement(ProcessActionCallback callback,
 
   delegate_->SelectOption(
       selector, proto_.select_option().selected_option(),
+      proto_.select_option().select_strategy(),
       base::BindOnce(&::autofill_assistant::SelectOptionAction::OnSelectOption,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }

@@ -279,8 +279,16 @@ void RequiredFieldsFallbackHandler::OnGetFallbackFieldTag(
   VLOG(3) << "Setting fallback value for " << required_field.selector << " ("
           << element_tag << ")";
   if (element_tag == "SELECT") {
+    DropdownSelectStrategy select_strategy;
+    if (required_field.select_strategy != UNSPECIFIED_SELECT_STRATEGY) {
+      select_strategy = required_field.select_strategy;
+    } else {
+      // This is the legacy default.
+      select_strategy = LABEL_STARTS_WITH;
+    }
+
     action_delegate_->SelectOption(
-        required_field.selector, fallback_value.value(),
+        required_field.selector, fallback_value.value(), select_strategy,
         base::BindOnce(&RequiredFieldsFallbackHandler::OnSetFallbackFieldValue,
                        weak_ptr_factory_.GetWeakPtr(), required_fields_index,
                        std::move(fallback_data)));

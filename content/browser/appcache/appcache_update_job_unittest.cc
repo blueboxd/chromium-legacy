@@ -17,6 +17,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
@@ -52,16 +53,6 @@
 
 namespace content {
 namespace appcache_update_job_unittest {
-
-namespace {
-
-// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
-// function.
-GURL RetryUrl() {
-  return GURL("http://retry");
-}
-
-}  // namespace
 
 class AppCacheUpdateJobTest;
 
@@ -475,6 +466,8 @@ class RetryRequestTestJob {
     RETRY_AFTER_0,
   };
 
+  static constexpr char kRetryUrl[] = "http://retry/";
+
   // Call this at the start of each retry test.
   static void Initialize(int num_retry_responses,
                          RetryHeader header,
@@ -496,7 +489,7 @@ class RetryRequestTestJob {
                                 std::string* headers,
                                 std::string* data) {
     ++num_requests_;
-    if (num_retries_ > 0 && url == RetryUrl()) {
+    if (num_retries_ > 0 && IsRetryUrl(url)) {
       --num_retries_;
       *headers = RetryRequestTestJob::retry_headers();
     } else {
@@ -505,6 +498,8 @@ class RetryRequestTestJob {
     if (data)
       *data = RetryRequestTestJob::data();
   }
+
+  static bool IsRetryUrl(const GURL& url) { return url.spec() == kRetryUrl; }
 
  private:
   static std::string retry_headers() {
@@ -540,9 +535,7 @@ class RetryRequestTestJob {
   }
 
   static std::string data() {
-    return std::string(
-        "CACHE MANIFEST\r"
-        "http://retry\r");  // must be same as RetryUrl()
+    return base::StrCat({"CACHE MANIFEST\r", kRetryUrl, "\r"});
   }
 
   static int num_requests_;
@@ -551,6 +544,8 @@ class RetryRequestTestJob {
   static int expected_requests_;
 };
 
+// static
+constexpr char RetryRequestTestJob::kRetryUrl[];
 int RetryRequestTestJob::num_requests_ = 0;
 int RetryRequestTestJob::num_retries_;
 RetryRequestTestJob::RetryHeader RetryRequestTestJob::retry_after_;
@@ -662,11 +657,10 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     std::string headers;
     std::string body;
-    if (url_request.url == RetryUrl()) {
+    if (RetryRequestTestJob::IsRetryUrl(url_request.url))
       RetryRequestTestJob::GetResponseForURL(url_request.url, &headers, &body);
-    } else {
+    else
       MockHttpServer::GetMockResponse(url_request.url.path(), &headers, &body);
-    }
 
     net::HttpResponseInfo info;
     info.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
@@ -2210,56 +2204,18 @@ class AppCacheUpdateJobTest : public testing::Test,
     WaitForUpdateToFinish();
   }
 
-  void RetryRequestTest() {
+  void RetryRetryAfterTest() {
     // Set some large number of times to return retry.
     // Expect 1 manifest fetch and 3 retries.
     RetryRequestTestJob::Initialize(5, RetryRequestTestJob::RETRY_AFTER_0, 4);
-
-    MakeService();
-    group_ = base::MakeRefCounted<AppCacheGroup>(
-        service_->storage(), RetryUrl(), service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update =
-        new AppCacheUpdateJob(service_.get(), group_.get());
-    group_->update_job_ = update;
-
-    MockFrontend* frontend = MakeMockFrontend();
-    AppCacheHost* host = MakeHost(frontend);
-    update->StartUpdate(host, GURL());
-
-    // Set up checks for when update job finishes.
-    do_checks_after_update_finished_ = true;
-    expect_group_obsolete_ = false;
-    expect_group_has_cache_ = false;
-    frontend->AddExpectedEvent(
-        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
-
-    WaitForUpdateToFinish();
+    RetryRequestTest(false);
   }
 
   void RetryNoRetryAfterTest() {
     // Set some large number of times to return retry.
     // Expect 1 manifest fetch and 0 retries.
     RetryRequestTestJob::Initialize(5, RetryRequestTestJob::NO_RETRY_AFTER, 1);
-
-    MakeService();
-    group_ = base::MakeRefCounted<AppCacheGroup>(
-        service_->storage(), RetryUrl(), service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update =
-        new AppCacheUpdateJob(service_.get(), group_.get());
-    group_->update_job_ = update;
-
-    MockFrontend* frontend = MakeMockFrontend();
-    AppCacheHost* host = MakeHost(frontend);
-    update->StartUpdate(host, GURL());
-
-    // Set up checks for when update job finishes.
-    do_checks_after_update_finished_ = true;
-    expect_group_obsolete_ = false;
-    expect_group_has_cache_ = false;
-    frontend->AddExpectedEvent(
-        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
-
-    WaitForUpdateToFinish();
+    RetryRequestTest(false);
   }
 
   void RetryNonzeroRetryAfterTest() {
@@ -2267,78 +2223,21 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Expect 1 request and 0 retry attempts.
     RetryRequestTestJob::Initialize(5, RetryRequestTestJob::NONZERO_RETRY_AFTER,
                                     1);
-
-    MakeService();
-    group_ = base::MakeRefCounted<AppCacheGroup>(
-        service_->storage(), RetryUrl(), service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update =
-        new AppCacheUpdateJob(service_.get(), group_.get());
-    group_->update_job_ = update;
-
-    MockFrontend* frontend = MakeMockFrontend();
-    AppCacheHost* host = MakeHost(frontend);
-    update->StartUpdate(host, GURL());
-
-    // Set up checks for when update job finishes.
-    do_checks_after_update_finished_ = true;
-    expect_group_obsolete_ = false;
-    expect_group_has_cache_ = false;
-    frontend->AddExpectedEvent(
-        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
-
-    WaitForUpdateToFinish();
+    RetryRequestTest(false);
   }
 
   void RetrySuccessTest() {
     // Set 2 as the retry limit (does not exceed the max).
     // Expect 1 manifest fetch, 2 retries, 1 url fetch, 1 manifest refetch.
     RetryRequestTestJob::Initialize(2, RetryRequestTestJob::RETRY_AFTER_0, 5);
-
-    MakeService();
-    group_ = base::MakeRefCounted<AppCacheGroup>(
-        service_->storage(), RetryUrl(), service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update =
-        new AppCacheUpdateJob(service_.get(), group_.get());
-    group_->update_job_ = update;
-
-    MockFrontend* frontend = MakeMockFrontend();
-    AppCacheHost* host = MakeHost(frontend);
-    update->StartUpdate(host, GURL());
-
-    // Set up checks for when update job finishes.
-    do_checks_after_update_finished_ = true;
-    expect_group_obsolete_ = false;
-    expect_group_has_cache_ = true;
-    frontend->AddExpectedEvent(
-        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
-
-    WaitForUpdateToFinish();
+    RetryRequestTest(true);
   }
 
   void RetryUrlTest() {
     // Set 1 as the retry limit (does not exceed the max).
     // Expect 1 manifest fetch, 1 url fetch, 1 url retry, 1 manifest refetch.
     RetryRequestTestJob::Initialize(1, RetryRequestTestJob::RETRY_AFTER_0, 4);
-
-    MakeService();
-    group_ = base::MakeRefCounted<AppCacheGroup>(
-        service_->storage(), RetryUrl(), service_->storage()->NewGroupId());
-    AppCacheUpdateJob* update =
-        new AppCacheUpdateJob(service_.get(), group_.get());
-    group_->update_job_ = update;
-
-    MockFrontend* frontend = MakeMockFrontend();
-    AppCacheHost* host = MakeHost(frontend);
-    update->StartUpdate(host, GURL());
-
-    // Set up checks for when update job finishes.
-    do_checks_after_update_finished_ = true;
-    expect_group_obsolete_ = false;
-    expect_group_has_cache_ = true;
-    frontend->AddExpectedEvent(
-        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
-
-    WaitForUpdateToFinish();
+    RetryRequestTest(true);
   }
 
   void FailStoreNewestCacheTest() {
@@ -4173,7 +4072,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     }
 
     if (expect_group_has_cache_) {
-      EXPECT_TRUE(group_->newest_complete_cache() != nullptr);
+      ASSERT_TRUE(group_->newest_complete_cache() != nullptr);
 
       if (expect_non_null_update_time_)
         EXPECT_TRUE(!group_->newest_complete_cache()->update_time().is_null());
@@ -4863,6 +4762,29 @@ class AppCacheUpdateJobTest : public testing::Test,
     // Start update after data write completes asynchronously.
   }
 
+  void RetryRequestTest(bool expect_group_has_cache) {
+    MakeService();
+    group_ = base::MakeRefCounted<AppCacheGroup>(
+        service_->storage(), GURL(RetryRequestTestJob::kRetryUrl),
+        service_->storage()->NewGroupId());
+    AppCacheUpdateJob* update =
+        new AppCacheUpdateJob(service_.get(), group_.get());
+    group_->update_job_ = update;
+
+    MockFrontend* frontend = MakeMockFrontend();
+    AppCacheHost* host = MakeHost(frontend);
+    update->StartUpdate(host, GURL());
+
+    // Set up checks for when update job finishes.
+    do_checks_after_update_finished_ = true;
+    expect_group_obsolete_ = false;
+    expect_group_has_cache_ = expect_group_has_cache;
+    frontend->AddExpectedEvent(
+        blink::mojom::AppCacheEventID::APPCACHE_CHECKING_EVENT);
+
+    WaitForUpdateToFinish();
+  }
+
   content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<MockAppCacheService> service_;
@@ -5165,8 +5087,8 @@ TEST_F(AppCacheUpdateJobTest, EmptyFile) {
   RunTestOnUIThread(&AppCacheUpdateJobTest::EmptyFileTest);
 }
 
-TEST_F(AppCacheUpdateJobTest, RetryRequest) {
-  RunTestOnUIThread(&AppCacheUpdateJobTest::RetryRequestTest);
+TEST_F(AppCacheUpdateJobTest, RetryRetryAfter) {
+  RunTestOnUIThread(&AppCacheUpdateJobTest::RetryRetryAfterTest);
 }
 
 TEST_F(AppCacheUpdateJobTest, RetryNoRetryAfter) {

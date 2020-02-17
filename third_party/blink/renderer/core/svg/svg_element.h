@@ -44,8 +44,8 @@ class SubtreeLayoutScope;
 class SVGAnimatedString;
 class SVGElement;
 class SVGElementRareData;
+class SVGElementResourceClient;
 class SVGPropertyBase;
-class SVGResourceClient;
 class SVGSVGElement;
 class SVGUseElement;
 
@@ -176,8 +176,8 @@ class CORE_EXPORT SVGElement : public Element {
   void RemoveAllIncomingReferences();
   void RemoveAllOutgoingReferences();
 
-  SVGResourceClient* GetSVGResourceClient();
-  SVGResourceClient& EnsureSVGResourceClient();
+  SVGElementResourceClient* GetSVGResourceClient();
+  SVGElementResourceClient& EnsureSVGResourceClient();
 
   class InvalidationGuard {
     STACK_ALLOCATED();

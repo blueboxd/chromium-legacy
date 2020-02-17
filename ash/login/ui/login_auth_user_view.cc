@@ -979,7 +979,7 @@ void LoginAuthUserView::SetAuthMethods(uint32_t auth_methods,
 
   password_view_->SetEnabled(has_password);
   password_view_->SetEnabledOnEmptyPassword(has_tap);
-  password_view_->SetFocusEnabledOnTextfield(has_password);
+  password_view_->SetFocusEnabledForChildViews(has_password);
   password_view_->SetVisible(!hide_auth && has_password);
   password_view_->layer()->SetOpacity(has_password ? 1 : 0);
   password_view_container_->SetVisible(has_password || !has_challenge_response);

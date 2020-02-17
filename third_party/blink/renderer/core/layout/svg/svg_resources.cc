@@ -45,7 +45,7 @@ namespace blink {
 
 SVGResources::SVGResources() : linked_resource_(nullptr) {}
 
-SVGResourceClient* SVGResources::GetClient(const LayoutObject& object) {
+SVGElementResourceClient* SVGResources::GetClient(const LayoutObject& object) {
   return To<SVGElement>(object.GetNode())->GetSVGResourceClient();
 }
 
@@ -290,23 +290,20 @@ bool SVGResources::DifferenceNeedsLayout(const SVGResources* a,
 }
 
 InvalidationModeMask SVGResources::RemoveClientFromCacheAffectingObjectBounds(
-    SVGResourceClient& client) const {
+    SVGElementResourceClient& client) const {
   if (!clipper_filter_masker_data_)
     return 0;
-  InvalidationModeMask invalidation_flags = 0;
-  if (LayoutSVGResourceClipper* clipper = clipper_filter_masker_data_->clipper)
-    clipper->RemoveClientFromCache(client);
+  InvalidationModeMask invalidation_flags =
+      SVGResourceClient::kBoundariesInvalidation;
   if (LayoutSVGResourceFilter* filter = clipper_filter_masker_data_->filter) {
     if (filter->RemoveClientFromCache(client))
       invalidation_flags |= SVGResourceClient::kPaintInvalidation;
   }
-  if (LayoutSVGResourceMasker* masker = clipper_filter_masker_data_->masker)
-    masker->RemoveClientFromCache(client);
-  return invalidation_flags | SVGResourceClient::kBoundariesInvalidation;
+  return invalidation_flags;
 }
 
 InvalidationModeMask SVGResources::RemoveClientFromCache(
-    SVGResourceClient& client) const {
+    SVGElementResourceClient& client) const {
   if (!HasResourceData())
     return 0;
 

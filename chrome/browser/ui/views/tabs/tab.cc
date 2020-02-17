@@ -100,6 +100,8 @@ namespace {
 // transitioning a tab from normal to pinned tab.
 constexpr int kPinnedTabExtraWidthToRenderAsNormal = 30;
 
+bool g_show_hover_card_on_mouse_hover = true;
+
 // Helper functions ------------------------------------------------------------
 
 // Returns the coordinate for an object of size |item_size| centered in a region
@@ -175,6 +177,11 @@ class Tab::TabCloseButtonObserver : public views::ViewObserver {
 
 // static
 const char Tab::kViewClassName[] = "Tab";
+
+// static
+void Tab::SetShowHoverCardOnMouseHoverForTesting(bool value) {
+  g_show_hover_card_on_mouse_hover = value;
+}
 
 Tab::Tab(TabController* controller)
     : controller_(controller),
@@ -599,7 +606,8 @@ void Tab::MaybeUpdateHoverStatus(const ui::MouseEvent& event) {
   tab_style_->ShowHover(TabStyle::ShowHoverStyle::kSubtle);
   UpdateForegroundColors();
   Layout();
-  controller_->UpdateHoverCard(this);
+  if (g_show_hover_card_on_mouse_hover)
+    controller_->UpdateHoverCard(this);
 }
 
 void Tab::OnMouseExited(const ui::MouseEvent& event) {

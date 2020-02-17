@@ -154,8 +154,6 @@ component("web_engine_core") {
     "browser/web_engine_content_browser_client.h",
     "browser/web_engine_devtools_controller.cc",
     "browser/web_engine_devtools_controller.h",
-    "browser/web_engine_memory_pressure_evaluator.cc",
-    "browser/web_engine_memory_pressure_evaluator.h",
     "browser/web_engine_net_log_observer.cc",
     "browser/web_engine_net_log_observer.h",
     "browser/web_engine_permission_manager.cc",

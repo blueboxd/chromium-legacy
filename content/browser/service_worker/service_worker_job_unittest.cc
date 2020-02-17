@@ -1096,6 +1096,7 @@ TEST_F(ServiceWorkerJobTest, AddRegistrationToMatchingProviderHosts) {
 
 namespace {  // Helpers for the update job tests.
 
+const char kNoChangeOrigin[] = "https://nochange/";
 const char kScope[] = "scope/";
 const char kScript[] = "script.js";
 
@@ -1104,15 +1105,6 @@ const char kHeaders[] =
     "Content-Type: application/javascript\n\n";
 const char kBody[] = "/* old body */";
 const char kNewBody[] = "/* new body */";
-
-// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
-// function.
-GURL NoChangeOrigin() {
-  return GURL("https://nochange/");
-}
-GURL NewVersionOrigin() {
-  return GURL("https://newversion/");
-}
 
 void RunNestedUntilIdle() {
   base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
@@ -1261,13 +1253,13 @@ class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
       // Spoof caching the script for the initial version.
       WriteStringResponse(writer.get(), kBody);
       version->script_cache_map()->NotifyFinishedCaching(
-          script, sizeof(kBody) / sizeof(char), net::OK, std::string());
+          script, base::size(kBody), net::OK, std::string());
     } else {
-      EXPECT_NE(NoChangeOrigin(), script.GetOrigin());
+      EXPECT_NE(GURL(kNoChangeOrigin), script.GetOrigin());
       // The script must be changed.
       WriteStringResponse(writer.get(), kNewBody);
       version->script_cache_map()->NotifyFinishedCaching(
-          script, sizeof(kNewBody) / sizeof(char), net::OK, std::string());
+          script, base::size(kNewBody), net::OK, std::string());
     }
 
     version->SetMainScriptHttpResponseInfo(CreateHttpResponseInfo());
@@ -1404,7 +1396,7 @@ TEST_F(ServiceWorkerUpdateJobTest, RegisterWithDifferentUpdateViaCache) {
 
 TEST_F(ServiceWorkerUpdateJobTest, Update_NoChange) {
   scoped_refptr<ServiceWorkerRegistration> registration =
-      update_helper_->SetupInitialRegistration(NoChangeOrigin());
+      update_helper_->SetupInitialRegistration(GURL(kNoChangeOrigin));
   ASSERT_TRUE(registration.get());
   ASSERT_EQ(4u, update_helper_->state_change_log_.size());
   EXPECT_EQ(ServiceWorkerVersion::INSTALLING,
@@ -1444,9 +1436,10 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
   const base::Time kToday = base::Time::Now();
   const base::Time kYesterday =
       kToday - base::TimeDelta::FromDays(1) - base::TimeDelta::FromHours(1);
+  const GURL kNewVersionOrigin("https://newversion/");
 
   scoped_refptr<ServiceWorkerRegistration> registration =
-      update_helper_->SetupInitialRegistration(NoChangeOrigin());
+      update_helper_->SetupInitialRegistration(GURL(kNoChangeOrigin));
   ASSERT_TRUE(registration.get());
 
   registration->AddListener(update_helper_);
@@ -1455,7 +1448,7 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
   // accessed. The check time should not be updated.
   // Set network not accessed.
   update_helper_->fake_network_.SetResponse(
-      NoChangeOrigin().Resolve(kScript), kHeaders, kBody,
+      GURL(kNoChangeOrigin).Resolve(kScript), kHeaders, kBody,
       /*network_accessed=*/false, net::OK);
 
   {
@@ -1476,9 +1469,9 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
   // Run an update where the script did not change and the network was
   // accessed. The check time should be updated.
   // Set network accessed.
-  update_helper_->fake_network_.SetResponse(NoChangeOrigin().Resolve(kScript),
-                                            kHeaders, kBody,
-                                            /*network_accessed=*/true, net::OK);
+  update_helper_->fake_network_.SetResponse(
+      GURL(kNoChangeOrigin).Resolve(kScript), kHeaders, kBody,
+      /*network_accessed=*/true, net::OK);
 
   {
     base::HistogramTester histogram_tester;
@@ -1488,7 +1481,7 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
     EXPECT_LT(kYesterday, registration->last_update_check());
     EXPECT_FALSE(update_helper_->update_found_);
     registration->RemoveListener(update_helper_);
-    registration = update_helper_->SetupInitialRegistration(NewVersionOrigin());
+    registration = update_helper_->SetupInitialRegistration(kNewVersionOrigin);
     ASSERT_TRUE(registration.get());
     // Update check succeeds but no update is found.
     histogram_tester.ExpectBucketCount("ServiceWorker.UpdateCheck.Result",
@@ -1501,7 +1494,7 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
 
   // Run an update where the script changed. The check time should be updated.
   // Change script body.
-  update_helper_->fake_network_.SetResponse(NewVersionOrigin().Resolve(kScript),
+  update_helper_->fake_network_.SetResponse(kNewVersionOrigin.Resolve(kScript),
                                             kHeaders, kNewBody,
                                             /*network_accessed=*/true, net::OK);
   {
@@ -1526,7 +1519,7 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
   embedded_worker_instance_client->set_force_start_worker_failure(true);
   registration->set_last_update_check(kYesterday);
   // Change script body.
-  update_helper_->fake_network_.SetResponse(NewVersionOrigin().Resolve(kScript),
+  update_helper_->fake_network_.SetResponse(kNewVersionOrigin.Resolve(kScript),
                                             kHeaders, kBody,
                                             /*network_accessed=*/true, net::OK);
   {
@@ -1544,8 +1537,10 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_BumpLastUpdateCheckTime) {
 }
 
 TEST_F(ServiceWorkerUpdateJobTest, Update_NewVersion) {
+  const GURL kNewVersionOrigin("https://newversion/");
+
   scoped_refptr<ServiceWorkerRegistration> registration =
-      update_helper_->SetupInitialRegistration(NewVersionOrigin());
+      update_helper_->SetupInitialRegistration(kNewVersionOrigin);
   ASSERT_TRUE(registration.get());
   update_helper_->state_change_log_.clear();
   auto runner = base::MakeRefCounted<base::TestSimpleTaskRunner>();
@@ -1553,7 +1548,7 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_NewVersion) {
 
   // Run the update job and an update is found.
   // Change script body.
-  update_helper_->fake_network_.SetResponse(NewVersionOrigin().Resolve(kScript),
+  update_helper_->fake_network_.SetResponse(kNewVersionOrigin.Resolve(kScript),
                                             kHeaders, kNewBody,
                                             /*network_accessed=*/true, net::OK);
 
@@ -1713,7 +1708,7 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_ScriptUrlChanged) {
   version->script_cache_map()->NotifyStartedCaching(new_script, resource_id);
   WriteStringResponse(writer.get(), kBody);
   version->script_cache_map()->NotifyFinishedCaching(
-      new_script, sizeof(kBody) / sizeof(char), net::OK, std::string());
+      new_script, base::size(kBody), net::OK, std::string());
 
   // Run the update job.
   base::RunLoop().RunUntilIdle();
@@ -1742,8 +1737,10 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_ScriptUrlChanged) {
 // Test that update fails if the incumbent worker was evicted
 // during the update job (this can happen on disk cache failure).
 TEST_F(ServiceWorkerUpdateJobTest, Update_EvictedIncumbent) {
+  const GURL kNewVersionOrigin("https://newversion/");
+
   scoped_refptr<ServiceWorkerRegistration> registration =
-      update_helper_->SetupInitialRegistration(NewVersionOrigin());
+      update_helper_->SetupInitialRegistration(kNewVersionOrigin);
   ASSERT_TRUE(registration.get());
   update_helper_->state_change_log_.clear();
 
@@ -1756,7 +1753,7 @@ TEST_F(ServiceWorkerUpdateJobTest, Update_EvictedIncumbent) {
   // Start the update job and make it block on the worker starting.
   // Evict the incumbent during that time.
   // Change script body.
-  update_helper_->fake_network_.SetResponse(NewVersionOrigin().Resolve(kScript),
+  update_helper_->fake_network_.SetResponse(kNewVersionOrigin.Resolve(kScript),
                                             kHeaders, kNewBody,
                                             /*network_accessed=*/true, net::OK);
 
@@ -1992,6 +1989,7 @@ class ServiceWorkerUpdateJobTestWithCrossOriginIsolation
 // Update job should handle the COEP header appropriately.
 TEST_F(ServiceWorkerUpdateJobTestWithCrossOriginIsolation,
        Update_CrossOriginEmbedderPolicy) {
+  const GURL kNewVersionOrigin("https://newversion/");
   const char kHeadersWithRequireCorp[] = R"(HTTP/1.1 200 OK
 Content-Type: application/javascript
 Cross-Origin-Embedder-Policy: require-corp
@@ -2008,7 +2006,7 @@ Cross-Origin-Embedder-Policy: none
       kToday - base::TimeDelta::FromDays(1) - base::TimeDelta::FromHours(1);
 
   scoped_refptr<ServiceWorkerRegistration> registration =
-      update_helper_->SetupInitialRegistration(NewVersionOrigin());
+      update_helper_->SetupInitialRegistration(kNewVersionOrigin);
   ASSERT_TRUE(registration.get());
   EXPECT_EQ(network::mojom::CrossOriginEmbedderPolicy::kNone,
             registration->active_version()->cross_origin_embedder_policy());
@@ -2017,7 +2015,7 @@ Cross-Origin-Embedder-Policy: none
 
   // Run an update where the response header is updated but the script did not
   // change. No update is found but the last update check time is updated.
-  update_helper_->fake_network_.SetResponse(NewVersionOrigin().Resolve(kScript),
+  update_helper_->fake_network_.SetResponse(kNewVersionOrigin.Resolve(kScript),
                                             kHeadersWithRequireCorp, kBody,
                                             /*network_accessed=*/true, net::OK);
 
@@ -2037,7 +2035,7 @@ Cross-Origin-Embedder-Policy: none
   }
 
   // Run an update where the COEP value and the script changed.
-  update_helper_->fake_network_.SetResponse(NewVersionOrigin().Resolve(kScript),
+  update_helper_->fake_network_.SetResponse(kNewVersionOrigin.Resolve(kScript),
                                             kHeadersWithRequireCorp, kNewBody,
                                             /*network_accessed=*/true, net::OK);
   {
@@ -2059,7 +2057,7 @@ Cross-Origin-Embedder-Policy: none
 
   // Run an update again where the COEP value and the body has been updated. The
   // COEP value should be updated appropriately.
-  update_helper_->fake_network_.SetResponse(NewVersionOrigin().Resolve(kScript),
+  update_helper_->fake_network_.SetResponse(kNewVersionOrigin.Resolve(kScript),
                                             kHeadersWithNone, kBody,
                                             /*network_accessed=*/true, net::OK);
   {

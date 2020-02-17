@@ -357,9 +357,10 @@ void ScriptExecutor::RetrieveElementFormAndFieldData(
 
 void ScriptExecutor::SelectOption(
     const Selector& selector,
-    const std::string& selected_option,
+    const std::string& value,
+    DropdownSelectStrategy select_strategy,
     base::OnceCallback<void(const ClientStatus&)> callback) {
-  delegate_->GetWebController()->SelectOption(selector, selected_option,
+  delegate_->GetWebController()->SelectOption(selector, value, select_strategy,
                                               std::move(callback));
 }
 

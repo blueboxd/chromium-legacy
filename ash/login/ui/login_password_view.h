@@ -22,25 +22,20 @@ class ButtonListener;
 class ImageView;
 class Separator;
 class Textfield;
-class ToggleImageButton;
 }  // namespace views
 
 namespace ash {
+class LoginButton;
 enum class EasyUnlockIconId;
 
-// Contains a textfield instance with a display password button. The user can
-// type a password into the textfield and hit enter to submit.
+// Contains a textfield instance with a submit button. The user can type a
+// password into the textfield and hit enter to submit.
 //
 // This view is always rendered via layers.
 //
-// The password view looks like this by default:
+// The password view looks like this:
 //
-//  * * * * * *    (\)
-//  ------------------
-//
-//  or this, in display mode:
-//
-//  1 2 3 4 5 6    (o)
+//   * * * * * *   =>
 //  ------------------
 class ASH_EXPORT LoginPasswordView : public views::View,
                                      public views::ButtonListener,
@@ -56,7 +51,7 @@ class ASH_EXPORT LoginPasswordView : public views::View,
     void SubmitPassword(const std::string& password);
 
     views::Textfield* textfield() const;
-    views::ToggleImageButton* display_password_button() const;
+    views::View* submit_button() const;
     views::View* easy_unlock_icon() const;
     void set_immediately_hover_easy_unlock_icon();
 
@@ -74,7 +69,7 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   LoginPasswordView();
   ~LoginPasswordView() override;
 
-  // |on_submit| is called when the user hits enter.
+  // |on_submit| is called when the user hits enter or pressed the submit arrow.
   // |on_password_text_changed| is called when the text in the password field
   // changes.
   void Init(const OnPasswordSubmit& on_submit,
@@ -92,8 +87,9 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   // Set the textfield name used for accessibility.
   void SetAccessibleName(const base::string16& name);
 
-  // Enable or disable focus on the password field.
-  void SetFocusEnabledOnTextfield(bool enable);
+  // Enable or disable focus on the child elements (ie, password field and
+  // submit button).
+  void SetFocusEnabledForChildViews(bool enable);
 
   // Clear all currently entered text.
   void Clear();
@@ -109,7 +105,7 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   // itself because it doesn't know which auth methods are enabled.
   void SetPlaceholderText(const base::string16& placeholder_text);
 
-  // Makes the textfield read-only.
+  // Makes the textfield read-only and enables/disables submitting.
   void SetReadOnly(bool read_only);
 
   // views::View:
@@ -119,9 +115,6 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // views::ButtonListener:
-  // Handles click on the display password button. Therefore, it inverts the
-  // display password button icon's (show/hide) and shows/hides the content of
-  // the password field.
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // views::TextfieldController:
@@ -136,16 +129,14 @@ class ASH_EXPORT LoginPasswordView : public views::View,
 
  private:
   class EasyUnlockIcon;
-  class DisplayPasswordButton;
-  class LoginTextfield;
   friend class TestApi;
 
   // Increases/decreases the contrast of the separator and capslock icon.
   void SetSeparatorAndCapsLockHighlighted(bool highlight);
 
-  // Needs to be true in order for SubmitPassword to be ran. Returns true if the
-  // textfield is not empty or if |enabled_on_empty_password| is true.
-  bool IsPasswordSubmittable();
+  // Enables/disables the submit button and changes the color of the separator
+  // based on if the view is enabled.
+  void UpdateUiState();
 
   // Submits the current password field text to mojo call and resets the text
   // field.
@@ -159,8 +150,8 @@ class ASH_EXPORT LoginPasswordView : public views::View,
 
   views::View* password_row_ = nullptr;
 
-  LoginTextfield* textfield_ = nullptr;
-  DisplayPasswordButton* display_password_button_ = nullptr;
+  views::Textfield* textfield_ = nullptr;
+  LoginButton* submit_button_ = nullptr;
   views::ImageView* capslock_icon_ = nullptr;
   views::Separator* separator_ = nullptr;
   EasyUnlockIcon* easy_unlock_icon_ = nullptr;

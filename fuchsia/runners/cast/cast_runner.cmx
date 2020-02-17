@@ -15,6 +15,7 @@
       "fuchsia.media.drm.PlayReady",
       "fuchsia.media.drm.Widevine",
       "fuchsia.mediacodec.CodecFactory",
+      "fuchsia.memorypressure.Provider",
       "fuchsia.net.NameLookup",
       "fuchsia.netstack.Netstack",
       "fuchsia.posix.socket.Provider",

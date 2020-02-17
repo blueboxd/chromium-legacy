@@ -11,7 +11,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/invalidation/impl/unacked_invalidation_set_test_util.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "components/invalidation/public/single_object_invalidation_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -185,79 +184,6 @@ TEST_F(UnackedInvalidationSetTest, Drop) {
   ASSERT_EQ(2U, set.GetSize());
   EXPECT_TRUE(set.StartsWithUnknownVersion());
   EXPECT_EQ(15, set.rbegin()->version());
-}
-
-class UnackedInvalidationSetSerializationTest
-    : public UnackedInvalidationSetTest {
- public:
-  UnackedInvalidationSet SerializeDeserialize() {
-    std::unique_ptr<base::DictionaryValue> value =
-        unacked_invalidations_.ToValue();
-    UnackedInvalidationSet deserialized(kObjectId_);
-    deserialized.ResetFromValue(*value);
-    return deserialized;
-  }
-};
-
-TEST_F(UnackedInvalidationSetSerializationTest, Empty) {
-  UnackedInvalidationSet deserialized = SerializeDeserialize();
-  EXPECT_THAT(unacked_invalidations_, test_util::Eq(deserialized));
-}
-
-TEST_F(UnackedInvalidationSetSerializationTest, OneInvalidation) {
-  Invalidation inv = Invalidation::Init(kObjectId_, 10, "payload");
-  unacked_invalidations_.Add(inv);
-
-  UnackedInvalidationSet deserialized = SerializeDeserialize();
-  EXPECT_THAT(unacked_invalidations_, test_util::Eq(deserialized));
-}
-
-TEST_F(UnackedInvalidationSetSerializationTest, WithUnknownVersion) {
-  Invalidation inv1 = Invalidation::Init(kObjectId_, 10, "payload");
-  Invalidation inv2 = Invalidation::InitUnknownVersion(kObjectId_);
-  Invalidation inv3 = Invalidation::InitUnknownVersion(kObjectId_);
-  unacked_invalidations_.Add(inv1);
-  unacked_invalidations_.Add(inv2);
-  unacked_invalidations_.Add(inv3);
-
-  UnackedInvalidationSet deserialized = SerializeDeserialize();
-  EXPECT_THAT(unacked_invalidations_, test_util::Eq(deserialized));
-}
-
-TEST_F(UnackedInvalidationSetSerializationTest, ValidConversionFromMap) {
-  UnackedInvalidationsMap map;
-  Invalidation inv = Invalidation::Init(kObjectId_, 10, "payload");
-  unacked_invalidations_.Add(inv);
-  std::unique_ptr<base::DictionaryValue> dict =
-      unacked_invalidations_.ToValue();
-  bool result = UnackedInvalidationSet::DeserializeSetIntoMap(*dict, &map);
-  EXPECT_EQ(true, result);
-  auto item = map.find(kObjectId_);
-  ASSERT_NE(map.end(), item);
-  EXPECT_EQ(kObjectId_, item->second.object_id());
-}
-
-TEST_F(UnackedInvalidationSetSerializationTest, InvalidConversionFromMap) {
-  UnackedInvalidationsMap map;
-  base::DictionaryValue dict;
-  // Empty dictionary should fail.
-  EXPECT_FALSE(UnackedInvalidationSet::DeserializeSetIntoMap(dict, &map));
-
-  // Non-int source should fail.
-  dict.SetString("source", "foo");
-  EXPECT_FALSE(UnackedInvalidationSet::DeserializeSetIntoMap(dict, &map));
-
-  // Missing "name" should fail.
-  dict.SetString("source", base::NumberToString(kObjectId_.source()));
-  EXPECT_FALSE(UnackedInvalidationSet::DeserializeSetIntoMap(dict, &map));
-
-  // The "invalidation-list" is not required, so add "name" to make valid.
-  dict.SetString("name", kObjectId_.name());
-  bool result = UnackedInvalidationSet::DeserializeSetIntoMap(dict, &map);
-  EXPECT_TRUE(result);
-  auto item = map.find(kObjectId_);
-  ASSERT_NE(map.end(), item);
-  EXPECT_EQ(kObjectId_, item->second.object_id());
 }
 
 }  // namespace

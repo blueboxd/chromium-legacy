@@ -11,6 +11,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
@@ -31,7 +32,24 @@ class TestPasswordStore : public PasswordStore {
                                std::vector<autofill::PasswordForm>,
                                std::less<>>;
 
+  struct CompromisedCredentialsLess {
+    bool operator()(const CompromisedCredentials& lhs,
+                    const CompromisedCredentials& rhs) const {
+      // Only compare members that are part of the unique key in the database.
+      return std::tie(lhs.signon_realm, lhs.username, lhs.compromise_type) <
+             std::tie(rhs.signon_realm, rhs.username, rhs.compromise_type);
+    }
+  };
+
+  using CompromisedCredentialsStorage =
+      base::flat_set<CompromisedCredentials, CompromisedCredentialsLess>;
+
   const PasswordMap& stored_passwords() const;
+
+  const CompromisedCredentialsStorage& compromised_credentials() const {
+    return compromised_credentials_;
+  }
+
   void Clear();
 
   // Returns true if no passwords are stored in the store. Note that this is not
@@ -116,6 +134,7 @@ class TestPasswordStore : public PasswordStore {
 
  private:
   PasswordMap stored_passwords_;
+  CompromisedCredentialsStorage compromised_credentials_;
 
   // Number of calls of FillMatchingLogins() method.
   int fill_matching_logins_calls_ = 0;

@@ -22038,6 +22038,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Sync_CustomizeSync">
+  <owner>msalama@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    The user selected to customize sync from
+    |chrome://settings/syncSetup/advanced|.
+  </description>
+</action>
+
+<action name="Sync_SyncEverything">
+  <owner>msalama@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    The user selected sync everything from
+    |chrome://settings/syncSetup/advanced|.
+  </description>
+</action>
+
 <action name="SyncedNotifications.SendingServiceDisabled">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>

@@ -519,5 +519,5 @@ TEST_P(MediaDevicesDispatcherHostTest, GetAvailableVideoInputDeviceFormats) {
 
 INSTANTIATE_TEST_SUITE_P(All,
                          MediaDevicesDispatcherHostTest,
-                         testing::Values("", "https://test.com"));
+                         testing::Values(std::string(), "https://test.com"));
 }  // namespace content

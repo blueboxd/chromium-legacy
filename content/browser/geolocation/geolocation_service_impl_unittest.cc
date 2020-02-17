@@ -36,15 +36,6 @@ using PermissionCallback = base::OnceCallback<void(PermissionStatus)>;
 double kMockLatitude = 1.0;
 double kMockLongitude = 10.0;
 
-// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
-// function.
-GURL MainUrl() {
-  return GURL("https://www.google.com/maps");
-}
-GURL EmbeddedUrl() {
-  return GURL("https://embeddables.com/someframe");
-}
-
 class TestPermissionManager : public MockPermissionManager {
  public:
   TestPermissionManager()
@@ -83,7 +74,7 @@ class GeolocationServiceTest : public RenderViewHostImplTestHarness {
 
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
-    NavigateAndCommit(MainUrl());
+    NavigateAndCommit(GURL("https://www.google.com/maps"));
     browser_context_.reset(new content::TestBrowserContext());
     browser_context_->SetPermissionControllerDelegate(
         std::make_unique<TestPermissionManager>());
@@ -103,17 +94,18 @@ class GeolocationServiceTest : public RenderViewHostImplTestHarness {
   }
 
   void CreateEmbeddedFrameAndGeolocationService(bool allow_via_feature_policy) {
+    const GURL kEmbeddedUrl("https://embeddables.com/someframe");
     if (allow_via_feature_policy) {
       RenderFrameHostTester::For(main_rfh())
           ->SimulateFeaturePolicyHeader(
               blink::mojom::FeaturePolicyFeature::kGeolocation,
-              std::vector<url::Origin>{url::Origin::Create(EmbeddedUrl())});
+              std::vector<url::Origin>{url::Origin::Create(kEmbeddedUrl)});
     }
     RenderFrameHost* embedded_rfh =
         RenderFrameHostTester::For(main_rfh())->AppendChild("");
     RenderFrameHostTester::For(embedded_rfh)->InitializeRenderFrameIfNeeded();
     auto navigation_simulator = NavigationSimulator::CreateRendererInitiated(
-        EmbeddedUrl(), embedded_rfh);
+        kEmbeddedUrl, embedded_rfh);
     navigation_simulator->Commit();
     embedded_rfh = navigation_simulator->GetFinalRenderFrameHost();
 

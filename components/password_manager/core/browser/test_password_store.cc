@@ -9,8 +9,10 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/autofill/core/common/password_form.h"
+#include "components/password_manager/core/browser/compromised_credentials_table.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
 #include "components/password_manager/core/browser/statistics_table.h"
@@ -226,31 +228,41 @@ std::vector<InteractionsStats> TestPasswordStore::GetAllSiteStatsImpl() {
 }
 
 bool TestPasswordStore::AddCompromisedCredentialsImpl(
-    const CompromisedCredentials& stats) {
-  NOTIMPLEMENTED();
-  return false;
+    const CompromisedCredentials& compromised_credentials) {
+  return compromised_credentials_.insert(compromised_credentials).second;
 }
 
 bool TestPasswordStore::RemoveCompromisedCredentialsImpl(
     const std::string& signon_realm,
     const base::string16& username,
     RemoveCompromisedCredentialsReason reason) {
-  NOTIMPLEMENTED();
-  return false;
+  const size_t old_size = compromised_credentials_.size();
+  base::EraseIf(compromised_credentials_, [&](const auto& credential) {
+    return credential.signon_realm == signon_realm &&
+           credential.username == username;
+  });
+
+  return old_size != compromised_credentials_.size();
 }
 
 std::vector<CompromisedCredentials>
 TestPasswordStore::GetAllCompromisedCredentialsImpl() {
-  NOTIMPLEMENTED();
-  return std::vector<CompromisedCredentials>();
+  return std::vector<CompromisedCredentials>(compromised_credentials_.begin(),
+                                             compromised_credentials_.end());
 }
 
 bool TestPasswordStore::RemoveCompromisedCredentialsByUrlAndTimeImpl(
     const base::RepeatingCallback<bool(const GURL&)>& url_filter,
     base::Time remove_begin,
     base::Time remove_end) {
-  NOTIMPLEMENTED();
-  return false;
+  const size_t old_size = compromised_credentials_.size();
+  base::EraseIf(compromised_credentials_, [&](const auto& credential) {
+    return remove_begin <= credential.create_time &&
+           credential.create_time < remove_end &&
+           (!url_filter || url_filter.Run(GURL(credential.signon_realm)));
+  });
+
+  return old_size != compromised_credentials_.size();
 }
 
 void TestPasswordStore::AddFieldInfoImpl(const FieldInfo& field_info) {

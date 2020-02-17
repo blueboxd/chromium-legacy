@@ -22,7 +22,6 @@ class WebContents;
 
 class FrameImpl;
 class WebEngineDevToolsController;
-class WebEngineMemoryPressureEvaluator;
 
 // Implementation of Context from fuchsia.web.
 // Owns a BrowserContext instance and uses it to create new WebContents/Frames.
@@ -86,10 +85,6 @@ class WEB_ENGINE_EXPORT ContextImpl : public fuchsia::web::Context {
   // Tracks all active FrameImpl instances, so that we can request their
   // destruction when this ContextImpl is destroyed.
   std::set<std::unique_ptr<FrameImpl>, base::UniquePtrComparator> frames_;
-
-  // Synthesizes MemoryPressureLevel values & notifications to manage the
-  // Context process' memory footprint.
-  std::unique_ptr<WebEngineMemoryPressureEvaluator> memory_pressure_evaluator_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextImpl);
 };

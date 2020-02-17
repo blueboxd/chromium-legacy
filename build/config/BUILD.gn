@@ -270,7 +270,8 @@ group("common_deps") {
   }
 
   if (is_fuchsia) {
-    public_deps += [ "//third_party/fuchsia-sdk:runtime_library" ]
+    public_deps +=
+        [ "//third_party/fuchsia-sdk/sdk/build/config:runtime_library_group" ]
   }
 }
 

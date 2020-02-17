@@ -15,6 +15,7 @@
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/kiosk_app_menu.h"
+#include "ash/public/cpp/shelf_prefs.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
@@ -85,6 +86,7 @@ class LoginShelfViewTest : public LoginTestBase {
  protected:
   void NotifySessionStateChanged(SessionState state) {
     GetSessionControllerClient()->SetSessionState(state);
+    GetSessionControllerClient()->FlushForTest();
   }
 
   void NotifyShutdownPolicyChanged(bool reboot_on_shutdown) {
@@ -98,10 +100,11 @@ class LoginShelfViewTest : public LoginTestBase {
 
   // Simulates a click event on the button.
   void Click(LoginShelfView::ButtonId id) {
-    const ui::MouseEvent event(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                               ui::EventTimeForNow(), 0, 0);
-    login_shelf_view_->ButtonPressed(
-        static_cast<views::Button*>(login_shelf_view_->GetViewByID(id)), event);
+    ui::test::EventGenerator* event_generator = GetEventGenerator();
+    event_generator->MoveMouseTo(
+        login_shelf_view_->GetViewByID(id)->GetBoundsInScreen().CenterPoint());
+    event_generator->ClickLeftButton();
+
     base::RunLoop().RunUntilIdle();
   }
 
@@ -186,6 +189,7 @@ TEST_F(LoginShelfViewTest,
        ShouldUpdateUiAfterShutdownPolicyChangeAtLockScreen) {
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 
+  CreateUserSessions(1);
   NotifySessionStateChanged(SessionState::LOCKED);
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
@@ -205,7 +209,7 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiBasedOnShutdownPolicyInActiveSession) {
   // The initial state of |reboot_on_shutdown| is false.
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 
-  NotifySessionStateChanged(SessionState::ACTIVE);
+  CreateUserSessions(1);
   NotifyShutdownPolicyChanged(true /*reboot_on_shutdown*/);
 
   NotifySessionStateChanged(SessionState::LOCKED);
@@ -217,6 +221,7 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiBasedOnShutdownPolicyInActiveSession) {
 TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterLockScreenNoteState) {
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kShutdown}));
 
+  CreateUserSessions(1);
   NotifySessionStateChanged(SessionState::LOCKED);
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
@@ -408,15 +413,41 @@ TEST_F(LoginShelfViewTest, ClickShutdownButton) {
   EXPECT_TRUE(Shell::Get()->lock_state_controller()->ShutdownRequested());
 }
 
+TEST_F(LoginShelfViewTest, ClickShutdownButtonOnLockScreen) {
+  CreateUserSessions(1);
+  NotifySessionStateChanged(SessionState::LOCKED);
+  Click(LoginShelfView::kShutdown);
+  EXPECT_TRUE(Shell::Get()->lock_state_controller()->ShutdownRequested());
+}
+
+// Tests that shutdown button can be clicked on the lock screen for active
+// session that starts with side shelf. See https://crbug.com/1050192.
+TEST_F(LoginShelfViewTest,
+       ClickShutdownButtonOnLockScreenWithVerticalInSessionShelf) {
+  CreateUserSessions(1);
+  SetShelfAlignmentPref(
+      Shell::Get()->session_controller()->GetPrimaryUserPrefService(),
+      GetPrimaryDisplay().id(), ShelfAlignment::kLeft);
+  ClearLogin();
+
+  CreateUserSessions(1);
+  NotifySessionStateChanged(SessionState::LOCKED);
+
+  Click(LoginShelfView::kShutdown);
+  EXPECT_TRUE(Shell::Get()->lock_state_controller()->ShutdownRequested());
+}
+
 TEST_F(LoginShelfViewTest, ClickRestartButton) {
   Click(LoginShelfView::kRestart);
   EXPECT_TRUE(Shell::Get()->lock_state_controller()->ShutdownRequested());
 }
 
 TEST_F(LoginShelfViewTest, ClickSignOutButton) {
-  NotifySessionStateChanged(SessionState::ACTIVE);
+  CreateUserSessions(1);
   EXPECT_EQ(session_manager::SessionState::ACTIVE,
             Shell::Get()->session_controller()->GetSessionState());
+
+  NotifySessionStateChanged(SessionState::LOCKED);
   Click(LoginShelfView::kSignOut);
   EXPECT_EQ(session_manager::SessionState::LOGIN_PRIMARY,
             Shell::Get()->session_controller()->GetSessionState());
@@ -425,6 +456,7 @@ TEST_F(LoginShelfViewTest, ClickSignOutButton) {
 TEST_F(LoginShelfViewTest, ClickUnlockButton) {
   // The unlock button is visible only when session state is LOCKED and note
   // state is kActive or kLaunching.
+  CreateUserSessions(1);
   NotifySessionStateChanged(SessionState::LOCKED);
 
   NotifyLockScreenNoteStateChanged(mojom::TrayActionState::kActive);
@@ -447,16 +479,22 @@ TEST_F(LoginShelfViewTest, ClickUnlockButton) {
 TEST_F(LoginShelfViewTest, ClickCancelButton) {
   auto client = std::make_unique<MockLoginScreenClient>();
   EXPECT_CALL(*client, CancelAddUser());
+  CreateUserSessions(1);
+  NotifySessionStateChanged(SessionState::LOGIN_SECONDARY);
   Click(LoginShelfView::kCancel);
 }
 
 TEST_F(LoginShelfViewTest, ClickBrowseAsGuestButton) {
   auto client = std::make_unique<MockLoginScreenClient>();
   EXPECT_CALL(*client, LoginAsGuest());
+
+  login_shelf_view_->SetAllowLoginAsGuest(true /*allow_guest*/);
+  NotifySessionStateChanged(SessionState::LOGIN_PRIMARY);
   Click(LoginShelfView::kBrowseAsGuest);
 }
 
 TEST_F(LoginShelfViewTest, TabGoesFromShelfToStatusAreaAndBackToShelf) {
+  CreateUserSessions(1);
   NotifySessionStateChanged(SessionState::LOCKED);
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
@@ -580,6 +618,7 @@ TEST_F(LoginShelfViewTest, ParentAccessButtonVisibility) {
 }
 
 TEST_F(LoginShelfViewTest, ParentAccessButtonVisibilityChangeOnLockScreen) {
+  CreateUserSessions(1);
   NotifySessionStateChanged(SessionState::LOCKED);
   EXPECT_TRUE(
       ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));

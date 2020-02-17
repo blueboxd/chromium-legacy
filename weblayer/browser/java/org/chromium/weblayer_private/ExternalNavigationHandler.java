@@ -62,9 +62,8 @@ public class ExternalNavigationHandler {
         // security (only access to BROWSABLE activities).
         intent.addCategory(Intent.CATEGORY_BROWSABLE);
 
-        // Ensure that startActivity() succeeds even if the application context
-        // isn't an  Activity. This also matches Chrome's behavior (see
-        // //chrome's ExternalNavigationHandler.java:PrepareExternalIntent()).
+        // Match Chrome's behavior (see //chrome's
+        // ExternalNavigationHandler.java:PrepareExternalIntent()).
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
         intent.setComponent(null);

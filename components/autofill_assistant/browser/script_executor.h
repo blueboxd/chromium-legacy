@@ -145,7 +145,8 @@ class ScriptExecutor : public ActionDelegate,
           callback) override;
   void SelectOption(
       const Selector& selector,
-      const std::string& selected_option,
+      const std::string& value,
+      DropdownSelectStrategy select_strategy,
       base::OnceCallback<void(const ClientStatus&)> callback) override;
   void HighlightElement(
       const Selector& selector,

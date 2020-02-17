@@ -93,7 +93,7 @@ void SVGResourcesCache::ClientLayoutChanged(LayoutObject& object) {
   // or we have filter resources, which could depend on the layout of children.
   if (!object.SelfNeedsLayout() && !resources->Filter())
     return;
-  SVGResourceClient* client = SVGResources::GetClient(object);
+  SVGElementResourceClient* client = SVGResources::GetClient(object);
   if (InvalidationModeMask invalidation_flags =
           resources->RemoveClientFromCache(*client)) {
     LayoutSVGResourceContainer::MarkClientForInvalidation(object,

@@ -18,12 +18,6 @@
 namespace content {
 namespace {
 
-// TODO(https://crbug.com/1042727): Fix test GURL scoping and remove this getter
-// function.
-url::Origin Origin() {
-  return url::Origin::Create(GURL("https://example.com"));
-}
-
 SkBitmap CreateIcon(int resolution) {
   SkBitmap icon;
   icon.allocN32Pixels(1, resolution);
@@ -32,9 +26,11 @@ SkBitmap CreateIcon(int resolution) {
 
 class ContentIndexServiceImplTest : public ::testing::Test {
  public:
+  static constexpr char kOrigin[] = "https://example.com";
+
   ContentIndexServiceImplTest()
       : service_(std::make_unique<ContentIndexServiceImpl>(
-            Origin(),
+            url::Origin::Create(GURL(kOrigin)),
             /* content_index_context= */ nullptr)) {}
 
   ~ContentIndexServiceImplTest() override = default;
@@ -64,15 +60,18 @@ class ContentIndexServiceImplTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ContentIndexServiceImplTest);
 };
 
+// static
+constexpr char ContentIndexServiceImplTest::kOrigin[];
+
 TEST_F(ContentIndexServiceImplTest, NullIcon) {
-  Add(SkBitmap(), Origin().GetURL());
+  Add(SkBitmap(), GURL(kOrigin));
   EXPECT_EQ("Invalid icon", bad_message_observer().WaitForBadMessage());
 }
 
 TEST_F(ContentIndexServiceImplTest, LargeIcon) {
   Add(CreateIcon(/* resolution= */ 2 *
                  blink::mojom::ContentIndexService::kMaxIconResolution),
-      Origin().GetURL());
+      GURL(kOrigin));
   EXPECT_EQ("Invalid icon", bad_message_observer().WaitForBadMessage());
 }
 

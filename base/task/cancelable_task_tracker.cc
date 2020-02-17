@@ -14,6 +14,7 @@
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
@@ -167,13 +168,17 @@ void CancelableTaskTracker::RunIfNotCanceled(
     const scoped_refptr<SequencedTaskRunner>& origin_task_runner,
     const scoped_refptr<TaskCancellationFlag>& flag,
     OnceClosure task) {
+  const bool task_canceled = flag->data.IsSet();
+  UMA_HISTOGRAM_BOOLEAN("Scheduler.CancelableTaskTracker.TaskCanceled",
+                        task_canceled);
   // TODO(https://crbug.com/1009795): Ignore off-sequence cancellation, to
   // evaluate whether it is a worthwhile optimization.
-  if (flag->data.IsSet() &&
-      (AllowOffSequenceTaskCancelation() ||
-       origin_task_runner->RunsTasksInCurrentSequence())) {
+  const bool skip_task =
+      task_canceled && (AllowOffSequenceTaskCancelation() ||
+                        origin_task_runner->RunsTasksInCurrentSequence());
+  if (skip_task)
     return;
-  }
+  SCOPED_UMA_HISTOGRAM_TIMER("Scheduler.CancelableTaskTracker.TaskDuration");
   std::move(task).Run();
 }
 

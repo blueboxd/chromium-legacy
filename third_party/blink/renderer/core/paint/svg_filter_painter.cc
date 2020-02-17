@@ -86,7 +86,7 @@ GraphicsContext* SVGFilterPainter::PrepareEffect(
     SVGFilterRecordingContext& recording_context) {
   filter_.ClearInvalidationMask();
 
-  SVGResourceClient* client = SVGResources::GetClient(object);
+  SVGElementResourceClient* client = SVGResources::GetClient(object);
   if (FilterData* filter_data = filter_.GetFilterDataForClient(client)) {
     // If the filterData already exists we do not need to record the content
     // to be filtered. This can occur if the content was previously recorded
@@ -126,7 +126,7 @@ void SVGFilterPainter::FinishEffect(
     const LayoutObject& object,
     const DisplayItemClient& display_item_client,
     SVGFilterRecordingContext& recording_context) {
-  SVGResourceClient* client = SVGResources::GetClient(object);
+  SVGElementResourceClient* client = SVGResources::GetClient(object);
   FilterData* filter_data = filter_.GetFilterDataForClient(client);
   if (!filter_data) {
     // Our state was torn down while we were being painted (selection style for

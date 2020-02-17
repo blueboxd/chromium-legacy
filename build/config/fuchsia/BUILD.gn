@@ -10,11 +10,11 @@ assert(is_fuchsia)
 assert(!is_posix)
 
 config("compiler") {
-  sdk_version_file = "${fuchsia_sdk}/.hash"
-  sdk_version = read_file(sdk_version_file, "trim string")
+  sdk_signature_file = "${fuchsia_sdk}/.hash"
+  sdk_signature = read_file(sdk_signature_file, "trim string")
   defines = [
     # To force full builds after SDK updates in case of ABI changes.
-    "FUCHSIA_SDK_VERSION=$sdk_version",
+    "FUCHSIA_SDK_SIGNATURE=$sdk_signature",
   ]
   cflags = []
   ldflags = []

@@ -63,6 +63,10 @@ class Tab : public gfx::AnimationDelegate,
   static constexpr int kMinimumContentsWidthForCloseButtons = 68;
   static constexpr int kTouchMinimumContentsWidthForCloseButtons = 100;
 
+  // Sets whether hover cards should appear on mouse hover. Used in browser
+  // tests to prevent them from interfering with unrelated tests.
+  static void SetShowHoverCardOnMouseHoverForTesting(bool value);
+
   explicit Tab(TabController* controller);
   ~Tab() override;
 

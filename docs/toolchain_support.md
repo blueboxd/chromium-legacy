@@ -86,7 +86,7 @@ that we can act on the quickest:
   build: Provide commands on how to reproduce your problem, targeted at someone
   who knows the chromium build well but doesn't know your feature / platform
   at all.
-  - Tell us which repro to check out, if needed.
+  - Tell us which repo to check out, if needed.
   - Tell us which `args.gn` to use.
   - Tell us which target to build.
   - Tell us how to run your test.

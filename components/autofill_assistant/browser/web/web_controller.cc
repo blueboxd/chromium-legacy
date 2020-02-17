@@ -79,13 +79,22 @@ const char* const kScrollIntoViewCenterScript =
 
 // Javascript to select a value from a select box. Also fires a "change" event
 // to trigger any listeners. Changing the index directly does not trigger this.
+// TODO(b/148656337): Remove the need to encode the ENUM values in JS.
 const char* const kSelectOptionScript =
-    R"(function(value) {
+    R"(function(value, compareStrategy) {
+      const VALUE_MATCH = 1;
+      const LABEL_MATCH = 2;
+      const LABEL_STARTSWITH = 3;
       const uppercaseValue = value.toUpperCase();
-      var found = false;
-      for (var i = 0; i < this.options.length; ++i) {
-        const label = this.options[i].label.toUpperCase();
-        if (label.length > 0 && label.startsWith(uppercaseValue)) {
+      let found = false;
+      for (let i = 0; i < this.options.length; ++i) {
+        const optionValue = this.options[i].value.toUpperCase();
+        const optionLabel = this.options[i].label.toUpperCase();
+        if ((compareStrategy === VALUE_MATCH && optionValue === uppercaseValue)
+              || (compareStrategy === LABEL_MATCH
+                    && optionLabel === uppercaseValue)
+              || (compareStrategy === LABEL_STARTSWITH
+                    && optionLabel.startsWith(uppercaseValue))) {
           this.options.selectedIndex = i;
           found = true;
           break;
@@ -894,23 +903,27 @@ void WebController::OnGetFormAndFieldDataForRetrieving(
 
 void WebController::SelectOption(
     const Selector& selector,
-    const std::string& selected_option,
+    const std::string& value,
+    DropdownSelectStrategy select_strategy,
     base::OnceCallback<void(const ClientStatus&)> callback) {
 #ifdef NDEBUG
-  VLOG(3) << __func__ << " " << selector << ", option=(redacted)";
+  VLOG(3) << __func__ << " " << selector << ", value=(redacted)"
+          << ", strategy=" << select_strategy;
 #else
-  DVLOG(3) << __func__ << " " << selector << ", option=" << selected_option;
+  DVLOG(3) << __func__ << " " << selector << ", value=" << value
+           << ", strategy=" << select_strategy;
 #endif
 
   FindElement(selector,
               /* strict_mode= */ true,
               base::BindOnce(&WebController::OnFindElementForSelectOption,
-                             weak_ptr_factory_.GetWeakPtr(), selected_option,
-                             std::move(callback)));
+                             weak_ptr_factory_.GetWeakPtr(), value,
+                             select_strategy, std::move(callback)));
 }
 
 void WebController::OnFindElementForSelectOption(
-    const std::string& selected_option,
+    const std::string& value,
+    DropdownSelectStrategy select_strategy,
     base::OnceCallback<void(const ClientStatus&)> callback,
     const ClientStatus& status,
     std::unique_ptr<ElementFinder::Result> element_result) {
@@ -920,15 +933,20 @@ void WebController::OnFindElementForSelectOption(
     return;
   }
 
-  std::vector<std::unique_ptr<runtime::CallArgument>> argument;
-  argument.emplace_back(
+  std::vector<std::unique_ptr<runtime::CallArgument>> arguments;
+  arguments.emplace_back(
       runtime::CallArgument::Builder()
-          .SetValue(base::Value::ToUniquePtrValue(base::Value(selected_option)))
+          .SetValue(base::Value::ToUniquePtrValue(base::Value(value)))
+          .Build());
+  arguments.emplace_back(
+      runtime::CallArgument::Builder()
+          .SetValue(base::Value::ToUniquePtrValue(
+              base::Value(static_cast<int>(select_strategy))))
           .Build());
   devtools_client_->GetRuntime()->CallFunctionOn(
       runtime::CallFunctionOnParams::Builder()
           .SetObjectId(element_result->object_id)
-          .SetArguments(std::move(argument))
+          .SetArguments(std::move(arguments))
           .SetFunctionDeclaration(std::string(kSelectOptionScript))
           .SetReturnByValue(true)
           .Build(),

@@ -110,9 +110,10 @@ class MockActionDelegate : public ActionDelegate {
                     const Selector& selector,
                     base::OnceCallback<void(const ClientStatus&)>& callback));
 
-  MOCK_METHOD3(SelectOption,
+  MOCK_METHOD4(SelectOption,
                void(const Selector& selector,
-                    const std::string& selected_option,
+                    const std::string& value,
+                    DropdownSelectStrategy select_strategy,
                     base::OnceCallback<void(const ClientStatus&)> callback));
   MOCK_METHOD3(FocusElement,
                void(const Selector& selector,

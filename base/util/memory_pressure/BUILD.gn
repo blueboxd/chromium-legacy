@@ -18,6 +18,8 @@ source_set("memory_pressure") {
     "system_memory_pressure_evaluator.h",
   ]
 
+  deps = [ "//base" ]
+
   if (is_win) {
     sources += [
       "system_memory_pressure_evaluator_win.cc",
@@ -32,14 +34,23 @@ source_set("memory_pressure") {
     ]
   }
 
+  if (is_fuchsia) {
+    deps += [
+      "//third_party/fuchsia-sdk/sdk:fuchsia-memorypressure",
+      "//third_party/fuchsia-sdk/sdk:sys_cpp",
+    ]
+    sources += [
+      "system_memory_pressure_evaluator_fuchsia.cc",
+      "system_memory_pressure_evaluator_fuchsia.h",
+    ]
+  }
+
   if (is_chromeos) {
     sources += [
       "system_memory_pressure_evaluator_chromeos.cc",
       "system_memory_pressure_evaluator_chromeos.h",
     ]
   }
-
-  deps = [ "//base" ]
 }
 
 source_set("unittests") {

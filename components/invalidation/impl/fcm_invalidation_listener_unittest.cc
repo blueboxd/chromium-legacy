@@ -12,7 +12,6 @@
 #include "base/test/task_environment.h"
 #include "components/invalidation/impl/fcm_invalidation_listener.h"
 #include "components/invalidation/impl/per_user_topic_subscription_manager.h"
-#include "components/invalidation/impl/unacked_invalidation_set_test_util.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/invalidation/public/invalidator_state.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"

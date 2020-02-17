@@ -33,6 +33,7 @@ class RequiredFieldsFallbackHandler {
 
     Selector selector;
     KeyboardValueFillStrategy fill_strategy;
+    DropdownSelectStrategy select_strategy;
     int delay_in_millisecond = 0;
     bool forced = false;
     FieldValueStatus status = UNKNOWN;

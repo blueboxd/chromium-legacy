@@ -30,7 +30,7 @@
 namespace blink {
 
 class ElementSMILAnimations;
-class SVGResourceClient;
+class SVGElementResourceClient;
 
 class SVGElementRareData final : public GarbageCollected<SVGElementRareData> {
  public:
@@ -99,8 +99,8 @@ class SVGElementRareData final : public GarbageCollected<SVGElementRareData> {
     needs_override_computed_style_update_ = true;
   }
 
-  SVGResourceClient* GetSVGResourceClient() { return resource_client_; }
-  SVGResourceClient& EnsureSVGResourceClient(SVGElement*);
+  SVGElementResourceClient* GetSVGResourceClient() { return resource_client_; }
+  SVGElementResourceClient& EnsureSVGResourceClient(SVGElement*);
 
   AffineTransform* AnimateMotionTransform();
 
@@ -111,7 +111,7 @@ class SVGElementRareData final : public GarbageCollected<SVGElementRareData> {
   SVGElementSet incoming_references_;
   HeapHashSet<WeakMember<SVGElement>> element_instances_;
   Member<SVGElement> corresponding_element_;
-  Member<SVGResourceClient> resource_client_;
+  Member<SVGElementResourceClient> resource_client_;
   Member<ElementSMILAnimations> smil_animations_;
   bool instances_updates_blocked_ : 1;
   bool use_override_computed_style_ : 1;

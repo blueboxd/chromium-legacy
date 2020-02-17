@@ -109,6 +109,7 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/test/views/accessibility_checker.h"
 #include "ui/views/views_delegate.h"
 #endif
@@ -287,6 +288,13 @@ void InProcessBrowserTest::SetUp() {
                                     default_download_dir_.GetPath()));
 
   AfterStartupTaskUtils::DisableScheduleTaskDelayForTesting();
+
+#if defined(TOOLKIT_VIEWS)
+  // Prevent hover cards from appearing when the mouse is over the tab. Tests
+  // don't typically account for this possibly, so it can cause unrelated tests
+  // to fail. See crbug.com/1050012.
+  Tab::SetShowHoverCardOnMouseHoverForTesting(false);
+#endif  // defined(TOOLKIT_VIEWS)
 
   BrowserTestBase::SetUp();
 }

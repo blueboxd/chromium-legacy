@@ -20,11 +20,9 @@ from common import GetHostOsFromPlatform, GetHostArchFromPlatform, \
                    DIR_SOURCE_ROOT, SDK_ROOT, IMAGES_ROOT
 
 sys.path.append(os.path.join(DIR_SOURCE_ROOT, 'build'))
-
 import find_depot_tools
 
-SDK_SUBDIRS = ["arch", "pkg", "qemu", "sysroot", "target",
-               "toolchain_libs", "tools"]
+SDK_SIGNATURE_FILE = '.hash'
 
 EXTRA_SDK_HASH_PREFIX = ''
 
@@ -79,6 +77,11 @@ def GetSdkHashForPlatform():
 def GetSdkTarballForPlatformAndHash(sdk_hash):
   return 'gs://fuchsia/development/{sdk_hash}/sdk/{platform}-amd64/gn.tar.gz'.format(
       sdk_hash=sdk_hash, platform=GetHostOsFromPlatform())
+
+
+def GetSdkSignature(sdk_hash, boot_images):
+  return 'gn:{sdk_hash}:{boot_images}:'.format(
+      sdk_hash=sdk_hash, boot_images=boot_images)
 
 
 def EnsureDirExists(path):
@@ -176,9 +179,10 @@ def main():
   if not sdk_hash:
     return 1
 
-  hash_filename = os.path.join(SDK_ROOT, '.hash')
-  if ((not os.path.exists(hash_filename))
-      or (open(hash_filename, 'r').read().strip() != 'gn:' + sdk_hash)):
+  signature_filename = os.path.join(SDK_ROOT, SDK_SIGNATURE_FILE)
+  current_signature = (open(signature_filename, 'r').read().strip()
+                       if os.path.exists(signature_filename) else '')
+  if current_signature != GetSdkSignature(sdk_hash, args.boot_images):
     logging.info('Downloading GN SDK %s...' % sdk_hash)
 
     if os.path.isdir(SDK_ROOT):
@@ -188,6 +192,21 @@ def main():
     DownloadAndUnpackFromCloudStorage(
         GetSdkTarballForPlatformAndHash(sdk_hash), SDK_ROOT)
 
+    # Clean out the boot images directory.
+    if (os.path.exists(IMAGES_ROOT)):
+      shutil.rmtree(IMAGES_ROOT)
+      os.mkdir(IMAGES_ROOT)
+
+    try:
+      # Ensure that the boot images are downloaded for this SDK.
+      # If the developer opted into downloading hardware boot images in their
+      # .gclient file, then only the hardware boot images will be downloaded.
+      DownloadSdkBootImages(sdk_hash, args.boot_images)
+    except subprocess.CalledProcessError as e:
+      logging.error(("command '%s' failed with status %d.%s"), " ".join(e.cmd),
+                    e.returncode, " Details: " + e.output if e.output else "")
+      return 1
+
   # Always re-generate sdk/BUILD.gn, even if the SDK hash has not changed,
   # in case the gen_build_defs.py script changed.
   logging.info("Generating sdk/BUILD.gn")
@@ -195,25 +214,8 @@ def main():
   logging.debug("Running '%s'", " ".join(cmd))
   subprocess.check_call(cmd)
 
-  # Clean out the boot images directory.
-  if (os.path.exists(IMAGES_ROOT)):
-    shutil.rmtree(IMAGES_ROOT)
-  os.mkdir(IMAGES_ROOT)
-
-  try:
-    # Ensure that the boot images are downloaded for this SDK.
-    # If the developer opted into downloading hardware boot images in their
-    # .gclient file, then only the hardware boot images will be downloaded.
-    DownloadSdkBootImages(sdk_hash, args.boot_images)
-  except subprocess.CalledProcessError as e:
-    logging.error((
-      "command '%s' failed with status %d.%s"),
-      " ".join(e.cmd), e.returncode,
-      " Details: " + e.output if e.output else "")
-    return 1
-
-  with open(hash_filename, 'w') as f:
-    f.write('gn:' + sdk_hash)
+  with open(signature_filename, 'w') as f:
+    f.write(GetSdkSignature(sdk_hash, args.boot_images))
 
   UpdateTimestampsRecursive()
 

@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Deferred iframes with loading='lazy' use the original base URL specified at the parse time assert_true: The loading=lazy iframe's content is accessible upon loading expected true got false
-Harness: the test ran to completion.
-

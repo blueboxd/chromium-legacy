@@ -187,11 +187,12 @@ class WebControllerBrowserTest : public content::ContentBrowserTest,
   }
 
   ClientStatus SelectOption(const Selector& selector,
-                            const std::string& option) {
+                            const std::string& value,
+                            DropdownSelectStrategy select_strategy) {
     base::RunLoop run_loop;
     ClientStatus result;
     web_controller_->SelectOption(
-        selector, option,
+        selector, value, select_strategy,
         base::BindOnce(&WebControllerBrowserTest::OnClientStatus,
                        base::Unretained(this), run_loop.QuitClosure(),
                        &result));
@@ -1072,23 +1073,37 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOption) {
   Selector selector;
   selector.selectors.emplace_back("#select");
-  EXPECT_EQ(OPTION_VALUE_NOT_FOUND,
-            SelectOption(selector, "incorrect_label").proto_status());
-  EXPECT_EQ(ACTION_APPLIED, SelectOption(selector, "two").proto_status());
 
   const std::string javascript = R"(
     let select = document.querySelector("#select");
     select.options[select.selectedIndex].label;
   )";
-  EXPECT_EQ("Two", content::EvalJs(shell(), javascript));
 
-  EXPECT_EQ(ACTION_APPLIED, SelectOption(selector, "one").proto_status());
-  EXPECT_EQ("One", content::EvalJs(shell(), javascript));
+  // Select value not matching anything.
+  EXPECT_EQ(OPTION_VALUE_NOT_FOUND,
+            SelectOption(selector, "incorrect label", LABEL_STARTS_WITH)
+                .proto_status());
+
+  // Selects nothing if no strategy is set.
+  EXPECT_EQ(OPTION_VALUE_NOT_FOUND,
+            SelectOption(selector, "one", UNSPECIFIED_SELECT_STRATEGY)
+                .proto_status());
+
+  // Select value matching the option's label.
+  EXPECT_EQ(ACTION_APPLIED,
+            SelectOption(selector, "ZÜRICH", LABEL_STARTS_WITH).proto_status());
+  EXPECT_EQ("Zürich Hauptbahnhof", content::EvalJs(shell(), javascript));
+
+  // Select value matching the option's value.
+  EXPECT_EQ(ACTION_APPLIED,
+            SelectOption(selector, "Aü万𠜎", VALUE_MATCH).proto_status());
+  EXPECT_EQ("Character Test Entry", content::EvalJs(shell(), javascript));
 
   selector.selectors.clear();
   selector.selectors.emplace_back("#incorrect_selector");
   EXPECT_EQ(ELEMENT_RESOLUTION_FAILED,
-            SelectOption(selector, "two").proto_status());
+            SelectOption(selector, "not important", LABEL_STARTS_WITH)
+                .proto_status());
 }
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIFrame) {
@@ -1098,7 +1113,9 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIFrame) {
   select_selector.selectors.clear();
   select_selector.selectors.emplace_back("#iframe");
   select_selector.selectors.emplace_back("select[name=state]");
-  EXPECT_EQ(ACTION_APPLIED, SelectOption(select_selector, "NY").proto_status());
+  EXPECT_EQ(
+      ACTION_APPLIED,
+      SelectOption(select_selector, "NY", LABEL_STARTS_WITH).proto_status());
 
   const std::string javascript = R"(
     let iframe = document.querySelector("iframe").contentDocument;
@@ -1112,8 +1129,9 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, SelectOptionInIFrame) {
   select_selector.selectors.clear();
   select_selector.selectors.emplace_back("#iframeExternal");
   select_selector.selectors.emplace_back("select[name=pet]");
-  EXPECT_EQ(ACTION_APPLIED,
-            SelectOption(select_selector, "Cat").proto_status());
+  EXPECT_EQ(
+      ACTION_APPLIED,
+      SelectOption(select_selector, "Cat", LABEL_STARTS_WITH).proto_status());
 
   Selector result_selector;
   result_selector.selectors.emplace_back("#iframeExternal");

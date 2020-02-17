@@ -8,4 +8,4 @@ const base::Feature kSharingPeerConnectionReceiver{
     "SharingPeerConnectionReceiver", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSharingPeerConnectionSender{
-    "SharingPeerConnectionSender", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SharingPeerConnectionSender", base::FEATURE_ENABLED_BY_DEFAULT};

@@ -16,15 +16,7 @@
 #include "components/invalidation/public/invalidation_export.h"
 #include "components/invalidation/public/invalidation_util.h"
 
-namespace base {
-class DictionaryValue;
-}  // namespace base
-
 namespace syncer {
-
-namespace test_util {
-class UnackedInvalidationSetEqMatcher;
-}  // test_util
 
 class SingleObjectInvalidationSet;
 class ObjectIdInvalidationMap;
@@ -98,22 +90,9 @@ class INVALIDATION_EXPORT UnackedInvalidationSet {
   // indicate that this invalidation has been lost without being acted on.
   void Drop(const AckHandle& handle);
 
-  // Deserializes the given |dict| as an UnackedInvalidationSet and inserts the
-  // pair into |map| using the ObjectId as the key. Returns false if the
-  // deserialization fails.
-  static bool DeserializeSetIntoMap(const base::DictionaryValue& dict,
-                                    syncer::UnackedInvalidationsMap* map);
-
-  std::unique_ptr<base::DictionaryValue> ToValue() const;
-  bool ResetFromValue(const base::DictionaryValue& value);
-
  private:
-  // Allow this test helper to have access to our internals.
-  friend class test_util::UnackedInvalidationSetEqMatcher;
 
   typedef std::set<Invalidation, InvalidationVersionLessThan> InvalidationsSet;
-
-  bool ResetListFromValue(const base::ListValue& value);
 
   // Limits the list size to the given maximum.  This function will correctly
   // update this class' internal data to indicate if invalidations have been

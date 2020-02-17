@@ -2700,7 +2700,7 @@ enum SigningAlgorithm {
   // DO NOT USE
   SIGNING_ALGORITHM_UNSPECIFIED = 0;
 
-  RSA_PKCS1_v1_5 = 1;
+  RSA_PKCS1_V1_5 = 1;
 }
 
 // Client Certificate Provisioning Flow, Stage 1: Start a CSR request.
@@ -2757,7 +2757,8 @@ message ClientCertificateProvisioningRequest {
   // The id of the client certificate profile, specified in the policy.
   optional string cert_profile_id = 2;
 
-  // The public key for which the certificate should be issued.
+  // The public key for which the certificate should be issued. It's a
+  // DER-serialized X.509 SubjectPublicKeyInfo.
   optional bytes public_key = 3;
 
   // Only filled if this is a request for a certificate for a user
@@ -2768,15 +2769,26 @@ message ClientCertificateProvisioningRequest {
     FinishCsrRequest finish_csr_request = 6;
     DownloadCertRequest download_cert_request = 7;
   }
+
+  // Received as part of policy for client certificate profiles. The client
+  // should not interpret this data and should forward it verbatim. DMServer
+  // uses |policy_version| as a hint to verify that the policy view of DMServer
+  // matches the view of Chrome OS device.
+  optional bytes policy_version = 8;
 }
 
 // Response for ClientCertificateProvisioningRequest.
 message ClientCertificateProvisioningResponse {
-  enum ClientCertificateProvisioningError {
+  enum Error {
     UNDEFINED = 0;
+    // The backend has not received a certificate within the time limit.
     TIMED_OUT = 1;
+    // The identity of the client could not be verified.
     IDENTITY_VERIFICATION_ERROR = 2;
+    // The CA encountered an error when processing the certification request.
     CA_ERROR = 3;
+    // The client has sent inconsistent data.
+    INCONSISTENT_DATA = 4;
   }
 
   // If filled, the request can currently not be processed and the client
@@ -2786,7 +2798,7 @@ message ClientCertificateProvisioningResponse {
   optional int64 try_again_later = 1;
 
   oneof response {
-    ClientCertificateProvisioningError error = 2;
+    Error error = 2;
     StartCsrResponse start_csr_response = 3;
     FinishCsrResponse finish_csr_response = 4;
     DownloadCertResponse download_cert_response = 5;
@@ -2885,7 +2897,7 @@ message ClientCertificateProvisioningResponse {
 //   policy_validation_report: policy_validation_report_request
 //   device_initial_enrollment_state: device_initial_enrollment_state_request
 //   refresh_account: refresh_account_request
-//   client_cert_provisioning: client_cert_provisioning_request
+//   client_cert_provisioning: client_certificate_provisioning_request
 message DeviceManagementRequest {
   reserved 24;  // unused previous version of chrome_desktop_report_request.
 
@@ -3121,7 +3133,7 @@ message DeviceManagementResponse {
 
   // Response to a client certificate provisioning request.
   optional ClientCertificateProvisioningResponse
-      client_cert_provisioning_response = 33;
+      client_certificate_provisioning_response = 33;
 
   // Next id: 34.
 }

@@ -236,11 +236,3 @@ template("cr_fuchsia_package") {
     outputs = [ _final_far_file ]
   }
 }
-
-# TODO(https:crbug.com/1050703): Migrate callers to cr_fuchsia_package() and
-# remove this old name.
-template("fuchsia_package") {
-  cr_fuchsia_package(target_name) {
-    forward_variables_from(invoker, "*")
-  }
-}

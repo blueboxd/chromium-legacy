@@ -154,7 +154,7 @@ static inline void RemoveFromCacheAndInvalidateDependencies(
 
   if (SVGResources* resources =
           SVGResourcesCache::CachedResourcesForLayoutObject(object)) {
-    SVGResourceClient* client = element->GetSVGResourceClient();
+    SVGElementResourceClient* client = element->GetSVGResourceClient();
     if (InvalidationModeMask invalidation_mask =
             resources->RemoveClientFromCacheAffectingObjectBounds(*client)) {
       LayoutSVGResourceContainer::MarkClientForInvalidation(object,

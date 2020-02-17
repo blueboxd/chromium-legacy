@@ -458,6 +458,19 @@ enum KeyboardValueFillStrategy {
   SIMULATE_KEY_PRESSES_SELECT_VALUE = 3;
 }
 
+enum DropdownSelectStrategy {
+  UNSPECIFIED_SELECT_STRATEGY = 0;
+
+  // Match by the option's value, case insensitive.
+  VALUE_MATCH = 1;
+
+  // Match by the option's label, case insensitive.
+  LABEL_MATCH = 2;
+
+  // Match by the option's label by `label.startsWith`, case insensitive.
+  LABEL_STARTS_WITH = 3;
+}
+
 // An action could be performed.
 message ActionProto {
   // Wait these many milliseconds before executing the action, if set.
@@ -882,8 +895,14 @@ message ClickProto {
 message SelectOptionProto {
   // The drop down element on which to select an option.
   optional ElementReferenceProto element = 2;
+
   // Value of the option to use.
   optional string selected_option = 3;
+
+  // The strategy used to select a value option. This defaults to
+  // |LABEL_STARTS_WITH| for the legacy case.
+  optional DropdownSelectStrategy select_strategy = 4
+      [default = LABEL_STARTS_WITH];
 }
 
 // Contain a localized text message from the server.
@@ -977,6 +996,9 @@ message UseAddressProto {
     // The strategy used to execute filling the value.
     optional KeyboardValueFillStrategy fill_strategy = 7;
 
+    // The strategy used to select a value option.
+    optional DropdownSelectStrategy select_strategy = 8;
+
     // Delay between two key presses when simlulating.
     optional int32 delay_in_millisecond = 4 [default = 20];
 
@@ -1033,6 +1055,9 @@ message UseCreditCardProto {
 
     // The strategy used to execute filling the value.
     optional KeyboardValueFillStrategy fill_strategy = 7;
+
+    // The strategy used to select a value option.
+    optional DropdownSelectStrategy select_strategy = 8;
 
     // Delay between two key presses when simlulating.
     optional int32 delay_in_millisecond = 4 [default = 20];

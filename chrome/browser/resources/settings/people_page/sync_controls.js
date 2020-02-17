@@ -169,7 +169,8 @@ Polymer({
         this.set(['syncPrefs', dataType], this.cachedSyncPrefs_[dataType]);
       }
     }
-
+    chrome.metricsPrivate.recordUserAction(
+        syncAllDataTypes ? 'Sync_SyncEverything' : 'Sync_CustomizeSync');
     this.onSingleSyncDataTypeChanged_();
   },
 

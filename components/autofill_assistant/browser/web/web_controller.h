@@ -106,7 +106,8 @@ class WebController {
   // picked.
   virtual void SelectOption(
       const Selector& selector,
-      const std::string& selected_option,
+      const std::string& value,
+      DropdownSelectStrategy select_strategy,
       base::OnceCallback<void(const ClientStatus&)> callback);
 
   // Highlight an element given by |selector|.
@@ -341,15 +342,16 @@ class WebController {
       base::OnceCallback<void(const ClientStatus&)> callback,
       std::unique_ptr<ElementFinder::Result> target_element,
       bool result);
-  void OnFocusElement(base::OnceCallback<void(const ClientStatus&)> callback,
-                      const DevtoolsClient::ReplyStatus& reply_status,
-                      std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForSelectOption(
-      const std::string& selected_option,
+      const std::string& value,
+      DropdownSelectStrategy select_strategy,
       base::OnceCallback<void(const ClientStatus&)> callback,
       const ClientStatus& status,
       std::unique_ptr<ElementFinder::Result> element_result);
   void OnSelectOption(base::OnceCallback<void(const ClientStatus&)> callback,
+                      const DevtoolsClient::ReplyStatus& reply_status,
+                      std::unique_ptr<runtime::CallFunctionOnResult> result);
+  void OnFocusElement(base::OnceCallback<void(const ClientStatus&)> callback,
                       const DevtoolsClient::ReplyStatus& reply_status,
                       std::unique_ptr<runtime::CallFunctionOnResult> result);
   void OnFindElementForHighlightElement(

@@ -158,7 +158,8 @@ class ActionDelegate {
   // picked.
   virtual void SelectOption(
       const Selector& selector,
-      const std::string& selected_option,
+      const std::string& value,
+      DropdownSelectStrategy select_strategy,
       base::OnceCallback<void(const ClientStatus&)> callback) = 0;
 
   // Focus on element given by |selector|. |top_padding| specifies the padding

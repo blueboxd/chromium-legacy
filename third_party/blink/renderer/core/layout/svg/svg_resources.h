@@ -39,6 +39,7 @@ class LayoutSVGResourceMarker;
 class LayoutSVGResourceMasker;
 class LayoutSVGResourcePaintServer;
 class SVGElement;
+class SVGElementResourceClient;
 
 // Holds a set of resources associated with a LayoutObject
 class SVGResources {
@@ -47,7 +48,7 @@ class SVGResources {
  public:
   SVGResources();
 
-  static SVGResourceClient* GetClient(const LayoutObject&);
+  static SVGElementResourceClient* GetClient(const LayoutObject&);
 
   static std::unique_ptr<SVGResources> BuildResources(const LayoutObject&,
                                                       const ComputedStyle&);
@@ -110,9 +111,9 @@ class SVGResources {
   void BuildSetOfResources(HashSet<LayoutSVGResourceContainer*>&);
 
   // Methods operating on all cached resources
-  InvalidationModeMask RemoveClientFromCache(SVGResourceClient&) const;
+  InvalidationModeMask RemoveClientFromCache(SVGElementResourceClient&) const;
   InvalidationModeMask RemoveClientFromCacheAffectingObjectBounds(
-      SVGResourceClient&) const;
+      SVGElementResourceClient&) const;
   void ResourceDestroyed(LayoutSVGResourceContainer*);
   void ClearReferencesTo(LayoutSVGResourceContainer*);
 

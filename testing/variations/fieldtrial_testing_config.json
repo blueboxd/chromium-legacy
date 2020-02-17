@@ -5451,6 +5451,29 @@
             ]
         }
     ],
+    "QuietNotificationPrompts": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "EnableWithAdaptiveActivation",
+                    "params": {
+                        "enable_adaptive_activation": "true",
+                        "enable_crowd_deny_triggering": "true"
+                    },
+                    "enable_features": [
+                        "QuietNotificationPrompts"
+                    ]
+                }
+            ]
+        }
+    ],
     "QuotaExpandPoolSize": [
         {
             "platforms": [

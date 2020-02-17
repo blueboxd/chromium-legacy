@@ -1222,13 +1222,13 @@ void SVGElement::RemoveAllOutgoingReferences() {
   outgoing_references.clear();
 }
 
-SVGResourceClient* SVGElement::GetSVGResourceClient() {
+SVGElementResourceClient* SVGElement::GetSVGResourceClient() {
   if (!HasSVGRareData())
     return nullptr;
   return SvgRareData()->GetSVGResourceClient();
 }
 
-SVGResourceClient& SVGElement::EnsureSVGResourceClient() {
+SVGElementResourceClient& SVGElement::EnsureSVGResourceClient() {
   return EnsureSVGRareData()->EnsureSVGResourceClient(this);
 }
 

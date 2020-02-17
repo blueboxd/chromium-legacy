@@ -138,8 +138,6 @@ static_library("test_support") {
     "invalidation_test_util.h",
     "object_id_invalidation_map_test_util.cc",
     "object_id_invalidation_map_test_util.h",
-    "unacked_invalidation_set_test_util.cc",
-    "unacked_invalidation_set_test_util.h",
   ]
 
   public_deps = [

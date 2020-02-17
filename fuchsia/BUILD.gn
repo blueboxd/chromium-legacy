@@ -5,8 +5,8 @@
 assert(is_fuchsia)
 
 import("//build/buildflag_header.gni")
-import("//build/config/fuchsia/fidl_library.gni")
 import("//fuchsia/release_channel.gni")
+import("//third_party/fuchsia-sdk/sdk/build/fidl_library.gni")
 
 fidl_library("cast_fidl") {
   library_name = "chromium.cast"
@@ -20,8 +20,8 @@ fidl_library("cast_fidl") {
   ]
 
   public_deps = [
-    "//third_party/fuchsia-sdk/sdk:fuchsia-ui-gfx",
-    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.gfx",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
   ]
 }
 

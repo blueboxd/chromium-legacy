@@ -32,11 +32,14 @@ void ActiveWebStateObservationForwarder::WebStateActivatedAt(
     web::WebState* new_web_state,
     int active_index,
     int reason) {
-  if (old_web_state) {
+  // If this class is created inside a |WebStateActivatedAt| callback, then it
+  // will be initialized already observing |new_web_state|, so it doesn't need
+  // to start or stop observing anything.
+  if (old_web_state && web_state_observer_.IsObserving(old_web_state)) {
     web_state_observer_.Remove(old_web_state);
   }
 
-  if (new_web_state) {
+  if (new_web_state && !web_state_observer_.IsObserving(new_web_state)) {
     web_state_observer_.Add(new_web_state);
   }
 }

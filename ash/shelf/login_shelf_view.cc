@@ -518,6 +518,11 @@ void LoginShelfView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(l10n_util::GetStringUTF8(IDS_ASH_SHELF_ACCESSIBLE_NAME));
 }
 
+void LoginShelfView::Layout() {
+  views::View::Layout();
+  UpdateButtonUnionBounds();
+}
+
 void LoginShelfView::ButtonPressed(views::Button* sender,
                                    const ui::Event& event) {
   UserMetricsRecorder::RecordUserClickOnShelfButton(
@@ -746,7 +751,6 @@ void LoginShelfView::UpdateUi() {
 
   UpdateButtonColors(is_oobe);
   Layout();
-  UpdateButtonUnionBounds();
 }
 
 void LoginShelfView::UpdateButtonColors(bool use_dark_colors) {

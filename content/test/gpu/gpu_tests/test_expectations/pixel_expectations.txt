@@ -144,6 +144,13 @@ crbug.com/1029389 [ android qualcomm-adreno-(tm)-330 ] Pixel_PrecisionRoundedCor
 # Flakes on Nexus 5X.
 crbug.com/883500 [ android-chromium no-use-gl no-use-vulkan qualcomm-adreno-(tm)-418 ] Pixel_BackgroundImage [ RetryOnFailure ]
 
+# Skia Renderer EGL timeout on Nexus 5X, fails to load minidump
+crbug.com/1033121 [ android skia-renderer use-gl no-use-vulkan qualcomm-adreno-(tm)-418 ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
+crbug.com/1033121 [ android skia-renderer use-gl no-use-vulkan qualcomm-adreno-(tm)-418 ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
+crbug.com/1033121 [ android skia-renderer use-gl no-use-vulkan qualcomm-adreno-(tm)-418 ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
+crbug.com/1033121 [ android skia-renderer use-gl no-use-vulkan qualcomm-adreno-(tm)-418 ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
+crbug.com/1041856 [ android skia-renderer use-gl no-use-vulkan qualcomm-adreno-(tm)-418 ] Pixel_Video_MP4 [ Skip ]
+
 # We do not have software H.264 decoding on Android, so it can't survive a
 # context loss which results in hardware decoder loss.
 crbug.com/580386 [ android ] Pixel_Video_Context_Loss_MP4 [ Skip ]

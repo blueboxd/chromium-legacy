@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/world_safe_v8_reference.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_payment_currency_amount.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -29,7 +29,7 @@ class ScriptState;
 
 class MODULES_EXPORT PaymentResponse final
     : public EventTargetWithInlineData,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public ActiveScriptWrappable<PaymentResponse> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(PaymentResponse);

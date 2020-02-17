@@ -26,6 +26,14 @@ bool OnlyOneSet(views::View* a, views::View* b) {
 
 }  // namespace
 
+LoginBigUserView::TestApi::TestApi(LoginBigUserView* view) : view_(view) {}
+
+LoginBigUserView::TestApi::~TestApi() = default;
+
+void LoginBigUserView::TestApi::Remove() {
+  view_->auth_user_callbacks_.on_remove.Run();
+}
+
 LoginBigUserView::LoginBigUserView(
     const LoginUserInfo& user,
     const LoginAuthUserView::Callbacks& auth_user_callbacks,

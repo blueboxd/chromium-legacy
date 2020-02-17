@@ -118,6 +118,9 @@ Polymer({
     /** @private */
     showPasswordEditDialog_: Boolean,
 
+    /** @private */
+    isOptedInForAccountStorage_: Boolean,
+
     /** @private {settings.SyncPrefs} */
     syncPrefs_: Object,
 
@@ -185,6 +188,12 @@ Polymer({
   passwordManager_: null,
 
   /**
+   * @type {?function(boolean):void}
+   * @private
+   */
+  setIsOptedInForAccountStorageListener_: null,
+
+  /**
    * @type {?function(!Array<PasswordManagerProxy.PasswordUiEntry>):void}
    * @private
    */
@@ -199,6 +208,10 @@ Polymer({
   /** @override */
   attached() {
     // Create listener functions.
+    const setIsOptedInForAccountStorageListener = optedIn => {
+      this.isOptedInForAccountStorage_ = optedIn;
+    };
+
     const setSavedPasswordsListener = list => {
       const newList = list.map(entry => ({entry: entry, password: ''}));
       // Because the backend guarantees that item.entry.id uniquely identifies a
@@ -211,6 +224,8 @@ Polymer({
       this.passwordExceptions = list;
     };
 
+    this.setIsOptedInForAccountStorageListener_ =
+        setIsOptedInForAccountStorageListener;
     this.setSavedPasswordsListener_ = setSavedPasswordsListener;
     this.setPasswordExceptionsListener_ = setPasswordExceptionsListener;
 
@@ -231,10 +246,14 @@ Polymer({
     // </if>
 
     // Request initial data.
+    this.passwordManager_.isOptedInForAccountStorage().then(
+        setIsOptedInForAccountStorageListener);
     this.passwordManager_.getSavedPasswordList(setSavedPasswordsListener);
     this.passwordManager_.getExceptionList(setPasswordExceptionsListener);
 
     // Listen for changes.
+    this.passwordManager_.addAccountStorageOptInStateListener(
+        setIsOptedInForAccountStorageListener);
     this.passwordManager_.addSavedPasswordListChangedListener(
         setSavedPasswordsListener);
     this.passwordManager_.addExceptionListChangedListener(
@@ -269,6 +288,12 @@ Polymer({
          * @type {function(!Array<PasswordManagerProxy.ExceptionEntry>):void}
          */
         (this.setPasswordExceptionsListener_));
+    this.passwordManager_.removeAccountStorageOptInStateListener(
+        /**
+         * @type {function(boolean):void}
+         */
+        (this.setIsOptedInForAccountStorageListener_));
+
     if (cr.toastManager.getToastManager().isToastOpen) {
       cr.toastManager.getToastManager().hide();
     }
@@ -497,6 +522,26 @@ Polymer({
    */
   showImportOrExportPasswords_(showExportPasswords, showImportPasswords) {
     return showExportPasswords || showImportPasswords;
+  },
+
+  /**
+   * @private
+   * @param {!PasswordManagerProxy.ExceptionEntry} item This row's item.
+   * @return {string}
+   */
+  getStorageText_(item) {
+    // TODO(crbug.com/1049141): Add proper translated strings once we have them.
+    return item.fromAccountStore ? 'Account' : 'Local';
+  },
+
+  /**
+   * @private
+   * @param {!PasswordManagerProxy.ExceptionEntry} item This row's item.
+   * @return {string}
+   */
+  getStorageIcon_(item) {
+    // TODO(crbug.com/1049141): Add the proper icons once we know them.
+    return item.fromAccountStore ? 'cr:sync' : 'cr:computer';
   },
 });
 })();

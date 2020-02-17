@@ -18,7 +18,8 @@ namespace blink {
 NativeFileSystemDirectoryIterator::NativeFileSystemDirectoryIterator(
     NativeFileSystemDirectoryHandle* directory,
     ExecutionContext* execution_context)
-    : ContextLifecycleObserver(execution_context), directory_(directory) {
+    : ExecutionContextLifecycleObserver(execution_context),
+      directory_(directory) {
   directory_->MojoHandle()->GetEntries(receiver_.BindNewPipeAndPassRemote());
 }
 
@@ -52,7 +53,7 @@ ScriptPromise NativeFileSystemDirectoryIterator::next(
 
 void NativeFileSystemDirectoryIterator::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(entries_);
   visitor->Trace(pending_next_);
   visitor->Trace(directory_);

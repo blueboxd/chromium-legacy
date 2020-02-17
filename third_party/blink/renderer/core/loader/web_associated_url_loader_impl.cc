@@ -49,7 +49,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_associated_url_loader_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
@@ -316,12 +316,12 @@ void WebAssociatedURLLoaderImpl::ClientAdapter::NotifyError(TimerBase* timer) {
 
 class WebAssociatedURLLoaderImpl::Observer final
     : public GarbageCollected<Observer>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(Observer);
 
  public:
   Observer(WebAssociatedURLLoaderImpl* parent, Document* document)
-      : ContextLifecycleObserver(document), parent_(parent) {}
+      : ExecutionContextLifecycleObserver(document), parent_(parent) {}
 
   void Dispose() {
     parent_ = nullptr;
@@ -340,7 +340,7 @@ class WebAssociatedURLLoaderImpl::Observer final
   }
 
   void Trace(Visitor* visitor) override {
-    ContextLifecycleObserver::Trace(visitor);
+    ExecutionContextLifecycleObserver::Trace(visitor);
   }
 
   WebAssociatedURLLoaderImpl* parent_;

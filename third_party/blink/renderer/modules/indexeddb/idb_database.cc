@@ -100,7 +100,7 @@ IDBDatabase::IDBDatabase(
     IDBDatabaseCallbacks* callbacks,
     v8::Isolate* isolate,
     mojo::PendingRemote<mojom::blink::ObservedFeature> connection_lifetime)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       backend_(std::move(backend)),
       connection_lifetime_(std::move(connection_lifetime)),
       event_queue_(
@@ -128,7 +128,7 @@ void IDBDatabase::Trace(Visitor* visitor) {
   visitor->Trace(event_queue_);
   visitor->Trace(database_callbacks_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 int64_t IDBDatabase::NextTransactionId() {
@@ -625,7 +625,7 @@ const AtomicString& IDBDatabase::InterfaceName() const {
 }
 
 ExecutionContext* IDBDatabase::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 STATIC_ASSERT_ENUM(mojom::blink::IDBException::kNoError,

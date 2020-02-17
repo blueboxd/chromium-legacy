@@ -67,7 +67,7 @@ const uint64_t EventSource::kDefaultReconnectDelay = 3000;
 inline EventSource::EventSource(ExecutionContext* context,
                                 const KURL& url,
                                 const EventSourceInit* event_source_init)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       url_(url),
       current_url_(url),
       with_credentials_(event_source_init->withCredentials()),
@@ -218,7 +218,7 @@ const AtomicString& EventSource::InterfaceName() const {
 }
 
 ExecutionContext* EventSource::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 void EventSource::DidReceiveResponse(uint64_t identifier,
@@ -364,7 +364,7 @@ void EventSource::Trace(Visitor* visitor) {
   visitor->Trace(loader_);
   EventTargetWithInlineData::Trace(visitor);
   ThreadableLoaderClient::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   EventSourceParser::Client::Trace(visitor);
 }
 

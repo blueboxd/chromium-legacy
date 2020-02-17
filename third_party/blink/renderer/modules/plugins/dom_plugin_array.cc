@@ -35,7 +35,7 @@
 namespace blink {
 
 DOMPluginArray::DOMPluginArray(LocalFrame* frame)
-    : ContextLifecycleObserver(frame ? frame->GetDocument() : nullptr),
+    : ExecutionContextLifecycleObserver(frame ? frame->GetDocument() : nullptr),
       PluginsChangedObserver(frame ? frame->GetPage() : nullptr) {
   UpdatePluginData();
 }
@@ -43,7 +43,7 @@ DOMPluginArray::DOMPluginArray(LocalFrame* frame)
 void DOMPluginArray::Trace(Visitor* visitor) {
   visitor->Trace(dom_plugins_);
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   PluginsChangedObserver::Trace(visitor);
 }
 

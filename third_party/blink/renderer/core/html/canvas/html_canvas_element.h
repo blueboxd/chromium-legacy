@@ -36,7 +36,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_blob_callback.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap_source.h"
@@ -96,7 +96,7 @@ typedef CanvasRenderingContext2DOrWebGLRenderingContextOrWebGL2RenderingContextO
 // this class and without overcomplicating context.
 class CORE_EXPORT HTMLCanvasElement final
     : public HTMLElement,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public PageVisibilityObserver,
       public CanvasRenderingContextHost,
       public WebSurfaceLayerBridgeObserver,
@@ -192,7 +192,7 @@ class CORE_EXPORT HTMLCanvasElement final
   bool PushFrame(scoped_refptr<CanvasResource> image,
                  const SkIRect& damage_rect) override;
 
-  // ContextLifecycleObserver and PageVisibilityObserver implementation
+  // ExecutionContextLifecycleObserver and PageVisibilityObserver implementation
   void ContextDestroyed() override;
 
   // PageVisibilityObserver implementation

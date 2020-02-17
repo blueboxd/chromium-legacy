@@ -122,7 +122,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
   if (!render_frame_host) {
     // TODO(crbug.com/31666): Support the case where the requester is a worker
     // (i.e., nested worker).
-    ScriptLoadFailed(std::move(client));
+    ScriptLoadFailed(std::move(client), /*error_message=*/"");
     return;
   }
 
@@ -134,7 +134,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
   if (is_cross_origin &&
       !GetContentClient()->browser()->DoesSchemeAllowCrossOriginSharedWorker(
           constructor_origin.scheme())) {
-    ScriptLoadFailed(std::move(client));
+    ScriptLoadFailed(std::move(client), /*error_message=*/"");
     return;
   }
 
@@ -149,7 +149,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
               ->GetBrowserContext(),
           client_render_frame_host_id.child_id,
           client_render_frame_host_id.frame_routing_id)) {
-    ScriptLoadFailed(std::move(client));
+    ScriptLoadFailed(std::move(client), /*error_message=*/"");
     return;
   }
 
@@ -159,7 +159,20 @@ void SharedWorkerServiceImpl::ConnectToWorker(
     // Non-secure contexts cannot connect to secure workers, and secure contexts
     // cannot connect to non-secure workers:
     if (host->instance().creation_context_type() != creation_context_type) {
-      ScriptLoadFailed(std::move(client));
+      ScriptLoadFailed(std::move(client), /*error_message=*/"");
+      return;
+    }
+    // Step 11.4: "If worker global scope is not null, then check if worker
+    // global scope's type and credentials match the options values. If not,
+    // queue a task to fire an event named error and abort these steps."
+    // https://html.spec.whatwg.org/C/#dom-sharedworker
+    if (host->instance().script_type() != info->options->type ||
+        host->instance().credentials_mode() != info->options->credentials) {
+      ScriptLoadFailed(
+          std::move(client),
+          "Failed to connect an existing shared worker because the type or "
+          "credentials given on the SharedWorker constructor doesn't match "
+          "the existing shared worker's type or credentials.");
       return;
     }
 
@@ -173,7 +186,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
   // Get a storage domain.
   SiteInstance* site_instance = render_frame_host->GetSiteInstance();
   if (!site_instance) {
-    ScriptLoadFailed(std::move(client));
+    ScriptLoadFailed(std::move(client), /*error_message=*/"");
     return;
   }
   std::string storage_domain;
@@ -401,10 +414,11 @@ SharedWorkerHost* SharedWorkerServiceImpl::FindMatchingSharedWorkerHost(
 }
 
 void SharedWorkerServiceImpl::ScriptLoadFailed(
-    mojo::PendingRemote<blink::mojom::SharedWorkerClient> client) {
+    mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
+    const std::string& error_message) {
   mojo::Remote<blink::mojom::SharedWorkerClient> remote_client(
       std::move(client));
-  remote_client->OnScriptLoadFailed();
+  remote_client->OnScriptLoadFailed(error_message);
 }
 
 }  // namespace content

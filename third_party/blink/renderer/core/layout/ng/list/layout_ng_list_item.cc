@@ -65,7 +65,7 @@ void LayoutNGListItem::SubtreeDidChange() {
   // Make sure an outside marker is a direct child of the list item (not nested
   // inside an anonymous box), and that a marker originated by a ::before or
   // ::after precedes the generated contents.
-  if ((!IsInside() && marker->Parent() != this) ||
+  if ((marker->IsLayoutNGListMarker() && marker->Parent() != this) ||
       (IsPseudoElement() && marker != FirstChild())) {
     marker->Remove();
     AddChild(marker, FirstChild());
@@ -76,13 +76,6 @@ void LayoutNGListItem::SubtreeDidChange() {
 
 void LayoutNGListItem::WillCollectInlines() {
   UpdateMarkerTextIfNeeded();
-}
-
-// Returns true if this is 'list-style-position: inside', or should be laid out
-// as 'inside'.
-bool LayoutNGListItem::IsInside() const {
-  return StyleRef().ListStylePosition() == EListStylePosition::kInside ||
-         (IsA<HTMLLIElement>(GetNode()) && !StyleRef().IsInsideListElement());
 }
 
 void LayoutNGListItem::UpdateMarkerTextIfNeeded() {
@@ -101,15 +94,11 @@ const LayoutObject* LayoutNGListItem::FindSymbolMarkerLayoutText(
   if (!object)
     return nullptr;
 
-  if (object->IsLayoutNGListItem()) {
-    const LayoutObject* marker = ToLayoutNGListItem(object)->Marker();
-    if (const ListMarker* list_marker = ListMarker::Get(marker))
-      return list_marker->SymbolMarkerLayoutText(*marker);
-    return nullptr;
-  }
-
   if (const ListMarker* list_marker = ListMarker::Get(object))
     return list_marker->SymbolMarkerLayoutText(*object);
+
+  if (object->IsLayoutNGListItem())
+    return FindSymbolMarkerLayoutText(ToLayoutNGListItem(object)->Marker());
 
   if (object->IsAnonymousBlock())
     return FindSymbolMarkerLayoutText(object->Parent());

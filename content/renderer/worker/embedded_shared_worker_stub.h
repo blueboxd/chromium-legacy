@@ -84,7 +84,7 @@ class EmbeddedSharedWorkerStub : public blink::WebSharedWorkerClient,
   void WorkerReadyForInspection(
       mojo::ScopedMessagePipeHandle devtools_agent_ptr_info,
       mojo::ScopedMessagePipeHandle devtools_agent_host_request) override;
-  void WorkerScriptLoadFailed() override;
+  void WorkerScriptLoadFailed(const std::string& error_message) override;
   void WorkerScriptEvaluated(bool success) override;
   scoped_refptr<blink::WebWorkerFetchContext> CreateWorkerFetchContext()
       override;

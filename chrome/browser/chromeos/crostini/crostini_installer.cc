@@ -393,8 +393,10 @@ void CrostiniInstaller::OnContainerSetup(bool success) {
     return;
   }
   UpdateInstallingState(InstallerState::kStartContainer);
-  ansible_management_service_observer_.Add(
-      AnsibleManagementService::GetForProfile(profile_));
+  if (ShouldConfigureDefaultContainer(profile_)) {
+    ansible_management_service_observer_.Add(
+        AnsibleManagementService::GetForProfile(profile_));
+  }
 }
 
 void CrostiniInstaller::OnAnsibleSoftwareConfigurationStarted() {

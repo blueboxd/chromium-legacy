@@ -50,7 +50,8 @@ int64_t GetUserGestureStatusForUkmMetric(LocalFrame* frame) {
 }  // namespace
 
 AutoplayUmaHelper::AutoplayUmaHelper(HTMLMediaElement* element)
-    : ContextLifecycleObserver(static_cast<ExecutionContext*>(nullptr)),
+    : ExecutionContextLifecycleObserver(
+          static_cast<ExecutionContext*>(nullptr)),
       element_(element),
       muted_video_play_method_intersection_observer_(nullptr),
       is_visible_(false),
@@ -298,7 +299,7 @@ bool AutoplayUmaHelper::ShouldListenToContextDestroyed() const {
 
 void AutoplayUmaHelper::Trace(Visitor* visitor) {
   NativeEventListener::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(element_);
   visitor->Trace(muted_video_play_method_intersection_observer_);
   visitor->Trace(muted_video_offscreen_duration_intersection_observer_);

@@ -24,18 +24,18 @@
  *
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_CONTEXT_LIFECYCLE_STATE_OBSERVER_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_CONTEXT_LIFECYCLE_STATE_OBSERVER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_EXECUTION_CONTEXT_LIFECYCLE_STATE_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_EXECUTION_CONTEXT_LIFECYCLE_STATE_OBSERVER_H_
 
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
-// A ContextLifecycleStateObserver responds to situations where Blink is
-// pausing a context or freezing a frame.
+// A ExecutionContextLifecycleStateObserver responds to situations where Blink
+// is pausing a context or freezing a frame.
 //
 // Context lifecycle state changes can happen in cases such as:
 // - modal dialogs during script execution (e.g. window.alert, window.print)
@@ -51,13 +51,13 @@ namespace blink {
 //
 // https://html.spec.whatwg.org/C/#pause
 // https://wicg.github.io/page-lifecycle/spec.html
-class CORE_EXPORT ContextLifecycleStateObserver
-    : public ContextLifecycleObserver {
+class CORE_EXPORT ExecutionContextLifecycleStateObserver
+    : public ExecutionContextLifecycleObserver {
  public:
-  explicit ContextLifecycleStateObserver(ExecutionContext*);
+  explicit ExecutionContextLifecycleStateObserver(ExecutionContext*);
   // TODO(crbug.com/1029822): This is a shim to enable migrating
   // ExecutionContext to LocalDOMWindow.
-  explicit ContextLifecycleStateObserver(Document*);
+  explicit ExecutionContextLifecycleStateObserver(Document*);
 
   // UpdateStateIfNeeded() should be called exactly once after object
   // construction to synchronize the suspend state with that in
@@ -70,12 +70,12 @@ class CORE_EXPORT ContextLifecycleStateObserver
 #endif
 
   virtual void ContextLifecycleStateChanged(
-      mojom::FrameLifecycleState state) = 0;
+      mojom::blink::FrameLifecycleState state) = 0;
 
   void SetExecutionContext(ExecutionContext*) override;
 
  protected:
-  virtual ~ContextLifecycleStateObserver();
+  virtual ~ExecutionContextLifecycleStateObserver();
 
  private:
 #if DCHECK_IS_ON()
@@ -85,4 +85,4 @@ class CORE_EXPORT ContextLifecycleStateObserver
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_CONTEXT_LIFECYCLE_STATE_OBSERVER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_EXECUTION_CONTEXT_LIFECYCLE_STATE_OBSERVER_H_

@@ -62,7 +62,7 @@
 namespace blink {
 
 SelectionController::SelectionController(LocalFrame& frame)
-    : ContextLifecycleObserver(frame.GetDocument()),
+    : ExecutionContextLifecycleObserver(frame.GetDocument()),
       frame_(&frame),
       mouse_down_may_start_select_(false),
       mouse_down_was_single_click_in_selection_(false),
@@ -72,7 +72,7 @@ SelectionController::SelectionController(LocalFrame& frame)
 void SelectionController::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(original_base_in_flat_tree_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 namespace {

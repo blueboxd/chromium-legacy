@@ -41,10 +41,10 @@ String TokenToString(const base::UnguessableToken& token) {
 }  // namespace
 
 Serial::Serial(ExecutionContext& execution_context)
-    : ContextLifecycleObserver(&execution_context) {}
+    : ExecutionContextLifecycleObserver(&execution_context) {}
 
 ExecutionContext* Serial::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 const AtomicString& Serial::InterfaceName() const {
@@ -156,7 +156,7 @@ void Serial::Trace(Visitor* visitor) {
   visitor->Trace(request_port_promises_);
   visitor->Trace(port_cache_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void Serial::EnsureServiceConnection() {

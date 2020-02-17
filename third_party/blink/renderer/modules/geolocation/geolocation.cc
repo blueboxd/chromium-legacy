@@ -106,7 +106,7 @@ Geolocation* Geolocation::Create(ExecutionContext* context) {
 }
 
 Geolocation::Geolocation(ExecutionContext* context)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       PageVisibilityObserver(GetDocument()->GetPage()),
       watchers_(MakeGarbageCollected<GeolocationWatchers>()) {}
 
@@ -119,7 +119,7 @@ void Geolocation::Trace(Visitor* visitor) {
   visitor->Trace(watchers_being_invoked_);
   visitor->Trace(last_position_);
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
 }
 

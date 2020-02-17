@@ -40,7 +40,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/dom/dom_time_stamp.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/vibration/navigator_vibration.h"
@@ -60,7 +60,7 @@ class TimestampTrigger;
 class MODULES_EXPORT Notification final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<Notification>,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public mojom::blink::NonPersistentNotificationListener {
   USING_GARBAGE_COLLECTED_MIXIN(Notification);
   DEFINE_WRAPPERTYPEINFO();
@@ -130,11 +130,11 @@ class MODULES_EXPORT Notification final
 
   // EventTarget interface.
   ExecutionContext* GetExecutionContext() const final {
-    return ContextLifecycleObserver::GetExecutionContext();
+    return ExecutionContextLifecycleObserver::GetExecutionContext();
   }
   const AtomicString& InterfaceName() const override;
 
-  // ContextLifecycleObserver interface.
+  // ExecutionContextLifecycleObserver interface.
   void ContextDestroyed() override;
 
   // ScriptWrappable interface.

@@ -91,7 +91,7 @@ RemotePlayback& RemotePlayback::From(HTMLMediaElement& element) {
 }
 
 RemotePlayback::RemotePlayback(HTMLMediaElement& element)
-    : ContextLifecycleObserver(element.GetExecutionContext()),
+    : ExecutionContextLifecycleObserver(element.GetExecutionContext()),
       RemotePlaybackController(element),
       state_(mojom::blink::PresentationConnectionState::CLOSED),
       availability_(mojom::ScreenAvailability::UNKNOWN),
@@ -604,7 +604,7 @@ void RemotePlayback::Trace(Visitor* visitor) {
   visitor->Trace(media_element_);
   visitor->Trace(observers_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   RemotePlaybackController::Trace(visitor);
 }
 

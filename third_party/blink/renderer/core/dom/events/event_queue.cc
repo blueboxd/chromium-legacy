@@ -36,7 +36,7 @@
 namespace blink {
 
 EventQueue::EventQueue(ExecutionContext* context, TaskType task_type)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       task_type_(task_type),
       is_closed_(false) {
   if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed())
@@ -47,7 +47,7 @@ EventQueue::~EventQueue() = default;
 
 void EventQueue::Trace(Visitor* visitor) {
   visitor->Trace(queued_events_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 bool EventQueue::EnqueueEvent(const base::Location& from_here, Event& event) {

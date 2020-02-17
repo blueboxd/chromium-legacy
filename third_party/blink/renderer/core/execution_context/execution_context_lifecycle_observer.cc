@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -39,27 +39,28 @@ void ContextClient::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
 }
 
-ContextLifecycleObserver::ContextLifecycleObserver()
+ExecutionContextLifecycleObserver::ExecutionContextLifecycleObserver()
     : observer_type_(kGenericType) {}
 
-ContextLifecycleObserver::ContextLifecycleObserver(Document* document,
-                                                   Type type)
-    : ContextLifecycleObserver(
+ExecutionContextLifecycleObserver::ExecutionContextLifecycleObserver(
+    Document* document,
+    Type type)
+    : ExecutionContextLifecycleObserver(
           document ? document->ToExecutionContext() : nullptr,
           type) {}
 
-ContextLifecycleObserver::ContextLifecycleObserver(
+ExecutionContextLifecycleObserver::ExecutionContextLifecycleObserver(
     ExecutionContext* execution_context,
     Type type)
     : observer_type_(type) {
   SetExecutionContext(execution_context);
 }
 
-void ContextLifecycleObserver::ObserverListWillBeCleared() {
+void ExecutionContextLifecycleObserver::ObserverListWillBeCleared() {
   execution_context_ = nullptr;
 }
 
-void ContextLifecycleObserver::SetExecutionContext(
+void ExecutionContextLifecycleObserver::SetExecutionContext(
     ExecutionContext* execution_context) {
   if (execution_context == execution_context_)
     return;
@@ -73,12 +74,12 @@ void ContextLifecycleObserver::SetExecutionContext(
     execution_context_->ContextLifecycleObserverList().AddObserver(this);
 }
 
-LocalFrame* ContextLifecycleObserver::GetFrame() const {
+LocalFrame* ExecutionContextLifecycleObserver::GetFrame() const {
   auto* document = Document::DynamicFrom(GetExecutionContext());
   return document ? document->GetFrame() : nullptr;
 }
 
-void ContextLifecycleObserver::Trace(Visitor* visitor) {
+void ExecutionContextLifecycleObserver::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
 }
 

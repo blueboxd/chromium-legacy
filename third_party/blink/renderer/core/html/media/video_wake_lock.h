@@ -9,7 +9,7 @@
 #include "services/device/public/mojom/wake_lock.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/html/media/remote_playback_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 
@@ -27,10 +27,11 @@ class HTMLVideoElement;
 // merge all the requests and take the appropriate system wake lock.
 // VideoWakeLock only uses "screen" related wake lock: it prevents the screen
 // from locking on mobile or the lockscreen to show up on desktop.
-class CORE_EXPORT VideoWakeLock final : public NativeEventListener,
-                                        public PageVisibilityObserver,
-                                        public RemotePlaybackObserver,
-                                        public ContextLifecycleStateObserver {
+class CORE_EXPORT VideoWakeLock final
+    : public NativeEventListener,
+      public PageVisibilityObserver,
+      public RemotePlaybackObserver,
+      public ExecutionContextLifecycleStateObserver {
   USING_GARBAGE_COLLECTED_MIXIN(VideoWakeLock);
 
  public:
@@ -47,7 +48,7 @@ class CORE_EXPORT VideoWakeLock final : public NativeEventListener,
   void OnRemotePlaybackStateChanged(
       mojom::blink::PresentationConnectionState) final;
 
-  // ContextLifecycleStateObserver
+  // ExecutionContextLifecycleStateObserver
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
   void ContextDestroyed() override;
 

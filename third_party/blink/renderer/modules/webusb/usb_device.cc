@@ -148,7 +148,7 @@ bool ConvertBufferSource(const ArrayBufferOrArrayBufferView& buffer_source,
 USBDevice::USBDevice(UsbDeviceInfoPtr device_info,
                      mojo::PendingRemote<UsbDevice> device,
                      ExecutionContext* context)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       device_info_(std::move(device_info)),
       device_(std::move(device)),
       opened_(false),
@@ -562,7 +562,7 @@ void USBDevice::ContextDestroyed() {
 void USBDevice::Trace(Visitor* visitor) {
   visitor->Trace(device_requests_);
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 wtf_size_t USBDevice::FindConfigurationIndex(

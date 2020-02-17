@@ -66,6 +66,11 @@ class ChromeAppBrowserProxy {
       callback(newState === 'locked');
     });
   }
+
+  /** @override */
+  isCrashReportingEnabled() {
+    return util.promisify(chrome.metricsPrivate.getIsCrashReportingEnabled)();
+  }
 }
 
 export const browserProxy = new ChromeAppBrowserProxy();

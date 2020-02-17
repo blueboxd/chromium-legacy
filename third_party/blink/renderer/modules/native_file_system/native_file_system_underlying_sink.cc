@@ -22,7 +22,7 @@ namespace blink {
 NativeFileSystemUnderlyingSink::NativeFileSystemUnderlyingSink(
     ExecutionContext* context,
     mojo::PendingRemote<mojom::blink::NativeFileSystemFileWriter> writer_remote)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       writer_remote_(std::move(writer_remote)) {
   DCHECK(writer_remote_);
 }
@@ -262,7 +262,7 @@ void NativeFileSystemUnderlyingSink::CloseComplete(
 
 void NativeFileSystemUnderlyingSink::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   UnderlyingSinkBase::Trace(visitor);
   visitor->Trace(pending_operation_);
 }

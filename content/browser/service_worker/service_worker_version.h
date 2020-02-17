@@ -962,6 +962,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::map<std::string, ServiceWorkerContainerHost*> controllee_map_;
   std::map<std::string, ServiceWorkerContainerHost*> bfcached_controllee_map_;
 
+  // Keeps track of the |client_uuid| of ContainerHost that is being evicted,
+  // and the reason why it is evicted. Once eviction is complete, the entry will
+  // be removed.
+  // TODO(crbug.com/1021718): Remove this once we fix the crash.
+  std::map<std::string, BackForwardCacheMetrics::NotRestoredReason>
+      controllees_to_be_evicted_;
+
   // Will be null while shutting down.
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::ObserverList<Observer>::Unchecked observers_;

@@ -56,7 +56,7 @@ constexpr base::TimeDelta kYieldThreshold =
     base::TimeDelta::FromMilliseconds(50);
 
 MessagePort::MessagePort(ExecutionContext& execution_context)
-    : ContextLifecycleObserver(&execution_context),
+    : ExecutionContextLifecycleObserver(&execution_context),
       task_runner_(execution_context.GetTaskRunner(TaskType::kPostedMessage)) {}
 
 MessagePort::~MessagePort() {
@@ -259,7 +259,7 @@ MessagePortArray* MessagePort::EntanglePorts(
 }
 
 void MessagePort::Trace(Visitor* visitor) {
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }
 

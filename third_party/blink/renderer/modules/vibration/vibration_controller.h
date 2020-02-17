@@ -23,7 +23,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/vibration_manager.mojom-blink.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -38,7 +38,7 @@ class UnsignedLongOrUnsignedLongSequence;
 
 class MODULES_EXPORT VibrationController final
     : public GarbageCollected<VibrationController>,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public PageVisibilityObserver {
   USING_GARBAGE_COLLECTED_MIXIN(VibrationController);
 
@@ -68,7 +68,7 @@ class MODULES_EXPORT VibrationController final
   void Trace(Visitor*) override;
 
  private:
-  // Inherited from ContextLifecycleObserver.
+  // Inherited from ExecutionContextLifecycleObserver.
   void ContextDestroyed() override;
 
   // Inherited from PageVisibilityObserver.

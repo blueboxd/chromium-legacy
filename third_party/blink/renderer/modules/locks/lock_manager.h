@@ -24,7 +24,7 @@ class ScriptState;
 class V8LockGrantedCallback;
 
 class LockManager final : public ScriptWrappable,
-                          public ContextLifecycleObserver {
+                          public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(LockManager);
 

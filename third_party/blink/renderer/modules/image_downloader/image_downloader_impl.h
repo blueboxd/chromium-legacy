@@ -7,7 +7,7 @@
 
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom-blink.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace blink {
@@ -21,7 +21,7 @@ struct WebSize;
 
 class ImageDownloaderImpl final : public GarbageCollected<ImageDownloaderImpl>,
                                   public Supplement<LocalFrame>,
-                                  public ContextLifecycleObserver,
+                                  public ExecutionContextLifecycleObserver,
                                   public mojom::blink::ImageDownloader {
   USING_PRE_FINALIZER(ImageDownloaderImpl, Dispose);
   USING_GARBAGE_COLLECTED_MIXIN(ImageDownloaderImpl);
@@ -41,7 +41,7 @@ class ImageDownloaderImpl final : public GarbageCollected<ImageDownloaderImpl>,
 
   void Trace(Visitor*) override;
 
-  // OverContextLifecycleObserver overrides.
+  // OverExecutionContextLifecycleObserver overrides.
   void ContextDestroyed() override;
 
  private:

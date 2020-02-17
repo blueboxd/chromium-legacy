@@ -33,7 +33,7 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -54,7 +54,7 @@ class WebContentDecryptionModule;
 // The WebContentDecryptionModule has the same lifetime as this object.
 class MediaKeys : public ScriptWrappable,
                   public ActiveScriptWrappable<MediaKeys>,
-                  public ContextLifecycleObserver {
+                  public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(MediaKeys);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -95,8 +95,8 @@ class MediaKeys : public ScriptWrappable,
 
   void Trace(Visitor*) override;
 
-  // ContextLifecycleObserver implementation.
-  // FIXME: This class could derive from ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver implementation.
+  // FIXME: This class could derive from ExecutionContextLifecycleObserver
   // again (http://crbug.com/483722).
   void ContextDestroyed() override;
 

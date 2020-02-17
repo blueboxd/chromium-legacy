@@ -44,7 +44,7 @@ void SharedWorkerConnectorImpl::Connect(
   if (!host) {
     mojo::Remote<blink::mojom::SharedWorkerClient> remote_client(
         std::move(client));
-    remote_client->OnScriptLoadFailed();
+    remote_client->OnScriptLoadFailed(/*error_message=*/"");
     return;
   }
   scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory;

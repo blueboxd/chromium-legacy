@@ -11,7 +11,7 @@
 #include "base/thread_annotations.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/task_type_traits.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 
@@ -21,7 +21,7 @@ namespace blink {
 // task runners for the current thread if no execution context is available.
 class CORE_EXPORT ParentExecutionContextTaskRunners final
     : public GarbageCollected<ParentExecutionContextTaskRunners>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ParentExecutionContextTaskRunners);
 
  public:

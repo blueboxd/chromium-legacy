@@ -90,7 +90,7 @@ PrerenderHandle::PrerenderHandle(
     const KURL& url,
     mojo::Remote<mojom::blink::PrerenderHandle> remote_handle,
     mojo::PendingReceiver<mojom::blink::PrerenderHandleClient> receiver)
-    : ContextLifecycleObserver(&document),
+    : ExecutionContextLifecycleObserver(&document),
       url_(url),
       client_(client),
       remote_handle_(std::move(remote_handle)),
@@ -107,8 +107,8 @@ void PrerenderHandle::Dispose() {
 void PrerenderHandle::Cancel() {
   // Avoid both abandoning and canceling the same prerender. In the abandon
   // case, the LinkLoader cancels the PrerenderHandle as the Document is
-  // destroyed, even through the ContextLifecycleObserver has already abandoned
-  // it.
+  // destroyed, even through the ExecutionContextLifecycleObserver has already
+  // abandoned it.
   if (remote_handle_)
     remote_handle_->Cancel();
   Detach();
@@ -148,7 +148,7 @@ void PrerenderHandle::OnPrerenderStop() {
 
 void PrerenderHandle::Trace(Visitor* visitor) {
   visitor->Trace(client_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void PrerenderHandle::Detach() {

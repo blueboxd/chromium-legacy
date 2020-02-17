@@ -542,7 +542,8 @@ bool Fullscreen::IsInFullscreenElementStack(const Element& element) {
 }
 
 Fullscreen::Fullscreen(Document& document)
-    : Supplement<Document>(document), ContextLifecycleObserver(&document) {
+    : Supplement<Document>(document),
+      ExecutionContextLifecycleObserver(&document) {
   document.SetHasFullscreenSupplement();
 }
 
@@ -1021,7 +1022,7 @@ void Fullscreen::Trace(Visitor* visitor) {
   visitor->Trace(pending_requests_);
   visitor->Trace(pending_exits_);
   Supplement<Document>::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 Fullscreen::PendingRequest::PendingRequest(Element* element,

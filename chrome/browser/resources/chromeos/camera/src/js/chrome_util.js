@@ -102,9 +102,9 @@ export function assertBoolean(value, optMessage) {
 
 /**
  * Wraps a function with completion callback as a Promise.
- * @param {function(...*)} func The last parameter of the function should be a
- *     completion callback.
- * @return {function(...*): Promise}
+ * @param {function(...?): ?} func The last parameter of the function should be
+ *     a completion callback.
+ * @return {function(...?): !Promise}
  */
 export function promisify(func) {
   return (...args) =>

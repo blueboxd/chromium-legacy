@@ -63,7 +63,7 @@ IdleSpellCheckController::~IdleSpellCheckController() = default;
 void IdleSpellCheckController::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(cold_mode_requester_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 IdleSpellCheckController::IdleSpellCheckController(LocalFrame& frame)

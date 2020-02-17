@@ -212,7 +212,7 @@ void ServiceWorkerContainer::Trace(Visitor* visitor) {
   visitor->Trace(service_worker_objects_);
   EventTargetWithInlineData::Trace(visitor);
   Supplement<Document>::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 ScriptPromise ServiceWorkerContainer::registerServiceWorker(
@@ -607,7 +607,8 @@ ServiceWorker* ServiceWorkerContainer::GetOrCreateServiceWorker(
 }
 
 ServiceWorkerContainer::ServiceWorkerContainer(Document* document)
-    : Supplement<Document>(*document), ContextLifecycleObserver(document) {}
+    : Supplement<Document>(*document),
+      ExecutionContextLifecycleObserver(document) {}
 
 ServiceWorkerContainer::ReadyProperty*
 ServiceWorkerContainer::CreateReadyProperty() {

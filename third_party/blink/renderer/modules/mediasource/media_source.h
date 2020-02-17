@@ -35,7 +35,7 @@
 
 #include "third_party/blink/public/platform/web_media_source.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/fileapi/url_registry.h"
 #include "third_party/blink/renderer/core/html/media/html_media_source.h"
 #include "third_party/blink/renderer/core/html/time_ranges.h"
@@ -53,7 +53,7 @@ class WebSourceBuffer;
 class MediaSource final : public EventTargetWithInlineData,
                           public HTMLMediaSource,
                           public ActiveScriptWrappable<MediaSource>,
-                          public ContextLifecycleObserver {
+                          public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MediaSource);
 
@@ -111,7 +111,7 @@ class MediaSource final : public EventTargetWithInlineData,
   // ScriptWrappable
   bool HasPendingActivity() const final;
 
-  // ContextLifecycleObserver interface
+  // ExecutionContextLifecycleObserver interface
   void ContextDestroyed() override;
 
   // URLRegistrable interface

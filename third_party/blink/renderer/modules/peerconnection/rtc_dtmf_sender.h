@@ -27,7 +27,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_PEERCONNECTION_RTC_DTMF_SENDER_H_
 
 #include <memory>
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_dtmf_sender_handler.h"
 #include "third_party/blink/renderer/platform/timer.h"
@@ -39,7 +39,7 @@ class RtcDtmfSenderHandler;
 
 class RTCDTMFSender final : public EventTargetWithInlineData,
                             public RtcDtmfSenderHandler::Client,
-                            public ContextLifecycleObserver {
+                            public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(RTCDTMFSender);
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(RTCDTMFSender, Dispose);
@@ -67,7 +67,7 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
   void Trace(Visitor*) override;

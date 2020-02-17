@@ -577,12 +577,12 @@ static bool g_threaded_parsing_enabled_for_testing = true;
 class Document::NetworkStateObserver final
     : public GarbageCollected<Document::NetworkStateObserver>,
       public NetworkStateNotifier::NetworkStateObserver,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(Document::NetworkStateObserver);
 
  public:
   explicit NetworkStateObserver(Document& document)
-      : ContextLifecycleObserver(&document) {
+      : ExecutionContextLifecycleObserver(&document) {
     online_observer_handle_ = GetNetworkStateNotifier().AddOnLineObserver(
         this, GetExecutionContext()->GetTaskRunner(TaskType::kNetworking));
   }
@@ -607,7 +607,7 @@ class Document::NetworkStateObserver final
   }
 
   void Trace(Visitor* visitor) override {
-    ContextLifecycleObserver::Trace(visitor);
+    ExecutionContextLifecycleObserver::Trace(visitor);
   }
 
  private:
@@ -3065,8 +3065,8 @@ void Document::Initialize() {
     View()->DidAttachDocument();
 
   // Observer(s) should not be initialized until the document is initialized /
-  // attached to a frame. Otherwise ContextLifecycleObserver::contextDestroyed
-  // wouldn't be fired.
+  // attached to a frame. Otherwise
+  // ExecutionContextLifecycleObserver::contextDestroyed wouldn't be fired.
   network_state_observer_ = MakeGarbageCollected<NetworkStateObserver>(*this);
 
   // Check for frame_ so we only attach execution contexts with its own
@@ -8258,7 +8258,7 @@ void Document::CountPotentialFeaturePolicyViolation(
 }
 void Document::ReportFeaturePolicyViolation(
     mojom::blink::FeaturePolicyFeature feature,
-    mojom::blink::FeaturePolicyDisposition disposition,
+    mojom::FeaturePolicyDisposition disposition,
     const String& message,
     const String& source_file) const {
   if (!RuntimeEnabledFeatures::FeaturePolicyReportingEnabled(this))
@@ -8270,9 +8270,8 @@ void Document::ReportFeaturePolicyViolation(
   // Construct the feature policy violation report.
   const String& feature_name = GetNameForFeature(feature);
   const String& disp_str =
-      (disposition == mojom::blink::FeaturePolicyDisposition::kReport
-           ? "report"
-           : "enforce");
+      (disposition == mojom::FeaturePolicyDisposition::kReport ? "report"
+                                                               : "enforce");
 
   FeaturePolicyViolationReportBody* body =
       source_file.IsEmpty()

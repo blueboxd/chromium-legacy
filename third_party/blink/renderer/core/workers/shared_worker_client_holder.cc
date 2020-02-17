@@ -70,7 +70,7 @@ SharedWorkerClientHolder* SharedWorkerClientHolder::From(Document& document) {
 }
 
 SharedWorkerClientHolder::SharedWorkerClientHolder(Document& document)
-    : ContextLifecycleObserver(&document),
+    : ExecutionContextLifecycleObserver(&document),
       task_runner_(document.GetTaskRunner(blink::TaskType::kDOMManipulation)) {
   DCHECK(IsMainThread());
   document.GetBrowserInterfaceBroker().GetInterface(
@@ -144,7 +144,7 @@ void SharedWorkerClientHolder::ContextDestroyed() {
 
 void SharedWorkerClientHolder::Trace(Visitor* visitor) {
   Supplement<Document>::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

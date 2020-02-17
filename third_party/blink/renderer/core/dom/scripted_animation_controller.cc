@@ -59,13 +59,13 @@ void ScriptedAnimationController::EraseFromPerFrameEventsMap(
 }
 
 ScriptedAnimationController::ScriptedAnimationController(Document* document)
-    : ContextLifecycleStateObserver(document),
+    : ExecutionContextLifecycleStateObserver(document),
       callback_collection_(document->ToExecutionContext()) {
   UpdateStateIfNeeded();
 }
 
 void ScriptedAnimationController::Trace(Visitor* visitor) {
-  ContextLifecycleStateObserver::Trace(visitor);
+  ExecutionContextLifecycleStateObserver::Trace(visitor);
   visitor->Trace(callback_collection_);
   visitor->Trace(event_queue_);
   visitor->Trace(media_query_list_listeners_);

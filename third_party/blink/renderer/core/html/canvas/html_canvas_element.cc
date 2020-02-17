@@ -108,7 +108,7 @@ constexpr int kMinimumAccelerated2dCanvasSize = 128 * 129;
 
 HTMLCanvasElement::HTMLCanvasElement(Document& document)
     : HTMLElement(html_names::kCanvasTag, document),
-      ContextLifecycleObserver(&document),
+      ExecutionContextLifecycleObserver(&document),
       PageVisibilityObserver(document.GetPage()),
       CanvasRenderingContextHost(
           CanvasRenderingContextHost::HostType::kCanvasHost),
@@ -1152,7 +1152,7 @@ void HTMLCanvasElement::NotifyGpuContextLost() {
 void HTMLCanvasElement::Trace(Visitor* visitor) {
   visitor->Trace(listeners_);
   visitor->Trace(context_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
   HTMLElement::Trace(visitor);
 }

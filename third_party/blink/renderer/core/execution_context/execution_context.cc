@@ -37,7 +37,7 @@
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/events/error_event.h"
 #include "third_party/blink/renderer/core/execution_context/agent.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/execution_context/security_context_init.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/csp/execution_context_csp_delegate.h"
@@ -103,12 +103,12 @@ void ExecutionContext::SetLifecycleState(mojom::FrameLifecycleState state) {
   DCHECK(lifecycle_state_ != state);
   lifecycle_state_ = state;
   context_lifecycle_observer_list_.ForEachObserver(
-      [&](ContextLifecycleObserver* observer) {
+      [&](ExecutionContextLifecycleObserver* observer) {
         if (observer->ObserverType() !=
-            ContextLifecycleObserver::kStateObjectType)
+            ExecutionContextLifecycleObserver::kStateObjectType)
           return;
-        ContextLifecycleStateObserver* state_observer =
-            static_cast<ContextLifecycleStateObserver*>(observer);
+        ExecutionContextLifecycleStateObserver* state_observer =
+            static_cast<ExecutionContextLifecycleStateObserver*>(observer);
 #if DCHECK_IS_ON()
         DCHECK_EQ(state_observer->GetExecutionContext(), this);
         DCHECK(state_observer->UpdateStateIfNeededCalled());
@@ -120,7 +120,7 @@ void ExecutionContext::SetLifecycleState(mojom::FrameLifecycleState state) {
 void ExecutionContext::NotifyContextDestroyed() {
   is_context_destroyed_ = true;
   context_lifecycle_observer_list_.ForEachObserver(
-      [](ContextLifecycleObserver* observer) {
+      [](ExecutionContextLifecycleObserver* observer) {
         observer->ContextDestroyed();
         observer->ObserverListWillBeCleared();
       });
@@ -132,9 +132,9 @@ unsigned ExecutionContext::ContextLifecycleStateObserverCountForTesting()
   DCHECK(!context_lifecycle_observer_list_.IsIteratingOverObservers());
   unsigned lifecycle_state_observers = 0;
   context_lifecycle_observer_list_.ForEachObserver(
-      [&](ContextLifecycleObserver* observer) {
+      [&](ExecutionContextLifecycleObserver* observer) {
         if (observer->ObserverType() !=
-            ContextLifecycleObserver::kStateObjectType)
+            ExecutionContextLifecycleObserver::kStateObjectType)
           return;
         lifecycle_state_observers++;
       });
@@ -410,9 +410,9 @@ bool ExecutionContext::IsFeatureEnabled(
     CountPotentialFeaturePolicyViolation(feature);
   }
 
-  bool should_report;
+  base::Optional<mojom::FeaturePolicyDisposition> disposition;
   bool enabled = GetSecurityContext().IsFeatureEnabled(feature, threshold_value,
-                                                       &should_report);
+                                                       &disposition);
 
   if (enabled) {
     // Report if the proposed header semantics change would have affected the
@@ -429,13 +429,8 @@ bool ExecutionContext::IsFeatureEnabled(
     }
   }
 
-  if (should_report && report_on_failure == ReportOptions::kReportOnFailure) {
-    mojom::blink::FeaturePolicyDisposition disposition =
-        enabled ? mojom::blink::FeaturePolicyDisposition::kReport
-                : mojom::blink::FeaturePolicyDisposition::kEnforce;
-    ReportFeaturePolicyViolation(feature, disposition, message, source_file);
-  }
-
+  if (disposition && report_on_failure == ReportOptions::kReportOnFailure)
+    ReportFeaturePolicyViolation(feature, *disposition, message, source_file);
   return enabled;
 }
 

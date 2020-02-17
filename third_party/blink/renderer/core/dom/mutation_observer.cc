@@ -108,7 +108,8 @@ MutationObserver* MutationObserver::Create(ScriptState* script_state,
 
 MutationObserver::MutationObserver(ExecutionContext* execution_context,
                                    Delegate* delegate)
-    : ContextLifecycleStateObserver(execution_context), delegate_(delegate) {
+    : ExecutionContextLifecycleStateObserver(execution_context),
+      delegate_(delegate) {
   priority_ = g_observer_priority++;
   UpdateStateIfNeeded();
 }
@@ -346,7 +347,7 @@ void MutationObserver::Trace(Visitor* visitor) {
   visitor->Trace(records_);
   visitor->Trace(registrations_);
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleStateObserver::Trace(visitor);
+  ExecutionContextLifecycleStateObserver::Trace(visitor);
 }
 
 }  // namespace blink

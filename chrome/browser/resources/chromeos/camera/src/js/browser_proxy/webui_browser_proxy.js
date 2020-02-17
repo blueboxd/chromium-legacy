@@ -102,6 +102,12 @@ class WebUIBrowserProxy {
   addOnLockChangeListener(callback) {
     NOTIMPLEMENTED();
   }
+
+  /** @override */
+  async isCrashReportingEnabled() {
+    NOTIMPLEMENTED();
+    return false;
+  }
 }
 
 export const browserProxy = new WebUIBrowserProxy();

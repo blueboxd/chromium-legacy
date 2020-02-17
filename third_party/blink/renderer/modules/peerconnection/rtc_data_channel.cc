@@ -213,7 +213,7 @@ RTCDataChannel::RTCDataChannel(
     ExecutionContext* context,
     scoped_refptr<webrtc::DataChannelInterface> channel,
     RTCPeerConnectionHandlerPlatform* peer_connection_handler)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       state_(webrtc::DataChannelInterface::kConnecting),
       binary_type_(kBinaryTypeArrayBuffer),
       scheduled_event_timer_(context->GetTaskRunner(TaskType::kNetworking),
@@ -445,7 +445,7 @@ const AtomicString& RTCDataChannel::InterfaceName() const {
 }
 
 ExecutionContext* RTCDataChannel::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 void RTCDataChannel::ContextDestroyed() {
@@ -496,7 +496,7 @@ bool RTCDataChannel::HasPendingActivity() const {
 void RTCDataChannel::Trace(Visitor* visitor) {
   visitor->Trace(scheduled_events_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void RTCDataChannel::OnStateChange(

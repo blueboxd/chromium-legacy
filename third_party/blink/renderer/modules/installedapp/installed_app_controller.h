@@ -15,7 +15,7 @@
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_related_application.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -31,7 +31,7 @@ using AppInstalledCallbacks =
 class MODULES_EXPORT InstalledAppController final
     : public GarbageCollected<InstalledAppController>,
       public Supplement<LocalFrame>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(InstalledAppController);
 
  public:
@@ -60,7 +60,7 @@ class MODULES_EXPORT InstalledAppController final
       const KURL& url,
       mojom::blink::ManifestPtr manifest);
 
-  // Inherited from ContextLifecycleObserver.
+  // Inherited from ExecutionContextLifecycleObserver.
   void ContextDestroyed() override;
 
   // Callback from the InstalledAppProvider mojo service.

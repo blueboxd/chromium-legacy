@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_file_writer.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view_or_blob_or_usv_string.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/streams/underlying_sink_base.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
@@ -18,8 +18,9 @@ class ExceptionState;
 class ScriptPromiseResolver;
 class WriteParams;
 
-class NativeFileSystemUnderlyingSink final : public UnderlyingSinkBase,
-                                             public ContextLifecycleObserver {
+class NativeFileSystemUnderlyingSink final
+    : public UnderlyingSinkBase,
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(NativeFileSystemUnderlyingSink);
 
  public:

@@ -12,7 +12,7 @@
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom-blink.h"
 #include "third_party/blink/public/web/web_manifest_manager.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -30,10 +30,11 @@ class ResourceResponse;
 // the ManifestParser in order to do so.
 //
 // Consumers should use the mojo ManifestManager interface to use this class.
-class MODULES_EXPORT ManifestManager : public GarbageCollected<ManifestManager>,
-                                       public Supplement<LocalFrame>,
-                                       public mojom::blink::ManifestManager,
-                                       public ContextLifecycleObserver {
+class MODULES_EXPORT ManifestManager
+    : public GarbageCollected<ManifestManager>,
+      public Supplement<LocalFrame>,
+      public mojom::blink::ManifestManager,
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ManifestManager);
   USING_PRE_FINALIZER(ManifestManager, Prefinalize);
 
@@ -71,7 +72,7 @@ class MODULES_EXPORT ManifestManager : public GarbageCollected<ManifestManager>,
                               const mojom::blink::ManifestPtr&,
                               const mojom::blink::ManifestDebugInfo*)>;
 
-  // From ContextLifecycleObserver
+  // From ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
   void RequestManifestImpl(InternalRequestManifestCallback callback);

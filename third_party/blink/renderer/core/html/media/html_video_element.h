@@ -230,7 +230,7 @@ class CORE_EXPORT HTMLVideoElement final
   friend class HTMLVideoElementPersistentTest;
   friend class VideoFillingViewportTest;
 
-  // ContextLifecycleStateObserver functions.
+  // ExecutionContextLifecycleStateObserver functions.
   void ContextDestroyed() final;
 
   bool LayoutObjectIsNeeded(const ComputedStyle&) const override;

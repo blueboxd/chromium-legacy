@@ -9,7 +9,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/feature_observer/feature_observer.mojom-blink.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom-blink.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -22,7 +22,8 @@ class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
 
-class Lock final : public ScriptWrappable, public ContextLifecycleObserver {
+class Lock final : public ScriptWrappable,
+                   public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Lock);
   USING_PRE_FINALIZER(Lock, Dispose);
@@ -43,7 +44,7 @@ class Lock final : public ScriptWrappable, public ContextLifecycleObserver {
   String name() const { return name_; }
   String mode() const;
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
   // The lock is held until the passed promise resolves. When it is released,

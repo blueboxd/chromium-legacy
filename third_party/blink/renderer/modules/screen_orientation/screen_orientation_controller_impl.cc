@@ -37,7 +37,7 @@ ScreenOrientationControllerImpl* ScreenOrientationControllerImpl::From(
 ScreenOrientationControllerImpl::ScreenOrientationControllerImpl(
     LocalFrame& frame)
     : ScreenOrientationController(frame),
-      ContextLifecycleObserver(frame.GetDocument()),
+      ExecutionContextLifecycleObserver(frame.GetDocument()),
       PageVisibilityObserver(frame.GetPage()) {
   AssociatedInterfaceProvider* provider =
       frame.GetRemoteNavigationAssociatedInterfaces();
@@ -221,7 +221,7 @@ void ScreenOrientationControllerImpl::ContextDestroyed() {
 
 void ScreenOrientationControllerImpl::Trace(Visitor* visitor) {
   visitor->Trace(orientation_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
   Supplement<LocalFrame>::Trace(visitor);
 }

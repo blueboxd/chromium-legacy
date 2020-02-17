@@ -65,6 +65,10 @@ class LoginTestBase : public AshTestBase {
   // Changes the active number of users. Fires an event on |DataDispatcher()|.
   void AddChildUsers(size_t num_users);
 
+  // Removes user specified by |account_id| from users(). Fires an event on
+  // |DataDispatcher()|
+  void RemoveUser(const AccountId& account_id);
+
   std::vector<LoginUserInfo>& users() { return users_; }
 
   const std::vector<LoginUserInfo>& users() const { return users_; }

@@ -426,7 +426,7 @@ UserMediaRequest::UserMediaRequest(ExecutionContext* context,
                                    MediaConstraints audio,
                                    MediaConstraints video,
                                    Callbacks* callbacks)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       media_type_(media_type),
       audio_(audio),
       video_(video),
@@ -621,7 +621,7 @@ void UserMediaRequest::ContextDestroyed() {
 void UserMediaRequest::Trace(Visitor* visitor) {
   visitor->Trace(controller_);
   visitor->Trace(callbacks_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

@@ -340,7 +340,7 @@ class SimpleResultPromise : public ContentDecryptionModuleResultPromise {
 MediaKeySession::MediaKeySession(ScriptState* script_state,
                                  MediaKeys* media_keys,
                                  WebEncryptedMediaSessionType session_type)
-    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
+    : ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)),
       async_event_queue_(
           MakeGarbageCollected<EventQueue>(GetExecutionContext(),
                                            TaskType::kMediaElementEvent)),
@@ -1011,7 +1011,7 @@ const AtomicString& MediaKeySession::InterfaceName() const {
 }
 
 ExecutionContext* MediaKeySession::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 bool MediaKeySession::HasPendingActivity() const {
@@ -1047,7 +1047,7 @@ void MediaKeySession::Trace(Visitor* visitor) {
   visitor->Trace(key_statuses_map_);
   visitor->Trace(closed_promise_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

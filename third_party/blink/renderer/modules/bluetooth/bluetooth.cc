@@ -362,7 +362,8 @@ ScriptPromise Bluetooth::requestLEScan(ScriptState* script_state,
 }
 
 void Bluetooth::ScanEvent(mojom::blink::WebBluetoothScanResultPtr result) {
-  ExecutionContext* context = ContextLifecycleObserver::GetExecutionContext();
+  ExecutionContext* context =
+      ExecutionContextLifecycleObserver::GetExecutionContext();
   DCHECK(context);
 
   BluetoothDevice* bluetooth_device =
@@ -415,7 +416,7 @@ const WTF::AtomicString& Bluetooth::InterfaceName() const {
 }
 
 ExecutionContext* Bluetooth::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 void Bluetooth::ContextDestroyed() {
@@ -425,12 +426,12 @@ void Bluetooth::ContextDestroyed() {
 void Bluetooth::Trace(Visitor* visitor) {
   visitor->Trace(device_instance_map_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
 }
 
 Bluetooth::Bluetooth(ExecutionContext* context)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       PageVisibilityObserver(Document::From(context)->GetPage()) {}
 
 Bluetooth::~Bluetooth() {

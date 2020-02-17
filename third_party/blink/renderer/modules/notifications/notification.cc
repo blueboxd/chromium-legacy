@@ -161,7 +161,7 @@ Notification* Notification::Create(ExecutionContext* context,
 Notification::Notification(ExecutionContext* context,
                            Type type,
                            mojom::blink::NotificationDataPtr data)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       type_(type),
       state_(State::kLoading),
       data_(std::move(data)),
@@ -501,7 +501,7 @@ void Notification::Trace(Visitor* visitor) {
   visitor->Trace(show_trigger_);
   visitor->Trace(loader_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

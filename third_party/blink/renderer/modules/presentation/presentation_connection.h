@@ -12,7 +12,7 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -34,7 +34,7 @@ class PresentationRequest;
 class WebString;
 
 class PresentationConnection : public EventTargetWithInlineData,
-                               public ContextLifecycleStateObserver,
+                               public ExecutionContextLifecycleStateObserver,
                                public mojom::blink::PresentationConnection {
   USING_GARBAGE_COLLECTED_MIXIN(PresentationConnection);
   DEFINE_WRAPPERTYPEINFO();
@@ -96,10 +96,10 @@ class PresentationConnection : public EventTargetWithInlineData,
   void AddedEventListener(const AtomicString& event_type,
                           RegisteredEventListener&) override;
 
-  // ContextLifecycleObserver implementation.
+  // ExecutionContextLifecycleObserver implementation.
   void ContextDestroyed() override;
 
-  // ContextLifecycleStateObserver implementation.
+  // ExecutionContextLifecycleStateObserver implementation.
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState state) override;
 
   String id_;

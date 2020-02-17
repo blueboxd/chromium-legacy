@@ -49,7 +49,7 @@ enum class TypingContinuation;
 
 class CORE_EXPORT InputMethodController final
     : public GarbageCollected<InputMethodController>,
-      ContextLifecycleObserver {
+      ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(InputMethodController);
 
  public:
@@ -191,7 +191,7 @@ class CORE_EXPORT InputMethodController final
   ui::TextInputAction InputActionOfFocusedElement() const;
   WebTextInputMode InputModeOfFocusedElement() const;
 
-  // Implements |ContextLifecycleObserver|.
+  // Implements |ExecutionContextLifecycleObserver|.
   void ContextDestroyed() final;
 
   enum class TypingContinuation;

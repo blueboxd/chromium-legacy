@@ -30,7 +30,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/document_parser_client.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request_event_target.h"
@@ -72,7 +72,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
                              public ThreadableLoaderClient,
                              public DocumentParserClient,
                              public ActiveScriptWrappable<XMLHttpRequest>,
-                             public ContextLifecycleObserver {
+                             public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(XMLHttpRequest);
 
@@ -104,7 +104,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
     kResponseTypeArrayBuffer,
   };
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
   ExecutionContext* GetExecutionContext() const override;
 

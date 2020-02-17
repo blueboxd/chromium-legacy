@@ -87,7 +87,7 @@ GPU* GPU::Create(ExecutionContext& execution_context) {
 
 GPU::GPU(ExecutionContext& execution_context,
          std::unique_ptr<WebGraphicsContext3DProvider> context_provider)
-    : ContextLifecycleObserver(&execution_context),
+    : ExecutionContextLifecycleObserver(&execution_context),
       dawn_control_client_(base::MakeRefCounted<DawnControlClientHolder>(
           std::move(context_provider))) {}
 
@@ -95,7 +95,7 @@ GPU::~GPU() = default;
 
 void GPU::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void GPU::ContextDestroyed() {

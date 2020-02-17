@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/modules/clipboard/clipboard_item.h"
 
@@ -19,7 +19,7 @@ namespace blink {
 class ScriptState;
 
 class Clipboard : public EventTargetWithInlineData,
-                  public ContextLifecycleObserver {
+                  public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(Clipboard);
   DEFINE_WRAPPERTYPEINFO();
 

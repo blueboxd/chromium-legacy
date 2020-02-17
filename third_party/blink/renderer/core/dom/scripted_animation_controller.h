@@ -28,7 +28,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -45,7 +45,7 @@ class MediaQueryListListener;
 
 class CORE_EXPORT ScriptedAnimationController
     : public GarbageCollected<ScriptedAnimationController>,
-      public ContextLifecycleStateObserver,
+      public ExecutionContextLifecycleStateObserver,
       public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptedAnimationController);
 

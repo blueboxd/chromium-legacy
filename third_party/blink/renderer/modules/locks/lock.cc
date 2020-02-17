@@ -67,7 +67,7 @@ Lock::Lock(ScriptState* script_state,
            mojo::PendingAssociatedRemote<mojom::blink::LockHandle> handle,
            mojo::PendingRemote<mojom::blink::ObservedFeature> lock_lifetime,
            LockManager* manager)
-    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
+    : ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)),
       name_(name),
       mode_(mode),
       handle_(std::move(handle)),
@@ -125,7 +125,7 @@ void Lock::ContextDestroyed() {
 }
 
 void Lock::Trace(Visitor* visitor) {
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   ScriptWrappable::Trace(visitor);
   visitor->Trace(resolver_);
   visitor->Trace(manager_);

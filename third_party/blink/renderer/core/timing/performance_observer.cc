@@ -81,7 +81,7 @@ PerformanceObserver::PerformanceObserver(
     ExecutionContext* execution_context,
     Performance* performance,
     V8PerformanceObserverCallback* callback)
-    : ContextLifecycleStateObserver(execution_context),
+    : ExecutionContextLifecycleStateObserver(execution_context),
       callback_(callback),
       performance_(performance),
       filter_options_(PerformanceEntry::kInvalid),
@@ -267,7 +267,7 @@ void PerformanceObserver::Trace(Visitor* visitor) {
   visitor->Trace(performance_);
   visitor->Trace(performance_entries_);
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleStateObserver::Trace(visitor);
+  ExecutionContextLifecycleStateObserver::Trace(visitor);
 }
 
 }  // namespace blink

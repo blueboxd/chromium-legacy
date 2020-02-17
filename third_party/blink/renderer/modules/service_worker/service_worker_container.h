@@ -41,7 +41,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_registration_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/service_worker/message_from_service_worker.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker.h"
@@ -59,7 +59,7 @@ class ExceptionState;
 class MODULES_EXPORT ServiceWorkerContainer final
     : public EventTargetWithInlineData,
       public Supplement<Document>,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public WebServiceWorkerProviderClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerContainer);

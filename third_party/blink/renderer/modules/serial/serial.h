@@ -9,7 +9,7 @@
 #include "third_party/blink/public/mojom/serial/serial.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -24,7 +24,7 @@ class SerialPort;
 class SerialPortRequestOptions;
 
 class Serial final : public EventTargetWithInlineData,
-                     public ContextLifecycleObserver {
+                     public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Serial);
 
@@ -35,7 +35,7 @@ class Serial final : public EventTargetWithInlineData,
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
   // Web-exposed interfaces

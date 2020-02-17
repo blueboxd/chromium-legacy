@@ -156,7 +156,7 @@ void PausableScriptExecutor::CreateAndRun(
 }
 
 void PausableScriptExecutor::ContextDestroyed() {
-  ContextLifecycleObserver::ContextDestroyed();
+  ExecutionContextLifecycleObserver::ContextDestroyed();
 
   if (callback_) {
     // Though the context is (about to be) destroyed, the callback is invoked
@@ -188,7 +188,7 @@ PausableScriptExecutor::PausableScriptExecutor(
     ScriptState* script_state,
     WebScriptExecutionCallback* callback,
     Executor* executor)
-    : ContextLifecycleObserver(frame->GetDocument()),
+    : ExecutionContextLifecycleObserver(frame->GetDocument()),
       script_state_(script_state),
       callback_(callback),
       blocking_option_(kNonBlocking),
@@ -250,7 +250,7 @@ void PausableScriptExecutor::ExecuteAndDestroySelf() {
 }
 
 void PausableScriptExecutor::Dispose() {
-  // Remove object as a ContextLifecycleObserver.
+  // Remove object as a ExecutionContextLifecycleObserver.
   // TODO(keishi): Remove IsIteratingOverObservers() check when
   // HeapObserverList() supports removal while iterating.
   if (!GetExecutionContext()
@@ -264,7 +264,7 @@ void PausableScriptExecutor::Dispose() {
 void PausableScriptExecutor::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(executor_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

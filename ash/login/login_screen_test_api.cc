@@ -218,4 +218,25 @@ bool LoginScreenTestApi::WaitForUiUpdate(int64_t previous_update_count) {
   return false;
 }
 
+int LoginScreenTestApi::GetUsersCount() {
+  LockScreen::TestApi lock_screen_test(LockScreen::Get());
+  LockContentsView::TestApi lock_contents_test(
+      lock_screen_test.contents_view());
+  return lock_contents_test.users().size();
+}
+
+bool LoginScreenTestApi::RemoveUser(const AccountId& account_id) {
+  LockScreen::TestApi lock_screen_test(LockScreen::Get());
+  LockContentsView::TestApi lock_contents_test(
+      lock_screen_test.contents_view());
+  return lock_contents_test.RemoveUser(account_id);
+}
+
+bool LoginScreenTestApi::IsOobeDialogVisible() {
+  LockScreen::TestApi lock_screen_test(LockScreen::Get());
+  LockContentsView::TestApi lock_contents_test(
+      lock_screen_test.contents_view());
+  return lock_contents_test.IsOobeDialogVisible();
+}
+
 }  // namespace ash

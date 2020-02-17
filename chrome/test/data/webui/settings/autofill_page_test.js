@@ -82,8 +82,10 @@ cr.define('settings_autofill_page', function() {
       const expected = new PasswordManagerExpectations();
       expected.requested.passwords = 1;
       expected.requested.exceptions = 1;
+      expected.requested.accountStorageOptInState = 1;
       expected.listening.passwords = 1;
       expected.listening.exceptions = 1;
+      expected.listening.accountStorageOptInState = 1;
       return expected;
     }
 
@@ -151,6 +153,7 @@ cr.define('settings_autofill_page', function() {
 
         passwordsExpectations.listening.passwords = 0;
         passwordsExpectations.listening.exceptions = 0;
+        passwordsExpectations.listening.accountStorageOptInState = 0;
         passwordManager.assertExpectations(passwordsExpectations);
 
         autofillExpectations.listeningAddresses = 0;

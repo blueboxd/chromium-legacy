@@ -40,7 +40,7 @@ DOMScheduler* DOMScheduler::From(Document& document) {
 }
 
 DOMScheduler::DOMScheduler(Document* document)
-    : ContextLifecycleObserver(document) {
+    : ExecutionContextLifecycleObserver(document) {
   if (document->IsContextDestroyed())
     return;
   DCHECK(document->GetScheduler());
@@ -54,7 +54,7 @@ void DOMScheduler::ContextDestroyed() {
 
 void DOMScheduler::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   Supplement<Document>::Trace(visitor);
 }
 

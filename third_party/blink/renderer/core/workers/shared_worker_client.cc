@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/workers/shared_worker.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
@@ -41,8 +42,14 @@ void SharedWorkerClient::OnConnected(
     OnFeatureUsed(feature);
 }
 
-void SharedWorkerClient::OnScriptLoadFailed() {
+void SharedWorkerClient::OnScriptLoadFailed(const String& error_message) {
   worker_->SetIsBeingConnected(false);
+  if (!error_message.IsEmpty()) {
+    worker_->GetExecutionContext()->AddConsoleMessage(
+        MakeGarbageCollected<ConsoleMessage>(
+            mojom::blink::ConsoleMessageSource::kWorker,
+            mojom::blink::ConsoleMessageLevel::kError, error_message));
+  }
   worker_->DispatchEvent(*Event::CreateCancelable(event_type_names::kError));
   // |this| can be destroyed at this point, for example, when a frame hosting
   // this shared worker is detached in the error handler, and closes mojo's

@@ -407,14 +407,14 @@ void PictureInPictureControllerImpl::Trace(Visitor* visitor) {
   visitor->Trace(picture_in_picture_window_);
   PictureInPictureController::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 PictureInPictureControllerImpl::PictureInPictureControllerImpl(
     Document& document)
     : PictureInPictureController(document),
       PageVisibilityObserver(document.GetPage()),
-      ContextLifecycleObserver(&document),
+      ExecutionContextLifecycleObserver(&document),
       session_observer_receiver_(this) {}
 
 bool PictureInPictureControllerImpl::EnsureService() {

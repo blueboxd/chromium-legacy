@@ -198,7 +198,7 @@ FileReader* FileReader::Create(ExecutionContext* context) {
 }
 
 FileReader::FileReader(ExecutionContext* context)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       state_(kEmpty),
       loading_state_(kLoadingStateNone),
       still_firing_events_(false),
@@ -479,7 +479,7 @@ void FileReader::FireEvent(const AtomicString& type) {
 void FileReader::Trace(Visitor* visitor) {
   visitor->Trace(error_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

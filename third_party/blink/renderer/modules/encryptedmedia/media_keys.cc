@@ -205,7 +205,7 @@ MediaKeys::MediaKeys(
     ExecutionContext* context,
     const WebVector<WebEncryptedMediaSessionType>& supported_session_types,
     std::unique_ptr<WebContentDecryptionModule> cdm)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       supported_session_types_(supported_session_types),
       cdm_(std::move(cdm)),
       media_element_(nullptr),
@@ -427,7 +427,7 @@ void MediaKeys::Trace(Visitor* visitor) {
   visitor->Trace(pending_actions_);
   visitor->Trace(media_element_);
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void MediaKeys::ContextDestroyed() {
@@ -435,7 +435,7 @@ void MediaKeys::ContextDestroyed() {
   pending_actions_.clear();
 
   // We don't need the CDM anymore. Only destroyed after all related
-  // ContextLifecycleObservers have been stopped.
+  // ExecutionContextLifecycleObservers have been stopped.
   cdm_.reset();
 }
 

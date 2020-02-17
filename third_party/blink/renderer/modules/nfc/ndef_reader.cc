@@ -49,7 +49,7 @@ NDEFReader* NDEFReader::Create(ExecutionContext* context) {
 }
 
 NDEFReader::NDEFReader(ExecutionContext* context)
-    : ContextLifecycleObserver(context) {
+    : ExecutionContextLifecycleObserver(context) {
   // Call GetNFCProxy to create a proxy. This guarantees no allocation will
   // be needed when calling HasPendingActivity later during gc tracing.
   GetNfcProxy();
@@ -62,7 +62,7 @@ const AtomicString& NDEFReader::InterfaceName() const {
 }
 
 ExecutionContext* NDEFReader::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 bool NDEFReader::HasPendingActivity() const {
@@ -158,7 +158,7 @@ void NDEFReader::Trace(Visitor* visitor) {
   visitor->Trace(resolver_);
   EventTargetWithInlineData::Trace(visitor);
   ActiveScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void NDEFReader::OnReading(const String& serial_number,

@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SCHEDULER_DOM_TASK_SIGNAL_H_
 
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_priority.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -19,8 +19,9 @@ namespace blink {
 class Document;
 class WebSchedulingTaskQueue;
 
-class MODULES_EXPORT DOMTaskSignal final : public AbortSignal,
-                                           public ContextLifecycleObserver {
+class MODULES_EXPORT DOMTaskSignal final
+    : public AbortSignal,
+      public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DOMTaskSignal);
 

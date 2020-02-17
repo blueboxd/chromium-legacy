@@ -157,7 +157,7 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
                              MediaStream* stream,
                              const MediaRecorderOptions* options,
                              ExceptionState& exception_state)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       stream_(stream),
       mime_type_(options->mimeType()),
       stopped_(true),
@@ -334,7 +334,7 @@ const AtomicString& MediaRecorder::InterfaceName() const {
 }
 
 ExecutionContext* MediaRecorder::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 void MediaRecorder::ContextDestroyed() {
@@ -453,7 +453,7 @@ void MediaRecorder::Trace(Visitor* visitor) {
   visitor->Trace(recorder_handler_);
   visitor->Trace(scheduled_events_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

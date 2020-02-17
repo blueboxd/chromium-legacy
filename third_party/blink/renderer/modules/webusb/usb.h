@@ -12,8 +12,8 @@
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -27,7 +27,7 @@ class USBDevice;
 class USBDeviceRequestOptions;
 
 class USB final : public EventTargetWithInlineData,
-                  public ContextLifecycleObserver,
+                  public ExecutionContextLifecycleObserver,
                   public device::mojom::blink::UsbDeviceManagerClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(USB);
@@ -51,7 +51,7 @@ class USB final : public EventTargetWithInlineData,
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
 
-  // ContextLifecycleObserver overrides.
+  // ExecutionContextLifecycleObserver overrides.
   void ContextDestroyed() override;
 
   USBDevice* GetOrCreateDevice(device::mojom::blink::UsbDeviceInfoPtr);

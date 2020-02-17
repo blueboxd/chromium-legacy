@@ -50,7 +50,7 @@ void ManifestManager::ProvideTo(LocalFrame& frame) {
 
 ManifestManager::ManifestManager(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
-      ContextLifecycleObserver(frame.GetDocument()),
+      ExecutionContextLifecycleObserver(frame.GetDocument()),
       may_have_manifest_(false),
       manifest_dirty_(true) {
   if (frame.IsMainFrame()) {
@@ -279,7 +279,7 @@ void ManifestManager::Trace(Visitor* visitor) {
   visitor->Trace(fetcher_);
   visitor->Trace(manifest_change_notifier_);
   Supplement<LocalFrame>::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

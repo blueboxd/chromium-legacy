@@ -300,8 +300,10 @@ class ClientTagBasedModelTypeProcessorTest : public ::testing::Test {
     return;
   }
 
-  ProcessorEntity* GetEntityForStorageKey(const std::string& storage_key) {
-    return type_processor()->GetEntityForStorageKey(storage_key);
+  const ProcessorEntity* GetEntityForStorageKey(
+      const std::string& storage_key) {
+    return type_processor()->entity_tracker_->GetEntityForStorageKey(
+        storage_key);
   }
 
   void ResetState(bool keep_db) {

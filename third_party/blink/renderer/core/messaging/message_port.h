@@ -39,7 +39,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -53,7 +53,7 @@ class ScriptState;
 class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
                                 public mojo::MessageReceiver,
                                 public ActiveScriptWrappable<MessagePort>,
-                                public ContextLifecycleObserver {
+                                public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MessagePort);
 
@@ -93,14 +93,14 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
 
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override {
-    return ContextLifecycleObserver::GetExecutionContext();
+    return ExecutionContextLifecycleObserver::GetExecutionContext();
   }
   MessagePort* ToMessagePort() override { return this; }
 
   // ScriptWrappable implementation.
   bool HasPendingActivity() const final;
 
-  // ContextLifecycleObserver implementation.
+  // ExecutionContextLifecycleObserver implementation.
   void ContextDestroyed() override { close(); }
 
   void setOnmessage(EventListener* listener) {

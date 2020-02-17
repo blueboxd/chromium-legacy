@@ -8,7 +8,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "third_party/blink/public/mojom/bluetooth/web_bluetooth.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_data_view.h"
 #include "third_party/blink/renderer/modules/bluetooth/bluetooth_remote_gatt_service.h"
@@ -37,7 +37,7 @@ class ScriptState;
 class BluetoothRemoteGATTCharacteristic final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<BluetoothRemoteGATTCharacteristic>,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public mojom::blink::WebBluetoothCharacteristicClient {
   USING_PRE_FINALIZER(BluetoothRemoteGATTCharacteristic, Dispose);
   DEFINE_WRAPPERTYPEINFO();
@@ -57,7 +57,7 @@ class BluetoothRemoteGATTCharacteristic final
   void RemoteCharacteristicValueChanged(
       const WTF::Vector<uint8_t>& value) override;
 
-  // ContextLifecycleObserver interface.
+  // ExecutionContextLifecycleObserver interface.
   void ContextDestroyed() override;
 
   // USING_PRE_FINALIZER interface.

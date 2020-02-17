@@ -24,8 +24,8 @@
  *
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_CONTEXT_LIFECYCLE_OBSERVER_H_
-#define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_CONTEXT_LIFECYCLE_OBSERVER_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_EXECUTION_CONTEXT_LIFECYCLE_OBSERVER_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_EXECUTION_CONTEXT_LIFECYCLE_OBSERVER_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/lifecycle_observer.h"
@@ -37,8 +37,8 @@ class Document;
 class LocalDOMWindow;
 class LocalFrame;
 
-// ContextClient and ContextLifecycleObserver are helpers to associate an
-// object with an ExecutionContext. It is unsafe to access an associated GC
+// ContextClient and ExecutionContextLifecycleObserver are helpers to associate
+// an object with an ExecutionContext. It is unsafe to access an associated GC
 // object, *including via GetExecutionContext()*, in the destructor of a GC
 // object.
 //
@@ -53,9 +53,9 @@ class LocalFrame;
 //   perform, such as halting activity or disconnecting from longer-lived
 //   objects, it should be a PausableObject.
 // * If an object additionally must suspend its activity during pause (see
-//   context_lifecycle_state_observer.h), it should be a
-//   ContextLifecycleStateObserver (and thus, transitively, also a
-//   ContextLifecycleObserver).
+//   execution_context_lifecycle_state_observer.h), it should be a
+//   ExecutionContextLifecycleStateObserver (and thus, transitively, also a
+//   ExecutionContextLifecycleObserver).
 //
 // If your object has activity which requires that it be kept alive, even if no
 // other object has a reference to it, consider whether your object should also
@@ -86,9 +86,9 @@ class CORE_EXPORT ContextClient : public GarbageCollectedMixin {
   WeakMember<ExecutionContext> execution_context_;
 };
 
-// ContextLifecycleObserver provides an additional ContextDestroyed() hook
-// to execute cleanup code when a context is shut down (e.g. for a document,
-// at navigation or frame detach -- not when its destructor runs).
+// ExecutionContextLifecycleObserver provides an additional ContextDestroyed()
+// hook to execute cleanup code when a context is shut down (e.g. for a
+// document, at navigation or frame detach -- not when its destructor runs).
 //
 // Execution context associated objects which have ongoing activity,
 // registration with objects which outlive the context, or resources which
@@ -98,10 +98,11 @@ class CORE_EXPORT ContextClient : public GarbageCollectedMixin {
 //
 // If there is ongoing activity associated with the object, consider whether it
 // needs to be paused when execution is suspended (see
-// ContextLifecycleStateObserver).
+// ExecutionContextLifecycleStateObserver).
 //
 // If none of the above applies, prefer the simpler ContextClient.
-class CORE_EXPORT ContextLifecycleObserver : public GarbageCollectedMixin {
+class CORE_EXPORT ExecutionContextLifecycleObserver
+    : public GarbageCollectedMixin {
  public:
   virtual void ContextDestroyed() {}
 
@@ -127,13 +128,15 @@ class CORE_EXPORT ContextLifecycleObserver : public GarbageCollectedMixin {
   void Trace(Visitor*) override;
 
  protected:
-  ContextLifecycleObserver();
+  ExecutionContextLifecycleObserver();
   // TODO(crbug.com/1029822): This is a shim to enable migrating
   // ExecutionContext to LocalDOMWindow.
-  explicit ContextLifecycleObserver(Document*, Type type = kGenericType);
+  explicit ExecutionContextLifecycleObserver(Document*,
+                                             Type type = kGenericType);
 
-  explicit ContextLifecycleObserver(ExecutionContext* execution_context,
-                                    Type type = kGenericType);
+  explicit ExecutionContextLifecycleObserver(
+      ExecutionContext* execution_context,
+      Type type = kGenericType);
 
  private:
   Type observer_type_;
@@ -150,10 +153,10 @@ class CORE_EXPORT ContextLifecycleObserver : public GarbageCollectedMixin {
 // call upon in a destructor.
 //
 // If the object is a per-ExecutionContext thing, use ContextClient/
-// ContextLifecycleObserver. If the object is a per-DOMWindow thing, use
-// DOMWindowClient. Basically, DOMWindowClient is expected to be used (only)
+// ExecutionContextLifecycleObserver. If the object is a per-DOMWindow thing,
+// use DOMWindowClient. Basically, DOMWindowClient is expected to be used (only)
 // for objects directly held by LocalDOMWindow. Other objects should use
-// ContextClient/ContextLifecycleObserver.
+// ContextClient/ExecutionContextLifecycleObserver.
 //
 // There is a subtle difference between the timing when the context gets
 // detached and the timing when the window gets detached. In common cases,
@@ -179,4 +182,4 @@ class CORE_EXPORT DOMWindowClient : public GarbageCollectedMixin {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_CONTEXT_LIFECYCLE_OBSERVER_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_EXECUTION_CONTEXT_LIFECYCLE_OBSERVER_H_

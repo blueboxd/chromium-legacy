@@ -207,7 +207,7 @@ class LockManager::LockRequestImpl final
 };
 
 LockManager::LockManager(ExecutionContext* context)
-    : ContextLifecycleObserver(context) {}
+    : ExecutionContextLifecycleObserver(context) {}
 
 ScriptPromise LockManager::request(ScriptState* script_state,
                                    const String& name,
@@ -418,7 +418,7 @@ bool LockManager::IsPendingRequest(LockRequestImpl* request) {
 
 void LockManager::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(pending_requests_);
   visitor->Trace(held_locks_);
 }

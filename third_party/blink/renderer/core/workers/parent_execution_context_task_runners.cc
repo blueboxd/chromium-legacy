@@ -26,7 +26,7 @@ ParentExecutionContextTaskRunners* ParentExecutionContextTaskRunners::Create() {
 
 ParentExecutionContextTaskRunners::ParentExecutionContextTaskRunners(
     ExecutionContext* context)
-    : ContextLifecycleObserver(context) {
+    : ExecutionContextLifecycleObserver(context) {
   // For now we only support very limited task types. Sort in the TaskType enum
   // value order.
   for (auto type : {TaskType::kNetworking, TaskType::kPostedMessage,
@@ -46,7 +46,7 @@ ParentExecutionContextTaskRunners::Get(TaskType type) {
 }
 
 void ParentExecutionContextTaskRunners::Trace(Visitor* visitor) {
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void ParentExecutionContextTaskRunners::ContextDestroyed() {

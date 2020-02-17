@@ -49,11 +49,15 @@ class MenuListSelectType final : public SelectType {
                        bool should_update_popup) override;
   void UpdateTextStyle() override { UpdateTextStyleInternal(); }
   void UpdateTextStyleAndContent() override;
+  const ComputedStyle* OptionStyle() const override {
+    return option_style_.get();
+  }
 
  private:
   String UpdateTextStyleInternal();
   void DidUpdateActiveOption(HTMLOptionElement* option);
 
+  scoped_refptr<const ComputedStyle> option_style_;
   int ax_menulist_last_active_index_ = -1;
   bool has_updated_menulist_active_option_ = false;
 };
@@ -121,7 +125,7 @@ String MenuListSelectType::UpdateTextStyleInternal() {
       option_style = option->GetComputedStyle();
     }
   }
-  select_->option_style_ = option_style;
+  option_style_ = option_style;
 
   auto& inner_element = select_->InnerElement();
   const ComputedStyle* inner_style = inner_element.GetComputedStyle();
@@ -216,5 +220,10 @@ void SelectType::DidSelectOption(HTMLOptionElement*,
 void SelectType::UpdateTextStyle() {}
 
 void SelectType::UpdateTextStyleAndContent() {}
+
+const ComputedStyle* SelectType::OptionStyle() const {
+  NOTREACHED();
+  return nullptr;
+}
 
 }  // namespace blink

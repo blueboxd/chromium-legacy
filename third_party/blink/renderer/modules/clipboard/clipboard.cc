@@ -12,7 +12,7 @@
 namespace blink {
 
 Clipboard::Clipboard(ExecutionContext* context)
-    : ContextLifecycleObserver(context) {
+    : ExecutionContextLifecycleObserver(context) {
   DCHECK(context);
 }
 
@@ -42,12 +42,12 @@ const AtomicString& Clipboard::InterfaceName() const {
 }
 
 ExecutionContext* Clipboard::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 void Clipboard::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

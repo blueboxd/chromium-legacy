@@ -279,7 +279,7 @@ void BlinkTestRunner::InspectSecondaryWindow() {
 }
 
 void BlinkTestRunner::ClearAllDatabases() {
-  Send(new WebTestHostMsg_ClearAllDatabases(routing_id()));
+  GetWebTestClientRemote().ClearAllDatabases();
 }
 
 void BlinkTestRunner::SetDatabaseQuota(int quota) {

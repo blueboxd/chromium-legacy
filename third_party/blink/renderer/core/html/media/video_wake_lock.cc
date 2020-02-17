@@ -18,7 +18,7 @@ namespace blink {
 
 VideoWakeLock::VideoWakeLock(HTMLVideoElement& video)
     : PageVisibilityObserver(video.GetDocument().GetPage()),
-      ContextLifecycleStateObserver(&video.GetDocument()),
+      ExecutionContextLifecycleStateObserver(&video.GetDocument()),
       video_element_(video) {
   VideoElement().addEventListener(event_type_names::kPlaying, this, true);
   VideoElement().addEventListener(event_type_names::kPause, this, true);
@@ -47,7 +47,7 @@ void VideoWakeLock::PageVisibilityChanged() {
 void VideoWakeLock::Trace(Visitor* visitor) {
   NativeEventListener::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
-  ContextLifecycleStateObserver::Trace(visitor);
+  ExecutionContextLifecycleStateObserver::Trace(visitor);
   visitor->Trace(video_element_);
 }
 

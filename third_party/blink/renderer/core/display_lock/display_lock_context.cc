@@ -110,7 +110,7 @@ ScriptPromise GetResolvedPromise(ScriptState* script_state) {
 
 DisplayLockContext::DisplayLockContext(Element* element,
                                        ExecutionContext* context)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       element_(element),
       document_(&element_->GetDocument()),
       state_(this) {}
@@ -124,7 +124,7 @@ void DisplayLockContext::Trace(Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(document_);
   visitor->Trace(whitespace_reattach_set_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void DisplayLockContext::Dispose() {

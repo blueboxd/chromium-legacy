@@ -24,7 +24,7 @@
  *
  */
 
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
 
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -33,19 +33,21 @@
 
 namespace blink {
 
-ContextLifecycleStateObserver::ContextLifecycleStateObserver(
+ExecutionContextLifecycleStateObserver::ExecutionContextLifecycleStateObserver(
     ExecutionContext* execution_context)
-    : ContextLifecycleObserver(execution_context, kStateObjectType) {
+    : ExecutionContextLifecycleObserver(execution_context, kStateObjectType) {
   DCHECK(!execution_context || execution_context->IsContextThread());
   InstanceCounters::IncrementCounter(
       InstanceCounters::kContextLifecycleStateObserverCounter);
 }
 
-ContextLifecycleStateObserver::ContextLifecycleStateObserver(Document* document)
-    : ContextLifecycleStateObserver(document ? document->ToExecutionContext()
-                                             : nullptr) {}
+ExecutionContextLifecycleStateObserver::ExecutionContextLifecycleStateObserver(
+    Document* document)
+    : ExecutionContextLifecycleStateObserver(
+          document ? document->ToExecutionContext() : nullptr) {}
 
-ContextLifecycleStateObserver::~ContextLifecycleStateObserver() {
+ExecutionContextLifecycleStateObserver::
+    ~ExecutionContextLifecycleStateObserver() {
   InstanceCounters::DecrementCounter(
       InstanceCounters::kContextLifecycleStateObserverCounter);
 
@@ -54,7 +56,7 @@ ContextLifecycleStateObserver::~ContextLifecycleStateObserver() {
 #endif
 }
 
-void ContextLifecycleStateObserver::UpdateStateIfNeeded() {
+void ExecutionContextLifecycleStateObserver::UpdateStateIfNeeded() {
 #if DCHECK_IS_ON()
   DCHECK(!update_state_if_needed_called_);
   update_state_if_needed_called_ = true;
@@ -63,15 +65,16 @@ void ContextLifecycleStateObserver::UpdateStateIfNeeded() {
 #if DCHECK_IS_ON()
     DCHECK(context->ContextLifecycleObserverList().HasObserver(this));
 #endif
-    mojom::FrameLifecycleState pause_state = context->ContextPauseState();
-    if (pause_state != mojom::FrameLifecycleState::kRunning)
+    mojom::blink::FrameLifecycleState pause_state =
+        context->ContextPauseState();
+    if (pause_state != mojom::blink::FrameLifecycleState::kRunning)
       ContextLifecycleStateChanged(pause_state);
   }
 }
 
-void ContextLifecycleStateObserver::SetExecutionContext(
+void ExecutionContextLifecycleStateObserver::SetExecutionContext(
     ExecutionContext* context) {
-  ContextLifecycleObserver::SetExecutionContext(context);
+  ExecutionContextLifecycleObserver::SetExecutionContext(context);
 
   if (context->IsContextDestroyed()) {
     ContextDestroyed();

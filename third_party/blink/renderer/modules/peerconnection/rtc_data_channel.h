@@ -31,7 +31,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -49,7 +49,7 @@ class RTCPeerConnectionHandlerPlatform;
 class MODULES_EXPORT RTCDataChannel final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<RTCDataChannel>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(RTCDataChannel);
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(RTCDataChannel, Dispose);
@@ -98,7 +98,7 @@ class MODULES_EXPORT RTCDataChannel final
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
   // ScriptWrappable

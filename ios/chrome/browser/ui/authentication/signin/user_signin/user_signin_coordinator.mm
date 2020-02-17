@@ -66,8 +66,8 @@ using signin_metrics::PromoAction;
   [self.unifiedConsentCoordinator start];
 
   // Display UnifiedConsentViewController within the host.
-  [self.viewController
-      showEmbeddedViewController:self.unifiedConsentCoordinator.viewController];
+  self.viewController.unifiedConsentViewController =
+      self.unifiedConsentCoordinator.viewController;
   [self.baseViewController presentViewController:self.viewController
                                         animated:YES
                                       completion:nil];

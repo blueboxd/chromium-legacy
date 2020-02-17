@@ -24,7 +24,7 @@ class ScriptPromise;
 class ScriptState;
 
 class Bluetooth final : public EventTargetWithInlineData,
-                        public ContextLifecycleObserver,
+                        public ExecutionContextLifecycleObserver,
                         public PageVisibilityObserver,
                         public mojom::blink::WebBluetoothScanClient {
   DEFINE_WRAPPERTYPEINFO();
@@ -56,7 +56,7 @@ class Bluetooth final : public EventTargetWithInlineData,
   // GC
   void Trace(Visitor*) override;
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(advertisementreceived, kAdvertisementreceived)

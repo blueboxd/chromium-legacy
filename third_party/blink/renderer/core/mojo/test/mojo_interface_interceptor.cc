@@ -102,7 +102,7 @@ void MojoInterfaceInterceptor::stop() {
 
 void MojoInterfaceInterceptor::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 const AtomicString& MojoInterfaceInterceptor::InterfaceName() const {
@@ -110,7 +110,7 @@ const AtomicString& MojoInterfaceInterceptor::InterfaceName() const {
 }
 
 ExecutionContext* MojoInterfaceInterceptor::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 bool MojoInterfaceInterceptor::HasPendingActivity() const {
@@ -124,7 +124,7 @@ void MojoInterfaceInterceptor::ContextDestroyed() {
 MojoInterfaceInterceptor::MojoInterfaceInterceptor(ExecutionContext* context,
                                                    const String& interface_name,
                                                    bool process_scope)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       interface_name_(interface_name),
       process_scope_(process_scope) {}
 

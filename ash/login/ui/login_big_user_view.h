@@ -23,6 +23,18 @@ namespace ash {
 class ASH_EXPORT LoginBigUserView : public NonAccessibleView,
                                     public WallpaperControllerObserver {
  public:
+  // TestApi is used for tests to get internal implementation details.
+  class ASH_EXPORT TestApi {
+   public:
+    explicit TestApi(LoginBigUserView* view);
+    ~TestApi();
+
+    void Remove();
+
+   private:
+    LoginBigUserView* const view_;
+  };
+
   LoginBigUserView(
       const LoginUserInfo& user,
       const LoginAuthUserView::Callbacks& auth_user_callbacks,

@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -18,8 +18,9 @@ class ExecutionContext;
 class FetchRequestData;
 class ScriptState;
 
-class CORE_EXPORT FetchManager final : public GarbageCollected<FetchManager>,
-                                       public ContextLifecycleObserver {
+class CORE_EXPORT FetchManager final
+    : public GarbageCollected<FetchManager>,
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(FetchManager);
 
  public:

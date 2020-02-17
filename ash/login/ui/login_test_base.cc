@@ -139,6 +139,16 @@ void LoginTestBase::AddChildUsers(size_t num_users) {
   DataDispatcher()->SetUserList(users_);
 }
 
+void LoginTestBase::RemoveUser(const AccountId& account_id) {
+  for (auto it = users().cbegin(); it != users().cend(); ++it)
+    if (it->basic_user_info.account_id == account_id) {
+      users().erase(it);
+      DataDispatcher()->SetUserList(users());
+      return;
+    }
+  ADD_FAILURE() << "User not found: " << account_id.Serialize();
+}
+
 LoginDataDispatcher* LoginTestBase::DataDispatcher() {
   return Shell::Get()->login_screen_controller()->data_dispatcher();
 }

@@ -10,7 +10,7 @@
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/network/network_state_notifier.h"
 
 namespace blink {
@@ -20,7 +20,7 @@ class ExecutionContext;
 class NetworkInformation final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<NetworkInformation>,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public NetworkStateNotifier::NetworkStateObserver {
   USING_GARBAGE_COLLECTED_MIXIN(NetworkInformation);
   DEFINE_WRAPPERTYPEINFO();
@@ -53,7 +53,7 @@ class NetworkInformation final
   // ScriptWrappable
   bool HasPendingActivity() const final;
 
-  // ContextLifecycleObserver overrides.
+  // ExecutionContextLifecycleObserver overrides.
   void ContextDestroyed() override;
 
   void Trace(Visitor*) override;
@@ -106,7 +106,8 @@ class NetworkInformation final
   // message has been shown, or if the holdback experiment is not enabled.
   bool web_holdback_console_message_shown_;
 
-  // Whether ContextLifecycleObserver::contextDestroyed has been called.
+  // Whether ExecutionContextLifecycleObserver::contextDestroyed has been
+  // called.
   bool context_stopped_;
 
   std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle>

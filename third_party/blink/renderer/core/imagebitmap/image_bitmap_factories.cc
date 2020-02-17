@@ -250,7 +250,7 @@ ImageBitmapFactories::ImageBitmapLoader::ImageBitmapLoader(
     base::Optional<IntRect> crop_rect,
     ScriptState* script_state,
     const ImageBitmapOptions* options)
-    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
+    : ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)),
       loader_(std::make_unique<FileReaderLoader>(
           FileReaderLoader::kReadAsArrayBuffer,
           this,
@@ -378,7 +378,7 @@ void ImageBitmapFactories::ImageBitmapLoader::ResolvePromiseOnOriginalThread(
 }
 
 void ImageBitmapFactories::ImageBitmapLoader::Trace(Visitor* visitor) {
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(factory_);
   visitor->Trace(resolver_);
   visitor->Trace(options_);

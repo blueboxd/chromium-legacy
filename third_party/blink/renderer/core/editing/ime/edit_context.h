@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 
 namespace blink {
 
@@ -33,7 +33,7 @@ class InputMethodController;
 
 class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
                                       public ActiveScriptWrappable<EditContext>,
-                                      public ContextLifecycleObserver,
+                                      public ExecutionContextLifecycleObserver,
                                       public WebInputMethodController {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(EditContext);

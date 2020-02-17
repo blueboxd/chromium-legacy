@@ -8,7 +8,7 @@
 #include "base/time/time.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -32,7 +32,7 @@ class ServiceWorkerRegistration;
 // by developers through ServiceWorkerRegistration.backgroundFetch.
 class MODULES_EXPORT BackgroundFetchManager final
     : public ScriptWrappable,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(BackgroundFetchManager);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -54,7 +54,7 @@ class MODULES_EXPORT BackgroundFetchManager final
 
   void Trace(Visitor* visitor) override;
 
-  // ContextLifecycleObserver interface
+  // ExecutionContextLifecycleObserver interface
   void ContextDestroyed() override;
 
  private:

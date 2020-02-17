@@ -24,7 +24,7 @@ BatteryManager* BatteryManager::Create(ExecutionContext* context) {
 BatteryManager::~BatteryManager() = default;
 
 BatteryManager::BatteryManager(ExecutionContext* context)
-    : ContextLifecycleStateObserver(context),
+    : ExecutionContextLifecycleStateObserver(context),
       PlatformEventController(Document::From(context)) {}
 
 ScriptPromise BatteryManager::StartRequest(ScriptState* script_state) {
@@ -127,7 +127,7 @@ void BatteryManager::Trace(Visitor* visitor) {
   visitor->Trace(battery_property_);
   PlatformEventController::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleStateObserver::Trace(visitor);
+  ExecutionContextLifecycleStateObserver::Trace(visitor);
 }
 
 }  // namespace blink

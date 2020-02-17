@@ -65,4 +65,10 @@ export class BrowserProxy {
    * @abstract
    */
   addOnLockChangeListener(callback) {}
+
+  /**
+   * @return {!Promise<boolean>}
+   * @abstract
+   */
+  async isCrashReportingEnabled() {}
 }

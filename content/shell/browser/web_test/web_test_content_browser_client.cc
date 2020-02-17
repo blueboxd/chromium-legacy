@@ -145,12 +145,10 @@ WebTestContentBrowserClient::GetNextFakeBluetoothChooser() {
 void WebTestContentBrowserClient::RenderProcessWillLaunch(
     RenderProcessHost* host) {
   ShellContentBrowserClient::RenderProcessWillLaunch(host);
-
   StoragePartition* partition =
       BrowserContext::GetDefaultStoragePartition(browser_context());
-  host->AddFilter(new WebTestMessageFilter(host->GetID(),
-                                           partition->GetDatabaseTracker(),
-                                           partition->GetQuotaManager()));
+  host->AddFilter(
+      new WebTestMessageFilter(host->GetID(), partition->GetQuotaManager()));
 }
 
 void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
@@ -165,14 +163,13 @@ void WebTestContentBrowserClient::ExposeInterfacesToRenderer(
 
   registry->AddInterface(base::BindRepeating(&BlinkTestClientImpl::Create),
                          ui_task_runner);
-
   StoragePartition* partition =
       BrowserContext::GetDefaultStoragePartition(browser_context());
   registry->AddInterface(base::BindRepeating(&WebTestClientImpl::Create,
                                              render_process_host->GetID(),
+                                             partition->GetDatabaseTracker(),
                                              partition->GetNetworkContext()),
                          ui_task_runner);
-
   registry->AddInterface(base::BindRepeating(&bluetooth::FakeBluetooth::Create),
                          ui_task_runner);
   // This class outlives |render_process_host|, which owns |registry|. Since

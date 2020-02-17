@@ -174,10 +174,6 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   ClientTagHash GetClientTagHash(const std::string& storage_key,
                                  const EntityData& data) const;
 
-  // Gets the entity for the given storage key, or null if there isn't one.
-  ProcessorEntity* GetEntityForStorageKey(const std::string& storage_key);
-  const ProcessorEntity* GetEntityForStorageKey(
-      const std::string& storage_key) const;
 
   // Create an entity in the entity map for |storage_key| and return a pointer
   // to it.
@@ -193,9 +189,9 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // tell the bridge to delete the actual data.
   void ExpireAllEntries(MetadataChangeList* metadata_changes);
 
-  // Removes |entity| and clears metadata for |entity| from
-  // |metadata_change_list|.
-  void RemoveEntity(ProcessorEntity* entity,
+  // Removes entity with specified |storage_key| and clears metadata for it from
+  // |metadata_change_list|. |storage_key| must not be empty.
+  void RemoveEntity(const std::string& storage_key,
                     MetadataChangeList* metadata_change_list);
 
   // Resets the internal state of the processor to the one right after calling
@@ -259,17 +255,6 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   //////////////////
 
   std::unique_ptr<ProcessorEntityTracker> entity_tracker_;
-
-  // The bridge wants to communicate entirely via storage keys that it is free
-  // to define and can understand more easily. All of the sync machinery wants
-  // to use client tag hash. This mapping allows us to convert from storage key
-  // to client tag hash. The other direction can use |entities_|.
-  // Entity is temporarily not included in this map for the duration of
-  // MergeSyncData/ApplySyncChanges call when the bridge doesn't support
-  // GetStorageKey(). In this case the bridge is responsible for updating
-  // storage key with UpdateStorageKey() call from within
-  // MergeSyncData/ApplySyncChanges.
-  std::map<std::string, ClientTagHash> storage_key_to_tag_hash_;
 
   // If the processor should behave as if |type_| is one of the commit only
   // model types. For this processor, being commit only means that on commit

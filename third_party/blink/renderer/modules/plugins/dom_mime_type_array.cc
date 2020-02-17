@@ -30,7 +30,7 @@
 namespace blink {
 
 DOMMimeTypeArray::DOMMimeTypeArray(LocalFrame* frame)
-    : ContextLifecycleObserver(frame ? frame->GetDocument() : nullptr),
+    : ExecutionContextLifecycleObserver(frame ? frame->GetDocument() : nullptr),
       PluginsChangedObserver(frame ? frame->GetPage() : nullptr) {
   UpdatePluginData();
 }
@@ -38,7 +38,7 @@ DOMMimeTypeArray::DOMMimeTypeArray(LocalFrame* frame)
 void DOMMimeTypeArray::Trace(Visitor* visitor) {
   visitor->Trace(dom_mime_types_);
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 unsigned DOMMimeTypeArray::length() const {

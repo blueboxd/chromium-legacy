@@ -132,8 +132,9 @@ void EmbeddedSharedWorkerStub::WorkerReadyForInspection(
   host_->OnReadyForInspection(std::move(remote), std::move(receiver));
 }
 
-void EmbeddedSharedWorkerStub::WorkerScriptLoadFailed() {
-  host_->OnScriptLoadFailed();
+void EmbeddedSharedWorkerStub::WorkerScriptLoadFailed(
+    const std::string& error_message) {
+  host_->OnScriptLoadFailed(error_message);
   pending_channels_.clear();
 }
 

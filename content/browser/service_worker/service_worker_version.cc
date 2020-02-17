@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -27,6 +28,7 @@
 #include "base/time/default_tick_clock.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/frame_host/back_forward_cache_can_store_document_result.h"
 #include "content/browser/service_worker/payment_handler_support.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
@@ -812,7 +814,24 @@ void ServiceWorkerVersion::RestoreControlleeFromBackForwardCacheMap(
   // cause of crash.
   CHECK(IsBackForwardCacheEnabled());
   CHECK(!base::Contains(controllee_map_, client_uuid));
-  CHECK(base::Contains(bfcached_controllee_map_, client_uuid));
+  if (!base::Contains(bfcached_controllee_map_, client_uuid)) {
+    // We are navigating to the page using BackForwardCache, which is being
+    // evicted due to activation, postMessage or claim. In this case, we reload
+    // the page without using BackForwardCache, so we can assume that
+    // ContainerHost will be deleted soon.
+    // TODO(crbug.com/1021718): Remove this CHECK once we fix the crash.
+    CHECK(base::Contains(controllees_to_be_evicted_, client_uuid));
+    // TODO(crbug.com/1021718): Remove DumpWithoutCrashing once we confirm the
+    // cause of the crash.
+    static auto* no_controllee_reason = base::debug::AllocateCrashKeyString(
+        "no_controllee_reason", base::debug::CrashKeySize::Size32);
+    BackForwardCacheCanStoreDocumentResult can_store;
+    can_store.No(controllees_to_be_evicted_.at(client_uuid));
+    base::debug::ScopedCrashKeyString scoped_no_controllee_reason(
+        no_controllee_reason, can_store.ToString());
+    base::debug::DumpWithoutCrashing();
+    return;
+  }
   AddControllee(bfcached_controllee_map_.at(client_uuid));
   bfcached_controllee_map_.erase(client_uuid);
 }
@@ -833,11 +852,17 @@ void ServiceWorkerVersion::OnControlleeDestroyed(
       RemoveControllee(client_uuid);
     } else if (base::Contains(bfcached_controllee_map_, client_uuid)) {
       RemoveControlleeFromBackForwardCacheMap(client_uuid);
+    } else {
+      // It is possible that the controllee belongs to neither |controllee_map_|
+      // or |bfcached_controllee_map_|. This happens when a BackForwardCached
+      // controllee is deleted after eviction, which has already removed it from
+      // |bfcached_controllee_map_|.
+      // In this case, |controllees_to_be_evicted_| should contain the
+      // controllee.
+      // TODO(crbug.com/1021718): Remove this CHECK once we fix the crash.
+      CHECK(base::Contains(controllees_to_be_evicted_, client_uuid));
+      controllees_to_be_evicted_.erase(client_uuid);
     }
-    // It is possible that the controllee belongs to neither |controllee_map_|
-    // or |bfcached_controllee_map_|. This happens when a BackForwardCached
-    // controllee is deleted after eviction, which has already removed it from
-    // |bfcached_controllee_map_|.
   }
 }
 
@@ -854,6 +879,7 @@ void ServiceWorkerVersion::EvictBackForwardCachedControllee(
     ServiceWorkerContainerHost* controllee,
     BackForwardCacheMetrics::NotRestoredReason reason) {
   controllee->EvictFromBackForwardCache(reason);
+  controllees_to_be_evicted_[controllee->client_uuid()] = reason;
   RemoveControlleeFromBackForwardCacheMap(controllee->client_uuid());
 }
 

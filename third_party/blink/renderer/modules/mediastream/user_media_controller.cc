@@ -31,11 +31,11 @@ const char UserMediaController::kSupplementName[] = "UserMediaController";
 
 UserMediaController::UserMediaController(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
-      ContextLifecycleObserver(frame.GetDocument()) {}
+      ExecutionContextLifecycleObserver(frame.GetDocument()) {}
 
 void UserMediaController::Trace(Visitor* visitor) {
   Supplement<LocalFrame>::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(client_);
 }
 

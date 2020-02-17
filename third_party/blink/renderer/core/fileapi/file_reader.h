@@ -36,7 +36,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"
@@ -53,7 +53,7 @@ class StringOrArrayBuffer;
 
 class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
                                      public ActiveScriptWrappable<FileReader>,
-                                     public ContextLifecycleObserver,
+                                     public ExecutionContextLifecycleObserver,
                                      public FileReaderLoaderClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FileReader);
@@ -78,7 +78,7 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   void result(ScriptState*, StringOrArrayBuffer& result_attribute) const;
   probe::AsyncTaskId* async_task_id() { return &async_task_id_; }
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
   // ScriptWrappable
@@ -87,7 +87,7 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   // EventTarget
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override {
-    return ContextLifecycleObserver::GetExecutionContext();
+    return ExecutionContextLifecycleObserver::GetExecutionContext();
   }
 
   // FileReaderLoaderClient

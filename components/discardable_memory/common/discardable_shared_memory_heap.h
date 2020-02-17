@@ -63,7 +63,7 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryHeap {
       std::unique_ptr<base::DiscardableSharedMemory> shared_memory,
       size_t size,
       int32_t id,
-      const base::Closure& deleted_callback);
+      base::OnceClosure deleted_callback);
 
   // Merge |span| into the free lists. This will coalesce |span| with
   // neighboring free spans when possible.
@@ -111,7 +111,7 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryHeap {
         std::unique_ptr<base::DiscardableSharedMemory> shared_memory,
         size_t size,
         int32_t id,
-        const base::Closure& deleted_callback);
+        base::OnceClosure deleted_callback);
     ~ScopedMemorySegment();
 
     bool IsUsed() const;
@@ -133,7 +133,7 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryHeap {
     std::unique_ptr<base::DiscardableSharedMemory> shared_memory_;
     const size_t size_;
     const int32_t id_;
-    const base::Closure deleted_callback_;
+    base::OnceClosure deleted_callback_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedMemorySegment);
   };

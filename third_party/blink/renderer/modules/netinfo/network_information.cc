@@ -222,7 +222,7 @@ const AtomicString& NetworkInformation::InterfaceName() const {
 }
 
 ExecutionContext* NetworkInformation::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 void NetworkInformation::AddedEventListener(
@@ -279,7 +279,7 @@ void NetworkInformation::StopObserving() {
 }
 
 NetworkInformation::NetworkInformation(ExecutionContext* context)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       web_holdback_console_message_shown_(false),
       context_stopped_(false) {
   base::Optional<base::TimeDelta> http_rtt;
@@ -300,7 +300,7 @@ NetworkInformation::NetworkInformation(ExecutionContext* context)
 
 void NetworkInformation::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 const String NetworkInformation::Host() const {

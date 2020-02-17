@@ -121,7 +121,8 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       const url::Origin& constructor_origin);
 
   void ScriptLoadFailed(
-      mojo::PendingRemote<blink::mojom::SharedWorkerClient> client);
+      mojo::PendingRemote<blink::mojom::SharedWorkerClient> client,
+      const std::string& error_message);
 
   // The ID that the next SharedWorkerInstance will be assigned.
   int64_t next_shared_worker_instance_id_ = 0;

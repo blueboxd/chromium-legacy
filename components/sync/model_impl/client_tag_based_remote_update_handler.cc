@@ -43,14 +43,11 @@ void LogNonReflectionUpdateFreshnessToUma(ModelType type,
 ClientTagBasedRemoteUpdateHandler::ClientTagBasedRemoteUpdateHandler(
     ModelType type,
     ModelTypeSyncBridge* bridge,
-    std::map<std::string, ClientTagHash>* storage_key_to_tag_hash,
     ProcessorEntityTracker* entity_tracker)
     : type_(type),
       bridge_(bridge),
-      storage_key_to_tag_hash_(storage_key_to_tag_hash),
       entity_tracker_(entity_tracker) {
   DCHECK(bridge_);
-  DCHECK(storage_key_to_tag_hash_);
   DCHECK(entity_tracker_);
 }
 
@@ -101,7 +98,6 @@ ClientTagBasedRemoteUpdateHandler::ProcessIncrementalUpdate(
       // the database.
       if (!storage_key_to_clear.empty()) {
         metadata_changes->ClearMetadata(storage_key_to_clear);
-        storage_key_to_tag_hash_->erase(storage_key_to_clear);
       }
       continue;
     }
@@ -110,9 +106,7 @@ ClientTagBasedRemoteUpdateHandler::ProcessIncrementalUpdate(
 
     if (entity->CanClearMetadata()) {
       metadata_changes->ClearMetadata(entity->storage_key());
-      storage_key_to_tag_hash_->erase(entity->storage_key());
-      entity_tracker_->Remove(
-          ClientTagHash::FromHashed(entity->metadata().client_tag_hash()));
+      entity_tracker_->RemoveEntityForStorageKey(entity->storage_key());
     } else {
       metadata_changes->UpdateMetadata(entity->storage_key(),
                                        entity->metadata());
@@ -307,7 +301,8 @@ ConflictResolution ClientTagBasedRemoteUpdateHandler::ResolveConflict(
         // bridges, so we may need to wait until UpdateStorageKey() is called.
         if (!bridge_->SupportsGetStorageKey()) {
           *storage_key_to_clear = entity->storage_key();
-          entity->ClearStorageKey();
+          entity_tracker_->ClearStorageKey(entity->storage_key());
+          DCHECK(entity->storage_key().empty());
         }
         // Squash the pending commit.
         entity->RecordForcedUpdate(update);
@@ -329,12 +324,7 @@ ProcessorEntity* ClientTagBasedRemoteUpdateHandler::CreateEntity(
     const EntityData& data) {
   DCHECK(!data.client_tag_hash.value().empty());
   DCHECK(!bridge_->SupportsGetStorageKey() || !storage_key.empty());
-  DCHECK(storage_key.empty() || storage_key_to_tag_hash_->find(storage_key) ==
-                                    storage_key_to_tag_hash_->end());
-  ProcessorEntity* entity_ptr = entity_tracker_->Add(storage_key, data);
-  if (!storage_key.empty())
-    (*storage_key_to_tag_hash_)[storage_key] = data.client_tag_hash;
-  return entity_ptr;
+  return entity_tracker_->Add(storage_key, data);
 }
 
 ProcessorEntity* ClientTagBasedRemoteUpdateHandler::CreateEntity(

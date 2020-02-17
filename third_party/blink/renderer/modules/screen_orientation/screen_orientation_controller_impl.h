@@ -26,7 +26,7 @@ using device::mojom::blink::ScreenOrientationLockResult;
 
 class MODULES_EXPORT ScreenOrientationControllerImpl final
     : public ScreenOrientationController,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public PageVisibilityObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientationControllerImpl);
 
@@ -57,7 +57,8 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
 
   static WebScreenOrientationType ComputeOrientation(const IntRect&, uint16_t);
 
-  // Inherited from ContextLifecycleObserver and PageVisibilityObserver.
+  // Inherited from ExecutionContextLifecycleObserver and
+  // PageVisibilityObserver.
   void ContextDestroyed() override;
   void PageVisibilityChanged() override;
 

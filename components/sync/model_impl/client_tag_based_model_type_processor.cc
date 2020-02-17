@@ -91,18 +91,8 @@ void ClientTagBasedModelTypeProcessor::ModelReadyToSync(
 
   if (batch->GetModelTypeState().initial_sync_done()) {
     EntityMetadataMap metadata_map(batch->TakeAllMetadata());
-
-    for (auto it = metadata_map.begin(); it != metadata_map.end(); it++) {
-      std::unique_ptr<sync_pb::EntityMetadata> metadata(std::move(it->second));
-      // As CreateFromMetadata() takes sync_pb::EntityMetadata by value, move it
-      // to avoid copying.
-      ProcessorEntity* entity_ptr = entity_tracker_->CreateEntityFromMetadata(
-          it->first, std::move(*metadata));
-      ClientTagHash client_tag_hash =
-          ClientTagHash::FromHashed(entity_ptr->metadata().client_tag_hash());
-      storage_key_to_tag_hash_[entity_ptr->storage_key()] = client_tag_hash;
-    }
-    entity_tracker_->set_model_type_state(batch->GetModelTypeState());
+    entity_tracker_ = std::make_unique<ProcessorEntityTracker>(
+        std::move(metadata_map), batch->GetModelTypeState());
   } else {
     // In older versions of the binary, commit-only types did not persist
     // initial_sync_done(). So this branch can be exercised for commit-only
@@ -355,7 +345,8 @@ void ClientTagBasedModelTypeProcessor::Put(
     return;
   }
 
-  ProcessorEntity* entity = GetEntityForStorageKey(storage_key);
+  ProcessorEntity* entity =
+      entity_tracker_->GetEntityForStorageKey(storage_key);
   if (entity == nullptr) {
     // The bridge is creating a new entity. The bridge may or may not populate
     // |data->client_tag_hash|, so let's ask for the client tag if needed.
@@ -378,14 +369,11 @@ void ClientTagBasedModelTypeProcessor::Put(
     if (entity != nullptr) {
       DCHECK(storage_key != entity->storage_key());
       DCHECK(entity->metadata().is_deleted());
-      // Remove the old storage key from the processor, the entity, and the
-      // corresponding metadata record.
-      storage_key_to_tag_hash_.erase(entity->storage_key());
+      // Remove the old storage key from the tracker and the corresponding
+      // metadata record.
       metadata_change_list->ClearMetadata(entity->storage_key());
-      entity->ClearStorageKey();
-      // Populate the new storage key in the existing entity.
-      entity->SetStorageKey(storage_key);
-      storage_key_to_tag_hash_[storage_key] = data->client_tag_hash;
+      entity_tracker_->UpdateOrOverrideStorageKey(data->client_tag_hash,
+                                                  storage_key);
     } else {
       if (data->creation_time.is_null())
         data->creation_time = base::Time::Now();
@@ -417,7 +405,8 @@ void ClientTagBasedModelTypeProcessor::Delete(
     return;
   }
 
-  ProcessorEntity* entity = GetEntityForStorageKey(storage_key);
+  ProcessorEntity* entity =
+      entity_tracker_->GetEntityForStorageKey(storage_key);
   if (entity == nullptr) {
     // Missing is as good as deleted as far as the model is concerned.
     return;
@@ -426,7 +415,7 @@ void ClientTagBasedModelTypeProcessor::Delete(
   if (entity->Delete())
     metadata_change_list->UpdateMetadata(storage_key, entity->metadata());
   else
-    RemoveEntity(entity, metadata_change_list);
+    RemoveEntity(entity->storage_key(), metadata_change_list);
 
   NudgeForCommitIfNeeded();
 }
@@ -446,47 +435,26 @@ void ClientTagBasedModelTypeProcessor::UpdateStorageKey(
   DCHECK(entity);
 
   DCHECK(entity->storage_key().empty());
-  DCHECK(storage_key_to_tag_hash_.find(storage_key) ==
-         storage_key_to_tag_hash_.end());
+  entity_tracker_->UpdateOrOverrideStorageKey(client_tag_hash, storage_key);
 
-  storage_key_to_tag_hash_[storage_key] = client_tag_hash;
-  entity->SetStorageKey(storage_key);
   metadata_change_list->UpdateMetadata(storage_key, entity->metadata());
 }
 
 void ClientTagBasedModelTypeProcessor::UntrackEntityForStorageKey(
     const std::string& storage_key) {
-  DCHECK(entity_tracker_->model_type_state().initial_sync_done());
-
-  // Look-up the client tag hash.
-  auto iter = storage_key_to_tag_hash_.find(storage_key);
-  if (iter == storage_key_to_tag_hash_.end()) {
-    // Missing is as good as untracked as far as the model is concerned.
-    return;
-  }
-
-  entity_tracker_->Remove(iter->second);
-  storage_key_to_tag_hash_.erase(iter);
+  entity_tracker_->RemoveEntityForStorageKey(storage_key);
 }
 
 void ClientTagBasedModelTypeProcessor::UntrackEntityForClientTagHash(
     const ClientTagHash& client_tag_hash) {
-  DCHECK(entity_tracker_->model_type_state().initial_sync_done());
   DCHECK(!client_tag_hash.value().empty());
-  const ProcessorEntity* entity =
-      entity_tracker_->GetEntityForTagHash(client_tag_hash);
-  if (entity == nullptr || entity->storage_key().empty()) {
-    // Is a no-op if no entity for |client_tag_hash| is tracked.
-    entity_tracker_->Remove(client_tag_hash);
-  } else {
-    DCHECK(storage_key_to_tag_hash_.count(entity->storage_key()));
-    UntrackEntityForStorageKey(entity->storage_key());
-  }
+  entity_tracker_->RemoveEntityForClientTagHash(client_tag_hash);
 }
 
 bool ClientTagBasedModelTypeProcessor::IsEntityUnsynced(
     const std::string& storage_key) {
-  ProcessorEntity* entity = GetEntityForStorageKey(storage_key);
+  const ProcessorEntity* entity =
+      entity_tracker_->GetEntityForStorageKey(storage_key);
   if (entity == nullptr) {
     return false;
   }
@@ -496,7 +464,8 @@ bool ClientTagBasedModelTypeProcessor::IsEntityUnsynced(
 
 base::Time ClientTagBasedModelTypeProcessor::GetEntityCreationTime(
     const std::string& storage_key) const {
-  const ProcessorEntity* entity = GetEntityForStorageKey(storage_key);
+  const ProcessorEntity* entity =
+      entity_tracker_->GetEntityForStorageKey(storage_key);
   if (entity == nullptr) {
     return base::Time();
   }
@@ -505,7 +474,8 @@ base::Time ClientTagBasedModelTypeProcessor::GetEntityCreationTime(
 
 base::Time ClientTagBasedModelTypeProcessor::GetEntityModificationTime(
     const std::string& storage_key) const {
-  const ProcessorEntity* entity = GetEntityForStorageKey(storage_key);
+  const ProcessorEntity* entity =
+      entity_tracker_->GetEntityForStorageKey(storage_key);
   if (entity == nullptr) {
     return base::Time();
   }
@@ -597,7 +567,7 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
       if (!entity->IsUnsynced()) {
         entity_change_list.push_back(
             EntityChange::CreateDelete(entity->storage_key()));
-        RemoveEntity(entity, metadata_change_list.get());
+        RemoveEntity(entity->storage_key(), metadata_change_list.get());
       }
       // If unsynced, we could theoretically update persisted metadata to have
       // more accurate bookkeeping. However, this wouldn't actually do anything
@@ -605,7 +575,7 @@ void ClientTagBasedModelTypeProcessor::OnCommitCompleted(
       // any of the changing metadata in the commit message. So skip updating
       // metadata.
     } else if (entity->CanClearMetadata()) {
-      RemoveEntity(entity, metadata_change_list.get());
+      RemoveEntity(entity->storage_key(), metadata_change_list.get());
     } else {
       metadata_change_list->UpdateMetadata(entity->storage_key(),
                                            entity->metadata());
@@ -822,8 +792,8 @@ ClientTagBasedModelTypeProcessor::OnIncrementalUpdateReceived(
   DCHECK(model_ready_to_sync_);
   DCHECK(model_type_state.initial_sync_done());
 
-  ClientTagBasedRemoteUpdateHandler updates_handler(
-      type_, bridge_, &storage_key_to_tag_hash_, entity_tracker_.get());
+  ClientTagBasedRemoteUpdateHandler updates_handler(type_, bridge_,
+                                                    entity_tracker_.get());
   return updates_handler.ProcessIncrementalUpdate(model_type_state,
                                                   std::move(updates));
 }
@@ -853,7 +823,8 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
     const std::string& storage_key = data.first;
 
     storage_keys_to_load.erase(storage_key);
-    ProcessorEntity* entity = GetEntityForStorageKey(storage_key);
+    ProcessorEntity* entity =
+        entity_tracker_->GetEntityForStorageKey(storage_key);
     // If the entity wasn't deleted or updated with new commit.
     if (entity != nullptr && entity->RequiresCommitData()) {
       // SetCommitData will update EntityData's fields with values from
@@ -865,7 +836,8 @@ void ClientTagBasedModelTypeProcessor::ConsumeDataBatch(
   // Detect failed loads that shouldn't have failed.
   std::vector<std::string> storage_keys_to_untrack;
   for (const std::string& storage_key : storage_keys_to_load) {
-    ProcessorEntity* entity = GetEntityForStorageKey(storage_key);
+    const ProcessorEntity* entity =
+        entity_tracker_->GetEntityForStorageKey(storage_key);
     if (entity == nullptr || entity->metadata().is_deleted()) {
       // Skip entities that are not tracked any more or already marked for
       // deletion.
@@ -925,39 +897,19 @@ void ClientTagBasedModelTypeProcessor::CommitLocalChanges(
 ClientTagHash ClientTagBasedModelTypeProcessor::GetClientTagHash(
     const std::string& storage_key,
     const EntityData& data) const {
-  auto iter = storage_key_to_tag_hash_.find(storage_key);
+  const base::Optional<ClientTagHash> client_tag_hash =
+      entity_tracker_->GetClientTagHash(storage_key);
   DCHECK(bridge_->SupportsGetClientTag());
-  return iter == storage_key_to_tag_hash_.end()
-             ? ClientTagHash::FromUnhashed(type_, bridge_->GetClientTag(data))
-             : iter->second;
-}
-
-ProcessorEntity* ClientTagBasedModelTypeProcessor::GetEntityForStorageKey(
-    const std::string& storage_key) {
-  auto iter = storage_key_to_tag_hash_.find(storage_key);
-  return iter == storage_key_to_tag_hash_.end()
-             ? nullptr
-             : entity_tracker_->GetEntityForTagHash(iter->second);
-}
-
-const ProcessorEntity* ClientTagBasedModelTypeProcessor::GetEntityForStorageKey(
-    const std::string& storage_key) const {
-  auto iter = storage_key_to_tag_hash_.find(storage_key);
-  return iter == storage_key_to_tag_hash_.end()
-             ? nullptr
-             : entity_tracker_->GetEntityForTagHash(iter->second);
+  return client_tag_hash.has_value()
+             ? client_tag_hash.value()
+             : ClientTagHash::FromUnhashed(type_, bridge_->GetClientTag(data));
 }
 
 ProcessorEntity* ClientTagBasedModelTypeProcessor::CreateEntity(
     const std::string& storage_key,
     const EntityData& data) {
-  DCHECK(!data.client_tag_hash.value().empty());
   DCHECK(!bridge_->SupportsGetStorageKey() || !storage_key.empty());
-  DCHECK(storage_key.empty() || storage_key_to_tag_hash_.find(storage_key) ==
-                                    storage_key_to_tag_hash_.end());
   ProcessorEntity* entity_ptr = entity_tracker_->Add(storage_key, data);
-  if (!storage_key.empty())
-    storage_key_to_tag_hash_[storage_key] = data.client_tag_hash;
   return entity_ptr;
 }
 
@@ -977,7 +929,6 @@ size_t ClientTagBasedModelTypeProcessor::EstimateMemoryUsage() const {
   using base::trace_event::EstimateMemoryUsage;
   size_t memory_usage = 0;
   memory_usage += entity_tracker_->EstimateMemoryUsage();
-  memory_usage += EstimateMemoryUsage(storage_key_to_tag_hash_);
   if (bridge_) {
     memory_usage += bridge_->EstimateSyncOverheadMemoryUsage();
   }
@@ -990,7 +941,7 @@ bool ClientTagBasedModelTypeProcessor::HasLocalChangesForTest() const {
 
 bool ClientTagBasedModelTypeProcessor::IsTrackingEntityForTest(
     const std::string& storage_key) const {
-  return storage_key_to_tag_hash_.count(storage_key) != 0;
+  return entity_tracker_->GetEntityForStorageKey(storage_key) != nullptr;
 }
 
 bool ClientTagBasedModelTypeProcessor::IsModelReadyToSyncForTest() const {
@@ -1002,7 +953,6 @@ void ClientTagBasedModelTypeProcessor::ExpireAllEntries(
   DCHECK(metadata_changes);
 
   std::vector<std::string> storage_key_to_be_deleted;
-
   for (const ProcessorEntity* entity :
        entity_tracker_->GetAllEntitiesIncludingTombstones()) {
     if (!entity->IsUnsynced()) {
@@ -1010,23 +960,17 @@ void ClientTagBasedModelTypeProcessor::ExpireAllEntries(
     }
   }
 
-  // Delete selected keys while not iterating over |entities_|.
   for (const std::string& key : storage_key_to_be_deleted) {
-    metadata_changes->ClearMetadata(key);
-    auto iter = storage_key_to_tag_hash_.find(key);
-    DCHECK(iter != storage_key_to_tag_hash_.end());
-    entity_tracker_->Remove(iter->second);
-    storage_key_to_tag_hash_.erase(iter);
+    RemoveEntity(key, metadata_changes);
   }
 }
 
 void ClientTagBasedModelTypeProcessor::RemoveEntity(
-    ProcessorEntity* entity,
+    const std::string& storage_key,
     MetadataChangeList* metadata_change_list) {
-  metadata_change_list->ClearMetadata(entity->storage_key());
-  storage_key_to_tag_hash_.erase(entity->storage_key());
-  entity_tracker_->Remove(
-      ClientTagHash::FromHashed(entity->metadata().client_tag_hash()));
+  DCHECK(!storage_key.empty());
+  metadata_change_list->ClearMetadata(storage_key);
+  entity_tracker_->RemoveEntityForStorageKey(storage_key);
 }
 
 void ClientTagBasedModelTypeProcessor::ResetState(
@@ -1040,7 +984,6 @@ void ClientTagBasedModelTypeProcessor::ResetState(
     case CLEAR_METADATA:
       model_ready_to_sync_ = false;
       entity_tracker_ = std::make_unique<ProcessorEntityTracker>(type_);
-      storage_key_to_tag_hash_.clear();
       break;
   }
 
@@ -1071,7 +1014,8 @@ void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(
     // There is an overlap between EntityData fields from the bridge and
     // EntityMetadata fields from the processor's entity, metadata is
     // the authoritative source of truth.
-    ProcessorEntity* entity = GetEntityForStorageKey(key_and_data.first);
+    const ProcessorEntity* entity =
+        entity_tracker_->GetEntityForStorageKey(key_and_data.first);
     // |entity| could be null if there are some unapplied changes.
     if (entity != nullptr) {
       const sync_pb::EntityMetadata& metadata = entity->metadata();

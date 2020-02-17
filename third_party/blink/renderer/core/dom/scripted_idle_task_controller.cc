@@ -90,7 +90,7 @@ void ScriptedIdleTaskController::V8IdleTask::invoke(IdleDeadline* deadline) {
 
 ScriptedIdleTaskController::ScriptedIdleTaskController(
     ExecutionContext* context)
-    : ContextLifecycleStateObserver(context),
+    : ExecutionContextLifecycleStateObserver(context),
       scheduler_(ThreadScheduler::Current()),
       next_callback_id_(0),
       paused_(false) {}
@@ -99,7 +99,7 @@ ScriptedIdleTaskController::~ScriptedIdleTaskController() = default;
 
 void ScriptedIdleTaskController::Trace(Visitor* visitor) {
   visitor->Trace(idle_tasks_);
-  ContextLifecycleStateObserver::Trace(visitor);
+  ExecutionContextLifecycleStateObserver::Trace(visitor);
 }
 
 int ScriptedIdleTaskController::NextCallbackId() {

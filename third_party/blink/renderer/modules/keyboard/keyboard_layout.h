@@ -10,7 +10,7 @@
 #include "third_party/blink/public/mojom/keyboard_lock/keyboard_lock.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/keyboard/keyboard_layout_map.h"
 
 namespace blink {
@@ -19,7 +19,7 @@ class ExceptionState;
 class ScriptPromiseResolver;
 
 class KeyboardLayout final : public GarbageCollected<KeyboardLayout>,
-                             public ContextLifecycleObserver {
+                             public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(KeyboardLayout);
 
  public:
@@ -28,7 +28,7 @@ class KeyboardLayout final : public GarbageCollected<KeyboardLayout>,
 
   ScriptPromise GetKeyboardLayoutMap(ScriptState*, ExceptionState&);
 
-  // ContextLifecycleObserver override.
+  // ExecutionContextLifecycleObserver override.
   void Trace(Visitor*) override;
 
  private:

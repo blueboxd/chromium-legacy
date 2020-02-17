@@ -5,5 +5,5 @@
 // https://gpuweb.github.io/gpuweb/
 
 dictionary GPUShaderModuleDescriptor : GPUObjectDescriptorBase {
-    [AllowShared] required Uint32Array code;
+    required [AllowShared] Uint32Array code;
 };

@@ -29,7 +29,6 @@
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/mojom/network_service.mojom.h"
-#include "storage/browser/database/database_tracker.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "url/origin.h"
 
@@ -37,11 +36,9 @@ namespace content {
 
 WebTestMessageFilter::WebTestMessageFilter(
     int render_process_id,
-    storage::DatabaseTracker* database_tracker,
     storage::QuotaManager* quota_manager)
     : BrowserMessageFilter(WebTestMsgStart),
       render_process_id_(render_process_id),
-      database_tracker_(database_tracker),
       quota_manager_(quota_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
@@ -56,8 +53,6 @@ scoped_refptr<base::SequencedTaskRunner>
 WebTestMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& message) {
   switch (message.type()) {
-    case WebTestHostMsg_ClearAllDatabases::ID:
-      return database_tracker_->task_runner();
     case WebTestHostMsg_InitiateCaptureDump::ID:
       return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
   }
@@ -67,7 +62,6 @@ WebTestMessageFilter::OverrideTaskRunnerForMessage(
 bool WebTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(WebTestMessageFilter, message)
-    IPC_MESSAGE_HANDLER(WebTestHostMsg_ClearAllDatabases, OnClearAllDatabases)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_SetDatabaseQuota, OnSetDatabaseQuota)
     IPC_MESSAGE_HANDLER(WebTestHostMsg_InitiateCaptureDump,
                         OnInitiateCaptureDump)
@@ -75,12 +69,6 @@ bool WebTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return handled;
-}
-
-void WebTestMessageFilter::OnClearAllDatabases() {
-  DCHECK(database_tracker_->task_runner()->RunsTasksInCurrentSequence());
-  database_tracker_->DeleteDataModifiedSince(base::Time(),
-                                             net::CompletionOnceCallback());
 }
 
 void WebTestMessageFilter::OnSetDatabaseQuota(int quota) {

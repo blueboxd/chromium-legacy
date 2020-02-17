@@ -41,7 +41,7 @@ TEST(DiscardableSharedMemoryHeapTest, SearchFreeLists) {
     ASSERT_TRUE(memory->CreateAndMap(segment_size));
     heap.MergeIntoFreeLists(heap.Grow(std::move(memory), segment_size,
                                       next_discardable_shared_memory_id++,
-                                      base::Bind(NullTask)));
+                                      base::BindOnce(NullTask)));
   }
 
   unsigned kSeed = 1;

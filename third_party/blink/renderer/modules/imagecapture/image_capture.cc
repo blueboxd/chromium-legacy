@@ -109,7 +109,7 @@ const AtomicString& ImageCapture::InterfaceName() const {
 }
 
 ExecutionContext* ImageCapture::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 bool ImageCapture::HasPendingActivity() const {
@@ -689,7 +689,7 @@ void ImageCapture::GetMediaTrackSettings(MediaTrackSettings* settings) const {
 }
 
 ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       stream_track_(track),
       capabilities_(MediaTrackCapabilities::Create()),
       settings_(MediaTrackSettings::Create()),
@@ -964,7 +964,7 @@ void ImageCapture::Trace(Visitor* visitor) {
   visitor->Trace(photo_capabilities_);
   visitor->Trace(service_requests_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

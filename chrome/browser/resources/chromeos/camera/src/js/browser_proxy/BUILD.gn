@@ -18,5 +18,6 @@ js_library("browser_proxy") {
   externs_list = [
     "../externs/chrome.js",
     "$externs_path/chrome_extensions.js",
+    "$externs_path/metrics_private.js",
   ]
 }

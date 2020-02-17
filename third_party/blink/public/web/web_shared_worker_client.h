@@ -52,7 +52,7 @@ class WebSharedWorkerClient {
   virtual void WorkerReadyForInspection(
       mojo::ScopedMessagePipeHandle devtools_agent_ptr_info,
       mojo::ScopedMessagePipeHandle devtools_agent_host_request) {}
-  virtual void WorkerScriptLoadFailed() = 0;
+  virtual void WorkerScriptLoadFailed(const std::string& error_message) = 0;
   virtual void WorkerScriptEvaluated(bool success) = 0;
 
   // Called on the main thread during initialization. Creates a new

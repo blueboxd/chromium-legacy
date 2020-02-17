@@ -66,7 +66,7 @@ void UnderlyingSourceBase::ContextDestroyed() {
 void UnderlyingSourceBase::Trace(Visitor* visitor) {
   visitor->Trace(controller_);
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

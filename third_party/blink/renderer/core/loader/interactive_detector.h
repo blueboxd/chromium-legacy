@@ -9,7 +9,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/loader/long_task_detector.h"
 #include "third_party/blink/renderer/core/page/page_hidden_state.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
@@ -41,7 +41,7 @@ class Event;
 class CORE_EXPORT InteractiveDetector
     : public GarbageCollected<InteractiveDetector>,
       public Supplement<Document>,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public LongTaskObserver {
   USING_GARBAGE_COLLECTED_MIXIN(InteractiveDetector);
 
@@ -120,7 +120,7 @@ class CORE_EXPORT InteractiveDetector
                            base::TimeTicks event_platform_timestamp,
                            base::TimeTicks processing_start);
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
   void Trace(Visitor*) override;

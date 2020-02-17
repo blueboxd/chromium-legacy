@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -31,7 +31,7 @@ class ReceiverPresentationConnection;
 // client.
 class MODULES_EXPORT PresentationReceiver final
     : public ScriptWrappable,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public mojom::blink::PresentationReceiver {
   USING_GARBAGE_COLLECTED_MIXIN(PresentationReceiver);
   DEFINE_WRAPPERTYPEINFO();
@@ -65,7 +65,7 @@ class MODULES_EXPORT PresentationReceiver final
 
   static void RecordOriginTypeAccess(ExecutionContext&);
 
-  // ContextLifecycleObserver implementation.
+  // ExecutionContextLifecycleObserver implementation.
   void ContextDestroyed() override;
 
   Member<ConnectionListProperty> connection_list_property_;

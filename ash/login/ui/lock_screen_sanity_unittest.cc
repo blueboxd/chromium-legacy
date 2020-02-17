@@ -396,7 +396,8 @@ TEST_F(LockScreenSanityTest, RemoveUser) {
   EXPECT_CALL(*client, OnRemoveUserWarningShown()).Times(1);
   submit();
   EXPECT_CALL(*client, RemoveUser(users()[0].basic_user_info.account_id))
-      .Times(1);
+      .Times(1)
+      .WillOnce(Invoke(this, &LoginTestBase::RemoveUser));
   submit();
 
   // Secondary auth should be gone because it is now the primary auth.
@@ -405,7 +406,7 @@ TEST_F(LockScreenSanityTest, RemoveUser) {
                   .primary_big_view()
                   ->GetCurrentUser()
                   .basic_user_info.account_id ==
-              users()[1].basic_user_info.account_id);
+              users()[0].basic_user_info.account_id);
 }
 
 TEST_F(LockScreenSanityTest, LockScreenKillsPreventsClipboardPaste) {

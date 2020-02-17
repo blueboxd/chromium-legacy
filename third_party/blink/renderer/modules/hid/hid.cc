@@ -81,7 +81,7 @@ mojom::blink::HidDeviceFilterPtr ConvertDeviceFilter(
 }  // namespace
 
 HID::HID(ExecutionContext& context)
-    : ContextLifecycleObserver(&context),
+    : ExecutionContextLifecycleObserver(&context),
       feature_handle_for_scheduler_(context.GetScheduler()->RegisterFeature(
           SchedulingPolicy::Feature::kWebHID,
           {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {}
@@ -92,7 +92,7 @@ HID::~HID() {
 }
 
 ExecutionContext* HID::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 const AtomicString& HID::InterfaceName() const {
@@ -257,7 +257,7 @@ void HID::Trace(Visitor* visitor) {
   visitor->Trace(request_device_promises_);
   visitor->Trace(device_cache_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

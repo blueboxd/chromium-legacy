@@ -1621,7 +1621,7 @@ void InputMethodController::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(composition_range_);
   visitor->Trace(active_edit_context_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

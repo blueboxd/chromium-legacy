@@ -33,7 +33,7 @@ PresentationAvailability::PresentationAvailability(
     ExecutionContext* execution_context,
     const WTF::Vector<KURL>& urls,
     bool value)
-    : ContextLifecycleStateObserver(execution_context),
+    : ExecutionContextLifecycleStateObserver(execution_context),
       PageVisibilityObserver(Document::From(execution_context)->GetPage()),
       urls_(urls),
       value_(value),
@@ -48,7 +48,7 @@ const AtomicString& PresentationAvailability::InterfaceName() const {
 }
 
 ExecutionContext* PresentationAvailability::GetExecutionContext() const {
-  return ContextLifecycleStateObserver::GetExecutionContext();
+  return ExecutionContextLifecycleStateObserver::GetExecutionContext();
 }
 
 void PresentationAvailability::AddedEventListener(
@@ -123,7 +123,7 @@ bool PresentationAvailability::value() const {
 void PresentationAvailability::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
-  ContextLifecycleStateObserver::Trace(visitor);
+  ExecutionContextLifecycleStateObserver::Trace(visitor);
 }
 
 }  // namespace blink

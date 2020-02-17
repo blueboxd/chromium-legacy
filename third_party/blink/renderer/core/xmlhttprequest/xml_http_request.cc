@@ -289,7 +289,7 @@ XMLHttpRequest::XMLHttpRequest(
     v8::Isolate* isolate,
     bool is_isolated_world,
     scoped_refptr<SecurityOrigin> isolated_world_security_origin)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       progress_event_throttle_(
           MakeGarbageCollected<XMLHttpRequestProgressEventThrottle>(this)),
       isolate_(isolate),
@@ -2044,7 +2044,7 @@ const AtomicString& XMLHttpRequest::InterfaceName() const {
 }
 
 ExecutionContext* XMLHttpRequest::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 void XMLHttpRequest::ReportMemoryUsageToV8() {
@@ -2077,7 +2077,7 @@ void XMLHttpRequest::Trace(Visitor* visitor) {
   XMLHttpRequestEventTarget::Trace(visitor);
   ThreadableLoaderClient::Trace(visitor);
   DocumentParserClient::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 std::ostream& operator<<(std::ostream& ostream, const XMLHttpRequest* xhr) {

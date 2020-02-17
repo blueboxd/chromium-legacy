@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_SYNC_MODEL_IMPL_CLIENT_TAG_BASED_REMOTE_UPDATE_HANDLER_H_
 #define COMPONENTS_SYNC_MODEL_IMPL_CLIENT_TAG_BASED_REMOTE_UPDATE_HANDLER_H_
 
-#include <map>
 #include <memory>
 #include <string>
 #include <unordered_set>
@@ -32,13 +31,9 @@ class ProcessorEntity;
 class ClientTagBasedRemoteUpdateHandler {
  public:
   // All parameters must not be nullptr and they must outlive this object.
-  // |model_type_state|, |storage_key_to_tag_hash| and |entities| are
-  // ClientTagBasedModelTypeProcessor internal fields. This will be changed in
-  // future.
   ClientTagBasedRemoteUpdateHandler(
       ModelType type,
       ModelTypeSyncBridge* bridge,
-      std::map<std::string, ClientTagHash>* storage_key_to_tag_hash,
       ProcessorEntityTracker* entities);
 
   // Processes incremental updates from the sync server.
@@ -71,8 +66,8 @@ class ClientTagBasedRemoteUpdateHandler {
   // Gets the entity for the given tag hash, or null if there isn't one.
   ProcessorEntity* GetEntityForTagHash(const ClientTagHash& tag_hash);
 
-  // Create an entity in the entity map for |storage_key|.
-  // |storage_key| must not exist in |storage_key_to_tag_hash_|.
+  // Create an entity in the entity tracker for |storage_key|.
+  // |storage_key| must not exist in the entity tracker.
   ProcessorEntity* CreateEntity(const std::string& storage_key,
                                 const EntityData& data);
 
@@ -84,10 +79,6 @@ class ClientTagBasedRemoteUpdateHandler {
 
   // ModelTypeSyncBridge linked to associated processor.
   ModelTypeSyncBridge* const bridge_;
-
-  // This mapping allows us to convert from storage key to client tag hash.
-  // Should be replaced with new interface.
-  std::map<std::string, ClientTagHash>* const storage_key_to_tag_hash_;
 
   // A map of client tag hash to sync entities known to the processor.
   // Should be replaced with new interface.

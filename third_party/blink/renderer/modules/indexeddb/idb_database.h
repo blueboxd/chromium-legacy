@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_idb_object_store_parameters.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_idb_transaction_options.h"
 #include "third_party/blink/renderer/core/dom/dom_string_list.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database_callbacks.h"
@@ -61,7 +61,7 @@ class IDBObserver;
 class MODULES_EXPORT IDBDatabase final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<IDBDatabase>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(IDBDatabase);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -133,7 +133,7 @@ class MODULES_EXPORT IDBDatabase final
   // ScriptWrappable
   bool HasPendingActivity() const final;
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
   // EventTarget

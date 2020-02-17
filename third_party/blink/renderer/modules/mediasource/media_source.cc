@@ -120,7 +120,7 @@ MediaSource* MediaSource::Create(ExecutionContext* context) {
 }
 
 MediaSource::MediaSource(ExecutionContext* context)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       ready_state_(ClosedKeyword()),
       async_event_queue_(
           MakeGarbageCollected<EventQueue>(context,
@@ -379,7 +379,7 @@ const AtomicString& MediaSource::InterfaceName() const {
 }
 
 ExecutionContext* MediaSource::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 void MediaSource::Trace(Visitor* visitor) {
@@ -389,7 +389,7 @@ void MediaSource::Trace(Visitor* visitor) {
   visitor->Trace(active_source_buffers_);
   visitor->Trace(live_seekable_range_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void MediaSource::SetWebMediaSourceAndOpen(

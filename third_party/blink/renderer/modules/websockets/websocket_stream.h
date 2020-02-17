@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBSOCKETS_WEBSOCKET_STREAM_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_channel_client.h"
 #include "third_party/blink/renderer/modules/websockets/websocket_common.h"
@@ -35,7 +35,7 @@ class WebSocketStreamOptions;
 class MODULES_EXPORT WebSocketStream final
     : public ScriptWrappable,
       public ActiveScriptWrappable<WebSocketStream>,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public WebSocketChannelClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(WebSocketStream);
@@ -77,7 +77,7 @@ class MODULES_EXPORT WebSocketStream final
                 uint16_t /* code */,
                 const String& /* reason */) override;
 
-  // Implementation of ContextLifecycleObserver.
+  // Implementation of ExecutionContextLifecycleObserver.
   void ContextDestroyed() override;
 
   // Implementation of ActiveScriptWrappable.

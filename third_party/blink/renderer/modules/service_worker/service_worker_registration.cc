@@ -136,7 +136,7 @@ ServiceWorkerRegistration* ServiceWorkerRegistration::Take(
 ServiceWorkerRegistration::ServiceWorkerRegistration(
     ExecutionContext* execution_context,
     WebServiceWorkerRegistrationObjectInfo info)
-    : ContextLifecycleObserver(execution_context),
+    : ExecutionContextLifecycleObserver(execution_context),
       registration_id_(info.registration_id),
       scope_(std::move(info.scope)),
       stopped_(false) {
@@ -148,7 +148,7 @@ ServiceWorkerRegistration::ServiceWorkerRegistration(
 ServiceWorkerRegistration::ServiceWorkerRegistration(
     ExecutionContext* execution_context,
     mojom::blink::ServiceWorkerRegistrationObjectInfoPtr info)
-    : ContextLifecycleObserver(execution_context),
+    : ExecutionContextLifecycleObserver(execution_context),
       registration_id_(info->registration_id),
       scope_(std::move(info->scope)),
       stopped_(false) {
@@ -317,7 +317,7 @@ void ServiceWorkerRegistration::Trace(Visitor* visitor) {
   visitor->Trace(active_);
   visitor->Trace(navigation_preload_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   Supplementable<ServiceWorkerRegistration>::Trace(visitor);
 }
 

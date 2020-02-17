@@ -319,7 +319,6 @@ class CORE_EXPORT HTMLSelectElement final
   Member<HTMLOptionElement> active_selection_end_;
   Member<HTMLOptionElement> option_to_scroll_to_;
   Member<HTMLOptionElement> suggested_option_;
-  scoped_refptr<const ComputedStyle> option_style_;
   bool uses_menu_list_ = true;
   bool is_multiple_;
   bool is_in_non_contiguous_selection_;

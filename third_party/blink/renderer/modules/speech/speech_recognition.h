@@ -31,7 +31,7 @@
 #include "third_party/blink/public/mojom/speech/speech_recognizer.mojom-blink.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -50,7 +50,7 @@ class SpeechRecognitionController;
 class MODULES_EXPORT SpeechRecognition final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<SpeechRecognition>,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public mojom::blink::SpeechRecognitionSessionClient,
       public PageVisibilityObserver {
   USING_GARBAGE_COLLECTED_MIXIN(SpeechRecognition);
@@ -102,7 +102,7 @@ class MODULES_EXPORT SpeechRecognition final
   // ScriptWrappable
   bool HasPendingActivity() const final;
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
   // PageVisibilityObserver

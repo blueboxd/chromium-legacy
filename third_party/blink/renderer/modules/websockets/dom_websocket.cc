@@ -182,7 +182,7 @@ constexpr WebSocketCommon::State DOMWebSocket::kClosing;
 constexpr WebSocketCommon::State DOMWebSocket::kClosed;
 
 DOMWebSocket::DOMWebSocket(ExecutionContext* context)
-    : ContextLifecycleStateObserver(context),
+    : ExecutionContextLifecycleStateObserver(context),
       buffered_amount_(0),
       consumed_buffered_amount_(0),
       buffered_amount_after_close_(0),
@@ -493,7 +493,7 @@ const AtomicString& DOMWebSocket::InterfaceName() const {
 }
 
 ExecutionContext* DOMWebSocket::GetExecutionContext() const {
-  return ContextLifecycleStateObserver::GetExecutionContext();
+  return ExecutionContextLifecycleStateObserver::GetExecutionContext();
 }
 
 void DOMWebSocket::ContextDestroyed() {
@@ -704,7 +704,7 @@ void DOMWebSocket::Trace(Visitor* visitor) {
   visitor->Trace(event_queue_);
   WebSocketChannelClient::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleStateObserver::Trace(visitor);
+  ExecutionContextLifecycleStateObserver::Trace(visitor);
 }
 
 }  // namespace blink

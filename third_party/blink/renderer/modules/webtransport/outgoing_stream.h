@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
@@ -34,7 +34,7 @@ class WritableStreamDefaultController;
 class MODULES_EXPORT OutgoingStream
     : public ScriptWrappable,
       public ActiveScriptWrappable<OutgoingStream>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(OutgoingStream, Dispose);
   USING_GARBAGE_COLLECTED_MIXIN(OutgoingStream);
@@ -70,7 +70,7 @@ class MODULES_EXPORT OutgoingStream
   // remotely or locally.
   bool HasPendingActivity() const final { return writing_aborted_resolver_; }
 
-  // Implementation of ContextLifecycleObserver.
+  // Implementation of ExecutionContextLifecycleObserver.
   void ContextDestroyed() override;
 
   void Trace(Visitor*) override;

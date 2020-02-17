@@ -459,7 +459,7 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
 
 CacheStorage::CacheStorage(ExecutionContext* context,
                            GlobalFetch::ScopedFetcher* fetcher)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       scoped_fetcher_(fetcher),
       blob_client_list_(MakeGarbageCollected<CacheStorageBlobClientList>()),
       ever_used_(false) {
@@ -500,7 +500,7 @@ void CacheStorage::Trace(Visitor* visitor) {
   visitor->Trace(scoped_fetcher_);
   visitor->Trace(blob_client_list_);
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 bool CacheStorage::IsAllowed(ScriptState* script_state) {

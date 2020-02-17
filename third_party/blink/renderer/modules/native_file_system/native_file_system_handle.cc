@@ -22,7 +22,7 @@ using mojom::blink::NativeFileSystemErrorPtr;
 NativeFileSystemHandle::NativeFileSystemHandle(
     ExecutionContext* execution_context,
     const String& name)
-    : ContextLifecycleObserver(execution_context), name_(name) {}
+    : ExecutionContextLifecycleObserver(execution_context), name_(name) {}
 
 // static
 NativeFileSystemHandle* NativeFileSystemHandle::CreateFromMojoEntry(
@@ -93,7 +93,7 @@ ScriptPromise NativeFileSystemHandle::requestPermission(
 
 void NativeFileSystemHandle::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

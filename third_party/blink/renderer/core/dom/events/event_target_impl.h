@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_TARGET_IMPL_H_
 
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 class ScriptState;
@@ -20,8 +20,9 @@ namespace blink {
 // increase the size of EventTarget and all of its subclasses with code
 // that are mostly unnecessary for them, resulting in a performance
 // decrease.
-class CORE_EXPORT EventTargetImpl final : public EventTargetWithInlineData,
-                                          public ContextLifecycleObserver {
+class CORE_EXPORT EventTargetImpl final
+    : public EventTargetWithInlineData,
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(EventTargetImpl);
 
  public:

@@ -16,7 +16,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/focus_changed_observer.h"
 #include "third_party/blink/renderer/modules/xr/xr_session.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
@@ -59,7 +59,7 @@ class XRSessionInit;
 // The XR object keeps weak references to XRSession objects after they were
 // returned through a successful requestSession promise, but does not own them.
 class XR final : public EventTargetWithInlineData,
-                 public ContextLifecycleObserver,
+                 public ExecutionContextLifecycleObserver,
                  public device::mojom::blink::VRServiceClient,
                  public FocusChangedObserver {
   DEFINE_WRAPPERTYPEINFO();
@@ -95,7 +95,7 @@ class XR final : public EventTargetWithInlineData,
   ExecutionContext* GetExecutionContext() const override;
   const AtomicString& InterfaceName() const override;
 
-  // ContextLifecycleObserver overrides.
+  // ExecutionContextLifecycleObserver overrides.
   void ContextDestroyed() override;
   void Trace(Visitor*) override;
 

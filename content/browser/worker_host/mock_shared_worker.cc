@@ -190,7 +190,8 @@ void MockSharedWorkerClient::OnConnected(
     on_connected_features_.insert(feature);
 }
 
-void MockSharedWorkerClient::OnScriptLoadFailed() {
+void MockSharedWorkerClient::OnScriptLoadFailed(
+    const std::string& error_message) {
   DCHECK(!on_script_load_failed_);
   on_script_load_failed_ = true;
 }

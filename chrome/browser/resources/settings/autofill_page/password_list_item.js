@@ -15,6 +15,8 @@ Polymer({
     ShowPasswordBehavior,
   ],
 
+  properties: {isOptedInForAccountStorage: {type: Boolean, value: false}},
+
   /**
    * Selects the password on tap if revealed.
    * @private
@@ -32,6 +34,26 @@ Polymer({
   onPasswordMenuTap_() {
     this.fire(
         'password-menu-tap', {target: this.$.passwordMenu, listItem: this});
+  },
+
+  /**
+   * @private
+   * @param {!PasswordManagerProxy.UiEntryWithPassword} item This row's item.
+   * @return {string}
+   */
+  getStorageText_(item) {
+    // TODO(crbug.com/1049141): Add proper translated strings once we have them.
+    return item.entry.fromAccountStore ? 'Account' : 'Local';
+  },
+
+  /**
+   * @private
+   * @param {!PasswordManagerProxy.UiEntryWithPassword} item This row's item.
+   * @return {string}
+   */
+  getStorageIcon_(item) {
+    // TODO(crbug.com/1049141): Add the proper icons once we know them.
+    return item.entry.fromAccountStore ? 'cr:sync' : 'cr:computer';
   },
 
   /**

@@ -33,7 +33,7 @@ BluetoothRemoteGATTCharacteristic::BluetoothRemoteGATTCharacteristic(
     mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr characteristic,
     BluetoothRemoteGATTService* service,
     BluetoothDevice* device)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       characteristic_(std::move(characteristic)),
       service_(service),
       device_(device) {
@@ -68,7 +68,7 @@ const WTF::AtomicString& BluetoothRemoteGATTCharacteristic::InterfaceName()
 
 ExecutionContext* BluetoothRemoteGATTCharacteristic::GetExecutionContext()
     const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 bool BluetoothRemoteGATTCharacteristic::HasPendingActivity() const {
@@ -459,7 +459,7 @@ void BluetoothRemoteGATTCharacteristic::Trace(Visitor* visitor) {
   visitor->Trace(value_);
   visitor->Trace(device_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

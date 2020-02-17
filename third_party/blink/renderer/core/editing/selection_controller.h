@@ -43,7 +43,7 @@ class LocalFrame;
 
 class CORE_EXPORT SelectionController final
     : public GarbageCollected<SelectionController>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(SelectionController);
 
  public:
@@ -116,7 +116,7 @@ class CORE_EXPORT SelectionController final
 
   FrameSelection& Selection() const;
 
-  // Implements |ContextLifecycleObserver|.
+  // Implements |ExecutionContextLifecycleObserver|.
   // TODO(yosin): We should relocate |original_base_in_flat_tree_| when DOM tree
   // changed.
   void ContextDestroyed() final;

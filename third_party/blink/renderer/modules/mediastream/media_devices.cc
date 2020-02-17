@@ -60,7 +60,7 @@ class PromiseResolverCallbacks final : public UserMediaRequest::Callbacks {
 }  // namespace
 
 MediaDevices::MediaDevices(ExecutionContext* context)
-    : ContextLifecycleObserver(context), stopped_(false) {}
+    : ExecutionContextLifecycleObserver(context), stopped_(false) {}
 
 MediaDevices::~MediaDevices() = default;
 
@@ -158,7 +158,7 @@ const AtomicString& MediaDevices::InterfaceName() const {
 }
 
 ExecutionContext* MediaDevices::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 void MediaDevices::RemoveAllEventListeners() {
@@ -371,7 +371,7 @@ void MediaDevices::Trace(Visitor* visitor) {
   visitor->Trace(scheduled_events_);
   visitor->Trace(requests_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

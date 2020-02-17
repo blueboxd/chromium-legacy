@@ -11,7 +11,7 @@
 #include "third_party/blink/public/mojom/mediastream/media_devices.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/mediastream/media_device_info.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
@@ -32,7 +32,7 @@ class ScriptState;
 class MODULES_EXPORT MediaDevices final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<MediaDevices>,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public mojom::blink::MediaDevicesListener {
   USING_GARBAGE_COLLECTED_MIXIN(MediaDevices);
   DEFINE_WRAPPERTYPEINFO();
@@ -64,7 +64,7 @@ class MODULES_EXPORT MediaDevices final
   // ScriptWrappable
   bool HasPendingActivity() const override;
 
-  // ContextLifecycleObserver overrides.
+  // ExecutionContextLifecycleObserver overrides.
   void ContextDestroyed() override;
 
   // mojom::blink::MediaDevicesListener implementation.

@@ -243,7 +243,7 @@ void TextSuggestionController::HandlePotentialSuggestionTap(
 
 void TextSuggestionController::Trace(Visitor* visitor) {
   visitor->Trace(frame_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void TextSuggestionController::ReplaceActiveSuggestionRange(

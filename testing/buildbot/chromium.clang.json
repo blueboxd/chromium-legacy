@@ -7722,12 +7722,6 @@
         "test_target": "//components/gcm_driver/android:components_gcm_driver_junit_tests"
       },
       {
-        "name": "components_invalidation_impl_junit_tests",
-        "swarming": {},
-        "test": "components_invalidation_impl_junit_tests",
-        "test_target": "//components/invalidation/impl:components_invalidation_impl_junit_tests"
-      },
-      {
         "name": "components_policy_junit_tests",
         "swarming": {},
         "test": "components_policy_junit_tests",

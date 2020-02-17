@@ -20,7 +20,7 @@ namespace blink {
 
 DOMTaskSignal::DOMTaskSignal(Document* document, WebSchedulingPriority priority)
     : AbortSignal(document->ToExecutionContext()),
-      ContextLifecycleObserver(document),
+      ExecutionContextLifecycleObserver(document),
       priority_(priority),
       web_scheduling_task_queue_(document->GetScheduler()
                                      ->ToFrameScheduler()
@@ -53,7 +53,7 @@ base::SingleThreadTaskRunner* DOMTaskSignal::GetTaskRunner() {
 
 void DOMTaskSignal::Trace(Visitor* visitor) {
   AbortSignal::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

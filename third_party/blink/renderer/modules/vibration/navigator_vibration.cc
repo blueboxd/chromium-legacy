@@ -35,7 +35,7 @@
 namespace blink {
 
 NavigatorVibration::NavigatorVibration(Navigator& navigator)
-    : ContextLifecycleObserver(navigator.GetFrame()->GetDocument()) {}
+    : ExecutionContextLifecycleObserver(navigator.GetFrame()->GetDocument()) {}
 
 NavigatorVibration::~NavigatorVibration() = default;
 
@@ -146,7 +146,7 @@ void NavigatorVibration::ContextDestroyed() {
 void NavigatorVibration::Trace(Visitor* visitor) {
   visitor->Trace(controller_);
   Supplement<Navigator>::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

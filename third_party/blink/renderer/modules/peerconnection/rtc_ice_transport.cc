@@ -158,7 +158,8 @@ RTCIceTransport::RTCIceTransport(
     scoped_refptr<base::SingleThreadTaskRunner> host_thread,
     std::unique_ptr<IceTransportAdapterCrossThreadFactory> adapter_factory,
     RTCPeerConnection* peer_connection)
-    : ContextLifecycleObserver(context), peer_connection_(peer_connection) {
+    : ExecutionContextLifecycleObserver(context),
+      peer_connection_(peer_connection) {
   DCHECK(context);
   DCHECK(proxy_thread);
   DCHECK(host_thread);
@@ -568,7 +569,7 @@ const AtomicString& RTCIceTransport::InterfaceName() const {
 }
 
 ExecutionContext* RTCIceTransport::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 void RTCIceTransport::ContextDestroyed() {
@@ -590,7 +591,7 @@ void RTCIceTransport::Trace(Visitor* visitor) {
   visitor->Trace(consumer_);
   visitor->Trace(peer_connection_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void RTCIceTransport::Dispose() {

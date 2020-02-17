@@ -24,7 +24,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -45,7 +45,7 @@ class MediaQuerySet;
 class CORE_EXPORT MediaQueryList final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<MediaQueryList>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MediaQueryList);
 
@@ -79,7 +79,7 @@ class CORE_EXPORT MediaQueryList final
   // From ScriptWrappable
   bool HasPendingActivity() const final;
 
-  // From ContextLifecycleObserver
+  // From ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
   const AtomicString& InterfaceName() const override;

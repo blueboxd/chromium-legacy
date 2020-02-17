@@ -19,6 +19,10 @@ class NetworkContext;
 }  // namespace mojom
 }  // namespace network
 
+namespace storage {
+class DatabaseTracker;
+}  // namespace storage
+
 namespace content {
 
 // WebTestClientImpl is an implementation of WebTestClient mojo interface that
@@ -28,10 +32,12 @@ namespace content {
 class WebTestClientImpl : public mojom::WebTestClient {
  public:
   static void Create(int render_process_id,
+                     storage::DatabaseTracker* database_tracker,
                      network::mojom::NetworkContext* network_context,
                      mojo::PendingReceiver<mojom::WebTestClient> receiver);
 
   WebTestClientImpl(int render_process_id,
+                    storage::DatabaseTracker* database_tracker,
                     network::mojom::NetworkContext* network_context);
   ~WebTestClientImpl() override;
 
@@ -58,6 +64,7 @@ class WebTestClientImpl : public mojom::WebTestClient {
   void WebTestRuntimeFlagsChanged(
       base::Value changed_web_test_runtime_flags) override;
   void DeleteAllCookies() override;
+  void ClearAllDatabases() override;
   void GetWritableDirectory(GetWritableDirectoryCallback callback) override;
   void RegisterIsolatedFileSystem(
       const std::vector<base::FilePath>& absolute_filenames,
@@ -65,6 +72,8 @@ class WebTestClientImpl : public mojom::WebTestClient {
   void SetFilePathForMockFileDialog(const base::FilePath& path) override;
 
   int render_process_id_;
+
+  scoped_refptr<storage::DatabaseTracker> database_tracker_;
 
   mojo::Remote<network::mojom::CookieManager> cookie_manager_;
 };

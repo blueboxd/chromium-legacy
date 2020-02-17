@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/public/cpp/login_screen_test_api.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
@@ -9,6 +10,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
+#include "chrome/browser/chromeos/login/test/device_state_mixin.h"
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -107,6 +109,73 @@ IN_PROC_BROWSER_TEST_F(LoginUITest, OobeCatchException) {
   test::OobeJS().ExpectTrue("cr.ErrorStore.getInstance().length == 1");
   test::OobeJS().ExecuteAsync("consle.error('Some error')");
   test::OobeJS().ExpectTrue("cr.ErrorStore.getInstance().length == 2");
+}
+
+class LoginViewUITest : public LoginManagerTest {
+ public:
+  LoginViewUITest()
+      : LoginManagerTest(false, false /* should_initialize_webui */) {
+    set_force_webui_login(false);
+    for (size_t i = 0; i < 10; ++i) {
+      const std::string email = "a" + base::NumberToString(i) + "@gmail.com";
+      const std::string gaia_id = base::NumberToString(i) + "111111111";
+      test_users_.push_back(AccountId::FromUserEmailGaiaId(email, gaia_id));
+    }
+  }
+  ~LoginViewUITest() override = default;
+
+ protected:
+  void AddUsers() {
+    for (const auto& user : test_users_)
+      RegisterUser(user);
+  }
+  std::vector<AccountId> test_users_;
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
+};
+
+IN_PROC_BROWSER_TEST_F(LoginViewUITest, PRE_UserRemoval) {
+  AddUsers();
+}
+
+IN_PROC_BROWSER_TEST_F(LoginViewUITest, UserRemoval) {
+  const int users_count = test_users_.size();
+  EXPECT_EQ(users_count, ash::LoginScreenTestApi::GetUsersCount());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+
+  // Remove the first user.
+  EXPECT_TRUE(ash::LoginScreenTestApi::RemoveUser(test_users_[0]));
+  EXPECT_EQ(users_count - 1, ash::LoginScreenTestApi::GetUsersCount());
+
+  // Can not remove twice.
+  EXPECT_FALSE(ash::LoginScreenTestApi::RemoveUser(test_users_[0]));
+  EXPECT_EQ(users_count - 1, ash::LoginScreenTestApi::GetUsersCount());
+
+  for (int i = 1; i < users_count; ++i) {
+    EXPECT_TRUE(ash::LoginScreenTestApi::RemoveUser(test_users_[i]));
+    EXPECT_EQ(users_count - i - 1, ash::LoginScreenTestApi::GetUsersCount());
+  }
+
+  // Gaia dialog should be shown again as there are no users anymore.
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginViewUITest, PRE_UserReverseRemoval) {
+  AddUsers();
+}
+
+IN_PROC_BROWSER_TEST_F(LoginViewUITest, UserReverseRemoval) {
+  const int users_count = test_users_.size();
+  EXPECT_EQ(users_count, ash::LoginScreenTestApi::GetUsersCount());
+  EXPECT_FALSE(ash::LoginScreenTestApi::IsOobeDialogVisible());
+
+  for (int i = users_count - 1; i >= 0; --i) {
+    EXPECT_TRUE(ash::LoginScreenTestApi::RemoveUser(test_users_[i]));
+    EXPECT_EQ(i, ash::LoginScreenTestApi::GetUsersCount());
+  }
+
+  // Gaia dialog should be shown again as there are no users anymore.
+  EXPECT_TRUE(ash::LoginScreenTestApi::IsOobeDialogVisible());
 }
 
 }  // namespace chromeos

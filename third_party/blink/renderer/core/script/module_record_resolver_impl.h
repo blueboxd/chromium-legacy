@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/boxed_v8_module.h"
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/script/module_record_resolver.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
@@ -25,11 +25,12 @@ class ModuleRecord;
 // ModuleMap (via Modulator) and V8 bindings.
 class CORE_EXPORT ModuleRecordResolverImpl final
     : public ModuleRecordResolver,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
  public:
   explicit ModuleRecordResolverImpl(Modulator* modulator,
                                     ExecutionContext* execution_context)
-      : ContextLifecycleObserver(execution_context), modulator_(modulator) {}
+      : ExecutionContextLifecycleObserver(execution_context),
+        modulator_(modulator) {}
 
   void Trace(Visitor*) override;
   USING_GARBAGE_COLLECTED_MIXIN(ModuleRecordResolverImpl);
@@ -48,7 +49,7 @@ class CORE_EXPORT ModuleRecordResolverImpl final
                                 v8::Local<v8::Module> referrer,
                                 ExceptionState&) final;
 
-  // Implements ContextLifecycleObserver:
+  // Implements ExecutionContextLifecycleObserver:
   void ContextDestroyed() final;
 
   // Corresponds to the spec concept "referencingModule.[[HostDefined]]".

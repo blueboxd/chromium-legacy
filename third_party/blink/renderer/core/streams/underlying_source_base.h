@@ -9,8 +9,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -22,7 +22,7 @@ class ReadableStreamDefaultControllerWithScriptScope;
 
 class CORE_EXPORT UnderlyingSourceBase
     : public ScriptWrappable,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(UnderlyingSourceBase);
 
@@ -41,13 +41,14 @@ class CORE_EXPORT UnderlyingSourceBase
 
   ScriptValue type(ScriptState*) const;
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   // TODO(ricea): Is this still useful?
   void ContextDestroyed() override;
 
  protected:
   explicit UnderlyingSourceBase(ScriptState* script_state)
-      : ContextLifecycleObserver(ExecutionContext::From(script_state)) {}
+      : ExecutionContextLifecycleObserver(
+            ExecutionContext::From(script_state)) {}
 
   ReadableStreamDefaultControllerWithScriptScope* Controller() const {
     return controller_;

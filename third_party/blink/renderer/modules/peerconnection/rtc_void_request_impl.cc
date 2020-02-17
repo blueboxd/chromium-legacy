@@ -42,7 +42,7 @@ RTCVoidRequestImpl::RTCVoidRequestImpl(
     RTCPeerConnection* requester,
     V8VoidFunction* success_callback,
     V8RTCPeerConnectionErrorCallback* error_callback)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       operation_(std::move(operation)),
       success_callback_(success_callback),
       error_callback_(error_callback),
@@ -92,7 +92,7 @@ void RTCVoidRequestImpl::Trace(Visitor* visitor) {
   visitor->Trace(error_callback_);
   visitor->Trace(requester_);
   RTCVoidRequest::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

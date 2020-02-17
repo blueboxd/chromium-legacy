@@ -17,7 +17,7 @@
 namespace blink {
 
 ScriptPromiseResolver::ScriptPromiseResolver(ScriptState* script_state)
-    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
+    : ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)),
       state_(kPending),
       script_state_(script_state),
       resolver_(script_state),
@@ -120,7 +120,7 @@ void ScriptPromiseResolver::Trace(blink::Visitor* visitor) {
   visitor->Trace(script_state_);
   visitor->Trace(resolver_);
   visitor->Trace(value_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

@@ -31,7 +31,7 @@
 #include "services/network/public/mojom/url_loader_factory.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -46,7 +46,7 @@ class URLRegistrable;
 
 class CORE_EXPORT PublicURLManager final
     : public GarbageCollected<PublicURLManager>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(PublicURLManager);
 
  public:
@@ -68,7 +68,7 @@ class CORE_EXPORT PublicURLManager final
   // If the URL fails to resolve the request will simply be disconnected.
   void Resolve(const KURL&, mojo::PendingReceiver<mojom::blink::BlobURLToken>);
 
-  // ContextLifecycleObserver interface.
+  // ExecutionContextLifecycleObserver interface.
   void ContextDestroyed() override;
 
   void Trace(Visitor*) override;

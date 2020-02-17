@@ -27,7 +27,7 @@
 namespace blink {
 
 Worklet::Worklet(Document* document)
-    : ContextLifecycleObserver(document),
+    : ExecutionContextLifecycleObserver(document),
       module_responses_map_(MakeGarbageCollected<WorkletModuleResponsesMap>()) {
   DCHECK(IsMainThread());
 }
@@ -194,7 +194,7 @@ void Worklet::Trace(Visitor* visitor) {
   visitor->Trace(module_responses_map_);
   visitor->Trace(pending_tasks_set_);
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

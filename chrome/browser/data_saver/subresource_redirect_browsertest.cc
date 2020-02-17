@@ -328,8 +328,9 @@ class RedirectDisabledSubresourceRedirectBrowserTest
 //  This test loads image.html, which triggers a subresource request
 //  for image.png.  This triggers an internal redirect to the mocked
 //  compression server, which responds with HTTP_OK.
-IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
-                       TestHTMLLoadRedirectSuccess) {
+IN_PROC_BROWSER_TEST_F(
+    SubresourceRedirectBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(TestHTMLLoadRedirectSuccess)) {
   EnableDataSaver(true);
   CreateUkmRecorder();
   SetUpPublicImageURLPaths({"/load_image/image.png"});
@@ -359,8 +360,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
 //  request for private_url_image.png.  This triggers an internal redirect
 //  to the mock compression server, which bypasses the request. The
 //  mock compression server creates a redirect to the original resource.
-IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
-                       TestHTMLLoadRedirectBypass) {
+IN_PROC_BROWSER_TEST_F(
+    SubresourceRedirectBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(TestHTMLLoadRedirectBypass)) {
   EnableDataSaver(true);
   CreateUkmRecorder();
   SetUpPublicImageURLPaths({"/load_image/private_url_image.png"});
@@ -539,7 +541,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
 //  This test verifies that the client will utilize the fallback logic if the
 //  server/network fails and returns nothing.
 IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
-                       FallbackOnServerFailure) {
+                       DISABLE_ON_WIN_MAC_CHROMEOS(FallbackOnServerFailure)) {
   EnableDataSaver(true);
   CreateUkmRecorder();
   SetUpPublicImageURLPaths({"/load_image/image.png"});
@@ -568,8 +570,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
   VerifyIneligibleOtherImageUkm(1);
 }
 
-IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
-                       TestTwoPublicImagesAreRedirected) {
+IN_PROC_BROWSER_TEST_F(
+    SubresourceRedirectBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(TestTwoPublicImagesAreRedirected)) {
   EnableDataSaver(true);
   CreateUkmRecorder();
   SetUpPublicImageURLPaths(
@@ -688,8 +691,9 @@ IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
 }
 
 // This test verifies that no image redirect happens when empty hints is sent.
-IN_PROC_BROWSER_TEST_F(SubresourceRedirectBrowserTest,
-                       TestNoRedirectWithEmptyHints) {
+IN_PROC_BROWSER_TEST_F(
+    SubresourceRedirectBrowserTest,
+    DISABLE_ON_WIN_MAC_CHROMEOS(TestNoRedirectWithEmptyHints)) {
   EnableDataSaver(true);
   CreateUkmRecorder();
   SetUpPublicImageURLPaths({});

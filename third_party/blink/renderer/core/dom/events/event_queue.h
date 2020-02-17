@@ -28,7 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_EVENTS_EVENT_QUEUE_H_
 
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 
 namespace blink {
@@ -37,7 +37,7 @@ class Event;
 class ExecutionContext;
 
 class CORE_EXPORT EventQueue final : public GarbageCollected<EventQueue>,
-                                     public ContextLifecycleObserver {
+                                     public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(EventQueue);
 
  public:

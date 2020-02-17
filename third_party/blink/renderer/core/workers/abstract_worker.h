@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_listener.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -47,14 +47,15 @@ class ExecutionContext;
 
 // Implementation of the AbstractWorker interface defined in the WebWorker HTML
 // spec: https://html.spec.whatwg.org/C/#abstractworker
-class CORE_EXPORT AbstractWorker : public EventTargetWithInlineData,
-                                   public ContextLifecycleStateObserver {
+class CORE_EXPORT AbstractWorker
+    : public EventTargetWithInlineData,
+      public ExecutionContextLifecycleStateObserver {
   USING_GARBAGE_COLLECTED_MIXIN(AbstractWorker);
 
  public:
   // EventTarget APIs
   ExecutionContext* GetExecutionContext() const final {
-    return ContextLifecycleObserver::GetExecutionContext();
+    return ExecutionContextLifecycleObserver::GetExecutionContext();
   }
 
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(error, kError)

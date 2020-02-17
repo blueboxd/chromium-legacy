@@ -107,7 +107,7 @@ WTF::String WebTimeRangesToString(const WebTimeRanges& ranges) {
 SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> web_source_buffer,
                            MediaSource* source,
                            EventQueue* async_event_queue)
-    : ContextLifecycleObserver(source->GetExecutionContext()),
+    : ExecutionContextLifecycleObserver(source->GetExecutionContext()),
       web_source_buffer_(std::move(web_source_buffer)),
       source_(source),
       track_defaults_(MakeGarbageCollected<TrackDefaultList>()),
@@ -1170,7 +1170,7 @@ void SourceBuffer::ContextDestroyed() {
 }
 
 ExecutionContext* SourceBuffer::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 const AtomicString& SourceBuffer::InterfaceName() const {
@@ -1452,7 +1452,7 @@ void SourceBuffer::Trace(Visitor* visitor) {
   visitor->Trace(audio_tracks_);
   visitor->Trace(video_tracks_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

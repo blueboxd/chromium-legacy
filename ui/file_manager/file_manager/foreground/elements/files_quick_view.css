@@ -90,11 +90,11 @@ cr-button:focus:not(:active) {
 }
 
 #metadata-button {
-  background: -webkit-image-set(
-      url(../images/files/ui/quick_view/info_outline.png) 1x,
-      url(../images/files/ui/quick_view/2x/info_outline.png) 2x)
-    center
-    no-repeat;
+  background-image: -webkit-image-set(
+    url(../images/files/ui/quick_view/info_outline.png) 1x,
+    url(../images/files/ui/quick_view/2x/info_outline.png) 2x);
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 #innerContentPanel {
@@ -154,17 +154,16 @@ cr-button:focus:not(:active) {
   text-overflow: ellipsis;
 }
 
+:host([files-ng]) #file-path {
+  margin-inline-start: 8px;
+}
+
 .buttons-group {
   display: flex;
 }
 
-#metadata-button {
-  --files-toggle-ripple-bg-color: white;
-  --files-toggle-ripple-activated-opacity: 0.3;
-}
-
-cr-button,
-files-icon-button {
+:host(:not([files-ng])) cr-button,
+:host(:not([files-ng])) files-icon-button {
   --ink-color: currentColor;
   border: none;
   border-radius: 2px;
@@ -176,6 +175,60 @@ files-icon-button {
   text-transform: uppercase;
 }
 
+:host([files-ng]) cr-button {
+  --hover-bg-color: rgba(0, 0, 0, .08);
+  --ink-color: var(--google-blue-refresh-300);
+  --text-color: currentColor;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  box-sizing: border-box;
+  height: 36px;
+  margin: 0 6px;
+  min-width: 36px;
+  padding: calc(6px - 1px);
+  width: 36px;
+}
+
+:host([files-ng]) cr-button::after {
+  content: '';
+  height: 48px;
+  position: absolute;
+  width: 48px;
+}
+
+:host([files-ng]) #back-button > .icon,
+:host([files-ng]) #open-button > .icon,
+:host([files-ng]) #delete-button > .icon,
+:host([files-ng]) #info-button > .icon {
+  -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  background-color: currentColor;
+  background-image: none;
+  height: 36px;
+  width: 36px;
+}
+
+iron-icon {
+  height: 16px;
+  width: 16px;
+}
+
+:host([files-ng]) #back-button > iron-icon {
+  display: none;
+}
+
+:host(:not([files-ng])) #back-button > .icon {
+  display: none;
+}
+
+:host([files-ng]) #back-button > .icon {
+  -webkit-mask-image: url(../images/files/ui/back.svg);
+}
+
+:host([files-ng]) #open-button > .icon {
+  -webkit-mask-image: url(../images/files/ui/external_link.svg);
+}
+
 #delete-button > .icon {
   -webkit-mask-image: url(../images/files/ui/delete.svg);
   background-color: currentColor;
@@ -183,9 +236,29 @@ files-icon-button {
   width: 16px;
 }
 
-iron-icon {
-  height: 16px;
-  width: 16px;
+:host([files-ng]) #delete-button > .icon {
+  -webkit-mask-image: url(../images/files/ui/delete_ng.svg);
+}
+
+:host(:not([files-ng])) #info-button {
+  display: none;
+}
+
+#metadata-button {
+  --files-toggle-ripple-bg-color: white;
+  --files-toggle-ripple-activated-opacity: 0.3;
+}
+
+:host([files-ng]) #metadata-button {
+  display: none;
+}
+
+:host([files-ng]) #info-button > .icon {
+  -webkit-mask-image: url(../images/files/ui/info.svg);
+}
+
+:host([files-ng]) cr-button:focus:not(:active) {
+  border: 1px solid var(--google-blue-600);
 }
 
 #metadata-box {

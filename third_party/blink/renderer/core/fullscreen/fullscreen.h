@@ -35,7 +35,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
@@ -52,7 +52,7 @@ class ScriptPromiseResolver;
 // actually enter and exit fullscreen it (indirectly) uses FullscreenController.
 class CORE_EXPORT Fullscreen final : public GarbageCollected<Fullscreen>,
                                      public Supplement<Document>,
-                                     public ContextLifecycleObserver {
+                                     public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(Fullscreen);
 
  public:
@@ -103,7 +103,7 @@ class CORE_EXPORT Fullscreen final : public GarbageCollected<Fullscreen>,
 
   static void ElementRemoved(Element&);
 
-  // ContextLifecycleObserver:
+  // ExecutionContextLifecycleObserver:
   void ContextDestroyed() override;
 
   void Trace(Visitor*) override;

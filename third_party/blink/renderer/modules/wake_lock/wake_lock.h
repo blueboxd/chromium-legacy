@@ -10,7 +10,7 @@
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -31,7 +31,7 @@ class ScriptState;
 class WakeLockManager;
 
 class MODULES_EXPORT WakeLock final : public ScriptWrappable,
-                                      public ContextLifecycleObserver,
+                                      public ExecutionContextLifecycleObserver,
                                       public PageVisibilityObserver {
   USING_GARBAGE_COLLECTED_MIXIN(WakeLock);
   DEFINE_WRAPPERTYPEINFO();
@@ -56,7 +56,7 @@ class MODULES_EXPORT WakeLock final : public ScriptWrappable,
                                     ScriptPromiseResolver*,
                                     mojom::blink::PermissionStatus);
 
-  // ContextLifecycleObserver implementation
+  // ExecutionContextLifecycleObserver implementation
   void ContextDestroyed() override;
 
   // PageVisibilityObserver implementation

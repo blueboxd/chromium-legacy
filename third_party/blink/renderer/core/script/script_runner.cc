@@ -40,7 +40,7 @@
 namespace blink {
 
 ScriptRunner::ScriptRunner(Document* document)
-    : ContextLifecycleStateObserver(document),
+    : ExecutionContextLifecycleStateObserver(document),
       document_(document),
       task_runner_(document->GetTaskRunner(TaskType::kNetworking)) {
   DCHECK(document);
@@ -262,7 +262,7 @@ void ScriptRunner::ExecuteTask() {
 }
 
 void ScriptRunner::Trace(Visitor* visitor) {
-  ContextLifecycleStateObserver::Trace(visitor);
+  ExecutionContextLifecycleStateObserver::Trace(visitor);
   visitor->Trace(document_);
   visitor->Trace(pending_in_order_scripts_);
   visitor->Trace(pending_async_scripts_);

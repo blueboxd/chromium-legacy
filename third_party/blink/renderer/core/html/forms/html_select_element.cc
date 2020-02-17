@@ -2149,7 +2149,6 @@ void HTMLSelectElement::DetachLayoutTree(bool performing_reattach) {
     popup_->DisconnectClient();
   SetPopupIsVisible(false);
   popup_ = nullptr;
-  option_style_ = nullptr;
   UnobserveTreeMutation();
 }
 
@@ -2253,8 +2252,7 @@ void HTMLSelectElement::ChangeRendering() {
 }
 
 const ComputedStyle* HTMLSelectElement::OptionStyle() const {
-  DCHECK(UsesMenuList());
-  return option_style_.get();
+  return select_type_->OptionStyle();
 }
 
 }  // namespace blink

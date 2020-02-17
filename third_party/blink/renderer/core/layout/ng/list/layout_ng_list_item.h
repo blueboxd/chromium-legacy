@@ -45,8 +45,6 @@ class CORE_EXPORT LayoutNGListItem final : public LayoutNGBlockFlow {
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void SubtreeDidChange() final;
 
-  bool IsInside() const;
-
   ListItemOrdinal ordinal_;
 };
 

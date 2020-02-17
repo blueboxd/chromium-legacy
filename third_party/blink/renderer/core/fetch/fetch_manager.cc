@@ -861,7 +861,7 @@ void FetchManager::Loader::NotifyFinished() {
 }
 
 FetchManager::FetchManager(ExecutionContext* execution_context)
-    : ContextLifecycleObserver(execution_context) {}
+    : ExecutionContextLifecycleObserver(execution_context) {}
 
 ScriptPromise FetchManager::Fetch(ScriptState* script_state,
                                   FetchRequestData* request,
@@ -904,7 +904,7 @@ void FetchManager::OnLoaderFinished(Loader* loader) {
 
 void FetchManager::Trace(Visitor* visitor) {
   visitor->Trace(loaders_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

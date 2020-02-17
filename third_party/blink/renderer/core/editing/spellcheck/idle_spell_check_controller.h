@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/scripted_idle_task_controller.h"
 #include "third_party/blink/renderer/core/editing/forward.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/timer.h"
 
 namespace blink {
@@ -29,7 +29,7 @@ class SpellCheckRequester;
 // See design doc for details: https://goo.gl/zONC3v
 class CORE_EXPORT IdleSpellCheckController final
     : public GarbageCollected<IdleSpellCheckController>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   DISALLOW_COPY_AND_ASSIGN(IdleSpellCheckController);
   USING_GARBAGE_COLLECTED_MIXIN(IdleSpellCheckController);
 
@@ -95,7 +95,7 @@ class CORE_EXPORT IdleSpellCheckController final
   void ColdModeTimerFired(TimerBase*);
   void ColdModeInvocation(IdleDeadline*);
 
-  // Implements |ContextLifecycleObserver|.
+  // Implements |ExecutionContextLifecycleObserver|.
   void ContextDestroyed() final;
 
   void DisposeIdleCallback();

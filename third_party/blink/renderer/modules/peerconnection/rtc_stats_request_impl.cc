@@ -33,7 +33,7 @@ RTCStatsRequestImpl::RTCStatsRequestImpl(ExecutionContext* context,
                                          RTCPeerConnection* requester,
                                          V8RTCStatsCallback* callback,
                                          MediaStreamTrack* selector)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       success_callback_(callback),
       component_(selector ? selector->Component() : nullptr),
       requester_(requester) {
@@ -78,7 +78,7 @@ void RTCStatsRequestImpl::Trace(Visitor* visitor) {
   visitor->Trace(component_);
   visitor->Trace(requester_);
   RTCStatsRequest::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

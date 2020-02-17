@@ -730,7 +730,7 @@ RTCPeerConnection::RTCPeerConnection(
     bool sdp_semantics_specified,
     MediaConstraints constraints,
     ExceptionState& exception_state)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       signaling_state_(
           webrtc::PeerConnectionInterface::SignalingState::kStable),
       ice_gathering_state_(webrtc::PeerConnectionInterface::kIceGatheringNew),
@@ -3173,7 +3173,7 @@ const AtomicString& RTCPeerConnection::InterfaceName() const {
 }
 
 ExecutionContext* RTCPeerConnection::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 void RTCPeerConnection::ContextDestroyed() {
@@ -3414,7 +3414,7 @@ void RTCPeerConnection::Trace(Visitor* visitor) {
   visitor->Trace(ice_transports_by_native_transport_);
   visitor->Trace(sctp_transport_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   MediaStreamObserver::Trace(visitor);
 }
 

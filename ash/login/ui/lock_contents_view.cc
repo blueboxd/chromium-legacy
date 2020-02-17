@@ -376,6 +376,40 @@ views::View* LockContentsView::TestApi::main_view() const {
   return view_->main_view_;
 }
 
+const std::vector<LockContentsView::UserState>&
+LockContentsView::TestApi::users() const {
+  return view_->users_;
+}
+
+bool LockContentsView::TestApi::RemoveUser(const AccountId& account_id) {
+  LoginBigUserView* big_view =
+      view_->TryToFindBigUser(account_id, false /*require_auth_active*/);
+  if (big_view) {
+    LoginBigUserView::TestApi user_api(big_view);
+    user_api.Remove();
+    return true;
+  }
+
+  LoginUserView* user_view = view_->TryToFindUserView(account_id);
+  if (!user_view) {
+    DLOG(ERROR) << "Could not find user: " << account_id.Serialize();
+    return false;
+  }
+  LoginUserView::TestApi user_view_api(user_view);
+  user_view_api.OnTap();
+  big_view = view_->TryToFindBigUser(account_id, false /*require_auth_active*/);
+  if (big_view) {
+    LoginBigUserView::TestApi user_api(big_view);
+    user_api.Remove();
+    return true;
+  }
+  return false;
+}
+
+bool LockContentsView::TestApi::IsOobeDialogVisible() const {
+  return view_->oobe_dialog_visible_;
+}
+
 LockContentsView::UserState::UserState(const LoginUserInfo& user_info)
     : account_id(user_info.basic_user_info.account_id) {
   fingerprint_state = user_info.fingerprint_state;
@@ -1729,19 +1763,6 @@ void LockContentsView::RemoveUser(bool is_primary) {
 
   // Ask chrome to remove the user.
   Shell::Get()->login_screen_controller()->RemoveUser(user);
-
-  // Display the new user list less |user|.
-  std::vector<LoginUserInfo> new_users;
-  if (!is_primary)
-    new_users.push_back(primary_big_view_->GetCurrentUser());
-  if (is_primary && opt_secondary_big_view_)
-    new_users.push_back(opt_secondary_big_view_->GetCurrentUser());
-  if (users_list_) {
-    for (int i = 0; i < users_list_->user_count(); ++i) {
-      new_users.push_back(users_list_->user_view_at(i)->current_user());
-    }
-  }
-  data_dispatcher_->SetUserList(new_users);
 }
 
 void LockContentsView::OnBigUserChanged() {

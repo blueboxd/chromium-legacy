@@ -102,7 +102,7 @@ void BroadcastChannel::ContextDestroyed() {
 }
 
 void BroadcastChannel::Trace(Visitor* visitor) {
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }
 
@@ -136,7 +136,7 @@ void BroadcastChannel::OnError() {
 
 BroadcastChannel::BroadcastChannel(ExecutionContext* execution_context,
                                    const String& name)
-    : ContextLifecycleObserver(execution_context),
+    : ExecutionContextLifecycleObserver(execution_context),
       origin_(execution_context->GetSecurityOrigin()),
       name_(name),
       feature_handle_for_scheduler_(

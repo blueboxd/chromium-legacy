@@ -123,7 +123,7 @@ SharedWorkerHost::~SharedWorkerHost() {
   } else {
     // Tell clients that this worker failed to start.
     for (const ClientInfo& info : clients_)
-      info.client->OnScriptLoadFailed();
+      info.client->OnScriptLoadFailed(/*error_message=*/"");
   }
 }
 
@@ -377,9 +377,9 @@ void SharedWorkerHost::OnReadyForInspection(
   }
 }
 
-void SharedWorkerHost::OnScriptLoadFailed() {
+void SharedWorkerHost::OnScriptLoadFailed(const std::string& error_message) {
   for (const ClientInfo& info : clients_)
-    info.client->OnScriptLoadFailed();
+    info.client->OnScriptLoadFailed(error_message);
 }
 
 void SharedWorkerHost::OnFeatureUsed(blink::mojom::WebFeature feature) {

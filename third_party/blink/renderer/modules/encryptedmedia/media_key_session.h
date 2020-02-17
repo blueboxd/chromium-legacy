@@ -31,7 +31,7 @@
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_property.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 #include "third_party/blink/renderer/modules/encryptedmedia/media_key_status_map.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
@@ -69,7 +69,7 @@ class MediaKeys;
 class MediaKeySession final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<MediaKeySession>,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       private WebContentDecryptionModuleSession::Client {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MediaKeySession);
@@ -104,7 +104,7 @@ class MediaKeySession final
   // ScriptWrappable
   bool HasPendingActivity() const final;
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
   void Trace(Visitor*) override;

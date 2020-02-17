@@ -31,6 +31,9 @@ class ASH_PUBLIC_EXPORT LoginScreenTestApi {
   static bool ClickAddUserButton();
   static bool ClickGuestButton();
   static bool WaitForUiUpdate(int64_t previous_update_count);
+  static int GetUsersCount();
+  static bool RemoveUser(const AccountId& account_id);
+  static bool IsOobeDialogVisible();
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(LoginScreenTestApi);

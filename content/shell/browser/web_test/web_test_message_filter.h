@@ -15,7 +15,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace storage {
-class DatabaseTracker;
 class QuotaManager;
 }  // namespace storage
 
@@ -24,7 +23,6 @@ namespace content {
 class WebTestMessageFilter : public BrowserMessageFilter {
  public:
   WebTestMessageFilter(int render_process_id,
-                       storage::DatabaseTracker* database_tracker,
                        storage::QuotaManager* quota_manager);
 
  private:
@@ -40,7 +38,6 @@ class WebTestMessageFilter : public BrowserMessageFilter {
       const IPC::Message& message) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  void OnClearAllDatabases();
   void OnSetDatabaseQuota(int quota);
   void OnInitiateCaptureDump(bool capture_navigation_history,
                              bool capture_pixels);
@@ -48,7 +45,6 @@ class WebTestMessageFilter : public BrowserMessageFilter {
 
   int render_process_id_;
 
-  scoped_refptr<storage::DatabaseTracker> database_tracker_;
   scoped_refptr<storage::QuotaManager> quota_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestMessageFilter);

@@ -28,7 +28,7 @@
 
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom-blink-forward.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/speech/speech_synthesis_voice.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"

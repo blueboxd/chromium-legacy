@@ -84,6 +84,7 @@ STRING_TYPES = frozenset([
 ])
 
 EXTENDED_ATTRIBUTES_APPLICABLE_TO_TYPES = frozenset([
+    'AllowShared',
     'Clamp',
     'EnforceRange',
     'TreatNullAs',

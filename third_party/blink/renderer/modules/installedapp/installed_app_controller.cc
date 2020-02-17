@@ -54,7 +54,7 @@ const char InstalledAppController::kSupplementName[] = "InstalledAppController";
 
 InstalledAppController::InstalledAppController(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
-      ContextLifecycleObserver(frame.GetDocument()) {}
+      ExecutionContextLifecycleObserver(frame.GetDocument()) {}
 
 void InstalledAppController::ContextDestroyed() {
   provider_.reset();
@@ -108,7 +108,7 @@ void InstalledAppController::OnFilterInstalledApps(
 
 void InstalledAppController::Trace(Visitor* visitor) {
   Supplement<LocalFrame>::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

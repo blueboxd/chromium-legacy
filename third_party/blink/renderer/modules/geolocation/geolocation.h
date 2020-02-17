@@ -34,7 +34,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_position_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_position_error_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_position_options.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/page/page_visibility_observer.h"
 #include "third_party/blink/renderer/modules/geolocation/geo_notifier.h"
 #include "third_party/blink/renderer/modules/geolocation/geolocation_position_error.h"
@@ -58,7 +58,7 @@ class ExecutionContext;
 class MODULES_EXPORT Geolocation final
     : public ScriptWrappable,
       public ActiveScriptWrappable<Geolocation>,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public PageVisibilityObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Geolocation);
@@ -70,7 +70,8 @@ class MODULES_EXPORT Geolocation final
   ~Geolocation() override;
   void Trace(Visitor*) override;
 
-  // Inherited from ContextLifecycleObserver and PageVisibilityObserver.
+  // Inherited from ExecutionContextLifecycleObserver and
+  // PageVisibilityObserver.
   void ContextDestroyed() override;
 
   Document* GetDocument() const;

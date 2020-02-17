@@ -85,7 +85,7 @@ namespace blink {
 // Constructor for rendering to the audio hardware.
 BaseAudioContext::BaseAudioContext(Document* document,
                                    enum ContextType context_type)
-    : ContextLifecycleStateObserver(document),
+    : ExecutionContextLifecycleStateObserver(document),
       InspectorHelperMixin(*AudioGraphTracer::FromDocument(*document),
                            String()),
       destination_node_(nullptr),
@@ -777,7 +777,7 @@ const AtomicString& BaseAudioContext::InterfaceName() const {
 }
 
 ExecutionContext* BaseAudioContext::GetExecutionContext() const {
-  return ContextLifecycleStateObserver::GetExecutionContext();
+  return ExecutionContextLifecycleStateObserver::GetExecutionContext();
 }
 
 void BaseAudioContext::StartRendering() {
@@ -805,7 +805,7 @@ void BaseAudioContext::Trace(Visitor* visitor) {
   visitor->Trace(audio_worklet_);
   InspectorHelperMixin::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleStateObserver::Trace(visitor);
+  ExecutionContextLifecycleStateObserver::Trace(visitor);
 }
 
 const SecurityOrigin* BaseAudioContext::GetSecurityOrigin() const {

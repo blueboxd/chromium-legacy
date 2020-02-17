@@ -16,6 +16,22 @@ ProcessorEntityTracker::ProcessorEntityTracker(ModelType type) {
   InitializeMetadata(type);
 }
 
+ProcessorEntityTracker::ProcessorEntityTracker(
+    std::map<std::string, std::unique_ptr<sync_pb::EntityMetadata>>
+        metadata_map,
+    const sync_pb::ModelTypeState& model_type_state)
+    : model_type_state_(model_type_state) {
+  DCHECK(model_type_state.initial_sync_done());
+  for (auto& kv : metadata_map) {
+    std::unique_ptr<ProcessorEntity> entity =
+        ProcessorEntity::CreateFromMetadata(kv.first, std::move(*kv.second));
+    const ClientTagHash client_tag_hash =
+        ClientTagHash::FromHashed(entity->metadata().client_tag_hash());
+    storage_key_to_tag_hash_[entity->storage_key()] = client_tag_hash;
+    entities_[client_tag_hash] = std::move(entity);
+  }
+}
+
 ProcessorEntityTracker::~ProcessorEntityTracker() = default;
 
 bool ProcessorEntityTracker::AllStorageKeysPopulated() const {
@@ -47,33 +63,62 @@ ProcessorEntity* ProcessorEntityTracker::Add(const std::string& storage_key,
                                              const EntityData& data) {
   DCHECK(!data.client_tag_hash.value().empty());
   DCHECK(!GetEntityForTagHash(data.client_tag_hash));
+  DCHECK(storage_key.empty() || storage_key_to_tag_hash_.find(storage_key) ==
+                                    storage_key_to_tag_hash_.end());
   std::unique_ptr<ProcessorEntity> entity = ProcessorEntity::CreateNew(
       storage_key, data.client_tag_hash, data.id, data.creation_time);
   ProcessorEntity* entity_ptr = entity.get();
   entities_[data.client_tag_hash] = std::move(entity);
+  if (!storage_key.empty())
+    storage_key_to_tag_hash_[storage_key] = data.client_tag_hash;
   return entity_ptr;
 }
 
-ProcessorEntity* ProcessorEntityTracker::CreateEntityFromMetadata(
-    const std::string& storage_key,
-    sync_pb::EntityMetadata metadata) {
-  std::unique_ptr<ProcessorEntity> entity =
-      ProcessorEntity::CreateFromMetadata(storage_key, std::move(metadata));
-  ClientTagHash client_tag_hash =
-      ClientTagHash::FromHashed(entity->metadata().client_tag_hash());
-  ProcessorEntity* entity_ptr = entity.get();
-  entities_[client_tag_hash] = std::move(entity);
-  return entity_ptr;
+void ProcessorEntityTracker::RemoveEntityForClientTagHash(
+    const ClientTagHash& client_tag_hash) {
+  DCHECK(model_type_state_.initial_sync_done());
+  DCHECK(!client_tag_hash.value().empty());
+  const ProcessorEntity* entity = GetEntityForTagHash(client_tag_hash);
+  if (entity == nullptr || entity->storage_key().empty()) {
+    entities_.erase(client_tag_hash);
+  } else {
+    DCHECK(storage_key_to_tag_hash_.find(entity->storage_key()) !=
+           storage_key_to_tag_hash_.end());
+    RemoveEntityForStorageKey(entity->storage_key());
+  }
 }
 
-void ProcessorEntityTracker::Remove(const ClientTagHash& client_tag_hash) {
-  entities_.erase(client_tag_hash);
+void ProcessorEntityTracker::RemoveEntityForStorageKey(
+    const std::string& storage_key) {
+  DCHECK(model_type_state_.initial_sync_done());
+  // Look-up the client tag hash.
+  auto iter = storage_key_to_tag_hash_.find(storage_key);
+  if (iter == storage_key_to_tag_hash_.end()) {
+    // Missing is as good as untracked as far as the model is concerned.
+    return;
+  }
+
+  DCHECK_EQ(entities_[iter->second]->storage_key(), storage_key);
+  entities_.erase(iter->second);
+  storage_key_to_tag_hash_.erase(iter);
+}
+
+void ProcessorEntityTracker::ClearStorageKey(const std::string& storage_key) {
+  DCHECK(!storage_key.empty());
+
+  ProcessorEntity* entity = GetEntityForStorageKey(storage_key);
+  DCHECK(entity);
+  DCHECK_EQ(entity->storage_key(), storage_key);
+  storage_key_to_tag_hash_.erase(storage_key);
+  entity->ClearStorageKey();
 }
 
 size_t ProcessorEntityTracker::EstimateMemoryUsage() const {
   size_t memory_usage = 0;
   memory_usage += sync_pb::EstimateMemoryUsage(model_type_state_);
   memory_usage += base::trace_event::EstimateMemoryUsage(entities_);
+  memory_usage +=
+      base::trace_event::EstimateMemoryUsage(storage_key_to_tag_hash_);
   return memory_usage;
 }
 
@@ -88,6 +133,22 @@ const ProcessorEntity* ProcessorEntityTracker::GetEntityForTagHash(
     const ClientTagHash& tag_hash) const {
   auto it = entities_.find(tag_hash);
   return it != entities_.end() ? it->second.get() : nullptr;
+}
+
+ProcessorEntity* ProcessorEntityTracker::GetEntityForStorageKey(
+    const std::string& storage_key) {
+  return const_cast<ProcessorEntity*>(
+      static_cast<const ProcessorEntityTracker*>(this)->GetEntityForStorageKey(
+          storage_key));
+}
+
+const ProcessorEntity* ProcessorEntityTracker::GetEntityForStorageKey(
+    const std::string& storage_key) const {
+  auto iter = storage_key_to_tag_hash_.find(storage_key);
+  if (iter == storage_key_to_tag_hash_.end()) {
+    return nullptr;
+  }
+  return GetEntityForTagHash(iter->second);
 }
 
 std::vector<const ProcessorEntity*>
@@ -151,6 +212,33 @@ ProcessorEntityTracker::IncrementSequenceNumberForAllExcept(
     affected_entities.push_back(entity);
   }
   return affected_entities;
+}
+
+void ProcessorEntityTracker::UpdateOrOverrideStorageKey(
+    const ClientTagHash& client_tag_hash,
+    const std::string& storage_key) {
+  ProcessorEntity* entity = GetEntityForTagHash(client_tag_hash);
+  DCHECK(entity);
+  const std::string previous_storage_key = entity->storage_key();
+  DCHECK_NE(previous_storage_key, storage_key);
+  if (!previous_storage_key.empty()) {
+    DCHECK(entity->metadata().is_deleted());
+    ClearStorageKey(previous_storage_key);
+  }
+  DCHECK(storage_key_to_tag_hash_.find(previous_storage_key) ==
+         storage_key_to_tag_hash_.end());
+  // Populate the new storage key in the existing entity.
+  entity->SetStorageKey(storage_key);
+  storage_key_to_tag_hash_[storage_key] = client_tag_hash;
+}
+
+base::Optional<ClientTagHash> ProcessorEntityTracker::GetClientTagHash(
+    const std::string& storage_key) const {
+  auto iter = storage_key_to_tag_hash_.find(storage_key);
+  if (iter != storage_key_to_tag_hash_.end()) {
+    return iter->second;
+  }
+  return base::nullopt;
 }
 
 }  // namespace syncer

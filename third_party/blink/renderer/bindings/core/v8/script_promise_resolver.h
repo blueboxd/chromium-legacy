@@ -9,8 +9,8 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/scoped_persistent.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
@@ -29,7 +29,7 @@ namespace blink {
 // functionalities.
 //  - A ScriptPromiseResolver retains a ScriptState. A caller
 //    can call resolve or reject from outside of a V8 context.
-//  - This class is an ContextLifecycleObserver and keeps track of the
+//  - This class is an ExecutionContextLifecycleObserver and keeps track of the
 //    associated ExecutionContext state. When it is stopped, resolve or reject
 //    will be ignored.
 //
@@ -37,7 +37,7 @@ namespace blink {
 // terminated). In such cases operations will silently fail.
 class CORE_EXPORT ScriptPromiseResolver
     : public GarbageCollected<ScriptPromiseResolver>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptPromiseResolver);
   USING_PRE_FINALIZER(ScriptPromiseResolver, Dispose);
 
@@ -76,7 +76,7 @@ class CORE_EXPORT ScriptPromiseResolver
     return resolver_.Promise();
   }
 
-  // ContextLifecycleObserver implementation.
+  // ExecutionContextLifecycleObserver implementation.
   void ContextDestroyed() override { Detach(); }
 
   // Calling this function makes the resolver release its internal resources.

@@ -772,6 +772,11 @@ void GaiaScreenHandler::HandleAuthExtensionLoaded() {
 }
 
 void GaiaScreenHandler::HandleWebviewLoadAborted(int error_code) {
+  if (error_code == net::ERR_INVALID_AUTH_CREDENTIALS) {
+    // Silently ignore this error - it is used as an intermediate state for
+    // committed interstitials (see https://crbug.com/1049349 for details).
+    return;
+  }
   if (error_code == net::ERR_ABORTED) {
     LOG(WARNING) << "Ignoring Gaia webview error: "
                  << net::ErrorToShortString(error_code);

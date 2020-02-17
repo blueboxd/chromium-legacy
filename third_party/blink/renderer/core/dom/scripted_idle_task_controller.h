@@ -7,7 +7,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_idle_request_callback.h"
 #include "third_party/blink/renderer/core/dom/idle_deadline.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -25,7 +25,7 @@ class ThreadScheduler;
 
 class CORE_EXPORT ScriptedIdleTaskController
     : public GarbageCollected<ScriptedIdleTaskController>,
-      public ContextLifecycleStateObserver,
+      public ExecutionContextLifecycleStateObserver,
       public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptedIdleTaskController);
 
@@ -82,7 +82,7 @@ class CORE_EXPORT ScriptedIdleTaskController
   int RegisterCallback(IdleTask*, const IdleRequestOptions*);
   void CancelCallback(CallbackId);
 
-  // ContextLifecycleStateObserver interface.
+  // ExecutionContextLifecycleStateObserver interface.
   void ContextDestroyed() override;
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) override;
 

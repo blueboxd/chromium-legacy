@@ -36,7 +36,7 @@
 #include "base/util/type_safety/pass_key.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/prerender/prerender.mojom-blink.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
@@ -46,7 +46,7 @@ class Document;
 class PrerenderClient;
 
 class PrerenderHandle final : public GarbageCollected<PrerenderHandle>,
-                              public ContextLifecycleObserver,
+                              public ExecutionContextLifecycleObserver,
                               public mojom::blink::PrerenderHandleClient {
   USING_GARBAGE_COLLECTED_MIXIN(PrerenderHandle);
   USING_PRE_FINALIZER(PrerenderHandle, Dispose);
@@ -70,7 +70,7 @@ class PrerenderHandle final : public GarbageCollected<PrerenderHandle>,
   void Cancel();
   const KURL& Url() const;
 
-  // ContextLifecycleObserver:
+  // ExecutionContextLifecycleObserver:
   void ContextDestroyed() override;
 
   // mojom::blink::PrerenderHandleClient:

@@ -40,7 +40,7 @@
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
 #include "third_party/blink/public/web/web_ax_enums.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache_base.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -339,7 +339,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   HeapVector<Member<AXEventParams>> notifications_to_post_;
   void PostNotificationsAfterLayout(Document*);
 
-  // ContextLifecycleObserver overrides.
+  // ExecutionContextLifecycleObserver overrides.
   void ContextDestroyed() override;
 
   // Get the currently focused Node element.

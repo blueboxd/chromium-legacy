@@ -76,7 +76,7 @@ VibrationController::SanitizeVibrationPattern(
 }
 
 VibrationController::VibrationController(LocalFrame& frame)
-    : ContextLifecycleObserver(frame.GetDocument()),
+    : ExecutionContextLifecycleObserver(frame.GetDocument()),
       PageVisibilityObserver(frame.GetDocument()->GetPage()),
       timer_do_vibrate_(
           frame.GetDocument()->GetTaskRunner(TaskType::kMiscPlatformAPI),
@@ -191,7 +191,7 @@ void VibrationController::PageVisibilityChanged() {
 }
 
 void VibrationController::Trace(Visitor* visitor) {
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
 }
 

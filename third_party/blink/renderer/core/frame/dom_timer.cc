@@ -69,7 +69,7 @@ DOMTimer::DOMTimer(ExecutionContext* context,
                    base::TimeDelta interval,
                    bool single_shot,
                    int timeout_id)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       TimerBase(context->GetTaskRunner(TaskType::kJavascriptTimer)),
       timeout_id_(timeout_id),
       nesting_level_(context->Timers()->TimerNestingLevel() + 1),
@@ -176,7 +176,7 @@ void DOMTimer::Fired() {
 
 void DOMTimer::Trace(Visitor* visitor) {
   visitor->Trace(action_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

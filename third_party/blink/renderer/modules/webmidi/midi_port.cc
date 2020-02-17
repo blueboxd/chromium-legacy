@@ -51,7 +51,7 @@ MIDIPort::MIDIPort(MIDIAccess* access,
                    TypeCode type,
                    const String& version,
                    PortState state)
-    : ContextLifecycleObserver(access->GetExecutionContext()),
+    : ExecutionContextLifecycleObserver(access->GetExecutionContext()),
       id_(id),
       manufacturer_(manufacturer),
       name_(name),
@@ -191,7 +191,7 @@ void MIDIPort::ContextDestroyed() {
 void MIDIPort::Trace(Visitor* visitor) {
   visitor->Trace(access_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void MIDIPort::OpenAsynchronously(ScriptPromiseResolver* resolver) {

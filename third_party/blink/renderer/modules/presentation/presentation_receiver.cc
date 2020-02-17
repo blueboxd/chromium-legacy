@@ -24,7 +24,7 @@
 namespace blink {
 
 PresentationReceiver::PresentationReceiver(LocalFrame* frame)
-    : ContextLifecycleObserver(frame->GetDocument()),
+    : ExecutionContextLifecycleObserver(frame->GetDocument()),
       connection_list_(MakeGarbageCollected<PresentationConnectionList>(
           frame->GetDocument()->ToExecutionContext())) {
   frame->GetBrowserInterfaceBroker().GetInterface(
@@ -122,7 +122,7 @@ void PresentationReceiver::Trace(Visitor* visitor) {
   visitor->Trace(connection_list_);
   visitor->Trace(connection_list_property_);
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

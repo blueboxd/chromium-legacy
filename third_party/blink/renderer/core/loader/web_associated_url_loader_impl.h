@@ -64,8 +64,8 @@ class CORE_EXPORT WebAssociatedURLLoaderImpl final
   Persistent<ClientAdapter> client_adapter_;
   Persistent<ThreadableLoader> loader_;
 
-  // A ContextLifecycleObserver for cancelling |loader_| when the Document is
-  // detached.
+  // A ExecutionContextLifecycleObserver for cancelling |loader_| when the
+  // Document is detached.
   Persistent<Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAssociatedURLLoaderImpl);

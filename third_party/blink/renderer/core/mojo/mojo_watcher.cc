@@ -52,7 +52,7 @@ MojoResult MojoWatcher::cancel() {
 void MojoWatcher::Trace(Visitor* visitor) {
   visitor->Trace(callback_);
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 bool MojoWatcher::HasPendingActivity() const {
@@ -65,7 +65,7 @@ void MojoWatcher::ContextDestroyed() {
 
 MojoWatcher::MojoWatcher(ExecutionContext* context,
                          V8MojoWatchCallback* callback)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       task_runner_(context->GetTaskRunner(TaskType::kInternalDefault)),
       callback_(callback) {}
 

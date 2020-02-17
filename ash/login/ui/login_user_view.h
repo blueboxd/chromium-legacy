@@ -40,6 +40,8 @@ class ASH_EXPORT LoginUserView : public views::View,
     LoginBaseBubbleView* menu() const;
     views::View* user_domain() const;
 
+    void OnTap() const;
+
     bool is_opaque() const;
 
    private:

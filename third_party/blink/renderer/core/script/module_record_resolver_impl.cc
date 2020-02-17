@@ -122,7 +122,7 @@ void ModuleRecordResolverImpl::ContextDestroyed() {
 
 void ModuleRecordResolverImpl::Trace(Visitor* visitor) {
   ModuleRecordResolver::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   visitor->Trace(record_to_module_script_map_);
   visitor->Trace(modulator_);
 }

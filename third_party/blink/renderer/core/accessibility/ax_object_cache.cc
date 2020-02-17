@@ -57,7 +57,7 @@ AXObjectCache* AXObjectCache::Create(Document& document) {
 }
 
 AXObjectCache::AXObjectCache(Document& document)
-    : ContextLifecycleObserver(document.GetExecutionContext()) {}
+    : ExecutionContextLifecycleObserver(document.GetExecutionContext()) {}
 
 AXObjectCache::~AXObjectCache() = default;
 
@@ -142,7 +142,7 @@ bool AXObjectCache::IsInsideFocusableElementOrARIAWidget(const Node& node) {
 }
 
 void AXObjectCache::Trace(Visitor* visitor) {
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

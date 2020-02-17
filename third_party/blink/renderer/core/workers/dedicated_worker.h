@@ -75,7 +75,7 @@ class CORE_EXPORT DedicatedWorker final
   void terminate();
   BeginFrameProviderParams CreateBeginFrameProviderParams();
 
-  // Implements ContextLifecycleObserver (via AbstractWorker).
+  // Implements ExecutionContextLifecycleObserver (via AbstractWorker).
   void ContextDestroyed() override;
 
   // Implements ScriptWrappable

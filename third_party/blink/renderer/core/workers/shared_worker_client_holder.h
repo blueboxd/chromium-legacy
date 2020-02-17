@@ -44,7 +44,7 @@
 #include "third_party/blink/public/mojom/worker/shared_worker_info.mojom-blink.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/document.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
@@ -64,7 +64,7 @@ class SharedWorker;
 class CORE_EXPORT SharedWorkerClientHolder final
     : public GarbageCollected<SharedWorkerClientHolder>,
       public Supplement<Document>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(SharedWorkerClientHolder);
 
  public:
@@ -81,7 +81,7 @@ class CORE_EXPORT SharedWorkerClientHolder final
                mojo::PendingRemote<mojom::blink::BlobURLToken>,
                mojom::blink::WorkerOptionsPtr options);
 
-  // Overrides ContextLifecycleObserver.
+  // Overrides ExecutionContextLifecycleObserver.
   void ContextDestroyed() override;
 
   void Trace(Visitor* visitor) override;

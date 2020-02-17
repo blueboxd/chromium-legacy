@@ -900,6 +900,7 @@ mojom("mojo_bindings") {
     "//content/public/common:web_preferences_mojom",
     "//mojo/public/mojom/base",
     "//skia/public/mojom",
+    "//ui/accessibility:ax_enums_mojo",
     "//ui/gfx/geometry/mojom",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",

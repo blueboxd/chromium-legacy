@@ -12,7 +12,7 @@
 #include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -30,7 +30,7 @@ class ScriptPromiseResolver;
 class ScriptState;
 
 class CookieStore final : public EventTargetWithInlineData,
-                          public ContextLifecycleObserver,
+                          public ExecutionContextLifecycleObserver,
                           public network::mojom::blink::CookieChangeListener {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(CookieStore);
@@ -68,7 +68,7 @@ class CookieStore final : public EventTargetWithInlineData,
   // GarbageCollected
   void Trace(Visitor* visitor) override;
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
   // EventTargetWithInlineData

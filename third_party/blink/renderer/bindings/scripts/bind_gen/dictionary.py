@@ -196,7 +196,7 @@ def make_get_v8_dict_member_names_func(cg_context):
     return_type = "const base::span<const v8::Eternal<v8::Name>>"
 
     func_decl = CxxFuncDeclNode(
-        name=name, arg_decls=arg_decls, return_type=return_type)
+        name=name, arg_decls=arg_decls, return_type=return_type, static=True)
     func_def = CxxFuncDefNode(
         name=name,
         class_name=cg_context.class_name,
@@ -205,15 +205,19 @@ def make_get_v8_dict_member_names_func(cg_context):
     func_def.set_base_template_vars(cg_context.template_bindings())
     body = func_def.body
 
-    pattern = ("static const char* kKeyStrings[] = {{{_1}}};")
-    _1 = ", ".join(
-        _format("\"{}\"", member.identifier)
-        for member in dictionary.own_members)
-    body.extend([
-        TextNode(_format(pattern, _1=_1)),
-        TextNode("return V8PerIsolateData::From(isolate)"
-                 "->FindOrCreateEternalNameCache(kKeyStrings, kKeyStrings);"),
-    ])
+    if dictionary.own_members:
+        pattern = "static const char* kKeyStrings[] = {{{_1}}};"
+        _1 = ", ".join(
+            _format("\"{}\"", member.identifier)
+            for member in dictionary.own_members)
+        body.extend([
+            TextNode(_format(pattern, _1=_1)),
+            TextNode("return V8PerIsolateData::From(isolate)"
+                     "->FindOrCreateEternalNameCache(kKeyStrings, "
+                     "kKeyStrings);"),
+        ])
+    else:
+        body.append(TextNode("return {};"))
 
     return func_decl, func_def
 
@@ -231,7 +235,11 @@ def make_fill_with_dict_members_func(cg_context):
     return_type = "bool"
 
     func_decl = CxxFuncDeclNode(
-        name=name, arg_decls=arg_decls, return_type=return_type, const=True)
+        name=name,
+        arg_decls=arg_decls,
+        return_type=return_type,
+        const=True,
+        override=True)
     func_def = CxxFuncDefNode(
         name=name,
         class_name=cg_context.class_name,
@@ -764,5 +772,5 @@ def generate_dictionary(dictionary):
 
 
 def generate_dictionaries(web_idl_database):
-    dictionary = web_idl_database.find('EventSourceInit')
+    dictionary = web_idl_database.find('GPUCommandBufferDescriptor')
     generate_dictionary(dictionary)

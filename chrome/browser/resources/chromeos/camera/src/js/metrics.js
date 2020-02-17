@@ -40,15 +40,6 @@ const ga = (function() {
 
   const getConfig = () =>
       new Promise((resolve) => service.getConfig().addCallback(resolve));
-  const checkEnabled = () => {
-    return new Promise((resolve) => {
-      try {
-        chrome.metricsPrivate.getIsCrashReportingEnabled(resolve);
-      } catch (e) {
-        resolve(false);  // Disable reporting by default.
-      }
-    });
-  };
   const initBuilder = async () => {
     const board = await browserProxy.getBoard();
     const boardName = /^(x86-)?(\w*)/.exec(board)[0];
@@ -57,7 +48,8 @@ const ga = (function() {
     base = analytics.EventBuilder.builder().dimen(1, boardName).dimen(2, osVer);
   };
 
-  return Promise.all([getConfig(), checkEnabled(), initBuilder()])
+  return Promise
+      .all([getConfig(), browserProxy.isCrashReportingEnabled(), initBuilder()])
       .then(([config, enabled]) => {
         config.setTrackingPermitted(enabled);
         return service.getTracker(id);

@@ -37,7 +37,7 @@ PermissionStatus* PermissionStatus::CreateAndListen(
 PermissionStatus::PermissionStatus(ExecutionContext* execution_context,
                                    MojoPermissionStatus status,
                                    MojoPermissionDescriptor descriptor)
-    : ContextLifecycleStateObserver(execution_context),
+    : ExecutionContextLifecycleStateObserver(execution_context),
       status_(status),
       descriptor_(std::move(descriptor)) {}
 
@@ -52,7 +52,7 @@ const AtomicString& PermissionStatus::InterfaceName() const {
 }
 
 ExecutionContext* PermissionStatus::GetExecutionContext() const {
-  return ContextLifecycleStateObserver::GetExecutionContext();
+  return ExecutionContextLifecycleStateObserver::GetExecutionContext();
 }
 
 bool PermissionStatus::HasPendingActivity() const {
@@ -103,7 +103,7 @@ void PermissionStatus::OnPermissionStatusChange(MojoPermissionStatus status) {
 
 void PermissionStatus::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleStateObserver::Trace(visitor);
+  ExecutionContextLifecycleStateObserver::Trace(visitor);
 }
 
 }  // namespace blink

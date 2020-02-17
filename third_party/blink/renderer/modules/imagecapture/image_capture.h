@@ -15,7 +15,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_track_settings.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_photo_settings.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
@@ -32,7 +32,7 @@ class ScriptPromiseResolver;
 class MODULES_EXPORT ImageCapture final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<ImageCapture>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(ImageCapture);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -51,7 +51,7 @@ class MODULES_EXPORT ImageCapture final
   // ScriptWrappable implementation.
   bool HasPendingActivity() const final;
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
   MediaStreamTrack* videoStreamTrack() const { return stream_track_.Get(); }

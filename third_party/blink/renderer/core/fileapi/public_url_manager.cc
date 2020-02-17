@@ -53,7 +53,7 @@ static void RemoveFromNullOriginMapIfNecessary(const KURL& blob_url) {
 }  // namespace
 
 PublicURLManager::PublicURLManager(ExecutionContext* context)
-    : ContextLifecycleObserver(context), is_stopped_(false) {}
+    : ExecutionContextLifecycleObserver(context), is_stopped_(false) {}
 
 String PublicURLManager::RegisterURL(URLRegistrable* registrable) {
   if (is_stopped_)
@@ -166,7 +166,7 @@ void PublicURLManager::ContextDestroyed() {
 }
 
 void PublicURLManager::Trace(Visitor* visitor) {
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

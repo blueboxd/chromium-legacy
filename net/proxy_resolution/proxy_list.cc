@@ -23,6 +23,12 @@ ProxyList::ProxyList() = default;
 
 ProxyList::ProxyList(const ProxyList& other) = default;
 
+ProxyList::ProxyList(ProxyList&& other) = default;
+
+ProxyList& ProxyList::operator=(const ProxyList& other) = default;
+
+ProxyList& ProxyList::operator=(ProxyList&& other) = default;
+
 ProxyList::~ProxyList() = default;
 
 void ProxyList::Set(const std::string& proxy_uri_list) {

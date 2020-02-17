@@ -430,7 +430,7 @@ WebSocketStream* WebSocketStream::CreateInternal(
 
 WebSocketStream::WebSocketStream(ExecutionContext* execution_context,
                                  ScriptState* script_state)
-    : ContextLifecycleObserver(execution_context),
+    : ExecutionContextLifecycleObserver(execution_context),
       script_state_(script_state),
       connection_resolver_(
           MakeGarbageCollected<ScriptPromiseResolver>(script_state)),
@@ -597,7 +597,7 @@ void WebSocketStream::Trace(Visitor* visitor) {
   visitor->Trace(source_);
   visitor->Trace(sink_);
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   WebSocketChannelClient::Trace(visitor);
 }
 

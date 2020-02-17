@@ -8844,13 +8844,6 @@
       },
       {
         "isolate_coverage_data": true,
-        "name": "components_invalidation_impl_junit_tests",
-        "swarming": {},
-        "test": "components_invalidation_impl_junit_tests",
-        "test_target": "//components/invalidation/impl:components_invalidation_impl_junit_tests"
-      },
-      {
-        "isolate_coverage_data": true,
         "name": "components_policy_junit_tests",
         "swarming": {},
         "test": "components_policy_junit_tests",

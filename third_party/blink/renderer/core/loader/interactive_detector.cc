@@ -49,7 +49,7 @@ InteractiveDetector::InteractiveDetector(
     Document& document,
     NetworkActivityChecker* network_activity_checker)
     : Supplement<Document>(document),
-      ContextLifecycleObserver(&document),
+      ExecutionContextLifecycleObserver(&document),
       clock_(base::DefaultTickClock::GetInstance()),
       network_activity_checker_(network_activity_checker),
       time_to_interactive_timer_(
@@ -541,7 +541,7 @@ void InteractiveDetector::ContextDestroyed() {
 
 void InteractiveDetector::Trace(Visitor* visitor) {
   Supplement<Document>::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void InteractiveDetector::SetTickClockForTesting(const base::TickClock* clock) {

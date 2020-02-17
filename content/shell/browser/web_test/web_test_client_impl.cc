@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
@@ -26,6 +27,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "storage/browser/database/database_tracker.h"
 #include "storage/browser/file_system/isolated_context.h"
 
 namespace content {
@@ -59,17 +61,21 @@ ContentIndexContext* GetContentIndexContext(const url::Origin& origin) {
 // static
 void WebTestClientImpl::Create(
     int render_process_id,
+    storage::DatabaseTracker* database_tracker,
     network::mojom::NetworkContext* network_context,
     mojo::PendingReceiver<mojom::WebTestClient> receiver) {
   mojo::MakeSelfOwnedReceiver(
-      std::make_unique<WebTestClientImpl>(render_process_id, network_context),
+      std::make_unique<WebTestClientImpl>(render_process_id, database_tracker,
+                                          network_context),
       std::move(receiver));
 }
 
 WebTestClientImpl::WebTestClientImpl(
     int render_process_id,
+    storage::DatabaseTracker* database_tracker,
     network::mojom::NetworkContext* network_context)
-    : render_process_id_(render_process_id) {
+    : render_process_id_(render_process_id),
+      database_tracker_(database_tracker) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   network_context->GetCookieManager(
       cookie_manager_.BindNewPipeAndPassReceiver());
@@ -238,6 +244,18 @@ void WebTestClientImpl::SetFilePathForMockFileDialog(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (BlinkTestController::Get())
     BlinkTestController::Get()->SetFilePathForMockFileDialog(path);
+}
+
+void WebTestClientImpl::ClearAllDatabases() {
+  database_tracker_->task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](scoped_refptr<storage::DatabaseTracker> db_tracker) {
+            DCHECK(db_tracker->task_runner()->RunsTasksInCurrentSequence());
+            db_tracker->DeleteDataModifiedSince(base::Time(),
+                                                net::CompletionOnceCallback());
+          },
+          database_tracker_));
 }
 
 }  // namespace content

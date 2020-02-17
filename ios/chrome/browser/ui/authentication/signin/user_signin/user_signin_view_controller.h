@@ -10,8 +10,8 @@
 // View controller used to show sign-in UI.
 @interface UserSigninViewController : UIViewController
 
-// Displays |viewController.view| above the UI displayed by the host.
-- (void)showEmbeddedViewController:(UIViewController*)viewController;
+// View controller that handles the user consent before the user signs in.
+@property UIViewController* unifiedConsentViewController;
 
 @end
 

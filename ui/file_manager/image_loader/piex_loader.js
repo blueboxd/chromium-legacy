@@ -57,9 +57,20 @@ function wasmModuleFailed() {
 }
 
 /**
- * @param {{id:number, thumbnail:!ArrayBuffer, mimeType:(string|undefined),
- *     orientation:number, colorSpace: ColorSpace, ifd:?string}}
- *     data The data returned from the piex wasm module.
+ * @typedef {{
+ *   id: number,
+ *   thumbnail: !ArrayBuffer,
+ *   mimeType: (string|undefined),
+ *   orientation: number,
+ *   colorSpace: ColorSpace,
+ *   ifd: ?string
+ * }}
+ */
+let ImagePreviewResponseData;
+
+/**
+ *
+ * @param {!ImagePreviewResponseData} data The preview image data.
  * @constructor
  * @struct
  */
@@ -269,8 +280,7 @@ class ImageBuffer {
    *
    * @throws {!Error} Data access security error.
    *
-   * @return {{id:number, thumbnail:!ArrayBuffer, mimeType:(string|undefined),
-   *          orientation:number, colorSpace: ColorSpace, ifd:?string}}
+   * @return {!ImagePreviewResponseData}
    */
   preview(result) {
     const preview = result.preview;
@@ -303,8 +313,7 @@ class ImageBuffer {
    *
    * @throws {!Error} Data access security error.
    *
-   * @return {{id:number, thumbnail:!ArrayBuffer, mimeType:(string|undefined),
-   *          orientation:number, colorSpace: ColorSpace, ifd:?string}}
+   * @return {!ImagePreviewResponseData}
    */
   thumbnail_(result) {
     const thumbnail = result.thumbnail;
@@ -347,8 +356,7 @@ class ImageBuffer {
    *
    * @throws {!Error} Data access security error.
    *
-   * @return {{id:number, thumbnail:!ArrayBuffer, mimeType:(string|undefined),
-   *          orientation:number, colorSpace: ColorSpace, ifd:?string}}
+   * @return {!ImagePreviewResponseData}
    */
   rgb_(result) {
     const thumbnail = result.thumbnail;

@@ -599,7 +599,7 @@ device::mojom::blink::XRSessionOptionsPtr XR::XRSessionOptionsFromQuery(
 }
 
 XR::XR(LocalFrame& frame, int64_t ukm_source_id)
-    : ContextLifecycleObserver(frame.GetDocument()),
+    : ExecutionContextLifecycleObserver(frame.GetDocument()),
       FocusChangedObserver(frame.GetPage()),
       ukm_source_id_(ukm_source_id),
       navigation_start_(
@@ -631,7 +631,7 @@ bool XR::IsFrameFocused() {
 }
 
 ExecutionContext* XR::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 const AtomicString& XR::InterfaceName() const {
@@ -1331,7 +1331,7 @@ void XR::Trace(Visitor* visitor) {
   visitor->Trace(outstanding_support_queries_);
   visitor->Trace(outstanding_request_queries_);
   visitor->Trace(fullscreen_event_manager_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }
 

@@ -27,7 +27,7 @@ using mojom::blink::PermissionService;
 using mojom::blink::PermissionStatus;
 
 WakeLock::WakeLock(Document& document)
-    : ContextLifecycleObserver(&document),
+    : ExecutionContextLifecycleObserver(&document),
       PageVisibilityObserver(document.GetPage()),
       managers_{
           MakeGarbageCollected<WakeLockManager>(document.ToExecutionContext(),
@@ -40,7 +40,7 @@ WakeLock::WakeLock(Document& document)
 }
 
 WakeLock::WakeLock(DedicatedWorkerGlobalScope& worker_scope)
-    : ContextLifecycleObserver(&worker_scope),
+    : ExecutionContextLifecycleObserver(&worker_scope),
       PageVisibilityObserver(nullptr),
       managers_{MakeGarbageCollected<WakeLockManager>(&worker_scope,
                                                       WakeLockType::kScreen),
@@ -265,7 +265,7 @@ void WakeLock::Trace(Visitor* visitor) {
   for (WakeLockManager* manager : managers_)
     visitor->Trace(manager);
   PageVisibilityObserver::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
 

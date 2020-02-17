@@ -86,7 +86,7 @@ void WebSharedWorkerImpl::TerminateWorkerThread() {
   asked_to_terminate_ = true;
 
   if (!worker_thread_) {
-    client_->WorkerScriptLoadFailed();
+    client_->WorkerScriptLoadFailed(/*error_message=*/"");
     // The worker thread hasn't been started yet. Immediately notify the client
     // of worker termination.
     client_->WorkerContextDestroyed();
@@ -104,14 +104,14 @@ void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
 
 void WebSharedWorkerImpl::DidFailToFetchClassicScript() {
   DCHECK(IsMainThread());
-  client_->WorkerScriptLoadFailed();
+  client_->WorkerScriptLoadFailed("Failed to fetch a worker script.");
   TerminateWorkerThread();
   // DidTerminateWorkerThread() will be called asynchronously.
 }
 
 void WebSharedWorkerImpl::DidFailToFetchModuleScript() {
   DCHECK(IsMainThread());
-  client_->WorkerScriptLoadFailed();
+  client_->WorkerScriptLoadFailed("Failed to fetch a worker script.");
   TerminateWorkerThread();
   // DidTerminateWorkerThread() will be called asynchronously.
 }

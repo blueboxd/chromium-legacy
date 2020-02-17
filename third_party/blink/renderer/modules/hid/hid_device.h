@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/array_buffer_or_array_buffer_view.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -31,7 +31,7 @@ class ScriptState;
 
 class MODULES_EXPORT HIDDevice
     : public EventTargetWithInlineData,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public device::mojom::blink::HidConnectionClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(HIDDevice);
@@ -69,7 +69,7 @@ class MODULES_EXPORT HIDDevice
                                   const ArrayBufferOrArrayBufferView& data);
   ScriptPromise receiveFeatureReport(ScriptState*, uint8_t report_id);
 
-  // ContextLifecycleObserver:
+  // ExecutionContextLifecycleObserver:
   void ContextDestroyed() override;
 
   void Trace(Visitor*) override;

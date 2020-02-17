@@ -62,7 +62,7 @@ class MODULES_EXPORT IDBOpenDBRequest final : public IDBRequest {
   void EnqueueResponse(std::unique_ptr<WebIDBDatabase>,
                        const IDBDatabaseMetadata&) override;
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   void ContextDestroyed() final;
 
   // EventTarget

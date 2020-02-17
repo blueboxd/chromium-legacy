@@ -32,8 +32,8 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_FILESYSTEM_FILE_WRITER_H_
 
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/filesystem/file_writer_base.h"
@@ -50,7 +50,7 @@ enum class FileErrorCode;
 class FileWriter final : public EventTargetWithInlineData,
                          public FileWriterBase,
                          public ActiveScriptWrappable<FileWriter>,
-                         public ContextLifecycleObserver {
+                         public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FileWriter);
   USING_PRE_FINALIZER(FileWriter, Dispose);
@@ -78,7 +78,7 @@ class FileWriter final : public EventTargetWithInlineData,
                int64_t offset) override;
   void DoCancel() override;
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
   // ScriptWrappable
@@ -87,7 +87,7 @@ class FileWriter final : public EventTargetWithInlineData,
   // EventTarget
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override {
-    return ContextLifecycleObserver::GetExecutionContext();
+    return ExecutionContextLifecycleObserver::GetExecutionContext();
   }
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(writestart, kWritestart)

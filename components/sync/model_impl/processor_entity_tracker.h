@@ -24,6 +24,15 @@ class ProcessorEntity;
 class ProcessorEntityTracker {
  public:
   explicit ProcessorEntityTracker(ModelType type);
+
+  // Creates tracker and fills entities data from batch metadata map. This
+  // constructor must be used only if initial_sync_done returns true in
+  // |model_type_state|.
+  ProcessorEntityTracker(
+      std::map<std::string, std::unique_ptr<sync_pb::EntityMetadata>>
+          metadata_map,
+      const sync_pb::ModelTypeState& model_type_state);
+
   ~ProcessorEntityTracker();
 
   // Returns true if all processor entities have non-empty storage keys.
@@ -41,15 +50,14 @@ class ProcessorEntityTracker {
   // Creates new processor entity (must not be deleted outside current object).
   ProcessorEntity* Add(const std::string& storage_key, const EntityData& data);
 
-  // Creates new processor entity loaded from storage (must not be deleted
-  // outside current).
-  // TODO(crbug.com/947044): use constructor to create current object from batch
-  // data.
-  ProcessorEntity* CreateEntityFromMetadata(const std::string& storage_key,
-                                            sync_pb::EntityMetadata metadata);
+  // Removes item from |entities_| and |storage_key_to_tag_hash|. If entity does
+  // not exist, does nothing.
+  void RemoveEntityForClientTagHash(const ClientTagHash& client_tag_hash);
+  void RemoveEntityForStorageKey(const std::string& storage_key);
 
-  // Removes item from entities.
-  void Remove(const ClientTagHash& client_tag_hash);
+  // Removes |storage_key| from |storage_key_to_tag_hash_| and clears it for
+  // the corresponding entity. Does not remove the entity from |entities_|.
+  void ClearStorageKey(const std::string& storage_key);
 
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
@@ -58,6 +66,11 @@ class ProcessorEntityTracker {
   ProcessorEntity* GetEntityForTagHash(const ClientTagHash& tag_hash);
   const ProcessorEntity* GetEntityForTagHash(
       const ClientTagHash& tag_hash) const;
+
+  // Gets the entity for the given storage key, or null if there isn't one.
+  ProcessorEntity* GetEntityForStorageKey(const std::string& storage_key);
+  const ProcessorEntity* GetEntityForStorageKey(
+      const std::string& storage_key) const;
 
   // Returns all entities including tombstones.
   std::vector<const ProcessorEntity*> GetAllEntitiesIncludingTombstones() const;
@@ -89,6 +102,15 @@ class ProcessorEntityTracker {
   std::vector<const ProcessorEntity*> IncrementSequenceNumberForAllExcept(
       const std::unordered_set<std::string>& already_updated_storage_keys);
 
+  // Assigns a new storage key to the entity for the given |client_tag_hash|.
+  // Clears previous storage key if entity already has one (the metadata of the
+  // entity must be deleted).
+  void UpdateOrOverrideStorageKey(const ClientTagHash& client_tag_hash,
+                                  const std::string& storage_key);
+
+  base::Optional<ClientTagHash> GetClientTagHash(
+      const std::string& storage_key) const;
+
  private:
   // A map of client tag hash to sync entities known to this tracker. This
   // should contain entries and metadata, although the entities may not always
@@ -97,6 +119,17 @@ class ProcessorEntityTracker {
 
   // The model type metadata (progress marker, initial sync done, etc).
   sync_pb::ModelTypeState model_type_state_;
+
+  // The bridge wants to communicate entirely via storage keys that it is free
+  // to define and can understand more easily. All of the sync machinery wants
+  // to use client tag hash. This mapping allows us to convert from storage key
+  // to client tag hash. The other direction can use |entities_|.
+  // Entity is temporarily not included in this map for the duration of
+  // MergeSyncData/ApplySyncChanges call when the bridge doesn't support
+  // GetStorageKey(). In this case the bridge is responsible for updating
+  // storage key with UpdateStorageKey() call from within
+  // MergeSyncData/ApplySyncChanges.
+  std::map<std::string, ClientTagHash> storage_key_to_tag_hash_;
 };
 
 }  // namespace syncer

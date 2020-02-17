@@ -147,7 +147,8 @@ void ImageDownloaderImpl::ProvideTo(LocalFrame& frame) {
 
 ImageDownloaderImpl::ImageDownloaderImpl(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
-      ContextLifecycleObserver(frame.GetDocument()->GetExecutionContext()) {
+      ExecutionContextLifecycleObserver(
+          frame.GetDocument()->GetExecutionContext()) {
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &ImageDownloaderImpl::CreateMojoService, WrapWeakPersistent(this)));
 }
@@ -253,7 +254,7 @@ void ImageDownloaderImpl::DidFetchImage(
 
 void ImageDownloaderImpl::Trace(Visitor* visitor) {
   Supplement<LocalFrame>::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void ImageDownloaderImpl::ContextDestroyed() {

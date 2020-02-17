@@ -57,6 +57,9 @@ interface WebTestClient {
   // Delete all cookies created in this associated storage context.
   DeleteAllCookies();
 
+  // Clears all WebSQL databases.
+  ClearAllDatabases();
+
   // Returns the absolute path to a directory this test can write data in. This
   // returns the path to a fresh empty directory for each test that calls this
   // method, but repeatedly calling this from the same test will return the same

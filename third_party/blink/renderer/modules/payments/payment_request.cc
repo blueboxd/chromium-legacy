@@ -820,7 +820,7 @@ const AtomicString& PaymentRequest::InterfaceName() const {
 }
 
 ExecutionContext* PaymentRequest::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 ScriptPromise PaymentRequest::Retry(ScriptState* script_state,
@@ -1042,7 +1042,7 @@ void PaymentRequest::Trace(Visitor* visitor) {
   visitor->Trace(can_make_payment_resolver_);
   visitor->Trace(has_enrolled_instrument_resolver_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void PaymentRequest::OnCompleteTimeoutForTesting() {
@@ -1067,7 +1067,7 @@ PaymentRequest::PaymentRequest(
     const PaymentDetailsInit* details,
     const PaymentOptions* options,
     ExceptionState& exception_state)
-    : ContextLifecycleObserver(execution_context),
+    : ExecutionContextLifecycleObserver(execution_context),
       options_(options),
       complete_timer_(
           execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI),

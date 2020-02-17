@@ -17,7 +17,7 @@
 #include "services/network/public/mojom/quic_transport.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/heap_allocator.h"
@@ -41,7 +41,7 @@ class WebTransportCloseProxy;
 class MODULES_EXPORT QuicTransport final
     : public ScriptWrappable,
       public ActiveScriptWrappable<QuicTransport>,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public network::mojom::blink::QuicTransportHandshakeClient,
       public network::mojom::blink::QuicTransportClient {
   DEFINE_WRAPPERTYPEINFO();
@@ -77,7 +77,7 @@ class MODULES_EXPORT QuicTransport final
   void OnDatagramReceived(base::span<const uint8_t> data) override;
   void OnIncomingStreamClosed(uint32_t stream_id, bool fin_received) override;
 
-  // Implementation of ContextLifecycleObserver
+  // Implementation of ExecutionContextLifecycleObserver
   void ContextDestroyed() final;
 
   // Implementation of ActiveScriptWrappable

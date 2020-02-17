@@ -181,7 +181,7 @@ const AtomicString& SpeechRecognition::InterfaceName() const {
 }
 
 ExecutionContext* SpeechRecognition::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 void SpeechRecognition::ContextDestroyed() {
@@ -210,7 +210,7 @@ void SpeechRecognition::OnConnectionError() {
 
 SpeechRecognition::SpeechRecognition(LocalFrame* frame,
                                      ExecutionContext* context)
-    : ContextLifecycleObserver(context),
+    : ExecutionContextLifecycleObserver(context),
       PageVisibilityObserver(frame ? frame->GetPage() : nullptr),
       grammars_(SpeechGrammarList::Create()),  // FIXME: The spec is not clear
                                                // on the default value for the
@@ -230,7 +230,7 @@ void SpeechRecognition::Trace(Visitor* visitor) {
   visitor->Trace(controller_);
   visitor->Trace(final_results_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
 }
 

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_state_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_state_observer.h"
 
 #include <memory>
 #include "testing/gmock/include/gmock/gmock.h"
@@ -40,46 +40,48 @@ using testing::AnyNumber;
 
 namespace blink {
 
-class MockContextLifecycleStateObserver final
-    : public GarbageCollected<MockContextLifecycleStateObserver>,
-      public ContextLifecycleStateObserver {
-  USING_GARBAGE_COLLECTED_MIXIN(MockContextLifecycleStateObserver);
+class MockExecutionContextLifecycleStateObserver final
+    : public GarbageCollected<MockExecutionContextLifecycleStateObserver>,
+      public ExecutionContextLifecycleStateObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(MockExecutionContextLifecycleStateObserver);
 
  public:
-  explicit MockContextLifecycleStateObserver(ExecutionContext* context)
-      : ContextLifecycleStateObserver(context) {}
+  explicit MockExecutionContextLifecycleStateObserver(ExecutionContext* context)
+      : ExecutionContextLifecycleStateObserver(context) {}
 
   void Trace(Visitor* visitor) override {
-    ContextLifecycleStateObserver::Trace(visitor);
+    ExecutionContextLifecycleStateObserver::Trace(visitor);
   }
 
   MOCK_METHOD1(ContextLifecycleStateChanged, void(mojom::FrameLifecycleState));
   MOCK_METHOD0(ContextDestroyed, void());
 };
 
-class ContextLifecycleStateObserverTest : public testing::Test {
+class ExecutionContextLifecycleStateObserverTest : public testing::Test {
  protected:
-  ContextLifecycleStateObserverTest();
+  ExecutionContextLifecycleStateObserverTest();
 
   Document& SrcDocument() const { return src_page_holder_->GetDocument(); }
   Document& DestDocument() const { return dest_page_holder_->GetDocument(); }
-  MockContextLifecycleStateObserver& Observer() { return *observer_; }
+  MockExecutionContextLifecycleStateObserver& Observer() { return *observer_; }
 
  private:
   std::unique_ptr<DummyPageHolder> src_page_holder_;
   std::unique_ptr<DummyPageHolder> dest_page_holder_;
-  Persistent<MockContextLifecycleStateObserver> observer_;
+  Persistent<MockExecutionContextLifecycleStateObserver> observer_;
 };
 
-ContextLifecycleStateObserverTest::ContextLifecycleStateObserverTest()
+ExecutionContextLifecycleStateObserverTest::
+    ExecutionContextLifecycleStateObserverTest()
     : src_page_holder_(std::make_unique<DummyPageHolder>(IntSize(800, 600))),
       dest_page_holder_(std::make_unique<DummyPageHolder>(IntSize(800, 600))),
-      observer_(MakeGarbageCollected<MockContextLifecycleStateObserver>(
-          src_page_holder_->GetDocument().ToExecutionContext())) {
+      observer_(
+          MakeGarbageCollected<MockExecutionContextLifecycleStateObserver>(
+              src_page_holder_->GetDocument().ToExecutionContext())) {
   observer_->UpdateStateIfNeeded();
 }
 
-TEST_F(ContextLifecycleStateObserverTest, NewContextObserved) {
+TEST_F(ExecutionContextLifecycleStateObserverTest, NewContextObserved) {
   unsigned initial_src_count =
       SrcDocument()
           .ToExecutionContext()
@@ -104,14 +106,14 @@ TEST_F(ContextLifecycleStateObserverTest, NewContextObserved) {
                 ->ContextLifecycleStateObserverCountForTesting());
 }
 
-TEST_F(ContextLifecycleStateObserverTest, MoveToActiveDocument) {
+TEST_F(ExecutionContextLifecycleStateObserverTest, MoveToActiveDocument) {
   EXPECT_CALL(Observer(), ContextLifecycleStateChanged(
                               mojom::FrameLifecycleState::kRunning));
   EXPECT_CALL(Observer(), ContextDestroyed()).Times(AnyNumber());
   Observer().SetExecutionContext(DestDocument().ToExecutionContext());
 }
 
-TEST_F(ContextLifecycleStateObserverTest, MoveToSuspendedDocument) {
+TEST_F(ExecutionContextLifecycleStateObserverTest, MoveToSuspendedDocument) {
   DestDocument().ToExecutionContext()->SetLifecycleState(
       mojom::FrameLifecycleState::kFrozen);
 
@@ -121,7 +123,7 @@ TEST_F(ContextLifecycleStateObserverTest, MoveToSuspendedDocument) {
   Observer().SetExecutionContext(DestDocument().ToExecutionContext());
 }
 
-TEST_F(ContextLifecycleStateObserverTest, MoveToStoppedDocument) {
+TEST_F(ExecutionContextLifecycleStateObserverTest, MoveToStoppedDocument) {
   DestDocument().Shutdown();
 
   EXPECT_CALL(Observer(), ContextDestroyed());

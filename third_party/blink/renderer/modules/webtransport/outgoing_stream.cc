@@ -94,7 +94,7 @@ class OutgoingStream::UnderlyingSink final : public UnderlyingSinkBase {
 OutgoingStream::OutgoingStream(ScriptState* script_state,
                                WebTransportCloseProxy* close_proxy,
                                mojo::ScopedDataPipeProducerHandle handle)
-    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
+    : ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)),
       script_state_(script_state),
       close_proxy_(close_proxy),
       data_pipe_(std::move(handle)),
@@ -155,7 +155,7 @@ void OutgoingStream::Trace(Visitor* visitor) {
   visitor->Trace(writing_aborted_resolver_);
   visitor->Trace(write_promise_resolver_);
   ScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void OutgoingStream::OnHandleReady(MojoResult result,

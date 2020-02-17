@@ -85,7 +85,7 @@ MediaKeySystemAccessInitializerBase::MediaKeySystemAccessInitializerBase(
     const String& key_system,
     const HeapVector<Member<MediaKeySystemConfiguration>>&
         supported_configurations)
-    : ContextLifecycleObserver(ExecutionContext::From((script_state))),
+    : ExecutionContextLifecycleObserver(ExecutionContext::From((script_state))),
       resolver_(MakeGarbageCollected<ScriptPromiseResolver>(script_state)),
       key_system_(key_system),
       supported_configurations_(supported_configurations.size()) {
@@ -149,7 +149,7 @@ ScriptPromise MediaKeySystemAccessInitializerBase::Promise() {
 void MediaKeySystemAccessInitializerBase::Trace(Visitor* visitor) {
   visitor->Trace(resolver_);
   EncryptedMediaRequest::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 bool MediaKeySystemAccessInitializerBase::IsExecutionContextValid() const {

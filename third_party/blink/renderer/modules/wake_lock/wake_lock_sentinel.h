@@ -9,7 +9,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/wake_lock/wake_lock_type.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -24,7 +24,7 @@ class WakeLockManager;
 class MODULES_EXPORT WakeLockSentinel final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<WakeLockSentinel>,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(WakeLockSentinel);
 
@@ -47,7 +47,7 @@ class MODULES_EXPORT WakeLockSentinel final
   // ActiveScriptWrappable overrides.
   bool HasPendingActivity() const override;
 
-  // ContextLifecycleObserver overrides.
+  // ExecutionContextLifecycleObserver overrides.
   void ContextDestroyed() override;
 
  private:

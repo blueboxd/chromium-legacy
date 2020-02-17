@@ -96,6 +96,23 @@ class TestPasswordManagerProxy extends TestBrowserProxy {
     this.plaintextPassword_ = plaintextPassword;
   }
 
+  /** @override */
+  addAccountStorageOptInStateListener(listener) {
+    this.actual_.listening.accountStorageOptInState++;
+    this.lastCallback.addAccountStorageOptInStateListener = listener;
+  }
+
+  /** @override */
+  removeAccountStorageOptInStateListener(listener) {
+    this.actual_.listening.accountStorageOptInState--;
+  }
+
+  /** @override */
+  isOptedInForAccountStorage() {
+    this.actual_.requested.accountStorageOptInState++;
+    return Promise.resolve(false);
+  }
+
   /**
    * Verifies expectations.
    * @param {!PasswordManagerExpectations} expected
@@ -108,11 +125,17 @@ class TestPasswordManagerProxy extends TestBrowserProxy {
     assertEquals(
         expected.requested.plaintextPassword,
         actual.requested.plaintextPassword);
+    assertEquals(
+        expected.requested.accountStorageOptInState,
+        actual.requested.accountStorageOptInState);
 
     assertEquals(expected.removed.passwords, actual.removed.passwords);
     assertEquals(expected.removed.exceptions, actual.removed.exceptions);
 
     assertEquals(expected.listening.passwords, actual.listening.passwords);
     assertEquals(expected.listening.exceptions, actual.listening.exceptions);
+    assertEquals(
+        expected.listening.accountStorageOptInState,
+        actual.listening.accountStorageOptInState);
   }
 }

@@ -34,7 +34,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_peer_connection_error_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_session_description_callback.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_session_description_enums.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_session_description_request.h"
@@ -49,7 +49,7 @@ class RTCSessionDescriptionPlatform;
 // shared code as to not repeat the majority of the implementations.
 class RTCSessionDescriptionRequestImpl final
     : public RTCSessionDescriptionRequest,
-      public ContextLifecycleObserver {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(RTCSessionDescriptionRequestImpl);
 
  public:
@@ -70,7 +70,7 @@ class RTCSessionDescriptionRequestImpl final
   void RequestSucceeded(RTCSessionDescriptionPlatform*) override;
   void RequestFailed(const webrtc::RTCError& error) override;
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
   void Trace(Visitor*) override;

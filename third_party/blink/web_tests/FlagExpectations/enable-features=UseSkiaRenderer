@@ -8,3 +8,10 @@ crbug.com/1002522 fast/canvas/canvas-toDataURL-webp.html [ Skip ]
 
 # Needs rebaseline.
 crbug.com/1039401 [ Linux ] css3/filters/effect-blur-hw.html [ Failure Pass ]
+
+# Needs triage
+crbug.com/1052768 [ Win ] animations/missing-values-last-keyframe.html [ Failure Pass ]
+crbug.com/1052768 [ Win ] css3/filters/effect-reference-colorspace.html [ Failure Pass ]
+crbug.com/1052768 [ Linux ] css3/filters/effect-reference-colorspace.html [ Failure Pass ]
+crbug.com/1052768 [ Win ] css3/filters/effect-reference-subregion.html [ Failure Pass ]
+crbug.com/1052768 [ Linux ] css3/filters/effect-reference-subregion.html [ Failure Pass ]

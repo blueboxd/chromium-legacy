@@ -167,7 +167,6 @@ class SearchResultRanker : file_manager::file_tasks::FileTasksObserver,
   // Ranks apps.
   std::unique_ptr<RecurrenceRanker> app_ranker_;
   std::map<std::string, float> app_ranks_;
-  bool have_renamed_help_app_ = false;
 
   // Testing-only closure to inform tests once a JSON config has been parsed.
   base::OnceClosure json_config_parsed_for_testing_;

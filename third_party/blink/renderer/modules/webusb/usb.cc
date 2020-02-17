@@ -92,7 +92,8 @@ UsbDeviceFilterPtr ConvertDeviceFilter(const USBDeviceFilter* filter,
 
 }  // namespace
 
-USB::USB(ExecutionContext& context) : ContextLifecycleObserver(&context) {}
+USB::USB(ExecutionContext& context)
+    : ExecutionContextLifecycleObserver(&context) {}
 
 USB::~USB() {
   // |service_| may still be valid but there should be no more outstanding
@@ -178,7 +179,7 @@ ScriptPromise USB::requestDevice(ScriptState* script_state,
 }
 
 ExecutionContext* USB::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 const AtomicString& USB::InterfaceName() const {
@@ -324,7 +325,7 @@ void USB::Trace(Visitor* visitor) {
   visitor->Trace(get_permission_requests_);
   visitor->Trace(device_cache_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

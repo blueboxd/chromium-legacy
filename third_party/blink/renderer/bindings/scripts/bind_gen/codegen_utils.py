@@ -105,25 +105,26 @@ def collect_include_headers_of_idl_types(idl_types):
             header_paths.add(
                 "third_party/blink/renderer/platform/wtf/text/wtf_string.h")
         elif idl_type.is_buffer_source_type:
-            header_paths.add(
-                "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
-            )
-            header_paths.add(
-                "third_party/blink/renderer/platform/heap/handle.h")
+            header_paths.update([
+                "third_party/blink/renderer/core/typed_arrays/array_buffer_view_helpers.h",
+                "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h",
+                "third_party/blink/renderer/platform/heap/handle.h",
+            ])
         elif idl_type.is_object or idl_type.is_any:
             header_paths.add(
                 "third_party/blink/renderer/bindings/core/v8/script_value.h")
         elif idl_type.type_definition_object:
-            header_paths.add(
-                "third_party/blink/renderer/platform/heap/handle.h")
             type_def_obj = idl_type.type_definition_object
-            header_paths.add(PathManager(type_def_obj).api_path(ext="h"))
+            header_paths.update([
+                PathManager(type_def_obj).api_path(ext="h"),
+                "third_party/blink/renderer/platform/heap/handle.h",
+            ])
         elif (idl_type.is_sequence or idl_type.is_frozen_array
               or idl_type.is_variadic or idl_type.is_record):
-            header_paths.add(
-                "third_party/blink/renderer/platform/wtf/vector.h")
-            header_paths.add(
-                "third_party/blink/renderer/platform/heap/heap_allocator.h")
+            header_paths.update([
+                "third_party/blink/renderer/platform/wtf/vector.h",
+                "third_party/blink/renderer/platform/heap/heap_allocator.h",
+            ])
         elif idl_type.is_promise:
             header_paths.add(
                 "third_party/blink/renderer/bindings/core/v8/script_promise.h")

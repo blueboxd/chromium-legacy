@@ -9,15 +9,16 @@
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_key_system_configuration.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/encrypted_media_request.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-class MediaKeySystemAccessInitializerBase : public EncryptedMediaRequest,
-                                            public ContextLifecycleObserver {
+class MediaKeySystemAccessInitializerBase
+    : public EncryptedMediaRequest,
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(MediaKeySystemAccessInitializerBase);
 
  public:

@@ -135,7 +135,7 @@ IDBRequest::IDBRequest(ScriptState* script_state,
                        const Source& source,
                        IDBTransaction* transaction,
                        AsyncTraceState metrics)
-    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
+    : ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)),
       transaction_(transaction),
       isolate_(script_state->GetIsolate()),
       metrics_(std::move(metrics)),
@@ -157,7 +157,7 @@ void IDBRequest::Trace(Visitor* visitor) {
   visitor->Trace(event_queue_);
   visitor->Trace(pending_cursor_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 ScriptValue IDBRequest::result(ScriptState* script_state,
@@ -624,7 +624,7 @@ const AtomicString& IDBRequest::InterfaceName() const {
 }
 
 ExecutionContext* IDBRequest::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 DispatchEventResult IDBRequest::DispatchEventInternal(Event& event) {

@@ -155,10 +155,3 @@ static_library("test_support") {
     "//testing/gtest",
   ]
 }
-
-if (is_android) {
-  # TODO(crbug.com/1029481): Remove this empty target (and references to it in
-  # various bot configs etc).
-  junit_binary("components_invalidation_impl_junit_tests") {
-  }
-}

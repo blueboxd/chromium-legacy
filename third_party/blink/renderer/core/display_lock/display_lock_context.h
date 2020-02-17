@@ -71,7 +71,7 @@ enum class DisplayLockContextCreateMethod { kUnknown, kCSS, kAttribute };
 
 class CORE_EXPORT DisplayLockContext final
     : public GarbageCollected<DisplayLockContext>,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public LocalFrameView::LifecycleNotificationObserver {
   USING_GARBAGE_COLLECTED_MIXIN(DisplayLockContext);
   USING_PRE_FINALIZER(DisplayLockContext, Dispose);
@@ -137,7 +137,7 @@ class CORE_EXPORT DisplayLockContext final
   void Trace(Visitor*) override;
   void Dispose();
 
-  // ContextLifecycleObserver overrides.
+  // ExecutionContextLifecycleObserver overrides.
   void ContextDestroyed() override;
 
   // Set which reasons activate, as a mask of DisplayLockActivationReason enums.

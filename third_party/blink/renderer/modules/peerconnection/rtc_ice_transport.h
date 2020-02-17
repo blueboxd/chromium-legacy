@@ -11,7 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_ice_candidate_pair.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_rtc_ice_parameters.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/peerconnection/adapters/ice_transport_proxy.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -42,7 +42,7 @@ class RTCPeerConnection;
 class MODULES_EXPORT RTCIceTransport final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<RTCIceTransport>,
-      public ContextLifecycleObserver,
+      public ExecutionContextLifecycleObserver,
       public IceTransportProxy::Delegate {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RTCIceTransport);
@@ -145,7 +145,7 @@ class MODULES_EXPORT RTCIceTransport final
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override;
 
-  // ContextLifecycleObserver overrides.
+  // ExecutionContextLifecycleObserver overrides.
   void ContextDestroyed() override;
 
   // ActiveScriptWrappable overrides.

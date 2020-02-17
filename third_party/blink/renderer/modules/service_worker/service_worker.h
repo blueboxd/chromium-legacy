@@ -105,7 +105,7 @@ class MODULES_EXPORT ServiceWorker final
   ScriptPromise InternalsTerminate(ScriptState*);
 
  private:
-  // ContextLifecycleStateObserver overrides.
+  // ExecutionContextLifecycleStateObserver overrides.
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState state) override;
   void ContextDestroyed() override;
 

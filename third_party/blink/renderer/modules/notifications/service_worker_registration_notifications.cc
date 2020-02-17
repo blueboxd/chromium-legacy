@@ -27,7 +27,7 @@ namespace blink {
 ServiceWorkerRegistrationNotifications::ServiceWorkerRegistrationNotifications(
     ExecutionContext* context,
     ServiceWorkerRegistration* registration)
-    : ContextLifecycleObserver(context), registration_(registration) {}
+    : ExecutionContextLifecycleObserver(context), registration_(registration) {}
 
 ScriptPromise ServiceWorkerRegistrationNotifications::showNotification(
     ScriptState* script_state,
@@ -101,7 +101,7 @@ void ServiceWorkerRegistrationNotifications::Trace(Visitor* visitor) {
   visitor->Trace(registration_);
   visitor->Trace(loaders_);
   Supplement<ServiceWorkerRegistration>::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 const char ServiceWorkerRegistrationNotifications::kSupplementName[] =

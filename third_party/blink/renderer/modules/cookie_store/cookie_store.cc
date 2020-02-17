@@ -222,7 +222,7 @@ scoped_refptr<SecurityOrigin> DefaultTopFrameOrigin(
 CookieStore::CookieStore(
     ExecutionContext* execution_context,
     mojo::Remote<network::mojom::blink::RestrictedCookieManager> backend)
-    : ContextLifecycleObserver(execution_context),
+    : ExecutionContextLifecycleObserver(execution_context),
       backend_(std::move(backend)),
       default_cookie_url_(DefaultCookieURL(execution_context)),
       default_site_for_cookies_(DefaultSiteForCookies(execution_context)),
@@ -326,7 +326,7 @@ ScriptPromise CookieStore::Delete(ScriptState* script_state,
 
 void CookieStore::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void CookieStore::ContextDestroyed() {
@@ -339,7 +339,7 @@ const AtomicString& CookieStore::InterfaceName() const {
 }
 
 ExecutionContext* CookieStore::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 void CookieStore::RemoveAllEventListeners() {

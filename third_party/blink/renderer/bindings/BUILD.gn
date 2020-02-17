@@ -148,37 +148,7 @@ action_with_pydeps("web_idl_database") {
 group("generate_v8_bindings") {
   public_deps = []
   if (use_v8_bind_gen_for_dictionary) {
-    public_deps += [ ":generate_v8_bindings_dictionary" ]
-  }
-}
-
-if (use_v8_bind_gen_for_dictionary) {
-  action_with_pydeps("generate_v8_bindings_dictionary") {
-    script = "${bindings_scripts_dir}/generate_bindings.py"
-
-    web_idl_database_outputs = get_target_outputs(":web_idl_database")
-    web_idl_database = web_idl_database_outputs[0]
-
-    inputs = [ web_idl_database ]
-    outputs =
-        generated_core_dictionary_files + generated_modules_dictionary_files +
-        generated_core_testing_dictionary_files + generated_demo_files
-
-    args = [
-      "dictionary",
-      "--web_idl_database",
-      rebase_path(web_idl_database, root_build_dir),
-      "--root_src_dir",
-      rebase_path("//", root_build_dir),
-      "--root_gen_dir",
-      rebase_path(root_gen_dir, root_build_dir),
-      "--output_core_reldir",
-      rebase_path("${bindings_output_dir}/core/v8/", root_gen_dir),
-      "--output_modules_reldir",
-      rebase_path("${bindings_output_dir}/modules/v8/", root_gen_dir),
-    ]
-
-    deps = [ ":web_idl_database" ]
+    public_deps += [ ":generate_bindings_dictionary" ]
   }
 }
 
@@ -207,6 +177,15 @@ template("generate_bindings") {
     ]
 
     deps = [ ":web_idl_database" ]
+  }
+}
+
+if (use_v8_bind_gen_for_dictionary) {
+  generate_bindings("generate_bindings_dictionary") {
+    target = "dictionary"
+    outputs =
+        generated_core_dictionary_files + generated_modules_dictionary_files +
+        generated_core_testing_dictionary_files + generated_demo_files
   }
 }
 

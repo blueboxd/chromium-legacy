@@ -139,7 +139,8 @@ static DataTransfer* CreateDraggingDataTransfer(DataTransferAccessPolicy policy,
 }
 
 DragController::DragController(Page* page)
-    : ContextLifecycleObserver(static_cast<ExecutionContext*>(nullptr)),
+    : ExecutionContextLifecycleObserver(
+          static_cast<ExecutionContext*>(nullptr)),
       page_(page),
       document_under_mouse_(nullptr),
       drag_initiator_(nullptr),
@@ -1367,7 +1368,7 @@ void DragController::Trace(Visitor* visitor) {
   visitor->Trace(drag_initiator_);
   visitor->Trace(drag_state_);
   visitor->Trace(file_input_element_under_mouse_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

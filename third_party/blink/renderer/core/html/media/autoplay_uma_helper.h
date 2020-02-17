@@ -8,7 +8,7 @@
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/native_event_listener.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
@@ -37,7 +37,7 @@ class IntersectionObserver;
 class IntersectionObserverEntry;
 
 class CORE_EXPORT AutoplayUmaHelper : public NativeEventListener,
-                                      public ContextLifecycleObserver {
+                                      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(AutoplayUmaHelper);
 
  public:

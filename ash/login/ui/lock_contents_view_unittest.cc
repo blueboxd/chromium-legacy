@@ -2448,6 +2448,10 @@ TEST_F(LockContentsViewUnitTest, RemoveUserFocusMovesBackToPrimaryUser) {
   users()[1].can_remove = true;
   DataDispatcher()->SetUserList(users());
   SetWidget(CreateWidgetWithContent(lock));
+  auto client = std::make_unique<MockLoginScreenClient>();
+  EXPECT_CALL(*client, RemoveUser(users()[1].basic_user_info.account_id))
+      .Times(1)
+      .WillOnce(Invoke(this, &LoginTestBase::RemoveUser));
 
   LockContentsView::TestApi test_api(lock);
   LoginAuthUserView::TestApi secondary_test_api(

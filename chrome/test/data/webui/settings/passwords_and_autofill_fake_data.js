@@ -240,6 +240,7 @@ function PasswordManagerExpectations() {
     passwords: 0,
     exceptions: 0,
     plaintextPassword: 0,
+    accountStorageOptInState: 0,
   };
 
   this.removed = {
@@ -250,6 +251,7 @@ function PasswordManagerExpectations() {
   this.listening = {
     passwords: 0,
     exceptions: 0,
+    accountStorageOptInState: 0,
   };
 }
 

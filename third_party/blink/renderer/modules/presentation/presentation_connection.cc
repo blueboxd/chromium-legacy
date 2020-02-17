@@ -158,7 +158,7 @@ class PresentationConnection::BlobLoader final
 PresentationConnection::PresentationConnection(LocalFrame& frame,
                                                const String& id,
                                                const KURL& url)
-    : ContextLifecycleStateObserver(frame.GetDocument()),
+    : ExecutionContextLifecycleStateObserver(frame.GetDocument()),
       id_(id),
       url_(url),
       state_(mojom::blink::PresentationConnectionState::CONNECTING),
@@ -433,7 +433,7 @@ void PresentationConnection::Trace(Visitor* visitor) {
   visitor->Trace(blob_loader_);
   visitor->Trace(messages_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleStateObserver::Trace(visitor);
+  ExecutionContextLifecycleStateObserver::Trace(visitor);
 }
 
 const AtomicString& PresentationConnection::state() const {

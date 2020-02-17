@@ -35,7 +35,7 @@
 #include "media/midi/midi_service.mojom-blink-forward.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_access_initializer.h"
 #include "third_party/blink/renderer/modules/webmidi/midi_dispatcher.h"
@@ -52,7 +52,7 @@ class MIDIOutputMap;
 
 class MIDIAccess final : public EventTargetWithInlineData,
                          public ActiveScriptWrappable<MIDIAccess>,
-                         public ContextLifecycleObserver,
+                         public ExecutionContextLifecycleObserver,
                          public MIDIDispatcher::Client {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MIDIAccess);
@@ -78,13 +78,13 @@ class MIDIAccess final : public EventTargetWithInlineData,
     return event_target_names::kMIDIAccess;
   }
   ExecutionContext* GetExecutionContext() const override {
-    return ContextLifecycleObserver::GetExecutionContext();
+    return ExecutionContextLifecycleObserver::GetExecutionContext();
   }
 
   // ScriptWrappable
   bool HasPendingActivity() const final;
 
-  // ContextLifecycleObserver
+  // ExecutionContextLifecycleObserver
   void ContextDestroyed() override;
 
   // MIDIDispatcher::Client

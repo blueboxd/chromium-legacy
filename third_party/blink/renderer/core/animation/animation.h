@@ -46,7 +46,7 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
-#include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -64,7 +64,7 @@ class AnimationTimeline;
 
 class CORE_EXPORT Animation : public EventTargetWithInlineData,
                               public ActiveScriptWrappable<Animation>,
-                              public ContextLifecycleObserver,
+                              public ExecutionContextLifecycleObserver,
                               public CompositorAnimationDelegate,
                               public CompositorAnimationClient,
                               public AnimationEffectOwner {

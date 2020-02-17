@@ -278,6 +278,10 @@ LoginBaseBubbleView* LoginUserView::TestApi::menu() const {
   return view_->menu_;
 }
 
+void LoginUserView::TestApi::OnTap() const {
+  view_->on_tap_.Run();
+}
+
 bool LoginUserView::TestApi::is_opaque() const {
   return view_->is_opaque_;
 }

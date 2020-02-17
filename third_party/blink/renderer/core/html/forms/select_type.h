@@ -31,6 +31,8 @@ class SelectType : public GarbageCollected<SelectType> {
   // and update the text.
   virtual void UpdateTextStyleAndContent();
 
+  virtual const ComputedStyle* OptionStyle() const;
+
   // TODO(crbug.com/1052232): Add more virtual functions.
 
  protected:

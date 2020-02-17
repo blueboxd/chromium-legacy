@@ -42,7 +42,7 @@ Sensor::Sensor(ExecutionContext* execution_context,
                ExceptionState& exception_state,
                device::mojom::blink::SensorType type,
                const Vector<mojom::blink::FeaturePolicyFeature>& features)
-    : ContextLifecycleObserver(execution_context),
+    : ExecutionContextLifecycleObserver(execution_context),
       frequency_(0.0),
       type_(type),
       state_(SensorState::kIdle),
@@ -148,7 +148,7 @@ DOMHighResTimeStamp Sensor::timestamp(ScriptState* script_state,
 void Sensor::Trace(Visitor* visitor) {
   visitor->Trace(sensor_proxy_);
   ActiveScriptWrappable::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }
 

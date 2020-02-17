@@ -173,7 +173,7 @@ QuicTransport* QuicTransport::Create(ScriptState* script_state,
 QuicTransport::QuicTransport(PassKey,
                              ScriptState* script_state,
                              const String& url)
-    : ContextLifecycleObserver(ExecutionContext::From(script_state)),
+    : ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)),
       script_state_(script_state),
       url_(NullURL(), url) {}
 
@@ -339,7 +339,7 @@ void QuicTransport::Trace(Visitor* visitor) {
   visitor->Trace(closed_resolver_);
   visitor->Trace(closed_);
   visitor->Trace(stream_map_);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
 

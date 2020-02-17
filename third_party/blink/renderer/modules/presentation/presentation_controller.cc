@@ -21,7 +21,7 @@ namespace blink {
 
 PresentationController::PresentationController(LocalFrame& frame)
     : Supplement<LocalFrame>(frame),
-      ContextLifecycleObserver(frame.GetDocument()) {}
+      ExecutionContextLifecycleObserver(frame.GetDocument()) {}
 
 PresentationController::~PresentationController() = default;
 
@@ -57,7 +57,7 @@ void PresentationController::Trace(Visitor* visitor) {
   visitor->Trace(connections_);
   visitor->Trace(availability_state_);
   Supplement<LocalFrame>::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 void PresentationController::SetPresentation(Presentation* presentation) {

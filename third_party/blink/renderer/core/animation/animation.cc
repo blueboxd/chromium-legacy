@@ -197,7 +197,7 @@ Animation* Animation::Create(ExecutionContext* execution_context,
 Animation::Animation(ExecutionContext* execution_context,
                      AnimationTimeline* timeline,
                      AnimationEffect* content)
-    : ContextLifecycleObserver(execution_context),
+    : ExecutionContextLifecycleObserver(execution_context),
       reported_play_state_(kIdle),
       playback_rate_(1),
       start_time_(),
@@ -1385,7 +1385,7 @@ const AtomicString& Animation::InterfaceName() const {
 }
 
 ExecutionContext* Animation::GetExecutionContext() const {
-  return ContextLifecycleObserver::GetExecutionContext();
+  return ExecutionContextLifecycleObserver::GetExecutionContext();
 }
 
 bool Animation::HasPendingActivity() const {
@@ -2194,7 +2194,7 @@ void Animation::Trace(Visitor* visitor) {
   visitor->Trace(ready_promise_);
   visitor->Trace(compositor_animation_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
+  ExecutionContextLifecycleObserver::Trace(visitor);
 }
 
 Animation::CompositorAnimationHolder*

@@ -32,6 +32,9 @@
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
+#include "extensions/common/constants.h"
 #include "url/gurl.h"
 
 namespace app_list {
@@ -338,8 +341,29 @@ void SearchResultRanker::FetchRankings(const base::string16& query) {
         query_based_mixed_types_ranker_->Rank(base::UTF16ToUTF8(query));
   }
 
-  if (app_ranker_)
+  if (app_ranker_) {
+    // The Help app is being replaced with the Discover app, and we want to keep
+    // ranking consistent by swapping the app IDs. The rename is a no-op if the
+    // Help app ID doesn't exist, so it's safe to do it several times.
+    // Unfortunately we can't do this on initialization though, as the model
+    // won't have been loaded from disk. Instead, do it on the first rank.
+    // TODO(1052154): Remove this special case after M84, to give all devices
+    // time to swap IDs.
+    if (!have_renamed_help_app_) {
+      const auto& discover_app_id =
+          web_app::WebAppProvider::Get(profile_)
+              ->system_web_app_manager()
+              .GetAppIdForSystemApp(web_app::SystemAppType::DISCOVER);
+      // The discover app ID is only present if the experiment is enabled.
+      if (discover_app_id.has_value()) {
+        app_ranker_->RenameTarget(extension_misc::kGeniusAppId,
+                                  discover_app_id.value());
+      }
+      have_renamed_help_app_ = true;
+    }
+
     app_ranks_ = app_ranker_->Rank();
+  }
 }
 
 void SearchResultRanker::Rank(Mixer::SortedResults* results) {

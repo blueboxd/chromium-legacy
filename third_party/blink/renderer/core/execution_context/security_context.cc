@@ -184,16 +184,21 @@ bool SecurityContext::IsFeatureEnabled(
 bool SecurityContext::IsFeatureEnabled(
     mojom::blink::FeaturePolicyFeature feature,
     PolicyValue threshold_value,
-    base::Optional<mojom::FeaturePolicyDisposition>* disposition) const {
-  FeatureEnabledState state = GetFeatureEnabledState(feature, threshold_value);
-  if (state == FeatureEnabledState::kEnabled)
-    return true;
-  if (disposition) {
-    *disposition = (state == FeatureEnabledState::kReportOnly)
-                       ? mojom::FeaturePolicyDisposition::kReport
-                       : mojom::FeaturePolicyDisposition::kEnforce;
+    bool* should_report) const {
+  LogImagePolicies(feature, threshold_value);
+  DCHECK(feature_policy_);
+  bool feature_policy_result =
+      feature_policy_->IsFeatureEnabled(feature, threshold_value);
+  bool report_only_feature_policy_result =
+      !report_only_feature_policy_ ||
+      report_only_feature_policy_->IsFeatureEnabled(feature, threshold_value);
+
+  if (should_report) {
+    *should_report =
+        !feature_policy_result || !report_only_feature_policy_result;
   }
-  return (state != FeatureEnabledState::kDisabled);
+
+  return feature_policy_result;
 }
 
 bool SecurityContext::IsFeatureEnabled(
@@ -211,13 +216,9 @@ bool SecurityContext::IsFeatureEnabled(
   return document_policy_->IsFeatureEnabled(feature, threshold_value);
 }
 
-FeatureEnabledState SecurityContext::GetFeatureEnabledState(
+void SecurityContext::LogImagePolicies(
     mojom::blink::FeaturePolicyFeature feature,
     PolicyValue threshold_value) const {
-  // The policy should always be initialized before checking it to ensure we
-  // properly inherit the parent policy.
-  DCHECK(feature_policy_);
-
   // Log metrics for unoptimized-*-images and oversized-images policies.
   if ((feature >= mojom::blink::FeaturePolicyFeature::kUnoptimizedLossyImages &&
        feature <= mojom::blink::FeaturePolicyFeature::
@@ -241,15 +242,6 @@ FeatureEnabledState SecurityContext::GetFeatureEnabledState(
               GetImagePolicyHistogramName(feature), 0, 100, 101, 0x1));
     }
   }
-  if (feature_policy_->IsFeatureEnabled(feature, threshold_value)) {
-    if (report_only_feature_policy_ &&
-        !report_only_feature_policy_->IsFeatureEnabled(feature,
-                                                       threshold_value)) {
-      return FeatureEnabledState::kReportOnly;
-    }
-    return FeatureEnabledState::kEnabled;
-  }
-  return FeatureEnabledState::kDisabled;
 }
 
 }  // namespace blink

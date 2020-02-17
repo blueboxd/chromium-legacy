@@ -59,7 +59,6 @@ using ParsedFeaturePolicy = std::vector<ParsedFeaturePolicyDeclaration>;
 // Whether to report policy violations when checking whether a feature is
 // enabled.
 enum class ReportOptions { kReportOnFailure, kDoNotReport };
-enum class FeatureEnabledState { kDisabled, kReportOnly, kEnabled };
 
 // Defines the security properties (such as the security origin, content
 // security policy, and other restrictions) of an environment in which
@@ -159,14 +158,12 @@ class CORE_EXPORT SecurityContext {
 
   // Tests whether the policy-controlled feature is enabled in this frame.
   // Use ExecutionContext::IsFeatureEnabled if a failure should be reported.
-  // If a non-null base::Optional<mojom::FeaturePolicyDisposition>* is provided
-  // and the feature is disabled via feature policy, it will be populated to
-  // indicate whether the feature usage should be blocked or merely reported.
+  // |should_report| is an extra return value that represent whether
+  // the failure should be reported.
   bool IsFeatureEnabled(mojom::blink::FeaturePolicyFeature) const;
-  bool IsFeatureEnabled(
-      mojom::blink::FeaturePolicyFeature,
-      PolicyValue threshold_value,
-      base::Optional<mojom::FeaturePolicyDisposition>* = nullptr) const;
+  bool IsFeatureEnabled(mojom::blink::FeaturePolicyFeature,
+                        PolicyValue threshold_value,
+                        bool* should_report = nullptr) const;
 
   bool IsFeatureEnabled(mojom::blink::DocumentPolicyFeature) const;
   bool IsFeatureEnabled(mojom::blink::DocumentPolicyFeature,
@@ -180,9 +177,8 @@ class CORE_EXPORT SecurityContext {
   std::unique_ptr<DocumentPolicy> document_policy_;
 
  private:
-  FeatureEnabledState GetFeatureEnabledState(mojom::blink::FeaturePolicyFeature,
-                                             PolicyValue threshold_value) const;
-
+  void LogImagePolicies(mojom::blink::FeaturePolicyFeature,
+                        PolicyValue threshold_value) const;
   Member<ContentSecurityPolicy> content_security_policy_;
 
   network::mojom::IPAddressSpace address_space_;

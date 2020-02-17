@@ -410,9 +410,9 @@ bool ExecutionContext::IsFeatureEnabled(
     CountPotentialFeaturePolicyViolation(feature);
   }
 
-  base::Optional<mojom::FeaturePolicyDisposition> disposition;
+  bool should_report;
   bool enabled = GetSecurityContext().IsFeatureEnabled(feature, threshold_value,
-                                                       &disposition);
+                                                       &should_report);
 
   if (enabled) {
     // Report if the proposed header semantics change would have affected the
@@ -429,8 +429,13 @@ bool ExecutionContext::IsFeatureEnabled(
     }
   }
 
-  if (disposition && report_on_failure == ReportOptions::kReportOnFailure)
-    ReportFeaturePolicyViolation(feature, *disposition, message, source_file);
+  if (should_report && report_on_failure == ReportOptions::kReportOnFailure) {
+    mojom::blink::FeaturePolicyDisposition disposition =
+        enabled ? mojom::blink::FeaturePolicyDisposition::kReport
+                : mojom::blink::FeaturePolicyDisposition::kEnforce;
+    ReportFeaturePolicyViolation(feature, disposition, message, source_file);
+  }
+
   return enabled;
 }
 

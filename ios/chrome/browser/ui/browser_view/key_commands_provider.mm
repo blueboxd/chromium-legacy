@@ -21,16 +21,17 @@
 
 @implementation KeyCommandsProvider
 
-- (NSArray*)
-    keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
-        baseViewController:(UIViewController*)baseViewController
-                dispatcher:
-                    (id<ApplicationCommands, BrowserCommands, OmniboxFocuser>)
-                        dispatcher
-               editingText:(BOOL)editingText {
+- (NSArray*)keyCommandsForConsumer:(id<KeyCommandsPlumbing>)consumer
+                baseViewController:(UIViewController*)baseViewController
+                        dispatcher:(id<ApplicationCommands,
+                                       BrowserCommands,
+                                       FindInPageCommands,
+                                       OmniboxFocuser>)dispatcher
+                       editingText:(BOOL)editingText {
   __weak id<KeyCommandsPlumbing> weakConsumer = consumer;
   __weak UIViewController* weakBaseViewController = baseViewController;
-  __weak id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
+  __weak id<ApplicationCommands, BrowserCommands, FindInPageCommands,
+            OmniboxFocuser>
       weakDispatcher = dispatcher;
 
   // Block to have the tab model open the tab at |index|, if there is one.
@@ -125,7 +126,7 @@
                              title:l10n_util::GetNSStringWithFixup(
                                        IDS_IOS_TOOLS_MENU_FIND_IN_PAGE)
                             action:^{
-                              [weakDispatcher showFindInPage];
+                              [weakDispatcher openFindInPage];
                             }],
         [UIKeyCommand cr_keyCommandWithInput:@"g"
                                modifierFlags:UIKeyModifierCommand

@@ -26,8 +26,7 @@ template("cronet_consumer_template") {
     forward_variables_from(invoker,
                            [
                              "bundle_deps",
-                             "cflags",
-                             "ldflags",
+                             "framework_dirs",
                            ])
 
     configs += [ "//build/config/compiler:enable_arc" ]
@@ -45,15 +44,6 @@ cronet_consumer_template("cronet_consumer") {
 if (!defined(additional_target_cpus) || additional_target_cpus == []) {
   cronet_consumer_template("cronet_consumer_static") {
     deps = [ "//components/cronet/ios:cronet_static_framework" ]
-
-    cflags = [
-      "-F",
-      "Static",
-    ]
-
-    ldflags = [
-      "-F",
-      "Static",
-    ]
+    framework_dirs = [ "$root_out_dir/Static" ]
   }
 }

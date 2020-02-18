@@ -17,6 +17,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/autofill_assistant/browser/actions/action.h"
 #include "components/autofill_assistant/browser/user_data.h"
+#include "components/autofill_assistant/browser/user_model.h"
 #include "components/autofill_assistant/browser/website_login_fetcher.h"
 
 namespace autofill_assistant {
@@ -35,6 +36,7 @@ class CollectUserDataAction : public Action,
 
   static bool IsUserDataComplete(
       const UserData& user_data,
+      const UserModel& user_model,
       const CollectUserDataOptions& collect_user_data_options);
 
   // Ensures that |end| is > |start| by modifying either |start| or |end|,

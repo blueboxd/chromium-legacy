@@ -14,6 +14,7 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "components/policy/core/common/extension_policy_migrator.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/mock_policy_service.h"
@@ -23,10 +24,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::testing::_;
 using ::testing::AnyNumber;
+using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::Return;
-using ::testing::_;
 
 namespace policy {
 
@@ -95,6 +97,11 @@ class ChangePolicyObserver : public PolicyService::Observer {
   bool observer_invoked_;
 };
 
+class MockPolicyMigrator : public ExtensionPolicyMigrator {
+ public:
+  MOCK_METHOD1(Migrate, void(PolicyBundle* bundle));
+};
+
 }  // namespace
 
 class PolicyServiceTest : public testing::Test {
@@ -121,7 +128,18 @@ class PolicyServiceTest : public testing::Test {
     providers.push_back(&provider0_);
     providers.push_back(&provider1_);
     providers.push_back(&provider2_);
-    policy_service_ = std::make_unique<PolicyServiceImpl>(std::move(providers));
+    auto migrator = std::make_unique<MockPolicyMigrator>();
+    EXPECT_CALL(*migrator, Migrate(_))
+        .WillRepeatedly(Invoke([](PolicyBundle* bundle) {
+          bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
+              .Set("migrated", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                   POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(15),
+                   nullptr);
+        }));
+    PolicyServiceImpl::Migrators migrators;
+    migrators.push_back(std::move(migrator));
+    policy_service_ = std::make_unique<PolicyServiceImpl>(std::move(providers),
+                                                          std::move(migrators));
   }
 
   void TearDown() override {
@@ -165,6 +183,9 @@ TEST_F(PolicyServiceTest, LoadsPoliciesBeforeProvidersRefresh) {
   expected.Set("pre", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_ENTERPRISE_DEFAULT,
                std::make_unique<base::Value>(13), nullptr);
+  expected.Set("migrated", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(15),
+               nullptr);
   EXPECT_TRUE(VerifyPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()), expected));
 }
@@ -177,6 +198,9 @@ TEST_F(PolicyServiceTest, NotifyObservers) {
   expectedPrevious.Set("pre", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                        POLICY_SOURCE_ENTERPRISE_DEFAULT,
                        std::make_unique<base::Value>(13), nullptr);
+  expectedPrevious.Set("migrated", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                       POLICY_SOURCE_PLATFORM,
+                       std::make_unique<base::Value>(15), nullptr);
 
   PolicyMap expectedCurrent;
   expectedCurrent.CopyFrom(expectedPrevious);
@@ -265,6 +289,9 @@ TEST_F(PolicyServiceTest, NotifyObserversInMultipleNamespaces) {
   previous_policy_map.Set("pre", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                           POLICY_SOURCE_ENTERPRISE_DEFAULT,
                           std::make_unique<base::Value>(13), nullptr);
+  previous_policy_map.Set("migrated", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                          POLICY_SOURCE_PLATFORM,
+                          std::make_unique<base::Value>(15), nullptr);
   PolicyMap policy_map;
   policy_map.CopyFrom(previous_policy_map);
   policy_map.Set("policy", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
@@ -390,6 +417,9 @@ TEST_F(PolicyServiceTest, Priorities) {
   expected.Set("pre", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_ENTERPRISE_DEFAULT,
                std::make_unique<base::Value>(13), nullptr);
+  expected.Set("migrated", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(15),
+               nullptr);
   expected.Set("aaa", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_CLOUD, std::make_unique<base::Value>(0), nullptr);
   expected.GetMutable("aaa")->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
@@ -573,6 +603,9 @@ TEST_F(PolicyServiceTest, NamespaceMerge) {
   expected.Set(kSameLevelPolicy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
                POLICY_SOURCE_ENTERPRISE_DEFAULT,
                std::make_unique<base::Value>("bundle0"), nullptr);
+  expected.Set("migrated", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+               POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(15),
+               nullptr);
   expected.GetMutable(kSameLevelPolicy)
       ->AddWarning(IDS_POLICY_CONFLICT_DIFF_VALUE);
   expected.GetMutable(kSameLevelPolicy)
@@ -612,6 +645,7 @@ TEST_F(PolicyServiceTest, NamespaceMerge) {
 
   EXPECT_TRUE(policy_service_->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string())).Equals(expected));
+  expected.Erase("migrated");
   EXPECT_TRUE(policy_service_->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kExtension)).Equals(expected));
 }
@@ -888,6 +922,9 @@ TEST_F(PolicyServiceTest, SeparateProxyPoliciesMerging) {
   expected_chrome.Set(key::kProxySettings, POLICY_LEVEL_MANDATORY,
                       POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                       std::move(expected_value), nullptr);
+  expected_chrome.Set("migrated", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                      POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(15),
+                      nullptr);
 
   // The resulting Extensions namespace map shouldn't have been modified.
   PolicyMap expected_extension;
@@ -945,6 +982,9 @@ TEST_F(PolicyServiceTest, DictionaryPoliciesMerging) {
                       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                       POLICY_SOURCE_PLATFORM,
                       base::Value::ToUniquePtrValue(policy->Clone()), nullptr);
+  expected_chrome.Set("migrated", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                      POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(15),
+                      nullptr);
 
   PolicyMap::Entry merged(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                           POLICY_SOURCE_MERGED, std::move(result), nullptr);
@@ -999,6 +1039,9 @@ TEST_F(PolicyServiceTest, ListsPoliciesMerging) {
                       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                       POLICY_SOURCE_PLATFORM,
                       base::Value::ToUniquePtrValue(policy->Clone()), nullptr);
+  expected_chrome.Set("migrated", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                      POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(15),
+                      nullptr);
 
   PolicyMap::Entry merged(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                           POLICY_SOURCE_MERGED, std::move(result), nullptr);
@@ -1063,6 +1106,9 @@ TEST_F(PolicyServiceTest, GroupPoliciesMergingDisabledForCloudUsers) {
                       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                       POLICY_SOURCE_PLATFORM,
                       base::Value::ToUniquePtrValue(policy->Clone()), nullptr);
+  expected_chrome.Set("migrated", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                      POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(15),
+                      nullptr);
 
   PolicyMap::Entry merged(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                           POLICY_SOURCE_MERGED, std::move(result), nullptr);
@@ -1131,6 +1177,9 @@ TEST_F(PolicyServiceTest, GroupPoliciesMergingEnabled) {
                       POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                       POLICY_SOURCE_PLATFORM,
                       base::Value::ToUniquePtrValue(policy->Clone()), nullptr);
+  expected_chrome.Set("migrated", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+                      POLICY_SOURCE_PLATFORM, std::make_unique<base::Value>(15),
+                      nullptr);
 
   PolicyMap::Entry merged(POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE,
                           POLICY_SOURCE_MERGED, std::move(result), nullptr);

@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include "base/bind.h"
-#include "base/no_destructor.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -32,9 +31,19 @@ class WindowsSpellCheckerTest : public testing::Test {
  public:
   WindowsSpellCheckerTest() {
     if (spellcheck::WindowsVersionSupportsSpellchecker()) {
+      feature_list_.InitAndEnableFeature(
+          spellcheck::kWinUseBrowserSpellChecker);
+
       win_spell_checker_ = std::make_unique<WindowsSpellChecker>(
           base::ThreadTaskRunnerHandle::Get(),
           base::CreateCOMSTATaskRunner({base::ThreadPool(), base::MayBlock()}));
+
+      win_spell_checker_->CreateSpellChecker(
+          "en-US", base::BindOnce(
+                       &WindowsSpellCheckerTest::SetLanguageCompletionCallback,
+                       base::Unretained(this)));
+
+      RunUntilResultReceived();
     }
   }
 
@@ -89,87 +98,12 @@ class WindowsSpellCheckerTest : public testing::Test {
   }
 #endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
 
-  // TODO(gujen) Make these methods actual tests. See the task_environment_
-  // comment below.
-  void RequestTextCheckTests() {
-    static const struct {
-      const char* text_to_check;
-      const char* expected_suggestion;
-    } kTestCases[] = {
-        {"absense", "absence"},    {"becomeing", "becoming"},
-        {"cieling", "ceiling"},    {"definate", "definite"},
-        {"eigth", "eight"},        {"exellent", "excellent"},
-        {"finaly", "finally"},     {"garantee", "guarantee"},
-        {"humerous", "humorous"},  {"imediately", "immediately"},
-        {"jellous", "jealous"},    {"knowlege", "knowledge"},
-        {"lenght", "length"},      {"manuever", "maneuver"},
-        {"naturaly", "naturally"}, {"ommision", "omission"},
-    };
-
-    for (size_t i = 0; i < base::size(kTestCases); ++i) {
-      const auto& test_case = kTestCases[i];
-      const base::string16 word(base::ASCIIToUTF16(test_case.text_to_check));
-
-      // Check if the suggested words occur.
-      win_spell_checker_->RequestTextCheck(
-          1, word,
-          base::BindOnce(&WindowsSpellCheckerTest::TextCheckCompletionCallback,
-                         base::Unretained(this)));
-      RunUntilResultReceived();
-
-      ASSERT_EQ(1u, spell_check_results_.size())
-          << "RequestTextCheckTests case " << i << ": Wrong number of results";
-
-      const std::vector<base::string16>& suggestions =
-          spell_check_results_.front().replacements;
-      const base::string16 suggested_word(
-          base::ASCIIToUTF16(test_case.expected_suggestion));
-      auto position =
-          std::find_if(suggestions.begin(), suggestions.end(),
-                       [&](const base::string16& suggestion) {
-                         return suggestion.compare(suggested_word) == 0;
-                       });
-
-      ASSERT_NE(suggestions.end(), position)
-          << "RequestTextCheckTests case " << i
-          << ": Expected suggestion not found";
-    }
-  }
-
-#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
-  void GetSupportedWindowsPreferredLanguagesTests() {
-    win_spell_checker_->GetSupportedWindowsPreferredLanguages(base::BindOnce(
-        &WindowsSpellCheckerTest::GetSupportedWindowsPreferredLanguagesCallback,
-        base::Unretained(this)));
-
-    RunUntilResultReceived();
-
-    ASSERT_LE(1u, preferred_languages_.size());
-    ASSERT_NE(preferred_languages_.end(),
-              std::find(preferred_languages_.begin(),
-                        preferred_languages_.end(), "en-US"));
-  }
-#endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
-
-#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  void PerLanguageSuggestionsTests() {
-    win_spell_checker_->GetPerLanguageSuggestions(
-        base::ASCIIToUTF16("tihs"),
-        base::BindOnce(
-            &WindowsSpellCheckerTest::PerLanguageSuggestionsCompletionCallback,
-            base::Unretained(this)));
-    RunUntilResultReceived();
-
-    ASSERT_EQ(per_language_suggestions_.size(), 1u);
-    ASSERT_GT(per_language_suggestions_[0].size(), 0u);
-  }
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-
  protected:
   std::unique_ptr<WindowsSpellChecker> win_spell_checker_;
 
   bool callback_finished_ = false;
   base::OnceClosure quit_;
+  base::test::ScopedFeatureList feature_list_;
 
   bool set_language_result_;
   std::vector<SpellCheckResult> spell_check_results_;
@@ -180,47 +114,99 @@ class WindowsSpellCheckerTest : public testing::Test {
   std::vector<std::string> preferred_languages_;
 #endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
 
-  // TODO(gujen) (crbug.com/1035044) The WindowsSpellChecker class is
-  // instantiated with static storage using base::NoDestructor (see
-  // GetWindowsSpellChecker) and creates its own task runner. The thread pool is
-  // destroyed together with TaskEnvironment when the test fixture object is
-  // destroyed. Therefore without some elaborate test-only code added to the
-  // WindowsSpellChecker class or a means to keep the TaskEnvironment alive
-  // (which would set off leak detection), easiest approach for now is to add
-  // all test coverage for Windows spellchecking to a single test.
   base::test::TaskEnvironment task_environment_{
       base::test::TaskEnvironment::MainThreadType::UI};
 };
 
-// TODO(gujen) Split this test into multiple tests instead of individual
-//             methods. See the task_environment_ comment in the
-//             WindowsSpellCheckerTest class.
-TEST_F(WindowsSpellCheckerTest, SpellCheckAsyncMethods) {
+TEST_F(WindowsSpellCheckerTest, RequestTextCheck) {
   if (!spellcheck::WindowsVersionSupportsSpellchecker()) {
     return;
   }
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(spellcheck::kWinUseBrowserSpellChecker);
+  ASSERT_TRUE(set_language_result_);
 
-  win_spell_checker_->CreateSpellChecker(
-      "en-US",
-      base::BindOnce(&WindowsSpellCheckerTest::SetLanguageCompletionCallback,
-                     base::Unretained(this)));
+  static const struct {
+    const char* text_to_check;
+    const char* expected_suggestion;
+  } kTestCases[] = {
+      {"absense", "absence"},    {"becomeing", "becoming"},
+      {"cieling", "ceiling"},    {"definate", "definite"},
+      {"eigth", "eight"},        {"exellent", "excellent"},
+      {"finaly", "finally"},     {"garantee", "guarantee"},
+      {"humerous", "humorous"},  {"imediately", "immediately"},
+      {"jellous", "jealous"},    {"knowlege", "knowledge"},
+      {"lenght", "length"},      {"manuever", "maneuver"},
+      {"naturaly", "naturally"}, {"ommision", "omission"},
+  };
 
-  RunUntilResultReceived();
+  for (size_t i = 0; i < base::size(kTestCases); ++i) {
+    const auto& test_case = kTestCases[i];
+    const base::string16 word(base::ASCIIToUTF16(test_case.text_to_check));
+
+    // Check if the suggested words occur.
+    win_spell_checker_->RequestTextCheck(
+        1, word,
+        base::BindOnce(&WindowsSpellCheckerTest::TextCheckCompletionCallback,
+                       base::Unretained(this)));
+    RunUntilResultReceived();
+
+    ASSERT_EQ(1u, spell_check_results_.size())
+        << "RequestTextCheckTests case " << i << ": Wrong number of results";
+
+    const std::vector<base::string16>& suggestions =
+        spell_check_results_.front().replacements;
+    const base::string16 suggested_word(
+        base::ASCIIToUTF16(test_case.expected_suggestion));
+    auto position =
+        std::find_if(suggestions.begin(), suggestions.end(),
+                     [&](const base::string16& suggestion) {
+                       return suggestion.compare(suggested_word) == 0;
+                     });
+
+    ASSERT_NE(suggestions.end(), position) << "RequestTextCheckTests case " << i
+                                           << ": Expected suggestion not found";
+  }
+}
+
+#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
+TEST_F(WindowsSpellCheckerTest, GetSupportedWindowsPreferredLanguages) {
+  if (!spellcheck::WindowsVersionSupportsSpellchecker()) {
+    return;
+  }
 
   ASSERT_TRUE(set_language_result_);
 
-  RequestTextCheckTests();
+  win_spell_checker_->GetSupportedWindowsPreferredLanguages(base::BindOnce(
+      &WindowsSpellCheckerTest::GetSupportedWindowsPreferredLanguagesCallback,
+      base::Unretained(this)));
 
-#if BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK)
-  GetSupportedWindowsPreferredLanguagesTests();
+  RunUntilResultReceived();
+
+  ASSERT_LE(1u, preferred_languages_.size());
+  ASSERT_NE(preferred_languages_.end(),
+            std::find(preferred_languages_.begin(), preferred_languages_.end(),
+                      "en-US"));
+}
 #endif  // BUILDFLAG(USE_WINDOWS_PREFERRED_LANGUAGES_FOR_SPELLCHECK
 
 #if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
-  PerLanguageSuggestionsTests();
-#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+TEST_F(WindowsSpellCheckerTest, GetPerLanguageSuggestions) {
+  if (!spellcheck::WindowsVersionSupportsSpellchecker()) {
+    return;
+  }
+
+  ASSERT_TRUE(set_language_result_);
+
+  win_spell_checker_->GetPerLanguageSuggestions(
+      base::ASCIIToUTF16("tihs"),
+      base::BindOnce(
+          &WindowsSpellCheckerTest::PerLanguageSuggestionsCompletionCallback,
+          base::Unretained(this)));
+  RunUntilResultReceived();
+
+  ASSERT_EQ(per_language_suggestions_.size(), 1u);
+  ASSERT_GT(per_language_suggestions_[0].size(), 0u);
 }
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
 
 }  // namespace

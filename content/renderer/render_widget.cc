@@ -3371,10 +3371,12 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
   ReportTimeSwapPromise(ReportTimeCallback swap_time_callback,
                         ReportTimeCallback presentation_time_callback,
                         scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                        LayerTreeView* layer_tree_view,
                         base::WeakPtr<RenderWidget> render_widget)
       : swap_time_callback_(std::move(swap_time_callback)),
         presentation_time_callback_(std::move(presentation_time_callback)),
         task_runner_(std::move(task_runner)),
+        layer_tree_view_(layer_tree_view),
         render_widget_(std::move(render_widget)) {}
   ~ReportTimeSwapPromise() override = default;
 
@@ -3389,10 +3391,11 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
   void DidSwap() override {
     DCHECK_GT(frame_token_, 0u);
     task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&RunCallbackAfterSwap, base::TimeTicks::Now(),
-                                  std::move(swap_time_callback_),
-                                  std::move(presentation_time_callback_),
-                                  std::move(render_widget_), frame_token_));
+        FROM_HERE,
+        base::BindOnce(&RunCallbackAfterSwap, base::TimeTicks::Now(),
+                       std::move(swap_time_callback_),
+                       std::move(presentation_time_callback_), layer_tree_view_,
+                       std::move(render_widget_), frame_token_));
   }
 
   cc::SwapPromise::DidNotSwapAction DidNotSwap(
@@ -3432,14 +3435,16 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
   int64_t TraceId() const override { return 0; }
 
  private:
+  // LayerTreeView is valid while RenderWidget is valid.
   static void RunCallbackAfterSwap(
       base::TimeTicks swap_time,
       ReportTimeCallback swap_time_callback,
       ReportTimeCallback presentation_time_callback,
+      LayerTreeView* layer_tree_view,
       base::WeakPtr<RenderWidget> render_widget,
       int frame_token) {
     if (render_widget) {
-      render_widget->layer_tree_view()->AddPresentationCallback(
+      layer_tree_view->AddPresentationCallback(
           frame_token,
           base::BindOnce(&RunCallbackAfterPresentation,
                          std::move(presentation_time_callback), swap_time));
@@ -3483,6 +3488,8 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
   ReportTimeCallback swap_time_callback_;
   ReportTimeCallback presentation_time_callback_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  // This pointer is valid while |render_widget_| is valid.
+  LayerTreeView* const layer_tree_view_;
   base::WeakPtr<RenderWidget> render_widget_;
   uint32_t frame_token_ = 0;
 
@@ -3544,7 +3551,7 @@ void RenderWidget::NotifySwapAndPresentationTime(
   layer_tree_host_->QueueSwapPromise(std::make_unique<ReportTimeSwapPromise>(
       std::move(swap_time_callback), std::move(presentation_time_callback),
       layer_tree_host_->GetTaskRunnerProvider()->MainThreadTaskRunner(),
-      weak_ptr_factory_.GetWeakPtr()));
+      layer_tree_view_.get(), weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RenderWidget::RequestUnbufferedInputEvents() {

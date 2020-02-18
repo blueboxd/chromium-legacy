@@ -13,10 +13,12 @@ import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
+import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withTagValue;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.iterableWithSize;
@@ -38,6 +40,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.BooleanAndProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.BooleanList;
 import org.chromium.chrome.browser.autofill_assistant.proto.CallbackProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
@@ -46,6 +49,7 @@ import org.chromium.chrome.browser.autofill_assistant.proto.ClientDimensionProto
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.CollectUserDataResultProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.ColorProto;
+import org.chromium.chrome.browser.autofill_assistant.proto.ComputeValueProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.DividerViewProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.DrawableProto;
 import org.chromium.chrome.browser.autofill_assistant.proto.EventProto;
@@ -716,5 +720,133 @@ public class AutofillAssistantGenericUiTest {
                                    IntList.newBuilder().addValues(3)))
                            .build(),
                 isIn(resultModelValues));
+    }
+
+    @Test
+    @MediumTest
+    @DisableIf.Build(sdk_is_less_than = 21)
+    public void testMandatoryFields() {
+        ViewProto clickableView1 = (ViewProto) ViewProto.newBuilder()
+                                           .setTextView(TextViewProto.newBuilder().setText(
+                                                   "Writes 'true' to output1 when clicked"))
+                                           .setIdentifier("clickableView1")
+                                           .build();
+        ViewProto clickableView2 = (ViewProto) ViewProto.newBuilder()
+                                           .setTextView(TextViewProto.newBuilder().setText(
+                                                   "Writes 'true' to output2 when clicked"))
+                                           .setIdentifier("clickableView2")
+                                           .build();
+
+        ViewProto rootView =
+                (ViewProto) ViewProto.newBuilder()
+                        .setViewContainer(
+                                ViewContainerProto.newBuilder()
+                                        .setLinearLayout(
+                                                LinearLayoutProto.newBuilder().setOrientation(
+                                                        LinearLayoutProto.Orientation.VERTICAL))
+                                        .addViews(clickableView1)
+                                        .addViews(clickableView2))
+                        .build();
+
+        List<InteractionProto> interactions = new ArrayList<>();
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
+                                OnViewClickedEventProto.newBuilder()
+                                        .setViewIdentifier("clickableView1")
+                                        .setValue(ValueProto.newBuilder().setBooleans(
+                                                BooleanList.newBuilder().addValues(true)))))
+                        .addCallbacks(CallbackProto.newBuilder().setSetValue(
+                                SetModelValueProto.newBuilder().setModelIdentifier("output1")))
+                        .build());
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
+                                OnViewClickedEventProto.newBuilder()
+                                        .setViewIdentifier("clickableView2")
+                                        .setValue(ValueProto.newBuilder().setBooleans(
+                                                BooleanList.newBuilder().addValues(true)))))
+                        .addCallbacks(CallbackProto.newBuilder().setSetValue(
+                                SetModelValueProto.newBuilder().setModelIdentifier("output2")))
+                        .build());
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "output1")))
+                        .addCallbacks(CallbackProto.newBuilder().setComputeValue(
+                                ComputeValueProto.newBuilder()
+                                        .setBooleanAnd(
+                                                BooleanAndProto.newBuilder().addAllModelIdentifiers(
+                                                        Arrays.asList("output1", "output2")))
+                                        .setResultModelIdentifier("combined")))
+                        .build());
+        interactions.add(
+                (InteractionProto) InteractionProto.newBuilder()
+                        .setTriggerEvent(EventProto.newBuilder().setOnValueChanged(
+                                OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
+                                        "output2")))
+                        .addCallbacks(CallbackProto.newBuilder().setComputeValue(
+                                ComputeValueProto.newBuilder()
+                                        .setBooleanAnd(
+                                                BooleanAndProto.newBuilder().addAllModelIdentifiers(
+                                                        Arrays.asList("output1", "output2")))
+                                        .setResultModelIdentifier("combined")))
+                        .build());
+
+        List<ModelProto.ModelValue> modelValues = new ArrayList<>();
+        modelValues.add((ModelProto.ModelValue) ModelProto.ModelValue.newBuilder()
+                                .setIdentifier("combined")
+                                .setValue(ValueProto.newBuilder().setBooleans(
+                                        BooleanList.newBuilder().addValues(false)))
+                                .build());
+
+        GenericUserInterfaceProto genericUserInterfacePrepended =
+                (GenericUserInterfaceProto) GenericUserInterfaceProto.newBuilder()
+                        .setRootView(rootView)
+                        .setInteractions(
+                                InteractionsProto.newBuilder().addAllInteractions(interactions))
+                        .setModel(ModelProto.newBuilder().addAllValues(modelValues))
+                        .build();
+
+        ArrayList<ActionProto> list = new ArrayList<>();
+        list.add(
+                (ActionProto) ActionProto.newBuilder()
+                        .setCollectUserData(CollectUserDataProto.newBuilder()
+                                                    .setGenericUserInterfacePrepended(
+                                                            genericUserInterfacePrepended)
+                                                    .setAdditionalModelIdentifierToCheck("combined")
+                                                    .setRequestTermsAndConditions(false))
+                        .build());
+        list.add((ActionProto) ActionProto.newBuilder()
+                         .setPrompt(PromptProto.newBuilder()
+                                            .setMessage("Finished")
+                                            .addChoices(PromptProto.Choice.newBuilder().setChip(
+                                                    ChipProto.newBuilder()
+                                                            .setType(ChipType.DONE_ACTION)
+                                                            .setText("End"))))
+                         .build());
+        AutofillAssistantTestScript script = new AutofillAssistantTestScript(
+                (SupportedScriptProto) SupportedScriptProto.newBuilder()
+                        .setPath("form_target_website.html")
+                        .setPresentation(PresentationProto.newBuilder().setAutostart(true).setChip(
+                                ChipProto.newBuilder().setText("Autostart")))
+                        .build(),
+                list);
+
+        AutofillAssistantTestService testService =
+                new AutofillAssistantTestService(Collections.singletonList(script));
+        startAutofillAssistant(mTestRule.getActivity(), testService);
+
+        waitUntilViewMatchesCondition(withText("Continue"), isCompletelyDisplayed());
+        onView(withContentDescription("Continue")).check(matches(not(isEnabled())));
+
+        onView(withText("Writes 'true' to output1 when clicked")).perform(click());
+        onView(withContentDescription("Continue")).check(matches(not(isEnabled())));
+        onView(withText("Writes 'true' to output2 when clicked")).perform(click());
+        onView(withContentDescription("Continue")).check(matches(isEnabled()));
+
+        onView(withText("Continue")).perform(click());
+        waitUntilViewMatchesCondition(withText("End"), isCompletelyDisplayed());
     }
 }

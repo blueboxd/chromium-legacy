@@ -1311,7 +1311,7 @@ void Controller::UpdateCollectUserDataActions() {
   }
 
   bool confirm_button_enabled = CollectUserDataAction::IsUserDataComplete(
-      *user_data_, *collect_user_data_options_);
+      *user_data_, user_model_, *collect_user_data_options_);
 
   UserAction confirm(collect_user_data_options_->confirm_action);
   confirm.SetEnabled(confirm_button_enabled);
@@ -1621,6 +1621,14 @@ void Controller::OnValueChanged(const std::string& identifier,
                                 const ValueProto& new_value) {
   event_handler_.DispatchEvent({EventProto::kOnValueChanged, identifier},
                                new_value);
+  // TODO(b/145043394) Remove this once chips are part of generic UI.
+  if (collect_user_data_options_ != nullptr &&
+      collect_user_data_options_->additional_model_identifier_to_check
+          .has_value() &&
+      identifier ==
+          *collect_user_data_options_->additional_model_identifier_to_check) {
+    UpdateCollectUserDataActions();
+  }
 }
 
 void Controller::OnTouchableAreaChanged(

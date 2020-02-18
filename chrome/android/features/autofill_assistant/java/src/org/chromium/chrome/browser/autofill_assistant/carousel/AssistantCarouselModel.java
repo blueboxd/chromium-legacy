@@ -4,15 +4,24 @@
 
 package org.chromium.chrome.browser.autofill_assistant.carousel;
 
-import org.chromium.ui.modelutil.ListModel;
+import org.chromium.ui.modelutil.PropertyModel;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * State for the carousel of the Autofill Assistant.
  */
-public class AssistantCarouselModel {
-    private final ListModel<AssistantChip> mChipsModel = new ListModel<>();
+public class AssistantCarouselModel extends PropertyModel {
+    public static final WritableObjectPropertyKey<List<AssistantChip>> CHIPS =
+            new WritableObjectPropertyKey<>();
 
-    public ListModel<AssistantChip> getChipsModel() {
-        return mChipsModel;
+    public AssistantCarouselModel() {
+        super(CHIPS);
+        set(CHIPS, new ArrayList<>());
+    }
+
+    public void setChips(List<AssistantChip> chips) {
+        set(CHIPS, chips);
     }
 }

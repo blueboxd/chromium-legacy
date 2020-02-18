@@ -21,12 +21,14 @@ class ChromeBrowserState;
 @class BrowserContainerViewController;
 @class BrowserViewControllerDependencyFactory;
 @class CommandDispatcher;
+@protocol FindInPageCommands;
 @protocol OmniboxFocuser;
 @protocol PasswordBreachCommands;
 @protocol PopupMenuCommands;
 @protocol FakeboxFocuser;
 @protocol SnackbarCommands;
 @class TabModel;
+@class ToolbarAccessoryPresenter;
 @protocol ToolbarCommands;
 
 // The top-level view controller for the browser UI. Manages other controllers
@@ -62,6 +64,7 @@ class ChromeBrowserState;
 @property(nonatomic, readonly) id<ApplicationCommands,
                                   BrowserCommands,
                                   BrowsingDataCommands,
+                                  FindInPageCommands,
                                   OmniboxFocuser,
                                   PasswordBreachCommands,
                                   PopupMenuCommands,

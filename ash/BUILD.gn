@@ -560,6 +560,10 @@ component("ash") {
     "power/hid_battery_util.h",
     "power/peripheral_battery_tracker.cc",
     "power/peripheral_battery_tracker.h",
+    "quick_answers/quick_answers_ui_controller.cc",
+    "quick_answers/quick_answers_ui_controller.h",
+    "quick_answers/ui/quick_answers_view.cc",
+    "quick_answers/ui/quick_answers_view.h",
     "root_window_controller.cc",
     "root_window_settings.cc",
     "root_window_settings.h",
@@ -1435,6 +1439,7 @@ component("ash") {
     "//cc/debug",
     "//cc/paint:paint",
     "//chromeos/assistant:buildflags",
+    "//chromeos/components/quick_answers",
 
     # TODO(https://crbug.com/644336): Make CrasAudioHandler Chrome or Ash only.
     "//chromeos/audio",

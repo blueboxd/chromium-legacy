@@ -89,6 +89,7 @@
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
+#include "third_party/blink/renderer/core/frame/remote_frame_owner.h"
 #include "third_party/blink/renderer/core/frame/report.h"
 #include "third_party/blink/renderer/core/frame/reporting_context.h"
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
@@ -2196,6 +2197,13 @@ void LocalFrame::ReportContentSecurityPolicyViolation(
       violation->after_redirect ? RedirectStatus::kFollowedRedirect
                                 : RedirectStatus::kNoRedirect,
       nullptr /* Element */);
+}
+
+void LocalFrame::DidUpdateFramePolicy(const FramePolicy& frame_policy) {
+  // At the moment, this is only used to replicate sandbox flags and container
+  // policy for frames with a remote owner.
+  SECURITY_CHECK(IsA<RemoteFrameOwner>(Owner()));
+  To<RemoteFrameOwner>(Owner())->SetFramePolicy(frame_policy);
 }
 
 void LocalFrame::BindToReceiver(

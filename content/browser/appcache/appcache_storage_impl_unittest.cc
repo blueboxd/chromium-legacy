@@ -386,6 +386,8 @@ class AppCacheStorageImplTest : public testing::Test {
     // us to load. The ctor should put it in the working set.
     int64_t cache_id = storage()->NewCacheId();
     auto cache = base::MakeRefCounted<AppCache>(storage(), cache_id);
+    cache->set_manifest_parser_version(1);
+    cache->set_manifest_scope("/");
 
     // Conduct the test.
     storage()->LoadCache(cache_id, delegate());
@@ -507,7 +509,7 @@ class AppCacheStorageImplTest : public testing::Test {
     group_ = base::MakeRefCounted<AppCacheGroup>(storage(), kManifestUrl,
                                                  storage()->NewGroupId());
     cache_ = base::MakeRefCounted<AppCache>(storage(), storage()->NewCacheId());
-    cache_->set_manifest_parser_version(0);
+    cache_->set_manifest_parser_version(1);
     cache_->set_manifest_scope("/");
     cache_->AddEntry(kEntryUrl,
                      AppCacheEntry(AppCacheEntry::MASTER, 1, kDefaultEntrySize,
@@ -559,7 +561,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // And a newest unstored complete cache.
     cache2_ = base::MakeRefCounted<AppCache>(storage(), 2);
-    cache2_->set_manifest_parser_version(0);
+    cache2_->set_manifest_parser_version(1);
     cache2_->set_manifest_scope("/");
     cache2_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT, 1,
                                                kDefaultEntrySize + 100,
@@ -611,7 +613,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Change the cache.
     base::Time now = base::Time::Now();
-    cache_->set_manifest_parser_version(0);
+    cache_->set_manifest_parser_version(1);
     cache_->set_manifest_scope("/");
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT,
                                               /*response_id=*/1,
@@ -677,7 +679,7 @@ class AppCacheStorageImplTest : public testing::Test {
     group_ = base::MakeRefCounted<AppCacheGroup>(storage(), kManifestUrl,
                                                  storage()->NewGroupId());
     cache_ = base::MakeRefCounted<AppCache>(storage(), storage()->NewCacheId());
-    cache_->set_manifest_parser_version(0);
+    cache_->set_manifest_parser_version(1);
     cache_->set_manifest_scope("/");
     cache_->AddEntry(kManifestUrl, AppCacheEntry(AppCacheEntry::MANIFEST,
                                                  /*response_id=*/1,
@@ -702,7 +704,7 @@ class AppCacheStorageImplTest : public testing::Test {
     group_ = base::MakeRefCounted<AppCacheGroup>(storage(), kManifestUrl,
                                                  storage()->NewGroupId());
     cache_ = base::MakeRefCounted<AppCache>(storage(), storage()->NewCacheId());
-    cache_->set_manifest_parser_version(0);
+    cache_->set_manifest_parser_version(1);
     cache_->set_manifest_scope("/");
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::EXPLICIT,
                                               /*response_id=*/1,
@@ -1440,7 +1442,7 @@ class AppCacheStorageImplTest : public testing::Test {
       cache_record.update_time = kZeroTime;
       cache_record.cache_size = kDefaultEntrySize;
       cache_record.padding_size = 0;
-      cache_record.manifest_parser_version = 0;
+      cache_record.manifest_parser_version = 1;
       cache_record.manifest_scope = std::string("/");
       EXPECT_TRUE(db.InsertCache(&cache_record));
       AppCacheDatabase::EntryRecord entry_record;
@@ -1612,7 +1614,7 @@ class AppCacheStorageImplTest : public testing::Test {
       cache_record.update_time = kZeroTime;
       cache_record.cache_size = kDefaultEntrySize;
       cache_record.padding_size = kDefaultEntryPadding;
-      cache_record.manifest_parser_version = 0;
+      cache_record.manifest_parser_version = 1;
       cache_record.manifest_scope = std::string("/");
       EXPECT_TRUE(database()->InsertCache(&cache_record));
       AppCacheDatabase::EntryRecord entry_record;

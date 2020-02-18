@@ -209,6 +209,9 @@ extern const char kExperimentalAccessibilityLanguageDetectionDynamicName[];
 extern const char
     kExperimentalAccessibilityLanguageDetectionDynamicDescription[];
 
+extern const char kExportTaggedPDFName[];
+extern const char kExportTaggedPDFDescription[];
+
 extern const char kFontAccessAPIName[];
 extern const char kFontAccessAPIDescription[];
 

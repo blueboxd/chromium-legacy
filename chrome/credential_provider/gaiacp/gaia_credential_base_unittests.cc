@@ -2433,37 +2433,35 @@ TEST_P(GcpGaiaCredentialBasePasswordChangeFailureTest, Fail) {
   // automatically.
   {
     HRESULT net_api_status;
-    base::string16 expected_error_msg;
+    UINT message_id;
     switch (failure_reason) {
       case 0:
         net_api_status = HRESULT_FROM_WIN32(ERROR_INVALID_PASSWORD);
-        expected_error_msg = GetStringResource(IDS_INVALID_PASSWORD_BASE);
+        message_id = IDS_INVALID_PASSWORD_BASE;
         break;
       case 1:
         net_api_status = HRESULT_FROM_WIN32(NERR_InvalidComputer);
-        expected_error_msg =
-            GetStringResource(IDS_INVALID_COMPUTER_NAME_ERROR_BASE);
+        message_id = IDS_INVALID_COMPUTER_NAME_ERROR_BASE;
         break;
       case 2:
         net_api_status = HRESULT_FROM_WIN32(NERR_NotPrimary);
-        expected_error_msg =
-            GetStringResource(IDS_AD_PASSWORD_CHANGE_DENIED_BASE);
+        message_id = IDS_AD_PASSWORD_CHANGE_DENIED_BASE;
         break;
       case 3:
         net_api_status = HRESULT_FROM_WIN32(NERR_UserNotFound);
-        expected_error_msg =
-            GetStringResource(IDS_USER_NOT_FOUND_PASSWORD_ERROR_BASE);
+        message_id = IDS_USER_NOT_FOUND_PASSWORD_ERROR_BASE;
         break;
       case 4:
         net_api_status = HRESULT_FROM_WIN32(NERR_PasswordTooShort);
-        expected_error_msg =
-            GetStringResource(IDS_PASSWORD_COMPLEXITY_ERROR_BASE);
+        message_id = IDS_PASSWORD_COMPLEXITY_ERROR_BASE;
         break;
       default:
         net_api_status = E_FAIL;
-        expected_error_msg = GetStringResource(IDS_UNKNOWN_PASSWORD_ERROR_BASE);
+        message_id = IDS_UNKNOWN_PASSWORD_ERROR_BASE;
         break;
     }
+
+    base::string16 expected_error_msg = GetStringResource(message_id);
 
     // Set reason for failing the password change attempt.
     fake_os_user_manager()->ShouldFailChangePassword(true, net_api_status);
@@ -2490,12 +2488,17 @@ TEST_P(GcpGaiaCredentialBasePasswordChangeFailureTest, Fail) {
 
     ASSERT_EQ(net_api_status, FinishLogonProcess(true, true, 0));
 
-    // Make sure password textbox is shown due to password change failure.
-    ASSERT_EQ(CPFS_DISPLAY_IN_SELECTED_TILE,
-              fake_credential_provider_credential_events()->GetFieldState(
-                  cred.Get(), FID_CURRENT_PASSWORD_FIELD));
+    CREDENTIAL_PROVIDER_FIELD_STATE cpfs = CPFS_DISPLAY_IN_SELECTED_TILE;
+    if (message_id == IDS_PASSWORD_COMPLEXITY_ERROR_BASE ||
+        message_id == IDS_USER_NOT_FOUND_PASSWORD_ERROR_BASE ||
+        message_id == IDS_AD_PASSWORD_CHANGE_DENIED_BASE) {
+      cpfs = CPFS_HIDDEN;
+    }
 
-    // Make sure password textbox is shown due to passwor change failure.
+    // Make sure password textbox is shown due to password change failure.
+    ASSERT_EQ(cpfs, fake_credential_provider_credential_events()->GetFieldState(
+                        cred.Get(), FID_CURRENT_PASSWORD_FIELD));
+
     EXPECT_STREQ(expected_error_msg.c_str(),
                  fake_credential_provider_credential_events()->GetFieldString(
                      cred.Get(), FID_DESCRIPTION));

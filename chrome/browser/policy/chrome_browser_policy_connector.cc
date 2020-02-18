@@ -135,14 +135,6 @@ ChromeBrowserPolicyConnector::GetPlatformProvider() {
 
 std::vector<std::unique_ptr<policy::ConfigurationPolicyProvider>>
 ChromeBrowserPolicyConnector::CreatePolicyProviders() {
-  // Assign ExtensionPolicyMigrators before any policy providers are created.
-#if defined(OS_WIN)
-  std::vector<std::unique_ptr<ExtensionPolicyMigrator>> migrators;
-  migrators.push_back(
-      std::make_unique<browser_switcher::BrowserSwitcherPolicyMigrator>());
-  ConfigurationPolicyProvider::SetMigrators(std::move(migrators));
-#endif
-
   auto providers = BrowserPolicyConnector::CreatePolicyProviders();
   std::unique_ptr<ConfigurationPolicyProvider> platform_provider =
       CreatePlatformProvider();

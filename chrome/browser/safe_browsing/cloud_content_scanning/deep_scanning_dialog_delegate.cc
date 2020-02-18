@@ -41,6 +41,7 @@
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "components/url_matcher/url_matcher.h"
 #include "content/public/browser/web_contents.h"
+#include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "net/base/mime_util.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -77,8 +78,62 @@ struct FileContents {
 
   BinaryUploadService::Result result;
   BinaryUploadService::Request::Data data;
+
+  // Store the file size separately instead of using data.contents.size() to
+  // keep track of size for large files.
+  int64_t size = 0;
   std::string sha256;
 };
+
+FileContents GetFileContentsForLargeFile(const base::FilePath& path,
+                                         base::File* file) {
+  size_t file_size = file->GetLength();
+  FileContents file_contents;
+  file_contents.result = BinaryUploadService::Result::FILE_TOO_LARGE;
+  file_contents.size = file_size;
+
+  // Only read 50MB at a time to avoid having very large files in memory.
+  std::unique_ptr<crypto::SecureHash> secure_hash =
+      crypto::SecureHash::Create(crypto::SecureHash::SHA256);
+  size_t bytes_read = 0;
+  std::string buf;
+  buf.reserve(BinaryUploadService::kMaxUploadSizeBytes);
+  while (bytes_read < file_size) {
+    int64_t bytes_currently_read = file->ReadAtCurrentPos(
+        &buf[0], BinaryUploadService::kMaxUploadSizeBytes);
+
+    if (bytes_currently_read == -1)
+      return FileContents();
+
+    secure_hash->Update(buf.data(), bytes_currently_read);
+
+    bytes_read += bytes_currently_read;
+  }
+
+  file_contents.sha256.resize(crypto::kSHA256Length);
+  secure_hash->Finish(base::data(file_contents.sha256), crypto::kSHA256Length);
+  return file_contents;
+}
+
+FileContents GetFileContentsForNormalFile(const base::FilePath& path,
+                                          base::File* file) {
+  size_t file_size = file->GetLength();
+  FileContents file_contents;
+  file_contents.result = BinaryUploadService::Result::SUCCESS;
+  file_contents.size = file_size;
+  file_contents.data.contents.resize(file_size);
+
+  int64_t bytes_currently_read =
+      file->ReadAtCurrentPos(&file_contents.data.contents[0], file_size);
+
+  if (bytes_currently_read == -1)
+    return FileContents();
+
+  DCHECK_EQ(static_cast<size_t>(bytes_currently_read), file_size);
+
+  file_contents.sha256 = crypto::SHA256HashString(file_contents.data.contents);
+  return file_contents;
+}
 
 // Callback used by FileSourceRequest to read file data on a blocking thread.
 FileContents GetFileContentsSHA256Blocking(const base::FilePath& path) {
@@ -86,26 +141,10 @@ FileContents GetFileContentsSHA256Blocking(const base::FilePath& path) {
   if (!file.IsValid())
     return FileContents();
 
-  size_t file_size = file.GetLength();
-  if (file_size > BinaryUploadService::kMaxUploadSizeBytes)
-    return FileContents(BinaryUploadService::Result::FILE_TOO_LARGE);
-
-  FileContents file_contents;
-  file_contents.result = BinaryUploadService::Result::SUCCESS;
-  file_contents.data.contents.resize(file_size);
-
-  size_t bytes_read = 0;
-  while (bytes_read < file_size) {
-    int64_t bytes_currently_read = file.ReadAtCurrentPos(
-        &file_contents.data.contents[bytes_read], file_size - bytes_read);
-    if (bytes_currently_read == -1)
-      return FileContents();
-
-    bytes_read += bytes_currently_read;
-  }
-
-  file_contents.sha256 = crypto::SHA256HashString(file_contents.data.contents);
-  return file_contents;
+  return static_cast<size_t>(file.GetLength()) >
+                 BinaryUploadService::kMaxUploadSizeBytes
+             ? GetFileContentsForLargeFile(path, &file)
+             : GetFileContentsForNormalFile(path, &file);
 }
 
 // A BinaryUploadService::Request implementation that gets the data to scan
@@ -170,6 +209,13 @@ std::string GetFileMimeType(base::FilePath path) {
   return mime_type;
 }
 
+bool AllowLargeFile() {
+  int state = g_browser_process->local_state()->GetInteger(
+      prefs::kBlockLargeFileTransfer);
+  return state != BLOCK_LARGE_UPLOADS &&
+         state != BLOCK_LARGE_UPLOADS_AND_DOWNLOADS;
+}
+
 bool AllowEncryptedFiles() {
   int state = g_browser_process->local_state()->GetInteger(
       prefs::kAllowPasswordProtectedFiles);
@@ -226,7 +272,7 @@ void DeepScanningDialogDelegate::FileSourceRequest::OnGotFileContents(
     FileContents file_contents) {
   if (delegate_)
     delegate_->SetFileInfo(path_, std::move(file_contents.sha256),
-                           file_contents.data.contents.length());
+                           file_contents.size);
 
   std::move(callback).Run(file_contents.result, file_contents.data);
 }
@@ -258,7 +304,6 @@ void DeepScanningDialogDelegate::Cancel() {
   RunCallback();
 }
 
-
 bool DeepScanningDialogDelegate::ResultShouldAllowDataUse(
     BinaryUploadService::Result result) {
   // Keep this implemented as a switch instead of a simpler if statement so that
@@ -277,7 +322,8 @@ bool DeepScanningDialogDelegate::ResultShouldAllowDataUse(
       return true;
 
     case BinaryUploadService::Result::FILE_TOO_LARGE:
-      return false;
+      return AllowLargeFile();
+
     case BinaryUploadService::Result::FILE_ENCRYPTED:
       return AllowEncryptedFiles();
   }
@@ -526,7 +572,7 @@ bool DeepScanningDialogDelegate::UploadData() {
       PrepareFileRequest(
           data_.paths[i],
           base::BindOnce(&DeepScanningDialogDelegate::AnalyzerCallback,
-                         base::Unretained(this), i));
+                         weak_ptr_factory_.GetWeakPtr(), i));
     } else {
       ++file_result_count_;
       result_.paths_results[i] = true;

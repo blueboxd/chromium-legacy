@@ -6,7 +6,7 @@
 
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
-#import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
@@ -22,22 +22,20 @@ NSString* const kFindInPageActivityType =
 }  // namespace
 
 @interface FindInPageActivity ()
-// The dispatcher that handles the command when the activity is performed.
-@property(nonatomic, weak) id<BrowserCommands> dispatcher;
+// The handler that handles the command when the activity is performed.
+@property(nonatomic, weak) id<FindInPageCommands> handler;
 @end
 
 @implementation FindInPageActivity
-
-@synthesize dispatcher = _dispatcher;
 
 + (NSString*)activityIdentifier {
   return kFindInPageActivityType;
 }
 
-- (instancetype)initWithDispatcher:(id<BrowserCommands>)dispatcher {
+- (instancetype)initWithHandler:(id<FindInPageCommands>)handler {
   self = [super init];
   if (self) {
-    _dispatcher = dispatcher;
+    _handler = handler;
   }
   return self;
 }
@@ -65,7 +63,7 @@ NSString* const kFindInPageActivityType =
 }
 
 - (void)performActivity {
-  [self.dispatcher showFindInPage];
+  [self.handler openFindInPage];
   [self activityDidFinish:YES];
 }
 

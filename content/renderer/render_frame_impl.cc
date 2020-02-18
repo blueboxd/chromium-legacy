@@ -2190,7 +2190,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SnapshotTree,
                         OnSnapshotAccessibilityTree)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
-    IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateFramePolicy, OnDidUpdateFramePolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFrameOwnerProperties,
                         OnSetFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_AdvanceFocus, OnAdvanceFocus)
@@ -2712,11 +2711,6 @@ void RenderFrameImpl::ExtractSmartClipData(
 void RenderFrameImpl::OnUpdateOpener(int opener_routing_id) {
   WebFrame* opener = ResolveOpener(opener_routing_id);
   frame_->SetOpener(opener);
-}
-
-void RenderFrameImpl::OnDidUpdateFramePolicy(
-    const blink::FramePolicy& frame_policy) {
-  frame_->SetFrameOwnerPolicy(frame_policy);
 }
 
 void RenderFrameImpl::OnSetFrameOwnerProperties(

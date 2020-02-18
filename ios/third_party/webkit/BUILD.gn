@@ -13,7 +13,7 @@ group("webkit") {
     deps = [ ":bundle_webkit_frameworks" ]
   }
 
-  all_dependent_configs = [ ":_webkit_config" ]
+  public_configs = [ ":_webkit_config" ]
 }
 
 if (_build_custom_webkit) {
@@ -110,15 +110,8 @@ config("_webkit_config") {
     # From the ld documentation: "Directories specified with -F are searched in
     # the order they appear on the command line and before the default search
     # path."
-    _framework_out_dir = "$target_out_dir/$_webkit_xcodebuild_out_dir"
-    common_flags = [
-      "-F",
-      rebase_path("$_framework_out_dir/", root_build_dir),
-    ]
-
-    cflags = common_flags
-    ldflags = common_flags
+    framework_dirs = [ "$target_out_dir/$_webkit_xcodebuild_out_dir" ]
   }
 
-  libs = [ "WebKit.framework" ]
+  frameworks = [ "WebKit.framework" ]
 }

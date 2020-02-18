@@ -515,8 +515,8 @@ void RenderFrameHostManager::CommitFramePolicy(
       frame_tree_node_->parent()->current_frame_host()->GetSiteInstance();
   for (const auto& pair : proxy_hosts_) {
     if (pair.second->GetSiteInstance() != parent_site_instance) {
-      pair.second->Send(new FrameMsg_DidUpdateFramePolicy(
-          pair.second->GetRoutingID(), frame_policy));
+      pair.second->GetAssociatedRemoteFrame()->DidUpdateFramePolicy(
+          frame_policy);
     }
   }
 }

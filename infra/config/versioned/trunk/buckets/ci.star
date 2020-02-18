@@ -233,12 +233,12 @@ ci.linux_builder(
 
 ci.linux_builder(
     name = 'Linux Ozone Tester (Wayland)',
-    triggered_by = ['ci/linux-ozone-rel'],
+    triggered_by = [vars.bucket.builder('linux-ozone-rel')],
 )
 
 ci.linux_builder(
     name = 'Linux Ozone Tester (X11)',
-    triggered_by = ['ci/linux-ozone-rel'],
+    triggered_by = [vars.bucket.builder('linux-ozone-rel')],
 )
 
 

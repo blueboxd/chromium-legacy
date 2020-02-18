@@ -1290,7 +1290,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': [
-        'chrome.win:81-',
+        'chrome.win:82-',
       ],
       'features': {
         'can_be_recommended': False,

@@ -42,8 +42,8 @@ component("platform") {
 
   if (is_fuchsia) {
     public_deps += [
-      "//third_party/fuchsia-sdk/sdk:fdio",
-      "//third_party/fuchsia-sdk/sdk:zx",
+      "//third_party/fuchsia-sdk/sdk/pkg/fdio",
+      "//third_party/fuchsia-sdk/sdk/pkg/zx",
     ]
   }
 

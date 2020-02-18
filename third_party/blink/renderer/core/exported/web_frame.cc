@@ -159,13 +159,6 @@ WebSecurityOrigin WebFrame::GetSecurityOrigin() const {
       ToCoreFrame(*this)->GetSecurityContext()->GetSecurityOrigin());
 }
 
-void WebFrame::SetFrameOwnerPolicy(const FramePolicy& frame_policy) {
-  // At the moment, this is only used to replicate sandbox flags and container
-  // policy for frames with a remote owner.
-  To<RemoteFrameOwner>(ToCoreFrame(*this)->Owner())
-      ->SetFramePolicy(frame_policy);
-}
-
 WebInsecureRequestPolicy WebFrame::GetInsecureRequestPolicy() const {
   return ToCoreFrame(*this)->GetSecurityContext()->GetInsecureRequestPolicy();
 }

@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -46,7 +47,24 @@ class UserModel {
                 bool force_notification = false);
 
   // Returns the value for |identifier| or nullopt if there is no such value.
-  base::Optional<ValueProto> GetValue(const std::string& identifier);
+  base::Optional<ValueProto> GetValue(const std::string& identifier) const;
+
+  // Returns all specified values in a new std::vector. Returns nullopt if any
+  // of the requested values was not found. |model_identifiers| must be
+  // a std::string iterable.
+  template <class T>
+  base::Optional<std::vector<ValueProto>> GetValues(
+      const T& model_identifiers) {
+    std::vector<ValueProto> values;
+    for (const auto& identifier : model_identifiers) {
+      auto value = GetValue(identifier);
+      if (!value.has_value()) {
+        return base::nullopt;
+      }
+      values.emplace_back(*value);
+    }
+    return values;
+  }
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

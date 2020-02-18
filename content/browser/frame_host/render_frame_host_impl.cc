@@ -3561,8 +3561,9 @@ void RenderFrameHostImpl::OnDidChangeFramePolicy(
   // navigates and the new policies take effect.
   RenderFrameHost* child_rfh = child->current_frame_host();
   if (child_rfh->GetSiteInstance() != GetSiteInstance()) {
-    child_rfh->Send(new FrameMsg_DidUpdateFramePolicy(child_rfh->GetRoutingID(),
-                                                      frame_policy));
+    static_cast<RenderFrameHostImpl*>(child_rfh)
+        ->GetAssociatedLocalFrame()
+        ->DidUpdateFramePolicy(frame_policy);
   }
 }
 

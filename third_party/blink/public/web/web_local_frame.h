@@ -66,6 +66,7 @@ class WebTextCheckClient;
 class WebURL;
 class WebView;
 enum class WebTreeScopeType;
+struct FramePolicy;
 struct TransferableMessage;
 struct WebAssociatedURLLoaderOptions;
 struct WebConsoleMessage;

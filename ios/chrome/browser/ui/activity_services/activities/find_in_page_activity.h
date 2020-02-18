@@ -7,7 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
-@protocol BrowserCommands;
+@protocol FindInPageCommands;
 
 // Activity to trigger the find in page feature.
 @interface FindInPageActivity : UIActivity
@@ -15,7 +15,7 @@
 // Identifier for the activity.
 + (NSString*)activityIdentifier;
 
-- (instancetype)initWithDispatcher:(id<BrowserCommands>)dispatcher
+- (instancetype)initWithHandler:(id<FindInPageCommands>)handler
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

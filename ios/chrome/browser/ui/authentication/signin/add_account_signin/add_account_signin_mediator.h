@@ -20,21 +20,16 @@ class IdentityManager;
 // flows.
 @protocol AddAccountSigninMediatorDelegate
 
-// Handles the flow for obtaining user consent for the selected Chrome identity.
-// |identity| is the identity of the consenting account.
-- (void)handleUserConsentForIdentity:(ChromeIdentity*)identity;
-
-// Shows alert modal dialog.
+// Shows alert modal dialog and interrupts sign-in operation.
 // |error| is the error to be displayed.
-// |identity| is the identity of the added account.
-- (void)showAlertWithError:(NSError*)error identity:(ChromeIdentity*)identity;
+- (void)addAccountSigninMediatorFailedWith:(NSError*)error;
 
-// Runs the sign-in completion callback.
+// Completes the sign-in operation.
 // |signinResult| is the state of sign-in at add account flow completion.
 // |identity| is the identity of the added account.
-- (void)runCompletionCallbackWithSigninResult:
+- (void)addAccountSigninMediatorFinishedWith:
             (SigninCoordinatorResult)signinResult
-                                     identity:(ChromeIdentity*)identity;
+                                    identity:(ChromeIdentity*)identity;
 
 @end
 

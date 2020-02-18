@@ -411,7 +411,7 @@ source_set("common") {
 
   if (is_fuchsia) {
     sources += [ "font_list_fuchsia.cc" ]
-    deps += [ "//third_party/fuchsia-sdk/sdk:fdio" ]
+    deps += [ "//third_party/fuchsia-sdk/sdk/pkg/fdio" ]
   }
 
   if (use_clang_coverage_inside_sandbox) {

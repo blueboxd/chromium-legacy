@@ -31,6 +31,7 @@ message CallbackProto {
     SetModelValueProto set_value = 1;
     ShowInfoPopupProto show_info_popup = 2;
     ShowListPopupProto show_list_popup = 3;
+    ComputeValueProto compute_value = 4;
   }
 }
 
@@ -58,6 +59,41 @@ message OnViewClickedEventProto {
 // Callback that writes the incoming value to |model_identifier|.
 message SetModelValueProto {
   // The identifier of the value to change.
+  optional string model_identifier = 1;
+}
+
+// Computes a value and stores the result to |result_model_identifier|.
+message ComputeValueProto {
+  oneof kind {
+    // Computes the logical AND of the specified model identifiers.
+    BooleanAndProto boolean_and = 2;
+    // Computes the logical OR of the specified model identifiers.
+    BooleanOrProto boolean_or = 3;
+    // Computes the logical NOT of the specified model identifiers.
+    BooleanNotProto boolean_not = 4;
+  }
+
+  // The model identifier to write the result to.
+  optional string result_model_identifier = 1;
+}
+
+// Performs a logical AND on all specified values.
+message BooleanAndProto {
+  // The model identifiers to logically AND. All identifiers must point to
+  // boolean ValueProtos.
+  repeated string model_identifiers = 1;
+}
+
+// Performs a logical OR on all specified values.
+message BooleanOrProto {
+  // The model identifiers to logically OR. All identifiers must point to
+  // boolean ValueProtos.
+  repeated string model_identifiers = 1;
+}
+
+// Performs a logical NOT on the specified value.
+message BooleanNotProto {
+  // The model identifier to logically invert. Must point to a boolean value.
   optional string model_identifier = 1;
 }
 

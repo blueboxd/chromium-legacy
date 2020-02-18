@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@protocol BrowserCommands;
+@protocol FindInPageCommands;
 class WebStateList;
 
 // Mediator for the Find Bar and the Find In page feature. As this feature is
@@ -16,7 +16,7 @@ class WebStateList;
 @interface FindBarMediator : NSObject
 
 - (instancetype)initWithWebStateList:(WebStateList*)webStateList
-                      commandHandler:(id<BrowserCommands>)commandHandler;
+                      commandHandler:(id<FindInPageCommands>)commandHandler;
 
 @end
 

@@ -32,7 +32,6 @@
 #include "url/origin.h"
 
 namespace blink {
-struct FramePolicy;
 struct WebRect;
 }
 
@@ -226,7 +225,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnCompositorFrameSwapped(const IPC::Message& message);
   void OnUpdateOpener(int opener_routing_id);
   void OnViewChanged(const FrameMsg_ViewChanged_Params& params);
-  void OnDidUpdateFramePolicy(const blink::FramePolicy& frame_policy);
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnSetFrameOwnerProperties(const FrameOwnerProperties& properties);

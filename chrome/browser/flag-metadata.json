@@ -2225,6 +2225,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "export-tagged-pdf",
+    "owners": [ "dmazzoni", "thestig" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "extension-apis",
     "owners": [ "rdevlin.cronin" ],
     "expiry_milestone": 76

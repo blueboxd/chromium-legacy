@@ -74,6 +74,7 @@ class FakeRemoteFrame : public blink::mojom::RemoteFrame {
       blink::mojom::WebSandboxFlags sandbox_flags,
       const std::vector<blink::ParsedFeaturePolicyDeclaration>&
           parsed_feature_policy) override {}
+  void DidUpdateFramePolicy(const blink::FramePolicy& frame_policy) override {}
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

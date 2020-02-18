@@ -7139,29 +7139,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_2020-02-06",
+                    "name": "Enabled_2020-02-18",
                     "enable_features": [
                         "SharingSendViaSync",
                         "SyncDeviceInfoInTransportMode"
-                    ]
-                }
-            ]
-        }
-    ],
-    "UnidoUseDeviceInfo": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "SharingUseDeviceInfo"
                     ]
                 }
             ]
@@ -7974,6 +7955,23 @@
             "experiments": [
                 {
                     "name": "pacing_factor:1.0,trust_vp8:true,trust_vp9:true,video_hysteresis:1.2,bitrate_adjuster:true,vp8_s0_boost:false"
+                }
+            ]
+        }
+    ],
+    "WebRTC-Vp9ExternalRefCtrl": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "ios",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
                 }
             ]
         }

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-PASS Should be parseable in a CSS stylesheet: '(forced-colors)'
+FAIL Should be parseable in a CSS stylesheet: '(forced-colors)' assert_true: expected true got false
 FAIL Should be parseable in a CSS stylesheet: '(forced-colors: none)' assert_true: expected true got false
 FAIL Should be parseable in a CSS stylesheet: '(forced-colors: active)' assert_true: expected true got false
 PASS Should not be parseable in a CSS stylesheet: '(forced-colors: 0)'
@@ -8,7 +8,7 @@ PASS Should not be parseable in a CSS stylesheet: '(forced-colors: 10px)'
 PASS Should not be parseable in a CSS stylesheet: '(forced-colors: active 0)'
 PASS Should not be parseable in a CSS stylesheet: '(forced-colors: none active)'
 PASS Should not be parseable in a CSS stylesheet: '(forced-colors: active/none)'
-PASS Should be parseable in JS: '(forced-colors)'
+FAIL Should be parseable in JS: '(forced-colors)' assert_true: expected true got false
 FAIL Should be parseable in JS: '(forced-colors: none)' assert_true: expected true got false
 FAIL Should be parseable in JS: '(forced-colors: active)' assert_true: expected true got false
 PASS Should not be parseable in JS: '(forced-colors: 0)'

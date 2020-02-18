@@ -125,8 +125,8 @@
   // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
   // clean up.
   self.actionHandler.dispatcher =
-      static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser>>(
-          self.browser->GetCommandDispatcher());
+      static_cast<id<ApplicationCommands, BrowserCommands, FindInPageCommands,
+                     OmniboxFocuser>>(self.browser->GetCommandDispatcher());
   self.actionHandler.incognito =
       self.browser->GetBrowserState()->IsOffTheRecord();
 

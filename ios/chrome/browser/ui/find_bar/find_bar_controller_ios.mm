@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/find_in_page/find_in_page_controller.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_constants.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_view.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_view_controller.h"

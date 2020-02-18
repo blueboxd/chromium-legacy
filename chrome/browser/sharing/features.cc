@@ -5,7 +5,7 @@
 #include "chrome/browser/sharing/features.h"
 
 const base::Feature kSharingUseDeviceInfo{"SharingUseDeviceInfo",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kSharingQRCodeGenerator{"SharingQRCodeGenerator",
                                             base::FEATURE_DISABLED_BY_DEFAULT};

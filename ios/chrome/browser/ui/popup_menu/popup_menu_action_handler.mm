@@ -12,6 +12,7 @@
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/page_info/features.h"
@@ -73,7 +74,7 @@ using base::UserMetricsAction;
       break;
     case PopupMenuActionFindInPage:
       RecordAction(UserMetricsAction("MobileMenuFindInPage"));
-      [self.dispatcher showFindInPage];
+      [self.dispatcher openFindInPage];
       break;
     case PopupMenuActionRequestDesktop:
       RecordAction(UserMetricsAction("MobileMenuRequestDesktopSite"));

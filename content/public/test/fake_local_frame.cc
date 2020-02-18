@@ -71,6 +71,9 @@ void FakeLocalFrame::AdvanceFocusInForm(blink::mojom::FocusType focus_type) {}
 void FakeLocalFrame::ReportContentSecurityPolicyViolation(
     network::mojom::CSPViolationPtr violation) {}
 
+void FakeLocalFrame::DidUpdateFramePolicy(
+    const blink::FramePolicy& frame_policy) {}
+
 void FakeLocalFrame::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<blink::mojom::LocalFrame>(

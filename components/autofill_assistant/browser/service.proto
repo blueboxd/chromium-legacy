@@ -1495,7 +1495,7 @@ message PopupListSectionProto {
 
 // Asks to provide the data used by UseAddressAction and
 // UseCreditCardAction.
-// Next: 26
+// Next: 27
 message CollectUserDataProto {
   enum TermsAndConditionsState {
     // No choice has been made yet.
@@ -1574,6 +1574,9 @@ message CollectUserDataProto {
   optional GenericUserInterfaceProto generic_user_interface_appended = 25;
   // Text to be shown in a separate info section.
   optional string info_section_text = 24;
+  // Optional. If specified, the continue button will only be enabled if the
+  // boolean at this location is true (and everything else is valid too).
+  optional string additional_model_identifier_to_check = 26;
 }
 
 // Stop Autofill Assistant.

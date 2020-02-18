@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_mediator.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_view_controller.h"
@@ -25,9 +26,6 @@
 @interface FindBarCoordinator () <FindInPageResponseDelegate,
                                   ContainedPresenterDelegate>
 
-// Command handler for |BrowserCommand|s.
-@property(nonatomic, readonly) id<BrowserCommands> browserCommandHandler;
-
 @property(nonatomic, strong) FindBarMediator* mediator;
 
 @end
@@ -39,15 +37,13 @@
     self.findBarController = [[FindBarControllerIOS alloc]
         initWithIncognito:self.browserState->IsOffTheRecord()];
 
-    self.findBarController.commandHandler = self.browserCommandHandler;
+    self.findBarController.commandHandler = self.findInPageCommandHandler;
   }
   self.presenter.delegate = self;
 
   self.mediator = [[FindBarMediator alloc]
       initWithWebStateList:self.browser->GetWebStateList()
-            commandHandler:HandlerForProtocol(
-                               self.browser->GetCommandDispatcher(),
-                               BrowserCommands)];
+            commandHandler:self.findInPageCommandHandler];
 
   DCHECK(self.currentWebState);
   FindTabHelper* helper = FindTabHelper::FromWebState(self.currentWebState);
@@ -122,7 +118,7 @@
 }
 
 - (void)findDidStop {
-  [self.browserCommandHandler closeFindInPage];
+  [self.findInPageCommandHandler closeFindInPage];
 }
 
 #pragma mark - ContainedPresenterDelegate
@@ -144,9 +140,9 @@
              : nullptr;
 }
 
-- (id<BrowserCommands>)browserCommandHandler {
+- (id<FindInPageCommands>)findInPageCommandHandler {
   return HandlerForProtocol(self.browser->GetCommandDispatcher(),
-                            BrowserCommands);
+                            FindInPageCommands);
 }
 
 @end

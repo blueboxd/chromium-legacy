@@ -17,8 +17,6 @@
 
 namespace policy {
 
-class ExtensionPolicyMigrator;
-
 // A mostly-abstract super class for platform-specific policy providers.
 // Platform-specific policy providers (Windows Group Policy, gconf,
 // etc.) should implement a subclass of this class.
@@ -38,9 +36,6 @@ class POLICY_EXPORT ConfigurationPolicyProvider
   // this is invoked. Override Shutdown() instead for cleanup code that needs
   // to post to the FILE thread, for example.
   ~ConfigurationPolicyProvider() override;
-
-  static void SetMigrators(
-      std::vector<std::unique_ptr<ExtensionPolicyMigrator>> migrators);
 
   // Invoked as soon as the main message loops are spinning. Policy providers
   // are created early during startup to provide the initial policies; the

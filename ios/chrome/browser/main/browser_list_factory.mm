@@ -43,3 +43,7 @@ web::BrowserState* BrowserListFactory::GetBrowserStateToUse(
   // Incognito browser states use same service as regular browser states.
   return GetBrowserStateRedirectedInIncognito(context);
 }
+
+void BrowserListFactory::BrowserStateShutdown(web::BrowserState* context) {
+  GetForBrowserState(ChromeBrowserState::FromBrowserState(context))->Shutdown();
+}

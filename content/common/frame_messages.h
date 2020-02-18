@@ -586,10 +586,6 @@ IPC_MESSAGE_ROUTED0(FrameMsg_Reload)
 // Change the accessibility mode in the renderer process.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode, ui::AXMode)
 
-// Notifies the frame that its parent has changed the frame's sandbox flags or
-// container policy.
-IPC_MESSAGE_ROUTED1(FrameMsg_DidUpdateFramePolicy, blink::FramePolicy)
-
 // Update a proxy's window.name property.  Used when the frame's name is
 // changed in another process.
 IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateName,

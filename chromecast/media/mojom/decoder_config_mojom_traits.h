@@ -40,10 +40,9 @@ struct mojo::EnumTraits<chromecast::media::mojom::AudioCodec,
         return chromecast::media::mojom::AudioCodec::kCodecFLAC;
       case (chromecast::media::AudioCodec::kCodecMpegHAudio):
         return chromecast::media::mojom::AudioCodec::kCodecMpegHAudio;
-      default:
-        DLOG(FATAL) << "Unrecognized AudioCodec";
-        return chromecast::media::mojom::AudioCodec::kAudioCodecUnknown;
     }
+    DLOG(FATAL) << "Unrecognized AudioCodec";
+    return chromecast::media::mojom::AudioCodec::kAudioCodecUnknown;
   }
 
   static bool FromMojom(chromecast::media::mojom::AudioCodec input,
@@ -85,9 +84,8 @@ struct mojo::EnumTraits<chromecast::media::mojom::AudioCodec,
       case (chromecast::media::mojom::AudioCodec::kCodecMpegHAudio):
         *output = chromecast::media::AudioCodec::kCodecMpegHAudio;
         return true;
-      default:
-        return false;
     }
+    return false;
   }
 };
 
@@ -109,10 +107,9 @@ struct mojo::EnumTraits<chromecast::media::mojom::ChannelLayout,
         return chromecast::media::mojom::ChannelLayout::kBitstream;
       case (chromecast::media::ChannelLayout::DISCRETE):
         return chromecast::media::mojom::ChannelLayout::kDiscrete;
-      default:
-        DLOG(FATAL) << "Unrecognized ChannelLayout";
-        return chromecast::media::mojom::ChannelLayout::kUnsupported;
     }
+    DLOG(FATAL) << "Unrecognized ChannelLayout";
+    return chromecast::media::mojom::ChannelLayout::kUnsupported;
   }
 
   static bool FromMojom(chromecast::media::mojom::ChannelLayout input,
@@ -136,9 +133,8 @@ struct mojo::EnumTraits<chromecast::media::mojom::ChannelLayout,
       case (chromecast::media::mojom::ChannelLayout::kDiscrete):
         *output = chromecast::media::ChannelLayout::DISCRETE;
         return true;
-      default:
-        return false;
     }
+    return false;
   }
 };
 
@@ -166,10 +162,9 @@ struct mojo::EnumTraits<chromecast::media::mojom::SampleFormat,
         return chromecast::media::mojom::SampleFormat::kSampleFormatPlanarS32;
       case (chromecast::media::SampleFormat::kSampleFormatS24):
         return chromecast::media::mojom::SampleFormat::kSampleFormatS24;
-      default:
-        DLOG(FATAL) << "Unrecognized SampleFormat";
-        return chromecast::media::mojom::SampleFormat::kUnknownSampleFormat;
     }
+    DLOG(FATAL) << "Unrecognized SampleFormat";
+    return chromecast::media::mojom::SampleFormat::kUnknownSampleFormat;
   }
 
   static bool FromMojom(chromecast::media::mojom::SampleFormat input,
@@ -202,9 +197,8 @@ struct mojo::EnumTraits<chromecast::media::mojom::SampleFormat,
       case (chromecast::media::mojom::SampleFormat::kSampleFormatS24):
         *output = chromecast::media::SampleFormat::kSampleFormatS24;
         return true;
-      default:
-        return false;
     }
+    return false;
   }
 };
 
@@ -220,10 +214,9 @@ struct mojo::EnumTraits<chromecast::media::mojom::EncryptionScheme,
         return chromecast::media::mojom::EncryptionScheme::kAesCtr;
       case (chromecast::media::EncryptionScheme::kAesCbc):
         return chromecast::media::mojom::EncryptionScheme::kAesCbc;
-      default:
-        DLOG(FATAL) << "Unrecognized EncryptionScheme";
-        return chromecast::media::mojom::EncryptionScheme::kUnencrypted;
     }
+    DLOG(FATAL) << "Unrecognized EncryptionScheme";
+    return chromecast::media::mojom::EncryptionScheme::kUnencrypted;
   }
 
   static bool FromMojom(chromecast::media::mojom::EncryptionScheme input,
@@ -238,9 +231,8 @@ struct mojo::EnumTraits<chromecast::media::mojom::EncryptionScheme,
       case (chromecast::media::mojom::EncryptionScheme::kAesCbc):
         *output = chromecast::media::EncryptionScheme::kAesCbc;
         return true;
-      default:
-        return false;
     }
+    return false;
   }
 };
 
@@ -254,10 +246,9 @@ struct mojo::EnumTraits<chromecast::media::mojom::StreamId,
         return chromecast::media::mojom::StreamId::kPrimary;
       case (chromecast::media::StreamId::kSecondary):
         return chromecast::media::mojom::StreamId::kSecondary;
-      default:
-        DLOG(FATAL) << "Unrecognized StreamId";
-        return chromecast::media::mojom::StreamId::kPrimary;
     }
+    DLOG(FATAL) << "Unrecognized StreamId";
+    return chromecast::media::mojom::StreamId::kPrimary;
   }
 
   static bool FromMojom(chromecast::media::mojom::StreamId input,
@@ -269,9 +260,8 @@ struct mojo::EnumTraits<chromecast::media::mojom::StreamId,
       case (chromecast::media::mojom::StreamId::kSecondary):
         *output = chromecast::media::StreamId::kSecondary;
         return true;
-      default:
-        return false;
     }
+    return false;
   }
 };
 

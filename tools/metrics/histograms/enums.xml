@@ -38306,6 +38306,7 @@ from previous Chrome versions.
   <int value="-462404204" label="CryptAuthV2DeviceSync:disabled"/>
   <int value="-462205750" label="enable-service-worker-sync"/>
   <int value="-461292699" label="ContentSuggestionsCategoryOrder:enabled"/>
+  <int value="-460702745" label="ExportTaggedPDF:disabled"/>
   <int value="-460313418" label="ProgressBarThrottle:enabled"/>
   <int value="-460081932" label="CustomFeedbackUi:disabled"/>
   <int value="-457292000" label="HappinessTrackingSurveysForDesktop:enabled"/>
@@ -39428,6 +39429,7 @@ from previous Chrome versions.
   <int value="965037619"
       label="HappinessTrackingSurveysForDesktopSettingsPrivacy:disabled"/>
   <int value="966415988" label="SyncPseudoUSSPasswords:enabled"/>
+  <int value="968355926" label="ExportTaggedPDF:enabled"/>
   <int value="969340095" label="EnableDspHotword:disabled"/>
   <int value="972228058" label="SyncUSSSessions:disabled"/>
   <int value="973601997" label="SafeBrowsingUseLocalBlacklistsV2:disabled"/>

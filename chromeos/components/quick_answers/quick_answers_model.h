@@ -6,6 +6,10 @@
 #define CHROMEOS_COMPONENTS_QUICK_ANSWERS_QUICK_ANSWERS_MODEL_H_
 
 #include <string>
+#include <vector>
+
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/image/image.h"
 
 namespace chromeos {
 namespace quick_answers {
@@ -33,11 +37,61 @@ enum class ResultType {
   kUnitConversionResult = 13668,
 };
 
+enum class QuickAnswerUiElementType {
+  kUnknown = 0,
+  kText = 1,
+  kImage = 2,
+};
+
+class QuickAnswerUiElement {
+ public:
+  explicit QuickAnswerUiElement(QuickAnswerUiElementType type) : type_(type) {}
+  QuickAnswerUiElement(const QuickAnswerUiElement&) = default;
+  QuickAnswerUiElement& operator=(const QuickAnswerUiElement&) = default;
+  QuickAnswerUiElement(QuickAnswerUiElement&&) = default;
+
+  QuickAnswerUiElementType type() const { return type_; }
+
+ private:
+  QuickAnswerUiElementType type_ = QuickAnswerUiElementType::kUnknown;
+};
+
+// class to describe an answer text.
+class QuickAnswerText : public QuickAnswerUiElement {
+ public:
+  QuickAnswerText(const std::string& text, SkColor color = SK_ColorBLACK)
+      : QuickAnswerUiElement(QuickAnswerUiElementType::kText),
+        text_(text),
+        color_(color) {}
+
+  const std::string text_;
+
+  // Attributes for text style.
+  SkColor color_ = SK_ColorBLACK;
+};
+
+class QuickAnswerImage : public QuickAnswerUiElement {
+ public:
+  explicit QuickAnswerImage(const gfx::Image& image)
+      : QuickAnswerUiElement(QuickAnswerUiElementType::kImage), image_(image) {}
+
+  gfx::Image image_;
+};
+
 // Structure to describe a quick answer.
 struct QuickAnswer {
+  QuickAnswer();
+  ~QuickAnswer();
+
+  //  TODO: Remove these after we deprecate simple UI version.
   ResultType result_type;
   std::string primary_answer;
   std::string secondary_answer;
+
+  std::vector<std::unique_ptr<QuickAnswerUiElement>> title;
+  std::vector<std::unique_ptr<QuickAnswerUiElement>> first_answer_row;
+  std::vector<std::unique_ptr<QuickAnswerUiElement>> second_answer_row;
+  std::unique_ptr<QuickAnswerImage> image;
 };
 
 // Structure to describe an quick answer request including selected content and

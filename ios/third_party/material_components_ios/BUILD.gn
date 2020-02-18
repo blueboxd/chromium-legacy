@@ -1455,7 +1455,7 @@ target(_mdc_target_type, "material_components_ios") {
     public_headers = _mdc_public_headers
   }
 
-  libs = [
+  frameworks = [
     "CoreGraphics.framework",
     "CoreText.framework",
     "QuartzCore.framework",

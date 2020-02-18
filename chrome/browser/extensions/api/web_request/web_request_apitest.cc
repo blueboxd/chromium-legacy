@@ -611,14 +611,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
       << message_;
 }
 
-// Flaky on multiple platforms: https://crbug.com/1003661
-#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_MACOSX)
-#define MAYBE_WebRequestExtraHeaders DISABLED_WebRequestExtraHeaders
-#else
-#define MAYBE_WebRequestExtraHeaders WebRequestExtraHeaders
-#endif
+// Flaky on all platforms: https://crbug.com/1003661
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
-                       MAYBE_WebRequestExtraHeaders) {
+                       DISABLED_WebRequestExtraHeaders) {
   CancelLoginDialog login_dialog_helper;
 
   ASSERT_TRUE(StartEmbeddedTestServer());

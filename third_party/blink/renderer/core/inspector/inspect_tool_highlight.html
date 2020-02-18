@@ -62,6 +62,7 @@ body {
 .tooltip-content {
     background-color: white;
     padding: 5px 8px;
+    border: 1px solid white;
     border-radius: 3px;
     box-sizing: border-box;
     min-width: 100px;
@@ -216,6 +217,36 @@ body {
     background-image: url("data:image/svg+xml;charset=UTF-8, %3csvg xmlns='http://www.w3.org/2000/svg' width='16px' height='16px' viewBox='0 0 48 48' fill='%2300a000'%3e%3cpath d='M0 0h48v48H0z' fill='none'/%3e%3cpath d='M18 32.34L9.66 24l-2.83 2.83L18 38l24-24-2.83-2.83z'/%3e%3c/svg%3e");
 }
 
+@media (forced-colors: active) {
+    :root, body {
+        background-color: transparent;
+        forced-color-adjust: none;
+    }
+    .tooltip-content {
+        border-color: Highlight;
+        background-color: Canvas;
+        color: Text;
+        forced-color-adjust: none;
+    }
+    .tooltip-content::after {
+        background-color: Highlight;
+    }
+    .color-swatch-inner,
+    .contrast-text,
+    .element-info-contrast-row {
+        border-color: Highlight;
+    }
+    .dimensions,
+    .element-info-name,
+    .element-info-value-color,
+    .element-info-value-contrast,
+    .element-info-value-text,
+    .material-tag-name,
+    .material-class-name,
+    .material-node-id {
+        color: CanvasText;
+    }
+}
 </style>
 
 

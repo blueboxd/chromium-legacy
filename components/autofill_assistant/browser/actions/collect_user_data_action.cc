@@ -26,7 +26,6 @@
 #include "components/autofill_assistant/browser/metrics.h"
 #include "components/autofill_assistant/browser/service.pb.h"
 #include "components/autofill_assistant/browser/user_data_util.h"
-#include "components/autofill_assistant/browser/user_model.h"
 #include "components/autofill_assistant/browser/website_login_fetcher_impl.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
@@ -286,6 +285,34 @@ bool IsValidUserFormSection(
       return false;
   }
   return true;
+}
+
+bool IsValidUserModel(const autofill_assistant::UserModel& user_model,
+                      const autofill_assistant::CollectUserDataOptions&
+                          collect_user_data_options) {
+  if (!collect_user_data_options.additional_model_identifier_to_check
+           .has_value()) {
+    return true;
+  }
+
+  auto valid = user_model.GetValue(
+      *collect_user_data_options.additional_model_identifier_to_check);
+  if (!valid.has_value()) {
+    VLOG(1) << "Error evaluating validity of user model: '"
+            << *collect_user_data_options.additional_model_identifier_to_check
+            << "' not found in user model.";
+    return false;
+  }
+
+  if (valid->kind_case() != autofill_assistant::ValueProto::kBooleans ||
+      valid->booleans().values().size() != 1) {
+    VLOG(1) << "Error evaluating validity of user model: expected single "
+               "boolean, but got "
+            << *valid;
+    return false;
+  }
+
+  return valid->booleans().values(0);
 }
 
 // Merges |model_a| and |model_b| into a new model.
@@ -950,6 +977,10 @@ bool CollectUserDataAction::CreateOptionsFromProto() {
     collect_user_data_options_->generic_user_interface_appended =
         collect_user_data.generic_user_interface_appended();
   }
+  if (collect_user_data.has_additional_model_identifier_to_check()) {
+    collect_user_data_options_->additional_model_identifier_to_check =
+        collect_user_data.additional_model_identifier_to_check();
+  }
 
   // TODO(crbug.com/806868): Maybe we could refactor this to make the confirm
   // chip and direct_action part of the additional_actions.
@@ -1062,6 +1093,7 @@ bool CollectUserDataAction::CheckInitialAutofillDataComplete(
 // static
 bool CollectUserDataAction::IsUserDataComplete(
     const UserData& user_data,
+    const UserModel& user_model,
     const CollectUserDataOptions& options) {
   auto* selected_profile =
       user_data.selected_address(options.contact_details_name);
@@ -1080,7 +1112,8 @@ bool CollectUserDataAction::IsUserDataComplete(
                               user_data.date_time_range_end_date_,
                               user_data.date_time_range_end_timeslot_,
                               options) &&
-         AreAdditionalSectionsComplete(user_data.additional_values_, options);
+         AreAdditionalSectionsComplete(user_data.additional_values_, options) &&
+         IsValidUserModel(user_model, options);
 }
 
 // TODO(b/148448649): Move to dedicated helper namespace.

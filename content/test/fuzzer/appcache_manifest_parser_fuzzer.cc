@@ -22,7 +22,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   AppCacheManifest manifest;
   const GURL kUrl("http://www.example.com");
   const std::string kScope = kUrl.GetWithEmptyPath().path();
-  ParseManifest(kUrl, kScope, true, reinterpret_cast<const char*>(data), size,
+  ParseManifest(kUrl, kScope, reinterpret_cast<const char*>(data), size,
                 PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest);
   return 0;
 }

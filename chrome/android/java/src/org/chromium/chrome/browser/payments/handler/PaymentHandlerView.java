@@ -104,6 +104,11 @@ import org.chromium.ui.base.ActivityWindowAndroid;
     }
 
     @Override
+    public float getFullHeightRatio() {
+        return 0.9f;
+    }
+
+    @Override
     public boolean hasCustomScrimLifecycle() {
         return true;
     }

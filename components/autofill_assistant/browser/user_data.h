@@ -193,6 +193,7 @@ struct CollectUserDataOptions {
   std::vector<UserFormSectionProto> additional_appended_sections;
   base::Optional<GenericUserInterfaceProto> generic_user_interface_prepended;
   base::Optional<GenericUserInterfaceProto> generic_user_interface_appended;
+  base::Optional<std::string> additional_model_identifier_to_check;
 
   base::OnceCallback<void(UserData*, const UserModel*)> confirm_callback;
   base::OnceCallback<void(int)> additional_actions_callback;

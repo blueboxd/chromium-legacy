@@ -14,6 +14,15 @@
 // Fake identity that will be returned by the add account method.
 @property(nonatomic, weak) ChromeIdentity* fakeIdentity;
 
+// Simulates a user tapping the sign-in button.
+- (void)addAccountViewControllerDidTapSignIn;
+
+// Simulates a user tapping the cancel button.
+- (void)addAccountViewControllerDidTapCancel;
+
+// Simulates the user encountering an error not handled by ChromeIdentity.
+- (void)addAccountViewControllerDidThrowUnhandledError;
+
 @end
 
 #endif  // IOS_PUBLIC_PROVIDER_CHROME_BROWSER_SIGNIN_FAKE_CHROME_IDENTITY_INTERACTION_MANAGER_H_

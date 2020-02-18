@@ -92,8 +92,9 @@ TEST_F(SearchResultLoaderTest, Success) {
       std::make_unique<QuickAnswer>();
   expected_quick_answer->primary_answer = "9.055 inches";
   test_url_loader_factory_.AddResponse(kURL, kValidResponse);
-  EXPECT_CALL(*mock_delegate_,
-              OnQuickAnswerReceived(QuickAnswerEqual(*expected_quick_answer)));
+  EXPECT_CALL(
+      *mock_delegate_,
+      OnQuickAnswerReceived(QuickAnswerEqual(&(*expected_quick_answer))));
   EXPECT_CALL(*mock_delegate_, OnNetworkError()).Times(0);
   loader_->Fetch("23cm");
   base::RunLoop().RunUntilIdle();

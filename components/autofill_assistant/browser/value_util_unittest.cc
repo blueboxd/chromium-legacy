@@ -120,5 +120,91 @@ TEST_F(ValueUtilTest, BoolComparison) {
   EXPECT_TRUE(value_a == value_b);
 }
 
+TEST_F(ValueUtilTest, AreAllValuesOfType) {
+  ValueProto value_a;
+  ValueProto value_b;
+  ValueProto value_c;
+  EXPECT_TRUE(AreAllValuesOfType({value_a, value_b, value_c},
+                                 ValueProto::KIND_NOT_SET));
+  EXPECT_FALSE(
+      AreAllValuesOfType({value_a, value_b, value_c}, ValueProto::kStrings));
+  EXPECT_FALSE(
+      AreAllValuesOfType({value_a, value_b, value_c}, ValueProto::kBooleans));
+  EXPECT_FALSE(
+      AreAllValuesOfType({value_a, value_b, value_c}, ValueProto::kInts));
+
+  value_a = SimpleValue(std::string(""));
+  value_b = SimpleValue(std::string("non-empty"));
+  EXPECT_TRUE(AreAllValuesOfType({value_a, value_b}, ValueProto::kStrings));
+  EXPECT_FALSE(
+      AreAllValuesOfType({value_a, value_b, value_c}, ValueProto::kStrings));
+
+  value_c = CreateStringValue();
+  EXPECT_TRUE(
+      AreAllValuesOfType({value_a, value_b, value_c}, ValueProto::kStrings));
+}
+
+TEST_F(ValueUtilTest, AreAllValuesOfSize) {
+  // Not-set values have size 0.
+  ValueProto value_a;
+  ValueProto value_b;
+  ValueProto value_c;
+  EXPECT_TRUE(AreAllValuesOfSize({value_a, value_b, value_c}, 0));
+
+  value_a = SimpleValue(std::string(""));
+  value_b = SimpleValue(std::string("non-empty"));
+  EXPECT_TRUE(AreAllValuesOfSize({value_a, value_b}, 1));
+
+  value_c = SimpleValue(std::string("another"));
+  EXPECT_TRUE(AreAllValuesOfSize({value_a, value_b, value_c}, 1));
+
+  value_c.mutable_strings()->add_values(std::string("second value"));
+  EXPECT_FALSE(AreAllValuesOfSize({value_a, value_b, value_c}, 1));
+
+  value_a.mutable_strings()->add_values(std::string(""));
+  value_b.mutable_strings()->add_values(std::string("test"));
+  EXPECT_TRUE(AreAllValuesOfSize({value_a, value_b, value_c}, 2));
+}
+
+TEST_F(ValueUtilTest, CombineValues) {
+  ValueProto value_a;
+  ValueProto value_b;
+  ValueProto value_c;
+  EXPECT_THAT(CombineValues({value_a, value_b, value_c}), ValueProto());
+
+  value_a = SimpleValue(1);
+  EXPECT_THAT(CombineValues({value_a, value_b, value_c}), base::nullopt);
+
+  value_a.mutable_strings()->add_values("First");
+  value_a.mutable_strings()->add_values("Second");
+  value_b.mutable_strings();
+  value_c.mutable_strings()->add_values("Third");
+  ValueProto expected;
+  expected.mutable_strings()->add_values("First");
+  expected.mutable_strings()->add_values("Second");
+  expected.mutable_strings()->add_values("Third");
+  EXPECT_THAT(CombineValues({value_a, value_b, value_c}), expected);
+
+  value_a = ValueProto();
+  value_a.mutable_ints();
+  value_b = SimpleValue(1);
+  value_c = SimpleValue(2);
+  value_c.mutable_ints()->add_values(3);
+  expected.mutable_ints()->add_values(1);
+  expected.mutable_ints()->add_values(2);
+  expected.mutable_ints()->add_values(3);
+  EXPECT_THAT(CombineValues({value_a, value_b, value_c}), expected);
+
+  value_a = SimpleValue(false);
+  value_b = SimpleValue(true);
+  value_b.mutable_booleans()->add_values(false);
+  value_c = ValueProto();
+  value_c.mutable_booleans();
+  expected.mutable_booleans()->add_values(false);
+  expected.mutable_booleans()->add_values(true);
+  expected.mutable_booleans()->add_values(false);
+  EXPECT_THAT(CombineValues({value_a, value_b, value_c}), expected);
+}
+
 }  // namespace value_util
 }  // namespace autofill_assistant

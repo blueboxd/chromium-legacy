@@ -11,6 +11,7 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol FindInPageCommands;
 @protocol LoadQueryCommands;
 @protocol PopupMenuActionHandlerCommands;
 
@@ -25,9 +26,11 @@
 @property(nonatomic, weak) id<PopupMenuActionHandlerCommands> commandHandler;
 
 // Dispatcher.
-@property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, LoadQueryCommands>
-        dispatcher;
+@property(nonatomic, weak) id<ApplicationCommands,
+                              BrowserCommands,
+                              FindInPageCommands,
+                              LoadQueryCommands>
+    dispatcher;
 
 @end
 

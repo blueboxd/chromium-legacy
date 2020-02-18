@@ -5,8 +5,8 @@
 #import "ios/chrome/browser/ui/find_bar/find_bar_mediator.h"
 
 #import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/web_state_list/active_web_state_observation_forwarder.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
@@ -20,15 +20,15 @@
   std::unique_ptr<ActiveWebStateObservationForwarder> _forwarder;
 }
 
-// Handler for any BrowserCommands.
-@property(nonatomic, weak) id<BrowserCommands> commandHandler;
+// Handler for any FindInPageCommands.
+@property(nonatomic, weak) id<FindInPageCommands> commandHandler;
 
 @end
 
 @implementation FindBarMediator
 
 - (instancetype)initWithWebStateList:(WebStateList*)webStateList
-                      commandHandler:(id<BrowserCommands>)commandHandler {
+                      commandHandler:(id<FindInPageCommands>)commandHandler {
   self = [super init];
   if (self) {
     DCHECK(webStateList);

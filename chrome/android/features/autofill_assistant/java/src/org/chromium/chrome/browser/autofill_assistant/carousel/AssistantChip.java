@@ -58,6 +58,9 @@ public class AssistantChip {
     /** Whether this chip is enabled or not. */
     private boolean mDisabled;
 
+    /** Whether this chip is visible or not. */
+    private boolean mVisible;
+
     /**
      * Whether this chip is sticky. A sticky chip will be a candidate to be displayed in the header
      * if the peek mode of the sheet is HANDLE_HEADER.
@@ -75,9 +78,21 @@ public class AssistantChip {
         mIcon = icon;
         mText = text;
         mDisabled = disabled;
+        mVisible = true;
         mSticky = sticky;
         mIdentifier = identifier;
         mSelectedListener = selectedListener;
+    }
+
+    public AssistantChip(AssistantChip other) {
+        mType = other.mType;
+        mIcon = other.mIcon;
+        mText = other.mText;
+        mDisabled = other.mDisabled;
+        mVisible = other.mVisible;
+        mSticky = other.mSticky;
+        mIdentifier = other.mIdentifier;
+        mSelectedListener = other.mSelectedListener;
     }
 
     public int getType() {
@@ -96,13 +111,16 @@ public class AssistantChip {
         return mDisabled;
     }
 
-    /**
-     * Set the disabled state of the {@link AssistantChip} object. Changing this flag will not
-     * affect the view this chip is bound to. Use this to keep the model and view in sync, if
-     * the view's state changes.
-     */
+    public boolean isVisible() {
+        return mVisible;
+    }
+
     public void setDisabled(boolean disabled) {
         mDisabled = disabled;
+    }
+
+    public void setVisible(boolean visible) {
+        mVisible = visible;
     }
 
     public boolean isSticky() {
@@ -119,15 +137,14 @@ public class AssistantChip {
 
     @Override
     public boolean equals(Object other) {
-        if (other == this) {
-            return true;
-        }
         if (!(other instanceof AssistantChip)) {
             return false;
         }
 
         AssistantChip that = (AssistantChip) other;
         return this.getType() == that.getType() && this.getText().equals(that.getText())
-                && this.getIcon() == that.getIcon() && this.isSticky() == that.isSticky();
+                && this.getIcon() == that.getIcon() && this.isSticky() == that.isSticky()
+                && this.getIdentifier().equals(that.getIdentifier())
+                && this.isDisabled() == that.isDisabled() && this.isVisible() == that.isVisible();
     }
 }

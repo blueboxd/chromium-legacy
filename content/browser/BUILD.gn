@@ -2019,7 +2019,7 @@ jumbo_source_set("browser") {
       "child_process_launcher_helper_fuchsia.cc",
       "speech/tts_fuchsia.cc",
     ]
-    deps += [ "//third_party/fuchsia-sdk/sdk:zx" ]
+    deps += [ "//third_party/fuchsia-sdk/sdk/pkg/zx" ]
   } else if (is_posix) {
     sources += [
       "child_process_launcher_helper_posix.cc",

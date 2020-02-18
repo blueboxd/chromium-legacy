@@ -29,7 +29,7 @@ class MockQuickAnswersDelegate
 };
 
 MATCHER_P(QuickAnswerEqual, quick_answer, "") {
-  return (arg->primary_answer == quick_answer.primary_answer);
+  return (arg->primary_answer == quick_answer->primary_answer);
 }
 
 MATCHER_P(QuickAnswersRequestEqual, quick_answers_request, "") {

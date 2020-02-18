@@ -470,7 +470,7 @@ TEST_F(AppCacheDatabaseTest, GroupRecords) {
   cache_record.group_id = 1;
   cache_record.online_wildcard = true;
   cache_record.update_time = kZeroTime;
-  cache_record.manifest_parser_version = 0;
+  cache_record.manifest_parser_version = 1;
   cache_record.manifest_scope = std::string("/");
   EXPECT_TRUE(db.InsertCache(&cache_record));
 
@@ -810,7 +810,7 @@ TEST_F(AppCacheDatabaseTest, OriginUsage) {
   cache_record.update_time = kZeroTime;
   cache_record.cache_size = 100;
   cache_record.padding_size = 1;
-  cache_record.manifest_parser_version = 0;
+  cache_record.manifest_parser_version = 1;
   cache_record.manifest_scope = std::string("/");
   EXPECT_TRUE(db.InsertCache(&cache_record));
 
@@ -890,7 +890,7 @@ TEST_F(AppCacheDatabaseTest, FindCachesForOrigin) {
     cache_record.update_time = kZeroTime;
     cache_record.cache_size = 100;
     cache_record.padding_size = 1000;
-    cache_record.manifest_parser_version = 0;
+    cache_record.manifest_parser_version = 1;
     cache_record.manifest_scope = std::string("/");
     EXPECT_TRUE(db.InsertCache(&cache_record));
   }

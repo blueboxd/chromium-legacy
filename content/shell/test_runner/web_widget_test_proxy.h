@@ -106,6 +106,9 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget {
   void ScheduleAnimationInternal(bool do_raster);
   void AnimateNow();
 
+  // Perform the synchronous composite step for a given RenderWidget.
+  static void DoComposite(content::RenderWidget* widget, bool do_raster);
+
   EventSender event_sender_{this};
 
   // For collapsing multiple simulated ScheduleAnimation() calls.

@@ -6,6 +6,7 @@
 
 #include "base/metrics/metrics_hashes.h"
 #include "base/no_destructor.h"
+#include "base/profiler/stack_sampling_profiler.h"
 
 namespace base {
 
@@ -39,6 +40,34 @@ void RemoveSampleMetadata(StringPiece name) {
 
 void RemoveSampleMetadata(StringPiece name, int64_t key) {
   GetSampleMetadataRecorder()->Remove(HashMetricName(name), key);
+}
+
+// This function is friended by StackSamplingProfiler so must live directly in
+// the base namespace.
+void ApplyMetadataToPastSamplesImpl(TimeTicks period_start,
+                                    TimeTicks period_end,
+                                    int64_t name_hash,
+                                    Optional<int64_t> key,
+                                    int64_t value) {
+  StackSamplingProfiler::ApplyMetadataToPastSamples(period_start, period_end,
+                                                    name_hash, key, value);
+}
+
+void ApplyMetadataToPastSamples(TimeTicks period_start,
+                                TimeTicks period_end,
+                                StringPiece name,
+                                int64_t value) {
+  return ApplyMetadataToPastSamplesImpl(period_start, period_end,
+                                        HashMetricName(name), nullopt, value);
+}
+
+void ApplyMetadataToPastSamples(TimeTicks period_start,
+                                TimeTicks period_end,
+                                StringPiece name,
+                                int64_t key,
+                                int64_t value) {
+  return ApplyMetadataToPastSamplesImpl(period_start, period_end,
+                                        HashMetricName(name), key, value);
 }
 
 MetadataRecorder* GetSampleMetadataRecorder() {

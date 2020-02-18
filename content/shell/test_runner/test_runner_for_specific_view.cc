@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_canvas.h"
+#include "content/common/widget_messages.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/shell/test_runner/layout_dump.h"
@@ -100,9 +101,11 @@ void TestRunnerForSpecificView::Reset() {
     // the Page.
     // TODO(danakj): This should set visibility on all RenderWidgets not just
     // the main frame.
-    // TODO(danakj): This should set visible on the RenderWidget not just the
-    // LayerTreeView.
-    main_frame_render_widget()->layer_tree_view()->SetVisible(true);
+    WidgetMsg_WasShown msg(main_frame_render_widget()->routing_id(),
+                           /*show_request_timestamp=*/base::TimeTicks(),
+                           /*was_evicted=*/false,
+                           /*record_tab_switch_time_request=*/base::nullopt);
+    main_frame_render_widget()->OnMessageReceived(msg);
   }
   web_view_test_proxy_->ApplyPageVisibilityState(
       content::PageVisibilityState::kVisible,
@@ -507,10 +510,16 @@ void TestRunnerForSpecificView::SetPageVisibility(
   // the Page.
   // TODO(danakj): This should set visibility on all RenderWidgets not just the
   // main frame.
-  // TODO(danakj): This should set visible on the RenderWidget not just the
-  // LayerTreeView.
-  main_frame_render_widget()->layer_tree_view()->SetVisible(
-      visibility == content::PageVisibilityState::kVisible);
+  if (visibility == content::PageVisibilityState::kVisible) {
+    WidgetMsg_WasShown msg(main_frame_render_widget()->routing_id(),
+                           /*show_request_timestamp=*/base::TimeTicks(),
+                           /*was_evicted=*/false,
+                           /*record_tab_switch_time_request=*/base::nullopt);
+    main_frame_render_widget()->OnMessageReceived(msg);
+  } else {
+    WidgetMsg_WasHidden msg(main_frame_render_widget()->routing_id());
+    main_frame_render_widget()->OnMessageReceived(msg);
+  }
   web_view_test_proxy_->ApplyPageVisibilityState(visibility,
                                                  /*initial_setting=*/false);
 }

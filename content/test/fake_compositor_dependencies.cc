@@ -94,7 +94,10 @@ void FakeCompositorDependencies::RequestNewLayerTreeFrameSink(
     const GURL& url,
     LayerTreeFrameSinkCallback callback,
     const char* client_name) {
-  std::move(callback).Run(cc::FakeLayerTreeFrameSink::Create3d(), nullptr);
+  std::unique_ptr<cc::FakeLayerTreeFrameSink> sink =
+      cc::FakeLayerTreeFrameSink::Create3d();
+  last_created_frame_sink_ = sink.get();
+  std::move(callback).Run(std::move(sink), nullptr);
 }
 
 #ifdef OS_ANDROID

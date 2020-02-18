@@ -4969,6 +4969,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(password_manager::features::kPasswordCheck)},
 #endif  // !defined(OS_ANDROID)
 
+    {"export-tagged-pdf", flag_descriptions::kExportTaggedPDFName,
+     flag_descriptions::kExportTaggedPDFDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kExportTaggedPDF)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the

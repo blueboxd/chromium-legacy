@@ -9,6 +9,7 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 
+@class FakeChromeIdentityInteractionManager;
 @class NSMutableArray;
 
 namespace ios {
@@ -31,6 +32,10 @@ class FakeChromeIdentityService : public ChromeIdentityService {
   ChromeIdentityInteractionManager* CreateChromeIdentityInteractionManager(
       ChromeBrowserState* browser_state,
       id<ChromeIdentityInteractionManagerDelegate> delegate) const override;
+  FakeChromeIdentityInteractionManager*
+  CreateFakeChromeIdentityInteractionManager(
+      ChromeBrowserState* browser_state,
+      id<ChromeIdentityInteractionManagerDelegate> delegate) const;
 
   bool IsValidIdentity(ChromeIdentity* identity) const override;
   ChromeIdentity* GetIdentityWithGaiaID(

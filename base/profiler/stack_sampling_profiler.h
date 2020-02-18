@@ -10,6 +10,7 @@
 
 #include "base/base_export.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/profiler/profile_builder.h"
 #include "base/profiler/sampling_profiler_thread_token.h"
 #include "base/synchronization/waitable_event.h"
@@ -156,6 +157,22 @@ class BASE_EXPORT StackSamplingProfiler {
   // SamplingThread is a separate thread used to suspend and sample stacks from
   // the target thread.
   class SamplingThread;
+
+  // Friend the global function from sample_metadata.cc so that it can call into
+  // the function below.
+  friend void ApplyMetadataToPastSamplesImpl(TimeTicks period_start,
+                                             TimeTicks period_end,
+                                             int64_t name_hash,
+                                             Optional<int64_t> key,
+                                             int64_t value);
+
+  // Apply metadata to already recorded samples. See the
+  // ApplyMetadataToPastSamples() docs in sample_metadata.h.
+  static void ApplyMetadataToPastSamples(TimeTicks period_start,
+                                         TimeTicks period_end,
+                                         int64_t name_hash,
+                                         Optional<int64_t> key,
+                                         int64_t value);
 
   // The thread whose stack will be sampled.
   SamplingProfilerThreadToken thread_token_;

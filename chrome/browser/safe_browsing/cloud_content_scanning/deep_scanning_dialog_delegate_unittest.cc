@@ -90,6 +90,11 @@ class BaseTest : public testing::Test {
         prefs::kSafeBrowsingSendFilesForMalwareCheck, state);
   }
 
+  void SetBlockLargeFilePolicy(BlockLargeFileTransferValues state) {
+    TestingBrowserProcess::GetGlobal()->local_state()->SetInteger(
+        prefs::kBlockLargeFileTransfer, state);
+  }
+
   void AddUrlToList(const char* pref_name, const GURL& url) {
     ListPrefUpdate(TestingBrowserProcess::GetGlobal()->local_state(), pref_name)
         ->Append(url.host());
@@ -1436,6 +1441,27 @@ INSTANTIATE_TEST_SUITE_P(
                     BinaryUploadService::Result::FILE_ENCRYPTED));
 
 using DeepScanningDialogDelegatePolicyResultsTest = BaseTest;
+
+TEST_F(DeepScanningDialogDelegatePolicyResultsTest, BlockLargeFile) {
+  // The value returned by ResultShouldAllowDataUse for FILE_TOO_LARGE should
+  // match the BlockLargeFilePolicy.
+  SetBlockLargeFilePolicy(
+      BlockLargeFileTransferValues::BLOCK_LARGE_UPLOADS_AND_DOWNLOADS);
+  EXPECT_FALSE(DeepScanningDialogDelegate::ResultShouldAllowDataUse(
+      BinaryUploadService::Result::FILE_TOO_LARGE));
+
+  SetBlockLargeFilePolicy(BlockLargeFileTransferValues::BLOCK_LARGE_DOWNLOADS);
+  EXPECT_TRUE(DeepScanningDialogDelegate::ResultShouldAllowDataUse(
+      BinaryUploadService::Result::FILE_TOO_LARGE));
+
+  SetBlockLargeFilePolicy(BlockLargeFileTransferValues::BLOCK_LARGE_UPLOADS);
+  EXPECT_FALSE(DeepScanningDialogDelegate::ResultShouldAllowDataUse(
+      BinaryUploadService::Result::FILE_TOO_LARGE));
+
+  SetBlockLargeFilePolicy(BlockLargeFileTransferValues::BLOCK_NONE);
+  EXPECT_TRUE(DeepScanningDialogDelegate::ResultShouldAllowDataUse(
+      BinaryUploadService::Result::FILE_TOO_LARGE));
+}
 
 TEST_F(DeepScanningDialogDelegatePolicyResultsTest,
        AllowPasswordProtectedFiles) {

@@ -72,11 +72,12 @@ NSString* const kActivityServicesSnackbarCategory =
 // share to the sharing activities.
 - (NSArray*)activityItemsForData:(ShareToData*)data;
 // Returns an array of UIActivity objects that can handle the given |data|.
-- (NSArray*)applicationActivitiesForData:(ShareToData*)data
-                              dispatcher:(id<BrowserCommands>)dispatcher
-                           bookmarkModel:
-                               (bookmarks::BookmarkModel*)bookmarkModel
-                        canSendTabToSelf:(BOOL)canSendTabToSelf;
+- (NSArray*)
+    applicationActivitiesForData:(ShareToData*)data
+           browserCommandHandler:(id<BrowserCommands>)browserCommandHandler
+               findInPageHandler:(id<FindInPageCommands>)findInPageHandler
+                   bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+                canSendTabToSelf:(BOOL)canSendTabToSelf;
 // Processes |extensionItems| returned from App Extension invocation returning
 // the |activityType|. Calls shareDelegate_ with the processed returned items
 // and |result| of activity. Returns whether caller should reset UI.
@@ -126,7 +127,9 @@ NSString* const kActivityServicesSnackbarCategory =
 
 - (void)shareWithData:(ShareToData*)data
             browserState:(ChromeBrowserState*)browserState
-              dispatcher:(id<BrowserCommands, SnackbarCommands>)dispatcher
+              dispatcher:
+                  (id<BrowserCommands, FindInPageCommands, SnackbarCommands>)
+                      dispatcher
         passwordProvider:(id<ActivityServicePassword>)passwordProvider
         positionProvider:(id<ActivityServicePositioner>)positionProvider
     presentationProvider:(id<ActivityServicePresentation>)presentationProvider {
@@ -162,14 +165,17 @@ NSString* const kActivityServicesSnackbarCategory =
       initWithActivityItems:[self activityItemsForData:data]
       applicationActivities:[self
                                 applicationActivitiesForData:data
-                                                  dispatcher:dispatcher
+                                       browserCommandHandler:dispatcher
+                                           findInPageHandler:dispatcher
                                                bookmarkModel:bookmarkModel
                                             canSendTabToSelf:canSendTabToSelf]];
 
   // Reading List and Print activities refer to iOS' version of these.
   // Chrome-specific implementations of these two activities are provided
-  // below in applicationActivitiesForData:dispatcher:bookmarkModel: The
-  // "Copy" action is also provided by chrome in order to change its icon.
+  // below in
+  // applicationActivitiesForData:browserCommandHandler:
+  // findInPageHandler:bookmarkModel:
+  // The "Copy" action is also provided by chrome in order to change its icon.
   NSArray* excludedActivityTypes = @[
     UIActivityTypeAddToReadingList, UIActivityTypeCopyToPasteboard,
     UIActivityTypePrint, UIActivityTypeSaveToCameraRoll
@@ -276,11 +282,12 @@ NSString* const kActivityServicesSnackbarCategory =
   return [NSString stringWithFormat:@"%@ \u2022 %@", device_name, active_time];
 }
 
-- (NSArray*)applicationActivitiesForData:(ShareToData*)data
-                              dispatcher:(id<BrowserCommands>)dispatcher
-                           bookmarkModel:
-                               (bookmarks::BookmarkModel*)bookmarkModel
-                        canSendTabToSelf:(BOOL)canSendTabToSelf {
+- (NSArray*)
+    applicationActivitiesForData:(ShareToData*)data
+           browserCommandHandler:(id<BrowserCommands>)browserCommandHandler
+               findInPageHandler:(id<FindInPageCommands>)findInPageHandler
+                   bookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
+                canSendTabToSelf:(BOOL)canSendTabToSelf {
   NSMutableArray* applicationActivities = [NSMutableArray array];
 
   [applicationActivities
@@ -289,14 +296,15 @@ NSString* const kActivityServicesSnackbarCategory =
   if (data.shareURL.SchemeIsHTTPOrHTTPS()) {
     if (canSendTabToSelf) {
       SendTabToSelfActivity* sendTabToSelfActivity =
-          [[SendTabToSelfActivity alloc] initWithDispatcher:dispatcher];
+          [[SendTabToSelfActivity alloc]
+              initWithDispatcher:browserCommandHandler];
       [applicationActivities addObject:sendTabToSelfActivity];
     }
 
     ReadingListActivity* readingListActivity =
         [[ReadingListActivity alloc] initWithURL:data.shareURL
                                            title:data.title
-                                      dispatcher:dispatcher];
+                                      dispatcher:browserCommandHandler];
     [applicationActivities addObject:readingListActivity];
 
     if (bookmarkModel) {
@@ -305,27 +313,27 @@ NSString* const kActivityServicesSnackbarCategory =
       BookmarkActivity* bookmarkActivity =
           [[BookmarkActivity alloc] initWithURL:data.visibleURL
                                      bookmarked:bookmarked
-                                     dispatcher:dispatcher];
+                                     dispatcher:browserCommandHandler];
       [applicationActivities addObject:bookmarkActivity];
     }
 
     if (data.isPageSearchable) {
       FindInPageActivity* findInPageActivity =
-          [[FindInPageActivity alloc] initWithDispatcher:dispatcher];
+          [[FindInPageActivity alloc] initWithHandler:findInPageHandler];
       [applicationActivities addObject:findInPageActivity];
     }
 
     if (data.userAgent != web::UserAgentType::NONE) {
       RequestDesktopOrMobileSiteActivity* requestActivity =
           [[RequestDesktopOrMobileSiteActivity alloc]
-              initWithDispatcher:dispatcher
+              initWithDispatcher:browserCommandHandler
                        userAgent:data.userAgent];
       [applicationActivities addObject:requestActivity];
     }
   }
   if (data.isPagePrintable) {
     PrintActivity* printActivity = [[PrintActivity alloc] init];
-    printActivity.dispatcher = dispatcher;
+    printActivity.dispatcher = browserCommandHandler;
     [applicationActivities addObject:printActivity];
   }
   return applicationActivities;

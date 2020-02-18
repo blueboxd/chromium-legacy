@@ -30,6 +30,7 @@ class WebLocalFrameClient;
 class WebRemoteFrameClient;
 class WebString;
 class WebView;
+struct FramePolicy;
 struct WebRect;
 
 class WebRemoteFrame : public WebFrame {

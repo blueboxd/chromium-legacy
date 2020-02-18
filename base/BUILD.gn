@@ -1615,23 +1615,23 @@ jumbo_component("base") {
     # by public //base headers, which requires they be on the include path.
     # TODO(https://crbug.com/841171): Move these back to |deps|.
     public_deps += [
-      "//third_party/fuchsia-sdk/sdk:async",
-      "//third_party/fuchsia-sdk/sdk:fdio",
-      "//third_party/fuchsia-sdk/sdk:fidl_cpp",
-      "//third_party/fuchsia-sdk/sdk:sys_cpp",
-      "//third_party/fuchsia-sdk/sdk:zx",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.io",
+      "//third_party/fuchsia-sdk/sdk/pkg/async",
+      "//third_party/fuchsia-sdk/sdk/pkg/fdio",
+      "//third_party/fuchsia-sdk/sdk/pkg/fidl_cpp",
+      "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
+      "//third_party/fuchsia-sdk/sdk/pkg/zx",
     ]
 
     deps += [
-      "//third_party/fuchsia-sdk/sdk:async-default",
-      "//third_party/fuchsia-sdk/sdk:async-loop-cpp",
-      "//third_party/fuchsia-sdk/sdk:async-loop-default",
-      "//third_party/fuchsia-sdk/sdk:fidl",
-      "//third_party/fuchsia-sdk/sdk:syslog",
-      "//third_party/fuchsia-sdk/sdk:vfs_cpp",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
+      "//third_party/fuchsia-sdk/sdk/pkg/async-default",
+      "//third_party/fuchsia-sdk/sdk/pkg/async-loop-cpp",
+      "//third_party/fuchsia-sdk/sdk/pkg/async-loop-default",
+      "//third_party/fuchsia-sdk/sdk/pkg/fidl",
+      "//third_party/fuchsia-sdk/sdk/pkg/syslog",
+      "//third_party/fuchsia-sdk/sdk/pkg/vfs_cpp",
       "//third_party/icu",
     ]
   }
@@ -3062,13 +3062,13 @@ test("base_unittests") {
     deps += [
       ":test_interface_impl",
       ":testfidl",
-      "//third_party/fuchsia-sdk/sdk:async",
-      "//third_party/fuchsia-sdk/sdk:async-default",
-      "//third_party/fuchsia-sdk/sdk:fdio",
-      "//third_party/fuchsia-sdk/sdk:sys_cpp",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
+      "//third_party/fuchsia-sdk/sdk/pkg/async",
+      "//third_party/fuchsia-sdk/sdk/pkg/async-default",
+      "//third_party/fuchsia-sdk/sdk/pkg/fdio",
+      "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
     ]
 
     manifest = "//build/config/fuchsia/tests.cmx"

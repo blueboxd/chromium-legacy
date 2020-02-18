@@ -72,11 +72,7 @@ class PermissionBubbleInteractiveUITest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(PermissionBubbleInteractiveUITest);
 };
 
-#if defined(OS_MACOSX)
-// TODO(https://crbug.com/1049284): Disabled due to persistent use after free
-// on Mac causing crash.
-#define MAYBE_CmdWClosesWindow DISABLED_CmdWClosesWindow
-#elif defined(OS_WIN) || defined(OS_LINUX)
+#if defined(OS_WIN) || defined(OS_LINUX)
 // TODO(https://crbug.com/866878): Accelerators are broken when this bubble is
 // showing on non-Mac.
 #define MAYBE_CmdWClosesWindow DISABLED_CmdWClosesWindow
@@ -95,7 +91,9 @@ IN_PROC_BROWSER_TEST_F(PermissionBubbleInteractiveUITest,
   // The actual window close happens via a posted task.
   EXPECT_TRUE(browser()->window()->IsVisible());
   ui_test_utils::WaitForBrowserToClose(browser());
-  EXPECT_FALSE(browser()->window()->IsVisible());
+  // The window has been destroyed at this point, so there should be no widgets
+  // hanging around.
+  EXPECT_EQ(0u, views::test::WidgetTest::GetAllWidgets().size());
 }
 
 #if defined(OS_WIN) || defined(OS_LINUX)

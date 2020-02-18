@@ -745,6 +745,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         startDispatchingToTarget:self
                      forProtocol:@protocol(BrowserCommands)];
     [self.commandDispatcher
+        startDispatchingToTarget:self
+                     forProtocol:@protocol(FindInPageCommands)];
+    [self.commandDispatcher
         startDispatchingToTarget:applicationCommandEndpoint
                      forProtocol:@protocol(ApplicationCommands)];
     // -startDispatchingToTarget:forProtocol: doesn't pick up protocols the
@@ -811,15 +814,18 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (id<ApplicationCommands,
       BrowserCommands,
+      BrowsingDataCommands,
+      FindInPageCommands,
       OmniboxFocuser,
       PasswordBreachCommands,
       PopupMenuCommands,
       FakeboxFocuser,
       SnackbarCommands,
       ToolbarCommands>)dispatcher {
-  return static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
-                        PasswordBreachCommands, PopupMenuCommands,
-                        FakeboxFocuser, SnackbarCommands, ToolbarCommands>>(
+  return static_cast<
+      id<ApplicationCommands, BrowserCommands, BrowsingDataCommands,
+         FindInPageCommands, OmniboxFocuser, PasswordBreachCommands,
+         PopupMenuCommands, FakeboxFocuser, SnackbarCommands, ToolbarCommands>>(
       self.commandDispatcher);
 }
 
@@ -1103,7 +1109,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // TODO(crbug.com/1052818): These should not be necessary once the
   // coordinators are moved up to BrowserCoordinator.
-  [self.findBarCoordinator stop];
+  [self.dispatcher hideFindUI];
   [self.textZoomCoordinator stop];
 }
 
@@ -1187,7 +1193,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Keyboard shouldn't overlay the ecoutez window, so dismiss find in page and
   // dismiss the keyboard.
-  [self closeFindInPage];
+  [self.dispatcher closeFindInPage];
   [self hideTextZoom];
   [[self viewForWebState:self.currentWebState] endEditing:NO];
 
@@ -1273,12 +1279,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     if (self.isNTPActiveForCurrentWebState) {
       [_ntpCoordinatorsForWebStates[webState] dismissModals];
     }
-    auto* findHelper = FindTabHelper::FromWebState(webState);
-    if (findHelper) {
-      findHelper->StopFinding(^{
-        [self.findBarCoordinator stop];
-      });
-    }
+    [self.dispatcher closeFindInPage];
     [self.textZoomCoordinator stop];
   }
 
@@ -1668,7 +1669,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // updateToobar];
   if (ShouldShowCompactToolbar(previousTraitCollection) !=
       ShouldShowCompactToolbar()) {
-    [self.findBarCoordinator stop];
+    [self.dispatcher hideFindUI];
     [self.textZoomCoordinator stop];
   }
 
@@ -2346,7 +2347,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   if (!self.inNewTabAnimation) {
     // Hide findbar.  |updateToolbar| will restore the findbar later.
-    [self.findBarCoordinator stop];
+    [self.dispatcher hideFindUI];
     [self.textZoomCoordinator stop];
 
     // Make new content visible, resizing it first as the orientation may
@@ -2437,11 +2438,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (isPrerendered && ![self.helper isToolbarLoading:self.currentWebState])
     [self.primaryToolbarCoordinator showPrerenderingAnimation];
 
-  auto* findHelper = FindTabHelper::FromWebState(webState);
-  if (findHelper && findHelper->IsFindUIActive() &&
-      !self.findBarCoordinator.presenter.isPresenting) {
-    [self.findBarCoordinator start];
-  }
+  [self.dispatcher showFindUIIfActive];
 
   BOOL hideToolbar = NO;
   if (webState) {
@@ -4032,76 +4029,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
 }
 
-- (void)showFindInPage {
-  if (!self.canShowFindBar)
-    return;
-
-  if (self.toolbarAccessoryPresenter.isPresenting) {
-    self.nextToolbarCoordinator = self.findBarCoordinator;
-    [self hideTextZoom];
-    return;
-  }
-
-  self.findBarCoordinator =
-      [[FindBarCoordinator alloc] initWithBaseViewController:self
-                                                     browser:self.browser];
-  self.findBarCoordinator.presenter = self.toolbarAccessoryPresenter;
-  self.findBarCoordinator.delegate = self;
-
-  [self.findBarCoordinator start];
-}
-
-- (void)closeFindInPage {
-  __weak BrowserViewController* weakSelf = self;
-  if (self.currentWebState) {
-    FindTabHelper* findTabHelper =
-        FindTabHelper::FromWebState(self.currentWebState);
-    if (findTabHelper->IsFindUIActive()) {
-      findTabHelper->StopFinding(^{
-        [weakSelf.findBarCoordinator stop];
-      });
-    } else {
-      [self.findBarCoordinator stop];
-    }
-  }
-}
-
-- (void)searchFindInPage {
-  DCHECK(self.currentWebState);
-  FindTabHelper* helper = FindTabHelper::FromWebState(self.currentWebState);
-  __weak BrowserViewController* weakSelf = self;
-  helper->StartFinding([self.findBarCoordinator.findBarController searchTerm],
-                       ^(FindInPageModel* model) {
-                         BrowserViewController* strongSelf = weakSelf;
-                         if (!strongSelf) {
-                           return;
-                         }
-                         [strongSelf.findBarCoordinator.findBarController
-                             updateResultsCount:model];
-                       });
-
-  if (!_isOffTheRecord)
-    helper->PersistSearchTerm();
-}
-
-- (void)findNextStringInPage {
-  DCHECK(self.currentWebState);
-  // TODO(crbug.com/603524): Reshow find bar if necessary.
-  FindTabHelper::FromWebState(self.currentWebState)
-      ->ContinueFinding(FindTabHelper::FORWARD, ^(FindInPageModel* model) {
-        [self.findBarCoordinator.findBarController updateResultsCount:model];
-      });
-}
-
-- (void)findPreviousStringInPage {
-  DCHECK(self.currentWebState);
-  // TODO(crbug.com/603524): Reshow find bar if necessary.
-  FindTabHelper::FromWebState(self.currentWebState)
-      ->ContinueFinding(FindTabHelper::REVERSE, ^(FindInPageModel* model) {
-        [self.findBarCoordinator.findBarController updateResultsCount:model];
-      });
-}
-
 - (void)showHelpPage {
   GURL helpUrl(l10n_util::GetStringUTF16(IDS_IOS_TOOLS_MENU_HELP_URL));
   UrlLoadParams params = UrlLoadParams::InNewTab(helpUrl);
@@ -4162,7 +4089,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // Dismiss the soft keyboard (if open).
   [[self viewForWebState:self.currentWebState] endEditing:NO];
   // Dismiss Find in Page focus.
-  [self.findBarCoordinator defocusFindBar];
+  [self.dispatcher defocusFindInPage];
 
   if (type == PopupMenuCommandTypeToolsMenu) {
     [self.bubblePresenter toolsMenuDisplayed];
@@ -4232,6 +4159,92 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   navigationManager->ReloadWithUserAgentType(userAgentType);
 }
 
+#pragma mark - FindInPageCommands
+
+- (void)openFindInPage {
+  if (!self.canShowFindBar)
+    return;
+
+  if (self.toolbarAccessoryPresenter.isPresenting) {
+    self.nextToolbarCoordinator = self.findBarCoordinator;
+    [self hideTextZoom];
+    return;
+  }
+
+  self.findBarCoordinator =
+      [[FindBarCoordinator alloc] initWithBaseViewController:self
+                                                     browser:self.browser];
+  self.findBarCoordinator.presenter = self.toolbarAccessoryPresenter;
+  self.findBarCoordinator.delegate = self;
+
+  [self.findBarCoordinator start];
+}
+
+- (void)closeFindInPage {
+  __weak BrowserViewController* weakSelf = self;
+  if (self.currentWebState) {
+    FindTabHelper* findTabHelper =
+        FindTabHelper::FromWebState(self.currentWebState);
+    if (findTabHelper->IsFindUIActive()) {
+      findTabHelper->StopFinding(^{
+        [weakSelf hideFindUI];
+      });
+    } else {
+      [self hideFindUI];
+    }
+  }
+}
+
+- (void)showFindUIIfActive {
+  web::WebState* currentWebState =
+      self.browser->GetWebStateList()->GetActiveWebState();
+  auto* findHelper = FindTabHelper::FromWebState(currentWebState);
+  if (findHelper && findHelper->IsFindUIActive() &&
+      !self.findBarCoordinator.presenter.isPresenting) {
+    [self.findBarCoordinator start];
+  }
+}
+
+- (void)hideFindUI {
+  [self.findBarCoordinator stop];
+}
+
+- (void)defocusFindInPage {
+  [self.findBarCoordinator defocusFindBar];
+}
+
+- (void)searchFindInPage {
+  DCHECK(self.currentWebState);
+  FindTabHelper* helper = FindTabHelper::FromWebState(self.currentWebState);
+  __weak __typeof(self) weakSelf = self;
+  helper->StartFinding([self.findBarCoordinator.findBarController searchTerm],
+                       ^(FindInPageModel* model) {
+                         [weakSelf.findBarCoordinator.findBarController
+                             updateResultsCount:model];
+                       });
+
+  if (!_isOffTheRecord)
+    helper->PersistSearchTerm();
+}
+
+- (void)findNextStringInPage {
+  DCHECK(self.currentWebState);
+  // TODO(crbug.com/603524): Reshow find bar if necessary.
+  FindTabHelper::FromWebState(self.currentWebState)
+      ->ContinueFinding(FindTabHelper::FORWARD, ^(FindInPageModel* model) {
+        [self.findBarCoordinator.findBarController updateResultsCount:model];
+      });
+}
+
+- (void)findPreviousStringInPage {
+  DCHECK(self.currentWebState);
+  // TODO(crbug.com/603524): Reshow find bar if necessary.
+  FindTabHelper::FromWebState(self.currentWebState)
+      ->ContinueFinding(FindTabHelper::REVERSE, ^(FindInPageModel* model) {
+        [self.findBarCoordinator.findBarController updateResultsCount:model];
+      });
+}
+
 #pragma mark - WebStateListObserving methods
 
 // Observer method, active WebState changed.
@@ -4273,7 +4286,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     return;
 
   // Remove the find bar for now.
-  [self.findBarCoordinator stop];
+  [self.dispatcher hideFindUI];
   [self.textZoomCoordinator stop];
 }
 
@@ -4540,7 +4553,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   } else {
     // Hide UI accessories such as find bar and first visit overlays
     // for welcome page.
-    [self.findBarCoordinator stop];
+    [self.dispatcher hideFindUI];
     [self.textZoomCoordinator stop];
     [self.infobarContainerCoordinator hideContainer:YES];
   }
@@ -4729,7 +4742,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   }
   if (self.nextToolbarCoordinator == self.findBarCoordinator) {
     dispatch_async(dispatch_get_main_queue(), ^{
-      [self showFindInPage];
+      [self openFindInPage];
     });
     self.nextToolbarCoordinator = nil;
   } else if (self.nextToolbarCoordinator == self.textZoomCoordinator) {

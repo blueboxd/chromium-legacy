@@ -1047,7 +1047,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnSetAccessibilityMode(ui::AXMode new_mode);
   void OnSnapshotAccessibilityTree(int callback_id, ui::AXMode ax_mode);
   void OnUpdateOpener(int opener_routing_id);
-  void OnDidUpdateFramePolicy(const blink::FramePolicy& frame_policy);
   void OnSetFrameOwnerProperties(
       const FrameOwnerProperties& frame_owner_properties);
   void OnAdvanceFocus(blink::mojom::FocusType type, int32_t source_routing_id);

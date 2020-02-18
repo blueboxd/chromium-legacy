@@ -34,6 +34,10 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Tests for the autofill assistant actions carousel.
  */
@@ -75,7 +79,7 @@ public class AutofillAssistantActionsCarouselUiTest {
         AssistantCarouselModel model = new AssistantCarouselModel();
         AssistantActionsCarouselCoordinator coordinator = createCoordinator(model);
 
-        assertThat(model.getChipsModel().size(), is(0));
+        assertThat(model.get(AssistantCarouselModel.CHIPS).size(), is(0));
         assertThat(coordinator.getView().getAdapter().getItemCount(), is(0));
     }
 
@@ -88,9 +92,10 @@ public class AutofillAssistantActionsCarouselUiTest {
 
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
-                        -> model.getChipsModel().add(
-                                new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE,
-                                        AssistantChip.Icon.NONE, "Test", false, true, "", null)));
+                        -> model.set(AssistantCarouselModel.CHIPS,
+                                Collections.singletonList(new AssistantChip(
+                                        AssistantChip.Type.BUTTON_HAIRLINE, AssistantChip.Icon.NONE,
+                                        "Test", false, true, "", null))));
 
         // Chip was created and is displayed on the screen.
         onView(is(coordinator.getView()))
@@ -108,14 +113,15 @@ public class AutofillAssistantActionsCarouselUiTest {
 
         // Note: this should be a small number that fits on screen without scrolling.
         int numChips = 3;
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            for (int i = 0; i < numChips; i++) {
-                model.getChipsModel().add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE,
-                        AssistantChip.Icon.NONE, "T" + i, false, false, "", null));
-            }
-            model.getChipsModel().add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE,
-                    AssistantChip.Icon.NONE, "X", false, true, "", null));
-        });
+        List<AssistantChip> chips = new ArrayList<>();
+        for (int i = 0; i < numChips; i++) {
+            chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, AssistantChip.Icon.NONE,
+                    "T" + i, false, false, "", null));
+        }
+        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, AssistantChip.Icon.NONE,
+                "X", false, true, "", null));
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> model.set(AssistantCarouselModel.CHIPS, chips));
 
         // Cancel chip is displayed to the user.
         onView(withText("X")).check(matches(isDisplayed()));
@@ -135,14 +141,14 @@ public class AutofillAssistantActionsCarouselUiTest {
 
         // Note: this should be a large number that does not fit on screen without scrolling.
         int numChips = 30;
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            for (int i = 0; i < numChips; i++) {
-                model.getChipsModel().add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE,
-                        AssistantChip.Icon.NONE, "Test" + i, false, false, "", null));
-            }
-            model.getChipsModel().add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE,
-                    AssistantChip.Icon.NONE, "Cancel", false, true, "", null));
-        });
+        List<AssistantChip> chips = new ArrayList<>();
+        for (int i = 0; i < numChips; i++) {
+            chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, AssistantChip.Icon.NONE,
+                    "Test" + i, false, false, "", null));
+        }
+        chips.add(new AssistantChip(AssistantChip.Type.BUTTON_HAIRLINE, AssistantChip.Icon.NONE,
+                "Cancel", false, true, "", null));
+        TestThreadUtils.runOnUiThreadBlocking(() -> model.set(AssistantCarouselModel.CHIPS, chips));
 
         // Cancel chip is initially displayed to the user.
         onView(withText("Cancel")).check(matches(isDisplayed()));

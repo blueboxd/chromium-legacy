@@ -88,6 +88,12 @@ constexpr char kKeyEnhancedDesktopSecurity[] = "Enhanced_desktop_security";
 constexpr char kKeyADAccounts[] = "AD_accounts";
 constexpr char kKeyLocalWindowsAccounts[] = "Local_Windows_accounts";
 
+// List of errors where Windows returns during password change that can't be
+// worked out with manual user input during forgot password flow.
+constexpr UINT kPasswordErrors[] = {IDS_PASSWORD_COMPLEXITY_ERROR_BASE,
+                                    IDS_USER_NOT_FOUND_PASSWORD_ERROR_BASE,
+                                    IDS_AD_PASSWORD_CHANGE_DENIED_BASE};
+
 base::string16 GetEmailDomains() {
   std::vector<wchar_t> email_domains(16);
   ULONG length = email_domains.size();
@@ -1276,6 +1282,14 @@ void CGaiaCredentialBase::SetErrorMessageInPasswordField(HRESULT hr) {
       break;
   }
   DisplayPasswordField(password_message_id);
+}
+
+bool CGaiaCredentialBase::BlockingPasswordError(UINT message_id) {
+  for (auto e : kPasswordErrors) {
+    if (e == message_id)
+      return true;
+  }
+  return false;
 }
 
 // static
@@ -2489,22 +2503,24 @@ void CGaiaCredentialBase::DisplayPasswordField(int password_message) {
     } else {
       events_->SetFieldString(this, FID_DESCRIPTION,
                               GetStringResource(password_message).c_str());
-      events_->SetFieldState(this, FID_CURRENT_PASSWORD_FIELD,
-                             CPFS_DISPLAY_IN_SELECTED_TILE);
-      // Force password link won't be displayed if the machine is domain joined
-      // or force reset password is disabled through registry.
-      if (!OSUserManager::Get()->IsUserDomainJoined(get_sid().m_str) &&
-          GetGlobalFlagOrDefault(kRegMdmEnableForcePasswordReset, 1)) {
-        events_->SetFieldState(this, FID_FORGOT_PASSWORD_LINK,
+      if (!BlockingPasswordError(password_message)) {
+        events_->SetFieldState(this, FID_CURRENT_PASSWORD_FIELD,
                                CPFS_DISPLAY_IN_SELECTED_TILE);
-        events_->SetFieldString(
-            this, FID_FORGOT_PASSWORD_LINK,
-            GetStringResource(IDS_FORGOT_PASSWORD_LINK_BASE).c_str());
+        // Force password link won't be displayed if the machine is domain
+        // joined or force reset password is disabled through registry.
+        if (!OSUserManager::Get()->IsUserDomainJoined(get_sid().m_str) &&
+            GetGlobalFlagOrDefault(kRegMdmEnableForcePasswordReset, 1)) {
+          events_->SetFieldState(this, FID_FORGOT_PASSWORD_LINK,
+                                 CPFS_DISPLAY_IN_SELECTED_TILE);
+          events_->SetFieldString(
+              this, FID_FORGOT_PASSWORD_LINK,
+              GetStringResource(IDS_FORGOT_PASSWORD_LINK_BASE).c_str());
+        }
+        events_->SetFieldInteractiveState(this, FID_CURRENT_PASSWORD_FIELD,
+                                          CPFIS_FOCUSED);
+        events_->SetFieldSubmitButton(this, FID_SUBMIT,
+                                      FID_CURRENT_PASSWORD_FIELD);
       }
-      events_->SetFieldInteractiveState(this, FID_CURRENT_PASSWORD_FIELD,
-                                        CPFIS_FOCUSED);
-      events_->SetFieldSubmitButton(this, FID_SUBMIT,
-                                    FID_CURRENT_PASSWORD_FIELD);
     }
   }
 }

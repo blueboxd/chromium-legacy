@@ -24,8 +24,8 @@ group("vulkan_base") {
   data_deps = [
     ":vulkan_base_configs",
     ":vulkan_image_pipe",
-    "sdk:trace-engine",
-    "sdk:vulkan",
+    "sdk/pkg/trace-engine",
+    "sdk/pkg/vulkan",
   ]
 }
 

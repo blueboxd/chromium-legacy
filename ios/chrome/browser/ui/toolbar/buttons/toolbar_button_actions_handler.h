@@ -9,6 +9,7 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@protocol FindInPageCommands;
 @protocol OmniboxFocuser;
 
 // Handler for the actions associated with the different toolbar buttons.
@@ -16,7 +17,7 @@
 
 // Dispatcher for the actions.
 @property(nonatomic, weak)
-    id<ApplicationCommands, BrowserCommands, OmniboxFocuser>
+    id<ApplicationCommands, BrowserCommands, FindInPageCommands, OmniboxFocuser>
         dispatcher;
 
 // Whether this handler is created in incognito.

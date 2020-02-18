@@ -27,3 +27,24 @@ source_set("add_account_signin") {
   public_deps =
       [ "//ios/chrome/browser/ui/authentication/signin:signin_headers" ]
 }
+
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [ "add_account_signin_mediator_unittest.mm" ]
+  deps = [
+    ":add_account_signin",
+    "//base/test:test_support",
+    "//components/prefs",
+    "//components/prefs:test_support",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/chrome/browser/signin",
+    "//ios/public/provider/chrome/browser/signin",
+    "//ios/public/provider/chrome/browser/signin:fake_chrome_identity",
+    "//ios/public/provider/chrome/browser/signin:test_support",
+    "//ios/web/public/test",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
+}

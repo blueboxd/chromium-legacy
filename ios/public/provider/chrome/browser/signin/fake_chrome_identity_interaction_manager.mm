@@ -6,6 +6,7 @@
 
 #include "base/mac/scoped_block.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/signin/chrome_identity_interaction_manager.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_interaction_manager_constants.h"
 #import "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/signin_error_provider.h"
@@ -26,10 +27,6 @@
   UIViewController* _viewController;
   BOOL _isCanceling;
 }
-
-- (void)addAccountViewControllerDidTapSignIn:(FakeAddAccountViewController*)vc;
-
-- (void)addAccountViewControllerDidTapCancel:(FakeAddAccountViewController*)vc;
 
 @end
 
@@ -89,11 +86,11 @@
 }
 
 - (void)didTapSignIn:(id)sender {
-  [_manager addAccountViewControllerDidTapSignIn:self];
+  [_manager addAccountViewControllerDidTapSignIn];
 }
 
 - (void)didTapCancel:(id)sender {
-  [_manager addAccountViewControllerDidTapCancel:self];
+  [_manager addAccountViewControllerDidTapCancel];
 }
 
 @end
@@ -129,14 +126,19 @@
   _isCanceling = NO;
 }
 
-- (void)addAccountViewControllerDidTapSignIn:(FakeAddAccountViewController*)vc {
+- (void)addAccountViewControllerDidTapSignIn {
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()
       ->AddIdentity(_fakeIdentity);
   [self dismissAndRunCompletionCallbackWithError:nil animated:YES];
 }
 
-- (void)addAccountViewControllerDidTapCancel:(FakeAddAccountViewController*)vc {
+- (void)addAccountViewControllerDidTapCancel {
   [self dismissAndRunCompletionCallbackWithError:[self canceledError]
+                                        animated:YES];
+}
+
+- (void)addAccountViewControllerDidThrowUnhandledError {
+  [self dismissAndRunCompletionCallbackWithError:[self unhandledError]
                                         animated:YES];
 }
 
@@ -172,6 +174,10 @@
   return [NSError errorWithDomain:provider->GetSigninErrorDomain()
                              code:provider->GetCode(ios::SigninError::CANCELED)
                          userInfo:nil];
+}
+
+- (NSError*)unhandledError {
+  return [NSError errorWithDomain:@"" code:-1 userInfo:nil];
 }
 
 @end

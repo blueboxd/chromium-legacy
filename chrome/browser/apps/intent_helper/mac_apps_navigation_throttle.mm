@@ -57,8 +57,11 @@ SFUniversalLink* API_AVAILABLE(macos(10.15)) GetUniversalLink(const GURL& url) {
   if (!safari_services || !SFUniversalLink_class)
     return nil;
 
-  return [[[SFUniversalLink_class alloc]
-      initWithWebpageURL:net::NSURLWithGURL(url)] autorelease];
+  NSURL* nsurl = net::NSURLWithGURL(url);
+  if (!nsurl)
+    return nil;
+
+  return [[[SFUniversalLink_class alloc] initWithWebpageURL:nsurl] autorelease];
 }
 
 base::Optional<IntentPickerAppInfo> AppInfoForUrl(const GURL& url) {

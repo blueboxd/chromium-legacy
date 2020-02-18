@@ -1127,7 +1127,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   // for an SSL error.
   if (web::WKNavigationState::NONE !=
           [self.navigationStates stateForNavigation:navigation] &&
-      !web::IsWKWebViewSSLCertError(context->GetError())) {
+      !(context && web::IsWKWebViewSSLCertError(context->GetError()))) {
     [self.navigationStates removeNavigation:navigation];
   }
 }

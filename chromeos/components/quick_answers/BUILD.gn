@@ -6,6 +6,7 @@ source_set("quick_answers") {
   sources = [
     "quick_answers_client.cc",
     "quick_answers_client.h",
+    "quick_answers_model.cc",
     "quick_answers_model.h",
     "search_result_loader.cc",
     "search_result_loader.h",
@@ -31,6 +32,7 @@ source_set("quick_answers") {
     "//services/data_decoder/public/cpp",
     "//services/network/public/cpp:cpp",
     "//third_party/re2",
+    "//ui/gfx",
   ]
 }
 

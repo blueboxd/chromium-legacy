@@ -500,6 +500,12 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void AdvanceFocusInForm(mojom::blink::FocusType focus_type) final;
   void ReportContentSecurityPolicyViolation(
       network::mojom::blink::CSPViolationPtr csp_violation) final;
+  // Updates the snapshotted policy attributes (sandbox flags and feature policy
+  // container policy) in the frame's FrameOwner. This is used when this frame's
+  // parent is in another process and it dynamically updates this frame's
+  // sandbox flags or container policy. The new policy won't take effect until
+  // the next navigation.
+  void DidUpdateFramePolicy(const FramePolicy& frame_policy) final;
 
   // blink::mojom::LocalMainFrame overrides:
   void SetScaleFactor(float scale) override;

@@ -33,7 +33,8 @@ void UserModel::SetValue(const std::string& identifier,
   }
 }
 
-base::Optional<ValueProto> UserModel::GetValue(const std::string& identifier) {
+base::Optional<ValueProto> UserModel::GetValue(
+    const std::string& identifier) const {
   auto it = values_.find(identifier);
   if (it != values_.end()) {
     return it->second;

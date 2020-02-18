@@ -380,9 +380,9 @@ TEST_F(AppCacheTest, ToFromDatabaseRecords) {
   auto group = base::MakeRefCounted<AppCacheGroup>(service.storage(),
                                                    kManifestUrl, kGroupId);
   AppCacheManifest manifest;
-  EXPECT_TRUE(ParseManifest(
-      kManifestUrl, kManifestScope, true, kData.c_str(), kData.length(),
-      PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest));
+  EXPECT_TRUE(
+      ParseManifest(kManifestUrl, kManifestScope, kData.c_str(), kData.length(),
+                    PARSE_MANIFEST_ALLOWING_DANGEROUS_FEATURES, manifest));
   cache->InitializeWithManifest(&manifest);
   EXPECT_EQ(APPCACHE_NETWORK_NAMESPACE,
             cache->online_whitelist_namespaces_[0].type);

@@ -1993,6 +1993,9 @@ class CORE_EXPORT Document : public ContainerNode,
   UserActionElementSet user_action_elements_;
   Member<RootScrollerController> root_scroller_controller_;
 
+  double overscroll_accumulated_delta_x_ = 0;
+  double overscroll_accumulated_delta_y_ = 0;
+
   uint64_t dom_tree_version_;
   static uint64_t global_tree_version_;
 

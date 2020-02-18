@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/policy/core/common/configuration_policy_provider.h"
+#include "components/policy/core/common/extension_policy_migrator.h"
 #include "components/policy/core/common/policy_bundle.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_export.h"
@@ -30,10 +31,14 @@ class POLICY_EXPORT PolicyServiceImpl
       public ConfigurationPolicyProvider::Observer {
  public:
   using Providers = std::vector<ConfigurationPolicyProvider*>;
+  using Migrators = std::vector<std::unique_ptr<ExtensionPolicyMigrator>>;
 
   // Creates a new PolicyServiceImpl with the list of
   // ConfigurationPolicyProviders, in order of decreasing priority.
-  explicit PolicyServiceImpl(Providers providers);
+  explicit PolicyServiceImpl(
+      Providers providers,
+      Migrators migrators =
+          std::vector<std::unique_ptr<ExtensionPolicyMigrator>>());
 
   // Creates a new PolicyServiceImpl with the list of
   // ConfigurationPolicyProviders, in order of decreasing priority.
@@ -41,7 +46,9 @@ class POLICY_EXPORT PolicyServiceImpl
   // initialization has completed (for any domain) after
   // |UnthrottleInitialization| has been called.
   static std::unique_ptr<PolicyServiceImpl> CreateWithThrottledInitialization(
-      Providers providers);
+      Providers providers,
+      Migrators migrators =
+          std::vector<std::unique_ptr<ExtensionPolicyMigrator>>());
 
   ~PolicyServiceImpl() override;
 
@@ -75,7 +82,9 @@ class POLICY_EXPORT PolicyServiceImpl
   // If |initialization_throttled| is true, this PolicyServiceImpl will only
   // notify observers that initialization has completed (for any domain) after
   // |UnthrottleInitialization| has been called.
-  PolicyServiceImpl(Providers providers, bool initialization_throttled);
+  PolicyServiceImpl(Providers providers,
+                    Migrators migrators,
+                    bool initialization_throttled);
 
   // ConfigurationPolicyProvider::Observer overrides:
   void OnUpdatePolicy(ConfigurationPolicyProvider* provider) override;
@@ -108,6 +117,8 @@ class POLICY_EXPORT PolicyServiceImpl
 
   // The providers, in order of decreasing priority.
   Providers providers_;
+
+  Migrators migrators_;
 
   // Maps each policy namespace to its current policies.
   PolicyBundle policy_bundle_;

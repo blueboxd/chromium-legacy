@@ -111,4 +111,10 @@ void FakeLayerTreeFrameSink::ReturnResourcesHeldByParent() {
   }
 }
 
+void FakeLayerTreeFrameSink::NotifyDidPresentCompositorFrame(
+    uint32_t frame_token,
+    const viz::FrameTimingDetails& details) {
+  client_->DidPresentCompositorFrame(frame_token, details);
+}
+
 }  // namespace cc

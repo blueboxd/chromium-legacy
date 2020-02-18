@@ -23,7 +23,6 @@ class CompositorTimingHistory::UMAReporter {
 
   // Throughput measurements
   virtual void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) = 0;
-  virtual void AddCommitInterval(base::TimeDelta interval) = 0;
   virtual void AddDrawInterval(base::TimeDelta interval) = 0;
 
   // Latency measurements
@@ -299,11 +298,6 @@ class RendererUMAReporter : public CompositorTimingHistory::UMAReporter {
         "Scheduling.Renderer.BeginMainFrameIntervalCritical", interval);
   }
 
-  void AddCommitInterval(base::TimeDelta interval) override {
-    UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED(
-        "Scheduling.Renderer.CommitInterval", interval);
-  }
-
   void AddDrawInterval(base::TimeDelta interval) override {
     UMA_HISTOGRAM_CUSTOM_TIMES_VSYNC_ALIGNED("Scheduling.Renderer.DrawInterval",
                                              interval);
@@ -402,10 +396,6 @@ class BrowserUMAReporter : public CompositorTimingHistory::UMAReporter {
   // side because browser rendering fps is not at 60.
   void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) override {}
 
-  // CommitInterval is not meaningful to measure on browser side because
-  // browser rendering fps is not at 60.
-  void AddCommitInterval(base::TimeDelta interval) override {}
-
   // DrawInterval is not meaningful to measure on browser side because
   // browser rendering fps is not at 60.
   void AddDrawInterval(base::TimeDelta interval) override {}
@@ -477,7 +467,6 @@ class NullUMAReporter : public CompositorTimingHistory::UMAReporter {
  public:
   ~NullUMAReporter() override = default;
   void AddBeginMainFrameIntervalCritical(base::TimeDelta interval) override {}
-  void AddCommitInterval(base::TimeDelta interval) override {}
   void AddDrawInterval(base::TimeDelta interval) override {}
   void AddDrawIntervalWithCompositedAnimations(
       base::TimeDelta inverval) override {}
@@ -515,7 +504,6 @@ CompositorTimingHistory::CompositorTimingHistory(
       enabled_(false),
       did_send_begin_main_frame_(false),
       begin_main_frame_needed_continuously_(false),
-      begin_main_frame_committing_continuously_(false),
       compositor_drawing_continuously_(false),
       begin_main_frame_queue_duration_history_(kDurationHistorySize),
       begin_main_frame_queue_duration_critical_history_(kDurationHistorySize),
@@ -583,15 +571,6 @@ void CompositorTimingHistory::SetBeginMainFrameNeededContinuously(bool active) {
     return;
   begin_main_frame_end_time_prev_ = base::TimeTicks();
   begin_main_frame_needed_continuously_ = active;
-}
-
-void CompositorTimingHistory::SetBeginMainFrameCommittingContinuously(
-    bool active) {
-  if (active == begin_main_frame_committing_continuously_)
-    return;
-  new_active_tree_draw_end_time_prev_committing_continuously_ =
-      base::TimeTicks();
-  begin_main_frame_committing_continuously_ = active;
 }
 
 void CompositorTimingHistory::SetCompositorDrawingContinuously(bool active) {
@@ -679,7 +658,6 @@ void CompositorTimingHistory::WillBeginImplFrame(
   // middle of every frame.
   if (!new_active_tree_is_likely && !did_send_begin_main_frame_) {
     SetBeginMainFrameNeededContinuously(false);
-    SetBeginMainFrameCommittingContinuously(false);
   }
 
   if (frame_type == viz::BeginFrameArgs::NORMAL)
@@ -698,7 +676,6 @@ void CompositorTimingHistory::WillFinishImplFrame(bool needs_redraw,
 
 void CompositorTimingHistory::BeginImplFrameNotExpectedSoon() {
   SetBeginMainFrameNeededContinuously(false);
-  SetBeginMainFrameCommittingContinuously(false);
   SetCompositorDrawingContinuously(false);
 }
 
@@ -727,7 +704,6 @@ void CompositorTimingHistory::BeginMainFrameStarted(
 void CompositorTimingHistory::BeginMainFrameAborted(
     const viz::BeginFrameId& id) {
   compositor_frame_reporting_controller_->BeginMainFrameAborted(id);
-  SetBeginMainFrameCommittingContinuously(false);
   base::TimeTicks begin_main_frame_end_time = Now();
   DidBeginMainFrame(begin_main_frame_end_time);
   begin_main_frame_frame_time_ = base::TimeTicks();
@@ -755,7 +731,6 @@ void CompositorTimingHistory::DidCommit() {
 
   compositor_frame_reporting_controller_->DidCommit();
 
-  SetBeginMainFrameCommittingContinuously(true);
   base::TimeTicks begin_main_frame_end_time = Now();
   DidBeginMainFrame(begin_main_frame_end_time);
   commit_duration_history_.InsertSample(begin_main_frame_end_time -
@@ -997,18 +972,6 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
         current_frame_had_raf && next_frame_has_pending_raf;
 
     new_active_tree_draw_end_time_prev_ = draw_end_time;
-
-    if (begin_main_frame_committing_continuously_) {
-      if (!new_active_tree_draw_end_time_prev_committing_continuously_
-               .is_null()) {
-        base::TimeDelta draw_interval =
-            draw_end_time -
-            new_active_tree_draw_end_time_prev_committing_continuously_;
-        uma_reporter_->AddCommitInterval(draw_interval);
-      }
-      new_active_tree_draw_end_time_prev_committing_continuously_ =
-          draw_end_time;
-    }
   }
   draw_start_time_ = base::TimeTicks();
 }

@@ -13,12 +13,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.autofill_assistant.EditDistance;
-import org.chromium.ui.modelutil.ListModel;
-import org.chromium.ui.modelutil.RecyclerViewAdapter;
-import org.chromium.ui.modelutil.SimpleRecyclerViewMcp;
-
-import java.util.List;
 
 /**
  * A coordinator responsible for suggesting chips to the user. If there is one chip to display, it
@@ -42,14 +36,13 @@ import java.util.List;
  * |               |
  */
 public class AssistantActionsCarouselCoordinator {
-    private final AssistantCarouselModel mModel;
     private final RecyclerView mView;
 
     public AssistantActionsCarouselCoordinator(Context context, AssistantCarouselModel model) {
-        mModel = model;
-
         mView = new RecyclerView(context);
         mView.setTag(RECYCLER_VIEW_TAG);
+        AssistantChipAdapter chipAdapter = new AssistantChipAdapter();
+        mView.setAdapter(chipAdapter);
 
         CustomLayoutManager layoutManager = new CustomLayoutManager();
         // Workaround for b/128679161.
@@ -70,75 +63,15 @@ public class AssistantActionsCarouselCoordinator {
                                 * context.getResources().getDimensionPixelSize(
                                         R.dimen.autofill_assistant_button_bg_vertical_inset)));
 
-        mView.setAdapter(new RecyclerViewAdapter<>(
-                new SimpleRecyclerViewMcp<>(model.getChipsModel(),
-                        AssistantChipViewHolder::getViewType, AssistantChipViewHolder::bind),
-                AssistantChipViewHolder::create));
+        model.addObserver((source, propertyKey) -> {
+            if (propertyKey == AssistantCarouselModel.CHIPS) {
+                chipAdapter.setChips(model.get(AssistantCarouselModel.CHIPS));
+            }
+        });
     }
 
     public RecyclerView getView() {
         return mView;
-    }
-
-    public void updateChips(List<AssistantChip> newChips) {
-        ListModel<AssistantChip> oldChips = mModel.getChipsModel();
-        if (!areChipsEqual(oldChips, newChips)) {
-            // We apply the minimum set of operations on the current chips to transform it in the
-            // target list of chips. When testing for chip equivalence, we only compare their type
-            // and text but all substitutions will still be applied so we are sure we display the
-            // given {@code chips} with their associated callbacks.
-            EditDistance.transform(oldChips, newChips, AssistantChip::equals);
-        } else {
-            for (int i = 0; i < oldChips.size(); ++i) {
-                AssistantChip oldChip = oldChips.get(i);
-                AssistantChip newChip = newChips.get(i);
-
-                // We assume that the enabled state is the only thing that may change.
-                if (oldChip.isDisabled() == newChip.isDisabled()) {
-                    continue;
-                }
-
-                View view = mView.getLayoutManager().findViewByPosition(i);
-                if (view == null) {
-                    oldChips.update(i, newChip);
-                } else {
-                    oldChip.setDisabled(newChip.isDisabled());
-                    view.setEnabled(!newChip.isDisabled());
-                }
-            }
-        }
-    }
-
-    /** Changes the visibility of all chips not matching the identifier **/
-    public void setAllChipsVisibleExcept(String identifier, boolean visible) {
-        ListModel<AssistantChip> chips = mModel.getChipsModel();
-        for (int i = 0; i < chips.size(); ++i) {
-            View view = mView.getLayoutManager().findViewByPosition(i);
-            if (view != null && !chips.get(i).getIdentifier().equals(identifier)) {
-                view.setVisibility(visible ? View.VISIBLE : View.GONE);
-            }
-        }
-    }
-
-    /**
-     * Returns |true| if all chips in the list are considered equal, meaning the same except their
-     * |isDisabled()| state.
-     */
-    private boolean areChipsEqual(ListModel<AssistantChip> oldChips, List<AssistantChip> newChips) {
-        if (oldChips.size() != newChips.size()) {
-            return false;
-        }
-
-        for (int i = 0; i < oldChips.size(); ++i) {
-            AssistantChip oldChip = oldChips.get(i);
-            AssistantChip newChip = newChips.get(i);
-
-            if (!oldChip.equals(newChip)) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     // TODO(crbug.com/806868): Handle RTL layouts.

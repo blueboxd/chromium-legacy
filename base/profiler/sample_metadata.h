@@ -105,6 +105,25 @@ BASE_EXPORT void RemoveSampleMetadata(StringPiece name);
 // If such an item doesn't exist, this has no effect.
 BASE_EXPORT void RemoveSampleMetadata(StringPiece name, int64_t key);
 
+// Applies the specified metadata to samples already recorded between
+// |period_start| and |period_end| in all thread's active profiles, subject to
+// the condition that the profile fully encompasses the period and the profile
+// has not already completed. The condition ensures that the metadata is applied
+// only if all execution during its scope was seen in the profile. This avoids
+// biasng the samples towards the 'middle' of the execution seen during the
+// metadata scope (i.e. because the start or end of execution was missed), at
+// the cost of missing execution that are longer than the profiling period, or
+// extend before or after it. |period_end| must be <= TimeTicks::Now().
+BASE_EXPORT void ApplyMetadataToPastSamples(TimeTicks period_start,
+                                            TimeTicks period_end,
+                                            StringPiece name,
+                                            int64_t value);
+BASE_EXPORT void ApplyMetadataToPastSamples(TimeTicks period_start,
+                                            TimeTicks period_end,
+                                            StringPiece name,
+                                            int64_t key,
+                                            int64_t value);
+
 // Returns the process-global metadata recorder instance used for tracking
 // sampling profiler metadata.
 //

@@ -591,34 +591,41 @@ TEST_F(CollectUserDataActionTest, ContactDetailsCanHandleUtf8) {
 TEST_F(CollectUserDataActionTest, UserDataComplete_Contact) {
   UserData user_data;
   CollectUserDataOptions options;
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
 
   options.contact_details_name = "profile";
   user_data.selected_addresses_["profile"] =
       std::make_unique<autofill::AutofillProfile>(base::GenerateGUID(),
                                                   kFakeUrl);
   options.request_payer_email = true;
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                         options));
 
   user_data.selected_addresses_["profile"]->SetRawInfo(
       autofill::ServerFieldType::EMAIL_ADDRESS,
       base::UTF8ToUTF16("joedoe@example.com"));
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
 
   options.request_payer_name = true;
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                         options));
 
   user_data.selected_addresses_["profile"]->SetRawInfo(
       autofill::ServerFieldType::NAME_FULL, base::UTF8ToUTF16("Joe Doe"));
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
 
   options.request_payer_phone = true;
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                         options));
 
   user_data.selected_addresses_["profile"]->SetRawInfo(
       autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER,
       base::UTF8ToUTF16("+1 23 456 789 01"));
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
 }
 
 TEST_F(CollectUserDataActionTest, UserDataComplete_Payment) {
@@ -627,7 +634,8 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_Payment) {
 
   options.request_payment_method = true;
   options.billing_address_name = "billing_address";
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                         options));
 
   // Valid credit card, but no billing address.
   user_data.selected_card_ =
@@ -636,7 +644,8 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_Payment) {
                                     "Marion Mitchell", "4111 1111 1111 1111",
                                     "01", "2050",
                                     /* billing_address_id = */ "");
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                         options));
 
   // Incomplete billing address.
   user_data.selected_addresses_["billing_address"] =
@@ -649,30 +658,36 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_Payment) {
       /* zipcode = */ "", "US", "16505678910");
   user_data.selected_card_->set_billing_address_id(
       user_data.selected_addresses_["billing_address"]->guid());
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                         options));
 
   user_data.selected_addresses_["billing_address"]->SetRawInfo(
       autofill::ADDRESS_HOME_ZIP, base::UTF8ToUTF16("91601"));
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
 
   // Zip code is optional in Argentinian address.
   user_data.selected_addresses_["billing_address"]->SetRawInfo(
       autofill::ADDRESS_HOME_ZIP, base::UTF8ToUTF16(""));
   user_data.selected_addresses_["billing_address"]->SetRawInfo(
       autofill::ADDRESS_HOME_COUNTRY, base::UTF8ToUTF16("AR"));
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
 
   options.require_billing_postal_code = true;
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                         options));
 
   user_data.selected_addresses_["billing_address"]->SetRawInfo(
       autofill::ADDRESS_HOME_ZIP, base::UTF8ToUTF16("B1675"));
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
 
   // Expired credit card.
   user_data.selected_card_->SetRawInfo(autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR,
                                        base::UTF8ToUTF16("2019"));
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                         options));
 }
 
 TEST_F(CollectUserDataActionTest, UserDataComplete_Terms) {
@@ -680,13 +695,16 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_Terms) {
   CollectUserDataOptions options;
 
   options.accept_terms_and_conditions_text.assign("Accept T&C");
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                         options));
 
   user_data.terms_and_conditions_ = REQUIRES_REVIEW;
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
 
   user_data.terms_and_conditions_ = ACCEPTED;
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
 }
 
 TEST_F(CollectUserDataActionTest, UserDataComplete_Login) {
@@ -694,10 +712,12 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_Login) {
   CollectUserDataOptions options;
 
   options.request_login_choice = true;
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                         options));
 
   user_data.login_choice_identifier_.assign("1");
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
 }
 
 TEST_F(CollectUserDataActionTest, UserDataComplete_ShippingAddress) {
@@ -705,7 +725,8 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_ShippingAddress) {
   CollectUserDataOptions options;
   options.request_shipping = true;
   options.shipping_address_name = "shipping_address";
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                         options));
 
   // Incomplete address.
   user_data.selected_addresses_["shipping_address"] =
@@ -716,11 +737,13 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_ShippingAddress) {
       "Mitchell", "Morrison", "marion@me.xyz", "Fox", "123 Zoo St.", "unit 5",
       "Hollywood", "CA",
       /* zipcode = */ "", "US", "16505678910");
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                         options));
 
   user_data.selected_addresses_["shipping_address"]->SetRawInfo(
       autofill::ADDRESS_HOME_ZIP, base::UTF8ToUTF16("91601"));
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
 }
 
 TEST_F(CollectUserDataActionTest, UserDataComplete_DateTimeRange) {
@@ -744,44 +767,76 @@ TEST_F(CollectUserDataActionTest, UserDataComplete_DateTimeRange) {
   user_data.date_time_range_end_timeslot_ = 0;
 
   // Initial selection is valid.
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
 
   // Start date not before end date is not ok.
   SetDateProto(&*user_data.date_time_range_start_date_, 2020, 2, 7);
   SetDateProto(&*user_data.date_time_range_end_date_, 2020, 1, 15);
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                         options));
 
   // Same date with end time > start time is ok.
   SetDateProto(&*user_data.date_time_range_start_date_, 2020, 1, 15);
   SetDateProto(&*user_data.date_time_range_end_date_, 2020, 1, 15);
   user_data.date_time_range_start_timeslot_ = 0;
   user_data.date_time_range_end_timeslot_ = 1;
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
 
   // Same date and same time is not ok.
   user_data.date_time_range_start_timeslot_ = 0;
   user_data.date_time_range_end_timeslot_ = 0;
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                         options));
 
   // Same date and start time > end time is not ok.
   user_data.date_time_range_start_timeslot_ = 1;
   user_data.date_time_range_end_timeslot_ = 0;
-  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                         options));
 
   // Start date before end date is ok.
   SetDateProto(&*user_data.date_time_range_start_date_, 2020, 3, 1);
   SetDateProto(&*user_data.date_time_range_end_date_, 2020, 3, 31);
   user_data.date_time_range_start_timeslot_ = 0;
   user_data.date_time_range_end_timeslot_ = 1;
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
   user_data.date_time_range_start_timeslot_ = 1;
   user_data.date_time_range_end_timeslot_ = 0;
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
 
   // Proper date comparison across years.
   SetDateProto(&*user_data.date_time_range_start_date_, 2019, 11, 10);
   SetDateProto(&*user_data.date_time_range_end_date_, 2020, 1, 5);
-  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, options));
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
+}
+
+TEST_F(CollectUserDataActionTest,
+       UserDataComplete_ChecksGenericUiCompleteness) {
+  UserData user_data;
+  CollectUserDataOptions options;
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
+
+  options.additional_model_identifier_to_check = "generic_ui_valid";
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                         options));
+
+  ValueProto invalid;
+  invalid.mutable_booleans()->add_values(false);
+  user_model_.SetValue("generic_ui_valid", invalid);
+  EXPECT_FALSE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                         options));
+
+  ValueProto valid;
+  valid.mutable_booleans()->add_values(true);
+  user_model_.SetValue("generic_ui_valid", valid);
+  EXPECT_TRUE(CollectUserDataAction::IsUserDataComplete(user_data, user_model_,
+                                                        options));
 }
 
 TEST_F(CollectUserDataActionTest, SelectDateTimeRange) {

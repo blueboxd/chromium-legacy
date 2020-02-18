@@ -32,6 +32,7 @@ android_library("weblayer_shell_java") {
   ]
   sources = [
     "shell_apk/src/org/chromium/weblayer/shell/InstrumentationActivity.java",
+    "shell_apk/src/org/chromium/weblayer/shell/TelemetryActivity.java",
     "shell_apk/src/org/chromium/weblayer/shell/WebLayerShellActivity.java",
   ]
 }

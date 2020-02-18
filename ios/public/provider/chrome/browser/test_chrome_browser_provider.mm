@@ -12,6 +12,7 @@
 #include "ios/public/provider/chrome/browser/mailto/test_mailto_handler_provider.h"
 #include "ios/public/provider/chrome/browser/omaha/test_omaha_service_provider.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
+#include "ios/public/provider/chrome/browser/signin/signin_error_provider.h"
 #include "ios/public/provider/chrome/browser/signin/test_signin_resources_provider.h"
 #import "ios/public/provider/chrome/browser/spotlight/test_spotlight_provider.h"
 #import "ios/public/provider/chrome/browser/ui/fullscreen_provider.h"
@@ -30,6 +31,7 @@ TestChromeBrowserProvider::TestChromeBrowserProvider()
           std::make_unique<TestAppDistributionProvider>()),
       branded_image_provider_(std::make_unique<TestBrandedImageProvider>()),
       omaha_service_provider_(std::make_unique<TestOmahaServiceProvider>()),
+      signin_error_provider_(std::make_unique<SigninErrorProvider>()),
       signin_resources_provider_(
           std::make_unique<TestSigninResourcesProvider>()),
       voice_search_provider_(std::make_unique<TestVoiceSearchProvider>()),
@@ -55,6 +57,10 @@ TestChromeBrowserProvider::GetSigninResourcesProvider() {
 void TestChromeBrowserProvider::SetChromeIdentityServiceForTesting(
     std::unique_ptr<ChromeIdentityService> service) {
   chrome_identity_service_.swap(service);
+}
+
+SigninErrorProvider* TestChromeBrowserProvider::GetSigninErrorProvider() {
+  return signin_error_provider_.get();
 }
 
 ChromeIdentityService* TestChromeBrowserProvider::GetChromeIdentityService() {

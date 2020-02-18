@@ -129,7 +129,14 @@ ChromeIdentityInteractionManager*
 FakeChromeIdentityService::CreateChromeIdentityInteractionManager(
     ChromeBrowserState* browser_state,
     id<ChromeIdentityInteractionManagerDelegate> delegate) const {
-  ChromeIdentityInteractionManager* manager =
+  return CreateFakeChromeIdentityInteractionManager(browser_state, delegate);
+}
+
+FakeChromeIdentityInteractionManager*
+FakeChromeIdentityService::CreateFakeChromeIdentityInteractionManager(
+    ChromeBrowserState* browser_state,
+    id<ChromeIdentityInteractionManagerDelegate> delegate) const {
+  FakeChromeIdentityInteractionManager* manager =
       [[FakeChromeIdentityInteractionManager alloc] init];
   manager.delegate = delegate;
   return manager;

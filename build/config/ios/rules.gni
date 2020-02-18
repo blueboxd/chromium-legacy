@@ -628,10 +628,10 @@ template("ios_app_bundle") {
     }
     deps += [ ":$_arch_executable_source" ]
 
-    if (!defined(libs)) {
-      libs = []
+    if (!defined(frameworks)) {
+      frameworks = []
     }
-    libs += [ "UIKit.framework" ]
+    frameworks += [ "UIKit.framework" ]
 
     if (!defined(ldflags)) {
       ldflags = []
@@ -1201,11 +1201,7 @@ template("ios_framework_bundle") {
     _framework_headers_target = _target_name + "_framework_headers"
     _framework_headers_config = _target_name + "_framework_headers_config"
     config(_framework_headers_config) {
-      # The link settings are inherited from the framework_bundle config.
-      cflags = [
-        "-F",
-        rebase_path("$_default_toolchain_root_out_dir/.", root_build_dir),
-      ]
+      framework_dirs = [ _default_toolchain_root_out_dir ]
     }
 
     _headers_map_config = _target_name + "_headers_map"
@@ -1224,15 +1220,8 @@ template("ios_framework_bundle") {
 
   _framework_public_config = _target_name + "_public_config"
   config(_framework_public_config) {
-    # TODO(sdefresne): should we have a framework_dirs similar to lib_dirs
-    # and include_dirs to avoid duplicate values on the command-line.
-    visibility = [ ":${_target_name}_signed_bundle" ]
-    ldflags = [
-      "-F",
-      rebase_path("$_default_toolchain_root_out_dir/.", root_build_dir),
-    ]
-    lib_dirs = [ root_out_dir ]
-    libs = [ "$_output_name.framework" ]
+    configs = [ ":$_framework_headers_config" ]
+    frameworks = [ "$_output_name.framework" ]
   }
 
   source_set(_arch_shared_library_source) {
@@ -1247,16 +1236,14 @@ template("ios_framework_bundle") {
                              "info_plist",
                              "info_plist_target",
                              "output_name",
+                             "public_configs",
                              "visibility",
                            ])
 
     visibility = [ ":$_arch_shared_library_target" ]
 
     if (_has_public_headers) {
-      configs += [
-        ":$_framework_headers_config",
-        ":$_headers_map_config",
-      ]
+      configs += [ ":$_headers_map_config" ]
 
       if (!defined(deps)) {
         deps = []
@@ -1278,6 +1265,7 @@ template("ios_framework_bundle") {
                              "info_plist_target",
                              "output_name",
                              "sources",
+                             "public_configs",
                              "visibility",
                            ])
 

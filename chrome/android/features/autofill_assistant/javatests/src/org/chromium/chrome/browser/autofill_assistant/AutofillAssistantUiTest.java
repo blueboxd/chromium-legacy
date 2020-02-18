@@ -221,7 +221,7 @@ public class AutofillAssistantUiTest {
                 new AssistantChip(AssistantChip.Type.CHIP_ASSISTIVE, AssistantChip.Icon.NONE,
                         "chip 1",
                         /* disabled= */ false, /* sticky= */ false, "", mRunnableMock));
-        ThreadUtils.runOnUiThreadBlocking(() -> carouselModel.getChipsModel().set(chips));
+        ThreadUtils.runOnUiThreadBlocking(() -> carouselModel.setChips(chips));
         RecyclerView chipsViewContainer = carouselCoordinator.getView();
         Assert.assertEquals(2, chipsViewContainer.getAdapter().getItemCount());
 

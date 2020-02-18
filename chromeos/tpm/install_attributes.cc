@@ -191,10 +191,9 @@ void InstallAttributes::ReadAttributesIfReady(base::OnceClosure callback,
       device_locked_ = true;
 
       static const char* const kEnterpriseAttributes[] = {
-          kAttrEnterpriseDeviceId,   kAttrEnterpriseDomain,
-          kAttrEnterpriseRealm,      kAttrEnterpriseMode,
-          kAttrEnterpriseOwned,      kAttrEnterpriseUser,
-          kAttrConsumerKioskEnabled,
+          kAttrEnterpriseDeviceId, kAttrEnterpriseDomain,
+          kAttrEnterpriseRealm,    kAttrEnterpriseMode,
+          kAttrEnterpriseUser,     kAttrConsumerKioskEnabled,
       };
       std::map<std::string, std::string> attr_map;
       for (size_t i = 0; i < base::size(kEnterpriseAttributes); ++i) {
@@ -320,16 +319,12 @@ void InstallAttributes::LockDeviceIfAttributesIsReady(
   }
 
   // Set values in the InstallAttrs.
-  std::string kiosk_enabled, enterprise_owned;
-  if (device_mode == policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH) {
+  std::string kiosk_enabled;
+  if (device_mode == policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH)
     kiosk_enabled = "true";
-  } else {
-    enterprise_owned = "true";
-  }
   std::string mode = GetDeviceModeString(device_mode);
   if (!tpm_util::InstallAttributesSet(kAttrConsumerKioskEnabled,
                                       kiosk_enabled) ||
-      !tpm_util::InstallAttributesSet(kAttrEnterpriseOwned, enterprise_owned) ||
       !tpm_util::InstallAttributesSet(kAttrEnterpriseMode, mode) ||
       !tpm_util::InstallAttributesSet(kAttrEnterpriseDomain, domain) ||
       !tpm_util::InstallAttributesSet(kAttrEnterpriseRealm, realm) ||
@@ -461,7 +456,6 @@ const char InstallAttributes::kAttrEnterpriseDeviceId[] =
 const char InstallAttributes::kAttrEnterpriseDomain[] = "enterprise.domain";
 const char InstallAttributes::kAttrEnterpriseRealm[] = "enterprise.realm";
 const char InstallAttributes::kAttrEnterpriseMode[] = "enterprise.mode";
-const char InstallAttributes::kAttrEnterpriseOwned[] = "enterprise.owned";
 const char InstallAttributes::kAttrEnterpriseUser[] = "enterprise.user";
 const char InstallAttributes::kAttrConsumerKioskEnabled[] =
     "consumer.app_kiosk_enabled";
@@ -512,7 +506,10 @@ policy::DeviceMode InstallAttributes::GetDeviceModeFromString(
     return policy::DEVICE_MODE_CONSUMER_KIOSK_AUTOLAUNCH;
   if (mode == InstallAttributes::kDemoDeviceMode)
     return policy::DEVICE_MODE_DEMO;
-  return policy::DEVICE_MODE_NOT_SET;
+  if (mode.empty())
+    return policy::DEVICE_MODE_NOT_SET;
+  NOTREACHED() << "Invalid device mode: " << mode;
+  return policy::DEVICE_MODE_ENTERPRISE;
 }
 
 void InstallAttributes::DecodeInstallAttributes(
@@ -523,8 +520,6 @@ void InstallAttributes::DecodeInstallAttributes(
   registration_realm_.clear();
   registration_device_id_.clear();
 
-  const std::string enterprise_owned =
-      ReadMapKey(attr_map, kAttrEnterpriseOwned);
   const std::string consumer_kiosk_enabled =
       ReadMapKey(attr_map, kAttrConsumerKioskEnabled);
   const std::string mode = ReadMapKey(attr_map, kAttrEnterpriseMode);
@@ -533,20 +528,13 @@ void InstallAttributes::DecodeInstallAttributes(
   const std::string device_id = ReadMapKey(attr_map, kAttrEnterpriseDeviceId);
   const std::string user_deprecated = ReadMapKey(attr_map, kAttrEnterpriseUser);
 
-  if (enterprise_owned == "true") {
+  registration_mode_ = GetDeviceModeFromString(mode);
+
+  if (registration_mode_ == policy::DEVICE_MODE_ENTERPRISE ||
+      registration_mode_ == policy::DEVICE_MODE_ENTERPRISE_AD ||
+      registration_mode_ == policy::DEVICE_MODE_DEMO) {
     WarnIfNonempty(attr_map, kAttrConsumerKioskEnabled);
     registration_device_id_ = device_id;
-
-    // Set registration_mode_.
-    registration_mode_ = GetDeviceModeFromString(mode);
-    if (registration_mode_ != policy::DEVICE_MODE_ENTERPRISE &&
-        registration_mode_ != policy::DEVICE_MODE_ENTERPRISE_AD &&
-        registration_mode_ != policy::DEVICE_MODE_DEMO) {
-      if (!mode.empty()) {
-        LOG(WARNING) << "Bad " << kAttrEnterpriseMode << ": " << mode;
-      }
-      registration_mode_ = policy::DEVICE_MODE_ENTERPRISE;
-    }
 
     if (registration_mode_ == policy::DEVICE_MODE_ENTERPRISE ||
         registration_mode_ == policy::DEVICE_MODE_DEMO) {
@@ -574,7 +562,6 @@ void InstallAttributes::DecodeInstallAttributes(
     return;
   }
 
-  WarnIfNonempty(attr_map, kAttrEnterpriseOwned);
   WarnIfNonempty(attr_map, kAttrEnterpriseDomain);
   WarnIfNonempty(attr_map, kAttrEnterpriseRealm);
   WarnIfNonempty(attr_map, kAttrEnterpriseDeviceId);

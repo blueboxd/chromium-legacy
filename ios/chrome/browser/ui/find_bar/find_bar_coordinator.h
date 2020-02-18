@@ -8,11 +8,12 @@
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 
 @class FindBarControllerIOS;
+@class FindBarCoordinator;
 @class ToolbarAccessoryPresenter;
 @protocol ToolbarAccessoryCoordinatorDelegate;
 
 // Coordinator for the Find Bar and the Find In page feature. Currently, this
-// is mostly a collection of code extracted from BrowserViewController, and not
+// is mostly a collection of code extracted from BrowserViewController and not
 // a good example of the ideal coordinator architecture.
 @interface FindBarCoordinator : ChromeCoordinator
 

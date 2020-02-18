@@ -21,9 +21,9 @@ source_set("core") {
     "//base:base",
     "//fuchsia/base",
     "//net:net",
-    "//third_party/fuchsia-sdk/sdk:sys_cpp",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.net.oldhttp",
     "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
+    "//third_party/fuchsia-sdk/sdk/pkg/sys_cpp",
   ]
   visibility = [ ":*" ]
 }

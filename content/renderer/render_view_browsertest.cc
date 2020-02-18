@@ -534,8 +534,7 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
     EXPECT_EQ(height, emulated_height);
     EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(get_dpr, &emulated_dpr));
     EXPECT_EQ(static_cast<int>(dpr * 10), emulated_dpr);
-    cc::LayerTreeHost* host =
-        main_widget()->layer_tree_view()->layer_tree_host();
+    cc::LayerTreeHost* host = main_widget()->layer_tree_host();
     EXPECT_EQ(compositor_dsf, host->device_scale_factor());
   }
 };

@@ -231,7 +231,7 @@ TEST_F(RenderWidgetTest, PageFocusIme) {
 // not propagated to the LayerTreeHost when properties are synced for main
 // frame.
 TEST_F(RenderWidgetTest, ActivePinchGestureUpdatesLayerTreeHost) {
-  auto* layer_tree_host = widget()->layer_tree_view()->layer_tree_host();
+  auto* layer_tree_host = widget()->layer_tree_host();
   EXPECT_FALSE(layer_tree_host->is_external_pinch_gesture_active_for_testing());
   content::VisualProperties visual_properties;
 

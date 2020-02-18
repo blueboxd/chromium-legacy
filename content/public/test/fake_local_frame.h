@@ -55,6 +55,7 @@ class FakeLocalFrame : public blink::mojom::LocalFrame {
   void AdvanceFocusInForm(blink::mojom::FocusType focus_type) override;
   void ReportContentSecurityPolicyViolation(
       network::mojom::CSPViolationPtr violation) override;
+  void DidUpdateFramePolicy(const blink::FramePolicy& frame_policy) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

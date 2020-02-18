@@ -17,6 +17,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/test/icu_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/display/manager/display_manager.h"
@@ -680,35 +681,6 @@ TEST_F(ScrollableShelfViewTest, ScrollWithMouseWheel) {
             scrollable_shelf_view_->layout_strategy_for_test());
 }
 
-// Verifies that the shelf is scrolled to show the pinned app after pinning.
-TEST_F(ScrollableShelfViewTest, FeedbackForAppPinning) {
-  AddAppShortcutsUntilOverflow();
-  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
-            scrollable_shelf_view_->layout_strategy_for_test());
-
-  // Pins the icons of running apps to the shelf.
-  const int num = shelf_view_->view_model()->view_size();
-  for (int i = 0; i < 2 * num; i++)
-    AddAppShortcut(ShelfItemType::TYPE_APP);
-
-  // Emulates the process that user pins another app icon. Icons of pinned apps
-  // are placed before those of running apps. So the icon should be located on
-  // the second page.
-  ShelfModel::ScopedUserTriggeredMutation user_triggered(
-      scrollable_shelf_view_->shelf_view()->model());
-  ShelfID shelf_id = AddAppShortcut();
-  const int view_index =
-      shelf_view_->model()->ItemIndexByAppID(shelf_id.app_id);
-  ASSERT_EQ(view_index, num);
-
-  // Scrolls the shelf to show the pinned app. Expects that the shelf is
-  // scrolled to the correct page.
-  EXPECT_LT(view_index, scrollable_shelf_view_->last_tappable_app_index());
-  EXPECT_GT(view_index, scrollable_shelf_view_->first_tappable_app_index());
-  EXPECT_EQ(ScrollableShelfView::kShowButtons,
-            scrollable_shelf_view_->layout_strategy_for_test());
-}
-
 // Verifies that removing a shelf icon by mouse works as expected on scrollable
 // shelf (see https://crbug.com/1033967).
 TEST_F(ScrollableShelfViewTest, RipOffShelfItem) {
@@ -804,6 +776,68 @@ TEST_F(ScrollableShelfViewTest, VerifyScrollEvent) {
                                       scroll_steps, num_fingers);
   EXPECT_EQ(ScrollableShelfView::kShowLeftArrowButton,
             scrollable_shelf_view_->layout_strategy_for_test());
+}
+
+// Tests scrollable shelf's features under both LTR and RTL.
+class ScrollableShelfViewRTLTest : public ScrollableShelfViewTest,
+                                   public testing::WithParamInterface<bool> {
+ public:
+  ScrollableShelfViewRTLTest() : scoped_locale_(GetParam() ? "ar" : "") {}
+  ~ScrollableShelfViewRTLTest() override = default;
+
+ private:
+  base::test::ScopedRestoreICUDefaultLocale scoped_locale_;
+};
+
+INSTANTIATE_TEST_SUITE_P(LtrRTL, ScrollableShelfViewRTLTest, testing::Bool());
+
+// Verifies that the shelf is scrolled to show the pinned app after pinning.
+TEST_P(ScrollableShelfViewRTLTest, FeedbackForAppPinning) {
+  AddAppShortcutsUntilOverflow();
+  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  // |num| is the minimum of app icons to enter overflow mode.
+  const int num = shelf_view_->view_model()->view_size();
+
+  ShelfModel::ScopedUserTriggeredMutation user_triggered(
+      scrollable_shelf_view_->shelf_view()->model());
+
+  {
+    ShelfID shelf_id = AddAppShortcut();
+    const int view_index =
+        shelf_view_->model()->ItemIndexByAppID(shelf_id.app_id);
+    ASSERT_EQ(view_index, num);
+
+    // When shelf only contains pinned apps, expects that the shelf is scrolled
+    // to the last page to show the latest pinned app.
+    EXPECT_EQ(ScrollableShelfView::kShowLeftArrowButton,
+              scrollable_shelf_view_->layout_strategy_for_test());
+  }
+
+  GetEventGenerator()->GestureTapAt(
+      scrollable_shelf_view_->left_arrow()->GetBoundsInScreen().CenterPoint());
+  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  // Pins the icons of running apps to the shelf.
+  for (int i = 0; i < 2 * num; i++)
+    AddAppShortcut(ShelfItemType::TYPE_APP);
+
+  {
+    ShelfID shelf_id = AddAppShortcut();
+    const int view_index =
+        shelf_view_->model()->ItemIndexByAppID(shelf_id.app_id);
+    ASSERT_EQ(view_index, num + 1);
+
+    // Scrolls the shelf to show the pinned app. Expects that the shelf is
+    // scrolled to the correct page. Notes that the pinned app should be placed
+    // ahead of running apps.
+    EXPECT_LT(view_index, scrollable_shelf_view_->last_tappable_app_index());
+    EXPECT_GT(view_index, scrollable_shelf_view_->first_tappable_app_index());
+    EXPECT_EQ(ScrollableShelfView::kShowButtons,
+              scrollable_shelf_view_->layout_strategy_for_test());
+  }
 }
 
 }  // namespace ash

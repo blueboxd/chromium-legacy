@@ -57,9 +57,9 @@ if (is_fuchsia) {
     public_deps = [ "//chromecast/public" ]
     deps = [
       "//base",
-      "//third_party/fuchsia-sdk/sdk:fidl",
-      "//third_party/fuchsia-sdk/sdk:fidl_cpp",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.hardware.power.statecontrol",
+      "//third_party/fuchsia-sdk/sdk/pkg/fidl",
+      "//third_party/fuchsia-sdk/sdk/pkg/fidl_cpp",
     ]
   }
 }

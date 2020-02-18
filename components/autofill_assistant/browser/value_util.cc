@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/autofill_assistant/browser/value_util.h"
+#include <algorithm>
 
 namespace autofill_assistant {
 
@@ -112,6 +113,106 @@ std::ostream& operator<<(std::ostream& out,
                          const ModelProto::ModelValue& value) {
   out << value.identifier() << ": " << value.value();
   return out;
+}
+
+// Convenience constructors.
+ValueProto SimpleValue(bool b) {
+  ValueProto value;
+  value.mutable_booleans()->add_values(b);
+  return value;
+}
+
+ValueProto SimpleValue(const std::string& s) {
+  ValueProto value;
+  value.mutable_strings()->add_values(s);
+  return value;
+}
+
+ValueProto SimpleValue(int i) {
+  ValueProto value;
+  value.mutable_ints()->add_values(i);
+  return value;
+}
+
+bool AreAllValuesOfType(const std::vector<ValueProto>& values,
+                        ValueProto::KindCase target_type) {
+  if (values.empty()) {
+    return false;
+  }
+  for (const auto& value : values) {
+    if (value.kind_case() != target_type) {
+      return false;
+    }
+  }
+  return true;
+}
+
+bool AreAllValuesOfSize(const std::vector<ValueProto>& values,
+                        int target_size) {
+  if (values.empty()) {
+    return false;
+  }
+  for (const auto& value : values) {
+    switch (value.kind_case()) {
+      case ValueProto::kStrings:
+        if (value.strings().values_size() != target_size)
+          return false;
+        break;
+      case ValueProto::kBooleans:
+        if (value.booleans().values_size() != target_size)
+          return false;
+        break;
+      case ValueProto::kInts:
+        if (value.ints().values_size() != target_size)
+          return false;
+        break;
+      case ValueProto::KIND_NOT_SET:
+        if (target_size != 0) {
+          return false;
+        }
+        break;
+    }
+  }
+  return true;
+}
+
+base::Optional<ValueProto> CombineValues(
+    const std::vector<ValueProto>& values) {
+  if (values.empty()) {
+    return base::nullopt;
+  }
+  auto shared_type = values[0].kind_case();
+  if (!AreAllValuesOfType(values, shared_type)) {
+    return base::nullopt;
+  }
+  if (shared_type == ValueProto::KIND_NOT_SET) {
+    return ValueProto();
+  }
+
+  ValueProto result;
+  for (const auto& value : values) {
+    switch (shared_type) {
+      case ValueProto::kStrings:
+        std::for_each(
+            value.strings().values().begin(), value.strings().values().end(),
+            [&](auto& s) { result.mutable_strings()->add_values(s); });
+        break;
+      case ValueProto::kBooleans:
+        std::for_each(
+            value.booleans().values().begin(), value.booleans().values().end(),
+            [&](auto& b) { result.mutable_booleans()->add_values(b); });
+        break;
+      case ValueProto::kInts:
+        std::for_each(
+            value.ints().values().begin(), value.ints().values().end(),
+            [&](const auto& i) { result.mutable_ints()->add_values(i); });
+        break;
+      case ValueProto::KIND_NOT_SET:
+        NOTREACHED();
+        return base::nullopt;
+    }
+  }
+  return result;
 }
 
 }  // namespace autofill_assistant

@@ -13,6 +13,7 @@ source_set("commands") {
     "browsing_data_commands.h",
     "command_dispatcher.h",
     "command_dispatcher.mm",
+    "find_in_page_commands.h",
     "infobar_commands.h",
     "load_query_commands.h",
     "omnibox_suggestion_commands.h",

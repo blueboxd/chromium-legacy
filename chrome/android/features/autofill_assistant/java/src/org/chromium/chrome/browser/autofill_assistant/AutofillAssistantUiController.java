@@ -14,6 +14,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip.Type;
 import org.chromium.chrome.browser.autofill_assistant.header.AssistantHeaderModel;
@@ -296,15 +297,29 @@ class AutofillAssistantUiController {
 
     @CalledByNative
     private void setActions(List<AssistantChip> chips) {
-        setActionChips(chips);
+        // TODO(b/144075373): Move this to AssistantCarouselModel and AssistantHeaderModel. Move
+        // header chip logic to native.
+        AssistantCarouselModel model = getModel().getActionsModel();
+        model.setChips(chips);
         setHeaderChip(chips);
     }
 
     @CalledByNative
     private void setAllChipsVisibleExcept(String identifier, boolean visible) {
-        mCoordinator.getBottomBarCoordinator()
-                .getActionsCarouselCoordinator()
-                .setAllChipsVisibleExcept(identifier, visible);
+        AssistantCarouselModel model = getModel().getActionsModel();
+        List<AssistantChip> chips = model.get(AssistantCarouselModel.CHIPS);
+        // Copy the list and modify the copy. Modifying the actual list in-place will not fire the
+        // relevant change notifications. TODO(b/144075373): Refactor to avoid this deep copy,
+        // preferably by moving this to native.
+        List<AssistantChip> newChips = new ArrayList<>();
+        for (int i = 0; i < chips.size(); ++i) {
+            AssistantChip newChip = new AssistantChip(chips.get(i));
+            newChips.add(newChip);
+            if (!chips.get(i).getIdentifier().equals(identifier)) {
+                newChip.setVisible(visible);
+            }
+        }
+        model.setChips(newChips);
     }
 
     private void setHeaderChip(List<AssistantChip> chips) {
@@ -318,12 +333,6 @@ class AutofillAssistantUiController {
         }
 
         getModel().getHeaderModel().set(AssistantHeaderModel.CHIP, headerChip);
-    }
-
-    private void setActionChips(List<AssistantChip> newChips) {
-        // TODO(b/144075373): Move this to AssistantActionsCarouselCoordinator.
-        mCoordinator.getBottomBarCoordinator().getActionsCarouselCoordinator().updateChips(
-                newChips);
     }
 
     @CalledByNative

@@ -17,6 +17,7 @@
 #include "base/unguessable_token.h"
 #include "build/build_config.h"
 #include "cc/layers/solid_color_layer.h"
+#include "cc/test/fake_layer_tree_frame_sink.h"
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/common/frame_replication_state.h"
@@ -269,6 +270,10 @@ class RenderWidgetUnittest : public testing::Test {
 
   const base::HistogramTester& histogram_tester() const {
     return histogram_tester_;
+  }
+
+  cc::FakeLayerTreeFrameSink* GetFrameSink() {
+    return compositor_deps_.last_created_frame_sink();
   }
 
  private:
@@ -532,7 +537,15 @@ class NotifySwapTimesRenderWidgetUnittest : public RenderWidgetUnittest {
     RenderWidgetUnittest::SetUp();
 
     viz::ParentLocalSurfaceIdAllocator allocator;
-    widget()->layer_tree_view()->SetVisible(true);
+    WidgetMsg_WasShown msg(widget()->routing_id(),
+                           /*show_request_timestamp=*/base::TimeTicks(),
+                           /*was_evicted=*/false,
+                           /*record_tab_switch_time_request=*/base::nullopt);
+    widget()->OnMessageReceived(msg);
+
+    // TODO(danakj): This usually happens through
+    // RenderWidget::OnUpdateVisualProperties() and we are cutting past that for
+    // some reason.
     allocator.GenerateId();
     widget()->layer_tree_host()->SetViewportRectAndScale(
         gfx::Rect(200, 100), 1.f,
@@ -583,12 +596,13 @@ class NotifySwapTimesRenderWidgetUnittest : public RenderWidgetUnittest {
     swap_run_loop.Run();
 
     // Present and wait for it to complete.
-    base::TimeTicks presentation_time;
-    if (!swap_to_presentation.is_zero())
-      presentation_time = swap_time + swap_to_presentation;
-    widget()->layer_tree_view()->DidPresentCompositorFrame(
-        1, gfx::PresentationFeedback(presentation_time,
-                                     base::TimeDelta::FromMilliseconds(16), 0));
+    viz::FrameTimingDetails timing_details;
+    if (!swap_to_presentation.is_zero()) {
+      timing_details.presentation_feedback = gfx::PresentationFeedback(
+          /*presentation_time=*/swap_time + swap_to_presentation,
+          base::TimeDelta::FromMilliseconds(16), 0);
+    }
+    GetFrameSink()->NotifyDidPresentCompositorFrame(1, timing_details);
     presentation_run_loop.Run();
   }
 };

@@ -41,6 +41,7 @@ source_set("test_support") {
     "//ios/public/provider/chrome/browser/images:test_support",
     "//ios/public/provider/chrome/browser/mailto:test_support",
     "//ios/public/provider/chrome/browser/omaha:test_support",
+    "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/public/provider/chrome/browser/spotlight:test_support",
     "//ios/public/provider/chrome/browser/ui",

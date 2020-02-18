@@ -207,15 +207,19 @@ static inline bool FeatureWithoutValue(const String& media_feature) {
          media_feature == media_feature_names::kResolutionMediaFeature ||
          media_feature == media_feature_names::kDisplayModeMediaFeature ||
          media_feature == media_feature_names::kScanMediaFeature ||
-         media_feature == media_feature_names::kShapeMediaFeature ||
+         (media_feature == media_feature_names::kShapeMediaFeature &&
+          RuntimeEnabledFeatures::MediaQueryShapeEnabled()) ||
          media_feature == media_feature_names::kColorGamutMediaFeature ||
          media_feature == media_feature_names::kImmersiveMediaFeature ||
          media_feature ==
              media_feature_names::kPrefersColorSchemeMediaFeature ||
          media_feature ==
              media_feature_names::kPrefersReducedMotionMediaFeature ||
-         media_feature == media_feature_names::kForcedColorsMediaFeature ||
-         media_feature == media_feature_names::kNavigationControlsMediaFeature;
+         (media_feature == media_feature_names::kForcedColorsMediaFeature &&
+          RuntimeEnabledFeatures::ForcedColorsEnabled()) ||
+         (media_feature ==
+              media_feature_names::kNavigationControlsMediaFeature &&
+          RuntimeEnabledFeatures::MediaQueryNavigationControlsEnabled());
 }
 
 bool MediaQueryExp::IsViewportDependent() const {

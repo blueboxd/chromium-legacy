@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/remote_dom_window.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_client.h"
+#include "third_party/blink/renderer/core/frame/remote_frame_owner.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -565,6 +566,27 @@ void RemoteFrame::DidSetFramePolicyHeaders(
     parsed_feature_policy_copy[i] = parsed_feature_policy[i];
   SetReplicatedFeaturePolicyHeaderAndOpenerPolicies(
       parsed_feature_policy_copy, FeaturePolicy::FeatureState());
+}
+
+// Update the proxy's FrameOwner with new sandbox flags and container policy
+// that were set by its parent in another process.
+//
+// Normally, when a frame's sandbox attribute is changed dynamically, the
+// frame's FrameOwner is updated with the new sandbox flags right away, while
+// the frame's SecurityContext is updated when the frame is navigated and the
+// new sandbox flags take effect.
+//
+// Currently, there is no use case for a proxy's pending FrameOwner sandbox
+// flags, so there's no message sent to proxies when the sandbox attribute is
+// first updated.  Instead, the active flags are updated when they take effect,
+// by OnDidSetActiveSandboxFlags. The proxy's FrameOwner flags are updated here
+// with the caveat that the FrameOwner won't learn about updates to its flags
+// until they take effect.
+void RemoteFrame::DidUpdateFramePolicy(const FramePolicy& frame_policy) {
+  // At the moment, this is only used to replicate sandbox flags and container
+  // policy for frames with a remote owner.
+  SECURITY_CHECK(IsA<RemoteFrameOwner>(Owner()));
+  To<RemoteFrameOwner>(Owner())->SetFramePolicy(frame_policy);
 }
 
 void RemoteFrame::SetMainFrameViewportSize(

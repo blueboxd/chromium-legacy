@@ -176,26 +176,23 @@ TestRunner* WebWidgetTestProxy::GetTestRunner() {
   return GetWebViewTestProxy()->test_interfaces()->GetTestRunner();
 }
 
-static void DoComposite(content::RenderWidget* widget, bool do_raster) {
+// static
+void WebWidgetTestProxy::DoComposite(content::RenderWidget* widget,
+                                     bool do_raster) {
   // Ensure that there is damage so that the compositor submits, and the display
   // compositor draws this frame.
   if (do_raster) {
-    content::LayerTreeView* layer_tree_view = widget->layer_tree_view();
-    layer_tree_view->layer_tree_host()->SetNeedsCommitWithForcedRedraw();
+    widget->layer_tree_host()->SetNeedsCommitWithForcedRedraw();
   }
 
-  widget->layer_tree_view()->layer_tree_host()->Composite(
-      base::TimeTicks::Now(), do_raster);
+  widget->layer_tree_host()->Composite(base::TimeTicks::Now(), do_raster);
 }
 
 void WebWidgetTestProxy::SynchronouslyComposite(bool do_raster) {
   DCHECK(!compositor_deps()->GetCompositorImplThreadTaskRunner());
-  DCHECK(!layer_tree_view()
-              ->layer_tree_host()
-              ->GetSettings()
-              .single_thread_proxy_scheduler);
+  DCHECK(!layer_tree_host()->GetSettings().single_thread_proxy_scheduler);
 
-  if (!layer_tree_view()->layer_tree_host()->IsVisible())
+  if (!layer_tree_host()->IsVisible())
     return;
 
   if (in_synchronous_composite_) {

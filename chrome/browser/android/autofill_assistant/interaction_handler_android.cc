@@ -28,6 +28,132 @@ void SetValue(base::WeakPtr<UserModel> user_model,
   user_model->SetValue(identifier, value);
 }
 
+void ComputeValueBooleanAnd(base::WeakPtr<UserModel> user_model,
+                            const BooleanAndProto& proto,
+                            const std::string& result_model_identifier,
+                            const ValueProto& ignored) {
+  if (!user_model) {
+    return;
+  }
+
+  auto values = user_model->GetValues(proto.model_identifiers());
+  if (!values.has_value()) {
+    DVLOG(2) << "Failed to find values in user model";
+    return;
+  }
+
+  if (!AreAllValuesOfType(*values, ValueProto::kBooleans) ||
+      !AreAllValuesOfSize(*values, 1)) {
+    DVLOG(2) << "All values must be 'boolean' and contain exactly 1 value each";
+    return;
+  }
+
+  bool result = true;
+  for (const auto& value : *values) {
+    result &= value.booleans().values(0);
+  }
+  user_model->SetValue(result_model_identifier, SimpleValue(result));
+}
+
+void ComputeValueBooleanOr(base::WeakPtr<UserModel> user_model,
+                           const BooleanOrProto& proto,
+                           const std::string& result_model_identifier,
+                           const ValueProto& ignored) {
+  if (!user_model) {
+    return;
+  }
+
+  auto values = user_model->GetValues(proto.model_identifiers());
+  if (!values.has_value()) {
+    DVLOG(2) << "Failed to find values in user model";
+    return;
+  }
+
+  if (!AreAllValuesOfType(*values, ValueProto::kBooleans) ||
+      !AreAllValuesOfSize(*values, 1)) {
+    DVLOG(2) << "All values must be 'boolean' and contain exactly 1 value each";
+    return;
+  }
+
+  bool result = true;
+  for (const auto& value : *values) {
+    result |= value.booleans().values(0);
+  }
+  user_model->SetValue(result_model_identifier, SimpleValue(result));
+}
+
+void ComputeValueBooleanNot(base::WeakPtr<UserModel> user_model,
+                            const BooleanNotProto& proto,
+                            const std::string& result_model_identifier,
+                            const ValueProto& ignored) {
+  if (!user_model) {
+    return;
+  }
+
+  auto value = user_model->GetValue(proto.model_identifier());
+  if (!value.has_value()) {
+    DVLOG(2) << "Error evaluating " << __func__ << ": "
+             << proto.model_identifier() << " not found in model";
+    return;
+  }
+  if (value->booleans().values().size() != 1) {
+    DVLOG(2) << "Error evaluating " << __func__
+             << ": expected single boolean, but got " << *value;
+    return;
+  }
+
+  user_model->SetValue(result_model_identifier,
+                       SimpleValue(!value->booleans().values(0)));
+}
+
+base::Optional<InteractionHandlerAndroid::InteractionCallback>
+CreateComputeValueCallbackForProto(base::WeakPtr<UserModel> user_model,
+                                   const ComputeValueProto& proto) {
+  if (proto.result_model_identifier().empty()) {
+    DVLOG(1) << "Error creating ComputeValue interaction: "
+                "result_model_identifier empty";
+    return base::nullopt;
+  }
+
+  switch (proto.kind_case()) {
+    case ComputeValueProto::kBooleanAnd:
+      if (proto.boolean_and().model_identifiers().size() == 0) {
+        DVLOG(1) << "Error creating ComputeValue::BooleanAnd interaction: no "
+                    "model_identifiers specified";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
+          base::BindRepeating(&ComputeValueBooleanAnd, user_model,
+                              proto.boolean_and(),
+                              proto.result_model_identifier()));
+    case ComputeValueProto::kBooleanOr:
+      if (proto.boolean_or().model_identifiers().size() == 0) {
+        DVLOG(1) << "Error creating ComputeValue::BooleanOr interaction: no "
+                    "model_identifiers specified";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
+          base::BindRepeating(&ComputeValueBooleanOr, user_model,
+                              proto.boolean_or(),
+                              proto.result_model_identifier()));
+    case ComputeValueProto::kBooleanNot:
+      if (proto.boolean_not().model_identifier().empty()) {
+        DVLOG(1) << "Error creating ComputeValue::BooleanNot interaction: "
+                    "model_identifier not specified";
+        return base::nullopt;
+      }
+      return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
+          base::BindRepeating(&ComputeValueBooleanNot, user_model,
+                              proto.boolean_not(),
+                              proto.result_model_identifier()));
+    case ComputeValueProto::KIND_NOT_SET:
+      DVLOG(1) << "Error creating ComputeValue interaction: kind not set";
+      return base::nullopt;
+  }
+
+  return base::nullopt;
+}
+
 void ShowInfoPopup(const InfoPopupProto& proto,
                    base::android::ScopedJavaGlobalRef<jobject> jcontext,
                    const ValueProto& ignored) {
@@ -197,6 +323,9 @@ CreateInteractionCallbackFromProto(
       return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
           base::BindRepeating(&ShowListPopup, user_model->GetWeakPtr(),
                               proto.show_list_popup(), jcontext, jdelegate));
+    case CallbackProto::kComputeValue:
+      return CreateComputeValueCallbackForProto(user_model->GetWeakPtr(),
+                                                proto.compute_value());
     case CallbackProto::KIND_NOT_SET:
       DVLOG(1) << "Error creating interaction: kind not set";
       return base::nullopt;

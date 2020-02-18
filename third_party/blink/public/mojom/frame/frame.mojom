@@ -15,6 +15,7 @@ import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/devtools/inspector_issue.mojom";
 import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
 import "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom";
+import "third_party/blink/public/mojom/frame/frame_policy.mojom";
 import "third_party/blink/public/mojom/frame/fullscreen.mojom";
 import "third_party/blink/public/mojom/frame/intrinsic_sizing_info.mojom";
 import "third_party/blink/public/mojom/frame/lifecycle.mojom";
@@ -357,6 +358,10 @@ interface LocalFrame {
   // Notifies the document navigation was blocked because a content security
   // policy was violated.
   ReportContentSecurityPolicyViolation(network.mojom.CSPViolation violation);
+
+  // Notifies the frame that its parent has changed the frame's sandbox flags or
+  // container policy.
+  DidUpdateFramePolicy(blink.mojom.FramePolicy frame_policy);
 };
 
 // Implemented in Browser, this interface defines frame-specific methods that
@@ -519,6 +524,10 @@ interface RemoteFrame {
   // all corresponding remote frames of a local frame when a navigation commits.
   DidSetFramePolicyHeaders(blink.mojom.WebSandboxFlags sandbox_flags,
       array<blink.mojom.ParsedFeaturePolicyDeclaration> parsed_feature_policy);
+
+  // Notifies the frame that its parent has changed the frame's sandbox flags or
+  // container policy.
+  DidUpdateFramePolicy(blink.mojom.FramePolicy frame_policy);
 };
 
 // Implemented in Blink, this interface defines main-frame-specific methods that

@@ -32,6 +32,8 @@ struct RenderPassSize {
   base::Optional<gfx::RRectF> backdrop_filter_bounds;
   gfx::ContentColorUsage content_color_usage;
   bool has_transparent_background;
+  bool cache_render_pass;
+  bool has_damage_from_contributing_component;
   bool generate_mipmap;
   std::vector<std::unique_ptr<CopyOutputRequest>> copy_callbacks;
   QuadList quad_list;
@@ -120,6 +122,9 @@ TEST(RenderPassTest, CopyShouldBeIdenticalExceptIdAndQuads) {
       copy->backdrop_filter_bounds.value(), 0.001));
   EXPECT_EQ(pass->content_color_usage, copy->content_color_usage);
   EXPECT_EQ(pass->has_transparent_background, copy->has_transparent_background);
+  EXPECT_EQ(pass->cache_render_pass, copy->cache_render_pass);
+  EXPECT_EQ(pass->has_damage_from_contributing_content,
+            copy->has_damage_from_contributing_content);
   EXPECT_EQ(pass->generate_mipmap, copy->generate_mipmap);
   EXPECT_EQ(0u, copy->quad_list.size());
 

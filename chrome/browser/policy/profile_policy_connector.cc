@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_switcher/browser_switcher_policy_migrator.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -212,6 +213,12 @@ void ProfilePolicyConnector::Init(
   }
 #endif
 
+  std::vector<std::unique_ptr<ExtensionPolicyMigrator>> migrators;
+#if defined(OS_WIN)
+  migrators.push_back(
+      std::make_unique<browser_switcher::BrowserSwitcherPolicyMigrator>());
+#endif
+
 #if defined(OS_CHROMEOS)
   ConfigurationPolicyProvider* user_policy_delegate_candidate =
       configuration_policy_provider ? configuration_policy_provider
@@ -234,12 +241,15 @@ void ProfilePolicyConnector::Init(
     // propagated. See CreatePolicyServiceWithInitializationThrottled for
     // details.
     policy_service_ = CreatePolicyServiceWithInitializationThrottled(
-        policy_providers_, user_policy_delegate_candidate);
+        policy_providers_, std::move(migrators),
+        user_policy_delegate_candidate);
   } else {
-    policy_service_ = std::make_unique<PolicyServiceImpl>(policy_providers_);
+    policy_service_ = std::make_unique<PolicyServiceImpl>(policy_providers_,
+                                                          std::move(migrators));
   }
 #else   // defined(OS_CHROMEOS)
-  policy_service_ = std::make_unique<PolicyServiceImpl>(policy_providers_);
+  policy_service_ = std::make_unique<PolicyServiceImpl>(policy_providers_,
+                                                        std::move(migrators));
 #endif  // defined(OS_CHROMEOS)
 }
 
@@ -334,11 +344,12 @@ ConfigurationPolicyProvider* ProfilePolicyConnector::GetPlatformProvider(
 std::unique_ptr<PolicyService>
 ProfilePolicyConnector::CreatePolicyServiceWithInitializationThrottled(
     const std::vector<ConfigurationPolicyProvider*>& policy_providers,
+    std::vector<std::unique_ptr<ExtensionPolicyMigrator>> migrators,
     ConfigurationPolicyProvider* user_policy_delegate) {
   DCHECK(user_policy_delegate);
 
-  auto policy_service =
-      PolicyServiceImpl::CreateWithThrottledInitialization(policy_providers);
+  auto policy_service = PolicyServiceImpl::CreateWithThrottledInitialization(
+      policy_providers, std::move(migrators));
 
   // base::Unretained is OK for |this| because
   // |proxied_policies_propagated_watcher_| is guaranteed not to call its

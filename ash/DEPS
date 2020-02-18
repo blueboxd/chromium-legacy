@@ -56,6 +56,7 @@ include_rules = [
   "+chromeos/audio",
   "+chromeos/components/multidevice/logging/logging.h",
   "+chromeos/components/proximity_auth/public/mojom",
+  "+chromeos/components/quick_answers",
   "+chromeos/constants",
   # TODO(https://crbug.com/940810): Eliminate this.
   "+chromeos/dbus/initialize_dbus_client.h",

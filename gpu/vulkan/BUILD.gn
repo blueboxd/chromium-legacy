@@ -80,7 +80,7 @@ if (enable_vulkan) {
     if (is_fuchsia) {
       sources += [ "fuchsia/vulkan_fuchsia_ext.h" ]
 
-      public_deps += [ "//third_party/fuchsia-sdk/sdk:zx" ]
+      public_deps += [ "//third_party/fuchsia-sdk/sdk/pkg/zx" ]
 
       data_deps += [ "//third_party/fuchsia-sdk:vulkan_base" ]
 

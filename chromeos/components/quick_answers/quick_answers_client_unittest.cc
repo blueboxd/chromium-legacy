@@ -221,7 +221,7 @@ TEST_F(QuickAnswersClientTest, SendRequest) {
   std::unique_ptr<QuickAnswer> quick_answer = std::make_unique<QuickAnswer>();
   quick_answer->primary_answer = "answer";
   EXPECT_CALL(*mock_delegate_,
-              OnQuickAnswerReceived(QuickAnswerEqual(*quick_answer)));
+              OnQuickAnswerReceived(QuickAnswerEqual(&(*quick_answer))));
   client_->OnQuickAnswerReceived(std::move(quick_answer));
 }
 

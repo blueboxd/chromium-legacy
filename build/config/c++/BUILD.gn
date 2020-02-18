@@ -104,6 +104,7 @@ config("runtime_library") {
       "-isystem" + rebase_path("$libcxx_prefix/include", root_build_dir),
       "-isystem" + rebase_path("$libcxxabi_prefix/include", root_build_dir),
     ]
+    cflags_objcc = cflags_cc
 
     defines += [ "CR_LIBCXX_REVISION=$libcxx_svn_revision" ]
 

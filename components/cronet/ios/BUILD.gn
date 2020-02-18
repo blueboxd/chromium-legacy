@@ -23,15 +23,15 @@ config("cronet_include_config") {
 }
 
 config("cronet_static_config") {
-  libs = [
+  frameworks = [
     "Cronet.framework",
     "UIKit.framework",
     "CFNetwork.framework",
     "MobileCoreServices.framework",
     "Security.framework",
     "SystemConfiguration.framework",
-    "resolv",
   ]
+  libs = [ "resolv" ]
   configs = [ ":cronet_include_config" ]
 }
 
@@ -108,7 +108,7 @@ ios_framework_bundle("cronet_framework") {
     "//net:net",
   ]
 
-  libs = [ "UIKit.framework" ]
+  frameworks = [ "UIKit.framework" ]
 
   public_deps = [ "//components/grpc_support:headers" ]
 

@@ -70,31 +70,26 @@ using signin_metrics::PromoAction;
   }
 }
 
-#pragma mark - Utility methods
+#pragma mark - Private
 
 // Completes the add account flow including handling any errors that have not
-// been handled internally by ChromeIdentity. Will return YES if the sign-in
-// flow should be interrupted following this step. |identity| is the identity of
-// the added account. |error| is an error reported by the SSOAuth following
-// adding an account.
-- (BOOL)shouldInterruptSigninForIdentity:(ChromeIdentity*)identity
-                                   error:(NSError*)error {
-  if (!self.identityInteractionManager) {
-    return YES;
-  }
-
+// been handled internally by ChromeIdentity. Will return the sign-in status of
+// the user.
+// |identity| is the identity of the added account.
+// |error| is an error reported by the SSOAuth following adding an account.
+- (SigninCoordinatorResult)signinStateWithIdentity:(ChromeIdentity*)identity
+                                             error:(NSError*)error {
+  DCHECK(self.identityInteractionManager);
   if (error) {
+    DCHECK(!identity);
     // Filter out errors handled internally by ChromeIdentity.
-    if (!ShouldHandleSigninError(error)) {
-      [self.delegate runCompletionCallbackWithSigninResult:
-                         SigninCoordinatorResultCanceledByUser
-                                                  identity:identity];
-      return YES;
+    if (ShouldHandleSigninError(error)) {
+      return SigninCoordinatorResultInterrupted;
     }
-
-    [self.delegate showAlertWithError:error identity:identity];
+    return SigninCoordinatorResultCanceledByUser;
   }
-  return error;
+  DCHECK(identity);
+  return SigninCoordinatorResultSuccess;
 }
 
 // Handles the reauthentication operation for a user from the screen to enter
@@ -125,18 +120,29 @@ using signin_metrics::PromoAction;
                          email:base::SysUTF8ToNSString(email)
                     completion:^(ChromeIdentity* chromeIdentity,
                                  NSError* error) {
-                      __typeof(self) strongSelf = weakSelf;
-                      if (!strongSelf) {
-                        return;
-                      }
-                      if ([strongSelf
-                              shouldInterruptSigninForIdentity:chromeIdentity
-                                                         error:error]) {
-                        return;
-                      }
-                      [strongSelf.delegate
-                          handleUserConsentForIdentity:chromeIdentity];
+                      [weakSelf operationCompletedWithIdentity:chromeIdentity
+                                                         error:error];
                     }];
+}
+
+// Handles the reauthentication or add account operation if the flow has not
+// been interrupted by a sign-in error.
+- (void)operationCompletedWithIdentity:(ChromeIdentity*)identity
+                                 error:(NSError*)error {
+  SigninCoordinatorResult signinResult = [self signinStateWithIdentity:identity
+                                                                 error:error];
+  switch (signinResult) {
+    case SigninCoordinatorResultSuccess:
+    case SigninCoordinatorResultCanceledByUser: {
+      [self.delegate addAccountSigninMediatorFinishedWith:signinResult
+                                                 identity:identity];
+      break;
+    }
+    case SigninCoordinatorResultInterrupted: {
+      [self.delegate addAccountSigninMediatorFailedWith:error];
+      break;
+    }
+  }
 }
 
 // Handles the add account operation for a user. Presents the screen to enter
@@ -146,17 +152,7 @@ using signin_metrics::PromoAction;
   __weak AddAccountSigninMediator* weakSelf = self;
   [self.identityInteractionManager
       addAccountWithCompletion:^(ChromeIdentity* identity, NSError* error) {
-        __typeof(self) strongSelf = weakSelf;
-        if (!strongSelf) {
-          return;
-        }
-        if ([strongSelf shouldInterruptSigninForIdentity:identity
-                                                   error:error]) {
-          return;
-        }
-        [strongSelf.delegate
-            runCompletionCallbackWithSigninResult:SigninCoordinatorResultSuccess
-                                         identity:identity];
+        [weakSelf operationCompletedWithIdentity:identity error:error];
       }];
 }
 

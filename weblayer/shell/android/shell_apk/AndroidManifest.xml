@@ -29,6 +29,9 @@
         </activity>
         <activity android:name="InstrumentationActivity">
         </activity>
+        <activity android:name="TelemetryActivity"
+                  android:theme="@android:style/Theme.Holo.Light.NoActionBar">
+        </activity>
         {% if weblayer_package is defined %}
             <meta-data android:name="org.chromium.weblayer.WebLayerPackage"
                        android:value="{{ weblayer_package }}"/>

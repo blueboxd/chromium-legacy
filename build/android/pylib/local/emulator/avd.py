@@ -317,11 +317,19 @@ class AvdConfig(object):
         avd_manager.Delete(avd_name=self._config.avd_name)
 
   def Install(self, packages=_ALL_PACKAGES):
-    """Installs the requested CIPD packages.
+    """Installs the requested CIPD packages and prepares them for use.
+
+    This includes making files writeable and revising some of the
+    emulator's internal config files.
 
     Returns: None
     Raises: AvdException on failure to install.
     """
+    self._InstallCipdPackages(packages=packages)
+    self._MakeWriteable()
+    self._EditConfigs()
+
+  def _InstallCipdPackages(self, packages):
     pkgs_by_dir = {}
     if packages is _ALL_PACKAGES:
       packages = [
@@ -341,9 +349,9 @@ class AvdConfig(object):
         os.makedirs(cipd_root)
       ensure_path = os.path.join(cipd_root, '.ensure')
       with open(ensure_path, 'w') as ensure_file:
-        # Make CIPD ensure that all files are present, even if
-        # it thinks the package is installed.
-        ensure_file.write('$ParanoidMode CheckPresence\n\n')
+        # Make CIPD ensure that all files are present and correct,
+        # even if it thinks the package is installed.
+        ensure_file.write('$ParanoidMode CheckIntegrity\n\n')
         for pkg in pkgs:
           ensure_file.write('%s %s\n' % (pkg.package_name, pkg.version))
           logging.info('  %s %s', pkg.package_name, pkg.version)
@@ -364,6 +372,7 @@ class AvdConfig(object):
                                                        str(e)),
             command=ensure_cmd)
 
+  def _MakeWriteable(self):
     # The emulator requires that some files are writable.
     for dirname, _, filenames in os.walk(self._emulator_home):
       for f in filenames:
@@ -372,6 +381,35 @@ class AvdConfig(object):
         if mode & stat.S_IRUSR:
           mode = mode | stat.S_IWUSR
         os.chmod(path, mode)
+
+  def _EditConfigs(self):
+    android_avd_home = os.path.join(self._emulator_home, 'avd')
+    avd_dir = os.path.join(android_avd_home, '%s.avd' % self._config.avd_name)
+
+    hardware_qemu_path = os.path.join(avd_dir, 'hardware-qemu.ini')
+    if os.path.exists(hardware_qemu_path):
+      with open(hardware_qemu_path) as hardware_qemu_file:
+        hardware_qemu_contents = ini.load(hardware_qemu_file)
+    else:
+      hardware_qemu_contents = {}
+
+    hardware_qemu_contents['hw.sdCard'] = 'true'
+    if self._config.avd_settings.sdcard.size:
+      sdcard_path = os.path.join(avd_dir, 'cr-sdcard.img')
+      if not os.path.exists(sdcard_path):
+        mksdcard_path = os.path.join(
+            os.path.dirname(self._emulator_path), 'mksdcard')
+        mksdcard_cmd = [
+            mksdcard_path,
+            self._config.avd_settings.sdcard.size,
+            sdcard_path,
+        ]
+        cmd_helper.RunCmd(mksdcard_cmd)
+
+      hardware_qemu_contents['hw.sdCard.path'] = sdcard_path
+
+    with open(hardware_qemu_path, 'w') as hardware_qemu_file:
+      ini.dump(hardware_qemu_contents, hardware_qemu_file)
 
   def _Initialize(self):
     if self._initialized:
@@ -460,16 +498,6 @@ class _AvdInstance(object):
           '-no-boot-anim',
       ]
 
-      android_avd_home = os.path.join(self._emulator_home, 'avd')
-      avd_dir = os.path.join(android_avd_home, '%s.avd' % self._avd_name)
-
-      hardware_qemu_path = os.path.join(avd_dir, 'hardware-qemu.ini')
-      if os.path.exists(hardware_qemu_path):
-        with open(hardware_qemu_path) as hardware_qemu_file:
-          hardware_qemu_contents = ini.load(hardware_qemu_file)
-      else:
-        hardware_qemu_contents = {}
-
       if read_only:
         emulator_cmd.append('-read-only')
       if not snapshot_save:
@@ -487,26 +515,6 @@ class _AvdInstance(object):
           raise AvdException('Emulator failed to start: DISPLAY not defined')
       else:
         emulator_cmd.append('-no-window')
-
-      hardware_qemu_contents['hw.sdCard'] = 'true'
-      if self._avd_config.avd_settings.sdcard.size:
-        sdcard_path = os.path.join(self._emulator_home, 'avd',
-                                   '%s.avd' % self._avd_name, 'cr-sdcard.img')
-        if not os.path.exists(sdcard_path):
-          mksdcard_path = os.path.join(
-              os.path.dirname(self._emulator_path), 'mksdcard')
-          mksdcard_cmd = [
-              mksdcard_path,
-              self._avd_config.avd_settings.sdcard.size,
-              sdcard_path,
-          ]
-          cmd_helper.RunCmd(mksdcard_cmd)
-
-        emulator_cmd.extend(['-sdcard', sdcard_path])
-        hardware_qemu_contents['hw.sdCard.path'] = sdcard_path
-
-      with open(hardware_qemu_path, 'w') as hardware_qemu_file:
-        ini.dump(hardware_qemu_contents, hardware_qemu_file)
 
       sock.listen(1)
 

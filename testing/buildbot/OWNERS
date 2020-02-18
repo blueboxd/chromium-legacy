@@ -6,7 +6,6 @@ file://infra/OWNERS
 jam@chromium.org
 jochen@chromium.org
 machenbach@chromium.org
-maruel@chromium.org
 sky@chromium.org
 
 per-file *chromium.perf*.json=crouleau@chromium.org

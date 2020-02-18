@@ -1872,8 +1872,11 @@ public class AwAutofillTest {
     }
 
     private void loadUrlSync(String url) throws Exception {
+        CallbackHelper done = mContentsClient.getOnPageCommitVisibleHelper();
+        int callCount = done.getCallCount();
         mRule.loadUrlSync(
                 mTestContainerView.getAwContents(), mContentsClient.getOnPageFinishedHelper(), url);
+        done.waitForCallback(callCount);
     }
 
     private String executeJavaScriptAndWaitForResult(String code) throws Throwable {

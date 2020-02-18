@@ -361,26 +361,6 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   }
 }
 
-// Update the proxy's FrameOwner with new sandbox flags and container policy
-// that were set by its parent in another process.
-//
-// Normally, when a frame's sandbox attribute is changed dynamically, the
-// frame's FrameOwner is updated with the new sandbox flags right away, while
-// the frame's SecurityContext is updated when the frame is navigated and the
-// new sandbox flags take effect.
-//
-// Currently, there is no use case for a proxy's pending FrameOwner sandbox
-// flags, so there's no message sent to proxies when the sandbox attribute is
-// first updated.  Instead, the active flags are updated when they take effect,
-// by OnDidSetActiveSandboxFlags. The proxy's FrameOwner flags are updated here
-// with the caveat that the FrameOwner won't learn about updates to its flags
-// until they take effect.
-void RenderFrameProxy::OnDidUpdateFramePolicy(
-    const blink::FramePolicy& frame_policy) {
-  DCHECK(web_frame()->Parent());
-  web_frame_->SetFrameOwnerPolicy(frame_policy);
-}
-
 bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
   // Page IPCs are routed via the main frame (both local and remote) and then
   // forwarded to the RenderView. See comment in
@@ -397,7 +377,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_ChildFrameProcessGone, OnChildFrameProcessGone)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_ViewChanged, OnViewChanged)
-    IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateFramePolicy, OnDidUpdateFramePolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
     IPC_MESSAGE_HANDLER(FrameMsg_EnforceInsecureRequestPolicy,
                         OnEnforceInsecureRequestPolicy)

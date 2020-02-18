@@ -495,7 +495,6 @@ class CONTENT_EXPORT RenderWidget
       const gfx::Size& initial_screen_size,
       float initial_device_scale_factor);
 
-  LayerTreeView* layer_tree_view() const { return layer_tree_view_.get(); }
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_; }
   WidgetInputHandlerManager* widget_input_handler_manager() {
     return widget_input_handler_manager_.get();

@@ -548,15 +548,22 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
     views::Widget* widget,
     BrowserView* browser_view)
     : browser_view_(browser_view) {
-  views::BoxLayout& layout =
-      *SetLayoutManager(std::make_unique<views::BoxLayout>(
-          views::BoxLayout::Orientation::kHorizontal,
-          gfx::Insets(0, WebAppFrameRightMargin()),
-          HorizontalPaddingBetweenPageActionsAndAppMenuButtons()));
-  // Right align to clip the leftmost items first when not enough space.
-  layout.set_main_axis_alignment(views::BoxLayout::MainAxisAlignment::kEnd);
-  layout.set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kCenter);
+  views::FlexLayout* const layout =
+      SetLayoutManager(std::make_unique<views::FlexLayout>());
+  layout->SetOrientation(views::LayoutOrientation::kHorizontal)
+      .SetInteriorMargin(gfx::Insets(0, WebAppFrameRightMargin()))
+      .SetDefault(
+          views::kMarginsKey,
+          gfx::Insets(0,
+                      HorizontalPaddingBetweenPageActionsAndAppMenuButtons()))
+      .SetCollapseMargins(true)
+      .SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
+      .SetDefault(views::kFlexBehaviorKey,
+                  views::FlexSpecification(
+                      views::MinimumFlexSizeRule::kPreferredSnapToZero,
+                      views::MaximumFlexSizeRule::kPreferred)
+                      .WithWeight(0))
+      .SetFlexAllocationOrder(views::FlexAllocationOrder::kReverse);
 
   const auto* app_controller = browser_view_->browser()->app_controller();
 
@@ -596,8 +603,20 @@ WebAppFrameToolbarView::ToolbarButtonContainer::ToolbarButtonContainer(
                              static_cast<int>(HTCLIENT));
 
   if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-    extensions_container_ = AddChildView(
-        std::make_unique<ExtensionsToolbarContainer>(browser_view_->browser()));
+    // Extensions toolbar area with pinned extensions is lower priority than,
+    // for example, the menu button or other toolbar buttons, and pinned
+    // extensions should hide before other toolbar buttons.
+    constexpr int kLowPriorityFlexOrder = 2;
+    extensions_container_ =
+        AddChildView(std::make_unique<ExtensionsToolbarContainer>(
+            browser_view_->browser(),
+            ExtensionsToolbarContainer::DisplayMode::kCompact));
+    extensions_container_->SetProperty(
+        views::kFlexBehaviorKey,
+        views::FlexSpecification(
+            extensions_container_->animating_layout_manager()
+                ->GetDefaultFlexRule())
+            .WithOrder(kLowPriorityFlexOrder));
     views::SetHitTestComponent(extensions_container_,
                                static_cast<int>(HTCLIENT));
   } else {

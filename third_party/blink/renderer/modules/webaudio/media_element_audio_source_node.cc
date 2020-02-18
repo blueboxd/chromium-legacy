@@ -107,6 +107,13 @@ void MediaElementAudioSourceHandler::SetFormat(uint32_t number_of_channels,
     PrintCorsMessage(MediaElement()->currentSrc().GetString());
   }
 
+  {
+    // Make sure |is_origin_tainted_| matches |is_tainted|.  But need to
+    // synchronize with process() to set this.
+    MediaElementAudioSourceHandlerLocker locker(*this);
+    is_origin_tainted_ = is_tainted;
+  }
+
   if (number_of_channels != source_number_of_channels_ ||
       source_sample_rate != source_sample_rate_) {
     if (!number_of_channels ||
@@ -119,16 +126,13 @@ void MediaElementAudioSourceHandler::SetFormat(uint32_t number_of_channels,
       MediaElementAudioSourceHandlerLocker locker(*this);
       source_number_of_channels_ = 0;
       source_sample_rate_ = 0;
-      is_origin_tainted_ = is_tainted;
       return;
     }
 
     // Synchronize with process() to protect |source_number_of_channels_|,
-    // |source_sample_rate_|, |multi_channel_resampler_|. and
-    // |is_origin_tainted_|.
+    // |source_sample_rate_|, |multi_channel_resampler_|.
     MediaElementAudioSourceHandlerLocker locker(*this);
 
-    is_origin_tainted_ = is_tainted;
     source_number_of_channels_ = number_of_channels;
     source_sample_rate_ = source_sample_rate;
 

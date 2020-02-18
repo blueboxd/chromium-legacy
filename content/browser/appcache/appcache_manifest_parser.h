@@ -58,8 +58,6 @@ struct CONTENT_EXPORT AppCacheManifest {
   // Stores the scope used to validate resource overrides specified in a given
   // manifest, if |scope_checks_enabled| is true.
   std::string scope;
-  // Whether manifests are parsed using the associated manifest scope.
-  bool scope_checks_enabled = true;
   bool online_whitelist_all = false;
   bool did_ignore_intercept_namespaces = false;
   bool did_ignore_fallback_namespaces = false;
@@ -72,7 +70,6 @@ enum ParseMode {
 
 CONTENT_EXPORT bool ParseManifest(const GURL& manifest_url,
                                   const std::string& manifest_scope,
-                                  const bool manifest_scope_checks_enabled,
                                   const char* manifest_bytes,
                                   int manifest_size,
                                   ParseMode parse_mode,

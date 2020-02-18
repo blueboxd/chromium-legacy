@@ -148,26 +148,13 @@ using signin_metrics::PromoAction;
 
 #pragma mark - AddAccountSigninMediatorDelegate
 
-- (void)handleUserConsentForIdentity:(ChromeIdentity*)identity {
-  // The UserSigninViewController is presented on top of the currently displayed
-  // view controller.
-  self.userSigninCoordinator = [SigninCoordinator
-      userSigninCoordinatorWithBaseViewController:self.baseViewController
-                                                      .presentedViewController
-                                          browser:self.browser
-                                         identity:identity
-                                      accessPoint:self.accessPoint
-                                      promoAction:self.promoAction];
-  [self.userSigninCoordinator start];
-}
-
-- (void)showAlertWithError:(NSError*)error identity:(ChromeIdentity*)identity {
+- (void)addAccountSigninMediatorFailedWith:(NSError*)error {
   DCHECK(error);
   __weak AddAccountSigninCoordinator* weakSelf = self;
   ProceduralBlock dismissAction = ^{
-    [weakSelf runCompletionCallbackWithSigninResult:
+    [weakSelf addAccountSigninMediatorFinishedWith:
                   SigninCoordinatorResultCanceledByUser
-                                           identity:identity];
+                                          identity:nil];
   };
 
   self.alertCoordinator =
@@ -175,9 +162,20 @@ using signin_metrics::PromoAction;
   [self.alertCoordinator start];
 }
 
-- (void)runCompletionCallbackWithSigninResult:
+- (void)addAccountSigninMediatorFinishedWith:
             (SigninCoordinatorResult)signinResult
-                                     identity:(ChromeIdentity*)identity {
+                                    identity:(ChromeIdentity*)identity {
+  switch (self.signinIntent) {
+    case SigninIntentReauth: {
+      // Show the user consent screen to finish the sign-in operation.
+      [self handleUserConsentForIdentity:identity];
+      return;
+    }
+    case SigninIntentAddAccount: {
+      break;
+    }
+  }
+
   // Cleaning up and calling the |signinCompletion| should be done last.
   self.identityInteractionManager = nil;
   DCHECK(!self.alertCoordinator);
@@ -191,6 +189,21 @@ using signin_metrics::PromoAction;
     // |self.signinCompletion| needs to be set to nil before calling it.
     signinCompletion(signinResult, identity);
   }
+}
+
+#pragma mark - Private
+
+- (void)handleUserConsentForIdentity:(ChromeIdentity*)identity {
+  // The UserSigninViewController is presented on top of the currently displayed
+  // view controller.
+  self.userSigninCoordinator = [SigninCoordinator
+      userSigninCoordinatorWithBaseViewController:self.baseViewController
+                                                      .presentedViewController
+                                          browser:self.browser
+                                         identity:identity
+                                      accessPoint:self.accessPoint
+                                      promoAction:self.promoAction];
+  [self.userSigninCoordinator start];
 }
 
 @end

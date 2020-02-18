@@ -841,8 +841,8 @@ class WebAppNonClientFrameViewAshTest
   }
 
   PageActionIconView* GetPageActionIcon(PageActionIconType type) {
-    return browser_view_->toolbar_button_provider()
-        ->GetPageActionIconView(type);
+    return browser_view_->toolbar_button_provider()->GetPageActionIconView(
+        type);
   }
 
   ContentSettingImageView* GrantGeolocationPermission() {
@@ -1043,6 +1043,10 @@ IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest,
                        BrowserCommandFocusToolbarGeolocation) {
   SetUpWebApp();
   ContentSettingImageView* geolocation_icon = GrantGeolocationPermission();
+
+  // In order to receive focus, the geo icon must be laid out (and be both
+  // visible and nonzero size).
+  web_app_frame_toolbar_->Layout();
 
   EXPECT_FALSE(web_app_menu_button_->HasFocus());
   EXPECT_FALSE(geolocation_icon->HasFocus());

@@ -53,7 +53,6 @@ class WebView;
 namespace mojom {
 enum class WebSandboxFlags;
 }
-struct FramePolicy;
 struct WebFrameOwnerProperties;
 
 // Frames may be rendered in process ('local') or out of process ('remote').
@@ -99,13 +98,6 @@ class BLINK_EXPORT WebFrame {
 
   // The security origin of this frame.
   WebSecurityOrigin GetSecurityOrigin() const;
-
-  // Updates the snapshotted policy attributes (sandbox flags and feature policy
-  // container policy) in the frame's FrameOwner. This is used when this frame's
-  // parent is in another process and it dynamically updates this frame's
-  // sandbox flags or container policy. The new policy won't take effect until
-  // the next navigation.
-  void SetFrameOwnerPolicy(const FramePolicy&);
 
   // The frame's insecure request policy.
   WebInsecureRequestPolicy GetInsecureRequestPolicy() const;

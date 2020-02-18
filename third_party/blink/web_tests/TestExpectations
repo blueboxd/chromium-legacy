@@ -273,17 +273,12 @@ crbug.com/968791 [ Mac ] virtual/scalefactor200/css3/filters/effect-blur-hw.html
 crbug.com/968791 virtual/scalefactor200/css3/filters/filterRegions.html [ Failure ]
 
 # These appear to be actually incorrect at device_scale_factor 2.0:
-crbug.com/968791 virtual/scalefactor200/css3/filters/effect-reference-image-lazy-attach.html [ Failure ]
-crbug.com/968791 virtual/scalefactor200/css3/filters/effect-reference-image.html [ Failure ]
+crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/css3/filters/effect-reference-image-lazy-attach.html [ Failure ]
+crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/css3/filters/effect-reference-image.html [ Failure ]
+crbug.com/968791 crbug.com/1051044 virtual/scalefactor200/css3/filters/effect-reference-image-hw.html [ Failure ]
 crbug.com/968791 virtual/scalefactor200/external/wpt/css/filter-effects/filters-test-brightness-003.html [ Failure ]
 
 # Copying these from elsewhere in TestExpectations (for non-scalefactor200 virtual suite)
-crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-all-on-background-hw.html [ Failure Pass ]
-crbug.com/658305 [ Mac ] virtual/scalefactor200/css3/filters/effect-reference-colorspace-hw.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-hw.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-image-hw.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-subregion-hw.html [ Failure Pass ]
-crbug.com/658305 virtual/scalefactor200/css3/filters/effect-reference-zoom-hw.html [ Failure Pass Timeout ]
 crbug.com/903383 virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-combined-001.html [ Failure ]
 crbug.com/903383 virtual/scalefactor200/external/wpt/css/filter-effects/css-filters-animation-blur.html [ Failure ]
 crbug.com/626703 virtual/scalefactor200/external/wpt/css/filter-effects/filter-subregion-01.html [ Failure ]
@@ -443,7 +438,7 @@ crbug.com/1052202 external/wpt/svg/linking/scripted/href-mpath-element.html [ Ti
 crbug.com/1052202 external/wpt/svg/linking/scripted/href-animate-element.html [ Timeout ]
 
 # Slightly flaky timeouts (about 1 in 30)
-crbug.com/1050993 [ Linux ] virtual/gpu-rasterization/images/drag-image-descendant-painting-sibling.html [ Pass Timeout ]
+crbug.com/1050993 [ Linux ] virtual/gpu-rasterization/images/drag-image-descendant-painting-sibling.html [ Crash Pass Timeout ]
 
 # ====== Paint team owned tests to here ======
 
@@ -2226,8 +2221,8 @@ crbug.com/636239 [ Win7 ] virtual/audio-service/media/video-zoom-controls.html [
 
 crbug.com/377696 printing/setPrinting.html [ Failure ]
 
-crbug.com/658305 css3/filters/effect-reference-image.html [ Pass Failure ]
-crbug.com/658305 css3/filters/effect-reference-image-lazy-attach.html [ Pass Failure ]
+crbug.com/1051044 css3/filters/effect-reference-image.html [ Pass Failure ]
+crbug.com/1051044 css3/filters/effect-reference-image-lazy-attach.html [ Pass Failure ]
 
 crbug.com/524160 [ Debug ] http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
 crbug.com/524160 [ Debug ] virtual/audio-service/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
@@ -6628,7 +6623,7 @@ crbug.com/1049689 external/wpt/workers/modules/shared-worker-import-referrer.htm
 crbug.com/1049689 virtual/omt-worker-fetch/external/wpt/workers/modules/shared-worker-import-referrer.html [ Pass Timeout ]
 
 # Sheriff 2020-02-10
-crbug.com/1050306 [ Fuchsia ] virtual/gpu/fast/canvas/canvas-filter-frameless-document.html [ Pass Failure ]
+crbug.com/1050306 [ Fuchsia ] virtual/gpu/fast/canvas/canvas-filter-frameless-document.html [ Crash Pass Timeout ]
 
 # Swiftshader issue.
 crbug.com/1048149 external/wpt/html/browsers/the-window-object/apis-for-creating-and-navigating-browsing-contexts-by-name/open-features-non-integer-innerwidth.html [ Crash Timeout ]
@@ -6727,3 +6722,13 @@ crbug.com/1006759 http/tests/devtools/profiler/agents-disabled-check.js [ Skip ]
 # DevTools roll
 crbug.com/1052111 http/tests/devtools/a11y-axe-core/audits-start-view-a11y-test.js [ Skip ]
 crbug.com/1052111 http/tests/devtools/user-metrics.js [ Skip ]
+
+# Sheriff 2020-02-18
+crbug.com/1050893 [ Fuchsia ] virtual/gpu/fast/canvas/feimage-with-foreignobject-taint-canvas-2.html [ Timeout Pass ]
+crbug.com/1051014 [ Fuchsia ] virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scroll-corner-crash.html [ Timeout Pass ]
+crbug.com/1051370 [ Fuchsia ] virtual/prefer_compositing_to_lcd_text/scrollbars/viewport-scrollbar-corner-with-percent-padding-crash.html [ Timeout Pass ]
+crbug.com/1051015 [ Fuchsia ] virtual/stable/fast/css3-text/css3-text-decoration/stable/getComputedStyle-text-decoration.html [ Timeout Pass ]
+crbug.com/1050995 [ Fuchsia ] http/tests/pointer-lock/iframe-sandboxed.html [ Timeout Pass ]
+crbug.com/1051774 [ Fuchsia ] http/tests/plugins/navigator-plugins-in-cross-origin-frame.html [ Timeout Pass ]
+crbug.com/1051133 [ Fuchsia ] http/tests/canvas/philip/tests/security.pattern.canvas.fillStyle.html [ Crash Timeout Pass ]
+crbug.com/1051131 [ Fuchsia ] http/tests/appcache/abort-cache-onchecking-resource-404.html [ Timeout Pass ]

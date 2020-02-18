@@ -91,13 +91,13 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantServiceInjector.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiController.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/BottomSheetUtils.java",
-    "java/src/org/chromium/chrome/browser/autofill_assistant/EditDistance.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/FeedbackContext.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/SizeListenableLinearLayout.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/carousel/AssistantActionsCarouselCoordinator.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/carousel/AssistantActionsDecoration.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/carousel/AssistantCarouselModel.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/carousel/AssistantChip.java",
+    "java/src/org/chromium/chrome/browser/autofill_assistant/carousel/AssistantChipAdapter.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/carousel/AssistantChipViewHolder.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/carousel/ButtonView.java",
     "java/src/org/chromium/chrome/browser/autofill_assistant/details/AssistantDetails.java",
@@ -242,7 +242,6 @@ android_library("test_java") {
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantTextUtilsTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/AutofillAssistantUiTestUtil.java",
-    "javatests/src/org/chromium/chrome/browser/autofill_assistant/EditDistanceTest.java",
     "javatests/src/org/chromium/chrome/browser/autofill_assistant/TestingAutofillAssistantModuleEntryProvider.java",
   ]
 

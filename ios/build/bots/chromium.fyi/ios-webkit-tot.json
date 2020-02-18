@@ -2,7 +2,7 @@
   "comments": [
     "Run tests against ToT webkit."
   ],
-  "xcode build version": "11a1027wk",
+  "xcode build version": "11c505wk",
   "gn_args": [
     "goma_dir=\"$(goma_dir)\"",
     "is_component_build=false",

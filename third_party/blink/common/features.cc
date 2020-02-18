@@ -339,8 +339,15 @@ const base::FeatureParam<int> kForceDarkBackgroundLightnessThresholdParam{
     &kForceWebContentsDarkMode, "background_lightness_threshold", -1};
 
 // Instructs WebRTC to honor the Min/Max Video Encode Accelerator dimensions.
-const base::Feature kWebRtcUseMinMaxVEADimensions{
-    "WebRtcUseMinMaxVEADimensions", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kWebRtcUseMinMaxVEADimensions {
+  "WebRtcUseMinMaxVEADimensions",
+  // TODO(crbug.com/1008491): enable other platforms.
+#if defined(OS_CHROMEOS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 // Blink garbage collection.
 // Enables compaction of backing stores on Blink's heap.

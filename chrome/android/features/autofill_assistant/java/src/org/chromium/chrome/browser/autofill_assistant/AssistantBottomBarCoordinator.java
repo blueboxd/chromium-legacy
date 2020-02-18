@@ -19,7 +19,7 @@ import org.chromium.base.ObserverList;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantActionsCarouselCoordinator;
-import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantChip;
+import org.chromium.chrome.browser.autofill_assistant.carousel.AssistantCarouselModel;
 import org.chromium.chrome.browser.autofill_assistant.details.AssistantDetailsCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.form.AssistantFormCoordinator;
 import org.chromium.chrome.browser.autofill_assistant.form.AssistantFormModel;
@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.modelutil.ListModel;
 
 /**
  * Coordinator responsible for the Autofill Assistant bottom bar.
@@ -149,7 +148,7 @@ class AssistantBottomBarCoordinator
         setChildMarginTop(mFormCoordinator.getView(), childSpacing);
 
         // Hide the carousels when they are empty.
-        hideWhenEmpty(mActionsCoordinator.getView(), model.getActionsModel().getChipsModel());
+        hideWhenEmpty(mActionsCoordinator.getView(), model.getActionsModel());
 
         // Set the horizontal margins of children. We don't set them on the payment request, the
         // carousels or the form to allow them to take the full width of the sheet.
@@ -325,18 +324,16 @@ class AssistantBottomBarCoordinator
     /**
      * Observe {@code model} such that the associated view is made invisible when it is empty.
      */
-    private void hideWhenEmpty(View carouselView, ListModel<AssistantChip> chipsModel) {
-        setCarouselVisibility(carouselView, chipsModel);
-        chipsModel.addObserver(new AbstractListObserver<Void>() {
-            @Override
-            public void onDataSetChanged() {
-                setCarouselVisibility(carouselView, chipsModel);
-            }
-        });
+    private void hideWhenEmpty(View carouselView, AssistantCarouselModel carouselModel) {
+        setCarouselVisibility(carouselView, carouselModel);
+        carouselModel.addObserver(
+                (source, propertyKey) -> setCarouselVisibility(carouselView, carouselModel));
     }
 
-    private void setCarouselVisibility(View carouselView, ListModel<AssistantChip> chipsModel) {
-        carouselView.setVisibility(chipsModel.size() > 0 ? View.VISIBLE : View.GONE);
+    private void setCarouselVisibility(View carouselView, AssistantCarouselModel carouselModel) {
+        carouselView.setVisibility(carouselModel.get(AssistantCarouselModel.CHIPS).size() > 0
+                        ? View.VISIBLE
+                        : View.GONE);
     }
 
     private void setHorizontalMargins(View view) {

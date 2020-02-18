@@ -990,9 +990,14 @@ void ScrollableShelfView::ScrollRectToVisible(const gfx::Rect& rect) {
   else
     rect_after_adjustment.Offset(0, -scroll_offset_.y());
 
+  // Notes that |rect| is not mirrored under RTL while |visible_space_| has been
+  // mirrored. It is easier for coding if we mirror |visible_space_| back and
+  // then do the calculation.
+  const gfx::Rect visible_space_without_RTL = GetMirroredRect(visible_space_);
+
   // |rect_after_adjustment| is already shown completely. So scroll is not
   // needed.
-  if (visible_space_.Contains(rect_after_adjustment)) {
+  if (visible_space_without_RTL.Contains(rect_after_adjustment)) {
     AdjustOffset();
     return;
   }
@@ -1002,8 +1007,8 @@ void ScrollableShelfView::ScrollRectToVisible(const gfx::Rect& rect) {
   // |forward| indicates the scroll direction.
   const bool forward =
       is_horizontal_alignment
-          ? rect_after_adjustment.right() > visible_space_.right()
-          : rect_after_adjustment.bottom() > visible_space_.bottom();
+          ? rect_after_adjustment.right() > visible_space_without_RTL.right()
+          : rect_after_adjustment.bottom() > visible_space_without_RTL.bottom();
 
   // Scrolling |shelf_view_| has the following side-effects:
   // (1) May change the layout strategy.
@@ -1013,7 +1018,7 @@ void ScrollableShelfView::ScrollRectToVisible(const gfx::Rect& rect) {
   // scroll.
   LayoutStrategy layout_strategy_after_scroll = layout_strategy_;
   float main_axis_offset_after_scroll = original_offset;
-  gfx::Rect visible_space_after_scroll = visible_space_;
+  gfx::Rect visible_space_after_scroll = visible_space_without_RTL;
   gfx::Rect rect_after_scroll = rect_after_adjustment;
 
   // In each iteration, it scrolls |shelf_view_| to the neighboring page.
@@ -1038,8 +1043,7 @@ void ScrollableShelfView::ScrollRectToVisible(const gfx::Rect& rect) {
     main_axis_offset_after_scroll = CalculateScrollDistanceAfterAdjustment(
         main_axis_offset_after_scroll, layout_strategy_after_scroll);
     visible_space_after_scroll =
-        CalculateVisibleSpace(layout_strategy_after_scroll);
-
+        GetMirroredRect(CalculateVisibleSpace(layout_strategy_after_scroll));
     rect_after_scroll = rect_after_adjustment;
     const int offset_delta = main_axis_offset_after_scroll - original_offset;
     if (is_horizontal_alignment)

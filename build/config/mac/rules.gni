@@ -289,19 +289,9 @@ template("mac_framework_bundle") {
 
   _framework_public_config = _target_name + "_public_config"
   config(_framework_public_config) {
-    # TODO(sdefresne): should we have a framework_dirs similar to lib_dirs
-    # and include_dirs to avoid duplicate values on the command-line.
     visibility = [ ":$_framework_target" ]
-    cflags = [
-      "-F",
-      rebase_path("$root_out_dir/.", root_build_dir),
-    ]
-    ldflags = [
-      "-F",
-      rebase_path("$root_out_dir/.", root_build_dir),
-    ]
-    lib_dirs = [ root_out_dir ]
-    libs = [ _framework_name ]
+    framework_dirs = [ root_out_dir ]
+    frameworks = [ _framework_name ]
   }
 
   create_bundle(_framework_target) {

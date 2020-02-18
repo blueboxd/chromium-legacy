@@ -75,6 +75,7 @@ void LogRecoveryTime(base::TimeDelta time) {
   if (self) {
     _lastSessionFreezeInfo = [[NSUserDefaults standardUserDefaults]
         dictionaryForKey:@(kNsUserDefaultKeyLastSessionInfo)];
+    _lastSessionEndedFrozen = _lastSessionFreezeInfo != nil;
     [[NSUserDefaults standardUserDefaults]
         removeObjectForKey:@(kNsUserDefaultKeyLastSessionInfo)];
     _delay = kFreezeDetectionDelay;

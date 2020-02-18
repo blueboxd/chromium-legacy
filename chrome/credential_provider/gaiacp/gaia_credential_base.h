@@ -285,6 +285,11 @@ class ATL_NO_VTABLE CGaiaCredentialBase
   // by NetUserChangePassword win32 function.
   void SetErrorMessageInPasswordField(HRESULT hr);
 
+  // Determines whether given message id corresponds to a password change error
+  // which can't be worked out with manual user input in the forgot password
+  // flow.
+  bool BlockingPasswordError(UINT message_id);
+
   Microsoft::WRL::ComPtr<ICredentialProviderCredentialEvents> events_;
   Microsoft::WRL::ComPtr<IGaiaCredentialProvider> provider_;
 

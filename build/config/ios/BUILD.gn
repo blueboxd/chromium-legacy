@@ -76,8 +76,6 @@ config("runtime_library") {
   common_flags = [
     "-isysroot",
     sysroot,
-
-    "-stdlib=libc++",
   ]
 
   if (use_ios_simulator) {
@@ -111,15 +109,9 @@ config("ios_dynamic_flags") {
 }
 
 config("xctest_config") {
-  common_flags = [
-    "-F",
-    "$ios_sdk_platform_path/Developer/Library/Frameworks",
-  ]
+  framework_dirs = [ "$ios_sdk_platform_path/Developer/Library/Frameworks" ]
 
-  cflags = common_flags
-  ldflags = common_flags
-
-  libs = [
+  frameworks = [
     "Foundation.framework",
     "XCTest.framework",
   ]

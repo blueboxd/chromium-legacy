@@ -10,7 +10,4 @@ public_headers = [
 ]
 traits_headers =
     [ "//third_party/blink/common/frame/frame_policy_mojom_traits.h" ]
-sources = [
-  "//third_party/blink/common/frame/frame_policy_mojom_traits.cc",
-]
 type_mappings = [ "blink.mojom.FramePolicy=::blink::FramePolicy" ]

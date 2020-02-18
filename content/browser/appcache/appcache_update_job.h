@@ -45,7 +45,6 @@ class AppCacheUpdateJobTest;
 
 class HostNotifier;
 
-CONTENT_EXPORT extern const base::Feature kAppCacheManifestScopeChecksFeature;
 CONTENT_EXPORT extern const base::Feature kAppCacheUpdateResourceOn304Feature;
 
 // Application cache Update algorithm and state.
@@ -248,10 +247,6 @@ class CONTENT_EXPORT AppCacheUpdateJob
   std::string fetched_manifest_scope_;
   // Stores the manifest scope determined during the refetch phase.
   std::string refetched_manifest_scope_;
-
-  // If true, AppCaches will be limited to their determined manifest scope
-  // (either the scope of the manifest URL or the override the server gives us).
-  const bool manifest_scope_checks_enabled_;
 
   // If true, AppCache resource fetches that return a 304 response will have
   // their cache entry copied and updated based on the 304 response.

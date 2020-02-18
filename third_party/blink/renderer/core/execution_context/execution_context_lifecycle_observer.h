@@ -28,7 +28,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXECUTION_CONTEXT_EXECUTION_CONTEXT_LIFECYCLE_OBSERVER_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/lifecycle_observer.h"
+#include "third_party/blink/renderer/platform/context_lifecycle_observer.h"
 
 namespace blink {
 
@@ -102,16 +102,12 @@ class CORE_EXPORT ContextClient : public GarbageCollectedMixin {
 //
 // If none of the above applies, prefer the simpler ContextClient.
 class CORE_EXPORT ExecutionContextLifecycleObserver
-    : public GarbageCollectedMixin {
+    : public ContextLifecycleObserver {
  public:
-  virtual void ContextDestroyed() {}
-
-  // Call before clearing an observer list.
-  void ObserverListWillBeCleared();
 
   // Returns the execution context until it is detached.
   // From then on, returns null instead.
-  ExecutionContext* GetExecutionContext() const { return execution_context_; }
+  ExecutionContext* GetExecutionContext() const;
   virtual void SetExecutionContext(ExecutionContext*);
 
   // If associated with a live document, returns the associated frame.
@@ -124,6 +120,8 @@ class CORE_EXPORT ExecutionContextLifecycleObserver
   };
 
   Type ObserverType() const { return observer_type_; }
+
+  bool IsExecutionContextLifecycleObserver() const override { return true; }
 
   void Trace(Visitor*) override;
 
@@ -140,7 +138,6 @@ class CORE_EXPORT ExecutionContextLifecycleObserver
 
  private:
   Type observer_type_;
-  WeakMember<ExecutionContext> execution_context_;
 };
 
 // DOMWindowClient is a helper to associate an object with a LocalDOMWindow.

@@ -9,9 +9,6 @@
 
 namespace network {
 
-// The name of the "Accept" header.
-COMPONENT_EXPORT(NETWORK_SERVICE) extern const char kAcceptHeader[];
-
 // Accept header used for frame requests.
 COMPONENT_EXPORT(NETWORK_SERVICE)
 extern const char kFrameAcceptHeader[];

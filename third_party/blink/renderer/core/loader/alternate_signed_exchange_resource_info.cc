@@ -175,7 +175,7 @@ AlternateSignedExchangeResourceInfo::FindMatchingEntry(
     accept_langs += language.Utf8();
   }
   net::HttpRequestHeaders request_headers;
-  request_headers.SetHeader("accept", accept_header);
+  request_headers.SetHeader(net::HttpRequestHeaders::kAccept, accept_header);
 
   WebPackageRequestMatcher matcher(request_headers, accept_langs);
   const auto variant_keys_list_it =

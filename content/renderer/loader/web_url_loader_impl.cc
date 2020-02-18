@@ -52,6 +52,7 @@
 #include "net/cert/ct_sct_to_string.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -627,14 +628,16 @@ void WebURLLoaderImpl::Context::Start(
 
   // TODO(yhirano): Move the logic below to blink/platform/loader.
   if (resource_type == blink::mojom::ResourceType::kStylesheet) {
-    request->headers.SetHeader(network::kAcceptHeader, kStylesheetAcceptHeader);
+    request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
+                               kStylesheetAcceptHeader);
   } else if (resource_type == blink::mojom::ResourceType::kFavicon ||
              resource_type == blink::mojom::ResourceType::kImage) {
-    request->headers.SetHeader(network::kAcceptHeader, kImageAcceptHeader);
+    request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
+                               kImageAcceptHeader);
   } else {
     // Calling SetHeaderIfMissing() instead of SetHeader() because JS can
     // manually set an accept header on an XHR.
-    request->headers.SetHeaderIfMissing(network::kAcceptHeader,
+    request->headers.SetHeaderIfMissing(net::HttpRequestHeaders::kAccept,
                                         network::kDefaultAcceptHeader);
   }
 

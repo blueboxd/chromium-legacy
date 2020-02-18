@@ -31,8 +31,9 @@ class NavigationPredictorPreconnectClientBrowserTest
  public:
   NavigationPredictorPreconnectClientBrowserTest()
       : subresource_filter::SubresourceFilterBrowserTest() {
-    feature_list_.InitFromCommandLine(std::string(),
-                                      "NavigationPredictorPreconnectHoldback");
+    feature_list_.InitFromCommandLine(
+        std::string(),
+        "NavigationPredictorPreconnectHoldback,PreconnectToSearch");
   }
 
   void SetUp() override {
@@ -189,7 +190,7 @@ class NavigationPredictorPreconnectClientBrowserTestWithHoldback
   NavigationPredictorPreconnectClientBrowserTestWithHoldback()
       : NavigationPredictorPreconnectClientBrowserTest() {
     feature_list_.InitFromCommandLine("NavigationPredictorPreconnectHoldback",
-                                      std::string());
+                                      "PreconnectToSearch");
   }
 
  private:

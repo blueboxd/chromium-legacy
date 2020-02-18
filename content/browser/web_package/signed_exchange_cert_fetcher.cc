@@ -22,8 +22,8 @@
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
+#include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
-#include "services/network/loader_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -121,7 +121,7 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
   // Cert requests should not send credential informartion, because the default
   // credentials mode of Fetch is "omit".
   resource_request_->credentials_mode = network::mojom::CredentialsMode::kOmit;
-  resource_request_->headers.SetHeader(network::kAcceptHeader,
+  resource_request_->headers.SetHeader(net::HttpRequestHeaders::kAccept,
                                        kCertChainMimeType);
   if (force_fetch) {
     resource_request_->load_flags |=

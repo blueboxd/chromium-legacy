@@ -369,6 +369,11 @@
     // Mount USB device containing partitions.
     await sendTestMessage({name: 'mountUsbWithPartitions'});
 
+    // Wait for the USB root to be available.
+    await remoteCall.waitForElement(
+        appId, '#directory-tree [entry-label="Drive Label"]');
+    await navigateWithDirectoryTree(appId, '/Drive Label');
+
     // Wait for 2 removable partitions to appear in the directory tree.
     await repeatUntil(async () => {
       const partitions = await remoteCall.callRemoteTestUtil(
@@ -2210,6 +2215,29 @@
     // Open Quick View on the check-selected files.
     await openQuickViewMultipleSelection(appId, ['Beautiful', 'Desktop']);
 
+    /**
+     * The <webview> resides in the <files-safe-media type="audio"> shadow DOM,
+     * which is a child of the #quick-view shadow DOM.
+     */
+    const audioWebView =
+        ['#quick-view', 'files-safe-media[type="audio"]', 'webview'];
+
+    // Wait for the Quick View <webview> to load and display its content.
+    function checkWebViewAudioLoaded(elements) {
+      let haveElements = Array.isArray(elements) && elements.length === 1;
+      if (haveElements) {
+        haveElements = elements[0].styles.display.includes('block');
+      }
+      if (!haveElements || elements[0].attributes.loaded !== '') {
+        return pending(caller, 'Waiting for <webview> to load.');
+      }
+      return;
+    }
+    await repeatUntil(async () => {
+      return checkWebViewAudioLoaded(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [audioWebView, ['display']]));
+    });
+
     // Open the Quick View delete confirm dialog.
     const deleteKey = ['#quick-view', 'Delete', false, false, false];
     chrome.test.assertTrue(
@@ -2228,7 +2256,7 @@
      * The <webview> resides in the <files-safe-media type="image"> shadow DOM,
      * which is a child of the #quick-view shadow DOM.
      */
-    const webView =
+    const imageWebView =
         ['#quick-view', 'files-safe-media[type="image"]', 'webview'];
 
     // Wait for the Quick View <webview> to load and display its content.
@@ -2244,7 +2272,7 @@
     }
     await repeatUntil(async () => {
       return checkWebViewImageLoaded(await remoteCall.callRemoteTestUtil(
-          'deepQueryAllElements', appId, [webView, ['display']]));
+          'deepQueryAllElements', appId, [imageWebView, ['display']]));
     });
 
     // Open the Quick View delete confirm dialog.

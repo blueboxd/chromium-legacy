@@ -333,6 +333,9 @@ testcase.keyboardSelectDriveDirectoryTree = async () => {
   // Focus the directory tree.
   await remoteCall.callRemoteTestUtil('focus', appId, ['#directory-tree']);
 
+  // Wait for Google Drive root to be available.
+  await remoteCall.waitForElement(appId, '.drive-volume');
+
   // Select Google Drive in the directory tree; as of the time of writing, it's
   // the last item so this happens to work.
   await remoteCall.fakeKeyDown(

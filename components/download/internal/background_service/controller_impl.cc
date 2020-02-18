@@ -1114,7 +1114,7 @@ void ControllerImpl::HandleStartDownloadResponse(
     DownloadClient client,
     const std::string& guid,
     DownloadParams::StartResult result,
-    const DownloadParams::StartCallback& callback) {
+    DownloadParams::StartCallback callback) {
   stats::LogStartDownloadResult(client, result);
 
   // UNEXPECTED_GUID means the guid was already in use.  Don't remove this entry
@@ -1130,7 +1130,7 @@ void ControllerImpl::HandleStartDownloadResponse(
   if (callback.is_null())
     return;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, guid, result));
+      FROM_HERE, base::BindOnce(std::move(callback), guid, result));
 }
 
 void ControllerImpl::HandleCompleteDownload(CompletionType type,

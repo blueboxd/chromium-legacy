@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/feature_policy/feature_policy_parser_delegate.h"
 #include "third_party/blink/renderer/core/frame/dom_timer_coordinator.h"
+#include "third_party/blink/renderer/platform/context_lifecycle_notifier.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap_observer_list.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -80,7 +81,6 @@ class SecurityContextInit;
 class SecurityOrigin;
 class ScriptState;
 class TrustedTypePolicyFactory;
-class ExecutionContextLifecycleObserver;
 
 enum class TaskType : unsigned char;
 
@@ -119,6 +119,7 @@ enum class SecureContextMode { kInsecureContext, kSecureContext };
 // Document to inherit from some of ExecutionContext's parent classes publicly.
 class CORE_EXPORT ExecutionContext
     : public Supplementable<ExecutionContext>,
+      public ContextLifecycleNotifier,
       public virtual ConsoleLogger,
       public virtual UseCounter,
       public virtual FeaturePolicyParserDelegate {
@@ -332,8 +333,9 @@ class CORE_EXPORT ExecutionContext
 
   String addressSpaceForBindings() const;
 
-  HeapObserverList<ExecutionContextLifecycleObserver>&
-  ContextLifecycleObserverList() {
+  void AddContextLifecycleObserver(ContextLifecycleObserver*) override;
+  void RemoveContextLifecycleObserver(ContextLifecycleObserver*) override;
+  HeapObserverList<ContextLifecycleObserver>& ContextLifecycleObserverList() {
     return context_lifecycle_observer_list_;
   }
   unsigned ContextLifecycleStateObserverCountForTesting() const;
@@ -380,8 +382,7 @@ class CORE_EXPORT ExecutionContext
 
   DOMTimerCoordinator timers_;
 
-  HeapObserverList<ExecutionContextLifecycleObserver>
-      context_lifecycle_observer_list_;
+  HeapObserverList<ContextLifecycleObserver> context_lifecycle_observer_list_;
 
   // Counter that keeps track of how many window interaction calls are allowed
   // for this ExecutionContext. Callers are expected to call

@@ -270,7 +270,17 @@ void AppBrowserController::DidStartNavigation(
   SetInitialURL(navigation_handle->GetURL());
 }
 
+void AppBrowserController::DOMContentLoaded(
+    content::RenderFrameHost* render_frame_host) {
+  // We hold off changing theme color for a new tab until the page is loaded.
+  DidChangeThemeColor();
+}
+
 void AppBrowserController::DidChangeThemeColor() {
+  base::Optional<SkColor> theme_color = GetThemeColor();
+  if (theme_color == last_theme_color_)
+    return;
+  last_theme_color_ = theme_color;
   UpdateThemePack();
   browser_->window()->UpdateFrameColor();
   if (has_tab_strip_) {
@@ -317,7 +327,13 @@ void AppBrowserController::OnTabStripModelChanged(
     const TabStripSelectionChange& selection) {
   if (selection.active_tab_changed()) {
     content::WebContentsObserver::Observe(selection.new_contents);
-    DidChangeThemeColor();
+    // Update themes when we switch tabs, or create the first tab, but not
+    // when we create 2nd or subsequent tabs. They should keep current theme
+    // until page loads. See |DOMContentLoaded|.
+    if (change.type() != TabStripModelChange::kInserted ||
+        tab_strip_model->count() == 1) {
+      DidChangeThemeColor();
+    }
   }
   if (change.type() == TabStripModelChange::kInserted) {
     for (const auto& contents : change.GetInsert()->contents)

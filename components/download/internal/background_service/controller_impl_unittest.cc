@@ -172,8 +172,8 @@ class DownloadServiceControllerImplTest : public testing::Test {
         file_monitor_(nullptr),
         init_callback_called_(false) {
     start_callback_ =
-        base::Bind(&DownloadServiceControllerImplTest::StartCallback,
-                   base::Unretained(this));
+        base::BindRepeating(&DownloadServiceControllerImplTest::StartCallback,
+                            base::Unretained(this));
   }
 
   ~DownloadServiceControllerImplTest() override = default;

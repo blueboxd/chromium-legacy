@@ -138,13 +138,16 @@ public class EphemeralTabCoordinator implements View.OnLayoutChangeListener {
     public void requestOpenSheet(String url, String title, boolean isIncognito) {
         mUrl = url;
         mIsIncognito = isIncognito;
-        if (mSheetContent == null) mSheetContent = createSheetContent();
 
         getContent().loadUrl(url, true);
         getContent().updateBrowserControlsState(true);
+        if (mSheetContent == null) {
+            mSheetContent = createSheetContent();
+            mSheetContent.attachWebContents(
+                    getContent().getWebContents(), (ContentView) getContent().getContainerView());
+        }
         if (mWebContentsObserver == null) mWebContentsObserver = createWebContentsObserver();
-        mSheetContent.attachWebContents(
-                getContent().getWebContents(), (ContentView) getContent().getContainerView());
+
         mSheetContent.updateTitle(title);
         mBottomSheetController.requestShowContent(mSheetContent, true);
         Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());

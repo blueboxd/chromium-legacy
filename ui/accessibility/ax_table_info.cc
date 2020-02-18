@@ -353,21 +353,12 @@ void AXTableInfo::UpdateExtraMacNodes() {
   // Resize.
   extra_mac_nodes.resize(extra_node_count);
 
-  std::vector<AXTreeObserver::Change> changes;
-  changes.reserve(extra_node_count +
-                  1);  // Room for extra nodes + table itself.
-
   // Create column nodes.
-  for (size_t i = 0; i < col_count; i++) {
+  for (size_t i = 0; i < col_count; i++)
     extra_mac_nodes[i] = CreateExtraMacColumnNode(i);
-    changes.push_back(AXTreeObserver::Change(
-        extra_mac_nodes[i], AXTreeObserver::ChangeType::NODE_CREATED));
-  }
 
   // Create table header container node.
   extra_mac_nodes[col_count] = CreateExtraMacTableHeaderNode();
-  changes.push_back(AXTreeObserver::Change(
-      extra_mac_nodes[col_count], AXTreeObserver::ChangeType::NODE_CREATED));
 
   // Update the columns to reflect current state of the table.
   for (size_t i = 0; i < col_count; i++)
@@ -379,12 +370,6 @@ void AXTableInfo::UpdateExtraMacNodes() {
   data.AddIntListAttribute(ax::mojom::IntListAttribute::kIndirectChildIds,
                            all_headers);
   extra_mac_nodes[col_count]->SetData(data);
-
-  changes.push_back(AXTreeObserver::Change(
-      table_node_, AXTreeObserver::ChangeType::NODE_CHANGED));
-  for (AXTreeObserver& observer : tree_->observers()) {
-    observer.OnAtomicUpdateFinished(tree_, false, changes);
-  }
 }
 
 AXNode* AXTableInfo::CreateExtraMacColumnNode(size_t col_index) {
@@ -398,8 +383,13 @@ AXNode* AXTableInfo::CreateExtraMacColumnNode(size_t col_index) {
   data.id = id;
   data.role = ax::mojom::Role::kColumn;
   node->SetData(data);
-  for (AXTreeObserver& observer : tree_->observers())
+  for (AXTreeObserver& observer : tree_->observers()) {
     observer.OnNodeCreated(tree_, node);
+    observer.OnAtomicUpdateFinished(
+        tree_, false,
+        {AXTreeObserver::Change(node,
+                                AXTreeObserver::ChangeType::NODE_CREATED)});
+  }
   return node;
 }
 
@@ -415,8 +405,13 @@ AXNode* AXTableInfo::CreateExtraMacTableHeaderNode() {
   data.role = ax::mojom::Role::kTableHeaderContainer;
   node->SetData(data);
 
-  for (AXTreeObserver& observer : tree_->observers())
+  for (AXTreeObserver& observer : tree_->observers()) {
     observer.OnNodeCreated(tree_, node);
+    observer.OnAtomicUpdateFinished(
+        tree_, false,
+        {AXTreeObserver::Change(node,
+                                AXTreeObserver::ChangeType::NODE_CREATED)});
+  }
 
   return node;
 }
@@ -450,13 +445,10 @@ void AXTableInfo::UpdateExtraMacColumnNodeAttributes(size_t col_index) {
 }
 
 void AXTableInfo::ClearExtraMacNodes() {
-  for (AXNode* extra_mac_node : extra_mac_nodes) {
+  for (size_t i = 0; i < extra_mac_nodes.size(); i++) {
     for (AXTreeObserver& observer : tree_->observers())
-      observer.OnNodeWillBeDeleted(tree_, extra_mac_node);
-    AXNode::AXID deleted_id = extra_mac_node->id();
-    delete extra_mac_node;
-    for (AXTreeObserver& observer : tree_->observers())
-      observer.OnNodeDeleted(tree_, deleted_id);
+      observer.OnNodeWillBeDeleted(tree_, extra_mac_nodes[i]);
+    delete extra_mac_nodes[i];
   }
 }
 
@@ -464,14 +456,7 @@ AXTableInfo::AXTableInfo(AXTree* tree, AXNode* table_node)
     : tree_(tree), table_node_(table_node) {}
 
 AXTableInfo::~AXTableInfo() {
-  if (!extra_mac_nodes.empty()) {
-    ClearExtraMacNodes();
-    for (AXTreeObserver& observer : tree_->observers()) {
-      observer.OnAtomicUpdateFinished(
-          tree_, false,
-          {{table_node_, AXTreeObserver::ChangeType::NODE_CHANGED}});
-    }
-  }
+  ClearExtraMacNodes();
 }
 
 }  // namespace ui

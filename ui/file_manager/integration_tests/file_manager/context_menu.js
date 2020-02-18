@@ -471,7 +471,6 @@ testcase.checkContextMenuForRenameInput = async () => {
  * context menu is opened from the file list inside the folder called
  * |folderName|. The folder is opened and the white area inside the folder is
  * selected. |folderName| must be inside the Google Drive root.
- * TODO(sashab): Allow specifying a generic path to any folder in the tree.
  *
  * @param {string} commandId ID of the command in the context menu to check.
  * @param {string} folderName Path to the file to open the context menu for.
@@ -487,28 +486,8 @@ async function checkContextMenuInDriveFolder(
   // Optionally copy hello.txt into the clipboard if needed.
   await maybeCopyToClipboard(appId, commandId);
 
-  // Focus the file list.
-  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
-      'focus', appId, ['#file-list:not([hidden])']));
-
-  // Select 'My Drive'.
-  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
-      'selectFolderInTree', appId, ['My Drive']));
-
-  // Wait for My Drive to load.
-  await remoteCall.waitUntilCurrentDirectoryIsChanged(appId, '/My Drive');
-
-  // Expand 'My Drive'.
-  chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(
-      'expandSelectedFolderInTree', appId, []));
-
-  // Select the folder.
-  await remoteCall.callRemoteTestUtil(
-      'selectFolderInTree', appId, [folderName]);
-
-  // Wait the folder to load.
-  await remoteCall.waitUntilCurrentDirectoryIsChanged(
-      appId, '/My Drive/' + folderName);
+  // Navigate to folder.
+  await navigateWithDirectoryTree(appId, '/My Drive/' + folderName);
 
   // Right-click inside the file list.
   chrome.test.assertTrue(!!await remoteCall.callRemoteTestUtil(

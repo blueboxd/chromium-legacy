@@ -347,8 +347,9 @@ void BackgroundFetchDelegateImpl::DownloadUrl(
   params.request_params.method = method;
   params.request_params.url = url;
   params.request_params.request_headers = headers;
-  params.callback = base::Bind(&BackgroundFetchDelegateImpl::OnDownloadReceived,
-                               weak_ptr_factory_.GetWeakPtr());
+  params.callback =
+      base::BindRepeating(&BackgroundFetchDelegateImpl::OnDownloadReceived,
+                          weak_ptr_factory_.GetWeakPtr());
   params.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(traffic_annotation);
 

@@ -2059,13 +2059,13 @@ class CountingDownloadFile : public download::DownloadFileImpl {
   }
 
   void Initialize(InitializeCallback callback,
-                  const CancelRequestCallback& cancel_request_callback,
+                  CancelRequestCallback cancel_request_callback,
                   const download::DownloadItem::ReceivedSlices& received_slices,
                   bool is_parallelizable) override {
     DCHECK(download::GetDownloadTaskRunner()->RunsTasksInCurrentSequence());
     active_files_++;
     download::DownloadFileImpl::Initialize(std::move(callback),
-                                           cancel_request_callback,
+                                           std::move(cancel_request_callback),
                                            received_slices, is_parallelizable);
   }
 

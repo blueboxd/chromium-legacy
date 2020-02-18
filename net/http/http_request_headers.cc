@@ -27,6 +27,7 @@ const char HttpRequestHeaders::kOptionsMethod[] = "OPTIONS";
 const char HttpRequestHeaders::kPostMethod[] = "POST";
 const char HttpRequestHeaders::kTraceMethod[] = "TRACE";
 const char HttpRequestHeaders::kTrackMethod[] = "TRACK";
+const char HttpRequestHeaders::kAccept[] = "Accept";
 const char HttpRequestHeaders::kAcceptCharset[] = "Accept-Charset";
 const char HttpRequestHeaders::kAcceptEncoding[] = "Accept-Encoding";
 const char HttpRequestHeaders::kAcceptLanguage[] = "Accept-Language";

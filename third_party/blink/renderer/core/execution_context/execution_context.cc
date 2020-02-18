@@ -102,12 +102,17 @@ void ExecutionContext::SetLifecycleState(mojom::FrameLifecycleState state) {
   DCHECK(lifecycle_state_ != state);
   lifecycle_state_ = state;
   context_lifecycle_observer_list_.ForEachObserver(
-      [&](ExecutionContextLifecycleObserver* observer) {
-        if (observer->ObserverType() !=
+      [&](ContextLifecycleObserver* observer) {
+        if (!observer->IsExecutionContextLifecycleObserver())
+          return;
+        ExecutionContextLifecycleObserver* execution_context_observer =
+            static_cast<ExecutionContextLifecycleObserver*>(observer);
+        if (execution_context_observer->ObserverType() !=
             ExecutionContextLifecycleObserver::kStateObjectType)
           return;
         ExecutionContextLifecycleStateObserver* state_observer =
-            static_cast<ExecutionContextLifecycleStateObserver*>(observer);
+            static_cast<ExecutionContextLifecycleStateObserver*>(
+                execution_context_observer);
 #if DCHECK_IS_ON()
         DCHECK_EQ(state_observer->GetExecutionContext(), this);
         DCHECK(state_observer->UpdateStateIfNeededCalled());
@@ -119,11 +124,22 @@ void ExecutionContext::SetLifecycleState(mojom::FrameLifecycleState state) {
 void ExecutionContext::NotifyContextDestroyed() {
   is_context_destroyed_ = true;
   context_lifecycle_observer_list_.ForEachObserver(
-      [](ExecutionContextLifecycleObserver* observer) {
+      [](ContextLifecycleObserver* observer) {
         observer->ContextDestroyed();
         observer->ObserverListWillBeCleared();
       });
   context_lifecycle_observer_list_.Clear();
+}
+
+void ExecutionContext::AddContextLifecycleObserver(
+    ContextLifecycleObserver* observer) {
+  context_lifecycle_observer_list_.AddObserver(observer);
+}
+
+void ExecutionContext::RemoveContextLifecycleObserver(
+    ContextLifecycleObserver* observer) {
+  DCHECK(context_lifecycle_observer_list_.HasObserver(observer));
+  context_lifecycle_observer_list_.RemoveObserver(observer);
 }
 
 unsigned ExecutionContext::ContextLifecycleStateObserverCountForTesting()
@@ -131,8 +147,11 @@ unsigned ExecutionContext::ContextLifecycleStateObserverCountForTesting()
   DCHECK(!context_lifecycle_observer_list_.IsIteratingOverObservers());
   unsigned lifecycle_state_observers = 0;
   context_lifecycle_observer_list_.ForEachObserver(
-      [&](ExecutionContextLifecycleObserver* observer) {
-        if (observer->ObserverType() !=
+      [&](ContextLifecycleObserver* observer) {
+        if (!observer->IsExecutionContextLifecycleObserver())
+          return;
+        if (static_cast<ExecutionContextLifecycleObserver*>(observer)
+                ->ObserverType() !=
             ExecutionContextLifecycleObserver::kStateObjectType)
           return;
         lifecycle_state_observers++;
@@ -323,6 +342,7 @@ void ExecutionContext::Trace(Visitor* visitor) {
   visitor->Trace(origin_trial_context_);
   visitor->Trace(timers_);
   visitor->Trace(context_lifecycle_observer_list_);
+  ContextLifecycleNotifier::Trace(visitor);
   ConsoleLogger::Trace(visitor);
   Supplementable<ExecutionContext>::Trace(visitor);
 }

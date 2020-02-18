@@ -198,9 +198,9 @@ CancelCallback DriveUploader::UploadNewFile(
       std::make_unique<UploadFileInfo>(local_file_path, content_type, callback,
                                        progress_callback,
                                        GetWakeLockProvider()),
-      base::Bind(&DriveUploader::CallUploadServiceAPINewFile,
-                 weak_ptr_factory_.GetWeakPtr(), parent_resource_id, title,
-                 options, current_batch_request_));
+      base::BindOnce(&DriveUploader::CallUploadServiceAPINewFile,
+                     weak_ptr_factory_.GetWeakPtr(), parent_resource_id, title,
+                     options, current_batch_request_));
 }
 
 void DriveUploader::StartBatchProcessing() {
@@ -230,9 +230,9 @@ CancelCallback DriveUploader::UploadExistingFile(
       std::make_unique<UploadFileInfo>(local_file_path, content_type, callback,
                                        progress_callback,
                                        GetWakeLockProvider()),
-      base::Bind(&DriveUploader::CallUploadServiceAPIExistingFile,
-                 weak_ptr_factory_.GetWeakPtr(), resource_id, options,
-                 current_batch_request_));
+      base::BindOnce(&DriveUploader::CallUploadServiceAPIExistingFile,
+                     weak_ptr_factory_.GetWeakPtr(), resource_id, options,
+                     current_batch_request_));
 }
 
 CancelCallback DriveUploader::ResumeUploadFile(
@@ -252,13 +252,13 @@ CancelCallback DriveUploader::ResumeUploadFile(
   upload_file_info->upload_location = upload_location;
 
   return StartUploadFile(std::move(upload_file_info),
-                         base::Bind(&DriveUploader::StartGetUploadStatus,
-                                    weak_ptr_factory_.GetWeakPtr()));
+                         base::BindOnce(&DriveUploader::StartGetUploadStatus,
+                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
 CancelCallback DriveUploader::StartUploadFile(
     std::unique_ptr<UploadFileInfo> upload_file_info,
-    const StartInitiateUploadCallback& start_initiate_upload_callback) {
+    StartInitiateUploadCallback start_initiate_upload_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "Uploading file: " << upload_file_info->DebugString();
 
@@ -270,13 +270,13 @@ CancelCallback DriveUploader::StartUploadFile(
       base::BindOnce(&DriveUploader::StartUploadFileAfterGetFileSize,
                      weak_ptr_factory_.GetWeakPtr(),
                      std::move(upload_file_info),
-                     start_initiate_upload_callback));
+                     std::move(start_initiate_upload_callback)));
   return info_ptr->GetCancelCallback();
 }
 
 void DriveUploader::StartUploadFileAfterGetFileSize(
     std::unique_ptr<UploadFileInfo> upload_file_info,
-    const StartInitiateUploadCallback& start_initiate_upload_callback,
+    StartInitiateUploadCallback start_initiate_upload_callback,
     bool get_file_size_result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -290,7 +290,7 @@ void DriveUploader::StartUploadFileAfterGetFileSize(
     UploadFailed(std::move(upload_file_info), DRIVE_CANCELLED);
     return;
   }
-  start_initiate_upload_callback.Run(std::move(upload_file_info));
+  std::move(start_initiate_upload_callback).Run(std::move(upload_file_info));
 }
 
 void DriveUploader::CallUploadServiceAPINewFile(

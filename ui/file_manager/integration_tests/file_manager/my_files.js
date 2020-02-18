@@ -155,8 +155,7 @@ testcase.myFilesUpdatesChildren = async () => {
 
   // Select Downloads folder.
   const isDriveQuery = false;
-  await remoteCall.callRemoteTestUtil(
-      'selectInDirectoryTree', appId, [downloadsQuery, isDriveQuery]);
+  await navigateWithDirectoryTree(appId, '/My files/Downloads');
 
   // Wait for gear menu to be displayed.
   await remoteCall.waitForElement(appId, '#gear-button');
@@ -184,6 +183,13 @@ testcase.myFilesUpdatesChildren = async () => {
   await remoteCall.waitForFiles(
       appId, TestEntryInfo.getExpectedRows([hiddenFolder, ENTRIES.beautiful]),
       {ignoreFileSize: true, ignoreLastModifiedTime: true});
+
+  // Wait for Downloads folder to have the expand icon because of hidden folder.
+  const hasChildren = ' > .tree-row[has-children=true]';
+  await remoteCall.waitForElement(appId, downloadsQuery + hasChildren);
+
+  // Expand Downloads to display the ".hidden-folder".
+  await expandTreeItem(appId, downloadsQuery);
 
   // Check the hidden folder to be displayed in LHS.
   // Children of Downloads and named ".hidden-folder".

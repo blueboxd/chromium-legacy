@@ -68,6 +68,7 @@ class NET_EXPORT HttpRequestHeaders {
   static const char kTraceMethod[];
   static const char kTrackMethod[];
 
+  static const char kAccept[];
   static const char kAcceptCharset[];
   static const char kAcceptEncoding[];
   static const char kAcceptLanguage[];

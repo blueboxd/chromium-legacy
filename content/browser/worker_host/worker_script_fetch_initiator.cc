@@ -45,6 +45,7 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/load_flags.h"
 #include "net/base/network_isolation_key.h"
+#include "net/http/http_request_headers.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
@@ -264,7 +265,7 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
   // are allowed and the check doesn't work well. See https://crbug.com/867302.
 
   // Set the "Accept" header.
-  resource_request->headers.SetHeaderIfMissing(network::kAcceptHeader,
+  resource_request->headers.SetHeaderIfMissing(net::HttpRequestHeaders::kAccept,
                                                network::kDefaultAcceptHeader);
 
   blink::mojom::RendererPreferences renderer_preferences;

@@ -455,9 +455,9 @@ body[type='open-multi-file'].check-select .dialog-header {
 
 .dialog-header cr-button,
 .dialog-header button {
-  --text-color: white;
   border: none;
   border-radius: 2px;
+  box-sizing: border-box;
   cursor: pointer;
   height: 32px;
   margin: 0 8px;
@@ -466,6 +466,14 @@ body[type='open-multi-file'].check-select .dialog-header {
   position: relative;
   text-transform: uppercase;
   z-index: 1;
+}
+
+body:not(check-select) .dialog-header:not(.files-ng) cr-button {
+  --text-color: white;
+}
+
+body.check-select .dialog-header:not(.files-ng) cr-button {
+  --text-color: rgb(90, 90, 90);
 }
 
 .dialog-header.files-ng cr-button {
@@ -633,7 +641,7 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
   -webkit-mask-image: url(../images/files/ui/search.svg);
 }
 
-body.check-select #search-button > .icon {
+body.check-select .dialog-header #search-button > .icon {
   background-image: -webkit-image-set(
       url(../images/files/ui/search.png) 1x,
       url(../images/files/ui/2x/search.png) 2x);
@@ -649,7 +657,7 @@ body.check-select #search-button > .icon {
   -webkit-mask-image: url(../images/files/ui/share_ng.svg);
 }
 
-body.check-select #share-menu-button > .icon {
+body.check-select .dialog-header #share-menu-button > .icon {
   background-image: url(../images/files/ui/share.svg);
 }
 
@@ -663,7 +671,7 @@ body.check-select #share-menu-button > .icon {
   -webkit-mask-image: url(../images/files/ui/delete_ng.svg);
 }
 
-body.check-select #delete-button > .icon {
+body.check-select .dialog-header #delete-button > .icon {
   background-image: url(../images/files/ui/delete.svg);
 }
 

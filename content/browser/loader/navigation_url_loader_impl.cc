@@ -444,7 +444,8 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
             browser_context_)) {
       accept_value.append(kAcceptHeaderSignedExchangeSuffix);
     }
-    resource_request_->headers.SetHeader(network::kAcceptHeader, accept_value);
+    resource_request_->headers.SetHeader(net::HttpRequestHeaders::kAccept,
+                                         accept_value);
 
     // NetworkService cases only.
     // Requests to WebUI scheme won't get redirected to/from other schemes
@@ -829,9 +830,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
 
     // Don't send Accept: application/signed-exchange for fallback redirects.
     if (redirect_info_.is_signed_exchange_fallback_redirect) {
-      url_loader_modified_headers_.SetHeader(network::kAcceptHeader,
+      url_loader_modified_headers_.SetHeader(net::HttpRequestHeaders::kAccept,
                                              network::kFrameAcceptHeader);
-      resource_request_->headers.SetHeader(network::kAcceptHeader,
+      resource_request_->headers.SetHeader(net::HttpRequestHeaders::kAccept,
                                            network::kFrameAcceptHeader);
     }
 

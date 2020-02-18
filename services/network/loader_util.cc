@@ -6,7 +6,6 @@
 
 namespace network {
 
-const char kAcceptHeader[] = "Accept";
 const char kFrameAcceptHeader[] =
     "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,"
     "image/apng,*/*;q=0.8";

@@ -142,7 +142,8 @@ struct DownloadParams {
     COUNT,
   };
 
-  using StartCallback = base::Callback<void(const std::string&, StartResult)>;
+  using StartCallback =
+      base::RepeatingCallback<void(const std::string&, StartResult)>;
 
   DownloadParams();
   DownloadParams(const DownloadParams& other);

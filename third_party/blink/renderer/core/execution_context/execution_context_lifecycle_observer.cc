@@ -56,22 +56,14 @@ ExecutionContextLifecycleObserver::ExecutionContextLifecycleObserver(
   SetExecutionContext(execution_context);
 }
 
-void ExecutionContextLifecycleObserver::ObserverListWillBeCleared() {
-  execution_context_ = nullptr;
+ExecutionContext* ExecutionContextLifecycleObserver::GetExecutionContext()
+    const {
+  return static_cast<ExecutionContext*>(GetContextLifecycleNotifier());
 }
 
 void ExecutionContextLifecycleObserver::SetExecutionContext(
     ExecutionContext* execution_context) {
-  if (execution_context == execution_context_)
-    return;
-
-  if (execution_context_)
-    execution_context_->ContextLifecycleObserverList().RemoveObserver(this);
-
-  execution_context_ = execution_context;
-
-  if (execution_context_)
-    execution_context_->ContextLifecycleObserverList().AddObserver(this);
+  SetContextLifecycleNotifier(execution_context);
 }
 
 LocalFrame* ExecutionContextLifecycleObserver::GetFrame() const {
@@ -80,7 +72,7 @@ LocalFrame* ExecutionContextLifecycleObserver::GetFrame() const {
 }
 
 void ExecutionContextLifecycleObserver::Trace(Visitor* visitor) {
-  visitor->Trace(execution_context_);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 DOMWindowClient::DOMWindowClient(LocalDOMWindow* window)

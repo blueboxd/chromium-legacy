@@ -51,6 +51,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_request_headers.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -1168,7 +1169,7 @@ class SignedExchangeAcceptHeaderBrowserTest
   }
 
   void MonitorRequest(const net::test_server::HttpRequest& request) {
-    const auto it = request.headers.find(std::string(network::kAcceptHeader));
+    const auto it = request.headers.find(net::HttpRequestHeaders::kAccept);
     if (it == request.headers.end())
       return;
     // Note this method is called on the EmbeddedTestServer's background thread.

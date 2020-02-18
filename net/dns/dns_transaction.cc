@@ -353,7 +353,8 @@ class DnsHTTPAttempt : public DnsAttempt, public URLRequest::Delegate {
     }
 
     HttpRequestHeaders extra_request_headers;
-    extra_request_headers.SetHeader("Accept", kDnsOverHttpResponseContentType);
+    extra_request_headers.SetHeader(HttpRequestHeaders::kAccept,
+                                    kDnsOverHttpResponseContentType);
     // Send minimal request headers where possible.
     extra_request_headers.SetHeader(HttpRequestHeaders::kAcceptLanguage, "*");
     extra_request_headers.SetHeader(HttpRequestHeaders::kUserAgent, "Chrome");

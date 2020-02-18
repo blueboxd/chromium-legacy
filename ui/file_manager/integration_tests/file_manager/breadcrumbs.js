@@ -76,6 +76,10 @@
         await remoteCall.callRemoteTestUtil('getBreadcrumbPath', appId, []);
     chrome.test.assertEq('/Os meus ficheiros/Transferências', path);
 
+    // Expand Downloads folder.
+    await expandTreeItem(
+        appId, '#directory-tree [full-path-for-testing="/Downloads"]');
+
     // Navigate to Downloads/photos.
     await remoteCall.waitAndClickElement(
         appId, '[full-path-for-testing="/Downloads/photos"]');

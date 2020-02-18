@@ -187,7 +187,7 @@ DownloadFileImpl::~DownloadFileImpl() {
 
 void DownloadFileImpl::Initialize(
     InitializeCallback initialize_callback,
-    const CancelRequestCallback& cancel_request_callback,
+    CancelRequestCallback cancel_request_callback,
     const DownloadItem::ReceivedSlices& received_slices,
     bool is_parallelizable) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

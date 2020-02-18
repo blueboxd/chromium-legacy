@@ -57,7 +57,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFile {
 
   // Used to drop the request, when the byte stream reader should be closed on
   // download sequence.
-  typedef base::Callback<void(int64_t offset)> CancelRequestCallback;
+  typedef base::RepeatingCallback<void(int64_t offset)> CancelRequestCallback;
 
   virtual ~DownloadFile() {}
 
@@ -65,7 +65,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadFile {
   // thread as per the comment above, passing DOWNLOAD_INTERRUPT_REASON_NONE
   // on success, or a network download interrupt reason on failure.
   virtual void Initialize(InitializeCallback initialize_callback,
-                          const CancelRequestCallback& cancel_request_callback,
+                          CancelRequestCallback cancel_request_callback,
                           const DownloadItem::ReceivedSlices& received_slices,
                           bool is_parallelizable) = 0;
 

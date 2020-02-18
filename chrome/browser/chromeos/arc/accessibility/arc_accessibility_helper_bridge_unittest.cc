@@ -400,6 +400,23 @@ TEST_F(ArcAccessibilityHelperBridgeTest, ToggleTalkBack) {
   ASSERT_FALSE(helper_bridge->last_event->event_args->GetList()[0].GetBool());
 }
 
+TEST_F(ArcAccessibilityHelperBridgeTest, Toast) {
+  TestArcAccessibilityHelperBridge* helper_bridge =
+      accessibility_helper_bridge();
+  std::vector<std::string> text({"Toast text"});
+  auto event = arc::mojom::AccessibilityEventData::New();
+  event->event_type =
+      arc::mojom::AccessibilityEventType::NOTIFICATION_STATE_CHANGED;
+  event->eventText =
+      base::make_optional<std::vector<std::string>>(std::move(text));
+
+  helper_bridge->OnAccessibilityEvent(event.Clone());
+
+  ASSERT_EQ(1, helper_bridge->GetEventCount(
+                   extensions::api::accessibility_private::
+                       OnAnnounceForAccessibility::kEventName));
+}
+
 // Accessibility event and surface creation/removal are sent in different
 // channels, mojo and wayland. Order of those events can be changed. This is the
 // case where mojo events arrive earlier than surface creation/removal.

@@ -1826,8 +1826,8 @@ void DownloadItemImpl::MaybeCompleteDownload() {
   DCHECK(!IsSavePackageDownload());
 
   if (!IsDownloadReadyForCompletion(
-          base::Bind(&DownloadItemImpl::MaybeCompleteDownload,
-                     weak_ptr_factory_.GetWeakPtr())))
+          base::BindRepeating(&DownloadItemImpl::MaybeCompleteDownload,
+                              weak_ptr_factory_.GetWeakPtr())))
     return;
   // Confirm we're in the proper set of states to be here; have all data, have a
   // history handle, (validated or safe).
@@ -2215,7 +2215,7 @@ void DownloadItemImpl::DeleteDownloadFile() {
 }
 
 bool DownloadItemImpl::IsDownloadReadyForCompletion(
-    const base::Closure& state_change_notification) {
+    base::OnceClosure state_change_notification) {
   // If the download hasn't progressed to the IN_PROGRESS state, then it's not
   // ready for completion.
   if (state_ != IN_PROGRESS_INTERNAL)
@@ -2246,7 +2246,8 @@ bool DownloadItemImpl::IsDownloadReadyForCompletion(
 
   // Give the delegate a chance to hold up a stop sign.  It'll call
   // use back through the passed callback if it does and that state changes.
-  if (!delegate_->ShouldCompleteDownload(this, state_change_notification))
+  if (!delegate_->ShouldCompleteDownload(this,
+                                         std::move(state_change_notification)))
     return false;
 
   return true;

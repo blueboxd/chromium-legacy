@@ -30,7 +30,7 @@ class MockDownloadFile : public DownloadFile {
   // Using the legacy workaround for move-only types in mock methods.
   MOCK_METHOD4(Initialize,
                void(InitializeCallback initialize_callback,
-                    const CancelRequestCallback& cancel_request_callback,
+                    CancelRequestCallback cancel_request_callback,
                     const DownloadItem::ReceivedSlices& received_slices,
                     bool is_parallelizable));
   void AddInputStream(std::unique_ptr<InputStream> input_stream,

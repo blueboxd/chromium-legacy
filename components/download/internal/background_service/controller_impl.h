@@ -186,11 +186,10 @@ class ControllerImpl : public Controller,
   void HandleStartDownloadResponse(DownloadClient client,
                                    const std::string& guid,
                                    DownloadParams::StartResult result);
-  void HandleStartDownloadResponse(
-      DownloadClient client,
-      const std::string& guid,
-      DownloadParams::StartResult result,
-      const DownloadParams::StartCallback& callback);
+  void HandleStartDownloadResponse(DownloadClient client,
+                                   const std::string& guid,
+                                   DownloadParams::StartResult result,
+                                   DownloadParams::StartCallback callback);
 
   // Handles and clears any pending task finished callbacks.
   void HandleTaskFinished(DownloadTaskType task_type,

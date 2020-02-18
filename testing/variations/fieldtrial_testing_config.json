@@ -5130,6 +5130,28 @@
             ]
         }
     ],
+    "PreconnectToSearch": [
+        {
+            "platforms": [
+                "android",
+                "linux",
+                "windows",
+                "chromeos",
+                "mac"
+            ],
+            "experiments": [
+                {
+                    "name": "EnabledWithoutStartupDelay",
+                    "params": {
+                        "startup_delay_ms": "0"
+                    },
+                    "enable_features": [
+                        "PreconnectToSearch"
+                    ]
+                }
+            ]
+        }
+    ],
     "PrefetchSRPAndroid": [
         {
             "platforms": [

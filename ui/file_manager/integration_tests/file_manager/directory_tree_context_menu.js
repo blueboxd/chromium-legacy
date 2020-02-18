@@ -665,10 +665,10 @@
         await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.photos], []);
 
     // Navigate to the photos folder.
-    navigateWithDirectoryTree(appId, '/My files/Downloads/photos');
+    await navigateWithDirectoryTree(appId, '/My files/Downloads/photos');
 
     // Start renaming the photos folder.
-    clickDirectoryTreeContextMenuItem(appId, '/Downloads/photos', 'rename');
+    await clickDirectoryTreeContextMenuItem(appId, '/Downloads/photos', 'rename');
 
     // Check: the renaming text input element should appear.
     const textInput = '#directory-tree .tree-row[selected] input';

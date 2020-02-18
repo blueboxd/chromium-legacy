@@ -143,6 +143,7 @@ class AppBrowserController : public TabStripModelObserver,
 
   // content::WebContentsObserver:
   void DidStartNavigation(content::NavigationHandle* handle) override;
+  void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override;
   void DidChangeThemeColor() override;
 
   // TabStripModelObserver:
@@ -180,6 +181,7 @@ class AppBrowserController : public TabStripModelObserver,
 
   scoped_refptr<BrowserThemePack> theme_pack_;
   std::unique_ptr<ui::ThemeProvider> theme_provider_;
+  base::Optional<SkColor> last_theme_color_;
 
   base::Optional<SystemAppType> system_app_type_;
 

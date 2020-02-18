@@ -630,7 +630,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   // Check if a download is ready for completion.  The callback provided
   // may be called at some point in the future if an external entity
   // state has change s.t. this routine should be checked again.
-  bool IsDownloadReadyForCompletion(const base::Closure& state_change_notify);
+  bool IsDownloadReadyForCompletion(base::OnceClosure state_change_notify);
 
   // Call to transition state; all state transitions should go through this.
   // |notify_action| specifies whether or not to call UpdateObservers() after

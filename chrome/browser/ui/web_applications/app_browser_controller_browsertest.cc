@@ -4,13 +4,20 @@
 
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 
+#include <memory>
+
+#include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/installable/installable_metrics.h"
+#include "chrome/browser/themes/custom_theme_supplier.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/components/install_manager.h"
@@ -22,10 +29,60 @@
 #include "chrome/common/web_application_info.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/test_utils.h"
+#include "content/public/test/theme_change_waiter.h"
 #include "extensions/browser/extension_registry.h"
 
+namespace {
+SkColor GetTabColor(Browser* browser) {
+  CustomThemeSupplier* theme = browser->app_controller()->GetThemeSupplier();
+  SkColor result;
+  EXPECT_TRUE(theme->GetColor(ThemeProperties::COLOR_TOOLBAR, &result));
+  return result;
+}
+}  // namespace
+
 namespace web_app {
+
+class LoadFinishedWaiter : public TabStripModelObserver,
+                           public content::WebContentsObserver {
+ public:
+  explicit LoadFinishedWaiter(Browser* browser) : browser_(browser) {
+    browser_->tab_strip_model()->AddObserver(this);
+  }
+
+  ~LoadFinishedWaiter() override {
+    browser_->tab_strip_model()->RemoveObserver(this);
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+  SkColor GetColorAtNavigation() { return color_at_navigation_; }
+
+  // TabStripModelObserver:
+  void OnTabStripModelChanged(
+      TabStripModel* tab_strip_model,
+      const TabStripModelChange& change,
+      const TabStripSelectionChange& selection) override {
+    if (selection.active_tab_changed())
+      content::WebContentsObserver::Observe(selection.new_contents);
+  }
+
+  // content::WebContentsObserver:
+  void DidFinishNavigation(content::NavigationHandle* handle) override {
+    color_at_navigation_ = GetTabColor(browser_);
+  }
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& validated_url) override {
+    run_loop_.Quit();
+  }
+
+ private:
+  Browser* browser_;
+  SkColor color_at_navigation_;
+  base::RunLoop run_loop_;
+};
 
 class AppBrowserControllerBrowserTest : public InProcessBrowserTest {
  public:
@@ -39,6 +96,9 @@ class AppBrowserControllerBrowserTest : public InProcessBrowserTest {
     app_browser_ = web_app::LaunchWebAppBrowser(
         browser()->profile(), test_system_web_app_installation_->GetAppId());
     tabbed_app_url_ = test_system_web_app_installation_->GetAppUrl();
+    ASSERT_TRUE(content::NavigateToURL(
+        app_browser_->tab_strip_model()->GetActiveWebContents(),
+        tabbed_app_url_));
   }
 
   GURL GetActiveTabURL() {
@@ -92,6 +152,40 @@ IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, TabsTest) {
   chrome::CloseTab(app_browser_);
   EXPECT_EQ(app_browser_->tab_strip_model()->count(), 1);
   EXPECT_EQ(GetActiveTabURL(), tabbed_app_url_);
+}
+
+IN_PROC_BROWSER_TEST_F(AppBrowserControllerBrowserTest, TabLoadNoThemeChange) {
+  InstallAndLaunchMockApp();
+  EXPECT_EQ(app_browser_->tab_strip_model()->count(), 1);
+  // First tab gets manifest theme immediately.
+  EXPECT_EQ(GetTabColor(app_browser_), SK_ColorGREEN);
+
+  // Dynamically change color.
+  content::WebContents* web_contents =
+      app_browser_->tab_strip_model()->GetActiveWebContents();
+  content::ThemeChangeWaiter theme_waiter(web_contents);
+  EXPECT_TRUE(content::ExecJs(web_contents, R"(
+      document.documentElement.innerHTML =
+          '<meta name="theme-color" content="yellow">';
+  )",
+                              content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                              /*world_id=*/1));
+  theme_waiter.Wait();
+  EXPECT_EQ(GetTabColor(app_browser_), SK_ColorYELLOW);
+
+  // Second tab keeps dynamic theme until loaded.
+  LoadFinishedWaiter load_waiter(app_browser_);
+  chrome::NewTab(app_browser_);
+  load_waiter.Wait();
+  EXPECT_EQ(app_browser_->tab_strip_model()->count(), 2);
+  EXPECT_EQ(load_waiter.GetColorAtNavigation(), SK_ColorYELLOW);
+  EXPECT_EQ(GetTabColor(app_browser_), SK_ColorGREEN);
+
+  // Switching tabs updates themes immediately.
+  chrome::SelectNextTab(app_browser_);
+  EXPECT_EQ(GetTabColor(app_browser_), SK_ColorYELLOW);
+  chrome::SelectNextTab(app_browser_);
+  EXPECT_EQ(GetTabColor(app_browser_), SK_ColorGREEN);
 }
 
 }  // namespace web_app

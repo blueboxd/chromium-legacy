@@ -160,16 +160,17 @@ class DriveUploader : public DriveUploaderInterface {
  private:
   class RefCountedBatchRequest;
   struct UploadFileInfo;
-  typedef base::Callback<void(std::unique_ptr<UploadFileInfo> upload_file_info)>
+  typedef base::OnceCallback<void(
+      std::unique_ptr<UploadFileInfo> upload_file_info)>
       StartInitiateUploadCallback;
 
   // Starts uploading a file with |upload_file_info|.
   google_apis::CancelCallback StartUploadFile(
       std::unique_ptr<UploadFileInfo> upload_file_info,
-      const StartInitiateUploadCallback& start_initiate_upload_callback);
+      StartInitiateUploadCallback start_initiate_upload_callback);
   void StartUploadFileAfterGetFileSize(
       std::unique_ptr<UploadFileInfo> upload_file_info,
-      const StartInitiateUploadCallback& start_initiate_upload_callback,
+      StartInitiateUploadCallback start_initiate_upload_callback,
       bool get_file_size_result);
 
   // Checks file size and call InitiateUploadNewFile or MultipartUploadNewFile

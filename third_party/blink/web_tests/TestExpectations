@@ -2815,6 +2815,9 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-004.html [ Fail
 crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-values/ex-unit-004.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-values/ex-unit-004.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-values/ex-unit-004.html [ Failure ]
 crbug.com/626703 [ Linux ] virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/gap-002-lr.html [ Failure ]
 crbug.com/626703 [ Mac ] virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/gap-002-lr.html [ Failure ]
 crbug.com/626703 [ Win ] virtual/layout_ng_flex_box/external/wpt/css/css-flexbox/gap-002-lr.html [ Failure ]
@@ -3266,10 +3269,6 @@ crbug.com/626703 [ Mac10.13 ] external/wpt/preload/onload-event.html [ Failure T
 crbug.com/626703 [ Retina ] external/wpt/preload/onload-event.html [ Timeout ]
 crbug.com/626703 external/wpt/html/rendering/widgets/button-layout/anonymous-button-content-box.html [ Failure ]
 crbug.com/626703 external/wpt/html/rendering/widgets/button-layout/inline-level.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-values/ch-unit-015.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-values/ch-unit-013.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-values/ch-unit-018.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-values/ch-unit-014.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-values/ch-unit-017.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/html/rendering/widgets/button-layout/propagate-text-decoration.html [ Failure ]
 crbug.com/626703 external/wpt/xhr/abort-after-stop.any.worker.html [ Timeout ]

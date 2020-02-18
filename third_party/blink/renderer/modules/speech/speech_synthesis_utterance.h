@@ -40,7 +40,7 @@ class SpeechSynthesis;
 
 class SpeechSynthesisUtterance final
     : public EventTargetWithInlineData,
-      public ContextClient,
+      public ExecutionContextClient,
       public mojom::blink::SpeechSynthesisClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(SpeechSynthesisUtterance, Dispose);
@@ -89,7 +89,7 @@ class SpeechSynthesisUtterance final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(boundary, kBoundary)
 
   ExecutionContext* GetExecutionContext() const override {
-    return ContextClient::GetExecutionContext();
+    return ExecutionContextClient::GetExecutionContext();
   }
 
   void Trace(Visitor*) override;

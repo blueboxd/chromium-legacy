@@ -18,7 +18,7 @@
     await TestRunner.addSnifferPromise(Elements.StylePropertiesSection.prototype, '_editingSelectorCommittedForTest');
 
     TestRunner.addResult('Is editing? ' + UI.isEditing());
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
 
 
     TestRunner.completeTest();

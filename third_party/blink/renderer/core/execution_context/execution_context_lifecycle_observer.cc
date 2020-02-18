@@ -10,32 +10,33 @@
 
 namespace blink {
 
-ContextClient::ContextClient(ExecutionContext* execution_context)
+ExecutionContextClient::ExecutionContextClient(
+    ExecutionContext* execution_context)
     : execution_context_(execution_context) {}
 
-ContextClient::ContextClient(LocalFrame* frame)
+ExecutionContextClient::ExecutionContextClient(LocalFrame* frame)
     : execution_context_(frame ? frame->GetDocument()->ToExecutionContext()
                                : nullptr) {}
 
-ExecutionContext* ContextClient::GetExecutionContext() const {
+ExecutionContext* ExecutionContextClient::GetExecutionContext() const {
   return execution_context_ && !execution_context_->IsContextDestroyed()
              ? execution_context_.Get()
              : nullptr;
 }
 
-Document* ContextClient::GetDocument() const {
+Document* ExecutionContextClient::GetDocument() const {
   return execution_context_
              ? Document::DynamicFrom(
                    static_cast<ExecutionContext*>(execution_context_))
              : nullptr;
 }
 
-LocalFrame* ContextClient::GetFrame() const {
+LocalFrame* ExecutionContextClient::GetFrame() const {
   auto* document = GetDocument();
   return document ? document->GetFrame() : nullptr;
 }
 
-void ContextClient::Trace(Visitor* visitor) {
+void ExecutionContextClient::Trace(Visitor* visitor) {
   visitor->Trace(execution_context_);
 }
 

@@ -45,9 +45,9 @@
     newProperty.valueElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
 }
 
-  function step3() {
+  async function step3() {
     TestRunner.addResult('After adding new rule:');
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
     TestRunner.completeTest();
   }
 })();

@@ -30,7 +30,7 @@ class MockWpPresentation : public GlobalObject {
                     uint32_t callback));
 
   void set_presentation_callback(wl_resource* callback_resource) {
-    DCHECK(!presentation_callback_);
+    DCHECK(!presentation_callback_ || callback_resource == nullptr);
     presentation_callback_ = callback_resource;
   }
 

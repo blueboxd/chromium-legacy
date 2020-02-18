@@ -19,7 +19,7 @@ class ExceptionState;
 class ScriptPromiseResolver;
 
 class KeyboardLayout final : public GarbageCollected<KeyboardLayout>,
-                             public ContextClient {
+                             public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(KeyboardLayout);
 
  public:

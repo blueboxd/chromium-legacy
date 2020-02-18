@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_animation_layout_providing.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_layout.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#include "ios/chrome/browser/ui/util/ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -16,6 +17,7 @@
 namespace {
 const CGFloat kBrowserToGridDuration = 0.3;
 const CGFloat kGridToBrowserDuration = 0.5;
+const CGFloat kReducedMotionDuration = 0.25;
 }  // namespace
 
 @interface TabGridTransitionHandler ()
@@ -41,13 +43,25 @@ const CGFloat kGridToBrowserDuration = 0.5;
 - (void)transitionFromBrowser:(UIViewController*)browser
                     toTabGrid:(UIViewController*)tabGrid
                withCompletion:(void (^)(void))completion {
-  // TODO(crbug.com/1038034): Add support for ReducedMotionAnimator.
 
   [browser willMoveToParentViewController:nil];
 
+  if (UIAccessibilityIsReduceMotionEnabled()) {
+    [self transitionWithReducedAnimationsForTab:browser.view
+                                 beingPresented:NO
+                                 withCompletion:^{
+                                   [browser.view removeFromSuperview];
+                                   [browser removeFromParentViewController];
+                                   if (completion)
+                                     completion();
+                                 }];
+    return;
+  }
+
+  CGFloat duration = self.animationDisabled ? 0 : kBrowserToGridDuration;
   self.animation = [[GridTransitionAnimation alloc]
       initWithLayout:[self transitionLayoutForTabInViewController:browser]
-            duration:kBrowserToGridDuration
+            duration:duration
            direction:GridAnimationDirectionContracting];
 
   UIView* animationContainer = [self.layoutProvider animationViewsContainer];
@@ -81,8 +95,6 @@ const CGFloat kGridToBrowserDuration = 0.5;
 - (void)transitionFromTabGrid:(UIViewController*)tabGrid
                     toBrowser:(UIViewController*)browser
                withCompletion:(void (^)(void))completion {
-  // TODO(crbug.com/1038034): Add support for ReducedMotionAnimator.
-
   [tabGrid addChildViewController:browser];
 
   browser.view.frame = tabGrid.view.bounds;
@@ -90,9 +102,23 @@ const CGFloat kGridToBrowserDuration = 0.5;
 
   browser.view.alpha = 0;
 
+  if (UIAccessibilityIsReduceMotionEnabled() ||
+      !self.layoutProvider.selectedCellVisible) {
+    [self transitionWithReducedAnimationsForTab:browser.view
+                                 beingPresented:YES
+                                 withCompletion:^{
+                                   [browser
+                                       didMoveToParentViewController:tabGrid];
+                                   if (completion)
+                                     completion();
+                                 }];
+    return;
+  }
+
+  CGFloat duration = self.animationDisabled ? 0 : kGridToBrowserDuration;
   self.animation = [[GridTransitionAnimation alloc]
       initWithLayout:[self transitionLayoutForTabInViewController:browser]
-            duration:kGridToBrowserDuration
+            duration:duration
            direction:GridAnimationDirectionExpanding];
 
   UIView* animationContainer = [self.layoutProvider animationViewsContainer];
@@ -151,6 +177,60 @@ const CGFloat kGridToBrowserDuration = 0.5;
          fromView:viewControllerForTab.view];
 
   return layout;
+}
+
+// Animates the transition for the |tab|, whether it is |beingPresented| or not,
+// with reduced animations.
+- (void)transitionWithReducedAnimationsForTab:(UIView*)tab
+                               beingPresented:(BOOL)beingPresented
+                               withCompletion:(void (^)(void))completion {
+  // The animation here creates a simple quick zoom effect -- the tab view
+  // fades in/out as it expands/contracts. The zoom is not large (75% to 100%)
+  // and is centered on the view's final center position, so it's not directly
+  // connected to any tab grid positions.
+  CGFloat tabFinalAlpha;
+  CGAffineTransform tabFinalTransform;
+  CGFloat tabFinalCornerRadius;
+
+  if (beingPresented) {
+    // If presenting, the tab view animates in from 0% opacity, 75% scale
+    // transform, and a 26pt corner radius
+    tabFinalAlpha = 1;
+    tabFinalTransform = tab.transform;
+    tab.transform = CGAffineTransformScale(tabFinalTransform, 0.75, 0.75);
+    tabFinalCornerRadius = DeviceCornerRadius();
+    tab.layer.cornerRadius = 26.0;
+  } else {
+    // If dismissing, the the tab view animates out to 0% opacity, 75% scale,
+    // and 26px corner radius.
+    tabFinalAlpha = 0;
+    tabFinalTransform = CGAffineTransformScale(tab.transform, 0.75, 0.75);
+    tab.layer.cornerRadius = DeviceCornerRadius();
+    tabFinalCornerRadius = 26.0;
+  }
+
+  // Set clipsToBounds on the animating view so its corner radius will look
+  // right.
+  BOOL oldClipsToBounds = tab.clipsToBounds;
+  tab.clipsToBounds = YES;
+
+  CGFloat duration = self.animationDisabled ? 0 : kReducedMotionDuration;
+  [UIView animateWithDuration:duration
+      delay:0.0
+      options:UIViewAnimationOptionCurveEaseOut
+      animations:^{
+        tab.alpha = tabFinalAlpha;
+        tab.transform = tabFinalTransform;
+        tab.layer.cornerRadius = tabFinalCornerRadius;
+      }
+      completion:^(BOOL finished) {
+        tab.clipsToBounds = oldClipsToBounds;
+        if (!finished && beingPresented) {
+          [tab removeFromSuperview];
+        }
+        if (completion)
+          completion();
+      }];
 }
 
 @end

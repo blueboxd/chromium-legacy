@@ -21,8 +21,9 @@ class TrustedScript;
 class TrustedTypePolicy;
 class TrustedTypePolicyOptions;
 
-class CORE_EXPORT TrustedTypePolicyFactory final : public ScriptWrappable,
-                                                   public ContextClient {
+class CORE_EXPORT TrustedTypePolicyFactory final
+    : public ScriptWrappable,
+      public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(TrustedTypePolicyFactory);
 

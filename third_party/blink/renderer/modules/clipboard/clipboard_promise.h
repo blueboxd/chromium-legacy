@@ -24,7 +24,7 @@ class LocalFrame;
 class ExecutionContext;
 
 class ClipboardPromise final : public GarbageCollected<ClipboardPromise>,
-                               public ContextClient {
+                               public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(ClipboardPromise);
 
  public:

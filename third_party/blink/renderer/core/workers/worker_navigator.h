@@ -44,7 +44,7 @@ namespace blink {
 class CORE_EXPORT WorkerNavigator final
     : public ScriptWrappable,
       public AcceptLanguagesWatcher,
-      public ContextClient,
+      public ExecutionContextClient,
       public NavigatorConcurrentHardware,
       public NavigatorDeviceMemory,
       public NavigatorID,

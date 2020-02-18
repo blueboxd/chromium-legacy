@@ -21,7 +21,7 @@ class ScriptValue;
 // Created for each ExtendableEvent instance.
 class MODULES_EXPORT WaitUntilObserver final
     : public GarbageCollected<WaitUntilObserver>,
-      public ContextClient {
+      public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(WaitUntilObserver);
 
  public:

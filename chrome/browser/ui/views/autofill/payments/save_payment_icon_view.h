@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_SAVE_CARD_ICON_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_SAVE_CARD_ICON_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_SAVE_PAYMENT_ICON_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_SAVE_PAYMENT_ICON_VIEW_H_
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
@@ -17,12 +17,12 @@ class SaveCardBubbleController;
 // The location bar icon to show the Save Credit Card bubble where the user can
 // choose to save the credit card info to use again later without re-entering
 // it.
-class SaveCardIconView : public PageActionIconView {
+class SavePaymentIconView : public PageActionIconView {
  public:
-  SaveCardIconView(CommandUpdater* command_updater,
-                   IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
-                   PageActionIconView::Delegate* page_action_icon_delegate);
-  ~SaveCardIconView() override;
+  SavePaymentIconView(CommandUpdater* command_updater,
+                      IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
+                      PageActionIconView::Delegate* page_action_icon_delegate);
+  ~SavePaymentIconView() override;
 
   // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
@@ -42,9 +42,9 @@ class SaveCardIconView : public PageActionIconView {
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
 
-  DISALLOW_COPY_AND_ASSIGN(SaveCardIconView);
+  DISALLOW_COPY_AND_ASSIGN(SavePaymentIconView);
 };
 
 }  // namespace autofill
 
-#endif  // CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_SAVE_CARD_ICON_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_AUTOFILL_PAYMENTS_SAVE_PAYMENT_ICON_VIEW_H_

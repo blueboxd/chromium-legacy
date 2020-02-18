@@ -70,7 +70,7 @@ RTCDtlsTransport::RTCDtlsTransport(
     ExecutionContext* context,
     rtc::scoped_refptr<webrtc::DtlsTransportInterface> native_transport,
     RTCIceTransport* ice_transport)
-    : ContextClient(context),
+    : ExecutionContextClient(context),
       current_state_(webrtc::DtlsTransportState::kNew),
       native_transport_(native_transport),
       proxy_(CreateProxy(context, native_transport, this)),
@@ -179,7 +179,7 @@ const AtomicString& RTCDtlsTransport::InterfaceName() const {
 }
 
 ExecutionContext* RTCDtlsTransport::GetExecutionContext() const {
-  return ContextClient::GetExecutionContext();
+  return ExecutionContextClient::GetExecutionContext();
 }
 
 void RTCDtlsTransport::Trace(Visitor* visitor) {
@@ -187,7 +187,7 @@ void RTCDtlsTransport::Trace(Visitor* visitor) {
   visitor->Trace(ice_transport_);
   DtlsTransportProxy::Delegate::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

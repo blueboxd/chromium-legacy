@@ -21,7 +21,7 @@ class ScriptPromise;
 class ScriptPromiseResolver;
 
 class GamepadHapticActuator final : public ScriptWrappable,
-                                    public ContextClient {
+                                    public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(GamepadHapticActuator);
 

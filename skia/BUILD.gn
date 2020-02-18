@@ -473,11 +473,11 @@ component("skia") {
       "ext/fontmgr_default_fuchsia.cc",
     ]
     deps += [
-      "//third_party/fuchsia-sdk/sdk:fuchsia-fonts",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-io",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
       "//third_party/fuchsia-sdk/sdk:sys_cpp",
       "//third_party/fuchsia-sdk/sdk:zx",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.fonts",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.io",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
       "//third_party/icu:icuuc",
     ]
   }
@@ -884,10 +884,10 @@ source_set("test_fonts") {
       "ext/test_fonts_fuchsia.h",
     ]
     deps += [
-      "//third_party/fuchsia-sdk/sdk:fuchsia-fonts",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-io",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
       "//third_party/fuchsia-sdk/sdk:sys_cpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.fonts",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.io",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
     ]
   }
   if (is_linux) {
@@ -937,7 +937,7 @@ test("skia_unittests") {
   if (is_fuchsia) {
     sources += [ "ext/fontmgr_fuchsia_unittest.cc" ]
     deps += [
-      "//third_party/fuchsia-sdk/sdk:fuchsia-fonts",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.fonts",
       "//third_party/test_fonts",
     ]
     data_deps = [ "//third_party/test_fonts" ]

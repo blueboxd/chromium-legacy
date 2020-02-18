@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
+#include "chrome/browser/ui/views/autofill/payments/save_payment_icon_view.h"
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -19,7 +19,7 @@
 
 namespace autofill {
 
-SaveCardIconView::SaveCardIconView(
+SavePaymentIconView::SavePaymentIconView(
     CommandUpdater* command_updater,
     IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
     PageActionIconView::Delegate* page_action_icon_delegate)
@@ -36,9 +36,9 @@ SaveCardIconView::SaveCardIconView(
   SetUpForInOutAnimation();
 }
 
-SaveCardIconView::~SaveCardIconView() = default;
+SavePaymentIconView::~SavePaymentIconView() = default;
 
-views::BubbleDialogDelegateView* SaveCardIconView::GetBubble() const {
+views::BubbleDialogDelegateView* SavePaymentIconView::GetBubble() const {
   SaveCardBubbleController* controller = GetController();
   if (!controller)
     return nullptr;
@@ -47,7 +47,7 @@ views::BubbleDialogDelegateView* SaveCardIconView::GetBubble() const {
       controller->GetSaveCardBubbleView());
 }
 
-void SaveCardIconView::UpdateImpl() {
+void SavePaymentIconView::UpdateImpl() {
   if (!GetWebContents())
     return;
 
@@ -71,14 +71,14 @@ void SaveCardIconView::UpdateImpl() {
     AnimateIn(IDS_AUTOFILL_CARD_SAVED);
 }
 
-void SaveCardIconView::OnExecuting(
+void SavePaymentIconView::OnExecuting(
     PageActionIconView::ExecuteSource execute_source) {}
 
-const gfx::VectorIcon& SaveCardIconView::GetVectorIcon() const {
+const gfx::VectorIcon& SavePaymentIconView::GetVectorIcon() const {
   return kCreditCardIcon;
 }
 
-const gfx::VectorIcon& SaveCardIconView::GetVectorIconBadge() const {
+const gfx::VectorIcon& SavePaymentIconView::GetVectorIconBadge() const {
   SaveCardBubbleController* controller = GetController();
   if (controller && controller->ShouldShowSaveFailureBadge())
     return kBlockedBadgeIcon;
@@ -86,11 +86,11 @@ const gfx::VectorIcon& SaveCardIconView::GetVectorIconBadge() const {
   return gfx::kNoneIcon;
 }
 
-const char* SaveCardIconView::GetClassName() const {
-  return "SaveCardIconView";
+const char* SavePaymentIconView::GetClassName() const {
+  return "SavePaymentIconView";
 }
 
-base::string16 SaveCardIconView::GetTextForTooltipAndAccessibleName() const {
+base::string16 SavePaymentIconView::GetTextForTooltipAndAccessibleName() const {
   base::string16 text;
 
   SaveCardBubbleController* const controller = GetController();
@@ -105,11 +105,11 @@ base::string16 SaveCardIconView::GetTextForTooltipAndAccessibleName() const {
                       : text;
 }
 
-SaveCardBubbleController* SaveCardIconView::GetController() const {
+SaveCardBubbleController* SavePaymentIconView::GetController() const {
   return SaveCardBubbleController::Get(GetWebContents());
 }
 
-void SaveCardIconView::AnimationEnded(const gfx::Animation* animation) {
+void SavePaymentIconView::AnimationEnded(const gfx::Animation* animation) {
   IconLabelBubbleView::AnimationEnded(animation);
 
   // |controller| may be nullptr due to lazy initialization.

@@ -57,7 +57,7 @@ IdleDetector* IdleDetector::Create(ScriptState* script_state,
 }
 
 IdleDetector::IdleDetector(ExecutionContext* context, base::TimeDelta threshold)
-    : ContextClient(context), threshold_(threshold), receiver_(this) {}
+    : ExecutionContextClient(context), threshold_(threshold), receiver_(this) {}
 
 IdleDetector::~IdleDetector() = default;
 
@@ -70,7 +70,7 @@ const AtomicString& IdleDetector::InterfaceName() const {
 }
 
 ExecutionContext* IdleDetector::GetExecutionContext() const {
-  return ContextClient::GetExecutionContext();
+  return ExecutionContextClient::GetExecutionContext();
 }
 
 bool IdleDetector::HasPendingActivity() const {
@@ -152,7 +152,7 @@ void IdleDetector::Update(mojom::blink::IdleStatePtr state) {
 void IdleDetector::Trace(Visitor* visitor) {
   visitor->Trace(state_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   ActiveScriptWrappable::Trace(visitor);
 }
 

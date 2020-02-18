@@ -53,7 +53,9 @@ class RTCQuicStream::PendingWriteBufferedAmountPromise
 RTCQuicStream::RTCQuicStream(ExecutionContext* context,
                              RTCQuicTransport* transport,
                              QuicStreamProxy* stream_proxy)
-    : ContextClient(context), transport_(transport), proxy_(stream_proxy) {
+    : ExecutionContextClient(context),
+      transport_(transport),
+      proxy_(stream_proxy) {
   DCHECK(transport_);
   DCHECK(proxy_);
 }
@@ -397,7 +399,7 @@ const AtomicString& RTCQuicStream::InterfaceName() const {
 }
 
 ExecutionContext* RTCQuicStream::GetExecutionContext() const {
-  return ContextClient::GetExecutionContext();
+  return ExecutionContextClient::GetExecutionContext();
 }
 
 void RTCQuicStream::Trace(Visitor* visitor) {
@@ -405,7 +407,7 @@ void RTCQuicStream::Trace(Visitor* visitor) {
   visitor->Trace(pending_read_buffered_amount_promises_);
   visitor->Trace(pending_write_buffered_amount_promises_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

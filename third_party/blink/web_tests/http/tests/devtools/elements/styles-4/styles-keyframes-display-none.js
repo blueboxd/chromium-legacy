@@ -27,15 +27,15 @@
 
   ElementsTestRunner.selectNodeAndWaitForStyles('element', step1);
 
-  function step1() {
+  async function step1() {
     TestRunner.addResult('=== #element styles ===');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     ElementsTestRunner.selectNodeAndWaitForStyles('container', step2);
   }
 
-  function step2() {
+  async function step2() {
     TestRunner.addResult('=== #container styles ===');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     TestRunner.completeTest();
   }
 })();

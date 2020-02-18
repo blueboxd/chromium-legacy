@@ -41,16 +41,16 @@
       ElementsTestRunner.selectNodeAndWaitForStyles('container', next);
     },
 
-    function testInsertProperty(next) {
-      ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    async function testInsertProperty(next) {
+      await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
       var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem('color');
       var treeElement = treeItem.section().addNewBlankProperty(1);
       ElementsTestRunner.waitForStyleApplied(onPropertyInserted);
       treeElement.applyStyleText('PROPERTY: INSERTED;', true);
 
-      function onPropertyInserted() {
+      async function onPropertyInserted() {
         TestRunner.addResult('\n\n#### AFTER PROPERTY INSERTION ####\n\n');
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+        await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
         var rules = ElementsTestRunner.getMatchedRules();
         ElementsTestRunner.validateRuleRanges('container', rules, next);
       }

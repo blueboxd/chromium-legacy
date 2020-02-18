@@ -30,7 +30,7 @@ class BeforeInstallPromptEvent final
     : public Event,
       public mojom::blink::AppBannerEvent,
       public ActiveScriptWrappable<BeforeInstallPromptEvent>,
-      public ContextClient {
+      public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_PRE_FINALIZER(BeforeInstallPromptEvent, Dispose);
   USING_GARBAGE_COLLECTED_MIXIN(BeforeInstallPromptEvent);

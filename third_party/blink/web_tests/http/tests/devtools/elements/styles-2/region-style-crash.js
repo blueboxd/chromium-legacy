@@ -25,8 +25,8 @@
 
   ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('p1', dumpAllStyles);
 
-  function dumpAllStyles() {
-    ElementsTestRunner.dumpSelectedElementStyles();
+  async function dumpAllStyles() {
+    await ElementsTestRunner.dumpSelectedElementStyles();
     TestRunner.completeTest();
   }
 })();

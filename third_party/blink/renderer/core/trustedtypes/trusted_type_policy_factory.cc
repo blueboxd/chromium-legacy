@@ -70,10 +70,9 @@ TrustedTypePolicy* TrustedTypePolicyFactory::defaultPolicy() const {
 }
 
 TrustedTypePolicyFactory::TrustedTypePolicyFactory(ExecutionContext* context)
-    : ContextClient(context),
+    : ExecutionContextClient(context),
       empty_html_(MakeGarbageCollected<TrustedHTML>("")),
-      empty_script_(MakeGarbageCollected<TrustedScript>("")) {
-}
+      empty_script_(MakeGarbageCollected<TrustedScript>("")) {}
 
 Vector<String> TrustedTypePolicyFactory::getPolicyNames() const {
   Vector<String> policyNames;
@@ -318,7 +317,7 @@ void TrustedTypePolicyFactory::CountTrustedTypeAssignmentError() {
 
 void TrustedTypePolicyFactory::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   visitor->Trace(empty_html_);
   visitor->Trace(empty_script_);
   visitor->Trace(policy_map_);

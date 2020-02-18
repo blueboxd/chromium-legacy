@@ -14,7 +14,7 @@ namespace blink {
 PictureInPictureWindow::PictureInPictureWindow(
     ExecutionContext* execution_context,
     const gfx::Size& size)
-    : ContextClient(execution_context), size_(size) {}
+    : ExecutionContextClient(execution_context), size_(size) {}
 
 void PictureInPictureWindow::OnClose() {
   size_ = gfx::Size();
@@ -50,7 +50,7 @@ bool PictureInPictureWindow::HasPendingActivity() const {
 
 void PictureInPictureWindow::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

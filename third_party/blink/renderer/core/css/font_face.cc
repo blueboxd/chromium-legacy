@@ -198,12 +198,12 @@ FontFace* FontFace::Create(Document* document,
 }
 
 FontFace::FontFace(ExecutionContext* context)
-    : ContextClient(context), status_(kUnloaded) {}
+    : ExecutionContextClient(context), status_(kUnloaded) {}
 
 FontFace::FontFace(ExecutionContext* context,
                    const AtomicString& family,
                    const FontFaceDescriptors* descriptors)
-    : ContextClient(context), family_(family), status_(kUnloaded) {
+    : ExecutionContextClient(context), family_(family), status_(kUnloaded) {
   SetPropertyFromString(context, descriptors->style(),
                         AtRuleDescriptorID::FontStyle);
   SetPropertyFromString(context, descriptors->weight(),
@@ -770,7 +770,7 @@ void FontFace::Trace(Visitor* visitor) {
   visitor->Trace(css_font_face_);
   visitor->Trace(callbacks_);
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 bool FontFace::HadBlankText() const {

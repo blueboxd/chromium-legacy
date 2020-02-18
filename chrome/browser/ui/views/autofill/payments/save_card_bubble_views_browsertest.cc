@@ -29,7 +29,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/autofill/payments/dialog_view_ids.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_bubble_views.h"
-#include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
+#include "chrome/browser/ui/views/autofill/payments/save_payment_icon_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container.h"
@@ -610,8 +610,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
   }
 
   void ClickOnDialogView(views::View* view) {
-    GetSaveCardBubbleViews()
-        ->ResetViewShownTimeStampForTesting();
+    GetSaveCardBubbleViews()->ResetViewShownTimeStampForTesting();
     views::BubbleFrameView* bubble_frame_view =
         static_cast<views::BubbleFrameView*>(GetSaveCardBubbleViews()
                                                  ->GetWidget()
@@ -701,7 +700,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
     return static_cast<SaveCardBubbleViews*>(save_card_bubble_view);
   }
 
-  SaveCardIconView* GetSaveCardIconView() {
+  SavePaymentIconView* GetSaveCardIconView() {
     BrowserView* browser_view =
         BrowserView::GetBrowserViewForBrowser(browser());
     PageActionIconView* icon =
@@ -715,7 +714,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
     } else {
       DCHECK(browser_view->GetLocationBarView()->Contains(icon));
     }
-    return static_cast<SaveCardIconView*>(icon);
+    return static_cast<SavePaymentIconView*>(icon);
   }
 
   void OpenSettingsFromManageCardsPrompt() {

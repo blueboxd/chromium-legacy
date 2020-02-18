@@ -23,7 +23,7 @@ class ScriptState;
 class ScreenOrientationControllerImpl;
 
 class ScreenOrientation final : public EventTargetWithInlineData,
-                                public ContextClient {
+                                public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(ScreenOrientation);
 

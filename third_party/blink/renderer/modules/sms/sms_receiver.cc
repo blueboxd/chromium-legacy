@@ -25,7 +25,8 @@
 
 namespace blink {
 
-SMSReceiver::SMSReceiver(ExecutionContext* context) : ContextClient(context) {}
+SMSReceiver::SMSReceiver(ExecutionContext* context)
+    : ExecutionContextClient(context) {}
 
 SMSReceiver::~SMSReceiver() = default;
 
@@ -139,7 +140,7 @@ void SMSReceiver::OnSMSReceiverConnectionError() {
 
 void SMSReceiver::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   visitor->Trace(requests_);
 }
 

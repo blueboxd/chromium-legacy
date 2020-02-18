@@ -16,26 +16,26 @@
 
   ElementsTestRunner.selectNodeAndWaitForStyles('container', step1);
 
-  function step1() {
+  async function step1() {
     TestRunner.addResult('Before disable');
-    ElementsTestRunner.dumpSelectedElementStyles(true, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, true);
 
     ElementsTestRunner.toggleStyleProperty('font-weight', false);
     ElementsTestRunner.waitForStyles('container', step2);
   }
 
-  function step2() {
+  async function step2() {
     TestRunner.addResult('After disable');
-    ElementsTestRunner.dumpSelectedElementStyles(true, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, true);
 
     var treeItem = ElementsTestRunner.getElementStylePropertyTreeItem('font-weight');
     treeItem.applyStyleText('color: green', false);
     ElementsTestRunner.waitForStyles('container', step3);
   }
 
-  function step3() {
+  async function step3() {
     TestRunner.addResult('After change');
-    ElementsTestRunner.dumpSelectedElementStyles(true, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, true);
     TestRunner.completeTest();
   }
 })();

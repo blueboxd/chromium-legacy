@@ -18,10 +18,10 @@
 
   await new Promise(x => ElementsTestRunner.selectNodeAndWaitForStyles('inspected', x));
   TestRunner.addResult('Before showing all properties:')
-  ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+  await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
 
   TestRunner.addResult('After showing all properties:')
   ElementsTestRunner.firstMatchedStyleSection()._showAllButton.click();
-  ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+  await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
   TestRunner.completeTest();
 })();

@@ -107,7 +107,6 @@
 #import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/infobars/infobar_positioner.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_model_delegate_ios.h"
-#import "ios/chrome/browser/ui/location_bar/location_bar_notification_names.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui_broadcasting_util.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui_state.h"
@@ -3863,9 +3862,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - ToolbarCoordinatorDelegate (Public)
 
 - (void)locationBarDidBecomeFirstResponder {
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kLocationBarBecomesFirstResponderNotification
-                    object:nil];
+  if (self.isNTPActiveForCurrentWebState) {
+    NewTabPageCoordinator* coordinator =
+        _ntpCoordinatorsForWebStates[self.currentWebState];
+    [coordinator locationBarDidBecomeFirstResponder];
+  }
   [self.sideSwipeController setEnabled:NO];
 
   if (!IsVisibleURLNewTabPage(self.currentWebState)) {
@@ -3887,9 +3888,12 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 - (void)locationBarDidResignFirstResponder {
   [self.sideSwipeController setEnabled:YES];
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kLocationBarResignsFirstResponderNotification
-                    object:nil];
+
+  if (self.isNTPActiveForCurrentWebState) {
+    NewTabPageCoordinator* coordinator =
+        _ntpCoordinatorsForWebStates[self.currentWebState];
+    [coordinator locationBarDidResignFirstResponder];
+  }
   [UIView animateWithDuration:0.3
       animations:^{
         [self.typingShield setAlpha:0.0];

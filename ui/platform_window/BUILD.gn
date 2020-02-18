@@ -29,10 +29,10 @@ component("platform_window") {
     ]
 
     public_deps = [
-      "//third_party/fuchsia-sdk/sdk:fuchsia-ui-policy",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-ui-views",
       "//third_party/fuchsia-sdk/sdk:scenic_cpp",
       "//third_party/fuchsia-sdk/sdk:sys_cpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.policy",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.views",
     ]
   }
 }

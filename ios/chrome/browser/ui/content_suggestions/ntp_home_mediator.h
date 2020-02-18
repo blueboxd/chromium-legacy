@@ -85,6 +85,12 @@ class UrlLoadingService;
 // Cleans the mediator.
 - (void)shutdown;
 
+// The location bar has lost focus.
+- (void)locationBarDidResignFirstResponder;
+
+// Tell location bar has taken focus.
+- (void)locationBarDidBecomeFirstResponder;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_NTP_HOME_MEDIATOR_H_

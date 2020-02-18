@@ -23,12 +23,12 @@
   TestRunner.evaluateInPage('loadIframe()');
   ElementsTestRunner.selectNodeAndWaitForStyles('container', step1);
 
-  function step1() {
-    ElementsTestRunner.dumpSelectedElementStyles(true /** excludeComputed */,
-                                                 false,
-                                                 true /** omitLonghands */,
-                                                 false,
-                                                 true /** printInnerText */);
+  async function step1() {
+    await ElementsTestRunner.dumpSelectedElementStyles(true /** excludeComputed */,
+                                                       false,
+                                                       true /** omitLonghands */,
+                                                       false,
+                                                       true /** printInnerText */);
     step2();
   }
 

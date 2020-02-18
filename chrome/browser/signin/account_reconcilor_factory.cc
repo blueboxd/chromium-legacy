@@ -29,7 +29,10 @@
 #include "chrome/browser/chromeos/account_manager/account_migration_runner.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/tpm/install_attributes.h"
+#include "components/pref_registry/pref_registry_syncable.h"
+#include "components/prefs/pref_service.h"
 #include "components/signin/core/browser/active_directory_account_reconcilor_delegate.h"
+#include "components/signin/public/base/signin_pref_names.h"
 #include "components/user_manager/user_manager.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #endif
@@ -145,6 +148,14 @@ KeyedService* AccountReconcilorFactory::BuildServiceInstanceFor(
                             CreateAccountReconcilorDelegate(profile));
   reconcilor->Initialize(true /* start_reconcile_if_tokens_available */);
   return reconcilor;
+}
+
+void AccountReconcilorFactory::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+#if defined(OS_CHROMEOS)
+  registry->RegisterBooleanPref(prefs::kForceLogoutUnauthenticatedUserEnabled,
+                                false);
+#endif
 }
 
 // static

@@ -31,7 +31,7 @@ class V8IntersectionObserverCallback;
 class CORE_EXPORT IntersectionObserver final
     : public ScriptWrappable,
       public ActiveScriptWrappable<IntersectionObserver>,
-      public ContextClient {
+      public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserver);
   DEFINE_WRAPPERTYPEINFO();
 

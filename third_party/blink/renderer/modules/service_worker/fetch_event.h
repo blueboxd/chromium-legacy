@@ -42,7 +42,7 @@ class WorkerGlobalScope;
 class MODULES_EXPORT FetchEvent final
     : public ExtendableEvent,
       public ActiveScriptWrappable<FetchEvent>,
-      public ContextClient {
+      public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FetchEvent);
 

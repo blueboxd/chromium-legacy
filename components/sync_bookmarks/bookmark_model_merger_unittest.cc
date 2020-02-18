@@ -1061,8 +1061,7 @@ TEST(BookmarkModelMergerTest, ShouldReplaceBookmarkGUIDWithConflictingURLs) {
   EXPECT_EQ(bookmark_bar_node->children()[0]->guid(), kGuid);
   EXPECT_EQ(bookmark_bar_node->children()[0]->url(), kUrl2);
   EXPECT_NE(bookmark_bar_node->children()[1]->guid(), kGuid);
-  EXPECT_TRUE(
-      base::IsValidGUIDOutputString(bookmark_bar_node->children()[1]->guid()));
+  EXPECT_TRUE(base::IsValidGUID(bookmark_bar_node->children()[1]->guid()));
   EXPECT_EQ(bookmark_bar_node->children()[1]->url(), kUrl1);
 }
 
@@ -1114,8 +1113,7 @@ TEST(BookmarkModelMergerTest, ShouldReplaceBookmarkGUIDWithConflictingTypes) {
   EXPECT_EQ(bookmark_bar_node->children()[0]->guid(), kGuid);
   EXPECT_TRUE(bookmark_bar_node->children()[0]->is_folder());
   EXPECT_NE(bookmark_bar_node->children()[1]->guid(), kGuid);
-  EXPECT_TRUE(
-      base::IsValidGUIDOutputString(bookmark_bar_node->children()[1]->guid()));
+  EXPECT_TRUE(base::IsValidGUID(bookmark_bar_node->children()[1]->guid()));
   EXPECT_FALSE(bookmark_bar_node->children()[1]->is_folder());
 }
 

@@ -18,8 +18,8 @@
     function keyframesRuleSelector(next) {
       ElementsTestRunner.addNewRule('@-webkit-keyframes shake', callback);
 
-      function callback() {
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+      async function callback() {
+        await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
         next();
       }
     }

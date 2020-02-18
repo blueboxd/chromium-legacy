@@ -243,7 +243,7 @@ IntersectionObserver::IntersectionObserver(
     DOMHighResTimeStamp delay,
     bool track_visibility,
     bool always_report_root_bounds)
-    : ContextClient(delegate.GetExecutionContext()),
+    : ExecutionContextClient(delegate.GetExecutionContext()),
       delegate_(&delegate),
       root_(root),
       thresholds_(thresholds),
@@ -464,7 +464,7 @@ void IntersectionObserver::Trace(Visitor* visitor) {
   visitor->Trace(delegate_);
   visitor->Trace(observations_);
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

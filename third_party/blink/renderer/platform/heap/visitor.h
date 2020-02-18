@@ -108,12 +108,10 @@ class PLATFORM_EXPORT Visitor {
     VisitRoot(const_cast<T*>(t), TraceDescriptorFor(t), location);
   }
 
-  template <typename T, bool maybe_deleted = false>
+  template <typename T>
   void Trace(const Member<T>& t) {
     T* value = t.GetSafe();
 
-    if (maybe_deleted && Member<T>::IsMemberHashTableDeletedValue(value))
-      return;
     DCHECK(!Member<T>::IsMemberHashTableDeletedValue(value));
 
     Trace(value);
@@ -121,7 +119,23 @@ class PLATFORM_EXPORT Visitor {
 
   template <typename T>
   ALWAYS_INLINE void TraceMaybeDeleted(const Member<T>& t) {
-    Trace<T, true>(t);
+    T* value = t.GetSafe();
+
+    if (Member<T>::IsMemberHashTableDeletedValue(value))
+      return;
+
+    Trace<T>(value);
+  }
+
+  // TraceMayBeDeleted strongifies WeakMembers.
+  template <typename T>
+  ALWAYS_INLINE void TraceMaybeDeleted(const WeakMember<T>& t) {
+    T* value = t.GetSafe();
+
+    if (WeakMember<T>::IsMemberHashTableDeletedValue(value))
+      return;
+
+    Trace<T>(value);
   }
 
   // Fallback methods used only when we need to trace raw pointers of T. This is

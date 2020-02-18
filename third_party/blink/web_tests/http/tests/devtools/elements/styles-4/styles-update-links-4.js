@@ -47,9 +47,9 @@
       ElementsTestRunner.waitForStyleApplied(onPropertyInserted);
       treeElement.applyStyleText('PROPERTY: INSERTED;', true);
 
-      function onPropertyInserted() {
+      async function onPropertyInserted() {
         TestRunner.addResult('\n\n#### AFTER PROPERTY INSERTED ####\n\n');
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+        await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
         var rules = ElementsTestRunner.getMatchedRules();
         ElementsTestRunner.validateRuleRanges('pseudo', rules, next);
       }

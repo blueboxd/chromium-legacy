@@ -28,8 +28,8 @@
         ElementsTestRunner.addNewRule('foo, #inspected, .bar, #inspected', callback);
       }
 
-      function callback() {
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, false, true);
+      async function callback() {
+        await ElementsTestRunner.dumpSelectedElementStyles(true, false, false, true);
         next();
       }
     },
@@ -42,8 +42,8 @@
       ElementsTestRunner.waitForSelectorCommitted(callback);
       selectorElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
 
-      function callback() {
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, false, true);
+      async function callback() {
+        await ElementsTestRunner.dumpSelectedElementStyles(true, false, false, true);
         next();
       }
     }

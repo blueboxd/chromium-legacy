@@ -41,7 +41,7 @@ class EventQueue;
 class SourceBuffer;
 
 class SourceBufferList final : public EventTargetWithInlineData,
-                               public ContextClient {
+                               public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(SourceBufferList);
 
@@ -70,7 +70,7 @@ class SourceBufferList final : public EventTargetWithInlineData,
   // EventTarget interface
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override {
-    return ContextClient::GetExecutionContext();
+    return ExecutionContextClient::GetExecutionContext();
   }
 
   void Trace(Visitor*) override;

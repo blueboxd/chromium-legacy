@@ -106,7 +106,7 @@ const AtomicString& PresentationRequest::InterfaceName() const {
 }
 
 ExecutionContext* PresentationRequest::GetExecutionContext() const {
-  return ContextClient::GetExecutionContext();
+  return ExecutionContextClient::GetExecutionContext();
 }
 
 void PresentationRequest::AddedEventListener(
@@ -235,11 +235,11 @@ const Vector<KURL>& PresentationRequest::Urls() const {
 void PresentationRequest::Trace(Visitor* visitor) {
   visitor->Trace(availability_property_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 PresentationRequest::PresentationRequest(ExecutionContext* execution_context,
                                          const Vector<KURL>& urls)
-    : ContextClient(execution_context), urls_(urls) {}
+    : ExecutionContextClient(execution_context), urls_(urls) {}
 
 }  // namespace blink

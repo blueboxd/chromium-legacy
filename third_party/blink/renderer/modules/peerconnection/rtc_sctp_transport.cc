@@ -78,7 +78,7 @@ RTCSctpTransport::RTCSctpTransport(
     rtc::scoped_refptr<webrtc::SctpTransportInterface> native_transport,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
     scoped_refptr<base::SingleThreadTaskRunner> worker_thread)
-    : ContextClient(context),
+    : ExecutionContextClient(context),
       current_state_(webrtc::SctpTransportState::kNew),
       native_transport_(native_transport),
       proxy_(CreateProxy(context,
@@ -163,13 +163,13 @@ const AtomicString& RTCSctpTransport::InterfaceName() const {
 }
 
 ExecutionContext* RTCSctpTransport::GetExecutionContext() const {
-  return ContextClient::GetExecutionContext();
+  return ExecutionContextClient::GetExecutionContext();
 }
 
 void RTCSctpTransport::Trace(Visitor* visitor) {
   visitor->Trace(dtls_transport_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   SctpTransportProxy::Delegate::Trace(visitor);
 }
 

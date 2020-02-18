@@ -205,16 +205,19 @@
       regularWebStateList;
   baseViewController.remoteTabsViewController.presentationDelegate = self;
 
-  // Insert the launch screen view in front of this view to hide it until after
-  // launch. This should happen before |baseViewController| is made the window's
-  // root view controller.
-  NSBundle* mainBundle = base::mac::FrameworkBundle();
-  NSArray* topObjects =
-      [mainBundle loadNibNamed:@"LaunchScreen" owner:self options:nil];
-  UIViewController* launchScreenController =
-      base::mac::ObjCCastStrict<UIViewController>([topObjects lastObject]);
-  self.launchMaskView = launchScreenController.view;
-  [baseViewController.view addSubview:self.launchMaskView];
+  if (!base::FeatureList::IsEnabled(kContainedBVC)) {
+    // Insert the launch screen view in front of this view to hide it until
+    // after launch. This should happen before |baseViewController| is made the
+    // window's root view controller.
+    NSBundle* mainBundle = base::mac::FrameworkBundle();
+    NSArray* topObjects = [mainBundle loadNibNamed:@"LaunchScreen"
+                                             owner:self
+                                           options:nil];
+    UIViewController* launchScreenController =
+        base::mac::ObjCCastStrict<UIViewController>([topObjects lastObject]);
+    self.launchMaskView = launchScreenController.view;
+    [baseViewController.view addSubview:self.launchMaskView];
+  }
 
   // TODO(crbug.com/850387) : Currently, consumer calls from the mediator
   // prematurely loads the view in |RecentTabsTableViewController|. Fix this so
@@ -284,15 +287,18 @@
   // It's also expected that |tabSwitcher| will be |self.tabSwitcher|, but that
   // may not be worth a DCHECK?
 
+  BOOL animated = !self.animationsDisabledForTesting;
+
   // If a BVC is currently being presented, dismiss it.  This will trigger any
   // necessary animations.
   if (self.bvcContainer) {
     if (base::FeatureList::IsEnabled(kContainedBVC)) {
-      [self.baseViewController contentWillAppearAnimated:NO];
+      [self.baseViewController contentWillAppearAnimated:animated];
       self.baseViewController.childViewControllerForStatusBarStyle = nil;
 
       self.transitionHandler = [[TabGridTransitionHandler alloc]
           initWithLayoutProvider:self.baseViewController];
+      self.transitionHandler.animationDisabled = !animated;
       [self.transitionHandler
           transitionFromBrowser:self.bvcContainer
                       toTabGrid:self.baseViewController
@@ -304,7 +310,6 @@
     } else {
       self.bvcContainer.transitioningDelegate = self.legacyTransitionHandler;
       self.bvcContainer = nil;
-      BOOL animated = !self.animationsDisabledForTesting;
       [self.baseViewController dismissViewControllerAnimated:animated
                                                   completion:nil];
     }
@@ -316,7 +321,6 @@
 - (void)showTabViewController:(UIViewController*)viewController
                    completion:(ProceduralBlock)completion {
   DCHECK(viewController);
-  [self.adaptor.tabGridViewController contentWillDisappearAnimated:NO];
 
   // Record when the tab switcher is dismissed.
   base::RecordAction(base::UserMetricsAction("MobileTabGridExited"));
@@ -358,8 +362,11 @@
     self.baseViewController.childViewControllerForStatusBarStyle =
         self.bvcContainer.currentBVC;
 
+    [self.adaptor.tabGridViewController contentWillDisappearAnimated:animated];
+
     self.transitionHandler = [[TabGridTransitionHandler alloc]
         initWithLayoutProvider:self.baseViewController];
+    self.transitionHandler.animationDisabled = !animated;
     [self.transitionHandler transitionFromTabGrid:self.baseViewController
                                         toBrowser:self.bvcContainer
                                    withCompletion:^{

@@ -69,7 +69,7 @@
 
 #splash-shortcut-info {
   bottom: 50px;
-  color: gray;
+  color: rgb(102, 102, 102);  /* #666 */
   left: 0;
   position: absolute;
   right: 0;

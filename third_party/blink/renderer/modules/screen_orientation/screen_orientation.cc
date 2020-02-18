@@ -117,7 +117,9 @@ ScreenOrientation* ScreenOrientation::Create(LocalFrame* frame) {
 }
 
 ScreenOrientation::ScreenOrientation(LocalFrame* frame)
-    : ContextClient(frame), type_(kWebScreenOrientationUndefined), angle_(0) {}
+    : ExecutionContextClient(frame),
+      type_(kWebScreenOrientationUndefined),
+      angle_(0) {}
 
 ScreenOrientation::~ScreenOrientation() = default;
 
@@ -189,7 +191,7 @@ ScreenOrientationControllerImpl* ScreenOrientation::Controller() {
 
 void ScreenOrientation::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

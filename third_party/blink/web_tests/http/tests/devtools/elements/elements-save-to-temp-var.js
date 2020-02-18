@@ -15,7 +15,7 @@
   await ConsoleTestRunner.waitForConsoleMessagesPromise(2);
   const secondMessage = Console.ConsoleView.instance()._visibleViewMessages[1];
   await promise;
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
 
   TestRunner.completeTest();
 })();

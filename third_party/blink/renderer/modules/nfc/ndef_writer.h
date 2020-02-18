@@ -23,7 +23,7 @@ class StringOrArrayBufferOrArrayBufferViewOrNDEFMessageInit;
 
 using NDEFMessageSource = StringOrArrayBufferOrArrayBufferViewOrNDEFMessageInit;
 
-class NDEFWriter : public ScriptWrappable, public ContextClient {
+class NDEFWriter : public ScriptWrappable, public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(NDEFWriter);
 

@@ -57,8 +57,8 @@
     ElementsTestRunner.expandAndDumpEventListeners(objectEventListenersPane._eventListenersView, step4);
   }
 
-  function step4() {
-    ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+  async function step4() {
+    await ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
     TestRunner.completeTest();
   }
 })();

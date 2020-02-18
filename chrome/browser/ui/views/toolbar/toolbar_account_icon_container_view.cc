@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
-#include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
+#include "chrome/browser/ui/views/autofill/payments/save_payment_icon_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container.h"

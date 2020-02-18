@@ -40,7 +40,7 @@ class ExceptionState;
 class LocalFrame;
 
 class StorageArea final : public ScriptWrappable,
-                          public ContextClient,
+                          public ExecutionContextClient,
                           public CachedStorageArea::Source {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(StorageArea);

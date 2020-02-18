@@ -114,6 +114,13 @@
   [self.contentSuggestionsCoordinator reload];
 }
 
+- (void)locationBarDidBecomeFirstResponder {
+  [self.contentSuggestionsCoordinator locationBarDidBecomeFirstResponder];
+}
+- (void)locationBarDidResignFirstResponder {
+  [self.contentSuggestionsCoordinator locationBarDidResignFirstResponder];
+}
+
 #pragma mark - LogoAnimationControllerOwnerOwner
 
 - (id<LogoAnimationControllerOwner>)logoAnimationControllerOwner {

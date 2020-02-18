@@ -111,14 +111,14 @@ component("sandbox") {
     ]
 
     deps += [
-      "//third_party/fuchsia-sdk/sdk:fuchsia-fonts",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-intl",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-logger",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-mediacodec",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-net",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-netstack",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-sysmem",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-ui-scenic",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.fonts",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mediacodec",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.net",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.netstack",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sysmem",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.scenic",
     ]
   }
 }

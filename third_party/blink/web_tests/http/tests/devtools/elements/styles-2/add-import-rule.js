@@ -22,10 +22,10 @@
     TestRunner.cssModel.matchedStylesPromise(nodeId).then(matchedStylesBefore);
   }
 
-  function matchedStylesBefore(matchedResult) {
+  async function matchedStylesBefore(matchedResult) {
     sheetId = matchedResult.nodeStyles()[1].styleSheetId;
     TestRunner.addResult('\n== Matched rules before @import added ==\n');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     TestRunner.CSSAgent.setStyleSheetText(sheetId, '@import \'data:text/css,span{color:green}\';').then(sheetTextSet);
   }
 
@@ -33,9 +33,9 @@
     ElementsTestRunner.selectNodeAndWaitForStyles('styled-span', matchedStylesAfter);
   }
 
-  function matchedStylesAfter() {
+  async function matchedStylesAfter() {
     TestRunner.addResult('\n== Matched rules after @import added ==\n');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     TestRunner.completeTest();
   }
 })();

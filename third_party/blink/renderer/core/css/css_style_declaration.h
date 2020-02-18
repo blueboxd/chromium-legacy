@@ -39,7 +39,7 @@ class ExceptionState;
 enum class SecureContextMode;
 
 class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable,
-                                        public ContextClient {
+                                        public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(CSSStyleDeclaration);
 
@@ -105,7 +105,8 @@ class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable,
   bool NamedPropertyQuery(const AtomicString&, ExceptionState&);
 
  protected:
-  CSSStyleDeclaration(ExecutionContext* context) : ContextClient(context) {}
+  CSSStyleDeclaration(ExecutionContext* context)
+      : ExecutionContextClient(context) {}
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CSSStyleDeclaration);

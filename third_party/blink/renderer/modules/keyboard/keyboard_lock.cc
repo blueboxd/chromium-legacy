@@ -38,7 +38,7 @@ constexpr char kKeyboardLockRequestFailedErrorMsg[] =
 }  // namespace
 
 KeyboardLock::KeyboardLock(ExecutionContext* context)
-    : ContextClient(context) {}
+    : ExecutionContextClient(context) {}
 
 KeyboardLock::~KeyboardLock() = default;
 
@@ -157,7 +157,7 @@ void KeyboardLock::LockRequestFinished(
 
 void KeyboardLock::Trace(Visitor* visitor) {
   visitor->Trace(request_keylock_resolver_);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

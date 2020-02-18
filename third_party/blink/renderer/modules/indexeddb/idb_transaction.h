@@ -64,7 +64,7 @@ class ScriptState;
 class MODULES_EXPORT IDBTransaction final
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<IDBTransaction>,
-      public ContextClient {
+      public ExecutionContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(IDBTransaction);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -194,6 +194,8 @@ class MODULES_EXPORT IDBTransaction final
   WebIDBTransaction* transaction_backend() {
     return transaction_backend_.get();
   }
+
+  void ContextDestroyed() override {}
 
  protected:
   // EventTarget

@@ -23,8 +23,8 @@
 
   ElementsTestRunner.selectNodeAndWaitForStyles('inspect', step2);
 
-  function step2() {
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, false);
+  async function step2() {
+    await ElementsTestRunner.dumpSelectedElementStyles(true, false, false);
     TestRunner.completeTest();
   }
 })();

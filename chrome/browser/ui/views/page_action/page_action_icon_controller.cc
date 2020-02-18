@@ -9,7 +9,7 @@
 #include "chrome/browser/sharing/shared_clipboard/shared_clipboard_ui_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
-#include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
+#include "chrome/browser/ui/views/autofill/payments/save_payment_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/cookie_controls_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
@@ -120,10 +120,10 @@ void PageActionIconController::Init(const PageActionIconParams& params,
         page_action_icons_.push_back(reader_mode_icon_);
         break;
       case PageActionIconType::kSaveCard:
-        save_card_icon_ = new autofill::SaveCardIconView(
+        save_payment_icon_ = new autofill::SavePaymentIconView(
             params.command_updater, params.icon_label_bubble_delegate,
             params.page_action_icon_delegate);
-        page_action_icons_.push_back(save_card_icon_);
+        page_action_icons_.push_back(save_payment_icon_);
         break;
       case PageActionIconType::kSendTabToSelf:
         send_tab_to_self_icon_ = new send_tab_to_self::SendTabToSelfIconView(
@@ -206,7 +206,7 @@ PageActionIconView* PageActionIconController::GetIconView(
     case PageActionIconType::kReaderMode:
       return reader_mode_icon_;
     case PageActionIconType::kSaveCard:
-      return save_card_icon_;
+      return save_payment_icon_;
     case PageActionIconType::kSendTabToSelf:
       return send_tab_to_self_icon_;
     case PageActionIconType::kSharedClipboard:

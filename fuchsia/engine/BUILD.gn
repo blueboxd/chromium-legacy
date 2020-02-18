@@ -93,11 +93,11 @@ component("web_engine_core") {
     "//services/service_manager/sandbox",
     "//skia/public/mojom",
     "//third_party/blink/public/common",
-    "//third_party/fuchsia-sdk/sdk:fuchsia-accessibility-semantics",
-    "//third_party/fuchsia-sdk/sdk:fuchsia-math",
-    "//third_party/fuchsia-sdk/sdk:fuchsia-ui-gfx",
     "//third_party/fuchsia-sdk/sdk:scenic_cpp",
     "//third_party/fuchsia-sdk/sdk:sys_cpp",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.math",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.gfx",
     "//third_party/widevine/cdm:headers",
     "//ui/accessibility",
     "//ui/aura",
@@ -113,7 +113,7 @@ component("web_engine_core") {
   data_deps = [ ":web_engine_pak" ]
   public_deps = [
     "//content/public/browser",
-    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
   ]
   data = [ "$root_out_dir/web_engine.pak" ]
   configs += [ ":web_engine_implementation" ]
@@ -238,7 +238,7 @@ source_set("browsertest_core") {
     "//content/test:test_support",
     "//net:test_support",
     "//testing/gtest",
-    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
     "//ui/ozone",
   ]
 }
@@ -265,8 +265,8 @@ test("web_engine_browsertests") {
     "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/fuchsia-sdk/sdk:fuchsia-accessibility-semantics",
     "//third_party/fuchsia-sdk/sdk:scenic_cpp",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics",
     "//ui/gfx",
     "//ui/ozone",
   ]
@@ -294,9 +294,9 @@ test("web_engine_unittests") {
     "//services/network/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
-    "//third_party/fuchsia-sdk/sdk:fuchsia-accessibility-semantics",
-    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
     "//third_party/fuchsia-sdk/sdk:scenic_cpp",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
   ]
 }
 
@@ -314,8 +314,8 @@ test("web_engine_integration_tests") {
     "//base/test:run_all_unittests",
     "//fuchsia/base",
     "//fuchsia/base:test_support",
-    "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
-    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
   ]
   package_deps = [ [
         ":web_engine",
@@ -348,10 +348,10 @@ executable("web_engine_shell_exec") {
   deps = [
     "//base",
     "//fuchsia/base",
-    "//third_party/fuchsia-sdk/sdk:fuchsia-ui-policy",
-    "//third_party/fuchsia-sdk/sdk:fuchsia-web",
     "//third_party/fuchsia-sdk/sdk:scenic_cpp",
     "//third_party/fuchsia-sdk/sdk:sys_cpp",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.policy",
+    "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.web",
     "//url",
   ]
 }

@@ -23,7 +23,7 @@
       TestRunner.addResult('  - hasSourceURL: ' + header.hasSourceURL);
       TestRunner.addResult('  - contents: ' + content);
     }
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
     TestRunner.completeTest();
   }
 })();

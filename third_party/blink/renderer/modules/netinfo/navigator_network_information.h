@@ -17,7 +17,7 @@ class NetworkInformation;
 class NavigatorNetworkInformation final
     : public GarbageCollected<NavigatorNetworkInformation>,
       public Supplement<Navigator>,
-      public ContextClient {
+      public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorNetworkInformation);
 
  public:

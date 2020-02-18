@@ -18,9 +18,9 @@
 
   ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step1);
 
-  function step1() {
+  async function step1() {
     TestRunner.addResult('=== Before selector modification ===');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     var section = ElementsTestRunner.firstMatchedStyleSection();
     section.startEditingSelector();
     section._selectorElement.textContent = '#inspected, #other';
@@ -28,24 +28,24 @@
     ElementsTestRunner.selectNodeAndWaitForStyles('other', step2);
   }
 
-  function step2() {
+  async function step2() {
     TestRunner.addResult('=== After selector modification ===');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     SDK.domModelUndoStack.undo();
     ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step3);
   }
 
-  function step3() {
+  async function step3() {
     TestRunner.addResult('=== After undo ===');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
 
     SDK.domModelUndoStack.redo();
     ElementsTestRunner.selectNodeAndWaitForStyles('other', step4);
   }
 
-  function step4() {
+  async function step4() {
     TestRunner.addResult('=== After redo ===');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     TestRunner.completeTest();
   }
 })();

@@ -735,7 +735,7 @@ bool WebPluginContainerImpl::WantsWheelEvents() const {
 WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement& element,
                                                WebPlugin* web_plugin)
     : EmbeddedContentView(IntRect()),
-      ContextClient(element.GetDocument().GetFrame()),
+      ExecutionContextClient(element.GetDocument().GetFrame()),
       element_(element),
       web_plugin_(web_plugin),
       layer_(nullptr),
@@ -790,7 +790,7 @@ void WebPluginContainerImpl::SetFrameRect(const IntRect& rect) {
 
 void WebPluginContainerImpl::Trace(Visitor* visitor) {
   visitor->Trace(element_);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 void WebPluginContainerImpl::HandleMouseEvent(MouseEvent& event) {

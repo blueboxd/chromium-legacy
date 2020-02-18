@@ -18,7 +18,7 @@ class V8IntersectionObserverCallback;
 
 class V8IntersectionObserverDelegate final
     : public IntersectionObserverDelegate,
-      public ContextClient {
+      public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(V8IntersectionObserverDelegate);
 
  public:

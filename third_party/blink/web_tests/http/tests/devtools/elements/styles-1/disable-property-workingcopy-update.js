@@ -44,9 +44,9 @@
       toggleProperty(false, next);
     },
 
-    function dumpDisabledText(next) {
+    async function dumpDisabledText(next) {
       SourcesTestRunner.dumpSourceFrameContents(cssSourceFrame);
-      ElementsTestRunner.dumpSelectedElementStyles(true);
+      await ElementsTestRunner.dumpSelectedElementStyles(true);
       next();
     },
 
@@ -54,9 +54,9 @@
       toggleProperty(true, next);
     },
 
-    function dumpEnabledText(next) {
+    async function dumpEnabledText(next) {
       SourcesTestRunner.dumpSourceFrameContents(cssSourceFrame);
-      ElementsTestRunner.dumpSelectedElementStyles(true);
+      await ElementsTestRunner.dumpSelectedElementStyles(true);
       next();
     }
   ]);

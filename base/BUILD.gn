@@ -1618,10 +1618,10 @@ jumbo_component("base") {
       "//third_party/fuchsia-sdk/sdk:async",
       "//third_party/fuchsia-sdk/sdk:fdio",
       "//third_party/fuchsia-sdk/sdk:fidl_cpp",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-intl",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-io",
       "//third_party/fuchsia-sdk/sdk:sys_cpp",
       "//third_party/fuchsia-sdk/sdk:zx",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.io",
     ]
 
     deps += [
@@ -1629,9 +1629,9 @@ jumbo_component("base") {
       "//third_party/fuchsia-sdk/sdk:async-loop-cpp",
       "//third_party/fuchsia-sdk/sdk:async-loop-default",
       "//third_party/fuchsia-sdk/sdk:fidl",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
       "//third_party/fuchsia-sdk/sdk:syslog",
       "//third_party/fuchsia-sdk/sdk:vfs_cpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
       "//third_party/icu",
     ]
   }
@@ -3065,10 +3065,10 @@ test("base_unittests") {
       "//third_party/fuchsia-sdk/sdk:async",
       "//third_party/fuchsia-sdk/sdk:async-default",
       "//third_party/fuchsia-sdk/sdk:fdio",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-intl",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-logger",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-sys",
       "//third_party/fuchsia-sdk/sdk:sys_cpp",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.intl",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.logger",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.sys",
     ]
 
     manifest = "//build/config/fuchsia/tests.cmx"

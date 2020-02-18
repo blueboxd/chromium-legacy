@@ -31,7 +31,7 @@ class ScriptState;
 // implementation.
 class CORE_EXPORT Body : public ScriptWrappable,
                          public ActiveScriptWrappable<Body>,
-                         public ContextClient {
+                         public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Body);
 
@@ -69,7 +69,7 @@ class CORE_EXPORT Body : public ScriptWrappable,
 
   void Trace(Visitor* visitor) override {
     ScriptWrappable::Trace(visitor);
-    ContextClient::Trace(visitor);
+    ExecutionContextClient::Trace(visitor);
   }
 
  protected:

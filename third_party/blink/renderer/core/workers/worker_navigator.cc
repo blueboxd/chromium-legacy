@@ -38,7 +38,7 @@ namespace blink {
 
 WorkerNavigator::WorkerNavigator(const String& user_agent,
                                  ExecutionContext* execution_context)
-    : ContextClient(execution_context),
+    : ExecutionContextClient(execution_context),
       NavigatorLanguage(execution_context),
       user_agent_(user_agent) {}
 
@@ -68,7 +68,7 @@ void WorkerNavigator::NotifyUpdate() {
 
 void WorkerNavigator::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   NavigatorLanguage::Trace(visitor);
   Supplementable<WorkerNavigator>::Trace(visitor);
 }

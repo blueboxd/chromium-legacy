@@ -37,7 +37,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_consumer.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/ui/content_suggestions/user_account_image_update_delegate.h"
-#import "ios/chrome/browser/ui/location_bar/location_bar_notification_names.h"
 #include "ios/chrome/browser/ui/ntp/metrics.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/ntp/notification_promo_whats_new.h"
@@ -140,21 +139,9 @@ const char kNTPHelpURL[] =
 
   self.templateURLService->Load();
   [self searchEngineChanged];
-
-  // Set up notifications;
-  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-  [defaultCenter addObserver:self.consumer
-                    selector:@selector(locationBarBecomesFirstResponder)
-                        name:kLocationBarBecomesFirstResponderNotification
-                      object:nil];
-  [defaultCenter addObserver:self.consumer
-                    selector:@selector(locationBarResignsFirstResponder)
-                        name:kLocationBarResignsFirstResponderNotification
-                      object:nil];
 }
 
 - (void)shutdown {
-  [[NSNotificationCenter defaultCenter] removeObserver:self.consumer];
   _searchEngineObserver.reset();
   DCHECK(_webStateObserver);
   if (_webState) {
@@ -162,6 +149,14 @@ const char kNTPHelpURL[] =
     _webState->RemoveObserver(_webStateObserver.get());
     _webStateObserver.reset();
   }
+}
+
+- (void)locationBarDidBecomeFirstResponder {
+  [self.consumer locationBarBecomesFirstResponder];
+}
+
+- (void)locationBarDidResignFirstResponder {
+  [self.consumer locationBarResignsFirstResponder];
 }
 
 #pragma mark - Properties.

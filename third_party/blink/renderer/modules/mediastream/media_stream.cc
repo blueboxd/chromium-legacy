@@ -102,7 +102,7 @@ MediaStream* MediaStream::Create(ExecutionContext* context,
 
 MediaStream::MediaStream(ExecutionContext* context,
                          MediaStreamDescriptor* stream_descriptor)
-    : ContextClient(context),
+    : ExecutionContextClient(context),
       descriptor_(stream_descriptor),
       scheduled_event_timer_(
           context->GetTaskRunner(TaskType::kMediaElementEvent),
@@ -137,7 +137,7 @@ MediaStream::MediaStream(ExecutionContext* context,
                          MediaStreamDescriptor* stream_descriptor,
                          const MediaStreamTrackVector& audio_tracks,
                          const MediaStreamTrackVector& video_tracks)
-    : ContextClient(context),
+    : ExecutionContextClient(context),
       descriptor_(stream_descriptor),
       scheduled_event_timer_(
           context->GetTaskRunner(TaskType::kMediaElementEvent),
@@ -167,7 +167,7 @@ MediaStream::MediaStream(ExecutionContext* context,
 MediaStream::MediaStream(ExecutionContext* context,
                          const MediaStreamTrackVector& audio_tracks,
                          const MediaStreamTrackVector& video_tracks)
-    : ContextClient(context),
+    : ExecutionContextClient(context),
       scheduled_event_timer_(
           context->GetTaskRunner(TaskType::kMediaElementEvent),
           this,
@@ -502,7 +502,7 @@ void MediaStream::Trace(Visitor* visitor) {
   visitor->Trace(observers_);
   visitor->Trace(scheduled_events_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   MediaStreamDescriptorClient::Trace(visitor);
 }
 

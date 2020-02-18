@@ -287,6 +287,23 @@ TEST(CSSSelectorParserTest, UnresolvedNamespacePrefix) {
   }
 }
 
+TEST(CSSSelectorParserTest, UnexpectedPipe) {
+  const char* test_cases[] = {"div | .c", "| div", " | div"};
+
+  auto* context = MakeGarbageCollected<CSSParserContext>(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
+  auto* sheet = MakeGarbageCollected<StyleSheetContents>(context);
+
+  for (auto* test_case : test_cases) {
+    CSSTokenizer tokenizer(test_case);
+    const auto tokens = tokenizer.TokenizeToEOF();
+    CSSParserTokenRange range(tokens);
+    CSSSelectorList list =
+        CSSSelectorParser::ParseSelector(range, context, sheet);
+    EXPECT_FALSE(list.IsValid());
+  }
+}
+
 TEST(CSSSelectorParserTest, SerializedUniversal) {
   const char* test_cases[][2] = {
       {"*::-webkit-volume-slider", "::-webkit-volume-slider"},

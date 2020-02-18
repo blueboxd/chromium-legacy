@@ -48,7 +48,7 @@ class ScriptPromiseResolver;
 class ScriptState;
 
 class GPUDevice final : public EventTargetWithInlineData,
-                        public ContextClient,
+                        public ExecutionContextClient,
                         public DawnObject<WGPUDevice> {
   USING_GARBAGE_COLLECTED_MIXIN(GPUDevice);
   DEFINE_WRAPPERTYPEINFO();

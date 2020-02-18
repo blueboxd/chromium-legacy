@@ -103,7 +103,6 @@ source_set("ntp_internal") {
     "//ios/chrome/browser/ui/content_suggestions/cells",
     "//ios/chrome/browser/ui/context_menu",
     "//ios/chrome/browser/ui/favicon",
-    "//ios/chrome/browser/ui/location_bar:notifications",
     "//ios/chrome/browser/ui/overscroll_actions",
     "//ios/chrome/browser/ui/toolbar/buttons",
     "//ios/chrome/browser/ui/toolbar/public",

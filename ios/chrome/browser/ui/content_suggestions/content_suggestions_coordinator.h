@@ -57,6 +57,12 @@ class WebState;
 // Reloads the suggestions.
 - (void)reload;
 
+// The location bar has lost focus.
+- (void)locationBarDidResignFirstResponder;
+
+// Tell location bar has taken focus.
+- (void)locationBarDidBecomeFirstResponder;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_COORDINATOR_H_

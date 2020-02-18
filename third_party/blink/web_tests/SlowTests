@@ -96,7 +96,6 @@ crbug.com/902685 virtual/split-http-cache-not-site-per-process/http/tests/devtoo
 crbug.com/246190 [ Release ] http/tests/devtools/indexeddb/* [ Slow ]
 crbug.com/451577 [ Mac ] http/tests/devtools/extensions/extensions-sidebar.js [ Slow ]
 crbug.com/941860 http/tests/devtools/extensions/extensions-events.js [ Slow ]
-crbug.com/667560 http/tests/devtools/startup/console/console-format-startup.js [ Slow ]
 crbug.com/679833 http/tests/devtools/network/network-datareceived.js [ Slow ]
 webkit.org/b/90488 [ Release ] http/tests/devtools/compiler-source-mapping-debug.js [ Slow ]
 crbug.com/243492 inspector-protocol/injected-script-discard.js [ Slow ]

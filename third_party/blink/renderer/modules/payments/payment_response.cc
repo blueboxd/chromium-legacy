@@ -22,7 +22,7 @@ PaymentResponse::PaymentResponse(
     PaymentAddress* shipping_address,
     PaymentStateResolver* payment_state_resolver,
     const String& request_id)
-    : ContextClient(ExecutionContext::From(script_state)),
+    : ExecutionContextClient(ExecutionContext::From(script_state)),
       request_id_(request_id),
       method_name_(response->method_name),
       shipping_address_(shipping_address),
@@ -139,7 +139,7 @@ const AtomicString& PaymentResponse::InterfaceName() const {
 }
 
 ExecutionContext* PaymentResponse::GetExecutionContext() const {
-  return ContextClient::GetExecutionContext();
+  return ExecutionContextClient::GetExecutionContext();
 }
 
 void PaymentResponse::Trace(Visitor* visitor) {
@@ -147,7 +147,7 @@ void PaymentResponse::Trace(Visitor* visitor) {
   visitor->Trace(shipping_address_);
   visitor->Trace(payment_state_resolver_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

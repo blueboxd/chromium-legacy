@@ -27,7 +27,6 @@ source_set("overscroll_actions") {
     "//ios/chrome/browser/ui/content_suggestions:content_suggestions_constant",
     "//ios/chrome/browser/ui/fullscreen",
     "//ios/chrome/browser/ui/fullscreen:feature_flags",
-    "//ios/chrome/browser/ui/location_bar:notifications",
     "//ios/chrome/browser/ui/page_info:constants",
     "//ios/chrome/browser/ui/side_swipe",
     "//ios/chrome/browser/ui/toolbar/public",

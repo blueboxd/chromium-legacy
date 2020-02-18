@@ -29,7 +29,7 @@ template <typename ResolvedType, typename RejectedType>
 class ScriptPromiseProperty final
     : public GarbageCollected<
           ScriptPromiseProperty<ResolvedType, RejectedType>>,
-      public ContextClient {
+      public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptPromiseProperty);
 
  public:
@@ -44,7 +44,7 @@ class ScriptPromiseProperty final
   // (typically ScriptPromiseProperty should be a member of the
   // property holder).
   ScriptPromiseProperty(ExecutionContext* execution_context)
-      : ContextClient(execution_context) {}
+      : ExecutionContextClient(execution_context) {}
 
   ScriptPromise Promise(DOMWrapperWorld& world) {
     if (!GetExecutionContext()) {
@@ -152,7 +152,7 @@ class ScriptPromiseProperty final
     TraceIfNeeded<RejectedType>::Trace(visitor, rejected_);
     visitor->Trace(resolvers_);
     visitor->Trace(promises_);
-    ContextClient::Trace(visitor);
+    ExecutionContextClient::Trace(visitor);
   }
 
   State GetState() const { return state_; }

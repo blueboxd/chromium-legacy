@@ -48,15 +48,15 @@
     }
   }
 
-  function step5() {
+  async function step5() {
     TestRunner.addResult('After adding new rule (inspected):');
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, true, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, false, true, true);
     ElementsTestRunner.selectNodeAndWaitForStyles('other', step6);
   }
 
-  function step6() {
+  async function step6() {
     TestRunner.addResult('After adding new rule (other):');
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
     testFinished = true;
     maybeCompleteTest();
   }

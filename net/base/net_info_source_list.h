@@ -4,8 +4,9 @@
 
 // This file intentionally does not have header guards, it's included
 // inside a macro to generate enum values. The following line silences a
-// presubmit warning that would otherwise be triggered by this:
+// presubmit and Tricium warning that would otherwise be triggered by this:
 // no-include-guard-because-multiply-included
+// NOLINT(build/header_guard)
 
 // Flags used to request different types of information about the current state
 // of a URLRequestContext.

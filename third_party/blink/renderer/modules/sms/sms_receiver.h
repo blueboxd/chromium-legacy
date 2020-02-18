@@ -18,7 +18,8 @@ namespace blink {
 class SMSReceiverOptions;
 class ScriptPromiseResolver;
 
-class SMSReceiver final : public ScriptWrappable, public ContextClient {
+class SMSReceiver final : public ScriptWrappable,
+                          public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(SMSReceiver);
   DEFINE_WRAPPERTYPEINFO();
 

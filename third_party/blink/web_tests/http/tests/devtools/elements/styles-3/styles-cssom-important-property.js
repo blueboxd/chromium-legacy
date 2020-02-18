@@ -14,6 +14,6 @@
   `);
 
   await new Promise(x => ElementsTestRunner.selectNodeAndWaitForStyles('inspected', x));
-  ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+  await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
   TestRunner.completeTest();
 })();

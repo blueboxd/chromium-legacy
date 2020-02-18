@@ -25,7 +25,7 @@ ReportingObserver* ReportingObserver::Create(
 ReportingObserver::ReportingObserver(ExecutionContext* execution_context,
                                      V8ReportingObserverCallback* callback,
                                      ReportingObserverOptions* options)
-    : ContextClient(execution_context),
+    : ExecutionContextClient(execution_context),
       execution_context_(execution_context),
       callback_(callback),
       options_(options),
@@ -94,7 +94,7 @@ void ReportingObserver::Trace(Visitor* visitor) {
   visitor->Trace(options_);
   visitor->Trace(report_queue_);
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

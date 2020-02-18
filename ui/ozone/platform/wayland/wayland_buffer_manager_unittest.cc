@@ -537,6 +537,121 @@ TEST_P(WaylandBufferManagerTest, EnsureCorrectOrderOfCallbacks) {
   DestroyBufferAndSetTerminateExpectation(widget, kBufferId2, false /*fail*/);
 }
 
+TEST_P(WaylandBufferManagerTest,
+       DestroyedBuffersGeneratePresentationFeedbackFailure) {
+  constexpr uint32_t kBufferId1 = 1;
+  constexpr uint32_t kBufferId2 = 2;
+  constexpr uint32_t kBufferId3 = 3;
+
+  const gfx::AcceleratedWidget widget = window_->GetWidget();
+  const gfx::Rect bounds = gfx::Rect({0, 0}, kDefaultSize);
+  window_->SetBounds(bounds);
+
+  MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget_);
+
+  auto* linux_dmabuf = server_.zwp_linux_dmabuf_v1();
+  EXPECT_CALL(*linux_dmabuf, CreateParams(_, _, _)).Times(3);
+  CreateDmabufBasedBufferAndSetTerminateExpecation(false /*fail*/, kBufferId1);
+  CreateDmabufBasedBufferAndSetTerminateExpecation(false /*fail*/, kBufferId2);
+  CreateDmabufBasedBufferAndSetTerminateExpecation(false /*fail*/, kBufferId3);
+
+  Sync();
+
+  ProcessCreatedBufferResourcesWithExpectation(3u /* expected size */,
+                                               false /* fail */);
+
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+  auto* mock_wp_presentation = server_.EnsureWpPresentation();
+  ASSERT_TRUE(mock_wp_presentation);
+
+  constexpr uint32_t kNumberOfCommits = 3;
+  EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(kNumberOfCommits);
+  EXPECT_CALL(*mock_surface, Frame(_)).Times(kNumberOfCommits);
+  EXPECT_CALL(*mock_surface, Commit()).Times(kNumberOfCommits);
+  EXPECT_CALL(*mock_wp_presentation,
+              Feedback(_, _, mock_surface->resource(), _))
+      .Times(3);
+
+  Sync();
+
+  ::testing::InSequence s;
+
+  // wp_presentation_feedback should work now.
+  ASSERT_TRUE(connection_->presentation());
+
+  // Commit the first buffer and expect OnSubmission immediately.
+  EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(0);
+  EXPECT_CALL(mock_surface_gpu,
+              OnSubmission(kBufferId1, gfx::SwapResult::SWAP_ACK))
+      .Times(1);
+  buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, bounds);
+  mock_surface->SendFrameCallback();
+  Sync();
+
+  // Deliberately drop the presentation feedback for the first buffer,
+  // since we will destroy it.
+  mock_wp_presentation->set_presentation_callback(nullptr);
+
+  // Commit second buffer now.
+  buffer_manager_gpu_->CommitBuffer(widget, kBufferId2, bounds);
+  mock_surface->SendFrameCallback();
+  Sync();
+
+  // Destroy the first buffer, which should trigger submission for the second
+  // buffer.
+  EXPECT_CALL(mock_surface_gpu,
+              OnSubmission(kBufferId2, gfx::SwapResult::SWAP_ACK))
+      .Times(1);
+  DestroyBufferAndSetTerminateExpectation(widget, kBufferId1, /*fail=*/false);
+  mock_surface->DestroyPrevAttachedBuffer();
+  mock_surface->SendFrameCallback();
+  Sync();
+
+  // Deliberately drop the presentation feedback for the second buffer,
+  // since we will destroy it.
+  mock_wp_presentation->set_presentation_callback(nullptr);
+
+  // Commit buffer 3 then send the presentation callback for it. This should
+  // not call OnPresentation as OnSubmission hasn't been called yet.
+  EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(0);
+  buffer_manager_gpu_->CommitBuffer(widget, kBufferId3, bounds);
+  mock_surface->SendFrameCallback();
+  mock_wp_presentation->SendPresentationCallback();
+  Sync();
+
+  // Destroy buffer 2, which should trigger OnSubmission for buffer 3, and
+  // OnPresentation for buffer 1, 2, and 3.
+  EXPECT_CALL(mock_surface_gpu,
+              OnSubmission(kBufferId3, gfx::SwapResult::SWAP_ACK))
+      .Times(1);
+  EXPECT_CALL(
+      mock_surface_gpu,
+      OnPresentation(
+          kBufferId1,
+          ::testing::Field(
+              &gfx::PresentationFeedback::flags,
+              ::testing::Eq(gfx::PresentationFeedback::Flags::kFailure))))
+      .Times(1);
+  EXPECT_CALL(
+      mock_surface_gpu,
+      OnPresentation(
+          kBufferId2,
+          ::testing::Field(
+              &gfx::PresentationFeedback::flags,
+              ::testing::Eq(gfx::PresentationFeedback::Flags::kFailure))))
+      .Times(1);
+  EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId3, _)).Times(1);
+  DestroyBufferAndSetTerminateExpectation(widget, kBufferId2, /*fail=*/false);
+  mock_surface->DestroyPrevAttachedBuffer();
+  mock_surface->SendFrameCallback();
+  mock_wp_presentation->SendPresentationCallback();
+  Sync();
+
+  DestroyBufferAndSetTerminateExpectation(widget, kBufferId3, false /*fail*/);
+}
+
+TEST_P(WaylandBufferManagerTest, MultiplePendingPresentationsForSameBuffer) {}
+
 TEST_P(WaylandBufferManagerTest, TestCommitBufferConditions) {
   constexpr uint32_t kDmabufBufferId = 1;
   constexpr uint32_t kDmabufBufferId2 = 2;

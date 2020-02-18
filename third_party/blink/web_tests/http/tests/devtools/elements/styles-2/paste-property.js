@@ -13,34 +13,34 @@
 
   ElementsTestRunner.selectNodeAndWaitForStyles('inspected', pasteFirstProperty);
 
-  function pasteFirstProperty() {
+  async function pasteFirstProperty() {
     TestRunner.addResult('Before pasting:');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     var section = ElementsTestRunner.inlineStyleSection();
 
     var treeElement = section.addNewBlankProperty(0);
     pasteProperty(treeElement, 'margin-left: 1px', pasteTwoProperties);
   }
 
-  function pasteTwoProperties() {
+  async function pasteTwoProperties() {
     TestRunner.addResult('After pasting \'margin-left: 1px\':');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
 
     var treeElement = ElementsTestRunner.inlineStyleSection().addNewBlankProperty(2);
     pasteProperty(treeElement, 'margin-top: 1px; color: red;', pasteOverExistingProperty);
   }
 
-  function pasteOverExistingProperty() {
+  async function pasteOverExistingProperty() {
     TestRunner.addResult('After pasting \'margin-top: 1px; color: red;\':');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
 
     var treeElement = ElementsTestRunner.getElementStylePropertyTreeItem('margin-top');
     pasteProperty(treeElement, 'foo: bar; moo: zoo', dumpAndComplete);
   }
 
-  function dumpAndComplete() {
+  async function dumpAndComplete() {
     TestRunner.addResult('After pasting \'foo: bar; moo: zoo\' over \'margin-top\':');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
 
     TestRunner.completeTest();
   }

@@ -59,7 +59,7 @@ class StyleRuleFontFace;
 
 class CORE_EXPORT FontFace : public ScriptWrappable,
                              public ActiveScriptWrappable<FontFace>,
-                             public ContextClient {
+                             public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FontFace);
 

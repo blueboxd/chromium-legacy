@@ -96,7 +96,7 @@ DOMFileSystem::DOMFileSystem(ExecutionContext* context,
                              mojom::blink::FileSystemType type,
                              const KURL& root_url)
     : DOMFileSystemBase(context, name, type, root_url),
-      ContextClient(context),
+      ExecutionContextClient(context),
       number_of_pending_callbacks_(0),
       root_entry_(
           MakeGarbageCollected<DirectoryEntry>(this, DOMFilePath::kRoot)) {}
@@ -181,7 +181,7 @@ void DOMFileSystem::ScheduleCallback(ExecutionContext* execution_context,
 void DOMFileSystem::Trace(Visitor* visitor) {
   visitor->Trace(root_entry_);
   DOMFileSystemBase::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

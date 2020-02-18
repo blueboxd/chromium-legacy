@@ -12,7 +12,7 @@
 namespace blink {
 
 NavigatorNetworkInformation::NavigatorNetworkInformation(Navigator& navigator)
-    : ContextClient(navigator.GetFrame()) {}
+    : ExecutionContextClient(navigator.GetFrame()) {}
 
 NavigatorNetworkInformation& NavigatorNetworkInformation::From(
     Navigator& navigator) {
@@ -51,7 +51,7 @@ NetworkInformation* NavigatorNetworkInformation::connection() {
 void NavigatorNetworkInformation::Trace(Visitor* visitor) {
   visitor->Trace(connection_);
   Supplement<Navigator>::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

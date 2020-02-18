@@ -48,9 +48,9 @@
       ElementsTestRunner.waitForSelectorCommitted(onSelectorEdited);
       section._selectorElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
 
-      function onSelectorEdited() {
+      async function onSelectorEdited() {
         TestRunner.addResult('\n\n#### AFTER SELECTOR EDIT ####\n\n');
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+        await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
         var rules = ElementsTestRunner.getMatchedRules();
         ElementsTestRunner.validateRuleRanges('container', rules, next);
       }

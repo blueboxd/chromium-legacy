@@ -189,7 +189,7 @@ bool WaitUntilObserver::IsDispatchingEvent() const {
 WaitUntilObserver::WaitUntilObserver(ExecutionContext* context,
                                      EventType type,
                                      int event_id)
-    : ContextClient(context),
+    : ExecutionContextClient(context),
       type_(type),
       event_id_(event_id),
       consume_window_interaction_timer_(
@@ -335,7 +335,7 @@ void WaitUntilObserver::ConsumeWindowInteraction(TimerBase*) {
 }
 
 void WaitUntilObserver::Trace(Visitor* visitor) {
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

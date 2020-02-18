@@ -13,13 +13,13 @@
 
   ElementsTestRunner.selectNodeAndWaitForStyles('inspected1', dumpStylesFirst);
 
-  function dumpStylesFirst() {
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+  async function dumpStylesFirst() {
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     ElementsTestRunner.selectNodeAndWaitForStyles('inspected2', dumpStylesSecond);
   }
 
-  function dumpStylesSecond() {
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+  async function dumpStylesSecond() {
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     TestRunner.completeTest();
   }
 })();

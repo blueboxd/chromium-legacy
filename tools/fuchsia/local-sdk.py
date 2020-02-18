@@ -36,11 +36,23 @@ def EnsureEmptyDir(path):
 
 def BuildForArch(arch):
   build_dir = 'out/release-' + arch
-  Run('scripts/fx', '--dir', build_dir, 'set', 'terminal.qemu-' + arch,
+  Run('scripts/fx', '--dir', build_dir, 'set', 'core.qemu-' + arch,
       '--with-base=//sdk/bundles:tools', '--args=is_debug=false',
       '--args=build_sdk_archives=true')
   Run('scripts/fx', 'build', 'topaz/public/sdk:fuchsia_dart', 'sdk',
       'build/images')
+
+
+def _CopyFilesIntoExistingDirectory(src, dst):
+  for entry in os.listdir(src):
+    src_path = os.path.join(src, entry)
+    dst_path = os.path.join(dst, entry)
+    if os.path.isdir(src_path):
+      if not os.path.exists(dst_path):
+        os.mkdir(dst_path)
+      _CopyFilesIntoExistingDirectory(src_path, dst_path)
+    else:
+      shutil.copy(src_path, dst_path)
 
 
 def main(args):
@@ -81,23 +93,21 @@ def main(args):
     BuildForArch(arch)
 
     arch_output_dir = os.path.join(fuchsia_root, 'out', 'release-' + arch)
-    sdk_tars = [
-        os.path.join(arch_output_dir, 'sdk', 'archive', 'core.tar.gz'),
-        os.path.join(arch_output_dir, 'sdk', 'archive', 'fuchsia_dart.tar.gz'),
-    ]
 
-    # Extract tars merging manifests
-    manifest_path = os.path.join(sdk_output_dir, 'meta', 'manifest.json')
-    for sdk_tar in sdk_tars:
-      with tarfile.open(sdk_tar, mode='r:gz') as tar:
-        for tar_file in tar:
-          try:
-            tar.extract(tar_file, sdk_output_dir)
-          except IOError:
-            # Ignore overwrite of read-only files.
-            pass
+    sdk_tarballs = ['core.tar.gz', 'fuchsia_dart.tar.gz']
 
-      # Merge the manifest ensuring that we don't have duplicate entries.
+    for sdk_tar in sdk_tarballs:
+      sdk_tar_path = os.path.join(arch_output_dir, 'sdk', 'archive', sdk_tar)
+      sdk_gn_dir = os.path.join(arch_output_dir, 'sdk', 'gn-' + sdk_tar)
+
+      # Process the Core SDK tarball to generate the GN SDK.
+      Run('scripts/sdk/gn/generate.py', '--archive', sdk_tar_path, '--output',
+          sdk_gn_dir)
+
+      _CopyFilesIntoExistingDirectory(sdk_gn_dir, sdk_output_dir)
+
+      # Merge the manifests.
+      manifest_path = os.path.join(sdk_output_dir, 'meta', 'manifest.json')
       if os.path.isfile(manifest_path):
         manifest = json.load(open(manifest_path))
         os.remove(manifest_path)

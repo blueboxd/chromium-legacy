@@ -2691,7 +2691,6 @@ TEST_F(TransportSecurityStateStaticTest, Preloaded) {
   EXPECT_TRUE(StaticShouldRedirect("plus.google.com"));
   EXPECT_TRUE(StaticShouldRedirect("groups.google.com"));
   EXPECT_TRUE(StaticShouldRedirect("apis.google.com"));
-  EXPECT_TRUE(StaticShouldRedirect("googleapis.com"));
   EXPECT_TRUE(StaticShouldRedirect("ssl.google-analytics.com"));
   EXPECT_TRUE(StaticShouldRedirect("google"));
   EXPECT_TRUE(StaticShouldRedirect("foo.google"));
@@ -2887,6 +2886,7 @@ TEST_F(TransportSecurityStateStaticTest, PreloadedPins) {
   EXPECT_TRUE(OnlyPinningInStaticState("ytimg.com"));
   EXPECT_TRUE(OnlyPinningInStaticState("googleusercontent.com"));
   EXPECT_TRUE(OnlyPinningInStaticState("www.googleusercontent.com"));
+  EXPECT_TRUE(OnlyPinningInStaticState("googleapis.com"));
   EXPECT_TRUE(OnlyPinningInStaticState("googleadservices.com"));
   EXPECT_TRUE(OnlyPinningInStaticState("googlecode.com"));
   EXPECT_TRUE(OnlyPinningInStaticState("appspot.com"));
@@ -2894,7 +2894,6 @@ TEST_F(TransportSecurityStateStaticTest, PreloadedPins) {
   EXPECT_TRUE(OnlyPinningInStaticState("doubleclick.net"));
   EXPECT_TRUE(OnlyPinningInStaticState("googlegroups.com"));
 
-  EXPECT_TRUE(HasStaticPublicKeyPins("googleapis.com"));
   EXPECT_TRUE(HasStaticPublicKeyPins("torproject.org"));
   EXPECT_TRUE(HasStaticPublicKeyPins("www.torproject.org"));
   EXPECT_TRUE(HasStaticPublicKeyPins("check.torproject.org"));

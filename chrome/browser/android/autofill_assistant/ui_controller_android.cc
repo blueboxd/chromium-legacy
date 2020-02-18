@@ -378,6 +378,12 @@ void UiControllerAndroid::SetupForState() {
         ShowContentAndExpandBottomSheet();
       return;
 
+    case AutofillAssistantState::BROWSE:
+      SetOverlayState(OverlayState::HIDDEN);
+      AllowShowingSoftKeyboard(true);
+      SetSpinPoodle(false);
+      return;
+
     case AutofillAssistantState::MODAL_DIALOG:
       SetOverlayState(OverlayState::FULL);
       AllowShowingSoftKeyboard(true);

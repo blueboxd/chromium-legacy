@@ -31,14 +31,14 @@ class FontFaceCache;
 using FontFaceSetIterable = SetlikeIterable<Member<FontFace>>;
 
 class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
-                                public ContextClient,
+                                public ExecutionContextClient,
                                 public FontFaceSetIterable,
                                 public FontFace::LoadFontCallback {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   FontFaceSet(ExecutionContext& context)
-      : ContextClient(&context),
+      : ExecutionContextClient(&context),
         ready_(MakeGarbageCollected<ReadyProperty>(GetExecutionContext())) {}
   ~FontFaceSet() override = default;
 
@@ -51,7 +51,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   virtual ScriptPromise ready(ScriptState*) = 0;
 
   ExecutionContext* GetExecutionContext() const override {
-    return ContextClient::GetExecutionContext();
+    return ExecutionContextClient::GetExecutionContext();
   }
 
   const AtomicString& InterfaceName() const override {

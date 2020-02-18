@@ -26,7 +26,7 @@ enum class RTCQuicStreamState { kNew, kOpening, kOpen, kClosing, kClosed };
 // RTCQuicTransport that it is associated with holds a strong reference to it
 // as long as it is not closed.
 class MODULES_EXPORT RTCQuicStream final : public EventTargetWithInlineData,
-                                           public ContextClient,
+                                           public ExecutionContextClient,
                                            public QuicStreamProxy::Delegate {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RTCQuicStream);

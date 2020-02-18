@@ -57,7 +57,7 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
           time_origin,
           SecurityOrigin::IsSecure(frame->GetDocument()->Url()),
           std::move(server_timing)),
-      ContextClient(frame),
+      ExecutionContextClient(frame),
       resource_timing_info_(info) {
   DCHECK(frame);
   DCHECK(frame->GetDocument());
@@ -75,7 +75,7 @@ PerformanceEntryType PerformanceNavigationTiming::EntryTypeEnum() const {
 }
 
 void PerformanceNavigationTiming::Trace(Visitor* visitor) {
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   PerformanceResourceTiming::Trace(visitor);
 }
 

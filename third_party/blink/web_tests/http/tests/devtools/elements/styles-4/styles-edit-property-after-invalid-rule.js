@@ -23,18 +23,18 @@
 
   ElementsTestRunner.selectNodeAndWaitForStyles('container', step1);
 
-  function step1() {
+  async function step1() {
     TestRunner.addResult('Initial value');
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
 
     var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem('padding');
     treeItem.applyStyleText('padding: 20px', false);
     ElementsTestRunner.waitForStyles('container', step2);
   }
 
-  function step2() {
+  async function step2() {
     TestRunner.addResult('After changing property');
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
     TestRunner.completeTest();
   }
 })();

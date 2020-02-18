@@ -400,7 +400,7 @@ bool Body::IsBodyUsedForDCheck(ExceptionState& exception_state) {
          BodyBuffer()->IsStreamDisturbedForDCheck(exception_state);
 }
 
-Body::Body(ExecutionContext* context) : ContextClient(context) {}
+Body::Body(ExecutionContext* context) : ExecutionContextClient(context) {}
 
 void Body::RejectInvalidConsumption(ScriptState* script_state,
                                     ExceptionState& exception_state) {

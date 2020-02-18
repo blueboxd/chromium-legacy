@@ -19638,6 +19638,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="676" label="DeviceLoginScreenPrivacyScreenEnabled"/>
   <int value="677" label="PrivacyScreenEnabled"/>
   <int value="678" label="AllowNativeNotifications"/>
+  <int value="679" label="ForceLogoutUnauthenticatedUserEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">

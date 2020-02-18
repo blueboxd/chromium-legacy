@@ -405,15 +405,16 @@ bool CSSSelectorParser::ConsumeName(CSSParserTokenRange& range,
   if (range.Peek().GetType() != kDelimiterToken ||
       range.Peek().Delimiter() != '|')
     return true;
-  range.Consume();
 
   namespace_prefix =
       name == CSSSelector::UniversalSelectorAtom() ? g_star_atom : name;
-  const CSSParserToken& name_token = range.Consume();
-  if (name_token.GetType() == kIdentToken) {
-    name = name_token.Value().ToAtomicString();
-  } else if (name_token.GetType() == kDelimiterToken &&
-             name_token.Delimiter() == '*') {
+  if (range.Peek(1).GetType() == kIdentToken) {
+    range.Consume();
+    name = range.Consume().Value().ToAtomicString();
+  } else if (range.Peek(1).GetType() == kDelimiterToken &&
+             range.Peek(1).Delimiter() == '*') {
+    range.Consume();
+    range.Consume();
     name = CSSSelector::UniversalSelectorAtom();
   } else {
     name = g_null_atom;

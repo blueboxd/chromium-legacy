@@ -313,4 +313,11 @@
   [self.contentSuggestionsMediator.dataSink reloadAllData];
 }
 
+- (void)locationBarDidBecomeFirstResponder {
+  [self.NTPMediator locationBarDidBecomeFirstResponder];
+}
+- (void)locationBarDidResignFirstResponder {
+  [self.NTPMediator locationBarDidResignFirstResponder];
+}
+
 @end

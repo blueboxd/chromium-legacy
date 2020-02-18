@@ -13,8 +13,8 @@
 
   ElementsTestRunner.selectNodeAndWaitForStyles('inspected', dumpStyles);
 
-  function dumpStyles() {
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+  async function dumpStyles() {
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     TestRunner.completeTest();
   }
 })();

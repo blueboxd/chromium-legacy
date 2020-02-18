@@ -19,7 +19,7 @@ namespace blink {
 class PictureInPictureWindow
     : public EventTargetWithInlineData,
       public ActiveScriptWrappable<PictureInPictureWindow>,
-      public ContextClient {
+      public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(PictureInPictureWindow);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -41,7 +41,7 @@ class PictureInPictureWindow
   // EventTarget overrides.
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override {
-    return ContextClient::GetExecutionContext();
+    return ExecutionContextClient::GetExecutionContext();
   }
 
   // ActiveScriptWrappable overrides.

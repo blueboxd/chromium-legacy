@@ -108,6 +108,11 @@ void MockSurface::AttachNewBuffer(wl_resource* buffer_resource,
   Attach(buffer_resource, x, y);
 }
 
+void MockSurface::DestroyPrevAttachedBuffer() {
+  DCHECK(prev_attached_buffer_);
+  prev_attached_buffer_ = nullptr;
+}
+
 void MockSurface::ReleasePrevAttachedBuffer() {
   if (!prev_attached_buffer_)
     return;

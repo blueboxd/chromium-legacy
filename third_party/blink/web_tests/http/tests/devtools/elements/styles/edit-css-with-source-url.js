@@ -27,9 +27,9 @@
 
   var uiSourceCode;
 
-  function nodeSelected() {
+  async function nodeSelected() {
     TestRunner.addResult('Dumping matched rules:');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     TestRunner.addResult('Editing styles from elements panel:');
     var treeElement = ElementsTestRunner.getMatchedStylePropertyTreeItem('color');
     treeElement.startEditing();
@@ -43,10 +43,10 @@
     uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, stylesEdited, this);
   }
 
-  function stylesEdited() {
+  async function stylesEdited() {
     TestRunner.addResult('Styles edited.');
     TestRunner.addResult('Dumping matched rules:');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     TestRunner.addResult('Dumping uiSourceCode content:');
     TestRunner.addResult(uiSourceCode.workingCopy());
     TestRunner.completeTest();

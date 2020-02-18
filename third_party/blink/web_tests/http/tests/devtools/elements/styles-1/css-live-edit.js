@@ -24,8 +24,8 @@
       ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('foo', didSelectElement);
     }
 
-    function didSelectElement() {
-      ElementsTestRunner.dumpSelectedElementStyles(false, true);
+    async function didSelectElement() {
+      await ElementsTestRunner.dumpSelectedElementStyles(false, true);
       next();
     }
   }]);

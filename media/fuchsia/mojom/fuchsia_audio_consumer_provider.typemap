@@ -7,11 +7,10 @@ os_whitelist = [ "fuchsia" ]
 public_headers = [ "fuchsia/media/drm/cpp/fidl.h" ]
 traits_headers =
     [ "//media/fuchsia/mojom/fuchsia_audio_consumer_provider_mojom_traits.h" ]
-sources = [
-  "//media/fuchsia/mojom/fuchsia_audio_consumer_provider_mojom_traits.h",
-]
+sources =
+    [ "//media/fuchsia/mojom/fuchsia_audio_consumer_provider_mojom_traits.h" ]
 public_deps = [
   "//fuchsia/mojom:traits",
-  "//third_party/fuchsia-sdk/sdk:fuchsia-media",
+  "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.media",
 ]
 type_mappings = [ "media.mojom.AudioConsumerRequest=::fidl::InterfaceRequest<::fuchsia::media::AudioConsumer>[move_only]" ]

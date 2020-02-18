@@ -55,7 +55,7 @@ const uint32_t kMaxBufferedRecvDatagrams = 5000;
 // long as it is alive.
 class MODULES_EXPORT RTCQuicTransport final
     : public EventTargetWithInlineData,
-      public ContextClient,
+      public ExecutionContextClient,
       public QuicTransportProxy::Delegate {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RTCQuicTransport);

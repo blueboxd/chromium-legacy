@@ -24,7 +24,17 @@
 
 #include <memory>
 
+#include "third_party/blink/renderer/platform/graphics/gradient.h"
+
 namespace blink {
+
+struct GradientData {
+  USING_FAST_MALLOC(GradientData);
+
+ public:
+  scoped_refptr<Gradient> gradient;
+  AffineTransform userspace_transform;
+};
 
 LayoutSVGResourceGradient::LayoutSVGResourceGradient(SVGGradientElement* node)
     : LayoutSVGResourcePaintServer(node),
@@ -50,10 +60,10 @@ bool LayoutSVGResourceGradient::RemoveClientFromCache(
   return true;
 }
 
-SVGPaintServer LayoutSVGResourceGradient::PreparePaintServer(
-    const SVGResourceClient& client,
+std::unique_ptr<GradientData> LayoutSVGResourceGradient::BuildGradientData(
     const FloatRect& object_bounding_box) {
-  ClearInvalidationMask();
+  // Create gradient object
+  auto gradient_data = std::make_unique<GradientData>();
 
   // Validate gradient DOM state before building the actual
   // gradient. This should avoid tearing down the gradient we're
@@ -61,39 +71,42 @@ SVGPaintServer LayoutSVGResourceGradient::PreparePaintServer(
   // no side-effects though.
   if (should_collect_gradient_attributes_) {
     if (!CollectGradientAttributes())
-      return SVGPaintServer::Invalid();
+      return gradient_data;
     should_collect_gradient_attributes_ = false;
   }
 
-  // Spec: When the geometry of the applicable element has no width or height
-  // and objectBoundingBox is specified, then the given effect (e.g. a gradient
-  // or a filter) will be ignored.
-  if (GradientUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox &&
-      object_bounding_box.IsEmpty())
-    return SVGPaintServer::Invalid();
+  // We want the text bounding box applied to the gradient space transform
+  // now, so the gradient shader can use it.
+  if (GradientUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
+    // Spec: When the geometry of the applicable element has no width or height
+    // and objectBoundingBox is specified, then the given effect (e.g. a
+    // gradient or a filter) will be ignored.
+    if (object_bounding_box.IsEmpty())
+      return gradient_data;
+    gradient_data->userspace_transform.Translate(object_bounding_box.X(),
+                                                 object_bounding_box.Y());
+    gradient_data->userspace_transform.ScaleNonUniform(
+        object_bounding_box.Width(), object_bounding_box.Height());
+  }
+
+  // Create gradient object
+  gradient_data->gradient = BuildGradient();
+
+  AffineTransform gradient_transform = CalculateGradientTransform();
+  gradient_data->userspace_transform *= gradient_transform;
+
+  return gradient_data;
+}
+
+SVGPaintServer LayoutSVGResourceGradient::PreparePaintServer(
+    const SVGResourceClient& client,
+    const FloatRect& object_bounding_box) {
+  ClearInvalidationMask();
 
   std::unique_ptr<GradientData>& gradient_data =
       gradient_map_->insert(&client, nullptr).stored_value->value;
   if (!gradient_data)
-    gradient_data = std::make_unique<GradientData>();
-
-  // Create gradient object
-  if (!gradient_data->gradient) {
-    gradient_data->gradient = BuildGradient();
-
-    // We want the text bounding box applied to the gradient space transform
-    // now, so the gradient shader can use it.
-    if (GradientUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox &&
-        !object_bounding_box.IsEmpty()) {
-      gradient_data->userspace_transform.Translate(object_bounding_box.X(),
-                                                   object_bounding_box.Y());
-      gradient_data->userspace_transform.ScaleNonUniform(
-          object_bounding_box.Width(), object_bounding_box.Height());
-    }
-
-    AffineTransform gradient_transform = CalculateGradientTransform();
-    gradient_data->userspace_transform *= gradient_transform;
-  }
+    gradient_data = BuildGradientData(object_bounding_box);
 
   if (!gradient_data->gradient)
     return SVGPaintServer::Invalid();

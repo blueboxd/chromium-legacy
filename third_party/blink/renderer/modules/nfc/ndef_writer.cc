@@ -32,13 +32,14 @@ NDEFWriter* NDEFWriter::Create(ExecutionContext* context) {
   return MakeGarbageCollected<NDEFWriter>(context);
 }
 
-NDEFWriter::NDEFWriter(ExecutionContext* context) : ContextClient(context) {}
+NDEFWriter::NDEFWriter(ExecutionContext* context)
+    : ExecutionContextClient(context) {}
 
 void NDEFWriter::Trace(Visitor* visitor) {
   visitor->Trace(nfc_proxy_);
   visitor->Trace(requests_);
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 // https://w3c.github.io/web-nfc/#writing-content

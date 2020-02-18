@@ -65,7 +65,7 @@ SpeechSynthesis* SpeechSynthesis::CreateForTesting(
 }
 
 SpeechSynthesis::SpeechSynthesis(ExecutionContext* context)
-    : ContextClient(context),
+    : ExecutionContextClient(context),
       receiver_(this, context),
       mojom_synthesis_(context) {
   DCHECK(!GetExecutionContext() || GetExecutionContext()->IsDocument());
@@ -292,7 +292,7 @@ void SpeechSynthesis::Trace(Visitor* visitor) {
   visitor->Trace(mojom_synthesis_);
   visitor->Trace(voice_list_);
   visitor->Trace(utterance_queue_);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }
 

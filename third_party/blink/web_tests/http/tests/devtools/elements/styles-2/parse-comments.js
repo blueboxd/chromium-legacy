@@ -46,9 +46,9 @@
 
   ElementsTestRunner.selectNodeAndWaitForStyles('main', step1);
 
-  function step1() {
+  async function step1() {
     TestRunner.addResult('Main style:');
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
     TestRunner.completeTest();
   }
 })();

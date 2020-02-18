@@ -59,7 +59,7 @@ if (is_fuchsia) {
       "//base",
       "//third_party/fuchsia-sdk/sdk:fidl",
       "//third_party/fuchsia-sdk/sdk:fidl_cpp",
-      "//third_party/fuchsia-sdk/sdk:fuchsia-hardware-power-statecontrol",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.hardware.power.statecontrol",
     ]
   }
 }

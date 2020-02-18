@@ -6,13 +6,15 @@
 #define COMPONENTS_INVALIDATION_IMPL_FAKE_INVALIDATION_SERVICE_H_
 
 #include <list>
+#include <memory>
 #include <utility>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "components/invalidation/impl/deprecated_invalidator_registrar.h"
+#include "components/invalidation/impl/invalidator_registrar_with_memory.h"
 #include "components/invalidation/impl/mock_ack_handler.h"
 #include "components/invalidation/public/invalidation_service.h"
+#include "components/prefs/testing_pref_service.h"
 
 namespace syncer {
 class Invalidation;
@@ -45,8 +47,8 @@ class FakeInvalidationService : public InvalidationService {
 
   void SetInvalidatorState(syncer::InvalidatorState state);
 
-  const syncer::DeprecatedInvalidatorRegistrar& invalidator_registrar() const {
-    return invalidator_registrar_;
+  const syncer::InvalidatorRegistrarWithMemory& invalidator_registrar() const {
+    return *invalidator_registrar_;
   }
 
   void EmitInvalidationForTest(const syncer::Invalidation& invalidation);
@@ -57,8 +59,10 @@ class FakeInvalidationService : public InvalidationService {
 
  private:
   std::string client_id_;
-  // TODO(crbug.com/1029481): Migrate to a non-deprecated class.
-  syncer::DeprecatedInvalidatorRegistrar invalidator_registrar_;
+  // |pref_service_| must outlive |invalidator_registrar_|.
+  TestingPrefServiceSimple pref_service_;
+  std::unique_ptr<syncer::InvalidatorRegistrarWithMemory>
+      invalidator_registrar_;
   syncer::MockAckHandler mock_ack_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeInvalidationService);

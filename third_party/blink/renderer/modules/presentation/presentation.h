@@ -20,7 +20,8 @@ class PresentationRequest;
 // Presentation.idl
 // See https://w3c.github.io/presentation-api/#navigatorpresentation for
 // details.
-class Presentation final : public ScriptWrappable, public ContextClient {
+class Presentation final : public ScriptWrappable,
+                           public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(Presentation);
   DEFINE_WRAPPERTYPEINFO();
 

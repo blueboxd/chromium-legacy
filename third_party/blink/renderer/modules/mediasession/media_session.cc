@@ -126,7 +126,7 @@ mojom::blink::MediaSessionPlaybackState StringToMediaSessionPlaybackState(
 }  // anonymous namespace
 
 MediaSession::MediaSession(ExecutionContext* execution_context)
-    : ContextClient(execution_context),
+    : ExecutionContextClient(execution_context),
       clock_(base::DefaultTickClock::GetInstance()),
       playback_state_(mojom::blink::MediaSessionPlaybackState::NONE) {}
 
@@ -377,7 +377,7 @@ void MediaSession::Trace(Visitor* visitor) {
   visitor->Trace(metadata_);
   visitor->Trace(action_handlers_);
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

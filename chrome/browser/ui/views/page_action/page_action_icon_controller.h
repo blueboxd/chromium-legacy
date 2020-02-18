@@ -31,7 +31,7 @@ class ZoomView;
 
 namespace autofill {
 class LocalCardMigrationIconView;
-class SaveCardIconView;
+class SavePaymentIconView;
 }  // namespace autofill
 
 namespace qrcode_generator {
@@ -89,7 +89,7 @@ class PageActionIconController : public zoom::ZoomEventManagerObserver {
   qrcode_generator::QRCodeGeneratorIconView* qrcode_generator_icon_view_ =
       nullptr;
   ReaderModeIconView* reader_mode_icon_ = nullptr;
-  autofill::SaveCardIconView* save_card_icon_ = nullptr;
+  autofill::SavePaymentIconView* save_payment_icon_ = nullptr;
   send_tab_to_self::SendTabToSelfIconView* send_tab_to_self_icon_ = nullptr;
   SharingIconView* shared_clipboard_icon_ = nullptr;
   TranslateIconView* translate_icon_ = nullptr;

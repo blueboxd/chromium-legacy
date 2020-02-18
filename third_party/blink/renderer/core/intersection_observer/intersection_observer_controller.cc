@@ -19,7 +19,7 @@ namespace blink {
 
 IntersectionObserverController::IntersectionObserverController(
     Document* document)
-    : ContextClient(document->ToExecutionContext()) {}
+    : ExecutionContextClient(document->ToExecutionContext()) {}
 
 IntersectionObserverController::~IntersectionObserverController() = default;
 
@@ -134,7 +134,7 @@ void IntersectionObserverController::Trace(Visitor* visitor) {
   visitor->Trace(explicit_root_observers_);
   visitor->Trace(implicit_root_observations_);
   visitor->Trace(pending_intersection_observers_);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

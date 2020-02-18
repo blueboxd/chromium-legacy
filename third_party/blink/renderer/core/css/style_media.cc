@@ -33,7 +33,7 @@
 
 namespace blink {
 
-StyleMedia::StyleMedia(LocalFrame* frame) : ContextClient(frame) {}
+StyleMedia::StyleMedia(LocalFrame* frame) : ExecutionContextClient(frame) {}
 
 AtomicString StyleMedia::type() const {
   LocalFrameView* view = GetFrame() ? GetFrame()->View() : nullptr;
@@ -63,7 +63,7 @@ bool StyleMedia::matchMedium(const String& query) const {
 
 void StyleMedia::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

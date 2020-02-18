@@ -13,16 +13,16 @@
 
   ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step1);
 
-  function step1(node) {
+  async function step1(node) {
     TestRunner.addResult('Before style property removal:');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     node.removeAttribute('style');
     ElementsTestRunner.waitForStyles('inspected', step2);
   }
 
-  function step2() {
+  async function step2() {
     TestRunner.addResult('After style property removal:');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     TestRunner.completeTest();
   }
 })();

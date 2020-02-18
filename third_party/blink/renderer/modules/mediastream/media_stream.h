@@ -54,7 +54,7 @@ class MODULES_EXPORT MediaStreamObserver : public GarbageCollectedMixin {
 
 class MODULES_EXPORT MediaStream final
     : public EventTargetWithInlineData,
-      public ContextClient,
+      public ExecutionContextClient,
       public ActiveScriptWrappable<MediaStream>,
       public MediaStreamDescriptorClient {
   USING_GARBAGE_COLLECTED_MIXIN(MediaStream);
@@ -135,7 +135,7 @@ class MODULES_EXPORT MediaStream final
   // EventTarget
   const AtomicString& InterfaceName() const override;
   ExecutionContext* GetExecutionContext() const override {
-    return ContextClient::GetExecutionContext();
+    return ExecutionContextClient::GetExecutionContext();
   }
 
   // ActiveScriptWrappable

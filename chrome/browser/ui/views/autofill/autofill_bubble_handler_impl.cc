@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/views/autofill/payments/local_card_migration_icon_view.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_failure_bubble_views.h"
-#include "chrome/browser/ui/views/autofill/payments/save_card_icon_view.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_manage_cards_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_offer_bubble_views.h"
 #include "chrome/browser/ui/views/autofill/payments/save_card_sign_in_promo_bubble_views.h"

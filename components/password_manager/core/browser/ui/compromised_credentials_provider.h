@@ -6,9 +6,13 @@
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_UI_COMPROMISED_CREDENTIALS_PROVIDER_H_
 
 #include "base/containers/span.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 #include "base/strings/string16.h"
+#include "components/password_manager/core/browser/compromised_credentials_consumer.h"
+#include "components/password_manager/core/browser/compromised_credentials_table.h"
+#include "components/password_manager/core/browser/password_store.h"
 #include "url/gurl.h"
 
 namespace password_manager {
@@ -16,19 +20,27 @@ namespace password_manager {
 // This class provides a read-only view over saved compromised credentials. It
 // supports an observer interface, and clients can register themselves to get
 // notified about changes to the list.
-class CompromisedCredentialsProvider {
+class CompromisedCredentialsProvider
+    : public PasswordStore::DatabaseCompromisedCredentialsObserver,
+      public CompromisedCredentialsConsumer {
  public:
-  // Simple credential. This is similar to the CompromisedCredentials struct,
-  // but it does not store information about creation time or why the credential
-  // is compromised, however it does know about the password of the associated
-  // credential.
-  struct Credential {
-    base::string16 username;
+  // Simple struct that augments the CompromisedCredentials with a password.
+  struct CredentialWithPassword : CompromisedCredentials {
+    // Enable explicit construction and assignment from the parent struct. These
+    // will leave |password| empty.
+    explicit CredentialWithPassword(CompromisedCredentials credential)
+        : CompromisedCredentials(std::move(credential)) {}
+
+    CredentialWithPassword& operator=(CompromisedCredentials credential) {
+      CompromisedCredentials::operator=(std::move(credential));
+      password.clear();
+      return *this;
+    }
+
     base::string16 password;
-    GURL url;
   };
 
-  using CredentialsView = base::span<const Credential>;
+  using CredentialsView = base::span<const CredentialWithPassword>;
 
   // Observer interface. Clients can implement this to get notified about
   // changes to the list of compromised credentials. Clients can register and
@@ -40,8 +52,10 @@ class CompromisedCredentialsProvider {
         CredentialsView credentials) = 0;
   };
 
-  CompromisedCredentialsProvider();
-  ~CompromisedCredentialsProvider();
+  explicit CompromisedCredentialsProvider(scoped_refptr<PasswordStore> store);
+  ~CompromisedCredentialsProvider() override;
+
+  void Init();
 
   // Returns a read-only view over the currently compromised credentials.
   CredentialsView GetCompromisedCredentials() const;
@@ -51,8 +65,21 @@ class CompromisedCredentialsProvider {
   void RemoveObserver(Observer* observer);
 
  private:
-  // Notify observers about changes in the compromised credentials.
-  void NotifyCompromisedCredentialsChanged(CredentialsView credentials);
+  // PasswordStore::DatabaseCompromisedCredentialsObserver:
+  void OnCompromisedCredentialsChanged() override;
+
+  // CompromisedCredentialsConsumer:
+  void OnGetCompromisedCredentials(
+      std::vector<CompromisedCredentials> compromised_credentials) override;
+
+  // Notify observers about changes to |compromised_credentials_|.
+  void NotifyCompromisedCredentialsChanged();
+
+  // The password store containing the compromised credentials.
+  scoped_refptr<PasswordStore> store_;
+
+  // Cache of the most recently obtained compromised credentials.
+  std::vector<CredentialWithPassword> compromised_credentials_;
 
   base::ObserverList<Observer, /*check_empty=*/true> observers_;
 };

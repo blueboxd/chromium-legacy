@@ -14,16 +14,16 @@
 
   ElementsTestRunner.selectNodeAndWaitForStyles('square', step1);
 
-  function step1() {
+  async function step1() {
     TestRunner.addResult('Rules before toggling:');
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
     ElementsTestRunner.waitForStyleApplied(step2);
     ElementsTestRunner.toggleMatchedStyleProperty('background-color', false);
   }
 
-  function step2() {
+  async function step2() {
     TestRunner.addResult('Rules after toggling:');
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
     TestRunner.completeTest();
   }
 })();

@@ -45,7 +45,7 @@ SpeechSynthesisUtterance* SpeechSynthesisUtterance::Create(
 
 SpeechSynthesisUtterance::SpeechSynthesisUtterance(ExecutionContext* context,
                                                    const String& text)
-    : ContextClient(context),
+    : ExecutionContextClient(context),
       receiver_(this, context),
       mojom_utterance_(mojom::blink::SpeechSynthesisUtterance::New()) {
   // Set default values. |voice| intentionally left null.
@@ -79,7 +79,7 @@ void SpeechSynthesisUtterance::Trace(Visitor* visitor) {
   visitor->Trace(receiver_);
   visitor->Trace(synthesis_);
   visitor->Trace(voice_);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }
 

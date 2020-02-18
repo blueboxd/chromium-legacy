@@ -14,10 +14,10 @@
 
   ElementsTestRunner.selectNodeAndWaitForStyles('nested', step1);
 
-  function step1() {
+  async function step1() {
     var treeItem = ElementsTestRunner.getElementStylePropertyTreeItem('font-weight');
     TestRunner.addResult('Before disable');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
 
     ElementsTestRunner.selectNodeAndWaitForStyles('container', step2);
   }
@@ -27,9 +27,9 @@
     ElementsTestRunner.selectNodeAndWaitForStyles('nested', step3);
   }
 
-  function step3() {
+  async function step3() {
     TestRunner.addResult('After disable:');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     TestRunner.completeTest();
   }
 })();

@@ -132,15 +132,6 @@ source_set("constants") {
   ]
 }
 
-# TODO(crbug.com/778008): Remove this target.
-source_set("notifications") {
-  sources = [
-    "location_bar_notification_names.h",
-    "location_bar_notification_names.mm",
-  ]
-  configs += [ "//build/config/compiler:enable_arc" ]
-}
-
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true

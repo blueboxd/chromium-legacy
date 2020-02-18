@@ -29,7 +29,7 @@ class V8MediaSessionActionHandler;
 
 class MODULES_EXPORT MediaSession final
     : public ScriptWrappable,
-      public ContextClient,
+      public ExecutionContextClient,
       blink::mojom::blink::MediaSessionClient {
   USING_GARBAGE_COLLECTED_MIXIN(MediaSession);
   DEFINE_WRAPPERTYPEINFO();

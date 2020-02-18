@@ -91,7 +91,7 @@ FetchEvent::FetchEvent(ScriptState* script_state,
                            worker_timing_remote,
                        bool navigation_preload_sent)
     : ExtendableEvent(type, initializer, wait_until_observer),
-      ContextClient(ExecutionContext::From(script_state)),
+      ExecutionContextClient(ExecutionContext::From(script_state)),
       observer_(respond_with_observer),
       preload_response_property_(MakeGarbageCollected<PreloadResponseProperty>(
           ExecutionContext::From(script_state))),
@@ -231,7 +231,7 @@ void FetchEvent::Trace(Visitor* visitor) {
   visitor->Trace(preload_response_property_);
   visitor->Trace(body_completion_notifier_);
   ExtendableEvent::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

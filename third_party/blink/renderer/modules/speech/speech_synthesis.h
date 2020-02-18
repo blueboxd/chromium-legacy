@@ -40,7 +40,7 @@ namespace blink {
 
 class MODULES_EXPORT SpeechSynthesis final
     : public EventTargetWithInlineData,
-      public ContextClient,
+      public ExecutionContextClient,
       public mojom::blink::SpeechSynthesisVoiceListObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(SpeechSynthesis);
@@ -67,7 +67,7 @@ class MODULES_EXPORT SpeechSynthesis final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(voiceschanged, kVoiceschanged)
 
   ExecutionContext* GetExecutionContext() const override {
-    return ContextClient::GetExecutionContext();
+    return ExecutionContextClient::GetExecutionContext();
   }
 
   // GarbageCollected

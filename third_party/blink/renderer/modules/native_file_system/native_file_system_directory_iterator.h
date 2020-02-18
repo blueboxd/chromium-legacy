@@ -21,7 +21,7 @@ class ScriptState;
 
 class NativeFileSystemDirectoryIterator final
     : public ScriptWrappable,
-      public ContextClient,
+      public ExecutionContextClient,
       public mojom::blink::NativeFileSystemDirectoryEntriesListener {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(NativeFileSystemDirectoryIterator);

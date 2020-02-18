@@ -14,6 +14,11 @@ namespace prefs {
 // Account Manager.
 const char kAccountConsistencyMirrorRequired[] =
     "account_consistency_mirror.required";
+
+// A boolean pref - should unauthenticated user should be logged out
+// automatically. Default value is false.
+const char kForceLogoutUnauthenticatedUserEnabled[] =
+    "profile.force_logout_unauthenticated_user_enabled";
 #endif
 
 // An integer property indicating the state of account id migration from

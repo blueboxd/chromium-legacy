@@ -864,6 +864,31 @@ TEST_F(ScriptExecutorTest, RunInterruptDuringPrompt) {
   EXPECT_EQ("done", delegate_.GetStatusMessage());
 }
 
+TEST_F(ScriptExecutorTest, RunPromptInBrowseMode) {
+  ActionsResponseProto actions_response;
+  auto* prompt = actions_response.add_actions()->mutable_prompt();
+  prompt->add_choices()->mutable_chip()->set_text("done");
+  prompt->set_browse_mode(true);
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+
+  executor_->Run(&user_data_, executor_callback_.Get());
+  EXPECT_EQ(AutofillAssistantState::BROWSE, delegate_.GetState());
+}
+
+TEST_F(ScriptExecutorTest, RunPromptInPromptMode) {
+  ActionsResponseProto actions_response;
+  auto* prompt = actions_response.add_actions()->mutable_prompt();
+  prompt->add_choices()->mutable_chip()->set_text("done");
+
+  EXPECT_CALL(mock_service_, OnGetActions(_, _, _, _, _, _))
+      .WillOnce(RunOnceCallback<5>(true, Serialize(actions_response)));
+
+  executor_->Run(&user_data_, executor_callback_.Get());
+  EXPECT_EQ(AutofillAssistantState::PROMPT, delegate_.GetState());
+}
+
 TEST_F(ScriptExecutorTest, RunInterruptMultipleTimesDuringPrompt) {
   SetupInterrupt("interrupt", "interrupt_trigger");
 

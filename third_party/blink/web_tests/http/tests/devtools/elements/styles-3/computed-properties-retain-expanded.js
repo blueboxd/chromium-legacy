@@ -30,17 +30,17 @@
 
   ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('inspected', step1);
 
-  function step1() {
+  async function step1() {
     var treeElement = ElementsTestRunner.findComputedPropertyWithName('display');
     treeElement.expand();
     TestRunner.addResult('\n#inspected computed styles: ');
-    ElementsTestRunner.dumpComputedStyle(true);
+    await ElementsTestRunner.dumpComputedStyle(true);
     ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('other', step2);
   }
 
-  function step2() {
+  async function step2() {
     TestRunner.addResult('\n#other computed styles: ');
-    ElementsTestRunner.dumpComputedStyle(true);
+    await ElementsTestRunner.dumpComputedStyle(true);
     TestRunner.completeTest();
   }
 })();

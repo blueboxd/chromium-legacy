@@ -18,6 +18,9 @@
 
 - (instancetype)init NS_UNAVAILABLE;
 
+// Whether the animations should be disabled.
+@property(nonatomic, assign) BOOL animationDisabled;
+
 // Starts the transition from the |browser| to the |tabGrid|. Assumes that the
 // |browser| is currently a child ViewController of the |tabGrid|. Calls
 // |completion| when the transition finishes.

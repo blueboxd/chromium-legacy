@@ -37,7 +37,7 @@ GPUDevice::GPUDevice(ExecutionContext* execution_context,
                      scoped_refptr<DawnControlClientHolder> dawn_control_client,
                      GPUAdapter* adapter,
                      const GPUDeviceDescriptor* descriptor)
-    : ContextClient(execution_context),
+    : ExecutionContextClient(execution_context),
       DawnObject(dawn_control_client,
                  dawn_control_client->GetInterface()->GetDefaultDevice()),
       adapter_(adapter),
@@ -231,7 +231,7 @@ void GPUDevice::OnPopErrorScopeCallback(ScriptPromiseResolver* resolver,
 }
 
 ExecutionContext* GPUDevice::GetExecutionContext() const {
-  return ContextClient::GetExecutionContext();
+  return ExecutionContextClient::GetExecutionContext();
 }
 
 const AtomicString& GPUDevice::InterfaceName() const {
@@ -242,7 +242,7 @@ void GPUDevice::Trace(Visitor* visitor) {
   visitor->Trace(adapter_);
   visitor->Trace(queue_);
   visitor->Trace(lost_property_);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }
 

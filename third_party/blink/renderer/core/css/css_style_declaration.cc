@@ -152,7 +152,7 @@ CSSPropertyID CssPropertyInfo(const ExecutionContext* execution_context,
 }  // namespace
 
 void CSSStyleDeclaration::Trace(Visitor* visitor) {
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
   ScriptWrappable::Trace(visitor);
 }
 

@@ -25,6 +25,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_invalidator.h"
 #include "components/invalidation/impl/fake_invalidation_service.h"
+#include "components/invalidation/impl/invalidator_registrar_with_memory.h"
 #include "components/invalidation/public/invalidation_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -380,7 +381,8 @@ bool CloudPolicyInvalidatorTestBase::IsInvalidationAcknowledged(
 
 bool CloudPolicyInvalidatorTestBase::IsInvalidatorRegistered() {
   return !invalidation_service_.invalidator_registrar()
-      .GetRegisteredIds(invalidator_.get()).empty();
+              .GetRegisteredTopics(invalidator_.get())
+              .empty();
 }
 
 int64_t CloudPolicyInvalidatorTestBase::GetHighestHandledInvalidationVersion()

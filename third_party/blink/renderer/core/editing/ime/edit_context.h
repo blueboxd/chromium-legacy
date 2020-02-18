@@ -33,7 +33,7 @@ class InputMethodController;
 
 class CORE_EXPORT EditContext final : public EventTargetWithInlineData,
                                       public ActiveScriptWrappable<EditContext>,
-                                      public ContextClient,
+                                      public ExecutionContextClient,
                                       public WebInputMethodController {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(EditContext);

@@ -40,36 +40,36 @@
     `);
 
   ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('id1', step1);
-  function step1(node) {
+  async function step1(node) {
     TestRunner.addResult('==== Computed style for ID1 ====');
-    ElementsTestRunner.dumpSelectedElementStyles(false, false);
+    await ElementsTestRunner.dumpSelectedElementStyles(false, false);
     TestRunner.cssModel.computedStylePromise(node.id).then(function(style) {
       TestRunner.addResult('value of --a: ' + style.get('--a'));
       ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('id2', step2);
     });
   }
 
-  function step2(node) {
+  async function step2(node) {
     TestRunner.addResult('==== Computed style for ID2 ====');
-    ElementsTestRunner.dumpSelectedElementStyles(false, false);
+    await ElementsTestRunner.dumpSelectedElementStyles(false, false);
     TestRunner.cssModel.computedStylePromise(node.id).then(function(style) {
       TestRunner.addResult('value of --b: ' + style.get('--b'));
       ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('id3', step3);
     });
   }
 
-  function step3(node) {
+  async function step3(node) {
     TestRunner.addResult('==== Computed style for ID3 ====');
-    ElementsTestRunner.dumpSelectedElementStyles(false, false);
+    await ElementsTestRunner.dumpSelectedElementStyles(false, false);
     TestRunner.cssModel.computedStylePromise(node.id).then(function(style) {
       TestRunner.addResult('value of --b: ' + style.get('--b'));
       ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('id4', step4);
     });
   }
 
-  function step4(node) {
+  async function step4(node) {
     TestRunner.addResult('==== Computed style for ID4 ====');
-    ElementsTestRunner.dumpSelectedElementStyles(false, false);
+    await ElementsTestRunner.dumpSelectedElementStyles(false, false);
     TestRunner.cssModel.computedStylePromise(node.id).then(function(style) {
       TestRunner.addResult('value of --a: ' + style.get('--a'));
       TestRunner.completeTest();

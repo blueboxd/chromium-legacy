@@ -126,8 +126,6 @@ source_set("unit_tests") {
 static_library("test_support") {
   testonly = true
   sources = [
-    "deprecated_invalidator_registrar.cc",
-    "deprecated_invalidator_registrar.h",
     "fake_invalidation_handler.cc",
     "fake_invalidation_handler.h",
     "fake_invalidation_service.cc",
@@ -148,6 +146,7 @@ static_library("test_support") {
     "//base",
     "//components/gcm_driver:test_support",
     "//components/keyed_service/core",
+    "//components/prefs:test_support",
     "//net",
     "//testing/gmock",
     "//testing/gtest",

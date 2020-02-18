@@ -32,9 +32,9 @@
 
   ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('main', step0);
 
-  function step0() {
+  async function step0() {
     TestRunner.addResult('Main frame style:');
-    ElementsTestRunner.dumpSelectedElementStyles();
+    await ElementsTestRunner.dumpSelectedElementStyles();
     TestRunner.evaluateInPage('loadIframe()');
     ConsoleTestRunner.addConsoleSniffer(step1);
   }
@@ -43,9 +43,9 @@
     ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('iframeBody', step2);
   }
 
-  function step2() {
+  async function step2() {
     TestRunner.addResult('iframe style:');
-    ElementsTestRunner.dumpSelectedElementStyles();
+    await ElementsTestRunner.dumpSelectedElementStyles();
     TestRunner.completeTest();
   }
 })();

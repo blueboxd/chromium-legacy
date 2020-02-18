@@ -68,9 +68,10 @@ class MockActionDelegate : public ActionDelegate {
                     ClickAction::ClickType click_type,
                     base::OnceCallback<void(const ClientStatus&)> callback));
 
-  MOCK_METHOD2(Prompt,
+  MOCK_METHOD3(Prompt,
                void(std::unique_ptr<std::vector<UserAction>> user_actions,
-                    bool disable_force_expand_sheet));
+                    bool disable_force_expand_sheet,
+                    bool browse_mode));
   MOCK_METHOD0(CleanUpAfterPrompt, void());
 
   void FillAddressForm(

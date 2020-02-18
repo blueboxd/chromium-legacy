@@ -26,7 +26,7 @@ class ResourceLoadTiming;
 
 class CORE_EXPORT PerformanceNavigationTiming final
     : public PerformanceResourceTiming,
-      public ContextClient {
+      public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(PerformanceNavigationTiming);
   friend class PerformanceNavigationTimingTest;

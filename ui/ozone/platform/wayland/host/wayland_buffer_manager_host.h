@@ -65,14 +65,6 @@ struct WaylandBuffer {
   // surface can tell the gpu about successful swap.
   bool released = true;
 
-  // In some cases, a presentation feedback can come earlier than we fire a
-  // submission callback. Thus, instead of sending it immediately to the GPU
-  // process, we store it and fire as soon as the submission callback is
-  // fired.
-  bool needs_send_feedback = false;
-
-  gfx::PresentationFeedback feedback;
-
   DISALLOW_COPY_AND_ASSIGN(WaylandBuffer);
 };
 

@@ -458,7 +458,7 @@ void SaveCardBubbleControllerImpl::OnSaveButton(
     current_bubble_type_ = BubbleType::UPLOAD_IN_PROGRESS;
 
     // Log this metric here since for each bubble, the bubble state will only be
-    // changed to UPLOAD_IN_PROGRESS once. SaveCardIconView::Update is not
+    // changed to UPLOAD_IN_PROGRESS once. SavePaymentIconView::Update is not
     // guaranteed to be called only once so logging in any functions related to
     // it is not reliable. Though bubble state change does not update the icon
     // which is done in OnBubbleClosed, OnBubbleClosed ought to be called

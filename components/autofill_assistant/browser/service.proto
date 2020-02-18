@@ -1309,6 +1309,11 @@ message PromptProto {
   // If this is true, then we do not force expand the sheet when entering the
   // prompt state. When false or not set, this keeps the default behavior.
   optional bool disable_force_expand_sheet = 6;
+
+  // If this is true, go into browse mode where navigation and user gestures
+  // like go_back do not shut down autofill assistant.
+  // TODO(marianfe): Consider introducing a BrowseAction instead.
+  optional bool browse_mode = 7;
 }
 
 message ContactDetailsProto {

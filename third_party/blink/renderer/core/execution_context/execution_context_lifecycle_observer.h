@@ -37,10 +37,10 @@ class Document;
 class LocalDOMWindow;
 class LocalFrame;
 
-// ContextClient and ExecutionContextLifecycleObserver are helpers to associate
-// an object with an ExecutionContext. It is unsafe to access an associated GC
-// object, *including via GetExecutionContext()*, in the destructor of a GC
-// object.
+// ExecutionContextClient and ExecutionContextLifecycleObserver are helpers to
+// associate an object with an ExecutionContext. It is unsafe to access an
+// associated GC object, *including via GetExecutionContext()*, in the
+// destructor of a GC object.
 //
 // To discourage incorrect usage, these objects both start returning null
 // once the execution context shuts down. For a document, this occurs when
@@ -48,7 +48,8 @@ class LocalFrame;
 // scope, this occurs when it shuts down.
 //
 // * If an object only needs to refer to a valid ExecutionContext but does not
-//   need to stop or suspend any activity, it should be a ContextClient.
+//   need to stop or suspend any activity, it should be a
+//   ExecutionContextClient.
 // * If an object associated with an ExecutionContext has shutdown logic to
 //   perform, such as halting activity or disconnecting from longer-lived
 //   objects, it should be a PausableObject.
@@ -61,9 +62,9 @@ class LocalFrame;
 // other object has a reference to it, consider whether your object should also
 // derive from ActiveScriptWrappable.
 
-// ContextClient provides access to the associated execution context until it is
-// shut down (e.g. for a document, at navigation or frame detach).
-class CORE_EXPORT ContextClient : public GarbageCollectedMixin {
+// ExecutionContextClient provides access to the associated execution context
+// until it is shut down (e.g. for a document, at navigation or frame detach).
+class CORE_EXPORT ExecutionContextClient : public GarbageCollectedMixin {
  public:
   // Returns the execution context until it is detached.
   // From then on, returns null instead.
@@ -79,8 +80,8 @@ class CORE_EXPORT ContextClient : public GarbageCollectedMixin {
   void Trace(Visitor*) override;
 
  protected:
-  explicit ContextClient(ExecutionContext*);
-  explicit ContextClient(LocalFrame*);
+  explicit ExecutionContextClient(ExecutionContext*);
+  explicit ExecutionContextClient(LocalFrame*);
 
  private:
   WeakMember<ExecutionContext> execution_context_;
@@ -100,7 +101,7 @@ class CORE_EXPORT ContextClient : public GarbageCollectedMixin {
 // needs to be paused when execution is suspended (see
 // ExecutionContextLifecycleStateObserver).
 //
-// If none of the above applies, prefer the simpler ContextClient.
+// If none of the above applies, prefer the simpler ExecutionContextClient.
 class CORE_EXPORT ExecutionContextLifecycleObserver
     : public ContextLifecycleObserver {
  public:
@@ -149,19 +150,20 @@ class CORE_EXPORT ExecutionContextLifecycleObserver
 // Both can safely be used up until destruction; i.e., unsafe to
 // call upon in a destructor.
 //
-// If the object is a per-ExecutionContext thing, use ContextClient/
+// If the object is a per-ExecutionContext thing, use ExecutionContextClient/
 // ExecutionContextLifecycleObserver. If the object is a per-DOMWindow thing,
 // use DOMWindowClient. Basically, DOMWindowClient is expected to be used (only)
 // for objects directly held by LocalDOMWindow. Other objects should use
-// ContextClient/ExecutionContextLifecycleObserver.
+// ExecutionContextClient/ExecutionContextLifecycleObserver.
 //
 // There is a subtle difference between the timing when the context gets
 // detached and the timing when the window gets detached. In common cases,
 // these two happen at the same timing. The only exception is a case where
 // a frame navigates from an initial empty document to another same-origin
 // document. In this case, a Document is recreated but a DOMWindow is reused.
-// Hence, in the navigated document ContextClient::getExecutionContext()
-// returns null while DOMWindowClient::domWindow() keeps returning the window.
+// Hence, in the navigated document
+// ExecutionContextClient::GetExecutionContext() returns null while
+// DOMWindowClient::domWindow() keeps returning the window.
 class CORE_EXPORT DOMWindowClient : public GarbageCollectedMixin {
  public:
   LocalDOMWindow* DomWindow() const;

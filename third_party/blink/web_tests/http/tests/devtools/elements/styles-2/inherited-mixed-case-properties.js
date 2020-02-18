@@ -19,8 +19,8 @@
 
   ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('nested', step1);
 
-  function step1() {
-    ElementsTestRunner.dumpSelectedElementStyles();
+  async function step1() {
+    await ElementsTestRunner.dumpSelectedElementStyles();
     TestRunner.completeTest();
   }
 })();

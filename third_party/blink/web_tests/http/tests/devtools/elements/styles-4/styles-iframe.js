@@ -32,15 +32,15 @@
     ElementsTestRunner.selectNodeAndWaitForStyles('main', step1);
   }
 
-  function step1() {
+  async function step1() {
     TestRunner.addResult('Main frame style:');
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
     ElementsTestRunner.selectNodeAndWaitForStyles('iframeBody', step2);
   }
 
-  function step2() {
+  async function step2() {
     TestRunner.addResult('iframe style:');
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
     TestRunner.completeTest();
   }
 })();

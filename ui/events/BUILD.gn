@@ -366,7 +366,7 @@ jumbo_component("events") {
       "fuchsia/input_event_dispatcher_delegate.h",
     ]
     sources += [ "fuchsia/input_event_dispatcher.cc" ]
-    public_deps += [ "//third_party/fuchsia-sdk/sdk:fuchsia-ui-input" ]
+    public_deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.input" ]
   }
 }
 
@@ -647,7 +647,7 @@ if (!is_ios) {
 
     if (is_fuchsia) {
       sources += [ "fuchsia/input_event_dispatcher_unittest.cc" ]
-      deps += [ "//third_party/fuchsia-sdk/sdk:fuchsia-ui-input" ]
+      deps += [ "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.ui.input" ]
     }
 
     if (is_win || is_mac || use_ozone) {

@@ -101,14 +101,14 @@ void RespondWithObserver::ResponseWasFulfilled(
 RespondWithObserver::RespondWithObserver(ExecutionContext* context,
                                          int event_id,
                                          WaitUntilObserver* observer)
-    : ContextClient(context),
+    : ExecutionContextClient(context),
       event_id_(event_id),
       state_(kInitial),
       observer_(observer) {}
 
 void RespondWithObserver::Trace(Visitor* visitor) {
   visitor->Trace(observer_);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

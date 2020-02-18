@@ -18,8 +18,8 @@
 
   ElementsTestRunner.selectNodeAndWaitForStylesWithComputed('foo', step1);
 
-  function step1() {
-    ElementsTestRunner.dumpSelectedElementStyles(false, false);
+  async function step1() {
+    await ElementsTestRunner.dumpSelectedElementStyles(false, false);
     TestRunner.completeTest();
   }
 })();

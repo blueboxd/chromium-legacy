@@ -32,8 +32,8 @@
 
   var divNode;
 
-  function dumpData() {
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+  async function dumpData() {
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     ElementsTestRunner.dumpElementsTree();
   }
 
@@ -44,10 +44,10 @@
     ElementsTestRunner.selectNodeAndWaitForStyles('div', divSelected1);
   }
 
-  function divSelected1() {
+  async function divSelected1() {
     TestRunner.addResult('');
     TestRunner.addResult('DIV with :hover and :active');
-    dumpData();
+    await dumpData();
     ElementsTestRunner.waitForStyles('div', hoverCallback, true);
     TestRunner.cssModel.forcePseudoState(divNode, 'hover', false);
 
@@ -57,10 +57,10 @@
     }
   }
 
-  function divSelected2() {
+  async function divSelected2() {
     TestRunner.addResult('');
     TestRunner.addResult('DIV with :active and :focus');
-    dumpData();
+    await dumpData();
     ElementsTestRunner.waitForStyles('div', focusCallback, true);
     TestRunner.cssModel.forcePseudoState(divNode, 'focus', false);
 
@@ -70,10 +70,10 @@
     }
   }
 
-  function divSelected3(node) {
+  async function divSelected3(node) {
     TestRunner.addResult('');
     TestRunner.addResult('DIV with no forced state');
-    dumpData();
+    await dumpData();
     TestRunner.completeTest();
   }
 })();

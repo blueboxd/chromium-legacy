@@ -50,7 +50,7 @@ namespace blink {
 
 class MutationObserver::V8DelegateImpl final
     : public MutationObserver::Delegate,
-      public ContextClient {
+      public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(V8DelegateImpl);
 
  public:
@@ -61,10 +61,10 @@ class MutationObserver::V8DelegateImpl final
 
   V8DelegateImpl(V8MutationCallback* callback,
                  ExecutionContext* execution_context)
-      : ContextClient(execution_context), callback_(callback) {}
+      : ExecutionContextClient(execution_context), callback_(callback) {}
 
   ExecutionContext* GetExecutionContext() const override {
-    return ContextClient::GetExecutionContext();
+    return ExecutionContextClient::GetExecutionContext();
   }
 
   void Deliver(const MutationRecordVector& records,
@@ -77,7 +77,7 @@ class MutationObserver::V8DelegateImpl final
   void Trace(Visitor* visitor) override {
     visitor->Trace(callback_);
     MutationObserver::Delegate::Trace(visitor);
-    ContextClient::Trace(visitor);
+    ExecutionContextClient::Trace(visitor);
   }
 
  private:

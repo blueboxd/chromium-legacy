@@ -60,6 +60,7 @@ class MockSurface : public ServerObject {
   bool has_role() const { return !!xdg_surface_ || !!sub_surface_; }
 
   void AttachNewBuffer(wl_resource* buffer_resource, int32_t x, int32_t y);
+  void DestroyPrevAttachedBuffer();
   void ReleasePrevAttachedBuffer();
   void SendFrameCallback();
 

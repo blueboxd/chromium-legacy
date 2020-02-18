@@ -20,7 +20,7 @@ class Document;
 
 class IntersectionObserverController
     : public GarbageCollected<IntersectionObserverController>,
-      public ContextClient,
+      public ExecutionContextClient,
       public NameClient {
   USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserverController);
 

@@ -22,7 +22,6 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_consumer.h"
-#import "ios/chrome/browser/ui/location_bar/location_bar_notification_names.h"
 #import "ios/chrome/browser/ui/toolbar/test/toolbar_test_navigation_manager.h"
 #include "ios/chrome/browser/url_loading/test_url_loading_service.h"
 #include "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -134,9 +133,7 @@ TEST_F(NTPHomeMediatorTest, TestConsumerNotificationFocus) {
   OCMExpect([consumer_ locationBarBecomesFirstResponder]);
 
   // Action.
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kLocationBarBecomesFirstResponderNotification
-                    object:nil];
+  [mediator_ locationBarDidBecomeFirstResponder];
 
   // Test.
   EXPECT_OCMOCK_VERIFY(consumer_);
@@ -150,9 +147,7 @@ TEST_F(NTPHomeMediatorTest, TestConsumerNotificationUnfocus) {
   OCMExpect([consumer_ locationBarResignsFirstResponder]);
 
   // Action.
-  [[NSNotificationCenter defaultCenter]
-      postNotificationName:kLocationBarResignsFirstResponderNotification
-                    object:nil];
+  [mediator_ locationBarDidResignFirstResponder];
 
   // Test.
   EXPECT_OCMOCK_VERIFY(consumer_);

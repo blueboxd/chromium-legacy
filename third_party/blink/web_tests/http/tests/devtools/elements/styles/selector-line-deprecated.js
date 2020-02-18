@@ -36,8 +36,8 @@
     }
   }
 
-  function step2() {
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+  async function step2() {
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     TestRunner.completeTest();
   }
 })();

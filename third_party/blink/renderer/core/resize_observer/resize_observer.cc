@@ -30,7 +30,7 @@ ResizeObserver* ResizeObserver::Create(Document& document, Delegate* delegate) {
 
 ResizeObserver::ResizeObserver(V8ResizeObserverCallback* callback,
                                Document& document)
-    : ContextClient(document.ToExecutionContext()),
+    : ExecutionContextClient(document.ToExecutionContext()),
       callback_(callback),
       skipped_observations_(false),
       element_size_changed_(false) {
@@ -40,7 +40,7 @@ ResizeObserver::ResizeObserver(V8ResizeObserverCallback* callback,
 }
 
 ResizeObserver::ResizeObserver(Delegate* delegate, Document& document)
-    : ContextClient(document.ToExecutionContext()),
+    : ExecutionContextClient(document.ToExecutionContext()),
       delegate_(delegate),
       skipped_observations_(false),
       element_size_changed_(false) {
@@ -208,7 +208,7 @@ void ResizeObserver::Trace(Visitor* visitor) {
   visitor->Trace(active_observations_);
   visitor->Trace(controller_);
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

@@ -21,7 +21,7 @@
     },
 
     async function testFreeFlowEdit(next) {
-      ElementsTestRunner.dumpSelectedElementStyles(true);
+      await ElementsTestRunner.dumpSelectedElementStyles(true);
       treeElement = ElementsTestRunner.getElementStylePropertyTreeItem('color');
       treeOutline = treeElement.treeOutline;
 
@@ -70,9 +70,9 @@
       ElementsTestRunner.selectNodeAndWaitForStyles('inspected', next);
     },
 
-    function dumpStyles(next) {
+    async function dumpStyles(next) {
       TestRunner.addResult('After append:');
-      ElementsTestRunner.dumpSelectedElementStyles(true);
+      await ElementsTestRunner.dumpSelectedElementStyles(true);
       next();
     }
   ]);

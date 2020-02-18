@@ -26,7 +26,7 @@ class WaitUntilObserver;
 // overriding onResponseFulfilled, onResponseRejected and onNoResponse.
 class MODULES_EXPORT RespondWithObserver
     : public GarbageCollected<RespondWithObserver>,
-      public ContextClient {
+      public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(RespondWithObserver);
 
  public:

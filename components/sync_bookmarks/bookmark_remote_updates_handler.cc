@@ -135,8 +135,7 @@ void ApplyRemoteUpdate(
   // replace the entire node in order to use it, as GUIDs are immutable. Further
   // updates are then applied to the new node instead.
   if (update_entity.specifics.bookmark().guid() != node->guid() &&
-      base::IsValidGUIDOutputString(
-          update_entity.specifics.bookmark().guid())) {
+      base::IsValidGUID(update_entity.specifics.bookmark().guid())) {
     const bookmarks::BookmarkNode* old_node = node;
     node = ReplaceBookmarkNodeGUID(
         node, update_entity.specifics.bookmark().guid(), model);
@@ -234,7 +233,7 @@ void BookmarkRemoteUpdatesHandler::Process(
     if (tracked_entity && !update_entity.is_deleted() &&
         update_entity.server_defined_unique_tag.empty() &&
         !tracked_entity->final_guid_matches(remote_guid)) {
-      DCHECK(base::IsValidGUIDOutputString(remote_guid));
+      DCHECK(base::IsValidGUID(remote_guid));
       bookmark_tracker_->PopulateFinalGuid(update_entity.id, remote_guid);
       // In many cases final_guid_matches() may return false because a final
       // GUID is not known for sure, but actually it matches the local GUID.

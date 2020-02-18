@@ -198,8 +198,8 @@
     else
       ElementsTestRunner.selectNodeAndWaitForStyles('inspected', stylesCallback);
 
-    function stylesCallback() {
-      ElementsTestRunner.dumpSelectedElementStyles(true, false, false, true);
+    async function stylesCallback() {
+      await ElementsTestRunner.dumpSelectedElementStyles(true, false, false, true);
       callback();
     }
   }

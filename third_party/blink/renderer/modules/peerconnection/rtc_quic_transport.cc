@@ -150,7 +150,7 @@ RTCQuicTransport::RTCQuicTransport(
     const HeapVector<Member<RTCCertificate>>& certificates,
     ExceptionState& exception_state,
     std::unique_ptr<P2PQuicTransportFactory> p2p_quic_transport_factory)
-    : ContextClient(context),
+    : ExecutionContextClient(context),
       transport_(transport),
       key_(key),
       certificates_(certificates),
@@ -691,7 +691,7 @@ const AtomicString& RTCQuicTransport::InterfaceName() const {
 }
 
 ExecutionContext* RTCQuicTransport::GetExecutionContext() const {
-  return ContextClient::GetExecutionContext();
+  return ExecutionContextClient::GetExecutionContext();
 }
 
 void RTCQuicTransport::Trace(Visitor* visitor) {
@@ -706,7 +706,7 @@ void RTCQuicTransport::Trace(Visitor* visitor) {
   visitor->Trace(ready_to_send_datagram_promise_);
   visitor->Trace(received_datagrams_);
   EventTargetWithInlineData::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

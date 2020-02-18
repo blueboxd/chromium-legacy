@@ -20,9 +20,9 @@
 
   ElementsTestRunner.selectNodeAndWaitForStyles('inspected', step1);
 
-  function step1() {
+  async function step1() {
     TestRunner.addResult('=== Before selector modification ===');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     var section = ElementsTestRunner.firstMatchedStyleSection();
     section.startEditingSelector();
     section._selectorElement.textContent = 'hr, #inspected ';
@@ -30,9 +30,9 @@
     section._selectorElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
   }
 
-  function step2() {
+  async function step2() {
     TestRunner.addResult('=== After non-affecting selector modification ===');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     var section = ElementsTestRunner.firstMatchedStyleSection();
     section.startEditingSelector();
     section._selectorElement.textContent = '#inspectedChanged';
@@ -40,9 +40,9 @@
     section._selectorElement.dispatchEvent(TestRunner.createKeyEvent('Enter'));
   }
 
-  function step3() {
+  async function step3() {
     TestRunner.addResult('=== After affecting selector modification ===');
-    ElementsTestRunner.dumpSelectedElementStyles(true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true);
     TestRunner.completeTest();
   }
 })();

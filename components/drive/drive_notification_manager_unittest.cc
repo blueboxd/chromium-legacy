@@ -94,13 +94,16 @@ class DriveNotificationManagerTest : public testing::Test {
 };
 
 TEST_F(DriveNotificationManagerTest, RegisterTeamDrives) {
+  // TODO(crbug.com/1029698): cleanup subscribed topics vs registered ids
+  // terminology.
   // By default, we should have registered for default corpus notifications on
   // initialization.
-  auto registered_ids =
-      fake_invalidation_service_->invalidator_registrar().GetAllRegisteredIds();
+  auto subscribed_topics = fake_invalidation_service_->invalidator_registrar()
+                               .GetAllSubscribedTopics();
 
-  syncer::ObjectIdSet expected_object_ids = {kDefaultCorpusObjectId};
-  EXPECT_EQ(expected_object_ids, registered_ids);
+  syncer::Topics expected_topics = syncer::ConvertIdsToTopics(
+      {kDefaultCorpusObjectId}, drive_notification_manager_.get());
+  EXPECT_EQ(expected_topics, subscribed_topics);
 
   const std::string team_drive_id_1 = "td_id_1";
   const auto team_drive_1_object_id =
@@ -108,19 +111,22 @@ TEST_F(DriveNotificationManagerTest, RegisterTeamDrives) {
 
   // Add the team drive
   drive_notification_manager_->UpdateTeamDriveIds({team_drive_id_1}, {});
-  registered_ids =
-      fake_invalidation_service_->invalidator_registrar().GetAllRegisteredIds();
+  subscribed_topics = fake_invalidation_service_->invalidator_registrar()
+                          .GetAllSubscribedTopics();
 
-  expected_object_ids = {kDefaultCorpusObjectId, team_drive_1_object_id};
-  EXPECT_EQ(expected_object_ids, registered_ids);
+  expected_topics = syncer::ConvertIdsToTopics(
+      {kDefaultCorpusObjectId, team_drive_1_object_id},
+      drive_notification_manager_.get());
+  EXPECT_EQ(expected_topics, subscribed_topics);
 
   // Remove the team drive.
   drive_notification_manager_->UpdateTeamDriveIds({}, {team_drive_id_1});
-  registered_ids =
-      fake_invalidation_service_->invalidator_registrar().GetAllRegisteredIds();
+  subscribed_topics = fake_invalidation_service_->invalidator_registrar()
+                          .GetAllSubscribedTopics();
 
-  expected_object_ids = {kDefaultCorpusObjectId};
-  EXPECT_EQ(expected_object_ids, registered_ids);
+  expected_topics = syncer::ConvertIdsToTopics(
+      {kDefaultCorpusObjectId}, drive_notification_manager_.get());
+  EXPECT_EQ(expected_topics, subscribed_topics);
 
   const std::string team_drive_id_2 = "td_id_2";
   const auto team_drive_2_object_id =
@@ -129,28 +135,33 @@ TEST_F(DriveNotificationManagerTest, RegisterTeamDrives) {
   // Add two team drives
   drive_notification_manager_->UpdateTeamDriveIds(
       {team_drive_id_1, team_drive_id_2}, {});
-  registered_ids =
-      fake_invalidation_service_->invalidator_registrar().GetAllRegisteredIds();
+  subscribed_topics = fake_invalidation_service_->invalidator_registrar()
+                          .GetAllSubscribedTopics();
 
-  expected_object_ids = {kDefaultCorpusObjectId, team_drive_1_object_id,
-                         team_drive_2_object_id};
-  EXPECT_EQ(expected_object_ids, registered_ids);
+  expected_topics = syncer::ConvertIdsToTopics(
+      {kDefaultCorpusObjectId, team_drive_1_object_id, team_drive_2_object_id},
+      drive_notification_manager_.get());
+  EXPECT_EQ(expected_topics, subscribed_topics);
 
   drive_notification_manager_->UpdateTeamDriveIds({}, {team_drive_id_1});
-  registered_ids =
-      fake_invalidation_service_->invalidator_registrar().GetAllRegisteredIds();
+  subscribed_topics = fake_invalidation_service_->invalidator_registrar()
+                          .GetAllSubscribedTopics();
 
-  expected_object_ids = {kDefaultCorpusObjectId, team_drive_2_object_id};
-  EXPECT_EQ(expected_object_ids, registered_ids);
+  expected_topics = syncer::ConvertIdsToTopics(
+      {kDefaultCorpusObjectId, team_drive_2_object_id},
+      drive_notification_manager_.get());
+  EXPECT_EQ(expected_topics, subscribed_topics);
 
   // Remove a team drive that doesn't exists with no changes.
   const std::string team_drive_id_3 = "td_id_3";
   drive_notification_manager_->UpdateTeamDriveIds({}, {team_drive_id_3});
-  registered_ids =
-      fake_invalidation_service_->invalidator_registrar().GetAllRegisteredIds();
+  subscribed_topics = fake_invalidation_service_->invalidator_registrar()
+                          .GetAllSubscribedTopics();
 
-  expected_object_ids = {kDefaultCorpusObjectId, team_drive_2_object_id};
-  EXPECT_EQ(expected_object_ids, registered_ids);
+  expected_topics = syncer::ConvertIdsToTopics(
+      {kDefaultCorpusObjectId, team_drive_2_object_id},
+      drive_notification_manager_.get());
+  EXPECT_EQ(expected_topics, subscribed_topics);
 }
 
 TEST_F(DriveNotificationManagerTest, TestBatchInvalidation) {

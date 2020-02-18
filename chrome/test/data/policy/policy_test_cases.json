@@ -6777,6 +6777,36 @@
       }
     ]
   },
+  "ForceLogoutUnauthenticatedUserEnabled": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": { "ForceLogoutUnauthenticatedUserEnabled": false },
+        "prefs": {
+          "profile.force_logout_unauthenticated_user_enabled": {
+            "value": false
+          }
+        }
+      },
+      {
+        "policies": { "ForceLogoutUnauthenticatedUserEnabled": true },
+        "prefs": {
+          "profile.force_logout_unauthenticated_user_enabled": {
+            "value": true
+          }
+        }
+      },
+      {
+        "policies": {},
+        "prefs": {
+          "profile.force_logout_unauthenticated_user_enabled": {
+            "value": false,
+            "expect_default": true
+          }
+        }
+      }
+    ]
+  },
   "AdvancedProtectionDeepScanningEnabled": {
     "os": ["win", "linux", "mac"],
     "policy_pref_mapping_test": [

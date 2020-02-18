@@ -30,7 +30,7 @@ class BluetoothRemoteGATTService;
 // "Interface required by CallbackPromiseAdapter" section and the
 // CallbackPromiseAdapter class comments.
 class BluetoothDevice final : public EventTargetWithInlineData,
-                              public ContextClient {
+                              public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(BluetoothDevice);
 

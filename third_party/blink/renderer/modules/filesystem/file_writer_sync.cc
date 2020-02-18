@@ -124,7 +124,9 @@ void FileWriterSync::DoCancel() {
 }
 
 FileWriterSync::FileWriterSync(ExecutionContext* context)
-    : ContextClient(context), error_(base::File::FILE_OK), complete_(true) {}
+    : ExecutionContextClient(context),
+      error_(base::File::FILE_OK),
+      complete_(true) {}
 
 void FileWriterSync::PrepareForWrite() {
   DCHECK(complete_);
@@ -137,7 +139,7 @@ FileWriterSync::~FileWriterSync() = default;
 void FileWriterSync::Trace(Visitor* visitor) {
   ScriptWrappable::Trace(visitor);
   FileWriterBase::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

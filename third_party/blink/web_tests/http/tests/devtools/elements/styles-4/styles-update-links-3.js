@@ -46,9 +46,9 @@
       ElementsTestRunner.waitForStyleApplied(onPropertyDisabled);
       treeItem._toggleDisabled(true);
 
-      function onPropertyDisabled() {
+      async function onPropertyDisabled() {
         TestRunner.addResult('\n\n#### AFTER PROPERTY DISABLED ####\n\n');
-        ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+        await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
         var rules = ElementsTestRunner.getMatchedRules();
         ElementsTestRunner.validateRuleRanges('container', rules, next);
       }

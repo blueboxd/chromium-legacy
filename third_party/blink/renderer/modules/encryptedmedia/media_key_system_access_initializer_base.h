@@ -17,7 +17,7 @@
 namespace blink {
 
 class MediaKeySystemAccessInitializerBase : public EncryptedMediaRequest,
-                                            public ContextClient {
+                                            public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(MediaKeySystemAccessInitializerBase);
 
  public:

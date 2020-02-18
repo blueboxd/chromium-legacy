@@ -44,7 +44,7 @@ class ExceptionState;
 
 class FileWriterSync final : public ScriptWrappable,
                              public FileWriterBase,
-                             public ContextClient {
+                             public ExecutionContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(FileWriterSync);
 

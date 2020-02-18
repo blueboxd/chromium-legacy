@@ -67,7 +67,7 @@ static Node* SelectionShadowAncestor(LocalFrame* frame) {
 }
 
 DOMSelection::DOMSelection(const TreeScope* tree_scope)
-    : ContextClient(tree_scope->RootNode().GetDocument().GetFrame()),
+    : ExecutionContextClient(tree_scope->RootNode().GetDocument().GetFrame()),
       tree_scope_(tree_scope) {}
 
 void DOMSelection::ClearTreeScope() {
@@ -856,7 +856,7 @@ void DOMSelection::AddConsoleWarning(const String& message) {
 void DOMSelection::Trace(Visitor* visitor) {
   visitor->Trace(tree_scope_);
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 }  // namespace blink

@@ -45,6 +45,6 @@
   `);
 
   await ElementsTestRunner.selectNodeAndWaitForStylesPromise('inspected');
-  ElementsTestRunner.dumpSelectedElementStyles(true, false);
+  await ElementsTestRunner.dumpSelectedElementStyles(true, false);
   TestRunner.completeTest();
 })();

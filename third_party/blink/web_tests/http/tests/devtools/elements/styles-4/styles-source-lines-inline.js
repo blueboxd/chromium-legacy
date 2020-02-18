@@ -10,8 +10,8 @@
 
   ElementsTestRunner.selectNodeAndWaitForStyles('foo', step2);
 
-  function step2() {
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+  async function step2() {
+    await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
     TestRunner.completeTest();
   }
 })();

@@ -311,10 +311,7 @@ void FCMNetworkHandler::OnMessage(const std::string& app_id,
 
 void FCMNetworkHandler::OnMessagesDeleted(const std::string& app_id) {
   DCHECK_EQ(app_id, app_id_);
-  base::UmaHistogramBoolean("FCMInvalidations.FCMMessagesDeleted", true);
-  // Note: If this actually happens in practice, consider notifying the client
-  // that messages were deleted so it can act on it, e.g. in case of sync by
-  // triggering a GetUpdates.
+  // Note: As of 2020-02, this doesn't actually happen in practice.
 }
 
 void FCMNetworkHandler::OnSendError(

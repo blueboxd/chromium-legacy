@@ -107,8 +107,13 @@ class ActionDelegate {
   // scripts, even though we're in the middle of a script. This includes
   // allowing access to the touchable elements set previously, in the same
   // script.
+  //
+  // When |browse_mode| is true, navigation and user gestures like go_back no
+  // longer shut down the autofill assistant client, except for navigating to
+  // a different domain.
   virtual void Prompt(std::unique_ptr<std::vector<UserAction>> user_actions,
-                      bool disable_force_expand_sheet) = 0;
+                      bool disable_force_expand_sheet,
+                      bool browse_mode = false) = 0;
 
   // Have the UI leave the prompt state and go back to its previous state.
   virtual void CleanUpAfterPrompt() = 0;

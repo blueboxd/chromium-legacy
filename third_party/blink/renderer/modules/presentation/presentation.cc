@@ -15,7 +15,7 @@
 
 namespace blink {
 
-Presentation::Presentation(LocalFrame* frame) : ContextClient(frame) {}
+Presentation::Presentation(LocalFrame* frame) : ExecutionContextClient(frame) {}
 
 // static
 Presentation* Presentation::Create(LocalFrame* frame) {
@@ -31,7 +31,7 @@ void Presentation::Trace(Visitor* visitor) {
   visitor->Trace(default_request_);
   visitor->Trace(receiver_);
   ScriptWrappable::Trace(visitor);
-  ContextClient::Trace(visitor);
+  ExecutionContextClient::Trace(visitor);
 }
 
 PresentationRequest* Presentation::defaultRequest() const {

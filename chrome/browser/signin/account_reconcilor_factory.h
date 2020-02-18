@@ -34,6 +34,10 @@ class AccountReconcilorFactory : public BrowserContextKeyedServiceFactory {
   // Returns an instance of the factory singleton.
   static AccountReconcilorFactory* GetInstance();
 
+  // BrowserContextKeyedServiceFactory:
+  void RegisterProfilePrefs(
+      user_prefs::PrefRegistrySyncable* registry) override;
+
  private:
   friend struct base::DefaultSingletonTraits<AccountReconcilorFactory>;
   friend class DummyAccountReconcilorWithDelegate;  // For testing.

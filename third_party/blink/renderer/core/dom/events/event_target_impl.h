@@ -21,7 +21,7 @@ namespace blink {
 // that are mostly unnecessary for them, resulting in a performance
 // decrease.
 class CORE_EXPORT EventTargetImpl final : public EventTargetWithInlineData,
-                                          public ContextClient {
+                                          public ExecutionContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(EventTargetImpl);
 
  public:

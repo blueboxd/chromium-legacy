@@ -53,6 +53,7 @@ bool StateNeedsUI(AutofillAssistantState state) {
     case AutofillAssistantState::PROMPT:
     case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
     case AutofillAssistantState::MODAL_DIALOG:
+    case AutofillAssistantState::BROWSE:
       return true;
 
     case AutofillAssistantState::INACTIVE:
@@ -79,6 +80,7 @@ bool StateEndsFlow(AutofillAssistantState state) {
     case AutofillAssistantState::RUNNING:
     case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
     case AutofillAssistantState::MODAL_DIALOG:
+    case AutofillAssistantState::BROWSE:
       return false;
   }
 
@@ -86,6 +88,13 @@ bool StateEndsFlow(AutofillAssistantState state) {
   return false;
 }
 
+// Check whether a domain is a subdomain of another domain.
+bool IsSubdomainOf(const std::string& subdomain,
+                   const std::string& parent_domain) {
+  return base::EndsWith(base::StringPiece(subdomain),
+                        base::StringPiece("." + parent_domain),
+                        base::CompareCase::INSENSITIVE_ASCII);
+}
 }  // namespace
 
 Controller::Controller(content::WebContents* web_contents,
@@ -593,7 +602,8 @@ bool Controller::ShouldCheckScripts() {
   return state_ == AutofillAssistantState::TRACKING ||
          state_ == AutofillAssistantState::STARTING ||
          state_ == AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT ||
-         (state_ == AutofillAssistantState::PROMPT &&
+         ((state_ == AutofillAssistantState::PROMPT ||
+           state_ == AutofillAssistantState::BROWSE) &&
           (!script_tracker_ || !script_tracker_->running()));
 }
 
@@ -1431,7 +1441,7 @@ void Controller::OnNoRunnableScriptsForPage() {
 
     default:
       // Always having a set of scripts to potentially run is not required in
-      // other states.
+      // other states, for example in BROWSE state.
       break;
   }
 }
@@ -1485,6 +1495,7 @@ void Controller::OnRunnableScriptsChanged(
     case AutofillAssistantState::TRACKING:
     case AutofillAssistantState::AUTOSTART_FALLBACK_PROMPT:
     case AutofillAssistantState::PROMPT:
+    case AutofillAssistantState::BROWSE:
       // Don't change state
       break;
 
@@ -1536,7 +1547,10 @@ void Controller::DidStartNavigation(
   //  it discovers that the new page has no scripts.
   //
   // Everything else, such as going back to a previous page, or refreshing the
-  // page is considered an end condition.
+  // page is considered an end condition. If going back to a previous page is
+  // required, consider using the BROWSE state instead.
+  // Note that BROWSE state end conditions are in DidFinishNavigation, in order
+  // to be able to properly evaluate the committed url.
   if (state_ == AutofillAssistantState::PROMPT &&
       web_contents()->GetLastCommittedURL().is_valid() &&
       !navigation_handle->WasServerRedirect() &&
@@ -1561,6 +1575,18 @@ void Controller::DidFinishNavigation(
       (navigation_handle->GetResponseHeaders()->response_code() / 100) == 2;
   navigation_error_ = !is_successful;
   navigating_to_new_document_ = false;
+
+  // When in BROWSE state, stop autofill assistant if the user navigates away
+  // from the original assisted domain. Subdomains of the original domain are
+  // supported.
+  if (state_ == AutofillAssistantState::BROWSE) {
+    auto current_host = web_contents()->GetLastCommittedURL().host();
+    if (current_host != script_domain_ &&
+        !IsSubdomainOf(current_host, script_domain_)) {
+      OnScriptError(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_GIVE_UP),
+                    Metrics::DropOutReason::NAVIGATION);
+    }
+  }
 
   if (start_after_navigation_) {
     std::move(start_after_navigation_).Run();

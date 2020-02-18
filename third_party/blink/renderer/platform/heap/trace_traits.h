@@ -379,7 +379,7 @@ struct TraceInCollectionTrait<kWeakHandling, blink::Member<T>, Traits> {
 template <typename T, typename Traits>
 struct TraceInCollectionTrait<kNoWeakHandling, blink::WeakMember<T>, Traits> {
   static bool Trace(blink::Visitor* visitor, blink::WeakMember<T>& t) {
-    visitor->TraceMaybeDeleted(static_cast<blink::Member<T>>(t));
+    visitor->TraceMaybeDeleted(t);
     return false;
   }
 };

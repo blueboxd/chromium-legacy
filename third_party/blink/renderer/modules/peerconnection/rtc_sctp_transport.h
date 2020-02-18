@@ -24,7 +24,7 @@ enum class RTCSctpTransportState { kChecking, kConnected, kClosed };
 // Blink bindings for the RTCSctpTransport JavaScript object.
 class MODULES_EXPORT RTCSctpTransport final
     : public EventTargetWithInlineData,
-      public ContextClient,
+      public ExecutionContextClient,
       public SctpTransportProxy::Delegate {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(RTCSctpTransport);

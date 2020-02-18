@@ -927,8 +927,6 @@ crbug.com/591099 [ Mac10.13 ] fast/dynamic/outerHTML-doc.html [ Failure ]
 # If they are not also fixed, reinstate them when removing these lines.
 crbug.com/982211 fast/events/before-unload-return-value-from-listener.html [ Pass Crash Timeout ]
 
-crbug.com/835810 [ Win7 ] http/tests/devtools/startup/dom-storage-open.js [ Pass Timeout ]
-
 # Crashes/asserts due to inline item reuse.
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/remove-block-from-content-after-spanner.html [ Failure Crash Timeout ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/dynamic/remove-block-from-content-before-spanner.html [ Failure Crash Timeout ]
@@ -1996,9 +1994,6 @@ crbug.com/1042162 inspector-protocol/console/console-let-const-with-api.js [ Pas
 
 # Will be re-enabled and rebaselined once we remove the '--enable-file-cookies' flag.
 crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
-
-# Needs rebaseline when https://chromium-review.googlesource.com/c/v8/v8/+/1914218 lands in chromium.
-http/tests/devtools/startup/console-stack-overflow-source-url.js [ Skip ]
 
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/legacy_dom_conformance/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]

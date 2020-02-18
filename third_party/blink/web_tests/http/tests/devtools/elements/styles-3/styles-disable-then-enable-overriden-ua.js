@@ -13,23 +13,23 @@
 
   ElementsTestRunner.selectNodeAndWaitForStyles('body-id', step1);
 
-  function step1() {
+  async function step1() {
     TestRunner.addResult('Before disable');
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
     ElementsTestRunner.toggleStyleProperty('margin', false);
     ElementsTestRunner.waitForStyles('body-id', step2);
   }
 
-  function step2() {
+  async function step2() {
     TestRunner.addResult('After disable');
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
     ElementsTestRunner.toggleStyleProperty('margin', true);
     ElementsTestRunner.waitForStyles('body-id', step3);
   }
 
-  function step3() {
+  async function step3() {
     TestRunner.addResult('After enable');
-    ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
+    await ElementsTestRunner.dumpSelectedElementStyles(true, false, true);
     TestRunner.completeTest();
   }
 })();

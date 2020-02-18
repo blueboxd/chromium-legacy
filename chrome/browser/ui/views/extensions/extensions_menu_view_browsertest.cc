@@ -279,14 +279,7 @@ class ExtensionsMenuViewBrowserTest : public ExtensionsToolbarBrowserTest {
   std::string ui_test_name_;
 };
 
-// TODO(crbug.com/1050712): the test is flaky.
-// TODO(crbug.com/1050712): the test is flaky.
-#if defined(OS_MACOSX) || defined(OS_LINUX)
-#define MAYBE_InvokeUi_default DISABLED_InvokeUi_default
-#else
-#define MAYBE_InvokeUi_default InvokeUi_default
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, MAYBE_InvokeUi_default) {
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, InvokeUi_default) {
   LoadTestExtension("extensions/uitest/long_name");
   LoadTestExtension("extensions/uitest/window_open");
 
@@ -363,8 +356,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   ShowAndVerifyUi();
 }
 
-// TODO(crbug.com/1050712): the test is flaky.
-IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, DISABLED_TriggerPopup) {
+IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, TriggerPopup) {
   LoadTestExtension("extensions/simple_with_popup");
   ShowUi("");
   VerifyUi();
@@ -396,9 +388,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest, DISABLED_TriggerPopup) {
   EXPECT_TRUE(GetVisibleToolbarActionViews().empty());
 }
 
-// TODO(crbug.com/1049063): Flaky on various platforms.
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       DISABLED_RemoveExtensionShowingPopup) {
+                       RemoveExtensionShowingPopup) {
   LoadTestExtension("extensions/simple_with_popup");
   ShowUi("");
   VerifyUi();
@@ -422,9 +413,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   EXPECT_TRUE(GetVisibleToolbarActionViews().empty());
 }
 
-// TODO(crbug.com/1049036): Flaky on various platforms.
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       DISABLED_TriggeringExtensionClosesMenu) {
+                       TriggeringExtensionClosesMenu) {
   LoadTestExtension("extensions/trigger_actions/browser_action");
   ShowUi("");
   VerifyUi();
@@ -449,15 +439,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   EXPECT_FALSE(ExtensionsMenuView::IsShowing());
 }
 
-// TODO(crbug.com/1050712): the test is flaky.
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_CreatesOneMenuItemPerExtension \
-  DISABLED_CreatesOneMenuItemPerExtension
-#else
-#define MAYBE_CreatesOneMenuItemPerExtension CreatesOneMenuItemPerExtension
-#endif
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       MAYBE_CreatesOneMenuItemPerExtension) {
+                       CreatesOneMenuItemPerExtension) {
   LoadTestExtension("extensions/uitest/long_name");
   LoadTestExtension("extensions/uitest/window_open");
   ShowUi("");
@@ -467,14 +450,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   DismissUi();
 }
 
-// TODO(crbug.com/1050712): the test is flaky.
-#if defined(OS_WIN)
-#define MAYBE_PinningDisabledInIncognito DISABLED_PinningDisabledInIncognito
-#else
-#define MAYBE_PinningDisabledInIncognito PinningDisabledInIncognito
-#endif
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       MAYBE_PinningDisabledInIncognito) {
+                       PinningDisabledInIncognito) {
   LoadTestExtension("extensions/uitest/window_open", true);
   SetUpIncognitoBrowser();
 
@@ -499,9 +476,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
   DismissUi();
 }
 
-// TODO(crbug.com/1048980): Flaky on various platforms.
 IN_PROC_BROWSER_TEST_F(ExtensionsMenuViewBrowserTest,
-                       DISABLED_ManageExtensionsOpensExtensionsPage) {
+                       ManageExtensionsOpensExtensionsPage) {
   // Ensure the menu is visible by adding an extension.
   LoadTestExtension("extensions/trigger_actions/browser_action");
   ShowUi("");
@@ -565,14 +541,8 @@ class ActivateWithReloadExtensionsMenuBrowserTest
     : public ExtensionsMenuViewBrowserTest,
       public ::testing::WithParamInterface<bool> {};
 
-// Flaky on windows, http://crbug.com/1048956
-#if defined(OS_WIN)
-#define MAYBE_ActivateWithReload DISABLED_ActivateWithReload
-#else
-#define MAYBE_ActivateWithReload ActivateWithReload
-#endif
 IN_PROC_BROWSER_TEST_P(ActivateWithReloadExtensionsMenuBrowserTest,
-                       MAYBE_ActivateWithReload) {
+                       ActivateWithReload) {
   ASSERT_TRUE(embedded_test_server()->Start());
   LoadTestExtension("extensions/blocked_actions/content_scripts");
   auto extension = extensions().back();

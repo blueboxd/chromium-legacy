@@ -72,7 +72,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "services/network/loader_util.h"
+#include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
 #include "storage/browser/blob/blob_handle.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -2467,7 +2467,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerURLLoaderThrottleTest,
 
   // Default headers are present.
   EXPECT_TRUE(CheckHeader(*dict, "accept",
-                          std::string(network::kFrameAcceptHeader) +
+                          std::string(network::kFrameAcceptHeaderValue) +
                               std::string(kAcceptHeaderSignedExchangeSuffix)));
 
   // Injected headers are present.

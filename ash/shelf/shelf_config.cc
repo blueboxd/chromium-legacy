@@ -34,7 +34,9 @@ bool ShelfControlsForcedShownForAccessibility() {
       Shell::Get()->accessibility_controller();
   return accessibility_controller->spoken_feedback_enabled() ||
          accessibility_controller->autoclick_enabled() ||
-         accessibility_controller->switch_access_enabled();
+         accessibility_controller->switch_access_enabled() ||
+         accessibility_controller
+             ->tablet_mode_shelf_navigation_buttons_enabled();
 }
 
 }  // namespace

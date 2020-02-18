@@ -28,14 +28,14 @@
   }
 
   var stepCount = 0;
-  function step2(callFrames) {
+  async function step2(callFrames) {
     if (stepCount < 2) {
       for (var i = 0, frame; frame = callFrames[i]; ++i)
         TestRunner.assertTrue(!frame.returnValue(), 'Unexpected returnValue in frame #' + i);
       SourcesTestRunner.stepOver();
       SourcesTestRunner.waitUntilResumed(SourcesTestRunner.waitUntilPaused.bind(SourcesTestRunner, step2));
     } else {
-      SourcesTestRunner.captureStackTrace(callFrames, null, {printReturnValue: true});
+      await SourcesTestRunner.captureStackTrace(callFrames, null, {printReturnValue: true});
       SourcesTestRunner.completeDebuggerTest();
     }
     ++stepCount;

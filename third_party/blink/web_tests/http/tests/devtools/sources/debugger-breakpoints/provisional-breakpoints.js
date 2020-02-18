@@ -18,7 +18,7 @@
 
   TestRunner.addResult('Navigate to the same page and dump stack on pause');
   TestRunner.navigate(TestRunner.url('resources/a.html'));
-  SourcesTestRunner.captureStackTrace(await SourcesTestRunner.waitUntilPausedPromise());
+  await SourcesTestRunner.captureStackTrace(await SourcesTestRunner.waitUntilPausedPromise());
   await new Promise(resolve => SourcesTestRunner.resumeExecution(resolve));
 
   TestRunner.addResult('Remove breakpoint, set another in not inline script and dump it');
@@ -33,7 +33,7 @@
 
   TestRunner.addResult('Navigate to the same page and dump stack on pause');
   TestRunner.navigate(TestRunner.url('resources/a.html'));
-  SourcesTestRunner.captureStackTrace(await SourcesTestRunner.waitUntilPausedPromise());
+  await SourcesTestRunner.captureStackTrace(await SourcesTestRunner.waitUntilPausedPromise());
   await new Promise(resolve => SourcesTestRunner.resumeExecution(resolve));
 
   SourcesTestRunner.completeDebuggerTest();

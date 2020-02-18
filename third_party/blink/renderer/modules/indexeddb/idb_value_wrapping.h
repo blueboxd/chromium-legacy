@@ -154,6 +154,11 @@ class MODULES_EXPORT IDBValueWrapper {
     return std::move(blob_info_);
   }
 
+  Vector<mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>>
+  TakeNativeFileSystemTransferTokens() {
+    return std::move(serialized_value_->NativeFileSystemTokens());
+  }
+
   size_t DataLengthBeforeWrapInBytes() { return original_data_length_; }
 
   // Default threshold for WrapIfBiggerThan().

@@ -25,6 +25,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.components.signin.AccountManagerDelegateException;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
@@ -112,26 +113,49 @@ public class AccountPickerDialogFragment extends DialogFragment {
 
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup viewGroup, @ViewType int viewType) {
-            LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
+            View view = inflateRowView(viewGroup, viewType);
             if (viewType == ViewType.NEW_ACCOUNT) {
-                TextView view = (TextView) inflater.inflate(
-                        R.layout.account_picker_new_account_row, viewGroup, false);
-                // Set the vector drawable programmatically because app:drawableStartCompat is only
-                // available after AndroidX appcompat library.
-                // TODO(https://crbug.com/948367): Use app:drawableStartCompat.
-                view.setCompoundDrawablesRelativeWithIntrinsicBounds(
-                        AppCompatResources.getDrawable(
-                                viewGroup.getContext(), R.drawable.ic_add_circle_40dp),
-                        null, null, null);
                 return new ViewHolder(view);
             }
-            View view = inflater.inflate(R.layout.account_picker_row, viewGroup, false);
             ImageView accountImage = view.findViewById(R.id.account_image);
             TextView accountTextPrimary = view.findViewById(R.id.account_text_primary);
             TextView accountTextSecondary = view.findViewById(R.id.account_text_secondary);
             ImageView selectionMark = view.findViewById(R.id.account_selection_mark);
             return new ViewHolder(
                     view, accountImage, accountTextPrimary, accountTextSecondary, selectionMark);
+        }
+
+        private View inflateRowView(ViewGroup viewGroup, @ViewType int viewType) {
+            LayoutInflater inflater = LayoutInflater.from(viewGroup.getContext());
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.MOBILE_IDENTITY_CONSISTENCY)) {
+                if (viewType == ViewType.NEW_ACCOUNT) {
+                    TextView view = (TextView) inflater.inflate(
+                            R.layout.account_picker_new_account_row, viewGroup, false);
+                    view.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                            AppCompatResources.getDrawable(
+                                    viewGroup.getContext(), R.drawable.ic_person_add_24dp),
+                            null, null, null);
+                    return view;
+                } else {
+                    return inflater.inflate(R.layout.account_picker_row, viewGroup, false);
+                }
+            } else {
+                if (viewType == ViewType.NEW_ACCOUNT) {
+                    TextView view = (TextView) inflater.inflate(
+                            R.layout.account_picker_new_account_row_legacy, viewGroup, false);
+                    // Set the vector drawable programmatically because app:drawableStartCompat is
+                    // only available after AndroidX appcompat library.
+
+                    // TODO(https://crbug.com/948367): Use app:drawableStartCompat.
+                    view.setCompoundDrawablesRelativeWithIntrinsicBounds(
+                            AppCompatResources.getDrawable(
+                                    viewGroup.getContext(), R.drawable.ic_add_circle_40dp),
+                            null, null, null);
+                    return view;
+                } else {
+                    return inflater.inflate(R.layout.account_picker_row_legacy, viewGroup, false);
+                }
+            }
         }
 
         @Override

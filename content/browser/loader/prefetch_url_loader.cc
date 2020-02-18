@@ -15,7 +15,6 @@
 #include "content/public/common/content_features.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
-#include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/features.h"

@@ -66,14 +66,8 @@ class TabHoverCardBubbleViewInteractiveUiTest : public InProcessBrowserTest {
 
 #if defined(USE_AURA)
 // Verify that the hover card is not visible when any key is pressed.
-// TODO(crbug.com/947668): The test is flaky on Win10.
-#if defined(OS_WIN)
-#define MAYBE_HoverCardHidesOnAnyKeyPressInSameWindow DISABLED_HoverCardHidesOnAnyKeyPressInSameWindow
-#else
-#define MAYBE_HoverCardHidesOnAnyKeyPressInSameWindow HoverCardHidesOnAnyKeyPressInSameWindow
-#endif
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewInteractiveUiTest,
-                       MAYBE_HoverCardHidesOnAnyKeyPressInSameWindow) {
+                       HoverCardHidesOnAnyKeyPressInSameWindow) {
   TabStrip* tab_strip =
       BrowserView::GetBrowserViewForBrowser(browser())->tabstrip();
   Tab* tab = tab_strip->tab_at(0);

@@ -30,9 +30,9 @@
             .then(() => SourcesTestRunner.runTestFunction());
       }
 
-      function didPause(callFrames) {
+      async function didPause(callFrames) {
         TestRunner.addResult('Script execution paused.');
-        SourcesTestRunner.captureStackTrace(callFrames);
+        await SourcesTestRunner.captureStackTrace(callFrames);
         SourcesTestRunner.dumpBreakpointSidebarPane();
         ConsoleTestRunner.addConsoleSniffer(testFunctionFinishedForTheFirstTime);
         SourcesTestRunner.resumeExecution(didResume);
@@ -71,9 +71,9 @@
         SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
       }
 
-      function didPause(callFrames) {
+      async function didPause(callFrames) {
         TestRunner.addResult('Script execution paused.');
-        SourcesTestRunner.captureStackTrace(callFrames);
+        await SourcesTestRunner.captureStackTrace(callFrames);
         SourcesTestRunner.dumpBreakpointSidebarPane();
         ConsoleTestRunner.addConsoleSniffer(testFunctionFinished);
         SourcesTestRunner.resumeExecution(didResume);

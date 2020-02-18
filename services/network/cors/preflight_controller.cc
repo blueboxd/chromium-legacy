@@ -14,7 +14,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/network_isolation_key.h"
 #include "net/http/http_request_headers.h"
-#include "services/network/loader_util.h"
+#include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -97,7 +97,7 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
   preflight_request->render_frame_id = request.render_frame_id;
 
   preflight_request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
-                                       kDefaultAcceptHeader);
+                                       kDefaultAcceptHeaderValue);
 
   preflight_request->headers.SetHeader(
       header_names::kAccessControlRequestMethod, request.method);

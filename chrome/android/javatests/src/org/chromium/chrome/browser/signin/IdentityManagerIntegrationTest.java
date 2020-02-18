@@ -59,7 +59,6 @@ public class IdentityManagerIntegrationTest {
 
     private IdentityMutator mIdentityMutator;
     private IdentityManager mIdentityManager;
-    private ChromeSigninController mChromeSigninController;
 
     @Before
     public void setUp() {
@@ -69,8 +68,7 @@ public class IdentityManagerIntegrationTest {
         mActivityTestRule.loadNativeLibraryAndInitBrowserProcess();
 
         // Make sure there is no account signed in yet.
-        mChromeSigninController = ChromeSigninController.get();
-        mChromeSigninController.setSignedInAccountName(null);
+        ChromeSigninController.get().setSignedInAccountName(null);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             seedAccountTrackerService();
@@ -190,9 +188,8 @@ public class IdentityManagerIntegrationTest {
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertEquals("Signed in and two accounts available",
-                    new HashSet<CoreAccountInfo>(Arrays.asList(mTestAccount1, mTestAccount2)),
-                    new HashSet<CoreAccountInfo>(
-                            Arrays.asList(mIdentityManager.getAccountsWithRefreshTokens())));
+                    new HashSet<>(Arrays.asList(mTestAccount1, mTestAccount2)),
+                    new HashSet<>(Arrays.asList(mIdentityManager.getAccountsWithRefreshTokens())));
         });
     }
 
@@ -208,9 +205,8 @@ public class IdentityManagerIntegrationTest {
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertEquals("Signed in and two accounts available",
-                    new HashSet<CoreAccountInfo>(Arrays.asList(mTestAccount1, mTestAccount2)),
-                    new HashSet<CoreAccountInfo>(
-                            Arrays.asList(mIdentityManager.getAccountsWithRefreshTokens())));
+                    new HashSet<>(Arrays.asList(mTestAccount1, mTestAccount2)),
+                    new HashSet<>(Arrays.asList(mIdentityManager.getAccountsWithRefreshTokens())));
         });
 
         removeAccount(TEST_ACCOUNT_HOLDER_2);
@@ -236,9 +232,8 @@ public class IdentityManagerIntegrationTest {
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertEquals("Signed in and two accounts available",
-                    new HashSet<CoreAccountInfo>(Arrays.asList(mTestAccount1, mTestAccount2)),
-                    new HashSet<CoreAccountInfo>(
-                            Arrays.asList(mIdentityManager.getAccountsWithRefreshTokens())));
+                    new HashSet<>(Arrays.asList(mTestAccount1, mTestAccount2)),
+                    new HashSet<>(Arrays.asList(mIdentityManager.getAccountsWithRefreshTokens())));
         });
 
         // Remove all.
@@ -266,9 +261,8 @@ public class IdentityManagerIntegrationTest {
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertEquals("Signed in and two accounts available",
-                    new HashSet<CoreAccountInfo>(Arrays.asList(mTestAccount1, mTestAccount2)),
-                    new HashSet<CoreAccountInfo>(
-                            Arrays.asList(mIdentityManager.getAccountsWithRefreshTokens())));
+                    new HashSet<>(Arrays.asList(mTestAccount1, mTestAccount2)),
+                    new HashSet<>(Arrays.asList(mIdentityManager.getAccountsWithRefreshTokens())));
         });
 
         removeAccount(TEST_ACCOUNT_HOLDER_1);
@@ -278,8 +272,8 @@ public class IdentityManagerIntegrationTest {
             // Re-validate and run checks.
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(null);
 
-            Assert.assertEquals("Not signed in and no accounts available", new CoreAccountInfo[] {},
-                    mIdentityManager.getAccountsWithRefreshTokens());
+            Assert.assertArrayEquals("Not signed in and no accounts available",
+                    new CoreAccountInfo[] {}, mIdentityManager.getAccountsWithRefreshTokens());
         });
     }
 
@@ -295,9 +289,8 @@ public class IdentityManagerIntegrationTest {
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
             Assert.assertEquals("Signed in and two accounts available",
-                    new HashSet<CoreAccountInfo>(Arrays.asList(mTestAccount1, mTestAccount2)),
-                    new HashSet<CoreAccountInfo>(
-                            Arrays.asList(mIdentityManager.getAccountsWithRefreshTokens())));
+                    new HashSet<>(Arrays.asList(mTestAccount1, mTestAccount2)),
+                    new HashSet<>(Arrays.asList(mIdentityManager.getAccountsWithRefreshTokens())));
         });
     }
 
@@ -308,7 +301,7 @@ public class IdentityManagerIntegrationTest {
             // Run test.
             mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(mTestAccount1.getId());
 
-            Assert.assertEquals("No accounts available", new CoreAccountInfo[] {},
+            Assert.assertArrayEquals("No accounts available", new CoreAccountInfo[] {},
                     mIdentityManager.getAccountsWithRefreshTokens());
         });
     }

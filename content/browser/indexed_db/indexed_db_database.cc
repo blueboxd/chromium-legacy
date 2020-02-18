@@ -877,7 +877,7 @@ Status IndexedDBDatabase::GetOperation(
     blink::mojom::IDBReturnValuePtr mojo_value =
         IndexedDBReturnValue::ConvertReturnValue(&value);
     dispatcher_host->CreateAllExternalObjects(
-        value.external_objects, &mojo_value->value->external_objects);
+        origin(), value.external_objects, &mojo_value->value->external_objects);
     std::move(callback).Run(
         blink::mojom::IDBDatabaseGetResult::NewValue(std::move(mojo_value)));
     return s;
@@ -934,7 +934,7 @@ Status IndexedDBDatabase::GetOperation(
   blink::mojom::IDBReturnValuePtr mojo_value =
       IndexedDBReturnValue::ConvertReturnValue(&value);
   dispatcher_host->CreateAllExternalObjects(
-      value.external_objects, &mojo_value->value->external_objects);
+      origin(), value.external_objects, &mojo_value->value->external_objects);
   std::move(callback).Run(
       blink::mojom::IDBDatabaseGetResult::NewValue(std::move(mojo_value)));
   return s;
@@ -1110,7 +1110,7 @@ Status IndexedDBDatabase::GetAllOperation(
     mojo_values.push_back(
         IndexedDBReturnValue::ConvertReturnValue(&found_values[i]));
     dispatcher_host->CreateAllExternalObjects(
-        found_values[i].external_objects,
+        origin(), found_values[i].external_objects,
         &mojo_values[i]->value->external_objects);
   }
   std::move(callback).Run(
@@ -1402,9 +1402,10 @@ Status IndexedDBDatabase::OpenCursorOperation(
     external_objects.swap(cursor_ptr->Value()->external_objects);
   }
 
-  if (mojo_value)
-    dispatcher_host->CreateAllExternalObjects(external_objects,
+  if (mojo_value) {
+    dispatcher_host->CreateAllExternalObjects(origin, external_objects,
                                               &mojo_value->external_objects);
+  }
 
   std::move(params->callback)
       .Run(blink::mojom::IDBDatabaseOpenCursorResult::NewValue(

@@ -34,9 +34,9 @@
     SourcesTestRunner.waitUntilPaused(step3);
   }
 
-  function step3(callFrames) {
+  async function step3(callFrames) {
     TestRunner.addResult('Script execution paused.');
-    SourcesTestRunner.captureStackTrace(callFrames);
+    await SourcesTestRunner.captureStackTrace(callFrames);
     TestRunner.addResult('Call stack status: ' + callstackStatus());
     SourcesTestRunner.showScriptSource('debug-inline-scripts.html', step4);
   }
@@ -47,7 +47,7 @@
         SourcesTestRunner.waitUntilPaused.bind(null, step5));
   }
 
-  function step5(callFrames) {
+  async function step5(callFrames) {
     if (callFrames[0].location().lineNumber !== 9) {
       SourcesTestRunner.resumeExecution(
           SourcesTestRunner.waitUntilPaused.bind(null, step5));
@@ -55,7 +55,7 @@
     }
 
     TestRunner.addResult('Script execution paused.');
-    SourcesTestRunner.captureStackTrace(callFrames);
+    await SourcesTestRunner.captureStackTrace(callFrames);
     SourcesTestRunner.showScriptSource('debug-inline-scripts.html', step6);
   }
 

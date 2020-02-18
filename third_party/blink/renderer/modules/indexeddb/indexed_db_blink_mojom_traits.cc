@@ -188,7 +188,8 @@ Vector<blink::mojom::blink::IDBExternalObjectPtr>
 StructTraits<blink::mojom::IDBValueDataView, std::unique_ptr<blink::IDBValue>>::
     external_objects(const std::unique_ptr<blink::IDBValue>& input) {
   Vector<blink::mojom::blink::IDBExternalObjectPtr> external_objects;
-  external_objects.ReserveInitialCapacity(input->BlobInfo().size());
+  external_objects.ReserveInitialCapacity(
+      input->BlobInfo().size() + input->NativeFileSystemTokens().size());
   for (const blink::WebBlobInfo& info : input->BlobInfo()) {
     auto blob_info = blink::mojom::blink::IDBBlobInfo::New();
     if (info.IsFile()) {
@@ -212,6 +213,11 @@ StructTraits<blink::mojom::IDBValueDataView, std::unique_ptr<blink::IDBValue>>::
     external_objects.push_back(
         blink::mojom::blink::IDBExternalObject::NewBlobOrFile(
             std::move(blob_info)));
+  }
+  for (auto& token : input->NativeFileSystemTokens()) {
+    external_objects.push_back(
+        blink::mojom::blink::IDBExternalObject::NewNativeFileSystemToken(
+            std::move(token)));
   }
   return external_objects;
 }
@@ -239,7 +245,10 @@ bool StructTraits<blink::mojom::IDBValueDataView,
     return false;
 
   Vector<blink::WebBlobInfo> value_blob_info;
-  value_blob_info.ReserveInitialCapacity(external_objects.size());
+  Vector<
+      mojo::PendingRemote<blink::mojom::blink::NativeFileSystemTransferToken>>
+      native_file_system_tokens;
+
   for (const auto& object : external_objects) {
     switch (object->which()) {
       case blink::mojom::blink::IDBExternalObject::Tag::BLOB_OR_FILE: {
@@ -255,11 +264,17 @@ bool StructTraits<blink::mojom::IDBValueDataView,
         }
         break;
       }
+      case blink::mojom::blink::IDBExternalObject::Tag::
+          NATIVE_FILE_SYSTEM_TOKEN:
+        native_file_system_tokens.push_back(
+            std::move(object->get_native_file_system_token()));
+        break;
     }
   }
 
-  *out = std::make_unique<blink::IDBValue>(std::move(value_buffer),
-                                           std::move(value_blob_info));
+  *out = std::make_unique<blink::IDBValue>(
+      std::move(value_buffer), std::move(value_blob_info),
+      std::move(native_file_system_tokens));
   return true;
 }
 

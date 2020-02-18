@@ -586,8 +586,9 @@ IDBRequest* IDBObjectStore::DoPut(ScriptState* script_state,
 
   value_wrapper.WrapIfBiggerThan(IDBValueWrapper::kWrapThreshold);
 
-  auto idb_value = std::make_unique<IDBValue>(value_wrapper.TakeWireBytes(),
-                                              value_wrapper.TakeBlobInfo());
+  auto idb_value = std::make_unique<IDBValue>(
+      value_wrapper.TakeWireBytes(), value_wrapper.TakeBlobInfo(),
+      value_wrapper.TakeNativeFileSystemTransferTokens());
 
   request->transit_blob_handles() = value_wrapper.TakeBlobDataHandles();
   transaction_->transaction_backend()->Put(

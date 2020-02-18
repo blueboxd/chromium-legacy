@@ -117,6 +117,12 @@ const char kAccessibilitySwitchAccessAutoScanSpeedMs[] =
 // enabled).
 const char kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs[] =
     "settings.a11y.switch_access.auto_scan.keyboard.speed_ms";
+// A boolean pref which, if set, indicates that shelf navigation buttons (home,
+// back and overview button) should be shown in tablet mode. Note that shelf
+// buttons might be shown even if the pref value is false - for example, if
+// spoken feedback, autoclick or switch access are enabled.
+const char kAccessibilityTabletModeShelfNavigationButtonsEnabled[] =
+    "settings.a11y.tablet_mode_shelf_nav_buttons_enabled";
 // A boolean pref which determines whether dictation is enabled.
 const char kAccessibilityDictationEnabled[] = "settings.a11y.dictation";
 // A boolean pref which determines whether the accessibility menu shows

@@ -23,7 +23,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "net/http/http_request_headers.h"
-#include "services/network/loader_util.h"
+#include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
 
 namespace content {
@@ -52,7 +52,7 @@ void SetUpOnUI(
   // Set the accept header to '*/*'.
   // https://fetch.spec.whatwg.org/#concept-fetch
   headers.SetHeader(net::HttpRequestHeaders::kAccept,
-                    network::kDefaultAcceptHeader);
+                    network::kDefaultAcceptHeaderValue);
 
   BrowserContext* browser_context = process_manager->browser_context();
   blink::mojom::RendererPreferences renderer_preferences;

@@ -153,6 +153,9 @@ BLINK_COMMON_EXPORT extern const base::Feature
 
 BLINK_COMMON_EXPORT extern const base::Feature kDiscardCodeCacheAfterFirstUse;
 
+BLINK_COMMON_EXPORT extern const base::Feature
+    kSuppressContentTypeForBeaconMadeWithArrayBufferView;
+
 }  // namespace features
 }  // namespace blink
 

@@ -217,6 +217,7 @@ source_set("web_applications_browser_tests") {
     "manifest_update_manager_browsertest.cc",
     "pending_app_manager_impl_browsertest.cc",
     "web_app_icon_manager_browsertest.cc",
+    "web_app_migration_manager_browsertest.cc",
   ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -224,6 +225,7 @@ source_set("web_applications_browser_tests") {
   deps = [
     ":common",
     ":web_applications",
+    ":web_applications_on_extensions",
     ":web_applications_on_extensions_test_support",
     ":web_applications_test_support",
     "//chrome/app:command_ids",
@@ -237,6 +239,8 @@ source_set("web_applications_browser_tests") {
 # web_applications set.
 source_set("web_applications_on_extensions") {
   sources = [
+    "web_app_migration_manager.cc",
+    "web_app_migration_manager.h",
     "web_app_provider.cc",
     "web_app_provider.h",
     "web_app_provider_factory.cc",
@@ -252,6 +256,7 @@ source_set("web_applications_on_extensions") {
     "//chrome/common",
     "//components/keyed_service/content",
     "//components/pref_registry:pref_registry",
+    "//components/sync",
     "//extensions/browser",
   ]
 }

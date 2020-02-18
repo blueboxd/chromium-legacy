@@ -94,8 +94,8 @@
             'Call breakDebugger, expect it to show up in next stack trace.');
       }
 
-      function step3(frames) {
-        SourcesTestRunner.captureStackTrace(frames);
+      async function step3(frames) {
+        await SourcesTestRunner.captureStackTrace(frames);
         TestRunner.domDebuggerModel.removeDOMBreakpoint(
             rootElement,
             Protocol.DOMDebugger.DOMBreakpointType.SubtreeModified);

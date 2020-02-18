@@ -139,12 +139,12 @@
   <div id="button-container">
     <cr-button class="cancel-button" on-click="onCancelButtonClick_"
         disabled="[[eq_(state_, State.CANCELING)]]">
-      $i18n{cancel}
+      [[getCancelButtonLabel_(state_)]]
     </cr-button>
     <cr-button id="next" class="action-button" on-click="onNextButtonClick_"
         aria-describedby="title" aria-details="prompt-message"
         hidden="[[!showNextButton_(state_)]]">
-      [[getNextButtonLabel_()]]
+      $i18n{next}
     </cr-button>
     <cr-button id="install" class="action-button"
         on-click="onInstallButtonClick_" aria-describedby="title"

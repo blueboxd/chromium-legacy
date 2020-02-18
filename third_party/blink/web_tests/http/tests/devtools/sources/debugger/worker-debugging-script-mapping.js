@@ -34,10 +34,10 @@
     maybeFinishTest();
   }
 
-  function maybeFinishTest() {
+  async function maybeFinishTest() {
     if (--callbacksLeft)
       return;
-    SourcesTestRunner.captureStackTrace(callFrames);
+    await SourcesTestRunner.captureStackTrace(callFrames);
     SourcesTestRunner.completeDebuggerTest();
   }
 })();

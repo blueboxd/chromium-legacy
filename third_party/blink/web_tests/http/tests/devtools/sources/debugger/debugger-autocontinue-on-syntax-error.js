@@ -14,7 +14,7 @@
   async function step1() {
     TestRunner.DebuggerAgent.setPauseOnExceptions(SDK.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
     await TestRunner.addIframe('resources/syntax-error.html');
-    ConsoleTestRunner.dumpConsoleMessages();
+    await ConsoleTestRunner.dumpConsoleMessages();
     SourcesTestRunner.completeDebuggerTest();
   }
 })();

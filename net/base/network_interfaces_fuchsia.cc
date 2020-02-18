@@ -88,7 +88,10 @@ std::vector<NetworkInterface> NetInterfaceToNetworkInterfaces(
     return output;
   }
 
-  output.push_back(NetworkInterfaceFromAddress(iface_in, 0));
+  // It is possible for the interface not to have an IPv4 address.
+  NetworkInterface ipv4_interface = NetworkInterfaceFromAddress(iface_in, 0);
+  if (!ipv4_interface.address.IsZero())
+    output.push_back(std::move(ipv4_interface));
 
   // Append interface entries for all additional IPv6 addresses.
   for (size_t i = 0; i < iface_in.ipv6addrs.size(); ++i) {

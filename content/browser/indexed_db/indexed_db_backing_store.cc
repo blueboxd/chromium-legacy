@@ -262,26 +262,37 @@ Status MergeDatabaseIntoActiveBlobJournal(
 }
 
 // Blob Data is encoded as a series of:
-//   { is_file [bool], blob_number [int64_t as varInt],
-//     type [string-with-length, may be empty],
-//     size [int64_t as varInt]
+//   { object_type [IndexedDBExternalObject::ObjectType as byte],
+//     (for Blobs and Files only) blob_number [int64_t as varInt],
+//     (for Blobs and Files only) type [string-with-length, may be empty],
+//     (for Blobs and Files only) size [int64_t as varInt]
 //     (for Files only) fileName [string-with-length]
 //     (for Files only) lastModified [int64_t as varInt, in microseconds]
+//     (for Native File System Handles only) token [binary-with-length]
 //   }
 // There is no length field; just read until you run out of data.
 std::string EncodeExternalObjects(
     const std::vector<IndexedDBExternalObject>& external_objects) {
   std::string ret;
   for (const auto& info : external_objects) {
-    EncodeBool(info.is_file(), &ret);
-    EncodeVarInt(info.blob_number(), &ret);
-    EncodeStringWithLength(info.type(), &ret);
-    EncodeVarInt(info.size(), &ret);
-    if (info.is_file()) {
-      EncodeStringWithLength(info.file_name(), &ret);
-      EncodeVarInt(
-          info.last_modified().ToDeltaSinceWindowsEpoch().InMicroseconds(),
-          &ret);
+    EncodeByte(static_cast<unsigned char>(info.object_type()), &ret);
+    switch (info.object_type()) {
+      case IndexedDBExternalObject::ObjectType::kBlob:
+      case IndexedDBExternalObject::ObjectType::kFile:
+        EncodeVarInt(info.blob_number(), &ret);
+        EncodeStringWithLength(info.type(), &ret);
+        EncodeVarInt(info.size(), &ret);
+        if (info.object_type() == IndexedDBExternalObject::ObjectType::kFile) {
+          EncodeStringWithLength(info.file_name(), &ret);
+          EncodeVarInt(
+              info.last_modified().ToDeltaSinceWindowsEpoch().InMicroseconds(),
+              &ret);
+        }
+        break;
+      case IndexedDBExternalObject::ObjectType::kNativeFileSystemHandle:
+        DCHECK(!info.native_file_system_token().empty());
+        EncodeBinary(info.native_file_system_token(), &ret);
+        break;
     }
   }
   return ret;
@@ -329,35 +340,55 @@ bool DecodeExternalObjects(const std::string& data,
   output->clear();
   StringPiece slice(data);
   while (!slice.empty()) {
-    bool is_file;
-    int64_t blob_number;
-    base::string16 type;
-    int64_t size;
-    base::string16 file_name;
-
-    if (!DecodeBool(&slice, &is_file))
+    unsigned char raw_object_type;
+    if (!DecodeByte(&slice, &raw_object_type) ||
+        raw_object_type > static_cast<uint8_t>(
+                              IndexedDBExternalObject::ObjectType::kMaxValue)) {
       return false;
-    if (!DecodeVarInt(&slice, &blob_number) ||
-        !DatabaseMetaDataKey::IsValidBlobNumber(blob_number))
-      return false;
-    if (!DecodeStringWithLength(&slice, &type))
-      return false;
-    if (!DecodeVarInt(&slice, &size) || size < 0)
-      return false;
-    if (!is_file) {
-      ret.push_back(IndexedDBExternalObject(type, size, blob_number));
-      continue;
     }
-    if (!DecodeStringWithLength(&slice, &file_name))
-      return false;
-    int64_t last_modified;
-    if (!DecodeVarInt(&slice, &last_modified) || size < 0)
-      return false;
-    ret.push_back(IndexedDBExternalObject(
-        blob_number, type, file_name,
-        base::Time::FromDeltaSinceWindowsEpoch(
-            base::TimeDelta::FromMicroseconds(last_modified)),
-        size));
+    IndexedDBExternalObject::ObjectType object_type =
+        static_cast<IndexedDBExternalObject::ObjectType>(raw_object_type);
+    switch (object_type) {
+      case IndexedDBExternalObject::ObjectType::kBlob:
+      case IndexedDBExternalObject::ObjectType::kFile: {
+        int64_t blob_number;
+        base::string16 type;
+        int64_t size;
+        base::string16 file_name;
+
+        if (!DecodeVarInt(&slice, &blob_number) ||
+            !DatabaseMetaDataKey::IsValidBlobNumber(blob_number)) {
+          return false;
+        }
+        if (!DecodeStringWithLength(&slice, &type))
+          return false;
+        if (!DecodeVarInt(&slice, &size) || size < 0)
+          return false;
+        if (object_type != IndexedDBExternalObject::ObjectType::kFile) {
+          ret.push_back(IndexedDBExternalObject(type, size, blob_number));
+          break;
+        }
+        if (!DecodeStringWithLength(&slice, &file_name))
+          return false;
+        int64_t last_modified;
+        if (!DecodeVarInt(&slice, &last_modified) || size < 0)
+          return false;
+        ret.push_back(IndexedDBExternalObject(
+            blob_number, type, file_name,
+            base::Time::FromDeltaSinceWindowsEpoch(
+                base::TimeDelta::FromMicroseconds(last_modified)),
+            size));
+        break;
+      }
+      case IndexedDBExternalObject::ObjectType::kNativeFileSystemHandle: {
+        base::span<const uint8_t> token;
+        if (!DecodeBinary(&slice, &token))
+          return false;
+        ret.push_back(IndexedDBExternalObject(
+            std::vector<uint8_t>(token.begin(), token.end())));
+        break;
+      }
+    }
   }
   output->swap(ret);
 
@@ -915,8 +946,10 @@ Status IndexedDBBackingStore::UpgradeBlobEntriesToV4(
         bool needs_rewrite = false;
         // Read the old entries & modify them to add the missing data.
         for (auto& object : temp_external_objects) {
-          if (!object.is_file())
+          if (object.object_type() !=
+              IndexedDBExternalObject::ObjectType::kFile) {
             continue;
+          }
           needs_rewrite = true;
           base::File::Info info;
           base::FilePath path =
@@ -1191,7 +1224,7 @@ int64_t IndexedDBBackingStore::GetInMemoryBlobSize() const {
   for (const auto& kvp : incognito_external_object_map_) {
     for (const IndexedDBExternalObject& object :
          kvp.second->external_objects()) {
-      if (!object.is_file()) {
+      if (object.object_type() == IndexedDBExternalObject::ObjectType::kBlob) {
         total_size += object.size();
       }
     }
@@ -1759,14 +1792,21 @@ Status IndexedDBBackingStore::Transaction::GetExternalObjectsForRecord(
       return InternalInconsistencyStatus();
     }
     for (auto& entry : value->external_objects) {
-      entry.set_indexed_db_file_path(
-          backing_store_->GetBlobFileName(database_id, entry.blob_number()));
-      entry.set_mark_used_callback(
-          backing_store_->active_blob_registry()->GetMarkBlobActiveCallback(
+      switch (entry.object_type()) {
+        case IndexedDBExternalObject::ObjectType::kFile:
+        case IndexedDBExternalObject::ObjectType::kBlob:
+          entry.set_indexed_db_file_path(backing_store_->GetBlobFileName(
               database_id, entry.blob_number()));
-      entry.set_release_callback(
-          backing_store_->active_blob_registry()->GetFinalReleaseCallback(
-              database_id, entry.blob_number()));
+          entry.set_mark_used_callback(
+              backing_store_->active_blob_registry()->GetMarkBlobActiveCallback(
+                  database_id, entry.blob_number()));
+          entry.set_release_callback(
+              backing_store_->active_blob_registry()->GetFinalReleaseCallback(
+                  database_id, entry.blob_number()));
+          break;
+        case IndexedDBExternalObject::ObjectType::kNativeFileSystemHandle:
+          break;
+      }
     }
   }
   return Status::OK();
@@ -2890,20 +2930,21 @@ Status IndexedDBBackingStore::Transaction::HandleBlobPreTransaction() {
 
   for (auto& iter : external_object_change_map_) {
     for (auto& entry : iter.second->mutable_external_objects()) {
-      blobs_to_write_.push_back({database_id_, next_blob_number});
-      DCHECK(entry.is_remote_valid());
-      entry.set_blob_number(next_blob_number);
-      ++next_blob_number;
-      result = indexed_db::UpdateBlobNumberGeneratorCurrentNumber(
-          direct_txn.get(), database_id_, next_blob_number);
-      if (!result)
-        return InternalInconsistencyStatus();
-    }
-    BlobEntryKey blob_entry_key;
-    StringPiece key_piece(iter.second->object_store_data_key());
-    if (!BlobEntryKey::FromObjectStoreDataKey(&key_piece, &blob_entry_key)) {
-      NOTREACHED();
-      return InternalInconsistencyStatus();
+      switch (entry.object_type()) {
+        case IndexedDBExternalObject::ObjectType::kFile:
+        case IndexedDBExternalObject::ObjectType::kBlob:
+          blobs_to_write_.push_back({database_id_, next_blob_number});
+          DCHECK(entry.is_remote_valid());
+          entry.set_blob_number(next_blob_number);
+          ++next_blob_number;
+          result = indexed_db::UpdateBlobNumberGeneratorCurrentNumber(
+              direct_txn.get(), database_id_, next_blob_number);
+          if (!result)
+            return InternalInconsistencyStatus();
+          break;
+        case IndexedDBExternalObject::ObjectType::kNativeFileSystemHandle:
+          break;
+      }
     }
   }
 
@@ -2946,6 +2987,10 @@ bool IndexedDBBackingStore::Transaction::CollectBlobFilesToRemove() {
         return false;
       }
       for (const auto& blob : external_objects) {
+        if (blob.object_type() != IndexedDBExternalObject::ObjectType::kBlob &&
+            blob.object_type() != IndexedDBExternalObject::ObjectType::kFile) {
+          continue;
+        }
         blobs_to_remove_.push_back({database_id_, blob.blob_number()});
         s = transaction_->Remove(blob_entry_key_bytes);
         if (!s.ok()) {
@@ -3146,77 +3191,132 @@ leveldb::Status IndexedDBBackingStore::Transaction::WriteNewBlobs(
   DCHECK(!external_object_change_map_.empty());
   DCHECK_GT(database_id_, 0);
 
-  // Remove all empty blobs.
-  int num_files_to_write = 0;
+  // Count how many objects we need to write by excluding all empty files and
+  // blobs.
+  int num_objects_to_write = 0;
   for (const auto& iter : external_object_change_map_) {
     for (const auto& entry : iter.second->external_objects()) {
-      if (entry.size() != 0)
-        ++num_files_to_write;
+      switch (entry.object_type()) {
+        case IndexedDBExternalObject::ObjectType::kFile:
+        case IndexedDBExternalObject::ObjectType::kBlob:
+          if (entry.size() != 0)
+            ++num_objects_to_write;
+          break;
+        case IndexedDBExternalObject::ObjectType::kNativeFileSystemHandle:
+          if (entry.native_file_system_token().empty())
+            ++num_objects_to_write;
+          break;
+      }
     }
   }
-  if (num_files_to_write == 0) {
+  if (num_objects_to_write == 0) {
     return std::move(callback).Run(
         BlobWriteResult::kRunPhaseTwoAndReturnResult);
   }
 
-  write_state_.emplace(num_files_to_write, std::move(callback));
+  write_state_.emplace(num_objects_to_write, std::move(callback));
 
   storage::mojom::BlobStorageContext* blob_storage_context =
       backing_store_->blob_storage_context_;
 
+  auto write_result_callback = base::BindRepeating(
+      [](base::WeakPtr<Transaction> transaction, bool success) {
+        if (!transaction)
+          return;
+        // This can be null if Rollback() is called.
+        if (!transaction->write_state_)
+          return;
+        auto& write_state = transaction->write_state_.value();
+        DCHECK(!write_state.on_complete.is_null());
+        if (!success) {
+          auto on_complete = std::move(write_state.on_complete);
+          transaction->write_state_.reset();
+          std::move(on_complete).Run(BlobWriteResult::kFailure);
+          return;
+        }
+        --(write_state.calls_left);
+        if (write_state.calls_left == 0) {
+          auto on_complete = std::move(write_state.on_complete);
+          transaction->write_state_.reset();
+          std::move(on_complete).Run(BlobWriteResult::kRunPhaseTwoAsync);
+        }
+      },
+      ptr_factory_.GetWeakPtr());
+
+  auto blob_write_result_callback = base::BindRepeating(
+      [](const base::RepeatingCallback<void(bool success)>& callback,
+         storage::mojom::WriteBlobToFileResult result) {
+        callback.Run(result == storage::mojom::WriteBlobToFileResult::kSuccess);
+      },
+      write_result_callback);
+
   for (auto& iter : external_object_change_map_) {
     for (auto& entry : iter.second->mutable_external_objects()) {
-      if (entry.size() == 0)
-        continue;
-      // If this directory creation fails then the WriteBlobToFile call will
-      // fail. So there is no need to special-case handle it here.
-      MakeIDBBlobDirectory(backing_store_->blob_path_, database_id_,
-                           entry.blob_number());
-      // TODO(dmurph): Refactor IndexedDBExternalObject to not use a
-      // SharedRemote, so this code can just move the remote, instead of
-      // cloning.
-      mojo::PendingRemote<blink::mojom::Blob> pending_blob;
-      entry.remote()->Clone(pending_blob.InitWithNewPipeAndPassReceiver());
+      switch (entry.object_type()) {
+        case IndexedDBExternalObject::ObjectType::kFile:
+        case IndexedDBExternalObject::ObjectType::kBlob: {
+          if (entry.size() == 0)
+            continue;
+          // If this directory creation fails then the WriteBlobToFile call
+          // will fail. So there is no need to special-case handle it here.
+          MakeIDBBlobDirectory(backing_store_->blob_path_, database_id_,
+                               entry.blob_number());
+          // TODO(dmurph): Refactor IndexedDBExternalObject to not use a
+          // SharedRemote, so this code can just move the remote, instead of
+          // cloning.
+          mojo::PendingRemote<blink::mojom::Blob> pending_blob;
+          entry.remote()->Clone(pending_blob.InitWithNewPipeAndPassReceiver());
 
-      // Android doesn't seem to consistantly be able to set file modification
-      // times. The timestamp is not checked during reading on Android either.
-      // https://crbug.com/1045488
-      base::Optional<base::Time> last_modified;
+          // Android doesn't seem to consistently be able to set file
+          // modification times. The timestamp is not checked during reading
+          // on Android either. https://crbug.com/1045488
+          base::Optional<base::Time> last_modified;
 #if !defined(OS_ANDROID)
-      last_modified = entry.last_modified().is_null()
-                          ? base::nullopt
-                          : base::make_optional(entry.last_modified());
+          last_modified = entry.last_modified().is_null()
+                              ? base::nullopt
+                              : base::make_optional(entry.last_modified());
 #endif
-      blob_storage_context->WriteBlobToFile(
-          std::move(pending_blob),
-          backing_store_->GetBlobFileName(database_id_, entry.blob_number()),
-          IndexedDBBackingStore::ShouldSyncOnCommit(durability_), last_modified,
-          base::BindOnce(
-              [](base::WeakPtr<Transaction> transaction,
-                 storage::mojom::WriteBlobToFileResult result) {
-                if (!transaction)
-                  return;
-                // This can be null if Rollback() is called.
-                if (!transaction->write_state_)
-                  return;
-                auto& write_state = transaction->write_state_.value();
-                DCHECK(!write_state.on_complete.is_null());
-                if (result != storage::mojom::WriteBlobToFileResult::kSuccess) {
-                  LOG(ERROR) << static_cast<int>(result);
-                  auto on_complete = std::move(write_state.on_complete);
-                  transaction->write_state_.reset();
-                  std::move(on_complete).Run(BlobWriteResult::kFailure);
-                  return;
-                }
-                --(write_state.calls_left);
-                if (write_state.calls_left == 0) {
-                  auto on_complete = std::move(write_state.on_complete);
-                  transaction->write_state_.reset();
-                  std::move(on_complete)
-                      .Run(BlobWriteResult::kRunPhaseTwoAsync);
-                }
-              },
-              ptr_factory_.GetWeakPtr()));
+          blob_storage_context->WriteBlobToFile(
+              std::move(pending_blob),
+              backing_store_->GetBlobFileName(database_id_,
+                                              entry.blob_number()),
+              IndexedDBBackingStore::ShouldSyncOnCommit(durability_),
+              last_modified, blob_write_result_callback);
+          break;
+        }
+        case IndexedDBExternalObject::ObjectType::kNativeFileSystemHandle: {
+          if (!entry.native_file_system_token().empty())
+            continue;
+          // TODO(dmurph): Refactor IndexedDBExternalObject to not use a
+          // SharedRemote, so this code can just move the remote, instead of
+          // cloning.
+          mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken>
+              token_clone;
+          entry.native_file_system_token_remote()->Clone(
+              token_clone.InitWithNewPipeAndPassReceiver());
+
+          backing_store_->native_file_system_context_->SerializeHandle(
+              std::move(token_clone),
+              base::BindOnce(
+                  [](base::WeakPtr<Transaction> transaction,
+                     IndexedDBExternalObject* object,
+                     base::OnceCallback<void(bool success)> callback,
+                     const std::vector<uint8_t>& serialized_token) {
+                    // |object| is owned by |transaction|, so make sure
+                    // |transaction| is still valid before doing anything else.
+                    if (!transaction)
+                      return;
+                    if (serialized_token.empty()) {
+                      std::move(callback).Run(/*success=*/false);
+                      return;
+                    }
+                    object->set_native_file_system_token(serialized_token);
+                    std::move(callback).Run(/*success=*/true);
+                  },
+                  ptr_factory_.GetWeakPtr(), &entry, write_result_callback));
+          break;
+        }
+      }
     }
   }
   return leveldb::Status::OK();

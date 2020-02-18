@@ -48,14 +48,14 @@
 
   var step = 0;
   var callStacksOutput = [];
-  function didPause(callFrames, reason, breakpointIds, asyncStackTrace) {
+  async function didPause(callFrames, reason, breakpointIds, asyncStackTrace) {
     ++step;
     if (step === 1) {
       TestRunner.DebuggerAgent.setAsyncCallStackDepth(maxAsyncCallStackDepth).then(resumeExecution);
       return;
     }
 
-    callStacksOutput.push(SourcesTestRunner.captureStackTraceIntoString(callFrames, asyncStackTrace) + '\n');
+    callStacksOutput.push(await SourcesTestRunner.captureStackTraceIntoString(callFrames, asyncStackTrace) + '\n');
     if (step < totalDebuggerStatements) {
       resumeExecution();
     } else {

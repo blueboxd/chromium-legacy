@@ -24,8 +24,6 @@ import java.util.List;
  * Utility class for test signin functionality.
  */
 public final class SigninTestUtil {
-    private static final String TAG = "Signin";
-
     private static final String DEFAULT_ACCOUNT = "test@gmail.com";
 
     @SuppressLint("StaticFieldLeak")
@@ -80,7 +78,7 @@ public final class SigninTestUtil {
         AccountHolder accountHolder = AccountHolder.builder(account).alwaysAccept(true).build();
         sAccountManager.addAccountHolderBlocking(accountHolder);
         sAddedAccounts.add(accountHolder);
-        TestThreadUtils.runOnUiThreadBlocking(SigninTestUtil::seedAccounts);
+        seedAccounts();
         return account;
     }
 
@@ -88,18 +86,9 @@ public final class SigninTestUtil {
      * Add and sign in an account with the default name.
      */
     public static Account addAndSignInTestAccount() {
-        return addAndSignInTestAccount(DEFAULT_ACCOUNT);
-    }
-
-    /**
-     * Add and sign in an account with a given name.
-     */
-    public static Account addAndSignInTestAccount(String name) {
-        Account account = addTestAccount(name);
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            ChromeSigninController.get().setSignedInAccountName(name);
-            seedAccounts();
-        });
+        Account account = addTestAccount(DEFAULT_ACCOUNT);
+        ChromeSigninController.get().setSignedInAccountName(DEFAULT_ACCOUNT);
+        seedAccounts();
         return account;
     }
 
@@ -111,8 +100,10 @@ public final class SigninTestUtil {
             accountNames[i] = accounts[i].name;
             accountIds[i] = sAccountManager.getAccountGaiaId(accounts[i].name);
         }
-        IdentityServicesProvider.get().getAccountTrackerService().syncForceRefreshForTest(
-                accountIds, accountNames);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            IdentityServicesProvider.get().getAccountTrackerService().syncForceRefreshForTest(
+                    accountIds, accountNames);
+        });
     }
 
     /**

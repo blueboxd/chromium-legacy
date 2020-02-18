@@ -19,7 +19,7 @@
   TestRunner.addResult('Run function and check pause');
   let pausePromise = SourcesTestRunner.waitUntilPausedPromise();
   TestRunner.evaluateInPage('main()//# sourceURL=test.js');
-  SourcesTestRunner.captureStackTrace(await pausePromise);
+  await SourcesTestRunner.captureStackTrace(await pausePromise);
   await new Promise(resolve => SourcesTestRunner.resumeExecution(resolve));
 
   TestRunner.addResult('Disable breakpoint');
@@ -29,7 +29,7 @@
   TestRunner.addResult('Run function and check that pause happens after function');
   pausePromise = SourcesTestRunner.waitUntilPausedPromise();
   TestRunner.evaluateInPage('main(); debugger;//# sourceURL=test.js');
-  SourcesTestRunner.captureStackTrace(await pausePromise);
+  await SourcesTestRunner.captureStackTrace(await pausePromise);
   await new Promise(resolve => SourcesTestRunner.resumeExecution(resolve));
 
   SourcesTestRunner.completeDebuggerTest();

@@ -73,7 +73,7 @@
 
   var step = 0;
   var stepInCount = 0;
-  function didPause(callFrames, reason, breakpointIds, asyncStackTrace) {
+  async function didPause(callFrames, reason, breakpointIds, asyncStackTrace) {
     if (stepInCount < 2) {
       ++stepInCount;
       SourcesTestRunner.stepInto();
@@ -82,7 +82,7 @@
     }
 
     stepInCount = 0;
-    SourcesTestRunner.captureStackTrace(callFrames);
+    await SourcesTestRunner.captureStackTrace(callFrames);
     TestRunner.addResult('');
     if (++step < totalDebuggerStatements)
       SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(SourcesTestRunner, didPause));

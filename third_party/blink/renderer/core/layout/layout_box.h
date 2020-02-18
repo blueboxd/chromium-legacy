@@ -634,6 +634,10 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                : OverrideIntrinsicContentWidth();
   }
 
+  // Returns element-native intrinsic size. Returns kIndefiniteSize if no such
+  // size.
+  LayoutUnit DefaultIntrinsicContentBlockSize() const;
+
   // IE extensions. Used to calculate offsetWidth/Height. Overridden by inlines
   // (LayoutFlow) to return the remaining width on a given line (and the height
   // of a single line).

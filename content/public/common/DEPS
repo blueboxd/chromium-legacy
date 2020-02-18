@@ -1,5 +1,5 @@
 include_rules = [
-  "+services/network/loader_util.h",
+  "+services/network/public/cpp/constants.h",
   "+services/network/network_service.h",
   "+services/network/public/cpp",
 ]

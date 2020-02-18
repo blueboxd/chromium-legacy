@@ -16,6 +16,6 @@
   await SourcesTestRunner.waitUntilPausedPromise();
   SourcesTestRunner.stepIntoAsync();
   let callFrames = await SourcesTestRunner.waitUntilPausedPromise();
-  SourcesTestRunner.captureStackTrace(callFrames);
+  await SourcesTestRunner.captureStackTrace(callFrames);
   SourcesTestRunner.completeDebuggerTest();
 })();

@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS Test content-type header for a body string
-FAIL Test content-type header for a body ArrayBufferView assert_equals: Correct Content-Type header result expected "" but got "application/octet-stream"
+PASS Test content-type header for a body ArrayBufferView
 FAIL Test content-type header for a body ArrayBuffer assert_equals: Correct Content-Type header result expected "" but got "text/plain;charset=UTF-8"
 PASS Test content-type header for a body Blob
 PASS Test content-type header for a body FormData

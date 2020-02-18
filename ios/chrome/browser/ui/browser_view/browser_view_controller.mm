@@ -4820,8 +4820,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   if (NTPHelper->IsActive()) {
     DCHECK(!_ntpCoordinatorsForWebStates[webState]);
     NewTabPageCoordinator* newTabPageCoordinator =
-        [[NewTabPageCoordinator alloc] initWithBrowserState:self.browserState];
-    newTabPageCoordinator.dispatcher = self.dispatcher;
+        [[NewTabPageCoordinator alloc] initWithBrowser:self.browser];
     newTabPageCoordinator.toolbarDelegate = self.toolbarInterface;
     newTabPageCoordinator.webState = webState;
     _ntpCoordinatorsForWebStates[webState] = newTabPageCoordinator;

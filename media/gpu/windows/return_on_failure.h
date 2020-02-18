@@ -13,4 +13,4 @@
     }                                       \
   } while (0)
 
-#endif  // MEDIA_GPU_D3D11_WINDOWS_RETURN_ON_FAILURE_H_
+#endif  // MEDIA_GPU_WINDOWS_RETURN_ON_FAILURE_H_

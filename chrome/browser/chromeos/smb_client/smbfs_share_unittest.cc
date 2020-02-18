@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_factory.h"
 #include "chrome/browser/chromeos/file_manager/volume_manager_observer.h"
+#include "chrome/browser/chromeos/smb_client/smb_url.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/components/smbfs/smbfs_host.h"
 #include "chromeos/components/smbfs/smbfs_mounter.h"
@@ -127,7 +128,7 @@ TEST_F(SmbFsShareTest, Mount) {
   mojo::Receiver<smbfs::mojom::SmbFs> smbfs_receiver(&smbfs);
   mojo::Remote<smbfs::mojom::SmbFsDelegate> delegate;
 
-  SmbFsShare share(&profile_, kSharePath, kDisplayName, {});
+  SmbFsShare share(&profile_, SmbUrl(kSharePath), kDisplayName, {});
   share.SetMounterCreationCallbackForTest(mounter_creation_callback_);
 
   EXPECT_CALL(*raw_mounter_, Mount(_))
@@ -163,7 +164,7 @@ TEST_F(SmbFsShareTest, Mount) {
   run_loop.Run();
 
   EXPECT_TRUE(share.IsMounted());
-  EXPECT_EQ(share.share_path(), kSharePath);
+  EXPECT_EQ(share.share_url().ToString(), kSharePath);
   EXPECT_EQ(share.mount_path(), base::FilePath(kMountPath));
 
   storage::ExternalMountPoints* const mount_points =
@@ -183,7 +184,7 @@ TEST_F(SmbFsShareTest, MountFailure) {
   EXPECT_CALL(observer_, OnVolumeUnmounted(chromeos::MOUNT_ERROR_NONE, _))
       .Times(0);
 
-  SmbFsShare share(&profile_, kSharePath, kDisplayName, {});
+  SmbFsShare share(&profile_, SmbUrl(kSharePath), kDisplayName, {});
   share.SetMounterCreationCallbackForTest(mounter_creation_callback_);
 
   base::RunLoop run_loop;
@@ -194,7 +195,7 @@ TEST_F(SmbFsShareTest, MountFailure) {
   run_loop.Run();
 
   EXPECT_FALSE(share.IsMounted());
-  EXPECT_EQ(share.share_path(), kSharePath);
+  EXPECT_EQ(share.share_url().ToString(), kSharePath);
   EXPECT_EQ(share.mount_path(), base::FilePath());
 }
 
@@ -203,7 +204,7 @@ TEST_F(SmbFsShareTest, UnmountOnDisconnect) {
   mojo::Receiver<smbfs::mojom::SmbFs> smbfs_receiver(&smbfs);
   mojo::Remote<smbfs::mojom::SmbFsDelegate> delegate;
 
-  SmbFsShare share(&profile_, kSharePath, kDisplayName, {});
+  SmbFsShare share(&profile_, SmbUrl(kSharePath), kDisplayName, {});
   share.SetMounterCreationCallbackForTest(mounter_creation_callback_);
 
   EXPECT_CALL(*raw_mounter_, Mount(_))

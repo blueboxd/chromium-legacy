@@ -34,8 +34,8 @@
 
     async function testSetByRegex(next) {
       await TestRunner.DebuggerAgent.invoke_setBreakpointByUrl({urlRegex: 'debugger-set-breakpoint.*', lineNumber: 11});
-      SourcesTestRunner.runTestFunctionAndWaitUntilPaused(callFrames => {
-        SourcesTestRunner.captureStackTrace(callFrames);
+      SourcesTestRunner.runTestFunctionAndWaitUntilPaused(async callFrames => {
+        await SourcesTestRunner.captureStackTrace(callFrames);
         next();
       });
     }

@@ -926,7 +926,7 @@ void AutofillAgent::SelectWasUpdated(
   // found, notify the driver that the the form was modified dynamically.
   FormData form;
   FormFieldData field;
-  if (FindFormAndFieldForFormControlElement(element_, field_data_manager_.get(),
+  if (FindFormAndFieldForFormControlElement(element, field_data_manager_.get(),
                                             &form, &field) &&
       !field.option_values.empty()) {
     GetAutofillDriver()->SelectFieldOptionsDidChange(form);

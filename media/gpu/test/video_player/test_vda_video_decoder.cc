@@ -65,9 +65,10 @@ void TestVDAVideoDecoder::Destroy() {
   // Invalidate all scheduled tasks.
   weak_this_factory_.InvalidateWeakPtrs();
 
+  decoder_ = nullptr;
+
   // Delete all video frames and related textures and the decoder.
   video_frames_.clear();
-  decoder_ = nullptr;
 
   delete this;
 }

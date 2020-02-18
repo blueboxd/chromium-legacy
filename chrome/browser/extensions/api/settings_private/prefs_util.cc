@@ -421,6 +421,9 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[ash::prefs::kAccessibilitySwitchAccessAutoScanSpeedMs] =
       settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)
+      [ash::prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled] =
+          settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)
       [ash::prefs::kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs] =
           settings_api::PrefType::PREF_TYPE_NUMBER;
   (*s_whitelist)[ash::prefs::kAccessibilityVirtualKeyboardEnabled] =

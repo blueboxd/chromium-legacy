@@ -199,6 +199,10 @@ class CORE_EXPORT NGLayoutInputNode {
     return kIndefiniteSize;
   }
 
+  LayoutUnit DefaultIntrinsicContentBlockSize() const {
+    return box_->DefaultIntrinsicContentBlockSize();
+  }
+
   // Display locking functionality.
   const DisplayLockContext& GetDisplayLockContext() const {
     DCHECK(box_->GetDisplayLockContext());

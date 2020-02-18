@@ -41,6 +41,7 @@ source_set("content_suggestions") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/favicon",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/metrics:metrics_internal",
     "//ios/chrome/browser/ntp",
     "//ios/chrome/browser/ntp_snippets",

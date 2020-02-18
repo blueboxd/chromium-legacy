@@ -47,7 +47,7 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
 
   // All the planes are stored in the same buffer, VAImage.va_buffer.
   std::vector<ColorPlaneLayout> planes(num_planes);
-  std::vector<uint8_t*> addrs(num_planes, nullptr);
+  uint8_t* addrs[VideoFrame::kMaxPlanes] = {};
   for (size_t i = 0; i < num_planes; i++) {
     planes[i].stride = va_image->image()->pitches[i];
     planes[i].offset = va_image->image()->offsets[i];

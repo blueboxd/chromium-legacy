@@ -216,6 +216,62 @@ class MockBlobStorageContext : public ::storage::mojom::BlobStorageContext {
   std::vector<BlobWrite> writes_;
 };
 
+class FakeNativeFileSystemTransferToken
+    : public ::blink::mojom::NativeFileSystemTransferToken {
+ public:
+  explicit FakeNativeFileSystemTransferToken(const base::UnguessableToken& id)
+      : id_(id) {}
+
+  void GetInternalID(GetInternalIDCallback callback) override {
+    std::move(callback).Run(id_);
+  }
+
+  void Clone(mojo::PendingReceiver<blink::mojom::NativeFileSystemTransferToken>
+                 clone_receiver) override {
+    mojo::MakeSelfOwnedReceiver(
+        std::make_unique<FakeNativeFileSystemTransferToken>(id_),
+        std::move(clone_receiver));
+  }
+
+ private:
+  base::UnguessableToken id_;
+};
+
+class MockNativeFileSystemContext
+    : public ::storage::mojom::NativeFileSystemContext {
+ public:
+  ~MockNativeFileSystemContext() override = default;
+
+  void SerializeHandle(
+      mojo::PendingRemote<::blink::mojom::NativeFileSystemTransferToken>
+          pending_token,
+      SerializeHandleCallback callback) override {
+    writes_.emplace_back(std::move(pending_token));
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  std::vector<uint8_t>{writes_.size() - 1}));
+  }
+
+  void DeserializeHandle(
+      const url::Origin& origin,
+      const std::vector<uint8_t>& bits,
+      mojo::PendingReceiver<::blink::mojom::NativeFileSystemTransferToken>
+          token) override {
+    NOTREACHED();
+  }
+
+  const std::vector<
+      mojo::Remote<::blink::mojom::NativeFileSystemTransferToken>>&
+  writes() {
+    return writes_;
+  }
+  void ClearWrites() { writes_.clear(); }
+
+ private:
+  std::vector<mojo::Remote<::blink::mojom::NativeFileSystemTransferToken>>
+      writes_;
+};
+
 class IndexedDBBackingStoreTest : public testing::Test {
  public:
   IndexedDBBackingStoreTest()
@@ -230,6 +286,8 @@ class IndexedDBBackingStoreTest : public testing::Test {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
     blob_context_ = std::make_unique<MockBlobStorageContext>();
+    native_file_system_context_ =
+        std::make_unique<MockNativeFileSystemContext>();
 
     idb_context_ = base::MakeRefCounted<IndexedDBContextImpl>(
         temp_dir_.GetPath(), special_storage_policy_, quota_manager_proxy_,
@@ -253,7 +311,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
     const Origin origin = Origin::Create(GURL("http://localhost:81"));
     idb_factory_ = std::make_unique<TestIDBFactory>(
         idb_context_.get(), blob_context_.get(),
-        /*native_file_system_context=*/nullptr);
+        native_file_system_context_.get());
 
     leveldb::Status s;
     std::tie(origin_state_handle_, s, std::ignore, data_loss_info_,
@@ -354,6 +412,7 @@ class IndexedDBBackingStoreTest : public testing::Test {
 
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<MockBlobStorageContext> blob_context_;
+  std::unique_ptr<MockNativeFileSystemContext> native_file_system_context_;
   scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<IndexedDBContextImpl> idb_context_;
@@ -374,9 +433,27 @@ class IndexedDBBackingStoreTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBackingStoreTest);
 };
 
-class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
+enum class ExternalObjectTestType {
+  kOnlyBlobs,
+  kOnlyNativeFileSystemHandles,
+  kBlobsAndNativeFileSystemHandles
+};
+
+class IndexedDBBackingStoreTestWithExternalObjects
+    : public testing::WithParamInterface<ExternalObjectTestType>,
+      public IndexedDBBackingStoreTest {
  public:
-  IndexedDBBackingStoreTestWithBlobs() = default;
+  IndexedDBBackingStoreTestWithExternalObjects() = default;
+
+  virtual ExternalObjectTestType TestType() { return GetParam(); }
+
+  bool IncludesBlobs() {
+    return TestType() != ExternalObjectTestType::kOnlyNativeFileSystemHandles;
+  }
+
+  bool IncludesNativeFileSystemHandles() {
+    return TestType() != ExternalObjectTestType::kOnlyBlobs;
+  }
 
   void SetUp() override {
     IndexedDBBackingStoreTest::SetUp();
@@ -384,18 +461,24 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
     const int64_t kTime1 = 13255919133000000ll;
     const int64_t kTime2 = 13287455133000000ll;
     // useful keys and values during tests
-    external_objects_.push_back(
-        CreateBlobInfo(base::UTF8ToUTF16("blob type"), 1));
-    external_objects_.push_back(CreateBlobInfo(
-        base::UTF8ToUTF16("file name"), base::UTF8ToUTF16("file type"),
-        base::Time::FromDeltaSinceWindowsEpoch(
-            base::TimeDelta::FromMicroseconds(kTime1)),
-        kBlobFileData1.size()));
-    external_objects_.push_back(CreateBlobInfo(
-        base::UTF8ToUTF16("file name"), base::UTF8ToUTF16("file type"),
-        base::Time::FromDeltaSinceWindowsEpoch(
-            base::TimeDelta::FromMicroseconds(kTime2)),
-        kBlobFileData2.size()));
+    if (IncludesBlobs()) {
+      external_objects_.push_back(
+          CreateBlobInfo(base::UTF8ToUTF16("blob type"), 1));
+      external_objects_.push_back(CreateBlobInfo(
+          base::UTF8ToUTF16("file name"), base::UTF8ToUTF16("file type"),
+          base::Time::FromDeltaSinceWindowsEpoch(
+              base::TimeDelta::FromMicroseconds(kTime1)),
+          kBlobFileData1.size()));
+      external_objects_.push_back(CreateBlobInfo(
+          base::UTF8ToUTF16("file name"), base::UTF8ToUTF16("file type"),
+          base::Time::FromDeltaSinceWindowsEpoch(
+              base::TimeDelta::FromMicroseconds(kTime2)),
+          kBlobFileData2.size()));
+    }
+    if (IncludesNativeFileSystemHandles()) {
+      external_objects_.push_back(CreateNativeFileSystemHandle());
+      external_objects_.push_back(CreateNativeFileSystemHandle());
+    }
     value3_ = IndexedDBValue("value3", external_objects_);
     key3_ = IndexedDBKey(ASCIIToUTF16("key3"));
   }
@@ -441,6 +524,26 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
     return info;
   }
 
+  IndexedDBExternalObject CreateNativeFileSystemHandle() {
+    auto id = base::UnguessableToken::Create();
+    mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken> remote;
+    base::CreateSequencedTaskRunner({base::ThreadPool()})
+        ->PostTask(
+            FROM_HERE,
+            base::BindOnce(
+                [](base::UnguessableToken id,
+                   mojo::PendingReceiver<
+                       blink::mojom::NativeFileSystemTransferToken>
+                       pending_receiver) {
+                  mojo::MakeSelfOwnedReceiver(
+                      std::make_unique<FakeNativeFileSystemTransferToken>(id),
+                      std::move(pending_receiver));
+                },
+                id, remote.InitWithNewPipeAndPassReceiver()));
+    IndexedDBExternalObject info(std::move(remote));
+    return info;
+  }
+
   // This just checks the data that survive getting stored and recalled, e.g.
   // the file path and UUID will change and thus aren't verified.
   bool CheckBlobInfoMatches(
@@ -454,27 +557,37 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
     for (size_t i = 0; i < external_objects_.size(); ++i) {
       const IndexedDBExternalObject& a = external_objects_[i];
       const IndexedDBExternalObject& b = reads[i];
-      if (a.is_file() != b.is_file()) {
-        EXPECT_EQ(a.is_file(), b.is_file());
+      if (a.object_type() != b.object_type()) {
+        EXPECT_EQ(a.object_type(), b.object_type());
         return false;
       }
-      if (a.type() != b.type()) {
-        EXPECT_EQ(a.is_file(), b.is_file());
-        return false;
-      }
-      if (a.size() != b.size()) {
-        EXPECT_EQ(a.size(), b.size());
-        return false;
-      }
-      if (a.is_file()) {
-        if (a.file_name() != b.file_name()) {
-          EXPECT_EQ(a.file_name(), b.file_name());
-          return false;
-        }
-        if (a.last_modified() != b.last_modified()) {
-          EXPECT_EQ(a.last_modified(), b.last_modified());
-          return false;
-        }
+      switch (a.object_type()) {
+        case IndexedDBExternalObject::ObjectType::kFile:
+          if (a.file_name() != b.file_name()) {
+            EXPECT_EQ(a.file_name(), b.file_name());
+            return false;
+          }
+          if (a.last_modified() != b.last_modified()) {
+            EXPECT_EQ(a.last_modified(), b.last_modified());
+            return false;
+          }
+          FALLTHROUGH;
+        case IndexedDBExternalObject::ObjectType::kBlob:
+          if (a.type() != b.type()) {
+            EXPECT_EQ(a.type(), b.type());
+            return false;
+          }
+          if (a.size() != b.size()) {
+            EXPECT_EQ(a.size(), b.size());
+            return false;
+          }
+          break;
+        case IndexedDBExternalObject::ObjectType::kNativeFileSystemHandle:
+          if (b.native_file_system_token().empty()) {
+            EXPECT_FALSE(b.native_file_system_token().empty());
+            return false;
+          }
+          break;
       }
     }
     return true;
@@ -484,16 +597,31 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
       const std::vector<IndexedDBExternalObject>& reads) const {
     DCHECK(idb_context_->IDBTaskRunner()->RunsTasksInCurrentSequence());
 
-    if (blob_context_->writes().size() != reads.size())
+    if (blob_context_->writes().size() +
+            native_file_system_context_->writes().size() !=
+        reads.size()) {
       return false;
+    }
     std::set<base::FilePath> ids;
     for (const auto& write : blob_context_->writes())
       ids.insert(write.path);
     if (ids.size() != blob_context_->writes().size())
       return false;
     for (const auto& read : reads) {
-      if (ids.count(read.indexed_db_file_path()) != 1)
-        return false;
+      switch (read.object_type()) {
+        case IndexedDBExternalObject::ObjectType::kBlob:
+        case IndexedDBExternalObject::ObjectType::kFile:
+          if (ids.count(read.indexed_db_file_path()) != 1)
+            return false;
+          break;
+        case IndexedDBExternalObject::ObjectType::kNativeFileSystemHandle:
+          if (read.native_file_system_token().size() != 1 ||
+              read.native_file_system_token()[0] >
+                  native_file_system_context_->writes().size()) {
+            return false;
+          }
+          break;
+      }
     }
     return true;
   }
@@ -501,8 +629,11 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
   bool CheckBlobWrites() {
     DCHECK(idb_context_->IDBTaskRunner()->RunsTasksInCurrentSequence());
 
-    if (blob_context_->writes().size() != external_objects_.size())
+    if (blob_context_->writes().size() +
+            native_file_system_context_->writes().size() !=
+        external_objects_.size()) {
       return false;
+    }
     for (size_t i = 0; i < blob_context_->writes().size(); ++i) {
       const BlobWrite& desc = blob_context_->writes()[i];
       const IndexedDBExternalObject& info = external_objects_[i];
@@ -518,6 +649,36 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
       uuid_loop.Run();
       if (uuid_out != info.uuid())
         return false;
+    }
+    for (size_t i = 0; i < native_file_system_context_->writes().size(); ++i) {
+      const IndexedDBExternalObject& info =
+          external_objects_[blob_context_->writes().size() + i];
+      base::UnguessableToken info_token;
+      {
+        base::RunLoop loop;
+        info.native_file_system_token_remote()->GetInternalID(
+            base::BindLambdaForTesting(
+                [&](const base::UnguessableToken& token) {
+                  info_token = token;
+                  loop.Quit();
+                }));
+        loop.Run();
+      }
+      base::UnguessableToken written_token;
+      {
+        base::RunLoop loop;
+        native_file_system_context_->writes()[i]->GetInternalID(
+            base::BindLambdaForTesting(
+                [&](const base::UnguessableToken& token) {
+                  written_token = token;
+                  loop.Quit();
+                }));
+        loop.Run();
+      }
+      if (info_token != written_token) {
+        EXPECT_EQ(info_token, written_token);
+        return false;
+      }
     }
     return true;
   }
@@ -539,8 +700,8 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
     return external_objects_;
   }
 
-  // Sample keys and values that are consistent. Public so that posted lambdas
-  // passed |this| can access them.
+  // Sample keys and values that are consistent. Public so that posted
+  // lambdas passed |this| can access them.
   IndexedDBKey key3_;
   IndexedDBValue value3_;
 
@@ -555,7 +716,23 @@ class IndexedDBBackingStoreTestWithBlobs : public IndexedDBBackingStoreTest {
 
   std::vector<std::string> blob_remote_uuids_;
 
-  DISALLOW_COPY_AND_ASSIGN(IndexedDBBackingStoreTestWithBlobs);
+  DISALLOW_COPY_AND_ASSIGN(IndexedDBBackingStoreTestWithExternalObjects);
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    /* no prefix */,
+    IndexedDBBackingStoreTestWithExternalObjects,
+    ::testing::Values(
+        ExternalObjectTestType::kOnlyBlobs,
+        ExternalObjectTestType::kOnlyNativeFileSystemHandles,
+        ExternalObjectTestType::kBlobsAndNativeFileSystemHandles));
+
+class IndexedDBBackingStoreTestWithBlobs
+    : public IndexedDBBackingStoreTestWithExternalObjects {
+ public:
+  ExternalObjectTestType TestType() override {
+    return ExternalObjectTestType::kOnlyBlobs;
+  }
 };
 
 BlobWriteCallback CreateBlobWriteCallback(
@@ -629,7 +806,7 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
   CycleIDBTaskRunner();
 }
 
-TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
+TEST_P(IndexedDBBackingStoreTestWithExternalObjects, PutGetConsistency) {
   // Initiate transaction1 - writing blobs.
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction1 =
       std::make_unique<IndexedDBBackingStore::Transaction>(
@@ -710,7 +887,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, PutGetConsistencyWithBlobs) {
   RunAllTasksUntilIdle();
 }
 
-TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRange) {
+TEST_P(IndexedDBBackingStoreTestWithExternalObjects, DeleteRange) {
   const std::vector<IndexedDBKey> keys = {
       IndexedDBKey(ASCIIToUTF16("key0")), IndexedDBKey(ASCIIToUTF16("key1")),
       IndexedDBKey(ASCIIToUTF16("key2")), IndexedDBKey(ASCIIToUTF16("key3"))};
@@ -734,6 +911,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRange) {
 
     // Reset from previous iteration.
     blob_context_->ClearWrites();
+    native_file_system_context_->ClearWrites();
     backing_store()->ClearRemovals();
 
     std::vector<IndexedDBValue> values = {
@@ -806,7 +984,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRange) {
   }
 }
 
-TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
+TEST_P(IndexedDBBackingStoreTestWithExternalObjects, DeleteRangeEmptyRange) {
   const std::vector<IndexedDBKey> keys = {
       IndexedDBKey(ASCIIToUTF16("key0")), IndexedDBKey(ASCIIToUTF16("key1")),
       IndexedDBKey(ASCIIToUTF16("key2")), IndexedDBKey(ASCIIToUTF16("key3")),
@@ -829,6 +1007,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
 
     // Reset from previous iteration.
     blob_context_->ClearWrites();
+    native_file_system_context_->ClearWrites();
     backing_store()->ClearRemovals();
 
     std::vector<IndexedDBValue> values = {
@@ -897,7 +1076,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, DeleteRangeEmptyRange) {
   }
 }
 
-TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
+TEST_P(IndexedDBBackingStoreTestWithExternalObjects,
+       BlobJournalInterleavedTransactions) {
   // Initiate transaction1.
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction1 =
       std::make_unique<IndexedDBBackingStore::Transaction>(
@@ -956,7 +1136,7 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, BlobJournalInterleavedTransactions) {
   RunAllTasksUntilIdle();
 }
 
-TEST_F(IndexedDBBackingStoreTestWithBlobs, ActiveBlobJournal) {
+TEST_P(IndexedDBBackingStoreTestWithExternalObjects, ActiveBlobJournal) {
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction1 =
       std::make_unique<IndexedDBBackingStore::Transaction>(
           backing_store()->AsWeakPtr(),
@@ -998,7 +1178,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, ActiveBlobJournal) {
   EXPECT_TRUE(CheckBlobInfoMatches(read_result_value.external_objects));
   EXPECT_TRUE(CheckBlobReadsMatchWrites(read_result_value.external_objects));
   for (size_t i = 0; i < read_result_value.external_objects.size(); ++i) {
-    read_result_value.external_objects[i].mark_used_callback().Run();
+    if (read_result_value.external_objects[i].mark_used_callback())
+      read_result_value.external_objects[i].mark_used_callback().Run();
   }
 
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction3 =
@@ -1020,11 +1201,13 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, ActiveBlobJournal) {
   EXPECT_TRUE(transaction3->CommitPhaseTwo().ok());
   EXPECT_EQ(0U, backing_store()->removals().size());
   for (size_t i = 0; i < read_result_value.external_objects.size(); ++i) {
-    read_result_value.external_objects[i].release_callback().Run();
+    if (read_result_value.external_objects[i].release_callback())
+      read_result_value.external_objects[i].release_callback().Run();
   }
   RunAllTasksUntilIdle();
 
-  EXPECT_TRUE(backing_store()->IsBlobCleanupPending());
+  if (TestType() != ExternalObjectTestType::kOnlyNativeFileSystemHandles) {
+    EXPECT_TRUE(backing_store()->IsBlobCleanupPending());
 #if DCHECK_IS_ON()
   EXPECT_EQ(3,
             backing_store()->NumAggregatedJournalCleaningRequestsForTesting());
@@ -1037,6 +1220,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, ActiveBlobJournal) {
 #if DCHECK_IS_ON()
   EXPECT_EQ(3, backing_store()->NumBlobFilesDeletedForTesting());
 #endif
+  }
+
   EXPECT_FALSE(backing_store()->IsBlobCleanupPending());
 
   // Clean on the IDB sequence.
@@ -1045,8 +1230,8 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, ActiveBlobJournal) {
   RunAllTasksUntilIdle();
 }
 
-// Make sure that using very high ( more than 32 bit ) values for database_id
-// and object_store_id still work.
+// Make sure that using very high ( more than 32 bit ) values for
+// database_id and object_store_id still work.
 TEST_F(IndexedDBBackingStoreTest, HighIds) {
   IndexedDBKey key1 = key1_;
   IndexedDBKey key2 = key2_;
@@ -1614,10 +1799,14 @@ std::string EncodeV3BlobInfos(
     const std::vector<IndexedDBExternalObject>& blob_info) {
   std::string ret;
   for (const auto& info : blob_info) {
-    EncodeBool(info.is_file(), &ret);
+    DCHECK(info.object_type() == IndexedDBExternalObject::ObjectType::kFile ||
+           info.object_type() == IndexedDBExternalObject::ObjectType::kBlob);
+    bool is_file =
+        info.object_type() == IndexedDBExternalObject::ObjectType::kFile;
+    EncodeBool(is_file, &ret);
     EncodeVarInt(info.blob_number(), &ret);
     EncodeStringWithLength(info.type(), &ret);
-    if (info.is_file())
+    if (is_file)
       EncodeStringWithLength(info.file_name(), &ret);
     else
       EncodeVarInt(info.size(), &ret);

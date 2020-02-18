@@ -65,10 +65,10 @@
 
   var totalBreaks = 6;
   var callStacksOutput = [];
-  function didPause(callFrames, reason, breakpointIds, asyncStackTrace, auxData) {
+  async function didPause(callFrames, reason, breakpointIds, asyncStackTrace, auxData) {
     --totalBreaks;
     auxData = auxData || {};
-    var result = SourcesTestRunner.captureStackTraceIntoString(callFrames) + '\n';
+    var result = await SourcesTestRunner.captureStackTraceIntoString(callFrames) + '\n';
     result += 'Event target: ' + auxData['targetName'] + '\n';
 
     callStacksOutput.push(result);

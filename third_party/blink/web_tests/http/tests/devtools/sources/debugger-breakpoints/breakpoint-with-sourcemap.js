@@ -20,6 +20,6 @@ foo();
   await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
   TestRunner.evaluateInPageAnonymously('foo()');
   let callFrames = await SourcesTestRunner.waitUntilPausedPromise();
-  SourcesTestRunner.captureStackTrace(callFrames);
+  await SourcesTestRunner.captureStackTrace(callFrames);
   SourcesTestRunner.completeDebuggerTest();
 })();

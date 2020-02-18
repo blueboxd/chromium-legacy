@@ -298,9 +298,9 @@ class ImageBuffer {
     return {
       thumbnail: new Uint8Array(view).buffer,
       mimeType: 'image/jpeg',
+      ifd: this.details(result, preview.orientation),
       orientation: preview.orientation,
       colorSpace: preview.colorSpace,
-      ifd: this.details(result),
       id: this.id,
     };
   }
@@ -341,9 +341,9 @@ class ImageBuffer {
     return {
       thumbnail: new Uint8Array(view).buffer,
       mimeType: 'image/jpeg',
+      ifd: this.details(result, thumbnail.orientation),
       orientation: thumbnail.orientation,
       colorSpace: thumbnail.colorSpace,
-      ifd: this.details(result),
       id: this.id,
     };
   }
@@ -437,9 +437,9 @@ class ImageBuffer {
     return {
       thumbnail: bitmap.buffer,
       mimeType: 'image/bmp',
+      ifd: this.details(result, thumbnail.orientation),
       orientation: thumbnail.orientation,
       colorSpace: thumbnail.colorSpace,
-      ifd: this.details(result),
       id: this.id,
     };
   }
@@ -451,9 +451,10 @@ class ImageBuffer {
    *
    * @private
    * @param {!PiexWasmImageResult} result
+   * @param {number} orientation - image EXIF orientation
    * @return {?string}
    */
-  details(result) {
+  details(result, orientation) {
     const details = result.details;
     if (!details) {
       return null;
@@ -470,6 +471,13 @@ class ImageBuffer {
           format[key] = value;
         }
       }
+    }
+
+    const usesWidthAsHeight = orientation >= 5;
+    if (usesWidthAsHeight) {
+      const width = format.width;
+      format.width = format.height;
+      format.height = width;
     }
 
     return JSON.stringify(format);

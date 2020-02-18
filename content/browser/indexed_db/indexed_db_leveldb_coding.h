@@ -56,6 +56,8 @@ CONTENT_EXPORT void EncodeString(const base::string16& value,
 CONTENT_EXPORT void EncodeStringWithLength(const base::string16& value,
                                            std::string* into);
 CONTENT_EXPORT void EncodeBinary(const std::string& value, std::string* into);
+CONTENT_EXPORT void EncodeBinary(base::span<const uint8_t> value,
+                                 std::string* into);
 CONTENT_EXPORT void EncodeDouble(double value, std::string* into);
 CONTENT_EXPORT void EncodeIDBKey(const blink::IndexedDBKey& value,
                                  std::string* into);
@@ -77,6 +79,11 @@ CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeStringWithLength(
     base::string16* value);
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeBinary(base::StringPiece* slice,
                                                     std::string* value);
+// The returned span is only valid as long as the date behind |slice| is
+// still valid.
+CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeBinary(
+    base::StringPiece* slice,
+    base::span<const uint8_t>* value);
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeDouble(base::StringPiece* slice,
                                                     double* value);
 CONTENT_EXPORT WARN_UNUSED_RESULT bool DecodeIDBKey(

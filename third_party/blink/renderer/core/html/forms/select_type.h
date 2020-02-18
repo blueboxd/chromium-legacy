@@ -21,7 +21,7 @@ class SelectType : public GarbageCollected<SelectType> {
   virtual void Trace(Visitor* visitor);
 
   // Returns true if the event is handled.
-  virtual bool DefaultEventHandler(Event& event) = 0;
+  virtual bool DefaultEventHandler(const Event& event) = 0;
 
   virtual void DidSelectOption(HTMLOptionElement* element,
                                HTMLSelectElement::SelectOptionFlags flags,

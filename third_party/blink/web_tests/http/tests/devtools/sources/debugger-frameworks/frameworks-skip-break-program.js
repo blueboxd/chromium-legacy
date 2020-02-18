@@ -45,8 +45,8 @@
     SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(SourcesTestRunner, didPause));
   }
 
-  function didPause(callFrames, reason, breakpointIds, asyncStackTrace) {
-    SourcesTestRunner.captureStackTrace(callFrames);
+  async function didPause(callFrames, reason, breakpointIds, asyncStackTrace) {
+    await SourcesTestRunner.captureStackTrace(callFrames);
     completeTest();
   }
 

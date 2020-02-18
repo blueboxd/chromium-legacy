@@ -45,6 +45,8 @@ ASH_PUBLIC_EXPORT extern const char kAccessibilitySwitchAccessAutoScanEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilitySwitchAccessAutoScanSpeedMs[];
 ASH_PUBLIC_EXPORT extern const char
     kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs[];
+ASH_PUBLIC_EXPORT extern const char
+    kAccessibilityTabletModeShelfNavigationButtonsEnabled[];
 ASH_PUBLIC_EXPORT extern const char kAccessibilityDictationEnabled[];
 ASH_PUBLIC_EXPORT extern const char kShouldAlwaysShowAccessibilityMenu[];
 

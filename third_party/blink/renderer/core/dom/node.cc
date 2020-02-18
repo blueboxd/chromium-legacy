@@ -2939,7 +2939,7 @@ DispatchEventResult Node::DispatchDOMActivateEvent(int detail,
   return EventTarget::GetDispatchEventResult(event);
 }
 
-void Node::DispatchSimulatedClick(Event* underlying_event,
+void Node::DispatchSimulatedClick(const Event* underlying_event,
                                   SimulatedClickMouseEventOptions event_options,
                                   SimulatedClickCreationScope scope) {
   if (auto* element = IsElementNode() ? To<Element>(this) : parentElement()) {

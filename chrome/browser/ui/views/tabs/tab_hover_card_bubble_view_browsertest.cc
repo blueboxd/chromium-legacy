@@ -145,14 +145,8 @@ class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(TabHoverCardBubbleViewBrowserTest);
 };
 
-// Fails on win: http://crbug.com/932402.
-#if defined(OS_WIN)
-#define MAYBE_InvokeUi_tab_hover_card DISABLED_InvokeUi_tab_hover_card
-#else
-#define MAYBE_InvokeUi_tab_hover_card InvokeUi_tab_hover_card
-#endif
 IN_PROC_BROWSER_TEST_F(TabHoverCardBubbleViewBrowserTest,
-                       MAYBE_InvokeUi_tab_hover_card) {
+                       InvokeUi_tab_hover_card) {
   ShowAndVerifyUi();
 }
 

@@ -857,7 +857,7 @@ class CORE_EXPORT Node : public EventTarget {
   DispatchEventResult DispatchDOMActivateEvent(int detail,
                                                Event& underlying_event);
 
-  void DispatchSimulatedClick(Event* underlying_event,
+  void DispatchSimulatedClick(const Event* underlying_event,
                               SimulatedClickMouseEventOptions = kSendNoEvents,
                               SimulatedClickCreationScope =
                                   SimulatedClickCreationScope::kFromUserAgent);

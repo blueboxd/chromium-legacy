@@ -31,6 +31,8 @@
 
 #include "third_party/blink/renderer/core/loader/ping_loader.h"
 
+#include "base/feature_list.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
@@ -143,9 +145,12 @@ class BeaconDOMArrayBufferView final : public Beacon {
         base::checked_cast<wtf_size_t>(data_->byteLengthAsSizeT()));
     request.SetHttpBody(std::move(entity_body));
 
-    // FIXME: a reasonable choice, but not in the spec; should it give a
-    // default?
-    request.SetHTTPContentType(AtomicString("application/octet-stream"));
+    if (!base::FeatureList::IsEnabled(
+            features::kSuppressContentTypeForBeaconMadeWithArrayBufferView)) {
+      // FIXME: a reasonable choice, but not in the spec; should it give a
+      // default?
+      request.SetHTTPContentType(AtomicString("application/octet-stream"));
+    }
   }
 
   const AtomicString GetContentType() const override { return g_null_atom; }

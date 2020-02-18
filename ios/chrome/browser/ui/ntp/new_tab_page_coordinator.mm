@@ -7,6 +7,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_coordinator.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
@@ -35,31 +36,30 @@
 
 #pragma mark - ChromeCoordinator
 
-- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
-  return [super initWithBaseViewController:nil browserState:browserState];
+- (instancetype)initWithBrowser:(Browser*)browser {
+  return [super initWithBaseViewController:nil browser:browser];
 }
 
 - (void)start {
   if (self.started)
     return;
 
-  DCHECK(self.browserState);
+  DCHECK(self.browser);
   DCHECK(self.webState);
-  DCHECK(self.dispatcher);
   DCHECK(self.toolbarDelegate);
 
-  if (self.browserState->IsOffTheRecord()) {
+  if (self.browser->GetBrowserState()->IsOffTheRecord()) {
     DCHECK(!self.incognitoViewController);
     UrlLoadingService* urlLoadingService =
-        UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
+        UrlLoadingServiceFactory::GetForBrowserState(
+            self.browser->GetBrowserState());
     self.incognitoViewController = [[IncognitoViewController alloc]
         initWithUrlLoadingService:urlLoadingService];
   } else {
     DCHECK(!self.contentSuggestionsCoordinator);
-    self.contentSuggestionsCoordinator =
-        [[ContentSuggestionsCoordinator alloc] initWithBaseViewController:nil];
-    self.contentSuggestionsCoordinator.dispatcher = self.dispatcher;
-    self.contentSuggestionsCoordinator.browserState = self.browserState;
+    self.contentSuggestionsCoordinator = [[ContentSuggestionsCoordinator alloc]
+        initWithBaseViewController:nil
+                           browser:self.browser];
     self.contentSuggestionsCoordinator.webState = self.webState;
     self.contentSuggestionsCoordinator.toolbarDelegate = self.toolbarDelegate;
     [self.contentSuggestionsCoordinator start];
@@ -81,7 +81,7 @@
 
 - (UIViewController*)viewController {
   [self start];
-  if (self.browserState->IsOffTheRecord()) {
+  if (self.browser->GetBrowserState()->IsOffTheRecord()) {
     return self.incognitoViewController;
   } else {
     return self.contentSuggestionsCoordinator.viewController;

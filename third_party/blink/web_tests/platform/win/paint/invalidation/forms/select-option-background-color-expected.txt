@@ -17,7 +17,7 @@
           "reason": "chunk appeared"
         },
         {
-          "object": "LayoutListBox SELECT",
+          "object": "LayoutBlockFlow SELECT",
           "rect": [1, 37, 13, 17],
           "reason": "chunk appeared"
         }

@@ -73,8 +73,8 @@
     ConsoleTestRunner.expandConsoleMessages(dumpConsoleMessages);
   }
 
-  function dumpConsoleMessages() {
-    ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+  async function dumpConsoleMessages() {
+    await ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
     SourcesTestRunner.completeDebuggerTest();
   }
 })();

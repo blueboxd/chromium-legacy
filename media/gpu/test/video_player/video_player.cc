@@ -10,8 +10,6 @@
 #include "media/gpu/test/video.h"
 #include "media/gpu/test/video_player/video_decoder_client.h"
 
-#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
-
 namespace media {
 namespace test {
 
@@ -40,11 +38,7 @@ const char* EventName(VideoPlayerEvent event) {
 }  // namespace
 
 VideoPlayer::VideoPlayer()
-    : video_(nullptr),
-      video_player_state_(VideoPlayerState::kUninitialized),
-      event_cv_(&event_lock_),
-      video_player_event_counts_{},
-      event_id_(0) {}
+    : event_cv_(&event_lock_), video_player_event_counts_{}, event_id_(0) {}
 
 VideoPlayer::~VideoPlayer() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -188,7 +182,7 @@ FrameRenderer* VideoPlayer::GetFrameRenderer() const {
 bool VideoPlayer::WaitForEvent(VideoPlayerEvent event, size_t times) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_GE(times, 1u);
-  DVLOGF(4) << "Event ID: " << static_cast<size_t>(event);
+  DVLOGF(4) << "Event: " << EventName(event);
 
   base::TimeDelta time_waiting;
   base::AutoLock auto_lock(event_lock_);

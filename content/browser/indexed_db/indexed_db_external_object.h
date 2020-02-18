@@ -63,12 +63,24 @@ class CONTENT_EXPORT IndexedDBExternalObject {
                           const base::string16& file_name,
                           const base::Time& last_modified,
                           const int64_t size);
+  // These are for Native File System handles.
+  IndexedDBExternalObject(
+      mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken>
+          token_remote);
+  IndexedDBExternalObject(std::vector<uint8_t> native_file_system_token);
 
   IndexedDBExternalObject(const IndexedDBExternalObject& other);
   ~IndexedDBExternalObject();
   IndexedDBExternalObject& operator=(const IndexedDBExternalObject& other);
 
-  bool is_file() const { return is_file_; }
+  // These values are serialized to disk.
+  enum class ObjectType : uint8_t {
+    kBlob = 0,
+    kFile = 1,
+    kNativeFileSystemHandle = 2,
+    kMaxValue = kNativeFileSystemHandle
+  };
+  ObjectType object_type() const { return object_type_; }
   bool is_remote_valid() const { return blob_remote_.is_bound(); }
   const std::string& uuid() const {
     DCHECK(is_remote_valid());
@@ -84,6 +96,16 @@ class CONTENT_EXPORT IndexedDBExternalObject {
   }
   int64_t blob_number() const { return blob_number_; }
   const base::Time& last_modified() const { return last_modified_; }
+  const std::vector<uint8_t> native_file_system_token() const {
+    return native_file_system_token_;
+  }
+  bool is_native_file_system_remote_valid() const {
+    return token_remote_.is_bound();
+  }
+  blink::mojom::NativeFileSystemTransferToken* native_file_system_token_remote()
+      const {
+    return token_remote_.get();
+  }
   const base::RepeatingClosure& mark_used_callback() const {
     return mark_used_callback_;
   }
@@ -94,12 +116,13 @@ class CONTENT_EXPORT IndexedDBExternalObject {
   void set_size(int64_t size);
   void set_indexed_db_file_path(const base::FilePath& file_path);
   void set_last_modified(const base::Time& time);
+  void set_native_file_system_token(std::vector<uint8_t> token);
   void set_blob_number(int64_t blob_number);
   void set_mark_used_callback(base::RepeatingClosure mark_used_callback);
   void set_release_callback(base::RepeatingClosure release_callback);
 
  private:
-  bool is_file_;
+  ObjectType object_type_;
 
   // Always for Blob; sometimes for File.
   mojo::SharedRemote<blink::mojom::Blob> blob_remote_;
@@ -117,7 +140,11 @@ class CONTENT_EXPORT IndexedDBExternalObject {
   // Only for File; valid only if size is.
   base::Time last_modified_;
 
-  // Valid only when this comes out of the database.
+  // Only for Native File System handle.
+  mojo::SharedRemote<blink::mojom::NativeFileSystemTransferToken> token_remote_;
+  std::vector<uint8_t> native_file_system_token_;
+
+  // Valid only when this comes out of the database. Only for Blob and File.
   int64_t blob_number_ = DatabaseMetaDataKey::kInvalidBlobNumber;
   base::RepeatingClosure mark_used_callback_;
   base::RepeatingClosure release_callback_;

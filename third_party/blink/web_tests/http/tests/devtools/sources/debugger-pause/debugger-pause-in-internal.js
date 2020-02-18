@@ -33,8 +33,8 @@
     SourcesTestRunner.waitUntilPaused(step3);
   }
 
-  function step3(callFrames) {
-    SourcesTestRunner.captureStackTrace(callFrames);
+  async function step3(callFrames) {
+    await SourcesTestRunner.captureStackTrace(callFrames);
     SourcesTestRunner.completeDebuggerTest();
   }
 })();

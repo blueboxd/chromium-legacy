@@ -77,8 +77,8 @@
         TestRunner.evaluateInPage('setTimeout(f1, 0)');
       }
 
-      function paused(callFrames) {
-        SourcesTestRunner.captureStackTrace(callFrames);
+      async function paused(callFrames) {
+        await SourcesTestRunner.captureStackTrace(callFrames);
         replaceInSource(
             panel.visibleView, 'debugger;', 'debugger;\n', didEditScriptSource);
       }

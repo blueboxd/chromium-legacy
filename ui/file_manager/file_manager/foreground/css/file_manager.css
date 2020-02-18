@@ -406,14 +406,76 @@ html[class*='col-resize'] #directory-tree .tree-row > .file-row > .root-eject:ho
 }
 
 /* A vertical splitter between the directory tree and the file list. It is
-   a transparent area centered on the directory tree right border.*/
-div.splitter {
+   a transparent area centered on the directory tree right border. */
+body:not(.files-ng) div.splitter {
   cursor: col-resize;
   flex: none;
   margin: 0 -3px;
   position: relative;
   width: 6px;
   z-index: 500;  /* Must be below the contextmenu (600). */
+}
+
+body.files-ng div.splitter {
+  align-items: center;
+  cursor: col-resize;
+  display: flex;
+  flex: none;
+  justify-content: center;
+  margin-inline-end: calc(16px - 6px);
+  margin: 0;
+  position: relative;
+  width: 32px;
+  z-index: 500;  /* Must be below the contextmenu (600). */
+}
+
+body:not(.files-ng) div.splitter .splitter-button {
+  display: none;
+}
+
+body.files-ng div.splitter .splitter-button {
+  --hover-bg-color: rgba(0, 0, 0, 4%);
+  --ink-color: rgba(0, 0, 0, 88%);
+  border-radius: 50%;
+  border: none;
+  cursor: col-resize;
+  height: 32px;
+  min-width: 32px;
+  padding: 0;
+  width: 32px;
+}
+
+body.files-ng div.splitter.splitter-active .splitter-button:hover {
+  --hover-bg-color: none;
+}
+
+html.col-resize body.files-ng div.splitter:not(.splitter-active) .splitter-button:hover {
+  --hover-bg-color: none;
+}
+
+body.files-ng div.splitter.splitter-active .splitter-button:not(:active) {
+  background-color: rgba(var(--google-grey-300-rgb), 88%);
+}
+
+body.files-ng div.splitter .splitter-button .icon {
+  -webkit-mask-image: url(../images/common/dragger.svg);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  height: 20px;
+  padding: 6px;
+  width: 20px;
+}
+
+body.files-ng div.splitter:not(.splitter-active) .splitter-button .icon {
+  background-color: var(--google-grey-300);
+}
+
+html:not(.col-resize) body.files-ng div.splitter:not(.splitter-active) .splitter-button:hover .icon {
+  background-color: var(--google-grey-500);
+}
+
+body.files-ng div.splitter.splitter-active .splitter-button .icon {
+  background-color: var(--google-grey-500);
 }
 
 /* Breadcrumbs and things under the title but above the list view. */
@@ -607,6 +669,11 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
 
 .dialog-header #search-wrapper {
   display: flex;
+}
+
+.dialog-header.files-ng #search-wrapper.has-cursor,
+.dialog-header.files-ng #search-wrapper.hide-pending {
+  background-color: var(--google-grey-100);
 }
 
 .dialog-header #search-box cr-input {

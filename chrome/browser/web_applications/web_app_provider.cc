@@ -32,6 +32,7 @@
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
+#include "chrome/browser/web_applications/web_app_migration_manager.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_shortcut_manager.h"
@@ -155,6 +156,16 @@ void WebAppProvider::Shutdown() {
 }
 
 void WebAppProvider::StartImpl() {
+  if (migration_manager_) {
+    migration_manager_->StartDatabaseMigration(
+        base::BindOnce(&WebAppProvider::OnDatabaseMigrationCompleted,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    OnDatabaseMigrationCompleted(/*success=*/true);
+  }
+}
+
+void WebAppProvider::OnDatabaseMigrationCompleted(bool success) {
   StartRegistryController();
 }
 
@@ -194,6 +205,8 @@ void WebAppProvider::CreateWebAppsSubsystems(Profile* profile) {
   file_handler_manager_ = std::make_unique<WebAppFileHandlerManager>(profile);
   shortcut_manager_ = std::make_unique<WebAppShortcutManager>(
       profile, icon_manager.get(), file_handler_manager_.get());
+  migration_manager_ = std::make_unique<WebAppMigrationManager>(
+      profile, database_factory_.get(), icon_manager.get());
 
   // Upcast to unified subsystem types:
   registrar_ = std::move(registrar);

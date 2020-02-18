@@ -408,9 +408,8 @@ void SmbService::MountInternal(
       }
     }
 
-    std::unique_ptr<SmbFsShare> mount =
-        std::make_unique<SmbFsShare>(profile_, info.share_url().ToString(),
-                                     info.display_name(), smbfs_options);
+    std::unique_ptr<SmbFsShare> mount = std::make_unique<SmbFsShare>(
+        profile_, info.share_url(), info.display_name(), smbfs_options);
     if (smbfs_mounter_creation_callback_) {
       mount->SetMounterCreationCallbackForTest(
           smbfs_mounter_creation_callback_);

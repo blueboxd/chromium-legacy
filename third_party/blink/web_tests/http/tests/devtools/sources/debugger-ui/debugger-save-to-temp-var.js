@@ -81,8 +81,8 @@
     TestRunner.evaluateInPage('checkThisObject()', dumpConsoleMessages);
   }
 
-  function dumpConsoleMessages() {
-    ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+  async function dumpConsoleMessages() {
+    await ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
     SourcesTestRunner.completeDebuggerTest();
   }
 })();

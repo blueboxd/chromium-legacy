@@ -75,6 +75,7 @@ class CONTENT_EXPORT IndexedDBCursor {
       IndexedDBTransaction* transaction);
 
  private:
+  const url::Origin origin_;
   blink::mojom::IDBTaskType task_type_;
   indexed_db::CursorType cursor_type_;
 

@@ -413,6 +413,9 @@ void AccessibilityControllerImpl::RegisterProfilePrefs(
       prefs::kAccessibilityVirtualKeyboardEnabled, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   registry->RegisterBooleanPref(
+      prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled, false,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
+  registry->RegisterBooleanPref(
       prefs::kHighContrastAcceleratorDialogHasBeenAccepted, false);
   registry->RegisterBooleanPref(
       prefs::kScreenMagnifierAcceleratorDialogHasBeenAccepted, false);
@@ -910,6 +913,16 @@ bool AccessibilityControllerImpl::IsEnterpriseIconVisibleForVirtualKeyboard() {
       prefs::kAccessibilityVirtualKeyboardEnabled);
 }
 
+void AccessibilityControllerImpl::SetTabletModeShelfNavigationButtonsEnabled(
+    bool enabled) {
+  if (!active_user_prefs_)
+    return;
+
+  active_user_prefs_->SetBoolean(
+      prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled, enabled);
+  active_user_prefs_->CommitPendingWrite();
+}
+
 void AccessibilityControllerImpl::TriggerAccessibilityAlert(
     AccessibilityAlert alert) {
   if (client_)
@@ -1228,6 +1241,11 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
       base::BindRepeating(
           &AccessibilityControllerImpl::UpdateVirtualKeyboardFromPref,
           base::Unretained(this)));
+  pref_change_registrar_->Add(
+      prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled,
+      base::BindRepeating(&AccessibilityControllerImpl::
+                              UpdateTabletModeShelfNavigationButtonsFromPref,
+                          base::Unretained(this)));
 
   // Load current state.
   UpdateAutoclickFromPref();
@@ -1249,6 +1267,7 @@ void AccessibilityControllerImpl::ObservePrefs(PrefService* prefs) {
   UpdateStickyKeysFromPref();
   UpdateSwitchAccessFromPref();
   UpdateVirtualKeyboardFromPref();
+  UpdateTabletModeShelfNavigationButtonsFromPref();
   UpdateShortcutsEnabledFromPref();
 }
 
@@ -1690,6 +1709,20 @@ void AccessibilityControllerImpl::UpdateVirtualKeyboardFromPref() {
   NotifyAccessibilityStatusChanged();
 
   keyboard::SetAccessibilityKeyboardEnabled(enabled);
+}
+
+void AccessibilityControllerImpl::
+    UpdateTabletModeShelfNavigationButtonsFromPref() {
+  DCHECK(active_user_prefs_);
+  const bool enabled = active_user_prefs_->GetBoolean(
+      prefs::kAccessibilityTabletModeShelfNavigationButtonsEnabled);
+
+  if (tablet_mode_shelf_navigation_buttons_enabled_ == enabled)
+    return;
+
+  tablet_mode_shelf_navigation_buttons_enabled_ = enabled;
+
+  NotifyAccessibilityStatusChanged();
 }
 
 base::string16 AccessibilityControllerImpl::GetBatteryDescription() const {

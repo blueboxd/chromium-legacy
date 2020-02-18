@@ -24,15 +24,15 @@
     SourcesTestRunner.runTestFunctionAndWaitUntilPaused(step2);
   }
 
-  function step2(callFrames) {
-    SourcesTestRunner.captureStackTrace(callFrames);
+  async function step2(callFrames) {
+    await SourcesTestRunner.captureStackTrace(callFrames);
     TestRunner.addResult('Stepping out...');
     SourcesTestRunner.waitUntilResumed(SourcesTestRunner.waitUntilPaused.bind(SourcesTestRunner, step3));
     SourcesTestRunner.stepOut();
   }
 
-  function step3(callFrames) {
-    SourcesTestRunner.captureStackTrace(callFrames);
+  async function step3(callFrames) {
+    await SourcesTestRunner.captureStackTrace(callFrames);
     SourcesTestRunner.completeDebuggerTest();
   }
 })();

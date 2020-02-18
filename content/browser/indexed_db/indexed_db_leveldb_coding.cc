@@ -146,6 +146,12 @@ void EncodeBinary(const std::string& value, std::string* into) {
   DCHECK(into->size() >= value.size());
 }
 
+void EncodeBinary(base::span<const uint8_t> value, std::string* into) {
+  EncodeVarInt(value.size(), into);
+  into->append(value.begin(), value.end());
+  DCHECK(into->size() >= value.size());
+}
+
 void EncodeStringWithLength(const base::string16& value, std::string* into) {
   EncodeVarInt(value.length(), into);
   EncodeString(value, into);
@@ -332,6 +338,22 @@ bool DecodeBinary(StringPiece* slice, std::string* value) {
     return false;
 
   value->assign(slice->begin(), size);
+  slice->remove_prefix(size);
+  return true;
+}
+
+bool DecodeBinary(StringPiece* slice, base::span<const uint8_t>* value) {
+  if (slice->empty())
+    return false;
+
+  int64_t length = 0;
+  if (!DecodeVarInt(slice, &length) || length < 0)
+    return false;
+  size_t size = length;
+  if (slice->size() < size)
+    return false;
+
+  *value = base::as_bytes(base::make_span(slice->substr(0, size)));
   slice->remove_prefix(size);
   return true;
 }

@@ -16,6 +16,7 @@
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_cache_factory.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #include "ios/chrome/browser/favicon/large_icon_cache.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/ntp_tiles/ios_most_visited_sites_factory.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -25,6 +26,7 @@
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_data_sink.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizer.h"
@@ -71,12 +73,10 @@
 
 @implementation ContentSuggestionsCoordinator
 
-@synthesize browserState = _browserState;
-
 - (void)start {
-  if (self.visible || !self.browserState) {
-    // Prevent this coordinator from being started twice in a row or without a
-    // browser state.
+  DCHECK(self.browser);
+  if (self.visible) {
+    // Prevent this coordinator from being started twice in a row
     return;
   }
 
@@ -84,7 +84,7 @@
 
   ntp_snippets::ContentSuggestionsService* contentSuggestionsService =
       IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
-          self.browserState);
+          self.browser->GetBrowserState());
   contentSuggestionsService->remote_suggestions_scheduler()
       ->OnSuggestionsSurfaceOpened();
   contentSuggestionsService->user_classifier()->OnEvent(
@@ -92,7 +92,8 @@
   contentSuggestionsService->user_classifier()->OnEvent(
       ntp_snippets::UserClassifier::Metric::SUGGESTIONS_SHOWN);
   PrefService* prefs =
-      ChromeBrowserState::FromBrowserState(self.browserState)->GetPrefs();
+      ChromeBrowserState::FromBrowserState(self.browser->GetBrowserState())
+          ->GetPrefs();
   bool contentSuggestionsEnabled =
       prefs->GetBoolean(prefs::kArticlesForYouEnabled);
   bool contentSuggestionsVisible =
@@ -108,40 +109,49 @@
   }
 
   UrlLoadingService* urlLoadingService =
-      UrlLoadingServiceFactory::GetForBrowserState(self.browserState);
+      UrlLoadingServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
 
   self.NTPMediator = [[NTPHomeMediator alloc]
         initWithWebState:self.webState
       templateURLService:ios::TemplateURLServiceFactory::GetForBrowserState(
-                             self.browserState)
+                             self.browser->GetBrowserState())
        urlLoadingService:urlLoadingService
              authService:AuthenticationServiceFactory::GetForBrowserState(
-                             self.browserState)
+                             self.browser->GetBrowserState())
          identityManager:IdentityManagerFactory::GetForBrowserState(
-                             self.browserState)
+                             self.browser->GetBrowserState())
               logoVendor:ios::GetChromeBrowserProvider()->CreateLogoVendor(
-                             self.browserState, self.webState)];
+                             self.browser->GetBrowserState(), self.webState)];
 
   BOOL voiceSearchEnabled = ios::GetChromeBrowserProvider()
                                 ->GetVoiceSearchProvider()
                                 ->IsVoiceSearchEnabled();
   self.headerController = [[ContentSuggestionsHeaderViewController alloc]
       initWithVoiceSearchEnabled:voiceSearchEnabled];
-  self.headerController.dispatcher = self.dispatcher;
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  self.headerController.dispatcher = static_cast<
+      id<ApplicationCommands, BrowserCommands, OmniboxFocuser, FakeboxFocuser>>(
+      self.browser->GetCommandDispatcher());
   self.headerController.commandHandler = self.NTPMediator;
   self.headerController.delegate = self.NTPMediator;
   self.headerController.readingListModel =
-      ReadingListModelFactory::GetForBrowserState(self.browserState);
+      ReadingListModelFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   self.headerController.toolbarDelegate = self.toolbarDelegate;
 
   favicon::LargeIconService* largeIconService =
-      IOSChromeLargeIconServiceFactory::GetForBrowserState(self.browserState);
-  LargeIconCache* cache =
-      IOSChromeLargeIconCacheFactory::GetForBrowserState(self.browserState);
+      IOSChromeLargeIconServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
+  LargeIconCache* cache = IOSChromeLargeIconCacheFactory::GetForBrowserState(
+      self.browser->GetBrowserState());
   std::unique_ptr<ntp_tiles::MostVisitedSites> mostVisitedFactory =
-      IOSMostVisitedSitesFactory::NewForBrowserState(self.browserState);
+      IOSMostVisitedSitesFactory::NewForBrowserState(
+          self.browser->GetBrowserState());
   ReadingListModel* readingListModel =
-      ReadingListModelFactory::GetForBrowserState(self.browserState);
+      ReadingListModelFactory::GetForBrowserState(
+          self.browser->GetBrowserState());
   self.contentSuggestionsMediator = [[ContentSuggestionsMediator alloc]
       initWithContentService:contentSuggestionsService
             largeIconService:largeIconService
@@ -170,13 +180,19 @@
   self.suggestionsViewController.audience = self;
   self.suggestionsViewController.overscrollDelegate = self;
   self.suggestionsViewController.metricsRecorder = self.metricsRecorder;
-  self.suggestionsViewController.dispatcher = self.dispatcher;
+  id<SnackbarCommands> dispatcher = HandlerForProtocol(
+      self.browser->GetCommandDispatcher(), SnackbarCommands);
+  self.suggestionsViewController.dispatcher = dispatcher;
 
   self.NTPMediator.consumer = self.headerController;
-  self.NTPMediator.dispatcher = self.dispatcher;
-  self.NTPMediator.NTPMetrics =
-      [[NTPHomeMetrics alloc] initWithBrowserState:self.browserState
-                                          webState:self.webState];
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  self.NTPMediator.dispatcher =
+      static_cast<id<ApplicationCommands, BrowserCommands, OmniboxFocuser,
+                     SnackbarCommands>>(self.browser->GetCommandDispatcher());
+  self.NTPMediator.NTPMetrics = [[NTPHomeMetrics alloc]
+      initWithBrowserState:self.browser->GetBrowserState()
+                  webState:self.webState];
   self.NTPMediator.metricsRecorder = self.metricsRecorder;
   self.NTPMediator.suggestionsViewController = self.suggestionsViewController;
   self.NTPMediator.suggestionsMediator = self.contentSuggestionsMediator;
@@ -220,12 +236,18 @@
 
 - (void)overscrollActionsController:(OverscrollActionsController*)controller
                    didTriggerAction:(OverscrollAction)action {
+  // TODO(crbug.com/1045047): Use HandlerForProtocol after commands protocol
+  // clean up.
+  id<ApplicationCommands, BrowserCommands, OmniboxFocuser, SnackbarCommands>
+      handler = static_cast<id<ApplicationCommands, BrowserCommands,
+                               OmniboxFocuser, SnackbarCommands>>(
+          self.browser->GetCommandDispatcher());
   switch (action) {
     case OverscrollAction::NEW_TAB: {
-      [_dispatcher openURLInNewTab:[OpenNewTabCommand command]];
+      [handler openURLInNewTab:[OpenNewTabCommand command]];
     } break;
     case OverscrollAction::CLOSE_TAB: {
-      [_dispatcher closeCurrentTab];
+      [handler closeCurrentTab];
       base::RecordAction(base::UserMetricsAction("OverscrollActionCloseTab"));
     } break;
     case OverscrollAction::REFRESH:

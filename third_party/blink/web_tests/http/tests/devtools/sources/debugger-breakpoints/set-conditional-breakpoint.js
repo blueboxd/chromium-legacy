@@ -25,9 +25,9 @@
             .then(() => SourcesTestRunner.runTestFunction());
       }
 
-      function didPause(callFrames) {
+      async function didPause(callFrames) {
         TestRunner.addResult('Script execution paused.');
-        SourcesTestRunner.captureStackTrace(callFrames);
+        await SourcesTestRunner.captureStackTrace(callFrames);
         SourcesTestRunner.dumpBreakpointSidebarPane();
         SourcesTestRunner.waitBreakpointSidebarPane().then(breakpointRemoved);
         SourcesTestRunner.removeBreakpoint(currentSourceFrame, 13);

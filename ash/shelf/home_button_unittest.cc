@@ -117,6 +117,7 @@ class HomeButtonTest
 };
 
 enum class TestAccessibilityFeature {
+  kTabletModeShelfNavigationButtons,
   kSpokenFeedback,
   kAutoclick,
   kSwitchAccess
@@ -138,6 +139,11 @@ class HomeButtonVisibilityWithAccessibilityFeaturesTest
 
   void SetTestA11yFeatureEnabled(bool enabled) {
     switch (GetParam()) {
+      case TestAccessibilityFeature::kTabletModeShelfNavigationButtons:
+        Shell::Get()
+            ->accessibility_controller()
+            ->SetTabletModeShelfNavigationButtonsEnabled(enabled);
+        break;
       case TestAccessibilityFeature::kSpokenFeedback:
         Shell::Get()->accessibility_controller()->SetSpokenFeedbackEnabled(
             enabled, A11Y_NOTIFICATION_NONE);
@@ -579,9 +585,11 @@ TEST_P(HomeButtonTest, ClickOnCornerPixel) {
 INSTANTIATE_TEST_SUITE_P(
     All,
     HomeButtonVisibilityWithAccessibilityFeaturesTest,
-    ::testing::Values(TestAccessibilityFeature::kSpokenFeedback,
-                      TestAccessibilityFeature::kAutoclick,
-                      TestAccessibilityFeature::kSwitchAccess));
+    ::testing::Values(
+        TestAccessibilityFeature::kTabletModeShelfNavigationButtons,
+        TestAccessibilityFeature::kSpokenFeedback,
+        TestAccessibilityFeature::kAutoclick,
+        TestAccessibilityFeature::kSwitchAccess));
 
 TEST_P(HomeButtonVisibilityWithAccessibilityFeaturesTest,
        TabletModeSwitchWithA11yFeatureEnabled) {

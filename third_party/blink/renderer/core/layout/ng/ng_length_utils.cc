@@ -1256,8 +1256,13 @@ LayoutUnit ClampIntrinsicBlockSize(
 
   // If the intrinsic size was overridden, then use that.
   LayoutUnit intrinsic_size_override = node.OverrideIntrinsicContentBlockSize();
-  if (intrinsic_size_override != kIndefiniteSize)
+  if (intrinsic_size_override != kIndefiniteSize) {
     return intrinsic_size_override + border_scrollbar_padding.BlockSum();
+  } else {
+    LayoutUnit default_intrinsic_size = node.DefaultIntrinsicContentBlockSize();
+    if (default_intrinsic_size != kIndefiniteSize)
+      return default_intrinsic_size + border_scrollbar_padding.BlockSum();
+  }
 
   // If we have size containment, we ignore child contributions to intrinsic
   // sizing.

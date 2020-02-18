@@ -8,8 +8,11 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
+#include "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
+#import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/snackbar_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/incognito_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller_delegate.h"
@@ -24,13 +27,6 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-@protocol NewTabPageTabDispatcher <ApplicationCommands,
-                                   BrowserCommands,
-                                   OmniboxFocuser,
-                                   FakeboxFocuser,
-                                   SnackbarCommands>
-@end
 
 // Test fixture for testing NewTabPageCoordinator class.
 class NewTabPageCoordinatorTest : public PlatformTest {
@@ -52,37 +48,42 @@ class NewTabPageCoordinatorTest : public PlatformTest {
 
     toolbar_delegate_ =
         OCMProtocolMock(@protocol(NewTabPageControllerDelegate));
-    dispatcher_ = OCMProtocolMock(@protocol(NewTabPageTabDispatcher));
   }
 
   void CreateCoordinator(bool off_the_record) {
     if (off_the_record) {
       ChromeBrowserState* otr_state =
           browser_state_->GetOffTheRecordChromeBrowserState();
+      browser_ = std::make_unique<TestBrowser>(otr_state);
       coordinator_ =
-          [[NewTabPageCoordinator alloc] initWithBrowserState:otr_state];
+          [[NewTabPageCoordinator alloc] initWithBrowser:browser_.get()];
     } else {
-      coordinator_ = [[NewTabPageCoordinator alloc]
-          initWithBrowserState:browser_state_.get()];
+      browser_ = std::make_unique<TestBrowser>(browser_state_.get());
+      coordinator_ =
+          [[NewTabPageCoordinator alloc] initWithBrowser:browser_.get()];
     }
     coordinator_.toolbarDelegate = toolbar_delegate_;
-    coordinator_.dispatcher = dispatcher_;
     coordinator_.webState = &web_state_;
   }
 
   web::TestWebState web_state_;
-  id dispatcher_;
   id toolbar_delegate_;
   id delegate_;
   web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
+  std::unique_ptr<Browser> browser_;
   NewTabPageCoordinator* coordinator_;
 };
 
 // Tests that the coordinator vends a content suggestions VC on the record.
 TEST_F(NewTabPageCoordinatorTest, StartOnTheRecord) {
   CreateCoordinator(/*off_the_record=*/false);
+  id snackbarCommandsHandlerMock =
+      [OCMockObject mockForProtocol:@protocol(SnackbarCommands)];
+  [browser_.get()->GetCommandDispatcher()
+      startDispatchingToTarget:snackbarCommandsHandlerMock
+                   forProtocol:@protocol(SnackbarCommands)];
   [coordinator_ start];
   UIViewController* viewController = [coordinator_ viewController];
   EXPECT_TRUE(

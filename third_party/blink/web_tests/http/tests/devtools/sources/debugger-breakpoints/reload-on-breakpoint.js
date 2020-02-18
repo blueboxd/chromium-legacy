@@ -14,8 +14,8 @@
     TestRunner.addResult('Waiting for breakpoint.');
     TestRunner.evaluateInPageWithTimeout('divergingFunction()');
 
-    function step1(callFrames) {
-      SourcesTestRunner.captureStackTrace(callFrames);
+    async function step1(callFrames) {
+      await SourcesTestRunner.captureStackTrace(callFrames);
       TestRunner.addResult('Reloading page...');
       TestRunner.reloadPage(onPageReloaded);
     }

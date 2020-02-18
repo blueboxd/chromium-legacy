@@ -10,6 +10,7 @@
 #include "net/base/request_priority.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/mojom/data_pipe_getter.mojom-blink.h"
@@ -28,10 +29,6 @@
 namespace blink {
 
 namespace {
-
-// TODO(kinuko): Use the ones that are defined in services/network
-// after we have services/network/public/cpp/constants.h.
-constexpr char kDefaultAcceptHeader[] = "*/*";
 
 constexpr char kStylesheetAcceptHeader[] = "text/css,*/*;q=0.1";
 constexpr char kImageAcceptHeader[] = "image/webp,image/apng,image/*,*/*;q=0.8";
@@ -342,7 +339,7 @@ void PopulateResourceRequest(const ResourceRequest& src,
     // Calling SetHeaderIfMissing() instead of SetHeader() because JS can
     // manually set an accept header on an XHR.
     dest->headers.SetHeaderIfMissing(net::HttpRequestHeaders::kAccept,
-                                     kDefaultAcceptHeader);
+                                     network::kDefaultAcceptHeaderValue);
   }
 }
 

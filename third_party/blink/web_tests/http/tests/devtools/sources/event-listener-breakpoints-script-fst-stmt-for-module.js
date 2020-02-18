@@ -24,10 +24,10 @@
     SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
   }
 
-  function didPause(callFrames, reason, breakpointIds, asyncStackTrace, auxData) {
+  async function didPause(callFrames, reason, breakpointIds, asyncStackTrace, auxData) {
     var eventName = (auxData && auxData.eventName || '').replace(/^instrumentation:/, '');
     TestRunner.addResult('\nPaused on ' + eventName);
-    SourcesTestRunner.captureStackTrace(callFrames);
+    await SourcesTestRunner.captureStackTrace(callFrames);
     SourcesTestRunner.resumeExecution(step2);
   }
 

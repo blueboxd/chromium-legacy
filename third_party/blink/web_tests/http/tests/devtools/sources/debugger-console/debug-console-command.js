@@ -60,7 +60,7 @@
 
     async function didPause(callFrames, reason) {
       TestRunner.addResult('Script execution paused.');
-      SourcesTestRunner.captureStackTrace(callFrames);
+      await SourcesTestRunner.captureStackTrace(callFrames);
       await ConsoleTestRunner.evaluateInConsolePromise('undebug(' + functionName + ')');
       TestRunner.addResult('Breakpoint removed.');
       TestRunner.assertEquals(reason, SDK.DebuggerModel.BreakReason.DebugCommand);

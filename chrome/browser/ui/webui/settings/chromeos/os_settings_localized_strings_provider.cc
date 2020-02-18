@@ -309,6 +309,10 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
       {"textToSpeechPreviewVoice", IDS_SETTINGS_TEXT_TO_SPEECH_PREVIEW_VOICE},
       {"textToSpeechPreviewPlay", IDS_SETTINGS_TEXT_TO_SPEECH_PREVIEW_PLAY},
       {"textToSpeechEngines", IDS_SETTINGS_TEXT_TO_SPEECH_ENGINES},
+      {"tabletModeShelfNavigationButtonsSettingLabel",
+       IDS_SETTINGS_A11Y_TABLET_MODE_SHELF_BUTTONS_LABEL},
+      {"tabletModeShelfNavigationButtonsSettingDescription",
+       IDS_SETTINGS_A11Y_TABLET_MODE_SHELF_BUTTONS_DESCRIPTION},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
@@ -330,6 +334,10 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("showExperimentalA11yLabels",
                           base::FeatureList::IsEnabled(
                               ::features::kExperimentalAccessibilityLabels));
+
+  html_source->AddBoolean(
+      "showTabletModeShelfNavigationButtonsSettings",
+      ash::features::IsHideShelfControlsInTabletModeEnabled());
 
   html_source->AddBoolean("enableLiveCaption",
                           base::FeatureList::IsEnabled(media::kLiveCaption));

@@ -38,8 +38,8 @@
       SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
     }
 
-    function didPause(callFrames) {
-      SourcesTestRunner.captureStackTrace(callFrames);
+    async function didPause(callFrames) {
+      await SourcesTestRunner.captureStackTrace(callFrames);
       SourcesTestRunner.removeBreakpoint(breakpointFunctionFrame, 21);
       next();
     }

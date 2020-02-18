@@ -63,8 +63,9 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
-#include "third_party/blink/renderer/core/layout/layout_list_box.h"
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_menu_list.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
@@ -356,11 +357,12 @@ bool HTMLSelectElement::CanSelectAll() const {
   return !UsesMenuList();
 }
 
-LayoutObject* HTMLSelectElement::CreateLayoutObject(const ComputedStyle&,
-                                                    LegacyLayout) {
+LayoutObject* HTMLSelectElement::CreateLayoutObject(
+    const ComputedStyle& style,
+    LegacyLayout legacy_layout) {
   if (UsesMenuList())
     return new LayoutMenuList(this);
-  return new LayoutListBox(this);
+  return LayoutObjectFactory::CreateBlockFlow(*this, style, legacy_layout);
 }
 
 HTMLCollection* HTMLSelectElement::selectedOptions() {

@@ -56,8 +56,6 @@ jumbo_component("network_service") {
     "keepalive_statistics_recorder.h",
     "legacy_tls_config_distributor.cc",
     "legacy_tls_config_distributor.h",
-    "loader_util.cc",
-    "loader_util.h",
     "mojo_host_resolver_impl.cc",
     "mojo_host_resolver_impl.h",
     "net_log_exporter.cc",

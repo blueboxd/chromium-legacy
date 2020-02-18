@@ -12,7 +12,6 @@
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/enum_utils.h"
 #include "net/base/features.h"
-#include "services/network/loader_util.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "third_party/blink/public/mojom/referrer.mojom.h"

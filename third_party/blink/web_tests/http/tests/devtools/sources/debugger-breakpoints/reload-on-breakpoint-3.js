@@ -11,7 +11,7 @@
       '../../sources/debugger-breakpoints/resources/diverge-without-breakpoint-throw-on-load.html');
   TestRunner.evaluateInPageWithTimeout(`divergingFunctionWithThrow()`);
   async function step1(callFrames) {
-    SourcesTestRunner.captureStackTrace(callFrames);
+    await SourcesTestRunner.captureStackTrace(callFrames);
     TestRunner.addResult('Reloading page...');
     TestRunner.reloadPage(onPageReloaded);
   }

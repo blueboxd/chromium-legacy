@@ -17,6 +17,7 @@ jumbo_component("cpp") {
   output_name = "network_cpp"
 
   sources = [
+    "constants.cc",
     "constants.h",
     "content_security_policy/content_security_policy.cc",
     "content_security_policy/content_security_policy.h",

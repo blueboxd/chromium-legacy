@@ -21,7 +21,7 @@
   await ConsoleTestRunner.waitForConsoleMessagesPromise(3);
   await new Promise(resolve => SourcesTestRunner.resumeExecution(resolve));
   await ConsoleTestRunner.waitForConsoleMessagesPromise(4);
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.addResult('Infinite loop finished');
   SourcesTestRunner.completeDebuggerTest();
 })();

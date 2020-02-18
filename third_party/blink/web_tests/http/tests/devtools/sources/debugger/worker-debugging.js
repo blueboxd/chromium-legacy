@@ -21,8 +21,8 @@
     SourcesTestRunner.waitUntilPaused(paused);
   }
 
-  function paused(callFrames) {
-    SourcesTestRunner.captureStackTrace(callFrames);
+  async function paused(callFrames) {
+    await SourcesTestRunner.captureStackTrace(callFrames);
     SourcesTestRunner.resumeExecution(SourcesTestRunner.completeDebuggerTest);
   }
 })();

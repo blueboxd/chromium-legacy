@@ -61,7 +61,9 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        // TODO(https://crbug.com/1033911): when the dialog is recreated, a NPE can occur here.
+        if (savedInstanceState != null) {
+            dismiss();
+        }
         String title = getString(R.string.sign_in_managed_account);
         String description = getString(
                 R.string.sign_in_managed_account_description, getArguments().getString(KEY_DOMAIN));
@@ -90,7 +92,7 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
     @Override
     public void onDismiss(DialogInterface dialog) {
         super.onDismiss(dialog);
-        if (!mListenerCalled) {
+        if (mListener != null && !mListenerCalled) {
             mListener.onCancel();
         }
     }

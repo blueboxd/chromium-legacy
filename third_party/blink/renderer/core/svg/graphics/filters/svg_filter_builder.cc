@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/svg/svg_filter_element.h"
 #include "third_party/blink/renderer/core/svg/svg_filter_primitive_standard_attributes.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_effect.h"
 #include "third_party/blink/renderer/platform/graphics/filters/source_alpha.h"
 #include "third_party/blink/renderer/platform/graphics/filters/source_graphic.h"
@@ -68,26 +69,21 @@ void SVGFilterGraphNodeMap::AddBuiltinEffect(FilterEffect* effect) {
   effect_references_.insert(effect, FilterEffectSet());
 }
 
-void SVGFilterGraphNodeMap::AddPrimitive(LayoutObject* object,
-                                         FilterEffect* effect) {
+void SVGFilterGraphNodeMap::AddPrimitive(
+    SVGFilterPrimitiveStandardAttributes& primitive,
+    FilterEffect* effect) {
   // The effect must be a newly created filter effect.
   DCHECK(!effect_references_.Contains(effect));
-  DCHECK(!object || !effect_renderer_.Contains(object));
+  DCHECK(!effect_element_.Contains(&primitive));
   effect_references_.insert(effect, FilterEffectSet());
-
-  unsigned number_of_input_effects = effect->InputEffects().size();
 
   // Add references from the inputs of this effect to the effect itself, to
   // allow determining what effects needs to be invalidated when a certain
   // effect changes.
-  for (unsigned i = 0; i < number_of_input_effects; ++i)
-    EffectReferences(effect->InputEffect(i)).insert(effect);
+  for (FilterEffect* input : effect->InputEffects())
+    EffectReferences(input).insert(effect);
 
-  // If object is null, that means the element isn't attached for some
-  // reason, which in turn mean that certain types of invalidation will not
-  // work (the LayoutObject -> FilterEffect mapping will not be defined).
-  if (object)
-    effect_renderer_.insert(object, effect);
+  effect_element_.insert(&primitive, effect);
 }
 
 void SVGFilterGraphNodeMap::InvalidateDependentEffects(FilterEffect* effect) {
@@ -102,7 +98,7 @@ void SVGFilterGraphNodeMap::InvalidateDependentEffects(FilterEffect* effect) {
 }
 
 void SVGFilterGraphNodeMap::Trace(Visitor* visitor) {
-  visitor->Trace(effect_renderer_);
+  visitor->Trace(effect_element_);
   visitor->Trace(effect_references_);
 }
 
@@ -111,22 +107,19 @@ SVGFilterBuilder::SVGFilterBuilder(FilterEffect* source_graphic,
                                    const PaintFlags* fill_flags,
                                    const PaintFlags* stroke_flags)
     : node_map_(node_map) {
-  FilterEffect* source_graphic_ref = source_graphic;
   builtin_effects_.insert(FilterInputKeywords::GetSourceGraphic(),
-                          source_graphic_ref);
-  builtin_effects_.insert(
-      FilterInputKeywords::SourceAlpha(),
-      MakeGarbageCollected<SourceAlpha>(source_graphic_ref));
+                          source_graphic);
+  builtin_effects_.insert(FilterInputKeywords::SourceAlpha(),
+                          MakeGarbageCollected<SourceAlpha>(source_graphic));
   if (fill_flags) {
     builtin_effects_.insert(FilterInputKeywords::FillPaint(),
                             MakeGarbageCollected<PaintFilterEffect>(
-                                source_graphic_ref->GetFilter(), *fill_flags));
+                                source_graphic->GetFilter(), *fill_flags));
   }
   if (stroke_flags) {
-    builtin_effects_.insert(
-        FilterInputKeywords::StrokePaint(),
-        MakeGarbageCollected<PaintFilterEffect>(source_graphic_ref->GetFilter(),
-                                                *stroke_flags));
+    builtin_effects_.insert(FilterInputKeywords::StrokePaint(),
+                            MakeGarbageCollected<PaintFilterEffect>(
+                                source_graphic->GetFilter(), *stroke_flags));
   }
   AddBuiltinEffects();
 }
@@ -185,7 +178,7 @@ void SVGFilterBuilder::BuildGraph(Filter* filter,
       continue;
 
     if (node_map_)
-      node_map_->AddPrimitive(effect_element.GetLayoutObject(), effect);
+      node_map_->AddPrimitive(effect_element, effect);
 
     effect_element.SetStandardAttributes(effect, primitive_units,
                                          reference_box);

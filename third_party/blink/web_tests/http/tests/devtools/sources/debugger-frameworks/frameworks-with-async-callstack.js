@@ -53,10 +53,10 @@
     SourcesTestRunner.runTestFunctionAndWaitUntilPaused(didPause);
   }
 
-  function didPause(callFrames, reason, breakpointIds, asyncStackTrace) {
-    SourcesTestRunner.captureStackTrace(callFrames, asyncStackTrace, {'dropFrameworkCallFrames': false});
+  async function didPause(callFrames, reason, breakpointIds, asyncStackTrace) {
+    await SourcesTestRunner.captureStackTrace(callFrames, asyncStackTrace, {'dropFrameworkCallFrames': false});
     TestRunner.addResult('\nPrinting visible call stack:');
-    SourcesTestRunner.captureStackTrace(callFrames, asyncStackTrace, {'dropFrameworkCallFrames': true});
+    await SourcesTestRunner.captureStackTrace(callFrames, asyncStackTrace, {'dropFrameworkCallFrames': true});
     SourcesTestRunner.completeDebuggerTest();
   }
 })();

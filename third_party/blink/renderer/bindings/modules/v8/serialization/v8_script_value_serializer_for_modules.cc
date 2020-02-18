@@ -54,24 +54,12 @@ bool V8ScriptValueSerializerForModules::WriteDOMObject(
   }
   if (wrapper_type_info == V8FileSystemFileHandle::GetWrapperTypeInfo() &&
       RuntimeEnabledFeatures::CloneableNativeFileSystemHandlesEnabled()) {
-    if (IsForStorage()) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kDataCloneError,
-          "A NativeFileSystemFileHandle can not be serialized for storage.");
-      return false;
-    }
     return WriteNativeFileSystemHandle(
         kNativeFileSystemFileHandleTag,
         wrappable->ToImpl<NativeFileSystemHandle>());
   }
   if (wrapper_type_info == V8FileSystemDirectoryHandle::GetWrapperTypeInfo() &&
       RuntimeEnabledFeatures::CloneableNativeFileSystemHandlesEnabled()) {
-    if (IsForStorage()) {
-      exception_state.ThrowDOMException(DOMExceptionCode::kDataCloneError,
-                                        "A NativeFileSystemDirectoryHandle can "
-                                        "not be serialized for storage.");
-      return false;
-    }
     return WriteNativeFileSystemHandle(
         kNativeFileSystemDirectoryHandleTag,
         wrappable->ToImpl<NativeFileSystemHandle>());

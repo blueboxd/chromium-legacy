@@ -106,6 +106,12 @@ suite('<crostini-installer-app>', () => {
     expectEquals(fakeBrowserProxy.handler.getCallCount('install'), 0);
 
     await clickNext();
+    expectFalse(app.$$('#configure-message').hidden);
+    await clickCancel();  // Back to the prompt page.
+    expectFalse(app.$$('#prompt-message').hidden);
+
+    await clickNext();
+    expectFalse(app.$$('#configure-message').hidden);
     await clickInstall();
     await fakeBrowserProxy.handler.whenCalled('install').then(
         ([diskSize, username]) => {

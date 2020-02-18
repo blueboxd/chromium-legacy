@@ -60,7 +60,7 @@
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
-#include "services/network/loader_util.h"
+#include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "third_party/blink/public/common/features.h"
@@ -1077,11 +1077,12 @@ class SignedExchangeAcceptHeaderBrowserTest
         *accept_header,
         IsSignedExchangeEnabled() && !is_fallback
             ? (is_navigation
-                   ? std::string(network::kFrameAcceptHeader) +
+                   ? std::string(network::kFrameAcceptHeaderValue) +
                          std::string(kAcceptHeaderSignedExchangeSuffix)
                    : std::string(kExpectedSXGEnabledAcceptHeaderForPrefetch))
-            : (is_navigation ? std::string(network::kFrameAcceptHeader)
-                             : std::string(network::kDefaultAcceptHeader)));
+            : (is_navigation
+                   ? std::string(network::kFrameAcceptHeaderValue)
+                   : std::string(network::kDefaultAcceptHeaderValue)));
   }
 
   void CheckNavigationAcceptHeader(const std::vector<GURL>& urls) {
@@ -1265,7 +1266,8 @@ IN_PROC_BROWSER_TEST_P(SignedExchangeAcceptHeaderBrowserTest, ServiceWorker) {
   NavigateAndWaitForTitle(https_server_.GetURL("/sxg/service-worker.html"),
                           "Done");
 
-  const std::string frame_accept = std::string(network::kFrameAcceptHeader);
+  const std::string frame_accept =
+      std::string(network::kFrameAcceptHeaderValue);
   const std::string frame_accept_with_sxg =
       frame_accept + std::string(kAcceptHeaderSignedExchangeSuffix);
   const std::vector<std::string> scopes = {"/sxg/sw-scope-generated/",

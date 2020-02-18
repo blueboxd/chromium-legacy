@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom-blink-forward.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key_path.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -36,7 +37,11 @@ class WebBlobInfo;
 // the values before returning them to the user.
 class MODULES_EXPORT IDBValue final {
  public:
-  IDBValue(scoped_refptr<SharedBuffer>, Vector<WebBlobInfo>);
+  IDBValue(
+      scoped_refptr<SharedBuffer>,
+      Vector<WebBlobInfo>,
+      Vector<mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>> =
+          {});
   ~IDBValue();
 
   size_t DataSize() const { return data_ ? data_->size() : 0; }
@@ -47,6 +52,11 @@ class MODULES_EXPORT IDBValue final {
   const scoped_refptr<SharedBuffer>& Data() const { return data_; }
   const IDBKey* PrimaryKey() const { return primary_key_.get(); }
   const IDBKeyPath& KeyPath() const { return key_path_; }
+
+  Vector<mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>>&
+  NativeFileSystemTokens() {
+    return native_file_system_tokens_;
+  }
 
   // Injects a primary key into a value coming from the backend.
   void SetInjectedPrimaryKey(std::unique_ptr<IDBKey> primary_key,
@@ -88,6 +98,9 @@ class MODULES_EXPORT IDBValue final {
   scoped_refptr<SharedBuffer> data_;
 
   Vector<WebBlobInfo> blob_info_;
+
+  Vector<mojo::PendingRemote<mojom::blink::NativeFileSystemTransferToken>>
+      native_file_system_tokens_;
 
   std::unique_ptr<IDBKey> primary_key_;
   IDBKeyPath key_path_;

@@ -31,8 +31,8 @@
   }
 
   var stepCount = 0;
-  function step2(callFrames) {
-    SourcesTestRunner.captureStackTrace(callFrames);
+  async function step2(callFrames) {
+    await SourcesTestRunner.captureStackTrace(callFrames);
     if (stepCount < 2) {
       TestRunner.addResult('Stepping over...');
       SourcesTestRunner.stepOver();

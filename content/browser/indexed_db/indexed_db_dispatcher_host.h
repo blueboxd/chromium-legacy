@@ -94,9 +94,10 @@ class CONTENT_EXPORT IndexedDBDispatcherHost : public blink::mojom::IDBFactory {
   // Removes all readers for this file path.
   void RemoveBoundReaders(const base::FilePath& path);
 
-  // Create external objects from |blob_infos| and store the results in
-  // |output_infos|.  |output_infos| must be the same length as |blob_infos|.
+  // Create external objects from |objects| and store the results in
+  // |mojo_objects|.  |mojo_objects| must be the same length as |objects|.
   void CreateAllExternalObjects(
+      const url::Origin& origin,
       const std::vector<IndexedDBExternalObject>& objects,
       std::vector<blink::mojom::IDBExternalObjectPtr>* mojo_objects);
 

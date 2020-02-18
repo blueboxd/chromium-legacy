@@ -57,7 +57,7 @@
     await TestRunner.evaluateInPageAsync(`window.workers[${i}].postMessage('')`);
 
     const callFrames = await pausedPromise;
-    SourcesTestRunner.captureStackTrace(callFrames);
+    await SourcesTestRunner.captureStackTrace(callFrames);
     await new Promise(resolve => SourcesTestRunner.resumeExecution(resolve));
   }
   SourcesTestRunner.completeDebuggerTest();

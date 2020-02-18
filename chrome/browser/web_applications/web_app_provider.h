@@ -44,6 +44,7 @@ class WebAppUiManager;
 
 // Forward declarations for new extension-independent subsystems.
 class WebAppDatabaseFactory;
+class WebAppMigrationManager;
 
 // Connects Web App features, such as the installation of default and
 // policy-managed web apps, with Profiles (as WebAppProvider is a
@@ -93,6 +94,7 @@ class WebAppProvider : public WebAppProviderBase {
 
  protected:
   virtual void StartImpl();
+  void OnDatabaseMigrationCompleted(bool success);
 
   // Create subsystems that work with either BMO and Extension backends.
   void CreateCommonSubsystems(Profile* profile);
@@ -112,6 +114,8 @@ class WebAppProvider : public WebAppProviderBase {
 
   // New extension-independent subsystems:
   std::unique_ptr<WebAppDatabaseFactory> database_factory_;
+  // migration_manager_ can be nullptr if no migration needed.
+  std::unique_ptr<WebAppMigrationManager> migration_manager_;
 
   // Generalized subsystems:
   std::unique_ptr<AppRegistrar> registrar_;

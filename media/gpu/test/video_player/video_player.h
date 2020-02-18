@@ -138,8 +138,8 @@ class VideoPlayer {
   // whether the decoder client should continue decoding frames.
   bool NotifyEvent(VideoPlayerEvent event);
 
-  const Video* video_;
-  VideoPlayerState video_player_state_;
+  const Video* video_ = nullptr;
+  VideoPlayerState video_player_state_ = VideoPlayerState::kUninitialized;
   std::unique_ptr<VideoDecoderClient> decoder_client_;
 
   // The timeout used when waiting for events.

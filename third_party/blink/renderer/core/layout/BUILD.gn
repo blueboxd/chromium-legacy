@@ -139,8 +139,6 @@ blink_core_sources("layout") {
     "layout_image_resource_style_image.h",
     "layout_inline.cc",
     "layout_inline.h",
-    "layout_list_box.cc",
-    "layout_list_box.h",
     "layout_list_item.cc",
     "layout_list_item.h",
     "layout_list_marker.cc",

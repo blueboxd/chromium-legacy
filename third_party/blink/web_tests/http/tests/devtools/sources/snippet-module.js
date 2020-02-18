@@ -29,7 +29,7 @@
   Sources.SourcesPanel.instance()._runSnippet();
 
   await ConsoleTestRunner.waitUntilNthMessageReceivedPromise(2);
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   Console.ConsoleView.clearConsole();
   TestRunner.completeTest();
 })();

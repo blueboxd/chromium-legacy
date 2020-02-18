@@ -76,26 +76,28 @@ constexpr int kPinRequestViewHorizontalInsetDp = 8;
 
 constexpr int kLockIconSizeDp = 24;
 
-constexpr int kIconToTitleDistanceDp = 28;
-constexpr int kTitleToDescriptionDistanceDp = 14;
-constexpr int kDescriptionToAccessCodeDistanceDp = 28;
-constexpr int kAccessCodeToPinKeyboardDistanceDp = 5;
+constexpr int kIconToTitleDistanceDp = 24;
+constexpr int kTitleToDescriptionDistanceDp = 8;
+constexpr int kDescriptionToAccessCodeDistanceDp = 32;
+constexpr int kAccessCodeToPinKeyboardDistanceDp = 16;
 constexpr int kPinKeyboardToFooterDistanceDp = 57;
-constexpr int kPinKeyboardToFooterPinKeyboardModeDistanceDp = 17;
+constexpr int kPinKeyboardToFooterPinKeyboardModeDistanceDp = 16;
 constexpr int kSubmitButtonBottomMarginDp = 28;
 
-constexpr int kTitleFontSizeDeltaDp = 3;
-constexpr int kDescriptionFontSizeDeltaDp = -1;
-constexpr int kDescriptionTextLineHeightDp = 16;
+constexpr int kTitleFontSizeDeltaDp = 4;
+constexpr int kTitleLineHeightDp = 24;
+constexpr int kDescriptionFontSizeDeltaDp = 0;
+constexpr int kDescriptionTextLineHeightDp = 18;
 
 constexpr int kAccessCodeFlexLengthWidthDp = 192;
-constexpr int kAccessCodeFontSizeDeltaDp = 5;
+constexpr int kAccessCodeFlexUnderlineThicknessDp = 1;
+constexpr int kAccessCodeFontSizeDeltaDp = 4;
 constexpr int kObscuredGlyphSpacingDp = 6;
 
 constexpr int kAccessCodeInputFieldWidthDp = 24;
 constexpr int kAccessCodeInputFieldHeightDp = 32;
-constexpr int kAccessCodeInputFieldUnderlineThicknessDp = 1;
-constexpr int kAccessCodeBetweenInputFieldsGapDp = 4;
+constexpr int kAccessCodeInputFieldUnderlineThicknessDp = 2;
+constexpr int kAccessCodeBetweenInputFieldsGapDp = 8;
 
 constexpr int kArrowButtonSizeDp = 48;
 
@@ -190,7 +192,7 @@ class PinRequestView::FlexCodeInput : public AccessCodeInput {
         kAccessCodeFontSizeDeltaDp, gfx::Font::FontStyle::NORMAL,
         gfx::Font::Weight::NORMAL));
     code_field_->SetBorder(views::CreateSolidSidedBorder(
-        0, 0, kAccessCodeInputFieldUnderlineThicknessDp, 0, kTextColor));
+        0, 0, kAccessCodeFlexUnderlineThicknessDp, 0, kTextColor));
     code_field_->SetBackgroundColor(SK_ColorTRANSPARENT);
     code_field_->SetFocusBehavior(FocusBehavior::ALWAYS);
     code_field_->SetPreferredSize(
@@ -427,7 +429,7 @@ class PinRequestView::FixedLengthCodeInput : public AccessCodeInput {
       }
       field->SetTextColor(kTextColor);
       field->SetFontList(views::Textfield::GetDefaultFontList().Derive(
-          kDescriptionFontSizeDeltaDp, gfx::Font::FontStyle::NORMAL,
+          kAccessCodeFontSizeDeltaDp, gfx::Font::FontStyle::NORMAL,
           gfx::Font::Weight::NORMAL));
       field->SetBorder(views::CreateSolidSidedBorder(
           0, 0, kAccessCodeInputFieldUnderlineThicknessDp, 0, kTextColor));
@@ -783,6 +785,7 @@ PinRequestView::PinRequestView(PinRequest request, Delegate* delegate)
   // Main view title.
   title_label_ = new views::Label(default_title_, views::style::CONTEXT_LABEL,
                                   views::style::STYLE_PRIMARY);
+  title_label_->SetLineHeight(kTitleLineHeightDp);
   title_label_->SetFontList(gfx::FontList().Derive(
       kTitleFontSizeDeltaDp, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));
   decorate_label(title_label_);

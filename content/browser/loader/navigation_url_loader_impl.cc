@@ -83,7 +83,7 @@
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/network/loader_util.h"
+#include "services/network/public/cpp/constants.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/request_destination.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -439,7 +439,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
               std::move(factory));
     }
 
-    std::string accept_value = network::kFrameAcceptHeader;
+    std::string accept_value = network::kFrameAcceptHeaderValue;
     if (signed_exchange_utils::IsSignedExchangeHandlingEnabled(
             browser_context_)) {
       accept_value.append(kAcceptHeaderSignedExchangeSuffix);
@@ -831,9 +831,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
     // Don't send Accept: application/signed-exchange for fallback redirects.
     if (redirect_info_.is_signed_exchange_fallback_redirect) {
       url_loader_modified_headers_.SetHeader(net::HttpRequestHeaders::kAccept,
-                                             network::kFrameAcceptHeader);
+                                             network::kFrameAcceptHeaderValue);
       resource_request_->headers.SetHeader(net::HttpRequestHeaders::kAccept,
-                                           network::kFrameAcceptHeader);
+                                           network::kFrameAcceptHeaderValue);
     }
 
     Restart();

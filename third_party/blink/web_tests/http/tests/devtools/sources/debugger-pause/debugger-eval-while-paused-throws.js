@@ -62,9 +62,9 @@
   }
 
   function dumpConsoleMessages() {
-    TestRunner.deprecatedRunAfterPendingDispatches(() => {
+    TestRunner.deprecatedRunAfterPendingDispatches(async () => {
       TestRunner.addResult('Dumping console messages:\n');
-      ConsoleTestRunner.dumpConsoleMessages();
+      await ConsoleTestRunner.dumpConsoleMessages();
       SourcesTestRunner.completeDebuggerTest();
     });
   }

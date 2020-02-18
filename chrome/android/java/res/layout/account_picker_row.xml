@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright 2018 The Chromium Authors. All rights reserved.
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -26,17 +26,15 @@
             android:id="@+id/account_text_primary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:minHeight="20dp"
-            android:textAppearance="@style/TextAppearance.TextMedium.Primary"
+            android:gravity="top"
+            android:textAppearance="@style/TextAppearance.TextLarge.Primary"
             tools:text="John Doe"/>
         <TextView
             android:id="@+id/account_text_secondary"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:minHeight="20dp"
-            android:textAppearance="@style/TextAppearance.TextSmall.Secondary"
+            android:gravity="top"
+            android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
             tools:text="john.doe@example.com"/>
     </LinearLayout>
     <ImageView

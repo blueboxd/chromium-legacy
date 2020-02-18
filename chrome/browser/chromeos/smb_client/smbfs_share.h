@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "chrome/browser/chromeos/smb_client/smb_errors.h"
+#include "chrome/browser/chromeos/smb_client/smb_url.h"
 #include "chromeos/components/smbfs/smbfs_host.h"
 #include "chromeos/components/smbfs/smbfs_mounter.h"
 
@@ -35,7 +36,7 @@ class SmbFsShare : public smbfs::SmbFsHost::Delegate {
           smbfs::SmbFsHost::Delegate* delegate)>;
 
   SmbFsShare(Profile* profile,
-             const std::string& share_path,
+             const SmbUrl& share_url,
              const std::string& display_name,
              const MountOptions& options);
   ~SmbFsShare() override;
@@ -52,7 +53,7 @@ class SmbFsShare : public smbfs::SmbFsHost::Delegate {
   bool IsMounted() const { return bool(host_); }
 
   const std::string& mount_id() const { return mount_id_; }
-  const std::string& share_path() const { return share_path_; }
+  const SmbUrl& share_url() const { return share_url_; }
 
   base::FilePath mount_path() const {
     return host_ ? host_->mount_path() : base::FilePath();
@@ -73,7 +74,7 @@ class SmbFsShare : public smbfs::SmbFsHost::Delegate {
   void OnDisconnected() override;
 
   Profile* const profile_;
-  const std::string share_path_;
+  const SmbUrl share_url_;
   const std::string display_name_;
   const MountOptions options_;
   const std::string mount_id_;

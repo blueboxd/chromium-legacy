@@ -169,18 +169,27 @@ void TransactionImpl::CreateExternalObjects(
   external_objects->resize(value->external_objects.size());
   for (size_t i = 0; i < value->external_objects.size(); ++i) {
     auto& object = value->external_objects[i];
-    DCHECK(object->is_blob_or_file());
-    blink::mojom::IDBBlobInfoPtr& info = object->get_blob_or_file();
-    uint64_t size = info->size;
-    total_blob_size += size;
+    switch (object->which()) {
+      case blink::mojom::IDBExternalObject::Tag::BLOB_OR_FILE: {
+        blink::mojom::IDBBlobInfoPtr& info = object->get_blob_or_file();
+        uint64_t size = info->size;
+        total_blob_size += size;
 
-    if (info->file) {
-      (*external_objects)[i] = IndexedDBExternalObject(
-          std::move(info->blob), info->uuid, info->file->name, info->mime_type,
-          info->file->last_modified, info->size);
-    } else {
-      (*external_objects)[i] = IndexedDBExternalObject(
-          std::move(info->blob), info->uuid, info->mime_type, info->size);
+        if (info->file) {
+          DCHECK_NE(info->size, IndexedDBExternalObject::kUnknownSize);
+          (*external_objects)[i] = IndexedDBExternalObject(
+              std::move(info->blob), info->uuid, info->file->name,
+              info->mime_type, info->file->last_modified, info->size);
+        } else {
+          (*external_objects)[i] = IndexedDBExternalObject(
+              std::move(info->blob), info->uuid, info->mime_type, info->size);
+        }
+        break;
+      }
+      case blink::mojom::IDBExternalObject::Tag::NATIVE_FILE_SYSTEM_TOKEN:
+        (*external_objects)[i] = IndexedDBExternalObject(
+            std::move(object->get_native_file_system_token()));
+        break;
     }
   }
 }

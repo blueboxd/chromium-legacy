@@ -106,6 +106,19 @@ Polymer({
       },
     },
 
+    /**
+     * Whether a setting for enabling shelf navigation buttons in tablet mode
+     * should be displayed in the accessibility settings.
+     * @private
+     */
+    showShelfNavigationButtonsSettings_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean(
+            'showTabletModeShelfNavigationButtonsSettings');
+      },
+    },
+
     /** @private */
     isGuest_: {
       type: Boolean,
@@ -126,6 +139,34 @@ Polymer({
 
     /** @private */
     hasTouchpad_: Boolean,
+
+    /**
+     * Boolean indicating whether shelf navigation buttons should implicitly be
+     * enabled in tablet mode - the navigation buttons are implicitly enabled
+     * when spoken feedback, automatic clicks, or switch access are enabled.
+     * The buttons can also be explicitly enabled by a designated a11y setting.
+     * @private
+     */
+    shelfNavigationButtonsImplicitlyEnabled_: {
+      type: Boolean,
+      computed: 'computeShelfNavigationButtonsImplicitlyEnabled_(' +
+          'prefs.settings.accessibility.value,' +
+          'prefs.settings.a11y.autoclick.value,' +
+          'prefs.settings.a11y.switch_access.enabled.value)',
+    },
+
+    /**
+     * The effective pref value that indicates whether shelf navigation buttons
+     * are enabled in tablet mode.
+     * @type {chrome.settingsPrivate.PrefObject}
+     * @private
+     */
+    shelfNavigationButtonsPref_: {
+      type: Object,
+      computed: 'getShelfNavigationButtonsEnabledPref_(' +
+          'shelfNavigationButtonsImplicitlyEnabled_,' +
+          'prefs.settings.a11y.tablet_mode_shelf_nav_buttons_enabled)',
+    },
   },
 
   observers: [
@@ -256,6 +297,65 @@ Polymer({
     settings.Router.getInstance().navigateTo(
         settings.routes.KEYBOARD,
         /* dynamicParams */ null, /* removeSearch */ true);
+  },
+
+  /**
+   * @return {boolean} Whether shelf navigation buttons should implicitly be
+   *     enabled in tablet mode (due to accessibility settings different than
+   *     shelf_navigation_buttons_enabled_in_tablet_mode).
+   * @private
+   */
+  computeShelfNavigationButtonsImplicitlyEnabled_() {
+    /**
+     * Gets the bool pref value for the provided pref key.
+     * @param {string} key
+     * @return {boolean}
+     */
+    const getBoolPrefValue = (key) => {
+      const pref = /** @type {chrome.settingsPrivate.PrefObject} */ (
+          this.get(key, this.prefs));
+      return pref && !!pref.value;
+    };
+
+    return getBoolPrefValue('settings.accessibility') ||
+        getBoolPrefValue('settings.a11y.autoclick') ||
+        getBoolPrefValue('settings.a11y.switch_access.enabled');
+  },
+
+  /**
+   * Calculates the effective value for "shelf navigation buttons enabled in
+   * tablet mode" setting - if the setting is implicitly enabled (by other a11y
+   * settings), this will return a stub pref value.
+   * @private
+   * @return {chrome.settingsPrivate.PrefObject}
+   */
+  getShelfNavigationButtonsEnabledPref_() {
+    if (this.shelfNavigationButtonsImplicitlyEnabled_) {
+      return /** @type {!chrome.settingsPrivate.PrefObject}*/ ({
+        value: true,
+        type: chrome.settingsPrivate.PrefType.BOOLEAN,
+        key: ''
+      });
+    }
+
+    return /** @type {chrome.settingsPrivate.PrefObject} */ (this.get(
+        'settings.a11y.tablet_mode_shelf_nav_buttons_enabled', this.prefs));
+  },
+
+  /**
+   * Handles the <code>tablet_mode_shelf_nav_buttons_enabled</code> setting's
+   * toggle changes. It updates the backing pref value, unless the setting is
+   * implicitly enabled.
+   * @private
+   */
+  updateShelfNavigationButtonsEnabledPref_() {
+    if (this.shelfNavigationButtonsImplicitlyEnabled_) {
+      return;
+    }
+
+    this.set(
+        'prefs.settings.a11y.tablet_mode_shelf_nav_buttons_enabled.value',
+        this.$.shelfNavigationButtonsEnabledControl.checked);
   },
 
   /** @private */

@@ -28,9 +28,9 @@
     TestRunner.reloadPage(SourcesTestRunner.completeDebuggerTest.bind(SourcesTestRunner));
   }
 
-  function step3(callFrames) {
+  async function step3(callFrames) {
     TestRunner.addResult('Script execution paused.');
-    SourcesTestRunner.captureStackTrace(callFrames);
+    await SourcesTestRunner.captureStackTrace(callFrames);
     SourcesTestRunner.showScriptSource('inline-scripts.html', step4);
   }
 
@@ -39,13 +39,13 @@
     SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(null, step5));
   }
 
-  function step5(callFrames) {
+  async function step5(callFrames) {
     if (callFrames[0].location.lineNumber !== 9) {
       SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(null, step5));
       return;
     }
     TestRunner.addResult('Script execution paused.');
-    SourcesTestRunner.captureStackTrace(callFrames);
+    await SourcesTestRunner.captureStackTrace(callFrames);
     SourcesTestRunner.showScriptSource('inline-scripts.html', step6);
   }
 

@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/svg/svg_filter_element.h"
 #include "third_party/blink/renderer/core/svg/svg_filter_primitive_standard_attributes.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
+#include "third_party/blink/renderer/platform/graphics/filters/filter_effect.h"
 
 namespace blink {
 
@@ -109,15 +110,13 @@ SVGUnitTypes::SVGUnitType LayoutSVGResourceFilter::PrimitiveUnits() const {
 void LayoutSVGResourceFilter::PrimitiveAttributeChanged(
     SVGFilterPrimitiveStandardAttributes& primitive,
     const QualifiedName& attribute) {
-  LayoutObject* object = primitive.GetLayoutObject();
-
   for (auto& filter : *filter_) {
     FilterData* filter_data = filter.value.Get();
     if (filter_data->state_ != FilterData::kReadyToPaint)
       continue;
 
     SVGFilterGraphNodeMap* node_map = filter_data->node_map.Get();
-    FilterEffect* effect = node_map->EffectByRenderer(object);
+    FilterEffect* effect = node_map->EffectForElement(primitive);
     if (!effect)
       continue;
     // Since all effects shares the same attribute value, all

@@ -153,6 +153,19 @@ def make_dict_member_set_def(cg_context):
         _1 = blink_member_name.presence_var
         body.append(T(_format("{_1} = true;", _1=_1)))
 
+    # Migration Adapter
+    real_type = member.idl_type.unwrap(typedef=True)
+    if (real_type.is_nullable and
+            blink_type_info(real_type).typename.startswith("base::Optional")):
+        func_to_null_def = CxxFuncDefNode(
+            name=_format("{}ToNull", blink_member_name.set_api),
+            arg_decls=[],
+            return_type="void")
+        func_to_null_def.set_base_template_vars(cg_context.template_bindings())
+        func_to_null_def.body.append(
+            T(_format("{}(base::nullopt);", blink_member_name.set_api)))
+        return ListNode([func_def, func_to_null_def])
+
     return func_def
 
 
@@ -772,5 +785,5 @@ def generate_dictionary(dictionary):
 
 
 def generate_dictionaries(web_idl_database):
-    dictionary = web_idl_database.find('GPUCommandBufferDescriptor')
+    dictionary = web_idl_database.find("ComputedEffectTiming")
     generate_dictionary(dictionary)

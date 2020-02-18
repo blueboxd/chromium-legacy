@@ -44,8 +44,8 @@
     SourcesTestRunner.waitUntilPaused(step5);
   }
 
-  function step5(callFrames) {
-    SourcesTestRunner.captureStackTrace(callFrames);
+  async function step5(callFrames) {
+    await SourcesTestRunner.captureStackTrace(callFrames);
     TestRunner.addResult('PASS: Debugger paused.');
     SourcesTestRunner.completeDebuggerTest();
   }

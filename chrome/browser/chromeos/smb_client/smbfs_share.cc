@@ -45,15 +45,17 @@ SmbMountResult MountErrorToMountResult(smbfs::mojom::MountError mount_error) {
 }  // namespace
 
 SmbFsShare::SmbFsShare(Profile* profile,
-                       const std::string& share_path,
+                       const SmbUrl& share_url,
                        const std::string& display_name,
                        const MountOptions& options)
     : profile_(profile),
-      share_path_(share_path),
+      share_url_(share_url),
       display_name_(display_name),
       options_(options),
       mount_id_(
-          base::ToLowerASCII(base::UnguessableToken::Create().ToString())) {}
+          base::ToLowerASCII(base::UnguessableToken::Create().ToString())) {
+  DCHECK(share_url_.IsValid());
+}
 
 SmbFsShare::~SmbFsShare() {
   Unmount();
@@ -67,11 +69,11 @@ void SmbFsShare::Mount(SmbFsShare::MountCallback callback) {
   // sessions.
   const std::string mount_dir = base::StrCat({kMountDirPrefix, mount_id_});
   if (mounter_creation_callback_for_test_) {
-    mounter_ = mounter_creation_callback_for_test_.Run(share_path_, mount_dir,
-                                                       options_, this);
+    mounter_ = mounter_creation_callback_for_test_.Run(
+        share_url_.ToString(), mount_dir, options_, this);
   } else {
     mounter_ = std::make_unique<smbfs::SmbFsMounter>(
-        share_path_, mount_dir, options_, this,
+        share_url_.ToString(), mount_dir, options_, this,
         chromeos::disks::DiskMountManager::GetInstance());
   }
   mounter_->Mount(base::BindOnce(&SmbFsShare::OnMountDone,

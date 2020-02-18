@@ -8,6 +8,7 @@ import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "third_party/blink/public/mojom/blob/blob.mojom";
+import "third_party/blink/public/mojom/native_file_system/native_file_system_transfer_token.mojom";
 
 // kIDBMaxMessageSize is 128MB, originally based on
 // IPC::Channel::kMaximumMessageSize.  The "usable" size is this value less
@@ -209,7 +210,7 @@ struct IDBBlobInfo {
 
 union IDBExternalObject {
   IDBBlobInfo blob_or_file;
-  // TODO(https://crbug.com/955193): Add NativeFileSystemTransferToken.
+  pending_remote<NativeFileSystemTransferToken> native_file_system_token;
 };
 
 struct IDBValue {

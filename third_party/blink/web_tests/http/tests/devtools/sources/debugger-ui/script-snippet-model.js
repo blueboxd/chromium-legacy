@@ -112,7 +112,7 @@ doesNothing;
       TestRunner.addResult('Run Snippet1..');
       Snippets.evaluateScriptSnippet(uiSourceCode1);
       await ConsoleTestRunner.waitUntilMessageReceivedPromise();
-      ConsoleTestRunner.dumpConsoleMessages();
+      await ConsoleTestRunner.dumpConsoleMessages();
 
       const functionPromise = TestRunner.addSnifferPromise(
           Console.ConsoleViewMessage.prototype,
@@ -121,17 +121,17 @@ doesNothing;
       Snippets.evaluateScriptSnippet(uiSourceCode2);
       await ConsoleTestRunner.waitUntilMessageReceivedPromise();
       await functionPromise;
-      ConsoleTestRunner.dumpConsoleMessages();
+      await ConsoleTestRunner.dumpConsoleMessages();
 
       TestRunner.addResult('Run Snippet1..');
       Snippets.evaluateScriptSnippet(uiSourceCode1);
       await ConsoleTestRunner.waitUntilMessageReceivedPromise();
-      ConsoleTestRunner.dumpConsoleMessages();
+      await ConsoleTestRunner.dumpConsoleMessages();
 
       TestRunner.addResult('Run Snippet3..');
       Snippets.evaluateScriptSnippet(uiSourceCode3);
       await ConsoleTestRunner.waitUntilMessageReceivedPromise();
-      ConsoleTestRunner.dumpConsoleMessages();
+      await ConsoleTestRunner.dumpConsoleMessages();
 
       await uiSourceCode1.project().deleteFile(uiSourceCode1);
       await uiSourceCode2.project().deleteFile(uiSourceCode2);
@@ -150,7 +150,7 @@ doesNothing;
       TestRunner.addResult('Run Snippet1..');
       Snippets.evaluateScriptSnippet(uiSourceCode1);
       await ConsoleTestRunner.waitUntilMessageReceivedPromise();
-      ConsoleTestRunner.dumpConsoleMessages();
+      await ConsoleTestRunner.dumpConsoleMessages();
 
       await TestRunner.reloadPagePromise();
 
@@ -179,7 +179,7 @@ doesNothing;
         TestRunner.addResult('Run Snippet1..');
         Snippets.evaluateScriptSnippet(uiSourceCode1);
         await ConsoleTestRunner.waitUntilMessageReceivedPromise();
-        ConsoleTestRunner.dumpConsoleMessages();
+        await ConsoleTestRunner.dumpConsoleMessages();
 
         await uiSourceCode1.project().deleteFile(uiSourceCode1);
         next();

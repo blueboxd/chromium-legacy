@@ -3571,6 +3571,9 @@
   <message name="IDS_CROSTINI_INSTALLER_NEXT_BUTTON" desc="Label for the button in the Crostini installer dialog to progress to the next page.">
     Next
   </message>
+  <message name="IDS_CROSTINI_INSTALLER_BACK_BUTTON" desc="Label for the button in the Crostini installer dialog to go back to the previous page.">
+    Back
+  </message>
   <message name="IDS_CROSTINI_INSTALLER_INSTALL_BUTTON" desc="Label for the button in the Crostini installer dialog to begin installing Linux.">
     Install
   </message>

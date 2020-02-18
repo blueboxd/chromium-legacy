@@ -51,7 +51,9 @@ IndexedDBCursor::IndexedDBCursor(
     indexed_db::CursorType cursor_type,
     blink::mojom::IDBTaskType task_type,
     base::WeakPtr<IndexedDBTransaction> transaction)
-    : task_type_(task_type),
+    : origin_(
+          transaction->BackingStoreTransaction()->backing_store()->origin()),
+      task_type_(task_type),
       cursor_type_(cursor_type),
       transaction_(std::move(transaction)),
       cursor_(std::move(cursor)),
@@ -125,7 +127,7 @@ leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
   if (value) {
     mojo_value = IndexedDBValue::ConvertAndEraseValue(value);
     external_objects.swap(value->external_objects);
-    dispatcher_host->CreateAllExternalObjects(external_objects,
+    dispatcher_host->CreateAllExternalObjects(origin_, external_objects,
                                               &mojo_value->external_objects);
   } else {
     mojo_value = blink::mojom::IDBValue::New();
@@ -180,9 +182,8 @@ leveldb::Status IndexedDBCursor::CursorContinueOperation(
   if (!dispatcher_host)
     return s;
 
-  if (!cursor_ ||
-      !cursor_->Continue(key.get(), primary_key.get(),
-                         IndexedDBBackingStore::Cursor::SEEK, &s)) {
+  if (!cursor_ || !cursor_->Continue(key.get(), primary_key.get(),
+                                     IndexedDBBackingStore::Cursor::SEEK, &s)) {
     cursor_.reset();
     if (s.ok()) {
       // This happens if we reach the end of the iterator and can't continue.
@@ -207,7 +208,7 @@ leveldb::Status IndexedDBCursor::CursorContinueOperation(
   if (value) {
     mojo_value = IndexedDBValue::ConvertAndEraseValue(value);
     external_objects.swap(value->external_objects);
-    dispatcher_host->CreateAllExternalObjects(external_objects,
+    dispatcher_host->CreateAllExternalObjects(origin_, external_objects,
                                               &mojo_value->external_objects);
   } else {
     mojo_value = blink::mojom::IDBValue::New();
@@ -334,7 +335,8 @@ leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
     mojo_values.push_back(
         IndexedDBValue::ConvertAndEraseValue(&found_values[i]));
     dispatcher_host->CreateAllExternalObjects(
-        found_values[i].external_objects, &mojo_values[i]->external_objects);
+        origin_, found_values[i].external_objects,
+        &mojo_values[i]->external_objects);
   }
 
   std::move(callback).Run(blink::mojom::IDBCursorResult::NewValues(

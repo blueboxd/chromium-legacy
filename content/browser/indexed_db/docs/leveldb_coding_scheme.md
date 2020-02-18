@@ -105,16 +105,18 @@ database should be deleted.
 
 ### ExternalObject (value)
 
-A external object (a blob or a file) is zero-or-more instances of the structure:
+A external object (a blob, a file, or a native file system handle) is zero-or-more
+instances of the structure:
 
 ```
 {
-  is_file (Bool),
-  blob_number (VarInt),
-  type (StringWithLength), // may be empty
-  size (VarInt),
+  object_type (IndexedDBExternalObject::ObjectType as byte]),
+  /*for Blobs and Files only*/ blob_number (VarInt),
+  /*for Blobs and Files only*/ type (StringWithLength), // may be empty
+  /*for Blobs and Files only*/ size (VarInt),
   /*for Files only*/ filename (StringWithLength)
   /*for Files only*/ lastModified (VarInt, in microseconds)
+  /*for Native File System Handles only*/ token (BinaryWithLength)
 }
 ```
 

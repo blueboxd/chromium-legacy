@@ -15,7 +15,6 @@
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
-#include "services/network/loader_util.h"
 #include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"

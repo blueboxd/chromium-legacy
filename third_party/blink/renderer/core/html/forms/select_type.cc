@@ -64,7 +64,7 @@ class MenuListSelectType final : public SelectType {
  public:
   explicit MenuListSelectType(HTMLSelectElement& select) : SelectType(select) {}
 
-  bool DefaultEventHandler(Event& event) override;
+  bool DefaultEventHandler(const Event& event) override;
   void DidSelectOption(HTMLOptionElement* element,
                        HTMLSelectElement::SelectOptionFlags flags,
                        bool should_update_popup) override;
@@ -83,7 +83,7 @@ class MenuListSelectType final : public SelectType {
   bool has_updated_menulist_active_option_ = false;
 };
 
-bool MenuListSelectType::DefaultEventHandler(Event& event) {
+bool MenuListSelectType::DefaultEventHandler(const Event& event) {
   // We need to make the layout tree up-to-date to have GetLayoutObject() give
   // the correct result below. An author event handler may have set display to
   // some element to none which will cause a layout tree detach.
@@ -167,7 +167,7 @@ bool MenuListSelectType::DefaultEventHandler(Event& event) {
       return true;
     }
 
-    auto& key_event = ToKeyboardEvent(event);
+    const auto& key_event = ToKeyboardEvent(event);
     if (select_->ShouldOpenPopupForKeyPressEvent(key_event))
       return select_->HandlePopupOpenKeyboardEvent(event);
 
@@ -180,7 +180,7 @@ bool MenuListSelectType::DefaultEventHandler(Event& event) {
     return false;
   }
 
-  auto* mouse_event = DynamicTo<MouseEvent>(event);
+  const auto* mouse_event = DynamicTo<MouseEvent>(event);
   if (event.type() == event_type_names::kMousedown && mouse_event &&
       mouse_event->button() ==
           static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
@@ -340,11 +340,11 @@ void MenuListSelectType::DidUpdateActiveOption(HTMLOptionElement* option) {
 class ListBoxSelectType final : public SelectType {
  public:
   explicit ListBoxSelectType(HTMLSelectElement& select) : SelectType(select) {}
-  bool DefaultEventHandler(Event& event) override;
+  bool DefaultEventHandler(const Event& event) override;
 };
 
-bool ListBoxSelectType::DefaultEventHandler(Event& event) {
-  auto* mouse_event = DynamicTo<MouseEvent>(event);
+bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
+  const auto* mouse_event = DynamicTo<MouseEvent>(event);
   if (event.type() == event_type_names::kGesturetap && event.IsGestureEvent()) {
     select_->focus();
     // Calling focus() may cause us to lose our layoutObject or change the
@@ -353,7 +353,7 @@ bool ListBoxSelectType::DefaultEventHandler(Event& event) {
       return false;
 
     // Convert to coords relative to the list box if needed.
-    auto& gesture_event = ToGestureEvent(event);
+    const auto& gesture_event = ToGestureEvent(event);
     if (HTMLOptionElement* option = EventTargetOption(gesture_event)) {
       if (!select_->IsDisabledFormControl()) {
         select_->UpdateSelectedState(option, true, gesture_event.shiftKey());
@@ -445,7 +445,7 @@ bool ListBoxSelectType::DefaultEventHandler(Event& event) {
   }
 
   if (event.type() == event_type_names::kKeydown) {
-    auto* keyboard_event = ToKeyboardEventOrNull(event);
+    const auto* keyboard_event = ToKeyboardEventOrNull(event);
     if (!keyboard_event)
       return false;
     const String& key = keyboard_event->key();

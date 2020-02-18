@@ -13,7 +13,6 @@
 #include "content/public/common/content_features.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
-#include "services/network/loader_util.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/common/loader/throttling_url_loader.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"

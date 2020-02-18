@@ -21,12 +21,22 @@ namespace {
 // Resolve the specified test file path to an absolute path. The path can be
 // either an absolute path, a path relative to the current directory, or a path
 // relative to the test data path.
-void ResolveTestFilePath(base::FilePath* file_path) {
-  if (!file_path->IsAbsolute()) {
-    if (!PathExists(*file_path))
-      *file_path = media::GetTestDataPath().Append(*file_path);
-    *file_path = base::MakeAbsoluteFilePath(*file_path);
+base::Optional<base::FilePath> ResolveFilePath(
+    const base::FilePath& file_path) {
+  base::FilePath resolved_path = file_path;
+
+  // Try to resolve the path into an absolute path. If the path doesn't exist,
+  // it might be relative to the test data dir.
+  if (!resolved_path.IsAbsolute()) {
+    resolved_path = base::MakeAbsoluteFilePath(
+        PathExists(resolved_path)
+            ? resolved_path
+            : media::GetTestDataPath().Append(resolved_path));
   }
+
+  return PathExists(resolved_path)
+             ? base::Optional<base::FilePath>(resolved_path)
+             : base::nullopt;
 }
 
 // Converts the |pixel_format| string into a VideoPixelFormat.
@@ -61,7 +71,13 @@ bool Image::Load() {
   DCHECK(!file_path_.empty());
   DCHECK(!IsLoaded());
 
-  ResolveTestFilePath(&file_path_);
+  base::Optional<base::FilePath> resolved_path = ResolveFilePath(file_path_);
+  if (!resolved_path) {
+    LOG(ERROR) << "Image file not found: " << file_path_;
+    return false;
+  }
+  file_path_ = resolved_path.value();
+  DVLOGF(2) << "File path: " << file_path_;
 
   if (!mapped_file_.Initialize(file_path_)) {
     LOG(ERROR) << "Failed to read file: " << file_path_;
@@ -94,7 +110,12 @@ bool Image::LoadMetadata() {
   }
 
   base::FilePath json_path = file_path_.AddExtension(kMetadataSuffix);
-  ResolveTestFilePath(&json_path);
+  base::Optional<base::FilePath> resolved_path = ResolveFilePath(json_path);
+  if (!resolved_path) {
+    LOG(ERROR) << "Image metadata file not found: " << json_path;
+    return false;
+  }
+  json_path = resolved_path.value();
 
   if (!base::PathExists(json_path)) {
     VLOGF(1) << "Image metadata file not found: " << json_path.BaseName();

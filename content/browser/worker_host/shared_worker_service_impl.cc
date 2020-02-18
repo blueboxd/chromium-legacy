@@ -35,7 +35,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/network/loader_util.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom.h"

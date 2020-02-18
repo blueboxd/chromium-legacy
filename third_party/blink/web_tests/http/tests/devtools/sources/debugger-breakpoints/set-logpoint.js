@@ -32,7 +32,7 @@
         SourcesTestRunner.dumpBreakpointSidebarPane();
 
         await ConsoleTestRunner.waitForConsoleMessagesPromise(1);
-        ConsoleTestRunner.dumpConsoleMessages();
+        await ConsoleTestRunner.dumpConsoleMessages();
 
         SourcesTestRunner.waitBreakpointSidebarPane().then(breakpointRemoved);
         SourcesTestRunner.removeBreakpoint(currentSourceFrame, 14);

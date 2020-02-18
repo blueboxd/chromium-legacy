@@ -13,6 +13,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.FindInPageCallback;
 import org.chromium.weblayer.Tab;
@@ -146,6 +147,7 @@ public class FindInPageTest {
 
     @Test
     @SmallTest
+    @DisabledTest(message = "Timeout flaky crbug.com/1052802")
     public void testHideOnNewTab() throws InterruptedException {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mActivity.getBrowser().getActiveTab().setNewTabCallback(new NewTabCallbackImpl());

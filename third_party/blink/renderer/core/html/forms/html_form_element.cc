@@ -181,7 +181,7 @@ HTMLElement* HTMLFormElement::item(unsigned index) {
   return elements()->item(index);
 }
 
-void HTMLFormElement::SubmitImplicitly(Event& event,
+void HTMLFormElement::SubmitImplicitly(const Event& event,
                                        bool from_implicit_submission_trigger) {
   int submission_trigger_count = 0;
   bool seen_default_button = false;
@@ -251,7 +251,7 @@ bool HTMLFormElement::ValidateInteractively() {
 }
 
 void HTMLFormElement::PrepareForSubmission(
-    Event* event,
+    const Event* event,
     HTMLFormControlElement* submit_button) {
   LocalFrame* frame = GetDocument().GetFrame();
   if (!frame || is_submitting_ || in_user_js_submit_event_)
@@ -377,7 +377,7 @@ void HTMLFormElement::SubmitDialog(FormSubmission* form_submission) {
 }
 
 void HTMLFormElement::ScheduleFormSubmission(
-    Event* event,
+    const Event* event,
     HTMLFormControlElement* submit_button) {
   LocalFrameView* view = GetDocument().View();
   LocalFrame* frame = GetDocument().GetFrame();

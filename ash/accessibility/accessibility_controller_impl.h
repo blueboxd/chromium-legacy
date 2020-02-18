@@ -165,6 +165,11 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   bool IsVirtualKeyboardSettingVisibleInTray();
   bool IsEnterpriseIconVisibleForVirtualKeyboard();
 
+  void SetTabletModeShelfNavigationButtonsEnabled(bool enabled);
+  bool tablet_mode_shelf_navigation_buttons_enabled() const {
+    return tablet_mode_shelf_navigation_buttons_enabled_;
+  }
+
   bool dictation_active() const { return dictation_active_; }
 
   // Returns true if accessibility shortcuts have been disabled.
@@ -296,6 +301,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void UpdateVirtualKeyboardFromPref();
   void UpdateAccessibilityHighlightingFromPrefs();
   void UpdateShortcutsEnabledFromPref();
+  void UpdateTabletModeShelfNavigationButtonsFromPref();
 
   void MaybeCreateSelectToSpeakEventHandler();
   void MaybeCreateSwitchAccessEventHandler();
@@ -326,6 +332,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   bool virtual_keyboard_enabled_ = false;
   bool dictation_active_ = false;
   bool shortcuts_enabled_ = true;
+  bool tablet_mode_shelf_navigation_buttons_enabled_ = false;
 
   SelectToSpeakState select_to_speak_state_ =
       SelectToSpeakState::kSelectToSpeakStateInactive;

@@ -47,6 +47,15 @@ namespace mf {
 
 MF_INITIALIZER_EXPORT void LogDXVAError(int line);
 
+#define RETURN_IF_FAILED(expr)                                \
+  do {                                                        \
+    HRESULT hresult = (expr);                                 \
+    if (FAILED(hresult)) {                                    \
+      DLOG(ERROR) << __func__ << ": failed with " << hresult; \
+      return hresult;                                         \
+    }                                                         \
+  } while (0)
+
 // Creates a Media Foundation sample with one buffer of length |buffer_length|
 // on a |align|-byte boundary. Alignment must be a perfect power of 2 or 0.
 MF_INITIALIZER_EXPORT Microsoft::WRL::ComPtr<IMFSample>

@@ -21,8 +21,8 @@
       SourcesTestRunner.waitUntilPaused(step1);
       TestRunner.evaluateInPageWithTimeout('sendRequest(\'/foo?a=b\')');
 
-      function step1(callFrames) {
-        SourcesTestRunner.captureStackTrace(callFrames);
+      async function step1(callFrames) {
+        await SourcesTestRunner.captureStackTrace(callFrames);
         SourcesTestRunner.resumeExecution(step2);
       }
 

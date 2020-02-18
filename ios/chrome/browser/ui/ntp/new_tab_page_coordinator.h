@@ -13,11 +13,6 @@ namespace web {
 class WebState;
 }
 
-@protocol ApplicationCommands;
-@protocol BrowserCommands;
-@protocol OmniboxFocuser;
-@protocol FakeboxFocuser;
-@protocol SnackbarCommands;
 @protocol NewTabPageControllerDelegate;
 
 // Coordinator handling the NTP.
@@ -25,8 +20,7 @@ class WebState;
     : ChromeCoordinator <LogoAnimationControllerOwnerOwner>
 
 // Initializes this Coordinator with its |browserState|.
-- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState
-    NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithBrowser:(Browser*)browser NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
     NS_UNAVAILABLE;
 - (instancetype)initWithBaseViewController:(UIViewController*)viewController
@@ -38,17 +32,11 @@ class WebState;
 // ViewController associated with this coordinator.
 @property(nonatomic, strong, readonly) UIViewController* viewController;
 
-// The web state list to pass to ContentSuggestionsCoordinator.
+// Webstate associated with this coordinator.
 @property(nonatomic, assign) web::WebState* webState;
+
 // The toolbar delegate to pass to ContentSuggestionsCoordinator.
 @property(nonatomic, weak) id<NewTabPageControllerDelegate> toolbarDelegate;
-// The dispatcher to pass to ContentSuggestionsCoordinator.
-@property(nonatomic, weak) id<ApplicationCommands,
-                              BrowserCommands,
-                              OmniboxFocuser,
-                              FakeboxFocuser,
-                              SnackbarCommands>
-    dispatcher;
 
 // Returns |YES| if the coordinator is started.
 @property(nonatomic, assign, getter=isStarted) BOOL started;

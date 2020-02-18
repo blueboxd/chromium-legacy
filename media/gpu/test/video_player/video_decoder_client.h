@@ -64,12 +64,11 @@ class VideoDecoderClient {
   ~VideoDecoderClient();
 
   // Return an instance of the VideoDecoderClient. The
-  // |gpu_memory_buffer_factory|, |frame_renderer| and |frame_processors| will
-  // not be owned by the decoder client, the caller should guarantee they
-  // outlive the decoder client. The |event_cb| will be called whenever an event
-  // occurs (e.g. frame decoded) and should be thread-safe. Initialization is
-  // performed asynchronous, upon completion a 'kInitialized' event will be
-  // thrown.
+  // |gpu_memory_buffer_factory| will not be owned by the decoder client, the
+  // caller should guarantee it outlives the decoder client. The |event_cb| will
+  // be called whenever an event occurs (e.g. frame decoded) and should be
+  // thread-safe. Initialization is performed asynchronous, upon completion a
+  // 'kInitialized' event will be thrown.
   static std::unique_ptr<VideoDecoderClient> Create(
       const VideoPlayer::EventCallback& event_cb,
       gpu::GpuMemoryBufferFactory* gpu_memory_buffer_factory,

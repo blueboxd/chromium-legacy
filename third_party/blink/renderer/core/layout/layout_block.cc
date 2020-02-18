@@ -1434,6 +1434,8 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
   auto* html_marquee_element = DynamicTo<HTMLMarqueeElement>(GetNode());
   if (html_marquee_element && html_marquee_element->IsHorizontal())
     min_logical_width = LayoutUnit();
+  if (UNLIKELY(IsListBox(this) && StyleRef().LogicalWidth().IsPercentOrCalc()))
+    min_logical_width = LayoutUnit();
 
   if (IsTableCell()) {
     Length table_cell_width =

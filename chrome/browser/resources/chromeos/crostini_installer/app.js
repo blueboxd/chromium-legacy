@@ -225,9 +225,11 @@ Polymer({
   onCancelButtonClick_() {
     switch (this.state_) {
       case State.PROMPT:
-      case State.CONFIGURE:
         BrowserProxy.getInstance().handler.cancelBeforeStart();
         this.closeDialog_();
+        break;
+      case State.CONFIGURE:
+        this.state_ = State.PROMPT;
         break;
       case State.INSTALLING:
         this.state_ = State.CANCELING;
@@ -321,14 +323,6 @@ Polymer({
    */
   showNextButton_(state) {
     return this.configurePageAccessible_() && state === State.PROMPT;
-  },
-
-  /**
-   * @returns {string}
-   * @private
-   */
-  getNextButtonLabel_() {
-    return loadTimeData.getString('next');
   },
 
   /**
@@ -504,4 +498,10 @@ Polymer({
       this.usernameError_ = '';
     }
   },
+
+  /** @private */
+  getCancelButtonLabel_(state) {
+    return loadTimeData.getString(
+        state === State.CONFIGURE ? 'back' : 'cancel');
+  }
 });

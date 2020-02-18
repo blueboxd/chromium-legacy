@@ -45,7 +45,7 @@
   SourcesTestRunner.resumeExecution();
   await ConsoleTestRunner.waitUntilMessageReceivedPromise();
   TestRunner.addResult('Actual return value:');
-  ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+  await ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
 
   SourcesTestRunner.completeDebuggerTest();
 })();

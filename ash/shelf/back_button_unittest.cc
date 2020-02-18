@@ -81,6 +81,7 @@ class BackButtonTest : public AshTestBase,
 };
 
 enum class TestAccessibilityFeature {
+  kTabletModeShelfNavigationButtons,
   kSpokenFeedback,
   kAutoclick,
   kSwitchAccess
@@ -102,6 +103,11 @@ class BackButtonVisibilityWithAccessibilityFeaturesTest
 
   void SetTestA11yFeatureEnabled(bool enabled) {
     switch (GetParam()) {
+      case TestAccessibilityFeature::kTabletModeShelfNavigationButtons:
+        Shell::Get()
+            ->accessibility_controller()
+            ->SetTabletModeShelfNavigationButtonsEnabled(enabled);
+        break;
       case TestAccessibilityFeature::kSpokenFeedback:
         Shell::Get()->accessibility_controller()->SetSpokenFeedbackEnabled(
             enabled, A11Y_NOTIFICATION_NONE);
@@ -252,9 +258,11 @@ TEST_P(BackButtonTest, NoContextMenuOnBackButton) {
 INSTANTIATE_TEST_SUITE_P(
     All,
     BackButtonVisibilityWithAccessibilityFeaturesTest,
-    ::testing::Values(TestAccessibilityFeature::kSpokenFeedback,
-                      TestAccessibilityFeature::kAutoclick,
-                      TestAccessibilityFeature::kSwitchAccess));
+    ::testing::Values(
+        TestAccessibilityFeature::kTabletModeShelfNavigationButtons,
+        TestAccessibilityFeature::kSpokenFeedback,
+        TestAccessibilityFeature::kAutoclick,
+        TestAccessibilityFeature::kSwitchAccess));
 
 TEST_P(BackButtonVisibilityWithAccessibilityFeaturesTest,
        TabletModeSwitchWithA11yFeatureEnabled) {

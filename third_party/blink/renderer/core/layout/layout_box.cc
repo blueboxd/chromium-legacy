@@ -40,6 +40,9 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
+#include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
+#include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_element_base.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -115,6 +118,43 @@ struct SameSizeAsLayoutBox : public LayoutBoxModelObject {
 
 static_assert(sizeof(LayoutBox) == sizeof(SameSizeAsLayoutBox),
               "LayoutBox should stay small");
+
+namespace {
+
+LayoutUnit ListBoxDefaultItemHeight(const LayoutBox& box) {
+  constexpr int kDefaultPaddingBottom = 1;
+
+  const SimpleFontData* font_data = box.StyleRef().GetFont().PrimaryFont();
+  if (!font_data)
+    return LayoutUnit();
+  return LayoutUnit(font_data->GetFontMetrics().Height() +
+                    kDefaultPaddingBottom);
+}
+
+// TODO(crbug.com/1040826): This function is written in LayoutObject API
+// so that this works in both of the legacy layout and LayoutNG. We
+// should have LayoutNG-specific code.
+LayoutUnit ListBoxItemHeight(const HTMLSelectElement& select,
+                             const LayoutBox& box) {
+  const auto& items = select.GetListItems();
+  if (items.IsEmpty() || box.ShouldApplySizeContainment())
+    return ListBoxDefaultItemHeight(box);
+
+  LayoutUnit max_height;
+  for (Element* element : items) {
+    if (auto* optgroup = DynamicTo<HTMLOptGroupElement>(element))
+      element = &optgroup->OptGroupLabelElement();
+    LayoutUnit item_height;
+    if (auto* layout_box = element->GetLayoutBox())
+      item_height = layout_box->Size().Height();
+    else
+      item_height = ListBoxDefaultItemHeight(box);
+    max_height = std::max(max_height, item_height);
+  }
+  return max_height;
+}
+
+}  // anonymous namespace
 
 BoxLayoutExtraInput::BoxLayoutExtraInput(LayoutBox& box) : box(box) {
   box.SetBoxLayoutExtraInput(this);
@@ -815,6 +855,19 @@ LayoutUnit LayoutBox::OverrideIntrinsicContentHeight() const {
   DCHECK(intrinsic_length.IsFixed());
   DCHECK_GE(intrinsic_length.Value(), 0.f);
   return LayoutUnit(intrinsic_length.Value());
+}
+
+LayoutUnit LayoutBox::DefaultIntrinsicContentBlockSize() const {
+  // If the intrinsic-block-size is specified, then we shouldn't ever need to
+  // get here.
+  DCHECK(!HasOverrideIntrinsicContentLogicalHeight());
+
+  auto* select = DynamicTo<HTMLSelectElement>(GetNode());
+  if (select && !select->UsesMenuList()) {
+    return ListBoxItemHeight(*select, *this) * select->ListBoxSize() -
+           ScrollbarLogicalHeight();
+  }
+  return kIndefiniteSize;
 }
 
 LayoutUnit LayoutBox::LogicalHeightWithVisibleOverflow() const {
@@ -3572,10 +3625,16 @@ void LayoutBox::ComputeLogicalHeight(
   if (HasOverrideIntrinsicContentLogicalHeight()) {
     height = OverrideIntrinsicContentLogicalHeight() +
              BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight();
-  } else if (ShouldApplySizeContainment() && !IsLayoutGrid()) {
-    height = BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight();
   } else {
-    height = LogicalHeight();
+    LayoutUnit default_height = DefaultIntrinsicContentBlockSize();
+    if (default_height != kIndefiniteSize) {
+      height = default_height + BorderAndPaddingLogicalHeight() +
+               ScrollbarLogicalHeight();
+    } else if (ShouldApplySizeContainment() && !IsLayoutGrid()) {
+      height = BorderAndPaddingLogicalHeight() + ScrollbarLogicalHeight();
+    } else {
+      height = LogicalHeight();
+    }
   }
   ComputeLogicalHeight(height, LogicalTop(), computed_values);
 }

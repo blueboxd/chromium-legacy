@@ -16,8 +16,8 @@
 
   ConsoleTestRunner.expandConsoleMessages(dumpConsoleMessages);
 
-  function dumpConsoleMessages() {
-    ConsoleTestRunner.dumpConsoleMessages(
+  async function dumpConsoleMessages() {
+    await ConsoleTestRunner.dumpConsoleMessages(
         false, false, TestRunner.textContentWithLineBreaks);
     TestRunner.completeTest();
   }

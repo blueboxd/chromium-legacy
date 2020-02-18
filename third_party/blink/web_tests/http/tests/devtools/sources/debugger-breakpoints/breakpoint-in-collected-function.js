@@ -33,7 +33,7 @@ foo = null;
   let inlineBreakpointsReady = SourcesTestRunner.waitDebuggerPluginBreakpoints();
   TestRunner.evaluateInPageAnonymously(script);
   let callFrames = await SourcesTestRunner.waitUntilPausedPromise();
-  SourcesTestRunner.captureStackTrace(callFrames);
+  await SourcesTestRunner.captureStackTrace(callFrames);
 
   sourceFrame = await SourcesTestRunner.showScriptSourcePromise('foo.js');
   await inlineBreakpointsReady;

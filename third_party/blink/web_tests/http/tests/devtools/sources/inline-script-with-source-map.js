@@ -24,13 +24,13 @@
   TestRunner.addResult('Call function and dump stack trace');
   TestRunner.evaluateInPageAnonymously('foo()');
   let callFrames = await SourcesTestRunner.waitUntilPausedPromise();
-  SourcesTestRunner.captureStackTrace(callFrames);
+  await SourcesTestRunner.captureStackTrace(callFrames);
 
   TestRunner.addResult('Dump console mesage with its location:');
   let messagePromise = ConsoleTestRunner.waitUntilMessageReceivedPromise();
   SourcesTestRunner.resumeExecution();
   await messagePromise;
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
 
   SourcesTestRunner.completeDebuggerTest();
 })();

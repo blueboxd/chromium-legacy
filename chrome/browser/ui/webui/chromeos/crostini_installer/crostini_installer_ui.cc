@@ -34,6 +34,7 @@ namespace {
 void AddStringResources(content::WebUIDataSource* source) {
   static constexpr webui::LocalizedString kStrings[] = {
       {"next", IDS_CROSTINI_INSTALLER_NEXT_BUTTON},
+      {"back", IDS_CROSTINI_INSTALLER_BACK_BUTTON},
       {"install", IDS_CROSTINI_INSTALLER_INSTALL_BUTTON},
       {"retry", IDS_CROSTINI_INSTALLER_RETRY_BUTTON},
       {"close", IDS_APP_CLOSE},

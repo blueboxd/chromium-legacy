@@ -409,11 +409,12 @@ void IndexedDBDispatcherHost::RemoveBoundReaders(const base::FilePath& path) {
 }
 
 void IndexedDBDispatcherHost::CreateAllExternalObjects(
+    const url::Origin& origin,
     const std::vector<IndexedDBExternalObject>& objects,
     std::vector<blink::mojom::IDBExternalObjectPtr>* mojo_objects) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  IDB_TRACE("IndexedDBDispatcherHost::CreateAllBlobs");
+  IDB_TRACE("IndexedDBDispatcherHost::CreateAllExternalObjects");
 
   DCHECK_EQ(objects.size(), mojo_objects->size());
   if (objects.empty())
@@ -423,38 +424,62 @@ void IndexedDBDispatcherHost::CreateAllExternalObjects(
     auto& blob_info = objects[i];
     auto& mojo_object = (*mojo_objects)[i];
 
-    DCHECK(mojo_object->is_blob_or_file());
-    auto& output_info = mojo_object->get_blob_or_file();
+    switch (blob_info.object_type()) {
+      case IndexedDBExternalObject::ObjectType::kBlob:
+      case IndexedDBExternalObject::ObjectType::kFile: {
+        DCHECK(mojo_object->is_blob_or_file());
+        auto& output_info = mojo_object->get_blob_or_file();
 
-    auto receiver = output_info->blob.InitWithNewPipeAndPassReceiver();
-    if (blob_info.is_remote_valid()) {
-      output_info->uuid = blob_info.uuid();
-      blob_info.Clone(std::move(receiver));
-      continue;
-    }
+        auto receiver = output_info->blob.InitWithNewPipeAndPassReceiver();
+        if (blob_info.is_remote_valid()) {
+          output_info->uuid = blob_info.uuid();
+          blob_info.Clone(std::move(receiver));
+          continue;
+        }
 
-    auto element = storage::mojom::BlobDataItem::New();
-    // TODO(enne): do we have to handle unknown size here??
-    element->size = blob_info.size();
-    element->side_data_size = 0;
-    element->content_type = base::UTF16ToUTF8(blob_info.type());
-    element->type = storage::mojom::BlobDataItemType::kIndexedDB;
+        auto element = storage::mojom::BlobDataItem::New();
+        // TODO(enne): do we have to handle unknown size here??
+        element->size = blob_info.size();
+        element->side_data_size = 0;
+        element->content_type = base::UTF16ToUTF8(blob_info.type());
+        element->type = storage::mojom::BlobDataItemType::kIndexedDB;
 
-    base::Time last_modified;
-    // Android doesn't seem to consistantly be able to set file modification
-    // times. https://crbug.com/1045488
+        base::Time last_modified;
+        // Android doesn't seem to consistently be able to set file modification
+        // times. https://crbug.com/1045488
 #if !defined(OS_ANDROID)
-    last_modified = blob_info.last_modified();
+        last_modified = blob_info.last_modified();
 #endif
-    BindFileReader(blob_info.indexed_db_file_path(), last_modified,
-                   blob_info.release_callback(),
-                   element->reader.InitWithNewPipeAndPassReceiver());
+        BindFileReader(blob_info.indexed_db_file_path(), last_modified,
+                       blob_info.release_callback(),
+                       element->reader.InitWithNewPipeAndPassReceiver());
 
-    // Write results to output_info.
-    output_info->uuid = base::GenerateGUID();
+        // Write results to output_info.
+        output_info->uuid = base::GenerateGUID();
 
-    mojo_blob_storage_context()->RegisterFromDataItem(
-        std::move(receiver), output_info->uuid, std::move(element));
+        mojo_blob_storage_context()->RegisterFromDataItem(
+            std::move(receiver), output_info->uuid, std::move(element));
+        break;
+      }
+      case IndexedDBExternalObject::ObjectType::kNativeFileSystemHandle: {
+        DCHECK(mojo_object->is_native_file_system_token());
+
+        mojo::PendingRemote<blink::mojom::NativeFileSystemTransferToken>
+            mojo_token;
+
+        if (blob_info.is_native_file_system_remote_valid()) {
+          blob_info.native_file_system_token_remote()->Clone(
+              mojo_token.InitWithNewPipeAndPassReceiver());
+        } else {
+          DCHECK(!blob_info.native_file_system_token().empty());
+          native_file_system_context()->DeserializeHandle(
+              origin, blob_info.native_file_system_token(),
+              mojo_token.InitWithNewPipeAndPassReceiver());
+        }
+        mojo_object->get_native_file_system_token() = std::move(mojo_token);
+        break;
+      }
+    }
   }
 }
 

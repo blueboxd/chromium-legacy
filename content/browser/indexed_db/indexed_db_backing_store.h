@@ -153,6 +153,8 @@ class CONTENT_EXPORT IndexedDBBackingStore {
 
     blink::mojom::IDBTransactionMode mode() const { return mode_; }
 
+    IndexedDBBackingStore* backing_store() { return backing_store_.get(); }
+
    private:
     // Called by CommitPhaseOne: Identifies the blob entries to write and adds
     // them to the recovery blob journal directly (i.e. not as part of the

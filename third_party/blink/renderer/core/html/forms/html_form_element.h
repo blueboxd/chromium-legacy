@@ -71,13 +71,14 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   void Disassociate(HTMLImageElement&);
   void DidAssociateByParser();
 
-  void PrepareForSubmission(Event*, HTMLFormControlElement* submit_button);
+  void PrepareForSubmission(const Event*,
+                            HTMLFormControlElement* submit_button);
   void submitFromJavaScript();
   void requestSubmit(ExceptionState& exception_state);
   void requestSubmit(HTMLElement* submitter, ExceptionState& exception_state);
   void reset();
 
-  void SubmitImplicitly(Event&, bool from_implicit_submission_trigger);
+  void SubmitImplicitly(const Event&, bool from_implicit_submission_trigger);
 
   String GetName() const;
 
@@ -133,7 +134,8 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   }
 
   void SubmitDialog(FormSubmission*);
-  void ScheduleFormSubmission(Event*, HTMLFormControlElement* submit_button);
+  void ScheduleFormSubmission(const Event*,
+                              HTMLFormControlElement* submit_button);
 
   void CollectListedElements(Node& root, ListedElement::List&) const;
   void CollectImageElements(Node& root, HeapVector<Member<HTMLImageElement>>&);

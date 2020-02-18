@@ -95,4 +95,33 @@ source_set("unit_tests") {
     "//ui/gl",
     "//ui/gl:test_support",
   ]
+  if (is_win) {
+    deps += [ "//media/renderers:media_foundation_renderer" ]
+  }
+}
+
+if (is_win) {
+  source_set("media_foundation_renderer") {
+    sources = [
+      "win/media_foundation_audio_stream.cc",
+      "win/media_foundation_audio_stream.h",
+      "win/media_foundation_source_wrapper.cc",
+      "win/media_foundation_source_wrapper.h",
+      "win/media_foundation_stream_wrapper.cc",
+      "win/media_foundation_stream_wrapper.h",
+      "win/media_foundation_video_stream.cc",
+      "win/media_foundation_video_stream.h",
+      "win/mf_cdm_proxy.h",
+    ]
+    deps = [
+      "//media",
+      "//media/base/win:media_foundation_util",
+    ]
+
+    # media_foundation_renderer uses Windows D3D and Media Foundation APIs.
+    libs = [
+      "d3d11.lib",
+      "mfplat.lib",
+    ]
+  }
 }

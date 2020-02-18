@@ -23,6 +23,7 @@ android_library("chrome_java_test_pagecontroller") {
     "javatests/src/org/chromium/chrome/test/pagecontroller/controllers/tabswitcher/TabSwitcherController.java",
     "javatests/src/org/chromium/chrome/test/pagecontroller/controllers/tabswitcher/TabSwitcherMenuController.java",
     "javatests/src/org/chromium/chrome/test/pagecontroller/controllers/urlpage/UrlPage.java",
+    "javatests/src/org/chromium/chrome/test/pagecontroller/controllers/webapk/first_run/LightWeightTOSController.java",
     "javatests/src/org/chromium/chrome/test/pagecontroller/rules/ChromeUiApplicationTestRule.java",
     "javatests/src/org/chromium/chrome/test/pagecontroller/rules/ChromeUiAutomatorTestRule.java",
     "javatests/src/org/chromium/chrome/test/pagecontroller/utils/BySelectorIndexUi2Locator.java",
@@ -66,6 +67,25 @@ instrumentation_test_apk("chrome_java_test_pagecontroller_tests") {
     ":chrome_java_test_pagecontroller",
     "//third_party/junit",
   ]
+
+  if (!is_java_debug) {
+    proguard_enabled = true
+    proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
+  }
+}
+
+instrumentation_test_apk("chrome_java_test_webapk_launch_tests") {
+  apk_name = "ChromeWebapkLaunchTests"
+  apk_under_test = "//chrome/android:chrome_public_apk"
+  android_manifest = "javatests/src/org/chromium/chrome/test/pagecontroller/tests/webapk/AndroidManifest.xml"
+  sources = [ "javatests/src/org/chromium/chrome/test/pagecontroller/tests/webapk/MapsGoFirstRunTest.java" ]
+  deps = [
+    ":chrome_java_test_pagecontroller",
+    "//third_party/junit",
+  ]
+
+  additional_apks =
+      [ "//chrome/android/webapk/shell_apk:uiautomator_maps_go_webapk" ]
 
   if (!is_java_debug) {
     proguard_enabled = true

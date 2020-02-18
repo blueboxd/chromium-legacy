@@ -16,6 +16,7 @@ import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 /**
  * Tab is a visual/functional unit that encapsulates the content (not just web site content
@@ -99,17 +100,17 @@ public interface Tab extends TabLifecycle {
     /**
      * @return The URL that is loaded in the current tab. This may not be the same as
      *         the last committed URL if a new navigation is in progress.
+     *
+     * @deprecated Please use {@link #getUrl()} instead.
      */
+    @Deprecated
     String getUrlString();
 
     /**
-     * Note: This function is currently being refactored to return a GURL. Please use
-     * {@link #getUrlString} for now.
-     *
      * @return The URL that is loaded in the current tab. This may not be the same as
      *         the last committed URL if a new navigation is in progress.
      */
-    String getUrl();
+    GURL getUrl();
 
     /**
      * @return The tab title.

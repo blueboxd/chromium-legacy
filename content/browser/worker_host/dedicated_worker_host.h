@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_WORKER_HOST_DEDICATED_WORKER_HOST_H_
 #define CONTENT_BROWSER_WORKER_HOST_DEDICATED_WORKER_HOST_H_
 
+#include <memory>
+
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "build/build_config.h"
@@ -119,6 +121,10 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
   // Called from WorkerScriptFetchInitiator. Continues starting the dedicated
   // worker in the renderer process.
   //
+  // |success| is true only when the script fetch succeeded.
+  //
+  // Note: None of the following parameters are valid if |success| is false.
+  //
   // |main_script_load_params| is sent to the renderer process and to be used to
   // load the dedicated worker main script pre-requested by the browser process.
   //
@@ -130,14 +136,19 @@ class DedicatedWorkerHost final : public blink::mojom::DedicatedWorkerHost,
   // |controller| contains information about the service worker controller. Once
   // a ServiceWorker object about the controller is prepared, it is registered
   // to |controller_service_worker_object_host|.
+  //
+  // |final_response_url| is the URL calculated from the initial request URL,
+  // redirect chain, and URLs fetched via service worker.
+  // https://fetch.spec.whatwg.org/#concept-response-url
   void DidStartScriptLoad(
+      bool success,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       blink::mojom::ControllerServiceWorkerInfoPtr controller,
       base::WeakPtr<ServiceWorkerObjectHost>
           controller_service_worker_object_host,
-      bool success);
+      const GURL& final_response_url);
 
   // Sets up the observer of network service crash.
   void ObserveNetworkServiceCrash(StoragePartitionImpl* storage_partition_impl);

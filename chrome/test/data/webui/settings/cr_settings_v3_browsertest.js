@@ -64,12 +64,23 @@ var CrSettingsDefaultBrowserV3Test = class extends CrSettingsV3BrowserTest {
   }
 };
 
-
 TEST_F('CrSettingsDefaultBrowserV3Test', 'All', function() {
   mocha.run();
 });
 
 GEN('#endif  // !defined(OS_CHROMEOS)');
+
+// eslint-disable-next-line no-var
+var CrSettingsDownloadsPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/downloads_page_test.m.js';
+  }
+};
+
+TEST_F('CrSettingsDownloadsPageV3Test', 'All', function() {
+  mocha.run();
+});
 
 // eslint-disable-next-line no-var
 var CrSettingsCheckboxV3Test = class extends CrSettingsV3BrowserTest {

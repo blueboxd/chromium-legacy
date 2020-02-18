@@ -65,6 +65,10 @@ class GpuMemoryBufferManager;
 }
 
 namespace viz {
+namespace mojom {
+class DisplayPrivate;
+class ExternalBeginFrameController;
+}  // namespace mojom
 class ContextProvider;
 class HostFrameSinkManager;
 class LocalSurfaceIdAllocation;
@@ -72,11 +76,11 @@ class RasterContextProvider;
 }
 
 namespace ui {
-
 class Compositor;
 class Layer;
 class ScopedAnimationDurationScaleMode;
 class ScrollInputHandler;
+struct PendingBeginFrameArgs;
 
 constexpr int kCompositorLockTimeoutMs = 67;
 
@@ -90,48 +94,6 @@ class COMPOSITOR_EXPORT ContextFactoryPrivate {
 
   // Gets the frame sink manager host instance.
   virtual viz::HostFrameSinkManager* GetHostFrameSinkManager() = 0;
-
-  // Inform the display corresponding to this compositor if it is visible. When
-  // false it does not need to produce any frames. Visibility is reset for each
-  // call to CreateLayerTreeFrameSink.
-  virtual void SetDisplayVisible(ui::Compositor* compositor, bool visible) = 0;
-
-  // Resize the display corresponding to this compositor to a particular size.
-  virtual void ResizeDisplay(ui::Compositor* compositor,
-                             const gfx::Size& size) = 0;
-
-  // Attempts to immediately swap a frame with the current size if possible,
-  // then will no longer swap until ResizeDisplay() is called.
-  virtual void DisableSwapUntilResize(ui::Compositor* compositor) = 0;
-
-  // Sets the color matrix used to transform how all output is drawn to the
-  // display underlying this ui::Compositor.
-  virtual void SetDisplayColorMatrix(ui::Compositor* compositor,
-                                     const SkMatrix44& matrix) = 0;
-
-  // Set the output color profile into which this compositor should render.
-  virtual void SetDisplayColorSpaces(
-      ui::Compositor* compositor,
-      const gfx::DisplayColorSpaces& display_color_spaces) = 0;
-
-  // Mac path for transporting vsync parameters to the display.  Other platforms
-  // update it via the BrowserCompositorLayerTreeFrameSink directly.
-  virtual void SetDisplayVSyncParameters(ui::Compositor* compositor,
-                                         base::TimeTicks timebase,
-                                         base::TimeDelta interval) = 0;
-
-  virtual void IssueExternalBeginFrame(
-      ui::Compositor* compositor,
-      const viz::BeginFrameArgs& args,
-      bool force,
-      base::OnceCallback<void(const viz::BeginFrameAck&)> callback) = 0;
-
-  virtual void SetOutputIsSecure(Compositor* compositor, bool secure) = 0;
-
-  // Adds an observer for vsync parameter changes.
-  virtual void AddVSyncParameterObserver(
-      Compositor* compositor,
-      mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer) = 0;
 };
 
 // This class abstracts the creation of the 3D context for the compositor. It is
@@ -193,7 +155,10 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   void AddChildFrameSink(const viz::FrameSinkId& frame_sink_id);
   void RemoveChildFrameSink(const viz::FrameSinkId& frame_sink_id);
 
-  void SetLayerTreeFrameSink(std::unique_ptr<cc::LayerTreeFrameSink> surface);
+  void SetLayerTreeFrameSink(std::unique_ptr<cc::LayerTreeFrameSink> surface,
+                             viz::mojom::DisplayPrivate* display_private);
+  void SetExternalBeginFrameController(viz::mojom::ExternalBeginFrameController*
+                                           external_begin_frame_controller);
 
   // Called when a child surface is about to resize.
   void OnChildResizing();
@@ -232,8 +197,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // from changes to layer properties.
   void ScheduleRedrawRect(const gfx::Rect& damage_rect);
 
-  // Finishes all outstanding rendering and disables swapping on this surface
-  // until it is resized.
+  // Attempts to immediately swap a frame with the current size if possible,
+  // then disables swapping on this surface until it is resized.
   void DisableSwapUntilResize();
   void ReenableSwap();
 
@@ -261,7 +226,9 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // the |root_layer|.
   void SetBackgroundColor(SkColor color);
 
-  // Sets the visibility of the underlying compositor.
+  // Inform the display corresponding to this compositor if it is visible. When
+  // false it does not need to produce any frames. Visibility is reset for each
+  // call to CreateLayerTreeFrameSink.
   void SetVisible(bool visible);
 
   // Gets the visibility of the underlying compositor.
@@ -273,8 +240,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
                                gfx::ScrollOffset* offset) const;
   bool ScrollLayerTo(cc::ElementId element_id, const gfx::ScrollOffset& offset);
 
-  // Mac sets vsync parameters through the browser compositor rather than from
-  // the GPU.
+  // Mac path for transporting vsync parameters to the display. Other platforms
+  // update it via the BrowserCompositorLayerTreeFrameSink directly.
   void SetDisplayVSyncParameters(base::TimeTicks timebase,
                                  base::TimeDelta interval);
   void AddVSyncParameterObserver(
@@ -331,6 +298,11 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   using PresentationTimeCallback =
       base::OnceCallback<void(const gfx::PresentationFeedback&)>;
   void RequestPresentationTimeForNextFrame(PresentationTimeCallback callback);
+
+  void IssueExternalBeginFrame(
+      const viz::BeginFrameArgs& args,
+      bool force,
+      base::OnceCallback<void(const viz::BeginFrameAck&)> callback);
 
   // LayerTreeHostClient implementation.
   void WillBeginMainFrame() override {}
@@ -420,6 +392,14 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   ui::ContextFactory* context_factory_;
   ui::ContextFactoryPrivate* context_factory_private_;
 
+  // These pointers are owned by |context_factory_|, and must be reset before
+  // calling RemoveCompositor();
+  viz::mojom::DisplayPrivate* display_private_ = nullptr;
+  viz::mojom::ExternalBeginFrameController* external_begin_frame_controller_ =
+      nullptr;
+
+  std::unique_ptr<PendingBeginFrameArgs> pending_begin_frame_args_;
+
   // The root of the Layer tree drawn by this compositor.
   Layer* root_layer_ = nullptr;
 
@@ -463,6 +443,8 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
 
   SkMatrix44 display_color_matrix_;
   gfx::DisplayColorSpaces display_color_spaces_;
+
+  bool output_is_secure_ = false;
 
   // If true, all paint commands are recorded at pixel size instead of DIP.
   const bool is_pixel_canvas_;

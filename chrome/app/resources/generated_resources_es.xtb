@@ -1384,7 +1384,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2865919525181940183">Captura de pantalla de los programas que hay en la pantalla ahora mismo</translation>
 <translation id="286674810810214575">Comprobando fuentes de alimentación...</translation>
 <translation id="2867768963760577682">Abrir como pestaña fija</translation>
-<translation id="2868184003987917410">No permitir que los sitios web accedan a tus dispositivos y datos de realidad virtual</translation>
 <translation id="2868746137289129307">Esta extensión está obsoleta e inhabilitada por la política de empresas. Es posible que se habilite automáticamente cuando haya una nueva versión disponible.</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2870909136778269686">Actualizando...</translation>
@@ -1714,7 +1713,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3348038390189153836">Se ha detectado un dispositivo extraíble.</translation>
 <translation id="3349933790966648062">Uso de memoria</translation>
 <translation id="3350117557200012647">Acceder al modo de vinculación</translation>
-<translation id="3350244554415289209">Preguntar cuando un sitio web quiera acceder a la posición de tu cámara o mapear tu habitación (recomendado)</translation>
 <translation id="3355936511340229503">Error de conexión</translation>
 <translation id="3356580349448036450">Completo</translation>
 <translation id="3359256513598016054">Restricciones de políticas de certificados</translation>
@@ -1731,7 +1729,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3382073616108123819">¡Vaya! El sistema no ha podido determinar los identificadores de dispositivo de este dispositivo.</translation>
 <translation id="3382086682569279540">La cuenta que gestionas se eliminará pronto</translation>
 <translation id="3382200254148930874">Deteniendo la supervisión...</translation>
-<translation id="3383210070657133526"><ph name="URL" /> quiere poder iniciar sesiones de realidad virtual</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" /> %</translation>
 <translation id="338583716107319301">Separador</translation>
 <translation id="338691029516748599">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" /> %, gestionada por el administrador, conectar</translation>
@@ -1828,7 +1825,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="3511307672085573050">Copiar dire&amp;cción de enlace</translation>
 <translation id="351152300840026870">Fuente de ancho fijo</translation>
 <translation id="3511528412952710609">Breve</translation>
-<translation id="3513704683820682405">Realidad aumentada</translation>
 <translation id="3514373592552233661">Las redes preferidas se utilizarán en lugar de otras redes conocidas si hay más de una disponible</translation>
 <translation id="3515983984924808886">Vuelve a tocar tu llave de seguridad para confirmar el restablecimiento. Se eliminará toda la información guardada en la llave de seguridad, incluido el PIN.</translation>
 <translation id="3518985090088779359">Aceptar y continuar</translation>
@@ -2531,7 +2527,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4501530680793980440">Confirmar eliminación</translation>
 <translation id="4502423230170890588">Eliminar del dispositivo</translation>
 <translation id="4504940961672722399">Para utilizar esta extensión, haz clic en este icono o pulsa <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4507164039066603071">No permitir que los sitios web accedan a la posición de tu cámara o mapeen tu habitación</translation>
 <translation id="4508051413094283164">Abre todos los marcadores en una ventana de incógnito</translation>
 <translation id="4508265954913339219">Error de activación</translation>
 <translation id="4508765956121923607">Ver código f&amp;uente</translation>
@@ -2837,7 +2832,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="494286511941020793">Ayuda para la configuración de proxy</translation>
 <translation id="4943368462779413526">Balón de fútbol</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" solicita conectarse a un puerto serie</translation>
-<translation id="4943703118917034429">Realidad virtual</translation>
 <translation id="4944310289250773232">Este servicio de autenticación está alojado por <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Acciones</translation>
 <translation id="4952981627953231344">Plugin VM no está permitido en este dispositivo. Ponte en contacto con el administrador de dispositivos de tu organización.</translation>
@@ -4111,7 +4105,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6758056191028427665">Envíanos tu opinión sobre nuestro servicio.</translation>
 <translation id="6759193508432371551">Restablecer estado de fábrica</translation>
 <translation id="6762833852331690540">Activado</translation>
-<translation id="6767115174726603949">Acceder a los dispositivos y datos de realidad virtual</translation>
 <translation id="6767566652486411142">Elegir otro idioma...</translation>
 <translation id="6767639283522617719">No se puede vincular el dominio. Comprueba que la configuración de la unidad organizativa sea correcta.</translation>
 <translation id="6769712124046837540">Añadiendo impresora...</translation>
@@ -4307,7 +4300,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="703001695939087067">Se ha cambiado al modo de vista general. Pulsa el tabulador para navegar.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - Puerto serie conectado</translation>
 <translation id="7031962166228839643">El módulo TPM se está preparando (este proceso puede tardar unos minutos). Por favor, espera...</translation>
-<translation id="7034615910652881882">Preguntar cuando un sitio web quiera acceder a tus dispositivos y datos de realidad virtual</translation>
 <translation id="7037509989619051237">Texto de vista previa</translation>
 <translation id="7039326228527141150">Acceder a dispositivos USB desde <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Inicio de sesión de tarjeta inteligente de Microsoft</translation>
@@ -4613,7 +4605,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7443806024147773267">Accede cuando quieras a tus contraseñas con tu cuenta de Google</translation>
 <translation id="7444983668544353857">Inhabilitar <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Instalar aplicaciones automáticamente</translation>
-<translation id="7448625729116931228">Preguntar cuando un sitio web quiera acceder a tus dispositivos y datos de realidad virtual (recomendado)</translation>
 <translation id="7450761244949417357">Abriendo en <ph name="ALTERNATIVE_BROWSER_NAME" /> ahora</translation>
 <translation id="7453008956351770337">Al seleccionar esta impresora, concedes permiso a la siguiente extensión para acceder a tu impresora:</translation>
 <translation id="7454548535253569100">Portal: <ph name="SUBFRAME_SITE" /></translation>
@@ -4750,7 +4741,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7652808307838961528">Editar persona (<ph name="PROFILE_NAME" />)</translation>
 <translation id="765293928828334535">No es posible añadir aplicaciones, extensiones ni secuencias de comandos de usuario desde este sitio web</translation>
 <translation id="7652954539215530680">Crear un PIN</translation>
-<translation id="7653295403398566475">Preguntar cuando un sitio web quiera acceder a la posición de tu cámara o mapear tu habitación</translation>
 <translation id="7654941827281939388">Esta cuenta ya se está utilizando en este ordenador.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7659584679870740384">No tienes autorización para utilizar este dispositivo. Ponte en contacto con el administrador para obtener permiso de inicio de sesión.</translation>
@@ -5289,7 +5279,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8338952601723052325">Sitio web para desarrolladores</translation>
 <translation id="8339059274628563283"><ph name="SITE" /> ha almacenado datos de forma local</translation>
 <translation id="833986336429795709">Para abrir este enlace, elige una aplicación</translation>
-<translation id="834057053932610950">No se ha podido configurar Linux. Ponte en contacto con tu administrador.</translation>
 <translation id="8342861492835240085">Seleccionar una colección</translation>
 <translation id="834290227245955730">El PIN no es válido. Intentos restantes: <ph name="RETRIES" />.</translation>
 <translation id="8351419472474436977">Esta extensión ha tomado el control de la configuración del proxy, lo que significa que puede cambiar, deshacer o espiar cualquier acción que hagas online. Si no estás seguro de los motivos por los que se ha producido este cambio, probablemente no lo quieras.</translation>

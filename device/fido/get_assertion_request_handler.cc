@@ -517,8 +517,8 @@ void GetAssertionRequestHandler::HandleTouch(FidoAuthenticator* authenticator) {
   state_ = State::kGettingRetries;
   CancelActiveAuthenticators(authenticator->GetId());
   authenticator_ = authenticator;
-  authenticator_->GetRetries(
-      base::BindOnce(&GetAssertionRequestHandler::OnRetriesResponse,
+  authenticator_->GetPinRetries(
+      base::BindOnce(&GetAssertionRequestHandler::OnPinRetriesResponse,
                      weak_factory_.GetWeakPtr()));
 }
 
@@ -532,12 +532,14 @@ void GetAssertionRequestHandler::HandleAuthenticatorMissingUV(
            base::nullopt, nullptr);
 }
 
-void GetAssertionRequestHandler::OnRetriesResponse(
+void GetAssertionRequestHandler::OnPinRetriesResponse(
     CtapDeviceResponseCode status,
     base::Optional<pin::RetriesResponse> response) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(my_sequence_checker_);
   DCHECK_EQ(state_, State::kGettingRetries);
   if (status != CtapDeviceResponseCode::kSuccess) {
+    FIDO_LOG(ERROR) << "OnPinRetriesResponse() failed for "
+                    << authenticator_->GetDisplayName();
     state_ = State::kFinished;
     std::move(completion_callback_)
         .Run(GetAssertionStatus::kAuthenticatorResponseInvalid, base::nullopt,
@@ -582,8 +584,8 @@ void GetAssertionRequestHandler::OnHavePINToken(
 
   if (status == CtapDeviceResponseCode::kCtap2ErrPinInvalid) {
     state_ = State::kGettingRetries;
-    authenticator_->GetRetries(
-        base::BindOnce(&GetAssertionRequestHandler::OnRetriesResponse,
+    authenticator_->GetPinRetries(
+        base::BindOnce(&GetAssertionRequestHandler::OnPinRetriesResponse,
                        weak_factory_.GetWeakPtr()));
     return;
   }
@@ -623,6 +625,34 @@ void GetAssertionRequestHandler::OnHavePINToken(
                      weak_factory_.GetWeakPtr(), authenticator_));
 }
 
+void GetAssertionRequestHandler::OnUvRetriesResponse(
+    CtapDeviceResponseCode status,
+    base::Optional<pin::RetriesResponse> response) {
+  if (status != CtapDeviceResponseCode::kSuccess) {
+    FIDO_LOG(ERROR) << "OnUvRetriesResponse() failed for "
+                    << authenticator_->GetDisplayName();
+    state_ = State::kFinished;
+    std::move(completion_callback_)
+        .Run(GetAssertionStatus::kAuthenticatorResponseInvalid, base::nullopt,
+             nullptr);
+    return;
+  }
+  if (response->retries == 0) {
+    // TODO(nsatragno): implement PIN fallback.
+    FIDO_LOG(DEBUG) << "OnUvRetriesResponse(): uv retries = 0 for "
+                    << authenticator_->GetDisplayName();
+    state_ = State::kFinished;
+    std::move(completion_callback_)
+        .Run(GetAssertionStatus::kUserConsentDenied, base::nullopt, nullptr);
+    return;
+  }
+  state_ = State::kWaitingForTouch;
+  observer()->OnRetryUserVerification(response->retries);
+  authenticator_->GetUvToken(
+      base::BindOnce(&GetAssertionRequestHandler::OnHaveUvToken,
+                     weak_factory_.GetWeakPtr(), authenticator_));
+}
+
 void GetAssertionRequestHandler::OnHaveUvToken(
     FidoAuthenticator* authenticator,
     CtapDeviceResponseCode status,
@@ -635,18 +665,17 @@ void GetAssertionRequestHandler::OnHaveUvToken(
     return;
   }
   if (status != CtapDeviceResponseCode::kSuccess) {
-    // TODO(nsatragno): implement PIN fallback and UV retries.
     if (status == CtapDeviceResponseCode::kCtap2ErrPinInvalid ||
         status == CtapDeviceResponseCode::kCtap2ErrOperationDenied) {
-      FIDO_LOG(ERROR) << "Failing assertion request due to status "
-                      << static_cast<int>(status) << " from "
-                      << authenticator->GetDisplayName()
-                      << " on uv token response";
       CancelActiveAuthenticators(authenticator->GetId());
-      std::move(completion_callback_)
-          .Run(GetAssertionStatus::kUserConsentDenied, base::nullopt, nullptr);
+      authenticator_ = authenticator;
+      state_ = State::kGettingRetries;
+      authenticator->GetUvRetries(
+          base::BindOnce(&GetAssertionRequestHandler::OnUvRetriesResponse,
+                         weak_factory_.GetWeakPtr()));
       return;
     }
+    // TODO(nsatragno): implement PIN fallback.
     FIDO_LOG(ERROR) << "Ignoring status " << static_cast<int>(status)
                     << " from " << authenticator->GetDisplayName();
     return;

@@ -220,7 +220,7 @@
 <translation id="2582407057977008361">ଅଲଗା</translation>
 <translation id="2583123579994033088">ଗ୍ରିଡ୍ ଛାଡ଼ି ଦେଉଛନ୍ତି</translation>
 <translation id="2592212930811759050">ଏଡିଟିଂ ଆରମ୍ଭ କରିବାକୁ ଦୁଇଥର ଟାପ୍ କରନ୍ତୁ</translation>
-<translation id="2594420797397883935">କୌଣସି ପୂର୍ବବର୍ତ୍ତୀ ଆଇଟମ୍ ନାହିଁ ଯାହା ଏକ ଲିଙ୍କ୍ ନୁହେଁ</translation>
+<translation id="2594420797397883935">ଏକ ଲିଙ୍କ୍ ହୋଇ ନ ଥିବା କୌଣସି ପୂର୍ବବର୍ତ୍ତୀ ଆଇଟମ୍ ନାହିଁ</translation>
 <translation id="2598495320872286378">ବ୍ୟାକରଣ ତ୍ରୁଟି</translation>
 <translation id="2614981083756825552">ଗଣିତ ML ଲେଆଉଟ୍</translation>
 <translation id="2624431853467395961">ଜାଣିବା ମୋଡ୍‌ ଖୋଲନ୍ତୁ</translation>
@@ -486,7 +486,7 @@
 <translation id="4257525771875631676">କୌଣସି ପରବର୍ତ୍ତୀ ଆଙ୍କର୍ ନାହାଁନ୍ତି</translation>
 <translation id="4271220233568730077">ପରବର୍ତ୍ତୀ ଗଣିତ</translation>
 <translation id="4275397969489577657">ଇଭେଣ୍ଟ ଷ୍ଟ୍ରିମ୍ ଲଗ୍‌ଇନ୍‌ ସକ୍ଷମ କରନ୍ତୁ</translation>
-<translation id="4278486392851938658">କୌଣସି ପୂର୍ବରୁ ଯାଇଥିବା ଲିଙ୍କ୍ ନାହିଁ</translation>
+<translation id="4278486392851938658">ପୂର୍ବରୁ ଭିଜିଟ୍ କରିଥିବା କୌଣସି ଲିଙ୍କ୍ ନାହିଁ</translation>
 <translation id="4281245629646759298">ହାଲୁକା ହଳଦିଆ</translation>
 <translation id="4289540628985791613">ଅବଲୋକନ</translation>
 <translation id="4300318234632215983">ଗୋଟିଏ ଲିଙ୍କ୍ ପଛରେ ଥିବା URL ଘୋଷଣା କରନ୍ତୁ</translation>
@@ -618,7 +618,7 @@
 <translation id="5138912041966667164">ମଧ୍ୟମ ସ୍ଲେଟ ନୀଳ</translation>
 <translation id="5140016802771803559">ରେବେକା ବାଇଗଣୀ</translation>
 <translation id="5158275234811857234">କଭର୍</translation>
-<translation id="5170206230005240598">ବ୍ରେଲ୍ଲୀ କ୍ୟାପ୍ସନଗୁଡ଼ିକୁ ସକ୍ଷମ କରାଯାଇଛି</translation>
+<translation id="5170206230005240598">ବ୍ରେଲି କ୍ୟାପ୍ସନଗୁଡ଼ିକୁ ସକ୍ଷମ କରାଯାଇଛି</translation>
 <translation id="517143700877085897">, ଚୟନ କରାଯାଇନାହିଁ</translation>
 <translation id="5177546608148437145">ବାରମ୍ବାର ବ୍ୟବହାର କରାଯାଉଥିବା କମାଣ୍ଡଗୁଡ଼ିକୁ ନିମ୍ନରେ ଦିଆଯାଇଥିବା ଅନୁରୂପ ଫିଲ୍ଡଗୁଡ଼ିକରେ ଟାଇପ୍ କରି ସେଗୁଡ଼ିକ ପାଇଁ କୀବୋର୍ଡ ସର୍ଟକଟଗୁଡ଼ିକ କଷ୍ଟମାଇଜ୍ କରନ୍ତୁ</translation>
 <translation id="5183440668879371625">ପୂର୍ବବର୍ତ୍ତୀ ଲାଇନ୍ ବ୍ରେଲିରେ ଲେଖନ୍ତୁ</translation>
@@ -757,7 +757,7 @@
 <translation id="6156755592608846750">ସେଲର ସମାପ୍ତି</translation>
 <translation id="6158882249329863701">ଧାଡ଼ି <ph name="TABLECELLROWINDEX" /> ସ୍ତମ୍ଭ <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">ମିଟର୍</translation>
-<translation id="6166362019018438352">ବ୍ରେଲ୍ଲୀ କ୍ୟାପ୍ସନଗୁଡ଼ିକୁ ଅକ୍ଷମ କରାଯାଇଛି</translation>
+<translation id="6166362019018438352">ବ୍ରେଲି କ୍ୟାପ୍ସନଗୁଡ଼ିକୁ ଅକ୍ଷମ କରାଯାଇଛି</translation>
 <translation id="6169420925157477918">ଲମ୍ବା ବିବରଣୀ ସହ ଛବି</translation>
 <translation id="6186305613600865047">ସିଧାସଳଖ ପୃଷ୍ଠାର ତଳକୁ ଯାଆନ୍ତୁ</translation>
 <translation id="6187190722927752226">ନୀଳ ସବୁଜ</translation>
@@ -873,7 +873,7 @@ Chrome ବ୍ରାଉଜର୍ ମେନୁ ଖୋଲିବା ପାଇଁ, Al
 <translation id="7051308646573997571">କୋରାଲ୍</translation>
 <translation id="7062635574500127092">ଟିଲ୍</translation>
 <translation id="7074412385073481360">ସ୍କ୍ରିନର ଶୀର୍ଷଭାଗରେ ଥିବା ChromeVox ପ୍ୟାନେଲରେ ଏକ ରିଫ୍ରେସ୍ କରାଯାଇପାରୁଥିବା
-        ବ୍ରେଲ୍ଲୀ ଡିସପ୍ଲେର ଆଉଟପୁଟକୁ ସିମୁଲେଟ୍ କରିଥାଏବ୍ରେଲ୍ଲୀ ଡିସପ୍ଲେର ଆଉଟପୁଟକୁ ସିମୁଲେଟ୍ କରିଥାଏ</translation>
+        ବ୍ରେଲି ଡିସପ୍ଲେର ଆଉଟପୁଟକୁ ସିମୁଲେଟ୍ କରିଥାଏ</translation>
 <translation id="7086377898680121060">ଉଜ୍ଜ୍ୱଳତା ବଢ଼ାନ୍ତୁ</translation>
 <translation id="7088743565397416204">ଯାହା ଫୋକସ୍‌ କରାଯାଇଛି ତାହାକୁ ସକ୍ରିୟ କରିବାକୁ ଦୁଇଥର-ଟାପ୍ କରନ୍ତୁ</translation>
 <translation id="7091296112653361280">ନାଭାଜୋ ଧଳା</translation>
@@ -996,7 +996,7 @@ Chrome ବ୍ରାଉଜର୍ ମେନୁ ଖୋଲିବା ପାଇଁ, Al
 <translation id="7939428177581522200">ଚୟନରେ ଯୋଗ କରାଯାଇଛି</translation>
 <translation id="794091007957014205">{COUNT,plural, =1{ଏଟ୍}other{#ଟି ଏଟ୍ ଚିହ୍ନ}}</translation>
 <translation id="7942349550061667556">ନାଲି</translation>
-<translation id="7948364528129376623">କୌଣସି ପରବର୍ତ୍ତୀ ଯାଇଥିବା ଲିଙ୍କ୍ ନାହିଁ</translation>
+<translation id="7948364528129376623">ପରବର୍ତ୍ତୀ ଭିଜିଟ୍ କରିଥିବା କୌଣସି ଲିଙ୍କ୍ ନାହିଁ</translation>
 <translation id="7965147473449754028">ମେନୁ ବନ୍ଦ କରାଗଲା</translation>
 <translation id="7968340748835037139">ଗାଢ଼ ସବୁଜ</translation>
 <translation id="7972507042926081808">ଚକୋଲେଟ୍</translation>
@@ -1005,7 +1005,7 @@ Chrome ବ୍ରାଉଜର୍ ମେନୁ ଖୋଲିବା ପାଇଁ, Al
 <translation id="8009786657110126785">{COUNT,plural, =1{ଉଦ୍ଧୃତାଂଶ}other{#ଟି ଉଦ୍ଧୃତାଂଶ}}</translation>
 <translation id="8017588669690167134">ସ୍ପୀଚ୍ ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="801990297710781303">ଫୁଟ୍‌ନୋଟ୍</translation>
-<translation id="8028833145828956995">ଆପଣ ଟଟସ୍କ୍ରିନ୍ ମାଧ୍ୟମରେ ChromeVox ବ୍ୟବହାର କରିପାରିବେ</translation>
+<translation id="8028833145828956995">ଆପଣ ଟଚସ୍କ୍ରିନ୍ ମାଧ୍ୟମରେ ChromeVox ବ୍ୟବହାର କରିପାରିବେ</translation>
 <translation id="8033827949643255796">ଚୟନ କରାଯାଇଛି</translation>
 <translation id="8035962149453661158">ସର୍ବାଧିକ:<ph name="X" /></translation>
 <translation id="8037651341025652929">ସମାପ୍ତି</translation>
@@ -1205,7 +1205,7 @@ Chrome ବ୍ରାଉଜର୍ ମେନୁ ଖୋଲିବା ପାଇଁ, Al
 <translation id="8946628535652548639">ଧା<ph name="TABLECELLROWINDEX" />ସ୍ତ<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8952400011684167587">କୌଣସି ପୂର୍ବବର୍ତ୍ତୀ ରେଡିଓ ବଟନ୍ ନାହିଁ</translation>
 <translation id="8957142051395645063">ଘୋଷଣା କରନ୍ତୁ</translation>
-<translation id="896035116006462153">ବିସ୍ତାରିତ ବ୍ରେଲ୍ଲୀ କମାଣ୍ଡଗୁଡ଼ିକ ବ୍ୟବହାର କରିବା ପାଇଁ, ଦୟାକରି 'ସ୍ଥିତି ଟ୍ରେ'ର ଆକ୍ସେସିବିଲିଟୀ ଅନ୍ତର୍ଗତ ଅନ୍ ସ୍କ୍ରିନ୍ କୀବୋର୍ଡକୁ ସକ୍ଷମ କରନ୍ତୁ</translation>
+<translation id="896035116006462153">ବିସ୍ତାରିତ ବ୍ରେଲି କମାଣ୍ଡଗୁଡ଼ିକ ବ୍ୟବହାର କରିବା ପାଇଁ, ଦୟାକରି 'ସ୍ଥିତି ଟ୍ରେ'ର ଆକ୍ସେସିବିଲିଟୀ ଅନ୍ତର୍ଗତ ଅନ୍ ସ୍କ୍ରିନ୍ କୀବୋର୍ଡକୁ ସକ୍ଷମ କରନ୍ତୁ</translation>
 <translation id="8970172509886453271">କୌଣସି ପୂର୍ବବର୍ତ୍ତୀ ବିଭାଗ ନାହିଁ</translation>
 <translation id="8978496506222343566">ଟୁଲ୍ ଟିପ୍</translation>
 <translation id="8986362086234534611">ଭୁଲିଗଲେ</translation>

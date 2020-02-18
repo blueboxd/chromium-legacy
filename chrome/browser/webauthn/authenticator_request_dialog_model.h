@@ -95,6 +95,9 @@ class AuthenticatorRequestDialogModel {
     kClientPinErrorHardBlock,
     kClientPinErrorAuthenticatorRemoved,
 
+    // Authenticator Internal User Verification
+    kRetryInternalUserVerification,
+
     // Confirm user consent to create a resident credential. Used prior to
     // triggering Windows-native APIs when Windows itself won't show any
     // notice about resident credentials.
@@ -356,6 +359,10 @@ class AuthenticatorRequestDialogModel {
   // OnHavePIN is called when the user enters a PIN in the UI.
   void OnHavePIN(const std::string& pin);
 
+  // Called when the user needs to retry user verification with the number of
+  // |attempts| remaining.
+  void OnRetryUserVerification(int attempts);
+
   // OnResidentCredentialConfirmed is called when a user accepts a dialog
   // confirming that they're happy to create a resident credential.
   void OnResidentCredentialConfirmed();
@@ -408,6 +415,7 @@ class AuthenticatorRequestDialogModel {
     return ephemeral_state_.has_attempted_pin_entry_;
   }
   base::Optional<int> pin_attempts() const { return pin_attempts_; }
+  base::Optional<int> uv_attempts() const { return uv_attempts_; }
 
   void RequestAttestationPermission(base::OnceCallback<void(bool)> callback);
 
@@ -505,6 +513,7 @@ class AuthenticatorRequestDialogModel {
 
   base::OnceCallback<void(std::string)> pin_callback_;
   base::Optional<int> pin_attempts_;
+  base::Optional<int> uv_attempts_;
 
   base::OnceCallback<void(bool)> attestation_callback_;
 

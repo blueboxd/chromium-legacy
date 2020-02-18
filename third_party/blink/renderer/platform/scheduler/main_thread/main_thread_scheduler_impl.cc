@@ -590,9 +590,6 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
       }
     }
   }
-
-  FrameSchedulerImpl::InitializeTaskTypeQueueTraitsMap(
-      frame_task_types_to_queue_traits);
 }
 
 MainThreadSchedulerImpl::AnyThread::~AnyThread() = default;

@@ -114,7 +114,7 @@
 <translation id="1919950603503897840">தொடர்புகளைத் தேர்ந்தெடுக்கவும்</translation>
 <translation id="1922076542920281912">Chrome உங்கள் இருப்பிடத் தகவலை அணுக அனுமதிப்பதற்கு <ph name="BEGIN_LINK" />Android அமைப்புகளிலும்<ph name="END_LINK" /> இருப்பிடத்தை இயக்கவும்.</translation>
 <translation id="1923695749281512248"><ph name="BYTES_DOWNLOADED_WITH_UNITS" /> / <ph name="FILE_SIZE_WITH_UNITS" /></translation>
-<translation id="1925021887439448749">தனிப்பயன் இணைய முகவரியை உள்ளிடவும்</translation>
+<translation id="1925021887439448749">பிரத்தியேக இணைய முகவரியை உள்ளிடவும்</translation>
 <translation id="1928696683969751773">புதுப்பிப்புகள்</translation>
 <translation id="19288952978244135">Chromeமை மீண்டும் திறக்கவும்.</translation>
 <translation id="1933845786846280168">தேர்ந்தெடுத்த தாவல்</translation>
@@ -242,7 +242,7 @@
 <translation id="2842985007712546952">மூலக் கோப்புறை</translation>
 <translation id="2860954141821109167">இந்தச் சாதனத்தில் ஃபோன் ஆப்ஸ் இயக்கப்பட்டுள்ளதை உறுதிசெய்து கொள்ளவும்</translation>
 <translation id="2870560284913253234">தளம்</translation>
-<translation id="2874939134665556319">முந்தைய ட்ராக்</translation>
+<translation id="2874939134665556319">முந்தைய டிராக்</translation>
 <translation id="2876369937070532032">ஆபத்தான தளங்களைப் பார்ப்பதால் உங்கள் பாதுகாப்பிற்கு ஆபத்து ஏற்படும்போது நீங்கள் பார்வையிடும் சில பக்கங்களின் URLகளை Googleளுக்கு அனுப்பும்</translation>
 <translation id="2888126860611144412">Chrome அறிமுகம்</translation>
 <translation id="2891154217021530873">பக்கத்தை ஏற்றுவதை நிறுத்து</translation>
@@ -305,7 +305,6 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">உள்ளடக்கத்தைப் பதிவிறக்குவதைத் தொடரவா?</translation>
 <translation id="3306398118552023113">இந்த ஆப்ஸ் Chromeமில் இயங்குகிறது</translation>
-<translation id="3312292613668865961">உங்கள் விர்ச்சுவல் ரியாலிட்டி சாதனத்தையும் தரவையும் தளங்கள் அணுக அனுமதிப்பதற்கு முன்பாக அனுமதியைக் கோரும் (பரிந்துரைக்கப்படுகிறது)</translation>
 <translation id="3315103659806849044">உங்கள் ஒத்திசைவு மற்றும் Google சேவை அமைப்புகளைத் தற்போது உங்களுக்கேற்ப மாற்றியமைக்கிறீர்கள். ஒத்திசைவை இயக்க, திரையின் அடிப்பகுதிக்கு அருகிலுள்ள ‘உறுதிப்படுத்து’ பட்டனைத் தட்டவும். மேலே செல்</translation>
 <translation id="3328801116991980348">தளம் குறித்த தகவல்</translation>
 <translation id="3333961966071413176">எல்லாத் தொடர்புகளும்</translation>
@@ -390,7 +389,7 @@
 <translation id="4000212216660919741">Home ஆஃப்லைனில் உள்ளது</translation>
 <translation id="4008040567710660924">குறிப்பிட்ட தளத்திற்கு, குக்கீகளை அனுமதிக்கும்.</translation>
 <translation id="4034817413553209278">{HOURS,plural, =1{# மணிநேரம்}other{# மணிநேரம்}}</translation>
-<translation id="4046123991198612571">அடுத்த ட்ராக்</translation>
+<translation id="4046123991198612571">அடுத்த டிராக்</translation>
 <translation id="4056223980640387499">செபியா</translation>
 <translation id="4060598801229743805">திரையின் மேற்பகுதிக்கு அருகில், விருப்பங்கள் உள்ளன</translation>
 <translation id="4062305924942672200">சட்டப்பூர்வத் தகவல்</translation>
@@ -432,7 +431,7 @@
 <translation id="4415276339145661267">Google கணக்கை நிர்வகி</translation>
 <translation id="4432792777822557199">இனி <ph name="SOURCE_LANGUAGE" /> மொழியில் உள்ள பக்கங்கள் <ph name="TARGET_LANGUAGE" /> மொழிக்கு மொழிபெயர்க்கப்படும்</translation>
 <translation id="4433925000917964731">Google வழங்கும் Lite பக்கம்</translation>
-<translation id="4434045419905280838">பாப் அப்கள் &amp; திசைதிருப்புதல்கள்</translation>
+<translation id="4434045419905280838">பாப்-அப்கள் &amp; திசைதிருப்புதல்கள்</translation>
 <translation id="4440958355523780886">Google வழங்கும் Lite பக்கம். அசல் பக்கத்தை ஏற்ற, தட்டவும்.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> தாவலை மூடும்</translation>
 <translation id="4452548195519783679"><ph name="FOLDER_NAME" /> இல் புத்தகக்குறியைச் சேர்த்தது</translation>
@@ -509,7 +508,6 @@
 <translation id="4915549754973153784">சாதனங்களைத் தேடும் போது <ph name="BEGIN_LINK" />உதவி பெறுக<ph name="END_LINK" />…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# பக்கம்}other{# பக்கங்கள்}}</translation>
 <translation id="4932247056774066048">நீங்கள் <ph name="DOMAIN_NAME" /> நிர்வகிக்கும் கணக்கிலிருந்து வெளியேறுவதால் உங்கள் Chrome தரவு இந்தச் சாதனத்திலிருந்து நீக்கப்படும். எனினும் இது உங்கள் Google கணக்கில் சேமிக்கப்பட்டிருக்கும்.</translation>
-<translation id="4935305910887312910">கேமரா நிலையைப் பெறுவதற்கோ உங்கள் அறையை மேப் செய்வதற்கோ தளங்களை அனுமதிக்கும் முன்பாக அனுமதியைக் கோரும் (பரிந்துரைக்கப்படுகிறது)</translation>
 <translation id="4943703118917034429">விர்ச்சுவல் ரியாலிட்டி</translation>
 <translation id="4943872375798546930">முடிவுகள் இல்லை</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> உங்கள் திரையைப் பகிர்கிறது</translation>
@@ -795,7 +793,7 @@
 <translation id="7015203776128479407">ஒத்திசைப்பதற்கான துவக்க அமைவு முடியவில்லை. ஒத்திசைவு முடக்கப்பட்டுள்ளது.</translation>
 <translation id="7016516562562142042">நடப்புத் தேடல் இன்ஜினுக்கு அனுமதிக்கப்பட்டுள்ளது</translation>
 <translation id="7022756207310403729">உலாவியில் திற</translation>
-<translation id="702463548815491781">TalkBack அல்லது ‘சுவிட்ச் அணுகல்’ இயக்கத்தில் இருக்கும்போது பரிந்துரைக்கப்படுகிறது</translation>
+<translation id="702463548815491781">TalkBack அல்லது ‘ஸ்விட்ச் அணுகல்’ இயக்கத்தில் இருக்கும்போது பரிந்துரைக்கப்படுகிறது</translation>
 <translation id="7029809446516969842">கடவுச்சொற்கள்</translation>
 <translation id="7053983685419859001">தடு</translation>
 <translation id="7055152154916055070">திசைதிருப்புதல் தடுக்கப்பட்டது:</translation>
@@ -808,6 +806,7 @@
 <translation id="7141896414559753902">தளங்கள் பாப்-அப்களையும் திசைதிருப்புதல்களையும் காட்டாமல் தடு (பரிந்துரைக்கப்படுகிறது)</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> இலிருந்து <ph name="BEGIN_LINK" />அசல் பக்கத்தை ஏற்று<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">கடந்த 24 மணிநேரம்</translation>
+<translation id="7173114856073700355">ஒத்திசைவு அமைப்புகளைப் பார்க்கவும்</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> கி.பை.</translation>
 <translation id="7177466738963138057">இதைப் பிறகு அமைப்புகளில் மாற்றலாம்</translation>
 <translation id="7180611975245234373">புதுப்பி</translation>
@@ -1015,7 +1014,6 @@
 <translation id="8664979001105139458">கோப்புப் பெயர் ஏற்கனவே உள்ளது</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{சிக்னல் வலிமையின் அளவு: # கோடு}other{சிக்னல் வலிமையின் அளவு: # கோடுகள்}}</translation>
 <translation id="868929229000858085">உங்கள் தொடர்புகளில் தேடுக</translation>
-<translation id="8698438463325761328">உங்கள் விர்ச்சுவல் ரியாலிட்டி சாதனத்தையும் தரவையும் தளங்கள் அணுகுவதைத் தடுக்கும்</translation>
 <translation id="869891660844655955">காலாவதியாகும் தேதி</translation>
 <translation id="8728487861892616501">இந்த ஆப்ஸைப் பயன்படுத்துவதன் மூலம், Chromeன் <ph name="BEGIN_LINK1" />சேவை விதிமுறைகள்<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />தனியுரிமை அறிக்கை<ph name="END_LINK2" />, <ph name="BEGIN_LINK3" />Family Link மூலம் நிர்வகிக்கும் Google கணக்குகளுக்கான தனியுரிமை அறிக்கை<ph name="END_LINK3" /> ஆகியவற்றை ஏற்கிறீர்கள்.</translation>
 <translation id="8748850008226585750">மறைந்துள்ள உள்ளடக்கம்</translation>
@@ -1032,7 +1030,6 @@
 <translation id="883806473910249246">உள்ளடக்கத்தைப் பதிவிறக்கும் போது பிழை ஏற்பட்டது.</translation>
 <translation id="8840953339110955557">ஆன்லைன் பதிப்பிலிருந்து இந்தப் பக்கம் வேறுபடலாம்.</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">கேமரா நிலையைப் பெறுவதற்கோ உங்கள் அறையை மேப் செய்வதற்கோ விரும்பும் தளங்களைத் தடுக்கும்</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, தாவல்</translation>
 <translation id="885701979325669005">சேமிப்பிடம்</translation>
 <translation id="889338405075704026">Chrome அமைப்புகளுக்குச் செல்</translation>

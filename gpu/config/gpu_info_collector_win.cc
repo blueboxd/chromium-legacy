@@ -299,19 +299,21 @@ bool InitVulkan(base::NativeLibrary* vulkan_library,
       return true;
     }
   }
-  base::UnloadNativeLibrary(*vulkan_library);
+
+  // From the crash reports, unloading the library here might cause a crash in
+  // the Vulkan loader or in the Vulkan driver. To work around it, don't
+  // explicitly unload the DLL. Instead, GPU process shutdown will unload all
+  // loaded DLLs.
+  // base::UnloadNativeLibrary(*vulkan_library);
   return false;
 }
 
 bool InitVulkanInstanceProc(
     const VkInstance& vk_instance,
     const PFN_vkGetInstanceProcAddr& vkGetInstanceProcAddr,
-    PFN_vkDestroyInstance* vkDestroyInstance,
     PFN_vkEnumeratePhysicalDevices* vkEnumeratePhysicalDevices,
     PFN_vkEnumerateDeviceExtensionProperties*
         vkEnumerateDeviceExtensionProperties) {
-  *vkDestroyInstance = reinterpret_cast<PFN_vkDestroyInstance>(
-      vkGetInstanceProcAddr(vk_instance, "vkDestroyInstance"));
 
   *vkEnumeratePhysicalDevices =
       reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(
@@ -322,7 +324,7 @@ bool InitVulkanInstanceProc(
           vkGetInstanceProcAddr(vk_instance,
                                 "vkEnumerateDeviceExtensionProperties"));
 
-  if ((*vkDestroyInstance) && (*vkEnumeratePhysicalDevices) &&
+  if ((*vkEnumeratePhysicalDevices) &&
       (*vkEnumerateDeviceExtensionProperties)) {
     return true;
   }
@@ -340,7 +342,6 @@ void GetGpuSupportedVulkanVersionAndExtensions(
   PFN_vkCreateInstance vkCreateInstance;
   PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevices;
   PFN_vkEnumerateDeviceExtensionProperties vkEnumerateDeviceExtensionProperties;
-  PFN_vkDestroyInstance vkDestroyInstance;
   VkInstance vk_instance = VK_NULL_HANDLE;
   uint32_t physical_device_count = 0;
   info->supports_vulkan = false;
@@ -375,7 +376,7 @@ void GetGpuSupportedVulkanVersionAndExtensions(
     VkResult result = vkCreateInstance(&create_info, nullptr, &vk_instance);
     if (result == VK_SUCCESS && vk_instance &&
         InitVulkanInstanceProc(vk_instance, vkGetInstanceProcAddr,
-                               &vkDestroyInstance, &vkEnumeratePhysicalDevices,
+                               &vkEnumeratePhysicalDevices,
                                &vkEnumerateDeviceExtensionProperties)) {
       result = vkEnumeratePhysicalDevices(vk_instance, &physical_device_count,
                                           nullptr);
@@ -384,7 +385,8 @@ void GetGpuSupportedVulkanVersionAndExtensions(
         info->vulkan_version = app_info.apiVersion;
         break;
       } else {
-        vkDestroyInstance(vk_instance, nullptr);
+        // Skip destroy here. GPU process shutdown will unload all loaded DLLs.
+        // vkDestroyInstance(vk_instance, nullptr);
         vk_instance = VK_NULL_HANDLE;
       }
     }
@@ -419,11 +421,14 @@ void GetGpuSupportedVulkanVersionAndExtensions(
     }
   }
 
-  if (vk_instance) {
-    vkDestroyInstance(vk_instance, nullptr);
-  }
-
-  base::UnloadNativeLibrary(vulkan_library);
+  // From the crash reports, calling the following two functions might cause a
+  // crash in the Vulkan loader or in the Vulkan driver. To work around it,
+  // don't explicitly unload the DLL. Instead, GPU process shutdown will unload
+  // all loaded DLLs.
+  // if (vk_instance) {
+  //   vkDestroyInstance(vk_instance, nullptr);
+  // }
+  // base::UnloadNativeLibrary(vulkan_library);
 }
 
 void RecordGpuSupportedRuntimeVersionHistograms(Dx12VulkanVersionInfo* info) {

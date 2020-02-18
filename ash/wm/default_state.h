@@ -61,6 +61,15 @@ class DefaultState : public BaseState {
   void UpdateBoundsFromState(WindowState* window_state,
                              WindowStateType old_state_type);
 
+  // Updates the window bounds for display bounds, or display work area bounds
+  // changes.
+  // |ensure_full_window_visibility| - Whether the window bounds should be
+  //     adjusted so they fully fit within the display work area. If false, the
+  //     method will ensure minimum window visibility.
+  void UpdateBoundsForDisplayOrWorkAreaBoundsChange(
+      WindowState* window_state,
+      bool ensure_full_window_visibility);
+
   // The saved window state for the case that the state gets de-/activated.
   gfx::Rect stored_bounds_;
   gfx::Rect stored_restore_bounds_;

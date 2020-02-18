@@ -120,7 +120,6 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> – сеанс, керований доменом <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Натиснути лівою кнопкою</translation>
 <translation id="2429753432712299108">Пристрою Bluetooth "<ph name="DEVICE_NAME" />" потрібен дозвіл на підключення. Перш ніж надати його, підтвердьте, що на пристрої відображається цей ключ доступу: <ph name="PASSKEY" /></translation>
-<translation id="2435457462613246316">Показати пароль</translation>
 <translation id="2473177541599297363">Підтвердьте роздільну здатність</translation>
 <translation id="2482878487686419369">Сповіщення</translation>
 <translation id="2484513351006226581">Натисніть комбінацію клавіш <ph name="KEYBOARD_SHORTCUT" />, щоб змінити розкладку клавіатури.</translation>
@@ -286,7 +285,6 @@
 <translation id="4527045527269911712">Пристрою Bluetooth "<ph name="DEVICE_NAME" />" потрібен дозвіл на підключення.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> до повного заряду</translation>
 <translation id="4561267230861221837">3G</translation>
-<translation id="4565377596337484307">Сховати пароль</translation>
 <translation id="4570957409596482333">Кнопка "Читання з екрана"</translation>
 <translation id="4585337515783392668">Зупинити трансляцію на невідомий пристрій</translation>
 <translation id="4628757576491864469">Пристрої</translation>

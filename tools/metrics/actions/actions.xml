@@ -4243,7 +4243,7 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="ClearBrowsingData_Autofill">
+<action name="ClearBrowsingData_Autofill" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -4254,7 +4254,7 @@ should be able to be added at any place in this file.
   <description>Browsing data has been deleted from the basic tab.</description>
 </action>
 
-<action name="ClearBrowsingData_Cache">
+<action name="ClearBrowsingData_Cache" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -4280,7 +4280,7 @@ should be able to be added at any place in this file.
   <description>Content settings have been deleted.</description>
 </action>
 
-<action name="ClearBrowsingData_Cookies">
+<action name="ClearBrowsingData_Cookies" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -4295,32 +4295,32 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="ClearBrowsingData_Everything">
+<action name="ClearBrowsingData_Everything" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="ClearBrowsingData_History">
+<action name="ClearBrowsingData_History" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="ClearBrowsingData_LastDay">
+<action name="ClearBrowsingData_LastDay" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="ClearBrowsingData_LastHour">
+<action name="ClearBrowsingData_LastHour" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="ClearBrowsingData_LastMonth">
+<action name="ClearBrowsingData_LastMonth" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="ClearBrowsingData_LastWeek">
+<action name="ClearBrowsingData_LastWeek" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
@@ -4340,12 +4340,13 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="ClearBrowsingData_MaskContainsUnprotectedWeb">
+<action name="ClearBrowsingData_MaskContainsUnprotectedWeb"
+    not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>
 
-<action name="ClearBrowsingData_OlderThan30Days">
+<action name="ClearBrowsingData_OlderThan30Days" not_user_triggered="true">
   <owner>dullweber@chromium.org</owner>
   <owner>msramek@chromium.org</owner>
   <description>
@@ -4353,7 +4354,7 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="ClearBrowsingData_Passwords">
+<action name="ClearBrowsingData_Passwords" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
 </action>

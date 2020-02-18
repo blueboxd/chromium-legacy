@@ -1381,7 +1381,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="2865919525181940183">Skjermdump av programmene som er på skjermen</translation>
 <translation id="286674810810214575">Sjekker strømkilder …</translation>
 <translation id="2867768963760577682">Åpne som festet fane</translation>
-<translation id="2868184003987917410">Ikke la nettsteder få tilgang til virtuell virkelighet-enhetene eller -dataene dine</translation>
 <translation id="2868746137289129307">Denne utvidelsen er utdatert og avslått av bedriftsretningslinjene. Den kan slås på automatisk når en nyere versjon er tilgjengelig.</translation>
 <translation id="2870560284913253234">Nettsted</translation>
 <translation id="2870909136778269686">Oppdaterer …</translation>
@@ -1711,7 +1710,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3348038390189153836">Oppdaget flyttbar enhet</translation>
 <translation id="3349933790966648062">Minnebruk</translation>
 <translation id="3350117557200012647">Start tilkoblingsmodus</translation>
-<translation id="3350244554415289209">Spør når nettsteder vil bruke kameraposisjonen din eller kartlegge rommet ditt (anbefales)</translation>
 <translation id="3355936511340229503">Tilkoblingsfeil</translation>
 <translation id="3356580349448036450">Fullført</translation>
 <translation id="3359256513598016054">Retningslinjebegrensninger for sertifikat</translation>
@@ -1728,7 +1726,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3382073616108123819">Beklager. Systemet kunne ikke fastslå enhetsidentifikatorer for denne enheten.</translation>
 <translation id="3382086682569279540">Kontoen du administrerer, fjernes snart</translation>
 <translation id="3382200254148930874">Avslutter tilsynet …</translation>
-<translation id="3383210070657133526"><ph name="URL" /> ønsker å kunne starte virtuell virkelighet-økter</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" /> %</translation>
 <translation id="338583716107319301">Skillelinje</translation>
 <translation id="338691029516748599">Nettverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" /> – <ph name="NETWORK_NAME" /> – <ph name="SECURITY_STATUS" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /> % – administreres av administratoren din – koble til</translation>
@@ -1825,7 +1822,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="3511307672085573050">Kopiér linkadr&amp;essen</translation>
 <translation id="351152300840026870">Skrift med fast bredde</translation>
 <translation id="3511528412952710609">Kort</translation>
-<translation id="3513704683820682405">Utvidet virkelighet</translation>
 <translation id="3514373592552233661">Foretrukne nettverk prioriteres fremfor andre kjente nettverk hvis mer enn ett nettverk er tilgjengelig</translation>
 <translation id="3515983984924808886">Berør sikkerhetsnøkkelen en gang til for å bekrefte tilbakestillingen. All informasjon som er lagret på sikkerhetsnøkkelen, inkludert PIN-koden, blir slettet.</translation>
 <translation id="3518985090088779359">Godta og fortsett</translation>
@@ -2527,7 +2523,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="4501530680793980440">Bekreftelse av fjerning</translation>
 <translation id="4502423230170890588">Fjern fra denne enheten</translation>
 <translation id="4504940961672722399">Bruk denne utvidelsen ved å klikke på ikonet eller trykke på <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4507164039066603071">Ikke la nettsteder få tilgang til kameraposisjonen din eller kartlegge rommet ditt</translation>
 <translation id="4508051413094283164">Åpne alt i et inkognitovindu</translation>
 <translation id="4508265954913339219">Aktiveringen mislyktes</translation>
 <translation id="4508765956121923607">Vis &amp;kilde</translation>
@@ -2833,7 +2828,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="494286511941020793">Hjelp for konfigurering av proxy-tjenere</translation>
 <translation id="4943368462779413526">Fotball</translation>
 <translation id="4943691134276646401">«<ph name="CHROME_EXTENSION_NAME" />» vil koble til en seriell port</translation>
-<translation id="4943703118917034429">Virtuell virkelighet</translation>
 <translation id="4944310289250773232">Verten for denne autentiseringstjenesten er <ph name="SAML_DOMAIN" />.</translation>
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4952981627953231344">Plugin VM tillates ikke på denne enheten. Kontakt enhetsadministratoren for organisasjonen din.</translation>
@@ -4107,7 +4101,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="6758056191028427665">Gi oss tilbakemelding.</translation>
 <translation id="6759193508432371551">Tilbakestilling til fabrikkstandard</translation>
 <translation id="6762833852331690540">På</translation>
-<translation id="6767115174726603949">få tilgang til virtuell virkelighet-enheter og -data</translation>
 <translation id="6767566652486411142">Velg et annet språk</translation>
 <translation id="6767639283522617719">Kan ikke bli med på domenet. Kontrollér at innstillingene for organisasjonsenheten er riktige.</translation>
 <translation id="6769712124046837540">Legger til skriver …</translation>
@@ -4303,7 +4296,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="703001695939087067">Du er i modusen for vindusoversikt. Trykk på fanen for å navigere.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – seriell port er tilkoblet</translation>
 <translation id="7031962166228839643">TMP blir klargjort. Vent litt (dette kan ta noen minutter).</translation>
-<translation id="7034615910652881882">Spør når nettsteder vil ha tilgang til virtuell virkelighet-enhetene eller -dataene dine</translation>
 <translation id="7037509989619051237">Tekst til forhåndsvisning</translation>
 <translation id="7039326228527141150">Les USB-enheter fra <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Pålogging med Microsoft-smartkort</translation>
@@ -4609,7 +4601,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7443806024147773267">Få tilgang til passordene dine når du er logget på Google-kontoen</translation>
 <translation id="7444983668544353857">Slå av <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">installere apper automatisk</translation>
-<translation id="7448625729116931228">Spør når nettsteder vil ha tilgang til virtuell virkelighet-enhetene eller -dataene dine (anbefales)</translation>
 <translation id="7450761244949417357">Åpnes i <ph name="ALTERNATIVE_BROWSER_NAME" /> nå</translation>
 <translation id="7453008956351770337">Ved å velge denne skriveren gir du følgende utvidelse tillatelse til å bruke skriveren din:</translation>
 <translation id="7454548535253569100">Portal: <ph name="SUBFRAME_SITE" /></translation>
@@ -4746,7 +4737,6 @@ Du kan administrere innstillingene for denne kontoen ved å installere Family Li
 <translation id="7652808307838961528">Endre personen <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Apper, utvidelser og brukerskript kan ikke legges til fra dette nettstedet</translation>
 <translation id="7652954539215530680">Opprett en PIN-kode</translation>
-<translation id="7653295403398566475">Spør når nettsteder vil bruke kameraposisjonen din eller kartlegge rommet ditt</translation>
 <translation id="7654941827281939388">Denne kontoen er allerede i bruk på denne datamaskinen.</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7659584679870740384">Du er ikke autorisert til å bruke denne enheten. Ta kontakt med administratoren for å få tillatelse til å logge på.</translation>
@@ -5285,7 +5275,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="8338952601723052325">Utviklernettsted</translation>
 <translation id="8339059274628563283">Data lagret lokalt på <ph name="SITE" /></translation>
 <translation id="833986336429795709">For å åpne denne linken, velg en app</translation>
-<translation id="834057053932610950">Det oppsto en feil under konfigureringen av Linux. Kontakt administratoren din.</translation>
 <translation id="8342861492835240085">Velg en samling</translation>
 <translation id="834290227245955730">Ugyldig PIN-kode. Gjenværende forsøk: <ph name="RETRIES" />.</translation>
 <translation id="8351419472474436977">Denne utvidelsen har tatt kontrollen over proxy-tjenerinnstillingene dine, noe som betyr at den kan endre, ødelegge eller spionere på alt du foretar deg på nettet. Hvis du ikke er sikker på hvorfor denne endringen fant sted, vil du mest sannsynlig ikke ha den.</translation>

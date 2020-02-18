@@ -120,7 +120,6 @@
 <translation id="2413728805700750528">「<ph name="DISPLAY_NAME" />」是受 <ph name="DOMAIN" /> 管理的工作階段</translation>
 <translation id="2427507373259914951">按一下左鍵</translation>
 <translation id="2429753432712299108">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限。接受要求前，請確認裝置顯示以下密碼金鑰：<ph name="PASSKEY" /></translation>
-<translation id="2435457462613246316">顯示密碼</translation>
 <translation id="2473177541599297363">確認解像度</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2484513351006226581">按下 <ph name="KEYBOARD_SHORTCUT" /> 鍵可切換鍵盤配置。</translation>
@@ -286,7 +285,6 @@
 <translation id="4527045527269911712">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限。</translation>
 <translation id="453661520163887813">還有 <ph name="TIME" />便完成充電</translation>
 <translation id="4561267230861221837">3G</translation>
-<translation id="4565377596337484307">隱藏密碼</translation>
 <translation id="4570957409596482333">「選取以朗讀」按鈕</translation>
 <translation id="4585337515783392668">停止投放到不明嘅接收器</translation>
 <translation id="4628757576491864469">裝置</translation>

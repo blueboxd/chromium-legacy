@@ -307,7 +307,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3104705064753753826">alrt dlg</translation>
 <translation id="3109724472072898302">Skjult</translation>
 <translation id="3112457281078985179">For å slå ChromeVox på eller av, trykk på Control+Alt+Z.</translation>
-<translation id="3128896337293924532">Det finnes ingen flere blokksitat-elementer</translation>
+<translation id="3128896337293924532">Det finnes ingen flere blokksitater</translation>
 <translation id="3134461040845705080">rdonly</translation>
 <translation id="3137663468179739624">Oliven</translation>
 <translation id="3138767756593758860">Vis liste over landemerker</translation>
@@ -335,7 +335,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3260949043575829030">Forrige lignende element</translation>
 <translation id="3270069636408109001">Det finnes ingen flere tabeller</translation>
-<translation id="3273791280096244679">Lagre etiketten</translation>
+<translation id="3273791280096244679">Lagre-etiketten</translation>
 <translation id="3286372614333682499">stående</translation>
 <translation id="3286390186030710347">Glidebryter</translation>
 <translation id="3300348286427369683">Støtte for rik tekst. Nå støtter ChromeVox felt med rik tekst, inkludert hoppekommandoer, markørstyring for punktskrift, merking med mer.</translation>
@@ -416,7 +416,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Lys korallrød</translation>
 <translation id="3816633764618089385">Neste media</translation>
-<translation id="3838966660807147922">Plasser markøren mellom tegn når du redigerer tekst (som i Mac OS X)</translation>
+<translation id="3838966660807147922">Plassér markøren mellom tegn når du redigerer tekst (som i Mac OS X)</translation>
 <translation id="385383972552776628">Åpne siden med alternativer</translation>
 <translation id="3856075812838139784">Skrivebeskyttet</translation>
 <translation id="3857141338659865495">Mellomturkis</translation>
@@ -620,7 +620,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="5158275234811857234">Omslag</translation>
 <translation id="5170206230005240598">Punktskrift-teksting er slått på</translation>
 <translation id="517143700877085897">, ikke valgt</translation>
-<translation id="5177546608148437145">Tilpass hurtigtastene for kommandoer du bruker ofte, ved å skrive dem inn i de tilsvarende feltene under</translation>
+<translation id="5177546608148437145">Tilpass hurtigtastene for kommandoer du bruker ofte, ved å skrive dem inn i de tilsvarende feltene nedenfor</translation>
 <translation id="5183440668879371625">Punktskrift – forrige linje</translation>
 <translation id="5184585361753914100">Vis konteksten for elementer før annen informasjon (for eksempel navn)</translation>
 <translation id="5189244881767082992">Linje</translation>
@@ -692,7 +692,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="5684277895745049190">Liste</translation>
 <translation id="570138335948847274">Velg om ChromeVox skal være aktiv eller inaktiv</translation>
 <translation id="5703716265115423771">volum ned</translation>
-<translation id="5704453877234251104">Trykk på pil opp eller pil ned for å bytte mellom automatiske fullføringer</translation>
+<translation id="5704453877234251104">Trykk på pil opp eller pil ned for automatiske fullføringer</translation>
 <translation id="5709192780268610569">Ingen lang beskrivelse</translation>
 <translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">Neste tabellkolonne</translation>
@@ -709,7 +709,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="5822819874379903994">Mørk turkis</translation>
 <translation id="5824976764713185207">Les siden automatisk når den er ferdig lastet inn</translation>
 <translation id="5826479389509458994">rad <ph name="ROW" /> kolonne <ph name="COL" /></translation>
-<translation id="5833044594931167190">Det finnes ingen ARIA-landmerker</translation>
+<translation id="5833044594931167190">Det finnes ingen ARIA-landemerker</translation>
 <translation id="5842625257683688671">Det finnes ingen flere illustrasjoner</translation>
 <translation id="5847883414085148048">Dedikasjon</translation>
 <translation id="5850707923114094062">Panorer bakover</translation>
@@ -905,7 +905,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="72393384879519786">Overskrift</translation>
 <translation id="7240858705033280249">Gå til detaljer</translation>
 <translation id="7241683698754534149">Åpne lange beskrivelser i en ny fane</translation>
-<translation id="7244947685630430863">Det finnes ingen tidligere bilder</translation>
+<translation id="7244947685630430863">Det finnes ingen tidligere illustrasjoner</translation>
 <translation id="7248671827512403053">App</translation>
 <translation id="725969808843520477">Neste alternativknapp</translation>
 <translation id="7261612856573623172">Systemstemme for tekst til tale</translation>
@@ -941,7 +941,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="7518543783849163354">For å stoppe talemeldingene fra ChromeVox midlertidig, trykk på Control-tasten.</translation>
 <translation id="7532613204005497612">Juni</translation>
 <translation id="7533226154149229506">Lys gullris</translation>
-<translation id="7543255924852002459">Forkast etiketten</translation>
+<translation id="7543255924852002459">Forkast-etiketten</translation>
 <translation id="7552432549459840808">Nyttige hurtigtaster i Chrome</translation>
 <translation id="7569983096843329377">Svart</translation>
 <translation id="7579911500627256166">punkt <ph name="DOT" /></translation>
@@ -1108,7 +1108,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8138880386467279117">Berøring</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{understrek}other{# understreker}}</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8182552736960088316">Det finnes ingen tidligere blokksitat-element</translation>
+<translation id="8182552736960088316">Det finnes ingen tidligere blokksitater</translation>
 <translation id="8184828902145951186">rad</translation>
 <translation id="8186185314313222077">slå av/på fullskjerm</translation>
 <translation id="8199231515320852133">Kunngjør overskriftene i den nåværende cellen</translation>
@@ -1225,7 +1225,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="9108589040018540527">scbr</translation>
 <translation id="911476240645808512">{COUNT,plural, =1{prosent}other{# prosenttegn}}</translation>
 <translation id="9115913704608474258">November</translation>
-<translation id="912759640994130978">Endre det gjeldende tastaturoppsettet ved å velge et alternativ på listen under</translation>
+<translation id="912759640994130978">Endre det gjeldende tastaturoppsettet ved å velge et alternativ på listen nedenfor</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9133928141873682933">Kaki</translation>
 <translation id="9149560530563164529">sctn</translation>

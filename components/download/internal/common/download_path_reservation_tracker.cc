@@ -325,8 +325,6 @@ PathValidationResult ValidatePathAndResolveConflicts(
 // - Returns the result of creating the path reservation.
 PathValidationResult CreateReservation(const CreateReservationInfo& info,
                                        base::FilePath* reserved_path) {
-  DCHECK(info.suggested_path.IsAbsolute());
-
   // Create a reservation map if one doesn't exist. It will be automatically
   // deleted when all the reservations are revoked.
   if (g_reservation_map == NULL)

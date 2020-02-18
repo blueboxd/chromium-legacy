@@ -197,7 +197,7 @@ const struct NonPrintableCodeEntry {
     {DomCode::MAIL_SEND, DomKey::MAIL_SEND},
     {DomCode::MEDIA_FAST_FORWARD, DomKey::MEDIA_FAST_FORWARD},
     {DomCode::MEDIA_LAST, DomKey::MEDIA_LAST},
-    // {DomCode::MEDIA_PAUSE, DomKey::MEDIA_PAUSE},
+    {DomCode::MEDIA_PAUSE, DomKey::MEDIA_PAUSE},
     {DomCode::MEDIA_PLAY, DomKey::MEDIA_PLAY},
     {DomCode::MEDIA_PLAY_PAUSE, DomKey::MEDIA_PLAY_PAUSE},
     {DomCode::MEDIA_RECORD, DomKey::MEDIA_RECORD},
@@ -391,9 +391,8 @@ const struct DomKeyToKeyboardCodeEntry {
     // http://www.w3.org/TR/DOM-Level-3-Events-key/#keys-media-controller
 #if defined(OS_POSIX)
     {DomKey::MEDIA_FAST_FORWARD, VKEY_OEM_104},
-#endif
-    {DomKey::MEDIA_PLAY, VKEY_PLAY},
-#if defined(OS_POSIX)
+    {DomKey::MEDIA_PAUSE, VKEY_MEDIA_PAUSE},
+    {DomKey::MEDIA_PLAY, VKEY_MEDIA_PLAY},
     {DomKey::MEDIA_REWIND, VKEY_OEM_103},
 #endif
     {DomKey::ZOOM_TOGGLE, VKEY_ZOOM},

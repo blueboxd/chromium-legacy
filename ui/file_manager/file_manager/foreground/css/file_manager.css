@@ -671,6 +671,11 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
   display: flex;
 }
 
+.dialog-header.files-ng #search-wrapper {
+  align-items: center;
+  height: 40px;
+}
+
 .dialog-header.files-ng #search-wrapper.has-cursor,
 .dialog-header.files-ng #search-wrapper.hide-pending {
   background-color: var(--google-grey-100);
@@ -1053,10 +1058,16 @@ body.check-select #search-box {
   margin-inline-end: 12px;
 }
 
-#search-box.has-cursor cr-input,
-#search-box.has-text cr-input,
-#search-box.hide-pending cr-input {
+.dialog-header:not(.files-ng) #search-box.has-cursor cr-input,
+.dialog-header:not(.files-ng) #search-box.has-text cr-input,
+.dialog-header:not(.files-ng) #search-box.hide-pending cr-input {
   width: 202px;
+}
+
+.dialog-header.files-ng #search-box.has-cursor cr-input,
+.dialog-header.files-ng #search-box.has-text cr-input,
+.dialog-header.files-ng #search-box.hide-pending cr-input {
+  width: calc(288px - 60px);
 }
 
 #search-box .clear {

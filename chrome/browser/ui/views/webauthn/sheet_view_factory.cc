@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/webauthn/sheet_view_factory.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "chrome/browser/ui/autofill/payments/webauthn_dialog_model.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_ble_pin_entry_sheet_view.h"
@@ -163,6 +165,10 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
           AuthenticatorGenericErrorSheetModel::
               ForClientPinErrorAuthenticatorRemoved(dialog_model));
+      break;
+    case Step::kRetryInternalUserVerification:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<AuthenticatorRetryUvSheetModel>(dialog_model));
       break;
     case Step::kResidentCredentialConfirmation:
       sheet_view = std::make_unique<AuthenticatorRequestSheetView>(

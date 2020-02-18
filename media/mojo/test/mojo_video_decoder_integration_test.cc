@@ -178,9 +178,9 @@ class MockVideoDecoder : public VideoDecoder {
 class FakeMojoMediaClient : public MojoMediaClient {
  public:
   using CreateVideoDecoderCB =
-      base::Callback<std::unique_ptr<VideoDecoder>(MediaLog*)>;
+      base::RepeatingCallback<std::unique_ptr<VideoDecoder>(MediaLog*)>;
 
-  FakeMojoMediaClient(CreateVideoDecoderCB create_video_decoder_cb)
+  explicit FakeMojoMediaClient(CreateVideoDecoderCB create_video_decoder_cb)
       : create_video_decoder_cb_(std::move(create_video_decoder_cb)) {}
 
   std::unique_ptr<VideoDecoder> CreateVideoDecoder(
@@ -204,9 +204,9 @@ class FakeMojoMediaClient : public MojoMediaClient {
 class MojoVideoDecoderIntegrationTest : public ::testing::Test {
  public:
   MojoVideoDecoderIntegrationTest()
-      : mojo_media_client_(
-            base::Bind(&MojoVideoDecoderIntegrationTest::CreateVideoDecoder,
-                       base::Unretained(this))) {}
+      : mojo_media_client_(base::BindRepeating(
+            &MojoVideoDecoderIntegrationTest::CreateVideoDecoder,
+            base::Unretained(this))) {}
 
   void TearDown() override {
     if (client_) {

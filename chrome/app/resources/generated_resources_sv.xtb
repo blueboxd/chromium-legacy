@@ -1384,7 +1384,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="2865919525181940183">Skärmdump av program som visas på skärmen</translation>
 <translation id="286674810810214575">Kontrollerar strömkällor …</translation>
 <translation id="2867768963760577682">Öppna som en fast flik</translation>
-<translation id="2868184003987917410">Tillåt inte att webbplatser kommer åt VR-enheter/data</translation>
 <translation id="2868746137289129307">Tillägget är inaktuellt och inaktiverat av företagspolicyn. Det kan aktiveras automatiskt när en ny version blir tillgänglig.</translation>
 <translation id="2870560284913253234">Webbplats</translation>
 <translation id="2870909136778269686">Uppdaterar ...</translation>
@@ -1714,7 +1713,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3348038390189153836">Flyttbar enhet upptäckt</translation>
 <translation id="3349933790966648062">Minnesanvändning</translation>
 <translation id="3350117557200012647">Aktivera kopplingsläget</translation>
-<translation id="3350244554415289209">Fråga när en webbplats försöker få åtkomst till kamerans position eller kartlägga rummet (rekommenderas)</translation>
 <translation id="3355936511340229503">Anslutningsfel</translation>
 <translation id="3356580349448036450">Klart</translation>
 <translation id="3359256513598016054">Begränsningar för Certifikatpolicy</translation>
@@ -1731,7 +1729,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3382073616108123819">Hoppsan! Det gick inte att fastställa enhets-id för den här enheten.</translation>
 <translation id="3382086682569279540">Kontot du hanterar tas snart bort</translation>
 <translation id="3382200254148930874">Föräldrakontroll avslutas …</translation>
-<translation id="3383210070657133526"><ph name="URL" /> vill kunna starta VR-sessioner</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" /> %</translation>
 <translation id="338583716107319301">Avgränsare</translation>
 <translation id="338691029516748599">Nätverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, signalstyrka <ph name="SIGNAL_STRENGTH" /> %, hanteras av administratören, anslut</translation>
@@ -1828,7 +1825,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="3511307672085573050">Kopiera länk&amp;adress</translation>
 <translation id="351152300840026870">Teckensnitt med fast bredd</translation>
 <translation id="3511528412952710609">Kort</translation>
-<translation id="3513704683820682405">Förstärkt verklighet</translation>
 <translation id="3514373592552233661">Prioriterade nätverk väljs före andra kända nätverk när det finns flera nätverk tillgängliga</translation>
 <translation id="3515983984924808886">Tryck på säkerhetsnyckeln igen för att bekräfta återställningen. All information som lagras på säkerhetsnyckeln, inklusive dess pinkod, raderas.</translation>
 <translation id="3518985090088779359">Godkänn och fortsätt</translation>
@@ -2532,7 +2528,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="4501530680793980440">Bekräfta borttagning</translation>
 <translation id="4502423230170890588">Ta bort från den här enheten</translation>
 <translation id="4504940961672722399">Använd tillägget genom att klicka på den här ikonen eller genom att trycka på <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4507164039066603071">Tillåt inte att webbplatser kommer åt kameran eller kartlägger rummet</translation>
 <translation id="4508051413094283164">Öppna alla i ett inkognitofönster</translation>
 <translation id="4508265954913339219">Aktiveringen misslyckades</translation>
 <translation id="4508765956121923607">Visa &amp;källa</translation>
@@ -2838,7 +2833,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="494286511941020793">Hjälp för proxykonfiguration</translation>
 <translation id="4943368462779413526">Amerikansk fotboll</translation>
 <translation id="4943691134276646401"><ph name="CHROME_EXTENSION_NAME" /> vill ansluta till en serieport</translation>
-<translation id="4943703118917034429">Virtuell verklighet</translation>
 <translation id="4944310289250773232">Den här autentiseringstjänsten tillhandahålls av <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Åtgärder</translation>
 <translation id="4952981627953231344">Plugin VM är inte tillåtet på den här enheten. Kontakta organisationens enhetsadministratör.</translation>
@@ -4112,7 +4106,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="6758056191028427665">Berätta hur vi sköter oss.</translation>
 <translation id="6759193508432371551">Återställ standardinställningar</translation>
 <translation id="6762833852331690540">På</translation>
-<translation id="6767115174726603949">Få åtkomst till VR-enheter och VR-data</translation>
 <translation id="6767566652486411142">Välj ett annat språk …</translation>
 <translation id="6767639283522617719">Det gick inte att ansluta till domänen. Kontrollera inställningarna för organisationsenheten.</translation>
 <translation id="6769712124046837540">Lägger till skrivare ...</translation>
@@ -4308,7 +4301,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="703001695939087067">Fönsteröversiktsläget har startats. Tryck på tabb för att navigera.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – Serieporten är ansluten</translation>
 <translation id="7031962166228839643">TPM förbereds, vänta (det kan ta några minuter)...</translation>
-<translation id="7034615910652881882">Fråga när en webbplats försöker få åtkomst till VR-enheter/data</translation>
 <translation id="7037509989619051237">Text för förhandsgranskning</translation>
 <translation id="7039326228527141150">Komma åt USB-enheter från <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Microsofts Logga in med smartkort</translation>
@@ -4614,7 +4606,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7443806024147773267">Få tillgång till dina lösenord när du är inloggad på Google-kontot</translation>
 <translation id="7444983668544353857">Inaktivera <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Installera appar automatiskt</translation>
-<translation id="7448625729116931228">Fråga när en webbplats försöker få åtkomst till VR-enheter/data (rekommenderas)</translation>
 <translation id="7450761244949417357">Öppnas i <ph name="ALTERNATIVE_BROWSER_NAME" /> nu</translation>
 <translation id="7453008956351770337">Genom att välja den här skrivaren ger du följande tillägg behörighet att komma åt skrivaren:</translation>
 <translation id="7454548535253569100">Portal: <ph name="SUBFRAME_SITE" /></translation>
@@ -4751,7 +4742,6 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="7652808307838961528">Redigera personen <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Appar, tillägg och användarskript kan inte läggas till från webbplatsen</translation>
 <translation id="7652954539215530680">Skapa en pinkod</translation>
-<translation id="7653295403398566475">Fråga när en webbplats försöker få åtkomst till kamerans position eller kartlägga rummet</translation>
 <translation id="7654941827281939388">Kontot används redan på den här datorn.</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7659584679870740384">Du har inte behörighet att använda den här enheten. Kontakta administratören om du vill ha behörighet att logga in.</translation>
@@ -5290,7 +5280,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8338952601723052325">Webbplats för utvecklare</translation>
 <translation id="8339059274628563283">Lokalt lagrad data för <ph name="SITE" /></translation>
 <translation id="833986336429795709">Välj en app för att öppna länken</translation>
-<translation id="834057053932610950">Ett fel uppstod när Linux skulle konfigureras. Kontakta administratören.</translation>
 <translation id="8342861492835240085">Välj en samling</translation>
 <translation id="834290227245955730">Ogiltig pinkod Återstående försök: <ph name="RETRIES" />.</translation>
 <translation id="8351419472474436977">Detta tillägg har tagit kontroll över dina proxyinställningar, vilket innebär att det kan ändra, knäcka eller tjuvlyssna på allt du gör på webben. Om du inte vet varför den här ändringen inträffade är den troligen inte önskvärd.</translation>

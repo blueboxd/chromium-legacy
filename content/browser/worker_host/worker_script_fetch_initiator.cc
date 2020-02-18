@@ -4,7 +4,6 @@
 
 #include "content/browser/worker_host/worker_script_fetch_initiator.h"
 
-#include <string>
 #include <vector>
 
 #include "base/bind.h"
@@ -56,10 +55,39 @@
 
 namespace content {
 
+namespace {
+
+// Calculate the final response URL from the redirect chain, URLs fetched by the
+// service worker and the initial request URL. The logic is mostly based on what
+// blink::ResourceResponse::ResponseUrl() does.
+GURL DetermineFinalResponseUrl(
+    const GURL& initial_request_url,
+    blink::mojom::WorkerMainScriptLoadParams* main_script_load_params) {
+  DCHECK(main_script_load_params);
+
+  network::mojom::URLResponseHead* url_response_head =
+      main_script_load_params->response_head.get();
+
+  // First check the URL list from the service worker.
+  if (!url_response_head->url_list_via_service_worker.empty()) {
+    DCHECK(url_response_head->was_fetched_via_service_worker);
+    return url_response_head->url_list_via_service_worker.back();
+  }
+
+  // Then check the list of redirects.
+  if (!main_script_load_params->redirect_infos.empty())
+    return main_script_load_params->redirect_infos.back().new_url;
+
+  // No redirection happened. The initial request URL was used for the response.
+  return initial_request_url;
+}
+
+}  // namespace
+
 // static
 void WorkerScriptFetchInitiator::Start(
     int worker_process_id,
-    const GURL& script_url,
+    const GURL& initial_request_url,
     RenderFrameHost* creator_render_frame_host,
     const net::SiteForCookies& site_for_cookies,
     const url::Origin& request_initiator,
@@ -118,12 +146,12 @@ void WorkerScriptFetchInitiator::Start(
   // Determine the referrer for the worker script request based on the spec.
   // https://w3c.github.io/webappsec-referrer-policy/#determine-requests-referrer
   Referrer sanitized_referrer = Referrer::SanitizeForRequest(
-      script_url,
+      initial_request_url,
       Referrer(outside_fetch_client_settings_object->outgoing_referrer,
                outside_fetch_client_settings_object->referrer_policy));
 
   resource_request = std::make_unique<network::ResourceRequest>();
-  resource_request->url = script_url;
+  resource_request->url = initial_request_url;
   resource_request->site_for_cookies = site_for_cookies;
   resource_request->request_initiator = request_initiator;
   resource_request->referrer = sanitized_referrer.url,
@@ -174,7 +202,7 @@ void WorkerScriptFetchInitiator::Start(
   AddAdditionalRequestHeaders(resource_request.get(), browser_context);
 
   CreateScriptLoader(
-      worker_process_id, creator_render_frame_host,
+      worker_process_id, initial_request_url, creator_render_frame_host,
       trusted_network_isolation_key, std::move(resource_request),
       std::move(factory_bundle_for_browser),
       std::move(subresource_loader_factories),
@@ -278,6 +306,7 @@ void WorkerScriptFetchInitiator::AddAdditionalRequestHeaders(
 
 void WorkerScriptFetchInitiator::CreateScriptLoader(
     int worker_process_id,
+    const GURL& initial_request_url,
     RenderFrameHost* creator_render_frame_host,
     const net::NetworkIsolationKey& trusted_network_isolation_key,
     std::unique_ptr<network::ResourceRequest> resource_request,
@@ -371,13 +400,15 @@ void WorkerScriptFetchInitiator::CreateScriptLoader(
       std::move(throttles), std::move(resource_request),
       base::BindOnce(WorkerScriptFetchInitiator::DidCreateScriptLoader,
                      std::move(callback),
-                     std::move(subresource_loader_factories)));
+                     std::move(subresource_loader_factories),
+                     initial_request_url));
 }
 
 void WorkerScriptFetchInitiator::DidCreateScriptLoader(
     CompletionCallback callback,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories,
+    const GURL& initial_request_url,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     base::Optional<SubresourceLoaderParams> subresource_loader_params,
     bool success) {
@@ -401,10 +432,17 @@ void WorkerScriptFetchInitiator::DidCreateScriptLoader(
         subresource_loader_params->controller_service_worker_object_host;
   }
 
+  // Figure out the final response URL.
+  GURL final_response_url;
+  if (success) {
+    final_response_url = DetermineFinalResponseUrl(
+        initial_request_url, main_script_load_params.get());
+  }
+
   std::move(callback).Run(
-      std::move(subresource_loader_factories),
+      success, std::move(subresource_loader_factories),
       std::move(main_script_load_params), std::move(controller),
-      std::move(controller_service_worker_object_host), success);
+      std::move(controller_service_worker_object_host), final_response_url);
 }
 
 }  // namespace content

@@ -416,7 +416,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Vaalea koralli</translation>
 <translation id="3816633764618089385">Seuraava mediakohde</translation>
-<translation id="3838966660807147922">Aseta osoitin merkkien väliin muokatessasi tekstiä (kuten Mac OS X)</translation>
+<translation id="3838966660807147922">Aseta kohdistin merkkien väliin muokatessasi tekstiä (kuten Mac OS X)</translation>
 <translation id="385383972552776628">Avaa asetussivu</translation>
 <translation id="3856075812838139784">Vain luku</translation>
 <translation id="3857141338659865495">Keskiturkoosi</translation>
@@ -730,7 +730,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="5948123859135882163">Vaihda matemaattisten lausekkeiden tulkintatapaa rakenteellisen ja semanttisen välillä</translation>
 <translation id="5955304353782037793">sov.</translation>
 <translation id="5956928062748260866">Dialogi</translation>
-<translation id="5961639938291964703">Selaa ylös- ja alasnäppäimillä tai tee haku kirjoittamalla</translation>
+<translation id="5961639938291964703">Selaa ylä- ja alanuolilla tai tee haku kirjoittamalla</translation>
 <translation id="5963413905009737549">Osio</translation>
 <translation id="5968607524793740041">Näytä kontekstivalikko</translation>
 <translation id="597121107011153418">{COUNT,plural, =1{jossa # kohde}other{jossa # kohdetta}}</translation>
@@ -887,7 +887,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="7143034430156387447">Vaihda 6 ja 8 pisteen pistekirjoituksen välillä</translation>
 <translation id="7143207342074048698">Yhdistetään</translation>
 <translation id="7153618581592392745">Laventeli</translation>
-<translation id="7157095268991842805">Kohdistettu</translation>
+<translation id="7157095268991842805">Koostettu</translation>
 <translation id="7157306005867877619">Tiivistelmä</translation>
 <translation id="7161771961008409533">Ponnahduspainike</translation>
 <translation id="7167657087543110">merkkien puhuminen</translation>
@@ -975,7 +975,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="7763537600611320912">Tiedoston <ph name="FILE_NAME" /> lataus aloitettu</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, salasanan tekstikenttä</translation>
 <translation id="7776293189010177726">Avaa ChromeVox-valikot.</translation>
-<translation id="7799302833060027366">Tutki laskutoimituksia painamalla ylä-, ala-, vasenta tai oikeaa painiketta</translation>
+<translation id="7799302833060027366">Tutki laskutoimituksia painamalla ylä-, ala-, vasenta tai oikeaa näppäintä</translation>
 <translation id="7800558923657349506">Epilogi</translation>
 <translation id="7805247615045262757">oletusnavigointi</translation>
 <translation id="7805768142964895445">Tila</translation>

@@ -317,6 +317,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
 
   const KURL& WebBundlePhysicalUrl() const { return web_bundle_physical_url_; }
 
+  bool LastSameDocumentNavigationWasBrowserInitiated() const {
+    return last_same_document_navigation_was_browser_initiated_;
+  }
+
  protected:
   Vector<KURL> redirect_chain_;
 
@@ -541,6 +545,10 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   const base::TickClock* clock_;
 
   Vector<OriginTrialFeature> initiator_origin_trial_features_;
+
+  // Whether this load request is a result of a browser initiated same-document
+  // navigation.
+  bool last_same_document_navigation_was_browser_initiated_ = false;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);

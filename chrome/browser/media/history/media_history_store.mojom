@@ -5,6 +5,7 @@
 module media_history.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
+import "services/media_session/public/mojom/media_session.mojom";
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
@@ -27,6 +28,8 @@ struct MediaHistoryOriginRow {
   double last_updated_time;
 };
 
+// A playback is recorded for each individual player on a page. Child frame
+// playbacks are recorded but we use the top frame url.
 struct MediaHistoryPlaybackRow {
   // The top frame URL of the page that had the playback.
   url.mojom.Url url;
@@ -37,6 +40,30 @@ struct MediaHistoryPlaybackRow {
 
   // The watchtime for the playback.
   mojo_base.mojom.TimeDelta watchtime;
+
+  // The last updated time of the row in JS time.
+  double last_updated_time;
+};
+
+// There is a single playback session for each web contents that plays videos
+// with audio tracks. It is not recorded for audio-only and video-only sessions.
+// It shares a 1:1 relationship with the media session of the page.
+struct MediaHistoryPlaybackSessionRow {
+  // The id of the session.
+  int64 id;
+
+  // The top frame URL of the page that had the playback session.
+  url.mojom.Url url;
+
+  // The duration and position of the playback session.
+  mojo_base.mojom.TimeDelta duration;
+  mojo_base.mojom.TimeDelta position;
+
+  // The metadata associated with the media session.
+  media_session.mojom.MediaMetadata metadata;
+
+  // The artwork associated with the media session.
+  array<media_session.mojom.MediaImage> artwork;
 
   // The last updated time of the row in JS time.
   double last_updated_time;
@@ -53,4 +80,8 @@ interface MediaHistoryStore {
 
   // Returns the playback from the playbacks table.
   GetMediaHistoryPlaybackRows() => (array<MediaHistoryPlaybackRow> rows);
+
+  // Returns the playback sessions from the sessions table.
+  GetMediaHistoryPlaybackSessionRows() =>
+    (array<MediaHistoryPlaybackSessionRow> rows);
 };

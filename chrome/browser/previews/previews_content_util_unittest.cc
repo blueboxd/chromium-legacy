@@ -164,8 +164,8 @@ TEST_F(PreviewsContentUtilTest,
   bool is_reload = false;
   bool previews_triggering_logic_already_ran = false;
   bool is_data_saver_user = true;
-  EXPECT_EQ(content::OFFLINE_PAGE_ON | content::DEFER_ALL_SCRIPT_ON |
-                content::RESOURCE_LOADING_HINTS_ON | content::NOSCRIPT_ON,
+  EXPECT_EQ(content::DEFER_ALL_SCRIPT_ON | content::RESOURCE_LOADING_HINTS_ON |
+                content::NOSCRIPT_ON,
             previews::CallDetermineAllowedClientPreviewsState(
                 &user_data, GURL("http://www.google.com"), is_reload,
                 previews_triggering_logic_already_ran, is_data_saver_user,
@@ -182,7 +182,8 @@ TEST_F(PreviewsContentUtilTest,
        DetermineAllowedClientPreviewsStateOfflineAndRedirects) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitFromCommandLine(
-      "Previews", "DeferAllScript,ResourceLoadingHints,NoScriptPreviews");
+      "Previews,OfflinePreviews",
+      "DeferAllScript,ResourceLoadingHints,NoScriptPreviews");
   PreviewsUserData user_data(1);
   bool is_reload = false;
   bool previews_triggering_logic_already_ran = false;

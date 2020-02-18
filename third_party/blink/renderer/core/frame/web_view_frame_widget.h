@@ -83,7 +83,6 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   void MouseCaptureLost() override;
   void SetFocus(bool) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
-  bool IsAcceleratedCompositingActive() const override;
   WebURL GetURLForDebugTrace() override;
 
   // WebFrameWidget overrides:

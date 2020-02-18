@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Yuklab olinsinmi?</translation>
 <translation id="3306398118552023113">Bu ilova Chrome brauzerida ishlayapti.</translation>
-<translation id="3312292613668865961">Saytlar virtual reallik qurilmalari yoki maʼlumotlaridan foydalanishi oldidan ruxsat olsin (tavsiya etiladi)</translation>
 <translation id="3315103659806849044">Siz hozir Sync va Google xizmati sozlamalaridasiz. Sinxronizatsiyani yoqish uchun ekranning quyi qismidagi Tasdiqlash tugmasini bosing. Tepaga</translation>
 <translation id="3328801116991980348">Sayt haqida ma’lumot</translation>
 <translation id="3333961966071413176">Barcha kontaktlar</translation>
@@ -514,7 +513,6 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="4915549754973153784">Qurilmalar qidirilayotganda <ph name="BEGIN_LINK" />yordam sahifasiga o‘ting<ph name="END_LINK" /></translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# ta sahifa}other{# ta sahifa}}</translation>
 <translation id="4932247056774066048">Chunki siz <ph name="DOMAIN_NAME" /> tomonidan boshqariladigan hisobingizdan chiqish arafasidasiz. Barcha axborotlar Google Chrome brauzeridan tozalab tashlanadi, lekin Google hisobingizda saqlanib qoladi.</translation>
-<translation id="4935305910887312910">Saytlar kamerangiz joylashuvini aniqlashi yoki xonangizni proyeksiyalashidan oldin ruxsat olsin (tavsiya etiladi)</translation>
 <translation id="4943703118917034429">Virtual reallik</translation>
 <translation id="4943872375798546930">Hech narsa topilmadi</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ekraningizni namoyish qilmoqda</translation>
@@ -818,6 +816,7 @@ Yangi soʻrov ochish yoki qidiruv soʻrovini tahrirlash uchun kerakli soʻz usti
 <translation id="7141896414559753902">Saytlarga qalqib chiquvchi oynalarni ochishni taqiqlash (tavsiya etiladi)</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> domenidagi <ph name="BEGIN_LINK" />asl sahifani yuklash<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">Oxirgi 24 soat</translation>
+<translation id="7173114856073700355">Sozlamalarni ochish</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Buni keyinroq “Sozlamalar” orqali o‘zgartirishingiz mumkin</translation>
 <translation id="7180611975245234373">Yangilash</translation>
@@ -1025,7 +1024,6 @@ Sayt bu seansda kamerani ISHLATMAYDI. Kamera rasmlari faqat siz uchun chiqadi.</
 <translation id="8664979001105139458">Bunday nomli fayl allaqachon bor</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signal darajasi: # chiziqda}other{Signal darajasi: # chiziqda}}</translation>
 <translation id="868929229000858085">Kontaktlarni qidirish</translation>
-<translation id="8698438463325761328">Saytlarga virtual reallik qurilmalari yoki maʼlumotlaridan foydalanishni taqiqlash</translation>
 <translation id="869891660844655955">Tugash muddati</translation>
 <translation id="8728487861892616501">Bu dasturdan foydalanish orqali siz Chrome <ph name="BEGIN_LINK1" />xizmat shartlari<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />Maxfiylik eslatmasi<ph name="END_LINK2" /> va <ph name="BEGIN_LINK3" />Family Link orqali boshqariladigan Google hisoblari uchun Maxfiylik eslatmasiga<ph name="END_LINK3" /> rozilik bildirgan hisoblanasiz.</translation>
 <translation id="8748850008226585750">Kontent berkitildi</translation>
@@ -1042,7 +1040,6 @@ Sayt bu seansda kamerani ISHLATMAYDI. Kamera rasmlari faqat siz uchun chiqadi.</
 <translation id="883806473910249246">Kontentni yuklab olishda xatolik yuz berdi.</translation>
 <translation id="8840953339110955557">Bu sahifa onlayn versiyasidan farq qilishi mumkin.</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">Saytlarga kamera joylashuvini aniqlash yoki xonangizni proyeksiyalashni taqiqlash</translation>
 <translation id="8853345339104747198">“<ph name="TAB_TITLE" />” ichki oynasi</translation>
 <translation id="885701979325669005">Ombor</translation>
 <translation id="889338405075704026">Chrome sozlamalarini ochish</translation>

@@ -47,13 +47,16 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
 
   void AddObserver(AXTreeObserver* observer);
   bool HasObserver(AXTreeObserver* observer);
-  void RemoveObserver(const AXTreeObserver* observer);
+  void RemoveObserver(AXTreeObserver* observer);
 
   base::ObserverList<AXTreeObserver>& observers() { return observers_; }
 
   AXNode* root() const { return root_; }
 
   const AXTreeData& data() const { return data_; }
+
+  // Destroys the tree and notifies all observers.
+  void Destroy();
 
   // AXNode::OwnerTree override.
   // Returns the globally unique ID of this accessibility tree.

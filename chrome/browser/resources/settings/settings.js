@@ -12,6 +12,7 @@ import './controls/settings_dropdown_menu.m.js';
 import './controls/settings_slider.m.js';
 import './controls/settings_textarea.m.js';
 import './controls/settings_toggle_button.m.js';
+import './downloads_page/downloads_page.m.js';
 import './on_startup_page/on_startup_page.m.js';
 import './on_startup_page/startup_urls_page.m.js';
 import './prefs/prefs.m.js';
@@ -35,6 +36,7 @@ export {DefaultBrowserBrowserProxyImpl} from './default_browser_page/default_bro
 
 export {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from './appearance_page/appearance_browser_proxy.m.js';
 export {CrSettingsPrefs} from './prefs/prefs_types.m.js';
+export {DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.m.js';
 export {ExtensionControlBrowserProxyImpl} from './extension_control_browser_proxy.m.js';
 export {FontsBrowserProxy, FontsBrowserProxyImpl} from './appearance_page/fonts_browser_proxy.m.js';
 export {OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from './on_startup_page/on_startup_browser_proxy.m.js';

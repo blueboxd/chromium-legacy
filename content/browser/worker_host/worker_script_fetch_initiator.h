@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
@@ -53,17 +54,18 @@ struct SubresourceLoaderParams;
 class WorkerScriptFetchInitiator {
  public:
   using CompletionCallback = base::OnceCallback<void(
+      bool success,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>,
       blink::mojom::WorkerMainScriptLoadParamsPtr,
       blink::mojom::ControllerServiceWorkerInfoPtr,
       base::WeakPtr<ServiceWorkerObjectHost>,
-      bool)>;
+      const GURL& final_response_url)>;
 
   // Creates a worker script fetcher and starts it. Must be called on the UI
   // thread. |callback| will be called with the result on the UI thread.
   static void Start(
       int worker_process_id,
-      const GURL& script_url,
+      const GURL& initial_request_url,
       RenderFrameHost* creator_render_frame_host,
       const net::SiteForCookies& site_for_cookies,
       const url::Origin& request_initiator,
@@ -103,6 +105,7 @@ class WorkerScriptFetchInitiator {
 
   static void CreateScriptLoader(
       int worker_process_id,
+      const GURL& initial_request_url,
       RenderFrameHost* creator_render_frame_host,
       const net::NetworkIsolationKey& trusted_network_isolation_key,
       std::unique_ptr<network::ResourceRequest> resource_request,
@@ -122,6 +125,7 @@ class WorkerScriptFetchInitiator {
       CompletionCallback callback,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories,
+      const GURL& initial_request_url,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       base::Optional<SubresourceLoaderParams> subresource_loader_params,
       bool success);

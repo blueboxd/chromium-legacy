@@ -76,16 +76,16 @@ class VIZ_COMMON_EXPORT TextureDrawQuad : public DrawQuad {
   struct OverlayResources {
     OverlayResources();
 
-    gfx::Size size_in_pixels[Resources::kMaxResourceIdCount];
+    gfx::Size size_in_pixels;
   };
   OverlayResources overlay_resources;
 
   ResourceId resource_id() const { return resources.ids[kResourceIdIndex]; }
   const gfx::Size& resource_size_in_pixels() const {
-    return overlay_resources.size_in_pixels[kResourceIdIndex];
+    return overlay_resources.size_in_pixels;
   }
   void set_resource_size_in_pixels(const gfx::Size& size_in_pixels) {
-    overlay_resources.size_in_pixels[kResourceIdIndex] = size_in_pixels;
+    overlay_resources.size_in_pixels = size_in_pixels;
   }
 
   static const TextureDrawQuad* MaterialCast(const DrawQuad*);

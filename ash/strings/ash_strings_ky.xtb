@@ -120,7 +120,6 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> – <ph name="DOMAIN" /> тарабынан башкарылган сеанс</translation>
 <translation id="2427507373259914951">Сол баскычын чыкылдатуу</translation>
 <translation id="2429753432712299108">"<ph name="DEVICE_NAME" />" Bluetooth түзмөгү жупташуу үчүн уруксат суроодо. Уруксат берүүдөн мурун, төмөнкү купуя сөз айкашы түзмөгүңүздө көрүнүп тургандыгын ырастаңыз: <ph name="PASSKEY" /></translation>
-<translation id="2435457462613246316">Сырсөздү көрсөтүү</translation>
 <translation id="2473177541599297363">Дааналыкты ырастоо</translation>
 <translation id="2482878487686419369">Билдирмелер</translation>
 <translation id="2484513351006226581">Баскычтоптун калыбын которуу үчүн <ph name="KEYBOARD_SHORTCUT" /> басып коюңуз.</translation>
@@ -286,7 +285,6 @@
 <translation id="4527045527269911712">Bluetooth түзмөгү "<ph name="DEVICE_NAME" />" жупташууга уруксат сурайт.</translation>
 <translation id="453661520163887813">Толгончо <ph name="TIME" /> бар</translation>
 <translation id="4561267230861221837">3G</translation>
-<translation id="4565377596337484307">Сырсөздү жашыруу</translation>
 <translation id="4570957409596482333">Басып туруп угуу баскычы</translation>
 <translation id="4585337515783392668">Белгисиз алуучуга чыгарууну токтотуу</translation>
 <translation id="4628757576491864469">Түзмөктөр</translation>
@@ -441,7 +439,7 @@
 <translation id="6727969043791803658">Туташып турат, батареянын деңгээли – <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="6751826523481687655">Майнаптуулукка көз салуу күйгүзүлгөн</translation>
 <translation id="6752912906630585008"><ph name="REMOVED_DESK" /> иш тактасы өчүрүлдү жана <ph name="RECEIVE_DESK" /> иш тактасы менен бириктирилди</translation>
-<translation id="6777216307882431711">Туташтырылган USB-C түзмөктөрү кубатталууда</translation>
+<translation id="6777216307882431711">Байланышкан USB-C түзмөктөрү кубатталууда</translation>
 <translation id="6790428901817661496">Ойнотуу</translation>
 <translation id="6803622936009808957">Колдоого алынган бир дагы чечилиш табылбагандыктан, дисплейлер чагылыштырылбай калды. Анын ордуна кеңейтилген иштакта киргизилди.</translation>
 <translation id="6820676911989879663">Тыныгуу алыңыз!</translation>
@@ -615,7 +613,7 @@
 <translation id="9080206825613744995">Микрофон колдонулууда.</translation>
 <translation id="9084606467167974638">Менюнун абалын өчүрүү/күйгүзүү</translation>
 <translation id="9089416786594320554">Киргизүү ыкмалары</translation>
-<translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> дисплейи алынып салынды</translation>
+<translation id="9091626656156419976"><ph name="DISPLAY_NAME" /> дисплейи өчүрүлдү</translation>
 <translation id="9151726767154816831">Жаңыртуу үчүн өчүрүп күйгүзүп, "жууп салыңыз".</translation>
 <translation id="9168436347345867845">Азыр эмес</translation>
 <translation id="9179259655489829027">Бул функция менен аккаунтка кирген бардык колдонуучуларга сырсөзсүз оңой өтө аласыз. Бул функцияны ишенимдүү аккаунттар менен гана колдонуңуз.</translation>

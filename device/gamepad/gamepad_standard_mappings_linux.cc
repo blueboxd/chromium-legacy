@@ -129,8 +129,6 @@ void MapperXboxElite2Bluetooth(const Gamepad& input, Gamepad* mapped) {
   mapped->buttons[BUTTON_INDEX_QUATERNARY] = input.buttons[4];
   mapped->buttons[BUTTON_INDEX_LEFT_SHOULDER] = input.buttons[6];
   mapped->buttons[BUTTON_INDEX_RIGHT_SHOULDER] = input.buttons[7];
-  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] = AxisToButton(input.axes[6]);
-  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] = AxisToButton(input.axes[5]);
   // On some systems, the View (back/select) button is interpreted as a media
   // key instead of a gamepad button. When it behaves as a media key, pressing
   // the button causes a back-navigation in the browser. The below mapping is
@@ -139,11 +137,25 @@ void MapperXboxElite2Bluetooth(const Gamepad& input, Gamepad* mapped) {
   mapped->buttons[BUTTON_INDEX_START] = input.buttons[11];
   mapped->buttons[BUTTON_INDEX_LEFT_THUMBSTICK] = input.buttons[13];
   mapped->buttons[BUTTON_INDEX_RIGHT_THUMBSTICK] = input.buttons[14];
-  mapped->buttons[BUTTON_INDEX_DPAD_UP] = AxisNegativeAsButton(input.axes[8]);
-  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] = AxisPositiveAsButton(input.axes[8]);
-  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] = AxisNegativeAsButton(input.axes[7]);
+  // The modern Xbox Elite Series 2 firmware reports less axes than prior
+  // versions. However, the only way to distinguish between the versions is
+  // to check the length of the axes.
+  //
+  // In the older firmware, axes 4 and 9 are redundancies, so after axis 3
+  // the mappings are shifted by 1
+  int axis_shift = mapped->axes_length > 8 ? 1 : 0;
+  mapped->buttons[BUTTON_INDEX_LEFT_TRIGGER] =
+      AxisToButton(input.axes[5 + axis_shift]);
+  mapped->buttons[BUTTON_INDEX_RIGHT_TRIGGER] =
+      AxisToButton(input.axes[4 + axis_shift]);
+  mapped->buttons[BUTTON_INDEX_DPAD_UP] =
+      AxisNegativeAsButton(input.axes[7 + axis_shift]);
+  mapped->buttons[BUTTON_INDEX_DPAD_DOWN] =
+      AxisPositiveAsButton(input.axes[7 + axis_shift]);
+  mapped->buttons[BUTTON_INDEX_DPAD_LEFT] =
+      AxisNegativeAsButton(input.axes[6 + axis_shift]);
   mapped->buttons[BUTTON_INDEX_DPAD_RIGHT] =
-      AxisPositiveAsButton(input.axes[7]);
+      AxisPositiveAsButton(input.axes[6 + axis_shift]);
 
   // The Xbox (meta) button does not generate an input event for this device.
   mapped->buttons_length = BUTTON_INDEX_COUNT - 1;

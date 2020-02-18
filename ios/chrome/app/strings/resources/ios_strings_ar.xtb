@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
 <translation id="1005230401424685968">سنة</translation>
-<translation id="1016495303386450659">تم إعادة تحميل العنصر</translation>
+<translation id="1016495303386450659">تمت إعادة تحميل العنصر</translation>
 <translation id="1047726139967079566">وضع إشارة مرجعية على هذه الصفحة...</translation>
 <translation id="1049743911850919806">التصفح المتخفي</translation>
 <translation id="1063454504051558093">استخدام كلمة مرور أخرى...</translation>
@@ -439,7 +439,7 @@
 <translation id="6831043979455480757">ترجمة</translation>
 <translation id="6851516051005285358">طلب موقع سطح المكتب</translation>
 <translation id="6858855187367714033">تم مسحه ضوئيًا.</translation>
-<translation id="6859944681507688231">لمسح رمز الاستجابة السريعة أو بطاقة ائتمان ضوئيًا، يمكنك تشغيل الكاميرا من الإعدادات.</translation>
+<translation id="6859944681507688231">لمسح رمز الاستجابة السريعة أو بطاقة ائتمان ضوئيًا، يمكنك تفعيل الكاميرا من الإعدادات.</translation>
 <translation id="6873263987691478642">وضع تقسيم العرض</translation>
 <translation id="6888009575607455378">هل تريد فعلاً تجاهل التغييرات؟</translation>
 <translation id="6896758677409633944">نسخ</translation>
@@ -560,7 +560,7 @@
 <translation id="8588404856427128947">غير مفعَّل</translation>
 <translation id="8605219856220328675">إغلاق علامة التبويب.</translation>
 <translation id="8620640915598389714">تعديل</translation>
-<translation id="8636825310635137004">للحصول على علامات التبويب من أجهزتك الأخرى، شغِّل المزامنة.</translation>
+<translation id="8636825310635137004">للحصول على علامات التبويب من أجهزتك الأخرى، فعِّل المزامنة.</translation>
 <translation id="8654802032646794042">إلغاء</translation>
 <translation id="8668210798914567634">تم حفظ هذه الصفحة في قائمة القراءة.</translation>
 <translation id="8680787084697685621">تفاصيل تسجيل الدخول إلى الحساب قديمة.</translation>

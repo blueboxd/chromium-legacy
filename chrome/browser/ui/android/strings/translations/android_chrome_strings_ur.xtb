@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">لائٹ</translation>
 <translation id="3303414029551471755">مواد ڈاؤن لوڈ کرنے کیلئے آگے بڑھیں؟</translation>
 <translation id="3306398118552023113">‏یہ ایپ Chrome میں چل رہی ہے</translation>
-<translation id="3312292613668865961">سائٹس کو آپ کے ورچوئل ریئلٹی ڈیوائس اور ڈیٹا تک رسائی کی اجازت سے پہلے پوچھیں (تجویز کردہ)</translation>
 <translation id="3315103659806849044">‏آپ فی الوقت اپنی Sync اور Google سروس کی ترتیبات کو حسب ضرورت بنا رہے ہیں۔ مطابقت پذیری آن کرنے کا عمل مکمل کرنے کیلئے، اسکرین کے نچلے حصے کے پاس موجود 'تصدیق کریں' بٹن تھپتھپائیں۔ اوپر نیویگیٹ کریں</translation>
 <translation id="3328801116991980348">سائٹ کی معلومات</translation>
 <translation id="3333961966071413176">تمام رابطے</translation>
@@ -514,7 +513,6 @@
 <translation id="4915549754973153784">آلات کو اسکین کرتے وقت <ph name="BEGIN_LINK" />مدد حاصل کریں<ph name="END_LINK" />…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# صفحہ}other{# صفحات}}</translation>
 <translation id="4932247056774066048">‏چونکہ آپ <ph name="DOMAIN_NAME" /> کے زیر نظم اکاؤنٹ سے سائن آؤٹ ہو رہے ہیں اسلئے آپ کا Chrome ڈیٹا اس آلہ سے حذف کردیا جائے گا۔ یہ آپ کے Google اکاؤنٹ میں باقی رہے گا۔</translation>
-<translation id="4935305910887312910">سائٹس کو کیمرا کی پوزیشن حاصل کرنے یا اپنے کمرے کی پیمائش کرنے کی اجازت دینے سے پہلے پوچھیں (تجویز کردہ)</translation>
 <translation id="4943703118917034429">ورچوئل رئیلٹی</translation>
 <translation id="4943872375798546930">کوئی نتائج نہیں ہیں</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> آپ کی اسکرین کا اشتراک کر رہا ہے</translation>
@@ -726,7 +724,7 @@
 <translation id="6437478888915024427">صفحہ کی معلومات</translation>
 <translation id="6441734959916820584">نام کافی بڑا ہے</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# تصویر}other{# تصاویر}}</translation>
-<translation id="6447558397796644647">وہ بُک مارک تلاش نہیں کر سکا۔ اپنا املا چیک کریں یا ایک نیا بُک مارک شامل کریں۔</translation>
+<translation id="6447558397796644647">وہ بُک مارک تلاش نہیں کیا جا سکا۔ اپنا املا چیک کریں یا ایک نیا بُک مارک شامل کریں۔</translation>
 <translation id="6447842834002726250">کوکیز</translation>
 <translation id="6461962085415701688">فائل نہیں کھل سکتی</translation>
 <translation id="6464977750820128603">‏آپ Chrome میں اپنی ملاحظہ کردہ سائٹس کو دیکھ اور ان کے لیے ٹائمرز سیٹ کر سکتے ہیں۔\n\nجن سائٹس کے لیے آپ ٹائمرز سیٹ کرتے ہیں اور جتنی دیر تک آپ ان سائٹس کو ملاحظہ کرتے ہیں اس کے بارے میں Google معلومات حاصل کرتا ہے۔ ڈیجیٹل فلاح و بہبود کو بہتر بنانے کے لیے اس معلومات کا استعمال کیا جاتا ہے۔</translation>
@@ -818,6 +816,7 @@
 <translation id="7141896414559753902">سائٹس کو پاپ اپس اور ری ڈائریکٹس دکھانے سے مسدود کریں (تجویز کردہ)</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> سے <ph name="BEGIN_LINK" />اصل صفحہ لوڈ کریں<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">آخری 72 گھنٹے</translation>
+<translation id="7173114856073700355">ترتیبات کھولیں</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">آپ بعد میں ترتیبات میں اسے تبدیل کر سکتے ہیں</translation>
 <translation id="7180611975245234373">ریفریش کریں</translation>
@@ -1025,7 +1024,6 @@
 <translation id="8664979001105139458">فائل کا نام پہلے سے موجود ہے</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{سگنل کی مضبوطی کی سطح: # بار}other{سگنل کی مضبوطی کی سطح: # بارز}}</translation>
 <translation id="868929229000858085">اپنے رابطوں کو تلاش کریں</translation>
-<translation id="8698438463325761328">سائٹس کو اپنے ورچوئل ریئلٹی ڈیوائس اور ڈیٹا تک رسائی سے مسدود کریں</translation>
 <translation id="869891660844655955">میعاد ختم ہونے کی تاریخ</translation>
 <translation id="8728487861892616501">‏اس ایپلیکیشن کا استعمال کر کے آپ Chrome کی <ph name="BEGIN_LINK1" />سروس کی شرائط<ph name="END_LINK1" /> اور <ph name="BEGIN_LINK2" />رازداری کے نوٹس<ph name="END_LINK2" />، اور <ph name="BEGIN_LINK3" />Family Link سے نظم کردہ Google اکاؤنٹس کیلئے رازداری کے نوٹس<ph name="END_LINK3" /> سے اتفاق کرتے ہیں۔</translation>
 <translation id="8748850008226585750">مواد مخفی ہیں</translation>
@@ -1042,7 +1040,6 @@
 <translation id="883806473910249246">مواد ڈاؤن لوڈ کرتے وقت ایک خرابی پیش آ گئی۔</translation>
 <translation id="8840953339110955557">یہ صفحہ آن لائن ورژن سے مختلف ہو سکتا ہے۔</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">سائٹس کو کیمرا کی پوزیشن حاصل کرنے یا اپنے کمرے کی پیمائش کرنے سے مسدود کریں</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />، ٹیب</translation>
 <translation id="885701979325669005">اسٹوریج</translation>
 <translation id="889338405075704026">‏Chrome کی ترتیبات میں جائیں</translation>

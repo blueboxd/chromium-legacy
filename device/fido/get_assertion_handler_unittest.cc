@@ -801,6 +801,7 @@ class TestObserver : public FidoRequestHandlerBase::Observer {
     NOTREACHED();
   }
   void FinishCollectToken() override { NOTREACHED(); }
+  void OnRetryUserVerification(int attempts) override {}
   void SetMightCreateResidentCredential(bool v) override {}
 
   bool controls_dispatch_ = false;

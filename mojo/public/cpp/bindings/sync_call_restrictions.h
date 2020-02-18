@@ -24,7 +24,7 @@ class PersistentPrefStoreClient;
 }
 
 namespace ui {
-class HostContextFactoryPrivate;
+class Compositor;
 }  // namespace ui
 
 namespace viz {
@@ -81,7 +81,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) SyncCallRestrictions {
   friend class viz::HostFrameSinkManager;
   // For preventing frame swaps of wrong size during resize on Windows.
   // (https://crbug.com/811945)
-  friend class ui::HostContextFactoryPrivate;
+  friend class ui::Compositor;
   // END ALLOWED USAGE.
 
 #if ENABLE_SYNC_CALL_RESTRICTIONS

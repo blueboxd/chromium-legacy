@@ -686,10 +686,9 @@ StyleRuleSupports* CSSParserImpl::ConsumeSupportsRule(
     const CSSParserTokenRange prelude,
     const RangeOffset& prelude_offset,
     CSSParserTokenStream& block) {
-  CSSSupportsParser::SupportsResult supported =
-      CSSSupportsParser::SupportsCondition(prelude, *this,
-                                           CSSSupportsParser::kForAtRule);
-  if (supported == CSSSupportsParser::kInvalid)
+  CSSSupportsParser::Result supported = CSSSupportsParser::SupportsCondition(
+      prelude, *this, CSSSupportsParser::Mode::kForAtRule);
+  if (supported == CSSSupportsParser::Result::kParseFailure)
     return nullptr;  // Parse error, invalid @supports condition
 
   if (observer_) {
@@ -707,8 +706,9 @@ StyleRuleSupports* CSSParserImpl::ConsumeSupportsRule(
   if (observer_)
     observer_->EndRuleBody(block.Offset());
 
-  return MakeGarbageCollected<StyleRuleSupports>(prelude_serialized, supported,
-                                                 rules);
+  return MakeGarbageCollected<StyleRuleSupports>(
+      prelude_serialized, supported == CSSSupportsParser::Result::kSupported,
+      rules);
 }
 
 StyleRuleViewport* CSSParserImpl::ConsumeViewportRule(

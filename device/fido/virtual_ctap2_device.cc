@@ -683,9 +683,15 @@ FidoDevice::CancelToken VirtualCtap2Device::DeviceTransact(
     case CtapRequestCommand::kAuthenticatorGetNextAssertion:
       response_code = OnGetNextAssertion(request_bytes, &response_data);
       break;
-    case CtapRequestCommand::kAuthenticatorClientPin:
-      response_code = OnPINCommand(request_bytes, &response_data);
+    case CtapRequestCommand::kAuthenticatorClientPin: {
+      auto opt_response_code = OnPINCommand(request_bytes, &response_data);
+      if (!opt_response_code) {
+        // Simulate timeout due to unresponded User Presence check.
+        return 0;
+      }
+      response_code = *opt_response_code;
       break;
+    }
     case CtapRequestCommand::kAuthenticatorCredentialManagement:
       response_code = OnCredentialManagement(request_bytes, &response_data);
       break;
@@ -1111,7 +1117,7 @@ CtapDeviceResponseCode VirtualCtap2Device::OnGetNextAssertion(
   return CtapDeviceResponseCode::kSuccess;
 }
 
-CtapDeviceResponseCode VirtualCtap2Device::OnPINCommand(
+base::Optional<CtapDeviceResponseCode> VirtualCtap2Device::OnPINCommand(
     base::span<const uint8_t> request_bytes,
     std::vector<uint8_t>* response) {
   if (device_info_->options.client_pin_availability ==
@@ -1148,6 +1154,11 @@ CtapDeviceResponseCode VirtualCtap2Device::OnPINCommand(
     case static_cast<int>(device::pin::Subcommand::kGetRetries):
       response_map.emplace(static_cast<int>(pin::ResponseKey::kRetries),
                            mutable_state()->pin_retries);
+      break;
+
+    case static_cast<int>(device::pin::Subcommand::kGetUvRetries):
+      response_map.emplace(static_cast<int>(pin::ResponseKey::kUvRetries),
+                           mutable_state()->uv_retries);
       break;
 
     case static_cast<int>(device::pin::Subcommand::kGetKeyAgreement): {
@@ -1301,6 +1312,10 @@ CtapDeviceResponseCode VirtualCtap2Device::OnPINCommand(
       --mutable_state()->uv_retries;
 
       // Simulate internal UV.
+      if (mutable_state()->simulate_press_callback &&
+          !mutable_state()->simulate_press_callback.Run(this)) {
+        return base::nullopt;
+      }
       if (!config_.user_verification_succeeds) {
         return CtapDeviceResponseCode::kCtap2ErrPinInvalid;
       }

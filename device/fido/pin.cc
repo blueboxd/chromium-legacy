@@ -77,15 +77,29 @@ EncodePINCommand(
 RetriesResponse::RetriesResponse() = default;
 
 // static
-base::Optional<RetriesResponse> RetriesResponse::Parse(
+base::Optional<RetriesResponse> RetriesResponse::ParsePinRetries(
     const base::Optional<cbor::Value>& cbor) {
+  return RetriesResponse::Parse(std::move(cbor),
+                                static_cast<int>(ResponseKey::kRetries));
+}
+
+// static
+base::Optional<RetriesResponse> RetriesResponse::ParseUvRetries(
+    const base::Optional<cbor::Value>& cbor) {
+  return RetriesResponse::Parse(std::move(cbor),
+                                static_cast<int>(ResponseKey::kUvRetries));
+}
+
+// static
+base::Optional<RetriesResponse> RetriesResponse::Parse(
+    const base::Optional<cbor::Value>& cbor,
+    const int retries_key) {
   if (!cbor || !cbor->is_map()) {
     return base::nullopt;
   }
   const auto& response_map = cbor->GetMap();
 
-  auto it =
-      response_map.find(cbor::Value(static_cast<int>(ResponseKey::kRetries)));
+  auto it = response_map.find(cbor::Value(retries_key));
   if (it == response_map.end() || !it->second.is_unsigned()) {
     return base::nullopt;
   }
@@ -99,7 +113,6 @@ base::Optional<RetriesResponse> RetriesResponse::Parse(
   ret.retries = static_cast<int>(retries);
   return ret;
 }
-
 
 KeyAgreementResponse::KeyAgreementResponse() = default;
 
@@ -357,8 +370,14 @@ std::vector<uint8_t> TokenResponse::PinAuth(
 
 // static
 std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-AsCTAPRequestValuePair(const RetriesRequest&) {
+AsCTAPRequestValuePair(const PinRetriesRequest&) {
   return EncodePINCommand(Subcommand::kGetRetries);
+}
+
+// static
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+AsCTAPRequestValuePair(const UvRetriesRequest&) {
+  return EncodePINCommand(Subcommand::kGetUvRetries);
 }
 
 // static

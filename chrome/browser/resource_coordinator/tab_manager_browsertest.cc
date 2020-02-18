@@ -9,6 +9,7 @@
 #include "base/memory/memory_pressure_listener.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/util/memory_pressure/fake_memory_pressure_monitor.h"
 #include "build/build_config.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
+#include "chrome/browser/performance_manager/graph/policies/policy_features.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_unittest_utils.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
@@ -487,66 +489,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
   EXPECT_TRUE(chrome::CanGoForward(browser()));
 }
 
-// On Linux, memory pressure listener is not implemented yet.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-
-// Test that the MemoryPressureListener event is properly triggering a tab
-// discard upon |MEMORY_PRESSURE_LEVEL_CRITICAL| event.
-IN_PROC_BROWSER_TEST_F(TabManagerTest, OomPressureListener) {
-  // Get two tabs open.
-  content::WindowedNotificationObserver load1(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::NotificationService::AllSources());
-  OpenURLParams open1(GURL(chrome::kChromeUIAboutURL), content::Referrer(),
-                      WindowOpenDisposition::CURRENT_TAB,
-                      ui::PAGE_TRANSITION_TYPED, false);
-  browser()->OpenURL(open1);
-  load1.Wait();
-
-  content::WindowedNotificationObserver load2(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::NotificationService::AllSources());
-  OpenURLParams open2(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
-                      WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                      ui::PAGE_TRANSITION_TYPED, false);
-  browser()->OpenURL(open2);
-  load2.Wait();
-
-  ASSERT_EQ(tsm()->count(), 2);
-
-  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(0)));
-  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(1)));
-
-  // Advance time so everything is urgent discardable.
-  test_clock_.Advance(kBackgroundUrgentProtectionTime);
-
-  // Nothing should happen with a moderate memory pressure event.
-  fake_memory_pressure_monitor_.SetAndNotifyMemoryPressure(
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
-  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(0)));
-  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(1)));
-
-  // A critical memory pressure event should discard a tab.
-  fake_memory_pressure_monitor_.SetAndNotifyMemoryPressure(
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
-  // Coming here, an asynchronous operation will collect system stats. Once in,
-  // a tab should get discarded. As such we need to give it 10s time to discard.
-  const int kTimeoutTimeInMS = 10000;
-  const int kIntervalTimeInMS = 5;
-  int timeout = kTimeoutTimeInMS / kIntervalTimeInMS;
-  while (--timeout) {
-    base::PlatformThread::Sleep(
-        base::TimeDelta::FromMilliseconds(kIntervalTimeInMS));
-    base::RunLoop().RunUntilIdle();
-    if (IsTabDiscarded(GetWebContentsAt(0)))
-      break;
-  }
-  EXPECT_TRUE(IsTabDiscarded(GetWebContentsAt(0)));
-  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(1)));
-}
-
-#endif
-
 IN_PROC_BROWSER_TEST_F(TabManagerTest, InvalidOrEmptyURL) {
   // Open two tabs. Wait for the foreground one to load but do not wait for the
   // background one.
@@ -616,83 +558,6 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabDiscardDoneCallback) {
       LifecycleUnitDiscardReason::EXTERNAL, std::move(callback)));
   EXPECT_TRUE(callback_state.called_);
 }
-
-// On Linux, memory pressure listener is not implemented yet.
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
-
-IN_PROC_BROWSER_TEST_F(TabManagerTest, RegisterMemoryPressureListener) {
-  // Open two tabs. Wait for the foreground one to load but do not wait for the
-  // background one.
-  content::WindowedNotificationObserver load1(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::NotificationService::AllSources());
-  OpenURLParams open1(GURL(chrome::kChromeUIAboutURL), content::Referrer(),
-                      WindowOpenDisposition::CURRENT_TAB,
-                      ui::PAGE_TRANSITION_TYPED, false);
-  browser()->OpenURL(open1);
-  load1.Wait();
-
-  content::WindowedNotificationObserver load2(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::NotificationService::AllSources());
-  OpenURLParams open2(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
-                      WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                      ui::PAGE_TRANSITION_TYPED, false);
-  browser()->OpenURL(open2);
-  load2.Wait();
-
-  ASSERT_EQ(2, tsm()->count());
-  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(0)));
-  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(1)));
-
-  // Advance time so everything is urgent discardable.
-  test_clock_.Advance(kBackgroundUrgentProtectionTime);
-
-  // After receiving memory pressure, the background tab should be discarded.
-  // A critical memory pressure event should discard a tab.
-  fake_memory_pressure_monitor_.SetAndNotifyMemoryPressure(
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
-  if (!IsTabDiscarded(GetWebContentsAt(1))) {
-    DiscardWaiter discard_waiter;
-    discard_waiter.Wait();
-  }
-
-  // Critical memory pressure should make the background tab discarded.
-  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(0)));
-  EXPECT_TRUE(IsTabDiscarded(GetWebContentsAt(1)));
-
-  // Open another background tab.
-  content::WindowedNotificationObserver load3(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::NotificationService::AllSources());
-  OpenURLParams open3(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
-                      WindowOpenDisposition::NEW_BACKGROUND_TAB,
-                      ui::PAGE_TRANSITION_TYPED, false);
-  browser()->OpenURL(open3);
-  load3.Wait();
-
-  ASSERT_EQ(3, tsm()->count());
-
-  // Advance time again so the new background tab is discardable.
-  test_clock_.Advance(kBackgroundUrgentProtectionTime);
-
-  // After receiving another critical memory pressure, the new background tab
-  // should be discarded. This verifies that the memory pressure listener is
-  // registered back when the previous dicard finished.
-  fake_memory_pressure_monitor_.SetAndNotifyMemoryPressure(
-      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
-  if (!IsTabDiscarded(GetWebContentsAt(2))) {
-    DiscardWaiter discard_waiter;
-    discard_waiter.Wait();
-  }
-
-  // Critical memory pressure should make the background tab discarded.
-  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(0)));
-  EXPECT_TRUE(IsTabDiscarded(GetWebContentsAt(1)));
-  EXPECT_TRUE(IsTabDiscarded(GetWebContentsAt(2)));
-}
-
-#endif
 
 // Makes sure that PDF pages are protected.
 IN_PROC_BROWSER_TEST_F(TabManagerTest, ProtectPDFPages) {
@@ -1376,6 +1241,155 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, UnfreezeTabOnNavigationEvent) {
   expect_state_transition.AllowState(LifecycleUnitState::FROZEN);
   expect_state_transition.Wait();
 }
+
+// On Linux, memory pressure listener is not implemented yet.
+#if !defined(OS_LINUX)
+
+class TabManagerMemoryPressureTest : public TabManagerTest {
+ public:
+  TabManagerMemoryPressureTest() {
+    scoped_feature_list_.InitAndDisableFeature(
+        performance_manager::features::kUrgentDiscardingFromPerformanceManager);
+  }
+  ~TabManagerMemoryPressureTest() override = default;
+  TabManagerMemoryPressureTest(const TabManagerMemoryPressureTest& other) =
+      delete;
+  TabManagerMemoryPressureTest& operator=(const TabManagerMemoryPressureTest&) =
+      delete;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Test that the MemoryPressureListener event is properly triggering a tab
+// discard upon |MEMORY_PRESSURE_LEVEL_CRITICAL| event.
+IN_PROC_BROWSER_TEST_F(TabManagerMemoryPressureTest, OomPressureListener) {
+  // Get two tabs open.
+  content::WindowedNotificationObserver load1(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  OpenURLParams open1(GURL(chrome::kChromeUIAboutURL), content::Referrer(),
+                      WindowOpenDisposition::CURRENT_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
+  browser()->OpenURL(open1);
+  load1.Wait();
+
+  content::WindowedNotificationObserver load2(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  OpenURLParams open2(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
+                      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
+  browser()->OpenURL(open2);
+  load2.Wait();
+
+  ASSERT_EQ(tsm()->count(), 2);
+
+  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(1)));
+
+  // Advance time so everything is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+
+  // Nothing should happen with a moderate memory pressure event.
+  fake_memory_pressure_monitor_.SetAndNotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE);
+  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(1)));
+
+  // A critical memory pressure event should discard a tab.
+  fake_memory_pressure_monitor_.SetAndNotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  // Coming here, an asynchronous operation will collect system stats. Once in,
+  // a tab should get discarded. As such we need to give it 10s time to discard.
+  const int kTimeoutTimeInMS = 10000;
+  const int kIntervalTimeInMS = 5;
+  int timeout = kTimeoutTimeInMS / kIntervalTimeInMS;
+  while (--timeout) {
+    base::PlatformThread::Sleep(
+        base::TimeDelta::FromMilliseconds(kIntervalTimeInMS));
+    base::RunLoop().RunUntilIdle();
+    if (IsTabDiscarded(GetWebContentsAt(0)))
+      break;
+  }
+  EXPECT_TRUE(IsTabDiscarded(GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(1)));
+}
+
+IN_PROC_BROWSER_TEST_F(TabManagerMemoryPressureTest,
+                       RegisterMemoryPressureListener) {
+  // Open two tabs. Wait for the foreground one to load but do not wait for the
+  // background one.
+  content::WindowedNotificationObserver load1(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  OpenURLParams open1(GURL(chrome::kChromeUIAboutURL), content::Referrer(),
+                      WindowOpenDisposition::CURRENT_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
+  browser()->OpenURL(open1);
+  load1.Wait();
+
+  content::WindowedNotificationObserver load2(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  OpenURLParams open2(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
+                      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
+  browser()->OpenURL(open2);
+  load2.Wait();
+
+  ASSERT_EQ(2, tsm()->count());
+  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(0)));
+  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(1)));
+
+  // Advance time so everything is urgent discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+
+  // After receiving memory pressure, the background tab should be discarded.
+  // A critical memory pressure event should discard a tab.
+  fake_memory_pressure_monitor_.SetAndNotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  if (!IsTabDiscarded(GetWebContentsAt(1))) {
+    DiscardWaiter discard_waiter;
+    discard_waiter.Wait();
+  }
+
+  // Critical memory pressure should make the background tab discarded.
+  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabDiscarded(GetWebContentsAt(1)));
+
+  // Open another background tab.
+  content::WindowedNotificationObserver load3(
+      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
+      content::NotificationService::AllSources());
+  OpenURLParams open3(GURL(chrome::kChromeUICreditsURL), content::Referrer(),
+                      WindowOpenDisposition::NEW_BACKGROUND_TAB,
+                      ui::PAGE_TRANSITION_TYPED, false);
+  browser()->OpenURL(open3);
+  load3.Wait();
+
+  ASSERT_EQ(3, tsm()->count());
+
+  // Advance time again so the new background tab is discardable.
+  test_clock_.Advance(kBackgroundUrgentProtectionTime);
+
+  // After receiving another critical memory pressure, the new background tab
+  // should be discarded. This verifies that the memory pressure listener is
+  // registered back when the previous discard finished.
+  fake_memory_pressure_monitor_.SetAndNotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+  if (!IsTabDiscarded(GetWebContentsAt(2))) {
+    DiscardWaiter discard_waiter;
+    discard_waiter.Wait();
+  }
+
+  // Critical memory pressure should make the background tab discarded.
+  EXPECT_FALSE(IsTabDiscarded(GetWebContentsAt(0)));
+  EXPECT_TRUE(IsTabDiscarded(GetWebContentsAt(1)));
+  EXPECT_TRUE(IsTabDiscarded(GetWebContentsAt(2)));
+}
+
+#endif  // !OS_LINUX
 
 }  // namespace resource_coordinator
 

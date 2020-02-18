@@ -835,15 +835,8 @@ int32_t PepperGraphics2DHost::Flush(PP_Resource* old_image_data) {
         no_update_visible = false;
       }
 
-      // Notify the plugin of the entire change (op_rect), even if it is
-      // partially or completely off-screen.
-      if (operation.type == QueuedOperation::SCROLL) {
-        bound_instance_->ScrollRect(
-            scroll_delta.x(), scroll_delta.y(), op_rect_in_viewport);
-      } else {
-        if (!op_rect_in_viewport.IsEmpty())
-          bound_instance_->InvalidateRect(op_rect_in_viewport);
-      }
+      if (!op_rect_in_viewport.IsEmpty())
+        bound_instance_->InvalidateRect(op_rect_in_viewport);
       composited_output_modified_ = true;
     }
   }

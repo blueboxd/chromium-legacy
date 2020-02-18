@@ -130,7 +130,7 @@ public class HomepageSettings extends PreferenceFragmentCompat {
             }
         } else {
             mHomepageEdit.setEnabled(!isManagedByPolicy && HomepageManager.isHomepageEnabled());
-            mHomepageEdit.setSummary(HomepageManager.getHomepageUri());
+            mHomepageEdit.setSummary(mHomepageManager.getHomepageUriIgnoringEnabledState());
         }
     }
 

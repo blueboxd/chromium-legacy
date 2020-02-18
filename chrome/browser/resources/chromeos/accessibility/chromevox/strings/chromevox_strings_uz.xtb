@@ -256,7 +256,7 @@
 <translation id="2811019999044652585">Asboblar yoki tizim panellari kabi ekranning boshqa qismlariga o‘tish uchun “Control + Forward” tugmalarini bosing. Chromebook qurilmalarida “Forward” tugmasi “2” tugmasining tepasida joylashgan.</translation>
 <translation id="2811204574343810641">Qator</translation>
 <translation id="2841013758207633010">Vaqt</translation>
-<translation id="2843432675592278677">Bundan oldin boshqa ARIA moʻljali mavjud emas</translation>
+<translation id="2843432675592278677">Bundan oldin boshqa ARIA belgisi mavjud emas</translation>
 <translation id="2843814945404750166">Toʻq yashilroq</translation>
 <translation id="2843837985843789981">Avvalgi guruh</translation>
 <translation id="2844995807198708617">Kontekst menyusi</translation>
@@ -401,7 +401,7 @@
 <translation id="3687295507293856493">Joriy katak sarlavhasida ma’lumotlar turini aniqlash</translation>
 <translation id="3692274950075847560">Q: <ph name="RESULT" /></translation>
 <translation id="370367311675896712">Chizilgan qator</translation>
-<translation id="3704037000573066734">Tafsilotlarni ochish uchun Qidiruv+A va J tugmalarini bosing</translation>
+<translation id="3704037000573066734">Tafsilotlarni ochish uchun Search+A va J tugmalarini bosing</translation>
 <translation id="3712520970944678024">Ovoz boshqaruvi</translation>
 <translation id="371302509916403935">Tagiga chizish</translation>
 <translation id="3716845769494773620">Ko‘p qatorli</translation>
@@ -476,7 +476,7 @@
 <translation id="4229646983878045487">date time</translation>
 <translation id="4230834257931120629">Och koʻkimtir kulrang</translation>
 <translation id="4231102694147661229">Dasturchi sozlamalarini yoqish</translation>
-<translation id="423428485095722850">Yoqish/oʻchirish uchun Qidiruv+Probel tugmalarini bosing</translation>
+<translation id="423428485095722850">Yoqish/oʻchirish uchun Search+Probel tugmalarini bosing</translation>
 <translation id="4243624244759495699"><ph name="LOCALE" />, <ph name="GRADE" />-daraja</translation>
 <translation id="4246217262268234757">Koʻkimtir kulrang</translation>
 <translation id="4253168017788158739">Eslatma</translation>
@@ -581,7 +581,7 @@
 <translation id="495170559598752135">Harakatlar</translation>
 <translation id="4953585991029886728">Matnni tahrirlash</translation>
 <translation id="4954534434583049121">Avvalgi iqtibos</translation>
-<translation id="4967543208652787610">Oʻzgartirishlarni qabul qilish uchun Enter tugmasini bekor qilish uchun Esc tugmasini bosing. Keyingi yoki avvalgi bandga oʻtish uchun yuqoriga va pastga tomon tugmalarini bosing</translation>
+<translation id="4967543208652787610">Oʻzgartirishlarni qabul qilish uchun Enter tugmasini, bekor qilish uchun Esc tugmasini bosing. Keyingi yoki avvalgi bandga oʻtish uchun yuqoriga va pastga tomon tugmalarini bosing</translation>
 <translation id="4973717656530883744">Minimum <ph name="X" /></translation>
 <translation id="4973762002207131920"><ph name="KEY" /> tugmasiga o‘tildi.</translation>
 <translation id="4974612477719259470">Avvalgi tugma mavjud emas</translation>
@@ -594,7 +594,7 @@
 <translation id="4994420463726586413">Batareyaning joriy holati aytilsin</translation>
 <translation id="4996716799442435517">Vizual</translation>
 <translation id="4997282455736854877">“<ph name="NAME" />” tanlash tugmasi belgilandi</translation>
-<translation id="5011664330025416377">Faollashtirish uchun Qidiruv+Probel tugmalarini bosing</translation>
+<translation id="5011664330025416377">Faollashtirish uchun Search+Probel tugmalarini bosing</translation>
 <translation id="501473567976723023">yanvar</translation>
 <translation id="5020651427400641814">Ovozlar jurnalini yoqish</translation>
 <translation id="5041394372352067729">Breyl ekranini sahifa tepasiga joylash</translation>
@@ -691,7 +691,7 @@
 <translation id="5684277895745049190">Ro‘yxat</translation>
 <translation id="570138335948847274">ChromeVox xususiyatini yoqish/faolsizlantirish</translation>
 <translation id="5703716265115423771">ovozni pasaytirish</translation>
-<translation id="5704453877234251104">Tepaga va pastga strelkalar yordamida shakllarni avto-toldiring</translation>
+<translation id="5704453877234251104">Tepaga va pastga strelkalar yordamida shakllarni avto-toʻldiring</translation>
 <translation id="5709192780268610569">Tafsilotlarsiz</translation>
 <translation id="5712244464475377681">popbtn</translation>
 <translation id="5712338278108304766">Jadvalning keyingi ustuni</translation>
@@ -1121,7 +1121,7 @@ Chrome brauzeri menyusini ochish uchun “Alt + F” tugmalarini bosing.</transl
 <translation id="827422111966801947">Toʻq siyohrang</translation>
 <translation id="8276439074553447000">Avvalgi faollashtiriladigan elementga o‘tish</translation>
 <translation id="8283603667300770666">Keyingi to‘ldiriladigan matn</translation>
-<translation id="8310185481635255431">Keyingi havola mavjud emas</translation>
+<translation id="8310185481635255431">Bundan keyin havola mavjud emas</translation>
 <translation id="831207808878314375">Tavsif</translation>
 <translation id="8313653172105209786">dir</translation>
 <translation id="8316881042119029234">Oq suyakrang</translation>

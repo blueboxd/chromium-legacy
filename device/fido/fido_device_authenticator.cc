@@ -97,14 +97,14 @@ void FidoDeviceAuthenticator::GetTouch(base::OnceCallback<void()> callback) {
           GetId(), std::move(callback)));
 }
 
-void FidoDeviceAuthenticator::GetRetries(GetRetriesCallback callback) {
+void FidoDeviceAuthenticator::GetPinRetries(GetRetriesCallback callback) {
   DCHECK(Options());
   DCHECK(Options()->client_pin_availability !=
          AuthenticatorSupportedOptions::ClientPinAvailability::kNotSupported);
 
-  RunOperation<pin::RetriesRequest, pin::RetriesResponse>(
-      pin::RetriesRequest(), std::move(callback),
-      base::BindOnce(&pin::RetriesResponse::Parse));
+  RunOperation<pin::PinRetriesRequest, pin::RetriesResponse>(
+      pin::PinRetriesRequest(), std::move(callback),
+      base::BindOnce(&pin::RetriesResponse::ParsePinRetries));
 }
 
 void FidoDeviceAuthenticator::GetEphemeralKey(
@@ -677,6 +677,17 @@ bool FidoDeviceAuthenticator::IsTouchIdAuthenticator() const {
 void FidoDeviceAuthenticator::SetTaskForTesting(
     std::unique_ptr<FidoTask> task) {
   task_ = std::move(task);
+}
+
+void FidoDeviceAuthenticator::GetUvRetries(GetRetriesCallback callback) {
+  DCHECK(Options());
+  DCHECK(Options()->user_verification_availability !=
+         AuthenticatorSupportedOptions::UserVerificationAvailability::
+             kNotSupported);
+
+  RunOperation<pin::UvRetriesRequest, pin::RetriesResponse>(
+      pin::UvRetriesRequest(), std::move(callback),
+      base::BindOnce(&pin::RetriesResponse::ParseUvRetries));
 }
 
 void FidoDeviceAuthenticator::GetUvToken(GetTokenCallback callback) {

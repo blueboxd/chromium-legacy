@@ -793,20 +793,30 @@ void SurfaceAggregator::EmitGutterQuadsIfNecessary(
 }
 
 void SurfaceAggregator::AddColorConversionPass() {
-  if (dest_pass_list_->empty())
+  if (dest_pass_list_->empty()) {
+    last_frame_had_color_conversion_pass_ = false;
     return;
+  }
+  auto* root_render_pass = dest_pass_list_->back().get();
+  gfx::Rect output_rect = root_render_pass->output_rect;
 
   // An extra color conversion pass is only done if the display's color
   // space is unsuitable as a blending color space.
-  auto* root_render_pass = dest_pass_list_->back().get();
-  if (display_color_spaces_
-          .GetOutputColorSpace(root_render_pass->content_color_usage,
-                               root_render_pass->has_transparent_background)
-          .IsSuitableForBlending()) {
-    return;
-  }
+  bool needs_color_conversion_pass =
+      !display_color_spaces_
+           .GetOutputColorSpace(root_render_pass->content_color_usage,
+                                root_render_pass->has_transparent_background)
+           .IsSuitableForBlending();
 
-  gfx::Rect output_rect = root_render_pass->output_rect;
+  // If we added or removed the color conversion pass, we need to add full
+  // damage to the current-root renderpass (and also the new-root renderpass,
+  // if the current-root renderpass becomes and intermediate renderpass).
+  if (needs_color_conversion_pass != last_frame_had_color_conversion_pass_)
+    root_render_pass->damage_rect = output_rect;
+
+  last_frame_had_color_conversion_pass_ = needs_color_conversion_pass;
+  if (!needs_color_conversion_pass)
+    return;
   CHECK(root_render_pass->transform_to_root_target == gfx::Transform());
 
   if (!color_conversion_render_pass_id_)

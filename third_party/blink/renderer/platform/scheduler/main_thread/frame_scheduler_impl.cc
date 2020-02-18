@@ -78,45 +78,6 @@ void UpdatePriority(MainThreadTaskQueue* task_queue) {
   task_queue->SetQueuePriority(frame_scheduler->ComputePriority(task_queue));
 }
 
-// Extract a substring from |source| from [start to end), trimming leading
-// whitespace.
-String ExtractAndTrimString(String source, size_t start, size_t end) {
-  DCHECK(start < source.length());
-  DCHECK(end <= source.length());
-  DCHECK(start <= end);
-  // Trim whitespace
-  while (start < end && source[start] == ' ')
-    ++start;
-  if (start < end)
-    return source.Substring(start, end - start);
-  return "";
-}
-
-HashSet<String> TaskTypesFromFieldTrialParam(const char* param) {
-  HashSet<String> result;
-  String task_type_list =
-      String::FromUTF8(base::GetFieldTrialParamValueByFeature(
-          kThrottleAndFreezeTaskTypes, param));
-  if (!task_type_list.length())
-    return result;
-  // Extract the individual names, separated by ",".
-  size_t pos = 0, start = 0;
-  while ((pos = task_type_list.find(',', start)) != kNotFound) {
-    String task_type = ExtractAndTrimString(task_type_list, start, pos);
-    // Not valid to start with "," or have ",," in the list.
-    DCHECK(task_type.length());
-    result.insert(task_type);
-    start = pos + 1;
-  }
-  // Handle the last or only task type name.
-  String task_type =
-      ExtractAndTrimString(task_type_list, start, task_type_list.length());
-  DCHECK(task_type.length());
-  result.insert(task_type);
-
-  return result;
-}
-
 }  // namespace
 
 FrameSchedulerImpl::PauseSubresourceLoadingHandleImpl::
@@ -371,42 +332,8 @@ FrameScheduler::FrameType FrameSchedulerImpl::GetFrameType() const {
   return frame_type_;
 }
 
-void FrameSchedulerImpl::InitializeTaskTypeQueueTraitsMap(
-    FrameTaskTypeToQueueTraitsArray& frame_task_types_to_queue_traits) {
-  DCHECK_EQ(frame_task_types_to_queue_traits.size(),
-            static_cast<size_t>(TaskType::kCount));
-  // Using std set and strings here because field trial parameters are std
-  // strings, and we cannot use WTF strings as Blink is not yet initialized.
-  HashSet<String> throttleable_task_type_names;
-  HashSet<String> freezable_task_type_names;
-  if (base::FeatureList::IsEnabled(kThrottleAndFreezeTaskTypes)) {
-    throttleable_task_type_names =
-        TaskTypesFromFieldTrialParam(kThrottleableTaskTypesListParam);
-    freezable_task_type_names =
-        TaskTypesFromFieldTrialParam(kFreezableTaskTypesListParam);
-  }
-  for (size_t i = 0; i < static_cast<size_t>(TaskType::kCount); i++) {
-    TaskType type = static_cast<TaskType>(i);
-    base::Optional<QueueTraits> queue_traits =
-        CreateQueueTraitsForTaskType(type);
-    if (queue_traits && (!throttleable_task_type_names.IsEmpty() ||
-                         !freezable_task_type_names.IsEmpty())) {
-      const char* task_type_name = TaskTypeNames::TaskTypeToString(type);
-      if (!throttleable_task_type_names.Take(task_type_name).IsEmpty())
-        queue_traits->SetCanBeThrottled(true);
-      if (freezable_task_type_names.Take(task_type_name).IsEmpty())
-        queue_traits->SetCanBeFrozen(true);
-    }
-    frame_task_types_to_queue_traits[i] = queue_traits;
-  }
-  // Protect against configuration errors.
-  DCHECK(throttleable_task_type_names.IsEmpty());
-  DCHECK(freezable_task_type_names.IsEmpty());
-}
-
 // static
-base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
-    TaskType type) {
+QueueTraits FrameSchedulerImpl::CreateQueueTraitsForTaskType(TaskType type) {
   // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
   // TODO(sreejakshetty): Clean up the PrioritisationType QueueTrait and
   // QueueType for kInternalContinueScriptLoading and kInternalContentCapture.
@@ -515,13 +442,15 @@ base::Optional<QueueTraits> FrameSchedulerImpl::CreateQueueTraitsForTaskType(
     case TaskType::kExperimentalWebScheduling:
     case TaskType::kCount:
       // Not a valid frame-level TaskType.
-      return base::nullopt;
+      NOTREACHED();
+      return QueueTraits();
   }
   // This method is called for all values between 0 and kCount. TaskType,
   // however, has numbering gaps, so even though all enumerated TaskTypes are
   // handled in the switch and return a value, we fall through for some values
   // of |type|.
-  return base::nullopt;
+  NOTREACHED();
+  return QueueTraits();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
@@ -533,17 +462,8 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
 
 scoped_refptr<MainThreadTaskQueue> FrameSchedulerImpl::GetTaskQueue(
     TaskType type) {
-  DCHECK_LT(static_cast<size_t>(type),
-            main_thread_scheduler_->scheduling_settings()
-                .frame_task_types_to_queue_traits.size());
-  base::Optional<QueueTraits> queue_traits =
-      main_thread_scheduler_->scheduling_settings()
-          .frame_task_types_to_queue_traits[static_cast<size_t>(type)];
-  // We don't have a QueueTraits mapping for |task_type| if it is not a
-  // frame-level task type.
-  DCHECK(queue_traits);
-  return frame_task_queue_controller_->GetTaskQueue(
-      queue_traits.value());
+  QueueTraits queue_traits = CreateQueueTraitsForTaskType(type);
+  return frame_task_queue_controller_->GetTaskQueue(queue_traits);
 }
 
 std::unique_ptr<WebResourceLoadingTaskRunnerHandle>

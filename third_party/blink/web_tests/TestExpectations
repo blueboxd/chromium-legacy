@@ -3141,7 +3141,6 @@ crbug.com/626703 [ Win ] external/wpt/css/css-align/baseline-rules/grid-item-inp
 crbug.com/626703 [ Linux ] external/wpt/css/css-align/baseline-rules/grid-item-input-type-text.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-align/baseline-rules/grid-item-input-type-text.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-align/baseline-rules/grid-item-input-type-text.html [ Failure ]
-crbug.com/626703 external/wpt/webxr/events_referenceSpace_reset_inline.https.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
 crbug.com/626703 [ Mac ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
 crbug.com/626703 [ Win ] external/wpt/clear-site-data/storage.https.html [ Timeout ]
@@ -5983,10 +5982,6 @@ crbug.com/937811 [ Win Release ] http/tests/devtools/elements/shadow/elements-pa
 # Pending enabling navigation feature
 crbug.com/705583 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigate_history_go_back.html [ Skip ]
 crbug.com/705583 external/wpt/html/semantics/embedded-content/the-iframe-element/iframe_sandbox_navigate_history_go_forward.html [ Skip ]
-
-# Sheriff 2019-07-30
-crbug.com/987115 [ Win ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Crash Pass Failure ]
-crbug.com/987115 [ Linux ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/scrollbar-button-gesture-target.html [ Crash Pass Failure ]
 
 # Sheriff 2019-07-31
 crbug.com/979422 [ Mac ] fast/borders/border-radius-mask-canvas-with-shadow.html [ Failure ]

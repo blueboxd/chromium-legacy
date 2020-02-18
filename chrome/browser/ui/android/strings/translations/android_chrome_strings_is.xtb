@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">Léttútgáfa</translation>
 <translation id="3303414029551471755">Viltu halda áfram og sækja efnið?</translation>
 <translation id="3306398118552023113">Þetta forrit keyrir í Chrome</translation>
-<translation id="3312292613668865961">Spyrja áður en vefsvæði fá aðgang að sýndarveruleikatæki og -gögnum (ráðlagt)</translation>
 <translation id="3315103659806849044">Þú ert að sérsníða stillingar samstillingar og þjónustu Google. Til að ljúka við að kveikja á samstillingu skaltu ýta á hnappinn „Staðfesta“ neðarlega á skjánum. Fara upp</translation>
 <translation id="3328801116991980348">Upplýsingar um vefsvæði</translation>
 <translation id="3333961966071413176">Allir tengiliðir</translation>
@@ -514,7 +513,6 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Fáðu aðstoð<ph name="END_LINK" /> á meðan leitað er að tækjum…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# síða}one{# síða}other{# síður}}</translation>
 <translation id="4932247056774066048">Þar sem þú ert að skrá þig út af reikningi sem er stjórnað af <ph name="DOMAIN_NAME" /> verður Chrome gögnum þínum eytt úr þessu tæki. Þau verða áfram á Google reikningnum þínum.</translation>
-<translation id="4935305910887312910">Spyrja áður en vefsvæði fá aðgang að stöðu myndavélar eða leyfi til að kortleggja herbergið þitt (ráðlagt)</translation>
 <translation id="4943703118917034429">Sýndarveruleiki</translation>
 <translation id="4943872375798546930">Engar niðurstöður</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> deilir skjánum þínum</translation>
@@ -818,6 +816,7 @@ Haltu fingri á hvaða orði sem er til að leita að því. Stilltu valið til 
 <translation id="7141896414559753902">Banna síðum að birta sprettiglugga og framsendingar (ráðlagt)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Hlaða upprunalegri síðu<ph name="END_LINK" /> frá <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Síðastliðinn sólarhring</translation>
+<translation id="7173114856073700355">Opna stillingar</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Þú getur breytt þessu síðar í stillingunum</translation>
 <translation id="7180611975245234373">Endurnýja</translation>
@@ -1025,7 +1024,6 @@ Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru 
 <translation id="8664979001105139458">Skráarheiti er þegar til</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Sendistyrkur: # stika}one{Sendistyrkur: # stika}other{Sendistyrkur: # stikur}}</translation>
 <translation id="868929229000858085">Leita í tengiliðum</translation>
-<translation id="8698438463325761328">Loka á að vefsvæði fái aðgang að sýndarveruleikatæki og -gögnum</translation>
 <translation id="869891660844655955">Lokadagsetning</translation>
 <translation id="8728487861892616501">Með því að nota þetta forrit samþykkirðu <ph name="BEGIN_LINK1" />þjónustuskilmála<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />persónuverndartilkynningu<ph name="END_LINK2" /> Chrome og <ph name="BEGIN_LINK3" />persónuverndartilkynningu fyrir Google reikninga sem stjórnað er með Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Innihald falið</translation>
@@ -1042,7 +1040,6 @@ Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru 
 <translation id="883806473910249246">Villa kom upp við að sækja efnið.</translation>
 <translation id="8840953339110955557">Þessi síða gæti verið frábrugðin útgáfunni sem er á netinu.</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">Loka fyrir að vefsvæði geti fengið stöðu myndavélar eða kortlagt herbergið þitt</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, flipi</translation>
 <translation id="885701979325669005">Geymslurými</translation>
 <translation id="889338405075704026">Fara í stillingar Chrome</translation>

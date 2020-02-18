@@ -93,10 +93,16 @@ void LabelButton::SetTextColor(ButtonState for_state, SkColor color) {
   explicitly_set_colors_[for_state] = true;
 }
 
-void LabelButton::SetEnabledTextColors(SkColor color) {
+void LabelButton::SetEnabledTextColors(base::Optional<SkColor> color) {
   ButtonState states[] = {STATE_NORMAL, STATE_HOVERED, STATE_PRESSED};
+  if (color.has_value()) {
+    for (auto state : states)
+      SetTextColor(state, color.value());
+    return;
+  }
   for (auto state : states)
-    SetTextColor(state, color);
+    explicitly_set_colors_[state] = false;
+  ResetColorsFromNativeTheme();
 }
 
 void LabelButton::SetTextShadows(const gfx::ShadowValues& shadows) {
@@ -427,27 +433,6 @@ void LabelButton::GetExtraParams(ui::NativeTheme::ExtraParams* params) const {
   params->button.background_color = label_->GetBackgroundColor();
 }
 
-void LabelButton::ResetColorsFromNativeTheme() {
-  const ui::NativeTheme* theme = GetNativeTheme();
-  // Since this is a LabelButton, use the label colors.
-  SkColor colors[STATE_COUNT] = {
-      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor),
-      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor),
-      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor),
-      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelDisabledColor),
-  };
-
-  label_->SetBackground(nullptr);
-  label_->SetAutoColorReadabilityEnabled(false);
-
-  for (size_t state = STATE_NORMAL; state < STATE_COUNT; ++state) {
-    if (!explicitly_set_colors_[state]) {
-      SetTextColor(static_cast<ButtonState>(state), colors[state]);
-      explicitly_set_colors_[state] = false;
-    }
-  }
-}
-
 PropertyEffects LabelButton::UpdateStyleToIndicateDefaultStatus() {
   // Check that a subclass hasn't replaced the Label font. These buttons may
   // never be given default status.
@@ -550,6 +535,27 @@ gfx::Size LabelButton::GetUnclampedSizeWithoutLabel() const {
     size.SetToMax(border()->GetMinimumSize());
 
   return size;
+}
+
+void LabelButton::ResetColorsFromNativeTheme() {
+  const ui::NativeTheme* theme = GetNativeTheme();
+  // Since this is a LabelButton, use the label colors.
+  SkColor colors[STATE_COUNT] = {
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor),
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor),
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor),
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelDisabledColor),
+  };
+
+  label_->SetBackground(nullptr);
+  label_->SetAutoColorReadabilityEnabled(false);
+
+  for (size_t state = STATE_NORMAL; state < STATE_COUNT; ++state) {
+    if (!explicitly_set_colors_[state]) {
+      SetTextColor(static_cast<ButtonState>(state), colors[state]);
+      explicitly_set_colors_[state] = false;
+    }
+  }
 }
 
 void LabelButton::ResetLabelEnabledColor() {

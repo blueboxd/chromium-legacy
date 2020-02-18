@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.payments.micro;
 
 import android.content.Context;
 
-import org.chromium.chrome.browser.payments.PaymentInstrument;
+import org.chromium.chrome.browser.payments.PaymentApp;
 import org.chromium.chrome.browser.payments.ui.LineItem;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.components.payments.CurrencyFormatter;
@@ -27,9 +27,9 @@ public class MicrotransactionCoordinator {
     public interface ConfirmObserver {
         /**
          * Called after the user has confirmed payment in the microtransaction UI.
-         * @param instrument The instrument to be used for the microtransaction.
+         * @param app The app to be used for the microtransaction.
          */
-        void onConfirmed(PaymentInstrument instrument);
+        void onConfirmed(PaymentApp app);
     }
 
     /** Observer for the dismissal of the microtransaction UI. */
@@ -70,7 +70,7 @@ public class MicrotransactionCoordinator {
      * Shows the microtransaction UI.
      *
      * @param chromeActivity  The activity where the UI should be shown.
-     * @param instrument      The instrument that contains the details to display and can be invoked
+     * @param app             The app that contains the details to display and can be invoked
      *                        upon user confirmation.
      * @param formatter       Formats the account balance amount according to its currency.
      * @param total           The total amount and currency for this microtransaction.
@@ -80,26 +80,25 @@ public class MicrotransactionCoordinator {
      * @return Whether the microtransaction UI was shown. Can be false if the UI was suppressed.
      */
     public boolean show(Context context, BottomSheetController bottomSheetController,
-            PaymentInstrument instrument, CurrencyFormatter formatter, LineItem total,
+            PaymentApp app, CurrencyFormatter formatter, LineItem total,
             ConfirmObserver confirmObserver, DismissObserver dismissObserver) {
         assert mMediator == null : "Already showing microtransaction UI";
 
         PropertyModel model =
                 new PropertyModel.Builder(MicrotransactionProperties.ALL_KEYS)
                         .with(MicrotransactionProperties.ACCOUNT_BALANCE,
-                                formatter.format(instrument.accountBalance()))
+                                formatter.format(app.accountBalance()))
                         .with(MicrotransactionProperties.AMOUNT, total.getPrice())
                         .with(MicrotransactionProperties.CURRENCY, total.getCurrency())
                         .with(MicrotransactionProperties.IS_PEEK_STATE_ENABLED, true)
                         .with(MicrotransactionProperties.IS_SHOWING_LINE_ITEMS, true)
                         .with(MicrotransactionProperties.IS_SHOWING_PROCESSING_SPINNER, false)
-                        .with(MicrotransactionProperties.PAYMENT_APP_ICON,
-                                instrument.getDrawableIcon())
-                        .with(MicrotransactionProperties.PAYMENT_APP_NAME, instrument.getLabel())
+                        .with(MicrotransactionProperties.PAYMENT_APP_ICON, app.getDrawableIcon())
+                        .with(MicrotransactionProperties.PAYMENT_APP_NAME, app.getLabel())
                         .build();
 
         mMediator = new MicrotransactionMediator(
-                context, instrument, model, confirmObserver, dismissObserver, this::hide);
+                context, app, model, confirmObserver, dismissObserver, this::hide);
 
         bottomSheetController.addObserver(mMediator);
 

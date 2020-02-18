@@ -26,6 +26,8 @@ int NativeCodeToEvdevCode(int native_code) {
 int EvdevCodeToNativeCode(int evdev_code) {
   if (evdev_code == KEY_RESERVED)
     return KeycodeConverter::InvalidNativeKeycode();
+  if (evdev_code == KEY_PLAYCD)
+    evdev_code = KEY_PLAY;
 
   return evdev_code + kXkbKeycodeOffset;
 }

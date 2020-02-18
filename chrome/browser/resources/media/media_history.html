@@ -9,10 +9,14 @@
   <script src="chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js"></script>
   <script src="chrome://resources/js/promise_resolver.js"></script>
   <script src="chrome://resources/js/util.js"></script>
+  <script src="chrome://resources/mojo/mojo/public/mojom/base/big_buffer.mojom-lite.js"></script>
+  <script src="chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-lite.js"></script>
   <script src="chrome://resources/mojo/mojo/public/mojom/base/unguessable_token.mojom-lite.js"></script>
   <script src="chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js"></script>
   <script src="chrome://resources/mojo/url/mojom/url.mojom-lite.js"></script>
   <script src="chrome://resources/mojo/url/mojom/origin.mojom-lite.js"></script>
+  <script src="ui/gfx/geometry/mojom/geometry.mojom-lite.js"></script>
+  <script src="services/media_session/public/mojom/media_session.mojom-lite.js"></script>
   <script src="chrome/browser/media/history/media_history_store.mojom-lite.js"></script>
 
   <script src="chrome://resources/js/cr.js"></script>
@@ -102,6 +106,7 @@
       <tab id="stats">Stats</tab>
       <tab id="origins">Origins</tab>
       <tab id="playbacks">Playbacks</tab>
+      <tab id="sessions">Sessions</tab>
     </tabs>
     <tabpanels>
       <tabpanel>
@@ -148,6 +153,11 @@
       </tabpanel>
       <tabpanel>
         <h1>Playbacks</h1>
+        <p>
+          The playbacks table stores playbacks that happened on a page. These
+          can be of any type and there is one playback stored for each player
+          per page.
+        </p>
         <button class="copy-all-to-clipboard">Copy all to clipboard</button>
         <table id="playbacks-table">
           <thead>
@@ -166,6 +176,50 @@
               </th>
               <th sort-key="watchtime">
                 Watchtime (secs)
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+          </tbody>
+        </table>
+      </tabpanel>
+      <tabpanel>
+        <h1>Sessions</h1>
+        <p>
+          The sessions table stores media sessions that had media playback that
+          had both an audio and video track. There is only one session recorded
+          for the lifetime of the page.
+        </p>
+        <button class="copy-all-to-clipboard">Copy all to clipboard</button>
+        <table id="sessions-table">
+          <thead>
+            <tr>
+              <th sort-key="url">
+                URL
+              </th>
+              <th sort-key="lastUpdatedTime" class="sort-column" sort-reverse>
+                Last Updated
+              </th>
+              <th sort-key="position">
+                Position (secs)
+              </th>
+              <th sort-key="duration">
+                Duration (secs)
+              </th>
+              <th sort-key="metadata.title">
+                Title
+              </th>
+              <th sort-key="metadata.artist">
+                Artist
+              </th>
+              <th sort-key="metadata.album">
+                Album
+              </th>
+              <th sort-key="metadata.sourceTitle">
+                Source Title
+              </th>
+              <th data-key="artwork">
+                Artwork
               </th>
             </tr>
           </thead>

@@ -284,8 +284,6 @@ ci.android_fyi_builder(
 
 ci.android_fyi_builder(
     name = 'android-pie-x86-fyi-rel',
-    schedule = '0 7 * * *',
-    triggered_by = [],
 )
 
 

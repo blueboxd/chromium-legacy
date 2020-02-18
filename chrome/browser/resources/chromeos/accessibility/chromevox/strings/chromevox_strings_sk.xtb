@@ -247,7 +247,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="2749275490991666823">Začiarknuté</translation>
 <translation id="27527859628328957">Prejsť na ďalšiu zamerateľnú položku</translation>
 <translation id="2756452585631602151">Zadajte vlastný štítok</translation>
-<translation id="2766299274563946262">Vľavo nie je žiadna bunka</translation>
+<translation id="2766299274563946262">Žiadna bunka vľavo</translation>
 <translation id="2770781857296573485">Vstúpiť do režimu preskúmavania skupín</translation>
 <translation id="2777845298774924149">Ukončené</translation>
 <translation id="2783001728278437613">{COUNT,plural, =1{+#}few{+#}many{+#}other{+#}}</translation>
@@ -335,7 +335,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="3244209481693235975"><ph name="LANGUAGE" />: <ph name="CONTENT" /></translation>
 <translation id="3260949043575829030">Predchádzajúca podobná položka</translation>
 <translation id="3270069636408109001">Žiadna ďalšia tabuľka</translation>
-<translation id="3273791280096244679">Uložiť štítok</translation>
+<translation id="3273791280096244679">Štítok uloženia</translation>
 <translation id="3286372614333682499">na výšku</translation>
 <translation id="3286390186030710347">Posuvník</translation>
 <translation id="3300348286427369683">Podpora formátovaného textu. ChromeVox teraz podporuje polia pre formátovaný text vrátane príkazov na preskočenie, smerovania braillovho kurzora, výberu atď.</translation>
@@ -362,7 +362,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="3399215457750029150">Žiadne ďalšie podobné prvky</translation>
 <translation id="3406283310380167331">Zobraziť zoznam formulárov</translation>
 <translation id="3414400929511680526">Alicina modrá</translation>
-<translation id="3418936350470374046">Nižšie nie je žiadna bunka</translation>
+<translation id="3418936350470374046">Žiadna bunka nižšie</translation>
 <translation id="3426155011797552211">Prepnutie na klasickú čítačku ChromeVox</translation>
 <translation id="344800400831402066">Karamelová</translation>
 <translation id="3457000393508828486">Čiastočne stlačené</translation>
@@ -416,7 +416,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="3810838688059735925">Video</translation>
 <translation id="3813387282697781382">Svetlokoralová</translation>
 <translation id="3816633764618089385">Ďalšie médiá</translation>
-<translation id="3838966660807147922">Pri úprave textu umiestnite kurzor medzi znaky (podobne ako v systéme Mac OS X)</translation>
+<translation id="3838966660807147922">Pri úprave textu ukazovať kurzor medzi znakmi (ako v systéme Mac OS X)</translation>
 <translation id="385383972552776628">Otvoriť stránku možností</translation>
 <translation id="3856075812838139784">Iba na čítanie</translation>
 <translation id="3857141338659865495">Stredne sýta tyrkysová</translation>
@@ -779,7 +779,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="6348657800373377022">Pole s výberom</translation>
 <translation id="6348869651006731065">Tmavosivá</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{bod}few{# body}many{# bodu}other{# bodov}}</translation>
-<translation id="6357433033180746873">Vpravo nie je žiadna bunka</translation>
+<translation id="6357433033180746873">Žiadna bunka vpravo</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Predchádzajúci nadpis</translation>
 <translation id="6376999910001533545">Gaštanovohnedá</translation>
@@ -940,7 +940,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="7518543783849163354">Ak chcete ChromeVox dočasne zastaviť, stlačte kláves Ctrl.</translation>
 <translation id="7532613204005497612">jún</translation>
 <translation id="7533226154149229506">Svetlá žltá</translation>
-<translation id="7543255924852002459">Zahodiť štítok</translation>
+<translation id="7543255924852002459">Štítok zahodenia</translation>
 <translation id="7552432549459840808">Užitočné skratky Chromu</translation>
 <translation id="7569983096843329377">Čierna</translation>
 <translation id="7579911500627256166">bodka <ph name="DOT" /></translation>
@@ -1103,7 +1103,7 @@ Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Al
 <translation id="8121539003537428024">Povoliť všetky filtre udalostí</translation>
 <translation id="8126386426083591964">Žiadny predchádzajúci nadpis piatej úrovne</translation>
 <translation id="812886159861361726">Sťahovanie súboru <ph name="FILE_NAME" /> bolo zastavené</translation>
-<translation id="8129445297241948503">Vyššie nie je žiadna bunka</translation>
+<translation id="8129445297241948503">Žiadna bunka vyššie</translation>
 <translation id="8138880386467279117">Klepnúť</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podčiarkovník}few{# podčiarkovníky}many{# underscores}other{# podčiarkovníkov}}</translation>
 <translation id="8179976553408161302">Enter</translation>

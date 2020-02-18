@@ -288,6 +288,20 @@ TEST_F(CastActivityRecordTest, SendSetVolumeRequestToReceiver) {
   record_->SendSetVolumeRequestToReceiver(*message, callback.Get());
 }
 
+TEST_F(CastActivityRecordTest, StopSessionOnReceiver) {
+  const base::Optional<std::string> client_id("theClientId");
+  base::MockCallback<cast_channel::ResultCallback> callback;
+
+  SetUpSession();
+  EXPECT_CALL(message_handler_,
+              StopSession(kChannelId, "theSessionId", client_id, _))
+      .WillOnce(WithArg<3>([](cast_channel::ResultCallback callback) {
+        std::move(callback).Run(cast_channel::Result::kOk);
+      }));
+  EXPECT_CALL(callback, Run(cast_channel::Result::kOk));
+  record_->StopSessionOnReceiver(client_id.value(), callback.Get());
+}
+
 TEST_F(CastActivityRecordTest, SendStopSessionMessageToClients) {
   SetUpSession();
   auto* client = AddMockClient("theClientId");

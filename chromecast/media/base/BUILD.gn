@@ -22,13 +22,14 @@ cast_source_set("key_systems") {
     "//base",
     "//chromecast:chromecast_buildflags",
     "//chromecast/public/media",
-    "//media",
     "//third_party/widevine/cdm:buildflags",
   ]
 
   if (enable_widevine) {
     deps += [ "//third_party/widevine/cdm:headers" ]
   }
+
+  assert_no_deps = [ "//media" ]
 }
 
 cast_source_set("base") {

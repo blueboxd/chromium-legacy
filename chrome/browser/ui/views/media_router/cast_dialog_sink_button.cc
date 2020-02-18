@@ -36,6 +36,25 @@ namespace media_router {
 
 namespace {
 
+// A view that represents the primary icon for a sink issue. This class is used
+// to ensure its color is kept in sync with current theme.
+class SinkIssueIconView : public views::ImageView {
+ public:
+  SinkIssueIconView() {
+    SetBorder(views::CreateEmptyBorder(kPrimaryIconBorder));
+  }
+  ~SinkIssueIconView() override = default;
+
+  // views::ImageView:
+  void OnThemeChanged() override {
+    const SkColor icon_color =
+        ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
+            ui::NativeTheme::kColorId_DefaultIconColor);
+    SetImage(gfx::CreateVectorIcon(::vector_icons::kInfoOutlineIcon,
+                                   kPrimaryIconSize, icon_color));
+  }
+};
+
 gfx::ImageSkia CreateSinkIcon(SinkIconType icon_type, bool enabled = true) {
   const gfx::VectorIcon* vector_icon;
   switch (icon_type) {
@@ -93,11 +112,7 @@ std::unique_ptr<views::View> CreatePrimaryIconForSink(
     return CreatePrimaryIconView(gfx::CreateVectorIcon(
         kGenericStopIcon, kPrimaryIconSize, gfx::kGoogleBlue500));
   } else if (sink.issue) {
-    const SkColor icon_color =
-        ui::NativeTheme::GetInstanceForNativeUi()->GetSystemColor(
-            ui::NativeTheme::kColorId_DefaultIconColor);
-    return CreatePrimaryIconView(gfx::CreateVectorIcon(
-        ::vector_icons::kInfoOutlineIcon, kPrimaryIconSize, icon_color));
+    return std::make_unique<SinkIssueIconView>();
   } else if (sink.state == UIMediaSinkState::CONNECTING ||
              sink.state == UIMediaSinkState::DISCONNECTING) {
     return CreateThrobber();

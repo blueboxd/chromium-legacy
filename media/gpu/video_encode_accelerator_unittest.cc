@@ -846,23 +846,23 @@ class StreamValidator {
   // buffer, passing true if the frame is a keyframe and the visible size.
   // Returns false if we are not interested in more frames and further
   // processing should be aborted.
-  typedef base::Callback<bool(bool, const gfx::Size&)> FrameFoundCallback;
+  typedef base::RepeatingCallback<bool(bool, const gfx::Size&)>
+      FrameFoundCallback;
 
   virtual ~StreamValidator() {}
 
   // Provide a StreamValidator instance for the given |profile| and |level|.
   // |level| is optional and should specified only if codec is h264.
-  static std::unique_ptr<StreamValidator> Create(
-      VideoCodecProfile profile,
-      base::Optional<uint8_t> level,
-      const FrameFoundCallback& frame_cb);
+  static std::unique_ptr<StreamValidator> Create(VideoCodecProfile profile,
+                                                 base::Optional<uint8_t> level,
+                                                 FrameFoundCallback frame_cb);
 
   // Process and verify contents of a bitstream buffer.
   virtual void ProcessStreamBuffer(const uint8_t* stream, size_t size) = 0;
 
  protected:
-  explicit StreamValidator(const FrameFoundCallback& frame_cb)
-      : frame_cb_(frame_cb) {}
+  explicit StreamValidator(FrameFoundCallback frame_cb)
+      : frame_cb_(std::move(frame_cb)) {}
 
   FrameFoundCallback frame_cb_;
   gfx::Size visible_size_;
@@ -870,9 +870,8 @@ class StreamValidator {
 
 class H264Validator : public StreamValidator {
  public:
-  H264Validator(base::Optional<uint8_t> level,
-                const FrameFoundCallback& frame_cb)
-      : StreamValidator(frame_cb),
+  H264Validator(base::Optional<uint8_t> level, FrameFoundCallback frame_cb)
+      : StreamValidator(std::move(frame_cb)),
         target_level_(level),
         seen_sps_(false),
         seen_pps_(false),
@@ -1005,8 +1004,8 @@ bool H264Validator::UpdateCurrentPicture(const H264SliceHeader& slice_hdr) {
 
 class VP8Validator : public StreamValidator {
  public:
-  explicit VP8Validator(const FrameFoundCallback& frame_cb)
-      : StreamValidator(frame_cb), seen_keyframe_(false) {}
+  explicit VP8Validator(FrameFoundCallback frame_cb)
+      : StreamValidator(std::move(frame_cb)), seen_keyframe_(false) {}
 
   void ProcessStreamBuffer(const uint8_t* stream, size_t size) override;
 
@@ -1034,8 +1033,10 @@ void VP8Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
 
 class VP9Validator : public StreamValidator {
  public:
-  explicit VP9Validator(const FrameFoundCallback& frame_cb)
-      : StreamValidator(frame_cb), parser_(false), seen_keyframe_(false) {}
+  explicit VP9Validator(FrameFoundCallback frame_cb)
+      : StreamValidator(std::move(frame_cb)),
+        parser_(false),
+        seen_keyframe_(false) {}
 
   void ProcessStreamBuffer(const uint8_t* stream, size_t size) override;
 
@@ -1067,15 +1068,15 @@ void VP9Validator::ProcessStreamBuffer(const uint8_t* stream, size_t size) {
 std::unique_ptr<StreamValidator> StreamValidator::Create(
     VideoCodecProfile profile,
     base::Optional<uint8_t> level,
-    const FrameFoundCallback& frame_cb) {
+    FrameFoundCallback frame_cb) {
   std::unique_ptr<StreamValidator> validator;
 
   if (IsH264(profile)) {
-    validator.reset(new H264Validator(level, frame_cb));
+    validator.reset(new H264Validator(level, std::move(frame_cb)));
   } else if (IsVP8(profile)) {
-    validator.reset(new VP8Validator(frame_cb));
+    validator.reset(new VP8Validator(std::move(frame_cb)));
   } else if (IsVP9(profile)) {
-    validator.reset(new VP9Validator(frame_cb));
+    validator.reset(new VP9Validator(std::move(frame_cb)));
   } else {
     LOG(FATAL) << "Unsupported profile: " << GetProfileName(profile);
   }

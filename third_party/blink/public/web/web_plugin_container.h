@@ -79,7 +79,6 @@ class WebPluginContainer {
 
   virtual void Invalidate() = 0;
   virtual void InvalidateRect(const WebRect&) = 0;
-  virtual void ScrollRect(const WebRect&) = 0;
 
   // Schedules an animation of the WebView that contains the plugin, as well as
   // the plugin.

@@ -474,7 +474,7 @@ void MakeCredentialRequestHandler::HandleTouch(
       state_ = State::kGettingRetries;
       CancelActiveAuthenticators(authenticator->GetId());
       authenticator_ = authenticator;
-      authenticator_->GetRetries(
+      authenticator_->GetPinRetries(
           base::BindOnce(&MakeCredentialRequestHandler::OnRetriesResponse,
                          weak_factory_.GetWeakPtr()));
       return;
@@ -596,7 +596,7 @@ void MakeCredentialRequestHandler::OnHavePINToken(
 
   if (status == CtapDeviceResponseCode::kCtap2ErrPinInvalid) {
     state_ = State::kGettingRetries;
-    authenticator_->GetRetries(
+    authenticator_->GetPinRetries(
         base::BindOnce(&MakeCredentialRequestHandler::OnRetriesResponse,
                        weak_factory_.GetWeakPtr()));
     return;

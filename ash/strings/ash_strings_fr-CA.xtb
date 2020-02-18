@@ -120,7 +120,6 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> est une session gérée par <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Clic gauche</translation>
 <translation id="2429753432712299108">L'appareil Bluetooth « <ph name="DEVICE_NAME" /> » demande l'autorisation de s'associer avec votre appareil. Avant d'accepter, veuillez confirmer que le code d'authentification suivant s'affiche sur l'appareil : <ph name="PASSKEY" />.</translation>
-<translation id="2435457462613246316">Affich. mot de passe</translation>
 <translation id="2473177541599297363">Confirmer la résolution</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="2484513351006226581">Appuyez sur <ph name="KEYBOARD_SHORTCUT" /> pour changer la disposition du clavier.</translation>
@@ -286,7 +285,6 @@
 <translation id="4527045527269911712">L'appareil Bluetooth « <ph name="DEVICE_NAME" /> » demande l'autorisation de s'associer.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> avant la recharge complète</translation>
 <translation id="4561267230861221837">3G</translation>
-<translation id="4565377596337484307">Masquer le mot de passe</translation>
 <translation id="4570957409596482333">Bouton Sélectionner pour énoncer</translation>
 <translation id="4585337515783392668">Arrêter la diffusion sur un récepteur inconnu</translation>
 <translation id="4628757576491864469">Appareils</translation>

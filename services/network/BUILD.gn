@@ -419,6 +419,7 @@ source_set("tests") {
 
   if (!is_ios) {
     deps += [
+      "//services/network/trust_tokens",
       "//services/network/trust_tokens:tests",
       "//services/proxy_resolver:lib",
     ]

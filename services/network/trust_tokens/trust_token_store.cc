@@ -44,6 +44,11 @@ TrustTokenStore::TrustTokenStore(
 
 TrustTokenStore::~TrustTokenStore() = default;
 
+std::unique_ptr<TrustTokenStore> TrustTokenStore::CreateInMemory() {
+  return std::make_unique<TrustTokenStore>(
+      std::make_unique<InMemoryTrustTokenPersister>());
+}
+
 void TrustTokenStore::RecordIssuance(const url::Origin& issuer) {
   DCHECK(!issuer.opaque());
   url::Origin issuer_origin = issuer;
@@ -152,7 +157,7 @@ std::vector<TrustTokenKeyCommitment> TrustTokenStore::KeyCommitments(
 
 void TrustTokenStore::SetKeyCommitmentsAndPruneStaleState(
     const url::Origin& issuer,
-    base::span<const TrustTokenKeyCommitment> keys) {
+    const std::vector<TrustTokenKeyCommitment>& keys) {
   DCHECK(!issuer.opaque());
   DCHECK([&keys]() {
     std::set<base::StringPiece> unique_keys;

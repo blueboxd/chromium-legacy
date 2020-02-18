@@ -92,7 +92,7 @@ public class AndroidPaymentAppFinderTest
     private final TestServerDownloader mDownloader = new TestServerDownloader();
 
     private EmbeddedTestServer mServer;
-    private List<PaymentInstrument> mPaymentApps;
+    private List<PaymentApp> mPaymentApps;
     private boolean mAllPaymentAppsCreated;
     private Map<String, PaymentMethodData> mMethodData;
 
@@ -104,7 +104,7 @@ public class AndroidPaymentAppFinderTest
 
     // PaymentAppFactoryDelegate implementation.
     @Override
-    public void onPaymentAppCreated(PaymentInstrument paymentApp) {
+    public void onPaymentAppCreated(PaymentApp paymentApp) {
         mPaymentApps.add(paymentApp);
     }
 

@@ -573,7 +573,6 @@
 <translation id="3495081129428749620">Εύρεση στη σελίδα
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Αυτή η πολιτική αγνοείται επειδή μια άλλη πολιτική από την ίδια ομάδα πολιτικής έχει υψηλότερη προτεραιότητα.</translation>
-<translation id="3513704683820682405">Επαυξημένη πραγματικότητα</translation>
 <translation id="3518941727116570328">Χειρισμός πολλών αντικειμένων</translation>
 <translation id="3528171143076753409">Το πιστοποιητικό του διακομιστή δεν είναι αξιόπιστο.</translation>
 <translation id="3528485271872257980">Σκούρο καφέ</translation>
@@ -899,7 +898,6 @@
 <translation id="4926159001844873046">Ο ιστότοπος <ph name="SITE" /> λέει</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4930153903256238152">Μεγάλη χωρητικότητα</translation>
-<translation id="4943703118917034429">Εικονική πραγματικότητα</translation>
 <translation id="4943872375798546930">Δεν υπάρχουν αποτελέσματα</translation>
 <translation id="4950898438188848926">Κουμπί εναλλαγής καρτέλας, πατήστε Enter για μετάβαση στην ανοιχτή καρτέλα, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Ενέργειες</translation>
@@ -1718,7 +1716,6 @@
 <translation id="861775596732816396">Μέγεθος 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Αποθήκευση αυτής της κάρτας στη συγκεκριμένη συσκευή</translation>
-<translation id="8647750283161643317">Επαναφορά προεπιλογών</translation>
 <translation id="8663226718884576429">Σύνοψη παραγγελίας, <ph name="TOTAL_LABEL" />, Περισσότερες λεπτομέρειες</translation>
 <translation id="867224526087042813">Υπογραφή</translation>
 <translation id="8676424191133491403">Χωρίς καθυστέρηση</translation>

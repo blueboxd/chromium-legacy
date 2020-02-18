@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Скачать?</translation>
 <translation id="3306398118552023113">Это приложение запущено в Chrome.</translation>
-<translation id="3312292613668865961">Запрашивать для сайтов разрешение на доступ к устройствам и данным виртуальной реальности (рекомендуется)</translation>
 <translation id="3315103659806849044">Сейчас вы находитесь на странице настроек сервисов Google и синхронизации. Чтобы включить синхронизацию, нажмите кнопку "Подтвердить" в нижней части экрана. Перейти вверх</translation>
 <translation id="3328801116991980348">Информация о сайте</translation>
 <translation id="3333961966071413176">Все контакты</translation>
@@ -514,7 +513,6 @@
 <translation id="4915549754973153784">Поиск устройств… <ph name="BEGIN_LINK" />Справка<ph name="END_LINK" /></translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# страница}one{# страница}few{# страницы}many{# страниц}other{# страницы}}</translation>
 <translation id="4932247056774066048">Вы выходите из аккаунта, которым управляет администратор домена <ph name="DOMAIN_NAME" />. Все данные Chrome будут удалены с этого устройства, но сохранятся в аккаунте Google.</translation>
-<translation id="4935305910887312910">Запрашивать для сайтов разрешение на составление плана комнаты и отслеживание положения камеры (рекомендуется)</translation>
 <translation id="4943703118917034429">Виртуальная реальность</translation>
 <translation id="4943872375798546930">Нет результатов</translation>
 <translation id="4958708863221495346">Сайту <ph name="URL_OF_THE_CURRENT_TAB" /> предоставлен доступ к вашему экрану</translation>
@@ -818,6 +816,7 @@
 <translation id="7141896414559753902">Блокировать всплывающие окна и переадресацию на сайтах (рекомендуется)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Загрузить исходную версию страницы<ph name="END_LINK" /> из <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Последние 24 часа</translation>
+<translation id="7173114856073700355">Открыть настройки</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7177466738963138057">Вы всегда можете изменить свой выбор в настройках</translation>
 <translation id="7180611975245234373">Обновить</translation>
@@ -1025,7 +1024,6 @@
 <translation id="8664979001105139458">Файл с таким именем уже существует.</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Уровень сигнала: # линия}one{Уровень сигнала: # линия}few{Уровень сигнала: # линии}many{Уровень сигнала: # линий}other{Уровень сигнала: # линии}}</translation>
 <translation id="868929229000858085">Поиск контактов</translation>
-<translation id="8698438463325761328">Закрыть сайтам доступ к устройствам и данным виртуальной реальности</translation>
 <translation id="869891660844655955">Срок действия</translation>
 <translation id="8728487861892616501">Используя это приложение, вы соглашаетесь с <ph name="BEGIN_LINK1" />Условиями использования<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Примечанием о конфиденциальности<ph name="END_LINK2" /> Chrome, а также с <ph name="BEGIN_LINK3" />Примечанием о конфиденциальности для аккаунтов Google, управляемых с помощью Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Содержимое скрыто</translation>
@@ -1042,7 +1040,6 @@
 <translation id="883806473910249246">При скачивании контента произошла ошибка.</translation>
 <translation id="8840953339110955557">Страница может отличаться от онлайн-версии.</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">Закрыть сайтам доступ к составлению плана комнаты и отслеживанию положения камеры</translation>
 <translation id="8853345339104747198">Вкладка "<ph name="TAB_TITLE" />"</translation>
 <translation id="885701979325669005">Хранилище</translation>
 <translation id="889338405075704026">Открыть настройки Chrome</translation>

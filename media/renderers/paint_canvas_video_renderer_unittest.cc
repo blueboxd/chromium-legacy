@@ -951,26 +951,26 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
     }
   }
 
-  base::Callback<void(GLenum target,
-                      GLint level,
-                      GLint internalformat,
-                      GLsizei width,
-                      GLsizei height,
-                      GLint border,
-                      GLenum format,
-                      GLenum type,
-                      const void* pixels)>
+  base::RepeatingCallback<void(GLenum target,
+                               GLint level,
+                               GLint internalformat,
+                               GLsizei width,
+                               GLsizei height,
+                               GLint border,
+                               GLenum format,
+                               GLenum type,
+                               const void* pixels)>
       teximage2d_callback_;
 
-  base::Callback<void(GLenum target,
-                      GLint level,
-                      GLint xoffset,
-                      GLint yoffset,
-                      GLsizei width,
-                      GLsizei height,
-                      GLenum format,
-                      GLenum type,
-                      const void* pixels)>
+  base::RepeatingCallback<void(GLenum target,
+                               GLint level,
+                               GLint xoffset,
+                               GLint yoffset,
+                               GLsizei width,
+                               GLsizei height,
+                               GLenum format,
+                               GLenum type,
+                               const void* pixels)>
       texsubimage2d_callback_;
 };
 

@@ -149,46 +149,6 @@ TEST_F(HoverButtonTest, TooltipAndAccessibleName) {
   }
 }
 
-// Tests that setting a custom tooltip on a HoverButton will not be overwritten
-// by HoverButton's own tooltips.
-TEST_F(HoverButtonTest, CustomTooltip) {
-  const base::string16 custom_tooltip = base::ASCIIToUTF16("custom");
-
-  for (size_t i = 0; i < base::size(kTitleSubtitlePairs); ++i) {
-    SCOPED_TRACE(testing::Message() << "Index: " << i);
-    TitleSubtitlePair pair = kTitleSubtitlePairs[i];
-    auto button = std::make_unique<HoverButton>(
-        nullptr, CreateIcon(), base::ASCIIToUTF16(pair.title),
-        base::ASCIIToUTF16(pair.subtitle));
-    button->set_auto_compute_tooltip(false);
-    button->SetTooltipText(custom_tooltip);
-    button->SetSize(gfx::Size(kButtonWidth, 40));
-    EXPECT_EQ(custom_tooltip, button->GetTooltipText(gfx::Point()));
-
-    // Make sure the accessible name is still set.
-    ui::AXNodeData data;
-    button->GetAccessibleNodeData(&data);
-    std::string accessible_name;
-    data.GetStringAttribute(ax::mojom::StringAttribute::kName,
-                            &accessible_name);
-
-    // The accessible name should always be the title and subtitle concatenated
-    // by \n.
-    base::string16 expected = base::JoinString(
-        {base::ASCIIToUTF16(pair.title), base::ASCIIToUTF16(pair.subtitle)},
-        base::ASCIIToUTF16("\n"));
-    EXPECT_EQ(expected, base::UTF8ToUTF16(accessible_name));
-  }
-}
-
-// Tests that setting the subtitle elide behavior doesn't lead to a crash for a
-// HoverButton with an empty subtitle.
-TEST_F(HoverButtonTest, SetSubtitleElideBehavior) {
-  HoverButton button(nullptr, CreateIcon(), base::ASCIIToUTF16("Test title"),
-                     base::string16());
-  button.SetSubtitleElideBehavior(gfx::ELIDE_EMAIL);
-}
-
 // Tests that a button with a subtitle and icons can be instantiated without a
 // crash.
 TEST_F(HoverButtonTest, CreateButtonWithSubtitleAndIcons) {

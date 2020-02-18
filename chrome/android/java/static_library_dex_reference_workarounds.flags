@@ -42,7 +42,7 @@
 -keep,allowobfuscation class org.chromium.chrome.browser.media.ui.MediaSessionTabHelper$** { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.payments.AndroidPaymentApp { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.payments.AndroidPaymentApp$** { *; }
--keep,allowobfuscation class org.chromium.chrome.browser.payments.PaymentInstrument { *; }
+-keep,allowobfuscation class org.chromium.chrome.browser.payments.PaymentApp { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.photo_picker.PhotoPickerDialog { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.preferences.languages.AddLanguageFragment { *; }
 -keep,allowobfuscation class org.chromium.chrome.browser.preferences.languages.AddLanguageFragment$$Lambda$** { *; }

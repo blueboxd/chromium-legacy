@@ -120,7 +120,6 @@
 <translation id="2413728805700750528">Ang <ph name="DISPLAY_NAME" /> ay isang session na pinapamahalaan ng <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Mag-left click</translation>
 <translation id="2429753432712299108">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" ng pahintulot na magpares . Bago tanggapin, pakikumpirma na ipinapakita ang passkey na ito sa device na iyon: <ph name="PASSKEY" /></translation>
-<translation id="2435457462613246316">Ipakita ang password</translation>
 <translation id="2473177541599297363">Kumpirmahin ang Resolution</translation>
 <translation id="2482878487686419369">Mga Abiso</translation>
 <translation id="2484513351006226581">Pindutin ang <ph name="KEYBOARD_SHORTCUT" /> upang palitan ang layout ng keyboard.</translation>
@@ -286,7 +285,6 @@
 <translation id="4527045527269911712">Gusto ng bluetooth device na "<ph name="DEVICE_NAME" />" na magpares.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> na lang bago mapuno</translation>
 <translation id="4561267230861221837">3G</translation>
-<translation id="4565377596337484307">Itago ang password</translation>
 <translation id="4570957409596482333">Button ng Select-to-Speak</translation>
 <translation id="4585337515783392668">Ihinto ang pag-cast sa isang hindi pa natutukoy na tagatanggap</translation>
 <translation id="4628757576491864469">Mga Device</translation>

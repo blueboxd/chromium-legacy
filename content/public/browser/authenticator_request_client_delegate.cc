@@ -180,6 +180,9 @@ void AuthenticatorRequestClientDelegate::FinishCollectToken() {
   NOTREACHED();
 }
 
+void AuthenticatorRequestClientDelegate::OnRetryUserVerification(int attempts) {
+}
+
 void AuthenticatorRequestClientDelegate::CustomizeDiscoveryFactory(
     device::FidoDiscoveryFactory* discovery_factory) {}
 

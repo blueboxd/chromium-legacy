@@ -162,8 +162,6 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       std::make_unique<::settings::ProtocolHandlersHandler>());
   AddSettingsPageUIHandler(
       std::make_unique<::settings::SearchEnginesHandler>(profile));
-  AddSettingsPageUIHandler(
-      std::make_unique<chromeos::settings::WallpaperHandler>(web_ui));
 
   html_source->AddBoolean("showAppManagement", base::FeatureList::IsEnabled(
                                                    ::features::kAppManagement));
@@ -302,8 +300,6 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
   web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::KeyboardHandler>());
 
-  // TODO(crbug/950007): Remove adding WallpaperHandler when
-  // SplitSettings complete.
   web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::WallpaperHandler>(web_ui()));
 

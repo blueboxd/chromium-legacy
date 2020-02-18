@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "components/schema_org/common/metadata.mojom-blink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/document_metadata/document_metadata.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -18,14 +19,14 @@ namespace blink {
 
 namespace {
 
-using mojom::blink::Entity;
-using mojom::blink::EntityPtr;
-using mojom::blink::Property;
-using mojom::blink::PropertyPtr;
-using mojom::blink::Values;
-using mojom::blink::ValuesPtr;
 using mojom::blink::WebPage;
 using mojom::blink::WebPagePtr;
+using schema_org::mojom::blink::Entity;
+using schema_org::mojom::blink::EntityPtr;
+using schema_org::mojom::blink::Property;
+using schema_org::mojom::blink::PropertyPtr;
+using schema_org::mojom::blink::Values;
+using schema_org::mojom::blink::ValuesPtr;
 
 class DocumentMetadataExtractorTest : public PageTestBase {
  public:

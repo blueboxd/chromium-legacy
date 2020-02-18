@@ -1383,7 +1383,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="2865919525181940183">Screenshot dei programmi attualmente sullo schermo</translation>
 <translation id="286674810810214575">Controllo delle fonti di alimentazione…</translation>
 <translation id="2867768963760577682">Apri in una scheda bloccata</translation>
-<translation id="2868184003987917410">Non consentire ai siti di accedere ai dati/dispositivi per realtà virtuale</translation>
 <translation id="2868746137289129307">Questa estensione è obsoleta e disattivata in base ai criteri aziendali. Potrebbe essere attivata automaticamente quando sarà disponibile una nuova versione.</translation>
 <translation id="2870560284913253234">Sito</translation>
 <translation id="2870909136778269686">Aggiornamento in corso...</translation>
@@ -1713,7 +1712,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3348038390189153836">Dispositivo rimovibile rilevato</translation>
 <translation id="3349933790966648062">Footprint di memoria</translation>
 <translation id="3350117557200012647">Attiva la modalità di accoppiamento</translation>
-<translation id="3350244554415289209">Chiedi conferma quando un sito vuole accedere alla posizione della videocamera o creare una mappa della stanza (opzione consigliata)</translation>
 <translation id="3355936511340229503">Errore di connessione</translation>
 <translation id="3356580349448036450">Fine</translation>
 <translation id="3359256513598016054">Vincoli criteri certificati</translation>
@@ -1730,7 +1728,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3382073616108123819">Spiacenti, il sistema non è riuscito a determinare gli identificatori di questo dispositivo.</translation>
 <translation id="3382086682569279540">L'account che gestisci verrà rimosso a breve</translation>
 <translation id="3382200254148930874">Interruzione della supervisione…</translation>
-<translation id="3383210070657133526"><ph name="URL" /> vuole poter avviare sessioni di realtà virtuale</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Separatore</translation>
 <translation id="338691029516748599">Rete <ph name="NETWORK_INDEX" /> di <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, intensità del segnale <ph name="SIGNAL_STRENGTH" />%, gestita dall'amministratore, connetti</translation>
@@ -1827,7 +1824,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="3511307672085573050">Copia indir&amp;izzo link</translation>
 <translation id="351152300840026870">Carattere a larghezza fissa</translation>
 <translation id="3511528412952710609">Breve</translation>
-<translation id="3513704683820682405">Realtà aumentata</translation>
 <translation id="3514373592552233661">Le reti preferite avranno precedenza su altre reti note se ne sono disponibili più di una</translation>
 <translation id="3515983984924808886">Tocca nuovamente il token di sicurezza per confermare la reimpostazione. Tutte le informazioni memorizzate sul token di sicurezza, nonché il suo PIN, verranno eliminate.</translation>
 <translation id="3518985090088779359">Accetta e continua</translation>
@@ -2531,7 +2527,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="4501530680793980440">Conferma rimozione</translation>
 <translation id="4502423230170890588">Rimuovi da questo dispositivo</translation>
 <translation id="4504940961672722399">Utilizza questa estensione facendo clic su questa icona o premendo <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4507164039066603071">Non consentire ai siti di accedere alla posizione della videocamera o creare una mappa della stanza</translation>
 <translation id="4508051413094283164">Apri tutto nella finestra di navigazione in incognito</translation>
 <translation id="4508265954913339219">Attivazione non riuscita</translation>
 <translation id="4508765956121923607">Visualizza s&amp;orgente</translation>
@@ -2837,7 +2832,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="494286511941020793">Guida configurazione proxy</translation>
 <translation id="4943368462779413526">Calcio</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" vuole collegarsi a una porta seriale</translation>
-<translation id="4943703118917034429">Realtà virtuale</translation>
 <translation id="4944310289250773232">Questo servizio di autenticazione è in hosting su <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Azioni</translation>
 <translation id="4952981627953231344">Plugin VM non consentito su questo dispositivo. Contatta l'amministratore del dispositivo dell'organizzazione.</translation>
@@ -4111,7 +4105,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="6758056191028427665">Comunicaci la tua opinione sul nostro lavoro.</translation>
 <translation id="6759193508432371551">Ripristino dati di fabbrica</translation>
 <translation id="6762833852331690540">On</translation>
-<translation id="6767115174726603949">Accedi a dati e ai dispositivi per realtà virtuale</translation>
 <translation id="6767566652486411142">Seleziona un'altra lingua…</translation>
 <translation id="6767639283522617719">Impossibile aggiungere al dominio. Assicurati che le impostazioni dell'unità organizzativa siano corrette.</translation>
 <translation id="6769712124046837540">Aggiunta della stampante...</translation>
@@ -4307,7 +4300,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="703001695939087067">Modalità panoramica finestre attivata. Premi il tasto TAB per spostarti.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - Porta seriale collegata</translation>
 <translation id="7031962166228839643">Preparazione del TPM in corso, attendi (l'operazione potrebbe richiedere alcuni minuti)...</translation>
-<translation id="7034615910652881882">Chiedi conferma quando un sito vuole accedere ai dati/dispositivi per realtà virtuale</translation>
 <translation id="7037509989619051237">Anteprima del testo</translation>
 <translation id="7039326228527141150">Accedi a dispositivi USB di <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Accesso smart card Microsoft</translation>
@@ -4613,7 +4605,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7443806024147773267">Puoi avere a disposizione le tue password ogni volta che accedi al tuo Account Google</translation>
 <translation id="7444983668544353857">Disabilita <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Installare automaticamente le app</translation>
-<translation id="7448625729116931228">Chiedi conferma quando un sito vuole accedere ai dati/dispositivi per realtà virtuale (opzione consigliata)</translation>
 <translation id="7450761244949417357">Apertura in <ph name="ALTERNATIVE_BROWSER_NAME" /> ora</translation>
 <translation id="7453008956351770337">Se selezioni questa stampante, autorizzi la seguente estensione ad accedere alla tua stampante:</translation>
 <translation id="7454548535253569100">Portale: <ph name="SUBFRAME_SITE" /></translation>
@@ -4750,7 +4741,6 @@ Puoi gestire le impostazioni dell'account installando l'app Family Link su quest
 <translation id="7652808307838961528">Modifica persona, <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Non è possibile aggiungere app, estensioni e script utente da questo sito web</translation>
 <translation id="7652954539215530680">Crea un PIN</translation>
-<translation id="7653295403398566475">Chiedi conferma quando un sito vuole accedere alla posizione della videocamera o creare una mappa della stanza</translation>
 <translation id="7654941827281939388">Questo account è già in uso su questo computer.</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7659584679870740384">Non sei autorizzato a utilizzare questo dispositivo. Per ottenere l'autorizzazione di accesso contatta l'amministratore.</translation>
@@ -5288,7 +5278,6 @@ Conserva il file di chiave in un luogo sicuro. Ti servirà per creare nuove vers
 <translation id="8338952601723052325">Sito web dello sviluppatore</translation>
 <translation id="8339059274628563283">Dati memorizzati di <ph name="SITE" /></translation>
 <translation id="833986336429795709">Scegli un'app per aprire il link</translation>
-<translation id="834057053932610950">Si è verificato un errore durante la configurazione di Linux. Contatta l'amministratore.</translation>
 <translation id="8342861492835240085">Seleziona una raccolta</translation>
 <translation id="834290227245955730">PIN non valido. Tentativi ancora disponibili: <ph name="RETRIES" />.</translation>
 <translation id="8351419472474436977">Questa estensione ha assunto il controllo delle tue impostazioni proxy, il che significa che può cambiare, interrompere o spiare tutto ciò che fai online. Se non sei sicuro del motivo per cui si sia verificato questo cambiamento, è probabile che sia indesiderato.</translation>

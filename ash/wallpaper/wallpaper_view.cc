@@ -215,8 +215,6 @@ std::unique_ptr<views::Widget> CreateWallpaperWidget(
   params.name = "WallpaperViewWidget";
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.layer_type = ui::LAYER_NOT_DRAWN;
-  if (controller->GetWallpaper().isNull())
-    params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.parent = root_window->GetChildById(container_id);
   WallpaperView* wallpaper_view = new WallpaperView(property);
   params.delegate = new WallpaperWidgetDelegate(wallpaper_view);

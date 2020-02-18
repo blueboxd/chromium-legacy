@@ -12,7 +12,7 @@ class CommandUpdater;
 
 namespace autofill {
 
-class SaveCardBubbleController;
+class SavePaymentIconController;
 
 // The location bar icon to show the Save Credit Card bubble where the user can
 // choose to save the credit card info to use again later without re-entering
@@ -37,7 +37,7 @@ class SavePaymentIconView : public PageActionIconView {
   const char* GetClassName() const override;
 
  private:
-  SaveCardBubbleController* GetController() const;
+  SavePaymentIconController* GetController() const;
 
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;

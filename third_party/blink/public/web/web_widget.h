@@ -211,10 +211,6 @@ class WebWidget {
   // Returns true if the WebWidget is currently animating a GestureFling.
   virtual bool IsFlinging() const { return false; }
 
-  // Returns true if the WebWidget uses GPU accelerated compositing
-  // to render its contents.
-  virtual bool IsAcceleratedCompositingActive() const { return false; }
-
   // Returns true if the WebWidget created is of type PepperWidget.
   virtual bool IsPepperWidget() const { return false; }
 

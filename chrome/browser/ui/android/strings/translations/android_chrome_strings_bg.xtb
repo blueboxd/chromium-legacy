@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">Олекотена</translation>
 <translation id="3303414029551471755">Искате ли да продължите с изтеглянето на съдържанието?</translation>
 <translation id="3306398118552023113">Това приложение се изпълнява в Chrome</translation>
-<translation id="3312292613668865961">Извеждане на запитване, преди да се разреши на сайтовете да осъществят достъп до устройствата и данните ви за виртуална реалност (препоръчително)</translation>
 <translation id="3315103659806849044">Понастоящем персонализирате настройките си за синхронизиране и за услугите на Google. За да включите синхронизирането, докоснете бутона „Потвърждаване“ в долната част на екрана. Навигиране нагоре</translation>
 <translation id="3328801116991980348">Информация за сайта</translation>
 <translation id="3333961966071413176">Всички контакти</translation>
@@ -514,7 +513,6 @@
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Получете помощ<ph name="END_LINK" />, докато се сканира за устройства…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# страница}other{# страници}}</translation>
 <translation id="4932247056774066048">Тъй като излизате от профил, управляван от <ph name="DOMAIN_NAME" />, данните ви в Chrome ще бъдат изтрити от това устройство. Те ще останат в профила ви в Google.</translation>
-<translation id="4935305910887312910">Извеждане на запитване, преди да се разреши на сайтовете да получат позицията на камерата или да картографират стаята ви (препоръчително)</translation>
 <translation id="4943703118917034429">Виртуална реалност</translation>
 <translation id="4943872375798546930">Няма резултати</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> споделя екрана ви</translation>
@@ -818,6 +816,7 @@
 <translation id="7141896414559753902">Блокиране на показването на изскачащи прозорци и пренасочвания от сайтовете (препоръчително)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Зареждане на оригиналната страница<ph name="END_LINK" /> от <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Последните 24 часа</translation>
+<translation id="7173114856073700355">Към настройките</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7177466738963138057">Можете да промените това по-късно от настройките</translation>
 <translation id="7180611975245234373">Опресняване</translation>
@@ -1025,7 +1024,6 @@
 <translation id="8664979001105139458">Името на файла вече съществува</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Сила на сигнала: # чертичка}other{Сила на сигнала: # чертички}}</translation>
 <translation id="868929229000858085">Търсене в контактите ви</translation>
-<translation id="8698438463325761328">Блокиране на сайтовете, така че да не осъществят достъп до устройствата и данните за виртуална реалност</translation>
 <translation id="869891660844655955">Дата на валидност</translation>
 <translation id="8728487861892616501">С използването на това приложение приемате <ph name="BEGIN_LINK1" />Общите условия<ph name="END_LINK1" /> и <ph name="BEGIN_LINK2" />Съобщението за поверителност<ph name="END_LINK2" /> на Chrome, както и <ph name="BEGIN_LINK3" />Съобщението за поверителност за профили в Google, управлявани чрез Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Съдържанието е скрито</translation>
@@ -1042,7 +1040,6 @@
 <translation id="883806473910249246">При изтеглянето на съдържанието възникна грешка.</translation>
 <translation id="8840953339110955557">Тази страница може да се различава от онлайн версията.</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">Блокиране на сайтовете, така че да не получават позицията на камерата и да не картографират стаята ви</translation>
 <translation id="8853345339104747198">„<ph name="TAB_TITLE" />“ – раздел</translation>
 <translation id="885701979325669005">Хранилище</translation>
 <translation id="889338405075704026">Към настройките за Chrome</translation>

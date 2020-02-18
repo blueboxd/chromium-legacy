@@ -325,7 +325,7 @@ void XRFrameProvider::OnNonImmersiveFrameData(
   }
 
   if (frame_data) {
-    request->value = std::move(frame_data->pose);
+    request->value = std::move(frame_data);
   } else {
     // Unexpectedly didn't get frame data, and we don't have a timestamp.
     // Try to request a regular animation frame to avoid getting stuck.
@@ -446,13 +446,15 @@ void XRFrameProvider::ProcessScheduledFrame(
       if (session->ended())
         continue;
 
-      const auto& frame_pose = request.value;
+      const auto& inline_frame_data = request.value;
+      device::mojom::blink::VRPosePtr inline_pose_data =
+          inline_frame_data ? std::move(inline_frame_data->pose) : nullptr;
 
       // Prior to updating input source state, update the state needed to create
       // presentation frame as newly created presentation frame will get passed
       // to the input source select[/start/end] events.
       session->UpdatePresentationFrameState(
-          high_res_now_ms, frame_pose, frame_data, frame_id_,
+          high_res_now_ms, inline_pose_data, inline_frame_data, frame_id_,
           true /* Non-immersive positions are always emulated */);
 
       // If the input state change caused this session to end, we should stop
@@ -460,7 +462,7 @@ void XRFrameProvider::ProcessScheduledFrame(
       if (session->ended())
         continue;
 
-      if (frame_data && frame_data->mojo_space_reset) {
+      if (inline_frame_data && inline_frame_data->mojo_space_reset) {
         session->OnMojoSpaceReset();
       }
 

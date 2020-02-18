@@ -194,19 +194,10 @@ const base::Feature kLowPriorityForCrossOriginOnlyWhenLoading{
     "BlinkSchedulerLowPriorityForCrossOriginOnlyWhenLoading",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable setting throttleable and freezable task types from field trial
-// parameters.
-const base::Feature kThrottleAndFreezeTaskTypes{
-    "ThrottleAndFreezeTaskTypes", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Prioritizes loading and compositing tasks while loading.
 const base::Feature kPrioritizeCompositingAndLoadingDuringEarlyLoading{
     "PrioritizeCompositingAndLoadingDuringEarlyLoading",
     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Parameters for |kThrottleAndFreezeTaskTypes|.
-extern const char PLATFORM_EXPORT kThrottleableTaskTypesListParam[];
-extern const char PLATFORM_EXPORT kFreezableTaskTypesListParam[];
 
 // Enable setting high priority database task type from field trial parameters.
 const base::Feature kHighPriorityDatabaseTaskType{

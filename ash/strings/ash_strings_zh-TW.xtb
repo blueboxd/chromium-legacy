@@ -120,7 +120,6 @@
 <translation id="2413728805700750528">「<ph name="DISPLAY_NAME" />」是由 <ph name="DOMAIN" /> 管理的工作階段</translation>
 <translation id="2427507373259914951">按左鍵</translation>
 <translation id="2429753432712299108">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限。接受要求前，請確認裝置顯示以下密碼金鑰：<ph name="PASSKEY" /></translation>
-<translation id="2435457462613246316">顯示密碼</translation>
 <translation id="2473177541599297363">確認解析度</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2484513351006226581">按下 <ph name="KEYBOARD_SHORTCUT" />可切換鍵盤配置。</translation>
@@ -244,7 +243,7 @@
 <translation id="3995138139523574647">USB-C 裝置 (右後方連接埠)</translation>
 <translation id="4017989525502048489">雷射筆</translation>
 <translation id="4021716437419160885">向下捲動</translation>
-<translation id="4028481283645788203">為安全起見，請輸入密碼</translation>
+<translation id="4028481283645788203">基於安全考量，請輸入密碼</translation>
 <translation id="4042660782729322247">你正在分享螢幕畫面</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{針對 1 個應用程式關閉}other{針對 # 個應用程式關閉}}</translation>
 <translation id="4072264167173457037">訊號中等</translation>
@@ -286,7 +285,6 @@
 <translation id="4527045527269911712">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限。</translation>
 <translation id="453661520163887813"><ph name="TIME" /> 後充飽</translation>
 <translation id="4561267230861221837">3G</translation>
-<translation id="4565377596337484307">隱藏密碼</translation>
 <translation id="4570957409596482333">隨選朗讀按鈕</translation>
 <translation id="4585337515783392668">停止透過不明接收器投放</translation>
 <translation id="4628757576491864469">裝置</translation>
@@ -523,7 +521,7 @@
 <translation id="7984197416080286869">指紋辨識失敗的次數過多</translation>
 <translation id="7994370417837006925">多帳戶登入</translation>
 <translation id="8000066093800657092">沒有網路</translation>
-<translation id="8029629653277878342">為安全起見，請輸入 PIN 碼或密碼</translation>
+<translation id="8029629653277878342">基於安全考量，請輸入 PIN 碼或密碼</translation>
 <translation id="8030169304546394654">已中斷連線</translation>
 <translation id="8048123526339889627">藍牙設定</translation>
 <translation id="8054466585765276473">正在計算電池使用時間。</translation>

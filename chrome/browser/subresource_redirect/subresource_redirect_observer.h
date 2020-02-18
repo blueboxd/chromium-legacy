@@ -34,7 +34,7 @@ class SubresourceRedirectObserver
   explicit SubresourceRedirectObserver(content::WebContents* web_contents);
 
   // content::WebContentsObserver.
-  void ReadyToCommitNavigation(
+  void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();

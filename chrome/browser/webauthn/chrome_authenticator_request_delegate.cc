@@ -550,8 +550,18 @@ void ChromeAuthenticatorRequestDelegate::CollectPIN(
 }
 
 void ChromeAuthenticatorRequestDelegate::FinishCollectToken() {
+  if (!weak_dialog_model_)
+    return;
+
   weak_dialog_model_->SetCurrentStep(
       AuthenticatorRequestDialogModel::Step::kClientPinTapAgain);
+}
+
+void ChromeAuthenticatorRequestDelegate::OnRetryUserVerification(int attempts) {
+  if (!weak_dialog_model_)
+    return;
+
+  weak_dialog_model_->OnRetryUserVerification(attempts);
 }
 
 void ChromeAuthenticatorRequestDelegate::SetMightCreateResidentCredential(

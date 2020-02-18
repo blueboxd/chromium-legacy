@@ -66,9 +66,8 @@ public interface PaymentAppFactoryParams {
 
     /**
      * @return The unmodifiable mapping of method names to modifiers, which include modified totals
-     * and additional line items. Used to display modified totals for each payment instrument,
-     * modified total in order summary, and additional line items in order summary. Should not be
-     * null.
+     * and additional line items. Used to display modified totals for each payment app, modified
+     * total in order summary, and additional line items in order summary. Should not be null.
      */
     default Map<String, PaymentDetailsModifier> getModifiers() {
         return null;

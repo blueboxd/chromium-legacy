@@ -416,7 +416,7 @@ Ako ste pregledali tutorijal, pomoću ChromeVoxa idite do dugmeta Zatvori i klik
 <translation id="3810838688059735925">Videozapis</translation>
 <translation id="3813387282697781382">Svijetlo koraljna</translation>
 <translation id="3816633764618089385">Sljedeća medijska stavka</translation>
-<translation id="3838966660807147922">Postavi kursor između znakova prilikom uređivanja teksta (kao u Mac OS X)</translation>
+<translation id="3838966660807147922">Postavi kursor između znakova prilikom uređivanja teksta (kao u sistemu Mac OS X)</translation>
 <translation id="385383972552776628">Otvori stranicu s opcijama</translation>
 <translation id="3856075812838139784">Samo za čitanje</translation>
 <translation id="3857141338659865495">Srednje tirkizna</translation>
@@ -595,7 +595,7 @@ Ako ste pregledali tutorijal, pomoću ChromeVoxa idite do dugmeta Zatvori i klik
 <translation id="4994420463726586413">Najava trenutnog statusa baterije</translation>
 <translation id="4996716799442435517">Vizuelno</translation>
 <translation id="4997282455736854877">Odabrali ste dugme za izbor <ph name="NAME" /></translation>
-<translation id="5011664330025416377">Za aktiviranje pritisnite tipku za pretraživanje + razmak</translation>
+<translation id="5011664330025416377">Pritisnite tipku za pretraživanje + razmak da aktivirate</translation>
 <translation id="501473567976723023">Januar</translation>
 <translation id="5020651427400641814">Omogući zapisivanje govora</translation>
 <translation id="5041394372352067729">Pomjeranje Brailleovog ekrana na vrh stranice</translation>
@@ -620,7 +620,7 @@ Ako ste pregledali tutorijal, pomoću ChromeVoxa idite do dugmeta Zatvori i klik
 <translation id="5158275234811857234">Naslovnica</translation>
 <translation id="5170206230005240598">Titlovi na Braillevom pismu su omogućeni</translation>
 <translation id="517143700877085897">, nije odabrano</translation>
-<translation id="5177546608148437145">Prilagodite prečice na tastaturi za često korištene komande upisivanjem prečica u odgovarajuća polja u nastavku</translation>
+<translation id="5177546608148437145">Prilagodite prečice na tastaturi za često korištene komande upisivanjem prečica u odgovarajuća polja ispod</translation>
 <translation id="5183440668879371625">Prethodni redak brajice</translation>
 <translation id="5184585361753914100">Prikaži kontekst stavke prije drugih informacija (kao što je njen naziv)</translation>
 <translation id="5189244881767082992">Red</translation>
@@ -730,7 +730,7 @@ Ako ste pregledali tutorijal, pomoću ChromeVoxa idite do dugmeta Zatvori i klik
 <translation id="5948123859135882163">Aktivirajte/deaktivirajte strukturno ili semantičko tumačenje matematičkih izraza</translation>
 <translation id="5955304353782037793">apl</translation>
 <translation id="5956928062748260866">Dijaloški okvir</translation>
-<translation id="5961639938291964703">Koristite strelice nagore i nadolje da pregledate ili unesite tekst da pretražujete</translation>
+<translation id="5961639938291964703">Koristite strelice nagore i nadolje da pregledate ili pišite da pretražujete</translation>
 <translation id="5963413905009737549">Odjeljak</translation>
 <translation id="5968607524793740041">Prikaz kontekstnog menija</translation>
 <translation id="597121107011153418">{COUNT,plural, =1{s # stavkom}one{s # stavkom}few{s # stavke}other{s # stavki}}</translation>
@@ -996,7 +996,7 @@ Da otvorite meni preglednika Chrome, pritisnite Alt+F.</translation>
 <translation id="7939428177581522200">dodano u odabir</translation>
 <translation id="794091007957014205">{COUNT,plural, =1{Znak @}one{# znak @}few{# znaka @}other{# znakova @}}</translation>
 <translation id="7942349550061667556">Crvena</translation>
-<translation id="7948364528129376623">Nema sljedećeg linka za posjetiti</translation>
+<translation id="7948364528129376623">Nema sljedećeg posjećenog linka</translation>
 <translation id="7965147473449754028">meni je zatvoren</translation>
 <translation id="7968340748835037139">Tamnozelena</translation>
 <translation id="7972507042926081808">Čokolada</translation>
@@ -1005,7 +1005,7 @@ Da otvorite meni preglednika Chrome, pritisnite Alt+F.</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{navodnik}one{# navodnik}few{# navodnika}other{# navodnika}}</translation>
 <translation id="8017588669690167134">Isključivanje govora</translation>
 <translation id="801990297710781303">Fusnota</translation>
-<translation id="8028833145828956995">Možete koristiti ChromeVox pomoću dodirnog ekrana</translation>
+<translation id="8028833145828956995">Možete koristiti ChromeVox pomoću ekrana na dodir</translation>
 <translation id="8033827949643255796">odabrano</translation>
 <translation id="8035962149453661158">maks:<ph name="X" /></translation>
 <translation id="8037651341025652929">Zaključak</translation>

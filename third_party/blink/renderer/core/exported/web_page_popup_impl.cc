@@ -381,7 +381,6 @@ void WebPagePopupImpl::SetWindowRect(const IntRect& rect_in_screen) {
 }
 
 void WebPagePopupImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
-  is_accelerated_compositing_active_ = !!layer;
   root_layer_ = std::move(layer);
   WidgetClient()->SetRootLayer(root_layer_);
 }
@@ -565,7 +564,6 @@ void WebPagePopupImpl::Close() {
     Cancel();
   }
 
-  is_accelerated_compositing_active_ = false;
   animation_host_ = nullptr;
   web_page_popup_client_ = nullptr;
 

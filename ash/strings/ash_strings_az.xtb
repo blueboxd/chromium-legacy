@@ -120,7 +120,6 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> sessiyası <ph name="DOMAIN" /> tərəfindən idarə olunur</translation>
 <translation id="2427507373259914951">Sol düymə</translation>
 <translation id="2429753432712299108">Bluetooth cihazı "<ph name="DEVICE_NAME" />" cütlənmək üçün icazə istəyir. Qəbul etmədən öncə bu parolun həmin cihazda göstərildiyini təsdiq edin: <ph name="PASSKEY" /></translation>
-<translation id="2435457462613246316">Parolu göstərin</translation>
 <translation id="2473177541599297363">Əksetmə qabiliyyətini təsdiq edin</translation>
 <translation id="2482878487686419369">Bildirişlər</translation>
 <translation id="2484513351006226581">Klaviatura düzülüşünü dəyişmək üçün <ph name="KEYBOARD_SHORTCUT" /> süyməsinə klikləyin.</translation>
@@ -286,7 +285,6 @@
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" cihazı cütlənmək üçün icazə istəyir.</translation>
 <translation id="453661520163887813">dolana qədər <ph name="TIME" /></translation>
 <translation id="4561267230861221837">3G</translation>
-<translation id="4565377596337484307">Parolu gizlədin</translation>
 <translation id="4570957409596482333">Səsləndirmək üçün Seçim düyməsi</translation>
 <translation id="4585337515783392668">Naməlum alıcının yayımını dayandırın</translation>
 <translation id="4628757576491864469">Cihazlar</translation>

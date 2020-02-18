@@ -211,6 +211,8 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
   display.set_display_frequency(display_info.display_frequency());
   if (!Display::HasForceDisplayColorProfile()) {
     if (hdr_enabled) {
+      // This will map to DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709 with
+      // DXGI_FORMAT_B8G8R8A8_UNORM.
       gfx::DisplayColorSpaces color_spaces(gfx::ColorSpace::CreateSRGB(),
                                            gfx::BufferFormat::BGRA_8888);
 
@@ -225,10 +227,9 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
       const auto hdr10 =
           gfx::ColorSpace::CreateHDR10(display_info.sdr_white_level());
 
-      // For the moment, always use HDR color space. Once we raster sRGB content
-      // as sRGB, we can dynamically switch in and out of HDR mode.
+      // Use HDR color spaces only when there is WCG or HDR content on the
+      // screen.
       const gfx::ContentColorUsage content_color_usages[] = {
-          gfx::ContentColorUsage::kSRGB,
           gfx::ContentColorUsage::kWideColorGamut,
           gfx::ContentColorUsage::kHDR,
       };

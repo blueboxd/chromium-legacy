@@ -54,7 +54,6 @@ class XHRReplayData final : public GarbageCollected<XHRReplayData> {
                 const AtomicString& method,
                 const KURL&,
                 bool async,
-                scoped_refptr<EncodedFormData>,
                 bool include_credentials);
 
   void AddHeader(const AtomicString& key, const AtomicString& value);
@@ -63,21 +62,16 @@ class XHRReplayData final : public GarbageCollected<XHRReplayData> {
   const AtomicString& Method() const { return method_; }
   const KURL& Url() const { return url_; }
   bool Async() const { return async_; }
-  EncodedFormData* FormData() const { return form_data_.get(); }
   const HTTPHeaderMap& Headers() const { return headers_; }
   bool IncludeCredentials() const { return include_credentials_; }
 
   virtual void Trace(Visitor* visitor) { visitor->Trace(execution_context_); }
-
-  void DeleteFormData() { form_data_ = nullptr; }
 
  private:
   WeakMember<ExecutionContext> execution_context_;
   AtomicString method_;
   KURL url_;
   bool async_;
-  // TODO(http://crbug.com/958524): Remove form_data_ after OutOfBlinkCORS is launched.
-  scoped_refptr<EncodedFormData> form_data_;
   HTTPHeaderMap headers_;
   bool include_credentials_;
 };

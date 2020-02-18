@@ -134,13 +134,7 @@ void ToolbarButton::UpdateColorsAndInsets() {
       ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
           views::EMPHASIS_MAXIMUM, size());
 
-  base::Optional<SkColor> text_color =
-      highlight_color_animation_.GetTextColor();
-  if (text_color) {
-    SetEnabledTextColors(*text_color);
-  } else {
-    ResetColorsFromNativeTheme();
-  }
+  SetEnabledTextColors(highlight_color_animation_.GetTextColor());
 
   // ToolbarButtons are always the height the location bar.
   const gfx::Insets paint_insets =

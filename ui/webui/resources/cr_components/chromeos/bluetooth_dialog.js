@@ -184,6 +184,13 @@ Polymer({
     // Attempting to connect and pair has failed. Remove listeners.
     this.endPairing();
 
+    if (!wasPairing && !this.getDialog_().open &&
+        (result === chrome.bluetoothPrivate.ConnectResultType.FAILED)) {
+      // Inform the caller to not open the dialog; the user is informed by
+      // other UI that the connection failed.
+      return false;
+    }
+
     const name = device.name || device.address;
     let id = 'bluetooth_connect_' + error;
     if (!this.i18nExists(id)) {

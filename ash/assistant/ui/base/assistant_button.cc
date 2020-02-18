@@ -30,7 +30,7 @@ AssistantButton::AssistantButton(AssistantButtonListener* listener,
   constexpr SkColor kInkDropBaseColor = SK_ColorBLACK;
   constexpr float kInkDropVisibleOpacity = 0.06f;
 
-  // Avoid drawing default focus rings since assistant buttons use
+  // Avoid drawing default focus rings since Assistant buttons use
   // a custom highlight on focus.
   SetInstallFocusRingOnFocus(false);
 
@@ -38,6 +38,7 @@ AssistantButton::AssistantButton(AssistantButtonListener* listener,
   SetFocusForPlatform();
 
   // Image.
+  EnableCanvasFlippingForRTLUI(false);
   SetImageHorizontalAlignment(views::ImageButton::ALIGN_CENTER);
   SetImageVerticalAlignment(views::ImageButton::ALIGN_MIDDLE);
 

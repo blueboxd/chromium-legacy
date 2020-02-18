@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">Básico</translation>
 <translation id="3303414029551471755">Queres continuar coa descarga do contido?</translation>
 <translation id="3306398118552023113">Esta aplicación execútase en Chrome</translation>
-<translation id="3312292613668865961">Pregunta antes de permitir que os sitios accedan aos teus dispositivos e datos de realidade virtual (recomendado)</translation>
 <translation id="3315103659806849044">Estás personalizando as opcións de configuración dos servizos de Google e de sincronización. Pera rematar de activar a sincronización, toca o botón Confirmar, situado preto da parte inferior da pantalla. Vai cara arriba</translation>
 <translation id="3328801116991980348">Información do sitio</translation>
 <translation id="3333961966071413176">Todos os contactos</translation>
@@ -514,7 +513,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="4915549754973153784">Podes <ph name="BEGIN_LINK" />obter axuda<ph name="END_LINK" /> mentres se buscan dispositivos…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# páxina}other{# páxinas}}</translation>
 <translation id="4932247056774066048">Dado que estás pechando sesión nunha conta xestionada por <ph name="DOMAIN_NAME" />, os teus datos de Chrome eliminaranse deste dispositivo. Permanecerá na túa Conta de Google.</translation>
-<translation id="4935305910887312910">Pregunta antes de permitir que os sitios reciban a posición da cámara ou mapeen o teu cuarto (recomendado)</translation>
 <translation id="4943703118917034429">Realidade virtual</translation>
 <translation id="4943872375798546930">Non hai resultados</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> está compartindo a túa pantalla</translation>
@@ -818,6 +816,7 @@ Mantén premida calquera palabra para buscala. Axusta a selección para refinar 
 <translation id="7141896414559753902">Non permite que os sitios mostren ventás emerxentes nin redireccións (recomendado)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Cargar páxina orixinal<ph name="END_LINK" /> desde <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">Últimas 24 horas</translation>
+<translation id="7173114856073700355">Abrir Configuración</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7177466738963138057">Podes cambiar esta opción máis tarde en Configuración</translation>
 <translation id="7180611975245234373">Actualizar</translation>
@@ -1025,7 +1024,6 @@ O sitio NON terá acceso á cámara. As imaxes da cámara só poderás velas ti.
 <translation id="8664979001105139458">Xa existe un ficheiro con este nome</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Nivel de intensidade do sinal: # barra}other{Nivel de intensidade do sinal: # barras}}</translation>
 <translation id="868929229000858085">Busca nos teus contactos</translation>
-<translation id="8698438463325761328">Impide que os sitios accedan aos teus dispositivos e datos de realidade virtual</translation>
 <translation id="869891660844655955">Data de vencemento</translation>
 <translation id="8728487861892616501">Ao usar esta aplicación, aceptas as <ph name="BEGIN_LINK1" />Condicións de servizo<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de privacidade<ph name="END_LINK2" /> de Chrome, así como o <ph name="BEGIN_LINK3" />Aviso de privacidade para contas de Google xestionadas a través de Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Contido oculto</translation>
@@ -1042,7 +1040,6 @@ O sitio NON terá acceso á cámara. As imaxes da cámara só poderás velas ti.
 <translation id="883806473910249246">Produciuse un erro ao descargar o contido.</translation>
 <translation id="8840953339110955557">Esta páxina pode ser diferente da versión en liña.</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">Impide que os sitios reciban a posición da cámara e mapeen o teu cuarto</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />: pestana</translation>
 <translation id="885701979325669005">Almacenamento</translation>
 <translation id="889338405075704026">Ir á configuración de Chrome</translation>

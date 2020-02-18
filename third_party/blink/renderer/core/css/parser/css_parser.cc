@@ -216,7 +216,8 @@ bool CSSParser::ParseSupportsCondition(const String& condition,
   CSSParserImpl parser(StrictCSSParserContext(secure_context_mode));
   return CSSSupportsParser::SupportsCondition(
              CSSParserTokenRange(tokens), parser,
-             CSSSupportsParser::kForWindowCSS) == CSSSupportsParser::kSupported;
+             CSSSupportsParser::Mode::kForWindowCSS) ==
+         CSSSupportsParser::Result::kSupported;
 }
 
 bool CSSParser::ParseColor(Color& color, const String& string, bool strict) {

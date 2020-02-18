@@ -976,7 +976,7 @@ TEST_F(TextFragmentAnchorTest, DisabledInWindowOpen) {
   EXPECT_EQ(ScrollOffset(), child_view->GetScrollableArea()->GetScrollOffset());
 }
 
-// Ensure that the text fragment anchor is only allowed in full (non-same-page)
+// Ensure that the text fragment anchor is not activated by same-document script
 // navigations.
 TEST_F(TextFragmentAnchorTest, DisabledInSamePageNavigation) {
   SimRequest main_request("https://example.com/test.html", "text/html");
@@ -1003,7 +1003,7 @@ TEST_F(TextFragmentAnchorTest, DisabledInSamePageNavigation) {
       ToScriptStateForMainWorld(GetDocument().GetFrame());
   ScriptState::Scope entered_context_scope(script_state);
   GetDocument().GetFrame()->DomWindow()->location()->setHash(
-      script_state->GetIsolate(), "text=test", ASSERT_NO_EXCEPTION);
+      script_state->GetIsolate(), ":~:text=test", ASSERT_NO_EXCEPTION);
   RunAsyncMatchingTasks();
 
   EXPECT_EQ(nullptr, GetDocument().CssTarget());

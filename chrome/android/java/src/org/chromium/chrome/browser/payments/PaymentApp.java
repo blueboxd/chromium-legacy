@@ -4,39 +4,44 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.graphics.drawable.Drawable;
+
 import androidx.annotation.Nullable;
 
+import org.chromium.base.task.PostTask;
+import org.chromium.chrome.browser.autofill.prefeditor.EditableOption;
+import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.payments.mojom.PaymentAddress;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
+import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
-import org.chromium.url.URI;
+import org.chromium.payments.mojom.PaymentOptions;
+import org.chromium.payments.mojom.PaymentRequestDetailsUpdate;
+import org.chromium.payments.mojom.PaymentShippingOption;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * The interface that a payment app implements. A payment app can get its data from Chrome autofill,
- * Android Pay, or third party apps.
+ * The base class for a single payment app, e.g., a payment handler.
  */
-public interface PaymentApp {
+public abstract class PaymentApp extends EditableOption {
     /**
-     * The interface for the requester of instruments.
+     * Whether complete and valid autofill data for merchant's request is available, e.g., if
+     * merchant specifies `requestPayerEmail: true`, then this variable is true only if the autofill
+     * data contains a valid email address. May be used in canMakePayment() for some types of
+     * app, such as AutofillPaymentInstrument.
      */
-    public interface InstrumentsCallback {
-        /**
-         * Called by this app to provide a list of instruments asynchronously.
-         *
-         * @param app         The calling app.
-         * @param instruments The instruments from this app.
-         */
-        void onInstrumentsReady(PaymentApp app, List<PaymentInstrument> instruments);
-    }
+    protected boolean mHaveRequestedAutofillData;
+
+    /** Whether the app should be invoked for a microtransaction. */
+    protected boolean mIsMicrotransaction;
 
     /**
      * The interface for listener to payment method, shipping address, and shipping option change
      * events. Note: What the spec calls "payment methods" in the context of a "change event", this
-     * code calls "instruments".
+     * code calls "apps".
      */
     public interface PaymentRequestUpdateEventCallback {
         /**
@@ -57,8 +62,8 @@ public interface PaymentApp {
          * interaction until updateWith() or onPaymentDetailsNotUpdated().
          * https://w3c.github.io/payment-request/#dom-paymentrequestupdateevent
          *
-         * @param shippingOptionId  Selected shipping option Identifier, Should not be null or
-         *         empty.
+         * @param shippingOptionId Selected shipping option Identifier, Should not be null or
+         *                         empty.
          * @return Whether the payment state wa valid.
          */
         boolean changeShippingOptionFromInvokedApp(String shippingOptionId);
@@ -68,97 +73,267 @@ public interface PaymentApp {
          * interaction until updateWith() or onPaymentDetailsNotUpdated().
          * https://w3c.github.io/payment-request/#dom-paymentrequestupdateevent
          *
-         * @param shippingAddress  Selected shipping address. Should not be null.
+         * @param shippingAddress Selected shipping address. Should not be null.
          * @return Whether the payment state wa valid.
          */
         boolean changeShippingAddressFromInvokedApp(PaymentAddress shippingAddress);
     }
 
     /**
-     * Sets the listener to payment method, shipping address, or shipping option change events.
-     * Should be called before a payment method has been selected, e.g., before getInstruments(),
-     * which constructs the payment methods.
-     *
-     * @param paymentRequestUpdateEventCallback The object that will receive notifications of
-     *         payment method, shipping address, and shipping option changes.
+     * The interface for the requester of payment details from the app.
      */
-    default void setPaymentRequestUpdateEventCallback(
-            PaymentRequestUpdateEventCallback paymentRequestUpdateEventCallback) {}
+    public interface InstrumentDetailsCallback {
+        /**
+         * Called by the payment app to let Chrome know that the payment app's UI is now hidden, but
+         * the payment details have not been returned yet. This is a good time to show a "loading"
+         * progress indicator UI.
+         */
+        void onInstrumentDetailsLoadingWithoutUI();
+
+        /**
+         * Called after retrieving payment details.
+         *
+         * @param methodName         Method name. For example, "visa".
+         * @param stringifiedDetails JSON-serialized object. For example, {"card": "123"}.
+         * @param payerData          Payer's shipping address and contact information.
+         */
+        void onInstrumentDetailsReady(
+                String methodName, String stringifiedDetails, PayerData payerData);
+
+        /**
+         * Called if unable to retrieve payment details.
+         * @param errorMessage Developer-facing error message to be used when rejecting the promise
+         *                     returned from PaymentRequest.show().
+         */
+        void onInstrumentDetailsError(String errorMessage);
+    }
+
+    /** The interface for the requester to abort payment. */
+    public interface AbortCallback {
+        /**
+         * Called after aborting payment is finished.
+         *
+         * @param abortSucceeded Indicates whether abort is succeed.
+         */
+        void onInstrumentAbortResult(boolean abortSucceeded);
+    }
+
+    protected PaymentApp(String id, String label, String sublabel, Drawable icon) {
+        super(id, label, sublabel, icon);
+    }
+
+    protected PaymentApp(
+            String id, String label, String sublabel, String tertiarylabel, Drawable icon) {
+        super(id, label, sublabel, tertiarylabel, icon);
+    }
 
     /**
-     * Provides a list of all payment instruments in this app. For example, this can be all credit
-     * cards for the current profile. Can return null or empty list, e.g., if user has no locally
-     * stored credit cards.
+     * Sets the modified total for this payment app.
+     *
+     * @param modifiedTotal The new modified total to use.
+     */
+    public void setModifiedTotal(@Nullable String modifiedTotal) {
+        updatePromoMessage(modifiedTotal);
+    }
+
+    /**
+     * Returns a set of payment method names for this app, e.g., "basic-card".
+     *
+     * @return The method names for this app.
+     */
+    public abstract Set<String> getInstrumentMethodNames();
+
+    /**
+     * @return Whether this is an autofill app. All autofill apps are sorted below all non-autofill
+     *         apps.
+     */
+    public boolean isAutofillInstrument() {
+        return false;
+    }
+
+    /** @return Whether this is a server autofill app. */
+    public boolean isServerAutofillInstrument() {
+        return false;
+    }
+
+    /**
+     * @return Whether this is a replacement for all server autofill apps. If at least one of
+     *         the displayed apps returns true here, then all apps that return true in
+     *         isServerAutofillInstrument() should be hidden.
+     */
+    public boolean isServerAutofillInstrumentReplacement() {
+        return false;
+    }
+
+    /**
+     * @return Whether the app supports the payment method with the method data. For example,
+     *         supported card types and networks in the data should be verified for 'basic-card'
+     *         payment method.
+     */
+    public boolean isValidForPaymentMethodData(String method, @Nullable PaymentMethodData data) {
+        return getInstrumentMethodNames().contains(method);
+    }
+
+    /**
+     * @return Whether the app can collect and return shipping address.
+     */
+    public boolean handlesShippingAddress() {
+        return false;
+    }
+
+    /**
+     * @return Whether the app can collect and return payer's name.
+     */
+    public boolean handlesPayerName() {
+        return false;
+    }
+
+    /**
+     * @return Whether the app can collect and return payer's email.
+     */
+    public boolean handlesPayerEmail() {
+        return false;
+    }
+
+    /**
+     * @return Whether the app can collect and return payer's phone.
+     */
+    public boolean handlesPayerPhone() {
+        return false;
+    }
+
+    /** @return The country code (or null if none) associated with this payment app. */
+    @Nullable
+    public String getCountryCode() {
+        return null;
+    }
+
+    /**
+     * @param haveRequestedAutofillData Whether complete and valid autofill data for merchant's
+     *                                  request is available.
+     */
+    /* package*/ void setHaveRequestedAutofillData(boolean haveRequestedAutofillData) {
+        mHaveRequestedAutofillData = haveRequestedAutofillData;
+    }
+
+    /**
+     * @return Whether presence of this payment app should cause the
+     *         PaymentRequest.canMakePayment() to return true.
+     */
+    public boolean canMakePayment() {
+        return true;
+    }
+
+    /** @return Whether this payment app can be pre-selected for immediate payment. */
+    public boolean canPreselect() {
+        return true;
+    }
+
+    /** @return Whether skip-UI flow with this app requires a user gesture. */
+    public boolean isUserGestureRequiredToSkipUi() {
+        return true;
+    }
+
+    /**
+     * Invoke the payment app to retrieve the payment details.
+     *
+     * The callback will be invoked with the resulting payment details or error.
      *
      * @param id               The unique identifier of the PaymentRequest.
-     * @param methodDataMap    The map from methods to method specific data. The data contains such
-     *                         information as whether the app should be invoked in test or
-     *                         production mode, merchant identifier, or a public key.
+     * @param merchantName     The name of the merchant.
      * @param origin           The origin of this merchant.
-     * @param iframeOrigin     The origin of the iframe that invoked PaymentRequest. Same as origin
-     *                         if PaymentRequest was not invoked from inside an iframe.
-     * @param certificateChain The site certificate chain of the merchant. Null for localhost and
-     *                         file on disk, which are secure origins without SSL.
+     * @param iframeOrigin     The origin of the iframe that invoked PaymentRequest.
+     * @param certificateChain The site certificate chain of the merchant. Can be null for localhost
+     *                         or local file, which are secure contexts without SSL.
+     * @param methodDataMap    The payment-method specific data for all applicable payment methods,
+     *                         e.g., whether the app should be invoked in test or production, a
+     *                         merchant identifier, or a public key.
+     * @param total            The total amount.
+     * @param displayItems     The shopping cart items.
      * @param modifiers        The relevant payment details modifiers.
-     * @param callback         The object that will receive the list of instruments.
+     * @param paymentOptions   The payment options of the PaymentRequest.
+     * @param shippingOptions  The shipping options of the PaymentRequest.
+     * @param callback         The object that will receive the payment details.
      */
-    void getInstruments(String id, Map<String, PaymentMethodData> methodDataMap, String origin,
-            String iframeOrigin, @Nullable byte[][] certificateChain,
-            Map<String, PaymentDetailsModifier> modifiers, InstrumentsCallback callback);
+    public void invokePaymentApp(String id, String merchantName, String origin, String iframeOrigin,
+            @Nullable byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
+            PaymentItem total, List<PaymentItem> displayItems,
+            Map<String, PaymentDetailsModifier> modifiers, PaymentOptions paymentOptions,
+            List<PaymentShippingOption> shippingOptions, InstrumentDetailsCallback callback) {}
 
     /**
-     * Returns a list of all payment method names that this app supports. For example, ["visa",
-     * "mastercard", "basic-card"] in basic card payments. Should return a list of at least one
-     * method name. https://w3c.github.io/webpayments-methods-card/#method-id
+     * Update the payment information in response to payment method, shipping address, or shipping
+     * option change events.
      *
-     * @return The list of all payment method names that this app supports.
+     * @param response The merchant's response to the payment method, shipping address, or shipping
+     *         option change events.
      */
-    Set<String> getAppMethodNames();
+    public void updateWith(PaymentRequestDetailsUpdate response) {}
 
     /**
-     * Checks whether the app can support the payment methods when the method-specific data is taken
-     * into account.
+     * Called when the merchant ignored the payment method, shipping address or shipping option
+     * change event.
+     */
+    public void onPaymentDetailsNotUpdated() {}
+
+    /**
+     * @return True after changePaymentMethodFromInvokedApp(), changeShippingOptionFromInvokedApp(),
+     *         or changeShippingAddressFromInvokedApp() and before update updateWith() or
+     *         onPaymentDetailsNotUpdated().
+     */
+    public boolean isWaitingForPaymentDetailsUpdate() {
+        return false;
+    }
+
+    /**
+     * Abort invocation of the payment app.
      *
-     * @param methodDataMap A mapping from the payment methods supported by this app to the
-     *                      corresponding method-specific data. Should not be null.
-     * @return True if the given methods are supported when the method-specific data is taken into
-     *         account.
+     * @param id       The unique identifier of the PaymentRequest.
+     * @param callback The callback to return abort result.
      */
-    boolean supportsMethodsAndData(Map<String, PaymentMethodData> methodDataMap);
+    public void abortPaymentApp(String id, AbortCallback callback) {
+        PostTask.postTask(UiThreadTaskTraits.DEFAULT, new Runnable() {
+            @Override
+            public void run() {
+                callback.onInstrumentAbortResult(false);
+            }
+        });
+    }
+
+    /** Cleans up any resources held by the payment app. For example, closes server connections. */
+    public abstract void dismissInstrument();
+
+    /** @return Whether the payment app is ready for a microtransaction (no UI flow.) */
+    public boolean isReadyForMicrotransaction() {
+        return false;
+    }
+
+    /** @return Account balance for microtransaction flow. */
+    @Nullable
+    public String accountBalance() {
+        return null;
+    }
+
+    /** Switch the app into the microtransaction mode. */
+    public void setMicrontransactionMode() {
+        mIsMicrotransaction = true;
+    }
 
     /**
-     * Gets the preferred related application Ids of this app. This app will be hidden if the
-     * preferred applications are exist. The return, for example, could be {"com.bobpay",
-     * "com.alicepay"}.
+     * @return The identifier for another payment app that should be hidden when this payment app is
+     * present.
      */
     @Nullable
-    default Set<String> getPreferredRelatedApplicationIds() {
+    public String getApplicationIdentifierToHide() {
         return null;
     }
 
     /**
-     * Gets the app Id this application can dedupe. The return, for example, could be
-     * "https://bobpay.com";
+     * @return The set of identifier of other apps that would cause this app to be hidden, if any of
+     * them are present, e.g., ["com.bobpay.production", "com.bobpay.beta"].
      */
     @Nullable
-    default URI getCanDedupedApplicationId() {
+    public Set<String> getApplicationIdentifiersThatHideThisApp() {
         return null;
-    }
-
-    /**
-     * Returns the identifier for this payment app to be saved in user preferences. For
-     * example, this can be "autofill", "https://android.com/pay", or
-     * "com.example.app.ExamplePaymentApp".
-     *
-     * @return The identifier for this payment app.
-     */
-    String getAppIdentifier();
-
-    /**
-     * @return The resource identifier for the additional text that should be displayed to the user
-     * when selecting a payment instrument from this payment app or 0 if not needed.
-     */
-    default int getAdditionalAppTextResourceId() {
-        return 0;
     }
 }

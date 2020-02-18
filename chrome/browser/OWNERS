@@ -18,6 +18,7 @@ per-file *_android.*=file://chrome/browser/android/OWNERS
 per-file *.java=file://chrome/browser/android/OWNERS
 
 per-file browser_resources.grd=file://ui/webui/PLATFORM_OWNERS
+per-file dev_ui_browser_resources.grd=file://ui/webui/PLATFORM_OWNERS
 
 per-file browser_close_manager_browsertest.cc=creis@chromium.org
 

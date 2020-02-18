@@ -7,8 +7,10 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/switches.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -38,6 +40,16 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
   // shifts the start of the new frame forward relative to the old
   // implementation.
   capabilities_.max_frames_pending = 2;
+
+  // Force the number of max pending frames to one when the switch
+  // "double-buffer-compositing" is passed.
+  // This will keep compositing in double buffered mode assuming |buffer_queue_|
+  // allocates at most one additional buffer.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDoubleBufferCompositing)) {
+    capabilities_.max_frames_pending = 1;
+    buffer_queue_->SetMaxBuffers(2);
+  }
 
   // It is safe to pass a raw pointer to *this because |buffer_queue_| is fully
   // owned and it doesn't use the SyncTokenProvider after it's destroyed.

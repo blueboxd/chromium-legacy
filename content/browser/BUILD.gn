@@ -2433,7 +2433,6 @@ jumbo_source_set("browser") {
       "//ui/accessibility/mojom",
       "//ui/android",
       "//ui/compositor",
-      "//ui/compositor/host",
       "//url:gurl_android",
       "//url:origin_android",
     ]
@@ -2604,7 +2603,6 @@ jumbo_source_set("browser") {
     deps += [
       "//components/viz/service/main",
       "//ui/compositor",
-      "//ui/compositor/host",
     ]
   }
 

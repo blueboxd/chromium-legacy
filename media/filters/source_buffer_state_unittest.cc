@@ -22,6 +22,7 @@ namespace media {
 
 using base::test::RunClosure;
 using testing::_;
+using testing::InvokeWithoutArgs;
 using testing::SaveArg;
 
 namespace {
@@ -52,11 +53,7 @@ void AddVideoTrack(std::unique_ptr<MediaTracks>& t, VideoCodec codec, int id) {
                    MediaTrack::Label(), MediaTrack::Language());
 }
 
-void InvokeCbAndSaveResult(const base::Callback<bool()>& cb, bool* result) {
-  DCHECK(result);
-  *result = cb.Run();
-}
-}
+}  // namespace
 
 class SourceBufferStateTest : public ::testing::Test {
  public:
@@ -117,14 +114,12 @@ class SourceBufferStateTest : public ::testing::Test {
     StreamParser::TextTrackConfigMap text_track_config_map;
 
     bool new_configs_result = false;
-    base::Closure new_configs_closure =
-        base::Bind(InvokeCbAndSaveResult,
-                   base::Bind(new_config_cb_, base::Passed(std::move(tracks)),
-                              text_track_config_map),
-                   &new_configs_result);
     EXPECT_CALL(*mock_stream_parser_, Parse(stream_data, data_size))
-        .WillOnce(testing::DoAll(RunClosure(new_configs_closure),
-                                 testing::Return(true)));
+        .WillOnce(InvokeWithoutArgs([&] {
+          new_configs_result =
+              new_config_cb_.Run(std::move(tracks), text_track_config_map);
+          return true;
+        }));
     sbs->Append(stream_data, data_size, t, t, &t);
     return new_configs_result;
   }

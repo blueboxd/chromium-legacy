@@ -105,6 +105,12 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "get_pin_one_try_remaining") {
       model->set_has_attempted_pin_entry_for_testing();
       model->CollectPIN(1, base::Bind([](std::string pin) {}));
+    } else if (name == "retry_uv") {
+      model->OnRetryUserVerification(5);
+    } else if (name == "retry_uv_two_tries_remaining") {
+      model->OnRetryUserVerification(2);
+    } else if (name == "retry_uv_one_try_remaining") {
+      model->OnRetryUserVerification(1);
     } else if (name == "second_tap") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kClientPinTapAgain);
@@ -262,6 +268,20 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
 
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
                        InvokeUi_get_pin_one_try_remaining) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_retry_uv) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
+                       InvokeUi_retry_uv_two_tries_remaining) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest,
+                       InvokeUi_retry_uv_one_try_remaining) {
   ShowAndVerifyUi();
 }
 

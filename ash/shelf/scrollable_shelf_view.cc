@@ -596,8 +596,6 @@ bool ScrollableShelfView::ShouldAdaptToRTL() const {
 
 gfx::Rect ScrollableShelfView::GetTargetScreenBoundsOfItemIcon(
     const ShelfID& id) const {
-  DCHECK(GetShelf()->IsHorizontalAlignment());
-
   // Calculates the available space for child views based on the target bounds.
   const gfx::Insets edge_padding =
       CalculateEdgePadding(/*use_target_bounds=*/true);
@@ -614,8 +612,12 @@ gfx::Rect ScrollableShelfView::GetTargetScreenBoundsOfItemIcon(
 
   // Transforms |icon_bounds| from shelf view's coordinates to scrollable shelf
   // view's coordinates manually.
-  icon_bounds.Offset(
-      -target_scroll_offset + ShelfConfig::Get()->GetAppIconEndPadding(), 0);
+  const int delta =
+      -target_scroll_offset + ShelfConfig::Get()->GetAppIconEndPadding();
+  const gfx::Vector2d bounds_offset = GetShelf()->IsHorizontalAlignment()
+                                          ? gfx::Vector2d(delta, 0)
+                                          : gfx::Vector2d(0, delta);
+  icon_bounds.Offset(bounds_offset);
 
   // If the icon is invisible under the target view bounds, replaces the actual
   // icon's bounds with the rectangle centering on the edge of |target_space|.

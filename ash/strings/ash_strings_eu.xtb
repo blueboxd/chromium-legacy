@@ -59,6 +59,7 @@
 <translation id="1658406695958299976">Oraingoan ere ezin izan da egiaztatu pasahitza. Oharra: duela gutxi aldatu baduzu pasahitza, saioa amaitu eta gero aplikatuko da pasahitz berria; beraz, erabili pasahitz zaharra hemen.</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> geratzen dira</translation>
 <translation id="1698760176351776263">IPv6 helbidea: <ph name="ADDRESS" /></translation>
+<translation id="1709762881904163296">Sarearen ezarpenak</translation>
 <translation id="1743570585616704562">Ez da ezagutu</translation>
 <translation id="1746730358044914197">Administratzaileak konfiguratzen ditu idazketa-metodoak.</translation>
 <translation id="1747827819627189109">Pantailako teklatua gaitu egin da</translation>
@@ -113,12 +114,12 @@
 <translation id="2354174487190027830"><ph name="NAME" /> aktibatzen</translation>
 <translation id="2359808026110333948">Jarraitu</translation>
 <translation id="2365393535144473978">Datu-konexioa aktibatzen baduzu, Bluetooth konexioa ere aktibatuko da.</translation>
+<translation id="2390318262976603432">Lurraldeko ezarpenak</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">Eguneratu egin daiteke</translation>
 <translation id="2413728805700750528"><ph name="DOMAIN" /> domeinuak kudeatutako saio kudeatua da <ph name="DISPLAY_NAME" /></translation>
 <translation id="2427507373259914951">Egin klik ezkerreko botoiarekin</translation>
 <translation id="2429753432712299108">Bluetooth bidezko "<ph name="DEVICE_NAME" />" gailuak parekatzeko baimena nahi du. Onartu aurretik, berretsi gailu horretan pasakode hau agertzen dela: <ph name="PASSKEY" /></translation>
-<translation id="2435457462613246316">Erakutsi pasahitza</translation>
 <translation id="2473177541599297363">Berretsi bereizmena</translation>
 <translation id="2482878487686419369">Jakinarazpenak</translation>
 <translation id="2484513351006226581">Teklatuaren diseinua aldatzeko, sakatu <ph name="KEYBOARD_SHORTCUT" />.</translation>
@@ -178,6 +179,7 @@
 <translation id="3154351730702813399">Gailuaren administratzaileak arakatze-jarduerak kontrola ditzake.</translation>
 <translation id="3181441307743005334">Baliteke berrabiarazteko prozesua zertxobait luzatzea</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Gailu batera konektatuta}other{# gailutara konektatuta}}</translation>
+<translation id="3207953481422525583">Erabiltzaile-ezarpenak</translation>
 <translation id="3217205077783620295">Bolumena aktibatuta dago. Aldatzen baduzu, audioa isilaraziko da.</translation>
 <translation id="3226991577105957773">eta beste <ph name="COUNT" /></translation>
 <translation id="3236488194889173876">Ez dago sare mugikor erabilgarririk</translation>
@@ -242,6 +244,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="3995138139523574647">USB-C gailua (eskuinaldeko atzeko ataka)</translation>
 <translation id="4017989525502048489">Laser-erakuslea</translation>
 <translation id="4021716437419160885">Egin behera</translation>
+<translation id="4028481283645788203">Pasahitza behar da gailua babestuago edukitzeko</translation>
 <translation id="4042660782729322247">Pantaila partekatzen ari zara</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{Aplikazio batean desaktibatuta}other{# aplikaziotan desaktibatuta}}</translation>
 <translation id="4072264167173457037">Tarteko seinalea</translation>
@@ -251,6 +254,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4149156641122542261"><ph name="DOMAIN" /> da <ph name="DEVICE_TYPE" /> gailuaren kudeatzailea</translation>
 <translation id="4181841719683918333">Hizkuntzak</translation>
 <translation id="4195877955194704651">Klik automatikoen botoia</translation>
+<translation id="4215497585250573029">VPN ezarpenak</translation>
 <translation id="4217571870635786043">Diktaketa</translation>
 <translation id="421885205185866088"><ph name="USER_EMAIL_ADDRESS" /> erabiltzailearen txartel adimendunaren PIN kodea</translation>
 <translation id="4239069858505860023">GPRS</translation>
@@ -265,6 +269,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4338109981321384717">Lupa</translation>
 <translation id="4351433414020964307">Laguntzailea kargatzen ari da…</translation>
 <translation id="4356930093361201197">kontraste handiko modua</translation>
+<translation id="4371348193907997655">Igortzeko eginbidearen ezarpenak</translation>
 <translation id="4378551569595875038">Konektatzen…</translation>
 <translation id="4379531060876907730">Hauek dira arkatzaren tresnak</translation>
 <translation id="4383956581743965695">-<ph name="TIME_SINCE_EXPIRATION" /></translation>
@@ -281,13 +286,13 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="4527045527269911712">Bluetooth bidezko "<ph name="DEVICE_NAME" />" gailuak parekatzeko baimena nahi du.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> geratzen dira guztiz kargatu arte</translation>
 <translation id="4561267230861221837">3G</translation>
-<translation id="4565377596337484307">Ezkutatu pasahitza</translation>
 <translation id="4570957409596482333">"Hautatu ozen irakurtzeko" botoia</translation>
 <translation id="4585337515783392668">Utzi hargailu ezezagun batera igortzeari</translation>
 <translation id="4628757576491864469">Gailuak</translation>
 <translation id="4659419629803378708">Gaitu da ChromeVox</translation>
 <translation id="4665114317261903604">Gaitu/Desgaitu ez molestatzeko modua. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Desblokeatu gailua gurasoen kodearekin</translation>
+<translation id="4710243778082831592">IME eginbidearen ezarpenak</translation>
 <translation id="4731797938093519117">Gurasoen sarbidea</translation>
 <translation id="4734965478015604180">Horizontala</translation>
 <translation id="4774338217796918551">Itzuli bihar ordu honetan: <ph name="COME_BACK_TIME" />.</translation>
@@ -517,7 +522,9 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="7984197416080286869">Saiakera gehiegi egin dira hatz-markarekin</translation>
 <translation id="7994370417837006925">Saio-hasiera anitza</translation>
 <translation id="8000066093800657092">Ez dago sarerik</translation>
+<translation id="8029629653277878342">PIN kodea edo pasahitza behar da gailua babestuago edukitzeko</translation>
 <translation id="8030169304546394654">Deskonektatuta</translation>
+<translation id="8048123526339889627">Bluetooth konexioaren ezarpenak</translation>
 <translation id="8054466585765276473">Bateria-denbora kalkulatzen.</translation>
 <translation id="8061464966246066292">Kontraste handia</translation>
 <translation id="8098591350844501178">Utzi pantaila <ph name="RECEIVER_NAME" /> izeneko gailura igortzeari</translation>
@@ -559,7 +566,9 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="8492573885090281069"><ph name="DISPLAY_NAME" /> pantailak ez du onartzen <ph name="SPECIFIED_RESOLUTION" /> bereizmena. <ph name="FALLBACK_RESOLUTION" /> ezarri da pantailaren bereizmen gisa. Sakatu "Berretsi" aldaketak gordetzeko. <ph name="TIMEOUT_SECONDS" /> barru leheneratuko dira aurreko ezarpenak.</translation>
 <translation id="8513108775083588393">Biratu automatikoki</translation>
 <translation id="8517041960877371778">Baliteke <ph name="DEVICE_TYPE" /> gailua ez kargatzea piztuta dagoen bitartean.</translation>
+<translation id="8563862697512465947">Jakinarazpen-ezarpenak</translation>
 <translation id="8627191004499078455"><ph name="DEVICE_NAME" /> gailura konektatuta</translation>
+<translation id="8631727435199967028">Erabilerraztasun-ezarpenak</translation>
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />. Seinalearen indarra: <ph name="SIGNAL_STRENGTH" />. Administratzaileak kudeatua.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> geratzen da</translation>
 <translation id="8649101189709089199">Hautatu ozen irakurtzeko</translation>
@@ -576,6 +585,7 @@ Jarraitu ahal izateko, erabiltzaile guztiek saioa amaitu behar dute.</translatio
 <translation id="875593634123171288">Erakutsi VPN ezarpenak</translation>
 <translation id="8785070478575117577">Konektatu <ph name="NETWORK_NAME" /> sarera</translation>
 <translation id="8814190375133053267">Wi-Fi konexioa</translation>
+<translation id="8825863694328519386">Atzera egiteko, pasatu hatza ezkerretik eskuinera</translation>
 <translation id="8828714802988429505">90°</translation>
 <translation id="8843682306134542540">Aldatu biratzearen blokeoa. <ph name="STATE_TEXT" /></translation>
 <translation id="8850991929411075241">Bilaketa + Ihes</translation>

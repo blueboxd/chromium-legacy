@@ -120,7 +120,6 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> er en administrert økt administrert av <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Venstreklikk</translation>
 <translation id="2429753432712299108">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til. Før du godtar dette, må du bekrefte at denne tilgangskoden vises på den aktuelle enheten: <ph name="PASSKEY" /></translation>
-<translation id="2435457462613246316">Vis passord</translation>
 <translation id="2473177541599297363">Bekreft oppløsningen</translation>
 <translation id="2482878487686419369">Varsler</translation>
 <translation id="2484513351006226581">Trykk på <ph name="KEYBOARD_SHORTCUT" /> for å bytte tastaturoppsett.</translation>
@@ -286,7 +285,6 @@
 <translation id="4527045527269911712">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> til batteriet er fulladet</translation>
 <translation id="4561267230861221837">3G</translation>
-<translation id="4565377596337484307">Skjul passord</translation>
 <translation id="4570957409596482333">Tekstopplesingsknapp</translation>
 <translation id="4585337515783392668">Stopp casting på en ukjent mottaker</translation>
 <translation id="4628757576491864469">Enheter</translation>

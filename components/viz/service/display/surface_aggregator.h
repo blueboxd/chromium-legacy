@@ -401,8 +401,12 @@ class VIZ_SERVICE_EXPORT SurfaceAggregator {
   // The set of surfacees being drawn for the first time. Used to determine if
   // de-jelly skew should be applied to a surface.
   base::flat_set<SurfaceId> new_surfaces_;
-  // Whether the last drawn frame had de-jelly skew applied.
+  // Whether the last drawn frame had de-jelly skew applied. Used in production
+  // on Android only.
   bool last_frame_had_jelly_ = false;
+  // Whether the last drawn frame had a color conversion pass applied. Used in
+  // production on Windows only (does not interact with jelly).
+  bool last_frame_had_color_conversion_pass_ = false;
 
   base::WeakPtrFactory<SurfaceAggregator> weak_factory_{this};
 

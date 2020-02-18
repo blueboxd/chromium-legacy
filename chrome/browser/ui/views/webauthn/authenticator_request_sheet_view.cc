@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
 
+#include <utility>
+
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -170,11 +172,10 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
     label_container->AddChildView(description_label.release());
   }
 
-  base::Optional<base::string16> additional_desciption =
-      model()->GetAdditionalDescription();
-  if (additional_desciption) {
+  base::string16 additional_desciption = model()->GetAdditionalDescription();
+  if (!additional_desciption.empty()) {
     auto label = std::make_unique<views::Label>(
-        std::move(*additional_desciption),
+        std::move(additional_desciption),
         views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT);
     label->SetMultiLine(true);
     label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -190,6 +191,15 @@ AuthenticatorRequestSheetView::CreateContentsBelowIllustration() {
     step_specific_content_ = step_specific_content.get();
     contents->AddChildView(step_specific_content.release());
     contents_layout->SetFlexForView(step_specific_content_, 1);
+  }
+
+  base::string16 error = model()->GetError();
+  if (!error.empty()) {
+    auto error_label = std::make_unique<views::Label>(
+        std::move(error), views::style::CONTEXT_LABEL, STYLE_RED);
+    error_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    error_label->SetMultiLine(true);
+    error_label_ = contents->AddChildView(std::move(error_label));
   }
 
   return contents;

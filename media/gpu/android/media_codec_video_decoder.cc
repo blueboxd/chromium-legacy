@@ -359,7 +359,6 @@ void MediaCodecVideoDecoder::Initialize(const VideoDecoderConfig& config,
     last_width_ = width;
   } else if (width > last_width_ * kReallocateThreshold && device_info_ &&
              device_info_->SdkVersion() > base::android::SDK_VERSION_P) {
-    DCHECK(codec_);
     // Reallocate the codec the next time we queue input, once there are no
     // outstanding output buffers.  Note that |deferred_flush_pending_| might
     // already be set, which is fine.  We're just upgrading the flush.

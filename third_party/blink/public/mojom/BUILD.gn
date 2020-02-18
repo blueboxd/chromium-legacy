@@ -188,6 +188,7 @@ mojom("mojom_platform") {
     ":web_feature_mojo_bindings",
     "//cc/mojom",
     "//components/payments/mojom",
+    "//components/schema_org/common:mojom",
     "//components/services/filesystem/public/mojom",
     "//mojo/public/mojom/base",
     "//services/device/public/mojom",
@@ -265,6 +266,7 @@ mojom("android_mojo_bindings") {
   }
   public_deps = [
     "//components/payments/mojom",
+    "//components/schema_org/common:mojom",
     "//mojo/public/mojom/base",
     "//services/media_session/public/mojom",
     "//services/network/public/mojom",

@@ -12,7 +12,6 @@
 AuthenticatorClientPinEntrySheetView::AuthenticatorClientPinEntrySheetView(
     std::unique_ptr<AuthenticatorClientPinEntrySheetModel> sheet_model)
     : AuthenticatorRequestSheetView(std::move(sheet_model)) {
-  pin_entry_sheet_model()->SetDelegate(this);
 }
 
 AuthenticatorClientPinEntrySheetView::~AuthenticatorClientPinEntrySheetView() =
@@ -25,14 +24,10 @@ AuthenticatorClientPinEntrySheetView::pin_entry_sheet_model() {
 
 std::unique_ptr<views::View>
 AuthenticatorClientPinEntrySheetView::BuildStepSpecificContent() {
-  DCHECK(!pin_entry_view_);
-  auto view = std::make_unique<AuthenticatorClientPinEntryView>(
+  return std::make_unique<AuthenticatorClientPinEntryView>(
       this, pin_entry_sheet_model()->mode() ==
                 AuthenticatorClientPinEntrySheetModel::Mode::
                     kPinSetup /* show_confirmation_text_field */);
-  pin_entry_view_ = view.get();
-  pin_entry_sheet_model()->MaybeShowRetryError();
-  return view;
 }
 
 void AuthenticatorClientPinEntrySheetView::OnPincodeChanged(
@@ -43,13 +38,4 @@ void AuthenticatorClientPinEntrySheetView::OnPincodeChanged(
 void AuthenticatorClientPinEntrySheetView::OnConfirmationChanged(
     base::string16 pincode) {
   pin_entry_sheet_model()->SetPinConfirmation(std::move(pincode));
-}
-
-void AuthenticatorClientPinEntrySheetView::ShowPinError(
-    const base::string16& error) {
-  if (!pin_entry_view_) {
-    NOTREACHED();
-    return;
-  }
-  pin_entry_view_->UpdateError(error);
 }

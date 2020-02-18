@@ -34,15 +34,16 @@ message BookmarkSpecifics {
   repeated MetaInfo meta_info = 6;
   reserved 7;
   reserved 8;
+  reserved 9;
   // Introduced in M81, it represents a globally unique and immutable ID.
   //
-  // If present, it must be the same as originator_client_item_id, unless
-  // originator client item ID is not a valid GUID. In such cases (which is the
-  // case for bookmarks created before 2015), this GUID must match the value
-  // inferred from the combination of originator cache GUID and
+  // If present, it must be the same as originator_client_item_id in lowercase,
+  // unless originator client item ID is not a valid GUID. In such cases (which
+  // is the case for bookmarks created before 2015), this GUID must match the
+  // value inferred from the combination of originator cache GUID and
   // originator client item ID, see InferGuidForLegacyBookmark().
   //
   // If not present, the value can be safely inferred using the very same
   // methods listed above.
-  optional string guid = 9;
+  optional string guid = 10;
 }

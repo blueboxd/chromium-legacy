@@ -55,7 +55,7 @@ import java.util.Set;
  * The point of interaction with a locally installed 3rd party native Android payment app.
  * https://developers.google.com/web/fundamentals/payments/payment-apps-developer-guide/android-payment-apps
  */
-public class AndroidPaymentApp extends PaymentInstrument implements WindowAndroid.IntentCallback {
+public class AndroidPaymentApp extends PaymentApp implements WindowAndroid.IntentCallback {
     /** The action name for the Pay Intent. */
     public static final String ACTION_PAY = "org.chromium.intent.action.PAY";
 
@@ -167,7 +167,7 @@ public class AndroidPaymentApp extends PaymentInstrument implements WindowAndroi
             Map<String, PaymentDetailsModifier> modifiers, IsReadyToPayCallback callback) {
         assert mMethodNames.containsAll(methodDataMap.keySet());
         assert mIsReadyToPayCallback
-                == null : "Have not responded to previous request for instruments yet";
+                == null : "Have not responded to previous IS_READY_TO_PAY request";
 
         mIsReadyToPayCallback = callback;
         if (mIsReadyToPayIntent == null) {

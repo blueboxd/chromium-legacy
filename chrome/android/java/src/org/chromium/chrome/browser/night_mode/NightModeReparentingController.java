@@ -52,7 +52,7 @@ public class NightModeReparentingController implements NightModeStateProvider.Ob
         // to be reparented last.
         TabReparentingParams foregroundTabParams = null;
         SparseArray<AsyncTabParams> paramsArray = AsyncTabParamsManager.getAsyncTabParams().clone();
-        for (int i = paramsArray.size() - 1; i >= 0; i--) {
+        for (int i = 0; i < paramsArray.size(); i++) {
             int tabId = paramsArray.keyAt(i);
             AsyncTabParams params = paramsArray.get(tabId);
             if (!(params instanceof TabReparentingParams)) continue;

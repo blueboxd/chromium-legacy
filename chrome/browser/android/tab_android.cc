@@ -61,6 +61,8 @@
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "url/android/gurl_android.h"
+#include "url/gurl.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
@@ -162,8 +164,9 @@ bool TabAndroid::IsNativePage() const {
 
 GURL TabAndroid::GetURL() const {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return GURL(base::android::ConvertJavaStringToUTF8(
-      Java_TabImpl_getUrl(env, weak_java_tab_.get(env))));
+  std::unique_ptr<GURL> gurl = url::GURLAndroid::ToNativeGURL(
+      env, Java_TabImpl_getUrl(env, weak_java_tab_.get(env)));
+  return std::move(*gurl);
 }
 
 bool TabAndroid::IsUserInteractable() const {

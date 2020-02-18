@@ -583,6 +583,11 @@ void AuthenticatorRequestDialogModel::OnHavePIN(const std::string& pin) {
   ephemeral_state_.has_attempted_pin_entry_ = true;
 }
 
+void AuthenticatorRequestDialogModel::OnRetryUserVerification(int attempts) {
+  uv_attempts_ = attempts;
+  SetCurrentStep(Step::kRetryInternalUserVerification);
+}
+
 void AuthenticatorRequestDialogModel::OnResidentCredentialConfirmed() {
   DCHECK_EQ(current_step(), Step::kResidentCredentialConfirmation);
   HideDialogAndDispatchToNativeWindowsApi();

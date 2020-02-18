@@ -402,7 +402,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="3687295507293856493">Menerka di judul kolom sel saat ini</translation>
 <translation id="3692274950075847560">P:<ph name="RESULT" /></translation>
 <translation id="370367311675896712">Garis coret</translation>
-<translation id="3704037000573066734">Tekan Search+A, J untuk beralih detail</translation>
+<translation id="3704037000573066734">Tekan Search+A, J untuk beralih ke detail</translation>
 <translation id="3712520970944678024">Ucapan Pengontrol</translation>
 <translation id="371302509916403935">Garis bawah</translation>
 <translation id="3716845769494773620">Multi-baris</translation>
@@ -552,7 +552,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="4763480195061959176">video</translation>
 <translation id="4764692524839457597">default</translation>
 <translation id="4772771694153161212">Tidak garis bawah</translation>
-<translation id="4785388431077919785">Keluar dari cari dalam halaman</translation>
+<translation id="4785388431077919785">Keluar dari sesi cari dalam halaman</translation>
 <translation id="4786285211967466855">Tidak ada judul level 1 sebelumnya</translation>
 <translation id="4787577491510559358">Ucapkan format item saat ini</translation>
 <translation id="479989351350248267">search</translation>
@@ -825,7 +825,7 @@ Jika telah menyelesaikan tutorial, gunakan ChromeVox untuk mengakses tombol Tutu
 <translation id="6714813999819678458">Judul tingkat 2 sebelumnya</translation>
 <translation id="6716505898850596801">Tombol pengubah</translation>
 <translation id="6720808010210697990">Tidak ada di dalam tabel</translation>
-<translation id="6730312624811567147">Gunakan Search Left atau Right untuk Home atau End, Search Control Left atau Right untuk Control Home atau End, Search Up atau Down untuk Page Up atau Down</translation>
+<translation id="6730312624811567147">Gunakan Search Panah Kiri atau Kanan untuk Home atau End, Search Control Panah Kiri atau Kanan untuk Control Home atau End, Search Panah Atas atau Bawah untuk Page Up atau Down</translation>
 <translation id="6734854816611871228"><ph name="VALUE" />, kotak kombo</translation>
 <translation id="6735257939857578167">dengan <ph name="NUM" /> item</translation>
 <translation id="6736510033526053669">tab dibuat</translation>
@@ -970,12 +970,12 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Tidak ada kotak kombinasi berikutnya</translation>
 <translation id="7731785449856576010">Tidak ada widget media berikutnya</translation>
-<translation id="773906353055481349">Tekan Search+Ctrl+Alt dengan tanda panah untuk memilih sel</translation>
+<translation id="773906353055481349">Tekan Search+Ctrl+Alt dengan tombol panah untuk memilih sel</translation>
 <translation id="7750184816513382104">Peka huruf besar/kecil</translation>
 <translation id="7763537600611320912">Download <ph name="FILE_NAME" /> dimulai</translation>
 <translation id="7770823902658038748"><ph name="VALUE" />, <ph name="NAME" />, kotak teks sandi</translation>
 <translation id="7776293189010177726">Membuka menu ChromeVox</translation>
-<translation id="7799302833060027366">Tekan ke atas, bawah, kiri, atau kanan untuk menggunakan fitur matematika</translation>
+<translation id="7799302833060027366">Tekan tombol panah atas, bawah, kiri, atau kanan untuk menggunakan fitur matematika</translation>
 <translation id="7800558923657349506">Epilog</translation>
 <translation id="7805247615045262757">navigasi default</translation>
 <translation id="7805768142964895445">Status</translation>
@@ -1061,7 +1061,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="8463645336674919227">Kesalahan tata bahasa diabaikan</translation>
 <translation id="847040613207937740">Tidak ada kotak centang berikutnya</translation>
 <translation id="847154984256717791">sibuk</translation>
-<translation id="8473540203671727883">Ucapkan teks di bagian bawah mouse</translation>
+<translation id="8473540203671727883">Ucapkan teks di bawah kursor</translation>
 <translation id="8476408756881832830">Jeda pemutaran saat ChromeVox sedang berbicara</translation>
 <translation id="8476508772960940536">ringkasan jendela</translation>
 <translation id="8503360654911991865">Menurunkan granularitas navigasi</translation>
@@ -1159,7 +1159,7 @@ Untuk membuka menu browser Chrome, tekan Alt+F.</translation>
 <translation id="9220679313820249046">Orange Red</translation>
 <translation id="9223032053830369045">Dark Red</translation>
 <translation id="923331726185079994">ChromeVox Telah Diperbarui</translation>
-<translation id="932892745999655330">Tanpa judul</translation>
+<translation id="932892745999655330">Tidak ada judul</translation>
 <translation id="93384979447910801">Dark Sea Green</translation>
 <translation id="948171205378458592">Mengurangi laju ucapan</translation>
 <translation id="958854023026327378">Geser satu jari ke bawah</translation>

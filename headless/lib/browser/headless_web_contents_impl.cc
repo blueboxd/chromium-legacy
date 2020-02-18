@@ -487,8 +487,8 @@ void HeadlessWebContentsImpl::BeginFrame(
 
   ui::Compositor* compositor = browser()->PlatformGetCompositor(this);
   CHECK(compositor);
-  compositor->context_factory_private()->IssueExternalBeginFrame(
-      compositor, args, /* force= */ true,
+  compositor->IssueExternalBeginFrame(
+      args, /*force=*/true,
       base::BindOnce(&PendingFrame::OnFrameComplete, pending_frame));
 }
 

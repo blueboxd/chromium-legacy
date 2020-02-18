@@ -37,7 +37,9 @@
 #import "ios/chrome/browser/ui/commands/password_breach_commands.h"
 #import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
+#import "ios/chrome/browser/ui/infobars/infobar_feature.h"
 #import "ios/chrome/browser/ui/open_in/open_in_mediator.h"
+#import "ios/chrome/browser/ui/overlays/overlay_container_coordinator.h"
 #import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/page_info/page_info_coordinator.h"
 #import "ios/chrome/browser/ui/page_info/page_info_legacy_coordinator.h"
@@ -152,6 +154,12 @@
 // option popup menus.
 @property(nonatomic, strong)
     LegacyTranslateInfobarCoordinator* translateInfobarCoordinator;
+
+// The container coordinators for the infobar modalities.
+@property(nonatomic, strong)
+    OverlayContainerCoordinator* infobarBannerOverlayContainerCoordinator;
+@property(nonatomic, strong)
+    OverlayContainerCoordinator* infobarModalOverlayContainerCoordinator;
 
 @end
 
@@ -353,6 +361,26 @@
   self.addCreditCardCoordinator = [[AutofillAddCreditCardCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser];
+
+  if (base::FeatureList::IsEnabled(kInfobarOverlayUI)) {
+    self.infobarBannerOverlayContainerCoordinator =
+        [[OverlayContainerCoordinator alloc]
+            initWithBaseViewController:self.viewController
+                               browser:self.browser
+                              modality:OverlayModality::kInfobarBanner];
+    [self.infobarBannerOverlayContainerCoordinator start];
+    self.viewController.infobarBannerOverlayContainerViewController =
+        self.infobarBannerOverlayContainerCoordinator.viewController;
+
+    self.infobarModalOverlayContainerCoordinator =
+        [[OverlayContainerCoordinator alloc]
+            initWithBaseViewController:self.viewController
+                               browser:self.browser
+                              modality:OverlayModality::kInfobarModal];
+    [self.infobarModalOverlayContainerCoordinator start];
+    self.viewController.infobarModalOverlayContainerViewController =
+        self.infobarModalOverlayContainerCoordinator.viewController;
+  }
 }
 
 // Stops child coordinators.
@@ -406,6 +434,12 @@
 
   [self.addCreditCardCoordinator stop];
   self.addCreditCardCoordinator = nil;
+
+  [self.infobarBannerOverlayContainerCoordinator stop];
+  self.infobarBannerOverlayContainerCoordinator = nil;
+
+  [self.infobarModalOverlayContainerCoordinator stop];
+  self.infobarModalOverlayContainerCoordinator = nil;
 }
 
 #pragma mark - AutofillSecurityAlertPresenter

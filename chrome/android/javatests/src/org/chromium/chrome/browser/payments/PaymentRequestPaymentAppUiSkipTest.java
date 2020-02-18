@@ -4,12 +4,6 @@
 
 package org.chromium.chrome.browser.payments;
 
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.DELAYED_CREATION;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.DELAYED_RESPONSE;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.HAVE_INSTRUMENTS;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.IMMEDIATE_CREATION;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.IMMEDIATE_RESPONSE;
-
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -24,6 +18,9 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppSpeed;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
@@ -51,7 +48,8 @@ public class PaymentRequestPaymentAppUiSkipTest {
     @MediumTest
     @Feature({"Payments"})
     public void testFail() throws TimeoutException {
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buyFail", mPaymentRequestTestRule.getResultReady());
@@ -67,7 +65,8 @@ public class PaymentRequestPaymentAppUiSkipTest {
     @MediumTest
     @Feature({"Payments"})
     public void testPayViaFastBobPay() throws TimeoutException {
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"https://bobpay.com", "\"transaction\"", "1337"});
@@ -81,7 +80,8 @@ public class PaymentRequestPaymentAppUiSkipTest {
     @MediumTest
     @Feature({"Payments"})
     public void testPayViaSlowBobPay() throws TimeoutException {
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, DELAYED_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.SLOW_FACTORY);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"https://bobpay.com", "\"transaction\"", "1337"});
@@ -95,8 +95,8 @@ public class PaymentRequestPaymentAppUiSkipTest {
     @MediumTest
     @Feature({"Payments"})
     public void testPayViaDelayedFastBobPay() throws TimeoutException {
-        mPaymentRequestTestRule.installPaymentApp(
-                "https://bobpay.com", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE, DELAYED_CREATION);
+        mPaymentRequestTestRule.addPaymentAppFactory("https://bobpay.com", AppPresence.HAVE_APPS,
+                FactorySpeed.FAST_FACTORY, AppSpeed.SLOW_APP);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"https://bobpay.com", "\"transaction\"", "1337"});
@@ -110,8 +110,8 @@ public class PaymentRequestPaymentAppUiSkipTest {
     @MediumTest
     @Feature({"Payments"})
     public void testPayViaDelayedSlowBobPay() throws TimeoutException {
-        mPaymentRequestTestRule.installPaymentApp(
-                "https://bobpay.com", HAVE_INSTRUMENTS, DELAYED_RESPONSE, DELAYED_CREATION);
+        mPaymentRequestTestRule.addPaymentAppFactory("https://bobpay.com", AppPresence.HAVE_APPS,
+                FactorySpeed.SLOW_FACTORY, AppSpeed.SLOW_APP);
         mPaymentRequestTestRule.openPageAndClickBuyAndWait(mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.expectResultContains(
                 new String[] {"https://bobpay.com", "\"transaction\"", "1337"});
@@ -129,10 +129,10 @@ public class PaymentRequestPaymentAppUiSkipTest {
     @MediumTest
     @Feature({"Payments"})
     public void testTwoPaymentsAppsWithTheSamePaymentMethodName() throws TimeoutException {
-        mPaymentRequestTestRule.installPaymentApp(
-                "https://bobpay.com", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE, IMMEDIATE_CREATION);
-        mPaymentRequestTestRule.installPaymentApp(
-                "https://bobpay.com", HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE, IMMEDIATE_CREATION);
+        mPaymentRequestTestRule.addPaymentAppFactory("https://bobpay.com", AppPresence.HAVE_APPS,
+                FactorySpeed.FAST_FACTORY, AppSpeed.FAST_APP);
+        mPaymentRequestTestRule.addPaymentAppFactory("https://bobpay.com", AppPresence.HAVE_APPS,
+                FactorySpeed.FAST_FACTORY, AppSpeed.FAST_APP);
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyToPay());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getDismissed());

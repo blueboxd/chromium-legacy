@@ -113,32 +113,31 @@ base::Optional<int64_t> MediaHistorySessionTable::SavePlaybackSession(
   return base::nullopt;
 }
 
-base::Optional<MediaHistoryStore::MediaPlaybackSessionList>
+std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>
 MediaHistorySessionTable::GetPlaybackSessions(
-    unsigned int num_sessions,
-    MediaHistoryStore::GetPlaybackSessionsFilter filter) {
+    base::Optional<unsigned int> num_sessions,
+    base::Optional<MediaHistoryStore::GetPlaybackSessionsFilter> filter) {
+  std::vector<mojom::MediaHistoryPlaybackSessionRowPtr> sessions;
   if (!CanAccessDatabase())
-    return base::nullopt;
+    return sessions;
 
   sql::Statement statement(DB()->GetCachedStatement(
       SQL_FROM_HERE,
       base::StringPrintf(
           "SELECT id, url, duration_ms, position_ms, title, artist, "
-          "album, source_title FROM %s ORDER BY id DESC",
+          "album, source_title, last_updated_time_s FROM %s ORDER BY id DESC",
           kTableName)
           .c_str()));
-
-  MediaHistoryStore::MediaPlaybackSessionList sessions;
 
   while (statement.Step()) {
     auto duration = base::TimeDelta::FromMilliseconds(statement.ColumnInt64(2));
     auto position = base::TimeDelta::FromMilliseconds(statement.ColumnInt64(3));
 
     // Skip any that should not be shown.
-    if (!filter.Run(duration, position))
+    if (filter.has_value() && !filter->Run(duration, position))
       continue;
 
-    auto session = std::make_unique<MediaHistoryStore::MediaPlaybackSession>();
+    auto session(mojom::MediaHistoryPlaybackSessionRow::New());
     session->id = statement.ColumnInt64(0);
     session->url = GURL(statement.ColumnString(1));
     session->duration = duration;
@@ -147,12 +146,16 @@ MediaHistorySessionTable::GetPlaybackSessions(
     session->metadata.artist = statement.ColumnString16(5);
     session->metadata.album = statement.ColumnString16(6);
     session->metadata.source_title = statement.ColumnString16(7);
+    session->last_updated_time =
+        base::Time::FromDeltaSinceWindowsEpoch(
+            base::TimeDelta::FromSeconds(statement.ColumnInt64(8)))
+            .ToJsTime();
 
     sessions.push_back(std::move(session));
 
     // If we have all the sessions we want we can stop loading data from the
     // database.
-    if (sessions.size() >= num_sessions)
+    if (num_sessions.has_value() && sessions.size() >= *num_sessions)
       break;
   }
 

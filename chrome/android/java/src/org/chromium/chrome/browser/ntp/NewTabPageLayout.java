@@ -933,6 +933,9 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         public void initialize(ActivityLifecycleDispatcher activityLifecycleDispatcher) {
             mActivityLifecycleDispatcher = activityLifecycleDispatcher;
             mActivityLifecycleDispatcher.register(this);
+            if (mActivityLifecycleDispatcher.isNativeInitializationFinished()) {
+                onFinishNativeInitialization();
+            }
         }
 
         @Override

@@ -40,8 +40,8 @@ import java.util.Set;
 /**
  * The locally stored credit card payment instrument.
  */
-public class AutofillPaymentInstrument extends PaymentInstrument
-        implements FullCardRequestDelegate, NormalizedAddressRequestDelegate {
+public class AutofillPaymentInstrument
+        extends PaymentApp implements FullCardRequestDelegate, NormalizedAddressRequestDelegate {
     // Bit field values are identical to CreditCardCompletionStatus fields in
     // autofill_card_validation.h. Please modify autofill_card_validation.h after changing these
     // bits since missing fields on both Android and Desktop are recorded in the same UMA metric:
@@ -63,9 +63,12 @@ public class AutofillPaymentInstrument extends PaymentInstrument
     private final WebContents mWebContents;
     private CreditCard mCard;
     private String mSecurityCode;
-    @Nullable private AutofillProfile mBillingAddress;
-    @Nullable private String mMethodName;
-    @Nullable private InstrumentDetailsCallback mCallback;
+    @Nullable
+    private AutofillProfile mBillingAddress;
+    @Nullable
+    private String mMethodName;
+    @Nullable
+    private InstrumentDetailsCallback mCallback;
     private boolean mIsWaitingForBillingNormalization;
     private boolean mIsWaitingForFullCardDetails;
     private boolean mHasValidNumberAndName;

@@ -4,9 +4,11 @@
 
 #include "components/viz/service/display_embedder/skia_output_device_buffer_queue.h"
 
+#include "base/command_line.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/switches.h"
 #include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
@@ -255,6 +257,15 @@ SkiaOutputDeviceBufferQueue::SkiaOutputDeviceBufferQueue(
   capabilities_.supports_commit_overlay_planes =
       gl_surface_->SupportsCommitOverlayPlanes();
   capabilities_.max_frames_pending = 2;
+
+  // Force the number of max pending frames to one when the switch
+  // "double-buffer-compositing" is passed.
+  // This will keep compositing in double buffered mode assuming |buffer_queue|
+  // allocates at most one additional buffer.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDoubleBufferCompositing))
+    capabilities_.max_frames_pending = 1;
+
   capabilities_.only_invalidates_damage_rect = false;
   // Set supports_surfaceless to enable overlays.
   capabilities_.supports_surfaceless = true;

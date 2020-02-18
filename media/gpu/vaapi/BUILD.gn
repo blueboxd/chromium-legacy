@@ -10,7 +10,7 @@ import("//tools/generate_stubs/rules.gni")
 import("//ui/gl/features.gni")
 import("//ui/ozone/ozone.gni")
 
-assert(is_linux)
+assert(is_linux)  # is_chromeos is a subset of is_linux
 assert(use_vaapi)
 
 generate_stubs("libva_stubs") {
@@ -19,9 +19,8 @@ generate_stubs("libva_stubs") {
   if (use_x11) {
     sigs += [ "va_x11.sigs" ]
   }
-  if (is_linux) {
-    sigs += [ "va_drm.sigs" ]
-  }
+  sigs += [ "va_drm.sigs" ]
+
   output_name = "va_stubs"
   deps = [ "//base" ]
 }
@@ -272,7 +271,6 @@ test("vaapi_unittest") {
 
 group("vaapi_fuzzers") {
   testonly = true
-  public_deps = [
-    "//media/gpu/vaapi/fuzzers/jpeg_decoder:vaapi_jpeg_decoder_fuzzertest",
-  ]
+  public_deps =
+      [ "//media/gpu/vaapi/fuzzers/jpeg_decoder:vaapi_jpeg_decoder_fuzzertest" ]
 }

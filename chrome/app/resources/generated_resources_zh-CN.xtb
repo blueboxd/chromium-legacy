@@ -20,6 +20,7 @@
 <translation id="1017280919048282932">添加到字典中(&amp;A)</translation>
 <translation id="1018656279737460067">已取消</translation>
 <translation id="1023873740278604399">请稍微移动一下您的手指，以便系统添加您指纹的各个部分。</translation>
+<translation id="1026655690966755180">添加端口</translation>
 <translation id="1026822031284433028">加载图片</translation>
 <translation id="1029317248976101138">缩放</translation>
 <translation id="1030706264415084469"><ph name="URL" /> 想在您的设备上永久存储大量数据</translation>
@@ -416,6 +417,7 @@
 <translation id="1572876035008611720">输入您的电子邮件地址</translation>
 <translation id="1576594961618857597">默认的白色头像</translation>
 <translation id="1578558981922970608">强制关闭</translation>
+<translation id="1580179297662343964">该扩展程序已被屏蔽，因为它包含少儿不宜的内容。</translation>
 <translation id="1581962803218266616">在 Finder 中显示</translation>
 <translation id="1582955169539260415">删除 [<ph name="FINGERPRINT_NAME" />]</translation>
 <translation id="1584990664401018068">您要使用的 Wi-Fi 网络（“<ph name="NETWORK_ID" />”）可能需要您进行身份验证。</translation>
@@ -1378,11 +1380,11 @@
 <translation id="2865919525181940183">当前屏幕所含程序的屏幕截图</translation>
 <translation id="286674810810214575">正在检查电源…</translation>
 <translation id="2867768963760577682">在固定标签页中打开</translation>
-<translation id="2868184003987917410">不允许网站访问您的虚拟实境设备/数据</translation>
 <translation id="2868746137289129307">此扩展程序已过期并已根据企业政策停用。当有新版本时，它可能会自动启用。</translation>
 <translation id="2870560284913253234">网站</translation>
 <translation id="2870909136778269686">正在更新…</translation>
 <translation id="2871813825302180988">已有人在此设备上使用该帐号。</translation>
+<translation id="287205682142673348">端口转发</translation>
 <translation id="287286579981869940">添加“<ph name="PROVIDER_NAME" />”…</translation>
 <translation id="2872961005593481000">关机</translation>
 <translation id="2874939134665556319">上一曲</translation>
@@ -1707,7 +1709,6 @@
 <translation id="3348038390189153836">检测到可移除的设备</translation>
 <translation id="3349933790966648062">内存占用空间</translation>
 <translation id="3350117557200012647">进入配对模式</translation>
-<translation id="3350244554415289209">在网站想访问您的摄像头位置或映射您的房间时询问您（推荐）</translation>
 <translation id="3355936511340229503">连接出错</translation>
 <translation id="3356580349448036450">已完成</translation>
 <translation id="3359256513598016054">证书政策约束</translation>
@@ -1724,7 +1725,6 @@
 <translation id="3382073616108123819">糟糕！系统无法识别此设备的标识符。</translation>
 <translation id="3382086682569279540">您所管理的帐号很快就会被移除</translation>
 <translation id="3382200254148930874">正在停用监管功能…</translation>
-<translation id="3383210070657133526"><ph name="URL" /> 希望能够启动虚拟实境会话</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">分隔符</translation>
 <translation id="338691029516748599">第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），<ph name="NETWORK_NAME" />，<ph name="SECURITY_STATUS" />，信号强度为 <ph name="SIGNAL_STRENGTH" />%，由您的管理员管理，连接</translation>
@@ -1821,7 +1821,6 @@
 <translation id="3511307672085573050">复制链接地址(&amp;E)</translation>
 <translation id="351152300840026870">宽度固定的字体</translation>
 <translation id="3511528412952710609">短</translation>
-<translation id="3513704683820682405">增强现实</translation>
 <translation id="3514373592552233661">如果有多个网络可供使用，首选网络将优先于其他已知网络</translation>
 <translation id="3515983984924808886">请再次轻触安全密钥以确认重置。安全密钥上存储的所有信息（包括它的 PIN 码）都会被删除。</translation>
 <translation id="3518985090088779359">接受并继续</translation>
@@ -2361,6 +2360,7 @@
 <translation id="4244238649050961491">查找更多触控笔应用</translation>
 <translation id="424726838611654458">始终用Adobe Reader打开</translation>
 <translation id="4247901771970415646">无法同步到“<ph name="USERNAME" />”</translation>
+<translation id="4248098802131000011">确保您的密码免受数据泄露和其他安全问题的侵害</translation>
 <translation id="4249248555939881673">正在等待建立网络连接…</translation>
 <translation id="4249373718504745892">已禁止此网页使用您的摄像头和麦克风。</translation>
 <translation id="424963718355121712">应用的安装来源必须是其自己发挥作用的主机</translation>
@@ -2498,6 +2498,7 @@
 <translation id="4459169140545916303"><ph name="DEVICE_LAST_ACTIVATED_TIME" /> 天前曾有活动</translation>
 <translation id="4460014764210899310">取消分组</translation>
 <translation id="4462159676511157176">自定义域名服务器</translation>
+<translation id="4465236939126352372">为“<ph name="APP_NAME" />”设置了 <ph name="TIME" />的使用时限</translation>
 <translation id="4465725236958772856">第 <ph name="NETWORK_INDEX" /> 个网络（共 <ph name="NETWORK_COUNT" /> 个），<ph name="NETWORK_NAME" />，由您的管理员管理，连接</translation>
 <translation id="4469477701382819144">已禁止会展示侵扰性或误导性广告的网站显示广告</translation>
 <translation id="4469762931504673593"><ph name="ORIGIN" /> 可修改“<ph name="FOLDERNAME" />”内的文件</translation>
@@ -2522,7 +2523,6 @@
 <translation id="4501530680793980440">确认删除</translation>
 <translation id="4502423230170890588">从此设备中移除</translation>
 <translation id="4504940961672722399">点击该图标或按 <ph name="EXTENSION_SHORTCUT" />，即可使用此扩展程序。</translation>
-<translation id="4507164039066603071">不允许网站访问您的摄像头位置或映射您的房间</translation>
 <translation id="4508051413094283164">在无痕式窗口中打开所有网址</translation>
 <translation id="4508265954913339219">激活失败</translation>
 <translation id="4508765956121923607">显示源代码(&amp;O)</translation>
@@ -2620,6 +2620,7 @@
 <translation id="4641539339823703554">Chrome无法设置系统时间。请检查下面的时间，并在必要时进行更正。</translation>
 <translation id="4643612240819915418">在新标签页中打开视频(&amp;O)</translation>
 <translation id="4645676300727003670">保留(&amp;K)</translation>
+<translation id="4646675363240786305">端口</translation>
 <translation id="4647090755847581616">关闭标签页(&amp;C)</translation>
 <translation id="4647697156028544508">请输入“<ph name="DEVICE_NAME" />”的 PIN：</translation>
 <translation id="4648491805942548247">权限不足</translation>
@@ -2812,6 +2813,7 @@
 <translation id="492299503953721473">移除 Android 应用</translation>
 <translation id="4923279099980110923">我愿意提供帮助</translation>
 <translation id="4924352752174756392">12 倍</translation>
+<translation id="4925320384394644410">您的端口将会显示在此处</translation>
 <translation id="4925542575807923399">此帐号的管理员规定：在多帐号登录会话中，此帐号必须是最先登录的帐号。</translation>
 <translation id="4927753642311223124">这里没有任何通知，往前走吧。</translation>
 <translation id="4929386379796360314">打印目的地</translation>
@@ -2826,7 +2828,6 @@
 <translation id="494286511941020793">代理配置帮助</translation>
 <translation id="4943368462779413526">美式足球</translation>
 <translation id="4943691134276646401">“<ph name="CHROME_EXTENSION_NAME" />”想连接到串行端口</translation>
-<translation id="4943703118917034429">虚拟实境</translation>
 <translation id="4944310289250773232">此项身份验证服务由 <ph name="SAML_DOMAIN" /> 托管</translation>
 <translation id="495170559598752135">操作</translation>
 <translation id="4952981627953231344">不允许在此设备上使用 Plugin VM。请与贵单位的设备管理员联系。</translation>
@@ -3474,6 +3475,7 @@
 <translation id="5863445608433396414">启用调试功能</translation>
 <translation id="5864195618110239517">使用按流量计费的网络连接</translation>
 <translation id="5864471791310927901">DHCP 查找失败</translation>
+<translation id="5865508026715185451">“<ph name="APP_NAME" />”即将暂停</translation>
 <translation id="586567932979200359">您正在通过磁盘映像运行 <ph name="PRODUCT_NAME" />。您只需在计算机上安装该软件，即可在没有磁盘映像的情况下运行它，并可确保使用最新版本。</translation>
 <translation id="5865733239029070421">自动将使用情况统计信息和崩溃报告发送至 Google</translation>
 <translation id="5866557323934807206">清除这些设置以便日后访问</translation>
@@ -3518,6 +3520,7 @@
     <ph name="LINE_BREAK" />
     此图片将会显示在 Chromebook 的登录屏幕和锁定屏幕上。</translation>
 <translation id="5925147183566400388">核证作业准则 (Certification Practice Statement) 指针</translation>
+<translation id="592815705005983377">磁盘大小调整和管理</translation>
 <translation id="592880897588170157">下载 PDF 文件，而不是在 Chrome 中自动打开它们</translation>
 <translation id="5931146425219109062">读取和更改您在访问的网站上的所有数据</translation>
 <translation id="5932124097031739492">已成功升级 Linux。</translation>
@@ -3638,6 +3641,7 @@
 <translation id="6080689532560039067">检查系统时间</translation>
 <translation id="6082651258230788217">在工具栏中显示</translation>
 <translation id="608531959444400877"><ph name="WINDOW_TITLE" /> - 属于未命名群组</translation>
+<translation id="6085886413119427067">确定如何通过安全连接来连接到网站</translation>
 <translation id="6086846494333236931">这是您的管理员安装的</translation>
 <translation id="6087960857463881712">酷炫表情</translation>
 <translation id="6091761513005122595">已成功装载共享资源。</translation>
@@ -3983,6 +3987,7 @@
 <translation id="6584878029876017575">Microsoft 生存时间签名</translation>
 <translation id="6586451623538375658">切换鼠标主按钮</translation>
 <translation id="6586604979641883411">必须有至少 <ph name="REQUIRED_SPACE" /> 的可用磁盘空间，才能升级 Linux。请在您的设备上释放一些空间，然后重试。</translation>
+<translation id="6588043302623806746">使用安全 DNS</translation>
 <translation id="6590458744723262880">重命名文件夹</translation>
 <translation id="6592267180249644460">WebRTC日志记录时间：<ph name="WEBRTC_LOG_CAPTURE_TIME" /></translation>
 <translation id="6592808042417736307">已捕获您的指纹</translation>
@@ -4025,6 +4030,7 @@
 <translation id="665061930738760572">在新窗口中打开(&amp;N)</translation>
 <translation id="6651237644330755633">信任该证书，以标识网站的身份</translation>
 <translation id="6651823585377804376">下载内容包含恶意软件。</translation>
+<translation id="6653184508164114047">磁盘大小调整和管理</translation>
 <translation id="665355505818177700">只有 x86_64 平台才支持 Chrome <ph name="MS_AD_NAME" /> 集成功能。采用 ARM 或 x86 平台的 Chromebook 不支持此功能。</translation>
 <translation id="6655190889273724601">开发者模式</translation>
 <translation id="6655458902729017087">隐藏帐号</translation>
@@ -4095,7 +4101,6 @@
 <translation id="6758056191028427665">让我们知道您的满意度。</translation>
 <translation id="6759193508432371551">恢复出厂设置</translation>
 <translation id="6762833852331690540">已开启</translation>
-<translation id="6767115174726603949">访问虚拟实境设备和数据</translation>
 <translation id="6767566652486411142">选择另一种语言…</translation>
 <translation id="6767639283522617719">无法加入到该网域中。请确保这一组织单元的设置正确无误。</translation>
 <translation id="6769712124046837540">添加打印机…</translation>
@@ -4291,7 +4296,6 @@
 <translation id="703001695939087067">已进入窗口概览模式。按 Tab 键即可导航。</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - 已连接到串行端口</translation>
 <translation id="7031962166228839643">正在准备 TPM，请稍候（这可能需要几分钟时间）...</translation>
-<translation id="7034615910652881882">在网站想访问您的虚拟实境设备/数据时询问您</translation>
 <translation id="7037509989619051237">要试听的文字</translation>
 <translation id="7039326228527141150">访问来自<ph name="VENDOR_NAME" />的 USB 设备</translation>
 <translation id="7039912931802252762">Microsoft 智能卡登录</translation>
@@ -4597,7 +4601,6 @@
 <translation id="7443806024147773267">只要您登录自己的 Google 帐号，即可获取您的密码</translation>
 <translation id="7444983668544353857">停用<ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">自动安装应用</translation>
-<translation id="7448625729116931228">在网站想访问您的虚拟实境设备/数据时询问您（推荐）</translation>
 <translation id="7450761244949417357">正在<ph name="ALTERNATIVE_BROWSER_NAME" />中打开</translation>
 <translation id="7453008956351770337">选择此打印机即表示您允许以下扩展程序访问您的打印机：</translation>
 <translation id="7454548535253569100">门户网站：<ph name="SUBFRAME_SITE" /></translation>
@@ -4734,7 +4737,6 @@
 <translation id="7652808307838961528">修改用户，<ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">无法从该网站添加应用、扩展程序和用户脚本</translation>
 <translation id="7652954539215530680">创建 PIN 码</translation>
-<translation id="7653295403398566475">在网站想访问您的摄像头位置或映射您的房间时询问您</translation>
 <translation id="7654941827281939388">已有人在此计算机上使用此帐号。</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7659584679870740384">您无权使用此设备。请向管理员申请登录权限。</translation>
@@ -4943,6 +4945,7 @@
 <translation id="7903742244674067440">您有证书可标识以下证书授权中心</translation>
 <translation id="7903925330883316394">实用程序：<ph name="UTILITY_TYPE" /></translation>
 <translation id="7904094684485781019">此帐号的管理员已停用多帐号登录。</translation>
+<translation id="7904526211178107182">使 Linux 端口可供您网络上的其他设备使用。</translation>
 <translation id="7908378463497120834">抱歉，您的外部存储设备上至少有一个分区无法加载。</translation>
 <translation id="7909969815743704077">已在隐身模式下进行下载</translation>
 <translation id="7910768399700579500">新建文件夹(&amp;N)</translation>
@@ -5271,7 +5274,6 @@
 <translation id="8338952601723052325">开发者网站</translation>
 <translation id="8339059274628563283"><ph name="SITE" /> 本地存储的数据</translation>
 <translation id="833986336429795709">要打开此链接，请选择一个应用</translation>
-<translation id="834057053932610950">配置 Linux 时出错。请与您的管理员联系。</translation>
 <translation id="8342861492835240085">选择一个集合</translation>
 <translation id="834290227245955730">PIN 码无效。剩余重试次数：<ph name="RETRIES" /> 次。</translation>
 <translation id="8351419472474436977">此扩展程序控制了您的代理设置，也就是说，它可以更改、破坏或窃听您在网上执行的任何操作。如果您不确定出现这种变化的原因，那么这种变化可能并不是您所希望的。</translation>
@@ -5533,6 +5535,7 @@
 <translation id="8719653885894320876"><ph name="PLUGIN_NAME" /> 下载失败</translation>
 <translation id="8720200012906404956">正在查找移动网络。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
 <translation id="8720816553731218127">安装时间属性的初始化已超时。</translation>
+<translation id="8721586345635311197">尽可能使用您当前所用的服务提供商</translation>
 <translation id="8722912030556880711">发送使用情况数据和诊断数据。目前，此设备会自动向 Google 发送诊断数据、设备数据和应用使用情况数据。这些数据会被用来帮助提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据也会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。如果您已开启“其他网络与应用活动记录”设置，这些数据可能会被保存到您的 Google 帐号中。<ph name="BEGIN_LINK2" />了解详情<ph name="END_LINK2" /></translation>
 <translation id="8724405322205516354">当您看见此图标时，请使用您的指纹进行身份验证或批准购买交易。</translation>
 <translation id="8724409975248965964">指纹已添加</translation>
@@ -5542,6 +5545,7 @@
 <translation id="8726206820263995930">从服务器抓取策略设置时出错：<ph name="CLIENT_ERROR" />。</translation>
 <translation id="8727154974495727220">设置完 <ph name="DEVICE_TYPE" /> 后，您只需按 Google 助理按钮或说出“Ok Google”，便可随时获得帮助。转到 Google 助理设置即可进行更改。</translation>
 <translation id="8730621377337864115">完成</translation>
+<translation id="8731787661154643562">端口号</translation>
 <translation id="8732030010853991079">点击该图标，即可使用此扩展程序。</translation>
 <translation id="8732212173949624846">读取和更改您在所有登录过的设备上的浏览记录</translation>
 <translation id="8732844209475700754">更多与隐私、安全和数据收集相关的设置</translation>

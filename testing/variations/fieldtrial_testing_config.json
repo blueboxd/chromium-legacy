@@ -836,10 +836,17 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_Full_20191119",
+                    "name": "Enabled_Full_20200214",
+                    "params": {
+                        "availability": "any",
+                        "event_trigger": "name:keyboard_accessory_address_filling_iph_trigger;comparator:<1;window:90;storage:360",
+                        "event_used": "name:keyboard_accessory_address_suggestion_accepted;comparator:<2;window:90;storage:360",
+                        "session_rate": "<1"
+                    },
                     "enable_features": [
                         "AutofillKeyboardAccessory",
-                        "AutofillManualFallbackAndroid"
+                        "AutofillManualFallbackAndroid",
+                        "IPH_KeyboardAccessoryAddressFilling"
                     ]
                 }
             ]
@@ -3499,28 +3506,6 @@
             ]
         }
     ],
-    "KeyboardAccessoryAddressIPH": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Address_IPH_Enabled",
-                    "params": {
-                        "availability": "any",
-                        "event_trigger": "name:keyboard_accessory_address_filling_iph_trigger;comparator:<1;window:90;storage:360",
-                        "event_used": "name:keyboard_accessory_address_suggestion_accepted;comparator:<2;window:90;storage:360",
-                        "session_rate": "<1"
-                    },
-                    "enable_features": [
-                        "IPH_KeyboardAccessoryAddressFilling"
-                    ],
-                    "disable_features": []
-                }
-            ]
-        }
-    ],
     "KeyboardAccessoryPasswordIPH": [
         {
             "platforms": [
@@ -5300,31 +5285,6 @@
                     "name": "Enabled",
                     "enable_features": [
                         "PrivacySettingsRedesign"
-                    ]
-                }
-            ]
-        }
-    ],
-    "ProactiveTabFreezeAndDiscard": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "params": {
-                        "HighLoadedTabCount": "1000",
-                        "ShouldPeriodicallyUnfreeze": "true",
-                        "ShouldProactivelyDiscard": "false",
-                        "ShouldProtectTabsSharingBrowsingInstance": "true"
-                    },
-                    "enable_features": [
-                        "ProactiveTabFreezeAndDiscard",
-                        "stop-non-timers-in-background"
                     ]
                 }
             ]
@@ -7177,6 +7137,21 @@
                     "params": {
                         "min_required_storage_for_update_mb": "500"
                     }
+                }
+            ]
+        }
+    ],
+    "UrgentDiscardingFromPerformanceManager": [
+        {
+            "platforms": [
+                "windows"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled_20200129",
+                    "enable_features": [
+                        "UrgentDiscardingFromPerformanceManager"
+                    ]
                 }
             ]
         }

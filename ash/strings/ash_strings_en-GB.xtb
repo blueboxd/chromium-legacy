@@ -120,7 +120,6 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> is a managed session managed by <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Left click</translation>
 <translation id="2429753432712299108">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair. Before accepting, please confirm that this passkey is shown on that device: <ph name="PASSKEY" /></translation>
-<translation id="2435457462613246316">Show password</translation>
 <translation id="2473177541599297363">Confirm resolution</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="2484513351006226581">Hit <ph name="KEYBOARD_SHORTCUT" /> to switch keyboard layout.</translation>
@@ -286,7 +285,6 @@
 <translation id="4527045527269911712">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> until full</translation>
 <translation id="4561267230861221837">3G</translation>
-<translation id="4565377596337484307">Hide password</translation>
 <translation id="4570957409596482333">Select-to-Speak button</translation>
 <translation id="4585337515783392668">Stop casting on an unknown receiver</translation>
 <translation id="4628757576491864469">Devices</translation>

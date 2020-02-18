@@ -551,7 +551,8 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowBasicAuthentication) {
 TEST_F(PreviewsDeciderImplTest,
        MAYBE_TestDisallowPreviewBecauseOfBlackListState) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kOfflinePreviews}, {});
   base::HistogramTester histogram_tester;
 
   PreviewsUserData user_data(kDefaultPageId);
@@ -599,7 +600,8 @@ TEST_F(PreviewsDeciderImplTest,
 
 TEST_F(PreviewsDeciderImplTest, MAYBE_TestSetBlacklistBoolDueToBlackListState) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kOfflinePreviews}, {});
 
   PreviewsUserData user_data(kDefaultPageId);
   content::MockNavigationHandle navigation_handle;
@@ -621,7 +623,8 @@ TEST_F(PreviewsDeciderImplTest, MAYBE_TestSetBlacklistBoolDueToBlackListState) {
 TEST_F(PreviewsDeciderImplTest,
        TestDisallowOfflineWhenNetworkQualityUnavailable) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kOfflinePreviews}, {});
   InitializeUIService();
 
   PreviewsUserData user_data(kDefaultPageId);
@@ -645,7 +648,8 @@ TEST_F(PreviewsDeciderImplTest,
 
 TEST_F(PreviewsDeciderImplTest, TestAllowLitePageWhenNetworkQualityFast) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kOfflinePreviews}, {});
   InitializeUIService(/*include_previews_opt_guide=*/false);
 
   PreviewsUserData user_data(kDefaultPageId);
@@ -665,7 +669,8 @@ TEST_F(PreviewsDeciderImplTest, TestAllowLitePageWhenNetworkQualityFast) {
 
 TEST_F(PreviewsDeciderImplTest, TestAllowLitePageWhenPageLoadNotPainful) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kOfflinePreviews}, {});
   InitializeUIService(/*include_previews_opt_guide=*/true);
 
   PreviewsUserData user_data(kDefaultPageId);
@@ -685,7 +690,8 @@ TEST_F(PreviewsDeciderImplTest, TestAllowLitePageWhenPageLoadNotPainful) {
 
 TEST_F(PreviewsDeciderImplTest, TestDisallowOfflineWhenNetworkQualityFast) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kOfflinePreviews}, {});
   InitializeUIService(/*include_previews_opt_guide=*/false);
 
   PreviewsUserData user_data(kDefaultPageId);
@@ -703,7 +709,8 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowOfflineWhenNetworkQualityFast) {
 
 TEST_F(PreviewsDeciderImplTest, TestDisallowOfflineWhenPageLoadNotPainful) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kOfflinePreviews}, {});
   InitializeUIService(/*include_previews_opt_guide=*/true);
 
   PreviewsUserData user_data(kDefaultPageId);
@@ -723,7 +730,8 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowOfflineWhenPageLoadNotPainful) {
 
 TEST_F(PreviewsDeciderImplTest, TestDisallowOfflineWhenNetworkOffline) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kOfflinePreviews}, {});
   InitializeUIService();
 
   PreviewsUserData user_data(kDefaultPageId);
@@ -741,7 +749,8 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowOfflineWhenNetworkOffline) {
 
 TEST_F(PreviewsDeciderImplTest, TestDisallowOfflineOnReload) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kOfflinePreviews}, {});
   InitializeUIService();
 
   ReportEffectiveConnectionType(net::EFFECTIVE_CONNECTION_TYPE_2G);
@@ -786,7 +795,8 @@ TEST_F(PreviewsDeciderImplTest, TestDisallowOfflineOnReloadWithExperiment) {
 
 TEST_F(PreviewsDeciderImplTest, TestAllowOffline) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kOfflinePreviews}, {});
   InitializeUIService();
 
   const struct {
@@ -1949,7 +1959,8 @@ TEST_F(PreviewsDeciderImplTest, LogDecisionMadeNetworkNotSlow) {
 
 TEST_F(PreviewsDeciderImplTest, LogDecisionMadeReloadDisallowed) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kOfflinePreviews}, {});
   InitializeUIService();
   std::unique_ptr<TestPreviewsBlackList> blacklist =
       std::make_unique<TestPreviewsBlackList>(
@@ -2176,7 +2187,8 @@ TEST_F(PreviewsDeciderImplTest, TestIgnoreLongTermRule) {
   // Verify that when long term rules can be ignored, and the caller is fine
   // with ignoring long term rules, they are not checked.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPreviews);
+  scoped_feature_list.InitWithFeatures(
+      {features::kPreviews, features::kOfflinePreviews}, {});
   InitializeUIService();
 
   std::unique_ptr<TestPreviewsBlackList> blacklist =

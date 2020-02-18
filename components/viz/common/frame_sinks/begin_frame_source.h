@@ -130,6 +130,34 @@ class VIZ_COMMON_EXPORT BeginFrameObserverBase : public BeginFrameObserver {
 // all BeginFrameSources *must* provide.
 class VIZ_COMMON_EXPORT BeginFrameSource {
  public:
+  class VIZ_COMMON_EXPORT BeginFrameArgsGenerator {
+   public:
+    BeginFrameArgsGenerator() = default;
+    ~BeginFrameArgsGenerator() = default;
+
+    BeginFrameArgs GenerateBeginFrameArgs(uint64_t source_id,
+                                          base::TimeTicks frame_time,
+                                          base::TimeTicks next_frame_time,
+                                          base::TimeDelta vsync_interval);
+
+   private:
+    static uint64_t EstimateTickCountsBetween(
+        base::TimeTicks frame_time,
+        base::TimeTicks next_expected_frame_time,
+        base::TimeDelta vsync_interval);
+
+    // Used for determining what the sequence number should be on
+    // CreateBeginFrameArgs.
+    base::TimeTicks next_expected_frame_time_;
+
+    // This is what the sequence number should be for any args created between
+    // |next_expected_frame_time_| to |next_expected_frame_time_| + vsync
+    // interval. Args created outside of this range will have their sequence
+    // number assigned relative to this, based on how many intervals the frame
+    // time is off.
+    uint64_t next_sequence_number_ = BeginFrameArgs::kStartingFrameNumber;
+  };
+
   // This restart_id should be used for BeginFrameSources that don't have to
   // worry about process restart. For example, if a BeginFrameSource won't
   // generate and forward BeginFrameArgs to another process or the process can't
@@ -302,16 +330,7 @@ class VIZ_COMMON_EXPORT DelayBasedBeginFrameSource
   base::TimeTicks last_timebase_;
   BeginFrameArgs last_begin_frame_args_;
 
-  // Used for determining what the sequence number should be on
-  // CreateBeginFrameArgs.
-  base::TimeTicks next_expected_frame_time_;
-
-  // This is what the sequence number should be for any args created between
-  // |next_expected_frame_time_| to |next_expected_frame_time_| + vsync
-  // interval. Args created outside of this range will have their sequence
-  // number assigned relative to this, based on how many intervals the frame
-  // time is off.
-  uint64_t next_sequence_number_;
+  BeginFrameArgsGenerator begin_frame_args_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayBasedBeginFrameSource);
 };

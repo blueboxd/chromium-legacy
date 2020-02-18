@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">आशय डाउनलोड करणे सुरु ठेवायचे?</translation>
 <translation id="3306398118552023113">हे अ‍ॅप Chrome मध्‍‍‍ये रन होत आहे</translation>
-<translation id="3312292613668865961">साइटना तुमचे आभासी वास्तविक डिव्हाइस आणि डेटा ॲक्सेस करण्याची अनुमती देण्यापूर्वी विनंती करा</translation>
 <translation id="3315103659806849044">तुम्ही सध्या तुमचे सिंक आणि Google सेवा सेटिंग्ज कस्टमाइझ करत आहात. सिंक सुरू करणे पूर्ण करण्यासाठी, स्क्रीनच्या खालच्या बाजूला निश्चित करा बटणावर टॅप करा. वर नेव्‍हिगेट करा</translation>
 <translation id="3328801116991980348">साइट माहिती</translation>
 <translation id="3333961966071413176">सर्व संपर्क</translation>
@@ -514,7 +513,6 @@
 <translation id="4915549754973153784">डिव्हाइस स्कॅन करत असताना <ph name="BEGIN_LINK" />मदत मिळवा<ph name="END_LINK" />…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# पेज}other{# पेज}}</translation>
 <translation id="4932247056774066048"><ph name="DOMAIN_NAME" /> द्वारे व्यवस्थापित केलेल्या खात्यामधून तुम्ही साइन आउट करत असल्यामुळे, या डिव्हाइसवरून Chrome डेटा हटवला जाईल. तो तुमच्या Google खात्यामध्ये तसाच राहिल.</translation>
-<translation id="4935305910887312910">कॅमेऱ्याची स्थिती मिळवण्यासाठी किंवा तुमच्या रूमचा नकाशा तयार करण्यासाठी साइटना अनुमती देण्यापूर्वी विनंती करा (शिफारस केलेले)</translation>
 <translation id="4943703118917034429">आभासी वास्तविकता</translation>
 <translation id="4943872375798546930">परिणाम नाहीत</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> तुमची स्क्रीन शेअर करत आहे</translation>
@@ -818,6 +816,7 @@
 <translation id="7141896414559753902">साइट पॉप-अप आणि रीडिरेक्ट दाखवण्यापासून ब्लॉक करा (शिफारस केलेले)</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> वरून <ph name="BEGIN_LINK" />मुळचे पेज लोड करा<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">शेवटच्या 72 तासांमधील</translation>
+<translation id="7173114856073700355">सेटिंग्ज उघडा</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">तुम्ही हे नंतर सेटिंग्ज मध्ये बदलू शकता.</translation>
 <translation id="7180611975245234373">रिफ्रेश करा</translation>
@@ -1025,7 +1024,6 @@
 <translation id="8664979001105139458">फाइलचे नाव आधीपासून अस्तित्वात आहे</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{सिग्नल क्षमता पातळी: # बार}other{सिग्नल क्षमता पातळी: # बार}}</translation>
 <translation id="868929229000858085">तुमचे संपर्क शोधा</translation>
-<translation id="8698438463325761328">तुमचे आभासी वास्तविकता डिव्हाइस आणि डेटा ॲक्सेस करण्यापासून साइटना ब्लॉक करा</translation>
 <translation id="869891660844655955">कालावधी समाप्ती तारीख</translation>
 <translation id="8728487861892616501">हे अ‍ॅप्लिकेशन वापरून, तुम्ही Chrome च्या <ph name="BEGIN_LINK1" />सेवा अटी<ph name="END_LINK1" /> आणि <ph name="BEGIN_LINK2" />गोपनीयता सूचना<ph name="END_LINK2" /> आणि <ph name="BEGIN_LINK3" />Family Link ने व्यवस्थापित केलेल्या Google खात्यांसाठी गोपनीयता सूचना<ph name="END_LINK3" /> यांना सहमती दर्शवता.</translation>
 <translation id="8748850008226585750">सामग्री लपविली</translation>
@@ -1042,7 +1040,6 @@
 <translation id="883806473910249246">आशय डाउनलोड करताना एरर आली.</translation>
 <translation id="8840953339110955557">हे पेज ऑनलाइन आवृत्तीपेक्षा वेगळे असू शकते.</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">तुमच्या कॅमेऱ्याची स्थिती मिळवण्यापासून किंवा रूमचा नकाशा तयार करण्यापासून साइटना ब्लॉक करा</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, टॅब</translation>
 <translation id="885701979325669005">स्टोरेज</translation>
 <translation id="889338405075704026">Chrome सेटिंग्जवर जा</translation>

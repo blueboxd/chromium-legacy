@@ -158,10 +158,6 @@ bool WebViewFrameWidget::SelectionBounds(WebRect& anchor,
   return web_view_->SelectionBounds(anchor, focus);
 }
 
-bool WebViewFrameWidget::IsAcceleratedCompositingActive() const {
-  return web_view_->IsAcceleratedCompositingActive();
-}
-
 WebURL WebViewFrameWidget::GetURLForDebugTrace() {
   return web_view_->GetURLForDebugTrace();
 }

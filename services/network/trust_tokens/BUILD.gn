@@ -8,6 +8,7 @@ source_set("trust_tokens") {
   visibility = [
     ":tests",
     "//services/network:network_service",
+    "//services/network:tests",
   ]
 
   sources = [
@@ -17,6 +18,8 @@ source_set("trust_tokens") {
     "sqlite_trust_token_persister.h",
     "trust_token_database_owner.cc",
     "trust_token_database_owner.h",
+    "trust_token_parameterization.cc",
+    "trust_token_parameterization.h",
     "trust_token_persister.h",
     "trust_token_store.cc",
     "trust_token_store.h",

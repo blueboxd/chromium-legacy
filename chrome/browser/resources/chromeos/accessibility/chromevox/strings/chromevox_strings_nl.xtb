@@ -33,7 +33,7 @@
 <translation id="1197088940767939838">Oranje</translation>
 <translation id="1201402288615127009">Volgende</translation>
 <translation id="1206619573307042055">marquee</translation>
-<translation id="1207086294218137981">Geen volgende kop voor niveau 4</translation>
+<translation id="1207086294218137981">Geen volgende kop van niveau 4</translation>
 <translation id="1213216066620407844">ChromeVox - Geef Chrome een stem</translation>
 <translation id="1225437811932752266">Je hebt de basisprincipes voor het gebruik van ChromeVox geleerd. Vergeet niet dat je het ChromeVox-opdrachtmenu op elk gewenst moment kunt openen door op Zoeken + punt te drukken. Voor meer informatie over ChromeVox en Chrome OS kun je de volgende artikelen lezen.
 Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten te navigeren en klik je erop.</translation>
@@ -150,7 +150,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="2007545860310005685">{COUNT,plural, =1{vierkante haak links}other{# vierkante haken links}}</translation>
 <translation id="2009187674653301682">Geen superscript</translation>
 <translation id="2010555995361223825">ChromeVox-menu's</translation>
-<translation id="203030071582665758">Geen vorige kop voor niveau 4</translation>
+<translation id="203030071582665758">Geen vorige kop van niveau 4</translation>
 <translation id="2045055672832940894">Geen vorig bedieningselement</translation>
 <translation id="2045490512405922022">niet aangevinkt</translation>
 <translation id="2063539687800151747">Epigraaf</translation>
@@ -243,7 +243,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">audio</translation>
 <translation id="2732718972699418926">a.m.</translation>
-<translation id="2737898226590637227">Geen volgende ARIA-oriëntatiepunt</translation>
+<translation id="2737898226590637227">Geen volgend ARIA-oriëntatiepunt</translation>
 <translation id="2749275490991666823">Aangevinkt</translation>
 <translation id="27527859628328957">Springen naar volgend actief item</translation>
 <translation id="2756452585631602151">Voer een aangepast label in</translation>
@@ -274,7 +274,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="2911433807131383493">ChromeVox-handleiding openen</translation>
 <translation id="2912405967290226587">Veeg met drie vingers naar rechts</translation>
 <translation id="2932083475399492303">Regeltype schakelen tussen structureel en indeling</translation>
-<translation id="2937799153569150791">Geen volgende kop voor niveau 3</translation>
+<translation id="2937799153569150791">Geen volgende kop van niveau 3</translation>
 <translation id="2942710183375260152">Donker leisteenblauw</translation>
 <translation id="2943596527105977722">Donker guldenroedegeel</translation>
 <translation id="2964026537669811554">Kopgroep</translation>
@@ -420,7 +420,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="385383972552776628">Pagina met opties openen</translation>
 <translation id="3856075812838139784">Alleen-lezen</translation>
 <translation id="3857141338659865495">Middenturkoois</translation>
-<translation id="3870295413168340326">Geen vorige kop voor niveau 3</translation>
+<translation id="3870295413168340326">Geen vorige kop van niveau 3</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3888566098798982329">Niet meer verschillende elementen</translation>
 <translation id="3897092660631435901">Menu</translation>
@@ -512,7 +512,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4493933053716737069">Geen vorig artikel</translation>
 <translation id="4505167975768625962">Invoeging</translation>
 <translation id="4511186779140817916">Gebleekte amandel</translation>
-<translation id="451510441928265982">Geen vorige kop voor niveau 2</translation>
+<translation id="451510441928265982">Geen vorige kop van niveau 2</translation>
 <translation id="4517854969512651305">Waarde verhogen</translation>
 <translation id="4529987814483543472">Klassieke toetsenbordindeling</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{slash}other{# slashes}}</translation>
@@ -528,7 +528,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
         <ph name="LINE_THROUGH_STRING" />
         <ph name="FONT_FAMILY_STRING" /></translation>
 <translation id="4591507479202817876">, geselecteerd</translation>
-<translation id="4594534924594958364">Vorig ander element</translation>
+<translation id="4594534924594958364">Vorig verschillend element</translation>
 <translation id="4597532268155981612">formulier</translation>
 <translation id="4597896406374528575">april</translation>
 <translation id="4601367666219428522">tabel <ph name="TABLENAME" /> <ph name="TABLEROWS" /> x <ph name="TABLECOLS" /></translation>
@@ -553,7 +553,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="4764692524839457597">standaard</translation>
 <translation id="4772771694153161212">Niet onderstreept</translation>
 <translation id="4785388431077919785">'Zoeken op pagina' afgesloten</translation>
-<translation id="4786285211967466855">Geen vorige kop voor niveau 1</translation>
+<translation id="4786285211967466855">Geen vorige kop van niveau 1</translation>
 <translation id="4787577491510559358">Opmaak voor huidig item aankondigen</translation>
 <translation id="479989351350248267">zoeken</translation>
 <translation id="4804818685124855865">Verbinding verbreken</translation>
@@ -620,7 +620,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="5158275234811857234">Omslag</translation>
 <translation id="5170206230005240598">Braille-ondertiteling ingeschakeld</translation>
 <translation id="517143700877085897">, niet geselecteerd</translation>
-<translation id="5177546608148437145">Pas de sneltoetsen voor vaak gebruikte opdrachten aan door deze in de bijbehorende velden hieronder te typen</translation>
+<translation id="5177546608148437145">Pas de sneltoetsen voor vaak gebruikte opdrachten aan door ze hieronder in de bijbehorende velden te typen</translation>
 <translation id="5183440668879371625">Vorige brailleregel</translation>
 <translation id="5184585361753914100">De context van een item weergeven vóór andere informatie (zoals de naam)</translation>
 <translation id="5189244881767082992">Regel</translation>
@@ -654,7 +654,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="5444587279251314700">(actief)</translation>
 <translation id="5446809554778706307">Geen focus. Druk op Ctrl+T om een nieuw tabblad te openen.</translation>
 <translation id="5451268436205074266">punten <ph name="DOT" /></translation>
-<translation id="5452267669091857717">Geen volgende kop voor niveau 1</translation>
+<translation id="5452267669091857717">Geen volgende kop van niveau 1</translation>
 <translation id="5455441614648621694">Aanvullend</translation>
 <translation id="5462510922370980473">Paginalijst</translation>
 <translation id="549602578321198708">Woord</translation>
@@ -849,7 +849,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="6910969481785184048">Inschakelen, uitschakelen en stoppen</translation>
 <translation id="6919104639734799681">Lijst met tabellen weergeven</translation>
 <translation id="6949846980769640811">Middenaquamarijn</translation>
-<translation id="6951482098621102657">Geen volgende kop voor niveau 5</translation>
+<translation id="6951482098621102657">Geen volgende kop van niveau 5</translation>
 <translation id="6955705049214951590">Mistig roze</translation>
 <translation id="699159175332639490">Zoeken + O + W</translation>
 <translation id="6994042831499278539">Woordenlijstreferentie</translation>
@@ -988,7 +988,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="7882421473871500483">Bruin</translation>
 <translation id="78826985582142166">schuif</translation>
 <translation id="7895896691902835279">Onbekende link</translation>
-<translation id="7913106023953875143">Geen volgende kop voor niveau 2</translation>
+<translation id="7913106023953875143">Geen volgende kop van niveau 2</translation>
 <translation id="7927711904086083099">Niet geselecteerd</translation>
 <translation id="7935627501098484003">Tijdbeheer</translation>
 <translation id="7939428177581522200">toegevoegd aan selectie</translation>
@@ -1100,7 +1100,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="8096975275316362544">Pastelmint</translation>
 <translation id="8098587210054821856">Leisteengrijs</translation>
 <translation id="8121539003537428024">Alle gebeurtenisfilters inschakelen</translation>
-<translation id="8126386426083591964">Geen vorige kop voor niveau 5</translation>
+<translation id="8126386426083591964">Geen vorige kop van niveau 5</translation>
 <translation id="812886159861361726">Download van <ph name="FILE_NAME" /> is gestopt</translation>
 <translation id="8129445297241948503">Geen cel hierboven beschikbaar</translation>
 <translation id="8138880386467279117">Touch</translation>
@@ -1156,12 +1156,12 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="858006550102277544">Reactie</translation>
 <translation id="8584721346566392021">k5</translation>
 <translation id="8587549812518406253">Volgend item in de lijst</translation>
-<translation id="8591343418134616947">Geen vorige kop voor niveau 6</translation>
+<translation id="8591343418134616947">Geen vorige kop van niveau 6</translation>
 <translation id="860150890330522909">selectievakje <ph name="NAME" /> aangevinkt</translation>
 <translation id="8603071050456974042">ChromeVox-venster</translation>
 <translation id="8606621670302093223">Datumbeheer</translation>
 <translation id="8613709718990529335">Bisque</translation>
-<translation id="8625173877182443267">Geen volgende kop voor niveau 6</translation>
+<translation id="8625173877182443267">Geen volgende kop van niveau 6</translation>
 <translation id="8628186274519446680">Tomaat</translation>
 <translation id="8631359288236106450"><ph name="COUNT" /> items geselecteerd</translation>
 <translation id="8638532244051952400">Huidige celcoördinaten bekendmaken</translation>
@@ -1173,7 +1173,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="867187640362843212">Kop 5</translation>
 <translation id="8696284982970258155">Honinggeel</translation>
 <translation id="8697111817566059991">{COUNT,plural, =1{pijpteken}other{# verticale pijptekens}}</translation>
-<translation id="8731479400585463771">Volgend ander element</translation>
+<translation id="8731479400585463771">Volgend verschillend element</translation>
 <translation id="8735450637152821465">Selectie beginnen</translation>
 <translation id="8743786158317878347">gestructureerde content openen, zoals tabellen</translation>
 <translation id="8747966237988593539">Geordende lijst</translation>
@@ -1203,7 +1203,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="8946628535652548639">r<ph name="TABLECELLROWINDEX" />k<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8952400011684167587">Geen vorig keuzerondje</translation>
 <translation id="8957142051395645063">Aankondigen</translation>
-<translation id="896035116006462153">Schakel het schermtoetsenbord in via het statusvak. Toegankelijkheid om uitgebreide braille-opdrachten te gebruiken.</translation>
+<translation id="896035116006462153">Schakel het schermtoetsenbord in via het statusvak om uitgebreide braille-opdrachten te gebruiken.</translation>
 <translation id="8970172509886453271">Geen vorig gedeelte</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Vergeten</translation>

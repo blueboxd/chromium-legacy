@@ -88,6 +88,14 @@ class ChromeBrowserState;
 // The Browser's ChromeBrowserState.
 @property(nonatomic, assign, readonly) ChromeBrowserState* browserState;
 
+// The container used for infobar banner overlays.
+@property(nonatomic, strong)
+    UIViewController* infobarBannerOverlayContainerViewController;
+
+// The container used for infobar modal overlays.
+@property(nonatomic, strong)
+    UIViewController* infobarModalOverlayContainerViewController;
+
 // Whether the receiver is currently the primary BVC.
 - (void)setPrimary:(BOOL)primary;
 

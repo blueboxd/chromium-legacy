@@ -474,7 +474,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void MouseCaptureLost();
   void SetFocus(bool enable) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const;
-  bool IsAcceleratedCompositingActive() const;
   void DidAcquirePointerLock();
   void DidNotAcquirePointerLock();
   void DidLosePointerLock();
@@ -705,7 +704,8 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   Persistent<ResizeViewportAnchor> resize_viewport_anchor_;
 
-  // Handle to the local main frame host.
+  // Handle to the local main frame host. Only valid when the MainFrame is
+  // local.
   mojo::AssociatedRemote<mojom::blink::LocalMainFrameHost>
       local_main_frame_host_remote_;
 

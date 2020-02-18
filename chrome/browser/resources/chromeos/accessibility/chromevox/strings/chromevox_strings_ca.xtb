@@ -33,7 +33,7 @@
 <translation id="1197088940767939838">Taronja</translation>
 <translation id="1201402288615127009">Següent</translation>
 <translation id="1206619573307042055">marquee</translation>
-<translation id="1207086294218137981">No hi ha cap capçalera més de nivell 4</translation>
+<translation id="1207086294218137981">No hi ha cap encapçalament més de nivell 4</translation>
 <translation id="1213216066620407844">ChromeVox: dona veu a Chrome</translation>
 <translation id="1225437811932752266">Enhorabona, has après els aspectes bàsics per fer servir ChromeVox correctament. Recorda que pots obrir el menú d'ordres de ChromeVox en qualsevol moment. Per fer-ho, només cal que premis Cerca+punt. Per obtenir encara més informació sobre ChromeVox i Chrome OS, consulta els articles següents.
 Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó Tanca i fes-hi clic.</translation>
@@ -150,7 +150,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="2007545860310005685">{COUNT,plural, =1{claudàtor d'obertura}other{# claudàtors d'obertura}}</translation>
 <translation id="2009187674653301682">No és un superíndex</translation>
 <translation id="2010555995361223825">Menús de ChromeVox</translation>
-<translation id="203030071582665758">No hi ha cap capçalera anterior de nivell 4</translation>
+<translation id="203030071582665758">No hi ha cap encapçalament anterior de nivell 4</translation>
 <translation id="2045055672832940894">No hi ha cap control anterior</translation>
 <translation id="2045490512405922022">sense marcar</translation>
 <translation id="2063539687800151747">Epígraf</translation>
@@ -182,7 +182,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="2267945578749931355">Caràcter següent</translation>
 <translation id="2278490101488436824">Fes lliscar tres dits cap a l'esquerra</translation>
 <translation id="2281234842553884450">Control lliscant anterior</translation>
-<translation id="2305942658236913680">No hi ha cap capçalera més</translation>
+<translation id="2305942658236913680">No hi ha cap encapçalament més</translation>
 <translation id="2311237334957139798">Ves al gest anterior en granularitat</translation>
 <translation id="2314393392395134769">No és un subíndex</translation>
 <translation id="2318372665160196757">Principal</translation>
@@ -274,7 +274,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="2911433807131383493">Obre el tutorial de ChromeVox</translation>
 <translation id="2912405967290226587">Fes lliscar tres dits cap a la dreta</translation>
 <translation id="2932083475399492303">Commuta el tipus de línia entre estructural o disseny.</translation>
-<translation id="2937799153569150791">No hi ha cap capçalera més de nivell 3</translation>
+<translation id="2937799153569150791">No hi ha cap encapçalament més de nivell 3</translation>
 <translation id="2942710183375260152">Blau pissarra fosc</translation>
 <translation id="2943596527105977722">Groc daurat fosc</translation>
 <translation id="2964026537669811554">Grup de capçalera</translation>
@@ -420,7 +420,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="385383972552776628">Obre la pàgina d'opcions</translation>
 <translation id="3856075812838139784">Només de lectura</translation>
 <translation id="3857141338659865495">Turquesa mitjà</translation>
-<translation id="3870295413168340326">No hi ha cap capçalera anterior de nivell 3</translation>
+<translation id="3870295413168340326">No hi ha cap encapçalament anterior de nivell 3</translation>
 <translation id="3887576927692165210">ed</translation>
 <translation id="3888566098798982329">No hi ha més elements diferents</translation>
 <translation id="3897092660631435901">Menú</translation>
@@ -512,7 +512,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4493933053716737069">No hi ha cap article anterior</translation>
 <translation id="4505167975768625962">Inserció</translation>
 <translation id="4511186779140817916">Blanc ametlla</translation>
-<translation id="451510441928265982">No hi ha cap capçalera anterior de nivell 2</translation>
+<translation id="451510441928265982">No hi ha cap encapçalament anterior de nivell 2</translation>
 <translation id="4517854969512651305">Augmenta el valor</translation>
 <translation id="4529987814483543472">Mapa de teclat clàssic</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{barra inclinada}other{# barres inclinades}}</translation>
@@ -553,7 +553,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="4764692524839457597">opció predeterminada</translation>
 <translation id="4772771694153161212">Sense subratllat</translation>
 <translation id="4785388431077919785">S'ha sortit de la cerca a la pàgina</translation>
-<translation id="4786285211967466855">No hi ha cap capçalera anterior de nivell 1</translation>
+<translation id="4786285211967466855">No hi ha cap encapçalament anterior de nivell 1</translation>
 <translation id="4787577491510559358">Anuncia el format de l'element actual</translation>
 <translation id="479989351350248267">cerca</translation>
 <translation id="4804818685124855865">Desconnecta</translation>
@@ -654,7 +654,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="5444587279251314700">(activa)</translation>
 <translation id="5446809554778706307">No has posat el focus en cap element. Prem Ctrl+T per obrir una pestanya nova.</translation>
 <translation id="5451268436205074266">punts <ph name="DOT" /></translation>
-<translation id="5452267669091857717">No hi ha cap capçalera més de nivell 1</translation>
+<translation id="5452267669091857717">No hi ha cap encapçalament més de nivell 1</translation>
 <translation id="5455441614648621694">Complementari</translation>
 <translation id="5462510922370980473">Llista de pàgines</translation>
 <translation id="549602578321198708">Paraula</translation>
@@ -746,7 +746,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="6044160928851315051">Enfosqueix la pantalla</translation>
 <translation id="6082768461603900813">Navegació bàsica</translation>
 <translation id="609281021724813947">No hi ha cap control lliscant anterior</translation>
-<translation id="6095514649509181044">No es distingeix entre majúscula i minúscula</translation>
+<translation id="6095514649509181044">No es distingeix entre majúscules i minúscules</translation>
 <translation id="6118126368611144850">Aplicacions d'Android per a Chrome. Si tens Play Store al dispositiu, dona un cop d'ull a ChromeVox amb les aplicacions d'Android. Baixa Google Chrome Canary de Play Store per provar aquesta compatibilitat experimental.</translation>
 <translation id="611827076493383239">vtd</translation>
 <translation id="6122013438240733403">botó</translation>
@@ -849,7 +849,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="6910969481785184048">Activar, desactivar i aturar ChromeVox</translation>
 <translation id="6919104639734799681">Mostra la llista de taules</translation>
 <translation id="6949846980769640811">Aiguamarina mitjà</translation>
-<translation id="6951482098621102657">No hi ha cap capçalera més de nivell 5</translation>
+<translation id="6951482098621102657">No hi ha cap encapçalament més de nivell 5</translation>
 <translation id="6955705049214951590">Rosa difuminat</translation>
 <translation id="699159175332639490">Cerca+O+W</translation>
 <translation id="6994042831499278539">Referència del glossari</translation>
@@ -886,7 +886,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="7143034430156387447">Alterna entre braille de sis i vuit punts</translation>
 <translation id="7143207342074048698">S'està connectant</translation>
 <translation id="7153618581592392745">Lavanda</translation>
-<translation id="7157095268991842805">Amb abast</translation>
+<translation id="7157095268991842805">Amb extensió</translation>
 <translation id="7157306005867877619">Resum</translation>
 <translation id="7161771961008409533">Botó emergent</translation>
 <translation id="7167657087543110">retorn de caràcters</translation>
@@ -989,7 +989,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="7882421473871500483">Marró</translation>
 <translation id="78826985582142166">control lliscant</translation>
 <translation id="7895896691902835279">Enllaç desconegut</translation>
-<translation id="7913106023953875143">No hi ha cap capçalera més de nivell 2</translation>
+<translation id="7913106023953875143">No hi ha cap encapçalament més de nivell 2</translation>
 <translation id="7927711904086083099">Sense seleccionar</translation>
 <translation id="7935627501098484003">Control de temps</translation>
 <translation id="7939428177581522200">s'ha afegit a la selecció</translation>
@@ -1101,7 +1101,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="8096975275316362544">Menta</translation>
 <translation id="8098587210054821856">Gris pissarra</translation>
 <translation id="8121539003537428024">Activa tots els filtres d'esdeveniments</translation>
-<translation id="8126386426083591964">No hi ha cap capçalera anterior de nivell 5</translation>
+<translation id="8126386426083591964">No hi ha cap encapçalament anterior de nivell 5</translation>
 <translation id="812886159861361726">S'ha aturat la baixada del fitxer <ph name="FILE_NAME" /></translation>
 <translation id="8129445297241948503">No hi ha cap cel·la més amunt</translation>
 <translation id="8138880386467279117">Tàctil</translation>
@@ -1122,7 +1122,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="827422111966801947">Anyil</translation>
 <translation id="8276439074553447000">Ves a l'element enfocable anterior</translation>
 <translation id="8283603667300770666">Camp de formulari següent</translation>
-<translation id="8310185481635255431">No hi ha cap més enllaç</translation>
+<translation id="8310185481635255431">No hi ha cap enllaç més</translation>
 <translation id="831207808878314375">Definició</translation>
 <translation id="8313653172105209786">directori</translation>
 <translation id="8316881042119029234">Blanquinós</translation>
@@ -1157,12 +1157,12 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="858006550102277544">Comentari</translation>
 <translation id="8584721346566392021">h5</translation>
 <translation id="8587549812518406253">Element de llista següent</translation>
-<translation id="8591343418134616947">No hi ha cap capçalera anterior de nivell 6</translation>
+<translation id="8591343418134616947">No hi ha cap encapçalament anterior de nivell 6</translation>
 <translation id="860150890330522909">S'ha marcat la casella de selecció <ph name="NAME" />.</translation>
 <translation id="8603071050456974042">Tauler de ChromeVox</translation>
 <translation id="8606621670302093223">Control de data</translation>
 <translation id="8613709718990529335">Rosa pàl·lid marronós</translation>
-<translation id="8625173877182443267">No hi ha cap capçalera més de nivell 6</translation>
+<translation id="8625173877182443267">No hi ha cap encapçalament més de nivell 6</translation>
 <translation id="8628186274519446680">Tomàquet</translation>
 <translation id="8631359288236106450">S'han seleccionat <ph name="COUNT" /> elements.</translation>
 <translation id="8638532244051952400">Anuncia les coordenades de la cel·la actual</translation>
@@ -1215,7 +1215,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="9065283790526219006">+element emergent</translation>
 <translation id="9065912140022662363">No hi ha cap botó d'opció més</translation>
 <translation id="9067522039955793016">Salt de pàgina</translation>
-<translation id="9073511731393676210">No hi ha cap capçalera anterior</translation>
+<translation id="9073511731393676210">No hi ha cap encapçalament anterior</translation>
 <translation id="9074824103975499138">Cerca als menús de ChromeVox</translation>
 <translation id="9077213568694924680">s'ha suprimit de la selecció.</translation>
 <translation id="9077305471618729969">Verd marí clar</translation>
@@ -1240,7 +1240,7 @@ Per obrir el menú del navegador Chrome, prem Alt+F.</translation>
 <translation id="9220679313820249046">Vermell ataronjat</translation>
 <translation id="9223032053830369045">Vermell fosc</translation>
 <translation id="923331726185079994">S'ha actualitzat ChromeVox</translation>
-<translation id="932892745999655330">No hi ha cap capçalera</translation>
+<translation id="932892745999655330">No hi ha cap encapçalament</translation>
 <translation id="93384979447910801">Verd marí fosc</translation>
 <translation id="948171205378458592">Disminueix la velocitat de la veu.</translation>
 <translation id="958854023026327378">Fes lliscar un dit cap avall</translation>

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webauthn/sheet_models.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/logging.h"
@@ -40,12 +41,12 @@ base::string16 GetRelyingPartyIdString(
 
 // Possibly returns a resident key warning if the model indicates that it's
 // needed.
-base::Optional<base::string16> PossibleResidentKeyWarning(
+base::string16 PossibleResidentKeyWarning(
     AuthenticatorRequestDialogModel* dialog_model) {
   if (dialog_model->might_create_resident_credential()) {
     return l10n_util::GetStringUTF16(IDS_WEBAUTHN_RESIDENT_KEY_PRIVACY);
   }
-  return base::nullopt;
+  return base::string16();
 }
 
 }  // namespace
@@ -92,15 +93,6 @@ bool AuthenticatorSheetModelBase::IsAcceptButtonEnabled() const {
 
 base::string16 AuthenticatorSheetModelBase::GetAcceptButtonLabel() const {
   return base::string16();
-}
-
-base::Optional<base::string16>
-AuthenticatorSheetModelBase::GetAdditionalDescription() const {
-  return base::nullopt;
-}
-
-ui::MenuModel* AuthenticatorSheetModelBase::GetOtherTransportsMenuModel() {
-  return nullptr;
 }
 
 void AuthenticatorSheetModelBase::OnBack() {
@@ -194,7 +186,7 @@ base::string16 AuthenticatorInsertAndActivateUsbSheetModel::GetStepDescription()
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USB_ACTIVATE_DESCRIPTION);
 }
 
-base::Optional<base::string16>
+base::string16
 AuthenticatorInsertAndActivateUsbSheetModel::GetAdditionalDescription() const {
   return PossibleResidentKeyWarning(dialog_model());
 }
@@ -656,8 +648,8 @@ base::string16 AuthenticatorBleActivateSheetModel::GetStepDescription() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_BLE_ACTIVATE_DESCRIPTION);
 }
 
-base::Optional<base::string16>
-AuthenticatorBleActivateSheetModel::GetAdditionalDescription() const {
+base::string16 AuthenticatorBleActivateSheetModel::GetAdditionalDescription()
+    const {
   return PossibleResidentKeyWarning(dialog_model());
 }
 
@@ -783,15 +775,27 @@ ui::MenuModel* AuthenticatorPaaskSheetModel::GetOtherTransportsMenuModel() {
 AuthenticatorClientPinEntrySheetModel::AuthenticatorClientPinEntrySheetModel(
     AuthenticatorRequestDialogModel* dialog_model,
     Mode mode)
-    : AuthenticatorSheetModelBase(dialog_model), mode_(mode) {}
+    : AuthenticatorSheetModelBase(dialog_model), mode_(mode) {
+  if (!dialog_model->has_attempted_pin_entry()) {
+    return;
+  }
+
+  if (mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinEntry) {
+    base::Optional<int> attempts = dialog_model->pin_attempts();
+    error_ =
+        attempts && *attempts <= 3
+            ? l10n_util::GetPluralStringFUTF16(
+                  IDS_WEBAUTHN_PIN_ENTRY_ERROR_FAILED_RETRIES, *attempts)
+            : l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_ENTRY_ERROR_FAILED);
+    return;
+  }
+
+  DCHECK(mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinSetup);
+  error_ = l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_SETUP_ERROR_FAILED);
+}
 
 AuthenticatorClientPinEntrySheetModel::
     ~AuthenticatorClientPinEntrySheetModel() = default;
-
-void AuthenticatorClientPinEntrySheetModel::SetDelegate(Delegate* delegate) {
-  DCHECK(!delegate_);
-  delegate_ = delegate;
-}
 
 void AuthenticatorClientPinEntrySheetModel::SetPinCode(
     base::string16 pin_code) {
@@ -802,30 +806,6 @@ void AuthenticatorClientPinEntrySheetModel::SetPinConfirmation(
     base::string16 pin_confirmation) {
   DCHECK(mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinSetup);
   pin_confirmation_ = std::move(pin_confirmation);
-}
-
-void AuthenticatorClientPinEntrySheetModel::MaybeShowRetryError() {
-  if (!delegate_) {
-    NOTREACHED();
-    return;
-  }
-  if (!dialog_model()->has_attempted_pin_entry()) {
-    return;
-  }
-
-  base::string16 error;
-  if (mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinEntry) {
-    auto attempts = dialog_model()->pin_attempts();
-    error =
-        attempts && *attempts <= 3
-            ? l10n_util::GetPluralStringFUTF16(
-                  IDS_WEBAUTHN_PIN_ENTRY_ERROR_FAILED_RETRIES, *attempts)
-            : l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_ENTRY_ERROR_FAILED);
-  } else {
-    DCHECK(mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinSetup);
-    error = l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_SETUP_ERROR_FAILED);
-  }
-  delegate_->ShowPinError(std::move(error));
 }
 
 const gfx::VectorIcon&
@@ -845,6 +825,10 @@ base::string16 AuthenticatorClientPinEntrySheetModel::GetStepDescription()
       mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinEntry
           ? IDS_WEBAUTHN_PIN_ENTRY_DESCRIPTION
           : IDS_WEBAUTHN_PIN_SETUP_DESCRIPTION);
+}
+
+base::string16 AuthenticatorClientPinEntrySheetModel::GetError() const {
+  return error_;
 }
 
 bool AuthenticatorClientPinEntrySheetModel::IsAcceptButtonVisible() const {
@@ -868,10 +852,6 @@ static bool IsValidUTF16(const base::string16& str16) {
 void AuthenticatorClientPinEntrySheetModel::OnAccept() {
   // TODO(martinkr): use device::pin::kMinLength once landed.
   constexpr size_t kMinPinLength = 4;
-  if (!delegate_) {
-    NOTREACHED();
-    return;
-  }
   if (mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinSetup) {
     // Validate a new PIN.
     base::Optional<base::string16> error;
@@ -884,7 +864,8 @@ void AuthenticatorClientPinEntrySheetModel::OnAccept() {
       error = l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_ENTRY_ERROR_MISMATCH);
     }
     if (error) {
-      delegate_->ShowPinError(*error);
+      error_ = *error;
+      dialog_model()->OnSheetModelDidChange();
       return;
     }
   } else {
@@ -892,8 +873,9 @@ void AuthenticatorClientPinEntrySheetModel::OnAccept() {
     DCHECK(mode_ == AuthenticatorClientPinEntrySheetModel::Mode::kPinEntry);
     // TODO: use device::pin::IsValid instead.
     if (pin_code_.size() < kMinPinLength) {
-      delegate_->ShowPinError(
-          l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_ENTRY_ERROR_TOO_SHORT));
+      error_ =
+          l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_ENTRY_ERROR_TOO_SHORT);
+      dialog_model()->OnSheetModelDidChange();
       return;
     }
   }
@@ -935,9 +917,44 @@ base::string16 AuthenticatorClientPinTapAgainSheetModel::GetStepDescription()
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_PIN_TAP_AGAIN_DESCRIPTION);
 }
 
-base::Optional<base::string16>
+base::string16
 AuthenticatorClientPinTapAgainSheetModel::GetAdditionalDescription() const {
   return PossibleResidentKeyWarning(dialog_model());
+}
+
+// AuthenticatorRetryUvSheetModel -------------------------------------
+
+AuthenticatorRetryUvSheetModel::AuthenticatorRetryUvSheetModel(
+    AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model) {}
+
+AuthenticatorRetryUvSheetModel::~AuthenticatorRetryUvSheetModel() = default;
+
+bool AuthenticatorRetryUvSheetModel::IsActivityIndicatorVisible() const {
+  return true;
+}
+
+const gfx::VectorIcon& AuthenticatorRetryUvSheetModel::GetStepIllustration(
+    ImageColorScheme color_scheme) const {
+  return color_scheme == ImageColorScheme::kDark ? kWebauthnFingerprintDarkIcon
+                                                 : kWebauthnFingerprintIcon;
+}
+
+base::string16 AuthenticatorRetryUvSheetModel::GetStepTitle() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_UV_RETRY_TITLE);
+}
+
+base::string16 AuthenticatorRetryUvSheetModel::GetStepDescription() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_UV_RETRY_DESCRIPTION);
+}
+
+base::string16 AuthenticatorRetryUvSheetModel::GetError() const {
+  int attempts = *dialog_model()->uv_attempts();
+  if (attempts > 3) {
+    return base::string16();
+  }
+  return l10n_util::GetPluralStringFUTF16(
+      IDS_WEBAUTHN_UV_RETRY_ERROR_FAILED_RETRIES, attempts);
 }
 
 // AuthenticatorGenericErrorSheetModel -----------------------------------

@@ -36,6 +36,7 @@ typedef void (^SigninCoordinatorCompletionCallback)(
         dispatcher;
 
 // Called when the sign-in dialog is interrupted, canceled or successful.
+// This completion needs to be set before calling -[SigninCoordinator start].
 @property(nonatomic, copy) SigninCoordinatorCompletionCallback signinCompletion;
 
 // Returns a coordinator for user sign-in workflow.
@@ -101,10 +102,16 @@ typedef void (^SigninCoordinatorCompletionCallback)(
                                                   promoAction;
 
 // Interrupts the sign-in flow.
+// |signinCompletion(SigninCoordinatorResultInterrupted, nil)| is guaranteed to
+// be called before |completion()|.
 // |action| action describing how to interrupt the sign-in.
 // |completion| called once the sign-in is fully interrupted.
 - (void)interruptWithAction:(SigninCoordinatorInterruptAction)action
                  completion:(ProceduralBlock)completion;
+
+// ChromeCoordinator.
+- (void)start NS_REQUIRES_SUPER;
+- (void)stop NS_REQUIRES_SUPER;
 
 @end
 

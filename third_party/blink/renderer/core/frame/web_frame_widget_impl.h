@@ -108,7 +108,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void MouseCaptureLost() override;
   void SetFocus(bool enable) override;
   bool SelectionBounds(WebRect& anchor, WebRect& focus) const override;
-  bool IsAcceleratedCompositingActive() const override;
   void SetRemoteViewportIntersection(const ViewportIntersectionState&) override;
   void SetIsInert(bool) override;
   void SetInheritedEffectiveTouchAction(TouchAction) override;
@@ -190,8 +189,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   base::Optional<base::TimeTicks> raf_aligned_input_start_time_;
   base::Optional<base::TimeTicks> update_layers_start_time_;
   base::Optional<base::TimeTicks> commit_compositor_frame_start_time_;
-
-  bool is_accelerated_compositing_active_ = false;
 
   bool suppress_next_keypress_event_ = false;
 

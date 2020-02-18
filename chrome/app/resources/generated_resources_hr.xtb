@@ -1384,7 +1384,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="2865919525181940183">Snimka zaslona programa koji su trenutačno na zaslonu</translation>
 <translation id="286674810810214575">Provjera izvora napajanja...</translation>
 <translation id="2867768963760577682">Otvori kao prikvačenu karticu</translation>
-<translation id="2868184003987917410">Ne dopuštaj web-lokacijama pristup uređajima/podacima virtualne stvarnosti</translation>
 <translation id="2868746137289129307">Proširenje je zastarjelo, pa su ga pravila tvrtke onemogućila. Možda će se automatski omogućiti kada postane dostupna novija verzija.</translation>
 <translation id="2870560284913253234">Web lokacija</translation>
 <translation id="2870909136778269686">Ažuriranje...</translation>
@@ -1714,7 +1713,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="3348038390189153836">Otkriven je uklonjivi uređaj</translation>
 <translation id="3349933790966648062">Upotreba memorije</translation>
 <translation id="3350117557200012647">Pokreni način uparivanja</translation>
-<translation id="3350244554415289209">Kad web-lokacija želi pristupiti položaju kamere ili mapirati prostoriju, prikaži upit (preporučeno)</translation>
 <translation id="3355936511340229503">Pogreška veze</translation>
 <translation id="3356580349448036450">Dovršeno</translation>
 <translation id="3359256513598016054">Ograničenja pravila certifikata</translation>
@@ -1731,7 +1729,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="3382073616108123819">Ups! Sustav nije uspio utvrditi identifikatore ovog uređaja.</translation>
 <translation id="3382086682569279540">Račun kojim upravljate uskoro će se ukloniti</translation>
 <translation id="3382200254148930874">Zaustavljanje nadzora...</translation>
-<translation id="3383210070657133526"><ph name="URL" /> želi mogućnost pokretanja sesija virtualne stvarnosti</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Separator</translation>
 <translation id="338691029516748599">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, jačina signala <ph name="SIGNAL_STRENGTH" />%, upravlja administrator, povežite</translation>
@@ -1828,7 +1825,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="3511307672085573050">Kopiraj adresu &amp;veze</translation>
 <translation id="351152300840026870">Font nepromjenjive širine</translation>
 <translation id="3511528412952710609">Kratko</translation>
-<translation id="3513704683820682405">Proširena stvarnost</translation>
 <translation id="3514373592552233661">Preferirane mreže imat će prednost pred ostalim poznatim mrežama ako je dostupno više mreža</translation>
 <translation id="3515983984924808886">Još jednom dodirnite sigurnosni ključ da biste potvrdili vraćanje na zadano. Izbrisat će se sve informacije pohranjene na sigurnosnom ključu, uključujući PIN.</translation>
 <translation id="3518985090088779359">Prihvati i nastavi</translation>
@@ -2532,7 +2528,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="4501530680793980440">Potvrda uklanjanja</translation>
 <translation id="4502423230170890588">Ukloni s ovog uređaja</translation>
 <translation id="4504940961672722399">Upotrijebite to proširenje tako što ćete kliknuti ovu ikonu ili pritisnuti prečac <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4507164039066603071">Ne dopuštaj web-lokacijama pristup položaju kamere ili mapiranje prostorije</translation>
 <translation id="4508051413094283164">Otvori sve u anonimnom prozoru</translation>
 <translation id="4508265954913339219">Aktivacija nije uspjela</translation>
 <translation id="4508765956121923607">Pogledaj i&amp;zvor</translation>
@@ -2838,7 +2833,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="494286511941020793">Pomoć za proxy konfiguraciju</translation>
 <translation id="4943368462779413526">Američki nogomet</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" želi se povezati sa serijskim priključkom</translation>
-<translation id="4943703118917034429">Virtualna stvarnost</translation>
 <translation id="4944310289250773232">Tu uslugu provjere autentičnosti hostira <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Radnje</translation>
 <translation id="4952981627953231344">Dodatak VM nije dopušten na ovom uređaju. Obratite se administratoru uređaja organizacije.</translation>
@@ -4112,7 +4106,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="6758056191028427665">Recite nam koliko ste zadovoljni nama.</translation>
 <translation id="6759193508432371551">Vraćanje na tvorničke postavke</translation>
 <translation id="6762833852331690540">Uključeno</translation>
-<translation id="6767115174726603949">pristupiti uređajima i podacima virtualne stvarnosti</translation>
 <translation id="6767566652486411142">Odabir drugog jezika…</translation>
 <translation id="6767639283522617719">Nije uspjelo pridruživanje domeni. Provjerite jesu li postavke ispravne za organizacijsku jedinicu.</translation>
 <translation id="6769712124046837540">Dodavanje pisača...</translation>
@@ -4308,7 +4301,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="703001695939087067">Otvoren je način pregleda u prozoru. Pritisnite karticu za kretanje.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – povezano sa serijskim priključkom</translation>
 <translation id="7031962166228839643">TPM se priprema, pričekajte (može potrajati nekoliko minuta)...</translation>
-<translation id="7034615910652881882">Kad web-lokacija želi pristupiti uređajima/podacima virtualne stvarnosti, prikaži upit</translation>
 <translation id="7037509989619051237">Tekst za pregled</translation>
 <translation id="7039326228527141150">pristupiti USB uređajima dobavljača <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Prijava na Microsoftovu pametnu karticu</translation>
@@ -4614,7 +4606,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="7443806024147773267">Pristupite svojim zaporkama kad god ste prijavljeni u svoj Google račun</translation>
 <translation id="7444983668544353857">Onemogući <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Automatsko instaliranje aplikacija</translation>
-<translation id="7448625729116931228">Kad web-lokacija želi pristupiti uređajima/podacima virtualne stvarnosti, prikaži upit (preporučeno)</translation>
 <translation id="7450761244949417357">Otvara se u pregledniku <ph name="ALTERNATIVE_BROWSER_NAME" /> sad</translation>
 <translation id="7453008956351770337">Odabirom tog pisača sljedećem proširenju dajete dopuštenje za pristup svojem pisaču:</translation>
 <translation id="7454548535253569100">Portal: <ph name="SUBFRAME_SITE" /></translation>
@@ -4751,7 +4742,6 @@ Postavkama računa možete upravljati tako da instalirate aplikaciju Family Link
 <translation id="7652808307838961528">Uređivanje osobe, <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Aplikacije, proširenja i korisničke skripte ne mogu se dodavati s ove web-lokacije</translation>
 <translation id="7652954539215530680">Izrada PIN-a</translation>
-<translation id="7653295403398566475">Kad web-lokacija želi pristupiti položaju kamere ili mapirati prostoriju, prikaži upit</translation>
 <translation id="7654941827281939388">Ovaj se račun već upotrebljava na ovom računalu.</translation>
 <translation id="7658239707568436148">Odustani</translation>
 <translation id="7659584679870740384">Niste ovlašteni za upotrebu ovog uređaja. Zamolite administratora da vam dopusti prijavu.</translation>
@@ -5290,7 +5280,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="8338952601723052325">Web-lokacija razvojnog programera</translation>
 <translation id="8339059274628563283">Lokalno pohranjeni podaci web-lokacije <ph name="SITE" /></translation>
 <translation id="833986336429795709">Da biste otvorili tu vezu, odaberite aplikaciju</translation>
-<translation id="834057053932610950">Došlo je do pogreške prilikom konfiguriranja Linuxa. Obratite se administratoru.</translation>
 <translation id="8342861492835240085">Odaberite zbirku</translation>
 <translation id="834290227245955730">PIN nije važeći. Preostalih pokušaja: <ph name="RETRIES" />.</translation>
 <translation id="8351419472474436977">To proširenje preuzelo je kontrolu nad vašim postavkama proxyja, a to znači da može promijeniti, prekinuti ili prisluškivati sve što radite na mreži. Ako niste sigurni kako je došlo do te promjene, vjerojatno je ne želite.</translation>

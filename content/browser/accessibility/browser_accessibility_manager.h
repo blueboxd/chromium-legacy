@@ -16,6 +16,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/accessibility_buildflags.h"
 #include "content/browser/accessibility/browser_accessibility_position.h"
@@ -29,6 +30,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_serializable_tree.h"
+#include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_id_registry.h"
 #include "ui/accessibility/ax_tree_manager.h"
 #include "ui/accessibility/ax_tree_observer.h"
@@ -488,9 +490,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // Factory to create BrowserAccessibility objects (for dependency injection).
   std::unique_ptr<BrowserAccessibilityFactory> factory_;
 
-  // The underlying tree of accessibility objects.
-  std::unique_ptr<ui::AXSerializableTree> tree_;
-
   // A mapping from a node id to its wrapper of type BrowserAccessibility.
   std::map<int32_t, BrowserAccessibility*> id_wrapper_map_;
 
@@ -530,11 +529,14 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // For testing only: A function to call when a generated event is fired.
   GeneratedEventCallbackForTesting generated_event_callback_for_testing_;
 
-  ui::AXEventGenerator event_generator_;
-
   // Fire all events regardless of focus and with no delay, to avoid test
   // flakiness. See NeverSuppressOrDelayEventsForTesting() for details.
   static bool never_suppress_or_delay_events_for_testing_;
+
+  const ui::AXEventGenerator& event_generator() const {
+    return event_generator_;
+  }
+  ui::AXEventGenerator& event_generator() { return event_generator_; }
 
   // Stores the id of the last focused node across all frames, as well as the id
   // of the tree that contains it, so that when focus might have changed we can
@@ -546,6 +548,19 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   static base::Optional<ui::AXTreeID> last_focused_node_tree_id_;
 
  private:
+  // The underlying tree of accessibility objects.
+  std::unique_ptr<ui::AXSerializableTree> tree_;
+
+  ui::AXEventGenerator event_generator_;
+
+  // Automatically stops observing notifications from the AXTree when this class
+  // is destructed.
+  //
+  // This member needs to be destructed before any observed AXTrees. Since
+  // destructors for non-static member fields are called in the reverse order of
+  // declaration, do not move this member above other members.
+  ScopedObserver<ui::AXTree, ui::AXTreeObserver> tree_observer_{this};
+
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManager);
 };
 

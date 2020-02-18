@@ -27,6 +27,11 @@ MediaHistoryUI::MediaHistoryUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUIMediaHistoryHost));
   source->AddResourcePath("media-history.js", IDR_MEDIA_HISTORY_JS);
   source->AddResourcePath(
+      "services/media_session/public/mojom/media_session.mojom-lite.js",
+      IDR_MEDIA_SESSION_MOJOM_LITE_JS);
+  source->AddResourcePath("ui/gfx/geometry/mojom/geometry.mojom-lite.js",
+                          IDR_UI_GEOMETRY_MOJOM_LITE_JS);
+  source->AddResourcePath(
       "chrome/browser/media/history/media_history_store.mojom-lite.js",
       IDR_MEDIA_HISTORY_STORE_MOJOM_LITE_JS);
   source->SetDefaultResource(IDR_MEDIA_HISTORY_HTML);
@@ -56,6 +61,12 @@ void MediaHistoryUI::GetMediaHistoryPlaybackRows(
     GetMediaHistoryPlaybackRowsCallback callback) {
   return GetMediaHistoryStore()->GetMediaHistoryPlaybackRowsForDebug(
       std::move(callback));
+}
+
+void MediaHistoryUI::GetMediaHistoryPlaybackSessionRows(
+    GetMediaHistoryPlaybackSessionRowsCallback callback) {
+  return GetMediaHistoryStore()->GetPlaybackSessions(
+      base::nullopt, base::nullopt, std::move(callback));
 }
 
 media_history::MediaHistoryStore* MediaHistoryUI::GetMediaHistoryStore() {

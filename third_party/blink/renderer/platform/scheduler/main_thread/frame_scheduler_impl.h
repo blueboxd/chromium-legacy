@@ -160,16 +160,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
       MainThreadTaskQueue*,
       base::sequence_manager::TaskQueue::QueueEnabledVoter*) override;
 
-  using FrameTaskTypeToQueueTraitsArray =
-      std::array<base::Optional<MainThreadTaskQueue::QueueTraits>,
-                 static_cast<size_t>(TaskType::kCount)>;
-
-  // Initializes the mapping from TaskType to QueueTraits for frame-level tasks.
-  // We control the policy and initialize this, but the map is stored with main
-  // thread scheduling settings to avoid redundancy.
-  static void InitializeTaskTypeQueueTraitsMap(
-      FrameTaskTypeToQueueTraitsArray&);
-
   // Returns the list of active features which currently tracked by the
   // scheduler for back-forward cache metrics.
   WTF::HashSet<SchedulingPolicy::Feature>
@@ -269,8 +259,8 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler,
 
   // Create the QueueTraits for a specific TaskType. This returns base::nullopt
   // for loading tasks and non-frame-level tasks.
-  static base::Optional<MainThreadTaskQueue::QueueTraits>
-      CreateQueueTraitsForTaskType(TaskType);
+  static MainThreadTaskQueue::QueueTraits CreateQueueTraitsForTaskType(
+      TaskType);
 
   // Reset the state which should not persist across navigations.
   void ResetForNavigation();

@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Vil du fortsætte og downloade indholdet?</translation>
 <translation id="3306398118552023113">Denne app kører i Chrome</translation>
-<translation id="3312292613668865961">Spørg, inden websites får adgang til dine virtual reality-enheder og -data (anbefales)</translation>
 <translation id="3315103659806849044">Du tilpasser i øjeblikket dine indstillinger for Synkronisering og Google-tjenester. Afslut aktiveringen af synkronisering ved at trykke på knappen Bekræft nederst på skærmen. Gå op</translation>
 <translation id="3328801116991980348">Webstedoplysninger</translation>
 <translation id="3333961966071413176">Alle kontakter</translation>
@@ -514,7 +513,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Få hjælp<ph name="END_LINK" />, mens der scannes efter enheder…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# side}one{# side}other{# sider}}</translation>
 <translation id="4932247056774066048">Da du er ved at logge ud af en konto, der administreres af <ph name="DOMAIN_NAME" />, slettes dine Chrome-data fra denne enhed. Dataene vil stadig være at finde på din Google-konto.</translation>
-<translation id="4935305910887312910">Spørg, inden websites får tilladelse til at modtage din kameraposition eller kortlægge dit rum (anbefales)</translation>
 <translation id="4943703118917034429">Virtual reality</translation>
 <translation id="4943872375798546930">Ingen resultater</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> deler din skærm</translation>
@@ -818,6 +816,7 @@ Tryk længe på et ord for at søge efter det. Du kan tilpasse søgningen ved at
 <translation id="7141896414559753902">Bloker visning af pop up-vinduer på websites og omdirigeringer (anbefales)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Indlæs den oprindelige side<ph name="END_LINK" /> fra <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">De seneste 24 timer</translation>
+<translation id="7173114856073700355">Åbn Indstillinger</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> kB</translation>
 <translation id="7177466738963138057">Du kan ændre dette senere i Indstillinger</translation>
 <translation id="7180611975245234373">Opdater</translation>
@@ -1025,7 +1024,6 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="8664979001105139458">Filnavnet findes allerede</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Signalstyrkeniveau: # søjle}one{Signalstyrkeniveau: # søjle}other{Signalstyrkeniveau: # søjler}}</translation>
 <translation id="868929229000858085">Søg blandt dine kontakter</translation>
-<translation id="8698438463325761328">Bloker websites, så de ikke kan få adgang til dine virtual reality-enheder og -data</translation>
 <translation id="869891660844655955">Udløbsdato</translation>
 <translation id="8728487861892616501">Når du bruger denne app, accepterer du Chromes <ph name="BEGIN_LINK1" />servicevilkår<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />erklæring om privatliv<ph name="END_LINK2" /> samt <ph name="BEGIN_LINK3" />erklæringen om privatliv for Google-konti, der administreres med Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Indholdet er skjult</translation>
@@ -1042,7 +1040,6 @@ Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</
 <translation id="883806473910249246">Der opstod en fejl under download af indholdet.</translation>
 <translation id="8840953339110955557">Denne side kan afvige fra onlineversionen.</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">Bloker websites, så de ikke kan modtage din kameraposition eller kortlægge dit rum</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, fane</translation>
 <translation id="885701979325669005">Lagerplads</translation>
 <translation id="889338405075704026">Gå til Chrome-indstillinger</translation>

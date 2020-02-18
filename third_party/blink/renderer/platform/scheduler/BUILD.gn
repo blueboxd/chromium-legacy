@@ -14,7 +14,6 @@ blink_platform_sources("scheduler") {
     "common/cooperative_scheduling_manager.cc",
     "common/dummy_schedulers.cc",
     "common/event_loop.cc",
-    "common/features.cc",
     "common/features.h",
     "common/frame_or_worker_scheduler.cc",
     "common/idle_helper.cc",

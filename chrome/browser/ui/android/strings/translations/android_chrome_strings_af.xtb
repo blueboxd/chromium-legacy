@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">Lig</translation>
 <translation id="3303414029551471755">Gaan voort om die inhoud af te laai?</translation>
 <translation id="3306398118552023113">Hierdie program loop tans in Chrome</translation>
-<translation id="3312292613668865961">Vra voordat werwe toegelaat word om toegang tot jou virtuelerealiteit-toestel en -data te kry (aanbeveel)</translation>
 <translation id="3315103659806849044">Jy pasmaak tans jou sinkronisering- en Google-diensinstellings. Tik op die Bevestig-knoppie naby die onderkant van die skerm om die aanskakel van sinkronisering te voltooi. Gaan op</translation>
 <translation id="3328801116991980348">Werfinligting</translation>
 <translation id="3333961966071413176">Alle kontakte</translation>
@@ -514,7 +513,6 @@ Tik op enige woord om 'n soektog daarvoor te skep. Langdruk om te kies as jy jou
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Kry hulp<ph name="END_LINK" /> terwyl toestelle gesoek word …</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# bladsy}other{# bladsye}}</translation>
 <translation id="4932247056774066048">Jou Chrome-data sal van hierdie toestel af uitgevee word omdat jy uitteken by 'n rekening wat deur <ph name="DOMAIN_NAME" /> bestuur word. Dit sal in jou Google-rekening bly.</translation>
-<translation id="4935305910887312910">Vra voordat werwe toegelaat word om kameraposisie te ontvang of jou vertrek te karteer (aanbeveel)</translation>
 <translation id="4943703118917034429">Virtuele realiteit</translation>
 <translation id="4943872375798546930">Geen resultate nie</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> deel tans jou skerm</translation>
@@ -818,6 +816,7 @@ Langdruk enige woord om 'n soektog daarvoor te skep. Pas die seleksie aan om jou
 <translation id="7141896414559753902">Verhinder werwe om opspringers en herleidings te wys (aanbeveel)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Laai oorspronklike bladsy<ph name="END_LINK" /> van <ph name="DOMAIN_NAME" /> af</translation>
 <translation id="7149893636342594995">Afgelope 24 uur</translation>
+<translation id="7173114856073700355">Maak Instellings oop</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">Jy kan dit later verander in Instellings</translation>
 <translation id="7180611975245234373">Herlaai</translation>
@@ -1025,7 +1024,6 @@ Die werf kry NIE toegang tot die kamera nie. Net jy kan die kameraprente sien.</
 <translation id="8664979001105139458">Lêernaam bestaan reeds</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Seinsterktevlak: # stafie}other{Seinsterktevlak: # stafies}}</translation>
 <translation id="868929229000858085">Deursoek jou kontakte</translation>
-<translation id="8698438463325761328">Blokkeer werwe om toegang tot jou virtuelerealiteit-toestel en -data te kry</translation>
 <translation id="869891660844655955">Vervaldatum</translation>
 <translation id="8728487861892616501">Deur hierdie program te gebruik, stem jy in tot Chrome se <ph name="BEGIN_LINK1" />diensbepalings<ph name="END_LINK1" /> en <ph name="BEGIN_LINK2" />privaatheidkennisgewing<ph name="END_LINK2" />, en die <ph name="BEGIN_LINK3" />privaatheidkennisgewing vir Google-rekeninge wat met Family Link bestuur word<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">Inhoud word versteek</translation>
@@ -1042,7 +1040,6 @@ Die werf kry NIE toegang tot die kamera nie. Net jy kan die kameraprente sien.</
 <translation id="883806473910249246">Kon nie die inhoud aflaai nie.</translation>
 <translation id="8840953339110955557">Hierdie bladsy kan van die aanlyn weergawe verskil.</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">Blokkeer werwe om kameraposisie te ontvang en jou vertrek te karteer</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, oortjie</translation>
 <translation id="885701979325669005">Berging</translation>
 <translation id="889338405075704026">Gaan na Chrome-instellings</translation>

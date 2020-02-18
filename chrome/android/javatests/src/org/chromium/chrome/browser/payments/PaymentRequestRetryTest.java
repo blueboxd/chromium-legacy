@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.browser.payments;
 
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.HAVE_INSTRUMENTS;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.IMMEDIATE_RESPONSE;
-
 import android.os.Build;
 import android.support.test.filters.MediumTest;
 
@@ -25,6 +22,8 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
@@ -67,22 +66,21 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
                 true /* isCached */, "Jon Doe", "4111111111111111", "" /* obfuscatedNumber */, "12",
                 "2050", "visa", R.drawable.mc_card, billing_address_id, "" /* serverId */));
 
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
     }
 
-    /**
-     * Tests that only the initially selected payment instrument is available during retry().
-     */
+    /** Tests that only the initially selected payment app is available during retry(). */
     @Test
     @MediumTest
     @Feature({"Payments"})
-    public void testDoNotAllowPaymentInstrumentChange() throws TimeoutException {
+    public void testDoNotAllowPaymentAppChange() throws TimeoutException {
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickAndWait(
                 R.id.button_primary, mPaymentRequestTestRule.getReadyForUnmaskInput());
 
-        // Confirm that two payment instruments are available for payment.
-        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        // Confirm that two payment apps are available for payment.
+        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentApps());
 
         mPaymentRequestTestRule.setTextInCardUnmaskDialogAndWait(
                 R.id.card_unmask_input, "123", mPaymentRequestTestRule.getReadyToUnmask());
@@ -90,9 +88,9 @@ public class PaymentRequestRetryTest implements MainActivityStartCallback {
                 ModalDialogProperties.ButtonType.POSITIVE,
                 mPaymentRequestTestRule.getPaymentResponseReady());
 
-        // Confirm that only one payment instrument is available for retry().
+        // Confirm that only one payment app is available for retry().
         mPaymentRequestTestRule.retryPaymentRequest("{}", mPaymentRequestTestRule.getReadyToPay());
-        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentApps());
     }
 
     /**

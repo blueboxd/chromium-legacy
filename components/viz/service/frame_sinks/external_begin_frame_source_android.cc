@@ -40,31 +40,11 @@ void ExternalBeginFrameSourceAndroid::OnVSync(
       base::TimeTicks() + base::TimeDelta::FromMicroseconds(time_micros);
   base::TimeDelta vsync_period(
       base::TimeDelta::FromMicroseconds(period_micros));
-
-  uint64_t sequence_number = next_sequence_number_;
-  // We expect |sequence_number| to be the number for the frame at
-  // |expected_frame_time|. We adjust this sequence number according to the
-  // actual frame time in case it is later than expected.
-  if (next_expected_frame_time_ != base::TimeTicks()) {
-    // Add |error_margin| to round |frame_time| up to the next tick if it is
-    // close to the end of an interval. This happens when a timebase is a bit
-    // off because of an imperfect presentation timestamp that may be a bit
-    // later than the beginning of the next interval.
-    constexpr double kErrorMarginIntervalPct = 0.05;
-    base::TimeDelta error_margin = vsync_period * kErrorMarginIntervalPct;
-    int ticks_since_estimated_frame_time =
-        (frame_time + error_margin - next_expected_frame_time_) / vsync_period;
-    sequence_number += std::max(0, ticks_since_estimated_frame_time);
-  }
-
   // Calculate the next frame deadline:
   base::TimeTicks deadline = frame_time + vsync_period;
-  auto begin_frame_args = BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, source_id(), sequence_number, frame_time, deadline,
-      vsync_period, BeginFrameArgs::NORMAL);
-  next_sequence_number_ = sequence_number + 1;
-  next_expected_frame_time_ = deadline;
 
+  auto begin_frame_args = begin_frame_args_generator_.GenerateBeginFrameArgs(
+      source_id(), frame_time, deadline, vsync_period);
   OnBeginFrame(begin_frame_args);
 }
 

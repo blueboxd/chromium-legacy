@@ -114,7 +114,7 @@ SubresourceRedirectObserver::SubresourceRedirectObserver(
 
 SubresourceRedirectObserver::~SubresourceRedirectObserver() = default;
 
-void SubresourceRedirectObserver::ReadyToCommitNavigation(
+void SubresourceRedirectObserver::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK(navigation_handle);
   if (!navigation_handle->IsInMainFrame() ||

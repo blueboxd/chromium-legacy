@@ -683,6 +683,11 @@ public class AppMenuTest extends DummyUiActivityTestCase {
         public int getCurrentActivityState() {
             return 0;
         }
+
+        @Override
+        public boolean isNativeInitializationFinished() {
+            return false;
+        }
     }
 
     private class TestMenuButtonDelegate implements MenuButtonDelegate {

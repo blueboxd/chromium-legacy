@@ -89,6 +89,11 @@ class CastActivityRecord : public ActivityRecord {
       const CastInternalMessage& cast_message,
       cast_channel::ResultCallback callback);
 
+  // Stops the currently active session on the receiver, and invokes |callback|
+  // with the result. Called when a SDK client requests to stop the session.
+  virtual void StopSessionOnReceiver(const std::string& client_id,
+                                     cast_channel::ResultCallback callback);
+
   // Called when the client given by |client_id| requests to leave the session.
   // This will also cause all clients within the session with matching origin
   // and/or tab ID to leave (i.e., their presentation connections will be

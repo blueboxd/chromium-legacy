@@ -30,17 +30,17 @@ namespace {
 class TestStreamSender final : public mojom::RemotingDataStreamSender {
  public:
   using SendFrameToSinkCallback =
-      base::Callback<void(const std::vector<uint8_t>& data,
-                          DemuxerStream::Type type)>;
+      base::RepeatingCallback<void(const std::vector<uint8_t>& data,
+                                   DemuxerStream::Type type)>;
   TestStreamSender(
       mojo::PendingReceiver<mojom::RemotingDataStreamSender> receiver,
       mojo::ScopedDataPipeConsumerHandle handle,
       DemuxerStream::Type type,
-      const SendFrameToSinkCallback& callback)
+      SendFrameToSinkCallback callback)
       : receiver_(this, std::move(receiver)),
         data_pipe_reader_(std::move(handle)),
         type_(type),
-        send_frame_to_sink_cb_(callback) {}
+        send_frame_to_sink_cb_(std::move(callback)) {}
 
   ~TestStreamSender() override = default;
 
@@ -75,13 +75,12 @@ class TestRemoter final : public mojom::Remoter {
  public:
   using SendMessageToSinkCallback =
       base::RepeatingCallback<void(const std::vector<uint8_t>& message)>;
-  TestRemoter(
-      mojo::PendingRemote<mojom::RemotingSource> source,
-      const SendMessageToSinkCallback& send_message_to_sink_cb,
-      const TestStreamSender::SendFrameToSinkCallback& send_frame_to_sink_cb)
+  TestRemoter(mojo::PendingRemote<mojom::RemotingSource> source,
+              SendMessageToSinkCallback send_message_to_sink_cb,
+              TestStreamSender::SendFrameToSinkCallback send_frame_to_sink_cb)
       : source_(std::move(source)),
-        send_message_to_sink_cb_(send_message_to_sink_cb),
-        send_frame_to_sink_cb_(send_frame_to_sink_cb) {}
+        send_message_to_sink_cb_(std::move(send_message_to_sink_cb)),
+        send_frame_to_sink_cb_(std::move(send_frame_to_sink_cb)) {}
 
   ~TestRemoter() override = default;
 
@@ -137,15 +136,15 @@ class TestRemoter final : public mojom::Remoter {
 };
 
 std::unique_ptr<RendererController> CreateController(
-    const TestRemoter::SendMessageToSinkCallback& send_message_to_sink_cb,
-    const TestStreamSender::SendFrameToSinkCallback& send_frame_to_sink_cb) {
+    TestRemoter::SendMessageToSinkCallback send_message_to_sink_cb,
+    TestStreamSender::SendFrameToSinkCallback send_frame_to_sink_cb) {
   mojo::PendingRemote<mojom::RemotingSource> remoting_source;
   auto remoting_source_receiver =
       remoting_source.InitWithNewPipeAndPassReceiver();
   mojo::PendingRemote<mojom::Remoter> remoter;
   std::unique_ptr<TestRemoter> test_remoter = std::make_unique<TestRemoter>(
-      std::move(remoting_source), send_message_to_sink_cb,
-      send_frame_to_sink_cb);
+      std::move(remoting_source), std::move(send_message_to_sink_cb),
+      std::move(send_frame_to_sink_cb));
   mojo::MakeSelfOwnedReceiver(std::move(test_remoter),
                               remoter.InitWithNewPipeAndPassReceiver());
   return std::make_unique<RendererController>(

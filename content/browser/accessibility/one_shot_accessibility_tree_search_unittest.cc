@@ -40,8 +40,8 @@ class TestBrowserAccessibilityManager : public BrowserAccessibilityManager {
 
 class OneShotAccessibilityTreeSearchTest : public testing::TestWithParam<bool> {
  public:
-  OneShotAccessibilityTreeSearchTest() {}
-  ~OneShotAccessibilityTreeSearchTest() override {}
+  OneShotAccessibilityTreeSearchTest() = default;
+  ~OneShotAccessibilityTreeSearchTest() override = default;
 
  protected:
   void SetUp() override;

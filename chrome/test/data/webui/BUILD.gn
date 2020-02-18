@@ -215,6 +215,7 @@ js2gtest("browser_tests_js_webui") {
     "$root_gen_dir/chrome/test/data/webui/settings/controlled_button_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/controlled_radio_button_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/default_browser_browsertest.m.js",
+    "$root_gen_dir/chrome/test/data/webui/settings/downloads_page_test.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/dropdown_menu_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/extension_controlled_indicator_tests.m.js",
     "$root_gen_dir/chrome/test/data/webui/settings/fake_settings_private.m.js",

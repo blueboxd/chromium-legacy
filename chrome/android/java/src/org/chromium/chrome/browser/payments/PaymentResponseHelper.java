@@ -35,31 +35,31 @@ public class PaymentResponseHelper implements NormalizedAddressRequestDelegate {
     private PaymentResponseRequesterDelegate mDelegate;
     private boolean mIsWaitingForShippingNormalization;
     private boolean mIsWaitingForPaymentsDetails = true;
-    private final PaymentInstrument mSelectedPaymentInstrument;
+    private final PaymentApp mSelectedPaymentApp;
     private final PaymentOptions mPaymentOptions;
     private final boolean mSkipToGpay;
-    private PayerData mPayerDataFromInstrument;
+    private PayerData mPayerDataFromPaymentApp;
 
     /**
      * Builds a helper to contruct and fill a PaymentResponse.
      *
-     * @param selectedShippingAddress   The shipping address picked by the user.
-     * @param selectedShippingOption    The shipping option picked by the user.
-     * @param selectedContact           The contact info picked by the user.
-     * @param selectedPaymentInstrument The payment instrument picked by the user.
-     * @param paymentOptions            The paymentOptions of the corresponding payment request.
-     * @param skipToGpay                Whether or not Gpay bridge is activated for skip to Gpay.
-     * @param delegate                  The object that will receive the completed PaymentResponse.
+     * @param selectedShippingAddress The shipping address picked by the user.
+     * @param selectedShippingOption  The shipping option picked by the user.
+     * @param selectedContact         The contact info picked by the user.
+     * @param selectedPaymentApp      The payment app picked by the user.
+     * @param paymentOptions          The paymentOptions of the corresponding payment request.
+     * @param skipToGpay              Whether or not Gpay bridge is activated for skip to Gpay.
+     * @param delegate                The object that will receive the completed PaymentResponse.
      */
     public PaymentResponseHelper(EditableOption selectedShippingAddress,
             EditableOption selectedShippingOption, EditableOption selectedContact,
-            PaymentInstrument selectedPaymentInstrument, PaymentOptions paymentOptions,
-            boolean skipToGpay, PaymentResponseRequesterDelegate delegate) {
+            PaymentApp selectedPaymentApp, PaymentOptions paymentOptions, boolean skipToGpay,
+            PaymentResponseRequesterDelegate delegate) {
         mPaymentResponse = new PaymentResponse();
         mPaymentResponse.payer = new PayerDetail();
 
         mDelegate = delegate;
-        mSelectedPaymentInstrument = selectedPaymentInstrument;
+        mSelectedPaymentApp = selectedPaymentApp;
         mPaymentOptions = paymentOptions;
         mSkipToGpay = skipToGpay;
 
@@ -70,7 +70,7 @@ public class PaymentResponseHelper implements NormalizedAddressRequestDelegate {
         // Set up the shipping option section of the response when it comes from payment sheet
         // (Shipping option comes from payment app when the app can handle shipping, or from Gpay
         // when skipToGpay is true).
-        if (mPaymentOptions.requestShipping && !mSelectedPaymentInstrument.handlesShippingAddress()
+        if (mPaymentOptions.requestShipping && !mSelectedPaymentApp.handlesShippingAddress()
                 && !mSkipToGpay) {
             assert selectedShippingOption != null;
             assert selectedShippingOption.getIdentifier() != null;
@@ -80,7 +80,7 @@ public class PaymentResponseHelper implements NormalizedAddressRequestDelegate {
         // Set up the shipping address section of the response when it comes from payment sheet
         // (Shipping address comes from payment app when the app can handle shipping, or from Gpay
         // when skipToGpay is true).
-        if (mPaymentOptions.requestShipping && !mSelectedPaymentInstrument.handlesShippingAddress()
+        if (mPaymentOptions.requestShipping && !mSelectedPaymentApp.handlesShippingAddress()
                 && !mSkipToGpay) {
             assert selectedShippingAddress != null;
             // Shipping addresses are created in PaymentRequestImpl.init(). These should all be
@@ -105,18 +105,17 @@ public class PaymentResponseHelper implements NormalizedAddressRequestDelegate {
     }
 
     /**
-     * Called after the payment instrument's details were received.
+     * Called after the payment details were received.
      *
-     * @param methodName          The method name of the payment instrument.
-     * @param stringifiedDetails  A string containing all the details of the payment instrument's
-     *                            details.
-     * @param payerData           The payer data received from the payment app.
+     * @param methodName         The payment method name being used for payment.
+     * @param stringifiedDetails A string containing all the details of the payment.
+     * @param payerData          The payer data received from the payment app.
      */
-    public void onInstrumentDetailsReceived(
+    public void onPaymentDetailsReceived(
             String methodName, String stringifiedDetails, PayerData payerData) {
         mPaymentResponse.methodName = methodName;
         mPaymentResponse.stringifiedDetails = stringifiedDetails;
-        mPayerDataFromInstrument = payerData;
+        mPayerDataFromPaymentApp = payerData;
 
         mIsWaitingForPaymentsDetails = false;
 
@@ -150,16 +149,15 @@ public class PaymentResponseHelper implements NormalizedAddressRequestDelegate {
         assert !mIsWaitingForShippingNormalization;
 
         // Set up the shipping section of the response when it comes from payment app.
-        if (mPaymentOptions.requestShipping
-                && mSelectedPaymentInstrument.handlesShippingAddress()) {
-            mPaymentResponse.shippingAddress = mPayerDataFromInstrument.shippingAddress;
-            mPaymentResponse.shippingOption = mPayerDataFromInstrument.selectedShippingOptionId;
+        if (mPaymentOptions.requestShipping && mSelectedPaymentApp.handlesShippingAddress()) {
+            mPaymentResponse.shippingAddress = mPayerDataFromPaymentApp.shippingAddress;
+            mPaymentResponse.shippingOption = mPayerDataFromPaymentApp.selectedShippingOptionId;
         }
 
         // Set up the contact section of the response.
         if (mPaymentOptions.requestPayerName) {
-            if (mSelectedPaymentInstrument.handlesPayerName()) {
-                mPaymentResponse.payer.name = mPayerDataFromInstrument.payerName;
+            if (mSelectedPaymentApp.handlesPayerName()) {
+                mPaymentResponse.payer.name = mPayerDataFromPaymentApp.payerName;
             } else if (!mSkipToGpay) {
                 assert mSelectedContact != null;
                 mPaymentResponse.payer.name = mSelectedContact.getPayerName();
@@ -168,8 +166,8 @@ public class PaymentResponseHelper implements NormalizedAddressRequestDelegate {
             }
         }
         if (mPaymentOptions.requestPayerPhone) {
-            if (mSelectedPaymentInstrument.handlesPayerPhone()) {
-                mPaymentResponse.payer.phone = mPayerDataFromInstrument.payerPhone;
+            if (mSelectedPaymentApp.handlesPayerPhone()) {
+                mPaymentResponse.payer.phone = mPayerDataFromPaymentApp.payerPhone;
             } else if (!mSkipToGpay) {
                 assert mSelectedContact != null;
                 mPaymentResponse.payer.phone = mSelectedContact.getPayerPhone();
@@ -178,8 +176,8 @@ public class PaymentResponseHelper implements NormalizedAddressRequestDelegate {
             }
         }
         if (mPaymentOptions.requestPayerEmail) {
-            if (mSelectedPaymentInstrument.handlesPayerEmail()) {
-                mPaymentResponse.payer.email = mPayerDataFromInstrument.payerEmail;
+            if (mSelectedPaymentApp.handlesPayerEmail()) {
+                mPaymentResponse.payer.email = mPayerDataFromPaymentApp.payerEmail;
             } else if (!mSkipToGpay) {
                 assert mSelectedContact != null;
                 mPaymentResponse.payer.email = mSelectedContact.getPayerEmail();

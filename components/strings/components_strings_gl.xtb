@@ -196,7 +196,7 @@
 <translation id="1743520634839655729">Para pagar máis rápido a próxima vez, garda a túa tarxeta, o nome e o enderezo de facturación na túa Conta de Google e neste dispositivo.</translation>
 <translation id="1743570585616704562">Non se recoñece</translation>
 <translation id="1745880797583122200">O teu navegador está xestionado</translation>
-<translation id="1746113442205726301">Cambio Y da imaxe</translation>
+<translation id="1746113442205726301">Desprazamento da imaxe no eixe Y</translation>
 <translation id="17513872634828108">Pestanas abertas</translation>
 <translation id="1752021286346845558">Caixa de correo 8</translation>
 <translation id="1753706481035618306">Número de páxina</translation>
@@ -571,7 +571,6 @@
 <translation id="3495081129428749620">Buscar na páxina
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Esta política ignórase porque hai outra política do mesmo grupo con máis prioridade.</translation>
-<translation id="3513704683820682405">Realidade aumentada</translation>
 <translation id="3518941727116570328">Control de varios obxectos</translation>
 <translation id="3528171143076753409">O certificado do servidor non é de confianza.</translation>
 <translation id="3528485271872257980">Marrón escuro</translation>
@@ -650,7 +649,7 @@
 <translation id="3789155188480882154">Tamaño 16</translation>
 <translation id="3797522431967816232">Prc3 (sobre)</translation>
 <translation id="3799805948399000906">Solicitouse a fonte</translation>
-<translation id="3807366285948165054">Cambio X da imaxe</translation>
+<translation id="3807366285948165054">Desprazamento da imaxe no eixe X</translation>
 <translation id="3807873520724684969">Bloqueouse o contido daniño.</translation>
 <translation id="3808375843007691220">Advertencia: Detectáronse funcións experimentais.</translation>
 <translation id="3810973564298564668">Xestionar</translation>
@@ -700,7 +699,7 @@
 <translation id="4075941231477579656">Touch ID</translation>
 <translation id="4079302484614802869">A configuración do proxy está establecida para utilizar un URL de script .pac, non servidores proxy fixos.</translation>
 <translation id="4082393374666368382">Configuración - Xestión</translation>
-<translation id="4088981014127559358">Cambio Y da imaxe do lado 1</translation>
+<translation id="4088981014127559358">Desprazamento do lado 1 da imaxe no eixe Y</translation>
 <translation id="4098354747657067197">O sitio ao que te dirixes é enganoso</translation>
 <translation id="4101413244023615925">Texto e gráficos</translation>
 <translation id="4103249731201008433">O número de serie do dispositivo non é válido</translation>
@@ -867,7 +866,7 @@
 <translation id="4780900888022378816"><ph name="ENROLLMENT_DOMAIN" /> xestiona o teu dispositivo e <ph name="ACCOUNT_DOMAIN" /> xestiona a túa conta.</translation>
 <translation id="4785689107224900852">Cambia a esta pestana</translation>
 <translation id="4791134497475588553">Aplicacións Linux instaladas e último uso</translation>
-<translation id="4796594887379589189">Código da conta do traballo</translation>
+<translation id="4796594887379589189">Código da conta para o traballo</translation>
 <translation id="4798078619018708837">Introduce a data de caducidade e o código CVC da tarxeta <ph name="CREDIT_CARD" /> para actualizar os datos. Unha vez confirmados, os detalles da tarxeta da túa Conta de Google compartiranse con este sitio.</translation>
 <translation id="4800132727771399293">Comproba a túa data de caducidade e o CVC e téntao de novo</translation>
 <translation id="480334179571489655">Produciuse un erro relacionado coa política de orixe</translation>
@@ -896,7 +895,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> di</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4930153903256238152">Gran capacidade</translation>
-<translation id="4943703118917034429">Realidade virtual</translation>
 <translation id="4943872375798546930">Non hai resultados</translation>
 <translation id="4950898438188848926">Botón de cambio de pestana, preme Intro para cambiar á pestana aberta, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Accións</translation>
@@ -1067,7 +1065,7 @@
 <translation id="5632627355679805402">Os datos encriptáronse co teu <ph name="BEGIN_LINK" />contrasinal de Google<ph name="END_LINK" /> a partir do <ph name="TIME" />. Introdúceo para iniciar a sincronización.</translation>
 <translation id="5633066919399395251">Os piratas informáticos do sitio <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> poderían tentar instalar programas perigosos no ordenador que rouben ou eliminen a túa información (por exemplo, fotos, contrasinais, mensaxes e tarxetas de crédito). <ph name="BEGIN_LEARN_MORE_LINK" />Máis información<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="563324245173044180">Bloqueouse contido enganoso.</translation>
-<translation id="5644090287519800334">Cambio X da imaxe do lado 1</translation>
+<translation id="5644090287519800334">Desprazamento do lado 1 da imaxe no eixe X</translation>
 <translation id="5645854190134202180">Segunda quenda</translation>
 <translation id="5659593005791499971">Correo electrónico</translation>
 <translation id="5663614846592581799">9x11 (sobre)</translation>
@@ -1379,7 +1377,7 @@
 <translation id="7135130955892390533">Mostrar estado</translation>
 <translation id="7138472120740807366">Método de entrega</translation>
 <translation id="7139724024395191329">Emirato</translation>
-<translation id="714064300541049402">Cambio X da imaxe do lado 2</translation>
+<translation id="714064300541049402">Desprazamento do lado 2 da imaxe no eixe X</translation>
 <translation id="7152423860607593928">Number-14 (sobre)</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> máis}other{<ph name="PAYMENT_METHOD_PREVIEW" /> e <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> máis}}</translation>
 <translation id="7153618581592392745">Lavanda</translation>
@@ -1488,7 +1486,7 @@ Detalles adicionais:
 <translation id="7569983096843329377">Negro</translation>
 <translation id="7575207903026901870">Botón Quitar suxestión, preme Intro para quitala</translation>
 <translation id="7578104083680115302">Paga rapidamente en sitios e aplicacións en diferentes dispositivos usando as tarxetas que gardaches con Google.</translation>
-<translation id="7581199239021537589">Cambio Y da imaxe do lado 2</translation>
+<translation id="7581199239021537589">Desprazamento do lado 2 da imaxe no eixe Y</translation>
 <translation id="7592362899630581445">O certificado do servidor inclúe un nome que está fóra do teu alcance.</translation>
 <translation id="7598391785903975535">Menos de <ph name="UPPER_ESTIMATE" /></translation>
 <translation id="759889825892636187">Actualmente <ph name="HOST_NAME" /> non pode procesar esta solicitude.</translation>
@@ -1576,7 +1574,7 @@ Detalles adicionais:
 <translation id="7953569069500808819">Grampa no bordo superior</translation>
 <translation id="7956713633345437162">Marcadores para móbiles</translation>
 <translation id="7961015016161918242">Nunca</translation>
-<translation id="7966803981046576691">Tipo de conta do traballo</translation>
+<translation id="7966803981046576691">Tipo de conta para o traballo</translation>
 <translation id="7977538094055660992">Dispositivo de saída</translation>
 <translation id="7977894662897852582">Edp</translation>
 <translation id="799149739215780103">Encadernación</translation>
@@ -1714,7 +1712,6 @@ Detalles adicionais:
 <translation id="861775596732816396">Tamaño 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Gardar esta tarxeta neste dispositivo</translation>
-<translation id="8647750283161643317">Restablecer todas as configuracións predeterminadas</translation>
 <translation id="8663226718884576429">Resumo do pedido, <ph name="TOTAL_LABEL" />, máis detalles</translation>
 <translation id="867224526087042813">Sinatura</translation>
 <translation id="8676424191133491403">Sen retardo</translation>

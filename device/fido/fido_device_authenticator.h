@@ -27,11 +27,6 @@ struct EnumerateRPsResponse;
 class FidoDevice;
 class FidoTask;
 
-namespace pin {
-struct RetriesRequest;
-struct RetriesResponse;
-}  // namespace pin
-
 // Adaptor class from a |FidoDevice| to the |FidoAuthenticator| interface.
 // Responsible for translating WebAuthn-level requests into serializations that
 // can be passed to the device for transport.
@@ -49,8 +44,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDeviceAuthenticator
                     GetAssertionCallback callback) override;
   void GetNextAssertion(GetAssertionCallback callback) override;
   void GetTouch(base::OnceCallback<void()> callback) override;
-  void GetRetries(GetRetriesCallback callback) override;
+  void GetPinRetries(GetRetriesCallback callback) override;
   void GetPINToken(std::string pin, GetTokenCallback callback) override;
+  void GetUvRetries(GetRetriesCallback callback) override;
   void GetUvToken(GetTokenCallback callback) override;
   void SetPIN(const std::string& pin,
               SetPINCallback callback) override;

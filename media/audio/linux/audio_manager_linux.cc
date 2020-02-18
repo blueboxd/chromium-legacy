@@ -6,12 +6,11 @@
 
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "media/audio/fake_audio_manager.h"
 #include "media/base/media_switches.h"
 
 #if defined(USE_ALSA)
 #include "media/audio/alsa/audio_manager_alsa.h"
-#else
-#include "media/audio/fake_audio_manager.h"
 #endif
 #if defined(USE_CRAS)
 #include "media/audio/cras/audio_manager_cras.h"
@@ -33,6 +32,13 @@ enum LinuxAudioIO {
 std::unique_ptr<media::AudioManager> CreateAudioManager(
     std::unique_ptr<AudioThread> audio_thread,
     AudioLogFactory* audio_log_factory) {
+  // For testing allow audio output to be disabled.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableAudioOutput)) {
+    return std::make_unique<FakeAudioManager>(std::move(audio_thread),
+                                              audio_log_factory);
+  }
+
 #if defined(USE_CRAS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseCras)) {
     UMA_HISTOGRAM_ENUMERATION("Media.LinuxAudioIO", kCras, kAudioIOMax + 1);

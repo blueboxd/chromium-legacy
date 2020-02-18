@@ -62,11 +62,6 @@ SchemeHostPortMatcherRule::FromUntrimmedRawString(
   std::string host;
   int port;
   if (ParseHostAndPort(raw, &host, &port)) {
-    // TODO(eroman): HostForURL() below DCHECKs() when |host| contains an
-    // embedded '\0'.
-    if (host.find('\0') != std::string::npos)
-      return nullptr;
-
     IPAddress ip_address;
     if (ip_address.AssignFromIPLiteral(host)) {
       // Instead of -1, 0 is invalid for IPEndPoint.

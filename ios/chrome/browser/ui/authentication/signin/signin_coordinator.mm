@@ -92,10 +92,45 @@ using signin_metrics::PromoAction;
                     signinIntent:SigninIntentReauth];
 }
 
+- (void)dealloc {
+  // -[SigninCoordinator runCompletionCallbackWithSigninResult:identity:] has
+  // to be called by the subclass before the coordinator is deallocated.
+  DCHECK(!self.signinCompletion);
+}
+
 - (void)interruptWithAction:(SigninCoordinatorInterruptAction)action
                  completion:(ProceduralBlock)completion {
   // This method needs to be implemented in the subclass.
   NOTREACHED();
+}
+
+#pragma mark - SigninCoordinator
+
+- (void)start {
+  // |signinCompletion| needs to be set by the owner to know when the sign-in
+  // is finished.
+  DCHECK(self.signinCompletion);
+}
+
+- (void)stop {
+  // -[SigninCoordinator runCompletionCallbackWithSigninResult:identity:] has
+  // to be called by the subclass before -[SigninCoordinator stop] is called.
+  DCHECK(!self.signinCompletion);
+}
+
+#pragma mark - Private
+
+- (void)runCompletionCallbackWithSigninResult:
+            (SigninCoordinatorResult)signinResult
+                                     identity:(ChromeIdentity*)identity {
+  // If |self.signinCompletion| is nil, this method has been probably called
+  // twice.
+  DCHECK(self.signinCompletion);
+  SigninCoordinatorCompletionCallback signinCompletion = self.signinCompletion;
+  self.signinCompletion = nil;
+  // The owner should call the stop method, during the callback.
+  // |self.signinCompletion| needs to be set to nil before calling it.
+  signinCompletion(signinResult, identity);
 }
 
 @end

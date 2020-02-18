@@ -616,7 +616,7 @@ const BookmarkNode* BookmarkModel::AddFolder(
   DCHECK(IsValidIndex(parent, index, true));
 
   if (guid)
-    DCHECK(base::IsValidGUID(*guid));
+    DCHECK(base::IsValidGUIDOutputString(*guid));
   else
     guid = base::GenerateGUID();
 
@@ -648,7 +648,7 @@ const BookmarkNode* BookmarkModel::AddURL(
   DCHECK(IsValidIndex(parent, index, true));
 
   if (guid)
-    DCHECK(base::IsValidGUID(*guid));
+    DCHECK(base::IsValidGUIDOutputString(*guid));
   else
     guid = base::GenerateGUID();
 

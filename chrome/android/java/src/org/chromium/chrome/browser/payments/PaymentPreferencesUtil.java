@@ -31,58 +31,58 @@ public class PaymentPreferencesUtil {
     }
 
     /**
-     * Gets use count of the payment instrument.
+     * Gets use count of the payment app.
      *
-     * @param id The instrument identifier.
+     * @param id The app identifier.
      * @return The use count.
      */
-    public static int getPaymentInstrumentUseCount(String id) {
+    public static int getPaymentAppUseCount(String id) {
         return SharedPreferencesManager.getInstance().readInt(
                 ChromePreferenceKeys.PAYMENTS_PAYMENT_INSTRUMENT_USE_COUNT.createKey(id));
     }
 
     /**
-     * Increase use count of the payment instrument by one.
+     * Increase use count of the payment app by one.
      *
-     * @param id The instrument identifier.
+     * @param id The app identifier.
      */
-    public static void increasePaymentInstrumentUseCount(String id) {
+    public static void increasePaymentAppUseCount(String id) {
         SharedPreferencesManager.getInstance().incrementInt(
                 ChromePreferenceKeys.PAYMENTS_PAYMENT_INSTRUMENT_USE_COUNT.createKey(id));
     }
 
     /**
-     * A convenient method to set use count of the payment instrument to a specific value for test.
+     * A convenient method to set use count of the payment app to a specific value for test.
      *
-     * @param id    The instrument identifier.
+     * @param id    The app identifier.
      * @param count The count value.
      */
     @VisibleForTesting
-    public static void setPaymentInstrumentUseCountForTest(String id, int count) {
+    public static void setPaymentAppUseCountForTest(String id, int count) {
         SharedPreferencesManager.getInstance().writeInt(
                 ChromePreferenceKeys.PAYMENTS_PAYMENT_INSTRUMENT_USE_COUNT.createKey(id), count);
     }
 
     /**
-     * Gets last use date of the payment instrument.
+     * Gets last use date of the payment app.
      *
-     * @param id The instrument identifier.
+     * @param id The app identifier.
      * @return The time difference between the last use date and 'midnight, January 1, 1970 UTC' in
      *         milliseconds.
      */
-    public static long getPaymentInstrumentLastUseDate(String id) {
+    public static long getPaymentAppLastUseDate(String id) {
         return SharedPreferencesManager.getInstance().readLong(
                 ChromePreferenceKeys.PAYMENTS_PAYMENT_INSTRUMENT_USE_DATE.createKey(id));
     }
 
     /**
-     * Sets last use date of the payment instrument.
+     * Sets last use date of the payment app.
      *
-     * @param id   The instrument identifier.
+     * @param id   The app identifier.
      * @param date The time difference between the last use date and 'midnight, January 1, 1970 UTC'
      *             in milliseconds.
      */
-    public static void setPaymentInstrumentLastUseDate(String id, long date) {
+    public static void setPaymentAppLastUseDate(String id, long date) {
         SharedPreferencesManager.getInstance().writeLong(
                 ChromePreferenceKeys.PAYMENTS_PAYMENT_INSTRUMENT_USE_DATE.createKey(id), date);
     }

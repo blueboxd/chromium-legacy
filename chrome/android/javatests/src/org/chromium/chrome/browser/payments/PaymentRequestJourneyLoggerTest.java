@@ -5,12 +5,8 @@
 package org.chromium.chrome.browser.payments;
 
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.DECEMBER;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.DELAYED_RESPONSE;
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.FIRST_BILLING_ADDRESS;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.HAVE_INSTRUMENTS;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.IMMEDIATE_RESPONSE;
 import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.NEXT_YEAR;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.NO_INSTRUMENTS;
 
 import android.support.test.filters.MediumTest;
 
@@ -29,6 +25,8 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
@@ -262,7 +260,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         createTestData();
 
         // Add a complete payment app.
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Complete a Payment Request with the payment app.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -301,7 +300,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         createTestData();
 
         // Add a complete payment app.
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -341,7 +341,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         createTestData();
 
         // Add an incomplete payment app.
-        mPaymentRequestTestRule.installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.NO_APPS, FactorySpeed.FAST_FACTORY);
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -718,7 +719,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         mHelper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
                 "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "650-253-0000", "",
                 "en-US"));
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -744,14 +746,14 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @MediumTest
     @Feature({"Payments"})
     @CommandLineFlags.Add("disable-features=StrictHasEnrolledAutofillInstrument")
-    public void testUserDidNotHaveCompleteSuggestions_PaymentApp_NoInstruments()
-            throws TimeoutException {
-        // Add an address and a payment app without instruments on file.
+    public void testUserDidNotHaveCompleteSuggestions_PaymentApp_NoApps() throws TimeoutException {
+        // Add an address and a factory without apps.
         AutofillTestHelper mHelper = new AutofillTestHelper();
         mHelper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
                 "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "650-253-0000", "",
                 "en-US"));
-        mPaymentRequestTestRule.installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.NO_APPS, FactorySpeed.FAST_FACTORY);
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -784,7 +786,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         mHelper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
                 "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "650-253-0000", "",
                 "en-US"));
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         // Cancel the payment request.
         mPaymentRequestTestRule.triggerUIAndWait(
@@ -892,7 +895,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         mHelper.setProfile(new AutofillProfile("", "https://example.com", true, "Jon Doe", "Google",
                 "340 Main St", "CA", "Los Angeles", "", "90291", "", "US", "650-253-0000", "",
                 "en-US"));
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         mPaymentRequestTestRule.triggerUIAndWait(
                 "cardsAndBobPayBuy", mPaymentRequestTestRule.getReadyToPay());
@@ -930,7 +934,8 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
         mHelper.setCreditCard(new CreditCard("", "https://example.com", true, true, "Jon Doe",
                 "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
                 mBillingAddressId, "" /* serverId */));
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
 
         mPaymentRequestTestRule.triggerUIAndWait(
                 "cardsAndBobPayBuy", mPaymentRequestTestRule.getReadyToPay());
@@ -1097,13 +1102,12 @@ public class PaymentRequestJourneyLoggerTest implements MainActivityStartCallbac
     @MediumTest
     @Feature({"Payments"})
     public void testNoShow() throws TimeoutException {
-        // Android Pay is supported but no instruments are present.
-        mPaymentRequestTestRule.installPaymentApp(
-                "https://android.com/pay", NO_INSTRUMENTS, DELAYED_RESPONSE);
+        // Android Pay has a factory but it does not return an app.
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                "https://android.com/pay", AppPresence.NO_APPS, FactorySpeed.SLOW_FACTORY);
         mPaymentRequestTestRule.openPageAndClickNodeAndWait(
                 "androidPayBuy", mPaymentRequestTestRule.getShowFailed());
-        mPaymentRequestTestRule.expectResultContains(
-                new String[] {"Payment method not supported"});
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Payment method not supported"});
 
         // Make sure that no journey metrics were logged.
         Assert.assertEquals(0,

@@ -54,10 +54,6 @@
 //        are distinct from UI Events' "ContextMenu", which corresponds to
 //        USB 0x070065 [Keyboard Application] via evdev 0x7F KEY_COMPOSE,
 //        following Windows convention.)
-//
-//  [L3]  Linux flattens both USB 0x070048 [Keyboard Pause] and 0x0C00B1
-//        [Media Pause] to 0x77 KEY_PAUSE. We map the former, since [1]
-//        defines a 'Pause' code but no 'MediaPause' code.
 
 // Windows notes:
 //
@@ -486,7 +482,7 @@ DOM_CODE_DECLARATION {
 
   //              USB     evdev    XKB     Win     Mac
   DOM_CODE(0x0c00b0, 0x00cf, 0x00d7, 0x0000, 0xffff, "MediaPlay", MEDIA_PLAY),
-  //DOM_CODE(0x0c00b1, 0x0077, 0x007f, 0x0000, 0xffff, "MediaPause", MEDIA_PAUSE),
+  DOM_CODE(0x0c00b1, 0x00c9, 0x00d1, 0x0000, 0xffff, "MediaPause", MEDIA_PAUSE),
   DOM_CODE(0x0c00b2, 0x00a7, 0x00af, 0x0000, 0xffff, "MediaRecord", MEDIA_RECORD),
   DOM_CODE(0x0c00b3, 0x00d0, 0x00d8, 0x0000, 0xffff, "MediaFastForward", MEDIA_FAST_FORWARD),
   DOM_CODE(0x0c00b4, 0x00a8, 0x00b0, 0x0000, 0xffff, "MediaRewind", MEDIA_REWIND),

@@ -1262,7 +1262,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/payments/PackageManagerDelegate.java",
   "java/src/org/chromium/chrome/browser/payments/PayerData.java",
   "java/src/org/chromium/chrome/browser/payments/PaymentApp.java",
-  "java/src/org/chromium/chrome/browser/payments/PaymentAppFactory.java",
   "java/src/org/chromium/chrome/browser/payments/PaymentAppFactoryDelegate.java",
   "java/src/org/chromium/chrome/browser/payments/PaymentAppFactoryInterface.java",
   "java/src/org/chromium/chrome/browser/payments/PaymentAppFactoryParams.java",

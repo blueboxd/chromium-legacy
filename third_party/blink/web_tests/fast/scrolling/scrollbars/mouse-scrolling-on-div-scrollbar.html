@@ -16,17 +16,14 @@
   top: 100px;
   left: 100px;
 }
-.fast {
-  will-change: transform;
-}
 .space {
   height: 200px;
   width: 200px;
 }
 </style>
 
-<!-- Composited non-custom fast scroller -->
-<div id="standard" class="appearance standardLocation fast">
+<!-- Composited non-custom scroller -->
+<div id="standard" class="appearance standardLocation">
   <div class="space"></div>
 </div>
 
@@ -54,24 +51,28 @@ window.onload = () => {
     let x = standardRectFast.right - BUTTON_WIDTH / 2;
     let y = standardRectFast.bottom - SCROLL_CORNER - BUTTON_WIDTH / 2;
     await mouseClickOn(x, y);
+    await waitForAnimationEndTimeBased(() => {return standardDivFast.scrollTop;});
     assert_equals(standardDivFast.scrollTop, 40, "Pressing the down arrow didn't scroll.");
 
     // Click on the Up arrow for standardRectFast.
     x = standardRectFast.right - BUTTON_WIDTH / 2;
     y = standardRectFast.top + BUTTON_WIDTH / 2;
     await mouseClickOn(x, y);
+    await waitForAnimationEndTimeBased(() => {return standardDivFast.scrollTop;});
     assert_equals(standardDivFast.scrollTop, 0, "Pressing the up arrow didn't scroll.");
 
     // Click on the Right arrow for standardRectFast.
     x = standardRectFast.right - SCROLL_CORNER - BUTTON_WIDTH / 2;
     y = standardRectFast.bottom - BUTTON_WIDTH / 2;
     await mouseClickOn(x, y);
+    await waitForAnimationEndTimeBased(() => {return standardDivFast.scrollLeft;});
     assert_equals(standardDivFast.scrollLeft, 40, "Pressing the right arrow didn't scroll.");
 
     // Click on the Left arrow for standardRectFast.
     x = standardRectFast.left + BUTTON_WIDTH / 2;
     y = standardRectFast.bottom - BUTTON_WIDTH / 2;
     await mouseClickOn(x, y);
+    await waitForAnimationEndTimeBased(() => {return standardDivFast.scrollLeft;});
     assert_equals(standardDivFast.scrollLeft, 0, "Pressing the left arrow didn't scroll.");
   }, "Test mouse click on non-custom composited div scrollbar arrows.");
 
@@ -84,24 +85,28 @@ window.onload = () => {
     let x = standardRectFast.right - BUTTON_WIDTH / 2;
     let y = standardRectFast.bottom - SCROLL_CORNER - BUTTON_WIDTH - 2;
     await mouseClickOn(x, y);
+    await waitForAnimationEndTimeBased(() => {return standardDivFast.scrollTop;});
     assert_equals(standardDivFast.scrollTop, 74, "Pressing the down trackpart didn't scroll.");
 
     // Click on the track part just below the up arrow.
     x = standardRectFast.right - BUTTON_WIDTH / 2;
     y = standardRectFast.top + BUTTON_WIDTH + 2;
     await mouseClickOn(x, y);
+    await waitForAnimationEndTimeBased(() => {return standardDivFast.scrollTop;});
     assert_equals(standardDivFast.scrollTop, 0, "Pressing the up trackpart didn't scroll.");
 
     // Click on the track part just to the left of the right arrow.
     x = standardRectFast.right - SCROLL_CORNER - BUTTON_WIDTH - 2;
     y = standardRectFast.bottom - BUTTON_WIDTH / 2;
     await mouseClickOn(x, y);
+    await waitForAnimationEndTimeBased(() => {return standardDivFast.scrollLeft;});
     assert_equals(standardDivFast.scrollLeft, 74, "Pressing the right trackpart didn't scroll.");
 
     // Click on the track part just to the right of the left arrow.
     x = standardRectFast.left + BUTTON_WIDTH + 2;
     y = standardRectFast.bottom - BUTTON_WIDTH / 2;
     await mouseClickOn(x, y);
+    await waitForAnimationEndTimeBased(() => {return standardDivFast.scrollLeft;});
     assert_equals(standardDivFast.scrollLeft, 0, "Pressing the left trackpart didn't scroll.");
   }, "Test mouse click on non-custom composited div scrollbar empty trackparts.");
 }

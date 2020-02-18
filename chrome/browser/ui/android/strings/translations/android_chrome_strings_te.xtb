@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">లైట్</translation>
 <translation id="3303414029551471755">కంటెంట్‌ను డౌన్‌లోడ్ చేయడం కొనసాగించాలా?</translation>
 <translation id="3306398118552023113">ఈ యాప్ Chromeలో అమలవుతోంది</translation>
-<translation id="3312292613668865961">మీ వర్చువల్ రియాలిటీ పరికరం మరియు డేటాను యాక్సెస్ చేయడానికి సైట్‌లను అనుమతించే ముందు అడుగుతుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="3315103659806849044">మీరు ప్రస్తుతం మీ సింక్, Google సేవా సెట్టింగ్‌లను అనుకూలీకరిస్తున్నారు. సింక్‌ను ఆన్ చేయడం పూర్తి చేయడానికి, స్క్రీన్ దిగువ భాగం సమీపంలోని నిర్ధారించు బటన్‌ను నొక్కండి. పైకి నావిగేట్ చేయి</translation>
 <translation id="3328801116991980348">సైట్ సమాచారం</translation>
 <translation id="3333961966071413176">మొత్తం పరిచయాలు</translation>
@@ -514,7 +513,6 @@
 <translation id="4915549754973153784">పరికరాల కోసం స్కాన్ చేస్తున్నప్పుడు <ph name="BEGIN_LINK" />సహాయం పొందండి<ph name="END_LINK" />…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# పేజీ}other{# పేజీలు}}</translation>
 <translation id="4932247056774066048">మీరు <ph name="DOMAIN_NAME" /> నిర్వహణలోని ఖాతా నుండి సైన్ అవుట్ చేస్తున్నందున, ఈ పరికరం నుండి మీ Chrome డేటా తొలగించబడుతుంది. అది మీ Google ఖాతాలో అలాగే భద్రపరచబడుతుంది.</translation>
-<translation id="4935305910887312910">కెమెరా స్థానాన్ని పొందడానికి లేదా మీ గదిని మ్యాప్ చేయడానికి సైట్‌లను అనుమతించే ముందు అడగడం జరుగుతుంది (సిఫార్సు చేయబడింది)</translation>
 <translation id="4943703118917034429">వర్చువల్ రియాలిటీ</translation>
 <translation id="4943872375798546930">ఫలితాలు ఏవీ లేవు</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> మీ స్క్రీన్‌ని భాగస్వామ్యం చేస్తోంది</translation>
@@ -818,6 +816,7 @@
 <translation id="7141896414559753902">మళ్లింపులు, పాప్-అప్‌లను చూపనివ్వకుండా సైట్‌లను బ్లాక్ చేస్తుంది (సిఫార్సు చేయడమైనది)</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> నుండి <ph name="BEGIN_LINK" />అసలైన పేజీని లోడ్ చేయండి<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">గత 72 గంటలు</translation>
+<translation id="7173114856073700355">సెట్టింగ్‌లను తెరువు</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">మీరు దీన్ని తర్వాత సెట్టింగ్‌లలో మార్చవచ్చు</translation>
 <translation id="7180611975245234373">రిఫ్రెష్ చేయి</translation>
@@ -1025,7 +1024,6 @@
 <translation id="8664979001105139458">ఫైల్ పేరు ఇప్పటికే ఉంది</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{సిగ్నల్ సామర్థ్యం స్థాయి: # బార్}other{సిగ్నల్ సామర్థ్యం స్థాయి: # బార్‌లు}}</translation>
 <translation id="868929229000858085">మీ పరిచయాలను వెతకండి</translation>
-<translation id="8698438463325761328">వర్చువల్ రియాలిటీ పరికరం మరియు డేటాను యాక్సెస్ చేయకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
 <translation id="869891660844655955">గడువు తేదీ</translation>
 <translation id="8728487861892616501">యాప్‌ని ఉపయోగించడం ద్వారా, మీరు Chrome యొక్క <ph name="BEGIN_LINK1" />సేవా నిబంధనలు<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />గోప్యతా నోటీసు<ph name="END_LINK2" /> మరియు <ph name="BEGIN_LINK3" />Google ఖాతాల కోసం Family Linkలో నిర్వహించే గోప్యతా నోటీసు<ph name="END_LINK3" />ను అంగీకరిస్తున్నారు.</translation>
 <translation id="8748850008226585750">కంటెంట్‌లు దాచబడ్డాయి</translation>
@@ -1042,7 +1040,6 @@
 <translation id="883806473910249246">కంటెంట్‌ను డౌన్‌లోడ్ చేస్తున్నప్పుడు ఎర్రర్ ఏర్పడింది.</translation>
 <translation id="8840953339110955557">ఈ పేజీ మరియు ఆన్‌లైన్ వెర్షన్ వేరుగా ఉండవచ్చు.</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">కెమెరా స్థానాన్ని పొందకుండా లేదా మీ గదిని మ్యాప్ చేయకుండా సైట్‌లను బ్లాక్ చేస్తుంది</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ట్యాబ్</translation>
 <translation id="885701979325669005">నిల్వ</translation>
 <translation id="889338405075704026">Chrome సెట్టింగ్‌లకు వెళ్లు</translation>

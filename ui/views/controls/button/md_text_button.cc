@@ -149,8 +149,8 @@ std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
           corner_radius_)));
 }
 
-void MdTextButton::SetEnabledTextColors(SkColor color) {
-  LabelButton::SetEnabledTextColors(color);
+void MdTextButton::SetEnabledTextColors(base::Optional<SkColor> color) {
+  LabelButton::SetEnabledTextColors(std::move(color));
   UpdateColors();
 }
 

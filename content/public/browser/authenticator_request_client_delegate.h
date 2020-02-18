@@ -248,6 +248,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
       base::Optional<int> attempts,
       base::OnceCallback<void(std::string)> provide_pin_cb) override;
   void FinishCollectToken() override;
+  void OnRetryUserVerification(int attempts) override;
 
  protected:
   // CustomizeDiscoveryFactory may be overridden in order to configure

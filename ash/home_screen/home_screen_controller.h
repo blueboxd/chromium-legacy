@@ -12,9 +12,12 @@
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/overview/overview_session.h"
+#include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_observer.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/scoped_observer.h"
 
 namespace ash {
 
@@ -26,6 +29,7 @@ class HomeScreenDelegate;
 // and owns the HomeLauncherGestureHandler that transitions the launcher window
 // and other windows when the launcher is shown, hidden or animated.
 class ASH_EXPORT HomeScreenController : public OverviewObserver,
+                                        public SplitViewObserver,
                                         public WallpaperControllerObserver {
  public:
   HomeScreenController();
@@ -55,6 +59,26 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   // Responsible to starting or stopping |fps_counter_|.
   void StartTrackingAnimationSmoothness(int64_t display_id);
   void RecordAnimationSmoothness();
+
+  // Called when the app list view is shown.
+  // Note that IsHomeScreenVisible() might still return false at this point, as
+  // the home screen visibility takes into account whether the app list view is
+  // obscured by an app window, or overview UI. This method gets called when the
+  // app list view widget visibility changes (regardless of whether anything is
+  // stacked above the home screen).
+  // TODO(https://crbug.com/1053316): Make the home screen visibility API, and
+  // relationship between home screen controller and app list controller less
+  // confusing. HomeScreenController logic can probably be folded into
+  // AppListController (as level of abstraction it's providing is no longer
+  // necessary).
+  void OnAppListViewShown();
+
+  // Called when the app list view is hidden.
+  void OnAppListViewClosing();
+
+  // SplitViewObserver:
+  void OnSplitViewStateChanged(SplitViewController::State previous_state,
+                               SplitViewController::State state) override;
 
   HomeScreenDelegate* delegate() { return delegate_; }
 
@@ -111,6 +135,9 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   // Responsible for recording smoothness related UMA stats for homescreen
   // animations.
   std::unique_ptr<FpsCounter> fps_counter_;
+
+  ScopedObserver<SplitViewController, SplitViewObserver> split_view_observer_{
+      this};
 
   base::WeakPtrFactory<HomeScreenController> weak_ptr_factory_{this};
 

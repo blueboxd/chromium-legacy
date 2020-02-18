@@ -233,6 +233,11 @@ enum KeyboardCode {
   // Windows does not have a specific key code for Compose. We use the unused
   // 0xE6 (VK_ICO_CLEAR) code to represent Compose.
   VKEY_COMPOSE = 0xE6,
+  // Windows does not have specific key codes for Media Play and Media Pause. We
+  // use the unused 0xE9 (VK_OEM_RESET) and 0xEA (VK_OEM_JUMP) codes to
+  // represent them.
+  VKEY_MEDIA_PLAY = 0xE9,
+  VKEY_MEDIA_PAUSE = 0xEA,
 };
 
 }  // namespace ui

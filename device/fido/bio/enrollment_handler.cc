@@ -135,7 +135,7 @@ void BioEnrollmentHandler::OnTouch(FidoAuthenticator* authenticator) {
 
   authenticator_ = authenticator;
   state_ = State::kGettingRetries;
-  authenticator_->GetRetries(base::BindOnce(
+  authenticator_->GetPinRetries(base::BindOnce(
       &BioEnrollmentHandler::OnRetriesResponse, weak_factory_.GetWeakPtr()));
 }
 
@@ -179,7 +179,7 @@ void BioEnrollmentHandler::OnHavePINToken(
     switch (status) {
       case CtapDeviceResponseCode::kCtap2ErrPinInvalid:
         state_ = State::kGettingRetries;
-        authenticator_->GetRetries(
+        authenticator_->GetPinRetries(
             base::BindOnce(&BioEnrollmentHandler::OnRetriesResponse,
                            weak_factory_.GetWeakPtr()));
         return;

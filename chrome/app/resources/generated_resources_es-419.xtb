@@ -1381,7 +1381,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="2865919525181940183">Captura de pantalla de los programas que aparecen</translation>
 <translation id="286674810810214575">Buscando fuentes de energía…</translation>
 <translation id="2867768963760577682">Abrir como pestaña fija</translation>
-<translation id="2868184003987917410">No permitir que los sitios accedan a los datos y dispositivos de realidad virtual</translation>
 <translation id="2868746137289129307">Esta extensión está desactualizada e inhabilitada por política de la empresa. Podría habilitarse automáticamente cuando haya una versión nueva disponible.</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2870909136778269686">Actualizando…</translation>
@@ -1711,7 +1710,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3348038390189153836">Se detectó un dispositivo removible.</translation>
 <translation id="3349933790966648062">Espacio en memoria</translation>
 <translation id="3350117557200012647">Activar el modo de sincronización</translation>
-<translation id="3350244554415289209">Preguntarme cuando un sitio desee acceder a la posición de la cámara o mapear mi habitación (recomendado)</translation>
 <translation id="3355936511340229503">Error de conexión</translation>
 <translation id="3356580349448036450">Completo</translation>
 <translation id="3359256513598016054">Restricciones de directivas para certificados</translation>
@@ -1728,7 +1726,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3382073616108123819">El sistema no pudo determinar los identificadores de dispositivo para este dispositivo.</translation>
 <translation id="3382086682569279540">Pronto se quitará la cuenta que administras</translation>
 <translation id="3382200254148930874">Deteniendo la supervisión…</translation>
-<translation id="3383210070657133526"><ph name="URL" /> quiere iniciar sesiones de realidad virtual</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Separador</translation>
 <translation id="338691029516748599">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />%, administrada por tu administrador, conectar</translation>
@@ -1825,7 +1822,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="3511307672085573050">Copiar la dir&amp;ección del vínculo</translation>
 <translation id="351152300840026870">Fuente de ancho fijo</translation>
 <translation id="3511528412952710609">Breve</translation>
-<translation id="3513704683820682405">Realidad aumentada</translation>
 <translation id="3514373592552233661">Se utilizarán las redes preferidas en lugar de otras conocidas si hay más de una disponible</translation>
 <translation id="3515983984924808886">Vuelve a tocar tu llave de seguridad para confirmar el restablecimiento. Se borrará toda la información almacenada en la llave de seguridad, incluido su PIN.</translation>
 <translation id="3518985090088779359">Aceptar y continuar</translation>
@@ -2529,7 +2525,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="4501530680793980440">Confirmar eliminación</translation>
 <translation id="4502423230170890588">Quitar de este dispositivo</translation>
 <translation id="4504940961672722399">Para usar esta extensión, haz clic en este ícono o presiona <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4507164039066603071">No permitir que los sitios accedan a la posición de la cámara ni mapeen mi habitación</translation>
 <translation id="4508051413094283164">Abrir todo en una ventana de incógnito</translation>
 <translation id="4508265954913339219">Falló la activación</translation>
 <translation id="4508765956121923607">Ver códig&amp;o fuente</translation>
@@ -2835,7 +2830,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="494286511941020793">Ayuda para la configuración de proxy</translation>
 <translation id="4943368462779413526">Fútbol americano</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" quiere conectarse a un puerto en serie</translation>
-<translation id="4943703118917034429">Realidad virtual</translation>
 <translation id="4944310289250773232"><ph name="SAML_DOMAIN" /> aloja este servicio de autenticación</translation>
 <translation id="495170559598752135">Acciones</translation>
 <translation id="4952981627953231344">No se permite usar Plugin VM en este dispositivo. Comunícate con el administrador de dispositivos de tu organización.</translation>
@@ -4109,7 +4103,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="6758056191028427665">Danos tu opinión sobre nuestro trabajo.</translation>
 <translation id="6759193508432371551">Restablecer configuración de fábrica</translation>
 <translation id="6762833852331690540">Sí</translation>
-<translation id="6767115174726603949">Acceder a datos y dispositivos de realidad virtual</translation>
 <translation id="6767566652486411142">Elegir otro idioma…</translation>
 <translation id="6767639283522617719">No se puede unir al dominio. Asegúrate de que sea correcta la configuración de la unidad organizacional.</translation>
 <translation id="6769712124046837540">Agregando impresora…</translation>
@@ -4305,7 +4298,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="703001695939087067">Se activó el modo de vista general de ventana. Presiona Tab para navegar.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - Puerto en serie conectado</translation>
 <translation id="7031962166228839643">TPM se está preparando, espera (esto llevará algunos minutos)</translation>
-<translation id="7034615910652881882">Preguntarme cuando un sitio desee acceder a mis datos o dispositivos de realidad virtual</translation>
 <translation id="7037509989619051237">Texto de prueba</translation>
 <translation id="7039326228527141150">Acceder a dispositivos USB de <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Inicio de sesión de tarjeta inteligente de Microsoft</translation>
@@ -4611,7 +4603,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7443806024147773267">Cuando accedas a tu Cuenta de Google, podrás consultar tus contraseñas en cualquier momento</translation>
 <translation id="7444983668544353857">Inhabilitar <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Instala apps automáticamente</translation>
-<translation id="7448625729116931228">Preguntarme cuando un sitio desee acceder a mis datos o dispositivos de realidad virtual (recomendado)</translation>
 <translation id="7450761244949417357">Se está abriendo en <ph name="ALTERNATIVE_BROWSER_NAME" /> en este momento</translation>
 <translation id="7453008956351770337">Al seleccionar esta impresora, concedes a la siguiente extensión permiso para acceder a tu impresora.</translation>
 <translation id="7454548535253569100">Portal: <ph name="SUBFRAME_SITE" /></translation>
@@ -4748,7 +4739,6 @@ Para administrar la configuración de esta cuenta, instala la app de Family Lin
 <translation id="7652808307838961528">Editar persona, <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Las apps, extensiones y secuencias de comandos de usuario no se pueden agregar desde este sitio web</translation>
 <translation id="7652954539215530680">Crear un PIN</translation>
-<translation id="7653295403398566475">Preguntarme cuando un sitio desee acceder a la posición de la cámara o mapear mi habitación</translation>
 <translation id="7654941827281939388">Ya se está utilizando esta cuenta en esta computadora.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7659584679870740384">No tienes autorización para utilizar este dispositivo. Para obtener permiso de acceso, comunícate con el administrador.</translation>
@@ -5287,7 +5277,6 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="8338952601723052325">Sitio web del programador</translation>
 <translation id="8339059274628563283">El sitio <ph name="SITE" /> almacenó datos de forma local</translation>
 <translation id="833986336429795709">Para abrir este vínculo, selecciona una app</translation>
-<translation id="834057053932610950">Se produjo un error durante la configuración de Linux. Comunícate con el administrador.</translation>
 <translation id="8342861492835240085">Seleccionar una colección</translation>
 <translation id="834290227245955730">El PIN no es válido. Intentos restantes: <ph name="RETRIES" />.</translation>
 <translation id="8351419472474436977">Esta extensión tomó control de tu configuración de proxy, lo que significa que puede cambiar, dañar o espiar cualquier actividad que realices en línea. Si sabes con certeza por qué se produjo este cambio, probablemente no lo desees.</translation>

@@ -4324,6 +4324,9 @@ TEST_F(SurfaceAggregatorWithResourcesTest, SecureOutputTexture) {
 // simulates the Windows HDR behavior.
 TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
   constexpr float device_scale_factor = 1.0f;
+  const gfx::Rect child_pass_damage_rect(10, 20, 30, 40);
+  const gfx::Rect full_damage_rect(SurfaceSize());
+  const gfx::Rect partial_damage_rect(45, 45, 10, 10);
 
   std::vector<Quad> quads[2] = {
       {Quad::SolidColorQuad(SK_ColorWHITE, gfx::Rect(5, 5)),
@@ -4350,6 +4353,8 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
   std::vector<Pass> passes = {Pass(quads[0], 2, SurfaceSize()),
                               Pass(quads[1], 1, SurfaceSize())};
   passes[1].has_transparent_background = true;
+  passes[1].damage_rect = partial_damage_rect;
+  passes[0].damage_rect = child_pass_damage_rect;
 
   // HDR content with a transparent background will get an extra RenderPass
   // converting to SCRGB-linear.
@@ -4368,6 +4373,14 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
               aggregated_frame.render_pass_list[1]->content_color_usage);
     EXPECT_EQ(gfx::ContentColorUsage::kHDR,
               aggregated_frame.render_pass_list[2]->content_color_usage);
+
+    // All passes will have full damage for the first frame.
+    EXPECT_EQ(full_damage_rect,
+              aggregated_frame.render_pass_list[2]->damage_rect);
+    EXPECT_EQ(full_damage_rect,
+              aggregated_frame.render_pass_list[1]->damage_rect);
+    EXPECT_EQ(full_damage_rect,
+              aggregated_frame.render_pass_list[0]->damage_rect);
   }
 
   // HDR content with an opaque background will get an extra RenderPass
@@ -4387,6 +4400,15 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
               aggregated_frame.render_pass_list[1]->content_color_usage);
     EXPECT_EQ(gfx::ContentColorUsage::kHDR,
               aggregated_frame.render_pass_list[2]->content_color_usage);
+
+    // The root pass (drawn to the backbuffer) and the intermediate pass (drawn
+    // to extended-sRGB) will now have partial damage. Note that the root pass
+    // will end up getting full damage due to the OutputSurface::Reshape call
+    // that will be made by DirectRenderer.
+    EXPECT_EQ(partial_damage_rect,
+              aggregated_frame.render_pass_list[2]->damage_rect);
+    EXPECT_EQ(partial_damage_rect,
+              aggregated_frame.render_pass_list[1]->damage_rect);
   }
 
   // This simulates the situation where we don't have HDR capabilities. Opaque
@@ -4417,6 +4439,10 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
               aggregated_frame.render_pass_list[0]->content_color_usage);
     EXPECT_EQ(gfx::ContentColorUsage::kHDR,
               aggregated_frame.render_pass_list[1]->content_color_usage);
+
+    // The root pass has full damage because the intermediate pass was removed.
+    EXPECT_EQ(full_damage_rect,
+              aggregated_frame.render_pass_list[1]->damage_rect);
   }
 
   // When the root pass has a transparent background, we'll end up getting a
@@ -4436,6 +4462,13 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, ColorSpaceTestWin) {
               aggregated_frame.render_pass_list[1]->content_color_usage);
     EXPECT_EQ(gfx::ContentColorUsage::kHDR,
               aggregated_frame.render_pass_list[2]->content_color_usage);
+
+    // The root (drawn to backbuffer) and intermediate (drawn to extended-sRGB)
+    // passes have full damage because they were added this frame.
+    EXPECT_EQ(full_damage_rect,
+              aggregated_frame.render_pass_list[2]->damage_rect);
+    EXPECT_EQ(full_damage_rect,
+              aggregated_frame.render_pass_list[1]->damage_rect);
   }
 }
 

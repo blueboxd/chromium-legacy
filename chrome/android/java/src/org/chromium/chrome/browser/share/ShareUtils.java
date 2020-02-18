@@ -23,7 +23,7 @@ public class ShareUtils {
             return false;
         }
 
-        String url = tab.getUrl();
+        String url = tab.getUrlString();
         boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_URL_PREFIX)
                 || url.startsWith(UrlConstants.CHROME_NATIVE_URL_PREFIX);
         boolean isShowingInterstitialPage =

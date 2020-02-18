@@ -70,11 +70,13 @@ bool CheckSecurityRestrictions(LocalFrame& frame,
     return false;
   }
 
-  // We only allow text fragment anchors on a full navigation.
-  // TODO(crbug.com/1023640): Explore allowing scroll to text navigations from
-  // same-page bookmarks.
-  if (same_document_navigation)
-    return false;
+  // Allow same-document navigations only if they are browser initiated, e.g.
+  // same-document bookmarks.
+  if (same_document_navigation) {
+    return frame.Loader()
+        .GetDocumentLoader()
+        ->LastSameDocumentNavigationWasBrowserInitiated();
+  }
 
   // Allow text fragments on same-origin initiated navigations.
   if (frame.Loader().GetDocumentLoader()->IsSameOriginNavigation())

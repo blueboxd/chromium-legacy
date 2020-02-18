@@ -50,13 +50,11 @@ XHRReplayData::XHRReplayData(ExecutionContext* execution_context,
                              const AtomicString& method,
                              const KURL& url,
                              bool async,
-                             scoped_refptr<EncodedFormData> form_data,
                              bool include_credentials)
     : execution_context_(execution_context),
       method_(method),
       url_(url),
       async_(async),
-      form_data_(form_data),
       include_credentials_(include_credentials) {}
 
 // ResourceData
@@ -112,11 +110,6 @@ size_t NetworkResourcesData::ResourceData::RemoveContent() {
     post_data_ = nullptr;
   }
 
-  if (xhr_replay_data_ && xhr_replay_data_->FormData()) {
-    result += xhr_replay_data_->FormData()->SizeInBytes();
-    xhr_replay_data_->DeleteFormData();
-  }
-
   return result;
 }
 
@@ -162,9 +155,6 @@ uint64_t NetworkResourcesData::ResourceData::DataLength() const {
 
   if (post_data_)
     data_length += post_data_->SizeInBytes();
-
-  if (xhr_replay_data_ && xhr_replay_data_->FormData())
-    data_length += xhr_replay_data_->FormData()->SizeInBytes();
 
   return data_length;
 }
@@ -369,15 +359,6 @@ void NetworkResourcesData::SetXHRReplayData(const String& request_id,
   ResourceData* resource_data = ResourceDataForRequestId(request_id);
   if (!resource_data || resource_data->IsContentEvicted())
     return;
-
-  if (xhr_replay_data->FormData()) {
-    if (!EnsureFreeSpace(xhr_replay_data->FormData()->SizeInBytes())) {
-      xhr_replay_data->DeleteFormData();
-    } else {
-      content_size_ += xhr_replay_data->FormData()->SizeInBytes();
-      request_ids_deque_.push_back(request_id);
-    }
-  }
 
   resource_data->SetXHRReplayData(xhr_replay_data);
 }

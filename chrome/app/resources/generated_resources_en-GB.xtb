@@ -1384,7 +1384,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="2865919525181940183">Screenshot of programs that are currently on the screen</translation>
 <translation id="286674810810214575">Checking power sources…</translation>
 <translation id="2867768963760577682">Open as a Pinned Tab</translation>
-<translation id="2868184003987917410">Do not allow sites to access your virtual reality devices/data</translation>
 <translation id="2868746137289129307">This extension is outdated and disabled by enterprise policy. It might become enabled automatically when a newer version is available.</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2870909136778269686">Updating...</translation>
@@ -1714,7 +1713,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3348038390189153836">Removable device detected</translation>
 <translation id="3349933790966648062">Memory footprint</translation>
 <translation id="3350117557200012647">Get into pairing mode</translation>
-<translation id="3350244554415289209">Ask when a site wants to access your camera position or map your room (recommended)</translation>
 <translation id="3355936511340229503">Connection error</translation>
 <translation id="3356580349448036450">Complete</translation>
 <translation id="3359256513598016054">Certificate Policy Constraints</translation>
@@ -1731,7 +1729,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3382073616108123819">Oops!  The system failed to determine device identifiers for this device.</translation>
 <translation id="3382086682569279540">The account that you manage will be removed soon</translation>
 <translation id="3382200254148930874">Stopping supervision...</translation>
-<translation id="3383210070657133526"><ph name="URL" /> wants to be able to start virtual reality sessions</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Separator</translation>
 <translation id="338691029516748599">Network <ph name="NETWORK_INDEX" /> of <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, signal strength <ph name="SIGNAL_STRENGTH" />%, managed by your administrator, connect</translation>
@@ -1828,7 +1825,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="3511307672085573050">Copy Link Addr&amp;ess</translation>
 <translation id="351152300840026870">Fixed-width font</translation>
 <translation id="3511528412952710609">Short</translation>
-<translation id="3513704683820682405">Augmented Reality</translation>
 <translation id="3514373592552233661">Preferred networks will be preferred over other known networks if more than one is available</translation>
 <translation id="3515983984924808886">Touch your security key again to confirm reset. All information stored on the security key, including its PIN, will be deleted.</translation>
 <translation id="3518985090088779359">Accept &amp; continue</translation>
@@ -2532,7 +2528,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="4501530680793980440">Confirm Removal</translation>
 <translation id="4502423230170890588">Remove from this device</translation>
 <translation id="4504940961672722399">Use this extension by clicking on this icon or by pressing <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4507164039066603071">Do not allow sites to access your camera position or map your room</translation>
 <translation id="4508051413094283164">Open all in incognito window</translation>
 <translation id="4508265954913339219">Activation failed</translation>
 <translation id="4508765956121923607">View S&amp;ource</translation>
@@ -2838,7 +2833,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="494286511941020793">Proxy Configuration Help</translation>
 <translation id="4943368462779413526">Football</translation>
 <translation id="4943691134276646401">'<ph name="CHROME_EXTENSION_NAME" />' wants to connect to a serial port</translation>
-<translation id="4943703118917034429">Virtual Reality</translation>
 <translation id="4944310289250773232">This authentication service is hosted by <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Actions</translation>
 <translation id="4952981627953231344">Plugin VM isn't allowed on this device. Contact your organisation's device administrator.</translation>
@@ -4112,7 +4106,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="6758056191028427665">Let us know how we’re doing.</translation>
 <translation id="6759193508432371551">Factory reset</translation>
 <translation id="6762833852331690540">On</translation>
-<translation id="6767115174726603949">Access virtual reality devices and data</translation>
 <translation id="6767566652486411142">Choose another language…</translation>
 <translation id="6767639283522617719">Can’t join the domain. Make sure that the settings are correct for the organisational unit.</translation>
 <translation id="6769712124046837540">Adding printer...</translation>
@@ -4308,7 +4301,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="703001695939087067">Entered window overview mode. Press tab to navigate.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – Serial port connected</translation>
 <translation id="7031962166228839643">TPM is being prepared, please wait (this may take a few minutes)...</translation>
-<translation id="7034615910652881882">Ask when a site wants to access your virtual reality devices/data</translation>
 <translation id="7037509989619051237">Text to preview</translation>
 <translation id="7039326228527141150">Access USB devices from <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Microsoft Smart Card Logon</translation>
@@ -4614,7 +4606,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7443806024147773267">Access your passwords whenever you're signed in to your Google account</translation>
 <translation id="7444983668544353857">Disable <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Automatically install apps</translation>
-<translation id="7448625729116931228">Ask when a site wants to access your virtual reality devices/data (recommended)</translation>
 <translation id="7450761244949417357">Opening in <ph name="ALTERNATIVE_BROWSER_NAME" /> now</translation>
 <translation id="7453008956351770337">By selecting this printer, you are giving the following extension the permission to access your printer:</translation>
 <translation id="7454548535253569100">Portal: <ph name="SUBFRAME_SITE" /></translation>
@@ -4751,7 +4742,6 @@ You can manage this account’s settings by installing the Family Link app on yo
 <translation id="7652808307838961528">Edit person, <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Apps, extensions and user scripts cannot be added from this website</translation>
 <translation id="7652954539215530680">Create a PIN</translation>
-<translation id="7653295403398566475">Ask when a site wants to access your camera position or map your room</translation>
 <translation id="7654941827281939388">This account is already being used on this computer.</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7659584679870740384">You are not authorised to use this device. Please contact the administrator for sign-in permission.</translation>
@@ -5290,7 +5280,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8338952601723052325">Developer website</translation>
 <translation id="8339059274628563283"><ph name="SITE" /> locally stored data</translation>
 <translation id="833986336429795709">To open this link, choose an app</translation>
-<translation id="834057053932610950">There was an error while configuring Linux. Contact your administrator.</translation>
 <translation id="8342861492835240085">Select a collection</translation>
 <translation id="834290227245955730">Invalid PIN. Retries left: <ph name="RETRIES" />.</translation>
 <translation id="8351419472474436977">This extension has taken control of your proxy settings, which means it can change, break or eavesdrop on anything that you do online. If you aren't sure why this change happened, you probably don't want it.</translation>

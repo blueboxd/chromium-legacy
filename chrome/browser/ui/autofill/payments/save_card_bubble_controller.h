@@ -57,9 +57,6 @@ class SaveCardBubbleController {
   virtual base::string16 GetAcceptButtonText() const = 0;
   virtual base::string16 GetDeclineButtonText() const = 0;
 
-  // Returns the tooltip message for the save card icon.
-  virtual base::string16 GetSaveCardIconTooltipText() const = 0;
-
   // Returns the account info of the signed-in user.
   virtual const AccountInfo& GetAccountInfo() const = 0;
 
@@ -84,17 +81,6 @@ class SaveCardBubbleController {
   // Returns whether or not a sign in / sync promo needs to be shown.
   virtual bool ShouldShowSignInPromo() const = 0;
 
-  // Returns true iff credit card upload save is in progress and the saving
-  // animation should be shown.
-  virtual bool ShouldShowSavingCardAnimation() const = 0;
-
-  // Returns true iff the card saved animation should be shown.
-  virtual bool ShouldShowCardSavedLabelAnimation() const = 0;
-
-  // Returns true iff credit card upload save failed and the failure badge on
-  // the icon should be shown.
-  virtual bool ShouldShowSaveFailureBadge() const = 0;
-
   // Interaction.
   // OnSyncPromoAccepted is called when the Dice Sign-in promo is clicked.
   virtual void OnSyncPromoAccepted(const AccountInfo& account,
@@ -109,15 +95,11 @@ class SaveCardBubbleController {
   virtual void OnLegalMessageLinkClicked(const GURL& url) = 0;
   virtual void OnManageCardsClicked() = 0;
   virtual void OnBubbleClosed() = 0;
-  // Once the animation ends, it shows a new bubble if needed.
-  virtual void OnAnimationEnded() = 0;
 
   // State.
 
   // Returns empty vector if no legal message should be shown.
   virtual const LegalMessageLines& GetLegalMessageLines() const = 0;
-  // Returns true iff the save card icon is visible.
-  virtual bool IsIconVisible() const = 0;
   // Returns true iff is showing or has showed bubble for upload save.
   virtual bool IsUploadSave() const = 0;
   // Returns the current state of the bubble.

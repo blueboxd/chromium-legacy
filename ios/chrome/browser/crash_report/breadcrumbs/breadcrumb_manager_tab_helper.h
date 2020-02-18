@@ -48,10 +48,6 @@ extern const char kBreadcrumbPageLoadFailure[];
 // Page.
 extern const char kBreadcrumbNtpNavigation[];
 
-// Appended to |kBreadcrumbPageLoaded| event if page load has
-// succeeded.
-extern const char kBreadcrumbPageLoadSuccess[];
-
 // Appended to |kBreadcrumbDidStartNavigation| event if navigation
 // was a client side redirect (f.e. window.open without user gesture).
 extern const char kBreadcrumbRendererInitiatedByScript[];

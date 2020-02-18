@@ -621,10 +621,6 @@ bool WebFrameWidgetImpl::SelectionBounds(WebRect& anchor_web,
   return true;
 }
 
-bool WebFrameWidgetImpl::IsAcceleratedCompositingActive() const {
-  return is_accelerated_compositing_active_;
-}
-
 void WebFrameWidgetImpl::SetRemoteViewportIntersection(
     const ViewportIntersectionState& intersection_state) {
   // Remote viewports are only applicable to local frames with remote ancestors.

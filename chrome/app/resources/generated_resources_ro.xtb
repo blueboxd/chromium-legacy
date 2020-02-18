@@ -420,7 +420,7 @@
 <translation id="1572876035008611720">Introdu adresa de e-mail</translation>
 <translation id="1576594961618857597">Avatar alb prestabilit</translation>
 <translation id="1578558981922970608">Închide forțat</translation>
-<translation id="1580179297662343964">Aceasta este blocată, deoarece include conținut destinat adulților</translation>
+<translation id="1580179297662343964">Extensia este blocată, deoarece include conținut destinat adulților</translation>
 <translation id="1581962803218266616">Afișează în Finder</translation>
 <translation id="1582955169539260415">șterge [<ph name="FINGERPRINT_NAME" />]</translation>
 <translation id="1584990664401018068">Este posibil ca rețeaua Wi-Fi pe care o folosești (<ph name="NETWORK_ID" />) să solicite autentificare.</translation>
@@ -1384,7 +1384,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2865919525181940183">Captură de ecran a programelor afișate pe ecran</translation>
 <translation id="286674810810214575">Se verifică sursele de alimentare…</translation>
 <translation id="2867768963760577682">Deschideți ca filă fixată</translation>
-<translation id="2868184003987917410">Nu permite site-urilor să acceseze dispozitivele de realitate virtuală/datele conexe</translation>
 <translation id="2868746137289129307">Această extensie este învechită și a fost dezactivată de o politică de companie. Dacă este disponibilă o nouă versiune, extensia ar putea fi activată automat.</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2870909136778269686">Se actualizează...</translation>
@@ -1714,7 +1713,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3348038390189153836">S-a detectat un dispozitiv detașabil</translation>
 <translation id="3349933790966648062">Memorie utilizată</translation>
 <translation id="3350117557200012647">Intră în modul de asociere</translation>
-<translation id="3350244554415289209">Anunță-mă dacă un site vrea să acceseze poziția camerei video sau să mapeze camera (recomandat)</translation>
 <translation id="3355936511340229503">Eroare de conexiune</translation>
 <translation id="3356580349448036450">Finalizat</translation>
 <translation id="3359256513598016054">Limitări ale politicii pentru certificate</translation>
@@ -1731,7 +1729,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3382073616108123819">Hopa! Sistemul nu a stabilit identificatorii de dispozitiv pentru acest dispozitiv.</translation>
 <translation id="3382086682569279540">Contul pe care îl gestionezi va fi eliminat în curând</translation>
 <translation id="3382200254148930874">Se oprește supravegherea…</translation>
-<translation id="3383210070657133526"><ph name="URL" /> dorește să poată iniția sesiuni de realitate virtuală</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Separator</translation>
 <translation id="338691029516748599">Rețeaua <ph name="NETWORK_INDEX" /> din <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, puterea semnalului: <ph name="SIGNAL_STRENGTH" /> %, gestionată de administratorul tău, conectează-te</translation>
@@ -1828,7 +1825,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3511307672085573050">Copiază adre&amp;sa linkului</translation>
 <translation id="351152300840026870">Font cu lățime fixă</translation>
 <translation id="3511528412952710609">Scurtă</translation>
-<translation id="3513704683820682405">Realitate augmentată</translation>
 <translation id="3514373592552233661">Dacă sunt disponibile mai multe rețele, vor fi folosite cele preferate</translation>
 <translation id="3515983984924808886">Atinge cheia de securitate din nou pentru a confirma resetarea. Toate informațiile stocate pe cheia de securitate, inclusiv codul său PIN, vor fi șterse.</translation>
 <translation id="3518985090088779359">Acceptă și continuă</translation>
@@ -2532,7 +2528,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4501530680793980440">Confirmați eliminarea</translation>
 <translation id="4502423230170890588">Elimină de pe acest dispozitiv</translation>
 <translation id="4504940961672722399">Utilizați această extensie dând clic pe pictogramă sau apăsând pe <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4507164039066603071">Nu permite site-urilor să acceseze poziția camerei video sau să mapeze camera</translation>
 <translation id="4508051413094283164">Deschide totul într-o fereastră incognito</translation>
 <translation id="4508265954913339219">Activarea nu a reușit</translation>
 <translation id="4508765956121923607">Afișează s&amp;ursa</translation>
@@ -2838,7 +2833,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="494286511941020793">Ajutor de configurare pentru proxy</translation>
 <translation id="4943368462779413526">Minge de fotbal</translation>
 <translation id="4943691134276646401">„<ph name="CHROME_EXTENSION_NAME" />” dorește să se conecteze la un port serial</translation>
-<translation id="4943703118917034429">Realitate virtuală</translation>
 <translation id="4944310289250773232">Acest serviciu de autentificare este găzduit de <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Acțiuni</translation>
 <translation id="4952981627953231344">Plugin VM nu este permis pe acest dispozitiv. Contactează administratorul dispozitivului din organizație.</translation>
@@ -4112,7 +4106,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="6758056191028427665">Spune-ne cum ne descurcăm.</translation>
 <translation id="6759193508432371551">Resetare la setările din fabrică</translation>
 <translation id="6762833852331690540">Activat</translation>
-<translation id="6767115174726603949">să acceseze dispozitivele de realitate virtuală și datele conexe</translation>
 <translation id="6767566652486411142">Alege altă limbă...</translation>
 <translation id="6767639283522617719">Dispozitivul nu poate fi asociat domeniului. Asigură-te că setările pentru unitatea organizațională sunt corecte.</translation>
 <translation id="6769712124046837540">Se adaugă imprimanta...</translation>
@@ -4308,7 +4301,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="703001695939087067">S-a trecut în modul de prezentare a ferestrei. Apasă tasta Tab pentru a naviga.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - Portul serial este conectat</translation>
 <translation id="7031962166228839643">Se pregătește TPM. Așteaptă (poate dura câteva minute)...</translation>
-<translation id="7034615910652881882">Anunță-mă dacă un site vrea să acceseze dispozitivele de realitate virtuală/datele conexe</translation>
 <translation id="7037509989619051237">Textul pentru previzualizare</translation>
 <translation id="7039326228527141150">Accesează dispozitivele USB de la <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Conectare Microsoft cu card inteligent</translation>
@@ -4614,7 +4606,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7443806024147773267">Accesează-ți parolele oricând te conectezi la Contul Google</translation>
 <translation id="7444983668544353857">Dezactivează <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Instalează automat aplicații</translation>
-<translation id="7448625729116931228">Anunță-mă dacă un site vrea să acceseze dispozitivele de realitate virtuală/datele conexe (recomandat)</translation>
 <translation id="7450761244949417357">Se deschide acum în <ph name="ALTERNATIVE_BROWSER_NAME" /></translation>
 <translation id="7453008956351770337">Selectând această imprimantă, acorzi următoarei extensii permisiunea de a accesa imprimanta:</translation>
 <translation id="7454548535253569100">Portal: <ph name="SUBFRAME_SITE" /></translation>
@@ -4751,7 +4742,6 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7652808307838961528">Editează persoana, <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Nu poți adăuga aplicații, extensii și scripturi de utilizator de pe acest site</translation>
 <translation id="7652954539215530680">Creează un cod PIN</translation>
-<translation id="7653295403398566475">Anunță-mă dacă un site vrea să acceseze poziția camerei video sau să mapeze camera</translation>
 <translation id="7654941827281939388">Acest cont este deja utilizat pe acest computer.</translation>
 <translation id="7658239707568436148">Anulează</translation>
 <translation id="7659584679870740384">Nu ești autorizat(ă) să folosești acest dispozitiv. Contactează administratorul pentru permisiunea de conectare.</translation>
@@ -5290,7 +5280,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8338952601723052325">Site-ul dezvoltatorului</translation>
 <translation id="8339059274628563283">Date salvate local de <ph name="SITE" /></translation>
 <translation id="833986336429795709">Pentru a deschide acest link, alege o aplicație</translation>
-<translation id="834057053932610950">A apărut o eroare la configurarea Linux. Contactează administratorul.</translation>
 <translation id="8342861492835240085">Selectează o colecție</translation>
 <translation id="834290227245955730">PIN nevalid. Număr de reîncercări rămase: <ph name="RETRIES" />.</translation>
 <translation id="8351419472474436977">Această extensie a preluat controlul asupra setărilor de proxy, ceea ce înseamnă că poate modifica, întrerupe sau intercepta tot ceea ce faceți online. Dacă nu știți sigur de ce a apărut această modificare, probabil că nu ați aprobat-o.</translation>

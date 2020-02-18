@@ -128,7 +128,7 @@ public class HomeButton extends ChromeImageButton
         if (!ChromeFeatureList.isInitialized()) return;
 
         if (isHomepageSettingsUIConversionEnabled()) {
-            menu.add(Menu.NONE, ID_SETTINGS, Menu.NONE, R.string.homebutton_context_menu_settings)
+            menu.add(Menu.NONE, ID_SETTINGS, Menu.NONE, R.string.options_homepage_edit_title)
                     .setOnMenuItemClickListener(this);
         } else {
             menu.add(Menu.NONE, ID_REMOVE, Menu.NONE, R.string.remove)

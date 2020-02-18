@@ -20,5 +20,5 @@ public interface AutofillPaymentAppCreator {
      * request.
      */
     @Nullable
-    PaymentInstrument createPaymentAppForCard(CreditCard card);
+    PaymentApp createPaymentAppForCard(CreditCard card);
 }

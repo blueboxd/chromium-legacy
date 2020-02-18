@@ -183,6 +183,7 @@ const base::FilePath::CharType kSingletonSocketFilename[] =
 const base::FilePath::CharType kSupervisedUserSettingsFilename[] =
     FPL("Managed Mode Settings");
 const base::FilePath::CharType kThemePackFilename[] = FPL("Cached Theme.pak");
+const base::FilePath::CharType kTrustTokenFilename[] = FPL("Trust Tokens");
 const base::FilePath::CharType kWebAppDirname[] = FPL("Web Applications");
 // Only use if the ENABLE_REPORTING build flag is true
 const base::FilePath::CharType kReportingAndNelStoreFilename[] =

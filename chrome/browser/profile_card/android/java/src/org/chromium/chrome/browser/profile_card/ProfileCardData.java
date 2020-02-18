@@ -6,19 +6,23 @@ package org.chromium.chrome.browser.profile_card;
 
 import android.graphics.Bitmap;
 
+import java.util.ArrayList;
+
 /** Defines the profile card data. */
 public class ProfileCardData {
     private Bitmap mAvatarBitmap;
     private String mTitle;
     private String mDescription;
     private String mPostFrequency;
+    private ArrayList<ContentPreviewPostData> mPostDataList;
 
-    public ProfileCardData(
-            Bitmap avatarBitmap, String title, String description, String postFrequency) {
+    public ProfileCardData(Bitmap avatarBitmap, String title, String description,
+            String postFrequency, ArrayList<ContentPreviewPostData> postDataList) {
         mAvatarBitmap = avatarBitmap;
         mTitle = title;
         mDescription = description;
         mPostFrequency = postFrequency;
+        mPostDataList = postDataList;
     }
 
     public Bitmap getAvatarBitmap() {
@@ -35,5 +39,9 @@ public class ProfileCardData {
 
     public String getPostFrequency() {
         return mPostFrequency;
+    }
+
+    public ArrayList<ContentPreviewPostData> getPostDataList() {
+        return mPostDataList;
     }
 }

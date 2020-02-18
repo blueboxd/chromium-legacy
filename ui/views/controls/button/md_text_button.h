@@ -52,7 +52,7 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   SkColor GetInkDropBaseColor() const override;
-  void SetEnabledTextColors(SkColor color) override;
+  void SetEnabledTextColors(base::Optional<SkColor> color) override;
   void SetText(const base::string16& text) override;
   PropertyEffects UpdateStyleToIndicateDefaultStatus() override;
   void StateChanged(ButtonState old_state) override;

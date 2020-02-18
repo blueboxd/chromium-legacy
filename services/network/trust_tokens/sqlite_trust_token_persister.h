@@ -44,6 +44,10 @@ class SQLiteTrustTokenPersister : public TrustTokenPersister {
   //
   // |on_done_initializing| will be called once the persister's underlying
   // state has been initialized from disk.
+  //
+  // If initialization fails, |on_done_initializing| will still be provided a
+  // non-null pointer to a usable SQLiteTrustTokenPersister, but the persister
+  // will only cache writes to memory, rather than persist them to disk.
   static void CreateForFilePath(
       scoped_refptr<base::SequencedTaskRunner> db_task_runner,
       const base::FilePath& path,

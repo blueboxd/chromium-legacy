@@ -17,6 +17,7 @@ namespace switches {
 VIZ_COMMON_EXPORT extern const char kDeJellyScreenWidth[];
 VIZ_COMMON_EXPORT extern const char kDeadlineToSynchronizeSurfaces[];
 VIZ_COMMON_EXPORT extern const char kDisableFrameRateLimit[];
+VIZ_COMMON_EXPORT extern const char kDoubleBufferCompositing[];
 VIZ_COMMON_EXPORT extern const char kEnableDeJelly[];
 VIZ_COMMON_EXPORT extern const char kEnableHardwareOverlays[];
 VIZ_COMMON_EXPORT extern const char kEnableVizDevTools[];

@@ -165,6 +165,13 @@ class MetricIntegrationTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, LayoutInstability) {
   LoadHTML(R"HTML(
     <script src="/layout-instability/resources/util.js"></script>
+    <script src="resources/testharness.js"></script>
+    <script>
+    // Tell testharness.js to not wait for 'real' tests; we only want
+    // testharness.js for its assertion helpers.
+    setup({'output': false});
+    </script>
+
     <style>
     #shifter { position: relative; width: 300px; height: 200px; }
     </style>
@@ -183,9 +190,12 @@ IN_PROC_BROWSER_TEST_F(MetricIntegrationTest, LayoutInstability) {
       const expectedScore = computeExpectedScore(300 * (200 + 160), 160);
 
       // Observer fires after the frame is painted.
-      if (watcher.score != 0) throw new Error("bad score");
+      assert_equals(watcher.score, 0, "The shift should not have happened yet");
       await watcher.promise;
-      if (watcher.score != expectedScore) throw new Error("bad score");
+
+      // Verify that the Performance API returns what we'd expect.
+      assert_equals(watcher.score, expectedScore, "bad score");
+
       return expectedScore;
     };
     </script>

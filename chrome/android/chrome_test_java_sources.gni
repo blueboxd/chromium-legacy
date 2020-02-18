@@ -414,6 +414,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/settings/SettingsActivityTest.java",
   "javatests/src/org/chromium/chrome/browser/settings/accessibility/AccessibilitySettingsTest.java",
   "javatests/src/org/chromium/chrome/browser/settings/homepage/HomepageSettingsFragmentTest.java",
+  "javatests/src/org/chromium/chrome/browser/settings/homepage/HomepageSettingsFragmentWithEditorTest.java",
   "javatests/src/org/chromium/chrome/browser/settings/notifications/NotificationsSettingsTest.java",
   "javatests/src/org/chromium/chrome/browser/settings/password/PasswordSettingsTest.java",
   "javatests/src/org/chromium/chrome/browser/settings/privacy/BrowsingDataBridgeTest.java",

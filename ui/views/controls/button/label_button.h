@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/button/button.h"
@@ -61,7 +62,7 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   void SetTextColor(ButtonState for_state, SkColor color);
 
   // Sets the text colors shown for the non-disabled states to |color|.
-  virtual void SetEnabledTextColors(SkColor color);
+  virtual void SetEnabledTextColors(base::Optional<SkColor> color);
 
   // Sets drop shadows underneath the text.
   void SetTextShadows(const gfx::ShadowValues& shadows);
@@ -151,9 +152,6 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Fills |params| with information about the button.
   virtual void GetExtraParams(ui::NativeTheme::ExtraParams* params) const;
 
-  // Resets colors from the NativeTheme, explicitly set colors are unchanged.
-  void ResetColorsFromNativeTheme();
-
   // Changes the visual styling to match changes in the default state.  Returns
   // the PropertyEffects triggered as a result.
   virtual PropertyEffects UpdateStyleToIndicateDefaultStatus();
@@ -182,6 +180,9 @@ class VIEWS_EXPORT LabelButton : public Button, public NativeThemeDelegate {
   // Both methods will then use the max of inset height + label height and this
   // height as total height, and clamp to min/max sizes as appropriate.
   gfx::Size GetUnclampedSizeWithoutLabel() const;
+
+  // Resets colors from the NativeTheme, explicitly set colors are unchanged.
+  void ResetColorsFromNativeTheme();
 
   // Updates additional state related to focus or default status, rather than
   // merely the Button::state(). E.g. ensures the label text color is

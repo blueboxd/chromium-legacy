@@ -86,7 +86,7 @@ public class PaymentRequestMultiplePaymentInstrumentsTest implements MainActivit
 
         // The user has a complete autofill profile.
         String billingAddressId = helper.setProfile(AUTOFILL_PROFILE);
-        // Add the autofill payment instruments.
+        // Add the autofill card.
         ArrayList<String> guids = new ArrayList<>();
         for (int i = 0; i < mCreditCardsToAdd.length; i++) {
             // CREDIT_CARDS[0] has no billing address.
@@ -97,11 +97,10 @@ public class PaymentRequestMultiplePaymentInstrumentsTest implements MainActivit
             guids.add(creditCardId);
         }
 
-        // Set up the autofill payment instruments use stats.
+        // Set up the autofill card use stats.
         for (int i = 0; i < guids.size(); i++) {
-            PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(
-                    guids.get(i), mCountsToSet[i]);
-            PaymentPreferencesUtil.setPaymentInstrumentLastUseDate(guids.get(i), mDatesToSet[i]);
+            PaymentPreferencesUtil.setPaymentAppUseCountForTest(guids.get(i), mCountsToSet[i]);
+            PaymentPreferencesUtil.setPaymentAppLastUseDate(guids.get(i), mDatesToSet[i]);
         }
     }
 
@@ -122,7 +121,7 @@ public class PaymentRequestMultiplePaymentInstrumentsTest implements MainActivit
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(5, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(5, mPaymentRequestTestRule.getNumberOfPaymentApps());
         int i = 0;
         // The two complete cards are sorted by frecency.
         Assert.assertTrue(mPaymentRequestTestRule.getPaymentMethodSuggestionLabel(i++).contains(
@@ -161,7 +160,7 @@ public class PaymentRequestMultiplePaymentInstrumentsTest implements MainActivit
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentApps());
 
         // Verify that the missing fields of the most complete payment method has been recorded.
         Assert.assertEquals(1,
@@ -186,7 +185,7 @@ public class PaymentRequestMultiplePaymentInstrumentsTest implements MainActivit
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
         mPaymentRequestTestRule.clickInPaymentMethodAndWait(
                 R.id.payments_section, mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentApps());
 
         // Verify that the missing fields of the most complete payment method has been recorded.
         Assert.assertEquals(1,
@@ -209,7 +208,7 @@ public class PaymentRequestMultiplePaymentInstrumentsTest implements MainActivit
         mDatesToSet = new int[] {};
 
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(0, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(0, mPaymentRequestTestRule.getNumberOfPaymentApps());
 
         // Verify that the missing fields of the most complete payment method has been recorded.
         Assert.assertEquals(1,

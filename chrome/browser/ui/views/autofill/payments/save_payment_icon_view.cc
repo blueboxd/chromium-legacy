@@ -6,7 +6,7 @@
 
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
-#include "chrome/browser/ui/autofill/payments/save_card_bubble_controller.h"
+#include "chrome/browser/ui/autofill/payments/save_payment_icon_controller.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -39,12 +39,12 @@ SavePaymentIconView::SavePaymentIconView(
 SavePaymentIconView::~SavePaymentIconView() = default;
 
 views::BubbleDialogDelegateView* SavePaymentIconView::GetBubble() const {
-  SaveCardBubbleController* controller = GetController();
+  SavePaymentIconController* controller = GetController();
   if (!controller)
     return nullptr;
 
   return static_cast<autofill::SaveCardBubbleViews*>(
-      controller->GetSaveCardBubbleView());
+      controller->GetSaveBubbleView());
 }
 
 void SavePaymentIconView::UpdateImpl() {
@@ -52,7 +52,7 @@ void SavePaymentIconView::UpdateImpl() {
     return;
 
   // |controller| may be nullptr due to lazy initialization.
-  SaveCardBubbleController* controller = GetController();
+  SavePaymentIconController* controller = GetController();
 
   bool command_enabled =
       SetCommandEnabled(controller && controller->IsIconVisible());
@@ -79,7 +79,7 @@ const gfx::VectorIcon& SavePaymentIconView::GetVectorIcon() const {
 }
 
 const gfx::VectorIcon& SavePaymentIconView::GetVectorIconBadge() const {
-  SaveCardBubbleController* controller = GetController();
+  SavePaymentIconController* controller = GetController();
   if (controller && controller->ShouldShowSaveFailureBadge())
     return kBlockedBadgeIcon;
 
@@ -93,11 +93,11 @@ const char* SavePaymentIconView::GetClassName() const {
 base::string16 SavePaymentIconView::GetTextForTooltipAndAccessibleName() const {
   base::string16 text;
 
-  SaveCardBubbleController* const controller = GetController();
+  SavePaymentIconController* const controller = GetController();
   if (controller)
-    text = controller->GetSaveCardIconTooltipText();
+    text = controller->GetSavePaymentIconTooltipText();
 
-  // Because the card icon is in an animated container, it is still briefly
+  // Because the payment icon is in an animated container, it is still briefly
   // visible as it's disappearing. Since our test infrastructure does not allow
   // views to have empty tooltip text when they are visible, we instead return
   // the default text.
@@ -105,15 +105,15 @@ base::string16 SavePaymentIconView::GetTextForTooltipAndAccessibleName() const {
                       : text;
 }
 
-SaveCardBubbleController* SavePaymentIconView::GetController() const {
-  return SaveCardBubbleController::Get(GetWebContents());
+SavePaymentIconController* SavePaymentIconView::GetController() const {
+  return SavePaymentIconController::Get(GetWebContents());
 }
 
 void SavePaymentIconView::AnimationEnded(const gfx::Animation* animation) {
   IconLabelBubbleView::AnimationEnded(animation);
 
   // |controller| may be nullptr due to lazy initialization.
-  SaveCardBubbleController* controller = GetController();
+  SavePaymentIconController* controller = GetController();
   if (controller)
     controller->OnAnimationEnded();
 }

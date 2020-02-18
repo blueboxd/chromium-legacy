@@ -50,12 +50,7 @@ BrowserAccessibilityManagerWin::BrowserAccessibilityManagerWin(
   Initialize(initial_tree);
 }
 
-BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() {
-  // Destroy the tree in the subclass, rather than in the inherited
-  // destructor, otherwise our overrides of functions like
-  // OnNodeWillBeDeleted won't be called.
-  tree_.reset(NULL);
-}
+BrowserAccessibilityManagerWin::~BrowserAccessibilityManagerWin() = default;
 
 // static
 ui::AXTreeUpdate BrowserAccessibilityManagerWin::GetEmptyDocument() {
@@ -716,7 +711,7 @@ void BrowserAccessibilityManagerWin::HandleSelectedStateChanged(
 void BrowserAccessibilityManagerWin::BeforeAccessibilityEvents() {
   BrowserAccessibilityManager::BeforeAccessibilityEvents();
 
-  for (const auto& targeted_event : event_generator_) {
+  for (const auto& targeted_event : event_generator()) {
     if (targeted_event.event_params.event ==
         ui::AXEventGenerator::Event::IGNORED_CHANGED) {
       BrowserAccessibility* event_target = GetFromAXNode(targeted_event.node);

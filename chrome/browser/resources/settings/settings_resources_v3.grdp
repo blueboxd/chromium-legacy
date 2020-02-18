@@ -71,16 +71,26 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/controls/settings_toggle_button.m.js"
            use_base_dir="false"
            type="BINDATA" />
-      <if expr="not chromeos">
-        <include name="IDR_SETTINGS_DEFAULT_BROWSER_BROWSER_PROXY_M_JS"
-                 file="${root_gen_dir}/chrome/browser/resources/settings/default_browser_page/default_browser_browser_proxy.m.js"
-                 use_base_dir="false"
-                 type="BINDATA" />
-        <include name="IDR_SETTINGS_DEFAULT_BROWSER_PAGE_M_JS"
-                 file="${root_gen_dir}/chrome/browser/resources/settings/default_browser_page/default_browser_page.m.js"
-                 use_base_dir="false"
-                 type="BINDATA" />
-      </if>
+  <if expr="not chromeos">
+    <include name="IDR_SETTINGS_DEFAULT_BROWSER_BROWSER_PROXY_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/default_browser_page/default_browser_browser_proxy.m.js"
+             use_base_dir="false"
+             type="BINDATA" />
+    <include name="IDR_SETTINGS_DEFAULT_BROWSER_PAGE_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/default_browser_page/default_browser_page.m.js"
+             use_base_dir="false"
+             type="BINDATA" />
+  </if>
+  <include name="IDR_SETTINGS_DOWNLOADS_BROWSER_PROXY_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/downloads_page/downloads_browser_proxy.m.js"
+           use_base_dir="false"
+           type="BINDATA"
+           preprocess="true" />
+  <include name="IDR_SETTINGS_DOWNLOADS_PAGE_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/downloads_page/downloads_page.m.js"
+           use_base_dir="false"
+           type="BINDATA"
+           preprocess="true" />
   <include name="IDR_SETTINGS_EXTENSION_CONTROL_BROWSER_PROXY_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/extension_control_browser_proxy.m.js"
            use_base_dir="false"

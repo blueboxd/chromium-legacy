@@ -53,6 +53,7 @@ import org.chromium.content_public.browser.WebContentsAccessibility;
 import org.chromium.content_public.common.ResourceRequestBody;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.url.GURL;
 
 /**
  * Implementation of the interface {@link Tab}. Contains and manages a {@link ContentView}.
@@ -156,7 +157,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
     /**
      * URL of the page currently loading. Used as a fall-back in case tab restore fails.
      */
-    private String mUrl;
+    private GURL mUrl;
 
     /**
      * True while a page load is in progress.
@@ -351,21 +352,21 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
 
     @Override
     public String getUrlString() {
-        return getUrl();
+        return getUrl().getSpec();
     }
 
     @CalledByNative
     @Override
-    public String getUrl() {
-        String url = getWebContents() != null ? getWebContents().getVisibleUrlString() : "";
+    public GURL getUrl() {
+        GURL url = getWebContents() != null ? getWebContents().getVisibleUrl() : GURL.emptyGURL();
 
         // If we have a ContentView, or a NativePage, or the url is not empty, we have a WebContents
         // so cache the WebContent's url. If not use the cached version.
-        if (getWebContents() != null || isNativePage() || !TextUtils.isEmpty(url)) {
+        if (getWebContents() != null || isNativePage() || !url.getSpec().isEmpty()) {
             mUrl = url;
         }
 
-        return mUrl != null ? mUrl : "";
+        return mUrl != null ? mUrl : GURL.emptyGURL();
     }
 
     @CalledByNative
@@ -836,7 +837,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
 
             mLaunchTypeAtCreation = mLaunchType;
             mPendingLoadParams = loadUrlParams;
-            if (loadUrlParams != null) mUrl = loadUrlParams.getUrl();
+            if (loadUrlParams != null) mUrl = new GURL(loadUrlParams.getUrl());
 
             TabHelpers.initTabHelpers(this, parent, creationState);
 
@@ -887,7 +888,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
         assert state != null;
         mFrozenContentsState = state.contentsState;
         mTimestampMillis = state.timestampMillis;
-        mUrl = state.getVirtualUrlFromState();
+        mUrl = new GURL(state.getVirtualUrlFromState());
         mTitle = state.getDisplayTitleFromState();
         mLaunchTypeAtCreation = state.tabLaunchTypeAtCreation;
         mRootId = state.rootId == Tab.INVALID_TAB_ID ? mId : state.rootId;
@@ -1442,7 +1443,7 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             initWebContents(webContents);
 
             if (failedToRestore) {
-                String url = TextUtils.isEmpty(mUrl) ? UrlConstants.NTP_URL : mUrl;
+                String url = mUrl.getSpec().isEmpty() ? UrlConstants.NTP_URL : mUrl.getSpec();
                 loadUrl(new LoadUrlParams(url, PageTransition.GENERATED));
             }
         } finally {

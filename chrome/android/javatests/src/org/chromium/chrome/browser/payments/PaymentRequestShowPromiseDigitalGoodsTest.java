@@ -17,6 +17,9 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppSpeed;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
@@ -49,8 +52,7 @@ public class PaymentRequestShowPromiseDigitalGoodsTest implements MainActivitySt
     @MediumTest
     @Feature({"Payments"})
     public void testDigitalGoodsFastApp() throws TimeoutException {
-        mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
-                PaymentRequestTestRule.IMMEDIATE_RESPONSE);
+        mRule.addPaymentAppFactory("basic-card", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mRule.openPage();
         mRule.executeJavaScriptAndWaitForResult("create();");
         mRule.triggerUIAndWait(mRule.getReadyToPay());
@@ -72,8 +74,8 @@ public class PaymentRequestShowPromiseDigitalGoodsTest implements MainActivitySt
     @MediumTest
     @Feature({"Payments"})
     public void testDigitalGoodsSlowApp() throws TimeoutException {
-        mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
-                PaymentRequestTestRule.DELAYED_RESPONSE, PaymentRequestTestRule.DELAYED_CREATION);
+        mRule.addPaymentAppFactory(
+                "basic-card", AppPresence.HAVE_APPS, FactorySpeed.SLOW_FACTORY, AppSpeed.SLOW_APP);
         mRule.openPage();
         mRule.executeJavaScriptAndWaitForResult("create();");
         mRule.triggerUIAndWait(mRule.getReadyToPay());
@@ -95,8 +97,7 @@ public class PaymentRequestShowPromiseDigitalGoodsTest implements MainActivitySt
     @MediumTest
     @Feature({"Payments"})
     public void testSkipUIFastApp() throws TimeoutException {
-        mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
-                PaymentRequestTestRule.IMMEDIATE_RESPONSE);
+        mRule.addPaymentAppFactory("basic-card", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mRule.openPage();
         mRule.executeJavaScriptAndWaitForResult("create();");
         mRule.enableSkipUIForBasicCard();
@@ -110,8 +111,8 @@ public class PaymentRequestShowPromiseDigitalGoodsTest implements MainActivitySt
     @MediumTest
     @Feature({"Payments"})
     public void testSkipUISlowApp() throws TimeoutException {
-        mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
-                PaymentRequestTestRule.DELAYED_RESPONSE, PaymentRequestTestRule.DELAYED_CREATION);
+        mRule.addPaymentAppFactory(
+                "basic-card", AppPresence.HAVE_APPS, FactorySpeed.SLOW_FACTORY, AppSpeed.SLOW_APP);
         mRule.openPage();
         mRule.executeJavaScriptAndWaitForResult("create();");
         mRule.enableSkipUIForBasicCard();

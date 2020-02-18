@@ -402,7 +402,7 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="3687295507293856493">Fai unha suposición na cabeceira da columna da cela actual</translation>
 <translation id="3692274950075847560">B:<ph name="RESULT" /></translation>
 <translation id="370367311675896712">Riscado</translation>
-<translation id="3704037000573066734">Preme a tecla de busca+A, J para ir aos detalles</translation>
+<translation id="3704037000573066734">Preme a tecla de busca + A ou J para ir aos detalles</translation>
 <translation id="3712520970944678024">Voz de control</translation>
 <translation id="371302509916403935">Subliñado</translation>
 <translation id="3716845769494773620">Múltiples liñas</translation>
@@ -825,7 +825,7 @@ Se remataches este titorial, utiliza ChromeVox para ir ao botón Pechar e facer 
 <translation id="6714813999819678458">Título de nivel 2 anterior</translation>
 <translation id="6716505898850596801">Teclas do modificador</translation>
 <translation id="6720808010210697990">Non estás nunha táboa</translation>
-<translation id="6730312624811567147">Usa as teclas de busca e frecha cara á esquerda ou á dereita para acceder a Inicio ou Fin. Usa as teclas de busca, Control e frecha cara á esquerda ou á dereita para acceder a Control. Inicio ou Fin. Usa as teclas de busca e frecha cara arriba ou abaixo para retroceder ou avanzar pola páxina</translation>
+<translation id="6730312624811567147">Usa a tecla de busca + frecha cara á esquerda ou á dereita para acceder a Inicio ou Fin. Usa a tecla de busca + Control ou a frecha cara á esquerda ou á dereita para acceder a Control + Inicio ou Fin. Usa a tecla de busca + frecha cara arriba ou abaixo para retroceder ou avanzar pola páxina</translation>
 <translation id="6734854816611871228"><ph name="VALUE" />, caixa de combinación</translation>
 <translation id="6735257939857578167">con <ph name="NUM" /> elementos</translation>
 <translation id="6736510033526053669">pestana creada</translation>

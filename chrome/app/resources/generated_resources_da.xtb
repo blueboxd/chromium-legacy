@@ -1384,7 +1384,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="2865919525181940183">Screenshot af de programmer, der lige nu er på skærmen</translation>
 <translation id="286674810810214575">Tjekker strømkilder...</translation>
 <translation id="2867768963760577682">Åbn som fastgjort fane</translation>
-<translation id="2868184003987917410">Tillad ikke, at websites får adgang til dine virtual reality-enheder/-data</translation>
 <translation id="2868746137289129307">Denne udvidelse er forældet og deaktiveret af virksomhedspolitikken. Den kan aktiveres automatisk, når en nyere version er tilgængelig.</translation>
 <translation id="2870560284913253234">Website</translation>
 <translation id="2870909136778269686">Opdaterer…</translation>
@@ -1714,7 +1713,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3348038390189153836">Der er registreret en flytbar enhed</translation>
 <translation id="3349933790966648062">Hukommelsesforbrug</translation>
 <translation id="3350117557200012647">Start parringstilstand</translation>
-<translation id="3350244554415289209">Spørg, når et website vil have adgang til din kameraposition eller vil kortlægge dit rum (anbefales)</translation>
 <translation id="3355936511340229503">Forbindelsesfejl</translation>
 <translation id="3356580349448036450">Fuldført</translation>
 <translation id="3359256513598016054">Begrænsninger for certifikatpolitik</translation>
@@ -1731,7 +1729,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3382073616108123819">Ups! Systemet kunne ikke bestemme enhedsidentifikatorer til denne enhed.</translation>
 <translation id="3382086682569279540">Den konto, du administrerer, fjernes snart</translation>
 <translation id="3382200254148930874">Afslutter tilsyn…</translation>
-<translation id="3383210070657133526"><ph name="URL" /> ønsker at kunne starte virtual reality-sessioner</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" /> %</translation>
 <translation id="338583716107319301">Separator</translation>
 <translation id="338691029516748599">Netværk <ph name="NETWORK_INDEX" /> af <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, signalstyrke <ph name="SIGNAL_STRENGTH" /> %, administreret af din administrator, opret forbindelse</translation>
@@ -1828,7 +1825,6 @@ Du kan administrere indstillingerne for denne konto ved at installere Family Lin
 <translation id="3511307672085573050">Kopier linkadr&amp;esse</translation>
 <translation id="351152300840026870">Skrifttype med fast bredde</translation>
 <translation id="3511528412952710609">Kort</translation>
-<translation id="3513704683820682405">Augmented reality</translation>
 <translation id="3514373592552233661">Favoritter netværk prioriteres frem for andre kendte netværk, hvis der er mere end ét tilgængeligt netværk</translation>
 <translation id="3515983984924808886">Tryk på din sikkerhedsnøgle igen for at bekræfte nulstillingen. Alle de oplysninger, der er gemt på sikkerhedsnøglen, bl.a. pinkoden, slettes.</translation>
 <translation id="3518985090088779359">Acceptér og fortsæt</translation>
@@ -2532,7 +2528,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4501530680793980440">Bekræft fjernelse</translation>
 <translation id="4502423230170890588">Fjern fra denne enhed</translation>
 <translation id="4504940961672722399">Brug denne udvidelse ved at klikke på dette ikon eller ved at trykke på <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4507164039066603071">Giv ikke websites adgang til din kameraposition eller til at kortlægge dit rum</translation>
 <translation id="4508051413094283164">Åbn alle i et inkognitovindue</translation>
 <translation id="4508265954913339219">Aktiveringen mislykkedes</translation>
 <translation id="4508765956121923607">Vis k&amp;ilde</translation>
@@ -2838,7 +2833,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="494286511941020793">Hjælp til proxykonfiguration</translation>
 <translation id="4943368462779413526">Amerikansk fodbold</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" anmoder om at oprette forbindelse til en seriel port</translation>
-<translation id="4943703118917034429">Virtual reality</translation>
 <translation id="4944310289250773232">Denne godkendelsestjeneste hostes af <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Handlinger</translation>
 <translation id="4952981627953231344">Plugin VM er ikke tilladt på denne enhed. Kontakt din organisations enhedsadministrator.</translation>
@@ -3531,7 +3525,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
     <ph name="LINE_BREAK" />
     Dette billede vises på loginskærmen og låseskærmen på Chromebook-enheden.</translation>
 <translation id="5925147183566400388">Markør for erklæring om certificeringspraksis</translation>
-<translation id="592815705005983377">Administration og valg af nye diskstørrelse</translation>
+<translation id="592815705005983377">Administration og valg af ny diskstørrelse</translation>
 <translation id="592880897588170157">Download PDF-filer, i stedet for at de åbnes automatisk i Chrome</translation>
 <translation id="5931146425219109062">Læse og redigere alle dine data på de websites, du besøger</translation>
 <translation id="5932124097031739492">Linux er blevet opgraderet.</translation>
@@ -4042,7 +4036,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="665061930738760572">Åbn i &amp;nyt vindue</translation>
 <translation id="6651237644330755633">Hav tillid til dette certifikat i forbindelse med identificering af websites</translation>
 <translation id="6651823585377804376">Downloaden indeholder malware.</translation>
-<translation id="6653184508164114047">Administration og valg af nye diskstørrelse</translation>
+<translation id="6653184508164114047">Administration og valg af ny diskstørrelse</translation>
 <translation id="665355505818177700">Chrome <ph name="MS_AD_NAME" />-integration understøttes kun på x86_64-platforme. Chromebooks, der er bygget på en ARM- eller x86-platform, understøtter ikke denne funktionalitet.</translation>
 <translation id="6655190889273724601">Udviklertilstand</translation>
 <translation id="6655458902729017087">Skjul konti</translation>
@@ -4113,7 +4107,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="6758056191028427665">Fortæl os, hvad du synes.</translation>
 <translation id="6759193508432371551">Gendannelse af fabriksindstillinger</translation>
 <translation id="6762833852331690540">Til</translation>
-<translation id="6767115174726603949">Have adgang til virtual reality-enheder og -data</translation>
 <translation id="6767566652486411142">Vælg et andet sprog...</translation>
 <translation id="6767639283522617719">Enheden kunne ikke knyttes til domænet. Sørg for, at indstillingerne er angivet korrekt for organisationsenheden.</translation>
 <translation id="6769712124046837540">Tilføjer printer...</translation>
@@ -4309,7 +4302,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="703001695939087067">Tilstanden for vinduesoversigt blev åbnet. Tryk på fanen for at navigere.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – tilsluttet en serieport</translation>
 <translation id="7031962166228839643">TPM forberedes. Vent lidt (dette kan tage et par minutter)...</translation>
-<translation id="7034615910652881882">Spørg, når et website vil have adgang til dine virtual reality-enheder/-data</translation>
 <translation id="7037509989619051237">Tekst til eksempel på oplæsning</translation>
 <translation id="7039326228527141150">Få adgang til USB-enheder fra <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Logon med Microsoft-chipkort</translation>
@@ -4615,7 +4607,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7443806024147773267">Få adgang til dine adgangskoder, så snart du logger ind på din Google-konto</translation>
 <translation id="7444983668544353857">Deaktiver <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Installer apps automatisk</translation>
-<translation id="7448625729116931228">Spørg, når et website vil have adgang til dine virtual reality-enheder/-data (anbefales)</translation>
 <translation id="7450761244949417357">Åbner i <ph name="ALTERNATIVE_BROWSER_NAME" /> nu</translation>
 <translation id="7453008956351770337">Ved at vælge denne printer giver du følgende udvidelser adgang til din printer:</translation>
 <translation id="7454548535253569100">Portal: <ph name="SUBFRAME_SITE" /></translation>
@@ -4752,7 +4743,6 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7652808307838961528">Rediger person, <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Apps, udvidelser og brugerscripts kan ikke tilføjes fra dette website</translation>
 <translation id="7652954539215530680">Opret en pinkode</translation>
-<translation id="7653295403398566475">Spørg, når et website vil have adgang til din kameraposition eller vil kortlægge dit rum</translation>
 <translation id="7654941827281939388">Denne konto er allerede i brug på denne computer.</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7659584679870740384">Du har ikke tilladelse til at bruge denne enhed. Kontakt administratoren for at få tilladelse til at logge ind.</translation>
@@ -5290,7 +5280,6 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8338952601723052325">Udviklerens website</translation>
 <translation id="8339059274628563283">Data fra <ph name="SITE" />, der er gemt lokalt</translation>
 <translation id="833986336429795709">Vælg en app for at åbne dette link</translation>
-<translation id="834057053932610950">Der opstod en fejl under konfigurationen af Linux. Kontakt din administrator.</translation>
 <translation id="8342861492835240085">Vælg en samling</translation>
 <translation id="834290227245955730">Pinkoden er ugyldig. Antal resterende forsøg: <ph name="RETRIES" />.</translation>
 <translation id="8351419472474436977">En udvidelse har taget kontrol over dine proxyindstillinger, hvilket betyder, at den kan ændre, ødelægge eller aflytte alt, hvad du foretager dig på nettet. Hvis du ikke er sikker på, hvorfor denne ændring er sket, er den sandsynligvis uønsket.</translation>

@@ -61,6 +61,8 @@ public final class ChromePreferenceKeys {
     public static final String AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN =
             "AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN";
 
+    public static final String BACKUP_FIRST_BACKUP_DONE = "first_backup_done";
+
     public static final String BOOKMARKS_LAST_MODIFIED_FOLDER_ID = "last_bookmark_folder_id";
     public static final String BOOKMARKS_LAST_USED_URL = "enhanced_bookmark_last_used_url";
     public static final String BOOKMARKS_LAST_USED_PARENT =
@@ -771,6 +773,7 @@ public final class ChromePreferenceKeys {
                 AUTOFILL_ASSISTANT_ENABLED,
                 AUTOFILL_ASSISTANT_ONBOARDING_ACCEPTED,
                 AUTOFILL_ASSISTANT_SKIP_INIT_SCREEN,
+                BACKUP_FIRST_BACKUP_DONE,
                 BOOKMARKS_LAST_MODIFIED_FOLDER_ID,
                 BOOKMARKS_LAST_USED_URL,
                 BOOKMARKS_LAST_USED_PARENT,

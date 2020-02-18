@@ -73,6 +73,7 @@ extern const base::FilePath::CharType kSingletonLockFilename[];
 extern const base::FilePath::CharType kSingletonSocketFilename[];
 extern const base::FilePath::CharType kSupervisedUserSettingsFilename[];
 extern const base::FilePath::CharType kThemePackFilename[];
+extern const base::FilePath::CharType kTrustTokenFilename[];
 extern const base::FilePath::CharType kWebAppDirname[];
 extern const base::FilePath::CharType kReportingAndNelStoreFilename[];
 

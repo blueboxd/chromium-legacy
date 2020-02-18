@@ -1383,7 +1383,6 @@ Pode gerir as definições desta conta ao instalar a aplicação Family Link no 
 <translation id="2865919525181940183">Captura de ecrã dos programas atualmente no ecrã</translation>
 <translation id="286674810810214575">A verificar as fontes alimentação…</translation>
 <translation id="2867768963760577682">Abrir como Separador Fixo</translation>
-<translation id="2868184003987917410">Não permitir que os sites acedam aos seus dados/dispositivos de realidade virtual</translation>
 <translation id="2868746137289129307">Esta extensão está desatualizada e foi desativada por uma política empresarial; pode ser ativada automaticamente quando estiver disponível uma versão mais recente.</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="2870909136778269686">A atualizar...</translation>
@@ -1714,7 +1713,6 @@ Pretende pará-lo?</translation>
 <translation id="3348038390189153836">Detetado dispositivo removível</translation>
 <translation id="3349933790966648062">Utilização da memória</translation>
 <translation id="3350117557200012647">Aceder ao modo de sincronização</translation>
-<translation id="3350244554415289209">Perguntar quando um site pretender aceder à posição da sua câmara ou mapear a sua divisão (recomendado)</translation>
 <translation id="3355936511340229503">Erro de ligação</translation>
 <translation id="3356580349448036450">Concluído</translation>
 <translation id="3359256513598016054">Restrições de políticas de certificados</translation>
@@ -1731,7 +1729,6 @@ Pretende pará-lo?</translation>
 <translation id="3382073616108123819">Ups! O sistema não conseguiu determinar identificadores de dispositivos para este dispositivo.</translation>
 <translation id="3382086682569279540">A conta que gere será removida brevemente</translation>
 <translation id="3382200254148930874">A parar a supervisão…</translation>
-<translation id="3383210070657133526"><ph name="URL" /> pretende poder iniciar sessões de realidade virtual.</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Separador</translation>
 <translation id="338691029516748599">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" />%, gerida pelo administrador, ligar</translation>
@@ -1828,7 +1825,6 @@ Pretende pará-lo?</translation>
 <translation id="3511307672085573050">Copiar &amp;Endereço do Link</translation>
 <translation id="351152300840026870">Tipo de letra com largura fixa</translation>
 <translation id="3511528412952710609">Curto</translation>
-<translation id="3513704683820682405">Realidade aumentada</translation>
 <translation id="3514373592552233661">As redes preferidas terão prioridade em relação a outras redes conhecidas caso mais do que uma estejam disponíveis</translation>
 <translation id="3515983984924808886">Toque novamente na chave de segurança para confirmar a reposição. Todas as informações armazenadas na chave de segurança, incluindo o respetivo PIN, serão eliminadas.</translation>
 <translation id="3518985090088779359">Aceitar e continuar</translation>
@@ -2532,7 +2528,6 @@ Pretende pará-lo?</translation>
 <translation id="4501530680793980440">Confirmar Remoção</translation>
 <translation id="4502423230170890588">Remover deste dispositivo</translation>
 <translation id="4504940961672722399">Clique no ícone ou prima <ph name="EXTENSION_SHORTCUT" /> para utilizar esta extensão.</translation>
-<translation id="4507164039066603071">Não permitir que os sites acedam à posição da sua câmara nem mapeiem a sua divisão</translation>
 <translation id="4508051413094283164">Abrir tudo numa janela de navegação anónima</translation>
 <translation id="4508265954913339219">A activação falhou</translation>
 <translation id="4508765956121923607">Ver &amp;Origem</translation>
@@ -2838,7 +2833,6 @@ Pretende pará-lo?</translation>
 <translation id="494286511941020793">Ajuda de configuração de proxy</translation>
 <translation id="4943368462779413526">Bola de futebol</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" pretende estabelecer ligação a uma porta de série</translation>
-<translation id="4943703118917034429">Realidade virtual</translation>
 <translation id="4944310289250773232">Este serviço de autenticação é alojado por <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Ações</translation>
 <translation id="4952981627953231344">O Plugin VM não é permitido neste dispositivo. Contacte o administrador do dispositivo da sua entidade.</translation>
@@ -4113,7 +4107,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="6758056191028427665">Dê-nos a sua opinião acerca do nosso desempenho.</translation>
 <translation id="6759193508432371551">Reposição de dados de fábrica</translation>
 <translation id="6762833852331690540">Ativado</translation>
-<translation id="6767115174726603949">Aceder a dados e dispositivos de realidade virtual</translation>
 <translation id="6767566652486411142">Selecionar outro idioma…</translation>
 <translation id="6767639283522617719">Não é possível associar ao domínio. Certifique-se de que as definições estão corretas para a unidade organizacional.</translation>
 <translation id="6769712124046837540">A adicionar impressora…</translation>
@@ -4309,7 +4302,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="703001695939087067">Entrou no modo de vista geral de janelas. Prima a tecla de tabulação para navegar.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - porta de série associada</translation>
 <translation id="7031962166228839643">O TPM está a ser preparado, aguarde (pode demorar alguns minutos)...</translation>
-<translation id="7034615910652881882">Perguntar quando um site pretender aceder aos seus dados/dispositivos de realidade virtual</translation>
 <translation id="7037509989619051237">Texto para pré-visualização</translation>
 <translation id="7039326228527141150">Aceder a dispositivos USB de <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Início de sessão de smart card Microsoft</translation>
@@ -4615,7 +4607,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7443806024147773267">Aceda às suas palavras-passe sempre que tiver sessão iniciada na sua Conta Google.</translation>
 <translation id="7444983668544353857">Desactivar <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Instalar aplicações automaticamente</translation>
-<translation id="7448625729116931228">Perguntar quando um site pretender aceder aos seus dados/dispositivos de realidade virtual (recomendado)</translation>
 <translation id="7450761244949417357">A abrir no <ph name="ALTERNATIVE_BROWSER_NAME" /> agora</translation>
 <translation id="7453008956351770337">Ao selecionar esta impressora, está a conceder à seguinte extensão a autorização para aceder à sua impressora:</translation>
 <translation id="7454548535253569100">Portal: <ph name="SUBFRAME_SITE" /></translation>
@@ -4752,7 +4743,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7652808307838961528">Editar pessoa: <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Não é possível adicionar aplicações, extensões e scripts de utilizador a partir deste Website.</translation>
 <translation id="7652954539215530680">Crie um PIN</translation>
-<translation id="7653295403398566475">Perguntar quando um site pretender aceder à posição da sua câmara ou mapear a sua divisão</translation>
 <translation id="7654941827281939388">Esta conta já está a ser utilizada neste computador.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7659584679870740384">Não está autorizado a utilizar este dispositivo. Contacte o gestor para obter autorização de início de sessão.</translation>
@@ -5290,7 +5280,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8338952601723052325">Website para programadores</translation>
 <translation id="8339059274628563283">Dados de <ph name="SITE" /> armazenados localmente</translation>
 <translation id="833986336429795709">Para abrir este link, escolher uma aplicação</translation>
-<translation id="834057053932610950">Ocorreu um erro ao configurar o Linux. Contacte o seu administrador.</translation>
 <translation id="8342861492835240085">Selecionar uma coleção</translation>
 <translation id="834290227245955730">PIN inválido. Tentativas restantes: <ph name="RETRIES" />.</translation>
 <translation id="8351419472474436977">Esta extensão apoderou-se das suas definições de proxy, o que significa que pode alterar, interromper ou intercetar qualquer coisa que esteja a fazer online. Se não tem a certeza do motivo pelo qual aconteceu esta alteração, é provável que não a queira.</translation>

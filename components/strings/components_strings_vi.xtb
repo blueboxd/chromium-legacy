@@ -573,7 +573,6 @@
 <translation id="3495081129428749620">Tìm trong trang
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Chính sách này bị bỏ qua vì một chính sách khác thuộc cùng nhóm chính sách có mức ưu tiên cao hơn.</translation>
-<translation id="3513704683820682405">Thực tế tăng cường</translation>
 <translation id="3518941727116570328">Xử lý nhiều đối tượng</translation>
 <translation id="3528171143076753409">Chứng chỉ của máy chủ không đáng tin cậy.</translation>
 <translation id="3528485271872257980">Nâu đậm</translation>
@@ -898,7 +897,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> cho biết</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4930153903256238152">Dung tích lớn</translation>
-<translation id="4943703118917034429">Thực tế ảo</translation>
 <translation id="4943872375798546930">Không tìm thấy kết quả nào</translation>
 <translation id="4950898438188848926">Nút chuyển đổi tab, nhấn phím Enter để chuyển sang tab đang mở, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Tác vụ</translation>
@@ -1717,7 +1715,6 @@ Thông tin chi tiết bổ sung:
 <translation id="861775596732816396">Kích thước 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Lưu thẻ này vào thiết bị này</translation>
-<translation id="8647750283161643317">Đặt lại tất cả về mặc định</translation>
 <translation id="8663226718884576429">Tóm tắt đơn hàng, <ph name="TOTAL_LABEL" />, chi tiết khác</translation>
 <translation id="867224526087042813">Chữ ký</translation>
 <translation id="8676424191133491403">Không trì hoãn</translation>

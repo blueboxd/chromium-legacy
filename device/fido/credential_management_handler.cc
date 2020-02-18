@@ -77,7 +77,7 @@ void CredentialManagementHandler::OnTouch(FidoAuthenticator* authenticator) {
   }
 
   authenticator_ = authenticator;
-  authenticator_->GetRetries(
+  authenticator_->GetPinRetries(
       base::BindOnce(&CredentialManagementHandler::OnRetriesResponse,
                      weak_factory_.GetWeakPtr()));
 }
@@ -130,7 +130,7 @@ void CredentialManagementHandler::OnHavePINToken(
 
   if (status == CtapDeviceResponseCode::kCtap2ErrPinInvalid) {
     state_ = State::kGettingRetries;
-    authenticator_->GetRetries(
+    authenticator_->GetPinRetries(
         base::BindOnce(&CredentialManagementHandler::OnRetriesResponse,
                        weak_factory_.GetWeakPtr()));
     return;

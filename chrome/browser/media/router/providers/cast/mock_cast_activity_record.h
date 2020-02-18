@@ -34,6 +34,9 @@ class MockCastActivityRecord : public CastActivityRecord {
   MOCK_METHOD2(SendSetVolumeRequestToReceiver,
                void(const CastInternalMessage& cast_message,
                     cast_channel::ResultCallback callback));
+  MOCK_METHOD2(StopSessionOnReceiver,
+               void(const std::string& client_id,
+                    cast_channel::ResultCallback callback));
   MOCK_METHOD1(SendStopSessionMessageToClients,
                void(const std::string& hash_token));
   MOCK_METHOD1(HandleLeaveSession, void(const std::string& client_id));

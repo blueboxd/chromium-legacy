@@ -39,7 +39,7 @@
 <translation id="2226276347425096477">இந்த உரையை <ph name="MAX_CHARACTERS" /> எழுத்துக்குறிகள் அல்லது அதற்கும் குறைவாக சுருக்கிடுங்கள் (நீங்கள் தற்போது <ph name="CURRENT_LENGTH" /> எழுத்துக்குறிகளைப் பயன்படுத்துகிறீர்கள்).</translation>
 <translation id="2246498165605549352">அகக் கோப்பு</translation>
 <translation id="2247351761944213033">வாரம் <ph name="WEEKNUMBER" />, <ph name="YEAR" /></translation>
-<translation id="2277199496770840904">ட்ராக் <ph name="NUMBER" /></translation>
+<translation id="2277199496770840904">டிராக் <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">செக்பாக்ஸ்</translation>
 <translation id="2311842470354187719">பக்க முறிப்பு</translation>
 <translation id="2335594187091864976">தேதி மற்றும் நேரம் தேர்ந்தெடுப்பான்</translation>
@@ -56,7 +56,7 @@
 <translation id="2709516037105925701">தானாகநிரப்பு</translation>
 <translation id="2723001399770238859">ஆடியோ</translation>
 <translation id="2746543609216772311">மதிப்பானது <ph name="MINIMUM_DATE_OR_TIME" /> அல்லது அதற்குப் பின்பு இருக்க வேண்டும்.</translation>
-<translation id="2759744352195237655">பாப் அப் பொத்தான்</translation>
+<translation id="2759744352195237655">பாப்-அப் பொத்தான்</translation>
 <translation id="2761667185364618470">தொடர விரும்பினால், இந்தப் பெட்டியைத் தேர்ந்தெடுங்கள்.</translation>
 <translation id="2844350028562914727">விவரங்கள்</translation>
 <translation id="2896972712917208084">ரேடியோ குழு</translation>

@@ -120,7 +120,6 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> er stýrð lota sem er stjórnað af <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Vinstrismella</translation>
 <translation id="2429753432712299108">Bluetooth-tækið „<ph name="DEVICE_NAME" />“ vill fá heimild til að parast. Áður en þú samþykkir skaltu staðfesta að þessi aðgangslykill birtist á því tæki: <ph name="PASSKEY" /></translation>
-<translation id="2435457462613246316">Sýna aðgangsorð</translation>
 <translation id="2473177541599297363">Staðfesta upplausn</translation>
 <translation id="2482878487686419369">Tilkynningar</translation>
 <translation id="2484513351006226581">Ýttu á <ph name="KEYBOARD_SHORTCUT" /> til að skipta um lyklaskipan.</translation>
@@ -286,7 +285,6 @@
 <translation id="4527045527269911712">Bluetooth-tækið „<ph name="DEVICE_NAME" />“ vill fá heimild til að parast.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> fram að fullri hleðslu</translation>
 <translation id="4561267230861221837">3G</translation>
-<translation id="4565377596337484307">Fela aðgangsorð</translation>
 <translation id="4570957409596482333">Hnappur fyrir textaupplestur</translation>
 <translation id="4585337515783392668">Hætta að senda út í óþekkt tæki</translation>
 <translation id="4628757576491864469">Tæki</translation>

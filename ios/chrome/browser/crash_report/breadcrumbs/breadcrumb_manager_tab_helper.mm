@@ -39,7 +39,6 @@ const char kBreadcrumbDownload[] = "#download";
 const char kBreadcrumbMixedContent[] = "#mixed";
 const char kBreadcrumbNtpNavigation[] = "#ntp";
 const char kBreadcrumbPageLoadFailure[] = "#failure";
-const char kBreadcrumbPageLoadSuccess[] = "#success";
 const char kBreadcrumbRendererInitiatedByUser[] = "#renderer-user";
 const char kBreadcrumbRendererInitiatedByScript[] = "#renderer-script";
 
@@ -135,7 +134,6 @@ void BreadcrumbManagerTabHelper::PageLoaded(
   } else {
     switch (load_completion_status) {
       case web::PageLoadCompletionStatus::SUCCESS:
-        event.push_back(kBreadcrumbPageLoadSuccess);
         break;
       case web::PageLoadCompletionStatus::FAILURE:
         event.push_back(kBreadcrumbPageLoadFailure);

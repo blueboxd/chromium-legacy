@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.profile_card;
 
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.AVATAR_BITMAP;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.DESCRIPTION;
-import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.IS_DIALOG_VISIBLE;
+import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.IS_VISIBLE;
+import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.POST_DATA_LIST;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.POST_FREQUENCY;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.TITLE;
 
@@ -29,8 +30,10 @@ class ProfileCardViewBinder {
             view.setDescription(model.get(DESCRIPTION));
         } else if (POST_FREQUENCY == propertyKey) {
             view.setPostFrequency(model.get(POST_FREQUENCY));
-        } else if (IS_DIALOG_VISIBLE == propertyKey) {
-            view.setVisibility(model.get(IS_DIALOG_VISIBLE));
+        } else if (POST_DATA_LIST == propertyKey) {
+            view.setPosts(model.get(POST_DATA_LIST));
+        } else if (IS_VISIBLE == propertyKey) {
+            view.setVisibility(model.get(IS_VISIBLE));
         }
     }
 }

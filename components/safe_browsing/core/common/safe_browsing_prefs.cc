@@ -81,6 +81,7 @@ GURL GetSimplifiedURL(const GURL& url) {
 
 namespace prefs {
 const char kSafeBrowsingEnabled[] = "safebrowsing.enabled";
+const char kSafeBrowsingEnhanced[] = "safebrowsing.enhanced";
 const char kSafeBrowsingExtendedReportingOptInAllowed[] =
     "safebrowsing.extended_reporting_opt_in_allowed";
 const char kSafeBrowsingIncidentsSent[] = "safebrowsing.incidents_sent";
@@ -136,6 +137,10 @@ const char kAdvancedProtectionDeepScanningEnabled[] =
 
 namespace safe_browsing {
 
+bool IsEnhancedProtectionEnabled(const PrefService& prefs) {
+  return prefs.GetBoolean(prefs::kSafeBrowsingEnhanced);
+}
+
 bool ExtendedReportingPrefExists(const PrefService& prefs) {
   return prefs.HasPrefPath(prefs::kSafeBrowsingScoutReportingEnabled);
 }
@@ -179,6 +184,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(
       prefs::kSafeBrowsingEnabled, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kSafeBrowsingEnhanced, false);
   registry->RegisterBooleanPref(prefs::kSafeBrowsingProceedAnywayDisabled,
                                 false);
   registry->RegisterDictionaryPref(prefs::kSafeBrowsingIncidentsSent);
@@ -229,6 +235,10 @@ void SetExtendedReportingPrefAndMetric(
 
 void SetExtendedReportingPref(PrefService* prefs, bool value) {
   prefs->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled, value);
+}
+
+void SetEnhancedPref(PrefService* prefs, bool value) {
+  prefs->SetBoolean(prefs::kSafeBrowsingEnhanced, value);
 }
 
 void UpdateMetricsAfterSecurityInterstitial(const PrefService& prefs,
@@ -303,7 +313,7 @@ base::ListValue GetSafeBrowsingPreferencesList(PrefService* prefs) {
   const char* safe_browsing_preferences[] = {
       prefs::kSafeBrowsingEnabled,
       prefs::kSafeBrowsingExtendedReportingOptInAllowed,
-      prefs::kSafeBrowsingScoutReportingEnabled};
+      prefs::kSafeBrowsingScoutReportingEnabled, prefs::kSafeBrowsingEnhanced};
 
   // Add the status of the preferences if they are Enabled or Disabled for the
   // user.

@@ -71,4 +71,7 @@ public interface ActivityLifecycleDispatcher {
      */
     @ActivityState
     int getCurrentActivityState();
+
+    /** @return Whether native initialization is complete. */
+    boolean isNativeInitializationFinished();
 }

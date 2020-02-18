@@ -4,43 +4,23 @@
 
 #include <string>
 
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/hats/hats_service.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
+#include "chrome/browser/ui/hats/mock_hats_service.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/settings/settings_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "content/public/common/url_constants.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
 typedef InProcessBrowserTest SettingsUITest;
 
 using ui_test_utils::NavigateToURL;
-
-namespace {
-
-class MockHatsService : public HatsService {
- public:
-  explicit MockHatsService(Profile* profile) : HatsService(profile) {}
-  ~MockHatsService() override = default;
-
-  MOCK_METHOD(void, LaunchSurvey, (const std::string& trigger), (override));
-};
-
-std::unique_ptr<KeyedService> BuildMockHatsService(
-    content::BrowserContext* context) {
-  return std::make_unique<MockHatsService>(static_cast<Profile*>(context));
-}
-
-}  // namespace
 
 IN_PROC_BROWSER_TEST_F(SettingsUITest, ViewSourceDoesntCrash) {
   NavigateToURL(browser(),

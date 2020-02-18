@@ -353,13 +353,14 @@ void SharedWorkerServiceImpl::StartWorker(
     const blink::MessagePortChannel& message_port,
     blink::mojom::FetchClientSettingsObjectPtr
         outside_fetch_client_settings_object,
+    bool did_fetch_worker_script,
     std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
         subresource_loader_factories,
     blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
     blink::mojom::ControllerServiceWorkerInfoPtr controller,
     base::WeakPtr<ServiceWorkerObjectHost>
         controller_service_worker_object_host,
-    bool did_fetch_worker_script) {
+    const GURL& final_response_url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // The host may already be gone if something forcibly terminated the worker

@@ -250,4 +250,23 @@ TEST_F(CastSessionClientImplTest, SendSetVolumeCommandToReceiver) {
       })"));
 }
 
+TEST_F(CastSessionClientImplTest, SendStopSessionCommandToReceiver) {
+  EXPECT_CALL(activity_, StopSessionOnReceiver)
+      .WillOnce([](const std::string& client_id, auto callback) {
+        EXPECT_EQ("theClientId", client_id);
+        std::move(callback).Run(cast_channel::Result::kOk);
+      });
+  client_->OnMessage(
+      blink::mojom::PresentationConnectionMessage::NewMessage(R"({
+        "type": "v2_message",
+        "clientId": "theClientId",
+        "sequenceNumber": 123,
+        "message": {
+          "requestId": 456,
+          "sessionId": "theSessionId",
+          "type": "STOP"
+        }
+      })"));
+}
+
 }  // namespace media_router

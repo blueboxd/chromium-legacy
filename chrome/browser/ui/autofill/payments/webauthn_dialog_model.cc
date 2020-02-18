@@ -138,13 +138,4 @@ base::string16 WebauthnDialogModel::GetStepDescription() const {
   return base::string16();
 }
 
-base::Optional<base::string16> WebauthnDialogModel::GetAdditionalDescription()
-    const {
-  return base::nullopt;
-}
-
-ui::MenuModel* WebauthnDialogModel::GetOtherTransportsMenuModel() {
-  return nullptr;
-}
-
 }  // namespace autofill

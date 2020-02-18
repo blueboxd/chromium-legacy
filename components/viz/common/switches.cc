@@ -23,6 +23,9 @@ const char kDeadlineToSynchronizeSurfaces[] =
 // Also implies --disable-gpu-vsync (see //ui/gl/gl_switches.h).
 const char kDisableFrameRateLimit[] = "disable-frame-rate-limit";
 
+// Sets the number of max pending frames in the GL buffer queue to 1.
+const char kDoubleBufferCompositing[] = "double-buffer-compositing";
+
 // Experimental de-jelly support.
 const char kEnableDeJelly[] = "enable-de-jelly";
 

@@ -5,8 +5,10 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 
 #include <stddef.h>
+
 #include <algorithm>
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/debug/crash_logging.h"
@@ -157,14 +159,14 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
                                    : nullptr),
       delegate_(delegate),
       factory_(factory),
-      tree_(new ui::AXSerializableTree()),
       user_is_navigating_away_(false),
       connected_to_parent_tree_node_(false),
       ax_tree_id_(ui::AXTreeIDUnknown()),
       device_scale_factor_(1.0f),
       use_custom_device_scale_factor_for_testing_(false),
-      event_generator_(tree_.get()) {
-  tree_->AddObserver(this);
+      tree_(std::make_unique<ui::AXSerializableTree>()),
+      event_generator_(ax_tree()) {
+  tree_observer_.Add(ax_tree());
 }
 
 BrowserAccessibilityManager::BrowserAccessibilityManager(
@@ -175,30 +177,33 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
                                    : nullptr),
       delegate_(delegate),
       factory_(factory),
-      tree_(new ui::AXSerializableTree()),
       user_is_navigating_away_(false),
       ax_tree_id_(ui::AXTreeIDUnknown()),
       device_scale_factor_(1.0f),
       use_custom_device_scale_factor_for_testing_(false),
-      event_generator_(tree_.get()) {
-  tree_->AddObserver(this);
+      tree_(std::make_unique<ui::AXSerializableTree>()),
+      event_generator_(ax_tree()) {
+  tree_observer_.Add(ax_tree());
   Initialize(initial_tree);
 }
 
 BrowserAccessibilityManager::~BrowserAccessibilityManager() {
+  // Fire any events that need to be fired when tree nodes get deleted. For
+  // example, events that fire every time "OnSubtreeWillBeDeleted" is called.
+  ax_tree()->Destroy();
   delegate_ = nullptr;  // Guard against reentrancy by screen reader.
   if (last_focused_node_tree_id_ &&
       ax_tree_id_ == *last_focused_node_tree_id_) {
     SetLastFocusedNode(nullptr);
   }
-  tree_.reset(nullptr);
+
   event_generator_.ReleaseTree();
   ui::AXTreeManagerMap::GetInstance().RemoveTreeManager(ax_tree_id_);
 }
 
 void BrowserAccessibilityManager::Initialize(
     const ui::AXTreeUpdate& initial_tree) {
-  if (!tree_->Unserialize(initial_tree)) {
+  if (!ax_tree()->Unserialize(initial_tree)) {
     static auto* ax_tree_error = base::debug::AllocateCrashKeyString(
         "ax_tree_error", base::debug::CrashKeySize::Size64);
     static auto* ax_tree_update = base::debug::AllocateCrashKeyString(
@@ -208,9 +213,9 @@ void BrowserAccessibilityManager::Initialize(
     // http://crbug.com/765490
     // Be sure to re-enable BrowserAccessibilityManagerTest.TestFatalError
     // when done (or delete it if no longer needed).
-    base::debug::SetCrashKeyString(ax_tree_error, tree_->error());
+    base::debug::SetCrashKeyString(ax_tree_error, ax_tree()->error());
     base::debug::SetCrashKeyString(ax_tree_update, initial_tree.ToString());
-    LOG(FATAL) << tree_->error();
+    LOG(FATAL) << ax_tree()->error();
   }
 }
 
@@ -329,7 +334,7 @@ BrowserAccessibility* BrowserAccessibilityManager::GetParentNodeFromParentTree()
 }
 
 const ui::AXTreeData& BrowserAccessibilityManager::GetTreeData() const {
-  return tree_->data();
+  return ax_tree()->data();
 }
 
 void BrowserAccessibilityManager::OnWindowFocused() {
@@ -382,14 +387,14 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     tree_updates = &merged_tree_updates;
 
   // Process all changes to the accessibility tree first.
-  for (uint32_t index = 0; index < tree_updates->size(); ++index) {
-    if (!tree_->Unserialize((*tree_updates)[index])) {
+  for (const ui::AXTreeUpdate& tree_update : *tree_updates) {
+    if (!ax_tree()->Unserialize(tree_update)) {
       // This is a fatal error, but if there is a delegate, it will handle the
       // error result and recover by re-creating the manager.
       if (delegate_) {
-        LOG(ERROR) << tree_->error();
+        LOG(ERROR) << ax_tree()->error();
       } else {
-        CHECK(false) << tree_->error();
+        CHECK(false) << ax_tree()->error();
       }
       return false;
     }
@@ -398,7 +403,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
   // If this page is hidden by an interstitial, suppress all events.
   BrowserAccessibilityManager* root_manager = GetRootManager();
   if (root_manager && root_manager->hidden_by_interstitial_page()) {
-    event_generator_.ClearEvents();
+    event_generator().ClearEvents();
     return true;
   }
 
@@ -435,7 +440,7 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
 
   bool received_load_complete_event = false;
   // Fire any events related to changes to the tree.
-  for (const auto& targeted_event : event_generator_) {
+  for (const auto& targeted_event : event_generator()) {
     BrowserAccessibility* event_target = GetFromAXNode(targeted_event.node);
     if (!event_target || !event_target->CanFireEvents())
       continue;
@@ -447,12 +452,10 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
 
     FireGeneratedEvent(targeted_event.event_params.event, event_target);
   }
-  event_generator_.ClearEvents();
+  event_generator().ClearEvents();
 
   // Fire events from Blink.
-  for (uint32_t index = 0; index < details.events.size(); index++) {
-    const ui::AXEvent& event = details.events[index];
-
+  for (const ui::AXEvent& event : details.events) {
     // Fire the native event.
     BrowserAccessibility* event_target = GetFromID(event.id);
     if (!event_target || !event_target->CanFireEvents())
@@ -471,15 +474,15 @@ bool BrowserAccessibilityManager::OnAccessibilityEvents(
     FireFocusEventsIfNeeded();
 
     // Perform the initial run of language detection.
-    tree_->language_detection_manager->DetectLanguages();
-    tree_->language_detection_manager->LabelLanguages();
+    ax_tree()->language_detection_manager->DetectLanguages();
+    ax_tree()->language_detection_manager->LabelLanguages();
 
     // After initial language detection, enable language detection for future
     // content updates in order to support dynamic content changes.
     //
     // If the LanguageDetectionDynamic feature flag is not enabled then this
     // is a no-op.
-    tree_->language_detection_manager->RegisterLanguageDetectionObserver();
+    ax_tree()->language_detection_manager->RegisterLanguageDetectionObserver();
   }
 
   // Allow derived classes to do event post-processing.
@@ -669,7 +672,7 @@ void BrowserAccessibilityManager::SetFocusLocallyForTesting(
     BrowserAccessibility* node) {
   ui::AXTreeData data = GetTreeData();
   data.focus_id = node->GetId();
-  tree_->UpdateData(data);
+  ax_tree()->UpdateData(data);
 }
 
 // static
@@ -1320,12 +1323,12 @@ AXTreeID BrowserAccessibilityManager::GetParentTreeID() const {
 }
 
 ui::AXNode* BrowserAccessibilityManager::GetRootAsAXNode() const {
-  // tree_ can be null during destruction.
-  if (!tree_)
+  // tree_ is nullptr after destruction.
+  if (!ax_tree())
     return nullptr;
 
   // tree_->root() can be null during AXTreeObserver callbacks.
-  return tree_->root();
+  return ax_tree()->root();
 }
 
 ui::AXNode* BrowserAccessibilityManager::GetParentNodeFromParentTreeAsAXNode()
@@ -1423,7 +1426,7 @@ ui::AXTreeUpdate BrowserAccessibilityManager::SnapshotAXTreeForTesting() {
   ui::AXTreeSerializer<const ui::AXNode*, ui::AXNodeData, ui::AXTreeData>
       serializer(tree_source.get());
   ui::AXTreeUpdate update;
-  serializer.SerializeChanges(tree_->root(), &update);
+  serializer.SerializeChanges(GetRootAsAXNode(), &update);
   return update;
 }
 

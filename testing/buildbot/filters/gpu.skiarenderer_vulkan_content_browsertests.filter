@@ -1,13 +1,3 @@
-# MediaBrowserTest error during playback. https://crbug.com/985387
--DevToolsVideoConsumerTest.SetMinAndMaxFramesChangesDimensions
--File/MediaTest*
--Http/MediaTest*
--MediaRedirectTest.*
--MediaSourceTest.*
--MediaTest.*
--MSE_*ClearKey/EncryptedMediaTest.*
--SRC_*ClearKey/EncryptedMediaTest.*
-
 # FeatureList Flakes. https://crbug.com/1012372
 -NavigationBrowserTest.HistoryBackCancelPendingNavigationUserGesture/1
 -SitePerProcessBrowserTest.*

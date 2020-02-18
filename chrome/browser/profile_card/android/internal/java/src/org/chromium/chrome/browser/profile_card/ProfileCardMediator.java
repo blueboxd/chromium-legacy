@@ -6,7 +6,8 @@ package org.chromium.chrome.browser.profile_card;
 
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.AVATAR_BITMAP;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.DESCRIPTION;
-import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.IS_DIALOG_VISIBLE;
+import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.IS_VISIBLE;
+import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.POST_DATA_LIST;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.POST_FREQUENCY;
 import static org.chromium.chrome.browser.profile_card.ProfileCardProperties.TITLE;
 
@@ -29,9 +30,10 @@ class ProfileCardMediator {
         mModel.set(TITLE, mProfileCardData.getTitle());
         mModel.set(DESCRIPTION, mProfileCardData.getDescription());
         mModel.set(POST_FREQUENCY, mProfileCardData.getPostFrequency());
+        mModel.set(POST_DATA_LIST, mProfileCardData.getPostDataList());
     }
 
     public void show() {
-        mModel.set(IS_DIALOG_VISIBLE, true);
+        mModel.set(IS_VISIBLE, true);
     }
 }

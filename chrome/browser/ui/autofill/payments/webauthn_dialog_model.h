@@ -43,8 +43,6 @@ class WebauthnDialogModel : public AuthenticatorRequestSheetModel {
       ImageColorScheme color_scheme) const override;
   base::string16 GetStepTitle() const override;
   base::string16 GetStepDescription() const override;
-  base::Optional<base::string16> GetAdditionalDescription() const override;
-  ui::MenuModel* GetOtherTransportsMenuModel() override;
   // Event handling is handed over to the controller.
   void OnBack() override {}
   void OnAccept() override {}

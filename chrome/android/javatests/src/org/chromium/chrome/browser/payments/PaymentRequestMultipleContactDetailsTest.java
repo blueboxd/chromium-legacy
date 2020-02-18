@@ -4,9 +4,6 @@
 
 package org.chromium.chrome.browser.payments;
 
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.HAVE_INSTRUMENTS;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.IMMEDIATE_RESPONSE;
-
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -22,6 +19,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
@@ -129,7 +128,8 @@ public class PaymentRequestMultipleContactDetailsTest implements MainActivitySta
             helper.setProfileUseStatsForTesting(guids.get(i), mCountsToSet[i], mDatesToSet[i]);
         }
 
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
     }
 
     /**
@@ -212,8 +212,11 @@ public class PaymentRequestMultipleContactDetailsTest implements MainActivitySta
         // Make sure the original profile is suggested last, to test that the suggestions are
         // sorted by completeness.
         mProfilesToAdd = new AutofillProfile[] {
-                AUTOFILL_PROFILES[2], AUTOFILL_PROFILES[6], AUTOFILL_PROFILES[7],
-                AUTOFILL_PROFILES[8], AUTOFILL_PROFILES[9],
+                AUTOFILL_PROFILES[2],
+                AUTOFILL_PROFILES[6],
+                AUTOFILL_PROFILES[7],
+                AUTOFILL_PROFILES[8],
+                AUTOFILL_PROFILES[9],
         };
         mCountsToSet = new int[] {1, 20, 15, 10, 5};
         mDatesToSet = new int[] {1000, 4000, 3000, 2000, 1000};

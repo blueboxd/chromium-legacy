@@ -703,6 +703,10 @@ ProfileNetworkContextService::CreateNetworkContextParams(
     cookie_path = cookie_path.Append(chrome::kCookieFilename);
     network_context_params->cookie_path = cookie_path;
 
+    base::FilePath trust_token_path = path;
+    trust_token_path = trust_token_path.Append(chrome::kTrustTokenFilename);
+    network_context_params->trust_token_path = std::move(trust_token_path);
+
 #if BUILDFLAG(ENABLE_REPORTING)
     base::FilePath reporting_and_nel_store_path = path;
     reporting_and_nel_store_path = reporting_and_nel_store_path.Append(

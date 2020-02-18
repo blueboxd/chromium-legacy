@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">ଲାଇଟ୍‌</translation>
 <translation id="3303414029551471755">ବିଷୟବସ୍ତୁ ଡାଉନ୍‍‍ଲୋଡ୍ କରିବା ପାଇଁ ଆଗକୁ ବଢ଼ିବେ?</translation>
 <translation id="3306398118552023113">Chromeରେ ଏହି ଆପ୍‍ ଚାଲୁଛି</translation>
-<translation id="3312292613668865961">ସାଇଟଗୁଡ଼ିକୁ ଆପଣଙ୍କର ଭର୍ଚୁଆଲ୍ ରିଆଲିଟୀ ଡିଭାଇସ୍ ଏବଂ ଡାଟାକୁ ଆକ୍ସେସ୍ କରିବାକୁ ଅନୁମତି ଦେବା ଆଗରୁ ପଚାରନ୍ତୁ (ସୁପାରିଶ କରାଯାଇଛି)</translation>
 <translation id="3315103659806849044">ଆପଣ ବର୍ତ୍ତମାନ ଆପଣଙ୍କର ସିଙ୍କ ଏବଂ Google ସେବାର ସେଟିଂସ୍‌ଗୁଡ଼ିକ କଷ୍ଟମାଇଜ୍ କରୁଛନ୍ତି। ସିଙ୍କ ଚାଲୁ କରିବା ଶେଷ କରିବା ପାଇଁ, ସ୍କ୍ରିନ୍‌ର ତଳ ପାର୍ଶ୍ୱରେ ଥିବା ନିଶ୍ଚିତ ବଟନ୍‌ରେ ଟାପ୍ କରନ୍ତୁ। ଉପରକୁ ନାଭିଗେଟ୍ କରନ୍ତୁ</translation>
 <translation id="3328801116991980348">ସାଇଟ୍‌ ସୂଚନା</translation>
 <translation id="3333961966071413176">ସମସ୍ତ ଯୋଗାଯୋଗଗୁଡ଼ିକ</translation>
@@ -514,7 +513,6 @@
 <translation id="4915549754973153784">ଯେତେବେଳେ, ଡିଭାଇସ୍‌ ପାଇଁ ସ୍କାନିଂ କରୁଛନ୍ତି, ସେତେବେଳେ<ph name="BEGIN_LINK" />ସାହାଯ୍ୟ ପ୍ରାପ୍ତ କରନ୍ତୁ<ph name="END_LINK" />…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# ପୃଷ୍ଠା}other{# ପୃଷ୍ଠା}}</translation>
 <translation id="4932247056774066048">ଯେହେତୁ ଆପଣ <ph name="DOMAIN_NAME" />ଙ୍କ ଦ୍ଵାରା ପରିଚାଳିତ ଏକ ଆକାଉଣ୍ଟରୁ ସାଇନ୍ ଆଉଟ୍ କରୁଛନ୍ତି, ଏହି ଡିଭାଇସ୍‌ରୁ ଆପଣଙ୍କର Chrome ଡାଟା ଡିଲିଟ୍ କରାଯିବ। ଏହା ଆପଣଙ୍କ Google ଆକାଉଣ୍ଟରେ ରହିବ।</translation>
-<translation id="4935305910887312910">ସାଇଟଗୁଡ଼ିକୁ କ୍ୟାମେରାର ସ୍ଥିତି ପ୍ରାପ୍ତ କରିବା କିମ୍ବା ଆପଣଙ୍କ ରୁମକୁ ମ୍ୟାପ୍ କରିବାକୁ ଅନୁମତି ଦେବା ଆଗରୁ ପଚାରନ୍ତୁ (ସୁପାରିଶ କରାଯାଇଛି)</translation>
 <translation id="4943703118917034429">ଭର୍ଚୁଆଲ୍ ରିଅଲିଟି</translation>
 <translation id="4943872375798546930">କୌଣସି ଫଳାଫଳ ନାହିଁ</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> ଆପଣଙ୍କର ସ୍କ୍ରିନ୍ ସେୟାର୍ କରୁଛି</translation>
@@ -818,6 +816,7 @@
 <translation id="7141896414559753902">ସାଇଟ୍‌ଗୁଡ଼ିକର ପପ୍‌-ଅପ୍‌ ଏବଂ ରିଡାଇରେକ୍ଟ ଦେଖାଇବାକୁ ଅବରୋଧ କରନ୍ତୁ (ସୁପାରିଶ୍ କରାଯାଇଛି)</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" />ରୁ <ph name="BEGIN_LINK" />ମୂଳ ପୃଷ୍ଠା ଲୋଡ୍‌ କରନ୍ତୁ<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">ଶେଷ 24 ଘଣ୍ଟା</translation>
+<translation id="7173114856073700355">ସେଟିଂସ୍ ଖୋଲନ୍ତୁ</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">ଆପଣ ଏହାକୁ ପରେ ସେଟିଂସ୍‌ରେ ପରିବର୍ତ୍ତନ କରିପାରିବେ।</translation>
 <translation id="7180611975245234373">ରିଫ୍ରେଶ୍</translation>
@@ -1025,7 +1024,6 @@
 <translation id="8664979001105139458">ଫାଇଲ୍‌ର ନାମ ପୂର୍ବରୁ ଅଛି</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{ସିଗ୍‍ନାଲ୍‌ ଦକ୍ଷତାର ସ୍ତର: #ଟି ବାର୍‍}other{ସିଗ୍‍ନାଲ୍‌ ଦକ୍ଷତାର ସ୍ତର: #ଟି ବାର୍‍}}</translation>
 <translation id="868929229000858085">ଆପଣଙ୍କର ଯୋଗାଯୋଗ ସନ୍ଧାନ କରନ୍ତୁ</translation>
-<translation id="8698438463325761328">ଆପଣଙ୍କର ଭର୍ଚୁଆଲ୍ ରିଆଲିଟୀ ଡିଭାଇସ୍ ଏବଂ ଡାଟା ଆକ୍ସେସ୍ କରିବାରୁ ସାଇଟଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="869891660844655955">ମିଆଦ ଶେଷ ହେଉଥିବା ତାରିଖ</translation>
 <translation id="8728487861892616501">ଏହି ଆପ୍ଲିକେସନ୍ ବ୍ୟବହାର କରିବା ଦ୍ୱାରା, ଆପଣ Chrome’ର <ph name="BEGIN_LINK1" />ସେବାର ସର୍ତ୍ତାବଳୀ<ph name="END_LINK1" /> ଏବଂ <ph name="BEGIN_LINK2" />ଗୋପନୀୟତା ବିଜ୍ଞପ୍ତି<ph name="END_LINK2" /> ଏବଂ <ph name="BEGIN_LINK3" />ପରିବାର ଲିଙ୍କ୍ ସହ ପରିଚାଳିତ Google ଆକାଉଣ୍ଟ ପାଇଁ ଗୋପନୀୟତା ବିଜ୍ଞପ୍ତି<ph name="END_LINK3" />ରେ ସମ୍ମତ ଅଛନ୍ତି।</translation>
 <translation id="8748850008226585750">ଲୁଚାଯାଇଥିବା ବିଷୟବସ୍ତୁ</translation>
@@ -1042,7 +1040,6 @@
 <translation id="883806473910249246">ବିଷୟବସ୍ତୁ ଡାଉନ୍‌ଲୋଡ୍ କରିବା ସମୟରେ ଏକ ତ୍ରୁଟି ଦେଖାଗଲା।</translation>
 <translation id="8840953339110955557">ଏହି ପୃଷ୍ଠା ଅନ୍‌ଲାଇନ୍ ସଂସ୍କରଣ ଠାରୁ ଅଲଗା ହୋଇପାରେ।</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">ଆପଣଙ୍କ କ୍ୟାମେରାର ସ୍ଥିତିକୁ ପ୍ରାପ୍ତ କରିବା କିମ୍ବା ଆପଣଙ୍କ ରୁମକୁ ମ୍ୟାପ୍ କରିବାରୁ ସାଇଟଗୁଡ଼ିକୁ ବ୍ଲକ୍ କରନ୍ତୁ</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ଟାବ୍‍</translation>
 <translation id="885701979325669005">ଷ୍ଟୋରେଜ୍</translation>
 <translation id="889338405075704026">Chrome ସେଟିଂସ୍‍କୁ ଯାଆନ୍ତୁ</translation>

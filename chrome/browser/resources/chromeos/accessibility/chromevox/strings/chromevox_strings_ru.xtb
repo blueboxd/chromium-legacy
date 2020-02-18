@@ -243,7 +243,7 @@
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">аудио</translation>
 <translation id="2732718972699418926">AM</translation>
-<translation id="2737898226590637227">Следующего ориентира ARIA нет</translation>
+<translation id="2737898226590637227">Следующей метки ARIA нет</translation>
 <translation id="2749275490991666823">Выбрано</translation>
 <translation id="27527859628328957">Перейти к следующему активируемому элементу</translation>
 <translation id="2756452585631602151">Добавьте свою метку</translation>
@@ -257,7 +257,7 @@
 <translation id="2811019999044652585">Чтобы перемещаться между разными частями экрана, например панелью инструментов и областью уведомлений, нажимайте CTRL + ВПЕРЕД. Клавиша ВПЕРЕД на Chromebook расположена над клавишей 2.</translation>
 <translation id="2811204574343810641">Строка.</translation>
 <translation id="2841013758207633010">Время</translation>
-<translation id="2843432675592278677">Предыдущего ориентира ARIA нет</translation>
+<translation id="2843432675592278677">Предыдущей метки ARIA нет</translation>
 <translation id="2843814945404750166">Темный оливково-зеленый</translation>
 <translation id="2843837985843789981">Перейти к предыдущей группе</translation>
 <translation id="2844995807198708617">Контекстное меню.</translation>
@@ -969,7 +969,7 @@
 <translation id="7701196182766842984">autolst</translation>
 <translation id="7714340021005120797">Следующего поля со списком нет</translation>
 <translation id="7731785449856576010">Следующего виджета мультимедиа нет</translation>
-<translation id="773906353055481349">Для перемещения к другой ячейке нажмите Поиск + Ctrl + Alt и нужную стрелку</translation>
+<translation id="773906353055481349">Для перехода к другой ячейке нажмите Поиск + Ctrl + Alt и нужную стрелку</translation>
 <translation id="7750184816513382104">Режим с учетом регистра</translation>
 <translation id="7763537600611320912">Началось скачивание файла "<ph name="FILE_NAME" />"</translation>
 <translation id="7770823902658038748">Поле для ввода пароля "<ph name="NAME" />" со значением "<ph name="VALUE" />"</translation>

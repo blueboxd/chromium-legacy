@@ -144,9 +144,16 @@
 #include "services/network/mock_mojo_dhcp_wpad_url_client.h"
 #endif  // defined(OS_CHROMEOS)
 
+#if !defined(OS_IOS)
+#include "services/network/trust_tokens/trust_token_parameterization.h"
+#include "services/network/trust_tokens/trust_token_store.h"
+#endif  // !defined(OS_IOS)
+
 namespace network {
 
 namespace {
+
+using ::testing::Optional;
 
 constexpr char kMockHost[] = "mock.host";
 constexpr char kCustomProxyResponse[] = "CustomProxyResponse";
@@ -423,8 +430,11 @@ class TestProxyLookupClient : public mojom::ProxyLookupClient {
 
 class NetworkContextTest : public testing::Test {
  public:
-  NetworkContextTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
+  explicit NetworkContextTest(
+      base::test::TaskEnvironment::TimeSource time_source =
+          base::test::TaskEnvironment::TimeSource::DEFAULT)
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO,
+                          time_source),
         network_change_notifier_(
             net::NetworkChangeNotifier::CreateMockIfNeeded()),
         network_service_(NetworkService::CreateForTesting()) {}
@@ -526,6 +536,13 @@ class NetworkContextTest : public testing::Test {
   // NetworkContext. Not strictly needed, but seems best to mimic real-world
   // usage.
   mojo::Remote<mojom::NetworkContext> network_context_remote_;
+};
+
+class NetworkContextTestWithMockTime : public NetworkContextTest {
+ public:
+  NetworkContextTestWithMockTime()
+      : NetworkContextTest(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
+  }
 };
 
 TEST_F(NetworkContextTest, DestroyContextWithLiveRequest) {
@@ -6825,6 +6842,75 @@ TEST_F(NetworkContextSplitCacheTest,
       net::NetworkIsolationKey(origin, url::Origin::Create(redirected_url)),
       true /* was_cached */, true /* is_navigation */);
 }
+
+#if !defined(OS_IOS)
+TEST_F(NetworkContextTest, EnableTrustTokens) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kTrustTokens);
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(mojom::NetworkContextParams::New());
+
+  EXPECT_TRUE(network_context->trust_token_store());
+}
+
+TEST_F(NetworkContextTestWithMockTime, EnableTrustTokensWithStoreOnDisk) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kTrustTokens);
+
+  base::ScopedTempDir dir;
+  ASSERT_TRUE(dir.CreateUniqueTempDir());
+  base::FilePath temp_path =
+      dir.GetPath().Append(FILE_PATH_LITERAL("my_token_store"));
+
+  {
+    auto params = mojom::NetworkContextParams::New();
+    params->trust_token_path = temp_path;
+    std::unique_ptr<NetworkContext> network_context =
+        CreateContextWithParams(std::move(params));
+    // Allow the store time to initialize asynchronously.
+    task_environment_.RunUntilIdle();
+
+    ASSERT_TRUE(network_context->trust_token_store());
+    network_context->trust_token_store()->SetBatchSize(
+        url::Origin::Create(GURL("https://trusttoken.com/")), 10);
+    // Allow the write time to propagate to disk.
+    task_environment_.FastForwardBy(2 * kTrustTokenWriteBufferingWindow);
+  }
+
+  // Allow the context's backing store time to be torn down asynchronously.
+  task_environment_.RunUntilIdle();
+  {
+    auto params = mojom::NetworkContextParams::New();
+    params->trust_token_path = temp_path;
+    std::unique_ptr<NetworkContext> network_context =
+        CreateContextWithParams(std::move(params));
+    // Allow the store time to initialize asynchronously.
+    task_environment_.RunUntilIdle();
+
+    ASSERT_TRUE(network_context->trust_token_store());
+    EXPECT_THAT(network_context->trust_token_store()->BatchSize(
+                    url::Origin::Create(GURL("https://trusttoken.com/"))),
+                Optional(10));
+  }
+
+  // Allow the context's backing store time to be destroyed asynchronously.
+  task_environment_.RunUntilIdle();
+}
+
+TEST_F(NetworkContextTest, DisableTrustTokens) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(features::kTrustTokens);
+
+  std::unique_ptr<NetworkContext> network_context =
+      CreateContextWithParams(mojom::NetworkContextParams::New());
+
+  // Allow the store time to initialize asynchronously.
+  task_environment_.RunUntilIdle();
+
+  EXPECT_FALSE(network_context->trust_token_store());
+}
+#endif  // !defined(OS_IOS)
 
 }  // namespace
 

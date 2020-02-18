@@ -12,6 +12,10 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
+namespace views {
+class Label;
+}  // namespace views
+
 class AuthenticatorRequestSheetModel;
 class NonAccessibleImageView;
 
@@ -22,9 +26,10 @@ class NonAccessibleImageView;
 //  -- an optional `back icon`,
 //  -- a pretty illustration in the top half of the dialog,
 //  -- the title of the current step,
-//  -- the description of the current step, and
+//  -- the description of the current step,
 //  -- an optional view with step-specific content, added by subclasses, filling
-//     the rest of the space.
+//     the rest of the space, and
+//  -- an optional contextual error.
 //
 // +-------------------------------------------------+
 // |*************************************************|
@@ -43,6 +48,7 @@ class NonAccessibleImageView;
 // | |                                             | |
 // | |                                             | |
 // | +---------------------------------------------+ |
+// |  optional contextual error                      |
 // +-------------------------------------------------+
 // |                                   OK   CANCEL   | <- Not part of this view.
 // +-------------------------------------------------+
@@ -97,6 +103,7 @@ class AuthenticatorRequestSheetView : public views::View,
   views::Button* back_arrow_button_ = nullptr;
   views::View* step_specific_content_ = nullptr;
   NonAccessibleImageView* step_illustration_ = nullptr;
+  views::Label* error_label_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorRequestSheetView);
 };

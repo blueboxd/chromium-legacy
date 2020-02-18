@@ -132,6 +132,24 @@ cr.define('safe_browsing', function() {
       addReportingEvent(reportingEvent);
     });
 
+    cr.sendWithPromise('getDeepScanRequests', []).then((requests) => {
+      requests.forEach(function(request) {
+        addDeepScanRequest(request);
+      });
+    });
+    cr.addWebUIListener('deep-scan-request-update', function(result) {
+      addDeepScanRequest(result);
+    });
+
+    cr.sendWithPromise('getDeepScanResponses', []).then((responses) => {
+      responses.forEach(function(response) {
+        addDeepScanResponse(response);
+      });
+    });
+    cr.addWebUIListener('deep-scan-response-update', function(result) {
+      addDeepScanResponse(result);
+    });
+
     $('get-referrer-chain-form').addEventListener('submit', addReferrerChain);
 
     // Allow tabs to be navigated to by fragment. The fragment with be of the
@@ -273,6 +291,20 @@ cr.define('safe_browsing', function() {
 
   function addRTLookupResponse(result) {
     addResultToTable('rt-lookup-ping-list', result, 1);
+  }
+
+  function addDeepScanRequest(result) {
+    addResultToTable('deep-scan-list', result, 0);
+  }
+
+  function addDeepScanResponse(result) {
+    if (result[1] === 'SUCCESS') {
+      // Display the response instead
+      addResultToTable('deep-scan-list', [result[0], result[2]], 1);
+    } else {
+      // Display the error code
+      addResultToTable('deep-scan-list', [result[0], result[1]], 1);
+    }
   }
 
   function addRTLookupExperimentEnabled(enabled) {

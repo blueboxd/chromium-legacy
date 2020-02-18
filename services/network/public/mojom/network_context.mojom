@@ -234,6 +234,14 @@ struct NetworkContextParams {
   // Points to the cookie file. An in-memory cookie store is used if it's empty.
   mojo_base.mojom.FilePath? cookie_path;
 
+  // Points to the Trust Token database. An in-memory trust token store is used
+  // if it's empty, or (through a fallback in the initialization logic; see
+  // SQLiteTrustTokenPersister's comments) if initialization fails.
+  //
+  // Initializing the on-disk database takes place asynchronously, so requests
+  // near startup may not support Trust Tokens protocol operations.
+  mojo_base.mojom.FilePath? trust_token_path;
+
   // If true, cookies will be stored encrypted.
   bool enable_encrypted_cookies = true;
 

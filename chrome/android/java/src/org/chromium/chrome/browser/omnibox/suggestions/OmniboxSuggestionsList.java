@@ -22,6 +22,7 @@ import android.widget.ListView;
 
 import androidx.annotation.VisibleForTesting;
 
+import org.chromium.base.TraceEvent;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
 import org.chromium.components.browser_ui.styles.ChromeColors;
@@ -144,28 +145,30 @@ public class OmniboxSuggestionsList extends ListView {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        final long start = Debug.threadCpuTimeNanos();
-        View contentView =
-                mEmbedder.getAnchorView().getRootView().findViewById(android.R.id.content);
-        ViewUtils.getRelativeLayoutPosition(contentView, mAnchorView, mTempPosition);
-        int anchorY = mTempPosition[1];
-        int anchorBottomRelativeToContent = anchorY + mAnchorView.getMeasuredHeight();
+        try (TraceEvent tracing = TraceEvent.scoped("OmniboxSuggestionsList.Measure")) {
+            final long start = Debug.threadCpuTimeNanos();
+            View contentView =
+                    mEmbedder.getAnchorView().getRootView().findViewById(android.R.id.content);
+            ViewUtils.getRelativeLayoutPosition(contentView, mAnchorView, mTempPosition);
+            int anchorY = mTempPosition[1];
+            int anchorBottomRelativeToContent = anchorY + mAnchorView.getMeasuredHeight();
 
-        // Update the layout params to ensure the parent correctly positions the suggestions under
-        // the anchor view.
-        ViewGroup.LayoutParams layoutParams = getLayoutParams();
-        if (layoutParams != null && layoutParams instanceof MarginLayoutParams) {
-            ((MarginLayoutParams) layoutParams).topMargin = anchorBottomRelativeToContent;
+            // Update the layout params to ensure the parent correctly positions the suggestions
+            // under the anchor view.
+            ViewGroup.LayoutParams layoutParams = getLayoutParams();
+            if (layoutParams != null && layoutParams instanceof MarginLayoutParams) {
+                ((MarginLayoutParams) layoutParams).topMargin = anchorBottomRelativeToContent;
+            }
+            mEmbedder.getWindowDelegate().getWindowVisibleDisplayFrame(mTempRect);
+            int availableViewportHeight = mTempRect.height() - anchorBottomRelativeToContent;
+
+            super.onMeasure(MeasureSpec.makeMeasureSpec(
+                                    mAnchorView.getMeasuredWidth(), MeasureSpec.EXACTLY),
+                    MeasureSpec.makeMeasureSpec(availableViewportHeight,
+                            mEmbedder.isTablet() ? MeasureSpec.AT_MOST : MeasureSpec.EXACTLY));
+            final long end = Debug.threadCpuTimeNanos();
+            SuggestionsMetrics.recordSuggestionListMeasureTime(start, end);
         }
-        mEmbedder.getWindowDelegate().getWindowVisibleDisplayFrame(mTempRect);
-        int availableViewportHeight = mTempRect.height() - anchorBottomRelativeToContent;
-
-        super.onMeasure(
-                MeasureSpec.makeMeasureSpec(mAnchorView.getMeasuredWidth(), MeasureSpec.EXACTLY),
-                MeasureSpec.makeMeasureSpec(availableViewportHeight,
-                        mEmbedder.isTablet() ? MeasureSpec.AT_MOST : MeasureSpec.EXACTLY));
-        final long end = Debug.threadCpuTimeNanos();
-        SuggestionsMetrics.recordSuggestionListMeasureTime(start, end);
     }
 
     @Override
@@ -224,10 +227,12 @@ public class OmniboxSuggestionsList extends ListView {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        final long start = Debug.threadCpuTimeNanos();
-        super.onLayout(changed, l, t, r, b);
-        final long end = Debug.threadCpuTimeNanos();
-        SuggestionsMetrics.recordSuggestionListLayoutTime(start, end);
+        try (TraceEvent tracing = TraceEvent.scoped("OmniboxSuggestionsList.Layout")) {
+            final long start = Debug.threadCpuTimeNanos();
+            super.onLayout(changed, l, t, r, b);
+            final long end = Debug.threadCpuTimeNanos();
+            SuggestionsMetrics.recordSuggestionListLayoutTime(start, end);
+        }
     }
 
     @Override

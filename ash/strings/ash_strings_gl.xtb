@@ -120,7 +120,6 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> é unha sesión xestionada por <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Clic co botón esquerdo do rato</translation>
 <translation id="2429753432712299108">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" quere recibir permiso para sincronizarse. Antes de aceptalo, confirma que se mostra esta clave de paso nese dispositivo: <ph name="PASSKEY" /></translation>
-<translation id="2435457462613246316">Mostrar contrasinal</translation>
 <translation id="2473177541599297363">Confirmar resolución</translation>
 <translation id="2482878487686419369">Notificacións</translation>
 <translation id="2484513351006226581">Para cambiar o deseño de teclado, preme <ph name="KEYBOARD_SHORTCUT" />.</translation>
@@ -287,7 +286,6 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="4527045527269911712">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" quere obter permiso para sincronizarse.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> para completar a carga</translation>
 <translation id="4561267230861221837">3G</translation>
-<translation id="4565377596337484307">Ocultar contrasinal</translation>
 <translation id="4570957409596482333">Botón Escoitar selección</translation>
 <translation id="4585337515783392668">Deter emisión nun receptor descoñecido</translation>
 <translation id="4628757576491864469">Dispositivos</translation>
@@ -524,7 +522,7 @@ Todos os usuarios deben pechar sesión para poder continuar.</translation>
 <translation id="7984197416080286869">Realizáronse demasiados intentos de desbloqueo mediante a impresión dixital</translation>
 <translation id="7994370417837006925">Inicio de sesión múltiple</translation>
 <translation id="8000066093800657092">Sen rede</translation>
-<translation id="8029629653277878342">É necesario escribir o PIN ou o contrasinal para ter máis seguranza</translation>
+<translation id="8029629653277878342">Como medida adicional de seguranza debes escribir o PIN ou o contrasinal</translation>
 <translation id="8030169304546394654">Desconectado</translation>
 <translation id="8048123526339889627">Configuración de Bluetooth</translation>
 <translation id="8054466585765276473">Calculando o tempo da batería.</translation>

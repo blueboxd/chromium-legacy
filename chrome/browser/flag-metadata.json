@@ -866,6 +866,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "double-buffer-compositing",
+    "owners": [ "chromeos-gfx@google.com" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "double-tap-to-zoom-in-tablet-mode",
     "owners": [ "afakhry" ],
     "expiry_milestone": 80
@@ -920,6 +925,11 @@
     "name": "enable-ambient-authentication-in-incognito",
     "owners": ["rhalavati", "chrome-privacy-core@google.com"],
     "expiry_milestone": 87
+  },
+  {
+    "name": "enable-ambient-mode",
+    "owners": [ "croissant-eng" ],
+    "expiry_milestone": 88
   },
   {
     "name": "enable-android-autofill-accessibility",
@@ -985,11 +995,6 @@
     "name": "enable-assistant-dsp",
     "owners": [ "croissant-eng" ],
     "expiry_milestone": 88
-  },
-  {
-    "name": "enable-assistant-key-remapping",
-    "owners": [ "croissant-eng" ],
-    "expiry_milestone": 78
   },
   {
     "name": "enable-assistant-launcher-integration",
@@ -3508,11 +3513,6 @@
     "name": "tab-outlines-in-low-contrast-themes",
     "owners": [ "dfried" ],
     "expiry_milestone":  82
-  },
-  {
-    "name": "tab-switcher-longpress-menu",
-    "owners": [ "lazzzis@google.com", "twellington" ],
-    "expiry_milestone": 81
   },
   {
     "name": "temporary-unexpire-flags-m78",

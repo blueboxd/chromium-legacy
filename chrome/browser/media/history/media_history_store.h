@@ -44,23 +44,6 @@ class MediaHistoryStore {
       scoped_refptr<base::UpdateableSequencedTaskRunner> db_task_runner);
   ~MediaHistoryStore();
 
-  // Represents a single playback session stored in the database.
-  struct MediaPlaybackSession {
-    int64_t id;
-    GURL url;
-    base::TimeDelta duration;
-    base::TimeDelta position;
-    media_session::MediaMetadata metadata;
-    std::vector<media_session::MediaImage> artwork;
-
-    MediaPlaybackSession();
-    ~MediaPlaybackSession();
-    MediaPlaybackSession(const MediaPlaybackSession&) = delete;
-    MediaPlaybackSession& operator=(const MediaPlaybackSession&) = delete;
-  };
-  using MediaPlaybackSessionList =
-      std::vector<std::unique_ptr<MediaPlaybackSession>>;
-
   // Saves a playback from a single player in the media history store.
   void SavePlayback(const content::MediaPlayerWatchTime& watch_time);
 
@@ -83,14 +66,14 @@ class MediaHistoryStore {
   // be ordered by most recent first and be limited to the first |num_sessions|.
   // For each session it calls |filter| and if that returns |true| then that
   // session will be included in the results.
-  using GetPlaybackSessionsCallback =
-      base::OnceCallback<void(base::Optional<MediaPlaybackSessionList>)>;
   using GetPlaybackSessionsFilter =
       base::RepeatingCallback<bool(const base::TimeDelta& duration,
                                    const base::TimeDelta& position)>;
-  void GetPlaybackSessions(unsigned int num_sessions,
-                           GetPlaybackSessionsFilter filter,
-                           GetPlaybackSessionsCallback callback);
+  void GetPlaybackSessions(
+      base::Optional<unsigned int> num_sessions,
+      base::Optional<GetPlaybackSessionsFilter> filter,
+      base::OnceCallback<void(
+          std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>)> callback);
 
   // Saves a playback session in the media history store.
   void SavePlaybackSession(

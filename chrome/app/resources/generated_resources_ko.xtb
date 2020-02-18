@@ -1384,7 +1384,6 @@
 <translation id="2865919525181940183">현재 화면에 표시된 프로그램의 스크린샷</translation>
 <translation id="286674810810214575">전원 확인 중...</translation>
 <translation id="2867768963760577682">고정 탭으로 열기</translation>
-<translation id="2868184003987917410">사이트에서 가상 현실 기기/데이터에 액세스하도록 허용 안함</translation>
 <translation id="2868746137289129307">이 확장 프로그램은 오래된 것이며 기업 정책에 의해 중지되었습니다. 새로운 버전이 있는 경우 자동으로 사용 설정될 수 있습니다.</translation>
 <translation id="2870560284913253234">사이트</translation>
 <translation id="2870909136778269686">업데이트 중...</translation>
@@ -1714,7 +1713,6 @@
 <translation id="3348038390189153836">이동식 기기가 검색됨</translation>
 <translation id="3349933790966648062">메모리 사용량</translation>
 <translation id="3350117557200012647">페어링 모드 시작</translation>
-<translation id="3350244554415289209">사이트에서 카메라 위치에 액세스하거나 실내를 매핑하려고 할 때 확인(권장)</translation>
 <translation id="3355936511340229503">연결 오류</translation>
 <translation id="3356580349448036450">완료</translation>
 <translation id="3359256513598016054">인증서 정책 제약조건</translation>
@@ -1731,7 +1729,6 @@
 <translation id="3382073616108123819">시스템에서 이 기기의 기기 식별자를 확인하지 못했습니다.</translation>
 <translation id="3382086682569279540">관리 중인 계정이 곧 삭제됩니다</translation>
 <translation id="3382200254148930874">감독 기능 중지...</translation>
-<translation id="3383210070657133526"><ph name="URL" />에서 가상 현실 세션 시작 권한을 요구합니다.</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">구분자</translation>
 <translation id="338691029516748599">네트워크 <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, 신호 강도 <ph name="SIGNAL_STRENGTH" />%, 관리자가 관리함, 연결</translation>
@@ -1828,7 +1825,6 @@
 <translation id="3511307672085573050">링크 주소 복사(&amp;E)</translation>
 <translation id="351152300840026870">고정폭 글꼴</translation>
 <translation id="3511528412952710609">짧게</translation>
-<translation id="3513704683820682405">증강 현실</translation>
 <translation id="3514373592552233661">두 개 이상의 네트워크를 사용할 수 있는 경우 기본 설정된 네트워크가 다른 알려진 네트워크보다 우선 사용됩니다.</translation>
 <translation id="3515983984924808886">보안 키를 다시 터치하여 초기화 여부를 확인하세요. PIN을 비롯하여 보안 키에 저장된 모든 정보가 삭제됩니다.</translation>
 <translation id="3518985090088779359">동의하고 계속</translation>
@@ -2530,7 +2526,6 @@
 <translation id="4501530680793980440">삭제 확인</translation>
 <translation id="4502423230170890588">기기에서 삭제</translation>
 <translation id="4504940961672722399">아이콘을 클릭하거나 <ph name="EXTENSION_SHORTCUT" />을(를) 눌러 확장 프로그램을 사용합니다.</translation>
-<translation id="4507164039066603071">사이트에서 카메라 위치에 액세스하거나 실내를 매핑하도록 허용 안함</translation>
 <translation id="4508051413094283164">모두 시크릿 창에서 열기</translation>
 <translation id="4508265954913339219">활성화 실패</translation>
 <translation id="4508765956121923607">소스 보기(&amp;O)</translation>
@@ -2836,7 +2831,6 @@
 <translation id="494286511941020793">프록시 설정 도움말</translation>
 <translation id="4943368462779413526">풋볼</translation>
 <translation id="4943691134276646401">'<ph name="CHROME_EXTENSION_NAME" />'에서 시리얼 포트에 연결하려고 합니다.</translation>
-<translation id="4943703118917034429">가상 현실</translation>
 <translation id="4944310289250773232">이 인증 서비스는 <ph name="SAML_DOMAIN" />에서 호스팅합니다</translation>
 <translation id="495170559598752135">작업</translation>
 <translation id="4952981627953231344">이 기기에서는 Plugin VM이 허용되지 않습니다. 조직의 기기 관리자에게 문의하세요.</translation>
@@ -4110,7 +4104,6 @@
 <translation id="6758056191028427665">개선할 점이나 격려하고 싶은 점을 알려주세요.</translation>
 <translation id="6759193508432371551">초기화</translation>
 <translation id="6762833852331690540">사용</translation>
-<translation id="6767115174726603949">가상 현실 기기 및 데이터 액세스</translation>
 <translation id="6767566652486411142">다른 언어 선택...</translation>
 <translation id="6767639283522617719">도메인에 가입할 수 없습니다. 조직 단위에 맞는 설정인지 확인하세요.</translation>
 <translation id="6769712124046837540">프린터 추가 중...</translation>
@@ -4306,7 +4299,6 @@
 <translation id="703001695939087067">창 개요 모드를 시작했습니다. 이동하려면 탭을 누르세요.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - 직렬 포트 연결됨</translation>
 <translation id="7031962166228839643">TPM을 준비 중입니다. 잠시 기다려 주세요(몇 분이 걸릴 수 있음)...</translation>
-<translation id="7034615910652881882">사이트에서 가상 현실 기기/데이터에 액세스하려고 할 때 확인</translation>
 <translation id="7037509989619051237">텍스트 미리보기</translation>
 <translation id="7039326228527141150"><ph name="VENDOR_NAME" />의 USB 기기에 액세스</translation>
 <translation id="7039912931802252762">Microsoft Smart Card Logon</translation>
@@ -4612,7 +4604,6 @@
 <translation id="7443806024147773267">Google 계정에 로그인되어 있으면 어디서나 비밀번호에 액세스할 수 있습니다.</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> 사용 중지</translation>
 <translation id="7448430327655618736">앱 자동 설치</translation>
-<translation id="7448625729116931228">사이트에서 가상 현실 기기/데이터에 액세스하려고 할 때 확인(권장)</translation>
 <translation id="7450761244949417357">지금 <ph name="ALTERNATIVE_BROWSER_NAME" />에서 여는 중</translation>
 <translation id="7453008956351770337">이 프린터를 선택하면 다음 확장 프로그램에 내 프린터에 액세스할 수 있는 권한을 부여하게 됩니다.</translation>
 <translation id="7454548535253569100">포털: <ph name="SUBFRAME_SITE" /></translation>
@@ -4749,7 +4740,6 @@
 <translation id="7652808307838961528">사용자 수정, <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">이 웹사이트에서 앱, 확장 프로그램, 사용자 스크립트 등을 추가할 수 없습니다</translation>
 <translation id="7652954539215530680">PIN 만들기</translation>
-<translation id="7653295403398566475">사이트에서 카메라 위치에 액세스하거나 실내를 매핑하려고 할 때 확인</translation>
 <translation id="7654941827281939388">이 계정은 이미 이 컴퓨터에서 사용되고 있습니다.</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="7659584679870740384">더 이상 이 기기를 사용할 권한이 없습니다. 관리자에게 로그인 권한에 대해 문의하세요.</translation>
@@ -5288,7 +5278,6 @@
 <translation id="8338952601723052325">개발자 웹사이트</translation>
 <translation id="8339059274628563283"><ph name="SITE" />에 로컬 저장된 데이터</translation>
 <translation id="833986336429795709">이 링크를 열려면 앱을 선택하세요.</translation>
-<translation id="834057053932610950">Linux를 설정하는 중에 오류가 발생했습니다. 관리자에게 문의하세요.</translation>
 <translation id="8342861492835240085">컬렉션 선택</translation>
 <translation id="834290227245955730">잘못된 PIN입니다. 남은 재시도 횟수는 <ph name="RETRIES" />회입니다.</translation>
 <translation id="8351419472474436977">이 확장 프로그램이 프록시 설정을 제어할 수 있게 되었으며, 따라서 사용자가 온라인에서 수행하는 모든 작업을 변경 및 중단하고 엿볼 수 있게 되었음을 의미합니다. 이와 같이 변경된 이유가 확실하지 않다면 이 설정을 사용하지 않는 것이 좋습니다.</translation>

@@ -1383,7 +1383,6 @@ Chcete-li spravovat nastavení tohoto účtu, nainstalujte si do zařízení apl
 <translation id="2865919525181940183">Snímek obrazovky programů, které jsou aktuálně na obrazovce.</translation>
 <translation id="286674810810214575">Probíhá kontrola zdrojů napájení...</translation>
 <translation id="2867768963760577682">Otevřít jako připnutou kartu</translation>
-<translation id="2868184003987917410">Nepovolovat webům přístup k zařízením/datům pro virtuální realitu</translation>
 <translation id="2868746137289129307">Toto rozšíření je zastaralé a je zakázáno podnikovou zásadou. Možná bude opět automaticky povoleno, až bude k dispozici novější verze.</translation>
 <translation id="2870560284913253234">Stránky</translation>
 <translation id="2870909136778269686">Aktualizace...</translation>
@@ -1713,7 +1712,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3348038390189153836">Bylo zjištěno vyměnitelné zařízení</translation>
 <translation id="3349933790966648062">Obsazená paměť</translation>
 <translation id="3350117557200012647">Zapněte režim párování</translation>
-<translation id="3350244554415289209">Zeptat se, když chce web zjistit pozici kamery nebo zmapovat místnost (doporučeno)</translation>
 <translation id="3355936511340229503">Chyba připojení</translation>
 <translation id="3356580349448036450">Dokončeno</translation>
 <translation id="3359256513598016054">Omezení zásad certifikátu</translation>
@@ -1730,7 +1728,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3382073616108123819">Jejda, systému se nepodařilo určit identifikátory tohoto zařízení.</translation>
 <translation id="3382086682569279540">Účet, který spravujete, bude brzy odstraněn</translation>
 <translation id="3382200254148930874">Ukončování dohledu...</translation>
-<translation id="3383210070657133526"><ph name="URL" /> chce povolení spouštět relace virtuální reality</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" /> %</translation>
 <translation id="338583716107319301">Oddělovač</translation>
 <translation id="338691029516748599">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, síla signálu: <ph name="SIGNAL_STRENGTH" /> %, spravováno administrátorem, připojit</translation>
@@ -1827,7 +1824,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="3511307672085573050">Kopírovat adr&amp;esu odkazu</translation>
 <translation id="351152300840026870">Písmo s pevnou šířkou</translation>
 <translation id="3511528412952710609">Krátká</translation>
-<translation id="3513704683820682405">Rozšířená realita</translation>
 <translation id="3514373592552233661">V případě, že bude k dispozici více než jedna síť, budou před ostatními známými sítěmi upřednostněny preferované sítě</translation>
 <translation id="3515983984924808886">Potvrďte reset tím, že se znovu dotknete bezpečnostního klíče. Všechny informace uložené na bezpečnostním klíči, včetně kódu PIN, se vymažou.</translation>
 <translation id="3518985090088779359">PŘIJMOUT A POKRAČOVAT</translation>
@@ -2530,7 +2526,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="4501530680793980440">Potvrdit odstranění</translation>
 <translation id="4502423230170890588">Odstranit z tohoto zařízení</translation>
 <translation id="4504940961672722399">Toto rozšíření aktivujete kliknutím na tuto ikonu nebo klávesovou zkratkou <ph name="EXTENSION_SHORTCUT" />.</translation>
-<translation id="4507164039066603071">Nepovolovat webům zjištění pozice kamery ani zmapování místnosti</translation>
 <translation id="4508051413094283164">Otevřít vše v anonymním okně</translation>
 <translation id="4508265954913339219">Aktivace se nezdařila</translation>
 <translation id="4508765956121923607">Z&amp;obrazit zdrojový kód</translation>
@@ -2836,7 +2831,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="494286511941020793">Nápověda ke konfiguraci proxy serveru</translation>
 <translation id="4943368462779413526">Americký fotbal</translation>
 <translation id="4943691134276646401">Rozšíření <ph name="CHROME_EXTENSION_NAME" /> se chce připojit k sériovému portu</translation>
-<translation id="4943703118917034429">Virtuální realita</translation>
 <translation id="4944310289250773232">Tato ověřovací služba je hostována v doméně <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Akce</translation>
 <translation id="4952981627953231344">Plugin VM na tomto zařízení není povolen. Kontaktujte administrátora zařízení ve své organizaci.</translation>
@@ -4110,7 +4104,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="6758056191028427665">Sdělte nám, jak si vedeme.</translation>
 <translation id="6759193508432371551">Tovární nastavení</translation>
 <translation id="6762833852331690540">Zapnuto</translation>
-<translation id="6767115174726603949">Přístup k zařízením a datům virtuální reality</translation>
 <translation id="6767566652486411142">Vybrat jiný jazyk...</translation>
 <translation id="6767639283522617719">Přidání do domény se nezdařilo. Zkontrolujte, zda jsou nastavení pro organizační jednotku správná.</translation>
 <translation id="6769712124046837540">Přidávání tiskárny...</translation>
@@ -4306,7 +4299,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="703001695939087067">Byl aktivován režim přehledu oken. Můžete je procházet tabulátorem.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – připojeno k sériovému portu</translation>
 <translation id="7031962166228839643">Připravuje se modul TPM. Čekejte prosím (možná i několik minut)...</translation>
-<translation id="7034615910652881882">Zeptat se, když chce web získat přístup k vašim zařízením/datům pro virtuální realitu</translation>
 <translation id="7037509989619051237">Text k náhledu</translation>
 <translation id="7039326228527141150">Přistupovat k zařízením USB od dodavatele <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Přihlášení pomocí karty SmartCard Microsoft</translation>
@@ -4612,7 +4604,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7443806024147773267">Mějte hesla k dispozici vždy, když jste přihlášeni k účtu Google</translation>
 <translation id="7444983668544353857">Deaktivovat <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Automaticky instalovat aplikace</translation>
-<translation id="7448625729116931228">Zeptat se, když chce web získat přístup k vašim zařízením/datům pro virtuální realitu (doporučeno)</translation>
 <translation id="7450761244949417357">Otevírání v prohlížeči <ph name="ALTERNATIVE_BROWSER_NAME" /></translation>
 <translation id="7453008956351770337">Výběrem tiskárny udělíte následujícímu rozšíření oprávnění k přístupu k tiskárně:</translation>
 <translation id="7454548535253569100">Portál: <ph name="SUBFRAME_SITE" /></translation>
@@ -4749,7 +4740,6 @@ Zpráva serveru: <ph name="SERVER_MSG" /></translation>
 <translation id="7652808307838961528">Upravit osobu: <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Nelze přidávat aplikace, rozšíření a uživatelské skripty z tohoto webu</translation>
 <translation id="7652954539215530680">Vytvoření kódu PIN</translation>
-<translation id="7653295403398566475">Zeptat se, když chce web zjistit pozici kamery nebo zmapovat místnost</translation>
 <translation id="7654941827281939388">Tento účet je v tomto počítači již používán.</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7659584679870740384">Nemáte oprávnění používat toto zařízení. Kontaktujte administrátora a požádejte jej o oprávnění k přihlášení.</translation>
@@ -5287,7 +5277,6 @@ Svůj soubor klíče uchovávejte na bezpečném místě. Budete jej potřebovat
 <translation id="8338952601723052325">Webové stránky pro vývojáře</translation>
 <translation id="8339059274628563283">Data webu <ph name="SITE" /> v místním úložišti</translation>
 <translation id="833986336429795709">Chcete-li otevřít tento odkaz, vyberte aplikaci</translation>
-<translation id="834057053932610950">Při konfiguraci Linuxu došlo k chybě. Kontaktujte administrátora.</translation>
 <translation id="8342861492835240085">Vyberte sbírku</translation>
 <translation id="834290227245955730">Neplatný kód PIN. Zbývající pokusy: <ph name="RETRIES" />.</translation>
 <translation id="8351419472474436977">Toto rozšíření převzalo kontrolu nad nastavením vašeho proxy serveru, což znamená, že může změnit, narušit nebo sledovat vše, co děláte na internetu. Pokud si nejste jisti, proč k tomu došlo, zřejmě se jedná o nežádoucí změnu.</translation>

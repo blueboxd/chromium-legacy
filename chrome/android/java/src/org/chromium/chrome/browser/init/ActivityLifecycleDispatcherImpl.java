@@ -45,6 +45,7 @@ public class ActivityLifecycleDispatcherImpl implements ActivityLifecycleDispatc
             new ObserverList<>();
 
     private @ActivityState int mActivityState = ActivityState.DESTROYED;
+    private boolean mIsNativeInitialized;
 
     @Override
     public void register(LifecycleObserver observer) {
@@ -115,6 +116,11 @@ public class ActivityLifecycleDispatcherImpl implements ActivityLifecycleDispatc
         return mActivityState;
     }
 
+    @Override
+    public boolean isNativeInitializationFinished() {
+        return mIsNativeInitialized;
+    }
+
     void dispatchPreInflationStartup() {
         for (InflationObserver observer : mInflationObservers) {
             observer.onPreInflationStartup();
@@ -160,6 +166,7 @@ public class ActivityLifecycleDispatcherImpl implements ActivityLifecycleDispatc
     }
 
     void dispatchNativeInitializationFinished() {
+        mIsNativeInitialized = true;
         for (NativeInitObserver observer : mNativeInitObservers) {
             observer.onFinishNativeInitialization();
         }

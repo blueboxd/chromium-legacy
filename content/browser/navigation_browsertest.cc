@@ -2182,6 +2182,59 @@ IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
   EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
 }
 
+IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
+                       EnabledOnSameDocumentBrowserNavigation) {
+  GURL url(embedded_test_server()->GetURL(
+      "/scrollable_page_with_content.html#:~:text=text"));
+  WebContents* main_contents = shell()->web_contents();
+  RenderFrameSubmissionObserver frame_observer(main_contents);
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WaitForPageLoad(main_contents);
+  frame_observer.WaitForScrollOffsetAtTop(false);
+  EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+
+  // Scroll the page back to top.
+  EXPECT_TRUE(ExecuteScript(main_contents, "window.scrollTo(0, 0)"));
+  frame_observer.WaitForScrollOffsetAtTop(true);
+
+  // Perform a same-document browser initiated navigation
+  GURL same_doc_url(embedded_test_server()->GetURL(
+      "/scrollable_page_with_content.html#:~:text=some"));
+  EXPECT_TRUE(NavigateToURL(shell(), same_doc_url));
+
+  WaitForPageLoad(main_contents);
+  frame_observer.WaitForScrollOffsetAtTop(false);
+  EXPECT_FALSE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+}
+
+IN_PROC_BROWSER_TEST_F(TextFragmentAnchorBrowserTest,
+                       DisabledOnSameDocumentScriptNavigation) {
+  GURL url(
+      embedded_test_server()->GetURL("/scrollable_page_with_content.html"));
+  GURL target_text_url(embedded_test_server()->GetURL(
+      "/scrollable_page_with_content.html#:~:text=some"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  WebContents* main_contents = shell()->web_contents();
+  TestNavigationObserver observer(main_contents);
+  EXPECT_TRUE(ExecuteScriptWithoutUserGesture(
+      main_contents, "location = '" + target_text_url.spec() + "';"));
+  observer.Wait();
+  EXPECT_EQ(target_text_url, main_contents->GetLastCommittedURL());
+
+  WaitForPageLoad(main_contents);
+
+  // Wait a short amount of time to ensure the page does not scroll.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
+  run_loop.Run();
+  EXPECT_TRUE(main_contents->GetMainFrame()->GetView()->IsScrollOffsetAtTop());
+}
+
 // Regression test for https://crbug.com/996044
 //  1) Navigate an iframe to srcdoc (about:srcdoc);
 //  2) Same-document navigation to about:srcdoc#1.

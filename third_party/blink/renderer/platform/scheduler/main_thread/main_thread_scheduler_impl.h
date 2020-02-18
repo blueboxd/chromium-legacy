@@ -134,14 +134,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     std::array<base::sequence_manager::TaskQueue::QueuePriority,
                net::RequestPrioritySize::NUM_PRIORITIES>
         net_to_blink_priority;
-
-    using FrameTaskTypeToQueueTraitsArray =
-        std::array<base::Optional<MainThreadTaskQueue::QueueTraits>,
-                   static_cast<size_t>(TaskType::kCount)>;
-    // Array of QueueTraits indexed by TaskType, containing TaskType::kCount
-    // entries. This is initialized early with all valid entries. Entries that
-    // aren't valid task types, i.e. non-frame level, are base::nullopt.
-    FrameTaskTypeToQueueTraitsArray frame_task_types_to_queue_traits;
   };
 
   static const char* UseCaseToString(UseCase use_case);

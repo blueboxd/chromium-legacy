@@ -68,7 +68,8 @@ TrustTokenDatabaseOwner::IssuerToplevelPairData() {
   return issuer_toplevel_pair_data_.get();
 }
 
-TrustTokenDatabaseOwner::TrustTokenDatabaseOwner(
+// Marking NOINLINE saves a few hundred bytes of binary size.
+NOINLINE TrustTokenDatabaseOwner::TrustTokenDatabaseOwner(
     base::OnceCallback<bool(sql::Database*)> db_opener,
     scoped_refptr<base::SequencedTaskRunner> db_task_runner,
     base::TimeDelta flush_delay_for_writes,

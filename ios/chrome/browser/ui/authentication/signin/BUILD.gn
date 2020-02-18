@@ -24,12 +24,19 @@ source_set("signin_headers") {
   ]
 }
 
+source_set("signin_protected") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [ "signin_coordinator+protected.h" ]
+  deps = [ ":signin_headers" ]
+}
+
 # Contains sign-in implementation.
 source_set("signin_impl") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [ "signin_coordinator.mm" ]
   deps = [
     ":signin_headers",
+    ":signin_protected",
     "//ios/chrome/browser/ui/authentication/signin/add_account_signin",
     "//ios/chrome/browser/ui/authentication/signin/advanced_settings_signin",
     "//ios/chrome/browser/ui/authentication/signin/user_signin",

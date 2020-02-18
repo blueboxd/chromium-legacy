@@ -16,8 +16,17 @@ namespace subresource_redirect {
 SubresourceRedirectHintsAgent::SubresourceRedirectHintsAgent() = default;
 SubresourceRedirectHintsAgent::~SubresourceRedirectHintsAgent() = default;
 
+void SubresourceRedirectHintsAgent::DidStartNavigation() {
+  // Clear the hints when a navigation starts, so that hints from previous
+  // navigation do not apply in case the same renderframe is reused.
+  public_image_urls_.clear();
+  public_image_urls_received_ = false;
+}
+
 void SubresourceRedirectHintsAgent::SetCompressPublicImagesHints(
     blink::mojom::CompressPublicImagesHintsPtr images_hints) {
+  DCHECK(public_image_urls_.empty());
+  DCHECK(!public_image_urls_received_);
   public_image_urls_ = images_hints->image_urls;
   public_image_urls_received_ = true;
 }

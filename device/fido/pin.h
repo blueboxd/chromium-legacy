@@ -41,13 +41,21 @@ constexpr size_t kMinBytes = 4;
 // accept.
 constexpr size_t kMaxBytes = 63;
 
-// RetriesRequest asks an authenticator for the number of remaining PIN attempts
-// before the device is locked.
-struct RetriesRequest {};
+// PinRetriesRequest asks an authenticator for the number of remaining PIN
+// attempts before the device is locked.
+struct PinRetriesRequest {};
 
-// RetriesResponse reflects an authenticator's response to a |RetriesRequest|.
+// UVRetriesRequest asks an authenticator for the number of internal user
+// verification attempts before the feature is locked.
+struct UvRetriesRequest {};
+
+// RetriesResponse reflects an authenticator's response to a |PinRetriesRequest|
+// or a |UvRetriesRequest|.
 struct RetriesResponse {
-  static base::Optional<RetriesResponse> Parse(
+  static base::Optional<RetriesResponse> ParsePinRetries(
+      const base::Optional<cbor::Value>& cbor);
+
+  static base::Optional<RetriesResponse> ParseUvRetries(
       const base::Optional<cbor::Value>& cbor);
 
   // retries is the number of PIN attempts remaining before the authenticator
@@ -55,6 +63,10 @@ struct RetriesResponse {
   int retries;
 
  private:
+  static base::Optional<RetriesResponse> Parse(
+      const base::Optional<cbor::Value>& cbor,
+      const int retries_key);
+
   RetriesResponse();
 };
 
@@ -196,7 +208,10 @@ class TokenResponse {
 };
 
 std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
-AsCTAPRequestValuePair(const RetriesRequest&);
+AsCTAPRequestValuePair(const PinRetriesRequest&);
+
+std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
+AsCTAPRequestValuePair(const UvRetriesRequest&);
 
 std::pair<CtapRequestCommand, base::Optional<cbor::Value>>
 AsCTAPRequestValuePair(const KeyAgreementRequest&);

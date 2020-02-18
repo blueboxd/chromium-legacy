@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Мазмұн жүктеуді жалғастырасыз ба?</translation>
 <translation id="3306398118552023113">Бұл қолданба Chrome браузерінде жұмыс істеп тұр</translation>
-<translation id="3312292613668865961">Сайттарға виртуалды шындық құрылғыңызды немесе деректерді пайдалануға рұқсат беру алдында сұрау (ұсынылады)</translation>
 <translation id="3315103659806849044">Синхрондау және Google қызметі параметрлерін реттеудесіз. Синхрондауды қосуды аяқтау үшін экранның төменгі жағындағы "Растау" түймесін түртіңіз. Жоғары қарай өту</translation>
 <translation id="3328801116991980348">Сайт ақпараты</translation>
 <translation id="3333961966071413176">Барлық контакт</translation>
@@ -514,7 +513,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="4915549754973153784">Құрылғыларды сканерлеу кезінде <ph name="BEGIN_LINK" />анықтама алыңыз<ph name="END_LINK" />…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# бет}other{# бет}}</translation>
 <translation id="4932247056774066048">Сіз <ph name="DOMAIN_NAME" /> басқаратын есептік жазбадан шығып бара жатқандықтан, Chrome браузеріңіздегі деректер осы құрылғыдан жойылады. Ол Google есептік жазбаңызда сақталады.</translation>
-<translation id="4935305910887312910">Сайттарға камераңыздың күйі туралы ақпарат алуға немесе бөлмеңіздің картасын жасауға рұқсат беру алдында сұрау (ұсынылады)</translation>
 <translation id="4943703118917034429">Виртуалды шындық</translation>
 <translation id="4943872375798546930">Нәтижесіз</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> экраныңызды бөлісуде</translation>
@@ -818,6 +816,7 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="7141896414559753902">Сайттардың қалқымалы терезе көрсетуіне және бағыттауына тыйым салу (ұсынылады)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Беттің<ph name="END_LINK" /> түпнұсқасын <ph name="DOMAIN_NAME" /> доменінен жүктеу</translation>
 <translation id="7149893636342594995">Соңғы 24 сағат</translation>
+<translation id="7173114856073700355">Параметрлерді ашу</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
 <translation id="7177466738963138057">Мұны кейінірек "Параметрлер" бөлімінде өзгертуге болады</translation>
 <translation id="7180611975245234373">Жаңарту</translation>
@@ -1025,7 +1024,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="8664979001105139458">Мұндай атаулы файл бұрыннан бар</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Сигнал деңгейі: # сызықша}other{Сигнал деңгейі: # сызықша}}</translation>
 <translation id="868929229000858085">Контактілеріңізді іздеңіз</translation>
-<translation id="8698438463325761328">Сайттардың виртуалды шындық құрылғыңызды және деректеріңізді пайдалануына тыйым салады.</translation>
 <translation id="869891660844655955">Аяқталу мерзімі</translation>
 <translation id="8728487861892616501">Осы қолданбаны пайдалана отырып, Chrome <ph name="BEGIN_LINK1" />Қызмет көрсету шарттары<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />Құпиялылық туралы ескертпе<ph name="END_LINK2" /> және <ph name="BEGIN_LINK3" />Family Link қызметінде жасалған Google есептік жазбаларына арналған құпиялылық туралы ескертпе<ph name="END_LINK3" /> талаптарына келісім бересіз.</translation>
 <translation id="8748850008226585750">Мазмұны жасырылған</translation>
@@ -1042,7 +1040,6 @@ Google есептік жазбасының шолу тарихы басқа Goog
 <translation id="883806473910249246">Мазмұнды жүктеп алу кезінде қате пайда болды.</translation>
 <translation id="8840953339110955557">Бұл беттің онлайн нұсқасы өзгеше болуы мүмкін.</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">Сайттардың камера күйі туралы ақпарат алуына немесе бөлмеңіздің картасын жасауына тыйым салу</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, қойынды</translation>
 <translation id="885701979325669005">Сақтау</translation>
 <translation id="889338405075704026">Chrome параметрлеріне өту</translation>

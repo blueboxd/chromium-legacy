@@ -190,6 +190,9 @@ extern const char kDecodeJpeg420ImagesToYUVDescription[];
 extern const char kDecodeLossyWebPImagesToYUVName[];
 extern const char kDecodeLossyWebPImagesToYUVDescription[];
 
+extern const char kDoubleBufferCompositingName[];
+extern const char kDoubleBufferCompositingDescription[];
+
 extern const char kDnsOverHttpsName[];
 extern const char kDnsOverHttpsDescription[];
 
@@ -1520,9 +1523,6 @@ extern const char kStartSurfaceAndroidDescription[];
 extern const char kStrictSiteIsolationName[];
 extern const char kStrictSiteIsolationDescription[];
 
-extern const char kTabSwitcherLongpressMenuName[];
-extern const char kTabSwitcherLongpressMenuDescription[];
-
 extern const char kUpdateMenuBadgeName[];
 extern const char kUpdateMenuBadgeDescription[];
 
@@ -1887,6 +1887,9 @@ extern const char kEnableAppReinstallZeroStateDescription[];
 
 extern const char kEnableArcUnifiedAudioFocusName[];
 extern const char kEnableArcUnifiedAudioFocusDescription[];
+
+extern const char kEnableAmbientModeName[];
+extern const char kEnableAmbientModeDescription[];
 
 extern const char kEnableAssistantAppSupportName[];
 extern const char kEnableAssistantAppSupportDescription[];

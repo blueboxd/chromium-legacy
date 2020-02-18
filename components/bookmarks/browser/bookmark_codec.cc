@@ -329,10 +329,24 @@ bool BookmarkCodec::DecodeNode(const base::DictionaryValue& value,
     // required. When encountering one such bookmark we thus assign to it a new
     // GUID. The same applies if the stored GUID is invalid or a duplicate.
     if (!value.GetString(kGuidKey, &guid) || guid.empty() ||
-        !base::IsValidGUID(guid) || guids_.count(guid) != 0) {
+        !base::IsValidGUID(guid)) {
       guid = base::GenerateGUID();
       guids_reassigned_ = true;
     }
+
+    // GUIDs are case insensitive as per RFC 4122. To prevent collisions due to
+    // capitalization differences, all GUIDs are canonicalized to lowercase
+    // during JSON-parsing.
+    guid = base::ToLowerASCII(guid);
+    DCHECK(base::IsValidGUIDOutputString(guid));
+
+    // Guard against GUID collisions, which would violate BookmarkModel's
+    // invariant that each GUID is unique.
+    if (guids_.count(guid) != 0) {
+      guid = base::GenerateGUID();
+      guids_reassigned_ = true;
+    }
+
     guids_.insert(guid);
   }
 

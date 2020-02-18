@@ -24,7 +24,7 @@ const base::Feature kPreviews {
 
 // Enables the Offline previews on android slow connections.
 const base::Feature kOfflinePreviews{"OfflinePreviews",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Support for enabling NoScript previews which includes a base feature
 // and a UserConsistent-specific experiment feature.

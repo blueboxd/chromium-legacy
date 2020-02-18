@@ -589,15 +589,7 @@ AXTree::AXTree(const AXTreeUpdate& initial_state) {
 }
 
 AXTree::~AXTree() {
-  if (root_) {
-    RecursivelyNotifyNodeDeletedForTreeTeardown(root_);
-    base::AutoReset<bool> update_state_resetter(&tree_update_in_progress_,
-                                                true);
-    DestroyNodeAndSubtree(root_, nullptr);
-  }
-  for (auto& entry : table_info_map_)
-    delete entry.second;
-  table_info_map_.clear();
+  Destroy();
 }
 
 void AXTree::AddObserver(AXTreeObserver* observer) {
@@ -608,7 +600,7 @@ bool AXTree::HasObserver(AXTreeObserver* observer) {
   return observers_.HasObserver(observer);
 }
 
-void AXTree::RemoveObserver(const AXTreeObserver* observer) {
+void AXTree::RemoveObserver(AXTreeObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
@@ -619,6 +611,19 @@ AXTreeID AXTree::GetAXTreeID() const {
 AXNode* AXTree::GetFromId(int32_t id) const {
   auto iter = id_map_.find(id);
   return iter != id_map_.end() ? iter->second : nullptr;
+}
+
+void AXTree::Destroy() {
+  for (auto& entry : table_info_map_)
+    delete entry.second;
+  table_info_map_.clear();
+  if (root_) {
+    RecursivelyNotifyNodeDeletedForTreeTeardown(root_);
+    base::AutoReset<bool> update_state_resetter(&tree_update_in_progress_,
+                                                true);
+    DestroyNodeAndSubtree(root_, nullptr);
+    root_ = nullptr;
+  }
 }
 
 void AXTree::UpdateData(const AXTreeData& new_data) {

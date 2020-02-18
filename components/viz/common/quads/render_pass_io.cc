@@ -1068,10 +1068,9 @@ void StreamVideoDrawQuadToDict(const StreamVideoDrawQuad* draw_quad,
   DCHECK(dict);
   dict->SetKey("uv_top_left", PointFToDict(draw_quad->uv_top_left));
   dict->SetKey("uv_bottom_right", PointFToDict(draw_quad->uv_bottom_right));
-  const size_t kIndex = StreamVideoDrawQuad::kResourceIdIndex;
   DCHECK_EQ(1u, draw_quad->resources.count);
   dict->SetKey("overlay_resource_size_in_pixels",
-               SizeToDict(draw_quad->overlay_resources.size_in_pixels[kIndex]));
+               SizeToDict(draw_quad->overlay_resources.size_in_pixels));
 }
 
 #define MAP_VIDEO_TYPE_TO_STRING(NAME) \
@@ -1117,9 +1116,8 @@ void TextureDrawQuadToDict(const TextureDrawQuad* draw_quad,
       "protected_video_type",
       ProtectedVideoTypeToString(draw_quad->protected_video_type));
   DCHECK_EQ(1u, draw_quad->resources.count);
-  const size_t kIndex = TextureDrawQuad::kResourceIdIndex;
   dict->SetKey("resource_size_in_pixels",
-               SizeToDict(draw_quad->overlay_resources.size_in_pixels[kIndex]));
+               SizeToDict(draw_quad->overlay_resources.size_in_pixels));
 }
 
 void TileDrawQuadToDict(const TileDrawQuad* draw_quad, base::Value* dict) {

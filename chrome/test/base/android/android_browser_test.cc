@@ -10,7 +10,10 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "content/public/test/test_utils.h"
 
-AndroidBrowserTest::AndroidBrowserTest() = default;
+AndroidBrowserTest::AndroidBrowserTest() {
+  CreateTestServer(base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+}
+
 AndroidBrowserTest::~AndroidBrowserTest() = default;
 
 void AndroidBrowserTest::SetUp() {

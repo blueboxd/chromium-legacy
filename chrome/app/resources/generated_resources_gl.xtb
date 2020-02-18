@@ -1383,7 +1383,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="2865919525181940183">Captura de pantalla dos programas que se atopan actualmente na pantalla</translation>
 <translation id="286674810810214575">Comprobando fontes de alimentación…</translation>
 <translation id="2867768963760577682">Abrir como pestana fixada</translation>
-<translation id="2868184003987917410">Non permitir que os sitios accedan aos teus dispositivos/datos de realidade virtual</translation>
 <translation id="2868746137289129307">Esta extensión é obsoleta e está desactivada pola política da empresa. Quizais se active automaticamente cando estea dispoñible unha nova versión.</translation>
 <translation id="2870560284913253234">Sitio</translation>
 <translation id="2870909136778269686">Actualizando…</translation>
@@ -1713,7 +1712,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3348038390189153836">Dispositivo extraíble detectado</translation>
 <translation id="3349933790966648062">Uso de memoria</translation>
 <translation id="3350117557200012647">Accede ao modo de sincronización</translation>
-<translation id="3350244554415289209">Preguntar cando un sitio queira acceder á posición da túa cámara ou mapear o teu cuarto (recomendado)</translation>
 <translation id="3355936511340229503">Erro de conexión</translation>
 <translation id="3356580349448036450">Completado</translation>
 <translation id="3359256513598016054">Restricións de políticas de certificados</translation>
@@ -1730,7 +1728,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3382073616108123819">O sistema non logrou determinar os identificadores deste dispositivo.</translation>
 <translation id="3382086682569279540">A conta que xestionas eliminarase en breve</translation>
 <translation id="3382200254148930874">Detendo supervisión...</translation>
-<translation id="3383210070657133526"><ph name="URL" /> quere ter a posibilidade de iniciar sesións de realidade virtual</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" /> %</translation>
 <translation id="338583716107319301">Separador</translation>
 <translation id="338691029516748599">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, xestionada polo teu administrador, conectar</translation>
@@ -1827,7 +1824,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="3511307672085573050">Copiar endere&amp;zo da ligazón</translation>
 <translation id="351152300840026870">Tipo de letra de largura fixa</translation>
 <translation id="3511528412952710609">Curto</translation>
-<translation id="3513704683820682405">Realidade aumentada</translation>
 <translation id="3514373592552233661">As redes preferidas terán prioridade ante outras redes coñecidas se hai varias dispoñibles</translation>
 <translation id="3515983984924808886">Toca a chave de seguranza de novo para confirmar o seu restablecemento. Eliminarase toda a información almacenada nela, incluídos os PIN.</translation>
 <translation id="3518985090088779359">Aceptar e continuar</translation>
@@ -2531,7 +2527,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="4501530680793980440">Confirmar eliminación</translation>
 <translation id="4502423230170890588">Quitar deste dispositivo</translation>
 <translation id="4504940961672722399">Fai clic nesta icona ou preme <ph name="EXTENSION_SHORTCUT" /> para utilizar esta extensión.</translation>
-<translation id="4507164039066603071">Non permitir que os sitios accedan á posición da túa cámara nin mapeen o teu cuarto</translation>
 <translation id="4508051413094283164">Abre todos os marcadores nunha ventá do modo de incógnito</translation>
 <translation id="4508265954913339219">No se puido efectuar a activación</translation>
 <translation id="4508765956121923607">Ver código f&amp;onte</translation>
@@ -2837,7 +2832,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="494286511941020793">Axuda para a configuración do proxy</translation>
 <translation id="4943368462779413526">Fútbol</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" quere conectarse a un porto en serie</translation>
-<translation id="4943703118917034429">Realidade virtual</translation>
 <translation id="4944310289250773232">Este servizo de autenticación está aloxado por <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Accións</translation>
 <translation id="4952981627953231344">Non se admite Plugin VM neste dispositivo. Ponte en contacto co administrador de dispositivos da túa administración.</translation>
@@ -4111,7 +4105,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="6758056191028427665">Indícanos o teu grao de satisfacción.</translation>
 <translation id="6759193508432371551">Restablecemento de fábrica</translation>
 <translation id="6762833852331690540">Si</translation>
-<translation id="6767115174726603949">Acceso a dispositivos e datos de realidade virtual</translation>
 <translation id="6767566652486411142">Escoller outro idioma…</translation>
 <translation id="6767639283522617719">O dispositivo non se puido vincular ao dominio. Asegúrate de que a configuración sexa correcta para a unidade organizativa.</translation>
 <translation id="6769712124046837540">Engadindo impresora...</translation>
@@ -4307,7 +4300,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="703001695939087067">Abriuse o modo de vista xeral da ventá. Preme a tecla Tab para navegar.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - Porto en serie conectado</translation>
 <translation id="7031962166228839643">Estase preparando o TPM (este proceso pode tardar uns minutos). Agarda...</translation>
-<translation id="7034615910652881882">Preguntar cando un sitio queira acceder aos teus dispositivos/datos de realidade virtual</translation>
 <translation id="7037509989619051237">Texto de vista previa</translation>
 <translation id="7039326228527141150">Acceder a dispositivos USB de <ph name="VENDOR_NAME" /></translation>
 <translation id="7039912931802252762">Inicio de sesión na tarxeta intelixente de Microsoft</translation>
@@ -4613,7 +4605,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7443806024147773267">Accede aos teus contrasinais sempre que teñas a sesión iniciada na túa Conta de Google</translation>
 <translation id="7444983668544353857">Desactivar <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Instala aplicacións automaticamente</translation>
-<translation id="7448625729116931228">Preguntar cando un sitio queira acceder aos teus dispositivos/datos de realidade virtual (recomendado)</translation>
 <translation id="7450761244949417357">Abrindo a páxina no navegador <ph name="ALTERNATIVE_BROWSER_NAME" /> agora</translation>
 <translation id="7453008956351770337">Ao seleccionar esta impresora, concédeselle permiso á extensión seguinte para acceder a ela:</translation>
 <translation id="7454548535253569100">Portal: <ph name="SUBFRAME_SITE" /></translation>
@@ -4750,7 +4741,6 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="7652808307838961528">Edita a persoa, <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Non se poden engadir aplicacións, extensións nin scripts de usuarios desde este sitio web</translation>
 <translation id="7652954539215530680">Crear un PIN</translation>
-<translation id="7653295403398566475">Preguntar cando un sitio queira acceder á posición da túa cámara ou mapear o teu cuarto</translation>
 <translation id="7654941827281939388">Esta conta xa se está usando neste ordenador.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7659584679870740384">Non estás autorizado a usar este dispositivo. Para obter permisos para iniciar sesión, ponte en contacto co administrador.</translation>
@@ -5288,7 +5278,6 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8338952601723052325">Sitio web do programador</translation>
 <translation id="8339059274628563283"><ph name="SITE" /> almacenou datos localmente</translation>
 <translation id="833986336429795709">Para abrir esta ligazón, escoller unha aplicación</translation>
-<translation id="834057053932610950">Produciuse un erro ao configurar Linux. Ponte en contacto co teu administrador.</translation>
 <translation id="8342861492835240085">Seleccionar unha colección</translation>
 <translation id="834290227245955730">O PIN non é válido. Intentos restantes: <ph name="RETRIES" />.</translation>
 <translation id="8351419472474436977">Esta extensión asumiu o control da túa configuración de proxy, o que significa que pode cambiar, anular ou espiar todo o que fagas en liña. Se non estás seguro de por que se produciu este cambio, é probable que non che interese conservalo.</translation>

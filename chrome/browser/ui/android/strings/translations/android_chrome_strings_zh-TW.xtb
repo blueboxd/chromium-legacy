@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">精簡版本</translation>
 <translation id="3303414029551471755">繼續下載這項內容？</translation>
 <translation id="3306398118552023113">Chrome 正在執行這個應用程式</translation>
-<translation id="3312292613668865961">系統必須先詢問你，才能允許網站存取你的虛擬實境裝置和資料 (建議設定)</translation>
 <translation id="3315103659806849044">你正在自訂同步功能和 Google 服務設定。如要完成開啟同步功能，請輕觸畫面底部附近的 [確認] 按鈕。向上瀏覽</translation>
 <translation id="3328801116991980348">網站資訊</translation>
 <translation id="3333961966071413176">所有聯絡人</translation>
@@ -514,7 +513,6 @@
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />查看說明<ph name="END_LINK" />。正在掃描裝置…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# 個網頁}other{# 個網頁}}</translation>
 <translation id="4932247056774066048">你即將登出由 <ph name="DOMAIN_NAME" /> 管理的帳戶，因此系統會將你的 Chrome 資料從這個裝置上刪除，但是這些資料會繼續保留在你的 Google 帳戶中。</translation>
-<translation id="4935305910887312910">系統必須先詢問你，才能允許網站取得攝影機位置或對應你的房間 (建議設定)</translation>
 <translation id="4943703118917034429">虛擬實境</translation>
 <translation id="4943872375798546930">沒有結果</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> 正在共用你的畫面。</translation>
@@ -726,7 +724,7 @@
 <translation id="6437478888915024427">頁面資訊</translation>
 <translation id="6441734959916820584">這個名稱太長</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# 張圖片}other{# 張圖片}}</translation>
-<translation id="6447558397796644647">找不到指定書籤。請檢查拼字或新增書籤。</translation>
+<translation id="6447558397796644647">找不到指定書籤。請檢查文字是否正確或新增書籤。</translation>
 <translation id="6447842834002726250">Cookie</translation>
 <translation id="6461962085415701688">無法開啟檔案</translation>
 <translation id="6464977750820128603">你可以查看自己透過 Chrome 造訪的網站，並對這些網站設定計時器。\n\nGoogle 會收到這些設有計時器的網站相關資訊以及你的造訪時間長度。這些資訊可協助我們改善數位健康。</translation>
@@ -818,6 +816,7 @@
 <translation id="7141896414559753902">禁止網站顯示彈出式視窗及重新導向 (建議)</translation>
 <translation id="7149158118503947153">從 <ph name="DOMAIN_NAME" /> <ph name="BEGIN_LINK" />載入原始頁面<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">過去 24 小時</translation>
+<translation id="7173114856073700355">開啟設定</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">日後可前往設定頁面進行變更</translation>
 <translation id="7180611975245234373">重新整理</translation>
@@ -1025,7 +1024,6 @@
 <translation id="8664979001105139458">檔案名稱已存在</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{訊號強度等級：# 格}other{訊號強度等級：# 格}}</translation>
 <translation id="868929229000858085">搜尋聯絡人</translation>
-<translation id="8698438463325761328">禁止網站存取你的虛擬實境裝置和資料</translation>
 <translation id="869891660844655955">到期日</translation>
 <translation id="8728487861892616501">使用這個應用程式即表示您同意接受 Chrome 的《<ph name="BEGIN_LINK1" />服務條款<ph name="END_LINK1" />》和《<ph name="BEGIN_LINK2" />隱私權聲明<ph name="END_LINK2" />》，以及《<ph name="BEGIN_LINK3" />透過 Family Link 管理的 Google 帳戶所適用的隱私權聲明<ph name="END_LINK3" />》。</translation>
 <translation id="8748850008226585750">內容已隱藏</translation>
@@ -1042,7 +1040,6 @@
 <translation id="883806473910249246">下載這項內容時發生錯誤。</translation>
 <translation id="8840953339110955557">這個網頁可能會和線上版本有所不同。</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">禁止網站取得攝影機位置或對應你的房間</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> (分頁)</translation>
 <translation id="885701979325669005">儲存空間</translation>
 <translation id="889338405075704026">前往 Chrome 設定</translation>

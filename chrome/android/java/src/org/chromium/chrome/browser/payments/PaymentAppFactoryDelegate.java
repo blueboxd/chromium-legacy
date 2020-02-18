@@ -32,7 +32,7 @@ public interface PaymentAppFactoryDelegate {
      *
      * @param paymentApp A payment app.
      */
-    void onPaymentAppCreated(PaymentInstrument paymentApp);
+    void onPaymentAppCreated(PaymentApp paymentApp);
 
     /**
      * Called when a payment app factory has failed to create a payment app.

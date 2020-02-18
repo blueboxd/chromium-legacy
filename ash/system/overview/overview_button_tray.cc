@@ -50,6 +50,7 @@ OverviewButtonTray::OverviewButtonTray(Shelf* shelf)
 
   Shell::Get()->overview_controller()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
+  Shell::Get()->shelf_config()->AddObserver(this);
 }
 
 OverviewButtonTray::~OverviewButtonTray() {
@@ -57,6 +58,7 @@ OverviewButtonTray::~OverviewButtonTray() {
     Shell::Get()->overview_controller()->RemoveObserver(this);
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
+  Shell::Get()->shelf_config()->RemoveObserver(this);
 }
 
 void OverviewButtonTray::UpdateAfterLoginStatusChange(LoginStatus status) {
@@ -161,6 +163,10 @@ void OverviewButtonTray::OnTabletModeEventsBlockingChanged() {
   UpdateIconVisibility();
 }
 
+void OverviewButtonTray::OnShelfConfigUpdated() {
+  UpdateIconVisibility();
+}
+
 void OverviewButtonTray::OnOverviewModeStarting() {
   SetIsActive(true);
 }
@@ -197,7 +203,10 @@ void OverviewButtonTray::UpdateIconVisibility() {
   bool should_show =
       Shell::Get()->tablet_mode_controller()->ShouldShowOverviewButton();
 
-  SetVisiblePreferred(should_show && active_session && !app_mode);
+  bool shelf_controls_shown = ShelfConfig::Get()->shelf_controls_shown();
+
+  SetVisiblePreferred(should_show && active_session && shelf_controls_shown &&
+                      !app_mode);
 }
 
 }  // namespace ash

@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">გაგრძელდეს შინაარსის ჩამოტვირთვა?</translation>
 <translation id="3306398118552023113">ეს აპი გაშვებულია Chrome-ში</translation>
-<translation id="3312292613668865961">შეკითხვა საიტებისთვის თქვენს ვირტუალური რეალობის მოწყობილობებზე/მონაცემებზე წვდომის დაშვებამდე (რეკომენდებული)</translation>
 <translation id="3315103659806849044">ამჟამად თქვენ ახორციელებთ სინქრონიზაციისა და Google სერვისის პარამეტრების მორგებას. სინქრონიზაციის ჩართვის დასასრულებლად შეეხეთ დადასტურების ღილაკს ეკრანის ქვედა ნაწილთან. ზემოთ გადასვლა</translation>
 <translation id="3328801116991980348">საიტის ინფორმაცია</translation>
 <translation id="3333961966071413176">ყველა კონტაქტი</translation>
@@ -514,7 +513,6 @@
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />მიიღეთ დახმარება<ph name="END_LINK" />, სანამ მოწყობილობების სკანირება მიმდინარეობს…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# გვერდი}other{# გვერდი}}</translation>
 <translation id="4932247056774066048">ვინაიდან <ph name="DOMAIN_NAME" />-ის მიერ მართული ანგარიშიდან გადიხართ, თქვენი Chrome მონაცემები წაიშლება ამ მოწყობილობიდან. ისინი შენარჩუნდება თქვენს Google ანგარიშში.</translation>
-<translation id="4935305910887312910">შეკითხვა საიტებისთვის თქვენი კამერის პოზიციის მიღების ან თქვენი ოთახის რუკის შექმნის დაშვებამდე (რეკომენდებული)</translation>
 <translation id="4943703118917034429">ვირტუალური რეალობა</translation>
 <translation id="4943872375798546930">შედეგები არ არის</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> აზიარებს თქვენს ეკრანს</translation>
@@ -818,6 +816,7 @@
 <translation id="7141896414559753902">საიტებისთვის გადამისამართებისა და ამომხტარი ფანჯრების ჩვენების დაბლოკვა (რეკომენდებული)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />გვერდის ორიგინალის ჩატვირთვა<ph name="END_LINK" /> <ph name="DOMAIN_NAME" />-დან</translation>
 <translation id="7149893636342594995">ბოლო 24 საათი</translation>
+<translation id="7173114856073700355">პარამეტრების გახსნა</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> კბაიტი</translation>
 <translation id="7177466738963138057">ამის მოგვიანებით შეცვლა შეგიძლიათ პარამეტრებიდან</translation>
 <translation id="7180611975245234373">განახლება</translation>
@@ -1025,7 +1024,6 @@
 <translation id="8664979001105139458">ამ სახელის მქონე ფაილი უკვე არსებობს</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{სიგნალის სიძლიერის დონე: # ხაზი}other{სიგნალის სიძლიერის დონე: # ხაზი}}</translation>
 <translation id="868929229000858085">თქვენს კონტაქტებში ძიება</translation>
-<translation id="8698438463325761328">საიტებისთვის თქვენს ვირტუალური რეალობის მოწყობილობებზე/მონაცემებზე წვდომის დაბლოკვა</translation>
 <translation id="869891660844655955">ვადის გასვლის თარიღი</translation>
 <translation id="8728487861892616501">ამ აპლიკაციის გამოყენებით თქვენ ეთანხმებით Chrome-ის <ph name="BEGIN_LINK1" />მომსახურების პირობებსა<ph name="END_LINK1" /> და <ph name="BEGIN_LINK2" />შეტყობინებას კონფიდენციალურობის შესახებ<ph name="END_LINK2" />, ასევე <ph name="BEGIN_LINK3" />შეტყობინებას მონაცემთა კონფიდენციალურობის წესების თაობაზე Family Link-ში მართული Google ანგარიშებისთვის<ph name="END_LINK3" />.</translation>
 <translation id="8748850008226585750">შიგთავსი დამალულია</translation>
@@ -1042,7 +1040,6 @@
 <translation id="883806473910249246">კონტენტის ჩამოტვირთვისას შეცდომა მოხდა.</translation>
 <translation id="8840953339110955557">ეს გვერდი შეიძლება განსხვავდებოდეს ონლაინ-ვერსიისგან.</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">საიტებისთვის თქვენი კამერის პოზიციის მიღების ან თქვენი ოთახის რუკის შექმნის დაბლოკვა</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ჩანართი</translation>
 <translation id="885701979325669005">შენახვა</translation>
 <translation id="889338405075704026">Chrome-ის პარამეტრებზე გადასვლა</translation>

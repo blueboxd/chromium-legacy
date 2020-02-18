@@ -1,17 +1,12 @@
 <html>
 <head></head>
-<img alt="long_placeholder_text" src="image.png#fragment" />
+<img alt="long_placeholder_text"/>
+<script src="common.js"></script>
 <script>
-function checkImage() {
-	sendValueToTest(document.images[0].complete);
-}
-
-function imageSrc() {
-	sendValueToTest(document.images[0].src);
-}
-
-function sendValueToTest(value) {
-  window.domAutomationController.send(value);
+window.onload = () => {
+  setTimeout(() => {
+    document.images[0].src = "image.png#fragment"
+  }, 1000)
 }
 </script>
 </html>

@@ -44,8 +44,6 @@ if (is_win || is_mac) {
       "unzipper.h",
       "update_apps.cc",
       "update_apps.h",
-      "update_service.cc",
-      "update_service.h",
       "updater.cc",
       "updater.h",
       "updater_constants.cc",
@@ -55,6 +53,7 @@ if (is_win || is_mac) {
     ]
 
     deps = [
+      ":update_service",
       ":version_header",
       "//base",
       "//chrome/updater/server",
@@ -69,6 +68,20 @@ if (is_win || is_mac) {
       "//third_party/crashpad/crashpad/handler",
       "//third_party/zlib/google:zip",
       "//url",
+    ]
+  }
+
+  source_set("update_service") {
+    sources = [
+      "update_service.cc",
+      "update_service.h",
+    ]
+
+    deps = [
+      "//base",
+      "//components/crx_file",
+      "//components/prefs",
+      "//components/update_client",
     ]
   }
 

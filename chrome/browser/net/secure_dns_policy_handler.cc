@@ -16,6 +16,7 @@
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_value_map.h"
 #include "components/strings/grit/components_strings.h"
+#include "net/dns/public/util.h"
 
 namespace policy {
 
@@ -140,8 +141,7 @@ bool SecureDnsPolicyHandler::IsTemplatesPolicyInvalid(
   for (const std::string& server_template :
        SplitString(templates_str, " ", base::TRIM_WHITESPACE,
                    base::SPLIT_WANT_NONEMPTY)) {
-    if (!chrome_browser_net::IsValidDohTemplate(server_template,
-                                                &server_method)) {
+    if (!net::dns_util::IsValidDohTemplate(server_template, &server_method)) {
       return true;
     }
   }

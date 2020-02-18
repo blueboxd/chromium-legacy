@@ -275,8 +275,6 @@ TEST_F(BreadcrumbManagerTabHelperTest, PageLoadSuccess) {
 
   EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbPageLoaded))
       << events.back();
-  EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbPageLoadSuccess))
-      << events.back();
   EXPECT_EQ(std::string::npos, events.back().find(kBreadcrumbPageLoadFailure))
       << events.back();
 }
@@ -291,8 +289,6 @@ TEST_F(BreadcrumbManagerTabHelperTest, PageLoadFailure) {
   ASSERT_EQ(1ul, events.size());
 
   EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbPageLoaded))
-      << events.back();
-  EXPECT_EQ(std::string::npos, events.back().find(kBreadcrumbPageLoadSuccess))
       << events.back();
   EXPECT_NE(std::string::npos, events.back().find(kBreadcrumbPageLoadFailure))
       << events.back();

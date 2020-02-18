@@ -10,8 +10,8 @@ details on the presubmit API built into gcl.
 
 
 def RunUnittests(input_api, output_api):
-  return input_api.canned_checks.RunPythonUnitTests(input_api, output_api,
-      ['grit.test_suite_all'])
+  return input_api.canned_checks.RunUnitTests(input_api, output_api,
+      [input_api.os_path.join('grit', 'test_suite_all.py')])
 
 
 def CheckChangeOnUpload(input_api, output_api):

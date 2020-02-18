@@ -15,7 +15,7 @@
 <translation id="106222400312645156">行見出し</translation>
 <translation id="1065552602950927991">無効な入力値</translation>
 <translation id="1066085461259044485">フォレスト グリーン</translation>
-<translation id="1087148255821848488">現在の表示スタイルは交互です</translation>
+<translation id="1087148255821848488">現在の表示スタイルは交互表示です</translation>
 <translation id="1087788677726983142">イベント ストリーム フィルタを非表示にする</translation>
 <translation id="1088402100970133699">前のリスト項目はありません</translation>
 <translation id="1114836634143403764">提案</translation>
@@ -320,7 +320,7 @@
 <translation id="316542773973815724">ナビゲーション</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{スペース}other{# 個のスペース}}</translation>
 <translation id="3179119189286472195">リンクオフ</translation>
-<translation id="320041337977930740">表示スタイルを交互に変更する</translation>
+<translation id="320041337977930740">表示スタイルを交互表示に変更する</translation>
 <translation id="3208346789712025453">次のコントロールはありません</translation>
 <translation id="320961988183078793"><ph name="TYPE" />を入力しました</translation>
 <translation id="321072937702597574">オーキッド</translation>
@@ -618,7 +618,7 @@
 <translation id="5138912041966667164">ミディアム スレートブルー</translation>
 <translation id="5140016802771803559">レベッカ パープル</translation>
 <translation id="5158275234811857234">表紙</translation>
-<translation id="5170206230005240598">ブライユ点字の表示が有効になっています</translation>
+<translation id="5170206230005240598">点字表示が有効になっています</translation>
 <translation id="517143700877085897">、選択されていません</translation>
 <translation id="5177546608148437145">下の対応するフィールドに入力して、頻繁に使用するコマンドのキーボード ショートカットをカスタマイズできます</translation>
 <translation id="5183440668879371625">ブライユ点字の前の行</translation>
@@ -745,7 +745,7 @@
 <translation id="6037602951055904232">前方にパンします</translation>
 <translation id="6044160928851315051">画面表示をオフにする</translation>
 <translation id="6082768461603900813">基本的な操作</translation>
-<translation id="609281021724813947">前のスライダはありません</translation>
+<translation id="609281021724813947">前のスライダーはありません。</translation>
 <translation id="6095514649509181044">大文字と小文字を区別しません</translation>
 <translation id="6118126368611144850">Chrome 用 Android アプリ。お使いのデバイスに Play ストアがインストールされている場合は、Android アプリで ChromeVox をお試しいただけます。Play ストアから Google Chrome Canary をダウンロードして、試験的にサポートされている機能をご利用ください。</translation>
 <translation id="611827076493383239">アクセス済み</translation>
@@ -757,7 +757,7 @@
 <translation id="6156755592608846750">ここでセルは終わりです</translation>
 <translation id="6158882249329863701">行 <ph name="TABLECELLROWINDEX" /> 列 <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">メーター</translation>
-<translation id="6166362019018438352">ブライユ点字の表示が無効になっています</translation>
+<translation id="6166362019018438352">点字表示が無効になっています</translation>
 <translation id="6169420925157477918">長い説明付きの画像です</translation>
 <translation id="6186305613600865047">ページの最後に移動します</translation>
 <translation id="6187190722927752226">アクアマリン</translation>
@@ -895,7 +895,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="7173102181852295013">ミッドナイト ブルー</translation>
 <translation id="717574717447196690">表から移動します</translation>
 <translation id="7203150201908454328">展開表示中</translation>
-<translation id="7209751026933045237">次のスライダはありません</translation>
+<translation id="7209751026933045237">次のスライダーはありません</translation>
 <translation id="7210211103303402262">分</translation>
 <translation id="7217912842225915592">+<ph name="NUM" /></translation>
 <translation id="7218782500591078391">ゴールデン ロッド</translation>
@@ -1205,7 +1205,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="8946628535652548639">行<ph name="TABLECELLROWINDEX" />列<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8952400011684167587">前のラジオボタンはありません</translation>
 <translation id="8957142051395645063">読み上げる</translation>
-<translation id="896035116006462153">ユーザー補助機能で拡張版の点字コマンドを使用するには、ステータストレイの下で画面キーボードを有効にしてください</translation>
+<translation id="896035116006462153">ユーザー補助機能で拡張版の点字コマンドを使用するには、ステータス トレイの下で画面キーボードを有効にしてください</translation>
 <translation id="8970172509886453271">前のセクションはありません</translation>
 <translation id="8978496506222343566">ツールチップ</translation>
 <translation id="8986362086234534611">削除</translation>

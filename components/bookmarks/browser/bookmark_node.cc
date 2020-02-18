@@ -48,15 +48,15 @@ std::string PermanentNodeTypeToGuid(BookmarkNode::Type type) {
 // static
 const int64_t BookmarkNode::kInvalidSyncTransactionVersion = -1;
 const char BookmarkNode::kRootNodeGuid[] =
-    "00000000-0000-4000-A000-000000000001";
+    "00000000-0000-4000-a000-000000000001";
 const char BookmarkNode::kBookmarkBarNodeGuid[] =
-    "00000000-0000-4000-A000-000000000002";
+    "00000000-0000-4000-a000-000000000002";
 const char BookmarkNode::kOtherBookmarksNodeGuid[] =
-    "00000000-0000-4000-A000-000000000003";
+    "00000000-0000-4000-a000-000000000003";
 const char BookmarkNode::kMobileBookmarksNodeGuid[] =
-    "00000000-0000-4000-A000-000000000004";
+    "00000000-0000-4000-a000-000000000004";
 const char BookmarkNode::kManagedNodeGuid[] =
-    "00000000-0000-4000-A000-000000000005";
+    "00000000-0000-4000-a000-000000000005";
 
 std::string BookmarkNode::RootNodeGuid() {
   return BookmarkNode::kRootNodeGuid;

@@ -127,11 +127,8 @@
 
 - (void)cancel {
   [self.controller cancel];
-  [self.coordinator
-      interruptWithAction:SigninCoordinatorInterruptActionNoDismiss
-               completion:nil];
-  [self.coordinator stop];
-  self.coordinator = nil;
+  [self interrupSigninCoordinatorWithAction:
+            SigninCoordinatorInterruptActionNoDismiss];
   [self.advancedSigninSettingsCoordinator abortWithDismiss:NO
                                                   animated:YES
                                                 completion:nil];
@@ -139,11 +136,8 @@
 
 - (void)cancelAndDismiss {
   [self.controller cancelAndDismiss];
-  [self.coordinator
-      interruptWithAction:SigninCoordinatorInterruptActionDismissWithAnimation
-               completion:nil];
-  [self.coordinator stop];
-  self.coordinator = nil;
+  [self interrupSigninCoordinatorWithAction:
+            SigninCoordinatorInterruptActionDismissWithAnimation];
   [self.advancedSigninSettingsCoordinator abortWithDismiss:YES
                                                   animated:YES
                                                 completion:nil];
@@ -306,6 +300,17 @@
   [self.advancedSigninSettingsCoordinator stop];
   self.advancedSigninSettingsCoordinator = nil;
   self.presentingViewController = nil;
+}
+
+- (void)interrupSigninCoordinatorWithAction:
+    (SigninCoordinatorInterruptAction)action {
+  __weak __typeof(self) weakSelf = self;
+  ProceduralBlock interruptCompletion = ^() {
+    // |weakSelf.coordinator.signinCompletion| is called before this interrupt
+    // block. The signin completion has to set |coordinator| to nil.
+    DCHECK(!weakSelf.coordinator);
+  };
+  [self.coordinator interruptWithAction:action completion:interruptCompletion];
 }
 
 @end

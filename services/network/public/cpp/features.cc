@@ -188,6 +188,12 @@ const base::Feature kCorbAllowlistAlsoAppliesToOorCors = {
 const char kCorbAllowlistAlsoAppliesToOorCorsParamName[] =
     "AllowlistForCorbAndCors";
 
+// Enables preprocessing requests with the Trust Tokens API Fetch flags set,
+// and handling their responses, according to the protocol.
+// (See https://github.com/WICG/trust-token-api.)
+const base::Feature kTrustTokens{"TrustTokens",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool ShouldEnableOutOfBlinkCorsForTesting() {
   return base::FeatureList::IsEnabled(features::kOutOfBlinkCors);
 }

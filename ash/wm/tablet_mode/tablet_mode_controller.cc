@@ -678,9 +678,6 @@ void TabletModeController::SetEnabledForDev(bool enabled) {
 }
 
 bool TabletModeController::ShouldShowOverviewButton() const {
-  if (!ShelfConfig::Get()->shelf_controls_shown())
-    return false;
-
   return AreInternalInputDeviceEventsBlocked() ||
          tablet_mode_behavior_.always_show_overview_button;
 }

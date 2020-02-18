@@ -3882,11 +3882,21 @@ TEST_F(UVTokenAuthenticatorImplTest, UvTokenRequestUvFails) {
       get_credential_options()->allow_credentials[0].id(),
       kTestRelyingPartyId));
 
+  int expected_retries = 5;
+  virtual_device_factory_->mutable_state()->uv_retries = expected_retries;
+  virtual_device_factory_->mutable_state()->simulate_press_callback =
+      base::BindLambdaForTesting([&](device::VirtualFidoDevice* device) {
+        EXPECT_EQ(--expected_retries,
+                  virtual_device_factory_->mutable_state()->uv_retries);
+        return true;
+      });
+
   auto options = get_credential_options();
   TestGetAssertionCallback callback_receiver;
   authenticator->GetAssertion(std::move(options), callback_receiver.callback());
   callback_receiver.WaitForCallback();
 
+  EXPECT_EQ(0, expected_retries);
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
 }
 

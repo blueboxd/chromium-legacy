@@ -159,6 +159,10 @@ class CastSessionClientImpl : public CastSessionClient,
   // succeeded or failed.
   void SendResultResponse(int sequence_number, cast_channel::Result result);
 
+  // Builds a callback that calls SendResultResponse().
+  cast_channel::ResultCallback MakeResultCallback(
+      const CastInternalMessage& cast_message);
+
   const AutoJoinPolicy auto_join_policy_;
 
   CastActivityRecord* const activity_;

@@ -61,6 +61,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/features.h"
+#include "net/dns/public/util.h"
 #include "net/net_buildflags.h"
 #include "net/third_party/uri_template/uri_template.h"
 #include "services/network/network_service.h"
@@ -551,8 +552,7 @@ void SystemNetworkContextManager::GetStubResolverConfig(
     for (const std::string& server_template :
          SplitString(doh_templates, " ", base::TRIM_WHITESPACE,
                      base::SPLIT_WANT_NONEMPTY)) {
-      if (!chrome_browser_net::IsValidDohTemplate(server_template,
-                                                  &server_method)) {
+      if (!net::dns_util::IsValidDohTemplate(server_template, &server_method)) {
         continue;
       }
 

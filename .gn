@@ -435,7 +435,6 @@ check_targets = [
   "//third_party/libc++abi/*",
   "//third_party/libcxx-pretty-printers/*",
   "//third_party/libdrm/*",
-  "//third_party/libexif/*",
   "//third_party/libgav1/*",
   "//third_party/libjingle/*",
 

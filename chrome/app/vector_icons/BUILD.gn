@@ -148,6 +148,8 @@ aggregate_vector_icons("chrome_vector_icons") {
     "webauthn/webauthn_error_bluetooth.icon",
     "webauthn/webauthn_error_bluetooth_dark.icon",
     "webauthn/webauthn_error_dark.icon",
+    "webauthn/webauthn_fingerprint.icon",
+    "webauthn/webauthn_fingerprint_dark.icon",
     "webauthn/webauthn_permission.icon",
     "webauthn/webauthn_permission_dark.icon",
     "webauthn/webauthn_phone.icon",

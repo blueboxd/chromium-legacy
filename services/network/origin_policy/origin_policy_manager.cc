@@ -26,8 +26,7 @@ namespace network {
 
 OriginPolicyManager::OriginPolicyManager(NetworkContext* owner_network_context)
     : owner_network_context_(owner_network_context) {
-  owner_network_context_->CreateUrlLoaderFactoryForNetworkService(
-      url_loader_factory_.BindNewPipeAndPassReceiver());
+  CreateOrRecreateURLLoaderFactory();
 }
 
 OriginPolicyManager::~OriginPolicyManager() {}
@@ -151,6 +150,17 @@ void OriginPolicyManager::MaybeReport(
     const OriginPolicyHeaderValues& header_info,
     const GURL& policy_url) {}
 #endif  // BUILDFLAG(ENABLE_REPORTING)
+
+void OriginPolicyManager::CreateOrRecreateURLLoaderFactory() {
+  url_loader_factory_.reset();
+  owner_network_context_->CreateUrlLoaderFactoryForNetworkService(
+      url_loader_factory_.BindNewPipeAndPassReceiver());
+
+  // This disconnect handler is necessary to avoid crbug.com/1047275.
+  url_loader_factory_.set_disconnect_handler(
+      base::BindOnce(&OriginPolicyManager::CreateOrRecreateURLLoaderFactory,
+                     base::Unretained(this)));
+}
 
 // static
 const char* OriginPolicyManager::GetExemptedVersionForTesting() {

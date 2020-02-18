@@ -96,6 +96,10 @@ class P2PSocketManager;
 class ProxyLookupRequest;
 class ResourceScheduler;
 class ResourceSchedulerClient;
+#if !defined(OS_IOS)
+class SQLiteTrustTokenPersister;
+class TrustTokenStore;
+#endif  // !defined(OS_IOS)
 class QuicTransport;
 class WebSocketFactory;
 
@@ -474,6 +478,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     return url_loader_factories_.size();
   }
 
+#if !defined(OS_IOS)
+  // Maintains Trust Tokens protocol state
+  // (https://github.com/WICG/trust-token-api). Used by URLLoader to check
+  // preconditions before annotating requests with protocol-related headers
+  // and to store information conveyed in the corresponding responses.
+  //
+  // Initialized asynchronously and may be null until initialized.
+  TrustTokenStore* trust_token_store() { return trust_token_store_.get(); }
+#endif  // !defined(OS_IOS)
+
  private:
   URLRequestContextOwner MakeURLRequestContext();
 
@@ -523,6 +537,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   void InitializeCorsParams();
 
+#if !defined(OS_IOS)
+  // If |trust_token_store_| is backed by an asynchronously-constructed (e.g.,
+  // SQL-based) persistence layer, |FinishConstructingTrustTokenStore|
+  // constructs and populates |trust_token_store_| once the persister's
+  // asynchronous initialization has finished.
+  void FinishConstructingTrustTokenStore(
+      std::unique_ptr<SQLiteTrustTokenPersister> persister);
+#endif  // !defined(OS_IOS)
+
   NetworkService* const network_service_;
 
   mojo::Remote<mojom::NetworkContextClient> client_;
@@ -559,6 +582,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       proxy_resolving_socket_factories_;
 
 #if !defined(OS_IOS)
+  // See the comment for |trust_token_store()|.
+  std::unique_ptr<TrustTokenStore> trust_token_store_;
+
   std::unique_ptr<WebSocketFactory> websocket_factory_;
 #endif  // !defined(OS_IOS)
 
@@ -684,6 +710,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // `http_auth_merged_preferences_` which would then be used to create
   // HttpAuthHandle via |NetworkContext::CreateHttpAuthHandlerFactory|.
   net::HttpAuthPreferences http_auth_merged_preferences_;
+
+  base::WeakPtrFactory<NetworkContext> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
 };

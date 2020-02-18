@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
-#include "chrome/browser/ui/views/webauthn/authenticator_request_dialog_view.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_request_dialog_view_test_api.h"
 #include "chrome/browser/ui/views/webauthn/authenticator_request_sheet_view.h"
 #include "chrome/browser/ui/webauthn/authenticator_request_dialog.h"
@@ -63,8 +62,12 @@ class TestSheetModel : public AuthenticatorRequestSheetModel {
         "Line Because Life Would Be Just Too Simple That Way");
   }
 
-  base::Optional<base::string16> GetAdditionalDescription() const override {
+  base::string16 GetAdditionalDescription() const override {
     return base::ASCIIToUTF16("More description text.");
+  }
+
+  base::string16 GetError() const override {
+    return base::ASCIIToUTF16("You must construct additional pylons.");
   }
 
   ui::MenuModel* GetOtherTransportsMenuModel() override { return nullptr; }

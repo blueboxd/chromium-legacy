@@ -563,7 +563,6 @@
 <translation id="3495081129428749620">Знайти на сторінці
     <ph name="PAGE_TITLE" /></translation>
 <translation id="3512163584740124171">Це правило ігнорується, оскільки інше правило цієї групи має вищий пріоритет.</translation>
-<translation id="3513704683820682405">Доповнена реальність</translation>
 <translation id="3518941727116570328">Обробка кількох об'єктів</translation>
 <translation id="3528171143076753409">Сертифікат сервера ненадійний.</translation>
 <translation id="3528485271872257980">Темно-коричневий</translation>
@@ -882,7 +881,6 @@
 <translation id="4926159001844873046">Повідомлення з <ph name="SITE" /></translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" /> з <ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4930153903256238152">Велика місткість</translation>
-<translation id="4943703118917034429">Віртуальна реальність</translation>
 <translation id="4943872375798546930">Не знайдено жодного результату</translation>
 <translation id="4950898438188848926">Кнопка перемикання вкладки: натисніть Enter, щоб перейти на відкриту вкладку, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Дії</translation>
@@ -1701,7 +1699,6 @@
 <translation id="861775596732816396">Розмір 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Зберегти цю картку на пристрої</translation>
-<translation id="8647750283161643317">Скинути все до налаштувань за умовчанням</translation>
 <translation id="8663226718884576429">Підсумок замовлення, <ph name="TOTAL_LABEL" />, докладніше</translation>
 <translation id="867224526087042813">Підпис</translation>
 <translation id="8676424191133491403">Без затримки</translation>

@@ -14,6 +14,8 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import androidx.annotation.IntDef;
+
 import org.junit.Assert;
 import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
@@ -49,12 +51,14 @@ import org.chromium.payments.mojom.PaymentShippingOption;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
 
-import java.util.ArrayList;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -64,23 +68,35 @@ import java.util.concurrent.atomic.AtomicReference;
 public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
         implements PaymentRequestObserverForTest, PaymentRequestServiceObserverForTest,
                    CardUnmaskObserverForTest, EditorObserverForTest {
-    /** Flag for installing a payment app without instruments. */
-    public static final int NO_INSTRUMENTS = 0;
+    @IntDef({AppPresence.NO_APPS, AppPresence.HAVE_APPS})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface AppPresence {
+        /** Flag for a factory without payment apps. */
+        public static final int NO_APPS = 0;
 
-    /** Flag for installing a payment app with instruments. */
-    public static final int HAVE_INSTRUMENTS = 1;
+        /** Flag for a factory with payment apps. */
+        public static final int HAVE_APPS = 1;
+    }
 
-    /** Flag for installing a fast payment app. */
-    public static final int IMMEDIATE_RESPONSE = 0;
+    @IntDef({AppSpeed.FAST_APP, AppSpeed.SLOW_APP})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface AppSpeed {
+        /** Flag for installing a payment app that responds to its invocation fast. */
+        public static final int FAST_APP = 0;
 
-    /** Flag for installing a slow payment app. */
-    public static final int DELAYED_RESPONSE = 1;
+        /** Flag for installing a payment app that responds to its invocation slowly. */
+        public static final int SLOW_APP = 1;
+    }
 
-    /** Flag for immediately installing a payment app. */
-    public static final int IMMEDIATE_CREATION = 0;
+    @IntDef({FactorySpeed.FAST_FACTORY, FactorySpeed.SLOW_FACTORY})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface FactorySpeed {
+        /** Flag for a factory that immediately creates a payment app. */
+        public static final int FAST_FACTORY = 0;
 
-    /** Flag for installing a payment app with a delay. */
-    public static final int DELAYED_CREATION = 1;
+        /** Flag for a factory that creates a payment app with a delay. */
+        public static final int SLOW_FACTORY = 1;
+    }
 
     /** The expiration month dropdown index for December. */
     public static final int DECEMBER = 11;
@@ -88,8 +104,10 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     /** The expiration year dropdown index for the next year. */
     public static final int NEXT_YEAR = 1;
 
-    /** The billing address dropdown index for the first billing address. Index 0 is for the
-     * "Select" hint.*/
+    /**
+     * The billing address dropdown index for the first billing address. Index 0 is for the
+     * "Select" hint.
+     */
     public static final int FIRST_BILLING_ADDRESS = 1;
 
     /** Command line flag to enable payment details modifiers in tests. */
@@ -430,8 +448,8 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
                 () -> mUI.getContactDetailsSectionForTest().getEditButtonState());
     }
 
-    /** Returns the label corresponding to the payment instrument at the specified |index|. */
-    protected String getPaymentInstrumentLabel(final int index) {
+    /** Returns the label of the payment app at the specified |index|. */
+    protected String getPaymentAppLabel(final int index) {
         return ThreadUtils.runOnUiThreadBlockingNoException(
                 ()
                         -> ((OptionSection) mUI.getPaymentMethodSectionForTest())
@@ -440,8 +458,8 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
                                    .toString());
     }
 
-    /** Returns the label of the selected payment instrument. */
-    protected String getSelectedPaymentInstrumentLabel() {
+    /** Returns the label of the selected payment app. */
+    protected String getSelectedPaymentAppLabel() {
         return ThreadUtils.runOnUiThreadBlockingNoException(() -> {
             OptionSection section = ((OptionSection) mUI.getPaymentMethodSectionForTest());
             int size = section.getNumberOfOptionLabelsForTest();
@@ -490,8 +508,8 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
                                    .toString());
     }
 
-    /** Returns the number of payment instruments. */
-    protected int getNumberOfPaymentInstruments() {
+    /** Returns the number of payment apps. */
+    protected int getNumberOfPaymentApps() {
         return ThreadUtils.runOnUiThreadBlockingNoException(
                 ()
                         -> ((OptionSection) mUI.getPaymentMethodSectionForTest())
@@ -503,7 +521,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
      * |suggestionIndex|.
      */
     protected String getPaymentMethodSuggestionLabel(final int suggestionIndex) {
-        Assert.assertTrue(suggestionIndex < getNumberOfPaymentInstruments());
+        Assert.assertTrue(suggestionIndex < getNumberOfPaymentApps());
 
         return ThreadUtils.runOnUiThreadBlockingNoException(
                 ()
@@ -609,7 +627,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
      */
     protected void clickOnPaymentMethodSuggestionOptionAndWait(
             final int suggestionIndex, CallbackHelper helper) throws TimeoutException {
-        Assert.assertTrue(suggestionIndex < getNumberOfPaymentInstruments());
+        Assert.assertTrue(suggestionIndex < getNumberOfPaymentApps());
 
         int callCount = helper.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(() -> {
@@ -643,7 +661,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
      */
     protected void clickOnPaymentMethodSuggestionEditIconAndWait(
             final int suggestionIndex, CallbackHelper helper) throws TimeoutException {
-        Assert.assertTrue(suggestionIndex < getNumberOfPaymentInstruments());
+        Assert.assertTrue(suggestionIndex < getNumberOfPaymentApps());
 
         int callCount = helper.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(() -> {
@@ -761,8 +779,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
             throws TimeoutException {
         int callCount = helper.getCallCount();
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            ViewGroup contents =
-                    (ViewGroup) mUI.getCardEditorDialog().findViewById(R.id.contents);
+            ViewGroup contents = (ViewGroup) mUI.getCardEditorDialog().findViewById(R.id.contents);
             Assert.assertNotNull(contents);
             for (int i = 0, j = 0; i < contents.getChildCount() && j < values.length; i++) {
                 View view = contents.getChildAt(i);
@@ -1125,127 +1142,96 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     }
 
     /**
-     * Installs a payment app for testing.
+     * Adds a payment app factory for testing.
      *
-     * @param instrumentPresence Whether the app has any payment instruments. Either NO_INSTRUMENTS
-     *                           or HAVE_INSTRUMENTS.
-     * @param responseSpeed      How quickly the app will respond to "get instruments" query. Either
-     *                           IMMEDIATE_RESPONSE or DELAYED_RESPONSE.
+     * @param appPresence  Whether the factory has apps.
+     * @param factorySpeed How quick the factory creates apps.
+     * @return The test factory. Can be ignored.
      */
-    protected void installPaymentApp(int instrumentPresence, int responseSpeed) {
-        installPaymentApp("https://bobpay.com", instrumentPresence, responseSpeed);
+    /* package */ TestFactory addPaymentAppFactory(
+            @AppPresence int appPresence, @FactorySpeed int factorySpeed) {
+        return addPaymentAppFactory("https://bobpay.com", appPresence, factorySpeed);
     }
 
     /**
-     * Installs a payment app for testing.
+     * Adds a payment app factory for testing.
      *
-     * @param methodName         The name of the payment method used in the payment app.
-     * @param instrumentPresence Whether the app has any payment instruments. Either NO_INSTRUMENTS
-     *                           or HAVE_INSTRUMENTS.
-     * @param responseSpeed      How quickly the app will respond to "get instruments" query. Either
-     *                           IMMEDIATE_RESPONSE or DELAYED_RESPONSE.
+     * @param methodName   The name of the payment method used in the payment app.
+     * @param appPresence  Whether the factory has apps.
+     * @param factorySpeed How quick the factory creates apps.
+     * @return The test factory. Can be ignored.
      */
-    protected void installPaymentApp(String methodName, int instrumentPresence, int responseSpeed) {
-        installPaymentApp(methodName, instrumentPresence, responseSpeed, IMMEDIATE_CREATION);
+    /* package */ TestFactory addPaymentAppFactory(
+            String methodName, @AppPresence int appPresence, @FactorySpeed int factorySpeed) {
+        return addPaymentAppFactory(methodName, appPresence, factorySpeed, AppSpeed.FAST_APP);
     }
 
     /**
-     * Installs a payment app for testing.
+     * Adds a payment app factory for testing.
      *
-     * @param methodName         The name of the payment method used in the payment app.
-     * @param instrumentPresence Whether the app has any payment instruments. Either NO_INSTRUMENTS
-     *                           or HAVE_INSTRUMENTS.
-     * @param responseSpeed      How quickly the app will respond to "get instruments" query. Either
-     *                           IMMEDIATE_RESPONSE or DELAYED_RESPONSE.
-     * @param creationSpeed      How quickly the app factory will create this app. Either
-     *                           IMMEDIATE_CREATION or DELAYED_CREATION.
+     * @param methodName   The name of the payment method used in the payment app.
+     * @param appPresence  Whether the factory has apps.
+     * @param factorySpeed How quick the factory creates apps.
+     * @param appSpeed     How quick the app responds to "invoke".
+     * @return The test factory. Can be ignored.
      */
-    protected void installPaymentApp(
-            final String appMethodName, final int instrumentPresence,
-            final int responseSpeed, final int creationSpeed) {
-        PaymentAppFactory.getInstance().addAdditionalFactory(
-                (webContents, methodNames, mayCrawlUnusued, callback) -> {
-                    final TestPay app = new TestPay(appMethodName, instrumentPresence,
-                            responseSpeed);
-                    if (creationSpeed == IMMEDIATE_CREATION) {
-                        callback.onPaymentAppCreated(app);
-                        callback.onAllPaymentAppsCreated();
-                    } else {
-                        new Handler().postDelayed(() -> {
-                            callback.onPaymentAppCreated(app);
-                            callback.onAllPaymentAppsCreated();
-                        }, 100);
-                    }
-                });
+    /* package */ TestFactory addPaymentAppFactory(String appMethodName, int appPresence,
+            @FactorySpeed int factorySpeed, @AppSpeed int appSpeed) {
+        TestFactory factory = new TestFactory(appMethodName, appPresence, factorySpeed, appSpeed);
+        PaymentAppService.getInstance().addFactory(factory);
+        return factory;
+    }
+
+    /** A payment app factory implementation for test. */
+    /* package */ static final class TestFactory implements PaymentAppFactoryInterface {
+        private final String mAppMethodName;
+        private final @AppPresence int mAppPresence;
+        private final @FactorySpeed int mFactorySpeed;
+        private final @AppSpeed int mAppSpeed;
+        private PaymentAppFactoryDelegate mDelegate;
+
+        private TestFactory(String appMethodName, @AppPresence int appPresence,
+                @FactorySpeed int factorySpeed, @AppSpeed int appSpeed) {
+            mAppMethodName = appMethodName;
+            mAppPresence = appPresence;
+            mFactorySpeed = factorySpeed;
+            mAppSpeed = appSpeed;
+        }
+
+        @Override
+        public void create(PaymentAppFactoryDelegate delegate) {
+            Runnable createApp = () -> {
+                boolean canMakePayment =
+                        delegate.getParams().getMethodData().containsKey(mAppMethodName);
+                delegate.onCanMakePaymentCalculated(canMakePayment);
+                if (canMakePayment && mAppPresence == AppPresence.HAVE_APPS) {
+                    delegate.onPaymentAppCreated(new TestPay(mAppMethodName, mAppSpeed));
+                }
+                delegate.onDoneCreatingPaymentApps(this);
+            };
+            if (mFactorySpeed == FactorySpeed.FAST_FACTORY) {
+                createApp.run();
+            } else {
+                new Handler().postDelayed(createApp, 100);
+            }
+            mDelegate = delegate;
+        }
+
+        /* package */ PaymentAppFactoryDelegate getDelegateForTest() {
+            return mDelegate;
+        }
     }
 
     /** A payment app implementation for test. */
-    static class TestPay implements PaymentApp {
+    /* package */ static final class TestPay extends PaymentApp {
         private final String mDefaultMethodName;
-        private final int mInstrumentPresence;
-        private final int mResponseSpeed;
-        private InstrumentsCallback mCallback;
+        private final @AppSpeed int mAppSpeed;
 
-        TestPay(String defaultMethodName, int instrumentPresence, int responseSpeed) {
+        TestPay(String defaultMethodName, @AppSpeed int appSpeed) {
+            super(/*id=*/UUID.randomUUID().toString(), /*label=*/defaultMethodName,
+                    /*sublabel=*/null, /*icon=*/null);
             mDefaultMethodName = defaultMethodName;
-            mInstrumentPresence = instrumentPresence;
-            mResponseSpeed = responseSpeed;
-        }
-
-        @Override
-        public void getInstruments(String id, Map<String, PaymentMethodData> methodData,
-                String origin, String iframeOrigin, byte[][] certificateChain,
-                Map<String, PaymentDetailsModifier> modifiers,
-                InstrumentsCallback instrumentsCallback) {
-            mCallback = instrumentsCallback;
-            respond();
-        }
-
-        void respond() {
-            final List<PaymentInstrument> instruments = new ArrayList<>();
-            if (mInstrumentPresence == HAVE_INSTRUMENTS) {
-                instruments.add(new TestPayInstrument(
-                        getAppIdentifier(), mDefaultMethodName, mDefaultMethodName));
-            }
-            Runnable instrumentsReady = () -> {
-                ThreadUtils.assertOnUiThread();
-                mCallback.onInstrumentsReady(TestPay.this, instruments);
-            };
-            if (mResponseSpeed == IMMEDIATE_RESPONSE) {
-                instrumentsReady.run();
-            } else if (mResponseSpeed == DELAYED_RESPONSE) {
-                new Handler().postDelayed(instrumentsReady, 100);
-            }
-        }
-
-        @Override
-        public Set<String> getAppMethodNames() {
-            Set<String> result = new HashSet<>();
-            result.add(mDefaultMethodName);
-            return result;
-        }
-
-        @Override
-        public boolean supportsMethodsAndData(Map<String, PaymentMethodData> methodsAndData) {
-            assert methodsAndData != null;
-            Set<String> methodNames = new HashSet<>(methodsAndData.keySet());
-            methodNames.retainAll(getAppMethodNames());
-            return !methodNames.isEmpty();
-        }
-
-        @Override
-        public String getAppIdentifier() {
-            return TestPay.this.toString();
-        }
-    }
-
-    /** A payment instrument implementation for test. */
-    private static class TestPayInstrument extends PaymentInstrument {
-        private final String mDefaultMethodName;
-
-        TestPayInstrument(String appId, String defaultMethodName, String label) {
-            super(appId + defaultMethodName, label, null, null);
-            mDefaultMethodName = defaultMethodName;
+            mAppSpeed = appSpeed;
         }
 
         @Override
@@ -1262,9 +1248,16 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
                 List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers,
                 PaymentOptions paymentOptions, List<PaymentShippingOption> shippingOptions,
                 InstrumentDetailsCallback detailsCallback) {
-            detailsCallback.onInstrumentDetailsReady(mDefaultMethodName,
-                    "{\"transaction\": 1337, \"total\": \"" + total.amount.value + "\"}",
-                    new PayerData());
+            Runnable respond = () -> {
+                detailsCallback.onInstrumentDetailsReady(mDefaultMethodName,
+                        "{\"transaction\": 1337, \"total\": \"" + total.amount.value + "\"}",
+                        new PayerData());
+            };
+            if (mAppSpeed == AppSpeed.FAST_APP) {
+                respond.run();
+            } else {
+                new Handler().postDelayed(respond, 100);
+            }
         }
 
         @Override

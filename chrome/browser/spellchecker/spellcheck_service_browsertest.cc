@@ -101,6 +101,14 @@ class SpellcheckServiceBrowserTest : public InProcessBrowserTest,
 
     SpellcheckService* spellcheck =
         SpellcheckServiceFactory::GetForContext(renderer_->GetBrowserContext());
+
+#if BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+    if (spellcheck::UseWinHybridSpellChecker()) {
+      // If the Windows hybrid spell checker is in use, initialization is async.
+      RunTestRunLoop();
+    }
+#endif  // BUILDFLAG(USE_WIN_HYBRID_SPELLCHECKER)
+
     ASSERT_NE(nullptr, spellcheck);
   }
 
@@ -382,15 +390,7 @@ IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, StartWithoutSpellcheck) {
 
 // A custom dictionary state change should send a 'custom dictionary changed'
 // message to the renderer, regardless of the spellcheck enabled state.
-//
-// TODO(crbug.com/1051777): Flaky on ASAN Win bot.
-#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
-#define MAYBE_CustomDictionaryChanged DISABLED_CustomDictionaryChanged
-#else
-#define MAYBE_CustomDictionaryChanged CustomDictionaryChanged
-#endif
-IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest,
-                       MAYBE_CustomDictionaryChanged) {
+IN_PROC_BROWSER_TEST_F(SpellcheckServiceBrowserTest, CustomDictionaryChanged) {
   InitSpellcheck(true, "en-US", "");
   EXPECT_TRUE(GetEnableSpellcheckState());
 

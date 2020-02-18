@@ -132,3 +132,36 @@ TEST_F('MediaHistoryPlaybacksWebUIBrowserTest', 'MAYBE_All', function() {
 
   mocha.run();
 });
+
+/**
+ * Tests for the sessions tab.
+ * @extends {MediaHistoryWebUIBrowserTest}
+ */
+function MediaHistorySessionsWebUIBrowserTest() {}
+
+MediaHistorySessionsWebUIBrowserTest.prototype = {
+  __proto__: MediaHistoryWebUIBrowserTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://media-history#tab-sessions',
+};
+
+TEST_F('MediaHistorySessionsWebUIBrowserTest', 'MAYBE_All', function() {
+  suiteSetup(function() {
+    return whenPageIsPopulatedForTest();
+  });
+
+  test('check data table is loaded', () => {
+    let dataHeaderRows =
+        Array.from(document.querySelector('#sessions-table thead tr').children);
+
+    assertDeepEquals(
+        [
+          'URL', 'Last Updated', 'Position (secs)', 'Duration (secs)', 'Title',
+          'Artist', 'Album', 'Source Title', 'Artwork'
+        ],
+        dataHeaderRows.map(x => x.textContent.trim()));
+  });
+
+  mocha.run();
+});

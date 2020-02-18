@@ -746,25 +746,6 @@ void PepperPluginInstanceImpl::InvalidateRect(const gfx::Rect& rect) {
   }
 }
 
-void PepperPluginInstanceImpl::ScrollRect(int dx,
-                                          int dy,
-                                          const gfx::Rect& rect) {
-  if (texture_layer_) {
-    InvalidateRect(rect);
-  } else if (fullscreen_container_) {
-    fullscreen_container_->ScrollRect(dx, dy, rect);
-  } else {
-    if (full_frame_ && !IsViewAccelerated()) {
-      container_->ScrollRect(rect);
-    } else {
-      // Can't do optimized scrolling since there could be other elements on top
-      // of us or the view renders via the accelerated compositor which is
-      // incompatible with the move and backfill scrolling model.
-      InvalidateRect(rect);
-    }
-  }
-}
-
 void PepperPluginInstanceImpl::CommitTransferableResource(
     const viz::TransferableResource& resource) {
   if (!committed_texture_.mailbox_holder.mailbox.IsZero() &&
@@ -2147,18 +2128,6 @@ void PepperPluginInstanceImpl::UpdateFlashFullscreenState(
     SendFocusChangeNotification();
 }
 
-bool PepperPluginInstanceImpl::IsViewAccelerated() {
-  if (!container_)
-    return false;
-
-  WebDocument document = container_->GetDocument();
-  WebLocalFrame* frame = document.GetFrame();
-  if (!frame)
-    return false;
-
-  return frame->FrameWidget()->IsAcceleratedCompositingActive();
-}
-
 void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
   if (!container_)
     return;
@@ -2214,7 +2183,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
 
   if (texture_layer_) {
     if (fullscreen_container_)
-      fullscreen_container_->SetLayer(texture_layer_.get());
+      fullscreen_container_->SetLayer(texture_layer_);
     else
       container_->SetCcLayer(texture_layer_.get(), true);
     if (is_flash_plugin_)

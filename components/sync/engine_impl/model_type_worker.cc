@@ -14,6 +14,7 @@
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/memory_usage_estimator.h"
@@ -579,7 +580,8 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnOriginatorClientItemId() {
     // Try to insert. If we already saw an item with the same originator item
     // ID, this will fail but give us its iterator.
     auto it_and_success = id_to_index.emplace(
-        candidate.entity.originator_client_item_id, pending_updates_.size());
+        base::ToLowerASCII(candidate.entity.originator_client_item_id),
+        pending_updates_.size());
     if (it_and_success.second) {
       // New item ID, append at the end. Note that we already inserted the
       // correct index (|pending_updates_.size()|) above.

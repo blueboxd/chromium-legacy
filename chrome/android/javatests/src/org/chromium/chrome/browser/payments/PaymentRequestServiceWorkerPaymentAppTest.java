@@ -37,7 +37,7 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         // For all the tests in this file, we expect abort exception when there is no supported
-        // payment instruments instead of showing payment request UI.
+        // payment apps instead of showing payment request UI.
         "enable-features=" + ChromeFeatureList.STRICT_HAS_ENROLLED_AUTOFILL_INSTRUMENT,
         "disable-field-trial-config",
         // Prevent crawling the web for real payment apps.
@@ -177,7 +177,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
 
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentApps());
         // The Bob Pay modifier should apply.
         Assert.assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
 
@@ -185,7 +185,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_all_cards_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentApps());
         // The modifier should apply.
         Assert.assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
 
@@ -193,7 +193,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_visa_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentApps());
         // The modifier should not apply.
         Assert.assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
 
@@ -201,7 +201,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_visa_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentApps());
         // The modifier should not apply.
         Assert.assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
     }
@@ -221,14 +221,14 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
 
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_all_cards_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentApps());
         Assert.assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
 
         mPaymentRequestTestRule.clickAndWait(
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_visa_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentApps());
         // The modifier should apply.
         Assert.assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
 
@@ -236,7 +236,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_visa_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentApps());
         // The modifier should apply.
         Assert.assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
     }
@@ -256,7 +256,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
 
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_all_cards_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentApps());
         // The modifier should apply.
         Assert.assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
 
@@ -264,7 +264,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_visa_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentApps());
         // The modifier should not apply.
         Assert.assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
 
@@ -272,7 +272,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
                 R.id.close_button, mPaymentRequestTestRule.getDismissed());
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_visa_modifier", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(1, mPaymentRequestTestRule.getNumberOfPaymentApps());
         // The modifier should not apply.
         Assert.assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
     }
@@ -288,12 +288,12 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
                 new ServiceWorkerPaymentApp.Capabilities[0], true, true);
 
         // Sets setCanMakePaymentForTesting(false) to return false for CanMakePayment since there is
-        // no real sw payment app, so if CanMakePayment is called then no payment instruments will
-        // be available, otherwise CanMakePayment is not called.
+        // no real sw payment app, so if CanMakePayment is called then no payment apps will be
+        // available, otherwise CanMakePayment is not called.
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(false);
 
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(2, mPaymentRequestTestRule.getNumberOfPaymentApps());
     }
 
     @Test
@@ -321,7 +321,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
 
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertNull(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel());
+        Assert.assertNull(mPaymentRequestTestRule.getSelectedPaymentAppLabel());
     }
 
     @Test
@@ -335,7 +335,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
 
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertNull(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel());
+        Assert.assertNull(mPaymentRequestTestRule.getSelectedPaymentAppLabel());
     }
 
     @Test
@@ -349,7 +349,7 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
         ServiceWorkerPaymentAppBridge.setCanMakePaymentForTesting(true);
 
         mPaymentRequestTestRule.triggerUIAndWait(mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertNull(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel());
+        Assert.assertNull(mPaymentRequestTestRule.getSelectedPaymentAppLabel());
     }
 
     @Test
@@ -371,11 +371,11 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
 
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_shipping_requested", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(3, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(3, mPaymentRequestTestRule.getNumberOfPaymentApps());
 
         // The payment app which provides shipping address must be preselected.
-        Assert.assertTrue(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().contains(
-                "shippingSupported"));
+        Assert.assertTrue(
+                mPaymentRequestTestRule.getSelectedPaymentAppLabel().contains("shippingSupported"));
     }
 
     @Test
@@ -400,11 +400,11 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
 
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_contact_requested", mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(4, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(4, mPaymentRequestTestRule.getNumberOfPaymentApps());
 
         // The payment app which provides full contact details must be preselected.
-        Assert.assertTrue(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().contains(
-                "contactSupported"));
+        Assert.assertTrue(
+                mPaymentRequestTestRule.getSelectedPaymentAppLabel().contains("contactSupported"));
         // The payment app which partially provides the required contact details comes before the
         // one that provides no contact information.
         Assert.assertTrue(mPaymentRequestTestRule.getPaymentMethodSuggestionLabel(2).contains(
@@ -434,10 +434,10 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
 
         mPaymentRequestTestRule.triggerUIAndWait("buy_with_shipping_and_contact_requested",
                 mPaymentRequestTestRule.getReadyForInput());
-        Assert.assertEquals(4, mPaymentRequestTestRule.getNumberOfPaymentInstruments());
+        Assert.assertEquals(4, mPaymentRequestTestRule.getNumberOfPaymentApps());
 
         // The payment app which provides all required information must be preselected.
-        Assert.assertTrue(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().contains(
+        Assert.assertTrue(mPaymentRequestTestRule.getSelectedPaymentAppLabel().contains(
                 "shippingAndContactSupported"));
         // The payment app which provides shipping comes before the one which provides contact
         // details when both required by merchant.

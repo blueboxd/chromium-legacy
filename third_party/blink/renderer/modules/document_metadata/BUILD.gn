@@ -12,5 +12,5 @@ blink_modules_sources("document_metadata") {
     "document_metadata_server.h",
   ]
 
-  deps = []
+  deps = [ "//components/schema_org/common:mojom_blink" ]
 }

@@ -19,74 +19,57 @@
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/focus/focus_manager.h"
-#include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/flex_layout.h"
 #include "ui/views/style/typography.h"
+#include "ui/views/view_class_properties.h"
 
 namespace {
 
 std::unique_ptr<views::Border> CreateBorderWithVerticalSpacing(
-    int vert_spacing) {
-  const int horz_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
+    int vertical_spacing) {
+  const int horizontal_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_BUTTON_HORIZONTAL_PADDING);
-  return views::CreateEmptyBorder(vert_spacing, horz_spacing, vert_spacing,
-                                  horz_spacing);
+  return views::CreateEmptyBorder(
+      gfx::Insets(vertical_spacing, horizontal_spacing));
 }
 
-// Sets the accessible name of |parent| to the text from |first| and |second|.
-// Also set the combined text as the tooltip for |parent| if |set_tooltip| is
-// true and either |first| or |second|'s text is cut off or elided.
-void SetTooltipAndAccessibleName(views::Button* parent,
-                                 views::StyledLabel* first,
-                                 views::Label* second,
-                                 const gfx::Rect& available_space,
-                                 int taken_width,
-                                 bool set_tooltip) {
-  const base::string16 accessible_name =
-      second == nullptr
-          ? first->GetText()
-          : base::JoinString({first->GetText(), second->GetText()},
-                             base::ASCIIToUTF16("\n"));
-  if (set_tooltip) {
-    const int available_width = available_space.width() - taken_width;
-
-    // |views::StyledLabel|s only add tooltips for any links they may have.
-    // However, since |HoverButton| will never insert a link inside its child
-    // |StyledLabel|, decide whether it needs a tooltip by checking whether the
-    // available space is smaller than its preferred size.
-    bool first_truncated = first->GetPreferredSize().width() > available_width;
-    bool second_truncated = false;
-    if (second != nullptr)
-      second_truncated = second->GetPreferredSize().width() > available_width;
-
-    parent->SetTooltipText(first_truncated || second_truncated
-                               ? accessible_name
-                               : base::string16());
+// Wrapper class for the icon that maintains consistent spacing for both badged
+// and unbadged icons.
+// Badging may make the icon slightly wider (but not taller). However, the
+// layout should be the same whether or not the icon is badged, so allow the
+// badged part of the icon to extend into the padding.
+class IconWrapper : public views::View {
+ public:
+  explicit IconWrapper(std::unique_ptr<views::View> icon, int vertical_spacing)
+      : icon_(AddChildView(std::move(icon))) {
+    SetLayoutManager(std::make_unique<views::BoxLayout>(
+        views::BoxLayout::Orientation::kHorizontal));
+    // Make sure hovering over the icon also hovers the |HoverButton|.
+    set_can_process_events_within_subtree(false);
+    // Don't cover |icon| when the ink drops are being painted.
+    // |MenuButton| already does this with its own image.
+    SetPaintToLayer();
+    layer()->SetFillsBoundsOpaquely(false);
+    SetProperty(views::kMarginsKey, gfx::Insets(vertical_spacing, 0));
   }
-  parent->SetAccessibleName(accessible_name);
-}
+
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override {
+    const int icon_height = icon_->GetPreferredSize().height();
+    const int icon_label_spacing =
+        ChromeLayoutProvider::Get()->GetDistanceMetric(
+            views::DISTANCE_RELATED_LABEL_HORIZONTAL);
+    return gfx::Size(icon_height + icon_label_spacing, icon_height);
+  }
+
+  views::View* icon() { return icon_; }
+
+ private:
+  views::View* icon_;
+};
 
 }  // namespace
-
-SingleLineStyledLabelWrapper::SingleLineStyledLabelWrapper(
-    const base::string16& title) {
-  auto title_label = std::make_unique<views::StyledLabel>(title, nullptr);
-  // Size without a maximum width to get a single line label.
-  title_label->SizeToFit(0);
-  label_ = AddChildView(std::move(title_label));
-}
-
-views::StyledLabel* SingleLineStyledLabelWrapper::label() {
-  return label_;
-}
-
-void SingleLineStyledLabelWrapper::OnBoundsChanged(
-    const gfx::Rect& previous_bounds) {
-  // Vertically center its child manually since it doesn't have a LayoutManager.
-  DCHECK(label_);
-
-  int y_center = (height() - label_->size().height()) / 2;
-  label_->SetPosition(gfx::Point(GetLocalBounds().x(), y_center));
-}
 
 HoverButton::HoverButton(views::ButtonListener* button_listener,
                          const base::string16& text)
@@ -128,118 +111,89 @@ HoverButton::HoverButton(views::ButtonListener* button_listener,
                          bool secondary_view_can_process_events)
     : HoverButton(button_listener, base::string16()) {
   label()->SetHandlesTooltips(false);
-  ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
 
-  // The vertical spacing above and below the icon. If the icon is small, use
-  // more vertical spacing.
-  constexpr int kLargeIconHeight = 20;
-  const int icon_height = icon_view->GetPreferredSize().height();
-  const bool is_small_icon = icon_height <= kLargeIconHeight;
-  int remaining_vert_spacing =
-      is_small_icon
-          ? layout_provider->GetDistanceMetric(DISTANCE_CONTROL_LIST_VERTICAL)
-          : 12;
-  const int total_height = icon_height + remaining_vert_spacing * 2;
+  // Set the layout manager to ignore the ink_drop_container to ensure the ink
+  // drop tracks the bounds of its parent.
+  SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetCrossAxisAlignment(views::LayoutAlignment::kCenter)
+      .SetChildViewIgnoredByLayout(ink_drop_container(), true);
 
-  // If the padding given to the top and bottom of the HoverButton (i.e., on
-  // either side of the |icon_view|) overlaps with the combined line height of
-  // the |title_| and |subtitle_|, calculate the remaining padding that is
-  // required to maintain a constant amount of padding above and below the icon.
-  const int num_labels = subtitle.empty() ? 1 : 2;
-  const int combined_line_height =
-      views::style::GetLineHeight(views::style::CONTEXT_LABEL,
-                                  views::style::STYLE_SECONDARY) *
-      num_labels;
-  if (combined_line_height > icon_height)
-    remaining_vert_spacing = (total_height - combined_line_height) / 2;
+  // The vertical space that must exist on the top and the bottom of the item
+  // to ensure the proper spacing is maintained between items when stacking
+  // vertically.
+  const int vertical_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                   DISTANCE_CONTROL_LIST_VERTICAL) /
+                               2;
 
-  views::GridLayout* grid_layout =
-      SetLayoutManager(std::make_unique<views::GridLayout>());
-  // Badging may make the icon slightly wider (but not taller). However, the
-  // layout should be the same whether or not the icon is badged, so allow the
-  // badged part of the icon to extend into the padding.
-  const int badge_spacing = icon_view->GetPreferredSize().width() - icon_height;
-  const int icon_label_spacing = layout_provider->GetDistanceMetric(
-                                     views::DISTANCE_RELATED_LABEL_HORIZONTAL) -
-                                 badge_spacing;
+  icon_view_ = AddChildView(std::make_unique<IconWrapper>(std::move(icon_view),
+                                                          vertical_spacing))
+                   ->icon();
 
-  constexpr int kColumnSetId = 0;
-  views::ColumnSet* columns = grid_layout->AddColumnSet(kColumnSetId);
-  columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
-                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
-                     0, 0);
-  columns->AddPaddingColumn(views::GridLayout::kFixedSize, icon_label_spacing);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
-                     views::GridLayout::USE_PREF, 0, 0);
+  // |label_wrapper| will hold both the title and subtitle if it exists.
+  auto label_wrapper = std::make_unique<views::View>();
 
-  taken_width_ = GetInsets().width() + icon_view->GetPreferredSize().width() +
-                 icon_label_spacing;
-
-  // Make sure hovering over the icon also hovers the |HoverButton|.
-  icon_view->set_can_process_events_within_subtree(false);
-  // Don't cover |icon_view| when the ink drops are being painted. |MenuButton|
-  // already does this with its own image.
-  icon_view->SetPaintToLayer();
-  icon_view->layer()->SetFillsBoundsOpaquely(false);
-  // Split the two rows evenly between the total height minus the padding.
-  const int row_height =
-      (total_height - remaining_vert_spacing * 2) / num_labels;
-  grid_layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId,
-                        row_height);
-  icon_view_ = grid_layout->AddView(std::move(icon_view), 1, num_labels);
-
-  auto title_wrapper = std::make_unique<SingleLineStyledLabelWrapper>(title);
-  title_ = title_wrapper->label();
+  title_ = label_wrapper->AddChildView(
+      std::make_unique<views::StyledLabel>(title, nullptr));
+  // Allow the StyledLabel for title to assume its preferred size on a single
+  // line and let the flex layout attenuate its width if necessary.
+  title_->SizeToFit(0);
   // Hover the whole button when hovering |title_|. This is OK because |title_|
   // will never have a link in it.
-  title_wrapper->set_can_process_events_within_subtree(false);
-  grid_layout->AddView(std::move(title_wrapper));
+  title_->set_can_process_events_within_subtree(false);
+
+  if (!subtitle.empty()) {
+    auto subtitle_label = std::make_unique<views::Label>(
+        subtitle, views::style::CONTEXT_BUTTON, views::style::STYLE_SECONDARY);
+    subtitle_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    subtitle_label->SetAutoColorReadabilityEnabled(false);
+    subtitle_ = label_wrapper->AddChildView(std::move(subtitle_label));
+  }
+
+  label_wrapper->SetLayoutManager(std::make_unique<views::FlexLayout>())
+      ->SetOrientation(views::LayoutOrientation::kVertical)
+      .SetMainAxisAlignment(views::LayoutAlignment::kCenter);
+  label_wrapper->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                               views::MaximumFlexSizeRule::kUnbounded));
+  label_wrapper->set_can_process_events_within_subtree(false);
+  label_wrapper->SetProperty(views::kMarginsKey,
+                             gfx::Insets(vertical_spacing, 0));
+  label_wrapper_ = AddChildView(std::move(label_wrapper));
+  // Observe |label_wrapper_| bounds changes to ensure the HoverButton tooltip
+  // is kept in sync with the size.
+  observed_label_.Add(label_wrapper_);
 
   if (secondary_view) {
-    columns->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
-                       views::GridLayout::kFixedSize,
-                       views::GridLayout::USE_PREF, 0, 0);
     secondary_view->set_can_process_events_within_subtree(
         secondary_view_can_process_events);
     // |secondary_view| needs a layer otherwise it's obscured by the layer
     // used in drawing ink drops.
     secondary_view->SetPaintToLayer();
     secondary_view->layer()->SetFillsBoundsOpaquely(false);
-    secondary_view_ =
-        grid_layout->AddView(std::move(secondary_view), 1, num_labels);
+    const int icon_label_spacing =
+        ChromeLayoutProvider::Get()->GetDistanceMetric(
+            views::DISTANCE_RELATED_LABEL_HORIZONTAL);
 
-    if (!resize_row_for_secondary_view) {
-      insets_ = views::LabelButton::GetInsets();
-      auto secondary_ctl_size = secondary_view_->GetPreferredSize();
-      if (secondary_ctl_size.height() > row_height) {
-        // Secondary view is larger. Reduce the insets.
-        int reduced_inset = (secondary_ctl_size.height() - row_height) / 2;
-        insets_.value().set_top(
-            std::max(insets_.value().top() - reduced_inset, 0));
-        insets_.value().set_bottom(
-            std::max(insets_.value().bottom() - reduced_inset, 0));
-      }
-    }
+    // If |resize_row_for_secondary_view| is true set vertical margins such that
+    // the vertical distance between HoverButtons is maintained.
+    // Otherwise set vertical margins to 0 and allow the secondary view to grow
+    // into the vertical margins that would otherwise exist due to |icon_view_|
+    // and the |label_wrapper_|.
+    const int secondary_spacing =
+        resize_row_for_secondary_view ? vertical_spacing : 0;
+    secondary_view->SetProperty(
+        views::kMarginsKey, gfx::Insets(secondary_spacing, icon_label_spacing,
+                                        secondary_spacing, 0));
+    secondary_view_ = AddChildView(std::move(secondary_view));
   }
 
-  if (!subtitle.empty()) {
-    grid_layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId,
-                          row_height);
-    auto subtitle_label = std::make_unique<views::Label>(
-        subtitle, views::style::CONTEXT_BUTTON, views::style::STYLE_SECONDARY);
-    subtitle_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    subtitle_label->SetAutoColorReadabilityEnabled(false);
-    grid_layout->SkipColumns(1);
-    subtitle_ = grid_layout->AddView(std::move(subtitle_label));
-  }
-
-  SetTooltipAndAccessibleName(this, title_, subtitle_, GetLocalBounds(),
-                              taken_width_, auto_compute_tooltip_);
-
-  SetBorder(CreateBorderWithVerticalSpacing(remaining_vert_spacing));
+  // Create the appropriate border with no vertical insets. The required spacing
+  // will be met via margins set on the containing views.
+  SetBorder(CreateBorderWithVerticalSpacing(0));
 }
 
-HoverButton::~HoverButton() {}
+HoverButton::~HoverButton() = default;
 
 // static
 SkColor HoverButton::GetInkDropColor(const views::View* view) {
@@ -258,30 +212,33 @@ void HoverButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   Button::GetAccessibleNodeData(node_data);
 }
 
-gfx::Insets HoverButton::GetInsets() const {
-  if (insets_)
-    return insets_.value();
-  return views::LabelButton::GetInsets();
+void HoverButton::OnViewBoundsChanged(View* observed_view) {
+  LabelButton::OnViewBoundsChanged(observed_view);
+  if (observed_view == label_wrapper_)
+    SetTooltipAndAccessibleName();
 }
 
-void HoverButton::SetSubtitleElideBehavior(gfx::ElideBehavior elide_behavior) {
-  if (subtitle_ && !subtitle_->GetText().empty())
-    subtitle_->SetElideBehavior(elide_behavior);
+void HoverButton::SetTitleTextStyle(views::style::TextStyle text_style,
+                                    SkColor background_color) {
+  title_->SetDisplayedOnBackgroundColor(background_color);
+  title_->SetDefaultTextStyle(text_style);
 }
 
-void HoverButton::SetTitleTextWithHintRange(const base::string16& title_text,
-                                            const gfx::Range& range) {
-  DCHECK(title_);
-  title_->SetText(title_text);
+void HoverButton::SetTooltipAndAccessibleName() {
+  const base::string16 accessible_name =
+      subtitle_ == nullptr
+          ? title_->GetText()
+          : base::JoinString({title_->GetText(), subtitle_->GetText()},
+                             base::ASCIIToUTF16("\n"));
 
-  if (range.IsValid()) {
-    views::StyledLabel::RangeStyleInfo style_info;
-    style_info.text_style = views::style::STYLE_SECONDARY;
-    title_->AddStyleRange(range, style_info);
-  }
-  title_->SizeToFit(0);
-  SetTooltipAndAccessibleName(this, title_, subtitle_, GetLocalBounds(),
-                              taken_width_, auto_compute_tooltip_);
+  // |views::StyledLabel|s only add tooltips for any links they may have.
+  // However, since |HoverButton| will never insert a link inside its child
+  // |StyledLabel|, decide whether it needs a tooltip by checking whether the
+  // available space is smaller than its preferred size.
+  const bool needs_tooltip =
+      label_wrapper_->GetPreferredSize().width() > label_wrapper_->width();
+  SetTooltipText(needs_tooltip ? accessible_name : base::string16());
+  SetAccessibleName(accessible_name);
 }
 
 views::Button::KeyClickAction HoverButton::GetKeyClickActionForEvent(
@@ -340,17 +297,4 @@ views::View* HoverButton::GetTooltipHandlerForPoint(const gfx::Point& point) {
   }
 
   return this;
-}
-
-void HoverButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  if (title_) {
-    SetTooltipAndAccessibleName(this, title_, subtitle_, GetLocalBounds(),
-                                taken_width_, auto_compute_tooltip_);
-  }
-}
-
-void HoverButton::SetTitleTextStyle(views::style::TextStyle text_style,
-                                    SkColor background_color) {
-  title_->SetDisplayedOnBackgroundColor(background_color);
-  title_->SetDefaultTextStyle(text_style);
 }

@@ -314,7 +314,7 @@ class TaskSchedulerV2 final : public TaskScheduler {
   bool HasTaskFolder(const wchar_t* folder_name) override {
     Microsoft::WRL::ComPtr<ITaskFolder> task_folder;
     const HRESULT hr = task_service_->GetFolder(
-        base::win::ScopedBstr(folder_name), &task_folder);
+        base::win::ScopedBstr(folder_name).Get(), &task_folder);
     return SUCCEEDED(hr);
   }
 

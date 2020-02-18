@@ -84,6 +84,10 @@ bool BufferQueue::Reshape(const gfx::Size& size,
   return true;
 }
 
+void BufferQueue::SetMaxBuffers(size_t max) {
+  max_buffers_ = max;
+}
+
 void BufferQueue::PageFlipComplete() {
   DCHECK(!in_flight_surfaces_.empty());
   if (in_flight_surfaces_.front()) {
@@ -135,7 +139,7 @@ std::unique_ptr<BufferQueue::AllocatedSurface> BufferQueue::GetNextSurface(
   }
 
   // We don't want to allow anything more than triple buffering.
-  DCHECK_LT(allocated_count_, 3U);
+  DCHECK_LT(allocated_count_, max_buffers_);
 
   // TODO(crbug.com/958670): if we can have a CreateSharedImage() that takes a
   // SurfaceHandle, we don't have to create a GpuMemoryBuffer here.

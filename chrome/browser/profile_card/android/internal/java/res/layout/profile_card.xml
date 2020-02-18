@@ -31,4 +31,9 @@
         android:id="@+id/post_freq"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
+
+    <include
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        layout="@layout/content_preview_posts_container" />
 </org.chromium.chrome.browser.profile_card.ProfileCardView>

@@ -34,7 +34,11 @@ class StartSurfaceToolbarCoordinator {
 
     StartSurfaceToolbarCoordinator(ViewStub startSurfaceToolbarStub) {
         mStub = startSurfaceToolbarStub;
-        mPropertyModel = new PropertyModel(StartSurfaceToolbarProperties.ALL_KEYS);
+        mPropertyModel =
+                new PropertyModel.Builder(StartSurfaceToolbarProperties.ALL_KEYS)
+                        .with(StartSurfaceToolbarProperties.INCOGNITO_SWITCHER_VISIBLE, true)
+                        .with(StartSurfaceToolbarProperties.MENU_IS_VISIBLE, true)
+                        .build();
         mToolbarMediator = new StartSurfaceToolbarMediator(mPropertyModel);
     }
 

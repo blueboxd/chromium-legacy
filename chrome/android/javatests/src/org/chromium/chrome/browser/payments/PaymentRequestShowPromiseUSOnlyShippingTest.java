@@ -18,6 +18,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppSpeed;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
 import org.chromium.chrome.browser.payments.PaymentRequestTestRule.MainActivityStartCallback;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
@@ -45,8 +48,7 @@ public class PaymentRequestShowPromiseUSOnlyShippingTest implements MainActivity
     @MediumTest
     @Feature({"Payments"})
     public void testCannotShipWithFastApp() throws TimeoutException {
-        mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
-                PaymentRequestTestRule.IMMEDIATE_RESPONSE);
+        mRule.addPaymentAppFactory("basic-card", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         runCannotShipTest();
     }
 
@@ -54,8 +56,8 @@ public class PaymentRequestShowPromiseUSOnlyShippingTest implements MainActivity
     @MediumTest
     @Feature({"Payments"})
     public void testCannotShipWithSlowApp() throws TimeoutException {
-        mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
-                PaymentRequestTestRule.DELAYED_RESPONSE, PaymentRequestTestRule.DELAYED_CREATION);
+        mRule.addPaymentAppFactory(
+                "basic-card", AppPresence.HAVE_APPS, FactorySpeed.SLOW_FACTORY, AppSpeed.SLOW_APP);
         runCannotShipTest();
     }
 
@@ -80,8 +82,7 @@ public class PaymentRequestShowPromiseUSOnlyShippingTest implements MainActivity
     @MediumTest
     @Feature({"Payments"})
     public void testCanShipWithFastApp() throws TimeoutException {
-        mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
-                PaymentRequestTestRule.IMMEDIATE_RESPONSE);
+        mRule.addPaymentAppFactory("basic-card", AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         runCanShipTest();
     }
 
@@ -89,8 +90,8 @@ public class PaymentRequestShowPromiseUSOnlyShippingTest implements MainActivity
     @MediumTest
     @Feature({"Payments"})
     public void testCanShipWithSlowApp() throws TimeoutException {
-        mRule.installPaymentApp("basic-card", PaymentRequestTestRule.HAVE_INSTRUMENTS,
-                PaymentRequestTestRule.DELAYED_RESPONSE, PaymentRequestTestRule.DELAYED_CREATION);
+        mRule.addPaymentAppFactory(
+                "basic-card", AppPresence.HAVE_APPS, FactorySpeed.SLOW_FACTORY, AppSpeed.SLOW_APP);
         runCanShipTest();
     }
 

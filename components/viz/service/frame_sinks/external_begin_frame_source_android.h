@@ -35,11 +35,8 @@ class VIZ_SERVICE_EXPORT ExternalBeginFrameSourceAndroid
 
   void SetEnabled(bool enabled);
 
-  uint64_t next_sequence_number_ = BeginFrameArgs::kStartingFrameNumber;
   base::android::ScopedJavaGlobalRef<jobject> j_object_;
-  // Used for determining what the sequence number should be on
-  // CreateBeginFrameArgs.
-  base::TimeTicks next_expected_frame_time_;
+  BeginFrameArgsGenerator begin_frame_args_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalBeginFrameSourceAndroid);
 };

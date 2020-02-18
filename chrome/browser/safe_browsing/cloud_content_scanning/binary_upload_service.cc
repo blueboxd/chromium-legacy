@@ -25,6 +25,7 @@
 #include "chrome/browser/safe_browsing/cloud_content_scanning/multipart_uploader.h"
 #include "chrome/browser/safe_browsing/dm_token_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/content/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -47,6 +48,27 @@ bool IsAdvancedProtectionRequest(const BinaryUploadService::Request& request) {
          request.deep_scanning_request().has_malware_scan_request() &&
          request.deep_scanning_request().malware_scan_request().population() ==
              MalwareDeepScanningClientRequest::POPULATION_TITANIUM;
+}
+
+std::string ResultToString(BinaryUploadService::Result result) {
+  switch (result) {
+    case BinaryUploadService::Result::UNKNOWN:
+      return "UNKNOWN";
+    case BinaryUploadService::Result::SUCCESS:
+      return "SUCCESS";
+    case BinaryUploadService::Result::UPLOAD_FAILURE:
+      return "UPLOAD_FAILURE";
+    case BinaryUploadService::Result::TIMEOUT:
+      return "TIMEOUT";
+    case BinaryUploadService::Result::FILE_TOO_LARGE:
+      return "FILE_TOO_LARGE";
+    case BinaryUploadService::Result::FAILED_TO_GET_TOKEN:
+      return "FAILED_TO_GET_TOKEN";
+    case BinaryUploadService::Result::UNAUTHORIZED:
+      return "UNAUTHORIZED";
+    case BinaryUploadService::Result::FILE_ENCRYPTED:
+      return "FILE_ENCRYPTED";
+  }
 }
 
 }  // namespace
@@ -114,6 +136,11 @@ void BinaryUploadService::UploadForDeepScanning(
   active_requests_[raw_request] = std::move(request);
   start_times_[raw_request] = base::TimeTicks::Now();
 
+  std::string token = base::RandBytesAsString(128);
+  token = base::HexEncode(token.data(), token.size());
+  active_tokens_[raw_request] = token;
+  raw_request->set_request_token(std::move(token));
+
   if (!binary_fcm_service_) {
     base::PostTask(FROM_HERE, {content::BrowserThread::UI},
                    base::BindOnce(&BinaryUploadService::FinishRequest,
@@ -123,14 +150,9 @@ void BinaryUploadService::UploadForDeepScanning(
     return;
   }
 
-  std::string token = base::RandBytesAsString(128);
-  token = base::HexEncode(token.data(), token.size());
-  active_tokens_[raw_request] = token;
   binary_fcm_service_->SetCallbackForToken(
       token, base::BindRepeating(&BinaryUploadService::OnGetResponse,
                                  weakptr_factory_.GetWeakPtr(), raw_request));
-  raw_request->set_request_token(std::move(token));
-
   binary_fcm_service_->GetInstanceID(
       base::BindOnce(&BinaryUploadService::OnGetInstanceID,
                      weakptr_factory_.GetWeakPtr(), raw_request));
@@ -305,6 +327,10 @@ void BinaryUploadService::FinishRequest(Request* request,
                                         Result result,
                                         DeepScanningClientResponse response) {
   RecordRequestMetrics(request, result, response);
+  WebUIInfoSingleton::GetInstance()->AddToDeepScanRequests(
+      request->deep_scanning_request());
+  WebUIInfoSingleton::GetInstance()->AddToDeepScanResponses(
+      active_tokens_[request], ResultToString(result), response);
 
   request->FinishRequest(result, response);
   active_requests_.erase(request);
@@ -314,15 +340,17 @@ void BinaryUploadService::FinishRequest(Request* request,
   received_dlp_verdicts_.erase(request);
 
   auto token_it = active_tokens_.find(request);
-  if (token_it != active_tokens_.end()) {
+  DCHECK(token_it != active_tokens_.end());
+  if (binary_fcm_service_) {
     binary_fcm_service_->ClearCallbackForToken(token_it->second);
 
     // The BinaryFCMService will handle all recoverable errors. In case of
     // unrecoverable error, there's nothing we can do here.
     binary_fcm_service_->UnregisterInstanceID(token_it->second,
                                               base::DoNothing());
-    active_tokens_.erase(token_it);
   }
+
+  active_tokens_.erase(token_it);
 }
 
 void BinaryUploadService::RecordRequestMetrics(

@@ -66,7 +66,7 @@ void AuraTestContextFactory::CreateLayerTreeFrameSink(
       base::ThreadTaskRunnerHandle::Get().get(), synchronous_composite,
       disable_display_vsync, refresh_rate);
   frame_sink->SetClient(frame_sink_client.get());
-  compositor->SetLayerTreeFrameSink(std::move(frame_sink));
+  compositor->SetLayerTreeFrameSink(std::move(frame_sink), nullptr);
   frame_sink_clients_.insert(std::move(frame_sink_client));
 }
 

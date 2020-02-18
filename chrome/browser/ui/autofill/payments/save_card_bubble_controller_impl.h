@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/payments/save_card_ui.h"
+#include "chrome/browser/ui/autofill/payments/save_payment_icon_controller.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
@@ -29,6 +30,7 @@ enum class BubbleType;
 // Omnibox icon.
 class SaveCardBubbleControllerImpl
     : public SaveCardBubbleController,
+      public SavePaymentIconController,
       public content::WebContentsObserver,
       public content::WebContentsUserData<SaveCardBubbleControllerImpl> {
  public:
@@ -111,7 +113,6 @@ class SaveCardBubbleControllerImpl
   base::string16 GetExplanatoryMessage() const override;
   base::string16 GetAcceptButtonText() const override;
   base::string16 GetDeclineButtonText() const override;
-  base::string16 GetSaveCardIconTooltipText() const override;
   const AccountInfo& GetAccountInfo() const override;
   Profile* GetProfile() const override;
   const CreditCard& GetCard() const override;
@@ -128,9 +129,6 @@ class SaveCardBubbleControllerImpl
   //    to the server -- this should change.
   // TODO(crbug.com/864702): Don't show promo if user is a butter user.
   bool ShouldShowSignInPromo() const override;
-  bool ShouldShowSavingCardAnimation() const override;
-  bool ShouldShowCardSavedLabelAnimation() const override;
-  bool ShouldShowSaveFailureBadge() const override;
   void OnSyncPromoAccepted(const AccountInfo& account,
                            signin_metrics::AccessPoint access_point,
                            bool is_default_promo_account) override;
@@ -140,12 +138,19 @@ class SaveCardBubbleControllerImpl
   void OnLegalMessageLinkClicked(const GURL& url) override;
   void OnManageCardsClicked() override;
   void OnBubbleClosed() override;
-  void OnAnimationEnded() override;
   const LegalMessageLines& GetLegalMessageLines() const override;
-  bool IsIconVisible() const override;
   bool IsUploadSave() const override;
   BubbleType GetBubbleType() const override;
   AutofillSyncSigninState GetSyncState() const override;
+
+  // SavePaymentIconController:
+  base::string16 GetSavePaymentIconTooltipText() const override;
+  bool ShouldShowSavingCardAnimation() const override;
+  bool ShouldShowCardSavedLabelAnimation() const override;
+  bool ShouldShowSaveFailureBadge() const override;
+  void OnAnimationEnded() override;
+  bool IsIconVisible() const override;
+  SaveCardBubbleView* GetSaveBubbleView() const override;
 
  protected:
   explicit SaveCardBubbleControllerImpl(content::WebContents* web_contents);

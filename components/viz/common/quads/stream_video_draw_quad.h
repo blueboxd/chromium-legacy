@@ -47,7 +47,7 @@ class VIZ_COMMON_EXPORT StreamVideoDrawQuad : public DrawQuad {
 
   struct OverlayResources {
     OverlayResources();
-    gfx::Size size_in_pixels[Resources::kMaxResourceIdCount];
+    gfx::Size size_in_pixels;
   };
   OverlayResources overlay_resources;
 
@@ -55,7 +55,7 @@ class VIZ_COMMON_EXPORT StreamVideoDrawQuad : public DrawQuad {
 
   ResourceId resource_id() const { return resources.ids[kResourceIdIndex]; }
   const gfx::Size& resource_size_in_pixels() const {
-    return overlay_resources.size_in_pixels[kResourceIdIndex];
+    return overlay_resources.size_in_pixels;
   }
 
  private:

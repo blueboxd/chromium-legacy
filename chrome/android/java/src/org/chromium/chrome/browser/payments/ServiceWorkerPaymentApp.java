@@ -35,7 +35,7 @@ import java.util.Set;
  *
  * @see https://w3c.github.io/payment-handler/
  */
-public class ServiceWorkerPaymentApp extends PaymentInstrument {
+public class ServiceWorkerPaymentApp extends PaymentApp {
     private final WebContents mWebContents;
     private final long mRegistrationId;
     private final URI mScope;

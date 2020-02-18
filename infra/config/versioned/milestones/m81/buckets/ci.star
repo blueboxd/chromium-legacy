@@ -48,12 +48,10 @@ ci.android_builder(
 ci.android_builder(
     name = 'Android arm Builder (dbg)',
     execution_timeout = 4 * time.hour,
-    triggered_by = [vars.poller.get()],
 )
 
 ci.android_builder(
     name = 'Cast Android (dbg)',
-    triggered_by = [vars.poller.get()],
 )
 
 ci.android_builder(
@@ -96,7 +94,6 @@ ci.android_builder(
 ci.android_builder(
     name = 'android-cronet-arm-rel',
     notifies = ['cronet'],
-    triggered_by = [vars.poller.get()],
 )
 
 ci.android_builder(
@@ -126,12 +123,10 @@ ci.chromiumos_builder(
 
 ci.chromiumos_builder(
     name = 'chromeos-arm-generic-rel',
-    triggered_by = [vars.poller.get()],
 )
 
 ci.chromiumos_builder(
     name = 'linux-chromeos-dbg',
-    triggered_by = [vars.poller.get()],
 )
 
 ci.chromiumos_builder(
@@ -201,19 +196,16 @@ ci.gpu_thin_tester(
 ci.linux_builder(
     name = 'Cast Linux',
     goma_jobs = goma.jobs.J50,
-    triggered_by = [vars.poller.get()],
 )
 
 ci.linux_builder(
     name = 'Fuchsia ARM64',
     notifies = ['cr-fuchsia'],
-    triggered_by = [vars.poller.get()],
 )
 
 ci.linux_builder(
     name = 'Fuchsia x64',
     notifies = ['cr-fuchsia'],
-    triggered_by = [vars.poller.get()],
 )
 
 ci.linux_builder(
@@ -228,7 +220,6 @@ ci.linux_builder(
 
 ci.linux_builder(
     name = 'linux-ozone-rel',
-    triggered_by = [vars.poller.get()],
 )
 
 ci.linux_builder(
@@ -250,7 +241,6 @@ ci.mac_builder(
 ci.mac_builder(
     name = 'Mac Builder (dbg)',
     os = os.MAC_ANY,
-    triggered_by = [vars.poller.get()],
 )
 
 # The build runs on 10.13, but triggers tests on 10.10 bots.
@@ -298,7 +288,6 @@ ci.mac_ios_builder(
 ci.memory_builder(
     name = 'Linux ASan LSan Builder',
     ssd = True,
-    triggered_by = [vars.poller.get()],
 )
 
 ci.memory_builder(
@@ -328,7 +317,6 @@ ci.win_builder(
     name = 'Win Builder (dbg)',
     cores = 32,
     os = os.WINDOWS_ANY,
-    triggered_by = [vars.poller.get()],
 )
 
 ci.win_builder(

@@ -71,7 +71,7 @@ void TextureDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   DrawQuad::SetAll(shared_quad_state, DrawQuad::Material::kTextureContent, rect,
                    visible_rect, needs_blending);
   resources.ids[kResourceIdIndex] = resource_id;
-  overlay_resources.size_in_pixels[kResourceIdIndex] = resource_size_in_pixels;
+  overlay_resources.size_in_pixels = resource_size_in_pixels;
   resources.count = 1;
   this->premultiplied_alpha = premultiplied_alpha;
   this->uv_top_left = uv_top_left;

@@ -106,8 +106,7 @@ bool StructTraits<viz::mojom::StreamVideoQuadStateDataView, viz::DrawQuad>::
       data.resource_id();
   quad->resources.count = 1;
   return data.ReadResourceSizeInPixels(
-             &quad->overlay_resources.size_in_pixels
-                  [viz::StreamVideoDrawQuad::kResourceIdIndex]) &&
+             &quad->overlay_resources.size_in_pixels) &&
          data.ReadUvTopLeft(&quad->uv_top_left) &&
          data.ReadUvBottomRight(&quad->uv_bottom_right);
 }
@@ -132,9 +131,7 @@ bool StructTraits<viz::mojom::TextureQuadStateDataView, viz::DrawQuad>::Read(
 
   quad->resources.ids[viz::TextureDrawQuad::kResourceIdIndex] =
       data.resource_id();
-  if (!data.ReadResourceSizeInPixels(
-          &quad->overlay_resources
-               .size_in_pixels[viz::TextureDrawQuad::kResourceIdIndex])) {
+  if (!data.ReadResourceSizeInPixels(&quad->overlay_resources.size_in_pixels)) {
     return false;
   }
 

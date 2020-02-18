@@ -94,6 +94,7 @@ class DocumentProvider : public AutocompleteProvider {
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, ParseDocumentSearchResults);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            ProductDescriptionStringsAndAccessibleLabels);
+  FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest, MatchDescriptionString);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
                            ParseDocumentSearchResultsBreakTies);
   FRIEND_TEST_ALL_PREFIXES(DocumentProviderTest,
@@ -161,6 +162,16 @@ class DocumentProvider : public AutocompleteProvider {
   static base::string16 GenerateLastModifiedString(
       const std::string& modified_timestamp_string,
       base::Time now);
+
+  // Convert mimetype (e.g. "application/vnd.google-apps.document") to a string
+  // that can be used in the match description (e.g. "Google Docs").
+  static base::string16 GetProductDescriptionString(
+      const std::string& mimetype);
+
+  // Construct match description; e.g. "Jan 12 - First Last - Google Docs".
+  static base::string16 GetMatchDescription(const std::string& update_time,
+                                            const std::string& mimetype,
+                                            const std::string& owner);
 
   // Don't request doc suggestions for inputs shorter than |min_query_length_|
   // or longer than |max_query_length_|. A value of -1 indicates no limit. These

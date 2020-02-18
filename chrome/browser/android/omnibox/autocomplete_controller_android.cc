@@ -62,8 +62,8 @@
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
-using base::android::ConvertUTF8ToJavaString;
 using base::android::ConvertUTF16ToJavaString;
+using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
@@ -110,7 +110,7 @@ class ZeroSuggestPrefetcher : public AutocompleteControllerDelegate {
   explicit ZeroSuggestPrefetcher(Profile* profile);
 
  private:
-  ~ZeroSuggestPrefetcher() override;
+  ~ZeroSuggestPrefetcher() override = default;
   void SelfDestruct();
 
   // AutocompleteControllerDelegate:
@@ -125,33 +125,15 @@ ZeroSuggestPrefetcher::ZeroSuggestPrefetcher(Profile* profile)
           std::make_unique<ChromeAutocompleteProviderClient>(profile),
           this,
           AutocompleteProvider::TYPE_ZERO_SUGGEST)) {
-  // Creating an arbitrary fake_request_source to avoid passing in an invalid
-  // AutocompleteInput object. This source is ignored entirely when
-  // kZeroSuggestionsOnNTP feature flag is enabled.
-  base::string16 fake_request_source = base::ASCIIToUTF16("chrome://newtab");
-  base::string16 fake_omnibox_content;
-  auto context =
-      metrics::OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
-
-  if (!base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP)) {
-    fake_request_source = base::ASCIIToUTF16("http://www.foobarbazblah.com");
-    fake_omnibox_content = fake_request_source;
-    context = metrics::OmniboxEventProto::OTHER;
-  }
-
-  AutocompleteInput input(fake_omnibox_content, context,
+  AutocompleteInput input(base::string16(), metrics::OmniboxEventProto::NTP,
                           ChromeAutocompleteSchemeClassifier(profile));
-  input.set_current_url(GURL(fake_request_source));
+  input.set_current_url(GURL(chrome::kChromeUINewTabURL));
   input.set_from_omnibox_focus(true);
   controller_->Start(input);
   // Delete ourselves after 10s. This is enough time to cache results or
   // give up if the results haven't been received.
-  expire_timer_.Start(FROM_HERE,
-                      base::TimeDelta::FromMilliseconds(10000),
-                      this, &ZeroSuggestPrefetcher::SelfDestruct);
-}
-
-ZeroSuggestPrefetcher::~ZeroSuggestPrefetcher() {
+  expire_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(10000), this,
+                      &ZeroSuggestPrefetcher::SelfDestruct);
 }
 
 void ZeroSuggestPrefetcher::SelfDestruct() {
@@ -403,16 +385,14 @@ AutocompleteControllerAndroid::Factory::Factory()
   DependsOn(ShortcutsBackendFactory::GetInstance());
 }
 
-AutocompleteControllerAndroid::Factory::~Factory() {
-}
+AutocompleteControllerAndroid::Factory::~Factory() = default;
 
 KeyedService* AutocompleteControllerAndroid::Factory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   return new AutocompleteControllerAndroid(static_cast<Profile*>(profile));
 }
 
-AutocompleteControllerAndroid::~AutocompleteControllerAndroid() {
-}
+AutocompleteControllerAndroid::~AutocompleteControllerAndroid() = default;
 
 void AutocompleteControllerAndroid::InitJNI(JNIEnv* env, jobject obj) {
   weak_java_autocomplete_controller_android_ =
@@ -667,15 +647,6 @@ static void JNI_AutocompleteController_PrefetchZeroSuggestResults(JNIEnv* env) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   if (!profile)
     return;
-
-  // ZeroSuggestPrefetcher uses a fake AutocompleteInput classified as OTHER.
-  // See its constructor.
-  if (!base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP) &&
-      !base::Contains(
-          OmniboxFieldTrial::GetZeroSuggestVariants(OmniboxEventProto::OTHER),
-          ZeroSuggestProvider::kRemoteNoUrlVariant)) {
-    return;
-  }
 
   // ZeroSuggestPrefetcher deletes itself after it's done prefetching.
   new ZeroSuggestPrefetcher(profile);

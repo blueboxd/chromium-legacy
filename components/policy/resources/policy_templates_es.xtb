@@ -4,7 +4,7 @@
 <translation id="1002439864875515590">Si se asigna una cadena en blanco a esta política o no se configura, <ph name="PRODUCT_OS_NAME" /> no mostrará la opción de autocompletar los datos durante el flujo de inicio de sesión del usuario.
       Si se le asigna una cadena que representa un nombre de dominio, <ph name="PRODUCT_OS_NAME" /> mostrará la opción de autocompletar los datos durante el inicio de sesión del usuario, por lo que el usuario podrá introducir únicamente su nombre de usuario sin la extensión de nombre de dominio.  El usuario podrá sobrescribir esta extensión de nombre de dominio.
       Si el valor de esta política no es un dominio válido, no se aplicará la política.</translation>
-<translation id="1010151305531217567">Cambiar el botón primario del ratón al derecho</translation>
+<translation id="1010151305531217567">Cambiar el botón principal del ratón al derecho</translation>
 <translation id="101438888985615157">Girar la pantalla 180 grados</translation>
 <translation id="1016912092715201525">Permite configurar la comprobación del navegador predeterminado en <ph name="PRODUCT_NAME" /> e impide que los usuarios modifiquen este ajuste.
 
@@ -4021,15 +4021,15 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 
       Para obtener más información sobre la política <ph name="IEEM_SITELIST_POLICY" /> de Internet Explorer, consulta esta página web: https://docs.microsoft.com/es-es/internet-explorer/ie11-deploy-guide/what-is-enterprise-mode</translation>
 <translation id="7132877481099023201">URLs a las que se concederá acceso a dispositivos de captura de vídeo sin confirmación</translation>
-<translation id="7134420220355750019">Cambia el botón primario del ratón al botón derecho.
+<translation id="7134420220355750019">Cambia el botón principal del ratón al botón derecho.
 
-          Si se habilita esta política, el botón derecho del ratón siempre será el primario.
+          Si se habilita esta política, el botón derecho del ratón siempre será el principal.
 
-          Si no se habilita esta política, el botón izquierdo del ratón siempre será el primario.
+          Si no se habilita esta política, el botón izquierdo del ratón siempre será el principal.
 
           Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
 
-          Si no la estableces, el botón izquierdo del ratón será el primario inicialmente, pero el usuario podrá cambiarlo en cualquier momento.</translation>
+          Si no la estableces, el botón izquierdo del ratón será el principal inicialmente, pero el usuario podrá cambiarlo en cualquier momento.</translation>
 <translation id="713712866686796666">Define la configuración diaria de cambio de alimentación en picos.
 
           Esta política solo se utilizará si se le asigna el valor "true" a la política <ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" />.

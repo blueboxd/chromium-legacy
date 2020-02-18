@@ -331,6 +331,9 @@ class AppListSyncableService : public syncer::SyncableService,
   bool initial_sync_data_processed_;
   bool first_app_list_sync_;
   std::string oem_folder_name_;
+  // Callback to install default page breaks.
+  // Only set for first time user for tablet form devices.
+  base::OnceClosure install_default_page_breaks_;
   base::OnceClosure wait_until_ready_to_sync_cb_;
 
   // List of observers.

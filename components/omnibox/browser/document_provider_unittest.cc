@@ -411,6 +411,118 @@ TEST_F(DocumentProviderTest, ProductDescriptionStringsAndAccessibleLabels) {
                          "https://documentprovider.tld/doc?id=3, 4 of 4"));
 }
 
+TEST_F(DocumentProviderTest, MatchDescriptionString) {
+  const std::string kGoodJSONResponseWithMimeTypes = base::StringPrintf(
+      R"({
+      "results": [
+        {
+          "title": "Date, mime, and owner provided",
+          "url": "https://documentprovider.tld/doc?id=1",
+          "score": 999,
+          "originalUrl": "%s",
+          "metadata": {
+            "updateTime": "1994-01-12T08:10:05Z",
+            "mimeType": "application/vnd.google-apps.document",
+            "owner": {
+              "personNames": [
+                {"displayName": "Green Moon"}
+              ]
+            }
+          }
+        },
+        {
+          "title": "Missing mime",
+          "score": 998,
+          "url": "https://documentprovider.tld/doc?id=2",
+          "metadata": {
+            "updateTime": "12 Jan 1994 08:10:05 GMT",
+            "owner": {
+              "personNames": [
+                {"displayName": "Blue Sunset"},
+                {"displayName": "White Aurora"}
+              ]
+            }
+          }
+        },
+        {
+          "title": "Missing owner",
+          "score": 997,
+          "url": "https://documentprovider.tld/doc?id=3",
+          "metadata": {
+            "updateTime": "12 Jan 1994 08:10:05 GMT",
+            "mimeType": "application/vnd.google-apps.spreadsheet"
+          }
+        },
+        {
+          "title": "Missing date",
+          "score": 997,
+          "url": "https://documentprovider.tld/doc?id=3",
+          "metadata": {
+            "mimeType": "application/vnd.google-apps.spreadsheet",
+            "owner": {
+              "personNames": [
+                {"displayName": "Red Lightning"}
+              ]
+            }
+          }
+        },
+        {
+          "title": "Missing metadata",
+          "score": 997,
+          "url": "https://documentprovider.tld/doc?id=4"
+        }
+      ]
+    })",
+      SAMPLE_ORIGINAL_URL.c_str());
+
+  base::Optional<base::Value> response =
+      base::JSONReader::Read(kGoodJSONResponseWithMimeTypes);
+  ASSERT_TRUE(response);
+  ASSERT_TRUE(response->is_dict());
+  provider_->input_.UpdateText(base::UTF8ToUTF16("input"), 0, {});
+
+  // Verify correct formatting when the DisplayOwner feature param is false.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        omnibox::kDocumentProvider, {
+                                        {"DisplayOwner", "false"},
+                                    });
+    ACMatches matches = provider_->ParseDocumentSearchResults(*response);
+
+    EXPECT_EQ(matches.size(), 5u);
+    EXPECT_EQ(matches[0].description,
+              base::ASCIIToUTF16("1/12/94 - Google Docs"));
+    EXPECT_EQ(matches[1].description,
+              base::ASCIIToUTF16("1/12/94 - Google Drive"));
+    EXPECT_EQ(matches[2].description,
+              base::ASCIIToUTF16("1/12/94 - Google Sheets"));
+    EXPECT_EQ(matches[3].description, base::ASCIIToUTF16("Google Sheets"));
+    EXPECT_EQ(matches[4].description, base::ASCIIToUTF16(""));
+  }
+
+  // Verify correct formatting when the DisplayOwner feature param is true.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        omnibox::kDocumentProvider, {
+                                        {"DisplayOwner", "true"},
+                                    });
+    ACMatches matches = provider_->ParseDocumentSearchResults(*response);
+
+    EXPECT_EQ(matches.size(), 5u);
+    EXPECT_EQ(matches[0].description,
+              base::ASCIIToUTF16("1/12/94 - Green Moon - Google Docs"));
+    EXPECT_EQ(matches[1].description,
+              base::ASCIIToUTF16("1/12/94 - Blue Sunset - Google Drive"));
+    EXPECT_EQ(matches[2].description,
+              base::ASCIIToUTF16("1/12/94 - Google Sheets"));
+    EXPECT_EQ(matches[3].description,
+              base::ASCIIToUTF16("Red Lightning - Google Sheets"));
+    EXPECT_EQ(matches[4].description, base::ASCIIToUTF16(""));
+  }
+}
+
 TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTies) {
   const std::string kGoodJSONResponseWithTies = base::StringPrintf(
       R"({

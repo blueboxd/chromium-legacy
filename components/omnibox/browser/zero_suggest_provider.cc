@@ -364,8 +364,7 @@ ZeroSuggestProvider::ZeroSuggestProvider(
   }
 }
 
-ZeroSuggestProvider::~ZeroSuggestProvider() {
-}
+ZeroSuggestProvider::~ZeroSuggestProvider() = default;
 
 const TemplateURL* ZeroSuggestProvider::GetTemplateURL(bool is_keyword) const {
   // Zero suggest provider should not receive keyword results.
@@ -555,8 +554,7 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
     }
     const base::string16 current_query_string16(
         base::ASCIIToUTF16(current_query_));
-    for (size_t i = 0; i < most_visited_urls_.size(); i++) {
-      const history::MostVisitedURL& url = most_visited_urls_[i];
+    for (const auto& url : most_visited_urls_) {
       SearchSuggestionParser::NavigationResult nav(
           client()->GetSchemeClassifier(), url.url,
           AutocompleteMatchType::NAVSUGGEST, 0, url.title, std::string(), false,
@@ -583,8 +581,8 @@ void ZeroSuggestProvider::ConvertResultsToAutocompleteMatches() {
 
   const SearchSuggestionParser::NavigationResults& nav_results(
       results_.navigation_results);
-  for (auto it = nav_results.begin(); it != nav_results.end(); ++it) {
-    matches_.push_back(NavigationToMatch(*it));
+  for (const auto& nav_result : nav_results) {
+    matches_.push_back(NavigationToMatch(nav_result));
   }
 }
 
@@ -709,14 +707,19 @@ ZeroSuggestProvider::ResultType ZeroSuggestProvider::TypeOfResultToRun(
     if (RemoteNoUrlSuggestionsAreAllowed(client(), template_url_service))
       return REMOTE_NO_URL;
 
-#if defined(OS_ANDROID) || defined(OS_IOS)
+#if defined(OS_ANDROID)
+    // Android defaults to presenting Zero-prefix recent query suggestions on
+    // new tab page.
+    return (IsNTPPage(current_page_classification_)) ? REMOTE_NO_URL
+                                                     : MOST_VISITED;
+#elif defined(OS_IOS)
     // Remote suggestions are replaced with the most visited ones.
     // TODO(tommycli): Most likely this fallback concept should be replaced by
     // a more general configuration setup.
     return MOST_VISITED;
 #else
     return NONE;
-#endif  //  defined(OS_ANDROID) || defined(OS_IOS)
+#endif
   }
 
   if (base::Contains(field_trial_variants, kRemoteSendUrlVariant) &&

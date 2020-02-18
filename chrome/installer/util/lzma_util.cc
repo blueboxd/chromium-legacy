@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/win/windows_version.h"
 
 extern "C" {
 #include "third_party/lzma_sdk/7z.h"
@@ -345,6 +346,12 @@ UnPackStatus LzmaUtilImpl::UnPack(const base::FilePath& location,
         // Unmap the target file from the process's address space.
         mapped_file.reset();
         last_folder_index = -1;
+        // Flush to avoid an interesting bug in Windows 7 through Windows 10
+        // 1809; see
+        // https://randomascii.wordpress.com/2018/02/25/compiler-bug-linker-bug-windows-kernel-bug/
+        // for details.
+        if (base::win::GetVersion() < base::win::Version::WIN10_RS5)
+          target_file.Flush();
       }
     }
 

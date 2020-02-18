@@ -120,7 +120,6 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> on hallatud seanss, mida haldab <ph name="DOMAIN" /></translation>
 <translation id="2427507373259914951">Vasakklikk</translation>
 <translation id="2429753432712299108">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks. Enne nõustumist veenduge, et selles seadmes oleks kuvatud see parool: <ph name="PASSKEY" /></translation>
-<translation id="2435457462613246316">Kuva parool</translation>
 <translation id="2473177541599297363">Kinnitage eraldusvõime</translation>
 <translation id="2482878487686419369">Märguanded</translation>
 <translation id="2484513351006226581">Klaviatuuripaigutuse muutmiseks vajutage klahvikombinatsiooni <ph name="KEYBOARD_SHORTCUT" />.</translation>
@@ -287,7 +286,6 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="4527045527269911712">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> täislaadimiseni</translation>
 <translation id="4561267230861221837">3G</translation>
-<translation id="4565377596337484307">Peida parool</translation>
 <translation id="4570957409596482333">Nupp Vali ja kuula</translation>
 <translation id="4585337515783392668">Katkesta ülekandmine tundmatus vastuvõtjas</translation>
 <translation id="4628757576491864469">Seadmed</translation>

@@ -12,16 +12,16 @@ Are you a Google employee? See
 
 ## System requirements
 
-*   A 64-bit Mac running 10.13+.
-*   [Xcode](https://developer.apple.com/xcode) 10+
-*   The OS X 10.14 SDK. Run
+*   A 64-bit Mac running 10.14+.
+*   [Xcode](https://developer.apple.com/xcode) 11+
+*   The OS X 10.15 SDK. Run
 
     ```shell
     $ ls `xcode-select -p`/Platforms/MacOSX.platform/Developer/SDKs
     ```
 
     to check whether you have it.  Building with a newer SDK works too, but
-    the releases currently use the 10.14 SDK.
+    the releases currently use the 10.15 SDK.
 
 ## Install `depot_tools`
 

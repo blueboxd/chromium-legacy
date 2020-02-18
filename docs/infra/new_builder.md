@@ -203,7 +203,7 @@ defaults. Find the block of builders defined using the appropriate function and
 add a new definition, which may be as simple as:
 
 ```starlark
-linux_builder(
+ci.linux_builder(
     name = '$BUILDER_NAME',
 )
 ```
@@ -283,46 +283,52 @@ luci.list_view(
 
 The scheduler is responsible for triggering CI / waterfall builders.
 
+Chromium's scheduler Starlark configuration is intermixed with the
+[builder definitions][23].
+Chromium's generated scheduler configuration is [here][12].
 Scheduler's configuration schema is [here][11].
-Chromium's scheduler configuration is [here][12].
-The scheduler configuration is not written in Starlark at this time, but is
-still part of the generation process: the handwritten proto file gets copied to
-the `generated` directory where the other configuration files are generated to
-and a presubmit check ensures that the files remain in sync.
 
-A typical chromium builder will need a job configuration. A chromium
-builder that's triggering on new commits or on a regular schedule
-(as opposed to being triggered by a parent builder) will also need
-a trigger entry.
+##### Poller
 
-``` sh
-trigger {
-  id: "master-gitiles-trigger"
+To trigger builders when changes are landed on a repo, a poller needs to be
+defined. The poller defines the repo and refs to watch and triggers builders
+when changes land on one of the watched refs.
 
-  ...
+Pollers are already defined for all of the active refs within chromium/src. The
+modules for the `ci` bucket and its release branch counterparts are written such
+that builders will be triggered by the appropriate poller by default. Setting
+the `triggered_by` field on a builder will disable this default behavior.
 
-  # Adding your builder to the master-gitiles-trigger
-  # will cause your builder to be triggered on new commits
-  # to chromium's master branch.
-  triggers: "your-new-ci-builder"
-}
+##### Triggered by another builder
 
-job {
-  id: "your-new-ci-builder"
+Builders that will be triggered by other builders (e.g. a builder compiles tests
+and then triggers another builder to actually run the tests) call this out in
+their own definition by setting the `triggered_by` field. For builders in the
+`ci` bucket and its release branch counterparts, this will disable the default
+behavior of being triggered by the poller.
 
-  # acl_sets should either be
-  #  - "default" for builders that are triggered by the scheduler
-  #     (i.e. anything triggering on new commits or on a cron)
-  #  - "triggered-by-parent-builders" for builders that are
-  #    triggered by other builders
-  acl_sets: "default"
+```starlark
+ci.linux_builder(
+    name = '$BUILDER_NAME',
+    triggered_by = ['$PARENT_BUILDER_NAME'],
+)
+```
 
-  buildbucket: {
-    server: "cr-buildbucket.appspot.com"
-    bucket: "luci.chromium.ci"
-    builder: "your-new-ci-builder"
-  }
-}
+##### Scheduled
+
+Builders that need to run regularly but not in response to landed code can be
+scheduled using the `schedule` field in their definition. For builders in the
+`ci` bucket and its release branch counterparts, the `triggered_by` field should
+be set to an empty list to disable the default behavior of being triggered by
+the poller. See the documentation of the `schedule` field in the `Job` message
+in the [scheduler schema][11].
+
+```starlark
+ci.builder(
+    name = '$BUILDER_NAME',
+    schedule = 'with 10m interval',
+    triggered_by = [],
+)
 ```
 
 ### Recipe-specific configurations
@@ -357,7 +363,7 @@ reach out to infra-dev@chromium.org or [file a bug][19]!
 [9]: http://luci-config.appspot.com/schemas/projects:luci-milo.cfg
 [10]: /infra/config/generated/luci-milo.cfg
 [11]: https://chromium.googlesource.com/infra/luci/luci-go/+/master/scheduler/appengine/messages/config.proto
-[12]: /infra/config/luci-scheduler.cfg
+[12]: /infra/config/generated/luci-scheduler.cfg
 [13]: /tools/mb/README.md
 [14]: /tools/mb/docs/user_guide.md#the-mb_config_pyl-config-file
 [15]: /testing/buildbot/README.md

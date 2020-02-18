@@ -318,6 +318,12 @@ const char kDecodeLossyWebPImagesToYUVDescription[] =
     "Decode and render lossy WebP images from YUV instead of RGB. "
     "You must also have GPU rasterization or OOP rasterization.";
 
+const char kDoubleBufferCompositingName[] = "Double buffered compositing";
+const char kDoubleBufferCompositingDescription[] =
+    "Use double buffer for compositing (instead of triple-buffering). "
+    "Latency should be reduced in some cases. On the other hand, more skipped "
+    "frames are expected.";
+
 const char kEnablePasswordsAccountStorageName[] =
     "Enable the account data storage for passwords";
 const char kEnablePasswordsAccountStorageDescription[] =
@@ -2638,12 +2644,6 @@ const char kStrictSiteIsolationDescription[] =
     "#site-isolation-trial-opt-out for how to disable site isolation for "
     "testing.";
 
-const char kTabSwitcherLongpressMenuName[] =
-    "Enable tab switcher long-press menu";
-const char kTabSwitcherLongpressMenuDescription[] =
-    "Enable showing a popup menu when the tab switcher is long-pressed, which "
-    "displays options for 'NewTab', 'New incognito tab' and 'Close tab'.";
-
 const char kUpdateMenuBadgeName[] = "Force show update menu badge";
 const char kUpdateMenuBadgeDescription[] =
     "When enabled, a badge will be shown on the app menu button if the update "
@@ -3258,6 +3258,10 @@ const char kEnableArcUnifiedAudioFocusName[] =
 const char kEnableArcUnifiedAudioFocusDescription[] =
     "If audio focus is enabled in Chrome then this will delegate audio focus "
     "control in Android apps to Chrome.";
+
+extern const char kEnableAmbientModeName[] = "Enable Ambient Mode";
+extern const char kEnableAmbientModeDescription[] =
+    "Enable Ambient Mode to show an enhanced lock screen with more functions";
 
 const char kEnableAssistantAppSupportName[] = "Enable Assistant App Support";
 const char kEnableAssistantAppSupportDescription[] =

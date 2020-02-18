@@ -94,7 +94,7 @@ public class AndroidPaymentAppFinderUnitTest {
 
     private void verifyNoAppsFound(PaymentAppFactoryDelegate delegate) {
         Mockito.verify(delegate, Mockito.never())
-                .onPaymentAppCreated(Mockito.any(PaymentInstrument.class));
+                .onPaymentAppCreated(Mockito.any(PaymentApp.class));
         Mockito.verify(delegate, Mockito.never())
                 .onPaymentAppCreationError(Mockito.any(String.class));
         Mockito.verify(delegate, Mockito.never())
@@ -412,7 +412,7 @@ public class AndroidPaymentAppFinderUnitTest {
         Mockito.verify(delegate).onDoneCreatingPaymentApps(/*factory=*/null);
     }
 
-    private static final class Matches implements ArgumentMatcher<PaymentInstrument> {
+    private static final class Matches implements ArgumentMatcher<PaymentApp> {
         private final String mExpectedAppIdentifier;
 
         private Matches(String expectedAppIdentifier) {
@@ -425,13 +425,13 @@ public class AndroidPaymentAppFinderUnitTest {
          * @param expectedAppIdentifier The expected app identifier to match.
          * @return A matcher to use in a mock expectation.
          */
-        public static ArgumentMatcher<PaymentInstrument> paymentAppIdentifier(
+        public static ArgumentMatcher<PaymentApp> paymentAppIdentifier(
                 String expectedAppIdentifier) {
             return new Matches(expectedAppIdentifier);
         }
 
         @Override
-        public boolean matches(PaymentInstrument app) {
+        public boolean matches(PaymentApp app) {
             return app.getIdentifier().equals(mExpectedAppIdentifier);
         }
     }

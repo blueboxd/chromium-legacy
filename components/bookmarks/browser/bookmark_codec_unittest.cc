@@ -719,4 +719,31 @@ TEST_F(BookmarkCodecTest, ReassignPermanentNodeDuplicateGUID) {
             decoded_model->bookmark_bar_node()->children()[0]->guid());
 }
 
+TEST_F(BookmarkCodecTest, CanonicalizeGUID) {
+  const std::string kLowerCaseGuid = base::GenerateGUID();
+  ASSERT_EQ(kLowerCaseGuid, base::ToLowerASCII(kLowerCaseGuid));
+
+  const std::string kUpperCaseGuid = base::ToUpperASCII(kLowerCaseGuid);
+
+  std::unique_ptr<BookmarkModel> model_to_encode(CreateTestModel1());
+  BookmarkCodec encoder;
+  std::unique_ptr<base::Value> value(
+      encoder.Encode(model_to_encode.get(), std::string()));
+
+  // Change a GUID to a capitalized form, which could have been produced by an
+  // older version of the browser, before canonicalization was enforced.
+  base::DictionaryValue* child_value;
+  GetBookmarksBarChildValue(value.get(), 0, &child_value);
+  child_value->SetString(BookmarkCodec::kGuidKey, kUpperCaseGuid);
+
+  std::unique_ptr<BookmarkModel> decoded_model2(
+      TestBookmarkClient::CreateModel());
+  BookmarkCodec decoder2;
+  ASSERT_TRUE(Decode(&decoder2, *value.get(), decoded_model2.get(),
+                     /*sync_metadata_str=*/nullptr));
+
+  EXPECT_EQ(kLowerCaseGuid,
+            decoded_model2->bookmark_bar_node()->children()[0]->guid());
+}
+
 }  // namespace bookmarks

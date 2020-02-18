@@ -36,16 +36,12 @@ class PreviewsServiceTest : public testing::Test {
 TEST_F(PreviewsServiceTest, TestOfflineFieldTrialNotSet) {
   blacklist::BlacklistData::AllowedTypesAndVersions allowed_types_and_versions =
       PreviewsService::GetAllowedPreviews();
-  EXPECT_NE(allowed_types_and_versions.find(
+  EXPECT_EQ(allowed_types_and_versions.find(
                 static_cast<int>(previews::PreviewsType::OFFLINE)),
             allowed_types_and_versions.end());
 }
 
 TEST_F(PreviewsServiceTest, TestOfflineFeatureDisabled) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(
-      previews::features::kOfflinePreviews);
-
   blacklist::BlacklistData::AllowedTypesAndVersions allowed_types_and_versions =
       PreviewsService::GetAllowedPreviews();
   EXPECT_EQ(allowed_types_and_versions.find(

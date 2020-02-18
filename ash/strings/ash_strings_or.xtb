@@ -114,13 +114,12 @@
 <translation id="2354174487190027830"><ph name="NAME" /> ସକ୍ରିୟ କରାଯାଉଛି</translation>
 <translation id="2359808026110333948">ଜାରି ରଖନ୍ତୁ</translation>
 <translation id="2365393535144473978">ମୋବାଇଲ୍‌ ଡାଟା ସକ୍ଷମ କରିବାରେ ବ୍ଲୁଟୁଥ୍‍ ସକ୍ଷମ ହେବ।</translation>
-<translation id="2390318262976603432">ସ୍ଥାନ ସେଟିଂସ୍</translation>
+<translation id="2390318262976603432">ଲୋକେଲ୍ ସେଟିଂସ୍</translation>
 <translation id="2391579633712104609">180°</translation>
 <translation id="2412593942846481727">ଅପ୍‍‍ଡେଟ୍ ଉପଲବ୍ଧ ଅଛି</translation>
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> ଏକ ପରିଚାଳିତ ଅବଧି ଯାହା <ph name="DOMAIN" /> ଦ୍ୱାରା ପରିଚାଳିତ</translation>
 <translation id="2427507373259914951">ବାମ କ୍ଲିକ୍</translation>
 <translation id="2429753432712299108">ବ୍ଲୁଥୁଥ୍ ଡିଭାଇସ୍ "<ph name="DEVICE_NAME" />" ପେୟାର୍ କରିବା ପାଇଁ ଅନୁମତି ଚାହିଁବ। ସ୍ୱୀକାର କରିବା ପୂର୍ବରୁ, ଦୟାକରି ସୁନିଶ୍ଚିତ କରନ୍ତୁ ଯେ ଏହି ପାସ୍‍କୀ ସେହି ଡିଭାଇସ୍‍‍ରେ ପ୍ରଦର୍ଶିତ ହୋଇଛି: <ph name="PASSKEY" /></translation>
-<translation id="2435457462613246316">ପାସୱାର୍ଡ ଦେଖାନ୍ତୁ</translation>
 <translation id="2473177541599297363">ରିଜୋଲ୍ୟୁସନ୍ ସୁନିଶ୍ଚିତ କରନ୍ତୁ</translation>
 <translation id="2482878487686419369">ବିଜ୍ଞପ୍ତିଗୁଡ଼ିକ</translation>
 <translation id="2484513351006226581">କୀ'ବୋର୍ଡ ଲେଆଉଟ୍‌କୁ ସ୍ଵିଚ୍ କରିବା ପାଇଁ <ph name="KEYBOARD_SHORTCUT" /> ଦବାନ୍ତୁ।</translation>
@@ -286,7 +285,6 @@
 <translation id="4527045527269911712">"<ph name="DEVICE_NAME" />" ବ୍ଲୁଟୁଥ୍ ଡିଭାଇସ୍ ପେୟାର୍ କରିବାକୁ ଅନୁମତି ଚାହୁଁଛି।</translation>
 <translation id="453661520163887813">ପୂର୍ଣ୍ଣ ଚାର୍ଜ ହେବାକୁ ଆଉ <ph name="TIME" /> ଅଛି</translation>
 <translation id="4561267230861221837">3G</translation>
-<translation id="4565377596337484307">ପାସୱାର୍ଡ୍ ଲୁଚାନ୍ତୁ</translation>
 <translation id="4570957409596482333">'କହିବାକୁ-ଚୟନ କରନ୍ତୁ' ବଟନ୍</translation>
 <translation id="4585337515783392668">ଏକ ଅଜଣା ରିସିଭର୍‌ରେ କାଷ୍ଟିଂ କରିବା ବନ୍ଦ କରନ୍ତୁ</translation>
 <translation id="4628757576491864469">ଡିଭାଇସ୍</translation>

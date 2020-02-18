@@ -1384,7 +1384,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2865919525181940183">Skermkiekie van programme wat tans op die skerm is</translation>
 <translation id="286674810810214575">Gaan tans kragbronne na …</translation>
 <translation id="2867768963760577682">Maak as vasgespelde oortjie oop</translation>
-<translation id="2868184003987917410">Moenie werwe toegang tot jou virtuelerealiteit-toestelle of -data gee nie</translation>
 <translation id="2868746137289129307">Hierdie uitbreiding is verouderd en volgens ondernemingsbeleid gedeaktiveer. Dit kan outomaties geaktiveer word wanneer 'n nuwer weergawe beskikbaar is.</translation>
 <translation id="2870560284913253234">Werf</translation>
 <translation id="2870909136778269686">Dateer tans op …</translation>
@@ -1714,7 +1713,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3348038390189153836">Verwyderbare toestel bespeur</translation>
 <translation id="3349933790966648062">Berginggebruik</translation>
 <translation id="3350117557200012647">Gaan na saambindmodus</translation>
-<translation id="3350244554415289209">Vra wanneer 'n werf toegang tot jou kameraposisie wil hê of jou vertrek wil karteer (aanbeveel)</translation>
 <translation id="3355936511340229503">Verbindingfout</translation>
 <translation id="3356580349448036450">Voltooi</translation>
 <translation id="3359256513598016054">Sertifikaatbeleidbeperkings</translation>
@@ -1731,7 +1729,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3382073616108123819">Oeps! Die stelsel kon nie toestelidentifiseerders vir hierdie toestel bepaal nie.</translation>
 <translation id="3382086682569279540">Die rekening wat jy bestuur, sal binnekort verwyder word</translation>
 <translation id="3382200254148930874">Staak tans toesig …</translation>
-<translation id="3383210070657133526"><ph name="URL" /> wil Virtuele Realiteit-sessies kan begin</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">Skeier</translation>
 <translation id="338691029516748599">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, seinsterkte <ph name="SIGNAL_STRENGTH" />%, deur jou administrateur bestuur, koppel</translation>
@@ -1828,7 +1825,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="3511307672085573050">Kopieer skakeladres</translation>
 <translation id="351152300840026870">Vastebreedte-lettertipe</translation>
 <translation id="3511528412952710609">Kort</translation>
-<translation id="3513704683820682405">Aangevulde realiteit</translation>
 <translation id="3514373592552233661">Voorkeurnetwerke sal verkies word bo ander bekende netwerke indien meer as een beskikbaar is</translation>
 <translation id="3515983984924808886">Raak weer jou sekuriteitsleutel om terugstelling te bevestig. Alle inligting wat op die sekuriteitsleutel geberg is, insluitend sy PIN, sal uitgevee word.</translation>
 <translation id="3518985090088779359">Aanvaar, gaan voort</translation>
@@ -2532,7 +2528,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="4501530680793980440">Bevestig verwydering</translation>
 <translation id="4502423230170890588">Verwyder van hierdie toestel</translation>
 <translation id="4504940961672722399">Gebruik hierdie uitbreiding deur op hierdie ikoon te klik of <ph name="EXTENSION_SHORTCUT" /> te druk.</translation>
-<translation id="4507164039066603071">Moenie werwe toelaat om jou kameraposisie te kry of jou vertrek te karteer nie</translation>
 <translation id="4508051413094283164">Maak almal in incognitovenster oop</translation>
 <translation id="4508265954913339219">Kon nie aktiveer nie</translation>
 <translation id="4508765956121923607">Bekyk bron</translation>
@@ -2838,7 +2833,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="494286511941020793">Instaanbediener se opstellinghulp</translation>
 <translation id="4943368462779413526">Voetbal</translation>
 <translation id="4943691134276646401">"<ph name="CHROME_EXTENSION_NAME" />" wil aan 'n seriepoort koppel</translation>
-<translation id="4943703118917034429">Virtuele realiteit</translation>
 <translation id="4944310289250773232">Hierdie stawingdiens word gehou deur <ph name="SAML_DOMAIN" /></translation>
 <translation id="495170559598752135">Handelinge</translation>
 <translation id="4952981627953231344">Plugin VM word nie op hierdie toestel toegelaat nie. Kontak jou organisasie se toesteladministrateur.</translation>
@@ -4113,7 +4107,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6758056191028427665">Sê vir ons hoe ons vaar.</translation>
 <translation id="6759193508432371551">Fabriekterugstelling</translation>
 <translation id="6762833852331690540">Aan</translation>
-<translation id="6767115174726603949">Kry toegang tot Virtuele Realiteit-toestelle en -data</translation>
 <translation id="6767566652486411142">Kies 'n ander taal …</translation>
 <translation id="6767639283522617719">Kan nie by die domein aansluit nie. Maak seker dat die instellings vir die organisatoriese eenheid korrek is.</translation>
 <translation id="6769712124046837540">Voeg tans drukker by …</translation>
@@ -4309,7 +4302,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="703001695939087067">Vensteroorsigmodus geaktiveer Druk oortjie om te navigeer.</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> – Reekspoort is gekoppel</translation>
 <translation id="7031962166228839643">TPM word tans voorberei. Wag asseblief (dit kan 'n paar minute neem) …</translation>
-<translation id="7034615910652881882">Vra wanneer 'n werf toegang tot jou virtuelerealiteit-toestelle of -data wil hê</translation>
 <translation id="7037509989619051237">Teks om te voorbeskou</translation>
 <translation id="7039326228527141150">Gaan by USB-toestelle van <ph name="VENDOR_NAME" /> in</translation>
 <translation id="7039912931802252762">Microsoft se slimkaart-aanmelding</translation>
@@ -4615,7 +4607,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7443806024147773267">Kry toegang tot jou wagwoorde wanneer jy by jou Google-rekening aangemeld is</translation>
 <translation id="7444983668544353857">Deaktiveer <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">Installeer programme outomaties</translation>
-<translation id="7448625729116931228">Vra wanneer 'n werf toegang tot jou virtuelerealiteit-toestelle of -data wil hê (aanbeveel)</translation>
 <translation id="7450761244949417357">Maak tans <ph name="ALTERNATIVE_BROWSER_NAME" /> oop</translation>
 <translation id="7453008956351770337">Deur hierdie drukker te kies, gee jy die volgende uitbreiding toestemming om toegang tot jou drukker te verkry:</translation>
 <translation id="7454548535253569100">Portaal: <ph name="SUBFRAME_SITE" /></translation>
@@ -4752,7 +4743,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7652808307838961528">Wysig persoon, <ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">Programme, uitbreidings en gebruikerskripte kan nie van hierdie webwerf af bygevoeg word nie</translation>
 <translation id="7652954539215530680">Skep 'n PIN</translation>
-<translation id="7653295403398566475">Vra wanneer 'n werf toegang tot jou kameraposisie wil hê of jou vertrek wil karteer</translation>
 <translation id="7654941827281939388">Hierdie rekening word reeds op hierdie rekenaar gebruik.</translation>
 <translation id="7658239707568436148">Kanselleer</translation>
 <translation id="7659584679870740384">Jy is nie gemagtig om hierdie toestel te gebruik nie. Kontak asseblief die administrateur vir toestemming om aan te meld.</translation>
@@ -5290,7 +5280,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8338952601723052325">Ontwikkelaarwebwerf</translation>
 <translation id="8339059274628563283"><ph name="SITE" /> se data wat plaaslik geberg is</translation>
 <translation id="833986336429795709">Kies 'n program om hierdie skakel oop te maak</translation>
-<translation id="834057053932610950">Kon nie Linux opstel nie. Kontak jou administrateur.</translation>
 <translation id="8342861492835240085">Kies 'n versameling</translation>
 <translation id="834290227245955730">Ongeldige PIN. Herprobeerslae oor: <ph name="RETRIES" />.</translation>
 <translation id="8351419472474436977">Hierdie uitbreiding het beheer oor jou instaanbediener-instellings oorgeneem, wat beteken dit kan alles wat jy aanlyn doen, verander, breek of afluister. As jy nie seker is hoekom hierdie verandering plaasgevind het nie, wil jy dit waarskynlik nie hê nie.</translation>

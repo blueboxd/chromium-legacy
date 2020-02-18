@@ -14,6 +14,7 @@ js_modulizer("modulize") {
     "controlled_button_tests.js",
     "controlled_radio_button_tests.js",
     "default_browser_browsertest.js",
+    "downloads_page_test.js",
     "dropdown_menu_tests.js",
     "extension_controlled_indicator_tests.js",
     "fake_settings_private.js",

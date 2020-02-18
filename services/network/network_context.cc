@@ -122,6 +122,9 @@
 #endif
 
 #if !defined(OS_IOS)
+#include "services/network/trust_tokens/sqlite_trust_token_persister.h"
+#include "services/network/trust_tokens/trust_token_parameterization.h"
+#include "services/network/trust_tokens/trust_token_store.h"
 #include "services/network/websocket_factory.h"
 #endif  // !defined(OS_IOS)
 
@@ -1794,6 +1797,23 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
     DCHECK(!params_->persist_session_cookies);
   }
 
+#if !defined(OS_IOS)
+  if (base::FeatureList::IsEnabled(features::kTrustTokens)) {
+    if (params_->trust_token_path) {
+      SQLiteTrustTokenPersister::CreateForFilePath(
+          base::CreateSequencedTaskRunner(
+              {base::ThreadPool(), base::MayBlock(),
+               kTrustTokenDatabaseTaskPriority,
+               base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
+          *params_->trust_token_path, kTrustTokenWriteBufferingWindow,
+          base::BindOnce(&NetworkContext::FinishConstructingTrustTokenStore,
+                         weak_factory_.GetWeakPtr()));
+    } else {
+      trust_token_store_ = TrustTokenStore::CreateInMemory();
+    }
+  }
+#endif  // !defined(OS_IOS)
+
   std::unique_ptr<net::StaticHttpUserAgentSettings> user_agent_settings =
       std::make_unique<net::StaticHttpUserAgentSettings>(
           params_->accept_language, params_->user_agent);
@@ -2321,6 +2341,14 @@ void NetworkContext::InitializeCorsParams() {
       break;
   }
 }
+
+#if !defined(OS_IOS)
+void NetworkContext::FinishConstructingTrustTokenStore(
+    std::unique_ptr<SQLiteTrustTokenPersister> persister) {
+  DCHECK(!trust_token_store_);
+  trust_token_store_ = std::make_unique<TrustTokenStore>(std::move(persister));
+}
+#endif  // !defined(OS_IOS)
 
 void NetworkContext::GetOriginPolicyManager(
     mojo::PendingReceiver<mojom::OriginPolicyManager> receiver) {

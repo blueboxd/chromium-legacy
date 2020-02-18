@@ -49,9 +49,9 @@ class MediaHistorySessionTable : public MediaHistoryTableBase {
       const media_session::MediaMetadata& metadata,
       const base::Optional<media_session::MediaPosition>& position);
 
-  base::Optional<MediaHistoryStore::MediaPlaybackSessionList>
-  GetPlaybackSessions(unsigned int num_sessions,
-                      MediaHistoryStore::GetPlaybackSessionsFilter filter);
+  std::vector<mojom::MediaHistoryPlaybackSessionRowPtr> GetPlaybackSessions(
+      base::Optional<unsigned int> num_sessions,
+      base::Optional<MediaHistoryStore::GetPlaybackSessionsFilter> filter);
 };
 
 }  // namespace media_history

@@ -13,7 +13,6 @@
 
 namespace views {
 class Textfield;
-class Label;
 }  // namespace views
 
 // View showing a label and text field for entering an authenticator PIN.
@@ -33,8 +32,6 @@ class AuthenticatorClientPinEntryView : public views::View,
                                            bool show_confirmation_text_field);
   ~AuthenticatorClientPinEntryView() override;
 
-  void UpdateError(const base::string16& value);
-
  private:
   // views::View:
   void RequestFocus() override;
@@ -48,7 +45,6 @@ class AuthenticatorClientPinEntryView : public views::View,
   Delegate* const delegate_;
   views::Textfield* pin_text_field_ = nullptr;
   views::Textfield* confirmation_text_field_ = nullptr;
-  views::Label* error_label_ = nullptr;
   const bool show_confirmation_text_field_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorClientPinEntryView);

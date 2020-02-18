@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">មុខងារ​ស្រាល</translation>
 <translation id="3303414029551471755">បន្តដើម្បីទាញយកមាតិកានេះ?</translation>
 <translation id="3306398118552023113">កម្មវិធីនេះ​កំពុងដំណើរការនៅក្នុង Chrome</translation>
-<translation id="3312292613668865961">សួរ​មុនពេល​អនុញ្ញាតឱ្យ​គេហទំព័រចូលប្រើទិន្នន័យ និងឧបករណ៍ VR របស់អ្នក (បានណែនាំ)</translation>
 <translation id="3315103659806849044">ឥឡូវនេះ អ្នកកំពុងប្ដូរ​ការកំណត់សេវាកម្ម Google និង​សមកាលកម្ម​របស់អ្នកតាមបំណង។ ដើម្បីបញ្ចប់ការបើក​សមកាលកម្ម សូមចុចប៊ូតុង "បញ្ជាក់" នៅជិតផ្នែកខាងក្រោម​នៃអេក្រង់។ រំកិលឡើងលើ</translation>
 <translation id="3328801116991980348">ព័ត៌មានគេហទំព័រ</translation>
 <translation id="3333961966071413176">ទំនាក់​ទំនង​ទាំងអស់</translation>
@@ -514,7 +513,6 @@
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />ទទួលជំនួយ<ph name="END_LINK" /> ខណៈពេលស្កេនរកឧបករណ៍…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# ទំព័រ}other{# ទំព័រ}}</translation>
 <translation id="4932247056774066048">ទិន្នន័យ Chrome របស់អ្នក​នឹងលុប​ចេញពីឧបករណ៍នេះ ដោយសារ​អ្នកចេញពី​គណនីដែល​គ្រប់គ្រង​ដោយ <ph name="DOMAIN_NAME" /> ។ ទិន្នន័យនេះ​នឹងនៅតែ​មាននៅក្នុងគណនី Google របស់អ្នកដដែល។</translation>
-<translation id="4935305910887312910">សួរ​មុនពេល​អនុញ្ញាតឱ្យ​គេហទំព័រទទួលទីតាំងកាមេរ៉ា ឬកំណត់ទីតាំងបន្ទប់របស់អ្នក (បានណែនាំ)</translation>
 <translation id="4943703118917034429">VR</translation>
 <translation id="4943872375798546930">គ្មានលទ្ធផលទេ</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> កំពុងចែករំលែកអេក្រង់របស់អ្នក។</translation>
@@ -818,6 +816,7 @@
 <translation id="7141896414559753902">ទប់​ស្កាត់​ទំព័រ​មិន​ឱ្យ​បង្ហាញ​ផ្ទាំង​ផុស និង​ការ​បញ្ជូន​បន្ត (បាន​ណែនាំ)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />ផ្ទុក​ទំព័រដើម<ph name="END_LINK" />ពី <ph name="DOMAIN_NAME" /></translation>
 <translation id="7149893636342594995">24 ម៉ោងមុន</translation>
+<translation id="7173114856073700355">បើកការកំណត់</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">អ្នក​អាច​ប្ដូរ​វា​ពេល​ក្រោយ​ក្នុង​ការ​កំណត់។</translation>
 <translation id="7180611975245234373">ធ្វើឲ្យថ្មីឡើងវិញ…</translation>
@@ -1025,7 +1024,6 @@
 <translation id="8664979001105139458">ឈ្មោះ​ឯកសារ​មានរួច​ហើយ</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{កម្រិត​កម្លាំង​រលកសញ្ញា៖ # កាំ}other{កម្រិត​កម្លាំង​រលកសញ្ញា៖ # កាំ}}</translation>
 <translation id="868929229000858085">ស្វែងរក​ទំនាក់ទំនង​របស់អ្នក</translation>
-<translation id="8698438463325761328">ទប់ស្កាត់​គេហទំព័រ​មិនឱ្យ​ចូល​ប្រើ​ទិន្នន័យ និងឧបករណ៍ VR របស់អ្នក</translation>
 <translation id="869891660844655955">កាលបរិច្ឆេទការផុតកំណត់</translation>
 <translation id="8728487861892616501">ប្រសិនបើ​ប្រើកម្មវិធីនេះ មានន័យថាអ្នកយល់ស្របតាម<ph name="BEGIN_LINK1" />លក្ខខណ្ឌប្រើប្រាស់<ph name="END_LINK1" /> និង<ph name="BEGIN_LINK2" />ការជូនដំណឹងអំពីឯកជនភាព<ph name="END_LINK2" />របស់ Chrome និង<ph name="BEGIN_LINK3" />ការជូនដំណឹងអំពីឯកជនភាពសម្រាប់គណនី Google ដែលត្រូវបានគ្រប់គ្រងដោយប្រើ Family Link<ph name="END_LINK3" /> ។</translation>
 <translation id="8748850008226585750">បានលាក់មាតិកា</translation>
@@ -1042,7 +1040,6 @@
 <translation id="883806473910249246">មាន​បញ្ហាកើត​ឡើង ខណៈពេល​កំពុង​ទាញយក​ខ្លឹមសារ។</translation>
 <translation id="8840953339110955557">ទំព័រ​នេះ​អាច​នឹង​ខុស​​ពី​កំណែ​លើ​អ៊ីនធឺណិត។</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">ទប់ស្កាត់​គេហទំព័រ​មិនឱ្យទទួល​ទីតាំងកាមេរ៉ា ឬកំណត់ទីតាំងបន្ទប់របស់អ្នក</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" /> ផ្ទាំង</translation>
 <translation id="885701979325669005">ឧបករណ៍ផ្ទុកទិន្នន័យ</translation>
 <translation id="889338405075704026">ចូលទៅកាន់​ការកំណត់ Chrome</translation>

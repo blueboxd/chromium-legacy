@@ -218,7 +218,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="2564726732032738475">Không có kết quả nào khác</translation>
 <translation id="257674075312929031">Nhóm</translation>
 <translation id="2582407057977008361">Loại trừ</translation>
-<translation id="2583123579994033088">Thoát khỏi chế độ lưới</translation>
+<translation id="2583123579994033088">Rời khỏi chế độ lưới</translation>
 <translation id="2592212930811759050">Nhấn đúp để bắt đầu chỉnh sửa</translation>
 <translation id="2594420797397883935">Không có mục nào trước đó không phải là đường liên kết</translation>
 <translation id="2598495320872286378">Lỗi ngữ pháp</translation>
@@ -307,7 +307,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="3104705064753753826">alrt dlg</translation>
 <translation id="3109724472072898302">Đã thu gọn</translation>
 <translation id="3112457281078985179">Để bật hoặc tắt ChromeVox, sử dụng phím Control+Alt+Z.</translation>
-<translation id="3128896337293924532">Không có phần trích dẫn nào tiếp theo</translation>
+<translation id="3128896337293924532">Không có phần trích dẫn khối nào tiếp theo</translation>
 <translation id="3134461040845705080">rdonly</translation>
 <translation id="3137663468179739624">Màu xanh ô liu</translation>
 <translation id="3138767756593758860">Hiển thị danh sách điểm mốc</translation>
@@ -893,7 +893,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="7167657087543110">âm ký tự</translation>
 <translation id="7170733337935166589">Chuyển đến đoạn tiếp theo trong khi tiếp tục đọc</translation>
 <translation id="7173102181852295013">Màu lam sẫm</translation>
-<translation id="717574717447196690">Thoát khỏi bảng</translation>
+<translation id="717574717447196690">Rời khỏi bảng</translation>
 <translation id="7203150201908454328">Được mở rộng</translation>
 <translation id="7209751026933045237">Không có thanh trượt nào tiếp theo</translation>
 <translation id="7210211103303402262">phút</translation>
@@ -1108,7 +1108,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="8138880386467279117">Cảm ứng</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{dấu gạch dưới}other{# dấu gạch dưới}}</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8182552736960088316">Không có phần trích dẫn nào trước đó</translation>
+<translation id="8182552736960088316">Không có phần trích dẫn khối nào trước đó</translation>
 <translation id="8184828902145951186">hàng</translation>
 <translation id="8186185314313222077">chuyển đổi chế độ toàn màn hình</translation>
 <translation id="8199231515320852133">Thông báo các tiêu đề của ô hiện tại</translation>
@@ -1203,9 +1203,9 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="8940925288729953902">Phím bổ trợ</translation>
 <translation id="8943282376843390568">Vàng chanh</translation>
 <translation id="8946628535652548639">h<ph name="TABLECELLROWINDEX" />c<ph name="TABLECELLCOLUMNINDEX" /></translation>
-<translation id="8952400011684167587">Không có nút radio nào trước đó</translation>
+<translation id="8952400011684167587">Không có nút chọn nào trước đó</translation>
 <translation id="8957142051395645063">Thông báo</translation>
-<translation id="896035116006462153">Vui lòng bật bàn phím ảo trong khay trạng thái, hỗ trợ tiếp cận để sử dụng lệnh chữ nổi mở rộng</translation>
+<translation id="896035116006462153">Vui lòng bật bàn phím ảo trong khay trạng thái, phần hỗ trợ tiếp cận để sử dụng lệnh chữ nổi mở rộng</translation>
 <translation id="8970172509886453271">Không có phần nào trước đó</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Quên</translation>

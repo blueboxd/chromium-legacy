@@ -2983,14 +2983,13 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="5530347722229944744">Bloquear downloads potencialmente perigosos</translation>
 <translation id="5534198977061777727">Controla como o <ph name="PRODUCT_NAME" /> processa dados de upload, download, colados da área de transferência ou arrastados e soltos que tenham tipos de arquivos não compatíveis com DLP ou verificação de malware.
 
-      Se esta política não for definida ou for configurada como "Bloquear tipos de arquivos não compatíveis: nenhum" (0), o <ph name="PRODUCT_NAME" /> permitirá o upload ou download de dados com tipos de arquivos não compatíveis com DLP ou verificação de malware.
+      Se esta política não for definida ou for configurada como "Não bloquear tipos de arquivo não compatíveis" (0), o <ph name="PRODUCT_NAME" /> permitirá o upload ou download de dados com tipos de arquivos não compatíveis com DLP ou verificação de malware.
 
       Se esta política for definida como "Bloquear tipos de arquivos não compatíveis: downloads" (1), o usuário tentar fazer o download do arquivo de um URL na política <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME" /> e houver tipos de arquivos não compatíveis com DLP ou verificação de malware, o <ph name="PRODUCT_NAME" /> bloqueará os dados transferidos por download.
 
       Se esta política for definida como "Bloquear tipos de arquivos não compatíveis: uploads" (2), o usuário tentar fazer upload de um arquivo para um domínio que não esteja na <ph name="DOMAINS_TO_NOT_CHECK_COMPLIANCE_OF_UPLOADED_CONTENT_POLICY_NAME" /> e o arquivo for de um tipo não compatível com DLP ou verificação de malware, o <ph name="PRODUCT_NAME" /> bloqueará o arquivo enviado, os dados colados da área de transferência, ou os dados arrastados e soltos.
 
-      Se esta política for definida como "Bloquear tipos de arquivos não compatíveis: uploads e downloads" (3), o <ph name="PRODUCT_NAME" /> terá um comportamento de acordo com as regras descritas em "Bloquear tipos de arquivos não compatíveis: uploads" e " Bloquear tipos de arquivos não compatíveis: downloads".
-      </translation>
+      Se esta política for definida como "Bloquear tipos de arquivos não compatíveis: uploads e downloads" (3), o <ph name="PRODUCT_NAME" /> terá um comportamento de acordo com as regras descritas em "Bloquear tipos de arquivos não compatíveis: uploads" e " Bloquear tipos de arquivos não compatíveis: downloads".</translation>
 <translation id="5535973522252703021">Lista branca do servidor de delegação Kerberos</translation>
 <translation id="554903022911579950">Kerberos</translation>
 <translation id="555022085242359084">Ativar o alto contraste na tela de login</translation>
@@ -4821,7 +4820,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8698286761337647563">Com quantos dias de antecedência os usuários do SAML precisam ser notificados quando as senhas estiverem prestes a expirar</translation>
 <translation id="8701288965900240388">Permite que você defina se os sites podem executar automaticamente o plug-in <ph name="FLASH_PLUGIN_NAME" />. A execução automática do plug-in <ph name="FLASH_PLUGIN_NAME" /> pode ser permitida ou negada para todos os sites.
 
-          O "Clique para ver" permite que o plug-in <ph name="FLASH_PLUGIN_NAME" /> seja executado, mas o usuário precisa clicar no marcador para iniciar a execução.
+          "Clique para reproduzir" permite que o plug-in <ph name="FLASH_PLUGIN_NAME" /> seja executado, mas o usuário precisa clicar no marcador para iniciar a execução.
 
           A reprodução automática só é permitida em domínios explicitamente listados na política <ph name="PLUGINS_ALLOWED_FOR_URLS_POLICY_NAME" />. Se você quiser ativar a reprodução automática em todos os sites, adicione http://* e https://* a essa lista.
 

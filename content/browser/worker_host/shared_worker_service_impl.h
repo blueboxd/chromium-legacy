@@ -100,19 +100,21 @@ class CONTENT_EXPORT SharedWorkerServiceImpl : public SharedWorkerService {
       const std::string& storage_domain,
       const blink::MessagePortChannel& message_port,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory);
+
   void StartWorker(
       const SharedWorkerInstance& instance,
       base::WeakPtr<SharedWorkerHost> host,
       const blink::MessagePortChannel& message_port,
       blink::mojom::FetchClientSettingsObjectPtr
           outside_fetch_client_settings_object,
+      bool did_fetch_worker_script,
       std::unique_ptr<blink::PendingURLLoaderFactoryBundle>
           subresource_loader_factories,
       blink::mojom::WorkerMainScriptLoadParamsPtr main_script_load_params,
       blink::mojom::ControllerServiceWorkerInfoPtr controller,
       base::WeakPtr<ServiceWorkerObjectHost>
           controller_service_worker_object_host,
-      bool success);
+      const GURL& final_response_url);
 
   // Returns nullptr if there is no such host.
   SharedWorkerHost* FindMatchingSharedWorkerHost(

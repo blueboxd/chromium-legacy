@@ -1,7 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr-CA">
-<translation id="1009046985747440431">Appuyez sur la flèche vers le haut ou vers le bas pour parcourir le menu. Appuyez sur Entrée pour sélectionner une option.</translation>
+<translation id="1009046985747440431">Appuyez sur la flèche vers le haut ou vers le bas pour parcourir le menu; appuyez sur Entrée pour sélectionner une option</translation>
 <translation id="1011903154582639569">Recherchez une touche, puis levez le doigt pour la sélectionner</translation>
 <translation id="1012173283529841972">Élément de liste</translation>
 <translation id="1013742170491673792">recherche</translation>
@@ -335,7 +335,7 @@ Si vous avez terminé le didacticiel, utilisez ChromeVox pour accéder au bouton
 <translation id="3244209481693235975"><ph name="LANGUAGE" /> : <ph name="CONTENT" /></translation>
 <translation id="3260949043575829030">Élément similaire précédent</translation>
 <translation id="3270069636408109001">Aucun tableau suivant</translation>
-<translation id="3273791280096244679">Enregistrer l'étiquette</translation>
+<translation id="3273791280096244679">Étiquette Enregistrer</translation>
 <translation id="3286372614333682499">portrait</translation>
 <translation id="3286390186030710347">Curseur</translation>
 <translation id="3300348286427369683">Prise en charge du texte enrichi. ChromeVox prend désormais en charge les champs de texte enrichi, notamment les commandes de saut, le routage du curseur en braille, la sélection et plus.</translation>
@@ -582,7 +582,7 @@ Si vous avez terminé le didacticiel, utilisez ChromeVox pour accéder au bouton
 <translation id="495170559598752135">Actions</translation>
 <translation id="4953585991029886728">Modifier le texte</translation>
 <translation id="4954534434583049121">Citation précédente</translation>
-<translation id="4967543208652787610">Appuyez sur Entrée pour accepter ou Échappement pour annuler. Passez au résultat suivant à l'aide de la flèche vers le bas et revenez au résultat précédent à l'aide de la flèche vers le haut.</translation>
+<translation id="4967543208652787610">Appuyez sur Entrée pour accepter ou Échappement pour annuler; passez au résultat suivant à l'aide de la flèche vers le bas et revenez au résultat précédent à l'aide de la flèche vers le haut</translation>
 <translation id="4973717656530883744">Minimum <ph name="X" /></translation>
 <translation id="4973762002207131920">Passage au mappage du clavier <ph name="KEY" /> effectué.</translation>
 <translation id="4974612477719259470">Aucun bouton précédent</translation>
@@ -696,7 +696,7 @@ Si vous avez terminé le didacticiel, utilisez ChromeVox pour accéder au bouton
 <translation id="5709192780268610569">Pas de description longue</translation>
 <translation id="5712244464475377681">bouton fenêtre contextuelle</translation>
 <translation id="5712338278108304766">Colonne suivante du tableau</translation>
-<translation id="5712530945736290890">Il n’y a aucun tableau</translation>
+<translation id="5712530945736290890">Il n'y a aucun tableau</translation>
 <translation id="571866080859340309">Exploration par groupe</translation>
 <translation id="5725079927589231571">Bleu acier clair</translation>
 <translation id="5732189279857692565">Ceci est le deuxième titre. Continuez en appuyant sur Recherche+h ou sur Recherche+Maj+h</translation>
@@ -746,7 +746,7 @@ Si vous avez terminé le didacticiel, utilisez ChromeVox pour accéder au bouton
 <translation id="6044160928851315051">Assombrir l'écran</translation>
 <translation id="6082768461603900813">Navigation de base</translation>
 <translation id="609281021724813947">Aucun curseur précédent</translation>
-<translation id="6095514649509181044">Ignore la casse</translation>
+<translation id="6095514649509181044">Non sensible à la casse</translation>
 <translation id="6118126368611144850">Applications Android pour Chrome. Si vous avez la boutique Play Store sur votre appareil, obtenez un aperçu de ChromeVox avec les applications Android. Essayez l'assistance expérimentale en téléchargeant Google Chrome Canary à partir de la boutique Play Store.</translation>
 <translation id="611827076493383239">visité</translation>
 <translation id="6122013438240733403">Bouton</translation>
@@ -941,7 +941,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt + F.</translation>
 <translation id="7518543783849163354">Pour que ChromeVox cesse temporairement de parler, appuyez sur la touche Ctrl.</translation>
 <translation id="7532613204005497612">Juin</translation>
 <translation id="7533226154149229506">Jaune or clair</translation>
-<translation id="7543255924852002459">Supprimer l'étiquette</translation>
+<translation id="7543255924852002459">Étiquette Supprimer</translation>
 <translation id="7552432549459840808">Raccourcis utiles de Google Chrome</translation>
 <translation id="7569983096843329377">Noir</translation>
 <translation id="7579911500627256166">point <ph name="DOT" /></translation>
@@ -969,7 +969,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt + F.</translation>
 <translation id="7693840228159394336">Case d'option précédente</translation>
 <translation id="7701196182766842984">liste remplissage automatique</translation>
 <translation id="7714340021005120797">Aucune zone de liste ou de texte suivante</translation>
-<translation id="7731785449856576010">Pas de widget multimédia suivant</translation>
+<translation id="7731785449856576010">Aucun widget multimédia suivant</translation>
 <translation id="773906353055481349">Appuyez simultanément sur Recherche+Ctrl+Alt et sur les flèches pour naviguer entre les cellules</translation>
 <translation id="7750184816513382104">Sensible à la casse</translation>
 <translation id="7763537600611320912">Le téléchargement du fichier <ph name="FILE_NAME" /> a commencé</translation>
@@ -1119,7 +1119,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt + F.</translation>
 <translation id="8215202828671303819">Sélection multiple</translation>
 <translation id="8249864170673238087"><ph name="COLOR" />, opacité à <ph name="OPACITY_PERCENTAGE" /> %.</translation>
 <translation id="826825447994856889">Introduction</translation>
-<translation id="827266600368092403">Début ou fin de la sélection</translation>
+<translation id="827266600368092403">Commencer ou terminer la sélection</translation>
 <translation id="827422111966801947">Indigo</translation>
 <translation id="8276439074553447000">Aller à l'élément activable précédent</translation>
 <translation id="8283603667300770666">Champ de formulaire suivant</translation>
@@ -1143,7 +1143,7 @@ Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt + F.</translation>
 <translation id="8463645336674919227">Abandon de l'erreur grammaticale</translation>
 <translation id="847040613207937740">Aucune case à cocher suivante</translation>
 <translation id="847154984256717791">occupé</translation>
-<translation id="8473540203671727883">Dictez le texte sous la souris</translation>
+<translation id="8473540203671727883">Dicter le texte sous la souris</translation>
 <translation id="8476408756881832830">Interrompre la lecture lorsque ChromeVox est en train de parler</translation>
 <translation id="8476508772960940536">aperçu de la fenêtre</translation>
 <translation id="8503360654911991865">Diminuer la granularité de la navigation</translation>

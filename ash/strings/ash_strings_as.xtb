@@ -114,13 +114,12 @@
 <translation id="2354174487190027830"><ph name="NAME" /> সক্ৰিয় কৰি থকা হৈছে</translation>
 <translation id="2359808026110333948">অব্যাহত ৰাখক</translation>
 <translation id="2365393535144473978">ম’বাইল ডেটা সক্ষম কৰিলে ব্লুটুথ সক্ষম হ’ব।</translation>
-<translation id="2390318262976603432">ল’কেল ছেটিংসমূহ</translation>
+<translation id="2390318262976603432">স্থানীয় ভাষাৰ ছেটিংসমূহ</translation>
 <translation id="2391579633712104609">১৮০°</translation>
 <translation id="2412593942846481727">আপডে’ট উপলব্ধ</translation>
 <translation id="2413728805700750528"><ph name="DOMAIN" />এ পৰিচালনা কৰা এটা পৰিচালিত ছেশ্বন হৈছে <ph name="DISPLAY_NAME" /></translation>
 <translation id="2427507373259914951">বাওঁফালে ক্লিক কৰা কার্য</translation>
 <translation id="2429753432712299108">ব্লুটুথ ডিভাইচ "<ph name="DEVICE_NAME" />"এ যোৰা লাগিবলৈ অনুমতি বিচাৰে। গ্ৰহণ কৰাৰ আগতে অনুগ্ৰহ কৰি এই পাছকীটো যে সেই ডিভাইচটোত দেখুওৱা হৈছে সেইয়া নিশ্চিত কৰক: <ph name="PASSKEY" /></translation>
-<translation id="2435457462613246316">পাছৱৰ্ড দেখুৱাওক</translation>
 <translation id="2473177541599297363">ৰিজ’লিউশ্বন নিশ্চিত কৰক</translation>
 <translation id="2482878487686419369">জাননী</translation>
 <translation id="2484513351006226581">কীব'র্ডৰ লেইআউট সলনি কৰিবলৈ <ph name="KEYBOARD_SHORTCUT" /> টিপক।</translation>
@@ -286,7 +285,6 @@
 <translation id="4527045527269911712">ব্লুটুথ ডিভাইচ "<ph name="DEVICE_NAME" />"এ যোৰা লাগিবলৈ অনুমতি বিচাৰে।</translation>
 <translation id="453661520163887813">সম্পূর্ণ হ'বলৈ <ph name="TIME" /> বাকী</translation>
 <translation id="4561267230861221837">3G</translation>
-<translation id="4565377596337484307">পাছৱৰ্ড লুকুৱাওক</translation>
 <translation id="4570957409596482333">কথা ক’বলৈ বাছনি কৰক বুটাম</translation>
 <translation id="4585337515783392668">কোনো অজ্ঞাত প্ৰাপকলৈ কাষ্ট কৰাটো বন্ধ কৰক</translation>
 <translation id="4628757576491864469">ডিভাইচ</translation>

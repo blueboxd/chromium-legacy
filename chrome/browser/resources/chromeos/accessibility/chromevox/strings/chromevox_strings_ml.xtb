@@ -416,7 +416,7 @@
 <translation id="3810838688059735925">വീഡിയോ</translation>
 <translation id="3813387282697781382">ഇളം കോറൽ</translation>
 <translation id="3816633764618089385">അടുത്ത മീഡിയ</translation>
-<translation id="3838966660807147922">ടെക്സ്റ്റ് എഡിറ്റ് ചെയ്യുമ്പോൾ കഴ്‌സർ പ്രതീകങ്ങൾക്കിടയിൽ വയ്‌ക്കുക (Mac OS X എന്നതുപോലെ)</translation>
+<translation id="3838966660807147922">ടെക്സ്റ്റ് എഡിറ്റ് ചെയ്യുമ്പോൾ കഴ്‌സർ അക്ഷരങ്ങൾക്കിടയിൽ വയ്‌ക്കുക (Mac OS X എന്നതുപോലെ)</translation>
 <translation id="385383972552776628">ഓപ്ഷനുകളുടെ പേജ് തുറക്കുക</translation>
 <translation id="3856075812838139784">വായനമാത്രം</translation>
 <translation id="3857141338659865495">മീഡിയം ടർകോയിസ്</translation>
@@ -519,7 +519,7 @@
 <translation id="4537277403911487429">സമാനമായ അടുത്ത ഇനം</translation>
 <translation id="4547556996012970016">അടുത്ത നില 5 ശീർഷകം</translation>
 <translation id="4562381607973973258">ശീർഷകം</translation>
-<translation id="4573990688012173948">ഫോർമാറ്റ് ചെയ്യൽ
+<translation id="4573990688012173948">ടെക്‌സ്റ്റ് ഫോർമാറ്റ് ചെയ്യൽ
         <ph name="FONT_SIZE_STRING" />
         <ph name="COLOR_STRING" />
         <ph name="BOLD_STRING" />

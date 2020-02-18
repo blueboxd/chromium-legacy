@@ -8,10 +8,6 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.DELAYED_RESPONSE;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.HAVE_INSTRUMENTS;
-import static org.chromium.chrome.browser.payments.PaymentRequestTestRule.IMMEDIATE_RESPONSE;
-
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
@@ -31,6 +27,8 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill.AutofillTestHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.AppPresence;
+import org.chromium.chrome.browser.payments.PaymentRequestTestRule.FactorySpeed;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.BasicCardNetwork;
@@ -75,18 +73,19 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
         mHelper.setCreditCard(new CreditCard(/*guid=*/"", "https://example.com", true /* isLocal */,
                 true /* isCached */, "Jon Doe", "5555555555554444", "" /* obfuscatedNumber */, "12",
                 "2050", "mastercard", R.drawable.mc_card, mBillingAddressId, "" /* serverId */));
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.FAST_FACTORY);
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_bobpay_discount", mPaymentRequestTestRule.getReadyToPay());
 
-        assertTrue(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith(
+        assertTrue(mPaymentRequestTestRule.getSelectedPaymentAppLabel().startsWith(
                 "https://bobpay.com"));
         assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
 
         // select other payment method and verify modifier for bobpay is not applied
         mPaymentRequestTestRule.clickOnPaymentMethodSuggestionOptionAndWait(
                 1, mPaymentRequestTestRule.getReadyForInput());
-        assertFalse(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith(
+        assertFalse(mPaymentRequestTestRule.getSelectedPaymentAppLabel().startsWith(
                 "https://bobpay.com"));
         assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
     }
@@ -103,28 +102,27 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
                 true /* isLocal */, true /* isCached */, "Jon Doe", "4111111111111111",
                 "" /* obfuscatedNumber */, "12", "2050", "visa", R.drawable.visa_card,
                 mBillingAddressId, "server-id-1"));
-        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(guid1, /*count=*/100);
+        PaymentPreferencesUtil.setPaymentAppUseCountForTest(guid1, /*count=*/100);
         // Credit mastercard with complete set of information.
         String guid2 = mHelper.setCreditCard(new CreditCard(/*guid=*/"", "https://example.com",
                 true /* isLocal */, true /* isCached */, "Jon Doe", "5200828282828210",
                 "" /* obfuscatedNumber */, "12", "2050", "mastercard", R.drawable.mc_card,
                 mBillingAddressId, "server-id-2"));
-        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(guid2, /*count=*/1);
+        PaymentPreferencesUtil.setPaymentAppUseCountForTest(guid2, /*count=*/1);
         mPaymentRequestTestRule.triggerUIAndWait(
                 "visa_supported_network", mPaymentRequestTestRule.getReadyToPay());
 
-        assertTrue("\"" + mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel()
+        assertTrue("\"" + mPaymentRequestTestRule.getSelectedPaymentAppLabel()
                         + "\" should start with \"Visa\".",
-                mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith("Visa"));
+                mPaymentRequestTestRule.getSelectedPaymentAppLabel().startsWith("Visa"));
         assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
 
         // select the other credit mastercard and verify modifier is not applied.
         mPaymentRequestTestRule.clickOnPaymentMethodSuggestionOptionAndWait(
                 1, mPaymentRequestTestRule.getReadyForInput());
-        assertTrue("\"" + mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel()
+        assertTrue("\"" + mPaymentRequestTestRule.getSelectedPaymentAppLabel()
                         + "\" should start with \"Mastercard\".",
-                mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith(
-                        "Mastercard"));
+                mPaymentRequestTestRule.getSelectedPaymentAppLabel().startsWith("Mastercard"));
         assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
     }
 
@@ -140,44 +138,42 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
                 true /* isLocal */, true /* isCached */, "Jon Doe", "5555555555554444",
                 "" /* obfuscatedNumber */, "12", "2050", "mastercard", R.drawable.mc_card,
                 mBillingAddressId, "" /* serverId */));
-        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(guid, /*count=*/1000);
+        PaymentPreferencesUtil.setPaymentAppUseCountForTest(guid, /*count=*/1000);
 
         // 2nd Mastercard with complete set of information.
         String guid1 = mHelper.setCreditCard(new CreditCard(/*guid=*/"", "https://example.com",
                 true /* isLocal */, true /* isCached */, "Jon Doe", "5200828282828210",
                 "" /* obfuscatedNumber */, "12", "2050", "mastercard", R.drawable.mc_card,
                 mBillingAddressId, "server-id-1"));
-        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(guid1, /*count=*/100);
+        PaymentPreferencesUtil.setPaymentAppUseCountForTest(guid1, /*count=*/100);
 
         // Visa card with complete set of information and unknown type.
         String guid2 = mHelper.setCreditCard(new CreditCard(/*guid=*/"", "https://example.com",
                 true /* isLocal */, true /* isCached */, "Jon Doe", "4111111111111111",
                 "" /* obfuscatedNumber */, "12", "2050", "visa", R.drawable.visa_card,
                 mBillingAddressId, "server-id-2"));
-        PaymentPreferencesUtil.setPaymentInstrumentUseCountForTest(guid2, /*count=*/1);
+        PaymentPreferencesUtil.setPaymentAppUseCountForTest(guid2, /*count=*/1);
 
         // The most frequently used Mastercard is selected by default.
         mPaymentRequestTestRule.triggerUIAndWait(
                 "mastercard_any_supported_type", mPaymentRequestTestRule.getReadyToPay());
-        assertTrue("\"" + mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel()
+        assertTrue("\"" + mPaymentRequestTestRule.getSelectedPaymentAppLabel()
                         + "\" should start with \"Mastercard\".",
-                mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith(
-                        "Mastercard"));
+                mPaymentRequestTestRule.getSelectedPaymentAppLabel().startsWith("Mastercard"));
         assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
 
         // Select the other credit Mastercard and verify modifier is applied.
         mPaymentRequestTestRule.clickOnPaymentMethodSuggestionOptionAndWait(
                 1, mPaymentRequestTestRule.getReadyForInput());
-        assertTrue("\"" + mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel()
+        assertTrue("\"" + mPaymentRequestTestRule.getSelectedPaymentAppLabel()
                         + "\" should start with \"Mastercard\".",
-                mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith(
-                        "Mastercard"));
+                mPaymentRequestTestRule.getSelectedPaymentAppLabel().startsWith("Mastercard"));
         assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
 
         // Select the visa card and verify modifier is not applied.
         mPaymentRequestTestRule.clickOnPaymentMethodSuggestionOptionAndWait(
                 2, mPaymentRequestTestRule.getReadyForInput());
-        assertTrue(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith("Visa"));
+        assertTrue(mPaymentRequestTestRule.getSelectedPaymentAppLabel().startsWith("Visa"));
         assertEquals("USD $5.00", mPaymentRequestTestRule.getOrderSummaryTotal());
     }
 
@@ -196,11 +192,12 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
                 "Jon Doe", "4111111111111111", "1111", "12", "2050", "visa", R.drawable.visa_card,
                 billingAddressId, "" /* serverId */));
 
-        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, DELAYED_RESPONSE);
+        mPaymentRequestTestRule.addPaymentAppFactory(
+                AppPresence.HAVE_APPS, FactorySpeed.SLOW_FACTORY);
         mPaymentRequestTestRule.triggerUIAndWait(
                 "buy_with_bobpay_discount", mPaymentRequestTestRule.getReadyToPay());
 
-        assertTrue(mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith(
+        assertTrue(mPaymentRequestTestRule.getSelectedPaymentAppLabel().startsWith(
                 "https://bobpay.com"));
         assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
 
@@ -263,7 +260,7 @@ public class PaymentRequestPaymentAppAndBasicCardWithModifiersTest {
         mPaymentRequestTestRule.triggerUIAndWait(
                 "visa_supported_network", mPaymentRequestTestRule.getReadyToPay());
 
-        if (mPaymentRequestTestRule.getSelectedPaymentInstrumentLabel().startsWith("BobPay")) {
+        if (mPaymentRequestTestRule.getSelectedPaymentAppLabel().startsWith("BobPay")) {
             assertEquals("USD $4.00", mPaymentRequestTestRule.getOrderSummaryTotal());
 
             // select the alice pay and verify modifier is not applied.

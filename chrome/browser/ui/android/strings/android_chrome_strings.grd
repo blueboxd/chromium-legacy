@@ -603,14 +603,11 @@ CHAR-LIMIT guidelines:
       <message name="IDS_OPTIONS_HOMEPAGE_EDIT_HINT" desc="Hint for the text edit on Homepage Preference setting, guiding user to enter their customized homepage setting">
         Enter custom web address
       </message>
-      <message name="IDS_OPTIONS_HOMEPAGE_EDIT_TITLE" desc="The title of the screen that allows users to change the URL that opens when they tap on the home page button in the omnibox.">
-        Edit home page
-      </message>
-      <message name="IDS_OPTIONS_HOMEPAGE_EDIT_LABEL" desc="The label for the edit text field that allows the user to change the URL that is opened when they tap on the home page button in the omnibox.">
-        Open this page
-      </message>
-      <message name="IDS_HOMEBUTTON_CONTEXT_MENU_SETTINGS" desc="The label displayed on home button context menu item, which navigate the user to the homepage settings.">
+      <message name="IDS_OPTIONS_HOMEPAGE_EDIT_TITLE" desc="The title of the screen that allows users to change the URL that opens when they tap on the homepage button in the omnibox. This string is also used as a long-press menu item that navigates the user to the homepage settings.">
         Edit homepage
+      </message>
+      <message name="IDS_OPTIONS_HOMEPAGE_EDIT_LABEL" desc="The label for the edit text field that allows the user to change the URL that is opened when they tap on the homepage button in the omnibox.">
+        Open this page
       </message>
       <message name="IDS_OPTIONS_HOMEPAGE_CHROME_HOMEPAGE" desc="The option that allows user to set Chrome's new tab page as the homepage." >
         Chrome’s homepage

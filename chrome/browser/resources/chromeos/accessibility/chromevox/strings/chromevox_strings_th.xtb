@@ -44,7 +44,7 @@
 <translation id="1243477406442346359">สีฟ้าดอกคอร์นฟลาวเวอร์</translation>
 <translation id="1246424317317450637">ตัวหนา</translation>
 <translation id="1251750620252348585">ส่วนหัวระดับ 6 ถัดไป</translation>
-<translation id="1268366246392928616">ไม่มีสูตรคณิตศาสตร์ก่อนหน้า</translation>
+<translation id="1268366246392928616">ไม่มีนิพจน์คณิตศาสตร์ก่อนหน้า</translation>
 <translation id="1275718070701477396">เลือกแล้ว</translation>
 <translation id="1277589437867411124">ไม่มีฟอร์ม</translation>
 <translation id="1291286136605998134">ปุ่มเปิด-ปิด</translation>
@@ -99,7 +99,7 @@
 <translation id="1618597272655350600">แจ้งคำอธิบายแบบเต็มของตำแหน่งปัจจุบัน</translation>
 <translation id="1627222324347828322">สีขาวโกสต์ไวท์</translation>
 <translation id="1630688379087270943">ระบุตัวเอียง:</translation>
-<translation id="1637708931433488456">รายการถัดไปเป็นลิงก์ทั้งหมด</translation>
+<translation id="1637708931433488456">ไม่มีรายการถัดไปที่ไม่ใช่ลิงก์</translation>
 <translation id="1639634871799530612">{COUNT,plural, =1{เครื่องหมายมากกว่า}other{# เครื่องหมายมากกว่า}}</translation>
 <translation id="1653266918374749391">ส่วนหัวระดับ 3 ก่อนหน้า</translation>
 <translation id="1657616855184033958">แสดงตัวกรองสตรีมเหตุการณ์</translation>
@@ -220,7 +220,7 @@
 <translation id="2582407057977008361">ส่วนที่ไม่เกี่ยวข้อง</translation>
 <translation id="2583123579994033088">กำลังออกจากตารางกริด</translation>
 <translation id="2592212930811759050">แตะสองครั้งเพื่อเริ่มแก้ไข</translation>
-<translation id="2594420797397883935">รายการก่อนหน้าเป็นลิงก์ทั้งหมด</translation>
+<translation id="2594420797397883935">ไม่มีรายการก่อนหน้าที่ไม่ใช่ลิงก์</translation>
 <translation id="2598495320872286378">ข้อผิดพลาดด้านไวยากรณ์</translation>
 <translation id="2614981083756825552">รูปแบบ ML คณิตศาสตร์</translation>
 <translation id="2624431853467395961">เปิดโหมดการเรียนรู้</translation>
@@ -582,7 +582,7 @@
 <translation id="495170559598752135">การทำงาน</translation>
 <translation id="4953585991029886728">แก้ไขข้อความ</translation>
 <translation id="4954534434583049121">ข้อความอ้างอิงก่อนหน้า</translation>
-<translation id="4967543208652787610">กด Enter เพื่อยอมรับหรือกด Ecs เพื่อยกเลิก กดลงเพื่อไปยังรายการถัดไปและกดขึ้นเพื่อไปยังรายการก่อนหน้า</translation>
+<translation id="4967543208652787610">กด Enter เพื่อยอมรับหรือกด Esc เพื่อยกเลิก กดลงเพื่อไปยังรายการถัดไปและกดขึ้นเพื่อไปยังรายการก่อนหน้า</translation>
 <translation id="4973717656530883744">ขั้นต่ำ <ph name="X" /></translation>
 <translation id="4973762002207131920">สลับเป็น <ph name="KEY" /> แล้ว</translation>
 <translation id="4974612477719259470">ไม่มีปุ่มก่อนหน้า</translation>
@@ -909,7 +909,7 @@
 <translation id="725969808843520477">ปุ่มตัวเลือกถัดไป</translation>
 <translation id="7261612856573623172">เสียงการอ่านออกเสียงข้อความของระบบ</translation>
 <translation id="7269119382257320590">ไม่มีเครื่องหมายวรรคตอน</translation>
-<translation id="7271278495464744706">เปิดใช้งานคำอธิบายขนาดยาว</translation>
+<translation id="7271278495464744706">เปิดใช้คำอธิบายแบบละเอียด</translation>
 <translation id="7273174640290488576">ว่าง</translation>
 <translation id="7274770952766771364">ข้อมูลอ้างอิงหมายเหตุ</translation>
 <translation id="7275004401821193978">ไม่มีช่องตัวเลือกรวมก่อนหน้า</translation>
@@ -1093,7 +1093,7 @@
         "vi": "เวียดนาม",
         "zh": "จีน",
         "zh_TW": "จีน (อักษรฮั่นตัวเต็ม)"}</translation>
-<translation id="8058636807889143711">ไม่มีสูตรคณิตศาสตร์ถัดไป</translation>
+<translation id="8058636807889143711">ไม่มีนิพจน์คณิตศาสตร์ถัดไป</translation>
 <translation id="8065607967589909823">รายการที่เลือกคือ</translation>
 <translation id="8066678206530322333">แบนเนอร์</translation>
 <translation id="8076492880354921740">แท็บ</translation>

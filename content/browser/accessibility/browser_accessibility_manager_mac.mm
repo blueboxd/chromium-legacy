@@ -123,7 +123,7 @@ BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory) {
   Initialize(initial_tree);
-  tree_->SetEnableExtraMacNodes(true);
+  ax_tree()->SetEnableExtraMacNodes(true);
 }
 
 BrowserAccessibilityManagerMac::~BrowserAccessibilityManagerMac() {}
@@ -195,7 +195,7 @@ void PostAnnouncementNotification(NSString* announcement) {
 // Check whether the current batch of events contains the event type.
 bool BrowserAccessibilityManagerMac::IsInGeneratedEventBatch(
     ui::AXEventGenerator::Event event_type) const {
-  for (const auto& event : event_generator_) {
+  for (const auto& event : event_generator()) {
     if (event.event_params.event == event_type)
       return true;  // Announcement will already be handled via this event.
   }

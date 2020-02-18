@@ -49,7 +49,7 @@ import java.util.Set;
 /**
  * Native bridge for interacting with service worker based payment apps.
  */
-@JNIAdditionalImport({PaymentInstrument.class})
+@JNIAdditionalImport({PaymentApp.class})
 public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface {
     private static final String TAG = "SWPaymentApp";
     private static boolean sCanMakePaymentForTesting;
@@ -346,7 +346,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
             Set<PaymentMethodData> methodData, PaymentItem total,
             Set<PaymentDetailsModifier> modifiers, PaymentOptions paymentOptions,
             List<PaymentShippingOption> shippingOptions, PaymentHandlerHost host,
-            boolean isMicrotrans, PaymentInstrument.InstrumentDetailsCallback callback) {
+            boolean isMicrotrans, PaymentApp.InstrumentDetailsCallback callback) {
         ThreadUtils.assertOnUiThread();
 
         ServiceWorkerPaymentAppBridgeJni.get().invokePaymentApp(webContents, registrationId,
@@ -384,8 +384,8 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
             String iframeOrigin, String paymentRequestId, Set<PaymentMethodData> methodData,
             PaymentItem total, Set<PaymentDetailsModifier> modifiers, PaymentOptions paymentOptions,
             List<PaymentShippingOption> shippingOptions, PaymentHandlerHost host,
-            PaymentInstrument.InstrumentDetailsCallback callback, String appName,
-            @Nullable Bitmap icon, URI swUri, URI scope, boolean useCache, String method,
+            PaymentApp.InstrumentDetailsCallback callback, String appName, @Nullable Bitmap icon,
+            URI swUri, URI scope, boolean useCache, String method,
             SupportedDelegations supportedDelegations) {
         ThreadUtils.assertOnUiThread();
 
@@ -409,7 +409,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
      * @param callback         Called after abort invoke payment app is finished running.
      */
     public static void abortPaymentApp(WebContents webContents, long registrationId, String swScope,
-            String paymentRequestId, PaymentInstrument.AbortCallback callback) {
+            String paymentRequestId, PaymentApp.AbortCallback callback) {
         ThreadUtils.assertOnUiThread();
 
         if (webContents.isDestroyed()) return;
@@ -641,7 +641,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
     }
 
     @CalledByNative
-    private static void onPaymentAppInvoked(PaymentInstrument.InstrumentDetailsCallback callback,
+    private static void onPaymentAppInvoked(PaymentApp.InstrumentDetailsCallback callback,
             String methodName, String stringifiedDetails, Object payerData, String errorMessage) {
         ThreadUtils.assertOnUiThread();
 
@@ -658,8 +658,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
     }
 
     @CalledByNative
-    private static void onPaymentAppAborted(
-            PaymentInstrument.AbortCallback callback, boolean result) {
+    private static void onPaymentAppAborted(PaymentApp.AbortCallback callback, boolean result) {
         ThreadUtils.assertOnUiThread();
 
         callback.onInstrumentAbortResult(result);
@@ -677,19 +676,19 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactoryInterface
                 String paymentRequestId, PaymentMethodData[] methodData, PaymentItem total,
                 PaymentDetailsModifier[] modifiers, PaymentOptions paymentOptions,
                 PaymentShippingOption[] shippingOptions, long nativePaymentHandlerObject,
-                boolean isMicrotrans, PaymentInstrument.InstrumentDetailsCallback callback);
+                boolean isMicrotrans, PaymentApp.InstrumentDetailsCallback callback);
         void installAndInvokePaymentApp(WebContents webContents, String topOrigin,
                 String paymentRequestOrigin, String paymentRequestId,
                 PaymentMethodData[] methodData, PaymentItem total,
                 PaymentDetailsModifier[] modifiers, PaymentOptions paymentOptions,
                 PaymentShippingOption[] shippingOptions, long nativePaymentHandlerObject,
-                PaymentInstrument.InstrumentDetailsCallback callback, String appName,
+                PaymentApp.InstrumentDetailsCallback callback, String appName,
                 @Nullable Bitmap icon, String swUrl, String scope, boolean useCache, String method,
                 boolean supportedDelegationsShippingAddress, boolean supportedDelegationsPayerName,
                 boolean supportedDelegationsPayerEmail, boolean supportedDelegationsPayerPhone);
         void abortPaymentApp(WebContents webContents, long registrationId,
                 String serviceWorkerScope, String paymentRequestId,
-                PaymentInstrument.AbortCallback callback);
+                PaymentApp.AbortCallback callback);
         void fireCanMakePaymentEvent(WebContents webContents, long registrationId,
                 String serviceWorkerScope, String paymentRequestId, String topOrigin,
                 String paymentRequestOrigin, PaymentMethodData[] methodData,

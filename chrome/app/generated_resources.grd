@@ -6846,8 +6846,8 @@ the Bookmarks menu.">
       </if>
 
       <if expr="is_android">
-        <message name="IDS_OPTIONS_HOMEPAGE_TITLE" desc="The title of the home page overlay on Android" formatter_data="android_java">
-          Home page
+        <message name="IDS_OPTIONS_HOMEPAGE_TITLE" desc="The title of Chrome's homepage setting screen on Android. " formatter_data="android_java">
+          Homepage
         </message>
       </if>
 
@@ -10405,6 +10405,19 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_WEBAUTHN_CLIENT_PIN_AUTHENTICATOR_REMOVED_DESCRIPTION" desc="Description in the error dialog shown after their security key (an external physical device for user authentication) was removed while the application was waiting for the security key PIN to be entered.">
         Reinsert your security key and try again
+      </message>
+
+      <!-- WebAuthn authenticator internal user verification -->
+      <message name="IDS_WEBAUTHN_UV_RETRY_TITLE" desc="The title on a dialog shown to the user when a previous attempt to verify their identity through fingerprints failed, and they are being asked to try again.">
+       Fingerprint not recognized
+      </message>
+      <message name="IDS_WEBAUTHN_UV_RETRY_DESCRIPTION" desc="The description on a dialog shown to the user when a previous attempt to verify their identity through fingerprints failed, and they are being asked to try again.">
+        Your fingerprint couldn't be recognized. Try again.
+      </message>
+      <message name="IDS_WEBAUTHN_UV_RETRY_ERROR_FAILED_RETRIES" desc="Error message displayed when the user's fingerprint is not recognized, and they are being asked to try again.">
+        {NUM_ATTEMPTS, plural,
+          =1 {You have one attempt remaining.}
+          other {You have # attempts remaining.}}
       </message>
 
       <!-- WebAuthn account selection for resident keys -->

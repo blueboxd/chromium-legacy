@@ -958,8 +958,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     }
 
     /**
-     *  Called to show the processing message after instrument details have been loaded
-     *  in the case the payment request UI has been skipped.
+     *  Called to show the processing message after payment details have been loaded in the case the
+     *  payment request UI has been skipped.
      */
     public void showProcessingMessageAfterUiSkip() {
         // Button was clicked before but not marked as clicked because we skipped the UI.

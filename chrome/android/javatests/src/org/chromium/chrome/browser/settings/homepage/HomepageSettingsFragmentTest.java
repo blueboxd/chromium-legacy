@@ -51,6 +51,7 @@ import org.chromium.ui.test.util.UiRestriction;
  * This test is created to check whether the UI components and the interaction when
  * {@link ChromeFeatureList#HOMEPAGE_SETTINGS_UI_CONVERSION } is enabled. Tests for {@link
  * HomepageSettings} when feature flag is turned off can be found in {@link
+ * HomepageSettingsFragmentWithEditorTest}, {@link
  * org.chromium.chrome.browser.partnercustomizations.PartnerHomepageIntegrationTest} and {@link
  * org.chromium.chrome.browser.homepage.HomepagePolicyIntegrationTest}.
  */

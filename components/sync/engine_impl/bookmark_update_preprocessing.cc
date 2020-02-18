@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/unique_position.h"
@@ -197,13 +198,18 @@ void AdaptGuidForBookmark(const sync_pb::SyncEntity& update_entity,
   if (specifics->bookmark().has_guid()) {
     LogGuidSource(BookmarkGuidSource::kSpecifics);
   } else if (base::IsValidGUID(update_entity.originator_client_item_id())) {
+    // Bookmarks created around 2016, between [M44..M52) use an uppercase GUID
+    // as originator client item ID, so it needs to be lowercased to adhere to
+    // the invariant that GUIDs in specifics are canonicalized.
     specifics->mutable_bookmark()->set_guid(
-        update_entity.originator_client_item_id());
+        base::ToLowerASCII(update_entity.originator_client_item_id()));
+    DCHECK(base::IsValidGUIDOutputString(specifics->bookmark().guid()));
     LogGuidSource(BookmarkGuidSource::kValidOCII);
   } else {
     specifics->mutable_bookmark()->set_guid(
         InferGuidForLegacyBookmark(update_entity.originator_cache_guid(),
                                    update_entity.originator_client_item_id()));
+    DCHECK(base::IsValidGUIDOutputString(specifics->bookmark().guid()));
     LogGuidSource(BookmarkGuidSource::kInferred);
   }
 }

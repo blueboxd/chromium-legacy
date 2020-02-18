@@ -88,7 +88,7 @@ class XRFrameProvider final : public GarbageCollected<XRFrameProvider> {
   HeapHashMap<Member<XRSession>,
               mojo::Remote<device::mojom::blink::XRFrameDataProvider>>
       non_immersive_data_providers_;
-  HeapHashMap<Member<XRSession>, device::mojom::blink::VRPosePtr>
+  HeapHashMap<Member<XRSession>, device::mojom::blink::XRFrameDataPtr>
       requesting_sessions_;
 
   // This frame ID is XR-specific and is used to track when frames arrive at the

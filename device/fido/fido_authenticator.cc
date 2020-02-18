@@ -19,7 +19,7 @@ void FidoAuthenticator::GetNextAssertion(
 
 void FidoAuthenticator::GetTouch(base::OnceCallback<void()> callback) {}
 
-void FidoAuthenticator::GetRetries(
+void FidoAuthenticator::GetPinRetries(
     FidoAuthenticator::GetRetriesCallback callback) {
   NOTREACHED();
 }
@@ -27,6 +27,11 @@ void FidoAuthenticator::GetRetries(
 void FidoAuthenticator::GetPINToken(
     std::string pin,
     FidoAuthenticator::GetTokenCallback callback) {
+  NOTREACHED();
+}
+
+void FidoAuthenticator::GetUvRetries(
+    FidoAuthenticator::GetRetriesCallback callback) {
   NOTREACHED();
 }
 

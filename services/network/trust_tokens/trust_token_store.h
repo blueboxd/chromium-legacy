@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/optional.h"
+#include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "services/network/trust_tokens/proto/public.pb.h"
 #include "services/network/trust_tokens/trust_token_persister.h"
@@ -71,6 +72,9 @@ class TrustTokenStore {
       std::unique_ptr<RecordExpiryDelegate> expiry_delegate_for_testing);
 
   virtual ~TrustTokenStore();
+
+  // Creates a TrustTokenStore on top of an in-memory persister.
+  static std::unique_ptr<TrustTokenStore> CreateInMemory();
 
   //// Methods related to ratelimits:
 
@@ -152,7 +156,7 @@ class TrustTokenStore {
   // distinct keys.
   virtual void SetKeyCommitmentsAndPruneStaleState(
       const url::Origin& issuer,
-      base::span<const TrustTokenKeyCommitment> keys);
+      const std::vector<TrustTokenKeyCommitment>& keys);
 
   // Returns the "batch size" (number of blinded tokens to provide per issuance
   // request) for the given issuer, if present and greater than 0. Otherwise,

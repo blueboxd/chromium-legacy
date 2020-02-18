@@ -15,6 +15,8 @@ import android.widget.TextView;
 
 import org.chromium.chrome.browser.profile_card.internal.R;
 
+import java.util.ArrayList;
+
 /**
  * UI component that handles showing a profile card view.
  */
@@ -24,6 +26,7 @@ public class ProfileCardView extends LinearLayout {
     private TextView mDescriptionTextView;
     private ImageView mAvatarView;
     private TextView mPostFrequencyTextView;
+    private LinearLayout mPostsContainer;
 
     public ProfileCardView(Context context) {
         super(context);
@@ -38,6 +41,7 @@ public class ProfileCardView extends LinearLayout {
         mDescriptionTextView = mMainContentView.findViewById(R.id.description);
         mDescriptionTextView.setMovementMethod(new ScrollingMovementMethod());
         mPostFrequencyTextView = mMainContentView.findViewById(R.id.post_freq);
+        mPostsContainer = mMainContentView.findViewById(R.id.posts_container);
     }
 
     void setAvatarBitmap(Bitmap avatarBitmap) {
@@ -71,6 +75,23 @@ public class ProfileCardView extends LinearLayout {
             mMainContentView.setVisibility(View.VISIBLE);
         } else {
             mMainContentView.setVisibility(View.GONE);
+        }
+    }
+
+    void setPosts(ArrayList<ContentPreviewPostData> postsDataList) {
+        if (postsDataList == null) return;
+
+        for (ContentPreviewPostData postData : postsDataList) {
+            ContentPreviewPostView postView = new ContentPreviewPostView(getContext());
+            if (postData.getImageBitmap() != null) {
+                postView.setImageBitmap(postData.getImageBitmap());
+            }
+            postView.setTitle(postData.getTitle());
+            // TODO(crbug/1052182): set posted time text according to the mock.
+            // TODO(crbug/1052184): add OnClickListener to the post.
+
+            mPostsContainer.addView(postView);
+            postView.setVisibility(true);
         }
     }
 }

@@ -7,6 +7,7 @@
 #include <memory>
 #include <tuple>
 
+#include "base/bits.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/video_frame_pool.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -37,11 +38,11 @@ class VideoFramePoolTest
     EXPECT_EQ(base::TimeDelta::FromMilliseconds(timestamp_ms),
               frame->timestamp());
     if (format == PIXEL_FORMAT_ARGB) {
-      EXPECT_EQ(coded_size.width(), frame->coded_size().width());
-      EXPECT_EQ(coded_size.height(), frame->coded_size().height());
+      EXPECT_EQ(coded_size, frame->coded_size());
     } else {
-      EXPECT_EQ((coded_size.width() + 1) & ~1, frame->coded_size().width());
-      EXPECT_EQ((coded_size.height() + 1) & ~1, frame->coded_size().height());
+      const gfx::Size adjusted(base::bits::Align(coded_size.width(), 2),
+                               base::bits::Align(coded_size.height(), 2));
+      EXPECT_EQ(adjusted, frame->coded_size());
     }
     EXPECT_EQ(visible_rect, frame->visible_rect());
     EXPECT_EQ(natural_size, frame->natural_size());

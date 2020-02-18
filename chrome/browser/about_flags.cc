@@ -924,7 +924,9 @@ const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
     {"ZPS on NTP: Local History", kOmniboxNTPZPSLocal,
      base::size(kOmniboxNTPZPSLocal), nullptr},
     {"ZPS on NTP: Remote History", kOmniboxNTPZPSRemote,
-     base::size(kOmniboxNTPZPSRemote), "t3314248"},
+     base::size(kOmniboxNTPZPSRemote), /* variation_id */ "t3314248"},
+    {"ZPS on NTP: Onboarding", kOmniboxNTPZPSRemote,
+     base::size(kOmniboxNTPZPSRemote), /* variation_id */ "t3316638"},
 #else   // !defined(OS_ANDROID)
     {"NTP Omnibox - Remote,Local",
      kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal,
@@ -4626,13 +4628,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsMac | kOsWin | kOsCrOS | kOsAndroid,
      FEATURE_VALUE_TYPE(features::kDnsOverHttps)},
 
-#if defined(OS_ANDROID)
-    {"tab-switcher-longpress-menu",
-     flag_descriptions::kTabSwitcherLongpressMenuName,
-     flag_descriptions::kTabSwitcherLongpressMenuDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kTabSwitcherLongpressMenu)},
-#endif  // defined(OS_ANDROID)
-
     {"web-bundles", flag_descriptions::kWebBundlesName,
      flag_descriptions::kWebBundlesDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebBundles)},
@@ -4972,6 +4967,16 @@ const FeatureEntry kFeatureEntries[] = {
     {"export-tagged-pdf", flag_descriptions::kExportTaggedPDFName,
      flag_descriptions::kExportTaggedPDFDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kExportTaggedPDF)},
+    {"double-buffer-compositing",
+     flag_descriptions::kDoubleBufferCompositingName,
+     flag_descriptions::kDoubleBufferCompositingDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(switches::kDoubleBufferCompositing)},
+
+#if defined(OS_CHROMEOS)
+    {"enable-ambient-mode", flag_descriptions::kEnableAmbientModeName,
+     flag_descriptions::kEnableAmbientModeDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kAmbientModeFeature)},
+#endif  // defined(OS_CHROMEOS)
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

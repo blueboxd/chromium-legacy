@@ -98,7 +98,7 @@ void SetPINRequestHandler::OnTouch(FidoAuthenticator* authenticator) {
         kSupportedAndPinSet:
       state_ = State::kGettingRetries;
       CancelActiveAuthenticators(authenticator->GetId());
-      authenticator_->GetRetries(
+      authenticator_->GetPinRetries(
           base::BindOnce(&SetPINRequestHandler::OnRetriesResponse,
                          weak_factory_.GetWeakPtr()));
       break;

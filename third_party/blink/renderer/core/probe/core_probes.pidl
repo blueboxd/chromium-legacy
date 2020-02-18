@@ -103,7 +103,7 @@ interface CoreProbes {
   void DidFailLoading(CoreProbeSink*, uint64_t identifier, DocumentLoader*, const ResourceError&);
   void WillSendEventSourceRequest(ExecutionContext*);
   void WillDispatchEventSourceEvent(ExecutionContext*, uint64_t identifier, const AtomicString& event_name, const AtomicString& event_id, const String& data);
-  void WillLoadXHR([Keep] ExecutionContext*, const AtomicString& method, const KURL& url, bool async, EncodedFormData* form_data, const HTTPHeaderMap& headers, bool include_credentials);
+  void WillLoadXHR([Keep] ExecutionContext*, const AtomicString& method, const KURL& url, bool async, const HTTPHeaderMap& headers, bool include_credentials);
   void DidFinishXHR(ExecutionContext*, XMLHttpRequest* xhr);
   void ScriptImported(ExecutionContext*, uint64_t identifier, const String& source_string);
   void ScriptExecutionBlockedByCSP(ExecutionContext*, const String& directive_text);

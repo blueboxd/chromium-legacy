@@ -129,7 +129,6 @@ ci.linux_builder(
 
 ci.linux_builder(
     name = 'linux-ozone-rel',
-    triggered_by = [vars.poller.get()],
 )
 
 ci.linux_builder(

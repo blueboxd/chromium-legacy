@@ -1106,6 +1106,15 @@ _BANNED_CPP_FUNCTIONS = (
       False,
       (),
     ),
+    (
+      r'/\b(IFACE|STD)METHOD_?\(',
+      (
+        'IFACEMETHOD() and STDMETHOD() make code harder to format and read.',
+        'Instead, always use IFACEMETHODIMP in the declaration.'
+      ),
+      False,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
 )
 
 # Format: Sequence of tuples containing:

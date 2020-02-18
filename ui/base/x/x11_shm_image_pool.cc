@@ -18,6 +18,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "net/base/url_util.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/rect.h"
@@ -55,7 +56,30 @@ std::size_t MaxShmSegmentSize() {
 }
 
 #if !defined(OS_CHROMEOS)
-bool ShouldUseMitShm() {
+bool IsRemoteHost(const std::string& name) {
+  if (name.empty())
+    return false;
+
+  return !net::HostStringIsLocalhost(name);
+}
+
+bool ShouldUseMitShm(XDisplay* display) {
+  // MIT-SHM may be available on remote connetions, but it will be unusable.  Do
+  // a best-effort check to see if the host is remote to disable the SHM
+  // codepath.  It may be possible in contrived cases for there to be a
+  // false-positive, but in that case we'll just fallback to the non-SHM
+  // codepath.
+  char* display_string = DisplayString(display);
+  char* host = nullptr;
+  int display_id = 0;
+  int screen = 0;
+  if (xcb_parse_display(display_string, &host, &display_id, &screen)) {
+    std::string name = host;
+    free(host);
+    if (IsRemoteHost(name))
+      return false;
+  }
+
   std::unique_ptr<base::Environment> env = base::Environment::Create();
 
   // Used by QT.
@@ -120,7 +144,7 @@ bool XShmImagePool::Resize(const gfx::Size& pixel_size) {
     return false;
 
 #if !defined(OS_CHROMEOS)
-  if (!ShouldUseMitShm())
+  if (!ShouldUseMitShm(display_))
     return false;
 #endif
 

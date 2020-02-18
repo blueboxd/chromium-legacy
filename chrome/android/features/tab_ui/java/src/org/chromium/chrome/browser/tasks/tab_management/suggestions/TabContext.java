@@ -91,7 +91,7 @@ public class TabContext {
             String referrerUrl = getReferrerUrlFromTab(tab);
             return new TabInfo(tab.getId(), tab.getTitle(), tab.getUrlString(),
                     ((TabImpl) tab).getOriginalUrl(), referrerUrl != null ? referrerUrl : "",
-                    tab.getTimestampMillis(), ((TabImpl) tab).getProfile(), tab.getUrl());
+                    tab.getTimestampMillis(), ((TabImpl) tab).getProfile(), tab.getUrlString());
         }
 
         public double getSiteEngagementScore() {

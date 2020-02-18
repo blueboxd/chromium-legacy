@@ -24,11 +24,6 @@ namespace {
 // often to an observer.
 constexpr double kDoubleTickDivisor = 2.0;
 
-// kErrorMarginIntervalPct used to determine what percentage of the time tick
-// interval should be used as a margin of error when comparing times to
-// deadlines.
-constexpr double kErrorMarginIntervalPct = 0.05;
-
 base::AtomicSequenceNumber g_next_source_id;
 
 // Generates a source_id with upper 32 bits from |restart_id| and lower 32 bits
@@ -100,6 +95,40 @@ void BeginFrameObserverBase::AsProtozeroInto(
   state->set_dropped_begin_frame_args(dropped_begin_frame_args_);
 
   last_begin_frame_args_.AsProtozeroInto(state->set_last_begin_frame_args());
+}
+
+BeginFrameArgs
+BeginFrameSource::BeginFrameArgsGenerator::GenerateBeginFrameArgs(
+    uint64_t source_id,
+    base::TimeTicks frame_time,
+    base::TimeTicks next_frame_time,
+    base::TimeDelta vsync_interval) {
+  uint64_t sequence_number =
+      next_sequence_number_ +
+      EstimateTickCountsBetween(frame_time, next_expected_frame_time_,
+                                vsync_interval);
+  next_expected_frame_time_ = next_frame_time;
+  next_sequence_number_ = sequence_number + 1;
+  return BeginFrameArgs::Create(BEGINFRAME_FROM_HERE, source_id,
+                                sequence_number, frame_time, next_frame_time,
+                                vsync_interval, BeginFrameArgs::NORMAL);
+}
+
+uint64_t BeginFrameSource::BeginFrameArgsGenerator::EstimateTickCountsBetween(
+    base::TimeTicks frame_time,
+    base::TimeTicks next_expected_frame_time,
+    base::TimeDelta vsync_interval) {
+  if (next_expected_frame_time.is_null())
+    return 0;
+
+  // kErrorMarginIntervalPct used to determine what percentage of the time tick
+  // interval should be used as a margin of error when comparing times to
+  // deadlines.
+  constexpr double kErrorMarginIntervalPct = 0.05;
+  base::TimeDelta error_margin = vsync_interval * kErrorMarginIntervalPct;
+  int ticks_since_estimated_frame_time =
+      (frame_time + error_margin - next_expected_frame_time) / vsync_interval;
+  return std::max(0, ticks_since_estimated_frame_time);
 }
 
 // BeginFrameSource -------------------------------------------------------
@@ -242,8 +271,7 @@ DelayBasedBeginFrameSource::DelayBasedBeginFrameSource(
     std::unique_ptr<DelayBasedTimeSource> time_source,
     uint32_t restart_id)
     : SyntheticBeginFrameSource(restart_id),
-      time_source_(std::move(time_source)),
-      next_sequence_number_(BeginFrameArgs::kStartingFrameNumber) {
+      time_source_(std::move(time_source)) {
   time_source_->SetClient(this);
 }
 
@@ -264,29 +292,8 @@ void DelayBasedBeginFrameSource::OnUpdateVSyncParameters(
 BeginFrameArgs DelayBasedBeginFrameSource::CreateBeginFrameArgs(
     base::TimeTicks frame_time) {
   base::TimeDelta interval = time_source_->Interval();
-  uint64_t sequence_number = next_sequence_number_;
-
-  base::TimeDelta error_margin = interval * kErrorMarginIntervalPct;
-
-  // We expect |sequence_number| to be the number for the frame at
-  // |expected_frame_time|. We adjust this sequence number according to the
-  // actual frame time in case it is later than expected.
-  if (next_expected_frame_time_ != base::TimeTicks()) {
-    // Add |error_margin| to round |frame_time| up to the next tick if it is
-    // close to the end of an interval. This happens when a timebase is a bit
-    // off because of an imperfect presentation timestamp that may be a bit
-    // later than the beginning of the next interval.
-    int ticks_since_estimated_frame_time =
-        (frame_time + error_margin - next_expected_frame_time_) / interval;
-    sequence_number += std::max(0, ticks_since_estimated_frame_time);
-  }
-
-  next_expected_frame_time_ = time_source_->NextTickTime();
-  next_sequence_number_ = sequence_number + 1;
-
-  return BeginFrameArgs::Create(
-      BEGINFRAME_FROM_HERE, source_id(), sequence_number, frame_time,
-      time_source_->NextTickTime(), interval, BeginFrameArgs::NORMAL);
+  return begin_frame_args_generator_.GenerateBeginFrameArgs(
+      source_id(), frame_time, time_source_->NextTickTime(), interval);
 }
 
 void DelayBasedBeginFrameSource::AddObserver(BeginFrameObserver* obs) {

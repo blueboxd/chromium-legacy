@@ -118,7 +118,6 @@
 <translation id="2413728805700750528"><ph name="DISPLAY_NAME" /> என்பது நிர்வகிக்கப்பட்ட ஓர் அமர்வாகும், இது <ph name="DOMAIN" /> ஆல் நிர்வகிக்கப்படுகிறது</translation>
 <translation id="2427507373259914951">இடது கிளிக் செய்யும்</translation>
 <translation id="2429753432712299108">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />", இணைப்பதற்கான அனுமதியை விரும்புகிறது. ஏற்றுக்கொள்வதற்கு முன்னர், இந்தக் கடவுச்சொல் அந்தச் சாதனத்தில் காண்பிக்கப்பட்டது என்பதை உறுதிப்படுத்தவும்: <ph name="PASSKEY" /></translation>
-<translation id="2435457462613246316">கடவுச்சொல்லைக் காண்பி</translation>
 <translation id="2482878487686419369">அறிவிப்புகள்</translation>
 <translation id="2484513351006226581">விசைப்பலகைத் தளவமைப்பை மாற்ற, <ph name="KEYBOARD_SHORTCUT" /> விசையை அழுத்தவும்.</translation>
 <translation id="2501920221385095727">ஸ்டிக்கி விசைகள்</translation>
@@ -175,7 +174,7 @@
 <translation id="3249513730522716925"><ph name="WINDOW_TITLE" /> என்ற சாளரமானது டெஸ்க்<ph name="ACTIVE_DESK" />ல் இருந்து டெஸ்க் <ph name="TARGET_DESK" />க்கு நகர்த்தப்பட்டது</translation>
 <translation id="3255483164551725916">உன்னால் என்னவெல்லாம் செய்ய முடியும்?</translation>
 <translation id="3290356915286466215">பாதுகாப்பற்ற வைஃபை நெட்வொர்க்</translation>
-<translation id="3294437725009624529">விருந்தினர்</translation>
+<translation id="3294437725009624529">கெஸ்ட்</translation>
 <translation id="3308453408813785101">அப்போதும் <ph name="USER_EMAIL_ADDRESS" /> பின்னர் உள்நுழையலாம்.</translation>
 <translation id="3321628682574733415">தவறான பெற்றோர் அணுகல் குறியீடு</translation>
 <translation id="332587331255250389">பேட்டரியை மாற்றவும்</translation>
@@ -271,7 +270,6 @@
 <translation id="4527045527269911712">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />", இணைப்பதற்கான அனுமதியை விரும்புகிறது.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> ஆகும் 100% சார்ஜாக</translation>
 <translation id="4561267230861221837">3G</translation>
-<translation id="4565377596337484307">கடவுச்சொல்லை மறைக்கும்</translation>
 <translation id="4570957409596482333">பேசும் திரை பொத்தான்</translation>
 <translation id="4585337515783392668">தெரியாத ரிசீவருக்கு அனுப்புவதை நிறுத்து</translation>
 <translation id="4628757576491864469">சாதனங்கள்</translation>
@@ -373,7 +371,7 @@
 <translation id="6062360702481658777"><ph name="LOGOUT_TIME_LEFT" /> இல் தானாகவே வெளியேற்றப்படுவீர்கள்.</translation>
 <translation id="6064337552080329342">கடவுச்சொல்லைச் சரிபார்க்க முடியவில்லை. மீண்டும் முயலவும்.</translation>
 <translation id="607652042414456612">உங்கள் கம்ப்யூட்டர் அருகிலுள்ள Bluetooth சாதனங்களால் கண்டறியப்படும், மேலும் <ph name="ADDRESS" /> என்ற முகவரியுடன் "<ph name="NAME" />" என்ற பெயரில் தோன்றும்</translation>
-<translation id="612734058257491180">விருந்தினர் அமர்வில் Google அசிஸ்டண்ட்டைப் பயன்படுத்த இயலாது.</translation>
+<translation id="612734058257491180">கெஸ்ட் அமர்வில் Google அசிஸ்டண்ட்டைப் பயன்படுத்த இயலாது.</translation>
 <translation id="615957422585914272">ஸ்கிரீன் கீபோர்டைக் காட்டு</translation>
 <translation id="6164005077879661055">இந்தக் மேற்பார்வையிடப்படும் பயனர் அகற்றப்பட்டவுடன் மேற்பார்வையிடப்படும் பயனருடன் தொடர்புடைய எல்லா கோப்புகளும், அகத் தரவும் நிரந்தரமாக நீக்கப்படும். இந்தக் மேற்பார்வையிடப்படும் பயனர் பார்வையிட்ட இணையதளங்களையும் அமைப்புகளையும் <ph name="MANAGEMENT_URL" /> இல் இன்னும் நிர்வாகியால் பார்க்க முடியும்.</translation>
 <translation id="6165508094623778733">மேலும் அறிக</translation>
@@ -443,7 +441,7 @@
 <translation id="7067196344162293536">தானியங்கு சுழற்றல்</translation>
 <translation id="7068360136237591149">கோப்புகளைத் திற</translation>
 <translation id="7076293881109082629">உள்நுழைகிறீர்கள்</translation>
-<translation id="7088960765736518739">சுவிட்ச் அணுகல்</translation>
+<translation id="7088960765736518739">ஸ்விட்ச் அணுகல்</translation>
 <translation id="7092922358121866860">நைட் லைட் அமைப்புகளைக் காண்பிக்கும்</translation>
 <translation id="7098389117866926363">USB-C சாதனம் (பின்பக்கம் உள்ள இடது போர்ட்)</translation>
 <translation id="7131634465328662194">நீங்கள் தானாக வெளியேற்றப்படுவீர்கள்.</translation>
@@ -518,7 +516,7 @@
 <translation id="8152092012181020186">மூடுவதற்கு Ctrl + W விசைகளை அழுத்தவும்.</translation>
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> உங்கள் நிர்வாகி இந்த அமைப்பை நிர்வகிக்கிறார்.</translation>
 <translation id="8167567890448493835"><ph name="LOCALE_NAME" />ஐப் பயன்படுத்துகிறது</translation>
-<translation id="8190698733819146287">மொழிகள் மற்றும்  உள்ளீடைத் தனிப்பயனாக்கு...</translation>
+<translation id="8190698733819146287">மொழிகள் மற்றும்  உள்ளீடைப் பிரத்தியேகமாக்கு...</translation>
 <translation id="8192202700944119416">அறிவிப்புகள் மறைக்கப்பட்டுள்ளன.</translation>
 <translation id="8203795194971602413">வலது கிளிக் செய்யும்</translation>
 <translation id="8236042855478648955">இடைவேளைக்கான நேரம்</translation>

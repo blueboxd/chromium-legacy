@@ -1384,7 +1384,6 @@
 <translation id="2865919525181940183">現在画面に表示されているプログラムのスクリーンショット</translation>
 <translation id="286674810810214575">電源を確認しています...</translation>
 <translation id="2867768963760577682">固定されたタブとして開く</translation>
-<translation id="2868184003987917410">サイトにバーチャル リアリティ デバイスとデータへのアクセスを許可しない</translation>
 <translation id="2868746137289129307">この拡張機能は古く、企業のポリシーによって無効にされました。新しいバージョンが利用可能になったときに自動的に有効になる可能性があります。</translation>
 <translation id="2870560284913253234">サイト</translation>
 <translation id="2870909136778269686">更新しています...</translation>
@@ -1714,7 +1713,6 @@
 <translation id="3348038390189153836">リムーバブル デバイスが検出されました</translation>
 <translation id="3349933790966648062">メモリ使用量</translation>
 <translation id="3350117557200012647">ペア設定モードにしてください</translation>
-<translation id="3350244554415289209">サイトからカメラ位置へのアクセスまたは室内のマッピングを求められたときに確認する（推奨）</translation>
 <translation id="3355936511340229503">接続エラー</translation>
 <translation id="3356580349448036450">完了</translation>
 <translation id="3359256513598016054">証明書ポリシーの制約</translation>
@@ -1731,7 +1729,6 @@
 <translation id="3382073616108123819">このデバイスのデバイス識別子を特定できませんでした。</translation>
 <translation id="3382086682569279540">管理対象のアカウントはまもなく削除されます</translation>
 <translation id="3382200254148930874">管理機能を停止しています...</translation>
-<translation id="3383210070657133526"><ph name="URL" /> がバーチャル リアリティ セッションを開始する許可を求めています</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">セパレータ</translation>
 <translation id="338691029516748599"><ph name="NETWORK_INDEX" /> 番目のネットワーク（全 <ph name="NETWORK_COUNT" /> 件）、<ph name="NETWORK_NAME" />、<ph name="SECURITY_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />%、管理者によって管理、接続</translation>
@@ -1828,7 +1825,6 @@
 <translation id="3511307672085573050">リンクのアドレスをコピー(&amp;E)</translation>
 <translation id="351152300840026870">固定幅フォント</translation>
 <translation id="3511528412952710609">短い</translation>
-<translation id="3513704683820682405">拡張現実（AR）</translation>
 <translation id="3514373592552233661">複数のネットワークを利用できる場合に、優先ネットワークを他の既知のネットワークより優先します</translation>
 <translation id="3515983984924808886">リセットを確定するには、セキュリティ キーをもう一度タップしてください。セキュリティ キーに保存されているすべての情報（PIN を含む）が削除されます。</translation>
 <translation id="3518985090088779359">同意して続行</translation>
@@ -2532,7 +2528,6 @@
 <translation id="4501530680793980440">削除の確認</translation>
 <translation id="4502423230170890588">このデバイスから削除</translation>
 <translation id="4504940961672722399">この拡張機能を使用するには、このアイコンをクリックするか、<ph name="EXTENSION_SHORTCUT" /> を押します。</translation>
-<translation id="4507164039066603071">サイトにカメラ位置へのアクセスまたは室内のマッピングを許可しない</translation>
 <translation id="4508051413094283164">すべてをシークレット ウィンドウで開く</translation>
 <translation id="4508265954913339219">起動に失敗しました</translation>
 <translation id="4508765956121923607">ソースを表示(&amp;O)</translation>
@@ -2838,7 +2833,6 @@
 <translation id="494286511941020793">プロキシ設定ヘルプ</translation>
 <translation id="4943368462779413526">フットボール</translation>
 <translation id="4943691134276646401">「<ph name="CHROME_EXTENSION_NAME" />」がシリアルポートへの接続を要求しています</translation>
-<translation id="4943703118917034429">バーチャル リアリティ</translation>
 <translation id="4944310289250773232">この認証サービスは <ph name="SAML_DOMAIN" /> でホストされています</translation>
 <translation id="495170559598752135">操作</translation>
 <translation id="4952981627953231344">Plugin VM はこのデバイスで許可されていません。組織のデバイス管理者にお問い合わせください。</translation>
@@ -4112,7 +4106,6 @@
 <translation id="6758056191028427665">アンケートにご協力ください。</translation>
 <translation id="6759193508432371551">初期状態へのリセット</translation>
 <translation id="6762833852331690540">オン</translation>
-<translation id="6767115174726603949">バーチャル リアリティ デバイスとデータにアクセスする</translation>
 <translation id="6767566652486411142">別の言語を選択...</translation>
 <translation id="6767639283522617719">ドメインを追加できません。組織部門の設定が正しいことをご確認ください。</translation>
 <translation id="6769712124046837540">プリンタの追加...</translation>
@@ -4308,7 +4301,6 @@
 <translation id="703001695939087067">ウィンドウ概観モードに切り替わりました。タブキーを押してウィンドウ間を移動できます。</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - シリアルポートを接続しました</translation>
 <translation id="7031962166228839643">TPM を準備しています。しばらくお待ちください（数分かかることがあります）...</translation>
-<translation id="7034615910652881882">サイトからバーチャル リアリティ デバイスとデータへのアクセスを求められたときに確認する</translation>
 <translation id="7037509989619051237">テキスト読み上げの音声をプレビュー</translation>
 <translation id="7039326228527141150"><ph name="VENDOR_NAME" /> の USB デバイスへのアクセス</translation>
 <translation id="7039912931802252762">Microsoft スマート カード ログオン</translation>
@@ -4614,7 +4606,6 @@
 <translation id="7443806024147773267">Google アカウントにログインすれば、いつでもパスワードにアクセスできます。</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> を無効にする</translation>
 <translation id="7448430327655618736">アプリの自動インストール</translation>
-<translation id="7448625729116931228">サイトからバーチャル リアリティ デバイスとデータへのアクセスを求められたときに確認する（推奨）</translation>
 <translation id="7450761244949417357">まもなく <ph name="ALTERNATIVE_BROWSER_NAME" /> で開きます</translation>
 <translation id="7453008956351770337">このプリンタを選択すると、次の拡張機能にプリンタへのアクセスを許可することになります。</translation>
 <translation id="7454548535253569100">ポータル: <ph name="SUBFRAME_SITE" /></translation>
@@ -4751,7 +4742,6 @@
 <translation id="7652808307838961528">ユーザー（<ph name="PROFILE_NAME" />）を編集</translation>
 <translation id="765293928828334535">このウェブサイトからアプリ、拡張機能、ユーザー スクリプトを追加することはできません</translation>
 <translation id="7652954539215530680">PIN の作成</translation>
-<translation id="7653295403398566475">サイトからカメラ位置へのアクセスまたは室内のマッピングを求められたときに確認する</translation>
 <translation id="7654941827281939388">このアカウントは既にこのパソコンで使用されています。</translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="7659584679870740384">このデバイスを使用する権限がありません。ログイン権限については、デバイスの所有者にお問い合わせください。</translation>
@@ -5290,7 +5280,6 @@
 <translation id="8338952601723052325">デベロッパーのウェブサイト</translation>
 <translation id="8339059274628563283"><ph name="SITE" /> によりデータがローカルに保存されました</translation>
 <translation id="833986336429795709">このリンクを開くにはアプリを選択します</translation>
-<translation id="834057053932610950">Linux の設定中にエラーが発生しました。管理者にお問い合わせください。</translation>
 <translation id="8342861492835240085">コレクションを選択</translation>
 <translation id="834290227245955730">無効な PIN です。入力できるのはあと <ph name="RETRIES" /> 回です。</translation>
 <translation id="8351419472474436977">この拡張機能によってプロキシ設定が制御されています。オンラインで行う操作は、この拡張機能によって変更、遮断、傍受される可能性があります。この変更が行われた理由に心当たりがない場合、これは不正な変更と考えられます。</translation>

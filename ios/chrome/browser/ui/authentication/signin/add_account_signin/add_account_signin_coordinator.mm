@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/authentication/signin/add_account_signin/add_account_signin_mediator.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_coordinator+protected.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_coordinator.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_interaction_manager.h"
@@ -119,9 +120,8 @@ using signin_metrics::PromoAction;
 
 - (void)stop {
   [super stop];
-  // If one of those 4 DCHECK() fails, -[AddAccountSigninCoordinator
+  // If one of those 3 DCHECK() fails, -[AddAccountSigninCoordinator
   // runCompletionCallbackWithSigninResult] has not been called.
-  DCHECK(!self.signinCompletion);
   DCHECK(!self.identityInteractionManager);
   DCHECK(!self.alertCoordinator);
   DCHECK(!self.userSigninCoordinator);
@@ -181,14 +181,7 @@ using signin_metrics::PromoAction;
   DCHECK(!self.alertCoordinator);
   DCHECK(!self.userSigninCoordinator);
 
-  if (self.signinCompletion) {
-    SigninCoordinatorCompletionCallback signinCompletion =
-        self.signinCompletion;
-    self.signinCompletion = nil;
-    // The owner should call the stop method, during the callback.
-    // |self.signinCompletion| needs to be set to nil before calling it.
-    signinCompletion(signinResult, identity);
-  }
+  [self runCompletionCallbackWithSigninResult:signinResult identity:identity];
 }
 
 #pragma mark - Private
@@ -203,6 +196,11 @@ using signin_metrics::PromoAction;
                                          identity:identity
                                       accessPoint:self.accessPoint
                                       promoAction:self.promoAction];
+  self.userSigninCoordinator.signinCompletion =
+      ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
+        // TODO(crbug.com/971989): Needs implementation.
+        NOTIMPLEMENTED();
+      };
   [self.userSigninCoordinator start];
 }
 

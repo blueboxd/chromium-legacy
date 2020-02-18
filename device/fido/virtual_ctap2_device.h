@@ -133,8 +133,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
       std::vector<uint8_t>* response);
   CtapDeviceResponseCode OnGetNextAssertion(base::span<const uint8_t> request,
                                             std::vector<uint8_t>* response);
-  CtapDeviceResponseCode OnPINCommand(base::span<const uint8_t> request,
-                                      std::vector<uint8_t>* response);
+  base::Optional<CtapDeviceResponseCode> OnPINCommand(
+      base::span<const uint8_t> request,
+      std::vector<uint8_t>* response);
   CtapDeviceResponseCode OnCredentialManagement(
       base::span<const uint8_t> request,
       std::vector<uint8_t>* response);

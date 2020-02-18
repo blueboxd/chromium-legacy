@@ -29,6 +29,7 @@ enum class Subcommand : uint8_t {
   kChangePIN = 0x04,
   kGetPINToken = 0x05,
   kGetUvToken = 0x06,
+  kGetUvRetries = 0x07,
 };
 
 // RequestKey enumerates the keys in the top-level CBOR map for all PIN
@@ -48,6 +49,7 @@ enum class ResponseKey : int {
   kKeyAgreement = 1,
   kPINToken = 2,
   kRetries = 3,
+  kUvRetries = 5,
 };
 
 // PointFromKeyAgreementResponse returns an |EC_POINT| that represents the same

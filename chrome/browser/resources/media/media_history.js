@@ -17,6 +17,7 @@ let store = null;
 let statsTableBody = null;
 let originsTable = null;
 let playbacksTable = null;
+let sessionsTable = null;
 
 /**
  * Creates a single row in the stats table.
@@ -58,8 +59,22 @@ function compareTableItem(sortKey, a, b) {
 
   // Compare mojo_base.mojom.TimeDelta microseconds value.
   if (sortKey == 'cachedAudioVideoWatchtime' ||
-      sortKey == 'actualAudioVideoWatchtime' || sortKey == 'watchtime') {
+      sortKey == 'actualAudioVideoWatchtime' || sortKey == 'watchtime' ||
+      sortKey == 'duration' || sortKey == 'position') {
     return val1.microseconds - val2.microseconds;
+  }
+
+  if (sortKey.startsWith('metadata.')) {
+    // Keys with a period denote nested objects.
+    let nestedA = a;
+    let nestedB = b;
+    const expandedKey = sortKey.split('.');
+    expandedKey.forEach((k) => {
+      nestedA = nestedA[k];
+      nestedB = nestedB[k];
+    });
+
+    return nestedA > nestedB;
   }
 
   if (sortKey == 'lastUpdatedTime') {
@@ -71,39 +86,68 @@ function compareTableItem(sortKey, a, b) {
 }
 
 /**
- * Formats a field to be displayed in the data table.
+ * Parses utf16 coded string.
+ * @param {!mojoBase.mojom.String16} arr
+ * @return {string}
+ */
+function decodeString16(arr) {
+  return arr.data.map(ch => String.fromCodePoint(ch)).join('');
+}
+
+/**
+ * Formats a field to be displayed in the data table and inserts it into the
+ * element.
+ * @param {HTMLTableRowElement} td
  * @param {?object} data
  * @param {string} key
- * @returns {?string}
  */
-function formatField(data, key) {
+function insertDataField(td, data, key) {
   if (data === undefined || data === null) {
     return;
   }
 
   if (key == 'origin') {
-    let origin = data.scheme + '://' + data.host;
+    // Format a mojo origin.
+    td.textContent = data.scheme + '://' + data.host;
     if (data.scheme == 'http' && data.port != '80') {
-      origin += ':' + data.port;
+      td.textContent += ':' + data.port;
     } else if (data.scheme == 'https' && data.port != '443') {
-      origin += ':' + data.port;
+      td.textContent += ':' + data.port;
     }
-
-    return origin;
   } else if (key == 'lastUpdatedTime') {
-    return data ? new Date(data).toISOString() : '';
+    // Format a JS timestamp.
+    td.textContent = data ? new Date(data).toISOString() : '';
   } else if (
       key == 'cachedAudioVideoWatchtime' ||
-      key == 'actualAudioVideoWatchtime' || key == 'watchtime') {
+      key == 'actualAudioVideoWatchtime' || key == 'watchtime' ||
+      key == 'duration' || key == 'position') {
+    // Format a mojo timedelta.
     const secs = (data.microseconds / 1000000);
-    return secs.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+    td.textContent = secs.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
   } else if (key == 'url') {
-    return data.url;
+    // Format a mojo GURL.
+    td.textContent = data.url;
   } else if (key == 'hasAudio' || key == 'hasVideo') {
-    return data ? 'Yes' : 'No';
+    // Format a boolean.
+    td.textContent = data ? 'Yes' : 'No';
+  } else if (
+      key == 'title' || key == 'artist' || key == 'album' ||
+      key == 'sourceTitle') {
+    // Format a mojo string16.
+    td.textContent = decodeString16(data);
+  } else if (key == 'artwork') {
+    // Format an array of mojo media images.
+    data.forEach((image) => {
+      const a = document.createElement('a');
+      a.href = image.src.url;
+      a.textContent = image.src.url;
+      a.target = '_blank';
+      td.appendChild(a);
+      td.appendChild(document.createElement('br'));
+    });
+  } else {
+    td.textContent = data;
   }
-
-  return data;
 }
 
 class DataTable {
@@ -153,7 +197,10 @@ class DataTable {
     // Get the sort key from the columns to determine which data should be in
     // which column.
     const headerCells = Array.from(this.table_.querySelectorAll('thead th'));
-    const sortKeys = headerCells.map((e) => e.getAttribute('sort-key'));
+    const dataAndSortKeys = headerCells.map((e) => {
+      return e.getAttribute('sort-key') ? e.getAttribute('sort-key') :
+                                          e.getAttribute('data-key');
+    });
 
     const currentSortCol = this.table_.querySelectorAll('.sort-column')[0];
     const currentSortKey = currentSortCol.getAttribute('sort-key');
@@ -170,9 +217,18 @@ class DataTable {
       const tr = document.createElement('tr');
       body.appendChild(tr);
 
-      sortKeys.forEach((key) => {
+      dataAndSortKeys.forEach((key) => {
         const td = document.createElement('td');
-        td.textContent = formatField(dataRow[key], key);
+
+        // Keys with a period denote nested objects.
+        let data = dataRow;
+        const expandedKey = key.split('.');
+        expandedKey.forEach((k) => {
+          data = data[k];
+          key = k;
+        });
+
+        insertDataField(td, data, key);
         tr.appendChild(td);
       });
     });
@@ -217,6 +273,10 @@ function showTab(name) {
       return store.getMediaHistoryPlaybackRows().then(response => {
         playbacksTable.setData(response.rows);
       });
+    case 'sessions':
+      return store.getMediaHistoryPlaybackSessionRows().then(response => {
+        sessionsTable.setData(response.rows);
+      });
   }
 
   // Return an empty promise if there is no tab.
@@ -230,6 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   originsTable = new DataTable($('origins-table'));
   playbacksTable = new DataTable($('playbacks-table'));
+  sessionsTable = new DataTable($('sessions-table'));
 
   cr.ui.decorate('tabbox', cr.ui.TabBox);
 

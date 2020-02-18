@@ -384,7 +384,7 @@
 <translation id="3538907380453898475">dscrplst</translation>
 <translation id="3549141990712742152"><ph name="TEXT" />ని కత్తిరించండి.</translation>
 <translation id="3549680091535286226">తాత్కాలికంగా ప్రసంగాన్ని ఆపడం కోసం 2 వేళ్లతో నొక్కండి</translation>
-<translation id="3564729643041517261">ప్రస్తుత ప్రదర్శన శైలి ప్రక్కప్రక్కనకు ఉంది</translation>
+<translation id="3564729643041517261">ప్రస్తుత ప్రదర్శన శైలి పక్కపక్కకు ఉంది</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, చెక్‌బాక్స్ ఎంచుకోబడలేదు</translation>
 <translation id="3589661172894441357">పదకోశం</translation>
 <translation id="3591784666823501596">దివ్యమైన నీలం రంగు</translation>
@@ -690,7 +690,7 @@
 <translation id="5682113568322255809">మైలురాయి</translation>
 <translation id="5683155931978483559">మునుపటి చెక్‌బాక్స్</translation>
 <translation id="5684277895745049190">జాబితా</translation>
-<translation id="570138335948847274">ChromeVoxను యాక్టివ్ లేదా ఇన్‌యాక్టివ్ చేయ‌డానికి టోగుల్ చేయండి</translation>
+<translation id="570138335948847274">ChromeVoxను యాక్టివ్ లేదా ఇన్‌యాక్టివ్ చేయడానికి టోగుల్ చేయండి</translation>
 <translation id="5703716265115423771">వాల్యూమ్ తగ్గిస్తుంది</translation>
 <translation id="5704453877234251104">ఆటోమేటిక్‌గా పూర్తి చేయడం కోసం పైకి లేదా కిందికి బాణాన్ని నొక్కండి</translation>
 <translation id="5709192780268610569">పెద్ద వివరణ లేదు</translation>
@@ -1205,7 +1205,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="8946628535652548639">అడ్డు వరుస<ph name="TABLECELLROWINDEX" />నిలువు వరుస<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8952400011684167587">మునుపటి రేడియో బటన్ లేదు</translation>
 <translation id="8957142051395645063">ప్రకటించు</translation>
-<translation id="896035116006462153">దయచేసి మ‌రింత వివ‌ర‌ణాత్మ‌క‌ బ్రెయిలీ ఆదేశాలను ఉపయోగించడానికి స్టేటస్ ట్రే, యాక్సెసిబిలిటీ కింద స్క్రీన్‌పై కీబోర్డ్‌‌ను ఎనేబుల్ చేయండి</translation>
+<translation id="896035116006462153">మరింత వివరణాత్మక బ్రెయిలీ ఆదేశాలను ఉపయోగించడానికి దయచేసి స్టేటస్ ట్రే, యాక్సెసిబిలిటీ కింద స్క్రీన్‌పై కీబోర్డ్‌ను ఎనేబుల్ చేయండి</translation>
 <translation id="8970172509886453271">మునుపటి విభాగం లేదు</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">మరిచిపోయారా</translation>
@@ -1225,7 +1225,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="9108589040018540527">scbr</translation>
 <translation id="911476240645808512">{COUNT,plural, =1{శాతం గుర్తు}other{# శాతం గుర్తులు}}</translation>
 <translation id="9115913704608474258">నవంబర్</translation>
-<translation id="912759640994130978">కింది జాబితా నుండి ఎంపికను ఎంచుకోవడం ద్వారా ప్రస్తుత కీమ్యాప్‌ను మార్చండి</translation>
+<translation id="912759640994130978">కింది జాబితా నుండి ఆప్షన్‌ను ఎంచుకోవడం ద్వారా ప్రస్తుత కీమ్యాప్‌ను మార్చండి</translation>
 <translation id="9128414153595658330">dlg</translation>
 <translation id="9133928141873682933">ఖాకీ రంగు</translation>
 <translation id="9149560530563164529">sctn</translation>

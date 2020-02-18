@@ -461,10 +461,6 @@ void WebPluginContainerImpl::InvalidateRect(const WebRect& rect) {
   InvalidateRect(static_cast<IntRect>(rect));
 }
 
-void WebPluginContainerImpl::ScrollRect(const WebRect& rect) {
-  InvalidateRect(rect);
-}
-
 void WebPluginContainerImpl::ScheduleAnimation() {
   if (auto* frame_view = element_->GetDocument().View())
     frame_view->ScheduleAnimation();

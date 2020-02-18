@@ -14,6 +14,7 @@
 #include "base/hash/sha1.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -392,7 +393,10 @@ bool HasExpectedBookmarkGuid(const sync_pb::BookmarkSpecifics& specifics,
   }
 
   if (base::IsValidGUID(originator_client_item_id)) {
-    return specifics.guid() == originator_client_item_id;
+    // Bookmarks created around 2016, between [M44..M52) use an uppercase GUID
+    // as originator client item ID, so it needs to be lowercased to adhere to
+    // the invariant that GUIDs in specifics are canonicalized.
+    return specifics.guid() == base::ToLowerASCII(originator_client_item_id);
   }
 
   return specifics.guid() ==

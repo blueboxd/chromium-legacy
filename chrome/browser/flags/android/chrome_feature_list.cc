@@ -197,7 +197,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kTabGroupsUiImprovementsAndroid,
     &kTabGridLayoutAndroid,
     &kTabReparenting,
-    &kTabSwitcherLongpressMenu,
     &kTabSwitcherOnReturn,
     &kTabToGTSAnimation,
     &kTrustedWebActivityPostMessage,
@@ -584,9 +583,6 @@ const base::Feature kTabGridLayoutAndroid{"TabGridLayoutAndroid",
 
 const base::Feature kTabReparenting{"TabReparenting",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kTabSwitcherLongpressMenu{"TabSwitcherLongpressMenu",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTabSwitcherOnReturn{"TabSwitcherOnReturn",
                                          base::FEATURE_DISABLED_BY_DEFAULT};

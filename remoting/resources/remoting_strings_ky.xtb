@@ -71,7 +71,7 @@
 <translation id="2676780859508944670">Жумуш аткарылууда…</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="2747641796667576127">Программалар, айрым учурларды эске албаганда, автоматтык түрдө жаңырып турат. Программаларды жаңыртууга бир нече мүнөт гана талап кылынып, компьютериңизге алыстан туташып жаңыртсаңыз да болот.</translation>
-<translation id="2758123043070977469">Аныктыгы текшерилип жатканда көйгөй чыкты. Каттоо эсебине кайра кириңиз.</translation>
+<translation id="2758123043070977469">Аныктыгы текшерилип жатканда көйгөй чыкты. Аккаунтка кайра кириңиз.</translation>
 <translation id="2803375539583399270">PIN кодду киргизиңиз</translation>
 <translation id="2841013758207633010">Убакыт</translation>
 <translation id="2851754573186462851">Chromium App Streaming</translation>
@@ -79,7 +79,7 @@
 <translation id="2891243864890517178">Mac түзмөгү үчүн (OS X Yosemite 10.10 жана андан кийинки версиялар)</translation>
 <translation id="2894654864775534701">Учурда бул компьютер башка аккаунт менен бөлүшүлгөн.</translation>
 <translation id="2919669478609886916">Учурда бул шайманды башка колдонуучу менен бөлүшүп жатасыз. Бөлүшө бересизби?</translation>
-<translation id="2921543551052660690">Мурун <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) катары киргенсиз. Ошол каттоо эсеби аркылуу компьютериңизге кирүү үчүн, ошол каттоо эсеп менен <ph name="LINK_BEGIN" />Chromium'га кириңиз<ph name="LINK_END" /> жана Chromoting'ди кайра орнотуңуз.</translation>
+<translation id="2921543551052660690">Мурун <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) аркылуу кирип турасыз. Ошол каттоо эсеби аркылуу компьютериңизге кирүү үчүн, ошол каттоо эсеп менен <ph name="LINK_BEGIN" />Chromium'га кириңиз<ph name="LINK_END" /> жана Chromoting'ди кайра орнотуңуз.</translation>
 <translation id="2926340305933667314">Бул компьютерге алыстан кирүү мүмкүнчүлүгү өчүрүлбөй калды. Бир аздан дагы аракет кылып көрүңүз.</translation>
 <translation id="2930135165929238380">Талап кылынган курамдык бөлүктөрдүн айрымдары жок болуп жатат. chrome://plugins дарегине өтүп, Native Client плагинин иштетиңиз.</translation>
 <translation id="2939145106548231838">Хосттун аныктыгын текшерүү</translation>
@@ -126,7 +126,7 @@
 <translation id="4068946408131579958">Бардык туташуулар</translation>
 <translation id="409800995205263688">ЭСКЕРТҮҮ: Саясат жөндөөлөрү тармагыңыздын ичиндеги компьютерлердин ортосунда гана туташуу мүмкүнчүлүгүн берет.</translation>
 <translation id="4126409073460786861">Жөндөп бүткөндөн кийин бул баракты жаңыртыңыз. Андан соң, түзмөктү тандап, PIN кодду киргизип, компьютерге кире аласыз</translation>
-<translation id="4145029455188493639">Каттоо эсебине <ph name="EMAIL_ADDRESS" /> менен кирдиңиз.</translation>
+<translation id="4145029455188493639">Аккаунтка <ph name="EMAIL_ADDRESS" /> менен кирдиңиз.</translation>
 <translation id="4155497795971509630">Талап кылынган курамдык бөлүктөрдүн айрымдары жок. Chrome'дун акыркы версиясы орнотулганын текшерип, дагы аракет кылып көрүңүз.</translation>
 <translation id="4156740505453712750">Бул компьютерге кирүү мүмкүнчүлүгүн коргоо үчүн, <ph name="BOLD_START" />кеминде алты сандуу<ph name="BOLD_END" /> PIN тандаңыз. Бул PIN башка жерден туташып жатканда керектелет.</translation>
 <translation id="4169432154993690151">Профилдин сүрөтүн тандоо үчүн Chrome Алыскы иштактасына камераңызды колдонууга уруксат бериңиз</translation>
@@ -199,7 +199,7 @@
 <translation id="5625493749705183369">Интернет аркылуу башка компьютерлерге коопсуз шартта кириңиз же башка колдонуучуга компьютериңизге коопсуз кирүүсүнө уруксат бериңиз.</translation>
 <translation id="5702987232842159181">Туташып турат:</translation>
 <translation id="5708869785009007625">Иштактаңыз учурда <ph name="USER" /> менен бөлүшүлүүдө.</translation>
-<translation id="5750083143895808682">Каттоо эсебине <ph name="EMAIL_ADDRESS" /> менен кирдиңиз.</translation>
+<translation id="5750083143895808682">Аккаунтка <ph name="EMAIL_ADDRESS" /> менен кирдиңиз.</translation>
 <translation id="5773590752998175013">Жупташтыруу күнү</translation>
 <translation id="579702532610384533">Кайра туташуу</translation>
 <translation id="5810269635982033450">Экранды компьютердин сенсордук тактасы катары иштетүү</translation>
@@ -270,12 +270,12 @@
 <translation id="7401733114166276557">Chrome Алыскы иштакта</translation>
 <translation id="7434397035092923453">Төмөнкү кардарга колдонуу мүмкүнчүлүгү берилген жок: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Туташкан кардар: <ph name="CLIENT_USERNAME" />.</translation>
-<translation id="7526139040829362392">Каттоо эсебин өзгөртүү</translation>
+<translation id="7526139040829362392">Аккаунтту өзгөртүү</translation>
 <translation id="7606912958770842224">Алыстан туташууну иштетүү</translation>
 <translation id="7628469622942688817">Бул түзмөктө PIN кодду эске сактап коюу.</translation>
 <translation id="7649070708921625228">Жардам</translation>
 <translation id="7658239707568436148">Жокко чыгаруу</translation>
-<translation id="7665369617277396874">Каттоо эсебин кошуу</translation>
+<translation id="7665369617277396874">Аккаунтту кошуу</translation>
 <translation id="7672203038394118626">Бул компьютерге алыстан туташуу мүмкүнчүлүгү өчүрүлгөн.</translation>
 <translation id="7678209621226490279">Сол жакка бекитүү</translation>
 <translation id="7693372326588366043">Хосттор тизмесин жаңылоо</translation>
@@ -295,7 +295,7 @@
 <translation id="8041721485428375115">Chrome Алыскы иш такта хостунун орноткучун жүктөп алуу менен, Google <ph name="LINK_BEGIN" />Тейлөө шарттарына<ph name="LINK_END" /> макулдугуңузду билдиресиз.</translation>
 <translation id="8060029310790625334">Жардам борбору</translation>
 <translation id="806699900641041263"><ph name="HOSTNAME" /> башкы түйүнү менен туташууда</translation>
-<translation id="8073845705237259513">Chrome Алыскы иштактасын колдонуу үчүн, түзмөгүңүзгө Google каттоо эсебин кошуңуз.</translation>
+<translation id="8073845705237259513">Chrome Алыскы иштактасын колдонуу үчүн, түзмөгүңүзгө Google аккаунтун кошуңуз.</translation>
 <translation id="80739703311984697">Алыскы хост үчүнчү жактагы вебсайтка аныктыгыңыздын текшерилишин талап кылат. Улантуу үчүн, Chromoting'дин бул дарекке кирүүсүнө кошумча уруксаттарды беришиңиз керек:</translation>
 <translation id="809687642899217504">Менин компьютерлерим</translation>
 <translation id="811307782653349804">Компьютериңизге каалаган жерден жетиңиз</translation>
@@ -317,7 +317,7 @@
 <translation id="8509907436388546015">Иштактаны интеграциялоо процесси</translation>
 <translation id="8513093439376855948">Алыскы хост башкаруусу үчүн түпнуска билдирүү алмашуу кызматы</translation>
 <translation id="8525306231823319788">Толук экран</translation>
-<translation id="8548209692293300397">Мурун <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) катары киргенсиз. Ошол каттоо эсеби аркылуу компьютериңизге кирүү үчүн, ошол каттоо эсеп менен <ph name="LINK_BEGIN" />Google Chrome'го кириңиз<ph name="LINK_END" /> жана Chrome Алыскы иш тактасын кайра орнотуңуз.</translation>
+<translation id="8548209692293300397">Мурун <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) аркылуу кирип турасыз. Ошол каттоо эсеби аркылуу компьютериңизге кирүү үчүн, ошол каттоо эсеп менен <ph name="LINK_BEGIN" />Google Chrome'го кириңиз<ph name="LINK_END" /> жана Chrome Алыскы иш тактасын кайра орнотуңуз.</translation>
 <translation id="858006550102277544">Жорум</translation>
 <translation id="8642984861538780905">Орточо</translation>
 <translation id="8712909229180978490">Google Drive'дан сакталган файлдарымды онлайнда көрө албай жатам.</translation>

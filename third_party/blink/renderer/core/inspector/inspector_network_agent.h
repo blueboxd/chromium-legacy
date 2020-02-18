@@ -150,7 +150,6 @@ class CORE_EXPORT InspectorNetworkAgent final
                    const AtomicString& method,
                    const KURL&,
                    bool async,
-                   EncodedFormData* form_data,
                    const HTTPHeaderMap& headers,
                    bool include_crendentials);
   void DidFinishXHR(XMLHttpRequest*);

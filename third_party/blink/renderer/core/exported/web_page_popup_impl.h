@@ -126,9 +126,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   void Close() override;
   WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) override;
   void SetFocus(bool) override;
-  bool IsAcceleratedCompositingActive() const override {
-    return is_accelerated_compositing_active_;
-  }
   WebURL GetURLForDebugTrace() override;
   WebHitTestResult HitTestResultAt(const gfx::Point&) override { return {}; }
 
@@ -171,7 +168,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   cc::AnimationHost* animation_host_ = nullptr;
   scoped_refptr<cc::Layer> root_layer_;
   base::TimeTicks raf_aligned_input_start_time_;
-  bool is_accelerated_compositing_active_ = false;
 
   bool suppress_next_keypress_event_ = false;
   Persistent<DOMRect> popup_owner_client_rect_;

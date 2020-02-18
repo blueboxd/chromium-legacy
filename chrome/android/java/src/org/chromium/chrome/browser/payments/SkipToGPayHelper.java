@@ -76,7 +76,7 @@ public class SkipToGPayHelper {
         }
 
         // V1 experiment: only enable skip-to-GPay if no usable basic-card exists.
-        // This check for autofill instrument is duplicate work if skip-to-GPay ends up not being
+        // This check for autofill card is duplicate work if skip-to-GPay ends up not being
         // enabled and adds a small delay (average ~3ms with first time ) to all hybrid request
         // flows. However, this is the cleanest way to implement SKIP_TO_GPAY_IF_NO_CARD.
         return !AutofillPaymentAppFactory.hasUsableAutofillCard(webContents, methodData)

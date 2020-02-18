@@ -639,10 +639,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // assess the security origin of the main frame document.
   bool CanAccessMainFrame() const;
 
-  // Returns true if the WebView the plugin is in renders via the accelerated
-  // compositing path.
-  bool IsViewAccelerated();
-
   // Track, set and reset size attributes to control the size of the plugin
   // in and out of fullscreen mode.
   void KeepSizeAttributesBeforeFullscreen();

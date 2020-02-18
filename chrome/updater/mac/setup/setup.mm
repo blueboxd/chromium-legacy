@@ -123,10 +123,21 @@ base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateCheckLaunchDName() {
       base::SysUTF8ToCFStringRef(launchd_name), base::scoped_policy::RETAIN);
 }
 
+base::ScopedCFTypeRef<CFStringRef> CopyGoogleUpdateServiceLaunchDName() {
+  std::string launchd_name = MAC_BUNDLE_IDENTIFIER_STRING;
+  launchd_name.append(".service");
+  return base::ScopedCFTypeRef<CFStringRef>(
+      base::SysUTF8ToCFStringRef(launchd_name), base::scoped_policy::RETAIN);
+}
+
 base::scoped_nsobject<NSString> GetGoogleUpdateCheckLaunchDLabel() {
-  base::scoped_nsobject<NSString> label(
+  return base::scoped_nsobject<NSString>(
       base::mac::CFToNSCast(CopyGoogleUpdateCheckLaunchDName()));
-  return label;
+}
+
+base::scoped_nsobject<NSString> GetGoogleUpdateServiceLaunchDLabel() {
+  return base::scoped_nsobject<NSString>(
+      base::mac::CFToNSCast(CopyGoogleUpdateServiceLaunchDName()));
 }
 
 base::scoped_nsobject<NSString> GetGoogleUpdateCheckMachName() {
@@ -137,6 +148,16 @@ base::scoped_nsobject<NSString> GetGoogleUpdateCheckMachName() {
                                     [GetGoogleUpdateCheckLaunchDLabel() hash]]);
 }
 
+base::scoped_nsobject<NSString> GetGoogleUpdateServiceMachName() {
+  base::scoped_nsobject<NSString> name(
+      base::mac::CFToNSCast(CopyGoogleUpdateServiceLaunchDName()));
+  return base::scoped_nsobject<NSString>(
+      [name
+          stringByAppendingFormat:@".%lu",
+                                  [GetGoogleUpdateServiceLaunchDLabel() hash]],
+      base::scoped_policy::RETAIN);
+}
+
 base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateCheckLaunchdPlist(
     const base::FilePath* updater_path) {
   // See the man page for launchd.plist.
@@ -144,10 +165,11 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateCheckLaunchdPlist(
     @LAUNCH_JOBKEY_LABEL : GetGoogleUpdateCheckLaunchDLabel(),
     @LAUNCH_JOBKEY_PROGRAM : base::SysUTF8ToNSString(updater_path->value()),
     @LAUNCH_JOBKEY_PROGRAMARGUMENTS : @[ @"--ua" ],
-    @LAUNCH_JOBKEY_MACHSERVICES : GetGoogleUpdateCheckMachName(),
+    @LAUNCH_JOBKEY_MACHSERVICES : @{GetGoogleUpdateCheckMachName() : @YES},
     @LAUNCH_JOBKEY_RUNATLOAD : @YES,
     @LAUNCH_JOBKEY_STARTINTERVAL : @18000,
     @LAUNCH_JOBKEY_KEEPALIVE : @{@LAUNCH_JOBKEY_KEEPALIVE_SUCCESSFULEXIT : @NO},
+    @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @NO,
     @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : @"Aqua"
   };
 
@@ -156,7 +178,26 @@ base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateCheckLaunchdPlist(
       base::scoped_policy::RETAIN);
 }
 
-bool CreateLaunchdItems() {
+base::ScopedCFTypeRef<CFDictionaryRef> CreateGoogleUpdateServiceLaunchdPlist(
+    const base::FilePath* updater_path) {
+  // See the man page for launchd.plist.
+  NSDictionary* launchd_plist = @{
+    @LAUNCH_JOBKEY_LABEL : GetGoogleUpdateServiceLaunchDLabel(),
+    @LAUNCH_JOBKEY_PROGRAM : base::SysUTF8ToNSString(updater_path->value()),
+    @LAUNCH_JOBKEY_PROGRAMARGUMENTS : @[ @"--server" ],
+    @LAUNCH_JOBKEY_MACHSERVICES : @{GetGoogleUpdateServiceMachName() : @YES},
+    @LAUNCH_JOBKEY_RUNATLOAD : @YES,
+    @LAUNCH_JOBKEY_KEEPALIVE : @{@LAUNCH_JOBKEY_KEEPALIVE_SUCCESSFULEXIT : @NO},
+    @LAUNCH_JOBKEY_ABANDONPROCESSGROUP : @NO,
+    @LAUNCH_JOBKEY_LIMITLOADTOSESSIONTYPE : @"Aqua"
+  };
+
+  return base::ScopedCFTypeRef<CFDictionaryRef>(
+      base::mac::CFCast<CFDictionaryRef>(launchd_plist),
+      base::scoped_policy::RETAIN);
+}
+
+bool CreateLaunchdCheckItem() {
   // We're creating directories and writing a file.
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
@@ -174,6 +215,24 @@ bool CreateLaunchdItems() {
                                                   name, plist);
 }
 
+bool CreateLaunchdServiceItem() {
+  // We're creating directories and writing a file.
+  base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
+                                                base::BlockingType::MAY_BLOCK);
+  base::ScopedCFTypeRef<CFStringRef> name(CopyGoogleUpdateServiceLaunchDName());
+
+  const base::FilePath updater_path =
+      base::mac::GetUserLibraryPath()
+          .Append(GetUpdateFolderName())
+          .Append(GetUpdaterAppName())
+          .Append(GetUpdaterAppExecutablePath());
+
+  base::ScopedCFTypeRef<CFDictionaryRef> plist(
+      CreateGoogleUpdateServiceLaunchdPlist(&updater_path));
+  return Launchd::GetInstance()->WritePlistToFile(Launchd::User, Launchd::Agent,
+                                                  name, plist);
+}
+
 bool RemoveFromLaunchd() {
   // This may block while deleting the launchd plist file.
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
@@ -183,12 +242,33 @@ bool RemoveFromLaunchd() {
                                              name);
 }
 
+bool StartLaunchdUpdateCheckTask() {
+  base::ScopedCFTypeRef<CFStringRef> name(CopyGoogleUpdateCheckLaunchDName());
+  return Launchd::GetInstance()->RestartJob(Launchd::User, Launchd::Agent, name,
+                                            CFSTR("Aqua"));
+}
+
+bool StartLaunchdServiceTask() {
+  base::ScopedCFTypeRef<CFStringRef> name(CopyGoogleUpdateServiceLaunchDName());
+  return Launchd::GetInstance()->RestartJob(Launchd::User, Launchd::Agent, name,
+                                            CFSTR("Aqua"));
+}
+
 int SetupUpdater() {
   if (!CopyBundle())
     return -1;
 
-  if (!CreateLaunchdItems())
+  if (!CreateLaunchdCheckItem())
     return -2;
+
+  if (!CreateLaunchdServiceItem())
+    return -3;
+
+  if (!StartLaunchdUpdateCheckTask())
+    return -4;
+
+  if (!StartLaunchdServiceTask())
+    return -5;
 
   return 0;
 }
@@ -200,7 +280,7 @@ int HandleUpdaterSetupCommands(const base::CommandLine* command_line) {
 
   if (command_line->HasSwitch(updater::kCrashMeSwitch)) {
     LOG(FATAL) << "Crashing deliberately.";
-    return -3;
+    return -100;
   }
 
   return SetupUpdater();

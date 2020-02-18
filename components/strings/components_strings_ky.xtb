@@ -572,7 +572,6 @@
 <translation id="3487845404393360112">4-түпкүч</translation>
 <translation id="3495081129428749620"><ph name="PAGE_TITLE" /> барагынан табуу</translation>
 <translation id="3512163584740124171">Ушул эле саясаттар тобундагы башка саясаттын мааниси артыкчылыктуу болгондуктан, бул саясат этибарга алынбайт.</translation>
-<translation id="3513704683820682405">Кошумчаланган чындык</translation>
 <translation id="3518941727116570328">Бир нече объектти тейлөө</translation>
 <translation id="3528171143076753409">Сервердин тастыктамасы ишенимдүү эмес.</translation>
 <translation id="3528485271872257980">Күңүрт күрөң</translation>
@@ -897,7 +896,6 @@
 <translation id="4926159001844873046"><ph name="SITE" /> мындай дейт:</translation>
 <translation id="4926340098269537727"><ph name="ACTIVE_MATCH" />/<ph name="TOTAL_MATCHCOUNT" /></translation>
 <translation id="4930153903256238152">Сыйымдуулугу чоң</translation>
-<translation id="4943703118917034429">Виртуалдык чындык</translation>
 <translation id="4943872375798546930">Натыйжалар жок</translation>
 <translation id="4950898438188848926">Өтмөктү которуштуруу баскычы. Ачык өтмөккө өтүү үчүн, "Enter" баскычын басыңыз, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Аракеттер</translation>
@@ -1715,7 +1713,6 @@
 <translation id="861775596732816396">Өлчөмү: 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
 <translation id="8625384913736129811">Бул карточка ушул түзмөктө сакталсын</translation>
-<translation id="8647750283161643317">Баарын демейкиге кайтаруу</translation>
 <translation id="8663226718884576429">Буйрутма тууралуу маалымат, <ph name="TOTAL_LABEL" />, Толук маалымат</translation>
 <translation id="867224526087042813">Колтамга</translation>
 <translation id="8676424191133491403">Дароо</translation>
@@ -1765,7 +1762,7 @@
 <translation id="890485472659500557">Engineering-C</translation>
 <translation id="890493561996401738">"Сунушту өчүрүү" баскычы. Өчүрүү үчүн "Enter" баскычын басыңыз, <ph name="REMOVE_BUTTON_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="8910670906166981838">Жашыруун режимге өттүңүз</translation>
-<translation id="8912362522468806198">Google каттоо эсеби</translation>
+<translation id="8912362522468806198">Google аккаунту</translation>
 <translation id="8918231688545606538">Бул шектүү баракча</translation>
 <translation id="892588693504540538">Жогорку оң жагын тешүү</translation>
 <translation id="8931333241327730545">Бул карточканы Google аккаунтуңузга сактап коесузбу?</translation>

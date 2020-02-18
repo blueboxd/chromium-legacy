@@ -56,10 +56,6 @@ if (is_win) {
       "brand_behaviors.h",
       "install.cc",
       "install.h",
-      "install_service_work_item.cc",
-      "install_service_work_item.h",
-      "install_service_work_item_impl.cc",
-      "install_service_work_item_impl.h",
       "install_worker.cc",
       "install_worker.h",
       "installer_crash_reporter_client.cc",
@@ -124,7 +120,6 @@ if (is_win) {
   test("setup_unittests") {
     sources = [
       "archive_patch_helper_unittest.cc",
-      "install_service_work_item_unittest.cc",
       "install_unittest.cc",
       "install_worker_unittest.cc",
       "installer_state_unittest.cc",

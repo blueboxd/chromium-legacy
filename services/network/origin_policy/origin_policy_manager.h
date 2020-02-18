@@ -83,6 +83,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) OriginPolicyManager
  private:
   using KnownVersionMap = std::map<url::Origin, std::string>;
 
+  void CreateOrRecreateURLLoaderFactory();
+
   // Parses a header and returns the result. If a parsed result does not contain
   // a non-empty policy version it means the `header_value` is invalid.
   static OriginPolicyHeaderValues

@@ -35,6 +35,7 @@
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
+#include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/test/direct_layer_tree_frame_sink.h"
@@ -147,14 +148,88 @@ class DirectOutputSurface : public viz::OutputSurface {
 
 }  // namespace
 
-struct InProcessContextFactory::PerCompositorData {
-  gpu::SurfaceHandle surface_handle = gpu::kNullSurfaceHandle;
-  std::unique_ptr<viz::BeginFrameSource> begin_frame_source;
-  std::unique_ptr<viz::Display> display;
-  SkMatrix44 output_color_matrix;
-  gfx::DisplayColorSpaces display_color_spaces;
-  base::TimeTicks vsync_timebase;
-  base::TimeDelta vsync_interval;
+// TODO(sgilhuly): This class is managed heavily by InProcessTransportFactory.
+// Move some of the logic in here and simplify the interface.
+class InProcessContextFactory::PerCompositorData
+    : public viz::mojom::DisplayPrivate {
+ public:
+  // viz::mojom::DisplayPrivate implementation.
+  void SetDisplayVisible(bool visible) override {
+    display_->SetVisible(visible);
+  }
+  void Resize(const gfx::Size& size) override { display_->Resize(size); }
+  bool DisableSwapUntilResize() override {
+    display_->DisableSwapUntilResize(base::OnceClosure());
+    return true;
+  }
+  void DisableSwapUntilResize(
+      DisableSwapUntilResizeCallback callback) override {
+    display_->DisableSwapUntilResize(std::move(callback));
+  }
+  void SetDisplayColorMatrix(const gfx::Transform& matrix) override {
+    output_color_matrix_ = matrix.matrix();
+  }
+  void SetDisplayColorSpaces(
+      const gfx::DisplayColorSpaces& color_spaces) override {
+    display_color_spaces_ = color_spaces;
+  }
+  void SetDisplayVSyncParameters(base::TimeTicks timebase,
+                                 base::TimeDelta interval) override {
+    vsync_timebase_ = timebase;
+    vsync_interval_ = interval;
+  }
+  void SetOutputIsSecure(bool secure) override {}
+  void ForceImmediateDrawAndSwapIfPossible() override {}
+  void AddVSyncParameterObserver(
+      mojo::PendingRemote<viz::mojom::VSyncParameterObserver> observer)
+      override {}
+#if defined(OS_ANDROID)
+  void SetVSyncPaused(bool paused) override {}
+  void UpdateRefreshRate(float refresh_rate) override {}
+  void SetSupportedRefreshRates(
+      const std::vector<float>& refresh_rates) override {}
+#endif
+
+  void SetSurfaceHandle(gpu::SurfaceHandle surface_handle) {
+    surface_handle_ = surface_handle;
+  }
+  void SetBeginFrameSource(
+      std::unique_ptr<viz::BeginFrameSource> begin_frame_source) {
+    begin_frame_source_ = std::move(begin_frame_source);
+  }
+  void SetDisplay(std::unique_ptr<viz::Display> display) {
+    display_ = std::move(display);
+  }
+
+  void ResetDisplayOutputParameters() {
+    output_color_matrix_.setIdentity();
+    display_color_spaces_ = gfx::DisplayColorSpaces();
+    vsync_timebase_ = base::TimeTicks();
+    vsync_interval_ = base::TimeDelta();
+  }
+
+  gpu::SurfaceHandle surface_handle() { return surface_handle_; }
+  viz::BeginFrameSource* begin_frame_source() {
+    return begin_frame_source_.get();
+  }
+  viz::Display* display() { return display_.get(); }
+
+  SkMatrix44 output_color_matrix() { return output_color_matrix_; }
+  gfx::DisplayColorSpaces display_color_spaces() {
+    return display_color_spaces_;
+  }
+  base::TimeTicks vsync_timebase() { return vsync_timebase_; }
+  base::TimeDelta vsync_interval() { return vsync_interval_; }
+
+ private:
+  gpu::SurfaceHandle surface_handle_ = gpu::kNullSurfaceHandle;
+  std::unique_ptr<viz::BeginFrameSource> begin_frame_source_;
+  std::unique_ptr<viz::Display> display_;
+
+  SkMatrix44 output_color_matrix_;
+  gfx::DisplayColorSpaces display_color_spaces_;
+  base::TimeTicks vsync_timebase_;
+  base::TimeDelta vsync_interval_;
 };
 
 InProcessContextFactory::InProcessContextFactory(
@@ -234,7 +309,7 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
   constexpr bool support_locking = false;
   scoped_refptr<InProcessContextProvider> context_provider =
       InProcessContextProvider::Create(attribs, &gpu_memory_buffer_manager_,
-                                       &image_factory_, data->surface_handle,
+                                       &image_factory_, data->surface_handle(),
                                        "UICompositor", support_locking);
 
   std::unique_ptr<viz::OutputSurface> display_output_surface;
@@ -275,24 +350,23 @@ void InProcessContextFactory::CreateLayerTreeFrameSink(
       begin_frame_source.get(), compositor->task_runner().get(),
       display_output_surface->capabilities().max_frames_pending);
 
-  data->display = std::make_unique<viz::Display>(
+  data->SetDisplay(std::make_unique<viz::Display>(
       &shared_bitmap_manager_, renderer_settings_, compositor->frame_sink_id(),
       std::move(display_output_surface), std::move(overlay_processor),
-      std::move(scheduler), compositor->task_runner());
+      std::move(scheduler), compositor->task_runner()));
   frame_sink_manager_->RegisterBeginFrameSource(begin_frame_source.get(),
                                                 compositor->frame_sink_id());
   // Note that we are careful not to destroy a prior |data->begin_frame_source|
   // until we have reset |data->display|.
-  data->begin_frame_source = std::move(begin_frame_source);
+  data->SetBeginFrameSource(std::move(begin_frame_source));
 
-  auto* display = per_compositor_data_[compositor.get()]->display.get();
   auto layer_tree_frame_sink = std::make_unique<DirectLayerTreeFrameSink>(
-      compositor->frame_sink_id(), frame_sink_manager_, display,
+      compositor->frame_sink_id(), frame_sink_manager_, data->display(),
       context_provider, shared_worker_context_provider_,
       compositor->task_runner(), &gpu_memory_buffer_manager_);
-  compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
+  compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink), data);
 
-  data->display->Resize(compositor->size());
+  data->Resize(compositor->size());
 }
 
 scoped_refptr<viz::ContextProvider>
@@ -325,12 +399,11 @@ void InProcessContextFactory::RemoveCompositor(Compositor* compositor) {
   if (it == per_compositor_data_.end())
     return;
   PerCompositorData* data = it->second.get();
-  frame_sink_manager_->UnregisterBeginFrameSource(
-      data->begin_frame_source.get());
+  frame_sink_manager_->UnregisterBeginFrameSource(data->begin_frame_source());
   DCHECK(data);
 #if !defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
-  if (data->surface_handle)
-    gpu::GpuSurfaceTracker::Get()->RemoveSurface(data->surface_handle);
+  if (data->surface_handle())
+    gpu::GpuSurfaceTracker::Get()->RemoveSurface(data->surface_handle());
 #endif
   per_compositor_data_.erase(it);
 }
@@ -352,66 +425,13 @@ viz::HostFrameSinkManager* InProcessContextFactory::GetHostFrameSinkManager() {
   return host_frame_sink_manager_;
 }
 
-void InProcessContextFactory::SetDisplayVisible(ui::Compositor* compositor,
-                                                bool visible) {
-  if (!per_compositor_data_.count(compositor))
-    return;
-  per_compositor_data_[compositor]->display->SetVisible(visible);
-}
-
-void InProcessContextFactory::ResizeDisplay(ui::Compositor* compositor,
-                                            const gfx::Size& size) {
-  if (!per_compositor_data_.count(compositor))
-    return;
-  per_compositor_data_[compositor]->display->Resize(size);
-}
-
-void InProcessContextFactory::DisableSwapUntilResize(
-    ui::Compositor* compositor) {
-  if (!per_compositor_data_.count(compositor))
-    return;
-  per_compositor_data_[compositor]->display->DisableSwapUntilResize(
-      base::OnceClosure());
-}
-
-void InProcessContextFactory::SetDisplayColorMatrix(ui::Compositor* compositor,
-                                                    const SkMatrix44& matrix) {
-  auto iter = per_compositor_data_.find(compositor);
-  if (iter == per_compositor_data_.end())
-    return;
-
-  iter->second->output_color_matrix = matrix;
-  iter->second->display->SetColorMatrix(matrix);
-}
-
-void InProcessContextFactory::SetDisplayColorSpaces(
-    ui::Compositor* compositor,
-    const gfx::DisplayColorSpaces& display_color_spaces) {
-  auto iter = per_compositor_data_.find(compositor);
-  if (iter == per_compositor_data_.end())
-    return;
-
-  iter->second->display_color_spaces = display_color_spaces;
-}
-
-void InProcessContextFactory::SetDisplayVSyncParameters(
-    ui::Compositor* compositor,
-    base::TimeTicks timebase,
-    base::TimeDelta interval) {
-  auto iter = per_compositor_data_.find(compositor);
-  if (iter == per_compositor_data_.end())
-    return;
-  iter->second->vsync_timebase = timebase;
-  iter->second->vsync_interval = interval;
-}
-
 SkMatrix44 InProcessContextFactory::GetOutputColorMatrix(
     Compositor* compositor) const {
   auto iter = per_compositor_data_.find(compositor);
   if (iter == per_compositor_data_.end())
     return SkMatrix44(SkMatrix44::kIdentity_Constructor);
 
-  return iter->second->output_color_matrix;
+  return iter->second->output_color_matrix();
 }
 
 gfx::DisplayColorSpaces InProcessContextFactory::GetDisplayColorSpaces(
@@ -419,14 +439,7 @@ gfx::DisplayColorSpaces InProcessContextFactory::GetDisplayColorSpaces(
   auto iter = per_compositor_data_.find(compositor);
   if (iter == per_compositor_data_.end())
     return gfx::DisplayColorSpaces();
-  return iter->second->display_color_spaces;
-}
-
-float InProcessContextFactory::GetSDRWhiteLevel(Compositor* compositor) const {
-  auto iter = per_compositor_data_.find(compositor);
-  if (iter == per_compositor_data_.end())
-    return 0;
-  return iter->second->display_color_spaces.GetSDRWhiteLevel();
+  return iter->second->display_color_spaces();
 }
 
 base::TimeTicks InProcessContextFactory::GetDisplayVSyncTimeBase(
@@ -434,7 +447,7 @@ base::TimeTicks InProcessContextFactory::GetDisplayVSyncTimeBase(
   auto iter = per_compositor_data_.find(compositor);
   if (iter == per_compositor_data_.end())
     return base::TimeTicks();
-  return iter->second->vsync_timebase;
+  return iter->second->vsync_timebase();
 }
 
 base::TimeDelta InProcessContextFactory::GetDisplayVSyncTimeInterval(
@@ -442,37 +455,32 @@ base::TimeDelta InProcessContextFactory::GetDisplayVSyncTimeInterval(
   auto iter = per_compositor_data_.find(compositor);
   if (iter == per_compositor_data_.end())
     return viz::BeginFrameArgs::DefaultInterval();
-  ;
-  return iter->second->vsync_interval;
+  return iter->second->vsync_interval();
 }
 
 void InProcessContextFactory::ResetDisplayOutputParameters(
-    ui::Compositor* compositor) {
+    Compositor* compositor) {
   auto iter = per_compositor_data_.find(compositor);
   if (iter == per_compositor_data_.end())
     return;
-
-  iter->second->output_color_matrix.setIdentity();
-  iter->second->display_color_spaces = gfx::DisplayColorSpaces();
-  iter->second->vsync_timebase = base::TimeTicks();
-  iter->second->vsync_interval = base::TimeDelta();
+  iter->second->ResetDisplayOutputParameters();
 }
 
 InProcessContextFactory::PerCompositorData*
-InProcessContextFactory::CreatePerCompositorData(ui::Compositor* compositor) {
+InProcessContextFactory::CreatePerCompositorData(Compositor* compositor) {
   DCHECK(!per_compositor_data_[compositor]);
 
   gfx::AcceleratedWidget widget = compositor->widget();
 
   auto data = std::make_unique<PerCompositorData>();
   if (widget == gfx::kNullAcceleratedWidget) {
-    data->surface_handle = gpu::kNullSurfaceHandle;
+    data->SetSurfaceHandle(gpu::kNullSurfaceHandle);
   } else {
 #if defined(GPU_SURFACE_HANDLE_IS_ACCELERATED_WINDOW)
-    data->surface_handle = widget;
+    data->SetSurfaceHandle(widget);
 #else
     gpu::GpuSurfaceTracker* tracker = gpu::GpuSurfaceTracker::Get();
-    data->surface_handle = tracker->AddSurfaceForNativeWidget(
+    data->SetSurfaceHandle(tracker->AddSurfaceForNativeWidget(
         gpu::GpuSurfaceTracker::SurfaceRecord(
             widget
 #if defined(OS_ANDROID)
@@ -483,7 +491,7 @@ InProcessContextFactory::CreatePerCompositorData(ui::Compositor* compositor) {
             ,
             nullptr, false /* can_be_used_with_surface_control */
 #endif
-            ));
+            )));
 #endif
   }
 

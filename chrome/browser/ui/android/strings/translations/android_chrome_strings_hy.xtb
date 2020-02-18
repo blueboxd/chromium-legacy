@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">Lite</translation>
 <translation id="3303414029551471755">Ներբեռնե՞լ բովանդակությունը:</translation>
 <translation id="3306398118552023113">Այս հավելվածն աշխատում է Chrome-ում</translation>
-<translation id="3312292613668865961">Հարցնել՝ նախքան թույլատրելը կայքերին օգտագործել վիրտուալ իրականության ձեր սարքերը/տվյալները (խորհուրդ է տրվում)</translation>
 <translation id="3315103659806849044">Դուք ներկայումս անհատականացնում եք համաժամացման և Google-ի ծառայությունների կարգավորումները: Անհատականացումն ավարտելու և համաժամացումը միացնելու համար հպեք «Հաստատել» կոճակին էկրանի ներքևի հատվածում: Անցնել վերև</translation>
 <translation id="3328801116991980348">Տեղեկություններ կայքի մասին</translation>
 <translation id="3333961966071413176">Բոլոր կոնտակտները</translation>
@@ -514,7 +513,6 @@
 <translation id="4915549754973153784"><ph name="BEGIN_LINK" />Ստացեք օգնություն<ph name="END_LINK" /> սարքեր որոնելիս…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# էջ}one{# էջ}other{# էջ}}</translation>
 <translation id="4932247056774066048">Դուք դուրս եք գալիս <ph name="DOMAIN_NAME" /> տիրույթի ադմինիստրատորի կողմից կառավարվող հաշվից: Chrome-ի ձեր տվյալները կհեռացվեն այս սարքից, սակայն կպահպանվեն Google հաշվում:</translation>
-<translation id="4935305910887312910">Հարցնել՝ նախքան թույլատրելը կայքերին հետագծել տեսախցիկի դիրքը և կազմել սենյակի հատակագիծը (խորհուրդ է տրվում)</translation>
 <translation id="4943703118917034429">Վիրտուալ իրականություն</translation>
 <translation id="4943872375798546930">Արդյունքներ չկան</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> էջը կիսվում է ձեր էկրանով</translation>
@@ -818,6 +816,7 @@
 <translation id="7141896414559753902">Արգելափակել ելնող պատուհանները և վերահասցեավորումը կայքերում (խորհուրդ է տրվում)</translation>
 <translation id="7149158118503947153"><ph name="BEGIN_LINK" />Բեռնել էջի բնօրինակը<ph name="END_LINK" /> <ph name="DOMAIN_NAME" /> տիրույթից</translation>
 <translation id="7149893636342594995">Վերջին 24 ժամվա</translation>
+<translation id="7173114856073700355">Բացել կարգավորումները</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> ԿԲ</translation>
 <translation id="7177466738963138057">Կարող եք սա հետագայում փոխել կարգավորումներում</translation>
 <translation id="7180611975245234373">Թարմացնել</translation>
@@ -1025,7 +1024,6 @@
 <translation id="8664979001105139458">Այս անունով ֆայլ արդեն գոյություն ունի</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{Ազդանշանի ուժգնությունը՝ # գծիկ}one{Signal Strength Level: # bars}other{Ազդանշանի ուժգնությունը՝ # գծիկ}}</translation>
 <translation id="868929229000858085">Որոնեք կոնտակտներ</translation>
-<translation id="8698438463325761328">Արգելել կայքերին օգտագործել վիրտուալ իրականության ձեր սարքերը/տվյալները</translation>
 <translation id="869891660844655955">Սպառման ժամկետ</translation>
 <translation id="8728487861892616501">Օգտագործելով այս հավելվածը՝ դուք ընդունում եք Chrome-ի <ph name="BEGIN_LINK1" />օգտագործման պայմաններն<ph name="END_LINK1" /> ու <ph name="BEGIN_LINK2" />գաղտնիության ծանուցումը<ph name="END_LINK2" />, ինչպես նաև <ph name="BEGIN_LINK3" />գաղտնիության ծանուցումը Family Link-ում ստեղծված Google հաշիվների համար<ph name="END_LINK3" />։</translation>
 <translation id="8748850008226585750">Բովանդակությունը թաքցված է</translation>
@@ -1042,7 +1040,6 @@
 <translation id="883806473910249246">Բովանդակությունը ներբեռնելիս սխալ առաջացավ:</translation>
 <translation id="8840953339110955557">Այս էջը կարող է տարբերվել առցանց տարբերակից։</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">Արգելել կայքերին հետագծել տեսախցիկի դիրքը և կազմել սենյակի հատակագիծը</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, ներդիր</translation>
 <translation id="885701979325669005">Պահեստ</translation>
 <translation id="889338405075704026">Անցնել Chrome-ի կարգավորումներ</translation>

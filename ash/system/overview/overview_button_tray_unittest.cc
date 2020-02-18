@@ -4,8 +4,10 @@
 
 #include "ash/system/overview/overview_button_tray.h"
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/login_status.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/root_window_controller.h"
@@ -26,7 +28,9 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/user_action_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_types.h"
 #include "ui/aura/window.h"
@@ -75,7 +79,13 @@ void PerformDoubleTap() {
 
 class OverviewButtonTrayTest : public AshTestBase {
  public:
-  OverviewButtonTrayTest() = default;
+  OverviewButtonTrayTest() {
+    scoped_features_.InitAndDisableFeature(
+        features::kHideShelfControlsInTabletMode);
+  }
+  OverviewButtonTrayTest(const OverviewButtonTrayTest& other) = delete;
+  OverviewButtonTrayTest& operator=(const OverviewButtonTrayTest& other) =
+      delete;
   ~OverviewButtonTrayTest() override = default;
 
   void SetUp() override {
@@ -107,7 +117,7 @@ class OverviewButtonTrayTest : public AshTestBase {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(OverviewButtonTrayTest);
+  base::test::ScopedFeatureList scoped_features_;
 };
 
 // Ensures that creation doesn't cause any crashes and adds the image icon.
@@ -455,6 +465,162 @@ TEST_F(OverviewButtonTrayTest, ForDevTabletModeForcesTheButtonShown) {
   // However, disabling tablet mode is always synchronous.
   Shell::Get()->tablet_mode_controller()->SetEnabledForDev(false);
   EXPECT_FALSE(TabletModeControllerTestApi().IsTabletModeStarted());
+  EXPECT_FALSE(GetTray()->GetVisible());
+}
+
+enum class TestAccessibilityFeature {
+  kNone,
+  kSpokenFeedback,
+  kAutoclick,
+  kSwitchAccess
+};
+
+// Tests overview button tray item behavior when shelf navigation buttons (which
+// includes overview button) are hidden.
+class OverviewButtonTrayWithShelfControlsHiddenTest
+    : public AshTestBase,
+      public testing::WithParamInterface<TestAccessibilityFeature> {
+ public:
+  OverviewButtonTrayWithShelfControlsHiddenTest() {
+    scoped_features_.InitWithFeatures(
+        {chromeos::features::kShelfHotseat,
+         features::kHideShelfControlsInTabletMode},
+        {});
+  }
+  OverviewButtonTrayWithShelfControlsHiddenTest(
+      const OverviewButtonTrayWithShelfControlsHiddenTest& other) = delete;
+  OverviewButtonTrayWithShelfControlsHiddenTest& operator=(
+      const OverviewButtonTrayWithShelfControlsHiddenTest& other) = delete;
+  ~OverviewButtonTrayWithShelfControlsHiddenTest() override = default;
+
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ::switches::kUseFirstDisplayAsInternal);
+
+    AshTestBase::SetUp();
+
+    // State change is asynchronous on the device. Do the same
+    // in this unit tests.
+    TabletModeController::SetUseScreenshotForTest(true);
+  }
+
+  void SetTestA11yFeatureEnabled(bool enabled) {
+    switch (GetParam()) {
+      case TestAccessibilityFeature::kNone:
+        break;
+      case TestAccessibilityFeature::kSpokenFeedback:
+        Shell::Get()->accessibility_controller()->SetSpokenFeedbackEnabled(
+            enabled, A11Y_NOTIFICATION_NONE);
+        break;
+      case TestAccessibilityFeature::kAutoclick:
+        Shell::Get()->accessibility_controller()->SetAutoclickEnabled(enabled);
+        break;
+      case TestAccessibilityFeature::kSwitchAccess:
+        Shell::Get()->accessibility_controller()->SetSwitchAccessEnabled(
+            enabled);
+        break;
+    }
+  }
+
+  bool HasTestingAccessibilityFeature() const {
+    return GetParam() != TestAccessibilityFeature::kNone;
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_features_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    OverviewButtonTrayWithShelfControlsHiddenTest,
+    ::testing::Values(TestAccessibilityFeature::kNone,
+                      TestAccessibilityFeature::kSpokenFeedback,
+                      TestAccessibilityFeature::kAutoclick,
+                      TestAccessibilityFeature::kSwitchAccess));
+
+// Test that tablet mode toggle does not change overview button visibility if
+// kHideShelfControlsInTabletMode feature is enabled, and buttons are not forced
+// by an accessibility feature.
+TEST_P(OverviewButtonTrayWithShelfControlsHiddenTest, VisibilityTest) {
+  ASSERT_FALSE(GetTray()->GetVisible());
+  SetTestA11yFeatureEnabled(true);
+
+  TabletModeControllerTestApi().EnterTabletMode();
+  EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
+  EXPECT_EQ(HasTestingAccessibilityFeature(), GetTray()->GetVisible());
+
+  TabletModeControllerTestApi().LeaveTabletMode();
+  EXPECT_FALSE(GetTray()->GetVisible());
+  EXPECT_FALSE(Shell::Get()->tablet_mode_controller()->InTabletMode());
+
+  // When there is an window, it'll take an screenshot and the tablet mode
+  // switch becomes asynchronous.
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
+
+  ASSERT_FALSE(GetTray()->GetVisible());
+
+  TabletMode::Waiter waiter(/*enable=*/true);
+  TabletModeControllerTestApi().EnterTabletMode();
+  EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
+  EXPECT_FALSE(GetTray()->GetVisible());
+
+  waiter.Wait();
+
+  EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
+  EXPECT_EQ(HasTestingAccessibilityFeature(), GetTray()->GetVisible());
+
+  // Disable the accessibility feature while in tablet mode - the button should
+  // be hidden.
+  SetTestA11yFeatureEnabled(false);
+
+  EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
+  EXPECT_FALSE(GetTray()->GetVisible());
+
+  TabletModeControllerTestApi().LeaveTabletMode();
+  EXPECT_FALSE(Shell::Get()->tablet_mode_controller()->InTabletMode());
+  EXPECT_FALSE(GetTray()->GetVisible());
+}
+
+// Verifies that enabling an accessibility feature that foces the overview
+// button visibility while in tablet mode shows the overview button.
+TEST_P(OverviewButtonTrayWithShelfControlsHiddenTest,
+       AccessibilityFeatureEnabledWhileInTabletMode) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
+  EXPECT_FALSE(GetTray()->GetVisible());
+
+  // The button should be shown if the feature gets enabled.
+  SetTestA11yFeatureEnabled(true);
+  EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
+  EXPECT_EQ(HasTestingAccessibilityFeature(), GetTray()->GetVisible());
+
+  TabletModeControllerTestApi().LeaveTabletMode();
+  EXPECT_FALSE(Shell::Get()->tablet_mode_controller()->InTabletMode());
+  EXPECT_FALSE(GetTray()->GetVisible());
+}
+
+TEST_P(OverviewButtonTrayWithShelfControlsHiddenTest,
+       AccessibilityFeaturesChangeWhileInOverview) {
+  Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+  EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
+  EXPECT_FALSE(GetTray()->GetVisible());
+
+  // Create a window to show in overview.
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
+  Shell::Get()->overview_controller()->StartOverview();
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+  EXPECT_FALSE(GetTray()->GetVisible());
+
+  // The button should be shown if the feature gets enabled.
+  SetTestA11yFeatureEnabled(true);
+  EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
+  EXPECT_EQ(HasTestingAccessibilityFeature(), GetTray()->GetVisible());
+
+  // The button should be hidden if the feature gets disabled.
+  SetTestA11yFeatureEnabled(false);
+  EXPECT_TRUE(Shell::Get()->tablet_mode_controller()->InTabletMode());
   EXPECT_FALSE(GetTray()->GetVisible());
 }
 

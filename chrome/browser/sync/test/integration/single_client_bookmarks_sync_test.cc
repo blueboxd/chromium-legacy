@@ -6,6 +6,7 @@
 
 #include "base/guid.h"
 #include "base/macros.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/profiles/profile.h"
@@ -311,6 +312,52 @@ IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
 
   EXPECT_EQ(1u, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title1));
   EXPECT_EQ(1u, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title2));
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTest,
+                       DownloadLegacyUppercaseGuid2016BookmarksAndCommit) {
+  const std::string lowercase_guid = base::GenerateGUID();
+  ASSERT_EQ(lowercase_guid, base::ToLowerASCII(lowercase_guid));
+
+  const std::string uppercase_guid = base::ToUpperASCII(lowercase_guid);
+  const std::string title1 = "Title1";
+  const std::string title2 = "Title2";
+
+  // Bookmarks created around 2016, between [M44..M52) use an uppercase GUID as
+  // originator client item ID.
+  fake_server::BookmarkEntityBuilder bookmark_builder(
+      title1, /*originator_cache_guid=*/base::GenerateGUID(),
+      /*originator_client_item_id=*/uppercase_guid);
+
+  fake_server_->InjectEntity(bookmark_builder.BuildBookmark(
+      GURL("http://page1.com"), /*is_legacy=*/true));
+
+  DisableVerifier();
+  ASSERT_TRUE(SetupSync());
+  ASSERT_EQ(1u, CountBookmarksWithTitlesMatching(kSingleProfileIndex, title1));
+
+  // The GUID should have been canonicalized (lowercased) in BookmarkModel.
+  EXPECT_TRUE(
+      ContainsBookmarkNodeWithGUID(kSingleProfileIndex, lowercase_guid));
+  EXPECT_FALSE(
+      ContainsBookmarkNodeWithGUID(kSingleProfileIndex, uppercase_guid));
+
+  // Changing the title should populate the server-side GUID in specifics in
+  // lowercase form.
+  ASSERT_EQ(1u, GetBookmarkBarNode(0)->children().size());
+  ASSERT_EQ(base::ASCIIToUTF16(title1),
+            GetBookmarkBarNode(0)->children()[0]->GetTitle());
+  SetTitle(kSingleProfileIndex, GetBookmarkBarNode(0)->children().front().get(),
+           title2);
+  ASSERT_TRUE(
+      UpdatedProgressMarkerChecker(GetSyncService(kSingleProfileIndex)).Wait());
+
+  // Verify the GUID that was committed to the server.
+  std::vector<sync_pb::SyncEntity> server_bookmarks =
+      GetFakeServer()->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
+  ASSERT_EQ(1u, server_bookmarks.size());
+  ASSERT_EQ(title2, server_bookmarks[0].specifics().bookmark().title());
+  EXPECT_EQ(lowercase_guid, server_bookmarks[0].specifics().bookmark().guid());
 }
 
 // Test that a client doesn't mutate the favicon data in the process

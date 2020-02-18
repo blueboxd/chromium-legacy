@@ -197,20 +197,10 @@ void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
       return;
     }
     case WM_EVENT_DISPLAY_BOUNDS_CHANGED: {
-      if (window_state->is_dragged() ||
-          window_state->allow_set_bounds_direct() ||
-          SetMaximizedOrFullscreenBounds(window_state)) {
-        return;
-      }
-      gfx::Rect work_area_in_parent =
-          screen_util::GetDisplayWorkAreaBoundsInParent(window_state->window());
-      gfx::Rect bounds = window_state->window()->GetTargetBounds();
       // When display bounds has changed, make sure the entire window is fully
       // visible.
-      bounds.AdjustToFit(work_area_in_parent);
-      window_state->AdjustSnappedBounds(&bounds);
-      if (window_state->window()->GetTargetBounds() != bounds)
-        window_state->SetBoundsDirectAnimated(bounds);
+      UpdateBoundsForDisplayOrWorkAreaBoundsChange(
+          window_state, /*ensure_full_window_visibility=*/true);
       return;
     }
     case WM_EVENT_WORKAREA_BOUNDS_CHANGED: {
@@ -227,21 +217,8 @@ void DefaultState::HandleWorkspaceEvents(WindowState* window_state,
       if (in_fullscreen && window_state->IsMaximized())
         return;
 
-      if (window_state->is_dragged() ||
-          window_state->allow_set_bounds_direct() ||
-          SetMaximizedOrFullscreenBounds(window_state)) {
-        return;
-      }
-      gfx::Rect work_area_in_parent =
-          screen_util::GetDisplayWorkAreaBoundsInParent(window_state->window());
-      gfx::Rect bounds = window_state->window()->GetTargetBounds();
-      if (!::wm::GetTransientParent(window_state->window())) {
-        AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
-                                                    &bounds);
-      }
-      window_state->AdjustSnappedBounds(&bounds);
-      if (window_state->window()->GetTargetBounds() != bounds)
-        window_state->SetBoundsDirectAnimated(bounds);
+      UpdateBoundsForDisplayOrWorkAreaBoundsChange(
+          window_state, /*ensure_full_window_visibility=*/false);
       return;
     }
     case WM_EVENT_SYSTEM_UI_AREA_CHANGED:
@@ -630,6 +607,34 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
     } else {
       window_state->SetBoundsDirectAnimated(bounds_in_parent);
     }
+  }
+}
+
+void DefaultState::UpdateBoundsForDisplayOrWorkAreaBoundsChange(
+    WindowState* window_state,
+    bool ensure_full_window_visibility) {
+  if (window_state->is_dragged() || window_state->allow_set_bounds_direct() ||
+      SetMaximizedOrFullscreenBounds(window_state)) {
+    return;
+  }
+
+  const gfx::Rect work_area_in_parent =
+      screen_util::GetDisplayWorkAreaBoundsInParent(window_state->window());
+  gfx::Rect bounds = window_state->window()->GetTargetBounds();
+  if (ensure_full_window_visibility)
+    bounds.AdjustToFit(work_area_in_parent);
+  else if (!::wm::GetTransientParent(window_state->window()))
+    AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent, &bounds);
+  window_state->AdjustSnappedBounds(&bounds);
+
+  if (window_state->window()->GetTargetBounds() == bounds)
+    return;
+
+  if (window_state->bounds_animation_type() ==
+      WindowState::BoundsChangeAnimationType::IMMEDIATE) {
+    window_state->SetBoundsDirect(bounds);
+  } else {
+    window_state->SetBoundsDirectAnimated(bounds);
   }
 }
 

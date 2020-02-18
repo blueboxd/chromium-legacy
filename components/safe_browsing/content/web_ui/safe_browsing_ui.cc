@@ -32,6 +32,7 @@
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/safe_browsing/core/proto/csd.pb.h"
+#include "components/safe_browsing/core/proto/webprotect.pb.h"
 #include "components/safe_browsing/core/realtime/policy_engine.h"
 #include "components/safe_browsing/core/web_ui/constants.h"
 #include "components/strings/grit/components_strings.h"
@@ -246,6 +247,38 @@ void WebUIInfoSingleton::ClearReportingEvents() {
   std::vector<base::Value>().swap(reporting_events_);
 }
 
+int WebUIInfoSingleton::AddToDeepScanRequests(
+    const DeepScanningClientRequest& request) {
+  if (!HasListener())
+    return -1;
+
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifyDeepScanRequestJsListener(request);
+
+  deep_scan_requests_.push_back(request);
+
+  return pg_pings_.size() - 1;
+}
+
+void WebUIInfoSingleton::AddToDeepScanResponses(
+    const std::string& token,
+    const std::string& status,
+    const DeepScanningClientResponse& response) {
+  if (!HasListener())
+    return;
+
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifyDeepScanResponseJsListener(token, status, response);
+
+  deep_scan_responses_[token] = std::make_pair(status, response);
+}
+
+void WebUIInfoSingleton::ClearDeepScans() {
+  std::vector<DeepScanningClientRequest>().swap(deep_scan_requests_);
+  std::map<std::string, std::pair<std::string, DeepScanningClientResponse>>()
+      .swap(deep_scan_responses_);
+}
+
 void WebUIInfoSingleton::RegisterWebUIInstance(SafeBrowsingUIHandler* webui) {
   webui_instances_.push_back(webui);
 }
@@ -260,6 +293,7 @@ void WebUIInfoSingleton::UnregisterWebUIInstance(SafeBrowsingUIHandler* webui) {
     ClearPGPings();
     ClearRTLookupPings();
     ClearLogMessages();
+    ClearDeepScans();
   }
 }
 
@@ -1233,6 +1267,169 @@ base::Value SerializeReportingEvent(const base::Value& event) {
   return std::move(result);
 }
 
+std::string SerializeDeepScanningRequest(
+    const DeepScanningClientRequest& request) {
+  base::DictionaryValue request_dict;
+
+  request_dict.SetKey("dm_token", base::Value(request.dm_token()));
+  request_dict.SetKey("fcm_notification_token",
+                      base::Value(request.fcm_notification_token()));
+
+  if (request.has_malware_scan_request()) {
+    base::DictionaryValue malware_request;
+
+    switch (request.malware_scan_request().population()) {
+      case MalwareDeepScanningClientRequest::POPULATION_UNKNOWN:
+        malware_request.SetStringKey("population", "POPULATION_UNKNOWN");
+        break;
+      case MalwareDeepScanningClientRequest::POPULATION_ENTERPRISE:
+        malware_request.SetStringKey("population", "POPULATION_ENTERPRISE");
+        break;
+      case MalwareDeepScanningClientRequest::POPULATION_TITANIUM:
+        malware_request.SetStringKey("population", "POPULATION_TITANIUM");
+        break;
+    }
+
+    malware_request.SetStringKey(
+        "download_token", request.malware_scan_request().download_token());
+
+    request_dict.SetKey("malware_scan_request", std::move(malware_request));
+  }
+
+  if (request.has_dlp_scan_request()) {
+    base::DictionaryValue dlp_request;
+
+    switch (request.dlp_scan_request().content_source()) {
+      case DlpDeepScanningClientRequest::CONTENT_SOURCE_UNKNOWN:
+        dlp_request.SetStringKey("content_source", "CONTENT_SOURCE_UNKNOWN");
+        break;
+      case DlpDeepScanningClientRequest::FILE_DOWNLOAD:
+        dlp_request.SetStringKey("content_source", "FILE_DOWNLOAD");
+        break;
+      case DlpDeepScanningClientRequest::FILE_UPLOAD:
+        dlp_request.SetStringKey("content_source", "FILE_UPLOAD");
+        break;
+      case DlpDeepScanningClientRequest::WEB_CONTENT_UPLOAD:
+        dlp_request.SetStringKey("content_source", "WEB_CONTENT_UPLOAD");
+        break;
+    }
+
+    request_dict.SetKey("dlp_scan_request", std::move(dlp_request));
+  }
+
+  request_dict.SetKey("request_token", base::Value(request.request_token()));
+
+  std::string request_serialized;
+  JSONStringValueSerializer serializer(&request_serialized);
+  serializer.set_pretty_print(true);
+  serializer.Serialize(request_dict);
+  return request_serialized;
+}
+
+std::string SerializeDeepScanningResponse(
+    const DeepScanningClientResponse& response) {
+  base::DictionaryValue response_dict;
+
+  response_dict.SetStringKey("token", response.token());
+
+  if (response.has_malware_scan_verdict()) {
+    base::DictionaryValue malware_verdict;
+
+    switch (response.malware_scan_verdict().status()) {
+      case MalwareDeepScanningVerdict::STATUS_UNKNOWN:
+        malware_verdict.SetStringKey("status", "STATUS_UNKNOWN");
+        break;
+      case MalwareDeepScanningVerdict::SUCCESS:
+        malware_verdict.SetStringKey("status", "SUCCESS");
+        break;
+      case MalwareDeepScanningVerdict::FAILURE:
+        malware_verdict.SetStringKey("status", "FAILURE");
+        break;
+    }
+
+    switch (response.malware_scan_verdict().verdict()) {
+      case MalwareDeepScanningVerdict::VERDICT_UNSPECIFIED:
+        malware_verdict.SetStringKey("verdict", "VERDICT_UNSPECIFIED");
+        break;
+      case MalwareDeepScanningVerdict::CLEAN:
+        malware_verdict.SetStringKey("verdict", "CLEAN");
+        break;
+      case MalwareDeepScanningVerdict::UWS:
+        malware_verdict.SetStringKey("verdict", "UWS");
+        break;
+      case MalwareDeepScanningVerdict::MALWARE:
+        malware_verdict.SetStringKey("verdict", "MALWARE");
+        break;
+    }
+
+    response_dict.SetKey("malware_scan_verdict", std::move(malware_verdict));
+  }
+
+  if (response.has_dlp_scan_verdict()) {
+    base::DictionaryValue dlp_verdict;
+
+    switch (response.dlp_scan_verdict().status()) {
+      case DlpDeepScanningVerdict::STATUS_UNKNOWN:
+        dlp_verdict.SetStringKey("status", "STATUS_UNKNOWN");
+        break;
+      case DlpDeepScanningVerdict::SUCCESS:
+        dlp_verdict.SetStringKey("status", "SUCCESS");
+        break;
+      case DlpDeepScanningVerdict::FAILURE:
+        dlp_verdict.SetStringKey("status", "FAILURE");
+        break;
+    }
+
+    base::ListValue triggered_rules;
+    for (const DlpDeepScanningVerdict::TriggeredRule& rule :
+         response.dlp_scan_verdict().triggered_rules()) {
+      base::DictionaryValue rule_value;
+
+      switch (rule.action()) {
+        case DlpDeepScanningVerdict::TriggeredRule::ACTION_UNKNOWN:
+          rule_value.SetStringKey("action", "ACTION_UNKNOWN");
+          break;
+        case DlpDeepScanningVerdict::TriggeredRule::REPORT_ONLY:
+          rule_value.SetStringKey("action", "REPORT_ONLY");
+          break;
+        case DlpDeepScanningVerdict::TriggeredRule::WARN:
+          rule_value.SetStringKey("action", "WARN");
+          break;
+        case DlpDeepScanningVerdict::TriggeredRule::BLOCK:
+          rule_value.SetStringKey("action", "BLOCK");
+          break;
+      }
+
+      rule_value.SetStringKey("rule_name", rule.rule_name());
+      rule_value.SetDoubleKey("rule_id", rule.rule_id());
+      rule_value.SetStringKey("rule_resource_name", rule.rule_resource_name());
+      rule_value.SetStringKey("rule_severity", rule.rule_severity());
+
+      base::ListValue matched_detectors;
+      for (const DlpDeepScanningVerdict::MatchedDetector& detector :
+           rule.matched_detectors()) {
+        base::DictionaryValue detector_value;
+        detector_value.SetStringKey("detector_id", detector.detector_id());
+        detector_value.SetStringKey("display_name", detector.display_name());
+        detector_value.SetStringKey("detector_type", detector.detector_type());
+        matched_detectors.Append(std::move(detector_value));
+      }
+
+      rule_value.SetKey("matched_detectors", std::move(matched_detectors));
+
+      triggered_rules.Append(std::move(rule_value));
+    }
+
+    dlp_verdict.SetKey("triggered_rules", std::move(triggered_rules));
+  }
+
+  std::string response_serialized;
+  JSONStringValueSerializer serializer(&response_serialized);
+  serializer.set_pretty_print(true);
+  serializer.Serialize(response_dict);
+  return response_serialized;
+}
+
 }  // namespace
 
 SafeBrowsingUI::SafeBrowsingUI(content::WebUI* web_ui)
@@ -1610,6 +1807,51 @@ void SafeBrowsingUIHandler::GetLogMessages(const base::ListValue* args) {
   ResolveJavascriptCallback(base::Value(callback_id), messages_received);
 }
 
+void SafeBrowsingUIHandler::GetDeepScanRequests(const base::ListValue* args) {
+  const std::vector<DeepScanningClientRequest>& requests =
+      WebUIInfoSingleton::GetInstance()->deep_scan_requests();
+
+  base::ListValue pings_sent;
+  for (size_t request_index = 0; request_index < requests.size();
+       request_index++) {
+    base::ListValue ping_entry;
+    ping_entry.Append(base::Value(int(request_index)));
+    ping_entry.Append(
+        base::Value(SerializeDeepScanningRequest(requests[request_index])));
+    pings_sent.Append(std::move(ping_entry));
+  }
+
+  AllowJavascript();
+  std::string callback_id;
+  args->GetString(0, &callback_id);
+  ResolveJavascriptCallback(base::Value(callback_id), pings_sent);
+}
+
+void SafeBrowsingUIHandler::GetDeepScanResponses(const base::ListValue* args) {
+  const std::map<std::string,
+                 std::pair<std::string, DeepScanningClientResponse>>
+      responses = WebUIInfoSingleton::GetInstance()->deep_scan_responses();
+
+  base::ListValue responses_sent;
+  for (const auto& token_and_status_and_response : responses) {
+    const std::string& token = token_and_status_and_response.first;
+    const std::string& status = token_and_status_and_response.second.first;
+    const DeepScanningClientResponse& response =
+        token_and_status_and_response.second.second;
+
+    base::ListValue response_entry;
+    response_entry.Append(base::Value(token));
+    response_entry.Append(base::Value(status));
+    response_entry.Append(base::Value(SerializeDeepScanningResponse(response)));
+    responses_sent.Append(std::move(response_entry));
+  }
+
+  AllowJavascript();
+  std::string callback_id;
+  args->GetString(0, &callback_id);
+  ResolveJavascriptCallback(base::Value(callback_id), responses_sent);
+}
+
 void SafeBrowsingUIHandler::NotifyClientDownloadRequestJsListener(
     ClientDownloadRequest* client_download_request) {
   AllowJavascript();
@@ -1702,6 +1944,29 @@ void SafeBrowsingUIHandler::NotifyReportingEventJsListener(
   FireWebUIListener("reporting-events-update", SerializeReportingEvent(event));
 }
 
+void SafeBrowsingUIHandler::NotifyDeepScanRequestJsListener(
+    const DeepScanningClientRequest& request) {
+  base::ListValue request_list;
+  request_list.Append(base::Value(request.request_token()));
+  request_list.Append(base::Value(SerializeDeepScanningRequest(request)));
+
+  AllowJavascript();
+  FireWebUIListener("deep-scan-request-update", request_list);
+}
+
+void SafeBrowsingUIHandler::NotifyDeepScanResponseJsListener(
+    const std::string& token,
+    const std::string& status,
+    const DeepScanningClientResponse& response) {
+  base::ListValue response_list;
+  response_list.Append(base::Value(token));
+  response_list.Append(base::Value(status));
+  response_list.Append(base::Value(SerializeDeepScanningResponse(response)));
+
+  AllowJavascript();
+  FireWebUIListener("deep-scan-response-update", response_list);
+}
+
 void SafeBrowsingUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getExperiments",
@@ -1771,6 +2036,14 @@ void SafeBrowsingUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getReportingEvents",
       base::BindRepeating(&SafeBrowsingUIHandler::GetReportingEvents,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getDeepScanRequests",
+      base::BindRepeating(&SafeBrowsingUIHandler::GetDeepScanRequests,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getDeepScanResponses",
+      base::BindRepeating(&SafeBrowsingUIHandler::GetDeepScanResponses,
                           base::Unretained(this)));
 }
 

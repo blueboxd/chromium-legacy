@@ -113,6 +113,7 @@ class VIZ_SERVICE_EXPORT BufferQueue {
                        gfx::BufferFormat format);
 
   gfx::BufferFormat buffer_format() const { return *format_; }
+  void SetMaxBuffers(size_t max);
 
  private:
   friend class BufferQueueTest;
@@ -148,6 +149,9 @@ class VIZ_SERVICE_EXPORT BufferQueue {
   gpu::SharedImageInterface* const sii_;
   gfx::Size size_;
   gfx::ColorSpace color_space_;
+
+  // We don't want to allow anything more than triple buffering by default.
+  size_t max_buffers_ = 3U;
   size_t allocated_count_;
   // The |format_| is optional to prevent use of uninitialized values.
   base::Optional<gfx::BufferFormat> format_;

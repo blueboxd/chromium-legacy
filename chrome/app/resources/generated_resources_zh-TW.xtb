@@ -1383,7 +1383,6 @@
 <translation id="2865919525181940183">目前畫面上程式的螢幕截圖</translation>
 <translation id="286674810810214575">正在檢查電源...</translation>
 <translation id="2867768963760577682">在固定分頁中開啟</translation>
-<translation id="2868184003987917410">不允許網站存取你的虛擬實境裝置/資料</translation>
 <translation id="2868746137289129307">這項過舊的擴充功能現已依企業政策停用。如有可用的新版本，則可能會自動重新啟用。</translation>
 <translation id="2870560284913253234">網站</translation>
 <translation id="2870909136778269686">更新中…</translation>
@@ -1713,7 +1712,6 @@
 <translation id="3348038390189153836">偵測到卸除式裝置</translation>
 <translation id="3349933790966648062">記憶體使用量</translation>
 <translation id="3350117557200012647">進入配對模式</translation>
-<translation id="3350244554415289209">網站必須先詢問你，才能存取攝影機位置或對應你的房間 (建議設定)</translation>
 <translation id="3355936511340229503">連線錯誤</translation>
 <translation id="3356580349448036450">完成</translation>
 <translation id="3359256513598016054">憑證原則限制</translation>
@@ -1730,7 +1728,6 @@
 <translation id="3382073616108123819">糟糕！系統無法判別這個裝置的裝置識別碼。</translation>
 <translation id="3382086682569279540">系統即將移除你管理的帳戶</translation>
 <translation id="3382200254148930874">正在停用監督功能...</translation>
-<translation id="3383210070657133526"><ph name="URL" /> 希望能開始虛擬實境工作階段</translation>
 <translation id="3385092118218578224"><ph name="DISPLAY_ZOOM" />%</translation>
 <translation id="338583716107319301">分隔線</translation>
 <translation id="338691029516748599">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" />，<ph name="SECURITY_STATUS" />，訊號強度 <ph name="SIGNAL_STRENGTH" />%，由系統管理員管理，連線</translation>
@@ -1827,7 +1824,6 @@
 <translation id="3511307672085573050">複製連結網址(&amp;E)</translation>
 <translation id="351152300840026870">固定寬度字型</translation>
 <translation id="3511528412952710609">短</translation>
-<translation id="3513704683820682405">擴增實境</translation>
 <translation id="3514373592552233661">如有多個可用網路，慣用網路的優先使用順序高於其他已知網路</translation>
 <translation id="3515983984924808886">請再次輕觸安全金鑰以確認重設。這個安全金鑰上儲存的所有資訊 (包括 PIN 碼) 都將遭到刪除。</translation>
 <translation id="3518985090088779359">接受並繼續</translation>
@@ -2530,7 +2526,6 @@
 <translation id="4501530680793980440">確認移除</translation>
 <translation id="4502423230170890588">從這個裝置中移除</translation>
 <translation id="4504940961672722399">按一下這個圖示或按下 <ph name="EXTENSION_SHORTCUT" />，即可使用這項擴充功能。</translation>
-<translation id="4507164039066603071">不允許網站存取攝影機位置或對應你的房間</translation>
 <translation id="4508051413094283164">在無痕式視窗中開啟所有書籤</translation>
 <translation id="4508265954913339219">啟用失敗</translation>
 <translation id="4508765956121923607">檢視原始碼(&amp;O)</translation>
@@ -2836,7 +2831,6 @@
 <translation id="494286511941020793">Proxy 設定說明</translation>
 <translation id="4943368462779413526">足球</translation>
 <translation id="4943691134276646401">「<ph name="CHROME_EXTENSION_NAME" />」要求與序列埠連線</translation>
-<translation id="4943703118917034429">虛擬實境</translation>
 <translation id="4944310289250773232">這是由 <ph name="SAML_DOMAIN" /> 代管的驗證服務</translation>
 <translation id="495170559598752135">動作</translation>
 <translation id="4952981627953231344">這部裝置不允許使用 Plugin VM。請與貴機構的裝置管理員聯絡。</translation>
@@ -4110,7 +4104,6 @@
 <translation id="6758056191028427665">請讓我們瞭解你的滿意度。</translation>
 <translation id="6759193508432371551">恢復原廠設定</translation>
 <translation id="6762833852331690540">開啟</translation>
-<translation id="6767115174726603949">存取虛擬實境裝置和資料</translation>
 <translation id="6767566652486411142">選擇其他語言...</translation>
 <translation id="6767639283522617719">無法加入網域。請確認該機構單位使用正確設定。</translation>
 <translation id="6769712124046837540">新增印表機...</translation>
@@ -4306,7 +4299,6 @@
 <translation id="703001695939087067">已進入視窗總覽模式。點選分頁即可瀏覽。</translation>
 <translation id="7031608529463141342"><ph name="WINDOW_TITLE" /> - 已連線至序列埠</translation>
 <translation id="7031962166228839643">正在準備 TPM，請稍候 (這可能需要幾分鐘的時間)...</translation>
-<translation id="7034615910652881882">網站必須先詢問你，才能存取你的虛擬實境裝置/資料</translation>
 <translation id="7037509989619051237">要預覽的文字</translation>
 <translation id="7039326228527141150">存取由 <ph name="VENDOR_NAME" /> 製造的 USB 裝置</translation>
 <translation id="7039912931802252762">Microsoft 智慧卡登入</translation>
@@ -4612,7 +4604,6 @@
 <translation id="7443806024147773267">系統會在你每次登入 Google 帳戶時存取你的密碼</translation>
 <translation id="7444983668544353857">停用 <ph name="NETWORKDEVICE" /></translation>
 <translation id="7448430327655618736">自動安裝應用程式</translation>
-<translation id="7448625729116931228">網站必須先詢問你，才能存取你的虛擬實境裝置/資料 (建議)</translation>
 <translation id="7450761244949417357">正在 <ph name="ALTERNATIVE_BROWSER_NAME" /> 中開啟</translation>
 <translation id="7453008956351770337">選取這部印表機，即表示您同意授權下列擴充功能存取您的印表機：</translation>
 <translation id="7454548535253569100">入口網站：<ph name="SUBFRAME_SITE" /></translation>
@@ -4749,7 +4740,6 @@
 <translation id="7652808307838961528">編輯使用者，<ph name="PROFILE_NAME" /></translation>
 <translation id="765293928828334535">無法從這個網站新增應用程式、擴充功能和使用者指令碼</translation>
 <translation id="7652954539215530680">建立 PIN 碼</translation>
-<translation id="7653295403398566475">網站必須先詢問你，才能存取攝影機位置或對應你的房間</translation>
 <translation id="7654941827281939388">已有人在這台電腦上使用這個帳戶。</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="7659584679870740384">您未獲得授權，無法使用這個裝置。如需登入權限，請與管理員聯絡。</translation>
@@ -5287,7 +5277,6 @@
 <translation id="8338952601723052325">開發人員網站</translation>
 <translation id="8339059274628563283"><ph name="SITE" /> 儲存在本機的資料</translation>
 <translation id="833986336429795709">請選擇要用來開啟這個連結的應用程式</translation>
-<translation id="834057053932610950">設定 Linux 時發生錯誤。請與你的系統管理員聯絡。</translation>
 <translation id="8342861492835240085">選取集合</translation>
 <translation id="834290227245955730">PIN 碼無效。剩餘重試次數：<ph name="RETRIES" /> 次。</translation>
 <translation id="8351419472474436977">你的 Proxy 設定已受到這個擴充功能控制，該擴充功能可變更、中斷、或監視你在網路上的行為。如果你不確定這項變更的發生原因，建議你停用該擴充功能。</translation>

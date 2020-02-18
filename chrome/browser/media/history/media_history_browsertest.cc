@@ -76,7 +76,7 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest {
     return content::ExecuteScript(GetWebContents(), "finishPlaying();");
   }
 
-  MediaHistoryStore::MediaPlaybackSessionList GetPlaybackSessionsSync(
+  std::vector<mojom::MediaHistoryPlaybackSessionRowPtr> GetPlaybackSessionsSync(
       int max_sessions) {
     return GetPlaybackSessionsSync(
         max_sessions, base::BindRepeating([](const base::TimeDelta& duration,
@@ -85,18 +85,18 @@ class MediaHistoryBrowserTest : public InProcessBrowserTest {
         }));
   }
 
-  MediaHistoryStore::MediaPlaybackSessionList GetPlaybackSessionsSync(
+  std::vector<mojom::MediaHistoryPlaybackSessionRowPtr> GetPlaybackSessionsSync(
       int max_sessions,
       MediaHistoryStore::GetPlaybackSessionsFilter filter) {
     base::RunLoop run_loop;
-    MediaHistoryStore::MediaPlaybackSessionList out;
+    std::vector<mojom::MediaHistoryPlaybackSessionRowPtr> out;
 
     GetMediaHistoryStore()->GetPlaybackSessions(
         max_sessions, std::move(filter),
         base::BindLambdaForTesting(
-            [&](base::Optional<MediaHistoryStore::MediaPlaybackSessionList>
+            [&](std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>
                     sessions) {
-              out = std::move(*sessions);
+              out = std::move(sessions);
               run_loop.Quit();
             }));
 

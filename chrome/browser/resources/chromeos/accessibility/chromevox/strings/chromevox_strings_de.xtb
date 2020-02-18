@@ -243,7 +243,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">Audio</translation>
 <translation id="2732718972699418926">AM</translation>
-<translation id="2737898226590637227">Kein nächstes ARIA-Landmark</translation>
+<translation id="2737898226590637227">Keine nächste ARIA-Markierung</translation>
 <translation id="2749275490991666823">Aktiviert</translation>
 <translation id="27527859628328957">Zum nächsten fokussierbaren Element springen</translation>
 <translation id="2756452585631602151">Benutzerdefiniertes Label eingeben</translation>
@@ -257,7 +257,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="2811019999044652585">Sie gelangen zu anderen Bildschirmbereichen, z. B. zu den Symbolleisten oder zur Taskleiste, indem Sie Strg + Weitertaste drücken. Auf einem Chromebook befindet sich die Weitertaste direkt über der Taste der Zahl 2.</translation>
 <translation id="2811204574343810641">Zeile</translation>
 <translation id="2841013758207633010">Zeit</translation>
-<translation id="2843432675592278677">Kein vorheriges ARIA-Landmark</translation>
+<translation id="2843432675592278677">Keine vorherige ARIA-Markierung</translation>
 <translation id="2843814945404750166">Dunkles Olivgrün</translation>
 <translation id="2843837985843789981">Vorherige Gruppe</translation>
 <translation id="2844995807198708617">Kontextmenü</translation>
@@ -307,7 +307,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="3104705064753753826">alrt dlg</translation>
 <translation id="3109724472072898302">Minimiert</translation>
 <translation id="3112457281078985179">Um ChromeVox ein- bzw. auszuschalten, verwenden Sie Strg + Alt + Z.</translation>
-<translation id="3128896337293924532">Kein nächstes blockquote-Tag</translation>
+<translation id="3128896337293924532">Kein nächstes blockquote-Element</translation>
 <translation id="3134461040845705080">rdonly</translation>
 <translation id="3137663468179739624">Olivgrün</translation>
 <translation id="3138767756593758860">Liste der Markierungen anzeigen</translation>
@@ -320,7 +320,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="316542773973815724">Navigation</translation>
 <translation id="3172700825913348768">{COUNT,plural, =1{Leerzeichen}other{# Leerzeichen}}</translation>
 <translation id="3179119189286472195">Kein Link</translation>
-<translation id="320041337977930740">Für die Displaydarstellung "Überlappen" festlegen</translation>
+<translation id="320041337977930740">Displaydarstellung in "Überlappen" ändern</translation>
 <translation id="3208346789712025453">Kein weiteres Steuerelement</translation>
 <translation id="320961988183078793"><ph name="TYPE" /> eingegeben</translation>
 <translation id="321072937702597574">Orchidee</translation>
@@ -709,7 +709,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="5822819874379903994">Dunkles Türkis</translation>
 <translation id="5824976764713185207">Seite automatisch lesen, wenn sie vollständig geladen ist</translation>
 <translation id="5826479389509458994"><ph name="ROW" />. Zeile, <ph name="COL" />. Spalte</translation>
-<translation id="5833044594931167190">Keine ARIA-Landmarks</translation>
+<translation id="5833044594931167190">Keine ARIA-Markierungen</translation>
 <translation id="5842625257683688671">Keine nächste Grafik</translation>
 <translation id="5847883414085148048">Widmung</translation>
 <translation id="5850707923114094062">Nach hinten schwenken</translation>
@@ -768,7 +768,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="6254901459154107917">Nächster bearbeitbarer Textbereich</translation>
 <translation id="6259464875943891919"><ph name="TYPE" /> beendet</translation>
 <translation id="6282062888058716985">nav</translation>
-<translation id="6304851457627491382">Kleines Fenster geschlossen</translation>
+<translation id="6304851457627491382">Dialogfeld geschlossen</translation>
 <translation id="6305702903308659374">Mit normaler Lautstärke wiedergeben, auch wenn eine Sprachausgabe durch ChromeVox stattfindet</translation>
 <translation id="6307969636681130414">Gedrückt</translation>
 <translation id="6315652249189065725">Menü für Tastenkombinationen öffnen</translation>
@@ -813,7 +813,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="6628427060004938651">Teil</translation>
 <translation id="6637586476836377253">log</translation>
 <translation id="6657128831881431364">Statusanzeige</translation>
-<translation id="6659594942844771486">Tabulatortaste</translation>
+<translation id="6659594942844771486">Tab</translation>
 <translation id="667999046851023355">Dokument</translation>
 <translation id="6688209025607531203">Eine nicht modale Benachrichtigung</translation>
 <translation id="6689672606256159458">Dunkle Lachsfarbe</translation>
@@ -825,7 +825,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="6714813999819678458">Vorherige Überschrift der Ebene 2</translation>
 <translation id="6716505898850596801">Modifikatortasten</translation>
 <translation id="6720808010210697990">Nicht in der Tabelle</translation>
-<translation id="6730312624811567147">Drücken Sie die Suchtaste in Verbindung mit dem Links- oder Rechtspfeil für "Home" oder "Ende", die Suchtaste in Verbindung mit der Steuerungstaste und dem Links- oder Rechtspfeil für "Strg-Home" oder "Strg-Ende" und die Suchtaste in Verbindung mit dem Aufwärts- oder Abwärtspfeil für "Bild auf" oder "Bild ab"</translation>
+<translation id="6730312624811567147">Drücken Sie die Suchtaste in Verbindung mit dem Links- oder Rechtspfeil für "Pos1" oder "Ende", die Suchtaste in Verbindung mit der Steuerungstaste und dem Links- oder Rechtspfeil für "Steuerung-Pos1" oder "Steuerung-Ende" und die Suchtaste in Verbindung mit dem Aufwärts- oder Abwärtspfeil für "Bild auf" oder "Bild ab"</translation>
 <translation id="6734854816611871228">Kombinationsfeld <ph name="VALUE" /></translation>
 <translation id="6735257939857578167">mit <ph name="NUM" /> Elementen</translation>
 <translation id="6736510033526053669">Tab erstellt</translation>
@@ -1107,7 +1107,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8138880386467279117">Berühren</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{Unterstrich}other{# Unterstriche}}</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8182552736960088316">Kein vorheriges blockquote-Tag</translation>
+<translation id="8182552736960088316">Kein vorheriges blockquote-Element</translation>
 <translation id="8184828902145951186">Zeile</translation>
 <translation id="8186185314313222077">Vollbildmodus an oder aus</translation>
 <translation id="8199231515320852133">Überschriften der aktuellen Zelle ansagen</translation>
@@ -1204,7 +1204,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8946628535652548639">z<ph name="TABLECELLROWINDEX" />s<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8952400011684167587">Kein vorheriges Optionsfeld</translation>
 <translation id="8957142051395645063">Ankündigen</translation>
-<translation id="896035116006462153">Um die erweiterten Braille-Befehle zu verwenden, aktivieren Sie die Bildschirmtastatur über "Statusleiste", "Einstellungen", "Bedienungshilfen"</translation>
+<translation id="896035116006462153">Um die erweiterten Braille-Befehle zu verwenden, aktivieren Sie die Bildschirmtastatur über "Statusleiste", "Bedienungshilfen"</translation>
 <translation id="8970172509886453271">Kein vorheriger Abschnitt</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">Entfernen</translation>
@@ -1235,7 +1235,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="9160096769946561184">Zum Ende der aktuellen Spalte gehen</translation>
 <translation id="9173115498289768110">Lautstärke: <ph name="PERCENT" /> %</translation>
 <translation id="9192904702577636854">Laufschrift</translation>
-<translation id="9205282956404529648">Geben Sie etwas zur automatischen Vervollständigung ein</translation>
+<translation id="9205282956404529648">Zur automatischen Vervollständigung etwas eintippen</translation>
 <translation id="9208241857935108694">Antikweiß</translation>
 <translation id="9220679313820249046">Orangerot</translation>
 <translation id="9223032053830369045">Dunkelrot</translation>

@@ -1089,7 +1089,7 @@
     },
     'image_editor': {
       'filepath': 'chrome/browser/image_editor'\
-                  'chrome/android/modules/image_editor',
+                  '|chrome/android/modules/image_editor',
     },
     'incident_reporting': {
       'filepath': 'chrome/browser/safe_browsing/incident_reporting',
@@ -1635,8 +1635,8 @@
     },
    'share_sheet': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/share/'\
-                  'chrome/android/java/res/layout/share_sheet_.*'\
-                  'chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/',
+                  '|chrome/android/java/res/layout/share_sheet_.*'\
+                  '|chrome/browser/share/android/java/src/org/chromium/chrome/browser/share/',
     },
     'sharing': {
       'filepath': 'chrome/browser/sharing/|'\
@@ -2325,11 +2325,13 @@
     'chromeos': ['oshima+watch@chromium.org'],
     'chromeos_attestation': ['dkrahn+watch@chromium.org'],
     'chromeos_bluetooth': ['hansberry+watch-bluetooth@chromium.org',
+                           'michaelirani+watch-bluetooth@chromium.org',
                            'vecore+watch-bluetooth@google.com'],
     'chromeos_calculator': ['dharcourt@chromium.org'],
     'chromeos_cellular': ['azeemarshad+watch-cellular@chromium.org',
                           'benchan+watch-cellular@chromium.org',
                           'ejcaruso+watch-cellular@chromium.org',
+                          'michaelirani+watch-cellular@chromium.org',
                           'vecore+watch-cellular@google.com'],
     'chromeos_geolocation': ['alemate+watch@chromium.org'],
     'chromeos_lkgm': ['achuith+watch@chromium.org',
@@ -2344,11 +2346,13 @@
                      'benchan+watch-network@chromium.org',
                      'ejcaruso+watch-network@chromium.org',
                      'jonmann+watch-network@chromium.org',
+                     'michaelirani+watch-network@chromium.org',
                      'stevenjb+watch-network@chromium.org',
                      'vecore+watch-network@google.com'],
     'chromeos_timezone': ['alemate+watch@chromium.org'],
     'chromeos_webui': ['alemate+watch@chromium.org'],
     'chromeos_wifi_sync': ['jonmann+watch@chromium.org',
+                           'michaelirani+watch@chromium.org',
                            'stevenjb+watch@chromium.org',
                            'vecore+watch@google.com'],
     'chromevox': ['anastasi+watch@google.com',
@@ -2543,6 +2547,7 @@
     'midi': ['toyoshim+midi@chromium.org'],
     'mojo': ['darin+watch@chromium.org'],
     'multidevice': ['hansberry+watch-multidevice@chromium.org',
+                    'michaelirani+watch-multidevice@chromium.org',
                     'nohle+watch-multidevice@chromium.org',
                     'themaxli+watch-multidevice@chromium.org',
                     'vecore+watch-multidevice@google.com'],
@@ -2669,7 +2674,7 @@
                       'creis+watch@chromium.org',
                       'nasko+codewatch@chromium.org'],
     'smartlock': ['hansberry+watch-smartlock@chromium.org',
-                  'nohle+watch-smartlock@chromium.org',
+                  'michaelirani+watch-smartlock@chromium.org',
                   'vecore+watch-smartlock@google.com'],
     'smb': ['cros-enterprise-lax+smbwatch@chromium.org'],
     'source_idls': ['jmedley+watch@chromium.org'],
@@ -2717,7 +2722,7 @@
                     'einbinder+watch-test-runner@chromium.org'],
     'tests': [],
     'tether': ['hansberry+watch-tether@chromium.org',
-               'nohle+watch-tether@chromium.org',
+               'michaelirani+watch-tether@chromium.org',
                'vecore+watch-tether@google.com'],
     'textinput': ['keithlee+watch@chromium.org',
                   'nona+watch@chromium.org',

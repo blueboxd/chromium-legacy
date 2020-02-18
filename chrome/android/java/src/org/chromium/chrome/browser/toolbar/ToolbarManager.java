@@ -887,7 +887,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         if (mTabGroupPopupUi != null) {
             tabSwitcherLongClickHandler = mTabGroupPopupUi.getLongClickListenerForTriggering();
-        } else if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_SWITCHER_LONGPRESS_MENU)) {
+        } else {
             tabSwitcherLongClickHandler =
                     TabSwitcherActionMenuCoordinator.createOnLongClickListener(
                             (id) -> mActivity.onOptionsItemSelected(id, null));

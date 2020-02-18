@@ -218,7 +218,7 @@
 <translation id="2564726732032738475">沒有其他結果</translation>
 <translation id="257674075312929031">群組</translation>
 <translation id="2582407057977008361">獨立元素</translation>
-<translation id="2583123579994033088">退出網格</translation>
+<translation id="2583123579994033088">正在離開網格</translation>
 <translation id="2592212930811759050">輕觸兩下即可開始編輯</translation>
 <translation id="2594420797397883935">沒有上一個非連結項目</translation>
 <translation id="2598495320872286378">文法錯誤</translation>
@@ -247,7 +247,7 @@
 <translation id="2749275490991666823">已勾選</translation>
 <translation id="27527859628328957">跳至下一個可選擇的項目</translation>
 <translation id="2756452585631602151">輸入自訂標籤</translation>
-<translation id="2766299274563946262">沒有左側儲存格</translation>
+<translation id="2766299274563946262">左側沒有儲存格</translation>
 <translation id="2770781857296573485">輸入群組探索</translation>
 <translation id="2777845298774924149">結束</translation>
 <translation id="2783001728278437613">{COUNT,plural, =1{+#}other{+#}}</translation>
@@ -416,7 +416,7 @@
 <translation id="3810838688059735925">影片</translation>
 <translation id="3813387282697781382">淺珊瑚紅</translation>
 <translation id="3816633764618089385">下一個媒體元素</translation>
-<translation id="3838966660807147922">編輯文字 (例如 Mac OS X) 時，請將滑鼠游標置於字元之間</translation>
+<translation id="3838966660807147922">編輯文字時，請將滑鼠游標置於字元之間 (如同 Mac OS X)</translation>
 <translation id="385383972552776628">開啟選項頁面</translation>
 <translation id="3856075812838139784">唯讀</translation>
 <translation id="3857141338659865495">中綠松石色</translation>
@@ -519,7 +519,7 @@
 <translation id="4537277403911487429">下一個相似的項目</translation>
 <translation id="4547556996012970016">下一個第 5 階標題</translation>
 <translation id="4562381607973973258">頁首</translation>
-<translation id="4573990688012173948">設定文字格式
+<translation id="4573990688012173948">文字格式
         <ph name="FONT_SIZE_STRING" />
         <ph name="COLOR_STRING" />
         <ph name="BOLD_STRING" />
@@ -779,7 +779,7 @@
 <translation id="6348657800373377022">下拉式方塊</translation>
 <translation id="6348869651006731065">暗灰</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{項目符號}other{# 個項目符號}}</translation>
-<translation id="6357433033180746873">沒有右側儲存格</translation>
+<translation id="6357433033180746873">右側沒有儲存格</translation>
 <translation id="6364795331201459219">第 6 階</translation>
 <translation id="6368143427468974988">上一個標題</translation>
 <translation id="6376999910001533545">栗色</translation>
@@ -872,7 +872,7 @@
 如要開啟 Chrome 瀏覽器選單，請按下 Alt+F 鍵。</translation>
 <translation id="7051308646573997571">珊瑚紅</translation>
 <translation id="7062635574500127092">藍綠色</translation>
-<translation id="7074412385073481360">在 ChromeVox 面板的畫面頂端 
+<translation id="7074412385073481360">在 ChromeVox 面板的畫面頂端
         模擬可重新整理的點字顯示器輸出結果</translation>
 <translation id="7086377898680121060">調高亮度</translation>
 <translation id="7088743565397416204">輕觸兩下即可啟用目前聚焦的項目</translation>
@@ -893,7 +893,7 @@
 <translation id="7167657087543110">字元語音回應</translation>
 <translation id="7170733337935166589">在連續朗讀時向前跳過</translation>
 <translation id="7173102181852295013">午夜藍</translation>
-<translation id="717574717447196690">退出表格</translation>
+<translation id="717574717447196690">正在離開表格</translation>
 <translation id="7203150201908454328">已展開</translation>
 <translation id="7209751026933045237">沒有下一個滑桿</translation>
 <translation id="7210211103303402262">分鐘</translation>
@@ -1104,7 +1104,7 @@
 <translation id="8121539003537428024">啟用所有事件篩選器</translation>
 <translation id="8126386426083591964">沒有上一個第 5 階標題</translation>
 <translation id="812886159861361726">已停止下載「<ph name="FILE_NAME" />」</translation>
-<translation id="8129445297241948503">沒有上方儲存格</translation>
+<translation id="8129445297241948503">上方沒有儲存格</translation>
 <translation id="8138880386467279117">輕觸</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{底線}other{# 個底線}}</translation>
 <translation id="8179976553408161302">Enter</translation>

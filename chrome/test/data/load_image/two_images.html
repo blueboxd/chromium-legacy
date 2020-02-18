@@ -1,18 +1,23 @@
 <html>
 <head></head>
-<img src="image.png" />
-<img src="image.png?foo" />
+<img/>
+<img/>
+<script src="common.js"></script>
 <script>
 function checkBothImagesLoaded() {
-	sendValueToTest(document.images[0].complete && document.images[1].complete);
+  return new Promise((resolve, reject) => {
+    Promise.all([imageLoadedPromise(document.images[0]),
+      imageLoadedPromise(document.images[1])]).then(() => {
+        resolve(true);
+      });
+   });
 }
 
-function imageSrc() {
-	sendValueToTest(document.images[0].src);
-}
-
-function sendValueToTest(value) {
-  window.domAutomationController.send(value);
+window.onload = () => {
+  setTimeout(() => {
+    document.images[0].src = "image.png"
+    document.images[1].src = "image.png?foo"
+  }, 1000)
 }
 </script>
 </html>

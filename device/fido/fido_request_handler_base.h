@@ -135,7 +135,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
     virtual bool SupportsPIN() const = 0;
 
     // CollectPIN is called when a PIN is needed to complete a request. The
-    // |retries| parameter is either |nullopt| to indicate that the user needs
+    // |attempts| parameter is either |nullopt| to indicate that the user needs
     // to set a PIN, or contains the number of PIN attempts remaining before a
     // hard lock.
     virtual void CollectPIN(
@@ -143,6 +143,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoRequestHandlerBase
         base::OnceCallback<void(std::string)> provide_pin_cb) = 0;
 
     virtual void FinishCollectToken() = 0;
+
+    // Called when an authenticator reports internal user verification has
+    // failed (e.g. not recognising the user's fingerprints) and the user should
+    // try again. Receives the number of |attempts| before the device locks
+    // internal user verification.
+    virtual void OnRetryUserVerification(int attempts) = 0;
 
     // SetMightCreateResidentCredential indicates whether the activation of an
     // authenticator may cause a resident credential to be created. A resident

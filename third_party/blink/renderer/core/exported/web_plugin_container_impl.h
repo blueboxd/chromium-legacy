@@ -124,7 +124,6 @@ class CORE_EXPORT WebPluginContainerImpl final
   void EnqueueMessageEvent(const WebDOMMessageEvent&) override;
   void Invalidate() override;
   void InvalidateRect(const WebRect&) override;
-  void ScrollRect(const WebRect&) override;
   void ScheduleAnimation() override;
   void ReportGeometry() override;
   v8::Local<v8::Object> V8ObjectForElement() override;

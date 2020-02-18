@@ -18,7 +18,7 @@ import android.view.View.OnClickListener;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.PackageManagerDelegate;
-import org.chromium.chrome.browser.payments.PaymentInstrument;
+import org.chromium.chrome.browser.payments.PaymentApp;
 import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator.CompleteAndCloseObserver;
 import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator.ConfirmObserver;
 import org.chromium.chrome.browser.payments.micro.MicrotransactionCoordinator.DismissObserver;
@@ -46,7 +46,7 @@ import org.chromium.ui.modelutil.PropertyModel;
     // 2 second delay to show error status before closing or returning back to waiting state.
     private static final int ERROR_DELAY_MS = 2000;
 
-    private final PaymentInstrument mInstrument;
+    private final PaymentApp mApp;
     private final PropertyModel mModel;
     private final ConfirmObserver mConfirmObserver;
     private final DismissObserver mDismissObserver;
@@ -59,10 +59,9 @@ import org.chromium.ui.modelutil.PropertyModel;
     private boolean mIsSheetOpened;
     private boolean mIsInProcessingState;
 
-    /* package */ MicrotransactionMediator(Context context, PaymentInstrument instrument,
-            PropertyModel model, ConfirmObserver confirmObserver, DismissObserver dismissObserver,
-            Runnable hider) {
-        mInstrument = instrument;
+    /* package */ MicrotransactionMediator(Context context, PaymentApp app, PropertyModel model,
+            ConfirmObserver confirmObserver, DismissObserver dismissObserver, Runnable hider) {
+        mApp = app;
         mModel = model;
         mConfirmObserver = confirmObserver;
         mDismissObserver = dismissObserver;
@@ -97,7 +96,7 @@ import org.chromium.ui.modelutil.PropertyModel;
                             @Override
                             public void onAuthenticationSucceeded(AuthenticationResult result) {
                                 showProcessing();
-                                mConfirmObserver.onConfirmed(mInstrument);
+                                mConfirmObserver.onConfirmed(mApp);
                             }
 
                             @Override
@@ -280,6 +279,6 @@ import org.chromium.ui.modelutil.PropertyModel;
     public void onClick(View v) {
         if (!mModel.get(MicrotransactionProperties.IS_SHOWING_PAY_BUTTON)) return;
         showProcessing();
-        mConfirmObserver.onConfirmed(mInstrument);
+        mConfirmObserver.onConfirmed(mApp);
     }
 }

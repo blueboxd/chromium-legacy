@@ -11,7 +11,10 @@ mojom("mojo_bindings") {
     "media_engagement_score_details.mojom",
   ]
 
-  public_deps = [ "//url/mojom:url_mojom_origin" ]
+  public_deps = [
+    "//services/media_session/public/mojom",
+    "//url/mojom:url_mojom_origin",
+  ]
 }
 
 proto_library("media_engagement_preload_proto") {

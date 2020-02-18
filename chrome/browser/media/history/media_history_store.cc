@@ -77,9 +77,9 @@ class MediaHistoryStoreInternal
       const base::Optional<media_session::MediaPosition>& position,
       const std::vector<media_session::MediaImage>& artwork);
 
-  base::Optional<MediaHistoryStore::MediaPlaybackSessionList>
-  GetPlaybackSessions(unsigned int num_sessions,
-                      MediaHistoryStore::GetPlaybackSessionsFilter filter);
+  std::vector<mojom::MediaHistoryPlaybackSessionRowPtr> GetPlaybackSessions(
+      base::Optional<unsigned int> num_sessions,
+      base::Optional<MediaHistoryStore::GetPlaybackSessionsFilter> filter);
 
   void RazeAndClose();
 
@@ -353,18 +353,19 @@ void MediaHistoryStoreInternal::SavePlaybackSession(
   DB()->CommitTransaction();
 }
 
-base::Optional<MediaHistoryStore::MediaPlaybackSessionList>
+std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>
 MediaHistoryStoreInternal::GetPlaybackSessions(
-    unsigned int num_sessions,
-    MediaHistoryStore::GetPlaybackSessionsFilter filter) {
+    base::Optional<unsigned int> num_sessions,
+    base::Optional<MediaHistoryStore::GetPlaybackSessionsFilter> filter) {
   DCHECK(db_task_runner_->RunsTasksInCurrentSequence());
+
   if (!initialization_successful_)
-    return base::nullopt;
+    return std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>();
 
   auto sessions =
       session_table_->GetPlaybackSessions(num_sessions, std::move(filter));
 
-  for (auto& session : *sessions) {
+  for (auto& session : sessions) {
     session->artwork = session_images_table_->GetImagesForSession(session->id);
   }
 
@@ -390,10 +391,6 @@ MediaHistoryStore::MediaHistoryStore(
 }
 
 MediaHistoryStore::~MediaHistoryStore() {}
-
-MediaHistoryStore::MediaPlaybackSession::MediaPlaybackSession() = default;
-
-MediaHistoryStore::MediaPlaybackSession::~MediaPlaybackSession() = default;
 
 void MediaHistoryStore::SavePlayback(
     const content::MediaPlayerWatchTime& watch_time) {
@@ -472,14 +469,10 @@ void MediaHistoryStore::SavePlaybackSession(
 }
 
 void MediaHistoryStore::GetPlaybackSessions(
-    unsigned int num_sessions,
-    GetPlaybackSessionsFilter filter,
-    GetPlaybackSessionsCallback callback) {
-  if (!db_->initialization_successful_) {
-    std::move(callback).Run(base::nullopt);
-    return;
-  }
-
+    base::Optional<unsigned int> num_sessions,
+    base::Optional<GetPlaybackSessionsFilter> filter,
+    base::OnceCallback<
+        void(std::vector<mojom::MediaHistoryPlaybackSessionRowPtr>)> callback) {
   base::PostTaskAndReplyWithResult(
       db_->db_task_runner_.get(), FROM_HERE,
       base::BindOnce(&MediaHistoryStoreInternal::GetPlaybackSessions, db_,

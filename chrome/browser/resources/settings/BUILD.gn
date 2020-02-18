@@ -219,6 +219,7 @@ group("closure_compile_module") {
     ":closure_compile_local_module",
     "appearance_page:closure_compile_module",
     "controls:closure_compile_module",
+    "downloads_page:closure_compile_module",
     "on_startup_page:closure_compile_module",
     "prefs:closure_compile_module",
     "search_engines_page:closure_compile_module",

@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">লাইট</translation>
 <translation id="3303414029551471755">সমলখিনি ডাউনল’ড কৰিবলৈ আগবাঢ়িবনে?</translation>
 <translation id="3306398118552023113">এই এপ্‌টো Chromeত চলি আছে</translation>
-<translation id="3312292613668865961">ছাইটসমূহক আপোনাৰ ভাৰ্ছুৱেল ৰিয়েলিটি ডিভাইচসমূহ আৰু ডেটা এক্সেছ কৰিবলৈ অনুমতি দিয়াৰ পূর্বে সোধক (চুপাৰিছ কৰা)</translation>
 <translation id="3315103659806849044">আপুনি বৰ্তমান আপোনাৰ ছিংক আৰু Google সেৱাৰ ছেটিংসমূহ কাষ্ট'মাইজ কৰি আছে। ছিংক অন কৰাটো সম্পূৰ্ণ কৰিবলৈ স্ক্রীণখনৰ একেবাৰে তলিৰ কাষত থকা নিশ্চিত কৰক বুটামটো টিপক। ওপৰলৈ যাওক</translation>
 <translation id="3328801116991980348">ছাইটৰ তথ্য</translation>
 <translation id="3333961966071413176">সকলো সম্পৰ্ক</translation>
@@ -514,7 +513,6 @@
 <translation id="4915549754973153784">ডিভাইচৰ বাবে স্কেন কৰাৰ ক্ষেত্ৰত <ph name="BEGIN_LINK" />সহায় পাওক<ph name="END_LINK" />…</translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{#টা পৃষ্ঠা}one{#টা পৃষ্ঠা}other{#টা পৃষ্ঠা}}</translation>
 <translation id="4932247056774066048">আপুনি যিহেতু <ph name="DOMAIN_NAME" />এ পৰিচালনা কৰা এটা একাউণ্টৰ পৰা ছাইন আউট কৰিবলৈ লৈছে, সেয়ে আপোনাৰ Chrome ডেটা এই ডিভাইচটোৰ পৰা মচা হ’ব। এইটো আপোনাৰ Google একাউণ্টত থাকিব।</translation>
-<translation id="4935305910887312910">ছাইটসমূহক আপোনাৰ কেমেৰাৰ স্থান লাভ কৰা অথবা আপোনাৰ কোঠা মেপ কৰাৰ অনুমতি দিয়াৰ পূর্বে সোধক (চুপাৰিছ কৰা)</translation>
 <translation id="4943703118917034429">ভাৰ্ছুৱেল ৰিয়েলিটি</translation>
 <translation id="4943872375798546930">কোনো ফলাফল নাই</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" />এ আপোনাৰ স্ক্ৰীণ শ্বেয়াৰ কৰি আছে</translation>
@@ -817,6 +815,7 @@
 <translation id="7141896414559753902">ছাইটসমূহে পপ্‌-আপ দেখুওৱাটো আৰু বেলেগ লিংকলৈ লৈ যোৱাটো অৱৰোধ কৰক (আমি চুপাৰিছ কৰোঁ)</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" />ৰ পৰা <ph name="BEGIN_LINK" />প্ৰকৃত পৃষ্ঠাটো ল'ড কৰক<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">যোৱা ২৪ ঘণ্টাত</translation>
+<translation id="7173114856073700355">ছেটিংসমূহ খোলক</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> কে.বি.</translation>
 <translation id="7177466738963138057">আপুনি এইটো পিছত ছেটিংসমূহ-লৈ গৈ সলনি কৰিব পাৰে</translation>
 <translation id="7180611975245234373">ৰিফ্ৰেশ্ব কৰক</translation>
@@ -1022,7 +1021,6 @@
 <translation id="8664979001105139458">এই ফাইলৰ নামটো ইতিমধ্যে আছে</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{ছিগনেলৰ ক্ষমতাৰ স্তৰ: # বাৰ}one{ছিগনেলৰ ক্ষমতাৰ স্তৰ: # বাৰ}other{ছিগনেলৰ ক্ষমতাৰ স্তৰ: # বাৰ}}</translation>
 <translation id="868929229000858085">সম্পৰ্কসূচীত থকা ব্যক্তি সন্ধান কৰক</translation>
-<translation id="8698438463325761328">ছাইটসমূহে আপোনাৰ ভাৰ্ছুৱেল ৰিয়েলিটি ডিভাইচ আৰু ডেটা এক্সেছ কৰাটো অৱৰোধ কৰক</translation>
 <translation id="869891660844655955">ম্যাদ উকলাৰ তাৰিখ</translation>
 <translation id="8728487861892616501">এই এপ্লিকেশ্বনটো ব্যৱহাৰ কৰি আপুনি Chromeৰ <ph name="BEGIN_LINK1" />সেৱাৰ চৰ্তাৱলী<ph name="END_LINK1" /> আৰু <ph name="BEGIN_LINK2" />গোপনীয়তাৰ জাননী<ph name="END_LINK2" /> আৰু <ph name="BEGIN_LINK3" />Family Linkৰ জৰিয়তে পৰিচালনা কৰা Google একাউণ্টৰ গোপনীয়তাৰ জাননী<ph name="END_LINK3" />ত সন্মতি দিছে।</translation>
 <translation id="8748850008226585750">সমল লুকাই ৰখা হৈছে</translation>
@@ -1039,7 +1037,6 @@
 <translation id="883806473910249246">সমল ডাউনল’ড কৰি থকাৰ সময়ত আসোঁৱাহৰ সৃষ্টি হ’ল৷</translation>
 <translation id="8840953339110955557">এই পৃষ্ঠাটো অনলাইন সংস্কৰণতকৈ বেলেগ হ’ব পাৰে।</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">ছাইটসমূহে আপোনাৰ কেমেৰাৰ স্থান লাভ কৰা অথবা আপোনাৰ কোঠা মেপ কৰাটো অৱৰোধ কৰক</translation>
 <translation id="8853345339104747198"><ph name="TAB_TITLE" />, টেব</translation>
 <translation id="885701979325669005">ষ্ট’ৰেজ</translation>
 <translation id="889338405075704026">Chromeৰ ছেটিংসমূহলৈ যাওক</translation>

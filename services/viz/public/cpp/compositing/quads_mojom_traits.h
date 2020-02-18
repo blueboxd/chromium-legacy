@@ -285,8 +285,7 @@ struct StructTraits<viz::mojom::StreamVideoQuadStateDataView, viz::DrawQuad> {
   static const gfx::Size& resource_size_in_pixels(const viz::DrawQuad& input) {
     const viz::StreamVideoDrawQuad* quad =
         viz::StreamVideoDrawQuad::MaterialCast(&input);
-    return quad->overlay_resources
-        .size_in_pixels[viz::StreamVideoDrawQuad::kResourceIdIndex];
+    return quad->overlay_resources.size_in_pixels;
   }
 
   static const gfx::PointF& uv_top_left(const viz::DrawQuad& input) {

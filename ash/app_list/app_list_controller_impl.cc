@@ -1176,6 +1176,8 @@ void AppListControllerImpl::ViewShown(int64_t display_id) {
   if (client_)
     client_->ViewShown(display_id);
 
+  Shell::Get()->home_screen_controller()->OnAppListViewShown();
+
   // Ensure search box starts fresh with no ring each time it opens.
   keyboard_traversal_engaged_ = false;
 }
@@ -1195,6 +1197,9 @@ void AppListControllerImpl::ViewClosing() {
 
   if (client_)
     client_->ViewClosing();
+
+  if (Shell::Get()->home_screen_controller())
+    Shell::Get()->home_screen_controller()->OnAppListViewClosing();
 }
 
 void AppListControllerImpl::ViewClosed() {

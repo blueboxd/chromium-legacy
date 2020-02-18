@@ -26,7 +26,6 @@ public class PaymentAppService implements PaymentAppFactoryInterface {
 
     /** Prevent instantiation. */
     private PaymentAppService() {
-        mFactories.add(PaymentAppFactory.getInstance());
         mFactories.add(new AutofillPaymentAppFactory());
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.SERVICE_WORKER_PAYMENT_APPS)) {
             mFactories.add(new ServiceWorkerPaymentAppBridge());
@@ -55,7 +54,7 @@ public class PaymentAppService implements PaymentAppFactoryInterface {
      */
     private final class Collector implements PaymentAppFactoryDelegate {
         private final Set<PaymentAppFactoryInterface> mPendingFactories;
-        private final List<PaymentInstrument> mPossiblyDuplicatePaymentApps = new ArrayList<>();
+        private final List<PaymentApp> mPossiblyDuplicatePaymentApps = new ArrayList<>();
         private final PaymentAppFactoryDelegate mDelegate;
 
         /** Whether at least one payment app factory has calculated canMakePayment to be true. */
@@ -88,7 +87,7 @@ public class PaymentAppService implements PaymentAppFactoryInterface {
         }
 
         @Override
-        public void onPaymentAppCreated(PaymentInstrument paymentApp) {
+        public void onPaymentAppCreated(PaymentApp paymentApp) {
             mPossiblyDuplicatePaymentApps.add(paymentApp);
         }
 
@@ -104,11 +103,11 @@ public class PaymentAppService implements PaymentAppFactoryInterface {
 
             if (!mCanMakePayment) mDelegate.onCanMakePaymentCalculated(false);
 
-            Set<PaymentInstrument> uniquePaymentApps =
+            Set<PaymentApp> uniquePaymentApps =
                     deduplicatePaymentApps(mPossiblyDuplicatePaymentApps);
             mPossiblyDuplicatePaymentApps.clear();
 
-            for (PaymentInstrument app : uniquePaymentApps) {
+            for (PaymentApp app : uniquePaymentApps) {
                 mDelegate.onPaymentAppCreated(app);
             }
 
@@ -116,8 +115,8 @@ public class PaymentAppService implements PaymentAppFactoryInterface {
         }
     }
 
-    private static Set<PaymentInstrument> deduplicatePaymentApps(List<PaymentInstrument> apps) {
-        Map<String, PaymentInstrument> identifierToAppMapping = new HashMap<>();
+    private static Set<PaymentApp> deduplicatePaymentApps(List<PaymentApp> apps) {
+        Map<String, PaymentApp> identifierToAppMapping = new HashMap<>();
         int numberOfApps = apps.size();
         for (int i = 0; i < numberOfApps; i++) {
             identifierToAppMapping.put(apps.get(i).getIdentifier(), apps.get(i));
@@ -129,8 +128,8 @@ public class PaymentAppService implements PaymentAppFactoryInterface {
             identifierToAppMapping.remove(apps.get(i).getApplicationIdentifierToHide());
         }
 
-        Set<PaymentInstrument> uniquePaymentApps = new HashSet<>(identifierToAppMapping.values());
-        for (PaymentInstrument app : identifierToAppMapping.values()) {
+        Set<PaymentApp> uniquePaymentApps = new HashSet<>(identifierToAppMapping.values());
+        for (PaymentApp app : identifierToAppMapping.values()) {
             // The list of native applications from the web app manifest's "related_applications"
             // section. If "prefer_related_applications" is true in the manifest and any one of the
             // related application is installed on the device, then the corresponding service worker

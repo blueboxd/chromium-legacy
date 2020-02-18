@@ -318,6 +318,22 @@ void HomeScreenController::RecordAnimationSmoothness() {
   fps_counter_.reset();
 }
 
+void HomeScreenController::OnAppListViewShown() {
+  split_view_observer_.Add(
+      SplitViewController::Get(delegate_->GetHomeScreenWindow()));
+  UpdateVisibility();
+}
+
+void HomeScreenController::OnAppListViewClosing() {
+  split_view_observer_.RemoveAll();
+}
+
+void HomeScreenController::OnSplitViewStateChanged(
+    SplitViewController::State previous_state,
+    SplitViewController::State state) {
+  UpdateVisibility();
+}
+
 void HomeScreenController::OnOverviewModeStarting() {
   const OverviewSession::EnterExitOverviewType overview_enter_type =
       Shell::Get()
@@ -422,8 +438,11 @@ bool HomeScreenController::ShouldShowHomeScreen() const {
       Shell::Get()->tablet_mode_controller()->InTabletMode();
   const bool in_overview =
       Shell::Get()->overview_controller()->InOverviewSession();
+  const bool in_split_view =
+      SplitViewController::Get(delegate_->GetHomeScreenWindow())
+          ->InSplitViewMode();
   return in_tablet_mode && !in_overview && !in_wallpaper_preview_ &&
-         !in_window_dragging_;
+         !in_window_dragging_ && !in_split_view;
 }
 
 }  // namespace ash

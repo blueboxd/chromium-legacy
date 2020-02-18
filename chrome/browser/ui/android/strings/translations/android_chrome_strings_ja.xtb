@@ -307,7 +307,6 @@
 <translation id="3298243779924642547">軽量版</translation>
 <translation id="3303414029551471755">コンテンツのダウンロードに進みますか？</translation>
 <translation id="3306398118552023113">このアプリは Chrome で実行中です</translation>
-<translation id="3312292613668865961">サイトにバーチャル リアリティ デバイスとデータへのアクセスを許可する前に確認します（推奨）</translation>
 <translation id="3315103659806849044">[同期と Google サービス] の設定をカスタマイズしています。同期を有効にしたら、画面の下部にある [確認] をタップしてください。上へ移動</translation>
 <translation id="3328801116991980348">サイト情報</translation>
 <translation id="3333961966071413176">すべての連絡先</translation>
@@ -514,7 +513,6 @@
 <translation id="4915549754973153784">デバイスのスキャン中… <ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="4921180162323349895">{FILE_COUNT,plural, =1{# ページ}other{# ページ}}</translation>
 <translation id="4932247056774066048"><ph name="DOMAIN_NAME" /> で管理されているアカウントからログアウトするにあたり、Chrome データはこのデバイスから削除されます。Google アカウントからはデータは削除されません。</translation>
-<translation id="4935305910887312910">サイトにカメラ位置の取得または室内のマッピングを許可する前に確認します（推奨）</translation>
 <translation id="4943703118917034429">バーチャル リアリティ</translation>
 <translation id="4943872375798546930">結果はありません</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> が画面を共有しています</translation>
@@ -818,6 +816,7 @@
 <translation id="7141896414559753902">サイトでのポップアップ表示とリダイレクトをブロックする（推奨）</translation>
 <translation id="7149158118503947153"><ph name="DOMAIN_NAME" /> から<ph name="BEGIN_LINK" />元のページを読み込む<ph name="END_LINK" /></translation>
 <translation id="7149893636342594995">過去 24 時間</translation>
+<translation id="7173114856073700355">設定を開く</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> KB</translation>
 <translation id="7177466738963138057">これは後から [設定] で変更できます</translation>
 <translation id="7180611975245234373">更新</translation>
@@ -1025,7 +1024,6 @@
 <translation id="8664979001105139458">同じ名前のファイルが存在します</translation>
 <translation id="8687353297350450808">{N_BARS,plural, =1{電波強度: レベル #}other{電波強度: レベル #}}</translation>
 <translation id="868929229000858085">連絡先を検索</translation>
-<translation id="8698438463325761328">サイトによるバーチャル リアリティ デバイスとデータへのアクセスをブロックします</translation>
 <translation id="869891660844655955">有効期限</translation>
 <translation id="8728487861892616501">このアプリケーションを使用すると、Chrome の<ph name="BEGIN_LINK1" />利用規約<ph name="END_LINK1" />と<ph name="BEGIN_LINK2" />プライバシーに関するお知らせ<ph name="END_LINK2" />、および <ph name="BEGIN_LINK3" />ファミリー リンクで管理する Google アカウントのプライバシーに関するお知らせ<ph name="END_LINK3" />に同意したことになります。</translation>
 <translation id="8748850008226585750">メッセージは非表示です</translation>
@@ -1042,7 +1040,6 @@
 <translation id="883806473910249246">コンテンツのダウンロード中にエラーが発生しました。</translation>
 <translation id="8840953339110955557">このページはオンライン版とは異なる可能性があります。</translation>
 <translation id="8847988622838149491">USB</translation>
-<translation id="884828189055900810">サイトによるカメラ位置の取得または室内のマッピングをブロックします</translation>
 <translation id="8853345339104747198">「<ph name="TAB_TITLE" />」タブ</translation>
 <translation id="885701979325669005">ストレージ</translation>
 <translation id="889338405075704026">Chrome 設定に移動</translation>

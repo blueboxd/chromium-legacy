@@ -56,7 +56,7 @@
 <translation id="1331702245475014624"><ph name="INDEX" /> از <ph name="TOTAL" /></translation>
 <translation id="1334095593597963605">حرف اور لفظ کی ایکو</translation>
 <translation id="1334570596456017464">سب اسکرپٹ</translation>
-<translation id="133801305381959373">کوئی قابل ترمیم اگلی متن فیلڈ نہیں ہے</translation>
+<translation id="133801305381959373">کوئی قابل ترمیم اگلی ٹیکسٹ فیلڈ نہیں ہے</translation>
 <translation id="1339428534620983148">پچھلے ٹیبل کا کالم</translation>
 <translation id="1342835525016946179">article</translation>
 <translation id="1346059596910821859">تجویز</translation>
@@ -139,7 +139,7 @@
 <translation id="1914424852593176649">سائز <ph name="FONT_SIZE" /></translation>
 <translation id="1914635379910604678"><ph name="DOT" /> کورڈ</translation>
 <translation id="1923956950274750765">میڈیم سحلبی</translation>
-<translation id="1928932365747995741">کوئی پچھلی قابل ترمیم متن فیلڈ نہیں ہے</translation>
+<translation id="1928932365747995741">کوئی پچھلی قابل ترمیم ٹیکسٹ فیلڈ نہیں ہے</translation>
 <translation id="1954623340234317532">سال کے ہفتے کا کنٹرول</translation>
 <translation id="1964135212174907577">اگلا آبجیکٹ</translation>
 <translation id="1969092762068865084">جولائی</translation>
@@ -416,7 +416,7 @@
 <translation id="3810838688059735925">ویڈیو</translation>
 <translation id="3813387282697781382">ہلکا مرجان</translation>
 <translation id="3816633764618089385">اگلا میڈیا</translation>
-<translation id="3838966660807147922">‏متن (جیسے Mac OS X) میں ترمیم کرتے وقت کرسر کو حروف کے درمیان رکھیں</translation>
+<translation id="3838966660807147922">‏ٹیکسٹ (جیسے Mac OS X) میں ترمیم کرتے وقت کرسر کو حروف کے درمیان رکھیں</translation>
 <translation id="385383972552776628">اختیارات کا صفحہ کھولیں</translation>
 <translation id="3856075812838139784">صرف پڑھنے کیلئے</translation>
 <translation id="3857141338659865495">میڈیم فیروزی</translation>
@@ -519,7 +519,7 @@
 <translation id="4537277403911487429">اگلا مماثل آئٹم</translation>
 <translation id="4547556996012970016">سطح 5 کی اگلی سرخی</translation>
 <translation id="4562381607973973258">ہیڈر</translation>
-<translation id="4573990688012173948">متن کی فارمیٹنگ
+<translation id="4573990688012173948">ٹیکسٹ کی فارمیٹنگ
         <ph name="FONT_SIZE_STRING" />
         <ph name="COLOR_STRING" />
         <ph name="BOLD_STRING" />
@@ -582,7 +582,7 @@
 <translation id="495170559598752135">کارروائیاں</translation>
 <translation id="4953585991029886728">متن میں ترمیم کریں</translation>
 <translation id="4954534434583049121">پچھلے بلاک کا اقتباس</translation>
-<translation id="4967543208652787610">‏قبول کرنے کیلئے enter یا منسوخ کرنے کیلئے escape، اگلا کیلئے نیچے اور پچھلا کیلئے اوپر دبائیں</translation>
+<translation id="4967543208652787610">‏قبول کرنے کیلئے enter یا منسوخ کرنے کیلئے escape، آگے کیلئے down اور پیچھے کیلئے up دبائیں</translation>
 <translation id="4973717656530883744">کم سے کم <ph name="X" /></translation>
 <translation id="4973762002207131920"><ph name="KEY" /> پر سوئچ کر دیا گیا۔</translation>
 <translation id="4974612477719259470">کوئی پچھلا بٹن نہیں ہے</translation>
@@ -757,7 +757,7 @@
 <translation id="6156755592608846750">سیل کا اختتام</translation>
 <translation id="6158882249329863701">قطار <ph name="TABLECELLROWINDEX" /> کالم <ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="6164829606128959761">میٹر</translation>
-<translation id="6166362019018438352">بریل کیپشنز غیر فعال کر دئے گئے</translation>
+<translation id="6166362019018438352">بریل کیپشنز غیر فعال ہیں</translation>
 <translation id="6169420925157477918">طویل تفصیل والی تصویر</translation>
 <translation id="6186305613600865047">صفحہ کے نیچے پہنچیں</translation>
 <translation id="6187190722927752226">سبزی مائل نیلا</translation>
@@ -975,7 +975,7 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="7763537600611320912">ڈاؤن لوڈ شروع ہو گیا <ph name="FILE_NAME" /></translation>
 <translation id="7770823902658038748"><ph name="VALUE" />، <ph name="NAME" />، پاس ورڈ کا متنی باکس</translation>
 <translation id="7776293189010177726">‏ChromeVox مینوز کھولیں</translation>
-<translation id="7799302833060027366">ریاضی دریافت کرنے کیلئے اوپر، نیچے، بائیں، یا دائیں تیر کا نشان والا بٹن دبائیں</translation>
+<translation id="7799302833060027366">‏ریاضی دریافت کرنے کیلئے up, down, left یا right تیر کے نشان والا بٹن دبائیں</translation>
 <translation id="7800558923657349506">اختتامیہ</translation>
 <translation id="7805247615045262757">ڈیفالٹ نیویگیشن</translation>
 <translation id="7805768142964895445">صورتحال</translation>
@@ -1143,7 +1143,7 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="8463645336674919227">گرامر کی غلطی کو چھوڑنا</translation>
 <translation id="847040613207937740">کوئی اگلا چیک باکس نہیں ہے</translation>
 <translation id="847154984256717791">مصروف</translation>
-<translation id="8473540203671727883">ماؤس کے نیچے متن بولیں</translation>
+<translation id="8473540203671727883">ماؤس کے نیچے موجود ٹیکسٹ بولیں</translation>
 <translation id="8476408756881832830">‏ChromeVox کے بولتے وقت پلے بیک موقوف کریں</translation>
 <translation id="8476508772960940536">ونڈو کا عمومی جائزہ</translation>
 <translation id="8503360654911991865">نیویگیشن گرینولیریٹی گھٹائیں</translation>
@@ -1205,7 +1205,7 @@ Chrome براؤزر مینو کھولنے کیلئے، Alt+F دبائیں۔</tra
 <translation id="8946628535652548639">قطار<ph name="TABLECELLROWINDEX" />کالم<ph name="TABLECELLCOLUMNINDEX" /></translation>
 <translation id="8952400011684167587">کوئی پچھلا ریڈیو بٹن نہیں ہے</translation>
 <translation id="8957142051395645063">اعلان کریں</translation>
-<translation id="896035116006462153">بریل کی توسیع کردہ کمانڈز استعمال کرنے کیلئے، براہ کرم اسٹیٹس ٹرے، ایکسیسبیلٹی کے تحت آن اسکرین کی بورڈ فعال کریں</translation>
+<translation id="896035116006462153">بریل کی توسیع کردہ کمانڈز استعمال کرنے کیلئے، براہ کرم اسٹیٹس ٹرے اور ایکسیسبیلٹی کے تحت آن اسکرین کی بورڈ فعال کریں</translation>
 <translation id="8970172509886453271">کوئی پچھلا سیکشن نہیں ہے</translation>
 <translation id="8978496506222343566">tltip</translation>
 <translation id="8986362086234534611">بھول جائیں</translation>

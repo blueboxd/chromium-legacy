@@ -475,6 +475,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   if (is_client_redirect_)
     redirect_chain_.push_back(old_url);
   redirect_chain_.push_back(new_url);
+  last_same_document_navigation_was_browser_initiated_ = !initiating_document;
 
   SetHistoryItemStateForCommit(
       history_item_.Get(), type,

@@ -17,7 +17,7 @@ console.log(\`Error with relative links
 //# sourceURL=console-linkify-relative-links.js
     `);
 
-    ConsoleTestRunner.dumpConsoleMessages();
+    await ConsoleTestRunner.dumpConsoleMessages();
     var consoleView = Console.ConsoleView.instance();
     var links = consoleView._visibleViewMessages[0].element().querySelectorAll('.console-message-text .devtools-link');
     for (var link of links)

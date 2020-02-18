@@ -10,6 +10,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -71,12 +72,15 @@ ManifestUpdateManager::ManifestUpdateManager(Profile* profile)
 
 ManifestUpdateManager::~ManifestUpdateManager() = default;
 
-void ManifestUpdateManager::SetSubsystems(AppRegistrar* registrar,
-                                          WebAppUiManager* ui_manager,
-                                          InstallManager* install_manager) {
+void ManifestUpdateManager::SetSubsystems(
+    AppRegistrar* registrar,
+    WebAppUiManager* ui_manager,
+    InstallManager* install_manager,
+    SystemWebAppManager* system_web_app_manager) {
   registrar_ = registrar;
   ui_manager_ = ui_manager;
   install_manager_ = install_manager;
+  system_web_app_manager_ = system_web_app_manager;
 }
 
 void ManifestUpdateManager::Start() {
@@ -95,6 +99,11 @@ void ManifestUpdateManager::MaybeUpdate(const GURL& url,
 
   if (app_id.empty() || !registrar_->IsLocallyInstalled(app_id)) {
     NotifyResult(url, ManifestUpdateResult::kNoAppInScope);
+    return;
+  }
+
+  if (system_web_app_manager_->IsSystemWebApp(app_id)) {
+    NotifyResult(url, ManifestUpdateResult::kAppIsSystemWebApp);
     return;
   }
 

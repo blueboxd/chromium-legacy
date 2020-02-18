@@ -23,8 +23,7 @@ class HIDDeviceRequestOptions;
 class ScriptPromiseResolver;
 class ScriptState;
 
-class HID : public EventTargetWithInlineData,
-            public ExecutionContextLifecycleObserver {
+class HID : public EventTargetWithInlineData, public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(HID);
 

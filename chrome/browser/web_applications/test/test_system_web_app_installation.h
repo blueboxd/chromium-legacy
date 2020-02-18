@@ -36,6 +36,9 @@ class TestSystemWebAppInstallation {
   const GURL& GetAppUrl();
   SystemAppType GetType();
 
+  // Override the contents served by chrome://test-system-app/manifest.json.
+  void SetManifest(std::string manifest);
+
  private:
   TestSystemWebAppInstallation(SystemAppType type, SystemAppInfo info);
 

@@ -24,7 +24,7 @@ namespace blink {
 BluetoothDevice::BluetoothDevice(ExecutionContext* context,
                                  mojom::blink::WebBluetoothDevicePtr device,
                                  Bluetooth* bluetooth)
-    : ExecutionContextLifecycleObserver(context),
+    : ContextClient(context),
       attribute_instance_map_(
           MakeGarbageCollected<BluetoothAttributeInstanceMap>(this)),
       device_(std::move(device)),
@@ -81,7 +81,7 @@ const WTF::AtomicString& BluetoothDevice::InterfaceName() const {
 }
 
 ExecutionContext* BluetoothDevice::GetExecutionContext() const {
-  return ExecutionContextLifecycleObserver::GetExecutionContext();
+  return ContextClient::GetExecutionContext();
 }
 
 void BluetoothDevice::Trace(Visitor* visitor) {
@@ -89,7 +89,7 @@ void BluetoothDevice::Trace(Visitor* visitor) {
   visitor->Trace(gatt_);
   visitor->Trace(bluetooth_);
   EventTargetWithInlineData::Trace(visitor);
-  ExecutionContextLifecycleObserver::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 void BluetoothDevice::AddedEventListener(

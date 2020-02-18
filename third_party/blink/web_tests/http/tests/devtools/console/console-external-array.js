@@ -37,8 +37,8 @@
     ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(onRemoteObjectsLoaded);
   }
 
-  function onRemoteObjectsLoaded() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function onRemoteObjectsLoaded() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

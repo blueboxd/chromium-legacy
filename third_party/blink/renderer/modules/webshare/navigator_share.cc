@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 
 namespace blink {
 
@@ -99,13 +100,23 @@ class NavigatorShare::ShareClientImpl final
   WeakMember<NavigatorShare> navigator_;
   bool has_files_;
   Member<ScriptPromiseResolver> resolver_;
+  FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle
+      feature_handle_for_scheduler_;
 };
 
 NavigatorShare::ShareClientImpl::ShareClientImpl(
     NavigatorShare* navigator_share,
     bool has_files,
     ScriptPromiseResolver* resolver)
-    : navigator_(navigator_share), has_files_(has_files), resolver_(resolver) {}
+    : navigator_(navigator_share),
+      has_files_(has_files),
+      resolver_(resolver),
+      feature_handle_for_scheduler_(
+          ExecutionContext::From(resolver_->GetScriptState())
+              ->GetScheduler()
+              ->RegisterFeature(
+                  SchedulingPolicy::Feature::kWebShare,
+                  {SchedulingPolicy::RecordMetricsForBackForwardCache()})) {}
 
 void NavigatorShare::ShareClientImpl::Callback(mojom::blink::ShareError error) {
   if (navigator_)

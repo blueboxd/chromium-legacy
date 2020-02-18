@@ -74,23 +74,23 @@ NavigationPolicy NavigationPolicyFromEventModifiers(int16_t button,
   return kNavigationPolicyCurrentTab;
 }
 
-NavigationPolicy NavigationPolicyFromEventInternal(Event* event) {
+NavigationPolicy NavigationPolicyFromEventInternal(const Event* event) {
   if (!event)
     return kNavigationPolicyCurrentTab;
 
-  if (auto* mouse_event = DynamicTo<MouseEvent>(event)) {
+  if (const auto* mouse_event = DynamicTo<MouseEvent>(event)) {
     return NavigationPolicyFromEventModifiers(
         mouse_event->button(), mouse_event->ctrlKey(), mouse_event->shiftKey(),
         mouse_event->altKey(), mouse_event->metaKey());
   } else if (event->IsKeyboardEvent()) {
     // The click is simulated when triggering the keypress event.
-    KeyboardEvent* key_event = ToKeyboardEvent(event);
+    const KeyboardEvent* key_event = ToKeyboardEvent(event);
     return NavigationPolicyFromEventModifiers(
         0, key_event->ctrlKey(), key_event->shiftKey(), key_event->altKey(),
         key_event->metaKey());
   } else if (event->IsGestureEvent()) {
     // The click is simulated when triggering the gesture-tap event
-    GestureEvent* gesture_event = ToGestureEvent(event);
+    const GestureEvent* gesture_event = ToGestureEvent(event);
     return NavigationPolicyFromEventModifiers(
         0, gesture_event->ctrlKey(), gesture_event->shiftKey(),
         gesture_event->altKey(), gesture_event->metaKey());
@@ -139,7 +139,7 @@ NavigationPolicy NavigationPolicyFromCurrentEvent() {
 
 }  // namespace
 
-NavigationPolicy NavigationPolicyFromEvent(Event* event) {
+NavigationPolicy NavigationPolicyFromEvent(const Event* event) {
   NavigationPolicy event_policy = NavigationPolicyFromEventInternal(event);
   NavigationPolicy input_policy = NavigationPolicyFromCurrentEvent();
 

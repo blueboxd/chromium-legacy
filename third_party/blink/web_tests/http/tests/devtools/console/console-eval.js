@@ -10,8 +10,8 @@
 
   ConsoleTestRunner.evaluateInConsole('1+2', step2);
 
-  function step2() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function step2() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

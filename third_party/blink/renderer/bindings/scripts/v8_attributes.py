@@ -470,6 +470,8 @@ def is_keep_alive_for_gc(interface, attribute):
     extended_attributes = attribute.extended_attributes
     if attribute.is_static:
         return False
+    if idl_type.is_array_buffer_or_view:
+        return False
     return (
         # For readonly attributes, for performance reasons we keep the attribute
         # wrapper alive while the owner wrapper is alive, because the attribute

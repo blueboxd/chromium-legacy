@@ -148,7 +148,7 @@ inline FormSubmission::FormSubmission(
     const AtomicString& content_type,
     HTMLFormElement* form,
     scoped_refptr<EncodedFormData> data,
-    Event* event,
+    const Event* event,
     NavigationPolicy navigation_policy,
     TriggeringEventInfo triggering_event_info,
     ClientNavigationReason reason,
@@ -173,7 +173,7 @@ inline FormSubmission::FormSubmission(const String& result)
 
 FormSubmission* FormSubmission::Create(HTMLFormElement* form,
                                        const Attributes& attributes,
-                                       Event* event,
+                                       const Event* event,
                                        HTMLFormControlElement* submit_button) {
   DCHECK(form);
 

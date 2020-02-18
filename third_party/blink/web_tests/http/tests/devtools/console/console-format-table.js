@@ -56,6 +56,6 @@
       console.table("foo", [1,2,3]);
   `);
 
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 })();

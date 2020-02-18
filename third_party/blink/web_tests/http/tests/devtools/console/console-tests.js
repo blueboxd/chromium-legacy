@@ -42,6 +42,6 @@
 
   Console.ConsoleView.instance()._setImmediatelyFilterMessagesForTest();
   Console.ConsoleViewFilter.levelFilterSetting().set(Console.ConsoleFilter.allLevelsFilterValue());
-  ConsoleTestRunner.dumpConsoleMessagesWithClasses();
+  await ConsoleTestRunner.dumpConsoleMessagesWithClasses();
   TestRunner.completeTest();
 })();

@@ -18,8 +18,7 @@ namespace blink {
 
 class ScriptState;
 
-class Clipboard : public EventTargetWithInlineData,
-                  public ExecutionContextLifecycleObserver {
+class Clipboard : public EventTargetWithInlineData, public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(Clipboard);
   DEFINE_WRAPPERTYPEINFO();
 

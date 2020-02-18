@@ -590,7 +590,6 @@ class WebMediaPlayerMSTest
   bool HasNativeControls() override { return false; }
   bool IsAudioElement() override { return is_audio_element_; }
   bool IsInAutoPIP() const override { return false; }
-  void ActivateViewportIntersectionMonitoring(bool activate) override {}
   void MediaRemotingStarted(
       const WebString& remote_device_friendly_name) override {}
   void MediaRemotingStopped(int error_code) override {}

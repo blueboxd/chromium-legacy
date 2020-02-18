@@ -28,7 +28,7 @@
 #include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
-#import "ios/web_view/internal/passwords/cwv_password_controller.h"
+#import "ios/web_view/internal/passwords/cwv_password_controller_fake.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_autofill_controller_delegate.h"
 #include "ios/web_view/test/test_with_locale_and_resources.h"
@@ -52,6 +52,7 @@ NSString* const kTestFormName = @"FormName";
 NSString* const kTestFieldIdentifier = @"FieldIdentifier";
 NSString* const kTestFrameId = @"FrameID";
 NSString* const kTestFieldValue = @"FieldValue";
+NSString* const kTestDisplayDescription = @"DisplayDescription";
 
 }  // namespace
 
@@ -79,7 +80,7 @@ class CWVAutofillControllerTest : public TestWithLocaleAndResources {
     test_web_state_.SetWebFramesManager(std::move(frames_manager));
 
     password_controller_ =
-        [[CWVPasswordController alloc] initWithWebState:&test_web_state_];
+        [[CWVPasswordControllerFake alloc] initWithWebState:&test_web_state_];
 
     autofill_controller_ =
         [[CWVAutofillController alloc] initWithWebState:&test_web_state_
@@ -105,18 +106,17 @@ class CWVAutofillControllerTest : public TestWithLocaleAndResources {
   CWVAutofillController* autofill_controller_;
   FakeAutofillAgent* autofill_agent_;
   FakeJSAutofillManager* js_autofill_manager_;
-  CWVPasswordController* password_controller_;
+  CWVPasswordControllerFake* password_controller_;
   std::unique_ptr<autofill::TestFormActivityTabHelper>
       test_form_activity_tab_helper_;
   id js_suggestion_manager_;
 };
 
-// Tests CWVAutofillController fetch suggestions.
-// This test is flaky (crbug.com/1048256).
-TEST_F(CWVAutofillControllerTest, FLAKY_FetchSuggestions) {
+// Tests CWVAutofillController fetch suggestions for profiles.
+TEST_F(CWVAutofillControllerTest, FetchProfileSuggestions) {
   FormSuggestion* suggestion =
       [FormSuggestion suggestionWithValue:kTestFieldValue
-                       displayDescription:nil
+                       displayDescription:kTestDisplayDescription
                                      icon:nil
                                identifier:0];
   [autofill_agent_ addSuggestion:suggestion
@@ -128,6 +128,53 @@ TEST_F(CWVAutofillControllerTest, FLAKY_FetchSuggestions) {
   id fetch_completion = ^(NSArray<CWVAutofillSuggestion*>* suggestions) {
     ASSERT_EQ(1U, suggestions.count);
     CWVAutofillSuggestion* suggestion = suggestions.firstObject;
+    EXPECT_NSEQ(kTestFieldValue, suggestion.value);
+    EXPECT_NSEQ(kTestDisplayDescription, suggestion.displayDescription);
+    EXPECT_NSEQ(kTestFormName, suggestion.formName);
+    fetch_completion_was_called = YES;
+  };
+  [autofill_controller_ fetchSuggestionsForFormWithName:kTestFormName
+                                        fieldIdentifier:kTestFieldIdentifier
+                                              fieldType:@""
+                                                frameID:kTestFrameId
+                                      completionHandler:fetch_completion];
+
+  EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
+    base::RunLoop().RunUntilIdle();
+    return fetch_completion_was_called;
+  }));
+}
+
+// Tests CWVAutofillController fetch suggestions for passwords.
+TEST_F(CWVAutofillControllerTest, FetchPasswordSuggestions) {
+  FormSuggestion* suggestion =
+      [FormSuggestion suggestionWithValue:kTestFieldValue
+                       displayDescription:nil
+                                     icon:nil
+                               identifier:0];
+  [autofill_agent_ addSuggestion:suggestion
+                     forFormName:kTestFormName
+                 fieldIdentifier:kTestFieldIdentifier
+                         frameID:kTestFrameId];
+
+  CWVAutofillSuggestion* passwordSuggestion =
+      [[CWVAutofillSuggestion alloc] initWithFormSuggestion:suggestion
+                                                   formName:kTestFormName
+                                            fieldIdentifier:kTestFieldIdentifier
+                                                    frameID:kTestFrameId
+                                       isPasswordSuggestion:YES];
+  [password_controller_ addPasswordSuggestion:passwordSuggestion
+                                     formName:kTestFormName
+                              fieldIdentifier:kTestFieldIdentifier
+                                      frameID:kTestFrameId];
+
+  __block BOOL fetch_completion_was_called = NO;
+  id fetch_completion = ^(NSArray<CWVAutofillSuggestion*>* suggestions) {
+    // Even though there are two available suggestions, having password
+    // suggestions means no profile suggestions should be returned.
+    ASSERT_EQ(1U, suggestions.count);
+    CWVAutofillSuggestion* suggestion = suggestions.firstObject;
+    EXPECT_TRUE([suggestion isPasswordSuggestion]);
     EXPECT_NSEQ(kTestFieldValue, suggestion.value);
     EXPECT_NSEQ(kTestFormName, suggestion.formName);
     fetch_completion_was_called = YES;

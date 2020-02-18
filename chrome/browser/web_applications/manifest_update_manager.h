@@ -27,6 +27,7 @@ namespace web_app {
 
 class WebAppUiManager;
 class InstallManager;
+class SystemWebAppManager;
 
 // Checks for updates to a web app's manifest and triggers a reinstall if the
 // current installation is out of date.
@@ -39,7 +40,8 @@ class ManifestUpdateManager final : public AppRegistrarObserver {
 
   void SetSubsystems(AppRegistrar* registrar,
                      WebAppUiManager* ui_manager,
-                     InstallManager* install_manager);
+                     InstallManager* install_manager,
+                     SystemWebAppManager* system_web_app_manager);
   void Start();
   void Shutdown();
 
@@ -77,6 +79,7 @@ class ManifestUpdateManager final : public AppRegistrarObserver {
   AppRegistrar* registrar_ = nullptr;
   WebAppUiManager* ui_manager_ = nullptr;
   InstallManager* install_manager_ = nullptr;
+  SystemWebAppManager* system_web_app_manager_ = nullptr;
 
   ScopedObserver<AppRegistrar, AppRegistrarObserver> registrar_observer_{this};
 

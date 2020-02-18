@@ -424,7 +424,16 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchFilesBrowserTest,
   EXPECT_TRUE(base::ReadFileToString(temp_file_path, &read_contents));
   EXPECT_EQ("test", read_contents);
 
-  // TODO(crbug.com/1048467): Check promptless directory read/write permissions.
+  // Deletes the launch file. Reuse the second launch directory.
+  bool file_removed;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents,
+      "window.secondLaunchParams.files[0].removeEntry("
+      "  window.secondLaunchParams.files[1].name"
+      ").then(_ => domAutomationController.send(true));",
+      &file_removed));
+  EXPECT_TRUE(file_removed);
+  EXPECT_FALSE(base::PathExists(temp_file_path2));
 }
 
 INSTANTIATE_TEST_SUITE_P(

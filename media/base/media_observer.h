@@ -34,9 +34,6 @@ class MEDIA_EXPORT MediaObserverClient {
   // may be displayed to explain why the switch occurred.
   virtual void SwitchToLocalRenderer(ReasonToSwitchToLocal reason) = 0;
 
-  // Requests to activate monitoring changes on viewport intersection.
-  virtual void ActivateViewportIntersectionMonitoring(bool activate) = 0;
-
   // Reports the latest compatibility state of the element's source for remote
   // playback.
   virtual void UpdateRemotePlaybackCompatibility(bool is_compatible) = 0;

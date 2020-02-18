@@ -27,7 +27,7 @@
 
   SDK.consoleModel.addMessage(message);
   TestRunner.debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, onScriptAdded);
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.evaluateInPage('loadScript()');
 
   function onScriptAdded(event) {

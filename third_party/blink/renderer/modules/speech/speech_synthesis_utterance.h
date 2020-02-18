@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/speech/speech_synthesis_voice.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
 namespace blink {
@@ -116,7 +117,7 @@ class SpeechSynthesisUtterance final
   // EventTarget
   const AtomicString& InterfaceName() const override;
 
-  mojo::Receiver<mojom::blink::SpeechSynthesisClient> receiver_{this};
+  HeapMojoReceiver<mojom::blink::SpeechSynthesisClient> receiver_;
   mojom::blink::SpeechSynthesisUtterancePtr mojom_utterance_;
   Member<SpeechSynthesis> synthesis_;
   Member<SpeechSynthesisVoice> voice_;

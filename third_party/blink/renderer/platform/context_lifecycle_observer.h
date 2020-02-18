@@ -15,7 +15,7 @@ class ContextLifecycleNotifier;
 // ExecutionContext from platform/.
 class PLATFORM_EXPORT ContextLifecycleObserver : public GarbageCollectedMixin {
  public:
-  virtual void ContextDestroyed() {}
+  virtual void ContextDestroyed() = 0;
 
   // Call before clearing an observer list.
   void ObserverListWillBeCleared();

@@ -9,8 +9,8 @@
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
 
-  function dumpMessages(next, message) {
-    ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+  async function dumpMessages(next, message) {
+    await ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
     SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.ConsoleCleared, afterCleared);
     Console.ConsoleView.clearConsole();
 

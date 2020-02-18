@@ -19,7 +19,7 @@ class ExceptionState;
 class ScriptPromiseResolver;
 
 class KeyboardLock final : public GarbageCollected<KeyboardLock>,
-                           public ExecutionContextLifecycleObserver {
+                           public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(KeyboardLock);
 
  public:
@@ -29,7 +29,6 @@ class KeyboardLock final : public GarbageCollected<KeyboardLock>,
   ScriptPromise lock(ScriptState*, const Vector<String>&, ExceptionState&);
   void unlock(ScriptState*);
 
-  // ExecutionContextLifecycleObserver override.
   void Trace(Visitor*) override;
 
  private:

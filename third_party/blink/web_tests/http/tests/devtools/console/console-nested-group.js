@@ -27,6 +27,6 @@
     }
   `);
 
-  ConsoleTestRunner.dumpConsoleMessagesWithClasses();
+  await ConsoleTestRunner.dumpConsoleMessagesWithClasses();
   TestRunner.completeTest();
 })();

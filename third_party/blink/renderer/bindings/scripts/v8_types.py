@@ -246,7 +246,7 @@ def cpp_type(idl_type, extended_attributes=None, raw_type=False, used_as_rvalue_
         return 'FlexibleArrayBufferView'
     if base_idl_type in TYPED_ARRAY_TYPES and 'FlexibleArrayBufferView' in extended_attributes:
         return 'Flexible' + base_idl_type
-    if base_idl_type in ARRAY_BUFFER_VIEW_AND_TYPED_ARRAY_TYPES:
+    if base_idl_type in ARRAY_BUFFER_VIEW_AND_TYPED_ARRAY_TYPES or base_idl_type == 'DataView':
         if not used_in_cpp_sequence:
             if 'AllowShared' in extended_attributes:
                 return cpp_template_type('MaybeShared', idl_type.implemented_as)
@@ -686,7 +686,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
         cpp_expression_format = (
             '{v8_value}->Is{idl_type}() ? '
             'V8{idl_type}::ToImpl(v8::Local<v8::{idl_type}>::Cast({v8_value})) : 0')
-    elif idl_type.is_array_buffer_view_or_typed_array:
+    elif idl_type.is_array_buffer_view_or_typed_array or base_idl_type == 'DataView':
         this_cpp_type = idl_type.cpp_type_args(extended_attributes=extended_attributes)
         if 'AllowShared' in extended_attributes:
             cpp_expression_format = ('ToMaybeShared<%s>({isolate}, {v8_value}, exception_state)' % this_cpp_type)

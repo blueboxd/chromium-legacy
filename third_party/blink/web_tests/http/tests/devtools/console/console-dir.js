@@ -59,8 +59,8 @@
     ConsoleTestRunner.expandConsoleMessages(dumpConsoleMessages, expandTreeElementFilter);
   }
 
-  function dumpConsoleMessages() {
-    ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+  async function dumpConsoleMessages() {
+    await ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
     TestRunner.completeTest();
   }
 })();

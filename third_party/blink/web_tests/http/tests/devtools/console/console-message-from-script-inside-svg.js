@@ -8,6 +8,6 @@
   await TestRunner.loadModule('console_test_runner');
   await TestRunner.showPanel('console');
   await TestRunner.navigatePromise('resources/svg.html');
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 })();

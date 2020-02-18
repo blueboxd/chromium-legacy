@@ -19,6 +19,6 @@
       console.log(new outer.inner());
   `);
 
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 })();

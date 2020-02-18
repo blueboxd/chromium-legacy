@@ -485,7 +485,7 @@ void WebSocketStream::DidConnect(const String& subprotocol,
   connection->setExtensions(extensions);
   source_ = MakeGarbageCollected<UnderlyingSource>(script_state_, this);
   auto* readable = ReadableStream::CreateWithCountQueueingStrategy(
-      script_state_, source_, 0);
+      script_state_, source_, 1);
   sink_ = MakeGarbageCollected<UnderlyingSink>(this);
   auto* writable =
       WritableStream::CreateWithCountQueueingStrategy(script_state_, sink_, 1);

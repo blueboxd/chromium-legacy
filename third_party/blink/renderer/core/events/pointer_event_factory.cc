@@ -428,7 +428,7 @@ PointerEvent* PointerEventFactory::CreatePointerEventFrom(
 
   SetEventSpecificFields(pointer_event_init, type);
 
-  if (UIEventWithKeyState* key_state_event =
+  if (const UIEventWithKeyState* key_state_event =
           FindEventWithKeyState(pointer_event)) {
     UIEventWithKeyState::SetFromWebInputEventModifiers(
         pointer_event_init, key_state_event->GetModifiers());

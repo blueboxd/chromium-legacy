@@ -26,11 +26,11 @@
     await ConsoleTestRunner.evaluateInConsolePromise(`produce_reference_error`);
   }
 
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
 
   TestRunner.addResult('\n\nStop grouping messages:\n');
   Console.ConsoleView.instance()._groupSimilarSetting.set(false);
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 
   /**

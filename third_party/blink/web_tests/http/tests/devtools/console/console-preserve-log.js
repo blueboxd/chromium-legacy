@@ -11,8 +11,8 @@
       TestRunner.runtimeModel, SDK.ConsoleMessage.MessageSource.Other,
       SDK.ConsoleMessage.MessageLevel.Info, 'PASS'));
   Common.settingForTest('preserveConsoleLog').set(true);
-  TestRunner.reloadPage(function() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  TestRunner.reloadPage(async function() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     Common.settingForTest('preserveConsoleLog').set(false);
     TestRunner.completeTest();
   });

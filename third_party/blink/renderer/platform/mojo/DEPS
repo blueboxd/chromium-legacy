@@ -21,6 +21,10 @@ include_rules = [
     "+third_party/blink/renderer/platform/platform_export.h",
     "+third_party/blink/renderer/platform/weborigin",
     "+third_party/blink/renderer/platform/wtf",
+    "+third_party/blink/renderer/platform/context_lifecycle_observer.h",
+    "+third_party/blink/renderer/platform/context_lifecycle_notifier.h",
+    "+third_party/blink/renderer/platform/heap_observer_list.h",
+    "+third_party/blink/renderer/platform/heap",
 ]
 
 specific_include_rules = {

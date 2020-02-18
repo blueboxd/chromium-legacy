@@ -70,17 +70,6 @@ DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  // TODO(nhiroki): Remove this flag check once module loading for
-  // DedicatedWorker is enabled by default (https://crbug.com/680046).
-  if (options->type() == "module" &&
-      !RuntimeEnabledFeatures::ModuleDedicatedWorkerEnabled()) {
-    exception_state.ThrowTypeError(
-        "Module scripts are not supported on DedicatedWorker yet. You can try "
-        "the feature with '--enable-experimental-web-platform-features' flag "
-        "(see https://crbug.com/680046)");
-    return nullptr;
-  }
-
   if (context->IsWorkerGlobalScope())
     UseCounter::Count(context, WebFeature::kNestedDedicatedWorker);
 

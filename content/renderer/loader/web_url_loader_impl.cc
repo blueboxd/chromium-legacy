@@ -57,7 +57,6 @@
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/ssl/ssl_info.h"
-#include "services/network/loader_util.h"
 #include "services/network/public/cpp/http_raw_request_response_info.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -102,11 +101,6 @@ namespace content {
 // Utilities ------------------------------------------------------------------
 
 namespace {
-
-constexpr char kStylesheetAcceptHeader[] = "text/css,*/*;q=0.1";
-constexpr char kImageAcceptHeader[] = "image/webp,image/apng,image/*,*/*;q=0.8";
-
-using HeadersVector = network::HttpRawRequestResponseInfo::HeadersVector;
 
 // Converts timing data from |load_timing| to the mojo type.
 network::mojom::LoadTimingInfo ToMojoLoadTiming(
@@ -407,7 +401,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   void OnBodyHasBeenRead(uint32_t read_bytes);
 
   static net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag(
-      blink::mojom::RequestContextType request_context);
+      blink::mojom::ResourceType resource_type);
 
   WebURLLoaderImpl* loader_;
 
@@ -613,45 +607,13 @@ void WebURLLoaderImpl::Context::Start(
     response_override = extra_data->TakeNavigationResponseOverrideOwnership();
   }
 
-  // TODO(brettw) this should take parameter encoding into account when
-  // creating the GURLs.
-
   // TODO(horo): Check credentials flag is unset when credentials mode is omit.
   //             Check credentials flag is set when credentials mode is include.
 
-  const blink::mojom::RequestContextType request_context_type =
-      static_cast<blink::mojom::RequestContextType>(
-          request->fetch_request_context_type);
   const blink::mojom::ResourceType resource_type =
-      RequestContextToResourceType(request_context_type);
-  request->resource_type = static_cast<int>(resource_type);
+      static_cast<blink::mojom::ResourceType>(request->resource_type);
 
   // TODO(yhirano): Move the logic below to blink/platform/loader.
-  if (resource_type == blink::mojom::ResourceType::kStylesheet) {
-    request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
-                               kStylesheetAcceptHeader);
-  } else if (resource_type == blink::mojom::ResourceType::kFavicon ||
-             resource_type == blink::mojom::ResourceType::kImage) {
-    request->headers.SetHeader(net::HttpRequestHeaders::kAccept,
-                               kImageAcceptHeader);
-  } else {
-    // Calling SetHeaderIfMissing() instead of SetHeader() because JS can
-    // manually set an accept header on an XHR.
-    request->headers.SetHeaderIfMissing(net::HttpRequestHeaders::kAccept,
-                                        network::kDefaultAcceptHeader);
-  }
-
-  if (resource_type == blink::mojom::ResourceType::kPrefetch ||
-      resource_type == blink::mojom::ResourceType::kFavicon) {
-    request->do_not_prompt_for_login = true;
-  }
-
-  if (request_context_type ==
-          blink::mojom::RequestContextType::XML_HTTP_REQUEST &&
-      (request->url.has_username() || request->url.has_password())) {
-    request->do_not_prompt_for_login = true;
-  }
-
   if (resource_type == blink::mojom::ResourceType::kImage &&
       IsBannedCrossSiteAuth(request.get(), passed_extra_data.get())) {
     // Prevent third-party image content from prompting for login, as this
@@ -728,7 +690,7 @@ void WebURLLoaderImpl::Context::Start(
     }
     resource_dispatcher_->StartSync(
         std::move(request), requestor_id,
-        GetTrafficAnnotationTag(request_context_type), loader_options,
+        GetTrafficAnnotationTag(resource_type), loader_options,
         sync_load_response, url_loader_factory_, std::move(throttles),
         timeout_interval, std::move(download_to_blob_registry),
         std::move(peer));
@@ -739,9 +701,8 @@ void WebURLLoaderImpl::Context::Start(
                          TRACE_EVENT_FLAG_FLOW_OUT);
   request_id_ = resource_dispatcher_->StartAsync(
       std::move(request), requestor_id, task_runner_,
-      GetTrafficAnnotationTag(request_context_type), loader_options,
-      std::move(peer), url_loader_factory_, std::move(throttles),
-      std::move(response_override));
+      GetTrafficAnnotationTag(resource_type), loader_options, std::move(peer),
+      url_loader_factory_, std::move(throttles), std::move(response_override));
 
   if (defers_loading_ != NOT_DEFERRING)
     resource_dispatcher_->SetDefersLoading(request_id_, true);
@@ -1159,40 +1120,32 @@ scoped_refptr<base::SingleThreadTaskRunner> WebURLLoaderImpl::GetTaskRunner() {
 // static
 // We have this function at the bottom of this file because it confuses
 // syntax highliting.
+// TODO(kinuko): Deprecate this, we basically need to know the destination
+// and if it's for favicon or not.
 net::NetworkTrafficAnnotationTag
 WebURLLoaderImpl::Context::GetTrafficAnnotationTag(
-    blink::mojom::RequestContextType request_context) {
-  switch (request_context) {
-    case blink::mojom::RequestContextType::UNSPECIFIED:
-    case blink::mojom::RequestContextType::AUDIO:
-    case blink::mojom::RequestContextType::BEACON:
-    case blink::mojom::RequestContextType::CSP_REPORT:
-    case blink::mojom::RequestContextType::DOWNLOAD:
-    case blink::mojom::RequestContextType::EVENT_SOURCE:
-    case blink::mojom::RequestContextType::FETCH:
-    case blink::mojom::RequestContextType::FONT:
-    case blink::mojom::RequestContextType::FORM:
-    case blink::mojom::RequestContextType::FRAME:
-    case blink::mojom::RequestContextType::HYPERLINK:
-    case blink::mojom::RequestContextType::IFRAME:
-    case blink::mojom::RequestContextType::IMAGE:
-    case blink::mojom::RequestContextType::IMAGE_SET:
-    case blink::mojom::RequestContextType::IMPORT:
-    case blink::mojom::RequestContextType::INTERNAL:
-    case blink::mojom::RequestContextType::LOCATION:
-    case blink::mojom::RequestContextType::MANIFEST:
-    case blink::mojom::RequestContextType::PING:
-    case blink::mojom::RequestContextType::PREFETCH:
-    case blink::mojom::RequestContextType::SCRIPT:
-    case blink::mojom::RequestContextType::SERVICE_WORKER:
-    case blink::mojom::RequestContextType::SHARED_WORKER:
-    case blink::mojom::RequestContextType::SUBRESOURCE:
-    case blink::mojom::RequestContextType::STYLE:
-    case blink::mojom::RequestContextType::TRACK:
-    case blink::mojom::RequestContextType::VIDEO:
-    case blink::mojom::RequestContextType::WORKER:
-    case blink::mojom::RequestContextType::XML_HTTP_REQUEST:
-    case blink::mojom::RequestContextType::XSLT:
+    blink::mojom::ResourceType resource_type) {
+  switch (resource_type) {
+    case blink::mojom::ResourceType::kMainFrame:
+    case blink::mojom::ResourceType::kSubFrame:
+    case blink::mojom::ResourceType::kNavigationPreloadMainFrame:
+    case blink::mojom::ResourceType::kNavigationPreloadSubFrame:
+      NOTREACHED();
+      FALLTHROUGH;
+
+    case blink::mojom::ResourceType::kStylesheet:
+    case blink::mojom::ResourceType::kScript:
+    case blink::mojom::ResourceType::kImage:
+    case blink::mojom::ResourceType::kFontResource:
+    case blink::mojom::ResourceType::kSubResource:
+    case blink::mojom::ResourceType::kMedia:
+    case blink::mojom::ResourceType::kWorker:
+    case blink::mojom::ResourceType::kSharedWorker:
+    case blink::mojom::ResourceType::kPrefetch:
+    case blink::mojom::ResourceType::kXhr:
+    case blink::mojom::ResourceType::kPing:
+    case blink::mojom::ResourceType::kServiceWorker:
+    case blink::mojom::ResourceType::kCspReport:
       return net::DefineNetworkTrafficAnnotation("blink_resource_loader", R"(
       semantics {
         sender: "Blink Resource Loader"
@@ -1214,9 +1167,8 @@ WebURLLoaderImpl::Context::GetTrafficAnnotationTag(
           "to load any webpage."
       })");
 
-    case blink::mojom::RequestContextType::EMBED:
-    case blink::mojom::RequestContextType::OBJECT:
-    case blink::mojom::RequestContextType::PLUGIN:
+    case blink::mojom::ResourceType::kObject:
+    case blink::mojom::ResourceType::kPluginResource:
       return net::DefineNetworkTrafficAnnotation(
           "blink_extension_resource_loader", R"(
         semantics {
@@ -1245,7 +1197,7 @@ WebURLLoaderImpl::Context::GetTrafficAnnotationTag(
           }
         })");
 
-    case blink::mojom::RequestContextType::FAVICON:
+    case blink::mojom::ResourceType::kFavicon:
       return net::DefineNetworkTrafficAnnotation("favicon_loader", R"(
         semantics {
           sender: "Blink Resource Loader"

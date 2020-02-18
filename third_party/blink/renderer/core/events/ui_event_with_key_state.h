@@ -92,7 +92,7 @@ class CORE_EXPORT UIEventWithKeyState : public UIEvent {
   static bool new_tab_modifier_set_from_isolated_world_;
 };
 
-UIEventWithKeyState* FindEventWithKeyState(Event*);
+const UIEventWithKeyState* FindEventWithKeyState(const Event*);
 
 }  // namespace blink
 

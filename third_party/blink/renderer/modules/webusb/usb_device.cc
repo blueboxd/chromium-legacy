@@ -1059,7 +1059,8 @@ void USBDevice::AsyncIsochronousTransferIn(
           DOMDataView::Create(buffer, byte_offset, packet->transferred_length);
     }
     packets.push_back(USBIsochronousInTransferPacket::Create(
-        ConvertTransferStatus(packet->status), data_view));
+        ConvertTransferStatus(packet->status),
+        NotShared<DOMDataView>(data_view)));
     byte_offset += packet->length;
   }
   resolver->Resolve(USBIsochronousInTransferResult::Create(buffer, packets));

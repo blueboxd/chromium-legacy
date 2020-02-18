@@ -108,8 +108,8 @@
       TestRunner.deprecatedRunAfterPendingDispatches(expandRecursively);
   }
 
-  function completeTest() {
-    ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+  async function completeTest() {
+    await ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
     TestRunner.completeTest();
   }
 })();

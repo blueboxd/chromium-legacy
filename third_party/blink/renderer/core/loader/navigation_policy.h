@@ -51,7 +51,7 @@ enum NavigationPolicy {
 // based on the Event. This function takes care of some security checks,
 // ensuring that synthesized events cannot trigger arbitrary downloads
 // or new tabs without user intention coming from a real input event.
-CORE_EXPORT NavigationPolicy NavigationPolicyFromEvent(Event*);
+CORE_EXPORT NavigationPolicy NavigationPolicyFromEvent(const Event*);
 
 // Returns a NavigationPolicy to use for navigating a new window.
 // This function respects user intention coming from a real input event,

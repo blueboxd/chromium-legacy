@@ -14,13 +14,13 @@
     console.log("three");
   `);
   TestRunner.addResult("=== Before clear ===");
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
 
   Console.ConsoleView.clearConsole();
   TestRunner.deprecatedRunAfterPendingDispatches(callback);
-  function callback() {
+  async function callback() {
     TestRunner.addResult("=== After clear ===");
-    ConsoleTestRunner.dumpConsoleMessages();
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

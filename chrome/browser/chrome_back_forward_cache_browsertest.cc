@@ -6,6 +6,7 @@
 #include "base/macros.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +27,7 @@
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
 
 class ChromeBackForwardCacheBrowserTest : public InProcessBrowserTest {
  public:
@@ -238,3 +240,41 @@ IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
 
   delete_observer_rfh_a.WaitUntilDeleted();
 }
+
+#if defined(OS_ANDROID)
+IN_PROC_BROWSER_TEST_F(ChromeBackForwardCacheBrowserTest,
+                       DoesNotCacheIfWebShare) {
+  // HTTPS needed for WebShare permission.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(GetChromeTestDataDir());
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  ASSERT_TRUE(https_server.Start());
+
+  GURL url_a(https_server.GetURL("a.com", "/title1.html"));
+  GURL url_b(https_server.GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), url_a));
+
+  // Use the WebShare feature on the empty page.
+  EXPECT_EQ("success", content::EvalJs(current_frame_host(), R"(
+    new Promise(resolve => {
+      navigator.share({title: 'the title'})
+        .then(m => { resolve("success"); })
+        .catch(error => { resolve(error.message); });
+    });
+  )"));
+
+  content::RenderFrameDeletedObserver deleted(current_frame_host());
+
+  // 2) Navigate away.
+  EXPECT_TRUE(content::NavigateToURL(web_contents(), url_b));
+
+  // The page uses WebShare so it should be deleted.
+  deleted.WaitUntilDeleted();
+
+  // 3) Go back.
+  web_contents()->GetController().GoBack();
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents()));
+}
+#endif

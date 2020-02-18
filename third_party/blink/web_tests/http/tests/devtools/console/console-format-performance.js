@@ -20,8 +20,8 @@
 
   TestRunner.evaluateInPage('logToConsole()', callback);
 
-  function callback() {
-    var messages = ConsoleTestRunner.dumpConsoleMessagesIntoArray();
+  async function callback() {
+    var messages = await ConsoleTestRunner.dumpConsoleMessagesIntoArray();
     messages.map(m => TestRunner.addResult(m.replace(/:\s+\d+/g, ': <number>')));
     TestRunner.completeTest();
   }

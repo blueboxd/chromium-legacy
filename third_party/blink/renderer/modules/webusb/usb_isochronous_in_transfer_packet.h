@@ -22,8 +22,9 @@ class USBIsochronousInTransferPacket final : public ScriptWrappable {
   }
 
   static USBIsochronousInTransferPacket* Create(const String& status,
-                                                DOMDataView* data) {
-    return MakeGarbageCollected<USBIsochronousInTransferPacket>(status, data);
+                                                NotShared<DOMDataView> data) {
+    return MakeGarbageCollected<USBIsochronousInTransferPacket>(status,
+                                                                data.View());
   }
 
   USBIsochronousInTransferPacket(const String& status, DOMDataView* data)

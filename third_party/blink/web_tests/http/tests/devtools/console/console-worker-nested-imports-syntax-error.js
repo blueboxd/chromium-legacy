@@ -16,8 +16,8 @@
   ConsoleTestRunner.waitForConsoleMessages(1, step1);
   TestRunner.evaluateInPage('startWorker();');
 
-  function step1() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function step1() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

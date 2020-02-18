@@ -5,6 +5,7 @@
 #include "ash/power/peripheral_battery_tracker.h"
 
 #include "ash/power/gatt_battery_controller.h"
+#include "ash/power/hfp_battery_listener.h"
 #include "ash/power/hid_battery_listener.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -25,8 +26,9 @@ void PeripheralBatteryTracker::InitializeOnBluetoothReady(
     scoped_refptr<device::BluetoothAdapter> adapter) {
   adapter_ = adapter;
   DCHECK(adapter_.get());
-  hid_battery_listener_ = std::make_unique<HidBatteryListener>(adapter_);
   gatt_battery_controller_ = std::make_unique<GattBatteryController>(adapter_);
+  hfp_battery_listener_ = std::make_unique<HfpBatteryListener>(adapter_);
+  hid_battery_listener_ = std::make_unique<HidBatteryListener>(adapter_);
 }
 
 }  // namespace ash

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/web_applications/test/bookmark_app_navigation_browsertest.h"
+#include "chrome/browser/ui/web_applications/test/web_app_navigation_browsertest.h"
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
@@ -40,56 +41,55 @@ const char kAppName[] = "Test app";
 
 }  // anonymous namespace
 
-namespace extensions {
-namespace test {
+namespace web_app {
 
 // static
-const char* BookmarkAppNavigationBrowserTest::GetLaunchingPageHost() {
+const char* WebAppNavigationBrowserTest::GetLaunchingPageHost() {
   return kLaunchingPageHost;
 }
 
 // static
-const char* BookmarkAppNavigationBrowserTest::GetLaunchingPagePath() {
+const char* WebAppNavigationBrowserTest::GetLaunchingPagePath() {
   return kLaunchingPagePath;
 }
 
 // static
-const char* BookmarkAppNavigationBrowserTest::GetAppUrlHost() {
+const char* WebAppNavigationBrowserTest::GetAppUrlHost() {
   return kAppUrlHost;
 }
 
 // static
-const char* BookmarkAppNavigationBrowserTest::GetOtherAppUrlHost() {
+const char* WebAppNavigationBrowserTest::GetOtherAppUrlHost() {
   return kOtherAppUrlHost;
 }
 
 // static
-const char* BookmarkAppNavigationBrowserTest::GetAppScopePath() {
+const char* WebAppNavigationBrowserTest::GetAppScopePath() {
   return kAppScopePath;
 }
 
 // static
-const char* BookmarkAppNavigationBrowserTest::GetAppUrlPath() {
+const char* WebAppNavigationBrowserTest::GetAppUrlPath() {
   return kAppUrlPath;
 }
 
 // static
-const char* BookmarkAppNavigationBrowserTest::GetInScopeUrlPath() {
+const char* WebAppNavigationBrowserTest::GetInScopeUrlPath() {
   return kInScopeUrlPath;
 }
 
 // static
-const char* BookmarkAppNavigationBrowserTest::GetOutOfScopeUrlPath() {
+const char* WebAppNavigationBrowserTest::GetOutOfScopeUrlPath() {
   return kOutOfScopeUrlPath;
 }
 
 // static
-const char* BookmarkAppNavigationBrowserTest::GetAppName() {
+const char* WebAppNavigationBrowserTest::GetAppName() {
   return kAppName;
 }
 
 // static
-std::string BookmarkAppNavigationBrowserTest::CreateServerRedirect(
+std::string WebAppNavigationBrowserTest::CreateServerRedirect(
     const GURL& target_url) {
   const char* const kServerRedirectBase = "/server-redirect?";
   return kServerRedirectBase +
@@ -98,8 +98,7 @@ std::string BookmarkAppNavigationBrowserTest::CreateServerRedirect(
 
 // static
 std::unique_ptr<content::TestNavigationObserver>
-BookmarkAppNavigationBrowserTest::GetTestNavigationObserver(
-    const GURL& target_url) {
+WebAppNavigationBrowserTest::GetTestNavigationObserver(const GURL& target_url) {
   auto observer = std::make_unique<content::TestNavigationObserver>(target_url);
   observer->WatchExistingWebContents();
   observer->StartWatchingNewWebContents();
@@ -107,11 +106,11 @@ BookmarkAppNavigationBrowserTest::GetTestNavigationObserver(
 }
 
 // static
-void BookmarkAppNavigationBrowserTest::ClickLinkWithModifiersAndWaitForURL(
+void WebAppNavigationBrowserTest::ClickLinkWithModifiersAndWaitForURL(
     content::WebContents* web_contents,
     const GURL& link_url,
     const GURL& target_url,
-    BookmarkAppNavigationBrowserTest::LinkTarget target,
+    WebAppNavigationBrowserTest::LinkTarget target,
     const std::string& rel,
     int modifiers) {
   auto observer = GetTestNavigationObserver(target_url);
@@ -142,11 +141,11 @@ void BookmarkAppNavigationBrowserTest::ClickLinkWithModifiersAndWaitForURL(
 }
 
 // static
-void BookmarkAppNavigationBrowserTest::ClickLinkAndWaitForURL(
+void WebAppNavigationBrowserTest::ClickLinkAndWaitForURL(
     content::WebContents* web_contents,
     const GURL& link_url,
     const GURL& target_url,
-    BookmarkAppNavigationBrowserTest::LinkTarget target,
+    WebAppNavigationBrowserTest::LinkTarget target,
     const std::string& rel) {
   ClickLinkWithModifiersAndWaitForURL(
       web_contents, link_url, target_url, target, rel,
@@ -154,20 +153,20 @@ void BookmarkAppNavigationBrowserTest::ClickLinkAndWaitForURL(
 }
 
 // static
-void BookmarkAppNavigationBrowserTest::ClickLinkAndWait(
+void WebAppNavigationBrowserTest::ClickLinkAndWait(
     content::WebContents* web_contents,
     const GURL& link_url,
-    BookmarkAppNavigationBrowserTest::LinkTarget target,
+    WebAppNavigationBrowserTest::LinkTarget target,
     const std::string& rel) {
   ClickLinkAndWaitForURL(web_contents, link_url, link_url, target, rel);
 }
 
-BookmarkAppNavigationBrowserTest::BookmarkAppNavigationBrowserTest()
+WebAppNavigationBrowserTest::WebAppNavigationBrowserTest()
     : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
-BookmarkAppNavigationBrowserTest::~BookmarkAppNavigationBrowserTest() = default;
+WebAppNavigationBrowserTest::~WebAppNavigationBrowserTest() = default;
 
-void BookmarkAppNavigationBrowserTest::SetUp() {
+void WebAppNavigationBrowserTest::SetUp() {
   https_server_.AddDefaultHandlers(GetChromeTestDataDir());
   // Register a request handler that will return empty pages. Tests are
   // responsible for adding elements and firing events on these empty pages.
@@ -185,74 +184,72 @@ void BookmarkAppNavigationBrowserTest::SetUp() {
             std::move(response));
       }));
 
-  ExtensionBrowserTest::SetUp();
+  InProcessBrowserTest::SetUp();
 }
 
-void BookmarkAppNavigationBrowserTest::SetUpInProcessBrowserTestFixture() {
-  ExtensionBrowserTest::SetUpInProcessBrowserTestFixture();
+void WebAppNavigationBrowserTest::SetUpInProcessBrowserTestFixture() {
+  InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   cert_verifier_.SetUpInProcessBrowserTestFixture();
 }
 
-void BookmarkAppNavigationBrowserTest::TearDownInProcessBrowserTestFixture() {
-  ExtensionBrowserTest::TearDownInProcessBrowserTestFixture();
+void WebAppNavigationBrowserTest::TearDownInProcessBrowserTestFixture() {
+  InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
   cert_verifier_.TearDownInProcessBrowserTestFixture();
 }
 
-void BookmarkAppNavigationBrowserTest::SetUpCommandLine(
+void WebAppNavigationBrowserTest::SetUpCommandLine(
     base::CommandLine* command_line) {
   cert_verifier_.SetUpCommandLine(command_line);
 }
 
-void BookmarkAppNavigationBrowserTest::SetUpOnMainThread() {
-  ExtensionBrowserTest::SetUpOnMainThread();
+void WebAppNavigationBrowserTest::SetUpOnMainThread() {
+  InProcessBrowserTest::SetUpOnMainThread();
   host_resolver()->AddRule("*", "127.0.0.1");
   // By default, all SSL cert checks are valid. Can be overridden in tests.
   cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
 }
 
-void BookmarkAppNavigationBrowserTest::InstallTestBookmarkApp() {
-  test_bookmark_app_ =
-      InstallTestBookmarkApp(GetAppUrlHost(), GetAppScopePath());
+Profile* WebAppNavigationBrowserTest::profile() {
+  return browser()->profile();
 }
 
-void BookmarkAppNavigationBrowserTest::InstallOtherTestBookmarkApp() {
-  InstallTestBookmarkApp(GetOtherAppUrlHost(), GetAppScopePath());
+void WebAppNavigationBrowserTest::InstallTestWebApp() {
+  test_web_app_ = InstallTestWebApp(GetAppUrlHost(), GetAppScopePath());
 }
 
-const Extension* BookmarkAppNavigationBrowserTest::InstallTestBookmarkApp(
+AppId WebAppNavigationBrowserTest::InstallTestWebApp(
     const std::string& app_host,
     const std::string& app_scope) {
   if (!https_server_.Started()) {
     CHECK(https_server_.Start());
   }
 
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = https_server_.GetURL(app_host, GetAppUrlPath());
-  web_app_info.scope = https_server_.GetURL(app_host, app_scope);
-  web_app_info.title = base::UTF8ToUTF16(GetAppName());
-  web_app_info.description = base::UTF8ToUTF16("Test description");
-  web_app_info.open_as_window = true;
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = https_server_.GetURL(app_host, GetAppUrlPath());
+  web_app_info->scope = https_server_.GetURL(app_host, app_scope);
+  web_app_info->title = base::UTF8ToUTF16(GetAppName());
+  web_app_info->description = base::UTF8ToUTF16("Test description");
+  web_app_info->open_as_window = true;
 
-  return InstallBookmarkApp(web_app_info);
+  return InstallWebApp(profile(), std::move(web_app_info));
 }
 
-Browser* BookmarkAppNavigationBrowserTest::OpenTestBookmarkApp() {
+Browser* WebAppNavigationBrowserTest::OpenTestWebApp() {
   GURL app_url = https_server_.GetURL(GetAppUrlHost(), GetAppUrlPath());
   auto observer = GetTestNavigationObserver(app_url);
-  Browser* app_browser = LaunchAppBrowser(test_bookmark_app_);
+  Browser* app_browser = LaunchWebAppBrowser(profile(), test_web_app_);
   observer->Wait();
 
   return app_browser;
 }
 
-void BookmarkAppNavigationBrowserTest::NavigateToLaunchingPage(
-    Browser* browser) {
+void WebAppNavigationBrowserTest::NavigateToLaunchingPage(Browser* browser) {
   ui_test_utils::NavigateToURL(
       browser,
       https_server_.GetURL(GetLaunchingPageHost(), GetLaunchingPagePath()));
 }
 
-bool BookmarkAppNavigationBrowserTest::TestActionDoesNotOpenAppWindow(
+bool WebAppNavigationBrowserTest::TestActionDoesNotOpenAppWindow(
     Browser* browser,
     const GURL& target_url,
     base::OnceClosure action) {
@@ -272,45 +269,11 @@ bool BookmarkAppNavigationBrowserTest::TestActionDoesNotOpenAppWindow(
   return !HasFailure();
 }
 
-void BookmarkAppNavigationBrowserTest::TestAppActionOpensForegroundTab(
-    Browser* app_browser,
-    const GURL& target_url,
-    base::OnceClosure action) {
-  size_t num_browsers = chrome::GetBrowserCount(profile());
-  int num_tabs_browser = browser()->tab_strip_model()->count();
-  int num_tabs_app_browser = app_browser->tab_strip_model()->count();
-
-  content::WebContents* app_web_contents =
-      app_browser->tab_strip_model()->GetActiveWebContents();
-  content::WebContents* initial_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  GURL initial_app_url = app_web_contents->GetLastCommittedURL();
-  GURL initial_tab_url = initial_tab->GetLastCommittedURL();
-
-  std::move(action).Run();
-
-  EXPECT_EQ(num_browsers, chrome::GetBrowserCount(profile()));
-
-  EXPECT_EQ(browser(), chrome::FindLastActive());
-
-  EXPECT_EQ(++num_tabs_browser, browser()->tab_strip_model()->count());
-  EXPECT_EQ(num_tabs_app_browser, app_browser->tab_strip_model()->count());
-
-  EXPECT_EQ(initial_app_url, app_web_contents->GetLastCommittedURL());
-
-  content::WebContents* new_tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_NE(initial_tab, new_tab);
-  EXPECT_EQ(target_url, new_tab->GetLastCommittedURL());
-}
-
-bool BookmarkAppNavigationBrowserTest::TestTabActionDoesNotOpenAppWindow(
+bool WebAppNavigationBrowserTest::TestTabActionDoesNotOpenAppWindow(
     const GURL& target_url,
     base::OnceClosure action) {
   return TestActionDoesNotOpenAppWindow(browser(), target_url,
                                         std::move(action));
 }
 
-}  // namespace test
-}  // namespace extensions
+}  // namespace web_app

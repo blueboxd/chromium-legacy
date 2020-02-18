@@ -65,7 +65,9 @@ SpeechSynthesis* SpeechSynthesis::CreateForTesting(
 }
 
 SpeechSynthesis::SpeechSynthesis(ExecutionContext* context)
-    : ContextClient(context) {
+    : ContextClient(context),
+      receiver_(this, context),
+      mojom_synthesis_(context) {
   DCHECK(!GetExecutionContext() || GetExecutionContext()->IsDocument());
 }
 
@@ -194,11 +196,6 @@ void SpeechSynthesis::SentenceBoundaryEventOccurred(
             sentence_boundary_string);
 }
 
-void SpeechSynthesis::Dispose() {
-  receiver_.reset();
-  mojom_synthesis_.reset();
-}
-
 void SpeechSynthesis::VoicesDidChange() {
   if (GetExecutionContext())
     DispatchEvent(*Event::Create(event_type_names::kVoiceschanged));
@@ -291,6 +288,8 @@ SpeechSynthesisUtterance* SpeechSynthesis::CurrentSpeechUtterance() const {
 }
 
 void SpeechSynthesis::Trace(Visitor* visitor) {
+  visitor->Trace(receiver_);
+  visitor->Trace(mojom_synthesis_);
   visitor->Trace(voice_list_);
   visitor->Trace(utterance_queue_);
   ContextClient::Trace(visitor);
@@ -326,29 +325,36 @@ bool SpeechSynthesis::IsAllowedToStartByAutoplay() const {
 
 void SpeechSynthesis::SetMojomSynthesisForTesting(
     mojo::PendingRemote<mojom::blink::SpeechSynthesis> mojom_synthesis) {
-  mojom_synthesis_.Bind(std::move(mojom_synthesis));
+  mojom_synthesis_.Bind(
+      std::move(mojom_synthesis),
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
   receiver_.reset();
-  mojom_synthesis_->AddVoiceListObserver(receiver_.BindNewPipeAndPassRemote());
+  mojom_synthesis_->AddVoiceListObserver(receiver_.BindNewPipeAndPassRemote(
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI)));
 }
 
 void SpeechSynthesis::InitializeMojomSynthesis() {
-  DCHECK(!mojom_synthesis_);
-
-  auto receiver = mojom_synthesis_.BindNewPipeAndPassReceiver();
+  DCHECK(!mojom_synthesis_.is_bound());
 
   // The frame could be detached. In that case, calls on mojom_synthesis_ will
   // just get dropped. That's okay and is simpler than having to null-check
   // mojom_synthesis_ before each use.
   ExecutionContext* context = GetExecutionContext();
-  if (context) {
-    context->GetBrowserInterfaceBroker().GetInterface(std::move(receiver));
-  }
 
-  mojom_synthesis_->AddVoiceListObserver(receiver_.BindNewPipeAndPassRemote());
+  if (!context)
+    return;
+
+  auto receiver = mojom_synthesis_.BindNewPipeAndPassReceiver(
+      context->GetTaskRunner(TaskType::kMiscPlatformAPI));
+
+  context->GetBrowserInterfaceBroker().GetInterface(std::move(receiver));
+
+  mojom_synthesis_->AddVoiceListObserver(receiver_.BindNewPipeAndPassRemote(
+      context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
 }
 
 void SpeechSynthesis::InitializeMojomSynthesisIfNeeded() {
-  if (!mojom_synthesis_)
+  if (!mojom_synthesis_.is_bound())
     InitializeMojomSynthesis();
 }
 

@@ -155,10 +155,11 @@ void UIEventWithKeyState::InitModifiers(bool ctrl_key,
     modifiers_ |= WebInputEvent::kMetaKey;
 }
 
-UIEventWithKeyState* FindEventWithKeyState(Event* event) {
-  for (Event* e = event; e; e = e->UnderlyingEvent())
+const UIEventWithKeyState* FindEventWithKeyState(const Event* event) {
+  for (const Event* e = event; e; e = e->UnderlyingEvent()) {
     if (e->IsKeyboardEvent() || e->IsMouseEvent() || e->IsPointerEvent())
-      return static_cast<UIEventWithKeyState*>(e);
+      return static_cast<const UIEventWithKeyState*>(e);
+  }
   return nullptr;
 }
 

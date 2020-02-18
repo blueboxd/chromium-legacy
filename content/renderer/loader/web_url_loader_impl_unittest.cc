@@ -308,8 +308,8 @@ class WebURLLoaderImplTest : public testing::Test {
   void DoStartAsyncRequest() {
     auto request = std::make_unique<network::ResourceRequest>();
     request->url = GURL(kTestURL);
-    request->fetch_request_context_type =
-        static_cast<int>(blink::mojom::RequestContextType::INTERNAL);
+    request->resource_type =
+        static_cast<int>(blink::mojom::ResourceType::kSubResource);
     request->priority = net::IDLE;
     client()->loader()->LoadAsynchronously(
         std::move(request), /*extra_data=*/nullptr, /*requestor_id=*/0,
@@ -476,8 +476,8 @@ TEST_F(WebURLLoaderImplTest, ResponseOverride) {
 
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = kRequestURL;
-  request->fetch_request_context_type =
-      static_cast<int>(blink::mojom::RequestContextType::SCRIPT);
+  request->resource_type =
+      static_cast<int>(blink::mojom::ResourceType::kScript);
 
   client()->loader()->LoadAsynchronously(
       std::move(request), std::move(extra_data), /*requestor_id=*/0,
@@ -618,8 +618,8 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
 
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
-  request->fetch_request_context_type =
-      static_cast<int>(blink::mojom::RequestContextType::INTERNAL);
+  request->resource_type =
+      static_cast<int>(blink::mojom::ResourceType::kSubResource);
   request->priority = net::HIGHEST;
 
   // Prepare a mock response

@@ -272,6 +272,11 @@ iron-icon {
   right: 0;
 }
 
+:host([files-ng]) #metadata-box {
+  background-color: var(--google-grey-900);
+  opacity: 1;
+}
+
 :host-context(html[dir='rtl']) #metadata-box {
   left: 0;
   right: auto;

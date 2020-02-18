@@ -26,6 +26,7 @@ class SystemWebAppManager;
 class WebAppAudioFocusIdMap;
 class WebAppPolicyManager;
 class WebAppUiManager;
+class SystemWebAppManager;
 
 class WebAppProviderBase : public KeyedService {
  public:

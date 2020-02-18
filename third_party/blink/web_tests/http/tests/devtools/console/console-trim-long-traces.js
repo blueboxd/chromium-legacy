@@ -20,6 +20,6 @@
   `);
 
   await ConsoleTestRunner.waitForConsoleMessagesPromise(2);
-  ConsoleTestRunner.dumpConsoleMessages(false, false, messageElement => '\n' + messageElement.deepTextContent().replace(/\u200b/g, ''));
+  await ConsoleTestRunner.dumpConsoleMessages(false, false, messageElement => '\n' + messageElement.deepTextContent().replace(/\u200b/g, ''));
   TestRunner.completeTest();
 })();

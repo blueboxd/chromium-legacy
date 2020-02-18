@@ -58,6 +58,8 @@ class CORE_EXPORT AbstractWorker
     return ExecutionContextLifecycleObserver::GetExecutionContext();
   }
 
+  void ContextDestroyed() override {}
+
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(error, kError)
 
   AbstractWorker(ExecutionContext*);

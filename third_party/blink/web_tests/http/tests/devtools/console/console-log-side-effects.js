@@ -103,6 +103,6 @@
         arr = [arr];
       console.log(arr);
   `);
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 })();

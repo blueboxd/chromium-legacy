@@ -60,6 +60,7 @@ class CORE_EXPORT ScriptRunner final
   void NotifyScriptReady(PendingScript*);
 
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) final;
+  void ContextDestroyed() final {}
 
   static void MovePendingScript(Document&, Document&, ScriptLoader*);
 

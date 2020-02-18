@@ -19,7 +19,7 @@ class ExceptionState;
 class ScriptPromiseResolver;
 
 class KeyboardLayout final : public GarbageCollected<KeyboardLayout>,
-                             public ExecutionContextLifecycleObserver {
+                             public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(KeyboardLayout);
 
  public:
@@ -28,7 +28,6 @@ class KeyboardLayout final : public GarbageCollected<KeyboardLayout>,
 
   ScriptPromise GetKeyboardLayoutMap(ScriptState*, ExceptionState&);
 
-  // ExecutionContextLifecycleObserver override.
   void Trace(Visitor*) override;
 
  private:

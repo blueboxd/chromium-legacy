@@ -66,6 +66,7 @@ class ChromeNativeFileSystemPermissionContext
       base::OnceCallback<void(AfterWriteCheckResult)> callback) override;
   bool CanObtainWritePermission(const url::Origin& origin) override;
 
+  ContentSetting GetReadGuardContentSetting(const url::Origin& origin);
   ContentSetting GetWriteGuardContentSetting(const url::Origin& origin);
 
   // Returns a snapshot of the currently granted permissions.

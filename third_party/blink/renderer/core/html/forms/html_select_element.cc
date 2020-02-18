@@ -46,12 +46,7 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
-#include "third_party/blink/renderer/core/events/gesture_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
-#include "third_party/blink/renderer/core/events/mouse_event.h"
-#include "third_party/blink/renderer/core/frame/local_dom_window.h"
-#include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/form_controller.h"
 #include "third_party/blink/renderer/core/html/forms/form_data.h"
@@ -65,15 +60,12 @@
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/input/event_handler.h"
-#include "third_party/blink/renderer/core/input/input_device_capabilities.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/hit_test_request.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_list_box.h"
 #include "third_party/blink/renderer/core/layout/layout_menu_list.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
-#include "third_party/blink/renderer/core/page/autoscroll_controller.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/spatial_navigation.h"
@@ -1287,21 +1279,20 @@ void HTMLSelectElement::ResetImpl() {
   SetNeedsValidityCheck();
 }
 
-void HTMLSelectElement::HandlePopupOpenKeyboardEvent(Event& event) {
+bool HTMLSelectElement::HandlePopupOpenKeyboardEvent(const Event& event) {
   focus();
   // Calling focus() may cause us to lose our layoutObject. Return true so
   // that our caller doesn't process the event further, but don't set
   // the event as handled.
   if (!GetLayoutObject() || !UsesMenuList() || IsDisabledFormControl())
-    return;
+    return false;
   // Save the selection so it can be compared to the new selection when
   // dispatching change events during selectOption, which gets called from
   // selectOptionByPopup, which gets called after the user makes a selection
   // from the menu.
   SaveLastSelection();
   ShowPopup();
-  event.SetDefaultHandled();
-  return;
+  return true;
 }
 
 bool HTMLSelectElement::ShouldOpenPopupForKeyDownEvent(
@@ -1335,130 +1326,6 @@ void HTMLSelectElement::SetPopupIsVisible(bool popup_is_visible) {
   if (::features::IsFormControlsRefreshEnabled() && GetLayoutObject()) {
     // Invalidate paint to ensure that the focus ring is updated.
     GetLayoutObject()->SetShouldDoFullPaintInvalidation();
-  }
-}
-
-void HTMLSelectElement::MenuListDefaultEventHandler(Event& event) {
-  // We need to make the layout tree up-to-date to have GetLayoutObject() give
-  // the correct result below. An author event handler may have set display to
-  // some element to none which will cause a layout tree detach.
-  GetDocument().UpdateStyleAndLayoutTree();
-
-  if (event.type() == event_type_names::kKeydown) {
-    if (!GetLayoutObject() || !event.IsKeyboardEvent())
-      return;
-
-    auto& key_event = ToKeyboardEvent(event);
-    if (ShouldOpenPopupForKeyDownEvent(key_event)) {
-      HandlePopupOpenKeyboardEvent(event);
-      return;
-    }
-
-    // When using spatial navigation, we want to be able to navigate away
-    // from the select element when the user hits any of the arrow keys,
-    // instead of changing the selection.
-    if (IsSpatialNavigationEnabled(GetDocument().GetFrame())) {
-      if (!active_selection_state_)
-        return;
-    }
-
-    // The key handling below shouldn't be used for non spatial navigation
-    // mode Mac
-    if (LayoutTheme::GetTheme().PopsMenuByArrowKeys() &&
-        !IsSpatialNavigationEnabled(GetDocument().GetFrame()))
-      return;
-
-    int ignore_modifiers = WebInputEvent::kShiftKey |
-                           WebInputEvent::kControlKey | WebInputEvent::kAltKey |
-                           WebInputEvent::kMetaKey;
-    if (key_event.GetModifiers() & ignore_modifiers)
-      return;
-
-    const String& key = key_event.key();
-    bool handled = true;
-    const ListItems& list_items = GetListItems();
-    HTMLOptionElement* option = SelectedOption();
-    int list_index = option ? option->ListIndex() : -1;
-
-    if (key == "ArrowDown" || key == "ArrowRight")
-      option = NextValidOption(list_index, kSkipForwards, 1);
-    else if (key == "ArrowUp" || key == "ArrowLeft")
-      option = NextValidOption(list_index, kSkipBackwards, 1);
-    else if (key == "PageDown")
-      option = NextValidOption(list_index, kSkipForwards, 3);
-    else if (key == "PageUp")
-      option = NextValidOption(list_index, kSkipBackwards, 3);
-    else if (key == "Home")
-      option = NextValidOption(-1, kSkipForwards, 1);
-    else if (key == "End")
-      option = NextValidOption(list_items.size(), kSkipBackwards, 1);
-    else
-      handled = false;
-
-    if (handled && option) {
-      SelectOption(option, kDeselectOtherOptionsFlag | kMakeOptionDirtyFlag |
-                               kDispatchInputAndChangeEventFlag);
-    }
-
-    if (handled)
-      event.SetDefaultHandled();
-  }
-
-  if (event.type() == event_type_names::kKeypress) {
-    if (!GetLayoutObject() || !event.IsKeyboardEvent())
-      return;
-
-    int key_code = ToKeyboardEvent(event).keyCode();
-    if (key_code == ' ' &&
-        IsSpatialNavigationEnabled(GetDocument().GetFrame())) {
-      // Use space to toggle arrow key handling for selection change or
-      // spatial navigation.
-      active_selection_state_ = !active_selection_state_;
-      event.SetDefaultHandled();
-      return;
-    }
-
-    auto& key_event = ToKeyboardEvent(event);
-    if (ShouldOpenPopupForKeyPressEvent(key_event)) {
-      HandlePopupOpenKeyboardEvent(event);
-      return;
-    }
-
-    if (!LayoutTheme::GetTheme().PopsMenuByReturnKey() && key_code == '\r') {
-      if (Form())
-        Form()->SubmitImplicitly(event, false);
-      DispatchInputAndChangeEventForMenuList();
-      event.SetDefaultHandled();
-    }
-  }
-
-  auto* mouse_event = DynamicTo<MouseEvent>(event);
-  if (event.type() == event_type_names::kMousedown && mouse_event &&
-      mouse_event->button() ==
-          static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
-    InputDeviceCapabilities* source_capabilities =
-        GetDocument()
-            .domWindow()
-            ->GetInputDeviceCapabilities()
-            ->FiresTouchEvents(mouse_event->FromTouch());
-    focus(FocusParams(SelectionBehaviorOnFocus::kRestore,
-                      mojom::blink::FocusType::kNone, source_capabilities));
-    if (GetLayoutObject() && UsesMenuList() && !IsDisabledFormControl()) {
-      if (PopupIsVisible()) {
-        HidePopup();
-      } else {
-        // Save the selection so it can be compared to the new selection
-        // when we call onChange during selectOption, which gets called
-        // from selectOptionByPopup, which gets called after the user
-        // makes a selection from the menu.
-        SaveLastSelection();
-        // TODO(lanwei): Will check if we need to add
-        // InputDeviceCapabilities here when select menu list gets
-        // focus, see https://crbug.com/476530.
-        ShowPopup();
-      }
-    }
-    event.SetDefaultHandled();
   }
 }
 
@@ -1511,10 +1378,6 @@ void HTMLSelectElement::UpdateSelectedState(HTMLOptionElement* clicked_option,
   UpdateListBoxSelection(!multi_select);
 }
 
-HTMLOptionElement* HTMLSelectElement::EventTargetOption(const Event& event) {
-  return DynamicTo<HTMLOptionElement>(event.target()->ToNode());
-}
-
 int HTMLSelectElement::ListIndexForOption(const HTMLOptionElement& option) {
   const ListItems& items = GetListItems();
   wtf_size_t length = items.size();
@@ -1547,244 +1410,6 @@ void HTMLSelectElement::HandleMouseRelease() {
   ListBoxOnChange();
 }
 
-void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
-  auto* mouse_event = DynamicTo<MouseEvent>(event);
-  if (event.type() == event_type_names::kGesturetap && event.IsGestureEvent()) {
-    focus();
-    // Calling focus() may cause us to lose our layoutObject or change the
-    // layoutObject type, in which case do not want to handle the event.
-    if (!GetLayoutObject() || UsesMenuList())
-      return;
-
-    // Convert to coords relative to the list box if needed.
-    auto& gesture_event = ToGestureEvent(event);
-    if (HTMLOptionElement* option = EventTargetOption(gesture_event)) {
-      if (!IsDisabledFormControl()) {
-        UpdateSelectedState(option, true, gesture_event.shiftKey());
-        ListBoxOnChange();
-      }
-      event.SetDefaultHandled();
-    }
-
-  } else if (event.type() == event_type_names::kMousedown && mouse_event &&
-             mouse_event->button() ==
-                 static_cast<int16_t>(WebPointerProperties::Button::kLeft)) {
-    focus();
-    // Calling focus() may cause us to lose our layoutObject, in which case
-    // do not want to handle the event.
-    if (!GetLayoutObject() || UsesMenuList() || IsDisabledFormControl())
-      return;
-
-    // Convert to coords relative to the list box if needed.
-    if (HTMLOptionElement* option = EventTargetOption(*mouse_event)) {
-      if (!option->IsDisabledFormControl()) {
-#if defined(OS_MACOSX)
-        UpdateSelectedState(option, mouse_event->metaKey(),
-                            mouse_event->shiftKey());
-#else
-        UpdateSelectedState(option, mouse_event->ctrlKey(),
-                            mouse_event->shiftKey());
-#endif
-      }
-      if (LocalFrame* frame = GetDocument().GetFrame())
-        frame->GetEventHandler().SetMouseDownMayStartAutoscroll();
-
-      event.SetDefaultHandled();
-    }
-
-  } else if (event.type() == event_type_names::kMousemove && mouse_event) {
-    if (mouse_event->button() !=
-            static_cast<int16_t>(WebPointerProperties::Button::kLeft) ||
-        !mouse_event->ButtonDown())
-      return;
-
-    LayoutObject* layout_object = GetLayoutObject();
-    if (layout_object) {
-      layout_object->GetFrameView()->UpdateAllLifecyclePhasesExceptPaint(
-          DocumentUpdateReason::kScroll);
-
-      if (Page* page = GetDocument().GetPage()) {
-        page->GetAutoscrollController().StartAutoscrollForSelection(
-            layout_object);
-      }
-    }
-    // Mousedown didn't happen in this element.
-    if (last_on_change_selection_.IsEmpty())
-      return;
-
-    if (HTMLOptionElement* option = EventTargetOption(*mouse_event)) {
-      if (!IsDisabledFormControl()) {
-        if (is_multiple_) {
-          // Only extend selection if there is something selected.
-          if (!active_selection_anchor_)
-            return;
-
-          SetActiveSelectionEnd(option);
-          UpdateListBoxSelection(false);
-        } else {
-          SetActiveSelectionAnchor(option);
-          SetActiveSelectionEnd(option);
-          UpdateListBoxSelection(true);
-        }
-      }
-    }
-
-  } else if (event.type() == event_type_names::kMouseup && mouse_event &&
-             mouse_event->button() ==
-                 static_cast<int16_t>(WebPointerProperties::Button::kLeft) &&
-             GetLayoutObject()) {
-    if (GetDocument().GetPage() &&
-        GetDocument()
-            .GetPage()
-            ->GetAutoscrollController()
-            .AutoscrollInProgressFor(ToLayoutBox(GetLayoutObject())))
-      GetDocument().GetPage()->GetAutoscrollController().StopAutoscroll();
-    else
-      HandleMouseRelease();
-
-  } else if (event.type() == event_type_names::kKeydown) {
-    if (!event.IsKeyboardEvent())
-      return;
-    const String& key = ToKeyboardEvent(event).key();
-
-    bool handled = false;
-    HTMLOptionElement* end_option = nullptr;
-    if (!active_selection_end_) {
-      // Initialize the end index
-      if (key == "ArrowDown" || key == "PageDown") {
-        HTMLOptionElement* start_option = LastSelectedOption();
-        handled = true;
-        if (key == "ArrowDown") {
-          end_option = NextSelectableOption(start_option);
-        } else {
-          end_option =
-              NextSelectableOptionPageAway(start_option, kSkipForwards);
-        }
-      } else if (key == "ArrowUp" || key == "PageUp") {
-        HTMLOptionElement* start_option = SelectedOption();
-        handled = true;
-        if (key == "ArrowUp") {
-          end_option = PreviousSelectableOption(start_option);
-        } else {
-          end_option =
-              NextSelectableOptionPageAway(start_option, kSkipBackwards);
-        }
-      }
-    } else {
-      // Set the end index based on the current end index.
-      if (key == "ArrowDown") {
-        end_option = NextSelectableOption(active_selection_end_.Get());
-        handled = true;
-      } else if (key == "ArrowUp") {
-        end_option = PreviousSelectableOption(active_selection_end_.Get());
-        handled = true;
-      } else if (key == "PageDown") {
-        end_option = NextSelectableOptionPageAway(active_selection_end_.Get(),
-                                                  kSkipForwards);
-        handled = true;
-      } else if (key == "PageUp") {
-        end_option = NextSelectableOptionPageAway(active_selection_end_.Get(),
-                                                  kSkipBackwards);
-        handled = true;
-      }
-    }
-    if (key == "Home") {
-      end_option = FirstSelectableOption();
-      handled = true;
-    } else if (key == "End") {
-      end_option = LastSelectableOption();
-      handled = true;
-    }
-
-    if (IsSpatialNavigationEnabled(GetDocument().GetFrame())) {
-      // Check if the selection moves to the boundary.
-      if (key == "ArrowLeft" || key == "ArrowRight" ||
-          ((key == "ArrowDown" || key == "ArrowUp") &&
-           end_option == active_selection_end_))
-        return;
-    }
-
-    bool is_control_key = false;
-#if defined(OS_MACOSX)
-    is_control_key = ToKeyboardEvent(event).metaKey();
-#else
-    is_control_key = ToKeyboardEvent(event).ctrlKey();
-#endif
-
-    if (is_multiple_ && ToKeyboardEvent(event).keyCode() == ' ' &&
-        is_control_key && active_selection_end_) {
-      // Use ctrl+space to toggle selection change.
-      ToggleSelection(*active_selection_end_);
-      event.SetDefaultHandled();
-      return;
-    }
-
-    if (end_option && handled) {
-      // Save the selection so it can be compared to the new selection
-      // when dispatching change events immediately after making the new
-      // selection.
-      SaveLastSelection();
-
-      SetActiveSelectionEnd(end_option);
-
-      is_in_non_contiguous_selection_ = is_multiple_ && is_control_key;
-      bool select_new_item =
-          !is_multiple_ || ToKeyboardEvent(event).shiftKey() ||
-          (!IsSpatialNavigationEnabled(GetDocument().GetFrame()) &&
-           !is_in_non_contiguous_selection_);
-      if (select_new_item)
-        active_selection_state_ = true;
-      // If the anchor is uninitialized, or if we're going to deselect all
-      // other options, then set the anchor index equal to the end index.
-      bool deselect_others =
-          !is_multiple_ ||
-          (!ToKeyboardEvent(event).shiftKey() && select_new_item);
-      if (!active_selection_anchor_ || deselect_others) {
-        if (deselect_others)
-          DeselectItemsWithoutValidation();
-        SetActiveSelectionAnchor(active_selection_end_.Get());
-      }
-
-      ScrollToOption(end_option);
-      if (select_new_item || is_in_non_contiguous_selection_) {
-        if (select_new_item) {
-          UpdateListBoxSelection(deselect_others);
-          ListBoxOnChange();
-        }
-        UpdateMultiSelectListBoxFocus();
-      } else {
-        ScrollToSelection();
-      }
-
-      event.SetDefaultHandled();
-    }
-
-  } else if (event.type() == event_type_names::kKeypress) {
-    if (!event.IsKeyboardEvent())
-      return;
-    int key_code = ToKeyboardEvent(event).keyCode();
-
-    if (key_code == '\r') {
-      if (Form())
-        Form()->SubmitImplicitly(event, false);
-      event.SetDefaultHandled();
-    } else if (is_multiple_ && key_code == ' ' &&
-               (IsSpatialNavigationEnabled(GetDocument().GetFrame()) ||
-                is_in_non_contiguous_selection_)) {
-      HTMLOptionElement* option = active_selection_end_;
-      // If there's no active selection,
-      // act as if "ArrowDown" had been pressed.
-      if (!option)
-        option = NextSelectableOption(LastSelectedOption());
-      if (option) {
-        // Use space to toggle selection change.
-        ToggleSelection(*option);
-        event.SetDefaultHandled();
-      }
-    }
-  }
-}
-
 void HTMLSelectElement::ToggleSelection(HTMLOptionElement& option) {
   active_selection_state_ = !active_selection_state_;
   UpdateSelectedState(&option, true /*multi*/, false /*shift*/);
@@ -1805,12 +1430,10 @@ void HTMLSelectElement::DefaultEventHandler(Event& event) {
     return;
   }
 
-  if (UsesMenuList())
-    MenuListDefaultEventHandler(event);
-  else
-    ListBoxDefaultEventHandler(event);
-  if (event.DefaultHandled())
+  if (select_type_->DefaultEventHandler(event)) {
+    event.SetDefaultHandled();
     return;
+  }
 
   if (event.type() == event_type_names::kKeypress && event.IsKeyboardEvent()) {
     auto& keyboard_event = ToKeyboardEvent(event);

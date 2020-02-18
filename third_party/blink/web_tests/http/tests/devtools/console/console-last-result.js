@@ -34,8 +34,8 @@
   function evaluateLastResultAndDump(callback) {
     ConsoleTestRunner.evaluateInConsole('$_', didEvaluate);
 
-    function didEvaluate() {
-      ConsoleTestRunner.dumpConsoleMessages();
+    async function didEvaluate() {
+      await ConsoleTestRunner.dumpConsoleMessages();
 
       if (callback)
         callback();

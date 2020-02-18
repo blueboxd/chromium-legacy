@@ -55,8 +55,8 @@
   }
 
   function dumpAndClearConsoleMessages(next) {
-    TestRunner.deprecatedRunAfterPendingDispatches(function() {
-      ConsoleTestRunner.dumpConsoleMessages();
+    TestRunner.deprecatedRunAfterPendingDispatches(async function() {
+      await ConsoleTestRunner.dumpConsoleMessages();
       Console.ConsoleView.clearConsole();
       TestRunner.deprecatedRunAfterPendingDispatches(next);
     });

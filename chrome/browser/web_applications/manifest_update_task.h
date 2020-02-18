@@ -32,7 +32,8 @@ enum ManifestUpdateResult {
   kAppNotEligible = 6,
   kAppUpdateFailed = 7,
   kAppUpdated = 8,
-  kMaxValue = kAppUpdated,
+  kAppIsSystemWebApp = 9,
+  kMaxValue = kAppIsSystemWebApp,
 };
 
 // Used by UpdateManager on a per web app basis for checking and performing

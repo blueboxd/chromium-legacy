@@ -97,7 +97,7 @@ class FormSubmission final : public GarbageCollected<FormSubmission> {
 
   static FormSubmission* Create(HTMLFormElement*,
                                 const Attributes&,
-                                Event*,
+                                const Event*,
                                 HTMLFormControlElement* submit_button);
 
   FormSubmission(SubmitMethod,
@@ -106,7 +106,7 @@ class FormSubmission final : public GarbageCollected<FormSubmission> {
                  const AtomicString& content_type,
                  HTMLFormElement*,
                  scoped_refptr<EncodedFormData>,
-                 Event*,
+                 const Event*,
                  NavigationPolicy navigation_policy,
                  TriggeringEventInfo triggering_event_info,
                  ClientNavigationReason reason,

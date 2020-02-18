@@ -338,11 +338,30 @@ OriginScopedNativeFileSystemPermissionContext::GetReadPermissionGrant(
     existing_grant = new_grant.get();
   }
 
-  // Files automatically get read access when picked by the user, directories
-  // need to first be confirmed.
-  if (user_action != UserAction::kLoadFromStorage && !is_directory) {
-    existing_grant->SetStatus(PermissionStatus::GRANTED);
-    ScheduleUsageIconUpdate();
+  const ContentSetting content_setting = GetReadGuardContentSetting(origin);
+  switch (content_setting) {
+    case CONTENT_SETTING_ALLOW:
+      existing_grant->SetStatus(PermissionStatus::GRANTED);
+      break;
+    case CONTENT_SETTING_ASK:
+      // Files automatically get read access when picked by the user,
+      // directories need to first be confirmed.
+      if (user_action != UserAction::kLoadFromStorage && !is_directory) {
+        existing_grant->SetStatus(PermissionStatus::GRANTED);
+        ScheduleUsageIconUpdate();
+      }
+      break;
+    case CONTENT_SETTING_BLOCK:
+      if (new_grant) {
+        existing_grant->SetStatus(PermissionStatus::DENIED);
+      } else {
+        // We won't revoke permission to an existing grant.
+        // TODO(crbug.com/1053363): Better integrate with content settings.
+      }
+      break;
+    default:
+      NOTREACHED();
+      break;
   }
 
   return existing_grant;

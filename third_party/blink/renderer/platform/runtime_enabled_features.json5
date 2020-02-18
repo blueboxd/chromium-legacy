@@ -1096,10 +1096,6 @@
       name: "MobileLayoutTheme",
     },
     {
-      name: "ModuleDedicatedWorker",
-      status: "stable",
-    },
-    {
       name: "ModuleServiceWorker",
       status: "test",
     },

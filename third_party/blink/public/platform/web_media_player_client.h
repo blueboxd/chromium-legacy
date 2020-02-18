@@ -101,11 +101,6 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   // controls and go fullscreen.
   virtual void OnBecamePersistentVideo(bool) = 0;
 
-  // After the monitoring is activated, the client will inform WebMediaPlayer
-  // when the element becomes/stops being the dominant visible content by
-  // calling WebMediaPlayer::BecameDominantVisibleContent(bool).
-  virtual void ActivateViewportIntersectionMonitoring(bool) = 0;
-
   // Returns whether the media element has always been muted. This is used to
   // avoid take audio focus for elements that the user is not aware is playing.
   virtual bool WasAlwaysMuted() = 0;

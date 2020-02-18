@@ -24,7 +24,7 @@
 namespace blink {
 
 EditContext::EditContext(ScriptState* script_state, const EditContextInit* dict)
-    : ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)) {
+    : ContextClient(ExecutionContext::From(script_state)) {
   DCHECK(IsMainThread());
 
   if (dict->hasText())
@@ -58,7 +58,7 @@ const AtomicString& EditContext::InterfaceName() const {
 }
 
 ExecutionContext* EditContext::GetExecutionContext() const {
-  return ExecutionContextLifecycleObserver::GetExecutionContext();
+  return ContextClient::GetExecutionContext();
 }
 
 bool EditContext::HasPendingActivity() const {
@@ -66,8 +66,7 @@ bool EditContext::HasPendingActivity() const {
 }
 
 InputMethodController& EditContext::GetInputMethodController() const {
-  return ExecutionContextLifecycleObserver::GetFrame()
-      ->GetInputMethodController();
+  return ContextClient::GetFrame()->GetInputMethodController();
 }
 
 bool EditContext::IsEditContextActive() const {
@@ -82,17 +81,17 @@ bool EditContext::IsInputPanelPolicyManual() const {
 
 void EditContext::DispatchCompositionEndEvent(const String& text) {
   auto* event = MakeGarbageCollected<CompositionEvent>(
-      event_type_names::kCompositionend,
-      ExecutionContextLifecycleObserver::GetFrame()->DomWindow(), text);
+      event_type_names::kCompositionend, ContextClient::GetFrame()->DomWindow(),
+      text);
   DispatchEvent(*event);
 }
 
 bool EditContext::DispatchCompositionStartEvent(const String& text) {
   auto* event = MakeGarbageCollected<CompositionEvent>(
       event_type_names::kCompositionstart,
-      ExecutionContextLifecycleObserver::GetFrame()->DomWindow(), text);
+      ContextClient::GetFrame()->DomWindow(), text);
   DispatchEvent(*event);
-  if (!ExecutionContextLifecycleObserver::GetFrame())
+  if (!ContextClient::GetFrame())
     return false;
   return true;
 }
@@ -582,7 +581,7 @@ WebRange EditContext::GetSelectionOffsets() const {
 
 void EditContext::Trace(Visitor* visitor) {
   ActiveScriptWrappable::Trace(visitor);
-  ExecutionContextLifecycleObserver::Trace(visitor);
+  ContextClient::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }
 

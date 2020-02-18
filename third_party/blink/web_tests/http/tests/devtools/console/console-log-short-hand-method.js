@@ -26,8 +26,8 @@
 
   ConsoleTestRunner.expandConsoleMessages(step1);
 
-  function step1() {
-    ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+  async function step1() {
+    await ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
     TestRunner.completeTest();
   }
 })();

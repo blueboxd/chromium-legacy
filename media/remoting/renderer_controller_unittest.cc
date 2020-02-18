@@ -85,10 +85,6 @@ class RendererControllerTest : public ::testing::Test,
     sink_name_.clear();
   }
 
-  void ActivateViewportIntersectionMonitoring(bool activate) override {
-    activate_viewport_intersection_monitoring_ = activate;
-  }
-
   double Duration() const override { return duration_in_sec_; }
 
   unsigned DecodedFrameCount() const override { return decoded_frames_; }
@@ -107,7 +103,6 @@ class RendererControllerTest : public ::testing::Test,
     controller_->SetClient(this);
     RunUntilIdle();
     EXPECT_FALSE(is_rendering_remotely_);
-    EXPECT_FALSE(activate_viewport_intersection_monitoring_);
     EXPECT_FALSE(disable_pipeline_suspend_);
     controller_->OnSinkAvailable(sink_metadata.Clone());
     RunUntilIdle();
@@ -146,7 +141,6 @@ class RendererControllerTest : public ::testing::Test,
     EXPECT_FALSE(disable_pipeline_suspend_);
     EXPECT_TRUE(sink_name_.empty());
     EXPECT_TRUE(IsInDelayedStart());
-    EXPECT_TRUE(activate_viewport_intersection_monitoring_);
   }
 
   void ExpectInRemoting() const {
@@ -154,7 +148,6 @@ class RendererControllerTest : public ::testing::Test,
     EXPECT_TRUE(disable_pipeline_suspend_);
     EXPECT_EQ(kDefaultReceiver, sink_name_);
     EXPECT_FALSE(IsInDelayedStart());
-    EXPECT_TRUE(activate_viewport_intersection_monitoring_);
   }
 
   void ExpectInLocalRendering() const {
@@ -169,7 +162,6 @@ class RendererControllerTest : public ::testing::Test,
  protected:
   bool is_rendering_remotely_ = false;
   bool is_remoting_cdm_ = false;
-  bool activate_viewport_intersection_monitoring_ = false;
   bool disable_pipeline_suspend_ = false;
   size_t decoded_bytes_ = 0;
   unsigned decoded_frames_ = 0;
@@ -231,7 +223,6 @@ TEST_F(RendererControllerTest, ToggleRendererOnSinkCapabilities) {
   // toggle remote rendering on.
   controller_->OnSinkAvailable(GetDefaultSinkMetadata(true).Clone());
   RunUntilIdle();
-  EXPECT_TRUE(activate_viewport_intersection_monitoring_);
   EXPECT_FALSE(is_rendering_remotely_);
   controller_->OnBecameDominantVisibleContent(true);
   RunUntilIdle();

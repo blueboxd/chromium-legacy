@@ -154,8 +154,8 @@
     TestRunner.deprecatedRunAfterPendingDispatches(dumpExpanded);
   }
 
-  function dumpExpanded() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function dumpExpanded() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

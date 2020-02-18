@@ -249,11 +249,11 @@ class CORE_EXPORT Event : public ScriptWrappable {
   }
   void setCancelBubble(ScriptState*, bool);
 
-  Event* UnderlyingEvent() const { return underlying_event_.Get(); }
-  void SetUnderlyingEvent(Event*);
+  const Event* UnderlyingEvent() const { return underlying_event_.Get(); }
+  void SetUnderlyingEvent(const Event*);
 
   bool HasEventPath() { return event_path_; }
-  EventPath& GetEventPath() {
+  EventPath& GetEventPath() const {
     DCHECK(event_path_);
     return *event_path_;
   }
@@ -355,7 +355,7 @@ class CORE_EXPORT Event : public ScriptWrappable {
 
   Member<EventTarget> current_target_;
   Member<EventTarget> target_;
-  Member<Event> underlying_event_;
+  Member<const Event> underlying_event_;
   Member<EventPath> event_path_;
   // The monotonic platform time in seconds, for input events it is the
   // event timestamp provided by the host OS and reported in the original

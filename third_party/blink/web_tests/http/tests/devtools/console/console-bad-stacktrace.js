@@ -30,6 +30,6 @@
       undefined, badStackTrace);
   SDK.consoleModel.addMessage(badStackTraceMessage);
 
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 })();

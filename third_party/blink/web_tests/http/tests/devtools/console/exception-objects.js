@@ -41,9 +41,9 @@
     ['setTimeout(rejectWithObject, 0); undefined', 3], ['rejectWithObject();', 3]
   ];
 
-  function nextExpression() {
+  async function nextExpression() {
     if (!expressions.length) {
-      ConsoleTestRunner.dumpConsoleMessages();
+      await ConsoleTestRunner.dumpConsoleMessages();
       TestRunner.completeTest();
       return;
     }

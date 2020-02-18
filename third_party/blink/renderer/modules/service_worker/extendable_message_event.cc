@@ -13,23 +13,6 @@ ExtendableMessageEvent* ExtendableMessageEvent::Create(
 }
 
 ExtendableMessageEvent* ExtendableMessageEvent::Create(
-    const AtomicString& type,
-    const ExtendableMessageEventInit* initializer,
-    WaitUntilObserver* observer) {
-  return MakeGarbageCollected<ExtendableMessageEvent>(type, initializer,
-                                                      observer);
-}
-
-ExtendableMessageEvent* ExtendableMessageEvent::Create(
-    scoped_refptr<SerializedScriptValue> data,
-    const String& origin,
-    MessagePortArray* ports,
-    WaitUntilObserver* observer) {
-  return MakeGarbageCollected<ExtendableMessageEvent>(std::move(data), origin,
-                                                      ports, observer);
-}
-
-ExtendableMessageEvent* ExtendableMessageEvent::Create(
     scoped_refptr<SerializedScriptValue> data,
     const String& origin,
     MessagePortArray* ports,
@@ -73,6 +56,21 @@ ExtendableMessageEvent* ExtendableMessageEvent::CreateError(
       MakeGarbageCollected<ExtendableMessageEvent>(origin, ports, observer);
   event->source_as_service_worker_ = source;
   return event;
+}
+
+ScriptValue ExtendableMessageEvent::data(ScriptState* script_state) const {
+  v8::Local<v8::Value> value;
+  if (!data_.IsEmpty()) {
+    value = data_.GetAcrossWorld(script_state);
+  } else if (serialized_data_) {
+    SerializedScriptValue::DeserializeOptions options;
+    MessagePortArray message_ports = ports();
+    options.message_ports = &message_ports;
+    value = serialized_data_->Deserialize(script_state->GetIsolate(), options);
+  } else {
+    value = v8::Null(script_state->GetIsolate());
+  }
+  return ScriptValue(script_state->GetIsolate(), value);
 }
 
 void ExtendableMessageEvent::source(
@@ -105,6 +103,7 @@ const AtomicString& ExtendableMessageEvent::InterfaceName() const {
 }
 
 void ExtendableMessageEvent::Trace(Visitor* visitor) {
+  visitor->Trace(data_);
   visitor->Trace(source_as_client_);
   visitor->Trace(source_as_service_worker_);
   visitor->Trace(source_as_message_port_);
@@ -122,6 +121,10 @@ ExtendableMessageEvent::ExtendableMessageEvent(
     const ExtendableMessageEventInit* initializer,
     WaitUntilObserver* observer)
     : ExtendableEvent(type, initializer, observer) {
+  if (initializer->hasData()) {
+    const ScriptValue& data = initializer->data();
+    data_.Set(data.GetIsolate(), data.V8Value());
+  }
   if (initializer->hasOrigin())
     origin_ = initializer->origin();
   if (initializer->hasLastEventId())

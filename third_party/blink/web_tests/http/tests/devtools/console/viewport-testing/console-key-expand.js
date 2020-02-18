@@ -40,13 +40,13 @@
       forceSelect(0);
 
       dumpFocus();
-      ConsoleTestRunner.dumpConsoleMessages();
+      await ConsoleTestRunner.dumpConsoleMessages();
       press('ArrowLeft');
       dumpFocus();
-      ConsoleTestRunner.dumpConsoleMessages();
+      await ConsoleTestRunner.dumpConsoleMessages();
       press('ArrowRight');
       dumpFocus();
-      ConsoleTestRunner.dumpConsoleMessages();
+      await ConsoleTestRunner.dumpConsoleMessages();
 
       next();
     },

@@ -28,11 +28,6 @@ class VideoFillingViewportTest : public SimTest {
     return element->mostly_filling_viewport_;
   }
 
-  void ActivateViewportIntersectionMonitoring(HTMLVideoElement* element,
-                                              bool enable) {
-    element->ActivateViewportIntersectionMonitoring(enable);
-  }
-
   void DoCompositeAndPropagate() {
     if (Compositor().NeedsBeginFrame())
       Compositor().BeginFrame();
@@ -62,13 +57,8 @@ TEST_F(VideoFillingViewportTest, MostlyFillingViewport) {
 
   auto* element = To<HTMLVideoElement>(GetDocument().getElementById("video"));
 
-  ActivateViewportIntersectionMonitoring(element, true);
   DoCompositeAndPropagate();
   EXPECT_TRUE(IsMostlyFillingViewport(element));
-
-  ActivateViewportIntersectionMonitoring(element, false);
-  EXPECT_FALSE(Compositor().NeedsBeginFrame());
-  EXPECT_FALSE(IsMostlyFillingViewport(element));
 }
 
 TEST_F(VideoFillingViewportTest, NotMostlyFillingViewport) {
@@ -85,7 +75,6 @@ TEST_F(VideoFillingViewportTest, NotMostlyFillingViewport) {
   Compositor().BeginFrame();
 
   auto* element = To<HTMLVideoElement>(GetDocument().getElementById("video"));
-  ActivateViewportIntersectionMonitoring(element, true);
   DoCompositeAndPropagate();
   EXPECT_FALSE(IsMostlyFillingViewport(element));
 }
@@ -105,7 +94,6 @@ TEST_F(VideoFillingViewportTest, FillingViewportChanged) {
 
   auto* element = To<HTMLVideoElement>(GetDocument().getElementById("video"));
 
-  ActivateViewportIntersectionMonitoring(element, true);
   DoCompositeAndPropagate();
   EXPECT_TRUE(IsMostlyFillingViewport(element));
 
@@ -131,7 +119,6 @@ TEST_F(VideoFillingViewportTest, LargeVideo) {
 
   auto* element = To<HTMLVideoElement>(GetDocument().getElementById("video"));
 
-  ActivateViewportIntersectionMonitoring(element, true);
   DoCompositeAndPropagate();
   EXPECT_TRUE(IsMostlyFillingViewport(element));
 }
@@ -151,7 +138,6 @@ TEST_F(VideoFillingViewportTest, VideoScrollOutHalf) {
 
   auto* element = To<HTMLVideoElement>(GetDocument().getElementById("video"));
 
-  ActivateViewportIntersectionMonitoring(element, true);
   DoCompositeAndPropagate();
   EXPECT_TRUE(IsMostlyFillingViewport(element));
 

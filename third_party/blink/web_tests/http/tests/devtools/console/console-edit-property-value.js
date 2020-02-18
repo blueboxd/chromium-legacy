@@ -46,8 +46,8 @@
     ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(step6);
   }
 
-  function step6() {
-    ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+  async function step6() {
+    await ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
     TestRunner.completeTest();
   }
 

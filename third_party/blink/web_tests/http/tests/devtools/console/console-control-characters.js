@@ -10,8 +10,8 @@
 
   ConsoleTestRunner.evaluateInConsole('var\u001d i = 0;', onEvaluated);
 
-  function onEvaluated() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function onEvaluated() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

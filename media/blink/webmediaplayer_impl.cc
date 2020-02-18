@@ -3282,12 +3282,6 @@ bool WebMediaPlayerImpl::DoesOverlaySupportMetadata() const {
          kNoTransformation;
 }
 
-void WebMediaPlayerImpl::ActivateViewportIntersectionMonitoring(bool activate) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-
-  client_->ActivateViewportIntersectionMonitoring(activate);
-}
-
 void WebMediaPlayerImpl::UpdateRemotePlaybackCompatibility(bool is_compatible) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 

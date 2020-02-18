@@ -163,7 +163,8 @@ bool InstallServiceWorkItemImpl::DoImpl() {
   // Save the original service name. Then create a new service name so as to not
   // conflict with the previous one to be safe, then install the new service.
   original_service_name_ = GetCurrentServiceName();
-  LOG_IF(WARNING, !CreateAndSetServiceName());
+  if (!CreateAndSetServiceName())
+    PLOG(ERROR) << "Failed to create and set unique service name";
 
   ScopedScHandle original_service = std::move(service_);
   if (InstallNewService()) {
@@ -227,13 +228,17 @@ void InstallServiceWorkItemImpl::RollbackImpl() {
 
   if (original_service_still_exists_) {
     // Set only the service name back to original_service_name_ and return.
-    LOG_IF(WARNING, !SetServiceName(original_service_name_));
+    if (!SetServiceName(original_service_name_)) {
+      PLOG(ERROR) << "Failed to restore service name to "
+                  << original_service_name_;
+    }
     return;
   }
 
   // Recreate original service with a new service name to avoid possible SCM
   // issues with reusing the old name.
-  LOG_IF(WARNING, !CreateAndSetServiceName());
+  if (!CreateAndSetServiceName())
+    PLOG(ERROR) << "Failed to create and set unique service name";
   if (!ReinstallOriginalService())
     RecordWin32ApiErrorCode(kCreateService);
 }

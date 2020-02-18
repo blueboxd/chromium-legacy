@@ -80,7 +80,6 @@ class UtilitySandboxedProcessLauncherDelegate
         sandbox_type_ ==
             service_manager::SandboxType::kNoSandboxAndElevatedPrivileges ||
         sandbox_type_ == service_manager::SandboxType::kXrCompositing ||
-        sandbox_type_ == service_manager::SandboxType::kProxyResolver ||
 #endif
         sandbox_type_ == service_manager::SandboxType::kUtility ||
         sandbox_type_ == service_manager::SandboxType::kNetwork ||
@@ -138,20 +137,12 @@ class UtilitySandboxedProcessLauncherDelegate
     if (sandbox_type_ == service_manager::SandboxType::kAudio)
       return audio::AudioPreSpawnTarget(policy);
 
-    if (sandbox_type_ == service_manager::SandboxType::kProxyResolver) {
-      sandbox::MitigationFlags flags = policy->GetDelayedProcessMitigations();
-      flags |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
-      if (sandbox::SBOX_ALL_OK != policy->SetDelayedProcessMitigations(flags))
-        return false;
-      return true;
-    }
-
     if (sandbox_type_ == service_manager::SandboxType::kXrCompositing &&
         base::FeatureList::IsEnabled(service_manager::features::kXRSandbox)) {
       // There were issues with some mitigations, causing an inability
       // to load OpenVR and Oculus APIs.
-      // TODO(https://crbug.com/881919): Try to harden the XR Compositor
-      // sandbox to use mitigations and restrict the token.
+      // TODO(https://crbug.com/881919): Try to harden the XR Compositor sandbox
+      // to use mitigations and restrict the token.
       policy->SetProcessMitigations(0);
       policy->SetDelayedProcessMitigations(0);
 

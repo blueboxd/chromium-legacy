@@ -30,7 +30,6 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAudioSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kSodaSandbox[];
 
 #if defined(OS_WIN)
-SERVICE_MANAGER_SANDBOX_EXPORT extern const char kProxyResolverSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kXrCompositingSandbox[];
 #endif  // OS_WIN
 

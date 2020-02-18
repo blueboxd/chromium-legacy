@@ -18,8 +18,8 @@
     ConsoleTestRunner.expandConsoleMessages(callback);
   });
 
-  function callback() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function callback() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

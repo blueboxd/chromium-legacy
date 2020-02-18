@@ -9,6 +9,6 @@
   await TestRunner.showPanel('console');
   await TestRunner.evaluateInPageAnonymously('console.log(1);//# sourceURL=a.js');
   await TestRunner.evaluateInPageAnonymously('console.log(2);//# sourceURL=a.js');
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 })();

@@ -16,8 +16,8 @@
 
   ConsoleTestRunner.evaluateInConsole('foo', step1);
 
-  function step1() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function step1() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

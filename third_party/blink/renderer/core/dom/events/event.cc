@@ -284,9 +284,9 @@ void Event::SetRelatedTargetIfExists(EventTarget* related_target) {
 
 void Event::ReceivedTarget() {}
 
-void Event::SetUnderlyingEvent(Event* ue) {
+void Event::SetUnderlyingEvent(const Event* ue) {
   // Prohibit creation of a cycle -- just do nothing in that case.
-  for (Event* e = ue; e; e = e->UnderlyingEvent())
+  for (const Event* e = ue; e; e = e->UnderlyingEvent())
     if (e == this)
       return;
   underlying_event_ = ue;

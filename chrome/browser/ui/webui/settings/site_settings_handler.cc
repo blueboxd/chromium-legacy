@@ -146,17 +146,13 @@ void AddExceptionsGrantedByHostedApps(
   }
 }
 
-base::flat_set<web_app::AppId> GetInstalledApps(
+base::flat_set<std::string> GetInstalledAppOrigins(
     Profile* profile,
     const web_app::AppRegistrar& registrar) {
-  auto apps = registrar.GetAppIds();
-  base::flat_set<std::string> installed;
-  for (auto app : apps) {
-    base::Optional<GURL> scope = registrar.GetAppScopeInternal(app);
-    if (scope.has_value())
-      installed.insert(scope.value().GetOrigin().spec());
-  }
-  return installed;
+  base::flat_set<std::string> origins;
+  for (const web_app::AppId& app : registrar.GetAppIds())
+    origins.insert(registrar.GetAppScope(app).GetOrigin().spec());
+  return origins;
 }
 
 // Groups |url| into sets of eTLD+1s in |site_group_map|, assuming |url| is an
@@ -228,8 +224,8 @@ void ConvertSiteGroupMapToListValue(
     const web_app::AppRegistrar& registrar) {
   DCHECK_EQ(base::Value::Type::LIST, list_value->type());
   DCHECK(profile);
-  base::flat_set<web_app::AppId> installed_apps =
-      GetInstalledApps(profile, registrar);
+  base::flat_set<std::string> installed_origins =
+      GetInstalledAppOrigins(profile, registrar);
   SiteEngagementService* engagement_service =
       SiteEngagementService::Get(profile);
   for (const auto& entry : site_group_map) {
@@ -256,7 +252,7 @@ void ConvertSiteGroupMapToListValue(
       origin_object.SetKey("usage", base::Value(0));
       origin_object.SetKey(kNumCookies, base::Value(0));
 
-      bool is_installed = installed_apps.contains(origin);
+      bool is_installed = installed_origins.contains(origin);
       if (is_installed)
         has_installed_pwa = true;
       origin_object.SetKey(kIsInstalled, base::Value(is_installed));

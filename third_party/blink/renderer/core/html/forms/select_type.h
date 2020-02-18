@@ -20,6 +20,9 @@ class SelectType : public GarbageCollected<SelectType> {
   void WillBeDestroyed();
   virtual void Trace(Visitor* visitor);
 
+  // Returns true if the event is handled.
+  virtual bool DefaultEventHandler(Event& event) = 0;
+
   virtual void DidSelectOption(HTMLOptionElement* element,
                                HTMLSelectElement::SelectOptionFlags flags,
                                bool should_update_popup);

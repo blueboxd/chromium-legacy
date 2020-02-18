@@ -51,6 +51,6 @@
   await TestRunner.evaluateInPagePromise('throwObjects()');
 
   await ConsoleTestRunner.waitForConsoleMessagesPromise(11);
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 })();

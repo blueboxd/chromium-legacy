@@ -245,8 +245,7 @@ base::Optional<SystemAppType> SystemWebAppManager::GetSystemAppTypeForAppId(
 }
 
 bool SystemWebAppManager::IsSystemWebApp(const AppId& app_id) const {
-  return registrar_->HasExternalAppWithInstallSource(
-      app_id, ExternalInstallSource::kSystemInstalled);
+  return app_id_to_app_type_.contains(app_id);
 }
 
 bool SystemWebAppManager::IsSingleWindow(SystemAppType type) const {

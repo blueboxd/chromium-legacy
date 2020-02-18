@@ -46,7 +46,7 @@ SpeechRecognition* SpeechRecognition::Create(ExecutionContext* context) {
 }
 
 void SpeechRecognition::start(ExceptionState& exception_state) {
-  if (!controller_)
+  if (!controller_ || !GetExecutionContext())
     return;
 
   if (started_) {
@@ -57,18 +57,20 @@ void SpeechRecognition::start(ExceptionState& exception_state) {
 
   final_results_.clear();
 
-  // See https://bit.ly/2S0zRAS for task types.
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      GetExecutionContext()->GetTaskRunner(blink::TaskType::kMiscPlatformAPI);
   mojo::PendingRemote<mojom::blink::SpeechRecognitionSessionClient>
       session_client;
-  receiver_.Bind(session_client.InitWithNewPipeAndPassReceiver(), task_runner);
+  // See https://bit.ly/2S0zRAS for task types.
+  receiver_.Bind(
+      session_client.InitWithNewPipeAndPassReceiver(),
+      GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI));
   receiver_.set_disconnect_handler(WTF::Bind(
       &SpeechRecognition::OnConnectionError, WrapWeakPersistent(this)));
 
-  controller_->Start(session_.BindNewPipeAndPassReceiver(),
-                     std::move(session_client), *grammars_, lang_, continuous_,
-                     interim_results_, max_alternatives_);
+  controller_->Start(
+      session_.BindNewPipeAndPassReceiver(
+          GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI)),
+      std::move(session_client), *grammars_, lang_, continuous_,
+      interim_results_, max_alternatives_);
   started_ = true;
 }
 
@@ -186,8 +188,8 @@ ExecutionContext* SpeechRecognition::GetExecutionContext() const {
 
 void SpeechRecognition::ContextDestroyed() {
   controller_ = nullptr;
-  receiver_.reset();
   session_.reset();
+  receiver_.reset();
 }
 
 bool SpeechRecognition::HasPendingActivity() const {
@@ -221,7 +223,8 @@ SpeechRecognition::SpeechRecognition(LocalFrame* frame,
       controller_(SpeechRecognitionController::From(frame)),
       started_(false),
       stopping_(false),
-      receiver_(this) {}
+      receiver_(this, context),
+      session_(context) {}
 
 SpeechRecognition::~SpeechRecognition() = default;
 
@@ -229,6 +232,8 @@ void SpeechRecognition::Trace(Visitor* visitor) {
   visitor->Trace(grammars_);
   visitor->Trace(controller_);
   visitor->Trace(final_results_);
+  visitor->Trace(receiver_);
+  visitor->Trace(session_);
   EventTargetWithInlineData::Trace(visitor);
   ExecutionContextLifecycleObserver::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);

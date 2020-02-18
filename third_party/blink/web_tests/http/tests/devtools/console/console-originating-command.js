@@ -8,8 +8,8 @@
   await TestRunner.showPanel('console');
 
   ConsoleTestRunner.evaluateInConsole('1 + 1', step1);
-  function step1() {
-    ConsoleTestRunner.dumpConsoleMessages(true);
+  async function step1() {
+    await ConsoleTestRunner.dumpConsoleMessages(true);
     TestRunner.completeTest();
   }
 })();

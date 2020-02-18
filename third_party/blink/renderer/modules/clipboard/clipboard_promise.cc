@@ -93,7 +93,7 @@ ScriptPromise ClipboardPromise::CreateForWriteText(ExecutionContext* context,
 
 ClipboardPromise::ClipboardPromise(ExecutionContext* context,
                                    ScriptState* script_state)
-    : ExecutionContextLifecycleObserver(context),
+    : ContextClient(context),
       script_state_(script_state),
       script_promise_resolver_(
           MakeGarbageCollected<ScriptPromiseResolver>(script_state)),
@@ -376,7 +376,7 @@ void ClipboardPromise::Trace(Visitor* visitor) {
   visitor->Trace(script_promise_resolver_);
   visitor->Trace(clipboard_writer_);
   visitor->Trace(clipboard_item_data_);
-  ExecutionContextLifecycleObserver::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 }  // namespace blink

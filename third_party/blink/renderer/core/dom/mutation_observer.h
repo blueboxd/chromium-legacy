@@ -116,6 +116,7 @@ class CORE_EXPORT MutationObserver final
   bool HasPendingActivity() const override { return !records_.IsEmpty(); }
 
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) final;
+  void ContextDestroyed() final {}
 
   void Trace(Visitor*) override;
 

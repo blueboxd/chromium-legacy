@@ -19,11 +19,11 @@
   `);
 
   TestRunner.addResult('=== Before clear ===');
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
 
-  function callback() {
+  async function callback() {
     TestRunner.addResult('=== After clear ===');
-    ConsoleTestRunner.dumpConsoleMessages();
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 

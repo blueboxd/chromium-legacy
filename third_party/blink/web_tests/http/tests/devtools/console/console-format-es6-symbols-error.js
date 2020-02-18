@@ -19,8 +19,8 @@
 
   TestRunner.evaluateInPage('logSymbolToConsoleWithError()', complete);
 
-  function complete() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function complete() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

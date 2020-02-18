@@ -52,8 +52,8 @@
       }
     }
 
-    function finish() {
-      ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+    async function finish() {
+      await ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
       TestRunner.completeTest();
     }
 

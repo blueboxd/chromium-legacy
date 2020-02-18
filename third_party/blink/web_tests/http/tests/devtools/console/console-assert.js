@@ -29,8 +29,8 @@
       ConsoleTestRunner.expandConsoleMessages(onExpandedMessages);
   }
 
-  function onExpandedMessages() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function onExpandedMessages() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 

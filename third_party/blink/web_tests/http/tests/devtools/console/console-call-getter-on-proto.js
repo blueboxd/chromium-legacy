@@ -47,8 +47,8 @@
     ConsoleTestRunner.expandGettersInConsoleMessages(step5);
   }
 
-  function step5() {
-    ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+  async function step5() {
+    await ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
     TestRunner.completeTest();
   }
 })();

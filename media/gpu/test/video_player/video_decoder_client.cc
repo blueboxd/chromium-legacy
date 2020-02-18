@@ -115,6 +115,10 @@ bool VideoDecoderClient::CreateDecoder() {
 void VideoDecoderClient::DestroyDecoder() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(video_player_sequence_checker_);
 
+  if (!decoder_client_thread_.IsRunning()) {
+    return;
+  }
+
   base::WaitableEvent done;
   decoder_client_thread_.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&VideoDecoderClient::DestroyDecoderTask,

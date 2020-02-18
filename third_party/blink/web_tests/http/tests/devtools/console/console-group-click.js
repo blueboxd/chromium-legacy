@@ -16,16 +16,16 @@
   const messagesElement = Console.ConsoleView.instance()._messagesElement;
 
   TestRunner.addResult(`\nBefore`);
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
 
   TestRunner.addResult(`\nClick on the group`);
   messagesElement.querySelector('.console-group-title').click();
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
 
   TestRunner.addResult(`\nClick on the object`);
   messagesElement.querySelector('.console-object').click();
-  ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(() => {
-    ConsoleTestRunner.dumpConsoleMessages();
+  ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(async () => {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   });
 })();

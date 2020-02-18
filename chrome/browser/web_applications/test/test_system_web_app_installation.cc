@@ -120,4 +120,8 @@ SystemAppType TestSystemWebAppInstallation::GetType() {
   return type_;
 }
 
+void TestSystemWebAppInstallation::SetManifest(std::string manifest) {
+  web_ui_controller_factory_.set_manifest(std::move(manifest));
+}
+
 }  // namespace web_app

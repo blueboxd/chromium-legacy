@@ -1360,7 +1360,7 @@ if (!is_android) {
       "../browser/ui/web_applications/web_app_browsertest.cc",
       "../browser/ui/web_applications/web_app_engagement_browsertest.cc",
       "../browser/ui/web_applications/web_app_file_handling_browsertest.cc",
-      "../browser/ui/web_applications/web_app_navigation_browsertest.cc",
+      "../browser/ui/web_applications/web_app_navigate_browsertest.cc",
       "../browser/ui/web_applications/web_app_ui_manager_impl_browsertest.cc",
       "../browser/ui/web_applications/web_app_uninstall_browsertest.cc",
       "../browser/ui/webauthn/authenticator_dialog_browsertest.cc",
@@ -1877,8 +1877,8 @@ if (!is_android) {
         "../browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_test_utils.h",
         "../browser/ui/views/extensions/extension_dialog_browsertest.cc",
         "../browser/ui/views/extensions/pwa_confirmation_bubble_view_browsertest.cc",
-        "../browser/ui/web_applications/test/bookmark_app_navigation_browsertest.cc",
-        "../browser/ui/web_applications/test/bookmark_app_navigation_browsertest.h",
+        "../browser/ui/web_applications/test/web_app_navigation_browsertest.cc",
+        "../browser/ui/web_applications/test/web_app_navigation_browsertest.h",
       ]
 
       if (enable_autofill_assistant_api) {

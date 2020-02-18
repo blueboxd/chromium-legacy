@@ -194,6 +194,10 @@ enum class ContentSettingsType : int32_t {
   VR,
   AR,
 
+  // Content setting which stores whether to allow site to open and read files
+  // and directories selected through the Native File System API.
+  NATIVE_FILE_SYSTEM_READ_GUARD,
+
   NUM_TYPES,
 };
 

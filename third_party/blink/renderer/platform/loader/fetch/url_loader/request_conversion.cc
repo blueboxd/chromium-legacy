@@ -16,6 +16,7 @@
 #include "services/network/public/mojom/data_pipe_getter.mojom.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/mojom/loader/resource_load_info.mojom-shared.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -27,6 +28,13 @@
 namespace blink {
 
 namespace {
+
+// TODO(kinuko): Use the ones that are defined in services/network
+// after we have services/network/public/cpp/constants.h.
+constexpr char kDefaultAcceptHeader[] = "*/*";
+
+constexpr char kStylesheetAcceptHeader[] = "text/css,*/*;q=0.1";
+constexpr char kImageAcceptHeader[] = "image/webp,image/apng,image/*,*/*;q=0.8";
 
 // TODO(yhirano): Unify these with variables in
 // content/public/common/content_constants.h.
@@ -69,6 +77,103 @@ std::string TrimLWSAndCRLF(const base::StringPiece& input) {
   while (begin < end && (end[-1] == '\r' || end[-1] == '\n'))
     --end;
   return std::string(base::StringPiece(begin, end - begin));
+}
+
+mojom::ResourceType RequestContextToResourceType(
+    mojom::RequestContextType request_context) {
+  switch (request_context) {
+    // CSP report
+    case mojom::RequestContextType::CSP_REPORT:
+      return mojom::ResourceType::kCspReport;
+
+    // Favicon
+    case mojom::RequestContextType::FAVICON:
+      return mojom::ResourceType::kFavicon;
+
+    // Font
+    case mojom::RequestContextType::FONT:
+      return mojom::ResourceType::kFontResource;
+
+    // Image
+    case mojom::RequestContextType::IMAGE:
+    case mojom::RequestContextType::IMAGE_SET:
+      return mojom::ResourceType::kImage;
+
+    // Media
+    case mojom::RequestContextType::AUDIO:
+    case mojom::RequestContextType::VIDEO:
+      return mojom::ResourceType::kMedia;
+
+    // Object
+    case mojom::RequestContextType::EMBED:
+    case mojom::RequestContextType::OBJECT:
+      return mojom::ResourceType::kObject;
+
+    // Ping
+    case mojom::RequestContextType::BEACON:
+    case mojom::RequestContextType::PING:
+      return mojom::ResourceType::kPing;
+
+    // Subresource of plugins
+    case mojom::RequestContextType::PLUGIN:
+      return mojom::ResourceType::kPluginResource;
+
+    // Prefetch
+    case mojom::RequestContextType::PREFETCH:
+      return mojom::ResourceType::kPrefetch;
+
+    // Script
+    case mojom::RequestContextType::IMPORT:
+    case mojom::RequestContextType::SCRIPT:
+      return mojom::ResourceType::kScript;
+
+    // Style
+    case mojom::RequestContextType::XSLT:
+    case mojom::RequestContextType::STYLE:
+      return mojom::ResourceType::kStylesheet;
+
+    // Subresource
+    case mojom::RequestContextType::DOWNLOAD:
+    case mojom::RequestContextType::MANIFEST:
+    case mojom::RequestContextType::SUBRESOURCE:
+      return mojom::ResourceType::kSubResource;
+
+    // TextTrack
+    case mojom::RequestContextType::TRACK:
+      return mojom::ResourceType::kMedia;
+
+    // Workers
+    case mojom::RequestContextType::SERVICE_WORKER:
+      return mojom::ResourceType::kServiceWorker;
+    case mojom::RequestContextType::SHARED_WORKER:
+      return mojom::ResourceType::kSharedWorker;
+    case mojom::RequestContextType::WORKER:
+      return mojom::ResourceType::kWorker;
+
+    // Unspecified
+    case mojom::RequestContextType::INTERNAL:
+    case mojom::RequestContextType::UNSPECIFIED:
+      return mojom::ResourceType::kSubResource;
+
+    // XHR
+    case mojom::RequestContextType::EVENT_SOURCE:
+    case mojom::RequestContextType::FETCH:
+    case mojom::RequestContextType::XML_HTTP_REQUEST:
+      return mojom::ResourceType::kXhr;
+
+    // Navigation requests should not go through WebURLLoader.
+    case mojom::RequestContextType::FORM:
+    case mojom::RequestContextType::HYPERLINK:
+    case mojom::RequestContextType::LOCATION:
+    case mojom::RequestContextType::FRAME:
+    case mojom::RequestContextType::IFRAME:
+      NOTREACHED();
+      return mojom::ResourceType::kSubResource;
+
+    default:
+      NOTREACHED();
+      return mojom::ResourceType::kSubResource;
+  }
 }
 
 }  // namespace
@@ -179,7 +284,22 @@ void PopulateResourceRequest(const ResourceRequest& src,
   dest->credentials_mode = src.GetCredentialsMode();
   dest->redirect_mode = src.GetRedirectMode();
   dest->fetch_integrity = src.GetFetchIntegrity().Utf8();
+
+  mojom::ResourceType resource_type =
+      RequestContextToResourceType(src.GetRequestContext());
+
+  // TODO(kinuko): Deprecate these.
   dest->fetch_request_context_type = static_cast<int>(src.GetRequestContext());
+  dest->resource_type = static_cast<int>(resource_type);
+
+  if (resource_type == mojom::ResourceType::kXhr &&
+      (dest->url.has_username() || dest->url.has_password())) {
+    dest->do_not_prompt_for_login = true;
+  }
+  if (resource_type == mojom::ResourceType::kPrefetch ||
+      resource_type == mojom::ResourceType::kFavicon) {
+    dest->do_not_prompt_for_login = true;
+  }
 
   dest->keepalive = src.GetKeepalive();
   dest->has_user_gesture = src.HasUserGesture();
@@ -209,6 +329,20 @@ void PopulateResourceRequest(const ResourceRequest& src,
     dest->request_body = base::MakeRefCounted<network::ResourceRequestBody>();
 
     PopulateResourceRequestBody(*body, dest->request_body.get());
+  }
+
+  if (resource_type == mojom::ResourceType::kStylesheet) {
+    dest->headers.SetHeader(net::HttpRequestHeaders::kAccept,
+                            kStylesheetAcceptHeader);
+  } else if (resource_type == mojom::ResourceType::kImage ||
+             resource_type == mojom::ResourceType::kFavicon) {
+    dest->headers.SetHeader(net::HttpRequestHeaders::kAccept,
+                            kImageAcceptHeader);
+  } else {
+    // Calling SetHeaderIfMissing() instead of SetHeader() because JS can
+    // manually set an accept header on an XHR.
+    dest->headers.SetHeaderIfMissing(net::HttpRequestHeaders::kAccept,
+                                     kDefaultAcceptHeader);
   }
 }
 

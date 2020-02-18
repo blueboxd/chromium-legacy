@@ -10,6 +10,6 @@
     var x = window.webkitStorageInfo;
     var y = window.webkitStorageInfo;
   `);
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 })();

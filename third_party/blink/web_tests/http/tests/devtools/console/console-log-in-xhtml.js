@@ -10,7 +10,7 @@
 
   await TestRunner.navigatePromise('resources/console-log-in-xhtml.xhtml');
 
-  ConsoleTestRunner.dumpConsoleMessages(undefined, undefined, simpleFormatter);
+  await ConsoleTestRunner.dumpConsoleMessages(undefined, undefined, simpleFormatter);
   TestRunner.completeTest();
   function simpleFormatter(element, message) {
     return message.messageText + ':' + message.line + ':' + message.column;

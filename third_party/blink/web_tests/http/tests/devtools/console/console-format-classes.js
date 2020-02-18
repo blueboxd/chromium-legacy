@@ -35,8 +35,8 @@
   `);
 
   ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(onRemoteObjectsLoaded);
-  function onRemoteObjectsLoaded() {
-    ConsoleTestRunner.dumpConsoleMessages(false, true /* dumpClassNames */);
+  async function onRemoteObjectsLoaded() {
+    await ConsoleTestRunner.dumpConsoleMessages(false, true /* dumpClassNames */);
     TestRunner.completeTest();
   }
 })();

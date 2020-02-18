@@ -310,10 +310,8 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
               this.request_.orientation = data.orientation;
               this.request_.colorSpace = data.colorSpace;
               this.ifd_ = data.ifd;
-              // TODO(1039141): if piex-wasm is updated to return more than
-              // just JPEG then it should indicate the image mimeType so we
-              // can set this.contentType_.
-              const blob = new Blob([data.thumbnail], {type: 'image/jpeg'});
+              this.contentType_ = data.mimeType;
+              const blob = new Blob([data.thumbnail], {type: data.mimeType});
               this.image_.src = URL.createObjectURL(blob);
             }.bind(this),
             function() {

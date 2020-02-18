@@ -67,7 +67,7 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
   static MouseEvent* Create(const AtomicString& event_type,
                             AbstractView*,
-                            Event* underlying_event,
+                            const Event* underlying_event,
                             SimulatedClickCreationScope);
 
   MouseEvent(const AtomicString& type,
@@ -164,8 +164,8 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   int layerX();
   int layerY();
 
-  virtual double offsetX();
-  virtual double offsetY();
+  virtual double offsetX() const;
+  virtual double offsetY() const;
 
   virtual double pageX() const { return static_cast<int>(page_location_.X()); }
 

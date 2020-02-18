@@ -59,8 +59,8 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   double pageX() const override { return page_location_.X(); }
   double pageY() const override { return page_location_.Y(); }
 
-  double offsetX() override;
-  double offsetY() override;
+  double offsetX() const override;
+  double offsetY() const override;
 
   void ReceivedTarget() override;
 

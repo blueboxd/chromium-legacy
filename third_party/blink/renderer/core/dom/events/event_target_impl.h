@@ -20,9 +20,8 @@ namespace blink {
 // increase the size of EventTarget and all of its subclasses with code
 // that are mostly unnecessary for them, resulting in a performance
 // decrease.
-class CORE_EXPORT EventTargetImpl final
-    : public EventTargetWithInlineData,
-      public ExecutionContextLifecycleObserver {
+class CORE_EXPORT EventTargetImpl final : public EventTargetWithInlineData,
+                                          public ContextClient {
   USING_GARBAGE_COLLECTED_MIXIN(EventTargetImpl);
 
  public:

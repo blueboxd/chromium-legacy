@@ -29,8 +29,9 @@ class USBInTransferResult final : public ScriptWrappable {
     return MakeGarbageCollected<USBInTransferResult>(status, nullptr);
   }
 
-  static USBInTransferResult* Create(const String& status, DOMDataView* data) {
-    return MakeGarbageCollected<USBInTransferResult>(status, data);
+  static USBInTransferResult* Create(const String& status,
+                                     NotShared<DOMDataView> data) {
+    return MakeGarbageCollected<USBInTransferResult>(status, data.View());
   }
 
   USBInTransferResult(const String& status, DOMDataView* data)

@@ -31,12 +31,12 @@
   ConsoleTestRunner.waitUntilNthMessageReceived(2, dumpMessages);
   TestRunner.evaluateInPage('testFunction()');
 
-  function dumpMessages() {
+  async function dumpMessages() {
     var consoleView = Console.ConsoleView.instance();
     consoleView._viewport.invalidate();
     var element = consoleView._visibleViewMessages[0].contentElement();
 
-    ConsoleTestRunner.dumpConsoleMessages();
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.evaluateInPage('window.accessedGet', dumpAccessedGetAndExpand);
   }
 
@@ -45,11 +45,11 @@
     ConsoleTestRunner.expandConsoleMessages(dumpExpandedConsoleMessages);
   }
 
-  function dumpExpandedConsoleMessages() {
+  async function dumpExpandedConsoleMessages() {
     var element = Console.ConsoleView.instance()._visibleViewMessages[0].contentElement();
     dumpNoteVisible(element, 'info-note');
 
-    ConsoleTestRunner.dumpConsoleMessages();
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.evaluateInPage('window.accessedGet', dumpAccessedGetAndCompleteTest);
   }
 

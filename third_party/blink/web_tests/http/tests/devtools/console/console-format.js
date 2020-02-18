@@ -133,8 +133,8 @@
         loopOverGlobals(next, total);
     }
 
-    function onRemoteObjectsLoaded() {
-      ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+    async function onRemoteObjectsLoaded() {
+      await ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
       TestRunner.addResult('Expanded all messages');
       ConsoleTestRunner.expandConsoleMessages(
           ConsoleTestRunner.expandConsoleMessagesErrorParameters.bind(this, finish), undefined, function(section) {
@@ -142,8 +142,8 @@
           });
     }
 
-    function finish() {
-      ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+    async function finish() {
+      await ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
       TestRunner.completeTest();
     }
 

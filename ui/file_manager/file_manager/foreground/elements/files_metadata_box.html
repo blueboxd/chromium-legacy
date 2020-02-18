@@ -34,10 +34,18 @@
         vertical-align: bottom;
       }
 
-      hr {
+      :host(:not([files-ng])) hr {
         border-color: white;
         margin-top: 31px;
         opacity: 0.24;
+      }
+
+      :host([files-ng]) hr {
+        border-color: rgba(255, 255, 255, 0.2);
+        border-top-width: 1px !important;
+        border-width: 0;
+        margin-bottom: 8px;
+        margin-top: 16px;
       }
 
       @media only screen and (max-width: 720px) {

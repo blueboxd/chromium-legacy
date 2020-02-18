@@ -77,8 +77,8 @@
     TestRunner.waitForUISourceCode('stack-with-sourceMap.coffee').then(dumpMessages);
   }
 
-  function dumpMessages() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function dumpMessages() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

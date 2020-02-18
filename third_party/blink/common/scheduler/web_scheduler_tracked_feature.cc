@@ -79,6 +79,8 @@ const char* FeatureToString(WebSchedulerTrackedFeature feature) {
       return "WebHID";
     case WebSchedulerTrackedFeature::kWakeLock:
       return "WakeLock";
+    case WebSchedulerTrackedFeature::kWebShare:
+      return "WebShare";
   }
 }
 

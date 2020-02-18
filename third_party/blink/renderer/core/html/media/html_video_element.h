@@ -179,7 +179,6 @@ class CORE_EXPORT HTMLVideoElement final
 
   // WebMediaPlayerClient implementation.
   void OnBecamePersistentVideo(bool) final;
-  void ActivateViewportIntersectionMonitoring(bool) final;
   void OnRequestAnimationFrame(base::TimeTicks presentation_time,
                                base::TimeTicks expected_presentation_time,
                                uint32_t presented_frames_counter,
@@ -288,10 +287,7 @@ class CORE_EXPORT HTMLVideoElement final
 
   bool video_has_played_ : 1;
 
-  bool viewport_monitoring_is_active_ : 1;
-
-  // The following is always false unless viewport intersection monitoring is
-  // turned on via ActivateViewportIntersectionMonitoring().
+  // True, if the video element occupies most of the viewport.
   bool mostly_filling_viewport_ : 1;
 };
 

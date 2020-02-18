@@ -10783,6 +10783,7 @@ Called by update_net_error_codes.py.-->
   <int value="61" label="Clipboard sanitized write"/>
   <int value="64" label="VR"/>
   <int value="65" label="AR"/>
+  <int value="66" label="Native file system read guard"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -67173,6 +67174,7 @@ Full version information for the fingerprint enum values:
   <int value="6" label="App not eligible"/>
   <int value="7" label="App update failed"/>
   <int value="8" label="App updated"/>
+  <int value="9" label="App is system web app"/>
 </enum>
 
 <enum name="WebappUninstallDialogAction">

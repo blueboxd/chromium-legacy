@@ -255,12 +255,11 @@ class CORE_EXPORT HTMLSelectElement final
   void ParseMultipleAttribute(const AtomicString&);
   HTMLOptionElement* LastSelectedOption() const;
   void UpdateSelectedState(HTMLOptionElement*, bool multi, bool shift);
-  void MenuListDefaultEventHandler(Event&);
-  void HandlePopupOpenKeyboardEvent(Event&);
+  // Returns true if this function handled the event.
+  bool HandlePopupOpenKeyboardEvent(const Event&);
   bool ShouldOpenPopupForKeyDownEvent(const KeyboardEvent&);
   bool ShouldOpenPopupForKeyPressEvent(const KeyboardEvent&);
   void SetPopupIsVisible(bool);
-  void ListBoxDefaultEventHandler(Event&);
   void SetOptionsChangedOnLayoutObject();
   wtf_size_t SearchOptionsForValue(const String&,
                                    wtf_size_t list_index_start,
@@ -284,7 +283,6 @@ class CORE_EXPORT HTMLSelectElement final
   HTMLOptionElement* LastSelectableOption() const;
   HTMLOptionElement* NextSelectableOptionPageAway(HTMLOptionElement*,
                                                   SkipDirection) const;
-  HTMLOptionElement* EventTargetOption(const Event&);
   AutoscrollController* GetAutoscrollController() const;
   LayoutBox* AutoscrollBox() override;
   void StopAutoscroll() override;

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_terminal.h"
 
+#include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/ui/ash/window_properties.h"
@@ -17,6 +18,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "net/base/escape.h"
+#include "ui/base/window_open_disposition.h"
 
 namespace crostini {
 
@@ -104,10 +106,14 @@ void LaunchContainerTerminal(Profile* profile,
 
 void LaunchTerminalSettings(Profile* profile) {
   DCHECK(base::FeatureList::IsEnabled(features::kTerminalSystemApp));
+  auto params = web_app::CreateSystemWebAppLaunchParams(
+      profile, web_app::SystemAppType::TERMINAL);
+  // Use an app pop window to host the settings page.
+  params->disposition = WindowOpenDisposition::NEW_POPUP;
   web_app::LaunchSystemWebApp(profile, web_app::SystemAppType::TERMINAL,
                               GURL(std::string(chrome::kChromeUITerminalURL) +
                                    "html/terminal_settings.html"),
-                              /*is_popup=*/true);
+                              *params);
 }
 
 }  // namespace crostini

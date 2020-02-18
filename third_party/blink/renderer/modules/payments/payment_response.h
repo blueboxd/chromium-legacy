@@ -29,7 +29,7 @@ class ScriptState;
 
 class MODULES_EXPORT PaymentResponse final
     : public EventTargetWithInlineData,
-      public ExecutionContextLifecycleObserver,
+      public ContextClient,
       public ActiveScriptWrappable<PaymentResponse> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(PaymentResponse);

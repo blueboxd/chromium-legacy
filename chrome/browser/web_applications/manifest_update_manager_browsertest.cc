@@ -21,6 +21,8 @@
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -635,9 +637,64 @@ IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerBrowserTest,
             http_server_.GetURL("/"));
 }
 
+class ManifestUpdateManagerSystemAppBrowserTest
+    : public ManifestUpdateManagerBrowserTest {
+ public:
+  static constexpr char kSystemAppManifestText[] =
+      R"({
+        "name": "Test System App",
+        "display": "standalone",
+        "icons": [
+          {
+            "src": "icon-256.png",
+            "sizes": "256x256",
+            "type": "image/png"
+          }
+        ],
+        "start_url": "/pwa.html",
+        "theme_color": "$1"
+      })";
+
+  ManifestUpdateManagerSystemAppBrowserTest()
+      : system_app_(
+            TestSystemWebAppInstallation::SetUpStandaloneSingleWindowApp()) {
+    system_app_->SetManifest(base::ReplaceStringPlaceholders(
+        kSystemAppManifestText, {"#0f0"}, nullptr));
+  }
+
+  void SetUpOnMainThread() override { system_app_->WaitForAppInstall(); }
+
+ protected:
+  std::unique_ptr<TestSystemWebAppInstallation> system_app_;
+};
+
+constexpr char
+    ManifestUpdateManagerSystemAppBrowserTest::kSystemAppManifestText[];
+
+IN_PROC_BROWSER_TEST_P(ManifestUpdateManagerSystemAppBrowserTest,
+                       CheckUpdateSkipped) {
+  system_app_->SetManifest(base::ReplaceStringPlaceholders(
+      kSystemAppManifestText, {"#f00"}, nullptr));
+
+  AppId app_id = system_app_->GetAppId();
+  EXPECT_EQ(GetResultAfterPageLoad(system_app_->GetAppUrl(), &app_id),
+            ManifestUpdateResult::kAppIsSystemWebApp);
+
+  histogram_tester_.ExpectBucketCount(
+      kUpdateHistogramName, ManifestUpdateResult::kAppIsSystemWebApp, 1);
+  EXPECT_EQ(GetProvider().registrar().GetAppThemeColor(app_id), SK_ColorGREEN);
+}
+
 INSTANTIATE_TEST_SUITE_P(All,
                          ManifestUpdateManagerBrowserTest,
                          ::testing::Values(ProviderType::kBookmarkApps,
                                            ProviderType::kWebApps),
                          ProviderTypeParamToString);
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ManifestUpdateManagerSystemAppBrowserTest,
+                         ::testing::Values(ProviderType::kBookmarkApps,
+                                           ProviderType::kWebApps),
+                         ProviderTypeParamToString);
+
 }  // namespace web_app

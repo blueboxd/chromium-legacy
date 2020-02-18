@@ -29,8 +29,8 @@
     ConsoleTestRunner.expandConsoleMessages(dump);
   }
 
-  function dump() {
-    ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+  async function dump() {
+    await ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
     TestRunner.completeTest();
   }
 })();

@@ -130,17 +130,17 @@ MouseEvent* MouseEvent::Create(const AtomicString& event_type,
 
 MouseEvent* MouseEvent::Create(const AtomicString& event_type,
                                AbstractView* view,
-                               Event* underlying_event,
+                               const Event* underlying_event,
                                SimulatedClickCreationScope creation_scope) {
   WebInputEvent::Modifiers modifiers = WebInputEvent::kNoModifiers;
-  if (UIEventWithKeyState* key_state_event =
+  if (const UIEventWithKeyState* key_state_event =
           FindEventWithKeyState(underlying_event)) {
     modifiers = key_state_event->GetModifiers();
   }
 
   SyntheticEventType synthetic_type = kPositionless;
   MouseEventInit* initializer = MouseEventInit::Create();
-  if (auto* mouse_event = DynamicTo<MouseEvent>(underlying_event)) {
+  if (const auto* mouse_event = DynamicTo<MouseEvent>(underlying_event)) {
     synthetic_type = kRealOrIndistinguishable;
     initializer->setScreenX(mouse_event->screenX());
     initializer->setScreenY(mouse_event->screenY());
@@ -555,19 +555,19 @@ int MouseEvent::layerY() {
                           : static_cast<int>(layer_location_.Y());
 }
 
-double MouseEvent::offsetX() {
+double MouseEvent::offsetX() const {
   if (!HasPosition())
     return 0;
   if (!has_cached_relative_position_)
-    ComputeRelativePosition();
+    const_cast<MouseEvent*>(this)->ComputeRelativePosition();
   return std::round(offset_location_.X());
 }
 
-double MouseEvent::offsetY() {
+double MouseEvent::offsetY() const {
   if (!HasPosition())
     return 0;
   if (!has_cached_relative_position_)
-    ComputeRelativePosition();
+    const_cast<MouseEvent*>(this)->ComputeRelativePosition();
   return std::round(offset_location_.Y());
 }
 

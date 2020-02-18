@@ -277,7 +277,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
       const std::string& remote_device_friendly_name) override;
   void SwitchToLocalRenderer(
       MediaObserverClient::ReasonToSwitchToLocal reason) override;
-  void ActivateViewportIntersectionMonitoring(bool activate) override;
   void UpdateRemotePlaybackCompatibility(bool is_compatible) override;
 
   // Test helper methods for exercising media suspension. Once called, when

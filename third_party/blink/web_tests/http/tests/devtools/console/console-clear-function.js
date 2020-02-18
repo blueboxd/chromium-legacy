@@ -26,25 +26,25 @@
     async function clearFromConsoleAPI(next) {
       await TestRunner.RuntimeAgent.evaluate('log();');
       TestRunner.addResult('=== Before clear ===');
-      ConsoleTestRunner.dumpConsoleMessages();
+      await ConsoleTestRunner.dumpConsoleMessages();
 
       await TestRunner.RuntimeAgent.evaluate('clearConsoleFromPage();');
 
       TestRunner.addResult('=== After clear ===');
-      ConsoleTestRunner.dumpConsoleMessages();
+      await ConsoleTestRunner.dumpConsoleMessages();
       next();
     },
 
     async function shouldNotClearWithPreserveLog(next) {
       await TestRunner.RuntimeAgent.evaluate('log();');
       TestRunner.addResult('=== Before clear ===');
-      ConsoleTestRunner.dumpConsoleMessages();
+      await ConsoleTestRunner.dumpConsoleMessages();
       Common.moduleSetting('preserveConsoleLog').set(true);
 
       await TestRunner.RuntimeAgent.evaluate('clearConsoleFromPage();');
 
       TestRunner.addResult('=== After clear ===');
-      ConsoleTestRunner.dumpConsoleMessages();
+      await ConsoleTestRunner.dumpConsoleMessages();
       Common.moduleSetting('preserveConsoleLog').set(false);
       next();
     }

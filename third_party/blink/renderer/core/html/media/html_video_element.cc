@@ -90,7 +90,6 @@ HTMLVideoElement::HTMLVideoElement(Document& document)
           !document.IsFeatureEnabled(
               mojom::blink::FeaturePolicyFeature::kUnsizedMedia)),
       video_has_played_(false),
-      viewport_monitoring_is_active_(false),
       mostly_filling_viewport_(false) {
   if (document.GetSettings()) {
     default_poster_url_ =
@@ -344,14 +343,6 @@ void HTMLVideoElement::OnBecamePersistentVideo(bool value) {
 
   if (GetWebMediaPlayer())
     GetWebMediaPlayer()->OnDisplayTypeChanged(DisplayType());
-}
-
-void HTMLVideoElement::ActivateViewportIntersectionMonitoring(bool activate) {
-  viewport_monitoring_is_active_ = activate;
-  if (activate)
-    custom_controls_fullscreen_detector_->TriggerObservation();
-  else
-    mostly_filling_viewport_ = false;
 }
 
 bool HTMLVideoElement::IsPersistent() const {
@@ -786,10 +777,6 @@ void HTMLVideoElement::SetIsEffectivelyFullscreen(
 }
 
 void HTMLVideoElement::SetIsDominantVisibleContent(bool is_dominant) {
-  // No monitoring, means |mostly_filling_viewport_| should never become true.
-  if (!viewport_monitoring_is_active_)
-    is_dominant = false;
-
   if (mostly_filling_viewport_ != is_dominant) {
     mostly_filling_viewport_ = is_dominant;
     auto* player = GetWebMediaPlayer();

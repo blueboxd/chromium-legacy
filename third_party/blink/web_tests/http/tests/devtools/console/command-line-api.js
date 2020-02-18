@@ -58,8 +58,8 @@
     step3();
   }
 
-  function step3() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function step3() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

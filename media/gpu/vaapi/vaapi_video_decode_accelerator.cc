@@ -142,11 +142,6 @@ void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
     return;
   }
 
-  // Post Cleanup() as a task so we don't recursively acquire lock_.
-  task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&VaapiVideoDecodeAccelerator::Cleanup, weak_this_));
-
   VLOGF(1) << "Notifying of error " << error;
   if (client_) {
     client_->NotifyError(error);
@@ -999,6 +994,16 @@ void VaapiVideoDecodeAccelerator::Cleanup() {
 
   VLOGF(2) << "Destroying VAVDA";
   state_ = kDestroying;
+
+  // Call DismissPictureBuffer() to notify |client_| that the picture buffers
+  // are no longer used and thus |client_| shall release them. If |client_| has
+  // been destroyed, DismissPictureBuffer() on all picture buffers are executed
+  // on the |client_| destruction.
+  if (client_) {
+    for (const auto& id_and_picture : pictures_)
+      client_->DismissPictureBuffer(id_and_picture.first);
+  }
+  pictures_.clear();
 
   client_ptr_factory_.reset();
   weak_this_factory_.InvalidateWeakPtrs();

@@ -16,7 +16,7 @@
 
 namespace web_app {
 
-class WebAppNavigationBrowserTest : public WebAppControllerBrowserTestBase {
+class WebAppNavigateBrowserTest : public WebAppControllerBrowserTestBase {
  public:
   static GURL GetGoogleURL() { return GURL("http://www.google.com/"); }
 
@@ -28,8 +28,8 @@ class WebAppNavigationBrowserTest : public WebAppControllerBrowserTestBase {
 };
 
 // This test verifies that navigating with "open_pwa_window_if_possible = true"
-// opens a new app window if there is an installed Bookmark App for the URL.
-IN_PROC_BROWSER_TEST_P(WebAppNavigationBrowserTest,
+// opens a new app window if there is an installed Web App for the URL.
+IN_PROC_BROWSER_TEST_P(WebAppNavigateBrowserTest,
                        AppInstalled_OpenAppWindowIfPossible_True) {
   InstallPWA(GetGoogleURL());
 
@@ -45,9 +45,9 @@ IN_PROC_BROWSER_TEST_P(WebAppNavigationBrowserTest,
 }
 
 // This test verifies that navigating with "open_pwa_window_if_possible = false"
-// opens a new foreground tab even if there is an installed Bookmark App for the
+// opens a new foreground tab even if there is an installed Web App for the
 // URL.
-IN_PROC_BROWSER_TEST_P(WebAppNavigationBrowserTest,
+IN_PROC_BROWSER_TEST_P(WebAppNavigateBrowserTest,
                        AppInstalled_OpenAppWindowIfPossible_False) {
   InstallPWA(GetGoogleURL());
 
@@ -64,7 +64,7 @@ IN_PROC_BROWSER_TEST_P(WebAppNavigationBrowserTest,
 
 // This test verifies that navigating with "open_pwa_window_if_possible = true"
 // opens a new foreground tab when there is no app installed for the URL.
-IN_PROC_BROWSER_TEST_P(WebAppNavigationBrowserTest,
+IN_PROC_BROWSER_TEST_P(WebAppNavigateBrowserTest,
                        NoAppInstalled_OpenAppWindowIfPossible) {
   int num_tabs = browser()->tab_strip_model()->count();
 
@@ -79,7 +79,7 @@ IN_PROC_BROWSER_TEST_P(WebAppNavigationBrowserTest,
 
 INSTANTIATE_TEST_SUITE_P(
     All,
-    WebAppNavigationBrowserTest,
+    WebAppNavigateBrowserTest,
     ::testing::Values(ControllerType::kHostedAppController,
                       ControllerType::kUnifiedControllerWithBookmarkApp,
                       ControllerType::kUnifiedControllerWithWebApp),

@@ -34,8 +34,8 @@
   `);
 
   TestRunner.evaluateInPage('logObject()', step2);
-  function step2() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function step2() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     step3();
   }
   function step3() {
@@ -44,8 +44,8 @@
   function step4() {
     ConsoleTestRunner.expandGettersInConsoleMessages(step5);
   }
-  function step5() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function step5() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

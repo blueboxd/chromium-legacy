@@ -87,6 +87,7 @@ class CORE_EXPORT ScriptedAnimationController
   void RunPostFrameCallbacks();
 
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) final;
+  void ContextDestroyed() final {}
 
   void DispatchEventsAndCallbacksForPrinting();
 

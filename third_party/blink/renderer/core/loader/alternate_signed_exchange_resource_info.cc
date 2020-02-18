@@ -22,8 +22,10 @@ namespace {
 constexpr char kAlternate[] = "alternate";
 constexpr char kAllowedAltSxg[] = "allowed-alt-sxg";
 
-// These accept header values are also defined in web_url_loader_impl.h and
-// loader_util.h. TODO(horo): Move somewhere and use shared constant value.
+// These accept header values are also defined in
+// blink/renderer/platform/loader/fetch/url_loader/fetch_conversion.cc and
+// services/network/loader_util.h.
+// TODO(horo): Move somewhere and use shared constant value.
 const char kDefaultAcceptHeader[] = "*/*";
 const char kStylesheetAcceptHeader[] = "text/css,*/*;q=0.1";
 const char kImageAcceptHeader[] = "image/webp,image/apng,image/*,*/*;q=0.8";

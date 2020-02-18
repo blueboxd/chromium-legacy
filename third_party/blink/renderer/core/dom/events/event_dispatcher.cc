@@ -78,7 +78,7 @@ void EventDispatcher::DispatchScopedEvent(Node& node, Event& event) {
 
 void EventDispatcher::DispatchSimulatedClick(
     Node& node,
-    Event* underlying_event,
+    const Event* underlying_event,
     SimulatedClickMouseEventOptions mouse_event_options,
     SimulatedClickCreationScope creation_scope) {
   // This persistent vector doesn't cause leaks, because added Nodes are removed

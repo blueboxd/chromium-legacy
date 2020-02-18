@@ -9,6 +9,6 @@
   await TestRunner.showPanel('console');
   await TestRunner.navigatePromise('resources/console-log-toString-object.html');
   await TestRunner.reloadPagePromise();
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 })();

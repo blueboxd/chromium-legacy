@@ -427,8 +427,6 @@ void RendererController::UpdateAndMaybeSwitch(StartTrigger start_trigger,
   DCHECK(thread_checker_.CalledOnValidThread());
 
   bool should_be_remoting = CanBeRemoting();
-  if (client_)
-    client_->ActivateViewportIntersectionMonitoring(should_be_remoting);
 
   // Being the dominant visible content is the signal that starts remote
   // rendering.
@@ -540,8 +538,6 @@ void RendererController::SetClient(MediaObserverClient* client) {
     }
     return;
   }
-
-  client_->ActivateViewportIntersectionMonitoring(CanBeRemoting());
 }
 
 bool RendererController::HasVideoCapability(

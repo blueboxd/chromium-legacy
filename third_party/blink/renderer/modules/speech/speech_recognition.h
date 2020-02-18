@@ -38,6 +38,8 @@
 #include "third_party/blink/renderer/modules/speech/speech_grammar_list.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition_result.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
+#include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -135,8 +137,8 @@ class MODULES_EXPORT SpeechRecognition final
   bool started_;
   bool stopping_;
   HeapVector<Member<SpeechRecognitionResult>> final_results_;
-  mojo::Receiver<mojom::blink::SpeechRecognitionSessionClient> receiver_;
-  mojo::Remote<mojom::blink::SpeechRecognitionSession> session_;
+  HeapMojoReceiver<mojom::blink::SpeechRecognitionSessionClient> receiver_;
+  HeapMojoRemote<mojom::blink::SpeechRecognitionSession> session_;
 };
 
 }  // namespace blink

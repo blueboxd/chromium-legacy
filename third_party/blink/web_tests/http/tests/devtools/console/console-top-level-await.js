@@ -59,6 +59,6 @@
   await test('s');
   await test('await {...{foo: 42}}');
   await new Promise(resolve => ConsoleTestRunner.waitForRemoteObjectsConsoleMessages(resolve));
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 })();

@@ -424,12 +424,16 @@ void WebSocketChannelImpl::CancelHandshake() {
 }
 
 void WebSocketChannelImpl::ApplyBackpressure() {
+  NETWORK_DVLOG(1) << this << " ApplyBackpressure";
   backpressure_ = true;
 }
 
 void WebSocketChannelImpl::RemoveBackpressure() {
-  backpressure_ = false;
-  ConsumePendingDataFrames();
+  NETWORK_DVLOG(1) << this << " RemoveBackpressure";
+  if (backpressure_) {
+    backpressure_ = false;
+    ConsumePendingDataFrames();
+  }
 }
 
 void WebSocketChannelImpl::OnOpeningHandshakeStarted(

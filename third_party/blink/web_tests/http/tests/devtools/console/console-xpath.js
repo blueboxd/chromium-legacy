@@ -38,9 +38,9 @@
     maybeCompleteTest();
   }
 
-  function maybeCompleteTest() {
+  async function maybeCompleteTest() {
     if (!waitForParameteres && completeMessageReceived) {
-      ConsoleTestRunner.dumpConsoleMessages();
+      await ConsoleTestRunner.dumpConsoleMessages();
       TestRunner.completeTest();
     }
   }

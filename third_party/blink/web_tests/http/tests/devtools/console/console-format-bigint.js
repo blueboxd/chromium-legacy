@@ -20,12 +20,12 @@
     console.log('%d %i %d %i', 123n, 123n, BigInt(123), BigInt(123));
   `);
 
-  ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+  await ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
   TestRunner.addResult('Expanded all messages');
   ConsoleTestRunner.expandConsoleMessages(dumpConsoleMessages);
 
-  function dumpConsoleMessages() {
-    ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
+  async function dumpConsoleMessages() {
+    await ConsoleTestRunner.dumpConsoleMessages(false, false, TestRunner.textContentWithLineBreaks);
     TestRunner.completeTest();
   }
 })();

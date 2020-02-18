@@ -8,6 +8,6 @@
   await TestRunner.showPanel('console');
   await TestRunner.addScriptTag('resources/syntax-error.js');
 
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 })();

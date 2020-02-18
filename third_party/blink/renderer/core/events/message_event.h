@@ -248,9 +248,6 @@ class CORE_EXPORT MessageEvent final : public Event {
   bool allow_autoplay_ = false;
 };
 
-extern CORE_EXPORT const V8PrivateProperty::SymbolKey
-    kPrivatePropertyMessageEventCachedData;
-
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_MESSAGE_EVENT_H_

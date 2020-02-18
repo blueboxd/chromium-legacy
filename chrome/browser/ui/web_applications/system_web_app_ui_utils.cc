@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -61,18 +62,13 @@ base::Optional<AppId> GetAppIdForSystemWebApp(Profile* profile,
              : base::Optional<AppId>();
 }
 
-Browser* LaunchSystemWebApp(Profile* profile,
-                            SystemAppType app_type,
-                            const GURL& url,
-                            bool is_popup,
-                            bool* did_create) {
-  if (did_create)
-    *did_create = false;
-
+base::Optional<apps::AppLaunchParams> CreateSystemWebAppLaunchParams(
+    Profile* profile,
+    SystemAppType app_type) {
   base::Optional<AppId> app_id = GetAppIdForSystemWebApp(profile, app_type);
-  // TODO(calamity): Queue a task to launch app after it is installed.
+  // TODO(calamity): Decide whether to report app launch failure or CHECK fail.
   if (!app_id)
-    return nullptr;
+    return base::nullopt;
 
   auto* provider = WebAppProvider::Get(profile);
   DCHECK(provider);
@@ -86,11 +82,24 @@ Browser* LaunchSystemWebApp(Profile* profile,
       apps::mojom::AppLaunchSource::kSourceChromeInternal,
       display::kInvalidDisplayId, /*fallback_container=*/
       ConvertDisplayModeToAppLaunchContainer(display_mode));
-  if (is_popup)
-    params.disposition = WindowOpenDisposition::NEW_POPUP;
-  params.override_url = url;
 
-  return LaunchSystemWebApp(profile, app_type, url, params, did_create);
+  return params;
+}
+
+Browser* LaunchSystemWebApp(Profile* profile,
+                            SystemAppType app_type,
+                            const GURL& url,
+                            bool* did_create) {
+  if (did_create)
+    *did_create = false;
+
+  base::Optional<apps::AppLaunchParams> params =
+      CreateSystemWebAppLaunchParams(profile, app_type);
+  if (!params)
+    return nullptr;
+  params->override_url = url;
+
+  return LaunchSystemWebApp(profile, app_type, url, *params, did_create);
 }
 
 namespace {

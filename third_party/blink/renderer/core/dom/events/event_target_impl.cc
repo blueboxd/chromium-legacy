@@ -13,15 +13,15 @@ const AtomicString& EventTargetImpl::InterfaceName() const {
 }
 
 ExecutionContext* EventTargetImpl::GetExecutionContext() const {
-  return ExecutionContextLifecycleObserver::GetExecutionContext();
+  return ContextClient::GetExecutionContext();
 }
 
 void EventTargetImpl::Trace(Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
-  ExecutionContextLifecycleObserver::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 EventTargetImpl::EventTargetImpl(ScriptState* script_state)
-    : ExecutionContextLifecycleObserver(ExecutionContext::From(script_state)) {}
+    : ContextClient(ExecutionContext::From(script_state)) {}
 
 }  // namespace blink

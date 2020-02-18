@@ -87,7 +87,7 @@ bool ImageInputType::SupportsValidation() const {
 }
 
 static IntPoint ExtractClickLocation(const Event& event) {
-  auto* mouse_event = DynamicTo<MouseEvent>(event.UnderlyingEvent());
+  const auto* mouse_event = DynamicTo<MouseEvent>(event.UnderlyingEvent());
   if (!event.UnderlyingEvent() || !mouse_event)
     return IntPoint();
   if (!mouse_event->HasPosition())

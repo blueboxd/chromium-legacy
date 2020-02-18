@@ -62,6 +62,12 @@ bool ContentSettingsInfo::IsDefaultSettingValid(ContentSetting setting) const {
     return false;
   }
 
+  // Don't support ALLOW for the native file system read access.
+  if (type == ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD &&
+      setting == CONTENT_SETTING_ALLOW) {
+    return false;
+  }
+
   return base::Contains(valid_settings_, setting);
 }
 

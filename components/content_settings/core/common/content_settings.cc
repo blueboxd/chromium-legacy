@@ -85,6 +85,7 @@ constexpr HistogramValue kHistogramValue[] = {
     {ContentSettingsType::SAFE_BROWSING_URL_CHECK_DATA, 63},
     {ContentSettingsType::VR, 64},
     {ContentSettingsType::AR, 65},
+    {ContentSettingsType::NATIVE_FILE_SYSTEM_READ_GUARD, 66},
 };
 
 }  // namespace

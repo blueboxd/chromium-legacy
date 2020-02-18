@@ -30,8 +30,8 @@
         'setTimeout(addInlineWithSyntaxError, 0);', ConsoleTestRunner.waitUntilMessageReceived.bind(this, step3));
   }
 
-  function step3() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function step3() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

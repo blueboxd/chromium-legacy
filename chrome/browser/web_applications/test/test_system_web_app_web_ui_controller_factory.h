@@ -21,12 +21,13 @@
 class TestSystemWebAppWebUIControllerFactory
     : public content::WebUIControllerFactory {
  public:
-  explicit TestSystemWebAppWebUIControllerFactory(const std::string source_name)
-      : source_name_(source_name) {}
+  explicit TestSystemWebAppWebUIControllerFactory(std::string source_name);
   TestSystemWebAppWebUIControllerFactory(
       const TestSystemWebAppWebUIControllerFactory&) = delete;
   TestSystemWebAppWebUIControllerFactory& operator=(
       const TestSystemWebAppWebUIControllerFactory&) = delete;
+
+  void set_manifest(std::string manifest) { manifest_ = std::move(manifest); }
 
   // content::WebUIControllerFactory
   std::unique_ptr<content::WebUIController> CreateWebUIControllerForURL(
@@ -43,6 +44,7 @@ class TestSystemWebAppWebUIControllerFactory
 
  private:
   std::string source_name_;
+  std::string manifest_;
 };
 
 #endif  // CHROME_BROWSER_WEB_APPLICATIONS_TEST_TEST_SYSTEM_WEB_APP_WEB_UI_CONTROLLER_FACTORY_H_

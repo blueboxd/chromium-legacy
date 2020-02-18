@@ -21,13 +21,13 @@
   var current = -1;
   loopOverCommands();
 
-  function loopOverCommands() {
+  async function loopOverCommands() {
     ++current;
 
     if (current < commands.length) {
       ConsoleTestRunner.evaluateInConsole(commands[current], loopOverCommands);
     } else {
-      ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+      await ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
       TestRunner.completeTest();
     }
   }

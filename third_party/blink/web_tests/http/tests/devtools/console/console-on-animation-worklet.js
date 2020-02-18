@@ -16,8 +16,8 @@
   ConsoleTestRunner.waitForConsoleMessages(4, finish);
   TestRunner.evaluateInPage('importWorklet();');
 
-  function finish() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function finish() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

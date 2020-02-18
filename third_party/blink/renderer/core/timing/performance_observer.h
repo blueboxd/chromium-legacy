@@ -52,6 +52,7 @@ class CORE_EXPORT PerformanceObserver final
   bool HasPendingActivity() const final;
 
   void ContextLifecycleStateChanged(mojom::FrameLifecycleState) final;
+  void ContextDestroyed() final {}
 
   void Trace(Visitor*) override;
 

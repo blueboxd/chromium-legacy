@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_TEST_BOOKMARK_APP_NAVIGATION_BROWSERTEST_H_
-#define CHROME_BROWSER_UI_WEB_APPLICATIONS_TEST_BOOKMARK_APP_NAVIGATION_BROWSERTEST_H_
+#ifndef CHROME_BROWSER_UI_WEB_APPLICATIONS_TEST_WEB_APP_NAVIGATION_BROWSERTEST_H_
+#define CHROME_BROWSER_UI_WEB_APPLICATIONS_TEST_WEB_APP_NAVIGATION_BROWSERTEST_H_
 
 #include <memory>
 #include <string>
@@ -11,23 +11,23 @@
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/web_applications/components/web_app_id.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/content_mock_cert_verifier.h"
-#include "extensions/common/extension.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
 class Browser;
+class Profile;
 
 namespace content {
 class TestNavigationObserver;
 class WebContents;
 }  // namespace content
 
-namespace extensions {
-namespace test {
+namespace web_app {
 
-class BookmarkAppNavigationBrowserTest : public ExtensionBrowserTest {
+class WebAppNavigationBrowserTest : public InProcessBrowserTest {
  public:
   enum class LinkTarget {
     SELF,
@@ -80,8 +80,8 @@ class BookmarkAppNavigationBrowserTest : public ExtensionBrowserTest {
                                LinkTarget target,
                                const std::string& rel);
 
-  BookmarkAppNavigationBrowserTest();
-  ~BookmarkAppNavigationBrowserTest() override;
+  WebAppNavigationBrowserTest();
+  ~WebAppNavigationBrowserTest() override;
 
   void SetUp() override;
   void SetUpInProcessBrowserTestFixture() override;
@@ -89,12 +89,13 @@ class BookmarkAppNavigationBrowserTest : public ExtensionBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpOnMainThread() override;
 
-  void InstallTestBookmarkApp();
-  void InstallOtherTestBookmarkApp();
-  const Extension* InstallTestBookmarkApp(const std::string& app_host,
-                                          const std::string& app_scope);
+  Profile* profile();
 
-  Browser* OpenTestBookmarkApp();
+  void InstallTestWebApp();
+  AppId InstallTestWebApp(const std::string& app_host,
+                          const std::string& app_scope);
+
+  Browser* OpenTestWebApp();
 
   // Navigates the active tab in |browser| to the launching page.
   void NavigateToLaunchingPage(Browser* browser);
@@ -105,13 +106,6 @@ class BookmarkAppNavigationBrowserTest : public ExtensionBrowserTest {
   bool TestActionDoesNotOpenAppWindow(Browser* browser,
                                       const GURL& target_url,
                                       base::OnceClosure action);
-
-  // Checks that a new foreground tab is opened in an existing browser, that the
-  // new tab's browser is in the foreground, and that |app_browser| didn't
-  // navigate.
-  void TestAppActionOpensForegroundTab(Browser* app_browser,
-                                       const GURL& target_url,
-                                       base::OnceClosure action);
 
   // Checks that no new windows are opened after running |action| and that the
   // main browser window is still the active one and navigated to |target_url|.
@@ -126,11 +120,10 @@ class BookmarkAppNavigationBrowserTest : public ExtensionBrowserTest {
   // Similar to net::MockCertVerifier, but also updates the CertVerifier
   // used by the NetworkService.
   content::ContentMockCertVerifier cert_verifier_;
-  const Extension* test_bookmark_app_;
+  AppId test_web_app_;
   base::HistogramTester histogram_tester_;
 };
 
-}  // namespace test
-}  // namespace extensions
+}  // namespace web_app
 
-#endif  // CHROME_BROWSER_UI_WEB_APPLICATIONS_TEST_BOOKMARK_APP_NAVIGATION_BROWSERTEST_H_
+#endif  // CHROME_BROWSER_UI_WEB_APPLICATIONS_TEST_WEB_APP_NAVIGATION_BROWSERTEST_H_

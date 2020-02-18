@@ -21,8 +21,8 @@
     ConsoleTestRunner.evaluateInConsole('bar', step2);
   }
 
-  function step2() {
-    ConsoleTestRunner.dumpConsoleMessages();
+  async function step2() {
+    await ConsoleTestRunner.dumpConsoleMessages();
     TestRunner.completeTest();
   }
 })();

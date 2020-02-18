@@ -167,8 +167,8 @@
       next();
     },
 
-    function dumpConsoleMessages(next) {
-      ConsoleTestRunner.dumpConsoleMessages();
+    async function dumpConsoleMessages(next) {
+      await ConsoleTestRunner.dumpConsoleMessages();
       next();
     }
   ]);

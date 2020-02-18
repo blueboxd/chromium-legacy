@@ -17,8 +17,8 @@
     ConsoleTestRunner.expandConsoleMessages(step3);
   }
 
-  function step3() {
-    ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
+  async function step3() {
+    await ConsoleTestRunner.dumpConsoleMessagesIgnoreErrorStackFrames();
     TestRunner.completeTest();
   }
 })();

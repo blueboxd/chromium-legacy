@@ -32,14 +32,20 @@ constexpr char kPwaHtml[] =
 <html>
 <head>
   <link rel="manifest" href="manifest.json">
+  <script>
+    navigator.serviceWorker.register('sw.js');
+  </script>
 </head>
 </html>
 )";
+
+constexpr char kSwJs[] = "globalThis.addEventListener('fetch', event => {});";
 
 // WebUIController that serves a System PWA.
 class TestSystemWebAppWebUIController : public content::WebUIController {
  public:
   explicit TestSystemWebAppWebUIController(std::string source_name,
+                                           const std::string& manifest,
                                            content::WebUI* web_ui)
       : WebUIController(web_ui) {
     content::WebUIDataSource* data_source =
@@ -50,19 +56,22 @@ class TestSystemWebAppWebUIController : public content::WebUIController {
           return path == "manifest.json" || path == "pwa.html";
         }),
         base::BindRepeating(
-            [](const std::string& id,
+            [](const std::string& manifest, const std::string& id,
                content::WebUIDataSource::GotDataCallback callback) {
               scoped_refptr<base::RefCountedString> ref_contents(
                   new base::RefCountedString);
               if (id == "manifest.json")
-                ref_contents->data() = kSystemAppManifestText;
+                ref_contents->data() = manifest;
               else if (id == "pwa.html")
                 ref_contents->data() = kPwaHtml;
+              else if (id == "sw.js")
+                ref_contents->data() = kSwJs;
               else
                 NOTREACHED();
 
               std::move(callback).Run(ref_contents);
-            }));
+            },
+            manifest));
     content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
                                   data_source);
   }
@@ -74,12 +83,16 @@ class TestSystemWebAppWebUIController : public content::WebUIController {
 
 }  // namespace
 
+TestSystemWebAppWebUIControllerFactory::TestSystemWebAppWebUIControllerFactory(
+    std::string source_name)
+    : source_name_(std::move(source_name)), manifest_(kSystemAppManifestText) {}
+
 std::unique_ptr<content::WebUIController>
 TestSystemWebAppWebUIControllerFactory::CreateWebUIControllerForURL(
     content::WebUI* web_ui,
     const GURL& url) {
   return std::make_unique<TestSystemWebAppWebUIController>(source_name_,
-                                                           web_ui);
+                                                           manifest_, web_ui);
 }
 
 content::WebUI::TypeID TestSystemWebAppWebUIControllerFactory::GetWebUIType(

@@ -27,9 +27,6 @@ enum class SandboxType {
 
   // The XR Compositing process.
   kXrCompositing,
-
-  // The proxy resolver process.
-  kProxyResolver,
 #endif
 
 #if defined(OS_FUCHSIA)

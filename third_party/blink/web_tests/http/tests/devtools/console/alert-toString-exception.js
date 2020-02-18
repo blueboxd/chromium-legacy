@@ -10,6 +10,6 @@
   await TestRunner.navigatePromise('resources/alert-toString-exception.html');
   await TestRunner.reloadPagePromise();
 
-  ConsoleTestRunner.dumpConsoleMessages();
+  await ConsoleTestRunner.dumpConsoleMessages();
   TestRunner.completeTest();
 })();

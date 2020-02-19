@@ -411,9 +411,14 @@ Polymer({
 
   /**
    * Copy selected password to clipboard.
+   * @private
    */
   onMenuCopyPasswordButtonTap_() {
-    // TODO(crbug.com/917337): Implement copy-to-clipbard functionality.
+    // Copy to clipboard occurs inside C++ and we don't expect getting result
+    // back to javascript.
+    this.passwordManager_.requestPlaintextPassword(
+        this.activePassword.item.entry.id,
+        chrome.passwordsPrivate.PlaintextReason.COPY);
     (this.$.menu).close();
   },
   /**

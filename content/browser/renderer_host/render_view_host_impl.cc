@@ -688,7 +688,7 @@ void RenderViewHostImpl::DispatchRenderViewCreated() {
 }
 
 void RenderViewHostImpl::ClosePage() {
-  is_waiting_for_close_ack_ = true;
+  is_waiting_for_page_close_completion_ = true;
 
   bool is_javascript_dialog_showing = delegate_->IsJavaScriptDialogShowing();
 
@@ -705,7 +705,10 @@ void RenderViewHostImpl::ClosePage() {
         ->WillCloseRenderView(GetProcess()->GetID(), GetRoutingID());
 #endif
 
-    Send(new ViewMsg_ClosePage(GetRoutingID()));
+    static_cast<RenderFrameHostImpl*>(GetMainFrame())
+        ->GetAssociatedLocalMainFrame()
+        ->ClosePage(base::BindOnce(&RenderViewHostImpl::OnPageClosed,
+                                   weak_factory_.GetWeakPtr()));
   } else {
     // This RenderViewHost doesn't have a live renderer, so just skip the close
     // event and close the page.
@@ -715,7 +718,7 @@ void RenderViewHostImpl::ClosePage() {
 
 void RenderViewHostImpl::ClosePageIgnoringUnloadEvents() {
   close_timeout_->Stop();
-  is_waiting_for_close_ack_ = false;
+  is_waiting_for_page_close_completion_ = false;
 
   sudden_termination_allowed_ = true;
   delegate_->Close(this);
@@ -811,7 +814,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_DidContentsPreferredSizeChange,
                         OnDidContentsPreferredSizeChange)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TakeFocus, OnTakeFocus)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_ClosePage_ACK, OnClosePageACK)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnFocus)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
@@ -883,7 +885,7 @@ void RenderViewHostImpl::OnTakeFocus(bool reverse) {
     view->TakeFocus(reverse);
 }
 
-void RenderViewHostImpl::OnClosePageACK() {
+void RenderViewHostImpl::OnPageClosed() {
   ClosePageIgnoringUnloadEvents();
 }
 

@@ -90,12 +90,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_ack_decimation, true)
 // If true, QUIC offload pacing when using USPS as egress method.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_offload_pacing_to_usps2, false)
 
-// If true, default on IETF style loss detection with 1/4 RTT time threshold and
-// adaptive packet threshold.
-QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_default_on_ietf_loss_detection,
-          true)
-
 // Max time that QUIC can pace packets into the future in ms.
 QUIC_FLAG(int32_t, FLAGS_quic_max_pace_time_into_future_ms, 10)
 
@@ -195,17 +189,8 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_negotiate_ack_delay_time, false)
 // length-prefixed connection IDs.
 QUIC_FLAG(bool, FLAGS_quic_prober_uses_length_prefixed_connection_ids, false)
 
-// If true and H2PR connection option is received, write_blocked_streams_ uses
-// HTTP2 (tree-style) priority write scheduler.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_use_http2_priority_write_scheduler,
-          true)
-
 // The maximum amount of CRYPTO frame data that can be buffered.
 QUIC_FLAG(int32_t, FLAGS_quic_max_buffered_crypto_bytes, 16 * 1024)
-
-// If true, enable HTTP/2 default scheduling(round robin).
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_rr_write_scheduler, true)
 
 // If the bandwidth during ack aggregation is smaller than (estimated
 // bandwidth * this flag), consider the current aggregation completed
@@ -276,10 +261,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_t099, true)
 // A testonly reloadable flag that will always default to false.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_testonly_default_false, false)
 
-// If true, QuicSentPacketManager will cap ack_delay to
-// peer_advertized_ack_delay before using it.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_sanitize_ack_delay, true)
-
 // If true, frames will be hold in an optimized wrapper data structure.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_interval_deque, true)
 
@@ -308,12 +289,6 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_quic_create_server_handshaker_in_constructor,
     true)
 
-// If true, the frequency of stream frame coalescing will be logged as
-// QuicSession.CoalesceStreamFrameStatus.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_log_coalesce_stream_frame_frequency,
-          true)
-
 // In BBR, slow pacing rate if it is likely causing overshoot.
 QUIC_FLAG(
     bool,
@@ -323,11 +298,6 @@ QUIC_FLAG(
 // If true, support QUIC BBRv2-style loss based startup exit in BBRv1.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_loss_based_startup_exit,
-          true)
-
-// If true, correctly stop processing bad PROX packets.
-QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_fix_handling_of_bad_prox_packet,
           true)
 
 // The default initial value of the max ack height filter's window length.
@@ -368,7 +338,7 @@ QUIC_FLAG(
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_set_send_algorithm_noop_if_cc_type_unchanged,
-    false)
+    true)
 
 // If true, use predictable grease settings identifiers and values.
 QUIC_FLAG(bool, FLAGS_quic_enable_http3_grease_randomness, true)
@@ -377,7 +347,7 @@ QUIC_FLAG(bool, FLAGS_quic_enable_http3_grease_randomness, true)
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_check_handshake_timeout_before_idle_timeout,
-    false)
+    true)
 
 // If true and batch writer is used, QuicConnection will flush after a mtu probe
 // is sent.
@@ -387,13 +357,13 @@ QUIC_FLAG(bool,
 
 // If true, QuicConnection will check MTU_DISCOVERY_FRAME in
 // nonretransmittable_frames to see if a packet is a MTU probe.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_better_mtu_packet_check, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_better_mtu_packet_check, true)
 
 // If true, neuter unencrypted control frames in
 // QuicUnackedPacketMap::NeuterUnencryptedPackets.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_neuter_unencrypted_control_frames,
-          false)
+          true)
 
 // When the EACK connection option is sent by the client, an ack-eliciting frame
 // is bundled with ACKs sent after the PTO fires.

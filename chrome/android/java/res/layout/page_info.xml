@@ -51,7 +51,7 @@
             android:visibility="gone" />
 
         <View
-            android:id="@+id/page_info_separator"
+            android:id="@+id/page_info_preview_separator"
             android:layout_marginTop="16dp"
             style="@style/HorizontalDivider"
             android:visibility="gone" />
@@ -96,6 +96,21 @@
         app:buttonColor="@color/app_banner_install_button_bg"
         style="@style/FilledButton" />
 
+    <View
+        android:id="@+id/page_info_permissions_separator"
+        android:layout_marginTop="16dp"
+        style="@style/HorizontalDivider" />
+
+    <TextView
+        android:id="@+id/page_info_permissions_list_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:paddingStart="@dimen/page_info_popup_padding_sides"
+        android:paddingEnd="@dimen/page_info_popup_padding_sides"
+        android:textAppearance="@style/TextAppearance.TextLarge.Primary"
+        android:text="@string/page_info_permissions_title"/>
+
     <LinearLayout
         android:id="@+id/page_info_permissions_list"
         android:layout_width="match_parent"
@@ -105,11 +120,16 @@
         android:paddingEnd="@dimen/page_info_popup_padding_sides" >
     </LinearLayout>
 
+    <View
+        android:id="@+id/page_info_cookie_controls_separator"
+        android:layout_marginTop="16dp"
+        style="@style/HorizontalDivider"/>
+
     <org.chromium.chrome.browser.page_info.CookieControlsView
         android:id="@+id/page_info_cookie_controls_view"
         android:layout_height="wrap_content"
         android:layout_width="match_parent"
-        android:paddingTop="12dp"
+        android:layout_marginTop="16dp"
         android:paddingStart="@dimen/page_info_popup_padding_sides"
         android:paddingEnd="@dimen/page_info_popup_padding_sides"/>
 

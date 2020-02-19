@@ -1726,8 +1726,6 @@ jumbo_static_library("browser") {
     "ssl/certificate_error_reporter.h",
     "ssl/chrome_security_blocking_page_factory.cc",
     "ssl/chrome_security_blocking_page_factory.h",
-    "ssl/chrome_ssl_host_state_delegate.cc",
-    "ssl/chrome_ssl_host_state_delegate.h",
     "ssl/chrome_ssl_host_state_delegate_factory.cc",
     "ssl/chrome_ssl_host_state_delegate_factory.h",
     "ssl/connection_help_tab_helper.cc",

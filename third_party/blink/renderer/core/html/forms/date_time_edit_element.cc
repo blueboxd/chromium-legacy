@@ -574,8 +574,7 @@ void DateTimeEditElement::BlurByOwner() {
 scoped_refptr<ComputedStyle> DateTimeEditElement::CustomStyleForLayoutObject() {
   // FIXME: This is a kind of layout. We might want to introduce new
   // layoutObject.
-  scoped_refptr<ComputedStyle> original_style = OriginalStyleForLayoutObject();
-  scoped_refptr<ComputedStyle> style = ComputedStyle::Clone(*original_style);
+  scoped_refptr<ComputedStyle> style = OriginalStyleForLayoutObject();
   float width = 0;
   for (Node* child = FieldsWrapperElement()->firstChild(); child;
        child = child->nextSibling()) {

@@ -85,12 +85,13 @@ class PasswordManagerProxy {
 
   /**
    * Gets the saved password for a given login pair.
-   * @param {number} id The id for password entry that should be
-   *     retrieved.
-   * @return {!Promise<(string|undefined)>} Gets invoked with the password if
-   *     it could be retrieved successfully.
+   * @param {number} id The id for the password entry being being retrieved.
+   * @param {!chrome.passwordsPrivate.PlaintextReason} reason The reason why the
+   *     plaintext password is requested.
+   * @return {!Promise<string>} A promise that resolves to the plaintext
+   * password.
    */
-  getPlaintextPassword(id) {}
+  requestPlaintextPassword(id, reason) {}
 
   /**
    * Triggers the dialogue for importing passwords.
@@ -225,9 +226,17 @@ class PasswordManagerImpl {
   }
 
   /** @override */
-  getPlaintextPassword(id) {
-    return new Promise(resolve => {
-      chrome.passwordsPrivate.requestPlaintextPassword(id, resolve);
+  requestPlaintextPassword(id, reason) {
+    return new Promise((resolve, reject) => {
+      chrome.passwordsPrivate.requestPlaintextPassword(
+          id, reason, (password) => {
+            if (chrome.runtime.lastError) {
+              reject(chrome.runtime.lastError.message);
+              return;
+            }
+
+            resolve(password);
+          });
     });
   }
 

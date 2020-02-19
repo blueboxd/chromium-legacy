@@ -277,11 +277,7 @@ void AutoplayUmaHelper::MaybeStopRecordingMutedVideoOffscreenDuration() {
 }
 
 void AutoplayUmaHelper::MaybeUnregisterContextDestroyedObserver() {
-  // TODO(keishi): Remove IsIteratingOverObservers() check when
-  // HeapObserverList() supports removal while iterating.
-  if (!ShouldListenToContextDestroyed() && !GetExecutionContext()
-                                                ->ContextLifecycleObserverList()
-                                                .IsIteratingOverObservers()) {
+  if (!ShouldListenToContextDestroyed()) {
     SetExecutionContext(nullptr);
   }
 }

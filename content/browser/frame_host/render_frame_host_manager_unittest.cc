@@ -1574,7 +1574,7 @@ TEST_P(RenderFrameHostManagerTest, CloseWithPendingWhileUnresponsive) {
 
   // Start to close the tab, but assume it's unresponsive.
   rfh1->render_view_host()->ClosePage();
-  EXPECT_TRUE(rfh1->render_view_host()->is_waiting_for_close_ack());
+  EXPECT_TRUE(rfh1->render_view_host()->is_waiting_for_page_close_completion());
 
   // Start a navigation to a new site.
   controller().LoadURL(kUrl2, Referrer(), ui::PAGE_TRANSITION_LINK,

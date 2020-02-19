@@ -96,7 +96,7 @@ class PasswordManagerPresenter
   // corresponding value, or nullopt otherwise.
   // TODO(https://crbug.com/778146): Update this method to take a DisplayEntry
   // instead.
-  void RequestShowPassword(
+  void RequestPlaintextPassword(
       const std::string& sort_key,
       base::OnceCallback<void(base::Optional<base::string16>)> callback) const;
 

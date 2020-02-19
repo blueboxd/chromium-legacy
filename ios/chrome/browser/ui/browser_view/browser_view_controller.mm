@@ -84,6 +84,7 @@
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/commands/send_tab_to_self_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
+#import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/dialogs/dialog_features.h"
@@ -747,6 +748,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self.commandDispatcher
         startDispatchingToTarget:self
                      forProtocol:@protocol(FindInPageCommands)];
+    [self.commandDispatcher
+        startDispatchingToTarget:self
+                     forProtocol:@protocol(TextZoomCommands)];
     [self.commandDispatcher
         startDispatchingToTarget:applicationCommandEndpoint
                      forProtocol:@protocol(ApplicationCommands)];

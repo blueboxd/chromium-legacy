@@ -6,8 +6,8 @@
 
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #include "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
 #import "ios/chrome/browser/ui/text_zoom/text_zoom_mediator.h"
 #import "ios/chrome/browser/ui/text_zoom/text_zoom_view_controller.h"
@@ -29,6 +29,9 @@
 
 @property(nonatomic, strong) TextZoomMediator* mediator;
 
+// Allows simplified access to the TextZoomCommands handler.
+@property(nonatomic, readonly) id<TextZoomCommands> textZoomCommandHandler;
+
 @end
 
 @implementation TextZoomCoordinator
@@ -41,14 +44,11 @@
 
   self.mediator = [[TextZoomMediator alloc]
       initWithWebStateList:self.browser->GetWebStateList()
-            commandHandler:HandlerForProtocol(
-                               self.browser->GetCommandDispatcher(),
-                               BrowserCommands)];
+            commandHandler:self.textZoomCommandHandler];
 
   self.textZoomViewController = [[TextZoomViewController alloc]
       initWithDarkAppearance:self.browserState->IsOffTheRecord()];
-  self.textZoomViewController.commandHandler =
-      HandlerForProtocol(self.browser->GetCommandDispatcher(), BrowserCommands);
+  self.textZoomViewController.commandHandler = self.textZoomCommandHandler;
 
   self.textZoomViewController.zoomHandler = self.mediator;
   self.mediator.consumer = self.textZoomViewController;
@@ -75,6 +75,13 @@
 
 - (void)containedPresenterDidDismiss:(id<ContainedPresenter>)presenter {
   [self.delegate toolbarAccessoryCoordinatorDidDismissUI:self];
+}
+
+#pragma mark - Private
+
+- (id<TextZoomCommands>)textZoomCommandHandler {
+  return HandlerForProtocol(self.browser->GetCommandDispatcher(),
+                            TextZoomCommands);
 }
 
 @end

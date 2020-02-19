@@ -4,9 +4,11 @@
 
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "chrome/browser/background/background_contents_service.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
 #include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
@@ -34,6 +36,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
+#include "extensions/browser/content_verifier/test_utils.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_registry.h"
@@ -44,6 +47,7 @@
 #include "extensions/browser/updater/extension_cache_fake.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/features/feature_channel.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/permissions/permissions_data.h"
@@ -127,6 +131,12 @@ void RegisterURLReplacingHandler(net::EmbeddedTestServer* test_server,
 class ExtensionPolicyTest : public PolicyTest {
  protected:
   void SetUp() override {
+    // Set default verification mode for content verifier to be enabled.
+    extensions::ChromeContentVerifierDelegate::SetDefaultModeForTesting(
+        extensions::ChromeContentVerifierDelegate::VerifyInfo::Mode::
+            ENFORCE_STRICT);
+    ignore_content_verifier_ =
+        std::make_unique<extensions::ScopedIgnoreContentVerifierForTest>();
     PolicyTest::SetUp();
     test_extension_cache_ = std::make_unique<extensions::ExtensionCacheFake>();
   }
@@ -229,8 +239,29 @@ class ExtensionPolicyTest : public PolicyTest {
                   forcelist.CreateDeepCopy(), nullptr);
   }
 
+  const extensions::Extension* InstallForceListExtension(
+      const std::string& id) {
+    extensions::ExtensionRegistry* registry = extension_registry();
+    if (registry->GetExtensionById(id,
+                                   extensions::ExtensionRegistry::EVERYTHING))
+      return nullptr;
+
+    GURL update_url = embedded_test_server()->GetURL(
+        "/extensions/good_v1_update_manifest.xml");
+
+    PolicyMap policies;
+    AddExtensionToForceList(&policies, id, update_url);
+
+    extensions::TestExtensionRegistryObserver observer(extension_registry());
+    UpdateProviderPolicy(policies);
+    observer.WaitForExtensionWillBeInstalled();
+
+    return registry->enabled_extensions().GetByID(id);
+  }
+
   std::unique_ptr<extensions::ExtensionCacheFake> test_extension_cache_;
-  extensions::ScopedIgnoreContentVerifierForTest ignore_content_verifier_;
+  std::unique_ptr<extensions::ScopedIgnoreContentVerifierForTest>
+      ignore_content_verifier_;
   extensions::ExtensionUpdater::ScopedSkipScheduledCheckForTest
       skip_scheduled_extension_checks_;
 };
@@ -915,6 +946,149 @@ IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest, ExtensionInstallForcelist) {
     extension_crashed_observer.Wait();
     extension_loaded_observer.WaitForExtensionLoaded();
   }
+}
+
+// Verifies that corrupted non-webstore policy-based extension is automatically
+// repaired (reinstalled).
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
+                       CorruptedNonWebstoreExtensionRepaired) {
+  ignore_content_verifier_.reset();
+  ExtensionRequestInterceptor interceptor;
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  const base::FilePath kResourcePath(FILE_PATH_LITERAL("script1.js"));
+
+  extensions::ExtensionService* service = extension_service();
+
+  // Step 1: Setup a policy and force-install an extension.
+  const extensions::Extension* extension =
+      InstallForceListExtension(kGoodCrxId);
+  ASSERT_TRUE(extension);
+
+  // Step 2: Corrupt extension's resource.
+  {
+    base::FilePath resource_path = extension->path().Append(kResourcePath);
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    // Temporarily disable extension, we don't want to tackle with resources of
+    // enabled one. Not using command DISABLE_USER_ACTION reason since
+    // force-installed extension may not be disabled by user action.
+    service->DisableExtension(kGoodCrxId,
+                              extensions::disable_reason::DISABLE_RELOAD);
+
+    const std::string kCorruptedContent("// corrupted\n");
+    ASSERT_EQ(kCorruptedContent.size(),
+              static_cast<unsigned>(base::WriteFile(resource_path,
+                                                    kCorruptedContent.data(),
+                                                    kCorruptedContent.size())));
+
+    service->EnableExtension(kGoodCrxId);
+  }
+
+  extensions::TestContentVerifyJobObserver content_verify_job_observer;
+  extensions::TestExtensionRegistryObserver observer(extension_registry());
+
+  // Step 3: Fetch resource to trigger corruption check and wait for content
+  // verify job completion.
+  {
+    content_verify_job_observer.ExpectJobResult(
+        kGoodCrxId, kResourcePath,
+        extensions::TestContentVerifyJobObserver::Result::FAILURE);
+
+    GURL resource_url = extension->GetResourceURL("script1.js");
+    FetchSubresource(browser()->tab_strip_model()->GetActiveWebContents(),
+                     resource_url);
+
+    EXPECT_TRUE(content_verify_job_observer.WaitForExpectedJobs());
+  }
+
+  // Step 4: Check that we are going to reinstall the extension and wait for
+  // extension reinstall.
+  EXPECT_TRUE(service->pending_extension_manager()
+                  ->IsPolicyReinstallForCorruptionExpected(kGoodCrxId));
+  observer.WaitForExtensionWillBeInstalled();
+
+  // Extension was reloaded, old extension object is invalid.
+  extension = extension_registry()->enabled_extensions().GetByID(kGoodCrxId);
+
+  // Step 5: Check that resource has its original contents.
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::FilePath resource_path = extension->path().Append(kResourcePath);
+    std::string contents;
+    ASSERT_TRUE(base::ReadFileToString(resource_path, &contents));
+    EXPECT_EQ("// script1\n", contents);
+  }
+}
+
+// Verifies that corrupted non-webstore policy-based extension is not repaired
+// if there are no computed_hashes.json for it. Note that this behavior will
+// change in the future.
+// See https://crbug.com/958794#c22 for details.
+// TODO(https://crbug.com/1044572): Change this test so extension without hashes
+// will be also reinstalled.
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
+                       CorruptedNonWebstoreExtensionWithoutHashesRemained) {
+  ignore_content_verifier_.reset();
+  ExtensionRequestInterceptor interceptor;
+  ASSERT_TRUE(embedded_test_server()->Start());
+  base::HistogramTester histogram_tester;
+
+  const base::FilePath kResourcePath(FILE_PATH_LITERAL("script1.js"));
+
+  extensions::ExtensionService* service = extension_service();
+
+  // Step 1: Setup a policy and force-install an extension.
+  const extensions::Extension* extension =
+      InstallForceListExtension(kGoodCrxId);
+  ASSERT_TRUE(extension);
+
+  // Step 2: Corrupt extension's resource and remove hashes.
+  {
+    base::FilePath resource_path = extension->path().Append(kResourcePath);
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    // Temporarily disable extension, we don't want to tackle with resources of
+    // enabled one. Not using command DISABLE_USER_ACTION reason since
+    // force-installed extension may not be disabled by user action.
+    service->DisableExtension(kGoodCrxId,
+                              extensions::disable_reason::DISABLE_RELOAD);
+
+    const std::string kCorruptedContent("// corrupted\n");
+    ASSERT_EQ(kCorruptedContent.size(),
+              static_cast<unsigned>(base::WriteFile(resource_path,
+                                                    kCorruptedContent.data(),
+                                                    kCorruptedContent.size())));
+    ASSERT_TRUE(base::DeleteFile(
+        extensions::file_util::GetComputedHashesPath(extension->path()),
+        /*recursive=*/false));
+
+    service->EnableExtension(kGoodCrxId);
+  }
+
+  extensions::TestContentVerifyJobObserver content_verify_job_observer;
+
+  // Step 3: Fetch resource to trigger corruption check and wait for content
+  // verify job completion.
+  {
+    content_verify_job_observer.ExpectJobResult(
+        kGoodCrxId, kResourcePath,
+        extensions::TestContentVerifyJobObserver::Result::FAILURE);
+
+    GURL resource_url = extension->GetResourceURL("script1.js");
+    FetchSubresource(browser()->tab_strip_model()->GetActiveWebContents(),
+                     resource_url);
+
+    EXPECT_TRUE(content_verify_job_observer.WaitForExpectedJobs());
+  }
+
+  // Step 4: Check that we are not going to reinstall the extension, but we have
+  // detected a corruption.
+  EXPECT_FALSE(service->pending_extension_manager()
+                   ->IsPolicyReinstallForCorruptionExpected(kGoodCrxId));
+  histogram_tester.ExpectUniqueSample(
+      "Extensions.CorruptPolicyExtensionDetected3",
+      extensions::PendingExtensionManager::PolicyReinstallReason::
+          NO_UNSIGNED_HASHES_FOR_NON_WEBSTORE_SKIP,
+      1);
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,

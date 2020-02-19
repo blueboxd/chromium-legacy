@@ -13,6 +13,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_delegate.h"
@@ -125,11 +126,12 @@ class TestDelegate : public PasswordsPrivateDelegate {
     }
   }
 
-  void RequestShowPassword(int id,
-                           PlaintextPasswordCallback callback,
-                           content::WebContents* web_contents) override {
+  void RequestPlaintextPassword(int id,
+                                api::passwords_private::PlaintextReason reason,
+                                PlaintextPasswordCallback callback,
+                                content::WebContents* web_contents) override {
     // Return a mocked password value.
-    std::move(callback).Run(base::ASCIIToUTF16(kPlaintextPassword));
+    std::move(callback).Run(plaintext_password_);
   }
 
   void SetProfile(Profile* profile) { profile_ = profile; }
@@ -168,6 +170,10 @@ class TestDelegate : public PasswordsPrivateDelegate {
     is_opted_in_for_account_storage_ = opted_in;
   }
 
+  base::Optional<base::string16>& plaintext_password() {
+    return plaintext_password_;
+  }
+
   // Flags for detecting whether import/export operations have been invoked.
   bool importPasswordsTriggered = false;
   bool exportPasswordsTriggered = false;
@@ -198,6 +204,8 @@ class TestDelegate : public PasswordsPrivateDelegate {
   base::Optional<api::passwords_private::PasswordUiEntry> last_deleted_entry_;
   base::Optional<api::passwords_private::ExceptionEntry>
       last_deleted_exception_;
+  base::Optional<base::string16> plaintext_password_ =
+      base::ASCIIToUTF16(kPlaintextPassword);
   Profile* profile_;
 
   bool is_opted_in_for_account_storage_ = false;
@@ -257,6 +265,10 @@ class PasswordsPrivateApiTest : public ExtensionApiTest {
     s_test_delegate_->SetOptedInForAccountStorage(opted_in);
   }
 
+  base::Optional<base::string16>& plaintext_password() {
+    return s_test_delegate_->plaintext_password();
+  }
+
  private:
   static TestDelegate* s_test_delegate_;
 
@@ -286,6 +298,11 @@ IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest,
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, RequestPlaintextPassword) {
   EXPECT_TRUE(RunPasswordsSubtest("requestPlaintextPassword")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, RequestPlaintextPasswordFails) {
+  plaintext_password().reset();
+  EXPECT_TRUE(RunPasswordsSubtest("requestPlaintextPasswordFails")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordsPrivateApiTest, GetSavedPasswordList) {

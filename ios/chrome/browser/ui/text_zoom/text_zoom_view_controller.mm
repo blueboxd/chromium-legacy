@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/ui/text_zoom/text_zoom_constants.h"
 #import "ios/chrome/common/colors/dynamic_color_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"

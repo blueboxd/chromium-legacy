@@ -302,8 +302,8 @@ TEST_F(PaintLayerClipperTest, ControlClipSelect) {
   PhysicalRect content_box_rect = target->PhysicalContentBoxRect();
   EXPECT_GT(foreground_rect.Rect().X(),
             content_box_rect.X() + target->Location().X());
-  EXPECT_LT(foreground_rect.Rect().Width(), content_box_rect.Width());
-}  // namespace blink
+  EXPECT_LE(foreground_rect.Rect().Width(), content_box_rect.Width());
+}
 
 TEST_F(PaintLayerClipperTest, LayoutSVGRootChild) {
   SetBodyInnerHTML(R"HTML(

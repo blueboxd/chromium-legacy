@@ -34,8 +34,8 @@ static const unsigned kColorMatrixSize = 20;
 
 FEColorMatrix::FEColorMatrix(Filter* filter,
                              ColorMatrixType type,
-                             const Vector<float>& values)
-    : FilterEffect(filter), type_(type), values_(values) {}
+                             Vector<float> values)
+    : FilterEffect(filter), type_(type), values_(std::move(values)) {}
 
 ColorMatrixType FEColorMatrix::GetType() const {
   return type_;
@@ -52,10 +52,10 @@ const Vector<float>& FEColorMatrix::Values() const {
   return values_;
 }
 
-bool FEColorMatrix::SetValues(const Vector<float>& values) {
+bool FEColorMatrix::SetValues(Vector<float> values) {
   if (values_ == values)
     return false;
-  values_ = values;
+  values_ = std::move(values);
   return true;
 }
 

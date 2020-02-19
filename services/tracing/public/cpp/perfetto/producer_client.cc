@@ -50,50 +50,9 @@ void ProducerClient::Connect(
                      std::move(producer_host_remote)));
 }
 
-void ProducerClient::BindClientAndHostPipesForTesting(
-    mojo::PendingReceiver<mojom::ProducerClient> producer_client_receiver,
-    mojo::PendingRemote<mojom::ProducerHost> producer_host_remote) {
-  task_runner()->GetOrCreateTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ProducerClient::BindClientAndHostPipesOnSequence,
-                     base::Unretained(this),
-                     std::move(producer_client_receiver),
-                     std::move(producer_host_remote)));
-}
-
-void ProducerClient::ResetSequenceForTesting() {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
-
-// The Mojo binding should run on the same sequence as the one we get
-// callbacks from Perfetto on, to avoid additional PostTasks.
-void ProducerClient::BindClientAndHostPipesOnSequence(
-    mojo::PendingReceiver<mojom::ProducerClient> producer_client_receiver,
-    mojo::PendingRemote<mojom::ProducerHost> producer_host_info) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  CHECK(!receiver_ || !receiver_->is_bound());
-
-  receiver_ = std::make_unique<mojo::Receiver<mojom::ProducerClient>>(
-      this, std::move(producer_client_receiver));
-  receiver_->set_disconnect_handler(base::BindOnce(
-      [](ProducerClient* producer_client) {
-        producer_client->receiver_->reset();
-      },
-      base::Unretained(this)));
-
-  producer_host_.Bind(std::move(producer_host_info));
-
-  // TODO(oysteine) We register the data sources in reverse as a temporary
-  // workaround to make sure that the TraceEventDataSource is registered
-  // *after* the MetadataSource, as the logic which waits for trace clients
-  // to be "ready" (in the tracing coordinator) waits for the TraceLog to
-  // be enabled, which is done by the TraceEventDataSource. We need to register
-  // the MetadataSource first to ensure that it's also ready. Once the
-  // Perfetto Observer interface is ready, we can remove this.
-  const auto& data_sources = PerfettoTracedProcess::Get()->data_sources();
-  for (auto it = data_sources.crbegin(); it != data_sources.crend(); ++it) {
-    NewDataSourceAdded(*it);
-  }
+perfetto::SharedMemoryArbiter* ProducerClient::MaybeSharedMemoryArbiter() {
+  return in_process_arbiter_ ? in_process_arbiter_
+                             : shared_memory_arbiter_.get();
 }
 
 void ProducerClient::NewDataSourceAdded(
@@ -121,11 +80,6 @@ void ProducerClient::NewDataSourceAdded(
   new_registration.set_track_event_descriptor_raw(proto.SerializeAsString());
 
   producer_host_->RegisterDataSource(std::move(new_registration));
-}
-
-perfetto::SharedMemoryArbiter* ProducerClient::MaybeSharedMemoryArbiter() {
-  return in_process_arbiter_ ? in_process_arbiter_
-                             : shared_memory_arbiter_.get();
 }
 
 bool ProducerClient::IsTracingActive() {
@@ -229,7 +183,7 @@ void ProducerClient::Flush(uint64_t flush_request_id,
       data_source->Flush(base::BindRepeating(
           [](base::WeakPtr<ProducerClient> weak_ptr, uint64_t id) {
             if (weak_ptr) {
-              weak_ptr->NotifyFlushComplete(id);
+              weak_ptr->NotifyDataSourceFlushComplete(id);
             }
           },
           weak_ptr_factory_.GetWeakPtr(), flush_request_id));
@@ -243,31 +197,11 @@ void ProducerClient::ClearIncrementalState() {
   }
 }
 
-void ProducerClient::RegisterDataSource(const perfetto::DataSourceDescriptor&) {
-  NOTREACHED();
-}
-
-void ProducerClient::UnregisterDataSource(const std::string& name) {
-  NOTREACHED();
-}
-
-void ProducerClient::NotifyDataSourceStopped(
-    perfetto::DataSourceInstanceID id) {
-  NOTREACHED();
-}
-
-void ProducerClient::NotifyDataSourceStarted(
-    perfetto::DataSourceInstanceID id) {
-  NOTREACHED();
-}
-
-void ProducerClient::ActivateTriggers(const std::vector<std::string>&) {
-  NOTREACHED();
-}
-
-bool ProducerClient::IsShmemProvidedByProducer() const {
-  NOTREACHED();
-  return false;
+std::unique_ptr<perfetto::TraceWriter> ProducerClient::CreateTraceWriter(
+    perfetto::BufferID target_buffer,
+    perfetto::BufferExhaustedPolicy buffer_exhausted_policy) {
+  return PerfettoProducer::CreateTraceWriter(target_buffer,
+                                             buffer_exhausted_policy);
 }
 
 void ProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
@@ -292,8 +226,44 @@ void ProducerClient::CommitData(const perfetto::CommitDataRequest& commit,
   producer_host_->CommitData(commit, std::move(commit_callback));
 }
 
+void ProducerClient::RegisterTraceWriter(uint32_t writer_id,
+                                         uint32_t target_buffer) {
+  producer_host_->RegisterTraceWriter(writer_id, target_buffer);
+}
+
+void ProducerClient::UnregisterTraceWriter(uint32_t writer_id) {
+  producer_host_->UnregisterTraceWriter(writer_id);
+}
+
 perfetto::SharedMemory* ProducerClient::shared_memory() const {
-  return shared_memory_.get();
+  NOTREACHED();
+  return nullptr;
+}
+
+void ProducerClient::NotifyFlushComplete(perfetto::FlushRequestID id) {
+  NOTREACHED();
+}
+
+void ProducerClient::RegisterDataSource(const perfetto::DataSourceDescriptor&) {
+  NOTREACHED();
+}
+
+void ProducerClient::UnregisterDataSource(const std::string& name) {
+  NOTREACHED();
+}
+
+void ProducerClient::NotifyDataSourceStopped(
+    perfetto::DataSourceInstanceID id) {
+  NOTREACHED();
+}
+
+void ProducerClient::NotifyDataSourceStarted(
+    perfetto::DataSourceInstanceID id) {
+  NOTREACHED();
+}
+
+void ProducerClient::ActivateTriggers(const std::vector<std::string>&) {
+  NOTREACHED();
 }
 
 size_t ProducerClient::shared_buffer_page_size_kb() const {
@@ -301,7 +271,63 @@ size_t ProducerClient::shared_buffer_page_size_kb() const {
   return 0;
 }
 
-void ProducerClient::NotifyFlushComplete(perfetto::FlushRequestID id) {
+bool ProducerClient::IsShmemProvidedByProducer() const {
+  NOTREACHED();
+  return false;
+}
+
+void ProducerClient::BindClientAndHostPipesForTesting(
+    mojo::PendingReceiver<mojom::ProducerClient> producer_client_receiver,
+    mojo::PendingRemote<mojom::ProducerHost> producer_host_remote) {
+  task_runner()->GetOrCreateTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ProducerClient::BindClientAndHostPipesOnSequence,
+                     base::Unretained(this),
+                     std::move(producer_client_receiver),
+                     std::move(producer_host_remote)));
+}
+
+void ProducerClient::ResetSequenceForTesting() {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+}
+
+perfetto::SharedMemory* ProducerClient::shared_memory_for_testing() const {
+  return shared_memory_.get();
+}
+
+// The Mojo binding should run on the same sequence as the one we get
+// callbacks from Perfetto on, to avoid additional PostTasks.
+void ProducerClient::BindClientAndHostPipesOnSequence(
+    mojo::PendingReceiver<mojom::ProducerClient> producer_client_receiver,
+    mojo::PendingRemote<mojom::ProducerHost> producer_host_info) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  CHECK(!receiver_ || !receiver_->is_bound());
+
+  receiver_ = std::make_unique<mojo::Receiver<mojom::ProducerClient>>(
+      this, std::move(producer_client_receiver));
+  receiver_->set_disconnect_handler(base::BindOnce(
+      [](ProducerClient* producer_client) {
+        producer_client->receiver_->reset();
+      },
+      base::Unretained(this)));
+
+  producer_host_.Bind(std::move(producer_host_info));
+
+  // TODO(oysteine) We register the data sources in reverse as a temporary
+  // workaround to make sure that the TraceEventDataSource is registered
+  // *after* the MetadataSource, as the logic which waits for trace clients
+  // to be "ready" (in the tracing coordinator) waits for the TraceLog to
+  // be enabled, which is done by the TraceEventDataSource. We need to register
+  // the MetadataSource first to ensure that it's also ready. Once the
+  // Perfetto Observer interface is ready, we can remove this.
+  const auto& data_sources = PerfettoTracedProcess::Get()->data_sources();
+  for (auto it = data_sources.crbegin(); it != data_sources.crend(); ++it) {
+    NewDataSourceAdded(*it);
+  }
+}
+
+void ProducerClient::NotifyDataSourceFlushComplete(
+    perfetto::FlushRequestID id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (pending_replies_for_latest_flush_.first != id) {
     // Ignore; completed flush was for an earlier request.
@@ -312,15 +338,6 @@ void ProducerClient::NotifyFlushComplete(perfetto::FlushRequestID id) {
   if (--pending_replies_for_latest_flush_.second == 0) {
     MaybeSharedMemoryArbiter()->NotifyFlushComplete(id);
   }
-}
-
-void ProducerClient::RegisterTraceWriter(uint32_t writer_id,
-                                         uint32_t target_buffer) {
-  producer_host_->RegisterTraceWriter(writer_id, target_buffer);
-}
-
-void ProducerClient::UnregisterTraceWriter(uint32_t writer_id) {
-  producer_host_->UnregisterTraceWriter(writer_id);
 }
 
 }  // namespace tracing

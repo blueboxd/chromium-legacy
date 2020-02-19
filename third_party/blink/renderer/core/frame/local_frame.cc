@@ -1924,6 +1924,32 @@ void LocalFrame::SetScaleFactor(float scale_factor) {
   GetPage()->GetVisualViewport().SetScale(scale_factor);
 }
 
+void LocalFrame::ClosePage(
+    mojom::blink::LocalMainFrame::ClosePageCallback completion_callback) {
+  SECURITY_CHECK(IsMainFrame());
+
+  // There are two ways to close a page:
+  //
+  // 1/ Via webview()->Close() that currently sets the WebView's delegate_ to
+  // NULL, and prevent any JavaScript dialogs in the onunload handler from
+  // appearing.
+  //
+  // 2/ Calling the FrameLoader's CloseURL method directly.
+  //
+  // TODO(creis): Having a single way to close that can run onunload is also
+  // useful for fixing http://b/issue?id=753080.
+
+  SubframeLoadingDisabler disabler(GetDocument());
+  // https://html.spec.whatwg.org/C/browsing-the-web.html#unload-a-document
+  // The ignore-opens-during-unload counter of a Document must be incremented
+  // when unloading itself.
+  IgnoreOpensDuringUnloadCountIncrementer ignore_opens_during_unload(
+      GetDocument());
+  Loader().DispatchUnloadEvent(nullptr, nullptr);
+
+  std::move(completion_callback).Run();
+}
+
 HitTestResult LocalFrame::HitTestResultForVisualViewportPos(
     const IntPoint& pos_in_viewport) {
   IntPoint root_frame_point(

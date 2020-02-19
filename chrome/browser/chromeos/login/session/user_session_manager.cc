@@ -2464,6 +2464,8 @@ void UserSessionManager::Shutdown() {
   always_on_vpn_manager_.reset();
   u2f_notification_.reset();
   release_notes_notification_.reset();
+  password_service_voted_.reset();
+  password_was_saved_ = false;
 }
 
 void UserSessionManager::SetSwitchesForUser(

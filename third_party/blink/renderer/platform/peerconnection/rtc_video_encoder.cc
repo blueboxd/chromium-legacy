@@ -416,7 +416,9 @@ void RTCVideoEncoder::Impl::CreateAndInitializeVEA(
   // Check that |profile| supports |input_visible_size|.
   if (base::FeatureList::IsEnabled(features::kWebRtcUseMinMaxVEADimensions)) {
     const auto vea_supported_profiles =
-        gpu_factories_->GetVideoEncodeAcceleratorSupportedProfiles();
+        gpu_factories_->GetVideoEncodeAcceleratorSupportedProfiles().value_or(
+            media::VideoEncodeAccelerator::SupportedProfiles());
+
     for (const auto vea_profile : vea_supported_profiles) {
       if (vea_profile.profile == profile &&
           (input_visible_size.width() > vea_profile.max_resolution.width() ||

@@ -1565,6 +1565,13 @@ message SystemProxySettingsProto {
   optional string system_proxy_settings = 1;
 }
 
+// Settings that control what certificates should be privisioned via DM server.
+message RequiredClientCertificateForDeviceProto {
+  // This is a JSON string, for details see
+  // "RequiredClientCertificateForDevice" in policy_templates.json.
+  optional string required_client_certificate_for_device = 1;
+}
+
 message ChromeDeviceSettingsProto {
   reserved 61, 90;
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
@@ -1690,4 +1697,6 @@ message ChromeDeviceSettingsProto {
   optional IntegerPolicyProto device_login_screen_chrome_variations_type = 99;
   optional DeviceLoginScreenPrivacyScreenEnabledProto
       device_login_screen_privacy_screen_enabled = 100;
+  optional RequiredClientCertificateForDeviceProto
+      required_client_certificate_for_device = 101;
 }

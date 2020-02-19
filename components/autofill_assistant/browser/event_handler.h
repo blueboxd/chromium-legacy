@@ -29,13 +29,13 @@ class EventHandler {
   // Interface for observers of the event handler.
   class Observer : public base::CheckedObserver {
    public:
-    virtual void OnEvent(const EventKey& key, const ValueProto& value) = 0;
+    virtual void OnEvent(const EventKey& key) = 0;
   };
 
   EventHandler();
   ~EventHandler();
 
-  void DispatchEvent(const EventKey& key, const ValueProto& value);
+  void DispatchEvent(const EventKey& key);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(const Observer* observer);

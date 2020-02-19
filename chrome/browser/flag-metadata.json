@@ -3051,6 +3051,11 @@
     "expiry_milestone": 83
   },
   {
+    "name": "password-change-support",
+    "owners": [ "selakovic" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "password-check",
     "owners": [ "jdoerrie", "vasilii" ],
     "expiry_milestone": 84

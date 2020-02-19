@@ -31,5 +31,6 @@ type_mappings = [
   "media.mojom.VideoBitrateAllocation=::media::VideoBitrateAllocation",
   "media.mojom.VideoEncodeAccelerator.Error=::media::VideoEncodeAccelerator::Error",
   "media.mojom.VideoEncodeAcceleratorConfig=::media::VideoEncodeAccelerator::Config",
+  "media.mojom.VideoEncodeAcceleratorSupportedProfile=::media::VideoEncodeAccelerator::SupportedProfile",
   "media.mojom.Vp8Metadata=::media::Vp8Metadata",
 ]

@@ -44,7 +44,8 @@ GetSupportedVideoEncodeAcceleratorProfiles() {
       RenderThreadImpl::current()->GetGpuFactories();
   if (!gpu_factories || !gpu_factories->IsGpuVideoAcceleratorEnabled())
     return media::VideoEncodeAccelerator::SupportedProfiles();
-  return gpu_factories->GetVideoEncodeAcceleratorSupportedProfiles();
+  return gpu_factories->GetVideoEncodeAcceleratorSupportedProfiles().value_or(
+      media::VideoEncodeAccelerator::SupportedProfiles());
 #endif  // defined(OS_ANDROID)
 }
 

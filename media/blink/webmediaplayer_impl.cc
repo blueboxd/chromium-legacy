@@ -1993,8 +1993,8 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
   // Create capabilities reporter and synchronize its initial state.
   video_decode_stats_reporter_.reset(new VideoDecodeStatsReporter(
       std::move(recorder),
-      base::Bind(&WebMediaPlayerImpl::GetPipelineStatistics,
-                 base::Unretained(this)),
+      base::BindRepeating(&WebMediaPlayerImpl::GetPipelineStatistics,
+                          base::Unretained(this)),
       pipeline_metadata_.video_decoder_config.profile(),
       pipeline_metadata_.natural_size, key_system_, cdm_config_,
       frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));

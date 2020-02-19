@@ -75,8 +75,11 @@ class CORE_EXPORT CSSSupportsParser {
   //                    | <general-enclosed>
   Result ConsumeSupportsInParens(CSSParserTokenRange&);
 
-  // <supports-feature> = <supports-decl>
+  // <supports-feature> = <supports-selector-fn> | <supports-decl>
   Result ConsumeSupportsFeature(CSSParserTokenRange&);
+
+  // <supports-selector-fn> = selector( <complex-selector> )
+  Result ConsumeSupportsSelectorFn(CSSParserTokenRange&);
 
   // <supports-decl> = ( <declaration> )
   Result ConsumeSupportsDecl(CSSParserTokenRange&);

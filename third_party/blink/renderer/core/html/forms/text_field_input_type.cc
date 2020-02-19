@@ -276,12 +276,10 @@ bool TextFieldInputType::ShouldSubmitImplicitly(const Event& event) {
          InputTypeView::ShouldSubmitImplicitly(event);
 }
 
-scoped_refptr<ComputedStyle> TextFieldInputType::CustomStyleForLayoutObject(
-    scoped_refptr<ComputedStyle> style) {
+void TextFieldInputType::CustomStyleForLayoutObject(ComputedStyle& style) {
   // The flag is necessary in order that a text field <input> with non-'visible'
   // overflow property doesn't change its baseline.
-  style->SetShouldIgnoreOverflowPropertyForInlineBlockBaseline();
-  return style;
+  style.SetShouldIgnoreOverflowPropertyForInlineBlockBaseline();
 }
 
 LayoutObject* TextFieldInputType::CreateLayoutObject(const ComputedStyle&,

@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 76 tests; 49 PASS, 27 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 76 tests; 51 PASS, 25 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS getStats succeeds
 PASS RTCRtpStreamStats's ssrc
 PASS RTCRtpStreamStats's kind
@@ -49,8 +49,8 @@ FAIL RTCVideoReceiverStats's partialFramesLost assert_true: Is partialFramesLost
 PASS RTCCodecStats's payloadType
 FAIL RTCCodecStats's codecType assert_true: Is codecType present expected true got false
 PASS RTCCodecStats's clockRate
-FAIL RTCCodecStats's channels assert_true: Is channels present expected true got false
-FAIL RTCCodecStats's sdpFmtpLine assert_true: Is sdpFmtpLine present expected true got false
+PASS RTCCodecStats's channels
+PASS RTCCodecStats's sdpFmtpLine
 PASS RTCTransportStats's bytesSent
 PASS RTCTransportStats's bytesReceived
 FAIL RTCTransportStats's rtcpTransportStatsId assert_true: Is rtcpTransportStatsId present expected true got false

@@ -116,6 +116,7 @@ class CORE_EXPORT CSSParserImpl {
   static std::unique_ptr<Vector<double>> ParseKeyframeKeyList(const String&);
 
   bool SupportsDeclaration(CSSParserTokenRange&);
+  const CSSParserContext* GetContext() const { return context_; }
 
   static void ParseDeclarationListForInspector(const String&,
                                                const CSSParserContext*,

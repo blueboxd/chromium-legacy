@@ -14,6 +14,10 @@ class COMPONENT_EXPORT(TRACING_CPP) SystemProducer : public PerfettoProducer,
                                                      public perfetto::Producer {
  public:
   SystemProducer(PerfettoTaskRunner* task_runner);
+  ~SystemProducer() override;
+
+  virtual void ActivateTriggers(const std::vector<std::string>& triggers) = 0;
+
   // Since Chrome does not support concurrent tracing sessions, and system
   // tracing is always lower priority than human or DevTools initiated tracing,
   // all system producers must be able to disconnect and stop tracing.

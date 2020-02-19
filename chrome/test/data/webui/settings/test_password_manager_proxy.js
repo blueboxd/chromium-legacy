@@ -11,7 +11,7 @@
  */
 class TestPasswordManagerProxy extends TestBrowserProxy {
   constructor() {
-    super(['getPlaintextPassword']);
+    super(['requestPlaintextPassword']);
 
     this.actual_ = new PasswordManagerExpectations();
 
@@ -25,7 +25,7 @@ class TestPasswordManagerProxy extends TestBrowserProxy {
     this.lastCallback = {
       addSavedPasswordListChangedListener: null,
       addExceptionListChangedListener: null,
-      getPlaintextPassword: null,
+      requestPlaintextPassword: null,
     };
 
     this.plaintextPassword_ = '';
@@ -87,8 +87,8 @@ class TestPasswordManagerProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  getPlaintextPassword(id) {
-    this.methodCalled('getPlaintextPassword', id);
+  requestPlaintextPassword(id, reason) {
+    this.methodCalled('requestPlaintextPassword', {id, reason});
     return Promise.resolve(this.plaintextPassword_);
   }
 

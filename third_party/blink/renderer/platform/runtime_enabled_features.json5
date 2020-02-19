@@ -529,6 +529,9 @@
       status: "experimental",
     },
     {
+      name: "CSSSupportsSelector",
+    },
+    {
       name: "CSSVariables2",
       status: "stable",
     },

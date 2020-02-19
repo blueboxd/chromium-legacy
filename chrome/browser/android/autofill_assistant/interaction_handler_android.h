@@ -28,8 +28,7 @@ namespace autofill_assistant {
 // UI.
 class InteractionHandlerAndroid : public EventHandler::Observer {
  public:
-  // Each interaction callback has exactly one free |ValueProto| parameter.
-  using InteractionCallback = base::RepeatingCallback<void(const ValueProto&)>;
+  using InteractionCallback = base::RepeatingCallback<void()>;
 
   // Constructor. |event_handler| and |jcontext| must outlive this instance.
   InteractionHandlerAndroid(
@@ -51,8 +50,7 @@ class InteractionHandlerAndroid : public EventHandler::Observer {
       UserModel* user_model);
 
   // Overrides autofill_assistant::EventHandler::Observer:
-  void OnEvent(const EventHandler::EventKey& key,
-               const ValueProto& value) override;
+  void OnEvent(const EventHandler::EventKey& key) override;
 
  private:
   void AddInteraction(const EventHandler::EventKey& key,

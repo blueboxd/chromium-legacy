@@ -5,13 +5,16 @@
 #include "third_party/blink/renderer/core/css/parser/css_supports_parser.h"
 
 #include "third_party/blink/renderer/core/css/parser/css_parser_impl.h"
+#include "third_party/blink/renderer/core/css/parser/css_selector_parser.h"
+#include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
 namespace {
 
-// TODO(andruud): This is not correct, but it's here to make it possible to
-// make web-facing changes separately.
+// TODO(crbug.com/1053910): This is not correct, but it's here to make it
+// possible to make web-facing changes separately.
 //
 // According to our (non-WPT) tests, the following is not a valid @supports
 // rule:
@@ -164,10 +167,37 @@ CSSSupportsParser::Result CSSSupportsParser::ConsumeSupportsInParens(
   return EvalUnknown(ConsumeGeneralEnclosed(range));
 }
 
-// <supports-feature> = <supports-decl>
+// <supports-feature> = <supports-selector-fn> | <supports-decl>
 CSSSupportsParser::Result CSSSupportsParser::ConsumeSupportsFeature(
     CSSParserTokenRange& range) {
+  const CSSParserTokenRange stored_range = range;
+
+  // <supports-selector-fn>
+  Result result = ConsumeSupportsSelectorFn(range);
+  if (result != Result::kParseFailure)
+    return result;
+  range = stored_range;
+
+  // <supports-decl>
   return ConsumeSupportsDecl(range);
+}
+
+// <supports-selector-fn> = selector( <complex-selector> )
+CSSSupportsParser::Result CSSSupportsParser::ConsumeSupportsSelectorFn(
+    CSSParserTokenRange& range) {
+  if (!RuntimeEnabledFeatures::CSSSupportsSelectorEnabled())
+    return Result::kParseFailure;
+  if (range.Peek().GetType() != kFunctionToken)
+    return Result::kParseFailure;
+  if (range.Peek().FunctionId() != CSSValueID::kSelector)
+    return Result::kParseFailure;
+  auto block = range.ConsumeBlock();
+  block.ConsumeWhitespace();
+  if (!ConsumeRequiredWhitespaceOrEOF(range))
+    return Result::kParseFailure;
+  if (CSSSelectorParser::SupportsComplexSelector(block, parser_.GetContext()))
+    return Result::kSupported;
+  return Result::kUnsupported;
 }
 
 // <supports-decl> = ( <declaration> )

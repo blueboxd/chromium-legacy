@@ -32,7 +32,7 @@ namespace media {
 // finalized at destruction and process tear-down.
 class MEDIA_BLINK_EXPORT VideoDecodeStatsReporter {
  public:
-  using GetPipelineStatsCB = base::Callback<PipelineStatistics(void)>;
+  using GetPipelineStatsCB = base::RepeatingCallback<PipelineStatistics(void)>;
 
   VideoDecodeStatsReporter(
       mojo::PendingRemote<mojom::VideoDecodeStatsRecorder> recorder_remote,

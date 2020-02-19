@@ -9,7 +9,7 @@
 
 #import "ios/chrome/browser/ui/text_zoom/text_zoom_consumer.h"
 
-@protocol BrowserCommands;
+@protocol TextZoomCommands;
 @class TextZoomViewController;
 
 @protocol TextZoomHandler <NSObject>
@@ -33,7 +33,7 @@
                          bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
 - (instancetype)initWithCoder:(NSCoder*)coder NS_UNAVAILABLE;
 
-@property(nonatomic, weak) id<BrowserCommands> commandHandler;
+@property(nonatomic, weak) id<TextZoomCommands> commandHandler;
 @property(nonatomic, weak) id<TextZoomHandler> zoomHandler;
 
 @end

@@ -85,18 +85,10 @@ void PosixSystemProducer::SetNewSocketForTesting(const char* socket) {
   }
 }
 
-void PosixSystemProducer::ResetSequenceForTesting() {
-  // DETACH the sequence and then immediately attach it. This is needed in tests
-  // because we might be executing in a TaskEnvironment, but the global
-  // PerfettoTracedProcess (which contains a pointer to PosixSystemProducer)
-  // will leak between tests, but the sequence will no longer be valid.
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-bool PosixSystemProducer::IsTracingActive() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return data_sources_tracing_ > 0;
+perfetto::SharedMemoryArbiter* PosixSystemProducer::MaybeSharedMemoryArbiter() {
+  base::AutoLock lock(services_lock_);
+  DCHECK(GetService());
+  return GetService()->MaybeSharedMemoryArbiter();
 }
 
 void PosixSystemProducer::NewDataSourceAdded(
@@ -124,7 +116,20 @@ void PosixSystemProducer::NewDataSourceAdded(
   }
   new_registration.set_track_event_descriptor_raw(proto.SerializeAsString());
 
-  GetSerivce()->RegisterDataSource(new_registration);
+  GetService()->RegisterDataSource(new_registration);
+}
+
+bool PosixSystemProducer::IsTracingActive() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return data_sources_tracing_ > 0;
+}
+
+void PosixSystemProducer::ActivateTriggers(
+    const std::vector<std::string>& triggers) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (state_ == State::kConnected) {
+    GetService()->ActivateTriggers(triggers);
+  }
 }
 
 void PosixSystemProducer::DisconnectWithReply(
@@ -142,8 +147,8 @@ void PosixSystemProducer::DisconnectWithReply(
     // trace in StartDataSource().
     for (const auto* const data_source :
          PerfettoTracedProcess::Get()->data_sources()) {
-      DCHECK(GetSerivce());
-      GetSerivce()->UnregisterDataSource(data_source->name());
+      DCHECK(GetService());
+      GetService()->UnregisterDataSource(data_source->name());
     }
     state_ = State::kUnregistered;
   }
@@ -159,6 +164,15 @@ void PosixSystemProducer::DisconnectWithReply(
     }
   }
   DelayedReconnect();
+}
+
+void PosixSystemProducer::ResetSequenceForTesting() {
+  // DETACH the sequence and then immediately attach it. This is needed in tests
+  // because we might be executing in a TaskEnvironment, but the global
+  // PerfettoTracedProcess (which contains a pointer to PosixSystemProducer)
+  // will leak between tests, but the sequence will no longer be valid.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void PosixSystemProducer::OnConnect() {
@@ -181,7 +195,7 @@ void PosixSystemProducer::OnConnect() {
 
 void PosixSystemProducer::OnDisconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(GetSerivce());
+  DCHECK(GetService());
   // Currently our data sources don't support the concept of the service
   // disappearing and thus can't shut down cleanly (they would attempt to flush
   // data across the broken socket). Add a CHECK to catch this if its a problem.
@@ -198,6 +212,7 @@ void PosixSystemProducer::OnDisconnect() {
               return;
             }
             if (weak_ptr->state_ == State::kConnecting) {
+              base::AutoLock lock(weak_ptr->services_lock_);
               // We never connected, which means this disconnect is
               // an error from connecting, which means we don't need
               // to keep this endpoint (and associated memory around
@@ -206,7 +221,6 @@ void PosixSystemProducer::OnDisconnect() {
               weak_ptr->services_.erase(weak_ptr->services_.end() - 1);
             }
             weak_ptr->state_ = State::kDisconnected;
-            weak_ptr->shared_memory_ = nullptr;
             weak_ptr->DelayedReconnect();
           },
           weak_ptr_factory_.GetWeakPtr()));
@@ -214,9 +228,8 @@ void PosixSystemProducer::OnDisconnect() {
 
 void PosixSystemProducer::OnTracingSetup() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!shared_memory_);
-  shared_memory_ = GetSerivce()->shared_memory();
-  DCHECK(shared_memory_);
+  // Called by the IPC layer when tracing is first started and after shared
+  // memory is set up.
 }
 
 void PosixSystemProducer::SetupDataSource(perfetto::DataSourceInstanceID,
@@ -254,7 +267,7 @@ void PosixSystemProducer::StartDataSource(
                 data_source->StartTracingWithID(
                     id, weak_ptr.get(),
                     EnsureGuardRailsAreFollowed(data_source_config));
-                weak_ptr->GetSerivce()->NotifyDataSourceStarted(id);
+                weak_ptr->GetService()->NotifyDataSourceStarted(id);
               },
               weak_ptr_factory_.GetWeakPtr(), data_source, id, config));
       if (!can_trace) {
@@ -277,7 +290,7 @@ void PosixSystemProducer::StopDataSource(perfetto::DataSourceInstanceID id) {
               return;
             }
             DCHECK_CALLED_ON_VALID_SEQUENCE(weak_ptr->sequence_checker_);
-            weak_ptr->GetSerivce()->NotifyDataSourceStopped(id);
+            weak_ptr->GetService()->NotifyDataSourceStopped(id);
             --weak_ptr->data_sources_tracing_;
             if (!weak_ptr->IsTracingActive()) {
               // If this is the last data source to be shut down then
@@ -306,7 +319,7 @@ void PosixSystemProducer::Flush(
           [](base::WeakPtr<PosixSystemProducer> weak_ptr,
              perfetto::FlushRequestID flush_id) {
             if (weak_ptr) {
-              weak_ptr->NotifyFlushComplete(flush_id);
+              weak_ptr->NotifyDataSourceFlushComplete(flush_id);
             }
           },
           weak_ptr_factory_.GetWeakPtr(), id));
@@ -329,100 +342,20 @@ void PosixSystemProducer::ClearIncrementalState(
   }
 }
 
-void PosixSystemProducer::CommitData(const perfetto::CommitDataRequest& commit,
-                                     CommitDataCallback callback) {
-  NOTREACHED();
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(GetSerivce());
-  GetSerivce()->CommitData(commit, std::move(callback));
-}
-
-perfetto::SharedMemory* PosixSystemProducer::shared_memory() const {
-  return shared_memory_;
-}
-
-void PosixSystemProducer::NotifyFlushComplete(perfetto::FlushRequestID id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (pending_replies_for_latest_flush_.first != id) {
-    // Ignore; completed flush was for an earlier request.
-    return;
-  }
-
-  DCHECK_NE(pending_replies_for_latest_flush_.second, 0u);
-  if (--pending_replies_for_latest_flush_.second == 0) {
-    DCHECK(MaybeSharedMemoryArbiter());
-    MaybeSharedMemoryArbiter()->NotifyFlushComplete(id);
-  }
-}
-
-void PosixSystemProducer::RegisterTraceWriter(uint32_t writer_id,
-                                              uint32_t target_buffer) {
-  // Never called by SharedMemoryArbiter/TraceWriter.
-  NOTREACHED();
-}
-
-void PosixSystemProducer::UnregisterTraceWriter(uint32_t writer_id) {
-  // Never called by SharedMemoryArbiter/TraceWriter.
-  NOTREACHED();
-}
-
-void PosixSystemProducer::RegisterDataSource(
-    const perfetto::DataSourceDescriptor&) {
-  // Never called by SharedMemoryArbiter/TraceWriter.
-  NOTREACHED();
-}
-
-void PosixSystemProducer::UnregisterDataSource(const std::string& name) {
-  // Never called by SharedMemoryArbiter/TraceWriter.
-  NOTREACHED();
-}
-
-void PosixSystemProducer::NotifyDataSourceStopped(
-    perfetto::DataSourceInstanceID id) {
-  // Never called by SharedMemoryArbiter/TraceWriter.
-  NOTREACHED();
-}
-
-void PosixSystemProducer::NotifyDataSourceStarted(
-    perfetto::DataSourceInstanceID id) {
-  // Never called by SharedMemoryArbiter/TraceWriter.
-  NOTREACHED();
-}
-
-size_t PosixSystemProducer::shared_buffer_page_size_kb() const {
-  // Never called by SharedMemoryArbiter/TraceWriter.
-  NOTREACHED();
-  return 0;
-}
-
-bool PosixSystemProducer::IsShmemProvidedByProducer() const {
-  NOTREACHED();
-  return false;
-}
-
-perfetto::SharedMemoryArbiter* PosixSystemProducer::MaybeSharedMemoryArbiter() {
-  DCHECK(GetSerivce());
-  return GetSerivce()->MaybeSharedMemoryArbiter();
-}
-
-void PosixSystemProducer::ActivateTriggers(
-    const std::vector<std::string>& triggers) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (state_ == State::kConnected) {
-    GetSerivce()->ActivateTriggers(triggers);
-  }
-}
-
 void PosixSystemProducer::ConnectSocket() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   state_ = State::kConnecting;
-  services_.push_back(perfetto::ProducerIPCClient::Connect(
+  auto service = perfetto::ProducerIPCClient::Connect(
       socket_name_.c_str(), this,
       base::StrCat(
           {mojom::kPerfettoProducerNamePrefix,
            base::NumberToString(
                base::trace_event::TraceLog::GetInstance()->process_id())}),
       task_runner(),
-      perfetto::TracingService::ProducerSMBScrapingMode::kEnabled));
+      perfetto::TracingService::ProducerSMBScrapingMode::kEnabled);
+
+  base::AutoLock lock(services_lock_);
+  services_.push_back(std::move(service));
 }
 
 bool PosixSystemProducer::SkipIfOnAndroidAndPreAndroidPie() const {
@@ -459,7 +392,7 @@ void PosixSystemProducer::Connect() {
       // from the service.
       return;
     case State::kUnregistered:
-      DCHECK(GetSerivce());
+      DCHECK(GetService());
       // We unregistered all our data sources due to a concurrent tracing
       // session but still have an open connection so just reregister
       // everything.
@@ -500,7 +433,29 @@ void PosixSystemProducer::DelayedReconnect() {
       IncreaseBackoff(connection_backoff_ms_, kMaxConnectionBackoffMs);
 }
 
-perfetto::TracingService::ProducerEndpoint* PosixSystemProducer::GetSerivce() {
+void PosixSystemProducer::NotifyDataSourceFlushComplete(
+    perfetto::FlushRequestID id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (pending_replies_for_latest_flush_.first != id) {
+    // Ignore; completed flush was for an earlier request.
+    return;
+  }
+
+  DCHECK_NE(pending_replies_for_latest_flush_.second, 0u);
+  if (--pending_replies_for_latest_flush_.second == 0) {
+    DCHECK(MaybeSharedMemoryArbiter());
+    MaybeSharedMemoryArbiter()->NotifyFlushComplete(id);
+  }
+}
+
+perfetto::TracingService::ProducerEndpoint* PosixSystemProducer::GetService() {
+#if DCHECK_IS_ON()
+  // Requires lock to be held when called on a non-producer sequence/thread.
+  if (!sequence_checker_.CalledOnValidSequence()) {
+    services_lock_.AssertAcquired();
+  }
+#endif  // DCHECK_IS_ON()
+
   switch (state_) {
     case State::kConnecting:
     case State::kConnected:

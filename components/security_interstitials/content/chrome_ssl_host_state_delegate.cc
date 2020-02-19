@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
+#include "components/security_interstitials/content/chrome_ssl_host_state_delegate.h"
 
 #include <stdint.h>
 
@@ -26,14 +26,12 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/security_interstitials/core/pref_names.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -87,13 +85,13 @@ const int kDefaultSSLCertDecisionVersion = 1;
 // at which each error type occurred (up to the |threshold| most recent
 // instances per error). The list is reset if the clock has gone backwards at
 // any point.
-void UpdateRecurrentInterstitialPref(Profile* profile,
+void UpdateRecurrentInterstitialPref(PrefService* pref_service,
                                      base::Clock* clock,
                                      int error,
                                      int threshold) {
   double now = clock->Now().ToJsTime();
 
-  DictionaryPrefUpdate pref_update(profile->GetPrefs(),
+  DictionaryPrefUpdate pref_update(pref_service,
                                    prefs::kRecurrentSSLInterstitial);
   base::Value* list_value =
       pref_update->FindKey(net::ErrorToShortString(error));
@@ -131,13 +129,13 @@ void UpdateRecurrentInterstitialPref(Profile* profile,
   }
 }
 
-bool DoesRecurrentInterstitialPrefMeetThreshold(Profile* profile,
+bool DoesRecurrentInterstitialPrefMeetThreshold(PrefService* pref_service,
                                                 base::Clock* clock,
                                                 int error,
                                                 int threshold,
                                                 int error_reset_time) {
   const base::DictionaryValue* pref =
-      profile->GetPrefs()->GetDictionary(prefs::kRecurrentSSLInterstitial);
+      pref_service->GetDictionary(prefs::kRecurrentSSLInterstitial);
   const base::Value* list_value = pref->FindKey(net::ErrorToShortString(error));
   if (!list_value)
     return false;
@@ -234,16 +232,21 @@ bool HostFilterToPatternFilter(
 
 }  // namespace
 
-ChromeSSLHostStateDelegate::ChromeSSLHostStateDelegate(Profile* profile)
+ChromeSSLHostStateDelegate::ChromeSSLHostStateDelegate(
+    content::BrowserContext* browser_context,
+    PrefService* pref_service,
+    HostContentSettingsMap* host_content_settings_map)
     : clock_(new base::DefaultClock()),
-      profile_(profile),
+      browser_context_(browser_context),
+      pref_service_(pref_service),
+      host_content_settings_map_(host_content_settings_map),
       recurrent_interstitial_threshold_for_testing(-1),
       recurrent_interstitial_mode_for_testing(NOT_SET),
       recurrent_interstitial_reset_time_for_testing(-1) {
-  MigrateOldSettings(HostContentSettingsMapFactory::GetForProfile(profile));
+  MigrateOldSettings(host_content_settings_map_);
 }
 
-ChromeSSLHostStateDelegate::~ChromeSSLHostStateDelegate() {}
+ChromeSSLHostStateDelegate::~ChromeSSLHostStateDelegate() = default;
 
 void ChromeSSLHostStateDelegate::RegisterProfilePrefs(
     user_prefs::PrefRegistrySyncable* registry) {
@@ -257,11 +260,11 @@ void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
   DCHECK(web_contents);
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetStoragePartition(
-          profile_, web_contents->GetMainFrame()->GetSiteInstance(),
+          browser_context_, web_contents->GetMainFrame()->GetSiteInstance(),
           false /* can_create */);
   if (!storage_partition ||
-      storage_partition !=
-          content::BrowserContext::GetDefaultStoragePartition(profile_)) {
+      storage_partition != content::BrowserContext::GetDefaultStoragePartition(
+                               browser_context_)) {
     // Decisions for non-default storage partitions are stored in memory only;
     // see comment on declaration of
     // |allowed_certs_for_non_default_storage_partitions_|.
@@ -273,10 +276,10 @@ void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
   }
 
   GURL url = GetSecureGURLForHost(host);
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
-  std::unique_ptr<base::Value> value(map->GetWebsiteSetting(
-      url, url, ContentSettingsType::SSL_CERT_DECISIONS, std::string(), NULL));
+  std::unique_ptr<base::Value> value(
+      host_content_settings_map_->GetWebsiteSetting(
+          url, url, ContentSettingsType::SSL_CERT_DECISIONS, std::string(),
+          nullptr));
 
   if (!value.get() || !value->is_dict())
     value.reset(new base::DictionaryValue());
@@ -299,9 +302,9 @@ void ChromeSSLHostStateDelegate::AllowCert(const std::string& host,
 
   // The map takes ownership of the value, so it is released in the call to
   // SetWebsiteSettingDefaultScope.
-  map->SetWebsiteSettingDefaultScope(url, GURL(),
-                                     ContentSettingsType::SSL_CERT_DECISIONS,
-                                     std::string(), std::move(value));
+  host_content_settings_map_->SetWebsiteSettingDefaultScope(
+      url, GURL(), ContentSettingsType::SSL_CERT_DECISIONS, std::string(),
+      std::move(value));
 }
 
 void ChromeSSLHostStateDelegate::Clear(
@@ -315,10 +318,9 @@ void ChromeSSLHostStateDelegate::Clear(
         base::BindRepeating(&HostFilterToPatternFilter, host_filter);
   }
 
-  HostContentSettingsMapFactory::GetForProfile(profile_)
-      ->ClearSettingsForOneTypeWithPredicate(
-          ContentSettingsType::SSL_CERT_DECISIONS, base::Time(),
-          base::Time::Max(), pattern_filter);
+  host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+      ContentSettingsType::SSL_CERT_DECISIONS, base::Time(), base::Time::Max(),
+      pattern_filter);
 }
 
 content::SSLHostStateDelegate::CertJudgment
@@ -339,11 +341,11 @@ ChromeSSLHostStateDelegate::QueryPolicy(const std::string& host,
 
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetStoragePartition(
-          profile_, web_contents->GetMainFrame()->GetSiteInstance(),
+          browser_context_, web_contents->GetMainFrame()->GetSiteInstance(),
           false /* can_create */);
   if (!storage_partition ||
-      storage_partition !=
-          content::BrowserContext::GetDefaultStoragePartition(profile_)) {
+      storage_partition != content::BrowserContext::GetDefaultStoragePartition(
+                               browser_context_)) {
     if (allowed_certs_for_non_default_storage_partitions_.find(host) ==
         allowed_certs_for_non_default_storage_partitions_.end()) {
       return DENIED;
@@ -357,11 +359,10 @@ ChromeSSLHostStateDelegate::QueryPolicy(const std::string& host,
     return DENIED;
   }
 
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
   std::unique_ptr<base::Value> value(
-      map->GetWebsiteSetting(url, url, ContentSettingsType::SSL_CERT_DECISIONS,
-                             std::string(), nullptr));
+      host_content_settings_map_->GetWebsiteSetting(
+          url, url, ContentSettingsType::SSL_CERT_DECISIONS, std::string(),
+          nullptr));
 
   if (!value.get() || !value->is_dict())
     return DENIED;
@@ -425,12 +426,10 @@ bool ChromeSSLHostStateDelegate::DidHostRunInsecureContent(
 void ChromeSSLHostStateDelegate::RevokeUserAllowExceptions(
     const std::string& host) {
   GURL url = GetSecureGURLForHost(host);
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
 
-  map->SetWebsiteSettingDefaultScope(url, GURL(),
-                                     ContentSettingsType::SSL_CERT_DECISIONS,
-                                     std::string(), nullptr);
+  host_content_settings_map_->SetWebsiteSettingDefaultScope(
+      url, GURL(), ContentSettingsType::SSL_CERT_DECISIONS, std::string(),
+      nullptr);
 
   // Decisions for non-default storage partitions are stored separately in
   // memory; delete those as well.
@@ -444,11 +443,11 @@ bool ChromeSSLHostStateDelegate::HasAllowException(
 
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetStoragePartition(
-          profile_, web_contents->GetMainFrame()->GetSiteInstance(),
+          browser_context_, web_contents->GetMainFrame()->GetSiteInstance(),
           false /* can_create */);
   if (!storage_partition ||
-      storage_partition !=
-          content::BrowserContext::GetDefaultStoragePartition(profile_)) {
+      storage_partition != content::BrowserContext::GetDefaultStoragePartition(
+                               browser_context_)) {
     return allowed_certs_for_non_default_storage_partitions_.find(host) !=
            allowed_certs_for_non_default_storage_partitions_.end();
   }
@@ -456,11 +455,11 @@ bool ChromeSSLHostStateDelegate::HasAllowException(
   GURL url = GetSecureGURLForHost(host);
   const ContentSettingsPattern pattern =
       ContentSettingsPattern::FromURLNoWildcard(url);
-  HostContentSettingsMap* map =
-      HostContentSettingsMapFactory::GetForProfile(profile_);
 
-  std::unique_ptr<base::Value> value(map->GetWebsiteSetting(
-      url, url, ContentSettingsType::SSL_CERT_DECISIONS, std::string(), NULL));
+  std::unique_ptr<base::Value> value(
+      host_content_settings_map_->GetWebsiteSetting(
+          url, url, ContentSettingsType::SSL_CERT_DECISIONS, std::string(),
+          nullptr));
 
   if (!value.get() || !value->is_dict())
     return false;
@@ -499,7 +498,7 @@ void ChromeSSLHostStateDelegate::RevokeUserAllowExceptionsHard(
     const std::string& host) {
   RevokeUserAllowExceptions(host);
   auto* network_context =
-      content::BrowserContext::GetDefaultStoragePartition(profile_)
+      content::BrowserContext::GetDefaultStoragePartition(browser_context_)
           ->GetNetworkContext();
   network_context->CloseIdleConnections(base::NullCallback());
 }
@@ -524,7 +523,8 @@ void ChromeSSLHostStateDelegate::DidDisplayErrorPage(int error) {
     recurrent_errors_[error] = count_it->second + 1;
   } else if (mode_param ==
              ChromeSSLHostStateDelegate::RecurrentInterstitialMode::PREF) {
-    UpdateRecurrentInterstitialPref(profile_, clock_.get(), error, threshold);
+    UpdateRecurrentInterstitialPref(pref_service_, clock_.get(), error,
+                                    threshold);
   }
 }
 
@@ -540,7 +540,7 @@ bool ChromeSSLHostStateDelegate::HasSeenRecurrentErrors(int error) const {
   } else if (mode_param ==
              ChromeSSLHostStateDelegate::RecurrentInterstitialMode::PREF) {
     return DoesRecurrentInterstitialPrefMeetThreshold(
-        profile_, clock_.get(), error, threshold,
+        pref_service_, clock_.get(), error, threshold,
         GetRecurrentInterstitialResetTime());
   }
 
@@ -549,7 +549,7 @@ bool ChromeSSLHostStateDelegate::HasSeenRecurrentErrors(int error) const {
 
 void ChromeSSLHostStateDelegate::ResetRecurrentErrorCountForTesting() {
   recurrent_errors_.clear();
-  DictionaryPrefUpdate pref_update(profile_->GetPrefs(),
+  DictionaryPrefUpdate pref_update(pref_service_,
                                    prefs::kRecurrentSSLInterstitial);
   pref_update->Clear();
 }
@@ -605,11 +605,11 @@ ChromeSSLHostStateDelegate::GetRecurrentInterstitialMode() const {
 // argument dict that is passed in.
 //
 // If create_entries is set to |DO_NOT_CREATE_DICTIONARY_ENTRIES|,
-// GetValidCertDecisionsDict will return NULL if there is anything invalid about
-// the setting, such as an invalid version or invalid value types (in addition
-// to there not being any values in the dictionary). If create_entries is set to
-// |CREATE_DICTIONARY_ENTRIES|, if no dictionary is found or the decisions are
-// expired, a new dictionary will be created.
+// GetValidCertDecisionsDict will return nullptr if there is anything invalid
+// about the setting, such as an invalid version or invalid value types (in
+// addition to there not being any values in the dictionary). If create_entries
+// is set to |CREATE_DICTIONARY_ENTRIES|, if no dictionary is found or the
+// decisions are expired, a new dictionary will be created.
 base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
     base::DictionaryValue* dict,
     CreateDictionaryEntriesDisposition create_entries) {
@@ -619,7 +619,7 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
   bool success = dict->GetInteger(kSSLCertDecisionVersionKey, &version);
   if (!success) {
     if (create_entries == DO_NOT_CREATE_DICTIONARY_ENTRIES)
-      return NULL;
+      return nullptr;
 
     dict->SetInteger(kSSLCertDecisionVersionKey,
                      kDefaultSSLCertDecisionVersion);
@@ -633,7 +633,7 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
     LOG(ERROR) << "Failed to parse a certificate error exception that is in a "
                << "newer version format (" << version << ") than is supported ("
                << kDefaultSSLCertDecisionVersion << ")";
-    return NULL;
+    return nullptr;
   }
 
   // Extract the certificate decision's expiration time from the content
@@ -653,7 +653,7 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
       LOG(ERROR) << "Failed to parse a certificate error exception that has a "
                  << "bad value for an expiration time: "
                  << decision_expiration_string;
-      return NULL;
+      return nullptr;
     }
     decision_expiration =
         base::Time::FromInternalValue(decision_expiration_int64);
@@ -661,12 +661,12 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
 
   // Check to see if the user's certificate decision has expired.
   // - Expired and |create_entries| is DO_NOT_CREATE_DICTIONARY_ENTRIES, return
-  // NULL.
+  // nullptr.
   // - Expired and |create_entries| is CREATE_DICTIONARY_ENTRIES, update the
   // expiration time.
   if (decision_expiration.ToInternalValue() <= now.ToInternalValue()) {
     if (create_entries == DO_NOT_CREATE_DICTIONARY_ENTRIES)
-      return NULL;
+      return nullptr;
 
     expired = true;
     base::Time expiration_time =
@@ -679,11 +679,11 @@ base::DictionaryValue* ChromeSSLHostStateDelegate::GetValidCertDecisionsDict(
   }
 
   // Extract the map of certificate fingerprints to errors from the setting.
-  base::DictionaryValue* cert_error_dict = NULL;  // Will be owned by dict
+  base::DictionaryValue* cert_error_dict = nullptr;  // Will be owned by dict
   if (expired ||
       !dict->GetDictionary(kSSLCertDecisionCertErrorMapKey, &cert_error_dict)) {
     if (create_entries == DO_NOT_CREATE_DICTIONARY_ENTRIES)
-      return NULL;
+      return nullptr;
 
     cert_error_dict =
         dict->SetDictionary(kSSLCertDecisionCertErrorMapKey,

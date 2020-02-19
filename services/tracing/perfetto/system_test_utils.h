@@ -62,9 +62,6 @@ class MockPosixSystemProducer : public PosixSystemProducer {
 
   void StopDataSource(perfetto::DataSourceInstanceID id) override;
 
-  void CommitData(const perfetto::CommitDataRequest& commit,
-                  CommitDataCallback callback = {}) override;
-
   void SetDataSourceEnabledCallback(
       base::OnceClosure data_source_enabled_callback);
 

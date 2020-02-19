@@ -3897,7 +3897,8 @@ TEST_F(WebViewTest, AddFrameInCloseURLUnload) {
   RegisterMockedHttpURLLoad("add_frame_in_unload.html");
   web_view_helper_.InitializeAndLoad(base_url_ + "add_frame_in_unload.html",
                                      &frame_client);
-  web_view_helper_.LocalMainFrame()->DispatchUnloadEvent();
+  // Dispatch unload event.
+  web_view_helper_.LocalMainFrame()->GetFrame()->ClosePage(base::DoNothing());
   EXPECT_EQ(0, frame_client.Count());
   web_view_helper_.Reset();
 }

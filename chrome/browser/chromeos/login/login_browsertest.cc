@@ -123,7 +123,8 @@ void TestSystemTrayIsVisible(bool otr) {
 // After a chrome crash, the session manager will restart chrome with
 // the -login-user flag indicating that the user is already logged in.
 // This profile should NOT be an OTR profile.
-IN_PROC_BROWSER_TEST_F(LoginUserTest, UserPassed) {
+// Test is flaky: https://crbug.com/1052603
+IN_PROC_BROWSER_TEST_F(LoginUserTest, DISABLED_UserPassed) {
   Profile* profile = browser()->profile();
   std::string profile_base_path("hash");
   profile_base_path.insert(0, chrome::kProfileDirPrefix);

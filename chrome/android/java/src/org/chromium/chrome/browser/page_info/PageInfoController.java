@@ -278,8 +278,10 @@ public class PageInfoController implements ModalDialogProperties.Controller,
 
         mView = new PageInfoView(activity, viewParams);
         if (isSheet(activity)) mView.setBackgroundColor(Color.WHITE);
+        // TODO(crbug.com/1040091): Remove when cookie controls are launched.
+        boolean showTitle = viewParams.cookieControlsShown;
         mPermissionParamsListBuilder = new PermissionParamsListBuilder(
-                activity, mWindowAndroid, mFullUrl, this, mView::setPermissions);
+                activity, mWindowAndroid, mFullUrl, showTitle, this, mView::setPermissions);
 
         mBridge = new CookieControlsBridge(this, webContents);
         CookieControlsView.CookieControlsParams cookieControlsParams =
@@ -329,7 +331,8 @@ public class PageInfoController implements ModalDialogProperties.Controller,
      */
     private void initPreviewUiParams(Context context, PageInfoViewParams viewParams) {
         final PreviewsAndroidBridge bridge = PreviewsAndroidBridge.getInstance();
-        viewParams.separatorShown = mPreviewPageState == PreviewPageState.INSECURE_PAGE_PREVIEW;
+        viewParams.previewSeparatorShown =
+                mPreviewPageState == PreviewPageState.INSECURE_PAGE_PREVIEW;
         viewParams.previewUIShown = isShowingPreview();
         if (isShowingPreview()) {
             viewParams.urlTitleShown = false;

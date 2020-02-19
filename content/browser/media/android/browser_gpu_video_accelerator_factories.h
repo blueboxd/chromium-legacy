@@ -50,7 +50,7 @@ class BrowserGpuVideoAcceleratorFactories
   gpu::GpuMemoryBufferManager* GpuMemoryBufferManager() override;
   base::UnsafeSharedMemoryRegion CreateSharedMemoryRegion(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
-  media::VideoEncodeAccelerator::SupportedProfiles
+  base::Optional<media::VideoEncodeAccelerator::SupportedProfiles>
   GetVideoEncodeAcceleratorSupportedProfiles() override;
   scoped_refptr<viz::ContextProvider> GetMediaContextProvider() override;
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;

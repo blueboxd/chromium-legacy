@@ -521,7 +521,7 @@ void Page::SetVisibilityState(PageVisibilityState visibility_state,
   if (is_initial_state)
     return;
 
-  page_visibility_observer_list_.ForEachObserver(
+  page_visibility_observer_set_.ForEachObserver(
       [](PageVisibilityObserver* observer) {
         observer->PageVisibilityChanged();
       });
@@ -879,7 +879,7 @@ void Page::Trace(Visitor* visitor) {
   visitor->Trace(focus_controller_);
   visitor->Trace(context_menu_controller_);
   visitor->Trace(page_scale_constraints_set_);
-  visitor->Trace(page_visibility_observer_list_);
+  visitor->Trace(page_visibility_observer_set_);
   visitor->Trace(pointer_lock_controller_);
   visitor->Trace(scrolling_coordinator_);
   visitor->Trace(browser_controls_);
@@ -950,11 +950,11 @@ void Page::WillBeDestroyed() {
   if (agent_metrics_collector_)
     agent_metrics_collector_->ReportMetrics();
 
-  page_visibility_observer_list_.ForEachObserver(
+  page_visibility_observer_set_.ForEachObserver(
       [](PageVisibilityObserver* observer) {
-        observer->ObserverListWillBeCleared();
+        observer->ObserverSetWillBeCleared();
       });
-  page_visibility_observer_list_.Clear();
+  page_visibility_observer_set_.Clear();
 
   page_scheduler_.reset();
 }

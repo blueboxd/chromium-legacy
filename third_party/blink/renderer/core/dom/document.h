@@ -66,7 +66,7 @@
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
-#include "third_party/blink/renderer/platform/heap_observer_list.h"
+#include "third_party/blink/renderer/platform/heap_observer_set.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -1746,9 +1746,9 @@ class CORE_EXPORT Document : public ContainerNode,
   void ScheduleFormSubmission(HTMLFormElement* form_element);
   void CancelFormSubmissions();
 
-  HeapObserverList<SynchronousMutationObserver>&
-  SynchronousMutationObserverList() {
-    return synchronous_mutation_observer_list_;
+  HeapObserverSet<SynchronousMutationObserver>&
+  SynchronousMutationObserverSet() {
+    return synchronous_mutation_observer_set_;
   }
 
   void NotifyUpdateCharacterData(CharacterData* character_data,
@@ -2300,8 +2300,8 @@ class CORE_EXPORT Document : public ContainerNode,
   HeapHashMap<WeakMember<Element>, Member<ExplicitlySetAttrElementsMap>>
       element_explicitly_set_attr_elements_map_;
 
-  HeapObserverList<SynchronousMutationObserver>
-      synchronous_mutation_observer_list_;
+  HeapObserverSet<SynchronousMutationObserver>
+      synchronous_mutation_observer_set_;
 
   Member<IntersectionObserver> display_lock_activation_observer_;
 

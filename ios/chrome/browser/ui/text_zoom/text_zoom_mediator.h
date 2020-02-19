@@ -9,6 +9,7 @@
 
 #import "ios/chrome/browser/ui/text_zoom/text_zoom_view_controller.h"
 
+@protocol TextZoomCommands;
 @protocol TextZoomConsumer;
 class WebStateList;
 
@@ -17,7 +18,7 @@ class WebStateList;
 @property(nonatomic, weak) id<TextZoomConsumer> consumer;
 
 - (instancetype)initWithWebStateList:(WebStateList*)webStateList
-                      commandHandler:(id<BrowserCommands>)commandHandler
+                      commandHandler:(id<TextZoomCommands>)commandHandler
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 

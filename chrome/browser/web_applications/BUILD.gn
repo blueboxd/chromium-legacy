@@ -218,6 +218,7 @@ source_set("web_applications_browser_tests") {
     "pending_app_manager_impl_browsertest.cc",
     "system_web_app_manager_browsertest.cc",
     "system_web_app_manager_browsertest.h",
+    "web_app_audio_focus_browsertest.cc",
     "web_app_icon_manager_browsertest.cc",
     "web_app_migration_manager_browsertest.cc",
   ]
@@ -308,6 +309,5 @@ group("browser_tests") {
     ":web_app_test_group",
     ":web_applications_browser_tests",
     "//chrome/browser/web_applications/components:browser_tests",
-    "//chrome/browser/web_applications/extensions:browser_tests",
   ]
 }

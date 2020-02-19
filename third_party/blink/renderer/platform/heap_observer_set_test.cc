@@ -24,7 +24,7 @@
  *
  */
 
-#include "third_party/blink/renderer/platform/heap_observer_list.h"
+#include "third_party/blink/renderer/platform/heap_observer_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
@@ -37,12 +37,12 @@ class TestingNotifier final : public GarbageCollected<TestingNotifier> {
  public:
   TestingNotifier() = default;
 
-  HeapObserverList<TestingObserver>& ObserverList() { return observer_list_; }
+  HeapObserverSet<TestingObserver>& ObserverSet() { return observer_set_; }
 
-  void Trace(Visitor* visitor) { visitor->Trace(observer_list_); }
+  void Trace(Visitor* visitor) { visitor->Trace(observer_set_); }
 
  private:
-  HeapObserverList<TestingObserver> observer_list_;
+  HeapObserverSet<TestingObserver> observer_set_;
 };
 
 class TestingObserver final : public GarbageCollected<TestingObserver> {
@@ -56,53 +56,53 @@ class TestingObserver final : public GarbageCollected<TestingObserver> {
   int count_ = 0;
 };
 
-void Notify(HeapObserverList<TestingObserver>& observer_list) {
-  observer_list.ForEachObserver(
+void Notify(HeapObserverSet<TestingObserver>& observer_set) {
+  observer_set.ForEachObserver(
       [](TestingObserver* observer) { observer->OnNotification(); });
 }
 
-TEST(HeapObserverListTest, AddRemove) {
+TEST(HeapObserverSetTest, AddRemove) {
   Persistent<TestingNotifier> notifier =
       MakeGarbageCollected<TestingNotifier>();
   Persistent<TestingObserver> observer =
       MakeGarbageCollected<TestingObserver>();
 
-  notifier->ObserverList().AddObserver(observer);
+  notifier->ObserverSet().AddObserver(observer);
 
   EXPECT_EQ(observer->Count(), 0);
-  Notify(notifier->ObserverList());
+  Notify(notifier->ObserverSet());
   EXPECT_EQ(observer->Count(), 1);
 
-  notifier->ObserverList().RemoveObserver(observer);
+  notifier->ObserverSet().RemoveObserver(observer);
 
-  Notify(notifier->ObserverList());
+  Notify(notifier->ObserverSet());
   EXPECT_EQ(observer->Count(), 1);
 }
 
-TEST(HeapObserverListTest, HasObserver) {
+TEST(HeapObserverSetTest, HasObserver) {
   Persistent<TestingNotifier> notifier =
       MakeGarbageCollected<TestingNotifier>();
   Persistent<TestingObserver> observer =
       MakeGarbageCollected<TestingObserver>();
 
-  EXPECT_FALSE(notifier->ObserverList().HasObserver(observer));
+  EXPECT_FALSE(notifier->ObserverSet().HasObserver(observer));
 
-  notifier->ObserverList().AddObserver(observer);
-  EXPECT_TRUE(notifier->ObserverList().HasObserver(observer.Get()));
+  notifier->ObserverSet().AddObserver(observer);
+  EXPECT_TRUE(notifier->ObserverSet().HasObserver(observer.Get()));
 
-  notifier->ObserverList().RemoveObserver(observer);
-  EXPECT_FALSE(notifier->ObserverList().HasObserver(observer.Get()));
+  notifier->ObserverSet().RemoveObserver(observer);
+  EXPECT_FALSE(notifier->ObserverSet().HasObserver(observer.Get()));
 }
 
-TEST(HeapObserverListTest, GarbageCollect) {
+TEST(HeapObserverSetTest, GarbageCollect) {
   Persistent<TestingNotifier> notifier =
       MakeGarbageCollected<TestingNotifier>();
   Persistent<TestingObserver> observer =
       MakeGarbageCollected<TestingObserver>();
-  notifier->ObserverList().AddObserver(observer);
+  notifier->ObserverSet().AddObserver(observer);
 
   ThreadState::Current()->CollectAllGarbageForTesting();
-  Notify(notifier->ObserverList());
+  Notify(notifier->ObserverSet());
   EXPECT_EQ(observer->Count(), 1);
 
   WeakPersistent<TestingObserver> weak_ref = observer.Get();
@@ -111,20 +111,20 @@ TEST(HeapObserverListTest, GarbageCollect) {
   EXPECT_EQ(weak_ref.Get(), nullptr);
 }
 
-TEST(HeapObserverListTest, IsIteratingOverObservers) {
+TEST(HeapObserverSetTest, IsIteratingOverObservers) {
   Persistent<TestingNotifier> notifier =
       MakeGarbageCollected<TestingNotifier>();
   Persistent<TestingObserver> observer =
       MakeGarbageCollected<TestingObserver>();
-  notifier->ObserverList().AddObserver(observer);
+  notifier->ObserverSet().AddObserver(observer);
 
-  EXPECT_FALSE(notifier->ObserverList().IsIteratingOverObservers());
-  notifier->ObserverList().ForEachObserver([&](TestingObserver* observer) {
-    EXPECT_TRUE(notifier->ObserverList().IsIteratingOverObservers());
+  EXPECT_FALSE(notifier->ObserverSet().IsIteratingOverObservers());
+  notifier->ObserverSet().ForEachObserver([&](TestingObserver* observer) {
+    EXPECT_TRUE(notifier->ObserverSet().IsIteratingOverObservers());
   });
 }
 
-TEST(HeapObserverListTest, ForEachObserverOrder) {
+TEST(HeapObserverSetTest, ForEachObserver) {
   Persistent<TestingNotifier> notifier =
       MakeGarbageCollected<TestingNotifier>();
   Persistent<TestingObserver> observer1 =
@@ -132,34 +132,46 @@ TEST(HeapObserverListTest, ForEachObserverOrder) {
   Persistent<TestingObserver> observer2 =
       MakeGarbageCollected<TestingObserver>();
 
-  HeapVector<Member<TestingObserver>> seen_observers;
+  HeapHashSet<Member<TestingObserver>> seen_observers;
 
-  notifier->ObserverList().AddObserver(observer1);
-  notifier->ObserverList().AddObserver(observer2);
-  notifier->ObserverList().ForEachObserver(
-      [&](TestingObserver* observer) { seen_observers.push_back(observer); });
-
-  ASSERT_EQ(2u, seen_observers.size());
-  EXPECT_EQ(observer1.Get(), seen_observers[0].Get());
-  EXPECT_EQ(observer2.Get(), seen_observers[1].Get());
-
-  seen_observers.clear();
-
-  notifier->ObserverList().RemoveObserver(observer1);
-  notifier->ObserverList().AddObserver(observer1);
-  notifier->ObserverList().ForEachObserver(
-      [&](TestingObserver* observer) { seen_observers.push_back(observer); });
+  notifier->ObserverSet().AddObserver(observer1);
+  notifier->ObserverSet().AddObserver(observer2);
+  notifier->ObserverSet().ForEachObserver(
+      [&](TestingObserver* observer) { seen_observers.insert(observer); });
 
   ASSERT_EQ(2u, seen_observers.size());
-  EXPECT_EQ(observer2.Get(), seen_observers[0].Get());
-  EXPECT_EQ(observer1.Get(), seen_observers[1].Get());
+  EXPECT_TRUE(seen_observers.Contains(observer1));
+  EXPECT_TRUE(seen_observers.Contains(observer2));
+}
 
-  seen_observers.clear();
+TEST(HeapObserverSetTest, RemoveWhileIterating) {
+  Persistent<TestingNotifier> notifier =
+      MakeGarbageCollected<TestingNotifier>();
+  Persistent<TestingObserver> observer1 =
+      MakeGarbageCollected<TestingObserver>();
+  Persistent<TestingObserver> observer2 =
+      MakeGarbageCollected<TestingObserver>();
 
-  notifier->ObserverList().Clear();
-  notifier->ObserverList().ForEachObserver(
-      [&](TestingObserver* observer) { seen_observers.push_back(observer); });
-  ASSERT_EQ(0u, seen_observers.size());
+  notifier->ObserverSet().AddObserver(observer1);
+  notifier->ObserverSet().AddObserver(observer2);
+  notifier->ObserverSet().ForEachObserver([&](TestingObserver* observer) {
+    EXPECT_TRUE(notifier->ObserverSet().HasObserver(observer));
+    notifier->ObserverSet().RemoveObserver(observer);
+    EXPECT_FALSE(notifier->ObserverSet().HasObserver(observer));
+  });
+  EXPECT_FALSE(notifier->ObserverSet().HasObserver(observer1));
+  EXPECT_FALSE(notifier->ObserverSet().HasObserver(observer2));
+
+  notifier->ObserverSet().AddObserver(observer1);
+  notifier->ObserverSet().AddObserver(observer2);
+  notifier->ObserverSet().ForEachObserver([&](TestingObserver* observer) {
+    EXPECT_TRUE(notifier->ObserverSet().HasObserver(observer1));
+    EXPECT_TRUE(notifier->ObserverSet().HasObserver(observer2));
+    notifier->ObserverSet().RemoveObserver(observer1);
+    EXPECT_FALSE(notifier->ObserverSet().HasObserver(observer1));
+    notifier->ObserverSet().RemoveObserver(observer2);
+    EXPECT_FALSE(notifier->ObserverSet().HasObserver(observer2));
+  });
 }
 
 }  // namespace blink

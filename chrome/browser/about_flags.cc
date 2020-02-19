@@ -48,7 +48,6 @@
 #include "chrome/browser/sharing/sms/sms_flags.h"
 #include "chrome/browser/sharing/webrtc/webrtc_flags.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/unexpire_flags.h"
 #include "chrome/common/buildflags.h"
@@ -105,6 +104,7 @@
 #include "components/previews/core/previews_switches.h"
 #include "components/printing/browser/features.h"
 #include "components/safe_browsing/core/features.h"
+#include "components/security_interstitials/content/chrome_ssl_host_state_delegate.h"
 #include "components/security_interstitials/core/features.h"
 #include "components/security_state/core/features.h"
 #include "components/security_state/core/security_state.h"
@@ -4946,6 +4946,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAmbientModeDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kAmbientModeFeature)},
 #endif  // defined(OS_CHROMEOS)
+
+    {"password-change-support", flag_descriptions::kPasswordChangeName,
+     flag_descriptions::kPasswordChangeDescription, kOsAll,
+     FEATURE_VALUE_TYPE(password_manager::features::kPasswordChange)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

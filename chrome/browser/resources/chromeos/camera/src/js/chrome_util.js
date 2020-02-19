@@ -107,6 +107,12 @@ export function assertBoolean(value, optMessage) {
  * @return {function(...?): !Promise}
  */
 export function promisify(func) {
-  return (...args) =>
-             new Promise((resolve) => func(...args, (val) => resolve(val)));
+  return (...args) => new Promise(
+             (resolve, reject) => func(...args, (val) => {
+               if (chrome && chrome.runtime && chrome.runtime.lastError) {
+                 reject(new Error(chrome.runtime.lastError.message));
+               } else {
+                 resolve(val);
+               }
+             }));
 }

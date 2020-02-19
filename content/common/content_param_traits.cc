@@ -14,7 +14,6 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/common/surfaces/surface_info.h"
 #include "content/common/content_to_visible_time_reporter.h"
-#include "content/common/frame_message_structs.h"
 #include "ipc/ipc_mojo_message_helper.h"
 #include "ipc/ipc_mojo_param_traits.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -143,35 +142,6 @@ bool ParamTraits<ui::AXMode>::Read(const base::Pickle* m,
 }
 
 void ParamTraits<ui::AXMode>::Log(const param_type& p, std::string* l) {}
-
-// static
-void ParamTraits<content::FrameMsg_ViewChanged_Params>::Write(
-    base::Pickle* m,
-    const param_type& p) {
-  DCHECK(p.frame_sink_id.is_valid());
-  WriteParam(m, p.frame_sink_id);
-}
-
-bool ParamTraits<content::FrameMsg_ViewChanged_Params>::Read(
-    const base::Pickle* m,
-    base::PickleIterator* iter,
-    param_type* r) {
-  if (!ReadParam(m, iter, &(r->frame_sink_id)))
-    return false;
-  if (!r->frame_sink_id.is_valid()) {
-    NOTREACHED();
-    return false;
-  }
-  return true;
-}
-
-// static
-void ParamTraits<content::FrameMsg_ViewChanged_Params>::Log(const param_type& p,
-                                                            std::string* l) {
-  l->append("(");
-  LogParam(p.frame_sink_id, l);
-  l->append(")");
-}
 
 template <>
 struct ParamTraits<blink::mojom::SerializedBlobPtr> {

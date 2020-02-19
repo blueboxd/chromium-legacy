@@ -36,15 +36,11 @@ class MojoSharedMemory;
 // them with TraceWriters and a configuration to start logging.
 class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
     : public PerfettoProducer,
+      public perfetto::TracingService::ProducerEndpoint,
       public mojom::ProducerClient {
  public:
   ProducerClient(PerfettoTaskRunner* task_runner);
   ~ProducerClient() override;
-
-  void NewDataSourceAdded(
-      const PerfettoTracedProcess::DataSourceBase* const data_source) override;
-
-  bool IsTracingActive() override;
 
   void Connect(mojo::PendingRemote<mojom::PerfettoService> perfetto_service);
 
@@ -52,6 +48,12 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
     DCHECK(!in_process_arbiter_);
     in_process_arbiter_ = arbiter;
   }
+
+  // PerfettoProducer implementation.
+  perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() override;
+  void NewDataSourceAdded(
+      const PerfettoTracedProcess::DataSourceBase* const data_source) override;
+  bool IsTracingActive() override;
 
   // mojom::ProducerClient implementation.
   // Called through Mojo by the ProducerHost on the service-side to control
@@ -69,24 +71,25 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
 
   // perfetto::TracingService::ProducerEndpoint implementation.
 
-  // Used by the TraceWriters
-  // to signal Perfetto that shared memory chunks are ready
+  // Called by DataSources to create trace writers. The returned trace writers
+  // are hooked up to our SharedMemoryArbiter directly.
+  std::unique_ptr<perfetto::TraceWriter> CreateTraceWriter(
+      perfetto::BufferID target_buffer,
+      perfetto::BufferExhaustedPolicy =
+          perfetto::BufferExhaustedPolicy::kDefault) override;
+
+  // Used by SharedMemoryArbiterImpl to register/unregister TraceWriters and
+  // send commit requests, which signal that shared memory chunks are ready
   // for consumption.
   void CommitData(const perfetto::CommitDataRequest& commit,
                   CommitDataCallback callback) override;
-
-  // Used by the DataSource implementations to create TraceWriters
-  // for writing their protobufs, and respond to flushes.
-  void NotifyFlushComplete(perfetto::FlushRequestID) override;
-  perfetto::SharedMemory* shared_memory() const override;
   void RegisterTraceWriter(uint32_t writer_id, uint32_t target_buffer) override;
   void UnregisterTraceWriter(uint32_t writer_id) override;
 
-  // Used by PerfettoTracedProcess to create trace writers.
-  perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() override;
-
   // These ProducerEndpoint functions are only used on the service
   // side and should not be called on the clients.
+  perfetto::SharedMemory* shared_memory() const override;
+  void NotifyFlushComplete(perfetto::FlushRequestID) override;
   void RegisterDataSource(const perfetto::DataSourceDescriptor&) override;
   void UnregisterDataSource(const std::string& name) override;
   void NotifyDataSourceStopped(perfetto::DataSourceInstanceID) override;
@@ -99,6 +102,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
       mojo::PendingReceiver<mojom::ProducerClient>,
       mojo::PendingRemote<mojom::ProducerHost>);
   void ResetSequenceForTesting();
+  perfetto::SharedMemory* shared_memory_for_testing() const;
 
  private:
   friend class base::NoDestructor<ProducerClient>;
@@ -106,6 +110,9 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   void BindClientAndHostPipesOnSequence(
       mojo::PendingReceiver<mojom::ProducerClient>,
       mojo::PendingRemote<mojom::ProducerHost>);
+
+  // Called after a data source has completed a flush.
+  void NotifyDataSourceFlushComplete(perfetto::FlushRequestID id);
 
   uint32_t data_sources_tracing_ = 0;
   std::unique_ptr<mojo::Receiver<mojom::ProducerClient>> receiver_;

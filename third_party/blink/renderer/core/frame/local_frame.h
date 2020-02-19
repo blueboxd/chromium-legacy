@@ -511,6 +511,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   // blink::mojom::LocalMainFrame overrides:
   void SetScaleFactor(float scale) override;
+  void ClosePage(
+      mojom::blink::LocalMainFrame::ClosePageCallback callback) override;
 
   SystemClipboard* GetSystemClipboard();
   RawSystemClipboard* GetRawSystemClipboard();

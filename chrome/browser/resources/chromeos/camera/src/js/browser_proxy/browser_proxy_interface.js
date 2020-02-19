@@ -71,4 +71,17 @@ export class BrowserProxy {
    * @abstract
    */
   async isCrashReportingEnabled() {}
+
+  /**
+   * @param {!FileEntry} file
+   * @return {!Promise}
+   * @abstract
+   */
+  async openGallery(file) {}
+
+  /**
+   * @param {string} type
+   * @abstract
+   */
+  openInspector(type) {}
 }

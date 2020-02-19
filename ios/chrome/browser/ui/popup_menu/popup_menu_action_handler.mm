@@ -15,6 +15,7 @@
 #import "ios/chrome/browser/ui/commands/find_in_page_commands.h"
 #import "ios/chrome/browser/ui/commands/load_query_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/ui/page_info/features.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_action_handler_commands.h"
 #import "ios/chrome/browser/ui/popup_menu/public/cells/popup_menu_item.h"

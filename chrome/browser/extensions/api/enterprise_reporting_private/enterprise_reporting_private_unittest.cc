@@ -10,6 +10,7 @@
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "chrome/browser/extensions/api/enterprise_reporting_private/chrome_desktop_report_request_helper.h"
 #include "chrome/browser/extensions/extension_api_unittest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/policy/fake_browser_dm_token_storage.h"
@@ -170,15 +171,7 @@ class EnterpriseReportingPrivateDeviceDataFunctionsTest
   void SetUp() override {
     ExtensionApiUnittest::SetUp();
     ASSERT_TRUE(fake_appdata_dir_.CreateUniqueTempDir());
-#if defined(OS_WIN)
-    base::PathService::Override(base::DIR_LOCAL_APP_DATA,
-                                fake_appdata_dir_.GetPath());
-#elif defined(OS_LINUX)
-    base::PathService::Override(base::DIR_CACHE, fake_appdata_dir_.GetPath());
-#elif defined(OS_MACOSX)
-    base::PathService::Override(base::DIR_APP_DATA,
-                                fake_appdata_dir_.GetPath());
-#endif
+    OverrideEndpointVerificationDirForTesting(fake_appdata_dir_.GetPath());
   }
 
  private:

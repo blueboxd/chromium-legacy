@@ -1498,6 +1498,10 @@ const char kPassiveMixedContentWarningDescription[] =
     "Causes a 'Not Secure' chip to be shown in the omnibox if a site contains "
     "passive (aka optionally blockable) mixed content.";
 
+const char kPasswordChangeName[] = "Rework password change flow";
+const char kPasswordChangeDescription[] =
+    "Change password when password leak is detected.";
+
 const char kPasswordEditingAndroidName[] = "Password editing for Android";
 const char kPasswordEditingAndroidDescription[] =
     "Adds the editing option for saved passwords.";

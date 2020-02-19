@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -154,6 +155,11 @@ class KerberosCredentialsManager : public KeyedService,
   void SetKerberosFilesHandlerForTesting(
       std::unique_ptr<KerberosFilesHandler> kerberos_files_handler);
 
+  // Used on tests to optionally set a callback that will be called after adding
+  // a managed account.
+  void SetAddManagedAccountCallbackForTesting(
+      base::RepeatingCallback<void(kerberos::ErrorType)> callback);
+
  private:
   friend class KerberosAddAccountRunner;
   using RepeatedAccountField =
@@ -165,6 +171,9 @@ class KerberosCredentialsManager : public KeyedService,
                               bool is_managed,
                               ResultCallback callback,
                               kerberos::ErrorType error);
+
+  // Callback for KerberosAddAccountRunner when adding a managed account.
+  void OnAddManagedAccountRunnerDone(kerberos::ErrorType error);
 
   // Callback for RemoveAccount().
   void OnRemoveAccount(const std::string& principal_name,
@@ -267,6 +276,10 @@ class KerberosCredentialsManager : public KeyedService,
 
   // List of objects that observe this instance.
   base::ObserverList<Observer, true /* check_empty */> observers_;
+
+  // Callback optionally used for testing.
+  base::RepeatingCallback<void(kerberos::ErrorType)>
+      add_managed_account_callback_for_testing_;
 
   base::WeakPtrFactory<KerberosCredentialsManager> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(KerberosCredentialsManager);

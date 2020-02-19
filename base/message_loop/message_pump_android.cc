@@ -83,7 +83,8 @@ STACK_ALIGN int DelayedLooperCallback(int fd, int events, void* data) {
 
 }  // namespace
 
-MessagePumpForUI::MessagePumpForUI() {
+MessagePumpForUI::MessagePumpForUI()
+    : env_(base::android::AttachCurrentThread()) {
   // The Android native ALooper uses epoll to poll our file descriptors and wake
   // us up. We use a simple level-triggered eventfd to signal that non-delayed
   // work is available, and a timerfd to signal when delayed work is ready to
@@ -121,6 +122,14 @@ MessagePumpForUI::~MessagePumpForUI() {
 }
 
 void MessagePumpForUI::OnDelayedLooperCallback() {
+  // There may be non-Chromium callbacks on the same ALooper which may have left
+  // a pending exception set, and ALooper does not check for this between
+  // callbacks. Check here, and if there's already an exception, just skip this
+  // iteration without clearing the fd. If the exception ends up being non-fatal
+  // then we'll just get called again on the next polling iteration.
+  if (base::android::HasException(env_))
+    return;
+
   // ALooper_pollOnce may call this after Quit() if OnNonDelayedLooperCallback()
   // resulted in Quit() in the same round.
   if (ShouldQuit())
@@ -159,6 +168,14 @@ void MessagePumpForUI::OnDelayedLooperCallback() {
 }
 
 void MessagePumpForUI::OnNonDelayedLooperCallback() {
+  // There may be non-Chromium callbacks on the same ALooper which may have left
+  // a pending exception set, and ALooper does not check for this between
+  // callbacks. Check here, and if there's already an exception, just skip this
+  // iteration without clearing the fd. If the exception ends up being non-fatal
+  // then we'll just get called again on the next polling iteration.
+  if (base::android::HasException(env_))
+    return;
+
   // ALooper_pollOnce may call this after Quit() if OnDelayedLooperCallback()
   // resulted in Quit() in the same round.
   if (ShouldQuit())

@@ -35,6 +35,8 @@ const char kDiceMigrationCompletePref[] = "signin.DiceMigrationComplete";
 
 const char kDiceMigrationStatusHistogram[] = "Signin.DiceMigrationStatus";
 
+const char kAllowBrowserSigninArgument[] = "allow-browser-signin";
+
 // Used for UMA histogram kDiceMigrationStatusHistogram.
 // Do not remove or re-order values.
 enum class DiceMigrationStatus {
@@ -58,6 +60,19 @@ DiceMigrationStatus GetDiceMigrationStatus(
       NOTREACHED();
       return DiceMigrationStatus::kDisabled;
   }
+}
+
+bool IsBrowserSigninAllowedByCommandLine() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kAllowBrowserSigninArgument)) {
+    std::string allowBrowserSignin =
+        command_line->GetSwitchValueASCII(kAllowBrowserSigninArgument);
+    return base::ToLowerASCII(allowBrowserSignin) == "true";
+  }
+
+  // TODO(crbug.com/1053961): Remove disallow-signin argument now that it was
+  // replaced by kAllowBrowserSigninArgument.
+  return !command_line->HasSwitch("disallow-signin");
 }
 #endif
 
@@ -83,9 +98,8 @@ AccountConsistencyModeManager::AccountConsistencyModeManager(Profile* profile)
   PrefService* prefs = profile->GetPrefs();
   // Propagate settings changes from the previous launch to the signin-allowed
   // pref.
-  bool signin_allowed =
-      prefs->GetBoolean(prefs::kSigninAllowedOnNextStartup) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch("disallow-signin");
+  bool signin_allowed = prefs->GetBoolean(prefs::kSigninAllowedOnNextStartup) &&
+                        IsBrowserSigninAllowedByCommandLine();
   prefs->SetBoolean(prefs::kSigninAllowed, signin_allowed);
 
   UMA_HISTOGRAM_BOOLEAN("Signin.SigninAllowed", signin_allowed);

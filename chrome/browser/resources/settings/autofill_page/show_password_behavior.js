@@ -77,19 +77,19 @@ const ShowPasswordBehavior = {
       return;
     }
     PasswordManagerImpl.getInstance()
-        .getPlaintextPassword(this.item.entry.id)
-        .then(password => {
-          if (password) {
-            this.set('item.password', password);
-          }
-          // <if expr="chromeos">
-          if (!password) {
-            // If no password was found, refresh auth token and retry.
-            this.tokenRequestManager.request(
-                this.onShowPasswordButtonTap_.bind(this));
-          }
-          // </if>
-        });
+        .requestPlaintextPassword(
+            this.item.entry.id, chrome.passwordsPrivate.PlaintextReason.VIEW)
+        .then(
+            password => {
+              this.set('item.password', password);
+            },
+            error => {
+              // <if expr="chromeos">
+              // If no password was found, refresh auth token and retry.
+              this.tokenRequestManager.request(
+                  this.onShowPasswordButtonTap_.bind(this));
+              // </if>
+            });
   },
 };
 

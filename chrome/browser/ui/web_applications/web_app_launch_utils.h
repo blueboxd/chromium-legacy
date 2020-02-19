@@ -19,15 +19,16 @@ class WebContents;
 
 namespace web_app {
 
-base::Optional<AppId> GetWebAppForActiveTab(Browser* browser);
+base::Optional<AppId> GetPwaForSecureActiveTab(Browser* browser);
 
 // Clears navigation history prior to user entering app scope.
 void PrunePreScopeNavigationHistory(const GURL& scope,
                                     content::WebContents* contents);
 
 // Reparents the active tab into a new app browser for the web app that has the
-// tab's URL in its scope. Does nothing if there is no web app in scope.
-Browser* ReparentWebAppForActiveTab(Browser* browser);
+// tab's URL in its scope. Does nothing if the tab is not secure or there is no
+// applicable web app.
+Browser* ReparentWebAppForSecureActiveTab(Browser* browser);
 
 // Reparents |contents| into a new app browser for |app_id|.
 Browser* ReparentWebContentsIntoAppBrowser(content::WebContents* contents,

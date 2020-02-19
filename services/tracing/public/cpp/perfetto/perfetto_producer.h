@@ -24,12 +24,11 @@ namespace tracing {
 //
 // In addition to the PerfettoProducers' pure virtual methods, subclasses must
 // implement the remaining methods of the ProducerEndpoint interface.
-class COMPONENT_EXPORT(TRACING_CPP) PerfettoProducer
-    : public perfetto::TracingService::ProducerEndpoint {
+class COMPONENT_EXPORT(TRACING_CPP) PerfettoProducer {
  public:
   PerfettoProducer(PerfettoTaskRunner* task_runner);
 
-  ~PerfettoProducer() override;
+  virtual ~PerfettoProducer();
 
   // Binds the registry and its trace writers to the ProducerClient's SMB, to
   // write into the given target buffer. The ownership of |registry| is
@@ -46,10 +45,17 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoProducer
   //
   // Should only be called while a tracing session is active and a
   // SharedMemoryArbiter exists.
-  std::unique_ptr<perfetto::TraceWriter> CreateTraceWriter(
+  //
+  // Virtual for testing.
+  virtual std::unique_ptr<perfetto::TraceWriter> CreateTraceWriter(
       perfetto::BufferID target_buffer,
       perfetto::BufferExhaustedPolicy =
-          perfetto::BufferExhaustedPolicy::kDefault) override;
+          perfetto::BufferExhaustedPolicy::kDefault);
+
+  // Returns the SharedMemoryArbiter if available.
+  // TODO(eseckler): Once startup tracing v2 is available in Chrome, this could
+  // become GetSharedMemoryArbiter() instead.
+  virtual perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() = 0;
 
   // Informs the PerfettoProducer a new Data Source was added. This instance
   // will also be found in |data_sources| having just be inserted before this

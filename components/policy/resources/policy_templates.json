@@ -1096,6 +1096,16 @@
       ],
     },
     {
+      'name': 'CertificateManagement',
+      'type': 'group',
+      'caption': '''Certificate management settings''',
+      'desc': '''Controls user and device policies for certificate management.''',
+      'policies': [
+        'RequiredClientCertificateForDevice',
+        'RequiredClientCertificateForUser',
+      ],
+    },
+    {
       'name': 'HomepageLocation',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'string',
@@ -20044,6 +20054,94 @@ If set to True or not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>
 
 If set to False, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not use native notifications. <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s Message Center will be used as a fallback.''',
     },
+    {
+      'name': 'RequiredClientCertificateForUser',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'name' : {
+              'description': 'The name of the certificate profile.',
+              'type': 'string'
+            },
+            'cert_profile_id': {
+              'description': 'The identifier for this client certificate.',
+              'type': 'string'
+            },
+            'key_algorithm': {
+              'description': 'The algorithm for key pair generation.',
+              'type': 'string',
+              'enum': [ 'rsa' ]
+            },
+            'renewal_period_seconds': {
+              'description': 'Number of days before expiration of a certificate when renewal should be triggered',
+              'type': 'integer'
+            }
+          },
+          'required': ['cert_profile_id', 'key_algorithm']
+        }
+      },
+      'supported_on': ['chrome_os:82-'],
+      'device_only': False,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+        'can_be_recommended': False,
+        'can_be_mandatory' : True,
+      },
+      'example_value': [{'name': 'Certificate Profile 1', 'cert_profile_id':'cert_profile_id_1', 'key_algorithm':'rsa', 'renewal_period_seconds': 2592000}],
+      'id': 680,
+      'caption': '''Required Client Certificates''',
+      'tags': [],
+      'desc': '''Specifies client certificates that should be enrolled using the device management protocol.''',
+    },
+    {
+      'name': 'RequiredClientCertificateForDevice',
+      'owners': ['file://components/policy/resources/OWNERS'],
+      'type': 'dict',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'object',
+          'properties': {
+            'name' : {
+              'description': 'The name of the certificate profile.',
+              'type': 'string'
+            },
+            'cert_profile_id': {
+              'description': 'An identifier for this client certificate.',
+              'type': 'string'
+            },
+            'key_algorithm': {
+              'description': 'The algorithm for key pair generation.',
+              'type': 'string',
+              'enum': [ 'rsa' ]
+            },
+            'renewal_period_seconds': {
+              'description': 'Number of days before expiration of a certificate when renewal should be triggered',
+              'type': 'integer'
+            }
+          },
+          'required': ['cert_profile_id', 'key_algorithm']
+        }
+      },
+      'supported_on': ['chrome_os:82-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+        'can_be_recommended': False,
+        'can_be_mandatory' : True,
+      },
+      'example_value': [{'name': 'Certificate Profile 1', 'cert_profile_id':'cert_profile_id_1', 'key_algorithm':'rsa', 'renewal_period_seconds': 2592000}],
+      'id': 681,
+      'caption': '''Required device-wide Client Certificates''',
+      'tags': [],
+      'desc': '''Specifies device-wide client certificates that should be enrolled using the device management protocol.''',
+    },
   ],
 
   'messages': {
@@ -20428,6 +20526,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'MinimumChromeVersionEnforced' : 'minimum_chrome_version_enforced.value',
     'SystemProxySettings': 'system_proxy_settings.system_proxy_settings',
     'DeviceLoginScreenPrivacyScreenEnabled': 'device_login_screen_privacy_screen_enabled.enabled',
+    'RequiredClientCertificateForDevice': 'required_client_certificate_for_device.required_client_certificate_for_device',
   },
   'policy_atomic_group_definitions': [
     {
@@ -20882,6 +20981,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569, 578],
-  'highest_id_currently_used': 679,
+  'highest_id_currently_used': 681,
   'highest_atomic_group_id_currently_used': 38
 }

@@ -28,6 +28,7 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
@@ -194,8 +195,9 @@ void PasswordsPrivateDelegateImpl::
   password_manager_presenter_->UndoRemoveSavedPasswordOrException();
 }
 
-void PasswordsPrivateDelegateImpl::RequestShowPassword(
+void PasswordsPrivateDelegateImpl::RequestPlaintextPassword(
     int id,
+    api::passwords_private::PlaintextReason reason,
     PlaintextPasswordCallback callback,
     content::WebContents* web_contents) {
   // Save |web_contents| so that it can be used later when OsReauthCall() is
@@ -203,6 +205,7 @@ void PasswordsPrivateDelegateImpl::RequestShowPassword(
   // exiting this method.
   // TODO(crbug.com/495290): Pass the native window directly to the
   // reauth-handling code.
+  // TODO(crbug.com/1047726): Make use of the different values for reason.
   web_contents_ = web_contents;
   if (!password_access_authenticator_.EnsureUserIsAuthenticated(
           password_manager::ReauthPurpose::VIEW_PASSWORD)) {
@@ -217,8 +220,25 @@ void PasswordsPrivateDelegateImpl::RequestShowPassword(
     return;
   }
 
-  password_manager_presenter_->RequestShowPassword(*sort_key,
-                                                   std::move(callback));
+  if (reason == api::passwords_private::PLAINTEXT_REASON_COPY) {
+    // In case of copy we don't need to give password back to UI. callback
+    // will receive either empty string in case of success or null otherwise.
+    // Copying occurs here so javascript doesn't need plaintext password.
+    callback = base::BindOnce(
+        [](PlaintextPasswordCallback callback,
+           base::Optional<base::string16> password) {
+          if (!password) {
+            std::move(callback).Run(base::nullopt);
+            return;
+          }
+          ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
+              .WriteText(*password);
+          std::move(callback).Run(base::string16());
+        },
+        std::move(callback));
+  }
+  password_manager_presenter_->RequestPlaintextPassword(*sort_key,
+                                                        std::move(callback));
 }
 
 bool PasswordsPrivateDelegateImpl::OsReauthCall(

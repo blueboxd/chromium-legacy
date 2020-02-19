@@ -42,6 +42,8 @@ class MEDIA_MOJO_EXPORT MojoVideoEncodeAcceleratorProvider
   // mojom::VideoEncodeAcceleratorProvider impl.
   void CreateVideoEncodeAccelerator(
       mojo::PendingReceiver<mojom::VideoEncodeAccelerator> receiver) override;
+  void GetVideoEncodeAcceleratorSupportedProfiles(
+      GetVideoEncodeAcceleratorSupportedProfilesCallback callback) override;
 
  private:
   const CreateAndInitializeVideoEncodeAcceleratorCallback create_vea_callback_;

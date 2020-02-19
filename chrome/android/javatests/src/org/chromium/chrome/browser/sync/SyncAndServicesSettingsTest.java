@@ -244,21 +244,6 @@ public class SyncAndServicesSettingsTest {
         Assert.assertNull("Sync error card should not be shown", getSyncErrorCard(fragment));
     }
 
-    @Test
-    @LargeTest
-    @Feature({"Sync", "Preferences"})
-    public void testTrustedVaultKeyRequiredShowsSyncErrorCard() throws Exception {
-        final FakeProfileSyncService pss = overrideProfileSyncService();
-        mSyncTestRule.setUpTestAccountAndSignIn();
-        SyncTestUtil.waitForSyncActive();
-        pss.setEngineInitialized(true);
-        pss.setTrustedVaultKeyRequiredForPreferredDataTypes(true);
-
-        SyncAndServicesSettings fragment = startSyncAndServicesPreferences();
-
-        Assert.assertNotNull("Sync error card should be shown", getSyncErrorCard(fragment));
-    }
-
     /**
      * Test: if the onboarding was never shown, the AA chrome preference should not exist.
      *
@@ -355,16 +340,6 @@ public class SyncAndServicesSettingsTest {
     private void setAutofillAssistantSwitchValue(boolean newValue) {
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.AUTOFILL_ASSISTANT_ENABLED, newValue);
-    }
-
-    // TODO(crbug.com/1030725): SyncTestRule should support overriding ProfileSyncService.
-    private FakeProfileSyncService overrideProfileSyncService() {
-        return TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            // PSS has to be constructed on the UI thread.
-            FakeProfileSyncService fakeProfileSyncService = new FakeProfileSyncService();
-            ProfileSyncService.overrideForTests(fakeProfileSyncService);
-            return fakeProfileSyncService;
-        });
     }
 
     /**

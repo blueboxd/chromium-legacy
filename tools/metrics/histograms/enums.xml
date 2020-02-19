@@ -19640,6 +19640,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="677" label="PrivacyScreenEnabled"/>
   <int value="678" label="AllowNativeNotifications"/>
   <int value="679" label="ForceLogoutUnauthenticatedUserEnabled"/>
+  <int value="680" label="RequiredClientCertificateForUser"/>
+  <int value="681" label="RequiredClientCertificateForDevice"/>
 </enum>
 
 <enum name="EnterprisePolicyDeviceIdValidity">
@@ -22846,6 +22848,8 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
 <enum name="ExtensionPolicyReinstallReason">
   <int value="0" label="Tried to load a corrupted extension"/>
   <int value="1" label="Corrupted Chrome Web Store extension"/>
+  <int value="2" label="Corrupted non-webstore extension"/>
+  <int value="4" label="Non-webstore extension without hashes skipped"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
@@ -36944,6 +36948,7 @@ from previous Chrome versions.
   <int value="-2075725205" label="disable-new-zip-unpacker"/>
   <int value="-2074080173" label="NightLight:disabled"/>
   <int value="-2071515296" label="allow-sync-xhr-in-page-dismissal"/>
+  <int value="-2068490665" label="PasswordChange:enabled"/>
   <int value="-2067166422" label="enable-slimming-paint-v2"/>
   <int value="-2066541315" label="Mus:enabled"/>
   <int value="-2064164557" label="DownloadsForeground:disabled"/>
@@ -37103,6 +37108,7 @@ from previous Chrome versions.
   <int value="-1899409297"
       label="ProcessSharingWithStrictSiteInstances:disabled"/>
   <int value="-1898386671" label="PasswordCheck:enabled"/>
+  <int value="-1896394207" label="PasswordChange:disabled"/>
   <int value="-1895719323" label="VrBrowsingTabsView:enabled"/>
   <int value="-1894699049" label="AudioFocusEnforcement:disabled"/>
   <int value="-1894054576" label="FontAccess:enabled"/>

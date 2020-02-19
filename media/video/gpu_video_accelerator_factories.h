@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/unsafe_shared_memory_region.h"
+#include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -140,7 +141,9 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() = 0;
 
   // Returns the supported codec profiles of video encode accelerator.
-  virtual VideoEncodeAccelerator::SupportedProfiles
+  // Returns nullopt if GpuVideoAcceleratorFactories don't know the VEA
+  // supported profiles.
+  virtual base::Optional<VideoEncodeAccelerator::SupportedProfiles>
   GetVideoEncodeAcceleratorSupportedProfiles() = 0;
 
   virtual scoped_refptr<viz::ContextProvider> GetMediaContextProvider() = 0;

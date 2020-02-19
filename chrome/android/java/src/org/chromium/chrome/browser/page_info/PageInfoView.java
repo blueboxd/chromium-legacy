@@ -160,7 +160,7 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         public boolean siteSettingsButtonShown = true;
         public boolean openOnlineButtonShown = true;
         public boolean previewUIShown = true;
-        public boolean separatorShown = true;
+        public boolean previewSeparatorShown = true;
         public boolean cookieControlsShown = true;
 
         public Runnable urlTitleClickCallback;
@@ -176,8 +176,14 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         public int urlOriginLength;
     }
 
-    /**  Parameters to configure the view of a permission row. */
+    /** Parameters to configure the permission info section */
     public static class PermissionParams {
+        public boolean show_title = true;
+        public List<PermissionRowParams> permissions;
+    }
+
+    /**  Parameters to configure the view of a permission row. */
+    public static class PermissionRowParams {
         public CharSequence status;
         public @DrawableRes int iconResource;
         public @ColorRes int iconTintColorResource;
@@ -203,9 +209,12 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
     private final TextView mPreviewMessage;
     private final TextView mPreviewStaleTimestamp;
     private final TextView mPreviewLoadOriginal;
+    private final TextView mPermissionsTitle;
+    private final View mPermissionsSeparator;
     private final LinearLayout mPermissionsList;
+    private final View mCookieControlsSeparator;
     private final CookieControlsView mCookieControlsView;
-    private final View mSeparator;
+    private final View mPreviewSeparator;
     private final Button mInstantAppButton;
     private final Button mSiteSettingsButton;
     private final Button mOpenOnlineButton;
@@ -216,19 +225,21 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
 
         // Find the container and all it's important subviews.
         LayoutInflater.from(context).inflate(R.layout.page_info, this, true);
-        mUrlTitle = (ElidedUrlTextView) findViewById(R.id.page_info_url);
-        mConnectionSummary = (TextView) findViewById(R.id.page_info_connection_summary);
-        mConnectionMessage = (TextView) findViewById(R.id.page_info_connection_message);
-        mPreviewMessage = (TextView) findViewById(R.id.page_info_preview_message);
-        mPreviewStaleTimestamp = (TextView) findViewById(R.id.page_info_stale_preview_timestamp);
-        mPreviewLoadOriginal = (TextView) findViewById(R.id.page_info_preview_load_original);
-        mPermissionsList = (LinearLayout) findViewById(R.id.page_info_permissions_list);
-        mCookieControlsView =
-                (CookieControlsView) findViewById(R.id.page_info_cookie_controls_view);
-        mSeparator = (View) findViewById(R.id.page_info_separator);
-        mInstantAppButton = (Button) findViewById(R.id.page_info_instant_app_button);
-        mSiteSettingsButton = (Button) findViewById(R.id.page_info_site_settings_button);
-        mOpenOnlineButton = (Button) findViewById(R.id.page_info_open_online_button);
+        mUrlTitle = findViewById(R.id.page_info_url);
+        mConnectionSummary = findViewById(R.id.page_info_connection_summary);
+        mConnectionMessage = findViewById(R.id.page_info_connection_message);
+        mPreviewMessage = findViewById(R.id.page_info_preview_message);
+        mPreviewStaleTimestamp = findViewById(R.id.page_info_stale_preview_timestamp);
+        mPreviewLoadOriginal = findViewById(R.id.page_info_preview_load_original);
+        mPermissionsTitle = findViewById(R.id.page_info_permissions_list_title);
+        mPermissionsSeparator = findViewById(R.id.page_info_permissions_separator);
+        mPermissionsList = findViewById(R.id.page_info_permissions_list);
+        mCookieControlsSeparator = findViewById(R.id.page_info_cookie_controls_separator);
+        mCookieControlsView = findViewById(R.id.page_info_cookie_controls_view);
+        mPreviewSeparator = findViewById(R.id.page_info_preview_separator);
+        mInstantAppButton = findViewById(R.id.page_info_instant_app_button);
+        mSiteSettingsButton = findViewById(R.id.page_info_site_settings_button);
+        mOpenOnlineButton = findViewById(R.id.page_info_open_online_button);
 
         mUrlTitle.setUrl(params.url, params.urlOriginLength);
         mUrlTitleLongClickCallback = params.urlTitleLongClickCallback;
@@ -242,6 +253,8 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         initializePageInfoViewChild(mConnectionSummary, false, 0f, null);
         initializePageInfoViewChild(mConnectionMessage, params.connectionMessageShown, 0f, null);
         // Hide the permissions list for sites with no permissions.
+        initializePageInfoViewChild(mPermissionsTitle, false, 0f, null);
+        initializePageInfoViewChild(mPermissionsSeparator, false, 0f, null);
         initializePageInfoViewChild(mPermissionsList, false, 1f, null);
         initializePageInfoViewChild(mInstantAppButton, params.instantAppButtonShown, 0f,
                 params.instantAppButtonClickCallback);
@@ -257,11 +270,12 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         initializePageInfoViewChild(mPreviewStaleTimestamp,
                 params.previewUIShown && !TextUtils.isEmpty(params.previewStaleTimestamp), 0f,
                 null);
-        initializePageInfoViewChild(mSeparator, params.separatorShown, 0f, null);
+        initializePageInfoViewChild(mPreviewSeparator, params.previewSeparatorShown, 0f, null);
         mPreviewLoadOriginal.setText(params.previewLoadOriginalMessage);
         if (!TextUtils.isEmpty(params.previewStaleTimestamp)) {
             mPreviewStaleTimestamp.setText(params.previewStaleTimestamp);
         }
+        initializePageInfoViewChild(mCookieControlsSeparator, params.cookieControlsShown, 0f, null);
         initializePageInfoViewChild(mCookieControlsView, params.cookieControlsShown, 0f, null);
     }
 
@@ -269,12 +283,14 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         return mCookieControlsView;
     }
 
-    public void setPermissions(List<PermissionParams> permissionParamsList) {
+    public void setPermissions(PermissionParams params) {
         mPermissionsList.removeAllViews();
         // If we have at least one permission show the lower permissions area.
-        mPermissionsList.setVisibility(!permissionParamsList.isEmpty() ? View.VISIBLE : View.GONE);
-        for (PermissionParams params : permissionParamsList) {
-            mPermissionsList.addView(createPermissionRow(params));
+        mPermissionsList.setVisibility(!params.permissions.isEmpty() ? View.VISIBLE : View.GONE);
+        mPermissionsTitle.setVisibility(params.show_title ? View.VISIBLE : View.GONE);
+        mPermissionsSeparator.setVisibility(params.show_title ? View.VISIBLE : View.GONE);
+        for (PermissionRowParams rowParams : params.permissions) {
+            mPermissionsList.addView(createPermissionRow(rowParams));
         }
     }
 
@@ -333,12 +349,11 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         child.setOnClickListener(this);
     }
 
-    private View createPermissionRow(PermissionParams params) {
+    private View createPermissionRow(PermissionRowParams params) {
         View permissionRow =
                 LayoutInflater.from(getContext()).inflate(R.layout.page_info_permission_row, null);
 
-        TextView permissionStatus =
-                (TextView) permissionRow.findViewById(R.id.page_info_permission_status);
+        TextView permissionStatus = permissionRow.findViewById(R.id.page_info_permission_status);
         permissionStatus.setText(params.status);
 
         ImageView permissionIcon = permissionRow.findViewById(R.id.page_info_permission_icon);
@@ -347,15 +362,15 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
                                                   : R.color.default_icon_color));
 
         if (params.warningTextResource != 0) {
-            TextView permissionUnavailable = (TextView) permissionRow.findViewById(
-                    R.id.page_info_permission_unavailable_message);
+            TextView permissionUnavailable =
+                    permissionRow.findViewById(R.id.page_info_permission_unavailable_message);
             permissionUnavailable.setVisibility(View.VISIBLE);
             permissionUnavailable.setText(params.warningTextResource);
         }
 
         if (params.subtitleTextResource != 0) {
             TextView permissionSubtitle =
-                    (TextView) permissionRow.findViewById(R.id.page_info_permission_subtitle);
+                    permissionRow.findViewById(R.id.page_info_permission_subtitle);
             permissionSubtitle.setVisibility(View.VISIBLE);
             permissionSubtitle.setText(params.subtitleTextResource);
         }
@@ -379,12 +394,15 @@ public class PageInfoView extends FrameLayout implements OnClickListener, OnLong
         animatableViews.add(mPreviewMessage);
         animatableViews.add(mPreviewStaleTimestamp);
         animatableViews.add(mPreviewLoadOriginal);
-        animatableViews.add(mSeparator);
+        animatableViews.add(mPreviewSeparator);
         animatableViews.add(mInstantAppButton);
+        animatableViews.add(mPermissionsTitle);
+        animatableViews.add(mPermissionsSeparator);
         for (int i = 0; i < mPermissionsList.getChildCount(); i++) {
             animatableViews.add(mPermissionsList.getChildAt(i));
         }
         animatableViews.add(mSiteSettingsButton);
+        animatableViews.add(mCookieControlsSeparator);
         animatableViews.add(mCookieControlsView);
 
         return animatableViews;

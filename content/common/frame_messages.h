@@ -24,7 +24,6 @@
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
 #include "content/common/frame_delete_intention.h"
-#include "content/common/frame_message_structs.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/frame_visual_properties.h"
@@ -570,11 +569,6 @@ IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateName,
 // Used when the frame's policy is changed in another process.
 IPC_MESSAGE_ROUTED1(FrameMsg_EnforceInsecureRequestPolicy,
                     blink::WebInsecureRequestPolicy)
-
-// Notifies RenderFrameProxy that its associated RenderWidgetHostView has
-// changed.
-IPC_MESSAGE_ROUTED1(FrameMsg_ViewChanged,
-                    content::FrameMsg_ViewChanged_Params /* params */)
 
 // Send to the RenderFrame to set text tracks state and style settings.
 // Sent for top-level frames.

@@ -497,9 +497,8 @@ void UiControllerAndroid::OnFeedbackButtonClicked() {
       base::android::ConvertUTF8ToJavaString(env, GetDebugContext()));
 }
 
-void UiControllerAndroid::OnViewEvent(const EventHandler::EventKey& key,
-                                      const ValueProto& value) {
-  ui_delegate_->DispatchEvent(key, value);
+void UiControllerAndroid::OnViewEvent(const EventHandler::EventKey& key) {
+  ui_delegate_->DispatchEvent(key);
 }
 
 void UiControllerAndroid::OnValueChanged(const std::string& identifier,

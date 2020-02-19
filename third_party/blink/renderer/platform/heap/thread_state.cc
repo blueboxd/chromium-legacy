@@ -1155,7 +1155,8 @@ void ThreadState::IncrementalMarkingStart(BlinkGC::GCReason reason) {
   DCHECK(!IsMarkingInProgress());
   // Sweeping is performed in driver functions.
   DCHECK(!IsSweepingInProgress());
-  Heap().stats_collector()->NotifyMarkingStarted(reason);
+  Heap().stats_collector()->NotifyMarkingStarted(
+      BlinkGC::CollectionType::kMajor, reason);
   {
     ThreadHeapStatsCollector::EnabledScope stats_scope(
         Heap().stats_collector(),
@@ -1336,7 +1337,7 @@ void ThreadState::CollectGarbage(BlinkGC::CollectionType collection_type,
   if (should_do_full_gc) {
     CompleteSweep();
     SetGCState(kNoGCScheduled);
-    Heap().stats_collector()->NotifyMarkingStarted(reason);
+    Heap().stats_collector()->NotifyMarkingStarted(collection_type, reason);
     RunAtomicPause(collection_type, stack_state, marking_type, sweeping_type,
                    reason);
   }

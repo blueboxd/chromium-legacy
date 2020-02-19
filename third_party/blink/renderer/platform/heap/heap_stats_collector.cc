@@ -100,11 +100,14 @@ void ThreadHeapStatsCollector::IncreaseCollectedWrapperCount(size_t count) {
   collected_wrapper_count_ += count;
 }
 
-void ThreadHeapStatsCollector::NotifyMarkingStarted(BlinkGC::GCReason reason) {
+void ThreadHeapStatsCollector::NotifyMarkingStarted(
+    BlinkGC::CollectionType collection_type,
+    BlinkGC::GCReason reason) {
   DCHECK(!is_started_);
   DCHECK(current_.marking_time().is_zero());
   is_started_ = true;
   current_.reason = reason;
+  current_.collection_type = collection_type;
 }
 
 void ThreadHeapStatsCollector::NotifyMarkingCompleted(size_t marked_bytes) {

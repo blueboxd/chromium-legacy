@@ -200,8 +200,7 @@ class Controller : public ScriptExecutorDelegate,
                          bool selected) override;
   void AddObserver(ControllerObserver* observer) override;
   void RemoveObserver(const ControllerObserver* observer) override;
-  void DispatchEvent(const EventHandler::EventKey& key,
-                     const ValueProto& value) override;
+  void DispatchEvent(const EventHandler::EventKey& key) override;
   UserModel* GetUserModel() override;
   EventHandler* GetEventHandler() override;
   bool ShouldPromptActionExpandSheet() const override;

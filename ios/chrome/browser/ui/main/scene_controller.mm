@@ -231,11 +231,10 @@ enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
 - (void)showHistory {
   self.historyCoordinator = [[HistoryCoordinator alloc]
       initWithBaseViewController:self.mainController.currentBVC
-                    browserState:self.mainController.mainBrowserState];
+                         browser:self.mainInterface.browser];
   self.historyCoordinator.loadStrategy =
       [self currentPageIsIncognito] ? UrlLoadStrategy::ALWAYS_IN_INCOGNITO
                                     : UrlLoadStrategy::NORMAL;
-  self.historyCoordinator.dispatcher = self.mainController.mainBVC.dispatcher;
   [self.historyCoordinator start];
 }
 

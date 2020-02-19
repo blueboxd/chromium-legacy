@@ -27,6 +27,10 @@ MenuListInnerElement::CustomStyleForLayoutObject() {
   // min-width: 0; is needed for correct shrinking.
   style->SetMinWidth(Length::Fixed(0));
   style->SetHasLineIfEmpty(true);
+  style->SetOverflowX(EOverflow::kHidden);
+  style->SetOverflowY(EOverflow::kHidden);
+  style->SetShouldIgnoreOverflowPropertyForInlineBlockBaseline();
+  style->SetTextOverflow(parent_style.TextOverflow());
 
   // Use margin:auto instead of align-items:center to get safe centering, i.e.
   // when the content overflows, treat it the same as align-items: flex-start.
@@ -38,19 +42,21 @@ MenuListInnerElement::CustomStyleForLayoutObject() {
     style->SetAlignSelfPosition(ItemPosition::kFlexStart);
   }
 
+  // We set margin-left/right instead of padding-left/right to clip text by
+  // 'overflow: hidden'.
   LayoutTheme& theme = LayoutTheme::GetTheme();
-  Length padding_start =
+  Length margin_start =
       Length::Fixed(theme.PopupInternalPaddingStart(parent_style));
-  Length padding_end = Length::Fixed(
+  Length margin_end = Length::Fixed(
       theme.PopupInternalPaddingEnd(GetDocument().GetFrame(), parent_style));
   if (parent_style.IsLeftToRightDirection()) {
     style->SetTextAlign(ETextAlign::kLeft);
-    style->SetPaddingLeft(padding_start);
-    style->SetPaddingRight(padding_end);
+    style->SetMarginLeft(margin_start);
+    style->SetMarginRight(margin_end);
   } else {
     style->SetTextAlign(ETextAlign::kRight);
-    style->SetPaddingLeft(padding_end);
-    style->SetPaddingRight(padding_start);
+    style->SetMarginLeft(margin_end);
+    style->SetMarginRight(margin_start);
   }
   style->SetPaddingTop(
       Length::Fixed(theme.PopupInternalPaddingTop(parent_style)));

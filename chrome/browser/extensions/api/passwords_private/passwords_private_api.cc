@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -103,8 +104,8 @@ ResponseAction PasswordsPrivateRequestPlaintextPasswordFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(parameters);
 
   GetDelegate(browser_context())
-      ->RequestShowPassword(
-          parameters->id,
+      ->RequestPlaintextPassword(
+          parameters->id, parameters->reason,
           base::BindOnce(
               &PasswordsPrivateRequestPlaintextPasswordFunction::GotPassword,
               this),
@@ -116,10 +117,16 @@ ResponseAction PasswordsPrivateRequestPlaintextPasswordFunction::Run() {
 
 void PasswordsPrivateRequestPlaintextPasswordFunction::GotPassword(
     base::Optional<base::string16> password) {
-  if (password)
+  if (password) {
     Respond(OneArgument(std::make_unique<base::Value>(std::move(*password))));
-  else
-    Respond(NoArguments());
+    return;
+  }
+
+  Respond(Error(base::StringPrintf(
+      "Could not obtain plaintext password. Either the user is not "
+      "authenticated or no password with id = %d could be found.",
+      api::passwords_private::RequestPlaintextPassword::Params::Create(*args_)
+          ->id)));
 }
 
 // PasswordsPrivateGetSavedPasswordListFunction

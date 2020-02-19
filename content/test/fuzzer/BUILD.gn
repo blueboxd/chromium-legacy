@@ -18,7 +18,7 @@ source_set("fuzzer_support") {
   ]
   public_deps = [
     "//base",
-    "//base/test:test_config",
+    "//base/test:test_support",
     "//content/renderer:for_content_tests",
     "//content/shell:content_shell_lib",
     "//content/test:test_support",

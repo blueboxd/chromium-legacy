@@ -1639,19 +1639,29 @@ const ComputedStyle* HTMLSelectElement::ItemComputedStyle(
 LayoutUnit HTMLSelectElement::ClientPaddingLeft() const {
   DCHECK(UsesMenuList());
   auto* this_box = GetLayoutBox();
-  auto* inner_box = InnerElement().GetLayoutBox();
-  if (this_box && inner_box)
-    return this_box->PaddingLeft() + inner_box->PaddingLeft();
-  return LayoutUnit();
+  if (!this_box || !InnerElement().GetLayoutBox())
+    return LayoutUnit();
+  LayoutTheme& theme = LayoutTheme::GetTheme();
+  const ComputedStyle& style = this_box->StyleRef();
+  int inner_padding =
+      style.IsLeftToRightDirection()
+          ? theme.PopupInternalPaddingStart(style)
+          : theme.PopupInternalPaddingEnd(GetDocument().GetFrame(), style);
+  return this_box->PaddingLeft() + inner_padding;
 }
 
 LayoutUnit HTMLSelectElement::ClientPaddingRight() const {
   DCHECK(UsesMenuList());
   auto* this_box = GetLayoutBox();
-  auto* inner_box = InnerElement().GetLayoutBox();
-  if (this_box && inner_box)
-    return this_box->PaddingRight() + inner_box->PaddingRight();
-  return LayoutUnit();
+  if (!this_box || !InnerElement().GetLayoutBox())
+    return LayoutUnit();
+  LayoutTheme& theme = LayoutTheme::GetTheme();
+  const ComputedStyle& style = this_box->StyleRef();
+  int inner_padding =
+      style.IsLeftToRightDirection()
+          ? theme.PopupInternalPaddingEnd(GetDocument().GetFrame(), style)
+          : theme.PopupInternalPaddingStart(style);
+  return this_box->PaddingRight() + inner_padding;
 }
 
 void HTMLSelectElement::PopupDidHide() {

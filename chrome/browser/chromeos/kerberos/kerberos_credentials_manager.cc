@@ -49,7 +49,7 @@ constexpr char kLoginEmail[] = "LOGIN_EMAIL";
 // Password placeholder.
 constexpr char kLoginPasswordPlaceholder[] = "${PASSWORD}";
 
-// Default encryption with strong encryption.
+// Default config with strong encryption.
 constexpr char kDefaultKerberosConfig[] = R"([libdefaults]
   default_tgs_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
   default_tkt_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
@@ -463,7 +463,18 @@ void KerberosCredentialsManager::OnAddAccountRunnerDone(
   if (add_account_runners_.empty())
     NotifyAccountsChanged();
 
+  if (is_managed) {
+    OnAddManagedAccountRunnerDone(error);
+  }
+
   std::move(callback).Run(error);
+}
+
+void KerberosCredentialsManager::OnAddManagedAccountRunnerDone(
+    kerberos::ErrorType error) {
+  if (add_managed_account_callback_for_testing_) {
+    add_managed_account_callback_for_testing_.Run(error);
+  }
 }
 
 void KerberosCredentialsManager::RemoveAccount(std::string principal_name,
@@ -895,6 +906,11 @@ KerberosCredentialsManager::GetGetKerberosFilesCallbackForTesting() {
 void KerberosCredentialsManager::SetKerberosFilesHandlerForTesting(
     std::unique_ptr<KerberosFilesHandler> kerberos_files_handler) {
   kerberos_files_handler_ = std::move(kerberos_files_handler);
+}
+
+void KerberosCredentialsManager::SetAddManagedAccountCallbackForTesting(
+    base::RepeatingCallback<void(kerberos::ErrorType)> callback) {
+  add_managed_account_callback_for_testing_ = std::move(callback);
 }
 
 }  // namespace chromeos

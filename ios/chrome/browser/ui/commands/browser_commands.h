@@ -100,12 +100,6 @@ class GURL;
 // prevent interaction with the web page.
 - (void)showActivityOverlay:(BOOL)show;
 
-// Shows the Text Zoom UI.
-- (void)showTextZoom;
-
-// Dismisses the Text Zoom UI.
-- (void)hideTextZoom;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_COMMANDS_BROWSER_COMMANDS_H_

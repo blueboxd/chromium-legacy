@@ -149,90 +149,6 @@ void RemoveBinariesVersionKey(const InstallerState& installer_state) {
   }
 }
 
-// Remove leftover traces of multi-install Chrome Frame, if present. Once upon a
-// time, Google Chrome Frame could be co-installed with Chrome such that they
-// shared the same binaries on disk. Support for new installs of GCF was dropped
-// from ToT in December 2013. Remove any stray bits in the registry leftover
-// from an old multi-install GCF.
-void RemoveMultiChromeFrame(const InstallerState& installer_state) {
-// There never was a "Chromium Frame".
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  // To maximize cleanup, unconditionally delete GCF's Clients and ClientState
-  // keys unless single-install GCF is present. This condition is satisfied if
-  // both keys exist, Clients\pv contains a value, and
-  // ClientState\UninstallString contains a path including "\Chrome Frame\".
-  // Multi-install GCF would have had "\Chrome\", and anything else is garbage.
-
-  static constexpr wchar_t kGcfGuid[] =
-      L"{8BA986DA-5100-405E-AA35-86F34A02ACBF}";
-  base::string16 clients_key_path = install_static::GetClientsKeyPath(kGcfGuid);
-  base::win::RegKey clients_key;
-  base::string16 client_state_key_path =
-      install_static::GetClientStateKeyPath(kGcfGuid);
-  base::win::RegKey client_state_key;
-
-  const bool has_clients_key =
-      clients_key.Open(installer_state.root_key(), clients_key_path.c_str(),
-                       KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS;
-  const bool has_client_state_key =
-      client_state_key.Open(installer_state.root_key(),
-                            client_state_key_path.c_str(),
-                            KEY_QUERY_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS;
-  if (!has_clients_key && !has_client_state_key)
-    return;  // Nothing to check or to clean.
-
-  base::string16 value;
-  if (has_clients_key && has_client_state_key &&
-      clients_key.ReadValue(google_update::kRegVersionField, &value) ==
-          ERROR_SUCCESS &&
-      !value.empty() &&
-      client_state_key.ReadValue(kUninstallStringField, &value) ==
-          ERROR_SUCCESS &&
-      value.find(L"\\Chrome Frame\\") != base::string16::npos) {
-    return;  // Single-install Chrome Frame found.
-  }
-  client_state_key.Close();
-  clients_key.Close();
-
-  // Remnants of multi-install GCF or of a malformed GCF are present. Remove the
-  // Clients and ClientState keys so that Google Update ceases to check for
-  // updates, and the Programs and Features control panel entry to reduce user
-  // confusion.
-  constexpr int kOperations = 3;
-  int success_count = 0;
-
-  if (InstallUtil::DeleteRegistryKey(installer_state.root_key(),
-                                     clients_key_path, KEY_WOW64_32KEY)) {
-    ++success_count;
-  }
-  if (InstallUtil::DeleteRegistryKey(installer_state.root_key(),
-                                     client_state_key_path, KEY_WOW64_32KEY)) {
-    ++success_count;
-  }
-  if (InstallUtil::DeleteRegistryKey(
-          installer_state.root_key(),
-          L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\"
-          L"Google Chrome Frame",
-          KEY_WOW64_32KEY)) {
-    ++success_count;
-  }
-  DCHECK_LE(success_count, kOperations);
-
-  // Used for a histogram; do not reorder.
-  enum MultiChromeFrameRemovalResult {
-    ALL_FAILED = 0,
-    PARTIAL_SUCCESS = 1,
-    SUCCESS = 2,
-    NUM_RESULTS
-  };
-  MultiChromeFrameRemovalResult result =
-      (success_count == kOperations ? SUCCESS : (success_count ? PARTIAL_SUCCESS
-                                                               : ALL_FAILED));
-  UMA_HISTOGRAM_ENUMERATION("Setup.Install.MultiChromeFrameRemoved", result,
-                            NUM_RESULTS);
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-}
-
 void RemoveAppLauncherVersionKey(const InstallerState& installer_state) {
 // The app launcher was only registered for Google Chrome.
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -247,19 +163,6 @@ void RemoveAppLauncherVersionKey(const InstallerState& installer_state) {
         installer_state.root_key(), path, KEY_WOW64_32KEY);
     UMA_HISTOGRAM_BOOLEAN("Setup.Install.DeleteAppLauncherClientsKey",
                           succeeded);
-  }
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-}
-
-void RemoveAppHostExe(const InstallerState& installer_state) {
-// The app host was only installed for Google Chrome.
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  base::FilePath app_host(
-      installer_state.target_path().Append(FILE_PATH_LITERAL("app_host.exe")));
-
-  if (base::PathExists(app_host)) {
-    const bool succeeded = base::DeleteFile(app_host, false);
-    UMA_HISTOGRAM_BOOLEAN("Setup.Install.DeleteAppHost", succeeded);
   }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
@@ -821,9 +724,7 @@ void DoLegacyCleanups(const InstallerState& installer_state,
     return;
 
   RemoveBinariesVersionKey(installer_state);
-  RemoveMultiChromeFrame(installer_state);
   RemoveAppLauncherVersionKey(installer_state);
-  RemoveAppHostExe(installer_state);
   RemoveLegacyChromeAppCommands(installer_state);
 }
 

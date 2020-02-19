@@ -14,6 +14,7 @@
 @protocol FindInPageCommands;
 @protocol LoadQueryCommands;
 @protocol PopupMenuActionHandlerCommands;
+@protocol TextZoomCommands;
 
 // Handles user interactions with the popup menu.
 @interface PopupMenuActionHandler
@@ -29,7 +30,8 @@
 @property(nonatomic, weak) id<ApplicationCommands,
                               BrowserCommands,
                               FindInPageCommands,
-                              LoadQueryCommands>
+                              LoadQueryCommands,
+                              TextZoomCommands>
     dispatcher;
 
 @end

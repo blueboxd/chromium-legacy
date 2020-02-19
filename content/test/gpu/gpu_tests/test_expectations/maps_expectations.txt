@@ -1,7 +1,9 @@
-# tags: [ android ]
+# tags: [ android win10 ]
 # tags: [ android-nexus-5x android-nexus-5 ]
 # tags: [ skia-renderer no-skia-renderer ]
+# tags: [ nvidia ]
 # results: [ Failure RetryOnFailure Skip ]
 
 crbug.com/1006045 [ android android-nexus-5x skia-renderer ] Maps_maps [ Failure ]
 crbug.com/1009137 [ android android-nexus-5 no-skia-renderer ] Maps_maps [ RetryOnFailure ]
+crbug.com/1053892 [ win10 nvidia ] Maps_maps [ Failure ]

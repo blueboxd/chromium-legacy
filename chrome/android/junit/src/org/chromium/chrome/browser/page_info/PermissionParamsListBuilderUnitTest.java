@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.page_info;
 import static junit.framework.Assert.assertNotNull;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -72,9 +74,16 @@ public class PermissionParamsListBuilderUnitTest {
                 .thenReturn(false);
         AndroidPermissionDelegate permissionDelegate = new FakePermissionDelegate();
         mSettingsActivityRequiredListener = new FakeSystemSettingsActivityRequiredListener();
-        mPermissionParamsListBuilder =
-                new PermissionParamsListBuilder(RuntimeEnvironment.application, permissionDelegate,
-                        "https://example.com", mSettingsActivityRequiredListener, result -> {});
+        mPermissionParamsListBuilder = new PermissionParamsListBuilder(
+                RuntimeEnvironment.application, permissionDelegate, "https://example.com", true,
+                mSettingsActivityRequiredListener, result -> {});
+    }
+
+    @Test
+    public void emptyList() {
+        PageInfoView.PermissionParams params = mPermissionParamsListBuilder.build();
+        assertFalse(params.show_title);
+        assertEquals(0, params.permissions.size());
     }
 
     @Test
@@ -83,10 +92,11 @@ public class PermissionParamsListBuilderUnitTest {
         mPermissionParamsListBuilder.addPermissionEntry(
                 "Foo", ContentSettingsType.COOKIES, ContentSettingValues.ALLOW);
 
-        List<PageInfoView.PermissionParams> params = mPermissionParamsListBuilder.build();
+        PageInfoView.PermissionParams params = mPermissionParamsListBuilder.build();
+        assertTrue(params.show_title);
 
-        assertEquals(1, params.size());
-        PageInfoView.PermissionParams permissionParams = params.get(0);
+        assertEquals(1, params.permissions.size());
+        PageInfoView.PermissionRowParams permissionParams = params.permissions.get(0);
 
         String expectedStatus = "Foo – " + context.getString(R.string.page_info_permission_allowed);
         assertEquals(expectedStatus, permissionParams.status.toString());
@@ -100,10 +110,11 @@ public class PermissionParamsListBuilderUnitTest {
         mPermissionParamsListBuilder.addPermissionEntry(
                 "Test", ContentSettingsType.GEOLOCATION, ContentSettingValues.ALLOW);
 
-        List<PageInfoView.PermissionParams> params = mPermissionParamsListBuilder.build();
+        List<PageInfoView.PermissionRowParams> rows =
+                mPermissionParamsListBuilder.build().permissions;
 
-        assertEquals(1, params.size());
-        PageInfoView.PermissionParams permissionParams = params.get(0);
+        assertEquals(1, rows.size());
+        PageInfoView.PermissionRowParams permissionParams = rows.get(0);
         assertEquals(
                 R.string.page_info_android_location_blocked, permissionParams.warningTextResource);
 
@@ -122,11 +133,12 @@ public class PermissionParamsListBuilderUnitTest {
         mPermissionParamsListBuilder.addPermissionEntry(
                 "", ContentSettingsType.NOTIFICATIONS, ContentSettingValues.ALLOW);
 
-        List<PageInfoView.PermissionParams> params = mPermissionParamsListBuilder.build();
+        List<PageInfoView.PermissionRowParams> rows =
+                mPermissionParamsListBuilder.build().permissions;
 
-        assertEquals(1, params.size());
+        assertEquals(1, rows.size());
         assertEquals(
-                R.string.page_info_android_permission_blocked, params.get(0).warningTextResource);
+                R.string.page_info_android_permission_blocked, rows.get(0).warningTextResource);
     }
 
     @Test
@@ -137,7 +149,8 @@ public class PermissionParamsListBuilderUnitTest {
         mPermissionParamsListBuilder.addPermissionEntry(
                 "", ContentSettingsType.NOTIFICATIONS, ContentSettingValues.ALLOW);
 
-        List<PageInfoView.PermissionParams> params = mPermissionParamsListBuilder.build();
+        List<PageInfoView.PermissionRowParams> params =
+                mPermissionParamsListBuilder.build().permissions;
 
         assertEquals(1, params.size());
         assertEquals(0, params.get(0).warningTextResource);
@@ -151,7 +164,8 @@ public class PermissionParamsListBuilderUnitTest {
         mPermissionParamsListBuilder.addPermissionEntry(
                 "", ContentSettingsType.NOTIFICATIONS, ContentSettingValues.ALLOW);
 
-        List<PageInfoView.PermissionParams> params = mPermissionParamsListBuilder.build();
+        List<PageInfoView.PermissionRowParams> params =
+                mPermissionParamsListBuilder.build().permissions;
 
         assertEquals(1, params.size());
         assertEquals(0, params.get(0).warningTextResource);

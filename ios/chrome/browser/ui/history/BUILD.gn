@@ -23,6 +23,7 @@ source_set("history") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/history",
+    "//ios/chrome/browser/main:public",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/ui/context_menu",
     "//ios/chrome/browser/ui/coordinators:chrome_coordinators",

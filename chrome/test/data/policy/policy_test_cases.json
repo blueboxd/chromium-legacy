@@ -2,6 +2,7 @@
   "-- Template --": {
     "intro": "Tests that policies map to prefs properly and whether the corresponding Chrome settings UI behaves properly, e.g. if a policy is managed, the UI should be readonly and an icon with a properly worded tooltip should show up.",
     "intro": "Top-level entries map a policy name to its test parameters, described below. The name of the top level entry should be of the form <policy name>[.suffix]. The optional suffix is used for defining multiple test cases for a single policy.",
+    "intro": "To run tests from this file use 'browser_tests --gtest_filter=*PolicyPrefsTest*' command.",
     "os": [
       "List of operating systems that support this policy. Valid values:",
       "win",
@@ -6229,6 +6230,57 @@
       {
         "policies": { "PrivacyScreenEnabled": true },
         "prefs": { "settings.display.privacy_screen_enabled": {} }
+      }
+    ]
+  },
+  "RequiredClientCertificateForUser": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "RequiredClientCertificateForUser": [{
+            "name": "Certificate Profile 1",
+            "cert_profile_id":"cert_profile_id_1",
+            "key_algorithm":"rsa",
+            "renewal_period_seconds": 2592000
+          }]
+        },
+        "prefs": {
+          "required_client_certificate_for_user": {
+            "value": [{
+              "name": "Certificate Profile 1",
+              "cert_profile_id":"cert_profile_id_1",
+              "key_algorithm":"rsa",
+              "renewal_period_seconds": 2592000
+            }]
+          }
+        }
+      }
+    ]
+  },
+  "RequiredClientCertificateForDevice": {
+    "os": ["chromeos"],
+    "policy_pref_mapping_test": [
+      {
+        "policies": {
+          "RequiredClientCertificateForDevice": [{
+            "name": "Certificate Profile 1",
+            "cert_profile_id":"cert_profile_id_1",
+            "key_algorithm":"rsa",
+            "renewal_period_seconds": 2592000
+          }]
+        },
+        "prefs": {
+          "required_client_certificate_for_device": {
+            "value": [{
+              "name": "Certificate Profile 1",
+              "cert_profile_id":"cert_profile_id_1",
+              "key_algorithm":"rsa",
+              "renewal_period_seconds": 2592000
+            }],
+            "local_state": true
+          }
+        }
       }
     ]
   },

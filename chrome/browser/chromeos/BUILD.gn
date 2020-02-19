@@ -770,6 +770,8 @@ source_set("chromeos") {
     "camera_detector.h",
     "camera_presence_notifier.cc",
     "camera_presence_notifier.h",
+    "cert_provisioning/cert_provisioning_common.cc",
+    "cert_provisioning/cert_provisioning_common.h",
     "certificate_provider/certificate_info.cc",
     "certificate_provider/certificate_info.h",
     "certificate_provider/certificate_provider.h",

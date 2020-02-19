@@ -98,7 +98,8 @@ media::VideoEncodeAccelerator::SupportedProfiles GetVEASupportedProfiles() {
     DVLOG(2) << "Couldn't initialize GpuVideoAcceleratorFactories";
     return media::VideoEncodeAccelerator::SupportedProfiles();
   }
-  return gpu_factories->GetVideoEncodeAcceleratorSupportedProfiles();
+  return gpu_factories->GetVideoEncodeAcceleratorSupportedProfiles().value_or(
+      media::VideoEncodeAccelerator::SupportedProfiles());
 }
 
 VideoTrackRecorderImpl::CodecEnumerator* GetCodecEnumerator() {

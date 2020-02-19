@@ -13,6 +13,7 @@
 #include "base/base_paths.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -37,6 +38,11 @@
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
+#endif
+
+#if defined(OS_LINUX)
+#include "base/environment.h"
+#include "base/nix/xdg_util.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -366,20 +372,34 @@ std::string ReadEncryptedSecret() {
 
 #endif  // defined(OS_MACOSX)
 
+base::FilePath* GetEndpointVerificationDirOverride() {
+  static base::NoDestructor<base::FilePath> dir_override;
+  return dir_override.get();
+}
+
 // Returns "AppData\Local\Google\Endpoint Verification".
 base::FilePath GetEndpointVerificationDir() {
   base::FilePath path;
+  if (!GetEndpointVerificationDirOverride()->empty())
+    return *GetEndpointVerificationDirOverride();
 #if defined(OS_WIN)
   if (!base::PathService::Get(base::DIR_LOCAL_APP_DATA, &path))
 #elif defined(OS_LINUX)
-  if (!base::PathService::Get(base::DIR_CACHE, &path))
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  path = base::nix::GetXDGDirectory(env.get(), base::nix::kXdgConfigHomeEnvVar,
+                                    base::nix::kDotConfigDir);
+  if (path.empty())
 #elif defined(OS_MACOSX)
   if (!base::PathService::Get(base::DIR_APP_DATA, &path))
 #else
   if (true)
 #endif
     return path;
+#if defined(OS_LINUX)
+  path = path.AppendASCII("google");
+#else
   path = path.AppendASCII("Google");
+#endif
   path = path.AppendASCII("Endpoint Verification");
   return path;
 }
@@ -418,6 +438,11 @@ GenerateChromeDesktopReportRequest(const base::DictionaryValue& report,
   AppendAdditionalBrowserInformation(request.get(), profile);
 
   return request;
+}
+
+// Sets the path used to store Endpoint Verification data for tests.
+void OverrideEndpointVerificationDirForTesting(const base::FilePath& path) {
+  *GetEndpointVerificationDirOverride() = path;
 }
 
 void StoreDeviceData(const std::string& id,

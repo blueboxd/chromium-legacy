@@ -353,8 +353,10 @@ void SkiaOutputDeviceBufferQueue::PageFlipComplete(Image* image) {
       available_images_.push_back(displayed_image_);
       // Call BeginWriteSkia() for the next frame here to avoid some expensive
       // operations on the critical code path.
-      if (!available_images_.front()->sk_surface())
+      if (!available_images_.front()->sk_surface() &&
+          dependency_->GetSharedContextState()->MakeCurrent(nullptr)) {
         available_images_.front()->BeginWriteSkia();
+      }
     }
   }
 

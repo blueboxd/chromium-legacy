@@ -15,7 +15,7 @@ PerfettoProducer::PerfettoProducer(PerfettoTaskRunner* task_runner)
   DCHECK(task_runner_);
 }
 
-PerfettoProducer::~PerfettoProducer() {}
+PerfettoProducer::~PerfettoProducer() = default;
 
 void PerfettoProducer::BindStartupTraceWriterRegistry(
     std::unique_ptr<perfetto::StartupTraceWriterRegistry> registry,
@@ -38,14 +38,14 @@ std::unique_ptr<perfetto::TraceWriter> PerfettoProducer::CreateTraceWriter(
                                                        buffer_exhausted_policy);
 }
 
-PerfettoTaskRunner* PerfettoProducer::task_runner() {
-  return task_runner_;
-}
-
 void PerfettoProducer::DeleteSoonForTesting(
     std::unique_ptr<PerfettoProducer> perfetto_producer) {
   PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner()->DeleteSoon(
       FROM_HERE, std::move(perfetto_producer));
+}
+
+PerfettoTaskRunner* PerfettoProducer::task_runner() {
+  return task_runner_;
 }
 
 }  // namespace tracing

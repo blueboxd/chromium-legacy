@@ -133,12 +133,6 @@ void MockPosixSystemProducer::StopDataSource(
   }
 }
 
-void MockPosixSystemProducer::CommitData(
-    const perfetto::CommitDataRequest& commit,
-    CommitDataCallback callback) {
-  PosixSystemProducer::CommitData(commit, callback);
-}
-
 void MockPosixSystemProducer::SetDataSourceEnabledCallback(
     base::OnceClosure data_source_enabled_callback) {
   data_source_enabled_callback_ = std::move(data_source_enabled_callback);

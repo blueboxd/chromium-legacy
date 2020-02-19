@@ -29,7 +29,6 @@ struct TransferableMessage;
 }
 
 namespace content {
-struct FrameMsg_ViewChanged_Params;
 struct RecordContentToVisibleTimeRequest;
 }
 
@@ -92,16 +91,6 @@ struct CONTENT_EXPORT ParamTraits<
   static bool Read(const base::Pickle* m,
                    base::PickleIterator* iter,
                    param_type* r);
-  static void Log(const param_type& p, std::string* l);
-};
-
-template <>
-struct CONTENT_EXPORT ParamTraits<content::FrameMsg_ViewChanged_Params> {
-  using param_type = content::FrameMsg_ViewChanged_Params;
-  static void Write(base::Pickle* m, const param_type& p);
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p);
   static void Log(const param_type& p, std::string* l);
 };
 

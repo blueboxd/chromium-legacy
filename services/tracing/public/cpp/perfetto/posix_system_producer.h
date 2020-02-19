@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/synchronization/lock.h"
 #include "services/tracing/public/cpp/perfetto/system_producer.h"
 #include "services/tracing/public/cpp/perfetto/task_runner.h"
 
@@ -53,12 +54,13 @@ class COMPONENT_EXPORT(TRACING_CPP) PosixSystemProducer
   void SetNewSocketForTesting(const char* socket);
 
   // PerfettoProducer implementation.
-  bool IsTracingActive() override;
+  perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() override;
   void NewDataSourceAdded(
       const PerfettoTracedProcess::DataSourceBase* const data_source) override;
+  bool IsTracingActive() override;
 
   // SystemProducer implementation.
-  //
+  void ActivateTriggers(const std::vector<std::string>& triggers) override;
   // When Chrome's tracing service wants to trace it always takes priority over
   // the system Perfetto service. To cleanly shut down and let the system
   // Perfetto know we are no longer participating we unregister the data
@@ -92,33 +94,6 @@ class COMPONENT_EXPORT(TRACING_CPP) PosixSystemProducer
       const perfetto::DataSourceInstanceID* data_source_ids,
       size_t num_data_sources) override;
 
-  // perfetto::TracingService::ProducerEndpoint implementation.
-
-  // Used by the TraceWriters to signal Perfetto that shared memory chunks are
-  // ready for consumption.
-  void CommitData(const perfetto::CommitDataRequest& commit,
-                  CommitDataCallback callback) override;
-
-  // Used by the DataSource implementations to create TraceWriters
-  // for writing their protobufs, and respond to flushes.
-  perfetto::SharedMemory* shared_memory() const override;
-  void NotifyFlushComplete(perfetto::FlushRequestID) override;
-  void RegisterTraceWriter(uint32_t writer_id, uint32_t target_buffer) override;
-  void UnregisterTraceWriter(uint32_t writer_id) override;
-
-  // Used by PerfettoTracedProcess to create trace writers and send triggers.
-  perfetto::SharedMemoryArbiter* MaybeSharedMemoryArbiter() override;
-  void ActivateTriggers(const std::vector<std::string>&) override;
-
-  // The rest of these perfetto::TracingService::ProducerEndpoint functions are
-  // not currently used.
-  void RegisterDataSource(const perfetto::DataSourceDescriptor&) override;
-  void UnregisterDataSource(const std::string& name) override;
-  void NotifyDataSourceStarted(perfetto::DataSourceInstanceID) override;
-  void NotifyDataSourceStopped(perfetto::DataSourceInstanceID) override;
-  size_t shared_buffer_page_size_kb() const override;
-  bool IsShmemProvidedByProducer() const override;
-
  protected:
   // Given our current |state_| determine how to properly connect and set up our
   // connection to the service via the named fd socket provided in the
@@ -139,8 +114,10 @@ class COMPONENT_EXPORT(TRACING_CPP) PosixSystemProducer
   // Chrome is already tracing we will wait awhile and attempt to Connect()
   // later.
   void DelayedReconnect();
+  // Called after a data source has completed a flush.
+  void NotifyDataSourceFlushComplete(perfetto::FlushRequestID id);
 
-  perfetto::TracingService::ProducerEndpoint* GetSerivce();
+  perfetto::TracingService::ProducerEndpoint* GetService();
 
   bool retrying_ = false;
   std::string socket_name_;
@@ -150,8 +127,9 @@ class COMPONENT_EXPORT(TRACING_CPP) PosixSystemProducer
   State state_ = State::kDisconnected;
   std::vector<base::OnceClosure> on_disconnect_callbacks_;
 
-  // Connection to the Perfetto service and the shared memory that it provides.
-  perfetto::SharedMemory* shared_memory_ = nullptr;
+  // |services_| is accessed by MaybeSharedMemoryArbiter() on any thread. This
+  // access and any modifications to |services_| are protected by this lock.
+  base::Lock services_lock_;
   // ProducerEndpoints must outlive all trace writers, but some trace writers
   // will never flush until future tracing sessions, which means even on
   // disconnecting we have to keep these around. So instead of destroying any

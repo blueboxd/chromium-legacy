@@ -8,6 +8,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
+#import "ios/chrome/browser/main/browser.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/history/history_clear_browsing_data_coordinator.h"
@@ -50,7 +51,6 @@
 @end
 
 @implementation HistoryCoordinator
-@synthesize dispatcher = _dispatcher;
 @synthesize historyClearBrowsingDataCoordinator =
     _historyClearBrowsingDataCoordinator;
 @synthesize historyNavigationController = _historyNavigationController;
@@ -61,22 +61,24 @@
 - (void)start {
   // Initialize and configure HistoryTableViewController.
   self.historyTableViewController = [[HistoryTableViewController alloc] init];
-  self.historyTableViewController.browserState = self.browserState;
+  self.historyTableViewController.browserState =
+      self.browser->GetBrowserState();
   self.historyTableViewController.loadStrategy = self.loadStrategy;
 
   // Initialize and set HistoryMediator
-  self.mediator =
-      [[HistoryMediator alloc] initWithBrowserState:self.browserState];
+  self.mediator = [[HistoryMediator alloc]
+      initWithBrowserState:self.browser->GetBrowserState()];
   self.historyTableViewController.imageDataSource = self.mediator;
 
   // Initialize and configure HistoryServices.
   _browsingHistoryDriver = std::make_unique<IOSBrowsingHistoryDriver>(
-      self.browserState, self.historyTableViewController);
+      self.browser->GetBrowserState(), self.historyTableViewController);
   _browsingHistoryService = std::make_unique<history::BrowsingHistoryService>(
       _browsingHistoryDriver.get(),
       ios::HistoryServiceFactory::GetForBrowserState(
-          self.browserState, ServiceAccessType::EXPLICIT_ACCESS),
-      ProfileSyncServiceFactory::GetForBrowserState(self.browserState));
+          self.browser->GetBrowserState(), ServiceAccessType::EXPLICIT_ACCESS),
+      ProfileSyncServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState()));
   self.historyTableViewController.historyService =
       _browsingHistoryService.get();
 
@@ -154,16 +156,20 @@
 }
 
 - (void)displayPrivacySettings {
-    self.historyClearBrowsingDataCoordinator =
-        [[HistoryClearBrowsingDataCoordinator alloc]
-            initWithBaseViewController:self.historyNavigationController
-                          browserState:self.browserState];
-    self.historyClearBrowsingDataCoordinator.localDispatcher = self;
-    self.historyClearBrowsingDataCoordinator.presentationDelegate =
-        self.presentationDelegate;
-    self.historyClearBrowsingDataCoordinator.loadStrategy = self.loadStrategy;
-    self.historyClearBrowsingDataCoordinator.dispatcher = self.dispatcher;
-    [self.historyClearBrowsingDataCoordinator start];
+  self.historyClearBrowsingDataCoordinator =
+      [[HistoryClearBrowsingDataCoordinator alloc]
+          initWithBaseViewController:self.historyNavigationController
+                        browserState:self.browser->GetBrowserState()];
+  self.historyClearBrowsingDataCoordinator.localDispatcher = self;
+  self.historyClearBrowsingDataCoordinator.presentationDelegate =
+      self.presentationDelegate;
+  self.historyClearBrowsingDataCoordinator.loadStrategy = self.loadStrategy;
+  // TODO(crbug.com/1048407): Remove dispatcher as the property of
+  // HistoryClearBrowsingDataCoordinator.
+  self.historyClearBrowsingDataCoordinator.dispatcher =
+      static_cast<id<ApplicationCommands, BrowsingDataCommands>>(
+          self.browser->GetCommandDispatcher());
+  [self.historyClearBrowsingDataCoordinator start];
 }
 
 @end

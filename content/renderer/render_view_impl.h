@@ -406,7 +406,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnExecuteEditCommand(const std::string& name, const std::string& value);
   void OnAllowScriptToClose(bool script_can_close);
   void OnCancelDownload(int32_t download_id);
-  void OnClosePage();
 
   void OnDeterminePageLanguage();
   void OnDisableScrollbarsForSmallWindows(

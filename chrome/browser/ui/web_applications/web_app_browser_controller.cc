@@ -30,6 +30,10 @@ WebAppBrowserController::WebAppBrowserController(Browser* browser)
 
 WebAppBrowserController::~WebAppBrowserController() = default;
 
+bool WebAppBrowserController::CreatedForInstalledPwa() const {
+  return !registrar().IsShortcutApp(GetAppId());
+}
+
 bool WebAppBrowserController::HasMinimalUiButtons() const {
   return registrar().GetAppEffectiveDisplayMode(GetAppId()) ==
          DisplayMode::kMinimalUi;

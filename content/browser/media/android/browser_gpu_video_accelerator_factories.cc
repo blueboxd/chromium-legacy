@@ -164,7 +164,7 @@ BrowserGpuVideoAcceleratorFactories::GetTaskRunner() {
   return nullptr;
 }
 
-media::VideoEncodeAccelerator::SupportedProfiles
+base::Optional<media::VideoEncodeAccelerator::SupportedProfiles>
 BrowserGpuVideoAcceleratorFactories::
     GetVideoEncodeAcceleratorSupportedProfiles() {
   return media::VideoEncodeAccelerator::SupportedProfiles();

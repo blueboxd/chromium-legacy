@@ -96,6 +96,16 @@ class WebAppBrowserTest : public WebAppControllerBrowserTest {
 
 using WebAppTabRestoreBrowserTest = WebAppBrowserTest;
 
+IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, CreatedForInstalledPwaForPwa) {
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->app_url = GURL(kExampleURL);
+  web_app_info->scope = GURL(kExampleURL);
+  AppId app_id = InstallWebApp(std::move(web_app_info));
+  Browser* app_browser = LaunchWebAppBrowser(app_id);
+
+  EXPECT_TRUE(app_browser->app_controller()->CreatedForInstalledPwa());
+}
+
 IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ThemeColor) {
   {
     const SkColor theme_color = SkColorSetA(SK_ColorBLUE, 0xF0);
@@ -596,7 +606,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ReparentWebAppForSecureActiveTab) {
   EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
             kEnabled);
 
-  Browser* const app_browser = ReparentWebAppForActiveTab(browser());
+  Browser* const app_browser = ReparentWebAppForSecureActiveTab(browser());
   ASSERT_EQ(app_browser->app_controller()->GetAppId(), app_id);
 }
 
@@ -609,7 +619,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBrowserTest, ReparentLastBrowserTab) {
   const AppId app_id = InstallPWA(app_url);
   NavigateToURLAndWait(browser(), app_url);
 
-  Browser* const app_browser = ReparentWebAppForActiveTab(browser());
+  Browser* const app_browser = ReparentWebAppForSecureActiveTab(browser());
   ASSERT_EQ(app_browser->app_controller()->GetAppId(), app_id);
 
   ASSERT_TRUE(IsBrowserOpen(browser()));

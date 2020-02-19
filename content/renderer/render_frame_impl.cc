@@ -726,7 +726,7 @@ bool IsHttpPost(const blink::WebURLRequest& request) {
 class MHTMLHandleWriterDelegate {
  public:
   MHTMLHandleWriterDelegate(
-      mojom::SerializeAsMHTMLParams& params,
+      const mojom::SerializeAsMHTMLParams& params,
       MHTMLHandleWriter::MHTMLWriteCompleteCallback callback,
       scoped_refptr<base::TaskRunner> main_thread_task_runner) {
     // Handle must be instantiated.
@@ -2655,15 +2655,15 @@ void RenderFrameImpl::UpdateBrowserControlsState(
 
   // Check content::BrowserControlsState, and cc::BrowserControlsState
   // are kept in sync.
-  static_assert(int(BROWSER_CONTROLS_STATE_SHOWN) ==
-                    int(cc::BrowserControlsState::kShown),
+  static_assert(static_cast<int>(BROWSER_CONTROLS_STATE_SHOWN) ==
+                    static_cast<int>(cc::BrowserControlsState::kShown),
                 "mismatching enums: SHOWN");
-  static_assert(int(BROWSER_CONTROLS_STATE_HIDDEN) ==
-                    int(cc::BrowserControlsState::kHidden),
+  static_assert(static_cast<int>(BROWSER_CONTROLS_STATE_HIDDEN) ==
+                    static_cast<int>(cc::BrowserControlsState::kHidden),
                 "mismatching enums: HIDDEN");
-  static_assert(
-      int(BROWSER_CONTROLS_STATE_BOTH) == int(cc::BrowserControlsState::kBoth),
-      "mismatching enums: BOTH");
+  static_assert(static_cast<int>(BROWSER_CONTROLS_STATE_BOTH) ==
+                    static_cast<int>(cc::BrowserControlsState::kBoth),
+                "mismatching enums: BOTH");
 
   cc::LayerTreeHost* host = render_widget_->layer_tree_host();
   host->UpdateBrowserControlsState(
@@ -3959,8 +3959,8 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
           frame_owner_properties);
   params.frame_owner_element_type = frame_owner_element_type;
   if (!Send(new FrameHostMsg_CreateChildFrame(params, &params_reply))) {
-    // Allocation of routing id failed, so we can't create a child frame. This can
-    // happen if the synchronous IPC message above has failed.  This can
+    // Allocation of routing id failed, so we can't create a child frame. This
+    // can happen if the synchronous IPC message above has failed.  This can
     // legitimately happen when the browser process has already destroyed
     // RenderProcessHost, but the renderer process hasn't quit yet.
     return nullptr;

@@ -164,14 +164,16 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
         Vector<float> input_parameters = GrayscaleMatrix(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount());
         effect = MakeGarbageCollected<FEColorMatrix>(
-            parent_filter, FECOLORMATRIX_TYPE_MATRIX, input_parameters);
+            parent_filter, FECOLORMATRIX_TYPE_MATRIX,
+            std::move(input_parameters));
         break;
       }
       case FilterOperation::SEPIA: {
         Vector<float> input_parameters = SepiaMatrix(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount());
         effect = MakeGarbageCollected<FEColorMatrix>(
-            parent_filter, FECOLORMATRIX_TYPE_MATRIX, input_parameters);
+            parent_filter, FECOLORMATRIX_TYPE_MATRIX,
+            std::move(input_parameters));
         break;
       }
       case FilterOperation::SATURATE: {
@@ -179,7 +181,8 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
         input_parameters.push_back(clampTo<float>(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount()));
         effect = MakeGarbageCollected<FEColorMatrix>(
-            parent_filter, FECOLORMATRIX_TYPE_SATURATE, input_parameters);
+            parent_filter, FECOLORMATRIX_TYPE_SATURATE,
+            std::move(input_parameters));
         break;
       }
       case FilterOperation::HUE_ROTATE: {
@@ -187,7 +190,8 @@ FilterEffect* FilterEffectBuilder::BuildFilterEffect(
         input_parameters.push_back(clampTo<float>(
             To<BasicColorMatrixFilterOperation>(filter_operation)->Amount()));
         effect = MakeGarbageCollected<FEColorMatrix>(
-            parent_filter, FECOLORMATRIX_TYPE_HUEROTATE, input_parameters);
+            parent_filter, FECOLORMATRIX_TYPE_HUEROTATE,
+            std::move(input_parameters));
         break;
       }
       case FilterOperation::INVERT: {

@@ -3005,7 +3005,7 @@ void RenderFrameHostImpl::ProcessBeforeUnloadACKFromFrame(
 }
 
 bool RenderFrameHostImpl::IsWaitingForUnloadACK() const {
-  return render_view_host_->is_waiting_for_close_ack_ ||
+  return render_view_host_->is_waiting_for_page_close_completion_ ||
          is_waiting_for_unload_ack_;
 }
 
@@ -4905,7 +4905,7 @@ void RenderFrameHostImpl::ResetWaitingState() {
     beforeunload_pending_replies_.clear();
   }
   send_before_unload_start_time_ = base::TimeTicks();
-  render_view_host_->is_waiting_for_close_ack_ = false;
+  render_view_host_->is_waiting_for_page_close_completion_ = false;
 }
 
 CanCommitStatus RenderFrameHostImpl::CanCommitOriginAndUrl(

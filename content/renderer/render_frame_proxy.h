@@ -223,7 +223,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnDeleteProxy();
   void OnCompositorFrameSwapped(const IPC::Message& message);
   void OnUpdateOpener(int opener_routing_id);
-  void OnViewChanged(const FrameMsg_ViewChanged_Params& params);
   void OnDidUpdateName(const std::string& name, const std::string& unique_name);
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnSetFrameOwnerProperties(const FrameOwnerProperties& properties);
@@ -236,6 +235,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
   void ChildProcessGone() override;
+  void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id) override;
 
   // ChildFrameCompositor:
   cc::Layer* GetLayer() override;

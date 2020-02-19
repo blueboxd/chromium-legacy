@@ -189,8 +189,8 @@ class VideoDecodeStatsReporterTest : public ::testing::Test {
       const base::Optional<CdmConfig> cdm_config = kDefaultCdmConfig) {
     reporter_ = std::make_unique<VideoDecodeStatsReporter>(
         SetupRecordInterceptor(&interceptor_),
-        base::Bind(&VideoDecodeStatsReporterTest::GetPipelineStatsCB,
-                   base::Unretained(this)),
+        base::BindRepeating(&VideoDecodeStatsReporterTest::GetPipelineStatsCB,
+                            base::Unretained(this)),
         profile, natural_size, key_system, cdm_config, task_runner_,
         task_runner_->GetMockTickClock());
   }

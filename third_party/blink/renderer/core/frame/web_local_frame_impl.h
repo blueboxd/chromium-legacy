@@ -110,7 +110,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebAutofillClient* AutofillClient() override;
   void SetContentCaptureClient(WebContentCaptureClient*) override;
   WebContentCaptureClient* ContentCaptureClient() const override;
-  void DispatchUnloadEvent() override;
   WebDocument GetDocument() const override;
   WebString AssignedName() const override;
   void SetName(const WebString&) override;

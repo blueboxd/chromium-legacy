@@ -108,6 +108,16 @@ class WebUIBrowserProxy {
     NOTIMPLEMENTED();
     return false;
   }
+
+  /** @override */
+  async openGallery(file) {
+    NOTIMPLEMENTED();
+  }
+
+  /** @override */
+  openInspector(type) {
+    NOTIMPLEMENTED();
+  }
 }
 
 export const browserProxy = new WebUIBrowserProxy();

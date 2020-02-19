@@ -302,13 +302,7 @@ String MenuListSelectType::UpdateTextStyleInternal() {
 
 void MenuListSelectType::UpdateTextStyleAndContent() {
   select_->InnerElement().firstChild()->setNodeValue(UpdateTextStyleInternal());
-  // LayoutMenuList::ControlClipRect() depends on the content box size of
-  // InnerElement.
   if (auto* box = select_->GetLayoutBox()) {
-    box->SetNeedsPaintPropertyUpdate();
-    if (auto* layer = box->Layer())
-      layer->SetNeedsCompositingInputsUpdate();
-
     if (auto* cache = select_->GetDocument().ExistingAXObjectCache())
       cache->TextChanged(box);
   }

@@ -1964,8 +1964,9 @@ bool HTMLInputElement::IsInteractiveContent() const {
 }
 
 scoped_refptr<ComputedStyle> HTMLInputElement::CustomStyleForLayoutObject() {
-  return input_type_view_->CustomStyleForLayoutObject(
-      OriginalStyleForLayoutObject());
+  scoped_refptr<ComputedStyle> style = OriginalStyleForLayoutObject();
+  input_type_view_->CustomStyleForLayoutObject(*style);
+  return style;
 }
 
 void HTMLInputElement::DidRecalcStyle(const StyleRecalcChange change) {

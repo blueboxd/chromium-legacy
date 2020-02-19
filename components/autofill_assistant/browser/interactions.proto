@@ -17,6 +17,7 @@ message InteractionsProto {
   repeated InteractionProto interactions = 1;
 }
 
+// An interaction consists of a trigger event and a series of actions.
 message InteractionProto {
   // Functions to call each time the event happens, in the specified order.
   repeated CallbackProto callbacks = 1;
@@ -24,8 +25,7 @@ message InteractionProto {
   optional EventProto trigger_event = 2;
 }
 
-// Each callback takes a single |ValueProto| as input. Some callbacks only
-// support values of particular types.
+// UI Actions to invoke.
 message CallbackProto {
   oneof kind {
     SetModelValueProto set_value = 1;
@@ -52,14 +52,14 @@ message OnModelValueChangedEventProto {
 message OnViewClickedEventProto {
   // The identifier of the view to observe.
   optional string view_identifier = 1;
-  // Optional, the value to send to the callback.
-  optional ValueProto value = 2;
 }
 
-// Callback that writes the incoming value to |model_identifier|.
+// Callback that writes the specified value to |model_identifier|.
 message SetModelValueProto {
-  // The identifier of the value to change.
+  // The model identifier to write to.
   optional string model_identifier = 1;
+  // The value to write.
+  optional ValueProto value = 2;
 }
 
 // Computes a value and stores the result to |result_model_identifier|.
@@ -124,11 +124,4 @@ message ShowListPopupProto {
   optional string selected_item_indices_model_identifier = 3;
   // Whether to allow the selection of multiple items or not.
   optional bool allow_multiselect = 4;
-}
-
-// Callback that expects a boolean input value and enables/disables the
-// specified view.
-message SetViewEnabledCallbackProto {
-  // The identifier of the view to enable/disable.
-  optional string view_identifier = 1;
 }

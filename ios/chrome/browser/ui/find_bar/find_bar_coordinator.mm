@@ -28,6 +28,9 @@
 
 @property(nonatomic, strong) FindBarMediator* mediator;
 
+// Allows simplified access to the FindInPageCommands handler.
+@property(nonatomic, readonly) id<FindInPageCommands> findInPageCommandHandler;
+
 @end
 
 @implementation FindBarCoordinator

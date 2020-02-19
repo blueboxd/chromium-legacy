@@ -219,13 +219,6 @@ const char* CustomTabBarView::GetClassName() const {
   return kViewClassName;
 }
 
-void CustomTabBarView::SetVisible(bool visible) {
-  if (!GetVisible() && visible) {
-    UpdateContents();
-  }
-  View::SetVisible(visible);
-}
-
 gfx::Size CustomTabBarView::CalculatePreferredSize() const {
   // ToolbarView::GetMinimumSize() uses the preferred size of its children, so
   // tell it the minimum size this control will fit into (its layout will
@@ -297,21 +290,16 @@ void CustomTabBarView::OnThemeChanged() {
 void CustomTabBarView::TabChangedAt(content::WebContents* contents,
                                     int index,
                                     TabChangeType change_type) {
-  if (delegate_->GetWebContents() == contents)
-    UpdateContents();
-}
-
-void CustomTabBarView::UpdateContents() {
-  // If the toolbar should not be shown don't update the UI, as the toolbar may
-  // be animating out and it looks messy.
-  web_app::AppBrowserController* const app_controller =
-      browser_->app_controller();
-  if (app_controller && !app_controller->ShouldShowCustomTabBar())
-    return;
-
-  content::WebContents* contents = delegate_->GetWebContents();
   if (!contents)
     return;
+
+  // If the toolbar should not be shown don't update the UI, as the toolbar may
+  // be animating out and it looks messy.
+  Browser* browser = chrome::FindBrowserWithWebContents(contents);
+  web_app::AppBrowserController* app_controller = browser->app_controller();
+  if (app_controller && !app_controller->ShouldShowCustomTabBar()) {
+    return;
+  }
 
   content::NavigationEntry* entry = contents->GetController().GetVisibleEntry();
   base::string16 title, location;

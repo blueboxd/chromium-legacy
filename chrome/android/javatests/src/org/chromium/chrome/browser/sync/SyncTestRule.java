@@ -256,8 +256,13 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
                     mFakeServerHelper = FakeServerHelper.get();
                 });
                 FakeServerHelper.useFakeServer(mContext);
-                TestThreadUtils.runOnUiThreadBlocking(
-                        () -> { mProfileSyncService = ProfileSyncService.get(); });
+                TestThreadUtils.runOnUiThreadBlocking(() -> {
+                    ProfileSyncService profileSyncService = createProfileSyncService();
+                    if (profileSyncService != null) {
+                        ProfileSyncService.overrideForTests(profileSyncService);
+                    }
+                    mProfileSyncService = ProfileSyncService.get();
+                });
 
                 UniqueIdentificationGeneratorFactory.registerGenerator(
                         UuidBasedUniqueIdentificationGenerator.GENERATOR_ID,
@@ -333,6 +338,13 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
             pref.setChecked(newValue);
         });
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+    }
+
+    /**
+     * Returns an instance of ProfileSyncService that can be overridden by subclasses.
+     */
+    protected ProfileSyncService createProfileSyncService() {
+        return null;
     }
 
     private void signinAndEnableSyncInternal(final Account account, boolean setFirstSetupComplete) {

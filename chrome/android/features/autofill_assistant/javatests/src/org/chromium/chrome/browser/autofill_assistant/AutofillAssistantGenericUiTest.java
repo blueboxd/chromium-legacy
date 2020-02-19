@@ -298,23 +298,25 @@ public class AutofillAssistantGenericUiTest {
         interactionsPrepended.add(
                 (InteractionProto) InteractionProto.newBuilder()
                         .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
-                                OnViewClickedEventProto.newBuilder()
-                                        .setViewIdentifier("clickableView1")
+                                OnViewClickedEventProto.newBuilder().setViewIdentifier(
+                                        "clickableView1")))
+                        .addCallbacks(CallbackProto.newBuilder().setSetValue(
+                                SetModelValueProto.newBuilder()
+                                        .setModelIdentifier("output_1")
                                         .setValue(ValueProto.newBuilder().setBooleans(
                                                 BooleanList.newBuilder().addValues(true)))))
-                        .addCallbacks(CallbackProto.newBuilder().setSetValue(
-                                SetModelValueProto.newBuilder().setModelIdentifier("output_1")))
                         .build());
         List<InteractionProto> interactionsAppended = new ArrayList<>();
         interactionsAppended.add(
                 (InteractionProto) InteractionProto.newBuilder()
                         .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
-                                OnViewClickedEventProto.newBuilder()
-                                        .setViewIdentifier("clickableView2")
+                                OnViewClickedEventProto.newBuilder().setViewIdentifier(
+                                        "clickableView2")))
+                        .addCallbacks(CallbackProto.newBuilder().setSetValue(
+                                SetModelValueProto.newBuilder()
+                                        .setModelIdentifier("output_2")
                                         .setValue(ValueProto.newBuilder().setStrings(
                                                 StringList.newBuilder().addValues("Hello World")))))
-                        .addCallbacks(CallbackProto.newBuilder().setSetValue(
-                                SetModelValueProto.newBuilder().setModelIdentifier("output_2")))
                         .build());
 
         List<ModelProto.ModelValue> modelValuesPrepended = new ArrayList<>();
@@ -431,14 +433,18 @@ public class AutofillAssistantGenericUiTest {
         interactions.add(
                 (InteractionProto) InteractionProto.newBuilder()
                         .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
-                                OnViewClickedEventProto.newBuilder()
-                                        .setViewIdentifier("clickableView")
+                                OnViewClickedEventProto.newBuilder().setViewIdentifier(
+                                        "clickableView")))
+                        .addCallbacks(CallbackProto.newBuilder().setSetValue(
+                                SetModelValueProto.newBuilder()
+                                        .setModelIdentifier("output_1")
                                         .setValue(ValueProto.newBuilder().setStrings(
                                                 StringList.newBuilder().addValues("Hello World")))))
                         .addCallbacks(CallbackProto.newBuilder().setSetValue(
-                                SetModelValueProto.newBuilder().setModelIdentifier("output_1")))
-                        .addCallbacks(CallbackProto.newBuilder().setSetValue(
-                                SetModelValueProto.newBuilder().setModelIdentifier("output_3")))
+                                SetModelValueProto.newBuilder()
+                                        .setModelIdentifier("output_3")
+                                        .setValue(ValueProto.newBuilder().setStrings(
+                                                StringList.newBuilder().addValues("Hello World")))))
                         .build());
         // Whenever output_1 changes, copy the value to output_2.
         interactions.add(
@@ -447,7 +453,10 @@ public class AutofillAssistantGenericUiTest {
                                 OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
                                         "output_1")))
                         .addCallbacks(CallbackProto.newBuilder().setSetValue(
-                                SetModelValueProto.newBuilder().setModelIdentifier("output_2")))
+                                SetModelValueProto.newBuilder()
+                                        .setModelIdentifier("output_2")
+                                        .setValue(ValueProto.newBuilder().setStrings(
+                                                StringList.newBuilder().addValues("Hello World")))))
                         .build());
         // Whenever output_2 changes, copy the value to output_1. This tests that no infinite loop
         // is created, because events should only be fired for actual value changes.
@@ -457,7 +466,10 @@ public class AutofillAssistantGenericUiTest {
                                 OnModelValueChangedEventProto.newBuilder().setModelIdentifier(
                                         "output_2")))
                         .addCallbacks(CallbackProto.newBuilder().setSetValue(
-                                SetModelValueProto.newBuilder().setModelIdentifier("output_1")))
+                                SetModelValueProto.newBuilder()
+                                        .setModelIdentifier("output_1")
+                                        .setValue(ValueProto.newBuilder().setStrings(
+                                                StringList.newBuilder().addValues("Hello World")))))
                         .build());
 
         List<ModelProto.ModelValue> modelValues = new ArrayList<>();
@@ -752,22 +764,24 @@ public class AutofillAssistantGenericUiTest {
         interactions.add(
                 (InteractionProto) InteractionProto.newBuilder()
                         .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
-                                OnViewClickedEventProto.newBuilder()
-                                        .setViewIdentifier("clickableView1")
+                                OnViewClickedEventProto.newBuilder().setViewIdentifier(
+                                        "clickableView1")))
+                        .addCallbacks(CallbackProto.newBuilder().setSetValue(
+                                SetModelValueProto.newBuilder()
+                                        .setModelIdentifier("output1")
                                         .setValue(ValueProto.newBuilder().setBooleans(
                                                 BooleanList.newBuilder().addValues(true)))))
-                        .addCallbacks(CallbackProto.newBuilder().setSetValue(
-                                SetModelValueProto.newBuilder().setModelIdentifier("output1")))
                         .build());
         interactions.add(
                 (InteractionProto) InteractionProto.newBuilder()
                         .setTriggerEvent(EventProto.newBuilder().setOnViewClicked(
-                                OnViewClickedEventProto.newBuilder()
-                                        .setViewIdentifier("clickableView2")
+                                OnViewClickedEventProto.newBuilder().setViewIdentifier(
+                                        "clickableView2")))
+                        .addCallbacks(CallbackProto.newBuilder().setSetValue(
+                                SetModelValueProto.newBuilder()
+                                        .setModelIdentifier("output2")
                                         .setValue(ValueProto.newBuilder().setBooleans(
                                                 BooleanList.newBuilder().addValues(true)))))
-                        .addCallbacks(CallbackProto.newBuilder().setSetValue(
-                                SetModelValueProto.newBuilder().setModelIdentifier("output2")))
                         .build());
         interactions.add(
                 (InteractionProto) InteractionProto.newBuilder()

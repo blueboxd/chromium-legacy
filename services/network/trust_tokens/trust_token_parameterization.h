@@ -11,15 +11,17 @@
 
 namespace network {
 
-// Priority for running blocking Trust Tokens database IO. This is given type
+// Priority for running blocking Trust Tokens database IO. This is given value
 // USER_VISIBLE because Trust Tokens DB operations can sometimes be in the
 // loading critical path, but generally only for subresources.
-extern const base::TaskPriority kTrustTokenDatabaseTaskPriority;
+constexpr base::TaskPriority kTrustTokenDatabaseTaskPriority =
+    base::TaskPriority::USER_VISIBLE;
 
 // The maximum time Trust Tokens backing database writes will be buffered before
 // being committed to disk. Two seconds was chosen fairly arbitrarily as a value
 // close to what the cookie store uses.
-extern const base::TimeDelta kTrustTokenWriteBufferingWindow;
+constexpr base::TimeDelta kTrustTokenWriteBufferingWindow =
+    base::TimeDelta::FromSeconds(2);
 
 }  // namespace network
 

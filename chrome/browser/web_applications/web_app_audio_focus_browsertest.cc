@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/extensions/browsertest_util.h"
+#include "base/unguessable_token.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
-#include "chrome/common/web_application_info.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/notification_service.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
-#include "extensions/test/extension_test_message_listener.h"
-#include "extensions/test/test_extension_dir.h"
-#include "media/base/media_switches.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/media_session/public/cpp/features.h"
+#include "ui/base/page_transition_types.h"
+#include "url/gurl.h"
+#include "url/third_party/mozilla/url_parse.h"
+#include "url/url_canon.h"
 
 namespace web_app {
 
@@ -28,7 +30,7 @@ const char kAudioFocusTestPageURL[] =
 
 // WebAppAudioFocusBrowserTest test that PWAs have separate audio
 // focus from the rest of the browser.
-class WebAppAudioFocusBrowserTest : public extensions::ExtensionBrowserTest {
+class WebAppAudioFocusBrowserTest : public WebAppControllerBrowserTest {
  public:
   WebAppAudioFocusBrowserTest() = default;
   ~WebAppAudioFocusBrowserTest() override = default;
@@ -40,7 +42,7 @@ class WebAppAudioFocusBrowserTest : public extensions::ExtensionBrowserTest {
          media_session::features::kAudioFocusSessionGrouping},
         {});
 
-    extensions::ExtensionBrowserTest::SetUp();
+    WebAppControllerBrowserTest::SetUp();
   }
 
   bool IsPaused(content::WebContents* web_contents) {
@@ -82,27 +84,13 @@ class WebAppAudioFocusBrowserTest : public extensions::ExtensionBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebAppAudioFocusBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WebAppAudioFocusBrowserTest, AppHasDifferentAudioFocus) {
+IN_PROC_BROWSER_TEST_P(WebAppAudioFocusBrowserTest, AppHasDifferentAudioFocus) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL app_url = embedded_test_server()->GetURL(kAudioFocusTestPageURL);
 
-  // Install the PWA.
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = app_url;
-  web_app_info.scope = app_url.GetWithoutFilename();
-  web_app_info.open_as_window = true;
-  const extensions::Extension* extension =
-      extensions::browsertest_util::InstallBookmarkApp(browser()->profile(),
-                                                       std::move(web_app_info));
-  ASSERT_TRUE(extension);
-
-  // Check that the extension has the correct type.
-  EXPECT_TRUE(extension->is_hosted_app());
-  EXPECT_TRUE(extension->from_bookmark());
+  AppId app_id = InstallPWA(app_url);
 
   // Launch browser with media page.
   content::WebContents* tab1 = AddTestPageTabAtIndex(0);
@@ -122,17 +110,10 @@ IN_PROC_BROWSER_TEST_F(WebAppAudioFocusBrowserTest, AppHasDifferentAudioFocus) {
   EXPECT_EQ(base::UnguessableToken::Null(), GetAudioFocusGroupId(tab2));
 
   // Launch the PWA.
-  content::WebContents* web_contents;
-  {
-    ui_test_utils::UrlLoadObserver url_observer(
-        app_url, content::NotificationService::AllSources());
-    Browser* app_browser = extensions::browsertest_util::LaunchAppBrowser(
-        browser()->profile(), extension);
-    url_observer.Wait();
-
-    web_contents = app_browser->tab_strip_model()->GetActiveWebContents();
-    EXPECT_TRUE(content::WaitForLoadStop(web_contents));
-  }
+  Browser* app_browser = LaunchWebAppBrowserAndWait(app_id);
+  content::WebContents* web_contents =
+      app_browser->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
 
   // Start the PWA playing and check that it has a group id.
   EXPECT_TRUE(StartPlaying(web_contents));
@@ -166,14 +147,10 @@ IN_PROC_BROWSER_TEST_F(WebAppAudioFocusBrowserTest, AppHasDifferentAudioFocus) {
 
   // Launch a second window for the PWA. It should have the same group id.
   {
-    ui_test_utils::UrlLoadObserver url_observer(
-        app_url, content::NotificationService::AllSources());
-    Browser* app_browser = extensions::browsertest_util::LaunchAppBrowser(
-        browser()->profile(), extension);
-    url_observer.Wait();
+    Browser* second_app_browser = LaunchWebAppBrowserAndWait(app_id);
 
     content::WebContents* new_contents =
-        app_browser->tab_strip_model()->GetActiveWebContents();
+        second_app_browser->tab_strip_model()->GetActiveWebContents();
     EXPECT_TRUE(content::WaitForLoadStop(new_contents));
 
     EXPECT_EQ(group_id, GetAudioFocusGroupId(new_contents));
@@ -194,24 +171,11 @@ IN_PROC_BROWSER_TEST_F(WebAppAudioFocusBrowserTest, AppHasDifferentAudioFocus) {
   EXPECT_EQ(group_id, GetAudioFocusGroupId(web_contents));
 }
 
-IN_PROC_BROWSER_TEST_F(WebAppAudioFocusBrowserTest,
-                       BookmarkAppHasSameAudioFocus) {
+IN_PROC_BROWSER_TEST_P(WebAppAudioFocusBrowserTest, WebAppHasSameAudioFocus) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL app_url = embedded_test_server()->GetURL(kAudioFocusTestPageURL);
 
-  // Install the bookmark app.
-  WebApplicationInfo web_app_info;
-  web_app_info.app_url = app_url;
-  web_app_info.scope = app_url.GetWithoutFilename();
-  web_app_info.open_as_window = true;
-  const extensions::Extension* extension =
-      extensions::browsertest_util::InstallBookmarkApp(profile(),
-                                                       std::move(web_app_info));
-  ASSERT_TRUE(extension);
-
-  // Check that the extension has the correct type.
-  EXPECT_TRUE(extension->is_hosted_app());
-  EXPECT_TRUE(extension->from_bookmark());
+  AppId app_id = InstallPWA(app_url);
 
   ui_test_utils::NavigateToURL(browser(), app_url);
   content::WebContents* web_contents =
@@ -220,5 +184,13 @@ IN_PROC_BROWSER_TEST_F(WebAppAudioFocusBrowserTest,
 
   EXPECT_EQ(base::UnguessableToken::Null(), GetAudioFocusGroupId(web_contents));
 }
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    WebAppAudioFocusBrowserTest,
+    ::testing::Values(ControllerType::kHostedAppController,
+                      ControllerType::kUnifiedControllerWithBookmarkApp,
+                      ControllerType::kUnifiedControllerWithWebApp),
+    ControllerTypeParamToString);
 
 }  // namespace web_app

@@ -205,8 +205,7 @@ class UiDelegate {
   virtual void RemoveObserver(const ControllerObserver* observer) = 0;
 
   // Dispatches an event to the event handler.
-  virtual void DispatchEvent(const EventHandler::EventKey& key,
-                             const ValueProto& value) = 0;
+  virtual void DispatchEvent(const EventHandler::EventKey& key) = 0;
 
   // Returns the user model.
   virtual UserModel* GetUserModel() = 0;

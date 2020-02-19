@@ -56,8 +56,6 @@ class LayoutSVGResourcePattern final : public LayoutSVGResourcePaintServer {
       const FloatRect& object_bounding_box);
   sk_sp<PaintRecord> AsPaintRecord(const FloatSize&,
                                    const AffineTransform&) const;
-  PatternData* PatternForClient(const SVGResourceClient&,
-                                const FloatRect& object_bounding_box);
 
   const LayoutSVGResourceContainer* ResolveContentElement() const;
 

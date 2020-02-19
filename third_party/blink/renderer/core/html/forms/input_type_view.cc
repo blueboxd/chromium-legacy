@@ -96,10 +96,7 @@ LayoutObject* InputTypeView::CreateLayoutObject(const ComputedStyle& style,
   return LayoutObject::CreateObject(&GetElement(), style, legacy);
 }
 
-scoped_refptr<ComputedStyle> InputTypeView::CustomStyleForLayoutObject(
-    scoped_refptr<ComputedStyle> original_style) {
-  return original_style;
-}
+void InputTypeView::CustomStyleForLayoutObject(ComputedStyle&) {}
 
 TextDirection InputTypeView::ComputedTextDirection() {
   return GetElement().ComputedStyleRef().Direction();

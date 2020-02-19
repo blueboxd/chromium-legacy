@@ -19,6 +19,15 @@ chrome.passwordsPrivate = {};
 /**
  * @enum {string}
  */
+chrome.passwordsPrivate.PlaintextReason = {
+  VIEW: 'VIEW',
+  COPY: 'COPY',
+  EDIT: 'EDIT',
+};
+
+/**
+ * @enum {string}
+ */
 chrome.passwordsPrivate.ExportProgressStatus = {
   NOT_STARTED: 'NOT_STARTED',
   IN_PROGRESS: 'IN_PROGRESS',
@@ -103,10 +112,13 @@ chrome.passwordsPrivate.undoRemoveSavedPasswordOrException = function() {};
  * operating systems, this call may result in an OS-level reauthentication. Once
  * the password has been fetched, it will be returned via |callback|.
  * @param {number} id The id for the password entry being being retrieved.
- * @param {function((string|undefined)):void} callback The callback that gets
- *     invoked with the retrieved password.
+ * @param {!chrome.passwordsPrivate.PlaintextReason} reason The reason why the
+ *     plaintext password is requested.
+ * @param {function(string):void} callback The callback that gets invoked with
+ *     the retrieved password.
  */
-chrome.passwordsPrivate.requestPlaintextPassword = function(id, callback) {};
+chrome.passwordsPrivate.requestPlaintextPassword = function(
+    id, reason, callback) {};
 
 /**
  * Returns the list of saved passwords.

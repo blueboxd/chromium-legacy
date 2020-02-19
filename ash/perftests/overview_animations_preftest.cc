@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/base/test/ui_controls.h"
 
 // Test overview enter/exit animations with following conditions
@@ -46,8 +46,9 @@ class OverviewAnimationsTest
     int wait_seconds = (base::SysInfo::IsRunningOnChromeOS() ? 5 : 0) +
                        n_browsers * cost_per_browser;
     base::RunLoop run_loop;
-    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                          base::TimeDelta::FromSeconds(wait_seconds));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromSeconds(wait_seconds));
     run_loop.Run();
   }
 

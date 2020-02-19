@@ -100,9 +100,8 @@ FilterEffect* SVGFEColorMatrixElement::Build(SVGFilterBuilder* filter_builder,
   DCHECK(input1);
 
   ColorMatrixType filter_type = type_->CurrentValue()->EnumValue();
-  Vector<float> filter_values = values_->CurrentValue()->ToFloatVector();
-  auto* effect =
-      MakeGarbageCollected<FEColorMatrix>(filter, filter_type, filter_values);
+  auto* effect = MakeGarbageCollected<FEColorMatrix>(
+      filter, filter_type, values_->CurrentValue()->ToFloatVector());
   effect->InputEffects().push_back(input1);
   return effect;
 }

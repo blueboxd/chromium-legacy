@@ -39,10 +39,11 @@ import java.util.List;
 class PermissionParamsListBuilder {
     private final List<PageInfoPermissionEntry> mEntries;
     private final String mFullUrl;
+    private final boolean mShouldShowTitle;
     private final Context mContext;
     private final AndroidPermissionDelegate mPermissionDelegate;
     private final SystemSettingsActivityRequiredListener mSettingsActivityRequiredListener;
-    private final Callback<List<PageInfoView.PermissionParams>> mDisplayPermissionsCallback;
+    private final Callback<PageInfoView.PermissionParams> mDisplayPermissionsCallback;
 
     /**
      * Creates a new builder of a list of PermissionParams that can be displayed.
@@ -56,11 +57,12 @@ class PermissionParamsListBuilder {
      *                                   user interaction with a permission entry.
      */
     PermissionParamsListBuilder(Context context, AndroidPermissionDelegate permissionDelegate,
-            String fullUrl,
+            String fullUrl, boolean shouldShowTitle,
             SystemSettingsActivityRequiredListener systemSettingsActivityRequiredListener,
-            Callback<List<PageInfoView.PermissionParams>> displayPermissionsCallback) {
+            Callback<PageInfoView.PermissionParams> displayPermissionsCallback) {
         mContext = context;
         mFullUrl = fullUrl;
+        mShouldShowTitle = shouldShowTitle;
         mSettingsActivityRequiredListener = systemSettingsActivityRequiredListener;
         mPermissionDelegate = permissionDelegate;
         mEntries = new ArrayList<>();
@@ -71,17 +73,20 @@ class PermissionParamsListBuilder {
         mEntries.add(new PageInfoPermissionEntry(name, type, value));
     }
 
-    List<PageInfoView.PermissionParams> build() {
-        List<PageInfoView.PermissionParams> permissionParams = new ArrayList<>();
+    PageInfoView.PermissionParams build() {
+        List<PageInfoView.PermissionRowParams> rowParams = new ArrayList<>();
         for (PermissionParamsListBuilder.PageInfoPermissionEntry permission : mEntries) {
-            permissionParams.add(createPermissionParams(permission));
+            rowParams.add(createPermissionParams(permission));
         }
-        return permissionParams;
+        PageInfoView.PermissionParams params = new PageInfoView.PermissionParams();
+        params.show_title = !rowParams.isEmpty() && mShouldShowTitle;
+        params.permissions = rowParams;
+        return params;
     }
 
-    private PageInfoView.PermissionParams createPermissionParams(
+    private PageInfoView.PermissionRowParams createPermissionParams(
             PermissionParamsListBuilder.PageInfoPermissionEntry permission) {
-        PageInfoView.PermissionParams permissionParams = new PageInfoView.PermissionParams();
+        PageInfoView.PermissionRowParams permissionParams = new PageInfoView.PermissionRowParams();
 
         permissionParams.iconResource = getImageResourceForPermission(permission.type);
         if (permission.setting == ContentSettingValues.ALLOW) {

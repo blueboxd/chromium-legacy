@@ -70,7 +70,7 @@ class AccountConsistencyModeManager : public KeyedService {
   FRIEND_TEST_ALL_PREFIXES(AccountConsistencyModeManagerTest,
                            SigninAllowedChangesDiceState);
   FRIEND_TEST_ALL_PREFIXES(AccountConsistencyModeManagerTest,
-                           DisallowSigninSwitch);
+                           AllowBrowserSigninSwitch);
   FRIEND_TEST_ALL_PREFIXES(AccountConsistencyModeManagerTest,
                            ForceDiceMigration);
 

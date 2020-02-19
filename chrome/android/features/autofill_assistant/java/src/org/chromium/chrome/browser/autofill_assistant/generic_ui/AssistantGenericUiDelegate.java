@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.autofill_assistant.generic_ui;
 
-import android.support.annotation.Nullable;
-
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -24,10 +22,10 @@ public class AssistantGenericUiDelegate {
         mNativeAssistantGenericUiDelegate = nativeAssistantGenericUiDelegate;
     }
 
-    void onViewClicked(String identifier, @Nullable AssistantValue value) {
+    void onViewClicked(String identifier) {
         assert mNativeAssistantGenericUiDelegate != 0;
-        AssistantGenericUiDelegateJni.get().onViewClicked(mNativeAssistantGenericUiDelegate,
-                AssistantGenericUiDelegate.this, identifier, value);
+        AssistantGenericUiDelegateJni.get().onViewClicked(
+                mNativeAssistantGenericUiDelegate, AssistantGenericUiDelegate.this, identifier);
     }
 
     void onListPopupSelectionChanged(String identifier, AssistantValue value) {
@@ -45,7 +43,7 @@ public class AssistantGenericUiDelegate {
     @NativeMethods
     interface Natives {
         void onViewClicked(long nativeAssistantGenericUiDelegate, AssistantGenericUiDelegate caller,
-                String identifier, @Nullable AssistantValue value);
+                String identifier);
         void onListPopupSelectionChanged(long nativeAssistantGenericUiDelegate,
                 AssistantGenericUiDelegate caller, String identifier, AssistantValue value);
     }

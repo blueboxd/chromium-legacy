@@ -22,6 +22,8 @@ static_library("core") {
     "metrics_helper.h",
     "mitm_software_ui.cc",
     "mitm_software_ui.h",
+    "pref_names.cc",
+    "pref_names.h",
     "safe_browsing_loud_error_ui.cc",
     "safe_browsing_loud_error_ui.h",
     "safe_browsing_quiet_error_ui.cc",

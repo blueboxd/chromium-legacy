@@ -418,13 +418,10 @@
   // |loadStrategy| to YES to ALWAYS_NEW_FOREGROUND_TAB.
   self.historyCoordinator = [[HistoryCoordinator alloc]
       initWithBaseViewController:self.baseViewController
-                    browserState:self.regularBrowser->GetBrowserState()];
+                         browser:self.regularBrowser];
   self.historyCoordinator.loadStrategy =
       UrlLoadStrategy::ALWAYS_NEW_FOREGROUND_TAB;
   self.historyCoordinator.presentationDelegate = self;
-  self.historyCoordinator.dispatcher =
-      static_cast<id<ApplicationCommands, BrowsingDataCommands>>(
-          self.dispatcher);
   [self.historyCoordinator start];
 }
 

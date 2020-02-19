@@ -571,10 +571,12 @@ cr.define('settings_passwords_section', function() {
 
       passwordManager.setPlaintextPassword('password');
       passwordDialog.$.showPasswordButton.click();
-      return passwordManager.whenCalled('getPlaintextPassword').then(id => {
-        assertEquals(1, id);
-        assertEquals('password', passwordDialog.item.password);
-      });
+      return passwordManager.whenCalled('requestPlaintextPassword')
+          .then(({id, reason}) => {
+            assertEquals(1, id);
+            assertEquals('VIEW', reason);
+            assertEquals('password', passwordDialog.item.password);
+          });
     });
 
     test('onShowSavedPasswordListItem', function() {
@@ -585,10 +587,27 @@ cr.define('settings_passwords_section', function() {
 
       passwordManager.setPlaintextPassword('password');
       passwordListItem.$$('#showPasswordButton').click();
-      return passwordManager.whenCalled('getPlaintextPassword').then(id => {
-        assertEquals(1, id);
-        assertEquals('password', passwordListItem.item.password);
-      });
+      return passwordManager.whenCalled('requestPlaintextPassword')
+          .then(({id, reason}) => {
+            assertEquals(1, id);
+            assertEquals('VIEW', reason);
+            assertEquals('password', passwordListItem.item.password);
+          });
+    });
+
+    test('onCopyPasswordListItem', function() {
+      const expectedItem = FakeDataMaker.passwordEntry('goo.gl', 'bart', 8, 1);
+      const passwordsSection = elementFactory.createPasswordsSection(
+          passwordManager, [expectedItem], []);
+
+      getFirstPasswordListItem(passwordsSection).$$('#passwordMenu').click();
+      passwordsSection.$$('#menuCopyPassword').click();
+
+      return passwordManager.whenCalled('requestPlaintextPassword')
+          .then(({id, reason}) => {
+            assertEquals(1, id);
+            assertEquals('COPY', reason);
+          });
     });
 
     test('closingPasswordsSectionHidesUndoToast', function(done) {

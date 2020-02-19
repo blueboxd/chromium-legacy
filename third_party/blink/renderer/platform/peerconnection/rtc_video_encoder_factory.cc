@@ -106,9 +106,10 @@ bool IsSameFormat(const webrtc::SdpVideoFormat& format1,
 RTCVideoEncoderFactory::RTCVideoEncoderFactory(
     media::GpuVideoAcceleratorFactories* gpu_factories)
     : gpu_factories_(gpu_factories) {
-  const media::VideoEncodeAccelerator::SupportedProfiles& profiles =
-      gpu_factories_->GetVideoEncodeAcceleratorSupportedProfiles();
-  for (const auto& profile : profiles) {
+  auto profiles = gpu_factories_->GetVideoEncodeAcceleratorSupportedProfiles();
+  if (!profiles)
+    return;
+  for (const auto& profile : *profiles) {
     base::Optional<webrtc::SdpVideoFormat> format = VEAToWebRTCFormat(profile);
     if (format) {
       supported_formats_.push_back(std::move(*format));

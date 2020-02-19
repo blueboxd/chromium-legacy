@@ -262,6 +262,7 @@ class TestGCScope : public TestGCCollectGarbageScope {
   explicit TestGCScope(BlinkGC::StackState state)
       : TestGCCollectGarbageScope(state) {
     ThreadState::Current()->Heap().stats_collector()->NotifyMarkingStarted(
+        BlinkGC::CollectionType::kMajor,
         BlinkGC::GCReason::kForcedGCForTesting);
     ThreadState::Current()->AtomicPauseMarkPrologue(
         BlinkGC::CollectionType::kMajor, state, BlinkGC::kAtomicMarking,

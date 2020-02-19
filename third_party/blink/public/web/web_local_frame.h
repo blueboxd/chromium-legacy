@@ -148,11 +148,6 @@ class WebLocalFrame : public WebFrame {
   virtual void SetContentCaptureClient(WebContentCaptureClient*) = 0;
   virtual WebContentCaptureClient* ContentCaptureClient() const = 0;
 
-  // Closing -------------------------------------------------------------
-
-  // Runs unload handlers for this frame.
-  virtual void DispatchUnloadEvent() = 0;
-
   // Basic properties ---------------------------------------------------
 
   virtual WebDocument GetDocument() const = 0;

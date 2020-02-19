@@ -73,13 +73,16 @@ class PasswordsPrivateDelegate : public KeyedService {
   // Requests the plain text password for entry corresponding to the |id|
   // generated for each entry of the password list.
   // |id| the id created when going over the list of saved passwords.
+  // |reason| The reason why the plaintext password is requested.
   // |callback| The callback that gets invoked with the saved password if it
   // could be obtained successfully, or base::nullopt otherwise.
   // |web_contents| The web content object used as the UI; will be used to show
   //     an OS-level authentication dialog if necessary.
-  virtual void RequestShowPassword(int id,
-                                   PlaintextPasswordCallback callback,
-                                   content::WebContents* web_contents) = 0;
+  virtual void RequestPlaintextPassword(
+      int id,
+      api::passwords_private::PlaintextReason reason,
+      PlaintextPasswordCallback callback,
+      content::WebContents* web_contents) = 0;
 
   // Trigger the password import procedure, allowing the user to select a file
   // containing passwords to import.

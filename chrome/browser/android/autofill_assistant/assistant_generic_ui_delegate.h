@@ -21,8 +21,7 @@ class AssistantGenericUiDelegate {
   void OnViewClicked(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& jcaller,
-      const base::android::JavaParamRef<jstring>& jview_identifier,
-      const base::android::JavaParamRef<jobject>& jvalue);
+      const base::android::JavaParamRef<jstring>& jview_identifier);
 
   // The selection in a list popup has changed. |jmodel_identifier| is the model
   // identifier that the new selection indices should be written to. |jvalue| is

@@ -512,14 +512,16 @@ TEST_F(WebAppRegistrarTest, CanFindShortcutWithUrlInScope) {
   EXPECT_EQ(app3_match, base::Optional<AppId>(app3_id));
 }
 
-TEST_F(WebAppRegistrarTest, FindAppDoesNotPreferPWAs) {
+TEST_F(WebAppRegistrarTest, FindPwaOverShortcut) {
   controller().Init();
 
   const GURL app1_launch("https://example.com/app/specific/launch1");
-  const AppId app1_id = GenerateAppIdFromURL(app1_launch);
 
   const GURL app2_scope("https://example.com/app");
   const GURL app2_page("https://example.com/app/specific/page2");
+  const AppId app2_id = GenerateAppIdFromURL(app2_scope);
+
+  const GURL app3_launch("https://example.com/app/specific/launch3");
 
   auto app1 = CreateWebApp(app1_launch.spec());
   RegisterApp(std::move(app1));
@@ -528,10 +530,13 @@ TEST_F(WebAppRegistrarTest, FindAppDoesNotPreferPWAs) {
   app2->SetScope(app2_scope);
   RegisterApp(std::move(app2));
 
+  auto app3 = CreateWebApp(app3_launch.spec());
+  RegisterApp(std::move(app3));
+
   base::Optional<AppId> app2_match =
       registrar().FindAppWithUrlInScope(app2_page);
   DCHECK(app2_match);
-  EXPECT_EQ(app2_match, base::Optional<AppId>(app1_id));
+  EXPECT_EQ(app2_match, base::Optional<AppId>(app2_id));
 }
 
 TEST_F(WebAppRegistrarTest, BeginAndCommitUpdate) {

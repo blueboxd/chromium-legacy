@@ -773,6 +773,14 @@ class ChromePasswordManagerClientAndroidTest
 
   void CreateManualFillingController(content::WebContents* web_contents);
 
+  ManualFillingControllerImpl* controller() {
+    return ManualFillingControllerImpl::FromWebContents(web_contents());
+  }
+
+  MockManualFillingView* view() {
+    return static_cast<MockManualFillingView*>(controller()->view());
+  }
+
  private:
   autofill::TestAutofillClient test_autofill_client_;
   NiceMock<MockPasswordAccessoryController> mock_pwd_controller_;
@@ -908,4 +916,16 @@ TEST_F(ChromePasswordManagerClientAndroidTest,
                   .empty());
 }
 
+TEST_F(ChromePasswordManagerClientAndroidTest, HideFillingUIOnNavigatingAway) {
+  CreateManualFillingController(web_contents());
+  // Navigate to a URL with a bubble/popup.
+  GURL kUrl1("https://example.com/");
+  NavigateAndCommit(kUrl1);
+  EXPECT_TRUE(ChromePasswordManagerClient::CanShowBubbleOnURL(kUrl1));
+
+  // Navigating away should call Hide.
+  EXPECT_CALL(*view(), Hide());
+  GURL kUrl2("https://accounts.google.com");
+  NavigateAndCommit(kUrl2);
+}
 #endif  //  defined(OS_ANDROID)

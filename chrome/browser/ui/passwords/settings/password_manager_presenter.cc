@@ -343,7 +343,7 @@ void PasswordManagerPresenter::UndoRemoveSavedPasswordOrException() {
 }
 
 #if !defined(OS_ANDROID)  // This is never called on Android.
-void PasswordManagerPresenter::RequestShowPassword(
+void PasswordManagerPresenter::RequestPlaintextPassword(
     const std::string& sort_key,
     base::OnceCallback<void(base::Optional<base::string16>)> callback) const {
   auto it = password_map_.find(sort_key);

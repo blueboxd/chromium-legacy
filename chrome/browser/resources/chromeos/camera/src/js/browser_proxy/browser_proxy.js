@@ -71,6 +71,26 @@ class ChromeAppBrowserProxy {
   isCrashReportingEnabled() {
     return util.promisify(chrome.metricsPrivate.getIsCrashReportingEnabled)();
   }
+
+  /** @override */
+  async openGallery(file) {
+    const id = 'nlkncpkkdoccmpiclbokaimcnedabhhm|app|open';
+    try {
+      const result = await util.promisify(
+          chrome.fileManagerPrivate.executeTask)(id, [file]);
+      if (result !== 'message_sent') {
+        console.warn('Unable to open picture: ' + result);
+      }
+    } catch (e) {
+      console.warn('Unable to open picture', e);
+      return;
+    }
+  }
+
+  /** @override */
+  openInspector(type) {
+    chrome.fileManagerPrivate.openInspector(type);
+  }
 }
 
 export const browserProxy = new ChromeAppBrowserProxy();

@@ -485,30 +485,21 @@ template <typename T>
 class GarbageCollected {
   IS_GARBAGE_COLLECTED_TYPE();
 
-  // For now direct allocation of arrays on the heap is not allowed.
-  void* operator new[](size_t size);
-
-#if defined(OS_WIN) && defined(COMPILER_MSVC)
-  // Due to some quirkiness in the MSVC compiler we have to provide
-  // the delete[] operator in the GarbageCollected subclasses as it
-  // is called when a class is exported in a DLL.
- protected:
-  void operator delete[](void* p) { NOTREACHED(); }
-#else
-  void operator delete[](void* p);
-#endif
-
  public:
   using ParentMostGarbageCollectedType = T;
 
-  void* operator new(size_t size) = delete;  // Must use MakeGarbageCollected.
+  // Must use MakeGarbageCollected.
+  void* operator new(size_t) = delete;
+  void* operator new[](size_t) = delete;
+  // The garbage collector is taking care of reclaiming the object. Also,
+  // virtual destructor requires an unambiguous, accessible 'operator delete'.
+  void operator delete(void*) { NOTREACHED(); }
+  void operator delete[](void*) = delete;
 
   template <typename Derived>
   static void* AllocateObject(size_t size) {
     return ThreadHeap::Allocate<GCInfoFoldedType<Derived>>(size);
   }
-
-  void operator delete(void* p) { NOTREACHED(); }
 
  protected:
   // This trait in theory can be moved to gc_info.h, but that would cause

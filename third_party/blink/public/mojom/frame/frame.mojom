@@ -555,6 +555,10 @@ interface RemoteFrame {
 interface LocalMainFrame {
   // Scales the view without affecting layout by using the visual viewport.
   SetScaleFactor(float scale);
+
+  // Instructs the renderer to close the current page, including running the
+  // onunload event handler.
+  ClosePage() => ();
 };
 
 // Implemented in Browser, this interface defines main-frame-specific methods

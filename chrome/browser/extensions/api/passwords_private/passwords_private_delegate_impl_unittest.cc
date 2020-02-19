@@ -21,6 +21,7 @@
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router.h"
 #include "chrome/browser/extensions/api/passwords_private/passwords_private_event_router_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
+#include "chrome/common/extensions/api/passwords_private.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
@@ -30,6 +31,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/test_event_router.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/clipboard/test/test_clipboard.h"
 
 using MockReauthCallback = base::MockCallback<
     password_manager::PasswordAccessAuthenticator::ReauthCallback>;
@@ -119,6 +121,8 @@ class PasswordsPrivateDelegateImplTest : public testing::Test {
   content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   extensions::TestEventRouter* event_router_ = nullptr;
+  ui::TestClipboard* test_clipboard_ =
+      ui::TestClipboard::CreateForCurrentThread();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PasswordsPrivateDelegateImplTest);
@@ -126,7 +130,9 @@ class PasswordsPrivateDelegateImplTest : public testing::Test {
 
 PasswordsPrivateDelegateImplTest::PasswordsPrivateDelegateImplTest() = default;
 
-PasswordsPrivateDelegateImplTest::~PasswordsPrivateDelegateImplTest() = default;
+PasswordsPrivateDelegateImplTest::~PasswordsPrivateDelegateImplTest() {
+  ui::Clipboard::DestroyClipboardForCurrentThread();
+}
 
 void PasswordsPrivateDelegateImplTest::SetUpPasswordStore(
     std::vector<autofill::PasswordForm> forms) {
@@ -236,6 +242,58 @@ TEST_F(PasswordsPrivateDelegateImplTest, ChangeSavedPassword) {
   EXPECT_TRUE(got_passwords);
 }
 
+// Checking callback result of RequestPlaintextPassword with reason Copy.
+// By implementation for Copy, callback will receive empty string.
+TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResult) {
+  autofill::PasswordForm form = CreateSampleForm();
+  SetUpPasswordStore({form});
+
+  PasswordsPrivateDelegateImpl delegate(&profile_);
+  base::RunLoop().RunUntilIdle();
+
+  MockReauthCallback callback;
+  delegate.set_os_reauth_call(callback.Get());
+
+  EXPECT_CALL(callback, Run(ReauthPurpose::VIEW_PASSWORD))
+      .WillOnce(Return(true));
+
+  MockPlaintextPasswordCallback password_callback;
+  EXPECT_CALL(password_callback, Run(Eq(base::string16())));
+  delegate.RequestPlaintextPassword(
+      0, api::passwords_private::PLAINTEXT_REASON_COPY, password_callback.Get(),
+      nullptr);
+
+  base::string16 result;
+  test_clipboard_->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
+  EXPECT_EQ(form.password_value, result);
+}
+
+TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResultFail) {
+  SetUpPasswordStore({CreateSampleForm()});
+
+  PasswordsPrivateDelegateImpl delegate(&profile_);
+  base::RunLoop().RunUntilIdle();
+
+  MockReauthCallback callback;
+  delegate.set_os_reauth_call(callback.Get());
+
+  EXPECT_CALL(callback, Run(ReauthPurpose::VIEW_PASSWORD))
+      .WillOnce(Return(false));
+
+  base::Time before_call = test_clipboard_->GetLastModifiedTime();
+
+  MockPlaintextPasswordCallback password_callback;
+  EXPECT_CALL(password_callback, Run(Eq(base::nullopt)));
+  delegate.RequestPlaintextPassword(
+      0, api::passwords_private::PLAINTEXT_REASON_COPY, password_callback.Get(),
+      nullptr);
+  // Clipboard should not be modifiend in case Reauth failed
+  base::string16 result;
+  test_clipboard_->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
+  EXPECT_EQ(base::string16(), result);
+  EXPECT_EQ(before_call, test_clipboard_->GetLastModifiedTime());
+}
+
 TEST_F(PasswordsPrivateDelegateImplTest, TestPassedReauthOnView) {
   SetUpPasswordStore({CreateSampleForm()});
 
@@ -252,7 +310,9 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestPassedReauthOnView) {
 
   MockPlaintextPasswordCallback password_callback;
   EXPECT_CALL(password_callback, Run(Eq(base::ASCIIToUTF16("test"))));
-  delegate.RequestShowPassword(0, password_callback.Get(), nullptr);
+  delegate.RequestPlaintextPassword(
+      0, api::passwords_private::PLAINTEXT_REASON_VIEW, password_callback.Get(),
+      nullptr);
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, TestFailedReauthOnView) {
@@ -271,7 +331,9 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestFailedReauthOnView) {
 
   MockPlaintextPasswordCallback password_callback;
   EXPECT_CALL(password_callback, Run(Eq(base::nullopt)));
-  delegate.RequestShowPassword(0, password_callback.Get(), nullptr);
+  delegate.RequestPlaintextPassword(
+      0, api::passwords_private::PLAINTEXT_REASON_VIEW, password_callback.Get(),
+      nullptr);
 }
 
 TEST_F(PasswordsPrivateDelegateImplTest, TestReauthOnExport) {

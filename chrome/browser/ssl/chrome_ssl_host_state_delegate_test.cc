@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
+#include "components/security_interstitials/content/chrome_ssl_host_state_delegate.h"
 
 #include <stdint.h>
 #include <utility>
@@ -328,7 +328,9 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest, Migrate) {
   // Trigger the migration code that happens on construction.
   {
     std::unique_ptr<ChromeSSLHostStateDelegate> temp_delegate(
-        new ChromeSSLHostStateDelegate(profile));
+        new ChromeSSLHostStateDelegate(
+            profile, profile->GetPrefs(),
+            HostContentSettingsMapFactory::GetForProfile(profile)));
   }
 
   // Test that the new style setting still works.
@@ -399,7 +401,9 @@ IN_PROC_BROWSER_TEST_F(ChromeSSLHostStateDelegateTest,
 
   // Create a new ChromeSSLHostStateDelegate to check that the state has been
   // saved to the pref and that the new ChromeSSLHostStateDelegate reads it.
-  ChromeSSLHostStateDelegate new_state(profile);
+  ChromeSSLHostStateDelegate new_state(
+      profile, profile->GetPrefs(),
+      HostContentSettingsMapFactory::GetForProfile(profile));
   new_state.SetRecurrentInterstitialThresholdForTesting(2);
   new_state.SetRecurrentInterstitialModeForTesting(
       ChromeSSLHostStateDelegate::RecurrentInterstitialMode::PREF);

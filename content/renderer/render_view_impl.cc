@@ -1188,7 +1188,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetInitialFocus, OnSetInitialFocus)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateTargetURL_ACK, OnUpdateTargetURLAck)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateWebPreferences, OnUpdateWebPreferences)
-    IPC_MESSAGE_HANDLER(ViewMsg_ClosePage, OnClosePage)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
                         OnEnablePreferredSizeChangedMode)
@@ -1812,22 +1811,6 @@ void RenderViewImpl::OnPluginActionAt(const gfx::Point& location,
                                       const PluginAction& action) {
   if (webview())
     webview()->PerformPluginAction(action, location);
-}
-
-void RenderViewImpl::OnClosePage() {
-  // ViewMsg_ClosePage should only be sent to active, non-swapped-out views.
-  DCHECK(webview()->MainFrame()->IsWebLocalFrame());
-
-  // TODO(creis): We'd rather use webview()->Close() here, but that currently
-  // sets the WebView's delegate_ to NULL, preventing any JavaScript dialogs
-  // in the onunload handler from appearing.  For now, we're bypassing that and
-  // calling the FrameLoader's CloseURL method directly.  This should be
-  // revisited to avoid having two ways to close a page.  Having a single way
-  // to close that can run onunload is also useful for fixing
-  // http://b/issue?id=753080.
-  webview()->MainFrame()->ToWebLocalFrame()->DispatchUnloadEvent();
-
-  Send(new ViewHostMsg_ClosePage_ACK(GetRoutingID()));
 }
 
 void RenderViewImpl::OnMoveOrResizeStarted() {

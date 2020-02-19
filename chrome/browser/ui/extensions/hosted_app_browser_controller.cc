@@ -59,9 +59,17 @@ bool IsSameHostAndPort(const GURL& app_url, const GURL& page_url) {
 HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
     : AppBrowserController(
           browser,
-          web_app::GetAppIdFromApplicationName(browser->app_name())) {}
+          web_app::GetAppIdFromApplicationName(browser->app_name())),
+      // If a bookmark app has a URL handler, then it is a PWA.
+      // TODO(https://crbug.com/774918): Replace once there is a more explicit
+      // indicator of a Bookmark App for an installable website.
+      created_for_installed_pwa_(UrlHandlers::GetUrlHandlers(GetExtension())) {}
 
 HostedAppBrowserController::~HostedAppBrowserController() = default;
+
+bool HostedAppBrowserController::CreatedForInstalledPwa() const {
+  return created_for_installed_pwa_;
+}
 
 bool HostedAppBrowserController::HasMinimalUiButtons() const {
   const Extension* extension = GetExtension();

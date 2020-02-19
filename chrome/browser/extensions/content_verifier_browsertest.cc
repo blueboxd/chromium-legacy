@@ -82,7 +82,7 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     // Override content verification mode before ExtensionSystemImpl initializes
     // ChromeContentVerifierDelegate.
     ChromeContentVerifierDelegate::SetDefaultModeForTesting(
-        ChromeContentVerifierDelegate::ENFORCE);
+        ChromeContentVerifierDelegate::VerifyInfo::Mode::ENFORCE);
 
     ON_CALL(update_service_, StartUpdateCheck)
         .WillByDefault(Invoke(this, &ContentVerifierTest::OnUpdateCheck));

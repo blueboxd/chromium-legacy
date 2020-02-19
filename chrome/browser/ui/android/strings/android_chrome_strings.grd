@@ -2175,6 +2175,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_PAGE_INFO_SITE_SETTINGS_BUTTON" desc="Text in the button that opens a website's Site Settings from the Page Info dialog.">
         Site settings
       </message>
+      <message name="IDS_PAGE_INFO_PERMISSIONS_TITLE" desc="Label used in the Page Info dialog above the permissions list.">
+        Permissions
+      </message>
       <message name="IDS_PAGE_INFO_INSTANT_APP_BUTTON" desc="Text in the button that opens an Android Instant app that is associated with the website's URL.">
         Open Instant App
       </message>
@@ -2220,7 +2223,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
 
       <!-- Cookie controls UI -->
       <message name="IDS_COOKIE_CONTROLS_BLOCKED_COOKIES" desc="Text showing the number of blocked cookies on a site.">
-        Blocked cookies (<ph name="COUNT">%1$s<ex>12</ex></ph>)
+      {COOKIE_COUNT, plural,
+          =1 {1 cookie blocked}
+          other {# cookies blocked}}
       </message>
 
       <!-- Sad tab page -->

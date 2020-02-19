@@ -29,20 +29,14 @@ AssistantGenericUiDelegate::~AssistantGenericUiDelegate() {
 void AssistantGenericUiDelegate::OnViewClicked(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
-    const base::android::JavaParamRef<jstring>& jview_identifier,
-    const base::android::JavaParamRef<jobject>& jvalue) {
+    const base::android::JavaParamRef<jstring>& jview_identifier) {
   std::string view_identifier;
   if (jview_identifier) {
     base::android::ConvertJavaStringToUTF8(env, jview_identifier,
                                            &view_identifier);
   }
 
-  ValueProto value;
-  if (jvalue) {
-    value = ui_controller_android_utils::ToNativeValue(env, jvalue);
-  }
-  ui_controller_->OnViewEvent({EventProto::kOnViewClicked, view_identifier},
-                              value);
+  ui_controller_->OnViewEvent({EventProto::kOnViewClicked, view_identifier});
 }
 
 void AssistantGenericUiDelegate::OnListPopupSelectionChanged(

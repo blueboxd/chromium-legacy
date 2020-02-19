@@ -549,6 +549,16 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
                     nullptr);
     }
   }
+
+  if (policy.has_required_client_certificate_for_device()) {
+    const em::RequiredClientCertificateForDeviceProto& container(
+        policy.required_client_certificate_for_device());
+    if (container.has_required_client_certificate_for_device()) {
+      SetJsonDevicePolicy(key::kRequiredClientCertificateForDevice,
+                          container.required_client_certificate_for_device(),
+                          policies);
+    }
+  }
 }
 
 void DecodeNetworkPolicies(const em::ChromeDeviceSettingsProto& policy,

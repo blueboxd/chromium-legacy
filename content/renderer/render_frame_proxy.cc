@@ -13,7 +13,6 @@
 #include "base/lazy_instance.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/frame_message_structs.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
 #include "content/common/input_messages.h"
@@ -375,7 +374,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxy, msg)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
-    IPC_MESSAGE_HANDLER(FrameMsg_ViewChanged, OnViewChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
     IPC_MESSAGE_HANDLER(FrameMsg_EnforceInsecureRequestPolicy,
                         OnEnforceInsecureRequestPolicy)
@@ -425,11 +423,6 @@ void RenderFrameProxy::OnUpdateOpener(int opener_routing_id) {
 
 void RenderFrameProxy::DidStartLoading() {
   web_frame_->DidStartLoading();
-}
-
-void RenderFrameProxy::OnViewChanged(
-    const FrameMsg_ViewChanged_Params& params) {
-  FrameSinkIdChanged(params.frame_sink_id);
 }
 
 void RenderFrameProxy::OnDidUpdateName(const std::string& name,
@@ -485,6 +478,10 @@ void RenderFrameProxy::DisableAutoResize() {
 
   pending_visual_properties_.auto_resize_enabled = false;
   SynchronizeVisualProperties();
+}
+
+void RenderFrameProxy::SetFrameSinkId(const viz::FrameSinkId& frame_sink_id) {
+  FrameSinkIdChanged(frame_sink_id);
 }
 
 void RenderFrameProxy::SynchronizeVisualProperties() {

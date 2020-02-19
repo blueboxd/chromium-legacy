@@ -497,9 +497,8 @@ void Controller::RemoveObserver(const ControllerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void Controller::DispatchEvent(const EventHandler::EventKey& key,
-                               const ValueProto& value) {
-  event_handler_.DispatchEvent(key, value);
+void Controller::DispatchEvent(const EventHandler::EventKey& key) {
+  event_handler_.DispatchEvent(key);
 }
 
 ViewportMode Controller::GetViewportMode() {
@@ -1619,8 +1618,7 @@ void Controller::OnWebContentsFocused(
 
 void Controller::OnValueChanged(const std::string& identifier,
                                 const ValueProto& new_value) {
-  event_handler_.DispatchEvent({EventProto::kOnValueChanged, identifier},
-                               new_value);
+  event_handler_.DispatchEvent({EventProto::kOnValueChanged, identifier});
   // TODO(b/145043394) Remove this once chips are part of generic UI.
   if (collect_user_data_options_ != nullptr &&
       collect_user_data_options_->additional_model_identifier_to_check

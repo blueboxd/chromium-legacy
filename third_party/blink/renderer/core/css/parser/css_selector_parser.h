@@ -35,6 +35,9 @@ class CORE_EXPORT CSSSelectorParser {
 
   static bool ConsumeANPlusB(CSSParserTokenRange&, std::pair<int, int>&);
 
+  static bool SupportsComplexSelector(CSSParserTokenRange,
+                                      const CSSParserContext*);
+
  private:
   CSSSelectorParser(const CSSParserContext*, StyleSheetContents*);
 
@@ -80,6 +83,8 @@ class CORE_EXPORT CSSSelectorParser {
   SplitCompoundAtImplicitShadowCrossingCombinator(
       std::unique_ptr<CSSParserSelector> compound_selector);
   void RecordUsageAndDeprecations(const CSSSelectorList&);
+  static bool ContainsUnknownWebkitPseudoElements(
+      const CSSSelector& complex_selector);
 
   const CSSParserContext* context_;
   const StyleSheetContents* style_sheet_;

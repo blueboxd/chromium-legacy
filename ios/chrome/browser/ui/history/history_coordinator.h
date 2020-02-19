@@ -12,21 +12,27 @@
 
 enum class UrlLoadStrategy;
 
-@protocol ApplicationCommands;
-@protocol BrowsingDataCommands;
 @protocol HistoryPresentationDelegate;
 
 // Coordinator that presents History.
 @interface HistoryCoordinator : ChromeCoordinator
-// The dispatcher for this Coordinator.
-@property(nonatomic, weak) id<ApplicationCommands, BrowsingDataCommands>
-    dispatcher;
+
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
+// Unavailable, use -initWithBaseViewController:browser:.
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:(ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
+
 // Opaque instructions on how to open urls.
 @property(nonatomic) UrlLoadStrategy loadStrategy;
 // Delegate used to make the Tab UI visible.
 @property(nonatomic, weak) id<HistoryPresentationDelegate> presentationDelegate;
+
 // Stops this Coordinator then calls |completionHandler|.
 - (void)stopWithCompletion:(ProceduralBlock)completionHandler;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_COORDINATOR_H_

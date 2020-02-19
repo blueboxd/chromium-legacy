@@ -144,7 +144,9 @@ class CONTENT_EXPORT RenderViewHostImpl
   bool is_active() const { return main_frame_routing_id_ != MSG_ROUTING_NONE; }
 
   // TODO(creis): Remove as part of http://crbug.com/418265.
-  bool is_waiting_for_close_ack() const { return is_waiting_for_close_ack_; }
+  bool is_waiting_for_page_close_completion() const {
+    return is_waiting_for_page_close_completion_;
+  }
 
   // Generate RenderViewCreated events for observers through the delegate.
   // These events are only generated for active RenderViewHosts (which have a
@@ -164,7 +166,8 @@ class CONTENT_EXPORT RenderViewHostImpl
   void DispatchRenderViewCreated();
 
   // Tells the renderer process to run the page's unload handler.
-  // A ClosePage_ACK ack is sent back when the handler execution completes.
+  // A completion callback is invoked by the renderer when the handler
+  // execution completes.
   void ClosePage();
 
   // Close the page ignoring whether it has unload events registers.
@@ -288,7 +291,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnDidContentsPreferredSizeChange(const gfx::Size& new_size);
   void OnPasteFromSelectionClipboard();
   void OnTakeFocus(bool reverse);
-  void OnClosePageACK();
   void OnFocus();
 
  private:
@@ -309,6 +311,8 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // Called by |close_timeout_| when the page closing timeout fires.
   void ClosePageTimeout();
+
+  void OnPageClosed();
 
   // TODO(creis): Move to a private namespace on RenderFrameHostImpl.
   // Delay to wait on closing the WebContents for a beforeunload/unload handler
@@ -347,10 +351,12 @@ class CONTENT_EXPORT RenderViewHostImpl
   // Routing ID for the main frame's RenderFrameHost.
   int main_frame_routing_id_;
 
-  // Set to true when waiting for a ViewHostMsg_ClosePageACK.
+  // Set to true when waiting for a blink.mojom.LocalMainFrame.ClosePage()
+  // to complete.
+  //
   // TODO(creis): Move to RenderFrameHost and RenderWidgetHost.
   // See http://crbug.com/418265.
-  bool is_waiting_for_close_ack_ = false;
+  bool is_waiting_for_page_close_completion_ = false;
 
   // True if the render view can be shut down suddenly.
   bool sudden_termination_allowed_ = false;

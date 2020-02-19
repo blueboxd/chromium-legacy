@@ -52,6 +52,22 @@ CSSSelectorList CSSSelectorParser::ConsumeSelector(
   return result;
 }
 
+// static
+bool CSSSelectorParser::SupportsComplexSelector(
+    CSSParserTokenRange range,
+    const CSSParserContext* context) {
+  range.ConsumeWhitespace();
+  CSSSelectorParser parser(context, nullptr);
+  auto parser_selector = parser.ConsumeComplexSelector(range);
+  if (parser.failed_parsing_ || !range.AtEnd() || !parser_selector)
+    return false;
+  auto complex_selector = parser_selector->ReleaseSelector();
+  DCHECK(complex_selector);
+  if (ContainsUnknownWebkitPseudoElements(*complex_selector.get()))
+    return false;
+  return true;
+}
+
 CSSSelectorParser::CSSSelectorParser(const CSSParserContext* context,
                                      StyleSheetContents* style_sheet)
     : context_(context), style_sheet_(style_sheet) {}
@@ -1196,6 +1212,19 @@ void CSSSelectorParser::RecordUsageAndDeprecations(
         RecordUsageAndDeprecations(*current->SelectorList());
     }
   }
+}
+
+bool CSSSelectorParser::ContainsUnknownWebkitPseudoElements(
+    const CSSSelector& complex_selector) {
+  for (const CSSSelector* current = &complex_selector; current;
+       current = current->TagHistory()) {
+    if (current->GetPseudoType() != CSSSelector::kPseudoWebKitCustomElement)
+      continue;
+    WebFeature feature = FeatureForWebKitCustomPseudoElement(current->Value());
+    if (feature == WebFeature::kCSSSelectorWebkitUnknownPseudo)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace blink

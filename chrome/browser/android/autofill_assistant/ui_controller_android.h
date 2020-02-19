@@ -118,7 +118,7 @@ class UiControllerAndroid : public ControllerObserver {
   void OnFeedbackButtonClicked();
 
   // Called by AssistantGenericUiDelegate:
-  void OnViewEvent(const EventHandler::EventKey& key, const ValueProto& value);
+  void OnViewEvent(const EventHandler::EventKey& key);
   void OnValueChanged(const std::string& identifier, const ValueProto& value);
 
   // Called by AssistantCollectUserDataDelegate:

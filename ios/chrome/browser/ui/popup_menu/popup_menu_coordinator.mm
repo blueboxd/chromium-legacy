@@ -251,7 +251,8 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
   self.actionHandler.baseViewController = self.baseViewController;
   self.actionHandler.dispatcher =
       static_cast<id<ApplicationCommands, BrowserCommands, FindInPageCommands,
-                     LoadQueryCommands>>(self.browser->GetCommandDispatcher());
+                     LoadQueryCommands, TextZoomCommands>>(
+          self.browser->GetCommandDispatcher());
   self.actionHandler.commandHandler = self.mediator;
   tableViewController.delegate = self.actionHandler;
 

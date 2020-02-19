@@ -9,10 +9,10 @@ namespace autofill_assistant {
 EventHandler::EventHandler() = default;
 EventHandler::~EventHandler() = default;
 
-void EventHandler::DispatchEvent(const EventKey& key, const ValueProto& value) {
-  DVLOG(3) << __func__ << " " << key << ": " << value;
+void EventHandler::DispatchEvent(const EventKey& key) {
+  DVLOG(3) << __func__ << " " << key;
   for (auto& observer : observers_) {
-    observer.OnEvent(key, value);
+    observer.OnEvent(key);
   }
 }
 

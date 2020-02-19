@@ -176,20 +176,18 @@ export function close(name, condition) {
  */
 export function onKeyPressed(event) {
   const key = util.getShortcutIdentifier(event);
-  const openInspector = (type) => chrome.fileManagerPrivate &&
-      chrome.fileManagerPrivate.openInspector(type);
   switch (key) {
     case 'BrowserBack':
       chrome.app.window.current().minimize();
       break;
     case 'Ctrl-Shift-I':
-      openInspector('normal');
+      browserProxy.openInspector('normal');
       break;
     case 'Ctrl-Shift-J':
-      openInspector('console');
+      browserProxy.openInspector('console');
       break;
     case 'Ctrl-Shift-C':
-      openInspector('element');
+      browserProxy.openInspector('element');
       break;
     case 'Ctrl-Shift-E':
       (async () => {

@@ -5,7 +5,7 @@
 #import "ios/chrome/browser/ui/text_zoom/text_zoom_mediator.h"
 
 #import "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/text_zoom_commands.h"
 #import "ios/chrome/browser/ui/text_zoom/text_zoom_consumer.h"
 #import "ios/chrome/browser/web/font_size_tab_helper.h"
 #import "ios/chrome/browser/web_state_list/active_web_state_observation_forwarder.h"
@@ -31,15 +31,15 @@
 // The active WebState's font size tab helper.
 @property(nonatomic, readonly) FontSizeTabHelper* fontSizeTabHelper;
 
-// Handler for any BrowserCommands.
-@property(nonatomic, weak) id<BrowserCommands> commandHandler;
+// Handler for any TextZoomCommands.
+@property(nonatomic, weak) id<TextZoomCommands> commandHandler;
 
 @end
 
 @implementation TextZoomMediator
 
 - (instancetype)initWithWebStateList:(WebStateList*)webStateList
-                      commandHandler:(id<BrowserCommands>)commandHandler {
+                      commandHandler:(id<TextZoomCommands>)commandHandler {
   self = [super init];
   if (self) {
     _commandHandler = commandHandler;

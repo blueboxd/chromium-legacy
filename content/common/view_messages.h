@@ -128,12 +128,6 @@ IPC_MESSAGE_ROUTED2(ViewMsg_PluginActionAt,
 // to prevent target URLs spamming the browser.
 IPC_MESSAGE_ROUTED0(ViewMsg_UpdateTargetURL_ACK)
 
-// Instructs the renderer to close the current page, including running the
-// onunload event handler.
-//
-// Expects a ClosePage_ACK message when finished.
-IPC_MESSAGE_ROUTED0(ViewMsg_ClosePage)
-
 // Notification that a move or resize renderer's containing window has
 // started.
 IPC_MESSAGE_ROUTED0(ViewMsg_MoveOrResizeStarted)
@@ -183,10 +177,6 @@ IPC_MESSAGE_ROUTED1(ViewHostMsg_ShowFullscreenWidget,
 // Sent from an inactive renderer for the browser to route to the active
 // renderer, instructing it to close.
 IPC_MESSAGE_ROUTED0(ViewHostMsg_RouteCloseEvent)
-
-// Indicates that the current page has been closed, after a ClosePage
-// message.
-IPC_MESSAGE_ROUTED0(ViewHostMsg_ClosePage_ACK)
 
 // Notifies the browser that we want to show a destination url for a potential
 // action (e.g. when the user is hovering over a link).

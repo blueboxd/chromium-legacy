@@ -79,20 +79,9 @@ int LayoutMenuList::MeasureOptionsWidth() const {
 
 PhysicalRect LayoutMenuList::ControlClipRect(
     const PhysicalOffset& additional_offset) const {
-  // Clip to the intersection of the content box and the content box for the
-  // inner box. This will leave room for the arrows which sit in the inner box
-  // padding, and if the inner box ever spills out of the outer box, that will
-  // get clipped too.
   PhysicalRect outer_box = PhysicalContentBoxRect();
   outer_box.offset += additional_offset;
-
-  LayoutBlock* block = InnerBlock();
-  PhysicalRect inner_box(
-      additional_offset + block->PhysicalLocation() +
-          PhysicalOffset(block->PaddingLeft(), block->PaddingTop()),
-      block->ContentSize());
-
-  return Intersection(outer_box, inner_box);
+  return outer_box;
 }
 
 void LayoutMenuList::ComputeIntrinsicLogicalWidths(
@@ -100,11 +89,13 @@ void LayoutMenuList::ComputeIntrinsicLogicalWidths(
     LayoutUnit& max_logical_width) const {
   int options_width = MeasureOptionsWidth();
 
-  LayoutBlock* block = InnerBlock();
+  LayoutTheme& theme = LayoutTheme::GetTheme();
+  int paddings = theme.PopupInternalPaddingStart(StyleRef()) +
+                 theme.PopupInternalPaddingEnd(GetFrame(), StyleRef());
   max_logical_width =
       std::max(options_width,
                LayoutTheme::GetTheme().MinimumMenuListSize(StyleRef())) +
-      block->PaddingLeft() + block->PaddingRight();
+      LayoutUnit(paddings);
   if (!StyleRef().Width().IsPercentOrCalc())
     min_logical_width = max_logical_width;
   else

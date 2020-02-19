@@ -41,6 +41,7 @@ class WebAppBrowserController : public AppBrowserController,
   ~WebAppBrowserController() override;
 
   // AppBrowserController:
+  bool CreatedForInstalledPwa() const override;
   bool HasMinimalUiButtons() const override;
   gfx::ImageSkia GetWindowAppIcon() const override;
   gfx::ImageSkia GetWindowIcon() const override;

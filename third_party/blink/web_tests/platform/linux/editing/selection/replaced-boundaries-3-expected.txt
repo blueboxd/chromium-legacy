@@ -16,9 +16,10 @@ layer at (0,0) size 800x600
           text run at (0,0) width 22: "abc"
         LayoutBR {BR} at (22,15) size 0x0
         LayoutMenuList {SELECT} at (0,20) size 233x20 [bgcolor=#DDDDDD] [border: (1px solid #767676)]
-          LayoutBlockFlow {DIV} at (1,1) size 231x18
-            LayoutText {#text} at (4,1) size 211x16
-              text run at (4,1) width 211: "this select box shouldn't be selected"
         LayoutText {#text} at (0,0) size 0x0
+layer at (13,85) size 211x18 scrollWidth 212
+  LayoutBlockFlow {DIV} at (5,1) size 211x18
+    LayoutText {#text} at (0,1) size 211x16
+      text run at (0,1) width 211: "this select box shouldn't be selected"
 selection start: position 1 of child 0 {#text} of child 3 {DIV} of body
 selection end:   position 1 of child 1 {BR} of child 3 {DIV} of body

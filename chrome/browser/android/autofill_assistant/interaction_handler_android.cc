@@ -20,18 +20,16 @@ namespace autofill_assistant {
 namespace {
 
 void SetValue(base::WeakPtr<UserModel> user_model,
-              const std::string& identifier,
-              const ValueProto& value) {
+              const SetModelValueProto& proto) {
   if (!user_model) {
     return;
   }
-  user_model->SetValue(identifier, value);
+  user_model->SetValue(proto.model_identifier(), proto.value());
 }
 
 void ComputeValueBooleanAnd(base::WeakPtr<UserModel> user_model,
                             const BooleanAndProto& proto,
-                            const std::string& result_model_identifier,
-                            const ValueProto& ignored) {
+                            const std::string& result_model_identifier) {
   if (!user_model) {
     return;
   }
@@ -57,8 +55,7 @@ void ComputeValueBooleanAnd(base::WeakPtr<UserModel> user_model,
 
 void ComputeValueBooleanOr(base::WeakPtr<UserModel> user_model,
                            const BooleanOrProto& proto,
-                           const std::string& result_model_identifier,
-                           const ValueProto& ignored) {
+                           const std::string& result_model_identifier) {
   if (!user_model) {
     return;
   }
@@ -84,8 +81,7 @@ void ComputeValueBooleanOr(base::WeakPtr<UserModel> user_model,
 
 void ComputeValueBooleanNot(base::WeakPtr<UserModel> user_model,
                             const BooleanNotProto& proto,
-                            const std::string& result_model_identifier,
-                            const ValueProto& ignored) {
+                            const std::string& result_model_identifier) {
   if (!user_model) {
     return;
   }
@@ -155,8 +151,7 @@ CreateComputeValueCallbackForProto(base::WeakPtr<UserModel> user_model,
 }
 
 void ShowInfoPopup(const InfoPopupProto& proto,
-                   base::android::ScopedJavaGlobalRef<jobject> jcontext,
-                   const ValueProto& ignored) {
+                   base::android::ScopedJavaGlobalRef<jobject> jcontext) {
   JNIEnv* env = base::android::AttachCurrentThread();
   auto jcontext_local = base::android::ScopedJavaLocalRef<jobject>(jcontext);
   ui_controller_android_utils::ShowJavaInfoPopup(
@@ -167,8 +162,7 @@ void ShowInfoPopup(const InfoPopupProto& proto,
 void ShowListPopup(base::WeakPtr<UserModel> user_model,
                    const ShowListPopupProto& proto,
                    base::android::ScopedJavaGlobalRef<jobject> jcontext,
-                   base::android::ScopedJavaGlobalRef<jobject> jdelegate,
-                   const ValueProto& ignored) {
+                   base::android::ScopedJavaGlobalRef<jobject> jdelegate) {
   if (!user_model) {
     return;
   }
@@ -273,10 +267,6 @@ base::Optional<EventHandler::EventKey> CreateEventKeyFromProto(
           env, jview->second,
           base::android::ConvertUTF8ToJavaString(
               env, proto.on_view_clicked().view_identifier()),
-          proto.on_view_clicked().has_value()
-              ? ui_controller_android_utils::ToJavaValue(
-                    env, proto.on_view_clicked().value())
-              : nullptr,
           jdelegate);
       return base::Optional<EventHandler::EventKey>(
           {proto.kind_case(), proto.on_view_clicked().view_identifier()});
@@ -301,7 +291,7 @@ CreateInteractionCallbackFromProto(
       }
       return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
           base::BindRepeating(&SetValue, user_model->GetWeakPtr(),
-                              proto.set_value().model_identifier()));
+                              proto.set_value()));
     case CallbackProto::kShowInfoPopup: {
       return base::Optional<InteractionHandlerAndroid::InteractionCallback>(
           base::BindRepeating(&ShowInfoPopup,
@@ -394,12 +384,11 @@ void InteractionHandlerAndroid::AddInteraction(
   interactions_[key].emplace_back(callback);
 }
 
-void InteractionHandlerAndroid::OnEvent(const EventHandler::EventKey& key,
-                                        const ValueProto& value) {
+void InteractionHandlerAndroid::OnEvent(const EventHandler::EventKey& key) {
   auto it = interactions_.find(key);
   if (it != interactions_.end()) {
     for (auto& callback : it->second) {
-      callback.Run(value);
+      callback.Run();
     }
   }
 }

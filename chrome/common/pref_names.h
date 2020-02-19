@@ -41,7 +41,6 @@ extern const char kRestoreOnStartup[];
 extern const char kSessionExitedCleanly[];
 extern const char kSessionExitType[];
 extern const char kObservedSessionTime[];
-extern const char kRecurrentSSLInterstitial[];
 extern const char kSiteEngagementLastUpdateTime[];
 extern const char kSupervisedUserCustodianEmail[];
 extern const char kSupervisedUserCustodianName[];
@@ -1028,6 +1027,11 @@ extern const char kWebComponentsV0Enabled[];
 
 #if defined(OS_ANDROID)
 extern const char kKnownInterceptionDisclosureInfobarLastShown[];
+#endif
+
+#if defined(OS_CHROMEOS)
+extern const char kRequiredClientCertificateForUser[];
+extern const char kRequiredClientCertificateForDevice[];
 #endif
 
 }  // namespace prefs

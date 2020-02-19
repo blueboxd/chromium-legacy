@@ -2866,6 +2866,8 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-003.html [ Fail
 crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-004.html [ Failure ]
 crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Failure ]
 
+crbug.com/1053965 external/wpt/css/css-values/ex-unit-004.html [ Failure ]
+
 # ====== New tests from wpt-importer added here ======
 crbug.com/626703 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/abrupt-completion.html [ Timeout ]
 crbug.com/626703 [ Mac ] virtual/omt-worker-fetch/external/wpt/workers/abrupt-completion.html [ Timeout ]
@@ -2890,9 +2892,6 @@ crbug.com/626703 [ Mac10.13 ] external/wpt/webxr/events_referenceSpace_reset_inl
 crbug.com/626703 [ Linux ] external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-002.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-002.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-grid/grid-model/grid-areas-overflowing-grid-container-002.html [ Failure ]
-crbug.com/626703 [ Linux ] external/wpt/css/css-values/ex-unit-004.html [ Failure ]
-crbug.com/626703 [ Mac ] external/wpt/css/css-values/ex-unit-004.html [ Failure ]
-crbug.com/626703 [ Win ] external/wpt/css/css-values/ex-unit-004.html [ Failure ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-text/letter-spacing/letter-spacing-nesting-003.xht [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-text/letter-spacing/letter-spacing-nesting-003.xht [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-text/letter-spacing/letter-spacing-nesting-003.xht [ Failure ]
@@ -6582,10 +6581,6 @@ crbug.com/1050559 [ Linux ] external/wpt/shape-detection/idlharness.https.any.ht
 crbug.com/1050559 [ Linux ] external/wpt/video-raf/idlharness.window.html [ Pass Failure ]
 crbug.com/1050559 [ Linux ] external/wpt/WebCryptoAPI/derive_bits_keys/hkdf.https.any.worker.html?1-1000 [ Pass Failure ]
 
-# Temporarily disable to unblock WebRTC CL roll making it PASS a test.
-crbug.com/webrtc/7061 external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]
-crbug.com/webrtc/7061 virtual/webrtc-wpt-plan-b/external/wpt/webrtc/RTCPeerConnection-mandatory-getStats.https.html [ Pass Failure ]
-
 # DevTools roll
 crbug.com/1006759 http/tests/devtools/elements/styles-1/edit-value-url-with-color.js [ Skip ]
 crbug.com/1006759 http/tests/devtools/sources/css-outline-dialog.js [ Skip ]
@@ -6626,3 +6621,6 @@ crbug.com/1051774 [ Fuchsia ] http/tests/plugins/navigator-plugins-in-cross-orig
 crbug.com/1051133 [ Fuchsia ] http/tests/canvas/philip/tests/security.pattern.canvas.fillStyle.html [ Crash Timeout Pass ]
 crbug.com/1051131 [ Fuchsia ] http/tests/appcache/abort-cache-onchecking-resource-404.html [ Timeout Pass ]
 crbug.com/848799 [ Win10 ] http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Timeout ]
+
+# Sheriff 2020-02-19
+crbug.com/1053903 [ Mac10.12 ] external/wpt/webxr/events_referenceSpace_reset_inline.https.html [ Pass Failure ]

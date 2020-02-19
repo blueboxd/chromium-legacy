@@ -260,7 +260,8 @@ TEST_F(PerfettoIntegrationTest, TracingRestarted) {
 
   RunUntilIdle();
 
-  perfetto::SharedMemory* first_session_shm = client->shared_memory();
+  perfetto::SharedMemory* first_session_shm =
+      client->shared_memory_for_testing();
   consumer.StopTracing();
 
   client_disabled_callback.Run();
@@ -278,7 +279,7 @@ TEST_F(PerfettoIntegrationTest, TracingRestarted) {
   RunUntilIdle();
 
   // We should still be using the same shared memory.
-  EXPECT_EQ(first_session_shm, client->shared_memory());
+  EXPECT_EQ(first_session_shm, client->shared_memory_for_testing());
 
   base::RunLoop client_redisabled_callback;
   client->SetAgentDisabledCallback(client_redisabled_callback.QuitClosure());
@@ -357,9 +358,10 @@ TEST_F(PerfettoIntegrationTest,
 
   client2_enabled_callback.Run();
 
-  EXPECT_TRUE(client1->shared_memory());
-  EXPECT_TRUE(client2->shared_memory());
-  EXPECT_NE(client1->shared_memory(), client2->shared_memory());
+  EXPECT_TRUE(client1->shared_memory_for_testing());
+  EXPECT_TRUE(client2->shared_memory_for_testing());
+  EXPECT_NE(client1->shared_memory_for_testing(),
+            client2->shared_memory_for_testing());
 
   ProducerClient::DeleteSoonForTesting(std::move(client1));
   ProducerClient::DeleteSoonForTesting(std::move(client2));

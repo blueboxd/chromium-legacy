@@ -85,10 +85,26 @@ var availableTests = [
   },
 
   function requestPlaintextPassword() {
-    chrome.passwordsPrivate.requestPlaintextPassword(0, password => {
-      // Ensure that the callback is invoked.
-      chrome.test.succeed();
-    });
+    chrome.passwordsPrivate.requestPlaintextPassword(
+        0, chrome.passwordsPrivate.PlaintextReason.VIEW, password => {
+          // Ensure that the callback is invoked without an error state and the
+          // expected plaintext password.
+          chrome.test.assertNoLastError();
+          chrome.test.assertEq('plaintext', password);
+          chrome.test.succeed();
+        });
+  },
+
+  function requestPlaintextPasswordFails() {
+    chrome.passwordsPrivate.requestPlaintextPassword(
+        123, chrome.passwordsPrivate.PlaintextReason.VIEW, password => {
+          // Ensure that the callback is invoked with an error state and the
+          // message contains the right id.
+          chrome.test.assertLastError(
+              'Could not obtain plaintext password. Either the user is not ' +
+              'authenticated or no password with id = 123 could be found.');
+          chrome.test.succeed();
+        });
   },
 
   function getSavedPasswordList() {

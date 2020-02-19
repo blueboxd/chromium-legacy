@@ -761,7 +761,8 @@ IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateApp) {
   EXPECT_TRUE(base::ContentsEqual(v2_file_path, new_crx_path));
 }
 
-IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, UpdateAndRemoveApp) {
+// Test is flaky: https://crbug.com/1044417
+IN_PROC_BROWSER_TEST_F(KioskAppManagerTest, DISABLED_UpdateAndRemoveApp) {
   // Add a version 1 app first.
   RunAddNewAppTest(kTestLocalFsKioskApp, "1.0.0", kTestLocalFsKioskAppName, "");
   KioskAppManager::AppList apps;

@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/chromeos/authpolicy/kerberos_files_handler.h"
+#include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/common/pref_names.h"
@@ -45,6 +46,7 @@ constexpr char kBadPrincipal2[] = "kerbeROS_user";
 constexpr char kBadPrincipal3[] = "kerbeROS_user@";
 constexpr char kBadPrincipal4[] = "@examPLE.com";
 constexpr char kBadPrincipal5[] = "kerbeROS@user@examPLE.com";
+constexpr char kBadManagedPrincipal[] = "${LOGIN_ID@examPLE.com";
 constexpr char kPassword[] = "m1sst1ped>_<";
 constexpr char kInvalidPassword[] = "";
 constexpr char kConfig[] = "[libdefaults]";
@@ -59,16 +61,33 @@ const bool kRememberPassword = true;
 const bool kDontAllowExisting = false;
 const bool kAllowExisting = true;
 
+const bool kDontSaveLoginPassword = false;
+const bool kSaveLoginPassword = true;
+
 const int kNoNotification = 0;
 const int kOneNotification = 1;
+const int kTwoNotifications = 2;
 
 const int kNoAccount = 0;
 const int kOneAccount = 1;
 const int kTwoAccounts = 2;
 const int kThreeAccounts = 3;
 
-// Account key for the kerberos.accounts pref.
+// Account keys for the kerberos.accounts pref.
 constexpr char kKeyPrincipal[] = "principal";
+constexpr char kKeyPassword[] = "password";
+constexpr char kKeyRememberPassword[] = "remember_password";
+constexpr char kKeyKrb5Conf[] = "krb5conf";
+
+// Password placeholder.
+constexpr char kLoginPasswordPlaceholder[] = "${PASSWORD}";
+
+// Default config.
+constexpr char kDefaultConfig[] = R"([libdefaults]
+  default_tgs_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
+  default_tkt_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
+  permitted_enctypes = aes256-cts-hmac-sha1-96 aes128-cts-hmac-sha1-96
+  forwardable = true)";
 
 // Fake observer used to test notifications sent by KerberosCredentialsManager
 // on accounts changes.
@@ -125,10 +144,16 @@ class KerberosCredentialsManagerTest : public testing::Test {
       : scoped_user_manager_(
             std::make_unique<testing::NiceMock<MockUserManager>>()),
         local_state_(TestingBrowserProcess::GetGlobal()) {
+    SessionManagerClient::InitializeFakeInMemory();
     KerberosClient::InitializeFake();
     client_test_interface()->SetTaskDelay(base::TimeDelta());
 
     mock_user_manager()->AddUser(AccountId::FromUserEmail(kProfileEmail));
+
+    // Setting the login password for the KerberosAccounts policy tests.
+    UserContext* user_context =
+        UserSessionManager::GetInstance()->mutable_user_context_for_testing();
+    user_context->SetPasswordKey(Key(kPassword));
 
     TestingProfile::Builder profile_builder;
     profile_builder.SetProfileName(kProfileEmail);
@@ -148,7 +173,9 @@ class KerberosCredentialsManagerTest : public testing::Test {
     mgr_.reset();
     display_service_.reset();
     profile_.reset();
+    UserSessionManager::GetInstance()->Shutdown();
     KerberosClient::Shutdown();
+    SessionManagerClient::Shutdown();
   }
 
   void SetPref(const char* name, base::Value value) {
@@ -165,16 +192,30 @@ class KerberosCredentialsManagerTest : public testing::Test {
     return KerberosClient::Get()->GetTestInterface();
   }
 
-  // Gets a callback that adds the passed-in error to |result_errors_|.
-  KerberosCredentialsManager::ResultCallback GetResultCallback() {
+  void SetupResultCallback(int account_count) {
     // If this is the first account addition, sets |result_run_loop_|.
     if (accounts_addition_count_ == 0) {
       EXPECT_TRUE(result_errors_.empty());
       EXPECT_FALSE(result_run_loop_);
       result_run_loop_ = std::make_unique<base::RunLoop>();
     }
-    accounts_addition_count_++;
 
+    accounts_addition_count_ += account_count;
+  }
+
+  // Gets a callback that adds the passed-in error to |result_errors_|.
+  // |account_count| is the number of times the callback should be called
+  // before stopping |result_run_loop_|.
+  base::RepeatingCallback<void(kerberos::ErrorType)> GetRepeatingCallback(
+      int account_count) {
+    SetupResultCallback(account_count);
+    return base::BindRepeating(&KerberosCredentialsManagerTest::OnResult,
+                               weak_ptr_factory_.GetWeakPtr());
+  }
+
+  // Gets a callback that adds the passed-in error to |result_errors_|.
+  KerberosCredentialsManager::ResultCallback GetResultCallback() {
+    SetupResultCallback(1);
     return base::BindOnce(&KerberosCredentialsManagerTest::OnResult,
                           weak_ptr_factory_.GetWeakPtr());
   }
@@ -266,6 +307,35 @@ class KerberosCredentialsManagerTest : public testing::Test {
     if (accounts.size() != 1)
       return Account();
     return std::move(accounts[0]);
+  }
+
+  // Verify KerberosCredentialsManager voted for saving login password for
+  // Kerberos service on UserSessionManager with value |save_login_password|.
+  void VerifyVotedForSavingLoginPassword(bool save_login_password) {
+    // Votes for not saving login password for all the other services. This way,
+    // the password should be saved if and only if Kerberos service voted for
+    // saving it.
+    for (auto s = static_cast<UserSessionManager::PasswordConsumingService>(0);
+         s < UserSessionManager::PasswordConsumingService::kCount;
+         s = static_cast<UserSessionManager::PasswordConsumingService>(
+             static_cast<int>(s) + 1)) {
+      if (s != UserSessionManager::PasswordConsumingService::kKerberos) {
+        UserSessionManager::GetInstance()->VoteForSavingLoginPassword(
+            s, kDontSaveLoginPassword);
+      }
+    }
+
+    // Checks whether the password was saved according to |save_login_password|.
+    if (save_login_password == kSaveLoginPassword) {
+      EXPECT_EQ(kPassword, FakeSessionManagerClient::Get()->login_password());
+    } else {
+      EXPECT_TRUE(FakeSessionManagerClient::Get()->login_password().empty());
+    }
+
+    // The password should have being deleted from |user_context| at the end.
+    const UserContext& user_context =
+        UserSessionManager::GetInstance()->user_context();
+    EXPECT_TRUE(user_context.GetPasswordKey()->GetSecret().empty());
   }
 
   content::BrowserTaskEnvironment task_environment_;
@@ -687,6 +757,9 @@ TEST_F(KerberosCredentialsManagerTest, UpdateEnabledFromPrefKerberosDisabled) {
 
 // Managed accounts are restored when prefs::KerberosEnabled is turned on.
 TEST_F(KerberosCredentialsManagerTest, UpdateEnabledFromPrefKerberosEnabled) {
+  mgr_->SetAddManagedAccountCallbackForTesting(
+      GetRepeatingCallback(kTwoAccounts));
+
   base::Value managed_account_1(base::Value::Type::DICTIONARY);
   base::Value managed_account_2(base::Value::Type::DICTIONARY);
 
@@ -704,6 +777,11 @@ TEST_F(KerberosCredentialsManagerTest, UpdateEnabledFromPrefKerberosEnabled) {
   EXPECT_TRUE(mgr_->GetActiveAccount().empty());
 
   SetPref(prefs::kKerberosEnabled, base::Value(true));
+
+  // Two notifications are expected: one from AddAccountRunner and another from
+  // RemoveAllManagedAccountsExcept.
+  WaitAndVerifyResult({kerberos::ERROR_NONE, kerberos::ERROR_NONE},
+                      kTwoNotifications, kTwoAccounts);
 
   EXPECT_TRUE(mgr_->IsKerberosEnabled());
   EXPECT_EQ(2u, ListAccounts().size());
@@ -752,7 +830,7 @@ TEST_F(KerberosCredentialsManagerTest,
 // account to be deleted.
 TEST_F(KerberosCredentialsManagerTest,
        UpdateAddAccountsAllowedFromPrefEnabled) {
-  // Staring with KerberosAddAccount disabled.
+  // Starting with KerberosAddAccount disabled.
   SetPref(prefs::kKerberosAddAccountsAllowed, base::Value(false));
 
   client_test_interface()->StartRecordingFunctionCalls();
@@ -760,7 +838,7 @@ TEST_F(KerberosCredentialsManagerTest,
   SetPref(prefs::kKerberosAddAccountsAllowed, base::Value(true));
 
   // Checks that ClearAccounts() was not called on KerberosClient.
-  std::string calls =
+  const std::string calls =
       client_test_interface()->StopRecordingAndGetRecordedFunctionCalls();
   EXPECT_TRUE(calls.empty());
 }
@@ -779,6 +857,248 @@ TEST_F(KerberosCredentialsManagerTest,
   Accounts accounts = ListAccounts();
   ASSERT_EQ(1u, accounts.size());
   EXPECT_EQ(kNormalizedOtherPrincipal, accounts[0].principal_name());
+}
+
+// UpdateAccountsFromPref votes for not saving the password if kerberos is
+// disabled. Also, no account is added.
+TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefKerberosDisabled) {
+  base::Value managed_account(base::Value::Type::DICTIONARY);
+  managed_account.SetStringKey(kKeyPrincipal, kPrincipal);
+
+  base::Value managed_accounts(base::Value::Type::LIST);
+  managed_accounts.Append(std::move(managed_account));
+
+  SetPref(prefs::kKerberosAccounts, std::move(managed_accounts));
+
+  VerifyVotedForSavingLoginPassword(kDontSaveLoginPassword);
+
+  EXPECT_EQ(0u, ListAccounts().size());
+  EXPECT_TRUE(mgr_->GetActiveAccount().empty());
+}
+
+// UpdateAccountsFromPref votes for not saving the password if no account is
+// saved in prefs. Also, existing managed accounts are deleted.
+TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefNoAccounts) {
+  // Starting with Kerberos enabled.
+  SetPref(prefs::kKerberosEnabled, base::Value(true));
+
+  AddAccountAndAuthenticate(kPrincipal, kUnmanaged, kerberos::ERROR_NONE,
+                            kOneNotification, kOneAccount);
+  AddAccountAndAuthenticate(kOtherPrincipal, kManaged, kerberos::ERROR_NONE,
+                            kOneNotification, kTwoAccounts);
+
+  base::Value managed_accounts(base::Value::Type::LIST);
+  SetPref(prefs::kKerberosAccounts, std::move(managed_accounts));
+
+  VerifyVotedForSavingLoginPassword(kDontSaveLoginPassword);
+
+  Accounts accounts = ListAccounts();
+  ASSERT_EQ(1u, accounts.size());
+  EXPECT_EQ(kNormalizedPrincipal, accounts[0].principal_name());
+}
+
+// UpdateAccountsFromPref ignores accounts with bad principal names.
+TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefBadPrincipal) {
+  // Starting with Kerberos enabled.
+  SetPref(prefs::kKerberosEnabled, base::Value(true));
+
+  base::Value managed_account_1(base::Value::Type::DICTIONARY);
+  base::Value managed_account_2(base::Value::Type::DICTIONARY);
+  base::Value managed_account_3(base::Value::Type::DICTIONARY);
+  base::Value managed_account_4(base::Value::Type::DICTIONARY);
+  base::Value managed_account_5(base::Value::Type::DICTIONARY);
+  base::Value managed_account_6(base::Value::Type::DICTIONARY);
+
+  managed_account_1.SetStringKey(kKeyPrincipal, kBadPrincipal1);
+  managed_account_2.SetStringKey(kKeyPrincipal, kBadPrincipal2);
+  managed_account_3.SetStringKey(kKeyPrincipal, kBadPrincipal3);
+  managed_account_4.SetStringKey(kKeyPrincipal, kBadPrincipal4);
+  managed_account_5.SetStringKey(kKeyPrincipal, kBadPrincipal5);
+  managed_account_6.SetStringKey(kKeyPrincipal, kBadManagedPrincipal);
+
+  base::Value managed_accounts(base::Value::Type::LIST);
+  managed_accounts.Append(std::move(managed_account_1));
+  managed_accounts.Append(std::move(managed_account_2));
+  managed_accounts.Append(std::move(managed_account_3));
+  managed_accounts.Append(std::move(managed_account_4));
+  managed_accounts.Append(std::move(managed_account_5));
+  managed_accounts.Append(std::move(managed_account_6));
+
+  SetPref(prefs::kKerberosAccounts, std::move(managed_accounts));
+
+  VerifyVotedForSavingLoginPassword(kDontSaveLoginPassword);
+
+  EXPECT_EQ(0u, ListAccounts().size());
+  EXPECT_TRUE(mgr_->GetActiveAccount().empty());
+}
+
+// UpdateAccountsFromPref uses config if given and default config if not.
+TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefConfig) {
+  // Starting with Kerberos enabled.
+  SetPref(prefs::kKerberosEnabled, base::Value(true));
+
+  mgr_->SetAddManagedAccountCallbackForTesting(
+      GetRepeatingCallback(kTwoAccounts));
+
+  base::Value config(base::Value::Type::LIST);
+  config.Append(base::Value("config line 1"));
+  config.Append(base::Value("config line 2"));
+  config.Append(base::Value("config line 3"));
+
+  constexpr char expected_config[] =
+      "config line 1\nconfig line 2\nconfig line 3\n";
+
+  base::Value managed_account_1(base::Value::Type::DICTIONARY);
+  base::Value managed_account_2(base::Value::Type::DICTIONARY);
+
+  managed_account_1.SetStringKey(kKeyPrincipal, kPrincipal);
+  managed_account_1.SetStringKey(kKeyPassword, kPassword);
+  managed_account_1.SetKey(kKeyKrb5Conf, std::move(config));
+
+  managed_account_2.SetStringKey(kKeyPrincipal, kOtherPrincipal);
+  managed_account_2.SetStringKey(kKeyPassword, kPassword);
+
+  base::Value managed_accounts(base::Value::Type::LIST);
+  managed_accounts.Append(std::move(managed_account_1));
+  managed_accounts.Append(std::move(managed_account_2));
+
+  SetPref(prefs::kKerberosAccounts, std::move(managed_accounts));
+
+  // Two notifications are expected: one from AddAccountRunner and another from
+  // RemoveAllManagedAccountsExcept().
+  WaitAndVerifyResult({kerberos::ERROR_NONE, kerberos::ERROR_NONE},
+                      kTwoNotifications, kTwoAccounts);
+
+  VerifyVotedForSavingLoginPassword(kDontSaveLoginPassword);
+
+  Accounts accounts = ListAccounts();
+  ASSERT_EQ(2u, accounts.size());
+  EXPECT_EQ(kNormalizedPrincipal, accounts[0].principal_name());
+  EXPECT_EQ(expected_config, accounts[0].krb5conf());
+  EXPECT_EQ(kNormalizedOtherPrincipal, accounts[1].principal_name());
+  EXPECT_EQ(kDefaultConfig, accounts[1].krb5conf());
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+}
+
+// UpdateAccountsFromPref votes for saving login password if any of the
+// passwords is equal to "${PASSWORD}".
+TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefPassword) {
+  // Starting with Kerberos enabled.
+  SetPref(prefs::kKerberosEnabled, base::Value(true));
+
+  mgr_->SetAddManagedAccountCallbackForTesting(
+      GetRepeatingCallback(kTwoAccounts));
+
+  base::Value managed_account_1(base::Value::Type::DICTIONARY);
+  base::Value managed_account_2(base::Value::Type::DICTIONARY);
+
+  managed_account_1.SetStringKey(kKeyPrincipal, kPrincipal);
+  managed_account_1.SetStringKey(kKeyPassword, kLoginPasswordPlaceholder);
+  managed_account_2.SetStringKey(kKeyPrincipal, kOtherPrincipal);
+  managed_account_2.SetStringKey(kKeyPassword, kPassword);
+
+  base::Value managed_accounts(base::Value::Type::LIST);
+  managed_accounts.Append(std::move(managed_account_1));
+  managed_accounts.Append(std::move(managed_account_2));
+
+  SetPref(prefs::kKerberosAccounts, std::move(managed_accounts));
+
+  // Two notifications are expected: one from AddAccountRunner and another from
+  // RemoveAllManagedAccountsExcept().
+  WaitAndVerifyResult({kerberos::ERROR_NONE, kerberos::ERROR_NONE},
+                      kTwoNotifications, kTwoAccounts);
+
+  VerifyVotedForSavingLoginPassword(kSaveLoginPassword);
+
+  Accounts accounts = ListAccounts();
+  ASSERT_EQ(2u, accounts.size());
+  EXPECT_EQ(kNormalizedPrincipal, accounts[0].principal_name());
+  EXPECT_TRUE(accounts[0].use_login_password());
+  EXPECT_EQ(kNormalizedOtherPrincipal, accounts[1].principal_name());
+  EXPECT_FALSE(accounts[1].use_login_password());
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+}
+
+// UpdateAccountsFromPref remembers password for accounts with kRememberPassword
+// set yo true.
+TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefRememberPassword) {
+  // Starting with Kerberos enabled.
+  SetPref(prefs::kKerberosEnabled, base::Value(true));
+
+  mgr_->SetAddManagedAccountCallbackForTesting(
+      GetRepeatingCallback(kTwoAccounts));
+
+  base::Value managed_account_1(base::Value::Type::DICTIONARY);
+  base::Value managed_account_2(base::Value::Type::DICTIONARY);
+
+  managed_account_1.SetStringKey(kKeyPrincipal, kPrincipal);
+  managed_account_1.SetStringKey(kKeyPassword, kPassword);
+  managed_account_1.SetBoolKey(kKeyRememberPassword, kRememberPassword);
+  managed_account_2.SetStringKey(kKeyPrincipal, kOtherPrincipal);
+  managed_account_2.SetStringKey(kKeyPassword, kLoginPasswordPlaceholder);
+  managed_account_2.SetBoolKey(kKeyRememberPassword, kDontRememberPassword);
+
+  base::Value managed_accounts(base::Value::Type::LIST);
+  managed_accounts.Append(std::move(managed_account_1));
+  managed_accounts.Append(std::move(managed_account_2));
+
+  SetPref(prefs::kKerberosAccounts, std::move(managed_accounts));
+
+  // Two notifications are expected: one from AddAccountRunner and another from
+  // RemoveAllManagedAccountsExcept().
+  WaitAndVerifyResult({kerberos::ERROR_NONE, kerberos::ERROR_NONE},
+                      kTwoNotifications, kTwoAccounts);
+
+  VerifyVotedForSavingLoginPassword(kSaveLoginPassword);
+
+  Accounts accounts = ListAccounts();
+  ASSERT_EQ(2u, accounts.size());
+  EXPECT_EQ(kNormalizedPrincipal, accounts[0].principal_name());
+  EXPECT_TRUE(accounts[0].password_was_remembered());
+  EXPECT_EQ(kNormalizedOtherPrincipal, accounts[1].principal_name());
+  EXPECT_FALSE(accounts[1].password_was_remembered());
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
+}
+
+// UpdateAccountsFromPref clears out old managed accounts not in
+// prefs::kKerberosAccounts anymore.
+TEST_F(KerberosCredentialsManagerTest, UpdateAccountsFromPrefClearAccounts) {
+  // Starting with Kerberos enabled.
+  SetPref(prefs::kKerberosEnabled, base::Value(true));
+
+  AddAccountAndAuthenticate(kPrincipal, kManaged, kerberos::ERROR_NONE,
+                            kOneNotification, kOneAccount);
+  AddAccountAndAuthenticate(kYetAnotherPrincipal, kManaged,
+                            kerberos::ERROR_NONE, kOneNotification,
+                            kTwoAccounts);
+
+  mgr_->SetAddManagedAccountCallbackForTesting(
+      GetRepeatingCallback(kTwoAccounts));
+
+  base::Value managed_account_1(base::Value::Type::DICTIONARY);
+  base::Value managed_account_2(base::Value::Type::DICTIONARY);
+
+  managed_account_1.SetStringKey(kKeyPrincipal, kPrincipal);
+  managed_account_2.SetStringKey(kKeyPrincipal, kOtherPrincipal);
+
+  base::Value managed_accounts(base::Value::Type::LIST);
+  managed_accounts.Append(std::move(managed_account_1));
+  managed_accounts.Append(std::move(managed_account_2));
+
+  SetPref(prefs::kKerberosAccounts, std::move(managed_accounts));
+
+  // Two notifications are expected: one from AddAccountRunner and another from
+  // RemoveAllManagedAccountsExcept().
+  WaitAndVerifyResult({kerberos::ERROR_NONE, kerberos::ERROR_NONE},
+                      kTwoNotifications, kTwoAccounts);
+
+  VerifyVotedForSavingLoginPassword(kDontSaveLoginPassword);
+
+  Accounts accounts = ListAccounts();
+  ASSERT_EQ(2u, accounts.size());
+  EXPECT_EQ(kNormalizedPrincipal, accounts[0].principal_name());
+  EXPECT_EQ(kNormalizedOtherPrincipal, accounts[1].principal_name());
+  EXPECT_EQ(kNormalizedPrincipal, mgr_->GetActiveAccount());
 }
 
 // TODO(https://crbug.com/952251): Add more tests
@@ -819,17 +1139,6 @@ TEST_F(KerberosCredentialsManagerTest,
 //     signal
 //     + Calls kerberos_ticket_expiry_notification::Show() if the active
 //       principal matches.
-// - UpdateAccountsFromPref()
-//     + Gets called then prefs::kKerberosAccounts changes.
-//     + If Kerberos is disabled, calls VoteForSavingLoginPassword(false)
-//     + If there are no accounts, calls VoteForSavingLoginPassword(false)
-//     + Accounts with bad principals ("${LOGIN_ID", "user@example@com") are
-//       ignored
-//     + Uses config if given and default config if not
-//     + Calls VoteForSavingLoginPassword(res), where
-//       res = any(account has password="${PASSWORD}")
-//     + Clears out old managed accounts not in prefs::kKerberosAccounts
-//     anymore
 // - Notification
 //     + If the notification is clicked, shows the KerberosAccounts settings
 //       with ?kerberos_reauth=<principal name>

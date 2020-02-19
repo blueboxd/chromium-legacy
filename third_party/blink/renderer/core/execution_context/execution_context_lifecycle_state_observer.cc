@@ -63,7 +63,7 @@ void ExecutionContextLifecycleStateObserver::UpdateStateIfNeeded() {
 #endif
   if (ExecutionContext* context = GetExecutionContext()) {
 #if DCHECK_IS_ON()
-    DCHECK(context->ContextLifecycleObserverList().HasObserver(this));
+    DCHECK(context->ContextLifecycleObserverSet().HasObserver(this));
 #endif
     mojom::blink::FrameLifecycleState pause_state =
         context->ContextPauseState();

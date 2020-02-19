@@ -920,11 +920,6 @@ char16* WriteInto(string16* str, size_t length_with_null) {
   return WriteIntoT(str, length_with_null);
 }
 
-#if defined(_MSC_VER) && !defined(__clang__)
-// Work around VC++ code-gen bug. https://crbug.com/804884
-#pragma optimize("", off)
-#endif
-
 // Generic version for all JoinString overloads. |list_type| must be a sequence
 // (std::vector or std::initializer_list) of strings/StringPieces (std::string,
 // string16, StringPiece or StringPiece16). |string_type| is either std::string
@@ -968,11 +963,6 @@ string16 JoinString(const std::vector<string16>& parts,
                     StringPiece16 separator) {
   return JoinStringT(parts, separator);
 }
-
-#if defined(_MSC_VER) && !defined(__clang__)
-// Work around VC++ code-gen bug. https://crbug.com/804884
-#pragma optimize("", on)
-#endif
 
 std::string JoinString(const std::vector<StringPiece>& parts,
                        StringPiece separator) {

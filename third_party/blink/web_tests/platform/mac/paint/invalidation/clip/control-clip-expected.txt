@@ -8,13 +8,13 @@
       "paintInvalidations": [
         {
           "object": "InlineTextBox 'SUCCESS'",
-          "rect": [82, 114, 52, 14],
-          "reason": "chunk appeared"
+          "rect": [9, 84, 52, 15],
+          "reason": "appeared"
         },
         {
           "object": "InlineTextBox 'SUCCESS'",
-          "rect": [9, 85, 52, 13],
-          "reason": "appeared"
+          "rect": [82, 114, 52, 14],
+          "reason": "chunk appeared"
         },
         {
           "object": "InlineTextBox 'FAILURE'",
@@ -23,7 +23,7 @@
         },
         {
           "object": "InlineTextBox 'FAILURE'",
-          "rect": [9, 85, 45, 13],
+          "rect": [9, 84, 45, 15],
           "reason": "disappeared"
         }
       ]

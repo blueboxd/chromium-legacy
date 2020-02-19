@@ -45,8 +45,6 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
   MOCK_METHOD0(DoCreateVideoEncodeAccelerator, VideoEncodeAccelerator*());
 
   MOCK_METHOD0(GetTaskRunner, scoped_refptr<base::SingleThreadTaskRunner>());
-  MOCK_METHOD0(GetVideoEncodeAcceleratorSupportedProfiles,
-               VideoEncodeAccelerator::SupportedProfiles());
   MOCK_METHOD0(GetMediaContextProvider, scoped_refptr<viz::ContextProvider>());
   MOCK_METHOD1(SetRenderingColorSpace, void(const gfx::ColorSpace&));
 
@@ -82,6 +80,10 @@ class MockGpuVideoAcceleratorFactories : public GpuVideoAcceleratorFactories {
 
   std::unique_ptr<VideoEncodeAccelerator> CreateVideoEncodeAccelerator()
       override;
+  base::Optional<VideoEncodeAccelerator::SupportedProfiles>
+  GetVideoEncodeAcceleratorSupportedProfiles() override {
+    return VideoEncodeAccelerator::SupportedProfiles();
+  }
 
   const std::vector<gfx::GpuMemoryBuffer*>& created_memory_buffers() {
     return created_memory_buffers_;

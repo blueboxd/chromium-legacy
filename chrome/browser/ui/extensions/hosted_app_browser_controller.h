@@ -35,6 +35,7 @@ class HostedAppBrowserController : public web_app::AppBrowserController,
   ~HostedAppBrowserController() override;
 
   // web_app::AppBrowserController:
+  bool CreatedForInstalledPwa() const override;
   bool HasMinimalUiButtons() const override;
   gfx::ImageSkia GetWindowAppIcon() const override;
   gfx::ImageSkia GetWindowIcon() const override;
@@ -64,6 +65,8 @@ class HostedAppBrowserController : public web_app::AppBrowserController,
   const Extension* GetExtension() const;
 
   std::unique_ptr<ExtensionUninstallDialog> uninstall_dialog_;
+
+  const bool created_for_installed_pwa_;
 
   DISALLOW_COPY_AND_ASSIGN(HostedAppBrowserController);
 };

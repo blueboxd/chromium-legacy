@@ -805,9 +805,11 @@ scoped_refptr<ComputedStyle> HTMLImageElement::CustomStyleForLayoutObject() {
     case LayoutDisposition::kPrimaryContent:  // Fall through.
     case LayoutDisposition::kCollapsed:
       return OriginalStyleForLayoutObject();
-    case LayoutDisposition::kFallbackContent:
-      return HTMLImageFallbackHelper::CustomStyleForAltText(
-          *this, ComputedStyle::Clone(*OriginalStyleForLayoutObject()));
+    case LayoutDisposition::kFallbackContent: {
+      scoped_refptr<ComputedStyle> style = OriginalStyleForLayoutObject();
+      HTMLImageFallbackHelper::CustomStyleForAltText(*this, *style);
+      return style;
+    }
     default:
       NOTREACHED();
       return nullptr;

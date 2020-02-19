@@ -123,10 +123,8 @@ void CrossProcessFrameConnector::SetView(RenderWidgetHostViewChildFrame* view) {
     view_->SetFrameConnectorDelegate(this);
     if (visibility_ != blink::mojom::FrameVisibility::kRenderedInViewport)
       OnVisibilityChanged(visibility_);
-    FrameMsg_ViewChanged_Params params;
-    params.frame_sink_id = view_->GetFrameSinkId();
-    frame_proxy_in_parent_renderer_->Send(new FrameMsg_ViewChanged(
-        frame_proxy_in_parent_renderer_->GetRoutingID(), params));
+    frame_proxy_in_parent_renderer_->GetAssociatedRenderFrameProxy()
+        ->SetFrameSinkId(view_->GetFrameSinkId());
   }
 }
 

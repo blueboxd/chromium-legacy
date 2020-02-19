@@ -65,8 +65,8 @@ public class CookieControlsView
     }
 
     public void setBlockedCookiesCount(int blockedCookies) {
-        mBlockedText.setText(String.format(
-                getContext().getString(R.string.cookie_controls_blocked_cookies), blockedCookies));
+        mBlockedText.setText(getContext().getResources().getQuantityString(
+                R.plurals.cookie_controls_blocked_cookies, blockedCookies, blockedCookies));
     }
 
     // CompoundButton.OnCheckedChangeListener:

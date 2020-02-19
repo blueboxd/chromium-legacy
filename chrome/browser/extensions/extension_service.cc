@@ -36,7 +36,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_custom_extension_provider.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
-#include "chrome/browser/extensions/app_data_migrator.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/data_deleter.h"
@@ -354,7 +353,6 @@ ExtensionService::ExtensionService(Profile* profile,
       extensions_enabled_(extensions_enabled),
       ready_(ready),
       shared_module_service_(new SharedModuleService(profile_)),
-      app_data_migrator_(new AppDataMigrator(profile_, registry_)),
       extension_registrar_(profile_, this),
       forced_extensions_tracker_(registry_, profile_) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1619,15 +1617,6 @@ void ExtensionService::AddNewOrUpdatedExtension(
   delayed_installs_.Remove(extension->id());
   if (InstallVerifier::NeedsVerification(*extension))
     InstallVerifier::Get(GetBrowserContext())->VerifyExtension(extension->id());
-
-  const Extension* old = registry_->GetInstalledExtension(extension->id());
-  if (AppDataMigrator::NeedsMigration(old, extension)) {
-    app_data_migrator_->DoMigrationAndReply(
-        old, extension,
-        base::BindOnce(&ExtensionService::FinishInstallation, AsWeakPtr(),
-                       base::RetainedRef(extension)));
-    return;
-  }
 
   FinishInstallation(extension);
 }

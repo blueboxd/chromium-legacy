@@ -18,6 +18,8 @@
 
 namespace net {
 
+class ProxyResolutionRequest;
+
 namespace test {
 
 class JobControllerPeer;
@@ -348,8 +350,7 @@ class HttpStreamFactory::JobController
   bool can_start_alternative_proxy_job_;
 
   State next_state_;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request>
-      proxy_resolve_request_;
+  std::unique_ptr<ProxyResolutionRequest> proxy_resolve_request_;
   const HttpRequestInfo request_info_;
   ProxyInfo proxy_info_;
   const SSLConfig server_ssl_config_;

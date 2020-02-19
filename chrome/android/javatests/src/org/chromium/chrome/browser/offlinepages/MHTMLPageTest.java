@@ -51,8 +51,7 @@ public class MHTMLPageTest implements CustomMainActivityStart {
 
     private EmbeddedTestServer mTestServer;
 
-    private static class TestDownloadNotificationService
-            implements DownloadController.DownloadNotificationService {
+    private static class TestDownloadNotificationService implements DownloadController.Observer {
         private Semaphore mSemaphore;
 
         TestDownloadNotificationService(Semaphore semaphore) {

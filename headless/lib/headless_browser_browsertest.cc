@@ -761,11 +761,9 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest,
 #define MAYBE_AIAFetching AIAFetching
 #endif
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, MAYBE_AIAFetching) {
-  net::SpawnedTestServer::SSLOptions ssl_options(
-      net::SpawnedTestServer::SSLOptions::CERT_AUTO_AIA_INTERMEDIATE);
-  net::SpawnedTestServer server(
-      net::SpawnedTestServer::TYPE_HTTPS, ssl_options,
-      base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
+  net::EmbeddedTestServer server(net::EmbeddedTestServer::TYPE_HTTPS);
+  server.SetSSLConfig(net::EmbeddedTestServer::CERT_AUTO_AIA_INTERMEDIATE);
+  server.AddDefaultHandlers(base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(server.Start());
 
   HeadlessBrowserContext* browser_context =

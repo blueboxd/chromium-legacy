@@ -51,6 +51,9 @@ class CONTENT_EXPORT SignedExchangeEnvelope {
   // AddResponseHeader returns false on duplicated keys. |name| must be
   // lower-cased.
   bool AddResponseHeader(base::StringPiece name, base::StringPiece value);
+  // SetResponseHeader replaces existing value, if any. |name| must be
+  // lower-cased.
+  void SetResponseHeader(base::StringPiece name, base::StringPiece value);
   scoped_refptr<net::HttpResponseHeaders> BuildHttpResponseHeaders() const;
 
   const base::span<const uint8_t> cbor_header() const {

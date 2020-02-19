@@ -418,14 +418,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   LayoutUnit FirstLineBoxBaseline() const override;
   LayoutUnit InlineBlockBaseline(LineDirectionMode) const override;
 
-  // This function disables the 'overflow' check in inlineBlockBaseline.
-  // For 'inline-block', CSS says that the baseline is the bottom margin edge
-  // if 'overflow' is not visible. But some descendant classes want to ignore
-  // this condition.
-  virtual bool ShouldIgnoreOverflowPropertyForInlineBlockBaseline() const {
-    return false;
-  }
-
   bool HitTestOverflowControl(
       HitTestResult&,
       const HitTestLocation&,

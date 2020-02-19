@@ -107,6 +107,8 @@ bool GetCompressedTexSizeInBytes(const char* function_name,
                                  GLsizei* size_in_bytes,
                                  ErrorState* error_state);
 
+bool ValidateCompressedFormatTarget(GLenum target, GLenum format);
+
 bool ValidateCompressedTexSubDimensions(GLenum target,
                                         GLint level,
                                         GLint xoffset,

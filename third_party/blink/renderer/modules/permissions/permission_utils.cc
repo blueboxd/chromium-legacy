@@ -213,6 +213,13 @@ PermissionDescriptorPtr ParsePermissionDescriptor(
     }
     return CreatePermissionDescriptor(PermissionName::NFC);
   }
+  if (name == "storage-access") {
+    if (!RuntimeEnabledFeatures::StorageAccessAPIEnabled()) {
+      exception_state.ThrowTypeError("The Storage Access API is not enabled.");
+      return nullptr;
+    }
+    return CreatePermissionDescriptor(PermissionName::STORAGE_ACCESS);
+  }
   return nullptr;
 }
 

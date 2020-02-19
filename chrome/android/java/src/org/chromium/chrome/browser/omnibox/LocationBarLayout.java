@@ -30,7 +30,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ObserverList;
-import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
@@ -82,9 +82,6 @@ import java.util.List;
 public class LocationBarLayout extends FrameLayout
         implements OnClickListener, LocationBar, AutocompleteDelegate, FakeboxDelegate,
                    VoiceRecognitionHandler.Delegate, AssistantVoiceSearchService.Observer {
-    private static final EnumeratedHistogramSample ENUMERATED_FOCUS_REASON =
-            new EnumeratedHistogramSample(
-                    "Android.OmniboxFocusReason", OmniboxFocusReason.NUM_ENTRIES);
 
     protected ImageButton mDeleteButton;
     protected ImageButton mMicButton;
@@ -1165,7 +1162,8 @@ public class LocationBarLayout extends FrameLayout
     }
 
     private void recordOmniboxFocusReason(@OmniboxFocusReason int reason) {
-        ENUMERATED_FOCUS_REASON.record(reason);
+        RecordHistogram.recordEnumeratedHistogram(
+                "Android.OmniboxFocusReason", reason, OmniboxFocusReason.NUM_ENTRIES);
     }
 
     @Override

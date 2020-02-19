@@ -35,13 +35,9 @@ namespace {
 const int kAppCacheFetchBufferSize = 32768;
 const size_t kMaxConcurrentUrlFetches = 2;
 
-const base::Feature kAppCacheCorruptionRecoveryFeature{
-    "AppCacheCorruptionRecovery", base::FEATURE_DISABLED_BY_DEFAULT};
-
 enum class ResourceCheck {
   kValid,
   kInvalid,
-  kCorrupt,
 };
 
 std::string FormatUrlErrorMessage(
@@ -154,10 +150,6 @@ ResourceCheck CanUseExistingResource(
 
   if (found_corruption) {
     update_metrics.IncrementExistingResourceCorrupt();
-    if (base::FeatureList::IsEnabled(kAppCacheCorruptionRecoveryFeature)) {
-      update_metrics.IncrementExistingResourceCorruptionRecovery();
-      return ResourceCheck::kCorrupt;
-    }
   }
 
   // Record the max age / expiry value on this entry in days.
@@ -1594,14 +1586,7 @@ void AppCacheUpdateJob::OnResponseInfoLoaded(
     LoadFromNewestCacheFailed(url, nullptr);  // no response found
   } else {
     ResourceCheck result = CanUseExistingResource(http_info, update_metrics_);
-    if (result == ResourceCheck::kCorrupt) {
-      // A corrupt resource was found.  In this case, we want to cause the next
-      // fetch attempt for this resource to be issued without conditional
-      // headers so a 200 OK response is the only result.  We do that by not
-      // passing along |response_info| here.  This case can only occur when the
-      // AppCacheCorruptionRecovery feature is enabled.
-      LoadFromNewestCacheFailed(url, nullptr);
-    } else if (result == ResourceCheck::kInvalid) {
+    if (result == ResourceCheck::kInvalid) {
       // An invalid resource was found, but we may want to add conditional
       // headers that could result in a 304 NOT MODIFIED response.
       LoadFromNewestCacheFailed(url, response_info);

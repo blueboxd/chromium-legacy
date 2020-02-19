@@ -87,9 +87,7 @@ declare_args() {
   # Enable logging override, e.g. enable DVLOGs at build time. Must not be
   # enabled when |use_jumbo_build| is true, in which case multiple .cc files
   # are combined and we could override more logging than expected.
-  # TODO(1021274): Disable this for Fuchsia once we're confident on the media
-  # playback quality.
-  enable_logging_override = !use_jumbo_build && (is_chromecast || is_fuchsia)
+  enable_logging_override = !use_jumbo_build && is_chromecast
 
   enable_dav1d_decoder = !is_android && !is_ios
 

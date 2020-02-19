@@ -73,7 +73,7 @@ class TestStreamFactory : public audio::FakeStreamFactory {
     std::move(created_callback)
         .Run({base::in_place,
               base::ReadOnlySharedMemoryRegion::Create(kShMemSize).region,
-              mojo::WrapPlatformFile(socket1.Release())},
+              mojo::PlatformHandle(socket1.Take())},
              initially_muted_, base::UnguessableToken::Create());
   }
 
@@ -94,13 +94,12 @@ class TestStreamFactory : public audio::FakeStreamFactory {
 
 class MockDelegate : public media::AudioInputIPCDelegate {
  public:
-  MockDelegate() {}
-  ~MockDelegate() override {}
+  MockDelegate() = default;
+  ~MockDelegate() override = default;
 
   void OnStreamCreated(base::ReadOnlySharedMemoryRegion mem_handle,
-                       base::SyncSocket::Handle socket_handle,
+                       base::SyncSocket::ScopedHandle socket_handle,
                        bool initially_muted) override {
-    base::SyncSocket socket(socket_handle);  // Releases the socket descriptor.
     GotOnStreamCreated(initially_muted);
   }
 

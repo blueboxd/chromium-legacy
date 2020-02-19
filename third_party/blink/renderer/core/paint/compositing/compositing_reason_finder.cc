@@ -65,7 +65,7 @@ CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
   if (style.BackfaceVisibility() == EBackfaceVisibility::kHidden)
     reasons |= CompositingReason::kBackfaceVisibilityHidden;
 
-  reasons |= CompositingReasonsForAnimation(style);
+  reasons |= CompositingReasonsForAnimation(layout_object);
   reasons |= CompositingReasonsForWillChange(style);
 
   // If the implementation of CreatesGroup changes, we need to be aware of that
@@ -108,7 +108,7 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
     return CompositingReason::kNone;
 
   const ComputedStyle& style = object.StyleRef();
-  auto reasons = CompositingReasonsForAnimation(style) |
+  auto reasons = CompositingReasonsForAnimation(object) |
                  CompositingReasonsForWillChange(style);
 
   if (RequiresCompositingFor3DTransform(object))
@@ -225,12 +225,15 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
 }
 
 CompositingReasons CompositingReasonFinder::CompositingReasonsForAnimation(
-    const ComputedStyle& style) {
+    const LayoutObject& object) {
   CompositingReasons reasons = CompositingReason::kNone;
+  const auto& style = object.StyleRef();
   if (style.SubtreeWillChangeContents())
     return reasons;
 
-  if (style.HasCurrentTransformAnimation())
+  // Transforms don't apply on non-replaced inline elements.
+  // TODO(crbug.com/666244): Support composited transform animation for SVG.
+  if (object.IsBox() && style.HasCurrentTransformAnimation())
     reasons |= CompositingReason::kActiveTransformAnimation;
   if (style.HasCurrentOpacityAnimation())
     reasons |= CompositingReason::kActiveOpacityAnimation;

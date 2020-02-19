@@ -189,6 +189,23 @@ gen-signedexchange \
   -expire 168h \
   -o test.example.org_hello.txt.sxg
 
+# Generate the signed exchange whose content is a HTML but content-type is
+# an invalid value.
+gen-signedexchange \
+  -version 1b3 \
+  -uri https://test.example.org/test/ \
+  -status 200 \
+  -content test.html \
+  -certificate prime256v1-sha256.public.pem \
+  -certUrl https://cert.example.org/cert.msg \
+  -validityUrl https://test.example.org/resource.validity.msg \
+  -privateKey prime256v1.key \
+  -responseHeader 'Content-Type: 0' \
+  -date $signature_date \
+  -expire 168h \
+  -o test.example.org_bad_content_type.sxg \
+  -miRecordSize 100
+
 # Generate the signed exchange whose content is gzip-encoded.
 gzip -c test.html >$tmpdir/test.html.gz
 gen-signedexchange \

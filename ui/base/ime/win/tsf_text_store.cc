@@ -182,6 +182,8 @@ STDMETHODIMP TSFTextStore::GetScreenExt(TsViewCookie view_cookie, RECT* rect) {
     return E_INVALIDARG;
   if (!rect)
     return E_INVALIDARG;
+  if (!text_input_client_)
+    return E_UNEXPECTED;
 
   // {0, 0, 0, 0} means that the document rect is not currently displayed.
   SetRect(rect, 0, 0, 0, 0);

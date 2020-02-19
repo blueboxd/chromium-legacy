@@ -416,8 +416,7 @@ bool CrossProcessFrameConnector::IsHidden() const {
 
 void CrossProcessFrameConnector::DidUpdateVisualProperties(
     const cc::RenderFrameMetadata& metadata) {
-  frame_proxy_in_parent_renderer_->Send(new FrameMsg_DidUpdateVisualProperties(
-      frame_proxy_in_parent_renderer_->GetRoutingID(), metadata));
+  frame_proxy_in_parent_renderer_->DidUpdateVisualProperties(metadata);
 }
 
 void CrossProcessFrameConnector::SetVisibilityForChildViews(

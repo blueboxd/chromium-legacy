@@ -98,10 +98,10 @@ void PPB_Audio_Shared::SetStopPlaybackState() {
 void PPB_Audio_Shared::SetStreamInfo(
     PP_Instance instance,
     base::UnsafeSharedMemoryRegion shared_memory_region,
-    base::SyncSocket::Handle socket_handle,
+    base::SyncSocket::ScopedHandle socket_handle,
     PP_AudioSampleRate sample_rate,
     int sample_frame_count) {
-  socket_.reset(new base::CancelableSyncSocket(socket_handle));
+  socket_.reset(new base::CancelableSyncSocket(std::move(socket_handle)));
   shared_memory_size_ = media::ComputeAudioOutputBufferSize(
       kAudioOutputChannels, sample_frame_count);
   DCHECK_GE(shared_memory_region.GetSize(), shared_memory_size_);

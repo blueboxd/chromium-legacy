@@ -28,9 +28,12 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantUiElement {
 
   AssistantUiElementType type() const { return type_; }
 
-  // Invoke to being processing the UI element for rendering. Upon completion,
-  // the specified |callback| will be run to indicate success or failure.
-  using ProcessingCallback = base::OnceCallback<void(bool)>;
+  // Invoke to being processing the UI element for rendering. The specified
+  // |callback| will be run upon completion. Note that we don't include the
+  // processing result in the callback, as in |AssistantResponse| we handle
+  // success/failure cases the same because failures will be skipped in view
+  // handling.
+  using ProcessingCallback = base::OnceCallback<void()>;
   virtual void Process(ProcessingCallback callback);
 
  protected:

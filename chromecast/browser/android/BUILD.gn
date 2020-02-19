@@ -50,19 +50,32 @@ java_cpp_template("cast_shell_build_config_gen") {
   defines += [ "_DEVICE_LOGS_PROVIDER_CLASS=\"${device_logs_provider_class}\"" ]
 }
 
+common_resources = [
+  "apk/res-values/values-v17/styles.xml",
+  "apk/res-values/values/strings.xml",
+]
+
 android_resources("cast_shell_android_resources") {
   android_manifest = cast_shell_android_manifest
   android_manifest_dep = ":cast_shell_manifest"
-  resource_dirs = [
-    "//chromecast/browser/android/apk/res",
-    "//chromecast/browser/android/apk/res-values",
-  ]
+  sources = common_resources + [
+              "apk/res/drawable-hdpi/ic_settings_cast.png",
+              "apk/res/drawable-mdpi/ic_settings_cast.png",
+              "apk/res/drawable-xhdpi/ic_settings_cast.png",
+              "apk/res/drawable-xxhdpi/ic_settings_cast.png",
+              "apk/res/drawable-xxxhdpi/ic_settings_cast.png",
+              "apk/res/layout/cast_web_contents_activity.xml",
+              "apk/res/mipmap-hdpi/app_icon.png",
+              "apk/res/mipmap-mdpi/app_icon.png",
+              "apk/res/mipmap-xhdpi/app_icon.png",
+              "apk/res/mipmap-xxhdpi/app_icon.png",
+            ]
 }
 
 android_resources("cast_shell_android_stub_resources") {
   android_manifest = cast_shell_android_manifest
   android_manifest_dep = ":cast_shell_manifest"
-  resource_dirs = [ "//chromecast/browser/android/apk/res-values" ]
+  sources = common_resources
 }
 
 android_library("cast_audio_manager_java") {

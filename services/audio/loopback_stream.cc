@@ -77,9 +77,9 @@ LoopbackStream::LoopbackStream(
   if (writer) {
     base::ReadOnlySharedMemoryRegion shared_memory_region =
         writer->TakeSharedMemoryRegion();
-    mojo::ScopedHandle socket_handle;
+    mojo::PlatformHandle socket_handle;
     if (shared_memory_region.IsValid()) {
-      socket_handle = mojo::WrapPlatformFile(foreign_socket.Release());
+      socket_handle = mojo::PlatformHandle(foreign_socket.Take());
       if (socket_handle.is_valid()) {
         std::move(created_callback)
             .Run({base::in_place, std::move(shared_memory_region),

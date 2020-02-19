@@ -77,14 +77,14 @@ import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 
 /**
- * Chrome implementation of the {@link DownloadController.DownloadNotificationService} interface.
+ * Chrome implementation of the {@link DownloadController.Observer} interface.
  * This class is responsible for keeping track of which downloads are in progress. It generates
  * updates for progress of downloads and handles cleaning up of interrupted progress notifications.
  * TODO(qinmin): move BroadcastReceiver inheritance into DownloadManagerBridge, as it
  * handles all Android DownloadManager interactions. And DownloadManagerService should not know
  * download Id issued by Android DownloadManager.
  */
-public class DownloadManagerService implements DownloadController.DownloadNotificationService,
+public class DownloadManagerService implements DownloadController.Observer,
                                                NetworkChangeNotifierAutoDetect.Observer,
                                                DownloadServiceDelegate, ProfileManager.Observer {
     private static final String TAG = "DownloadService";

@@ -61,8 +61,6 @@ source_set("dns") {
       "esni_content.cc",
       "host_cache.cc",
       "host_resolver.cc",
-      "host_resolver_histograms.cc",
-      "host_resolver_histograms.h",
       "host_resolver_manager.cc",
       "host_resolver_mdns_listener_impl.cc",
       "host_resolver_mdns_listener_impl.h",

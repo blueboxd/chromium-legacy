@@ -41,7 +41,7 @@ class MockDelegate final : public media::AudioInputIPCDelegate {
   MOCK_METHOD0(OnIPCClosed, void());
 
   void OnStreamCreated(base::ReadOnlySharedMemoryRegion shared_memory_region,
-                       base::SyncSocket::Handle socket_handle,
+                       base::SyncSocket::ScopedHandle socket_handle,
                        bool initially_muted) override {
     StreamCreated(initially_muted);
   }
@@ -77,7 +77,7 @@ class CapturedAudioInputTest : public ::testing::Test {
     audio_client->StreamCreated(
         std::move(pending_stream), stream_client_.BindNewPipeAndPassReceiver(),
         {base::in_place, base::ReadOnlySharedMemoryRegion::Create(1024).region,
-         mojo::WrapPlatformFile(foreign_socket.Release())},
+         mojo::PlatformHandle(foreign_socket.Take())},
         initially_muted);
   }
 

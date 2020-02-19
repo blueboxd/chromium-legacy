@@ -95,9 +95,7 @@ bool RemoteTestServer::StartInBackground() {
   // the test spawer may forward OCSP a second time, from the device to the
   // host.
   bool ocsp_server_enabled =
-      type() == TYPE_HTTPS && (ssl_options().server_certificate ==
-                                   SSLOptions::CERT_AUTO_AIA_INTERMEDIATE ||
-                               !ssl_options().GetOCSPArgument().empty());
+      type() == TYPE_HTTPS && !ssl_options().GetOCSPArgument().empty();
   if (ocsp_server_enabled) {
     ocsp_proxy_ = std::make_unique<TcpSocketProxy>(io_thread_.task_runner());
     bool initialized = ocsp_proxy_->Initialize();

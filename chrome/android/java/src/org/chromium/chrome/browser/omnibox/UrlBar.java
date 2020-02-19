@@ -40,7 +40,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.base.metrics.CachedMetrics.ActionEvent;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
@@ -55,12 +55,12 @@ public abstract class UrlBar extends AutocompleteEditText {
 
     private static final boolean DEBUG = false;
 
-    private static final CachedMetrics.ActionEvent ACTION_LONG_PRESS_COPY =
-            new CachedMetrics.ActionEvent("Omnibox.LongPress.Copy");
-    private static final CachedMetrics.ActionEvent ACTION_LONG_PRESS_CUT =
-            new CachedMetrics.ActionEvent("Omnibox.LongPress.Cut");
-    private static final CachedMetrics.ActionEvent ACTION_LONG_PRESS_SHARE =
-            new CachedMetrics.ActionEvent("Omnibox.LongPress.Share");
+    private static final ActionEvent ACTION_LONG_PRESS_COPY =
+            new ActionEvent("Omnibox.LongPress.Copy");
+    private static final ActionEvent ACTION_LONG_PRESS_CUT =
+            new ActionEvent("Omnibox.LongPress.Cut");
+    private static final ActionEvent ACTION_LONG_PRESS_SHARE =
+            new ActionEvent("Omnibox.LongPress.Share");
 
     // TextView becomes very slow on long strings, so we limit maximum length
     // of what is displayed to the user, see limitDisplayableLength().

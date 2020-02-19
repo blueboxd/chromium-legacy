@@ -12,5 +12,6 @@
 
 TerminalUI::TerminalUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  content::URLDataSource::Add(profile, std::make_unique<TerminalSource>());
+  content::URLDataSource::Add(profile,
+                              std::make_unique<TerminalSource>(profile));
 }

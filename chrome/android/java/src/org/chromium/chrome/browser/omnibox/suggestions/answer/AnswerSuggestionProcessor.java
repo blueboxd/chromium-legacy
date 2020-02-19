@@ -29,7 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/** A class that handles model and view creation for the most commonly used omnibox suggestion. */
+/**
+ * A class that handles model and view creation for the most commonly used omnibox suggestion.
+ */
 public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
     private final Map<String, List<PropertyModel>> mPendingAnswerRequestUrls;
     private final Context mContext;
@@ -60,9 +62,6 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
     }
 
     @Override
-    public void onNativeInitialized() {}
-
-    @Override
     public int getViewTypeId() {
         return OmniboxSuggestionUiType.ANSWER_SUGGESTION;
     }
@@ -79,24 +78,16 @@ public class AnswerSuggestionProcessor extends BaseSuggestionViewProcessor {
     }
 
     @Override
-    public void onUrlFocusChange(boolean hasFocus) {
-    }
-
-    @Override
     public void recordSuggestionPresented(OmniboxSuggestion suggestion, PropertyModel model) {
         // Note: At the time of writing this functionality, AiS was offering at most one answer to
         // any query. If this changes before the metric is expired, the code below may need either
         // revisiting or a secondary metric telling us how many answer suggestions have been shown.
+        // SuggestionUsed bookkeeping handled in C++:
+        // https://cs.chromium.org/Omnibox.SuggestionUsed.AnswerInSuggest
         if (suggestion.hasAnswer()) {
             RecordHistogram.recordEnumeratedHistogram("Omnibox.AnswerInSuggestShown",
                     suggestion.getAnswer().getType(), AnswerType.TOTAL_COUNT);
         }
-    }
-
-    @Override
-    public void recordSuggestionUsed(OmniboxSuggestion suggestion, PropertyModel model) {
-        // Bookkeeping handled in C++:
-        // https://cs.chromium.org/Omnibox.SuggestionUsed.AnswerInSuggest
     }
 
     private void maybeFetchAnswerIcon(PropertyModel model, OmniboxSuggestion suggestion) {

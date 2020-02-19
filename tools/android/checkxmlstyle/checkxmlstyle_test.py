@@ -138,11 +138,12 @@ class ColorReferencesTest(unittest.TestCase):
   def testReferenceInSemanticColors(self):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
-      MockFile(helpers.COLOR_PALETTE_PATH,
-        ['<resources><color name="a">#f0f0f0</color></resources>']),
-      MockFile('ui/android/java/res/values/semantic_colors.xml',
-        ['<color name="b">@color/hello<color>',
-         '<color name="c">@color/a<color>'])
+        MockFile(helpers.COLOR_PALETTE_PATH,
+                 ['<resources><color name="a">#f0f0f0</color></resources>']),
+        MockFile('ui/android/java/res/values/semantic_colors.xml', [
+            '<color name="b">@color/hello<color>',
+            '<color name="c">@color/a<color>'
+        ])
     ]
     errors = checkxmlstyle._CheckSemanticColorsReferences(
       mock_input_api, MockOutputApi())

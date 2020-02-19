@@ -16,7 +16,7 @@
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
-#include "mojo/public/cpp/system/handle.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -45,7 +45,7 @@ class GraphicsDelegateWin : public GraphicsDelegate {
   void Cleanup();
   void PreRender();
   void PostRender();
-  mojo::ScopedHandle GetTexture();
+  mojo::PlatformHandle GetTexture();
   gfx::RectF GetLeft();
   gfx::RectF GetRight();
   void ResetMemoryBuffer();

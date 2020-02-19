@@ -25,6 +25,8 @@
 #include "net/http/proxy_client_socket.h"
 #include "net/http/proxy_fallback.h"
 #include "net/log/net_log_source_type.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
+#include "net/proxy_resolution/proxy_resolution_request.h"
 #include "net/socket/socket_tag.h"
 #include "net/ssl/ssl_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"

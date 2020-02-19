@@ -92,12 +92,8 @@ void TCPServerSocket::OnAcceptCompleted(int result) {
   auto pending_accept = std::move(pending_accepts_queue_.front());
   pending_accepts_queue_.erase(pending_accepts_queue_.begin());
 
-  net::IPEndPoint peer_addr;
   if (result == net::OK) {
     DCHECK(accepted_socket_);
-    result = accepted_socket_->GetPeerAddress(&peer_addr);
-  }
-  if (result == net::OK) {
     mojo::DataPipe send_pipe;
     mojo::DataPipe receive_pipe;
     mojo::PendingRemote<mojom::TCPConnectedSocket> socket;
@@ -110,7 +106,7 @@ void TCPServerSocket::OnAcceptCompleted(int result) {
     delegate_->OnAccept(std::move(connected_socket),
                         socket.InitWithNewPipeAndPassReceiver());
     std::move(pending_accept->callback)
-        .Run(result, peer_addr, std::move(socket),
+        .Run(result, accepted_address_, std::move(socket),
              std::move(receive_pipe.consumer_handle),
              std::move(send_pipe.producer_handle));
   } else {
@@ -128,7 +124,8 @@ void TCPServerSocket::ProcessNextAccept() {
   int result =
       socket_->Accept(&accepted_socket_,
                       base::BindRepeating(&TCPServerSocket::OnAcceptCompleted,
-                                          base::Unretained(this)));
+                                          base::Unretained(this)),
+                      &accepted_address_);
   if (result == net::ERR_IO_PENDING)
     return;
   OnAcceptCompleted(result);

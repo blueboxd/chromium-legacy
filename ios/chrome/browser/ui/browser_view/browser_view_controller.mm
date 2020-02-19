@@ -1631,6 +1631,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // TODO(crbug.com/976411):This should probably move to the BannerVC once/if
   // the dismiss event from BVC is observable.
   if (IsInfobarUIRebootEnabled() &&
+      !base::FeatureList::IsEnabled(kInfobarOverlayUI) &&
       (self.infobarContainerCoordinator.infobarBannerState !=
        InfobarBannerPresentationState::NotPresented)) {
     [self.infobarContainerCoordinator dismissInfobarBannerAnimated:NO
@@ -1854,6 +1855,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // presented. Dismiss it in case the user or system has triggered another
   // presentation.
   if (IsInfobarUIRebootEnabled() &&
+      !base::FeatureList::IsEnabled(kInfobarOverlayUI) &&
       (self.infobarContainerCoordinator.infobarBannerState !=
        InfobarBannerPresentationState::NotPresented)) {
     [self.infobarContainerCoordinator
@@ -2031,15 +2033,17 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self.tabStripCoordinator start];
   }
 
-  // Create the Infobar Container Coordinator.
-  self.infobarContainerCoordinator = [[InfobarContainerCoordinator alloc]
-      initWithBaseViewController:self
-                    browserState:self.browserState
-                    webStateList:self.tabModel.webStateList];
-  self.infobarContainerCoordinator.commandDispatcher = self.dispatcher;
-  self.infobarContainerCoordinator.positioner = self;
-  self.infobarContainerCoordinator.syncPresenter = self;
-  [self.infobarContainerCoordinator start];
+  if (!base::FeatureList::IsEnabled(kInfobarOverlayUI)) {
+    // Create the Infobar Container Coordinator.
+    self.infobarContainerCoordinator = [[InfobarContainerCoordinator alloc]
+        initWithBaseViewController:self
+                      browserState:self.browserState
+                      webStateList:self.tabModel.webStateList];
+    self.infobarContainerCoordinator.commandDispatcher = self.dispatcher;
+    self.infobarContainerCoordinator.positioner = self;
+    self.infobarContainerCoordinator.syncPresenter = self;
+    [self.infobarContainerCoordinator start];
+  }
 }
 
 // Called by NSNotificationCenter when the view's window becomes key to account
@@ -2963,13 +2967,18 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 // Provides a view that encompasses currently displayed infobar(s) or nil
 // if no infobar is presented.
 - (UIView*)infoBarOverlayViewForWebState:(web::WebState*)webState {
-  if (webState && self.currentWebState == webState) {
-    DCHECK(self.infobarContainerCoordinator);
-    if ([self.infobarContainerCoordinator
-            isInfobarPresentingForWebState:self.currentWebState]) {
-      return [self.infobarContainerCoordinator legacyContainerView];
-    }
+  if (!webState || self.currentWebState != webState)
+    return nil;
+
+  if (base::FeatureList::IsEnabled(kInfobarOverlayUI))
+    return self.infobarBannerOverlayContainerViewController.view;
+
+  DCHECK(self.infobarContainerCoordinator);
+  if ([self.infobarContainerCoordinator
+          isInfobarPresentingForWebState:self.currentWebState]) {
+    return [self.infobarContainerCoordinator legacyContainerView];
   }
+
   return nil;
 }
 
@@ -3281,6 +3290,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // controller that allows interaction with the rest of the App while its being
   // presented. Dismiss it in case the user or system has triggered repost form.
   if (IsInfobarUIRebootEnabled() &&
+      !base::FeatureList::IsEnabled(kInfobarOverlayUI) &&
       (self.infobarContainerCoordinator.infobarBannerState !=
        InfobarBannerPresentationState::NotPresented)) {
     [self.infobarContainerCoordinator

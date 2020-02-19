@@ -169,6 +169,8 @@ class CONTENT_EXPORT RenderFrameProxyHost
   // renderer.
   void DisableAutoResize();
 
+  void DidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
+
   blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfacesTesting();
   bool IsInertForTesting();
 

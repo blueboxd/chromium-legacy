@@ -18561,10 +18561,13 @@ void GLES2DecoderImpl::TexStorageImpl(GLenum target,
     return;
   }
   bool is_compressed_format = IsCompressedTextureFormat(internal_format);
-  if (is_compressed_format && target == GL_TEXTURE_3D) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION, function_name, "target invalid for format");
-    return;
+  if (is_compressed_format) {
+    if (!::gpu::gles2::ValidateCompressedFormatTarget(target,
+                                                      internal_format)) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                         "target invalid for format");
+      return;
+    }
   }
   // The glTexStorage entry points require width, height, and depth to be
   // at least 1, but the other texture entry points (those which use

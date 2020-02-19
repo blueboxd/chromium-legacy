@@ -382,8 +382,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
                         OnEnforceInsecureRequestPolicy)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFrameOwnerProperties,
                         OnSetFrameOwnerProperties)
-    IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateVisualProperties,
-                        OnDidUpdateVisualProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_TransferUserActivationFrom,
                         OnTransferUserActivationFrom)
     IPC_MESSAGE_HANDLER(UnfreezableFrameMsg_DeleteProxy, OnDeleteProxy)
@@ -460,7 +458,7 @@ void RenderFrameProxy::OnTransferUserActivationFrom(int32_t source_routing_id) {
   web_frame()->TransferUserActivationFrom(source_proxy->web_frame());
 }
 
-void RenderFrameProxy::OnDidUpdateVisualProperties(
+void RenderFrameProxy::DidUpdateVisualProperties(
     const cc::RenderFrameMetadata& metadata) {
   if (!parent_local_surface_id_allocator_->UpdateFromChild(
           metadata.local_surface_id_allocation.value_or(

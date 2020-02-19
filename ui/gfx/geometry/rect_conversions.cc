@@ -108,6 +108,16 @@ bool IsNearestRectWithinDistance(const gfx::RectF& rect, float distance) {
       (std::abs(max_y - float_max_y) < distance);
 }
 
+gfx::Rect ToRoundedRect(const gfx::RectF& rect) {
+  int left = ToRoundedInt(rect.x());
+  int top = ToRoundedInt(rect.y());
+  int right = ToRoundedInt(rect.right());
+  int bottom = ToRoundedInt(rect.bottom());
+  gfx::Rect result;
+  result.SetByBounds(left, top, right, bottom);
+  return result;
+}
+
 Rect ToFlooredRectDeprecated(const RectF& rect) {
   return Rect(ToFlooredInt(rect.x()),
               ToFlooredInt(rect.y()),

@@ -322,8 +322,15 @@ Color LayoutThemeMacRefresh::FocusRingColor() const {
   if (UsesTestModeFocusRingColor())
     return kDefaultFocusRingColor;
 
+  Color keyboard_focus_indicator =
+      GetSystemColor(MacSystemColorID::kKeyboardFocusIndicator);
+  // Take the RGB values from the keyboard_focus_indicator color, but use a
+  // different alpha value to avoid having a color too light.
+  Color focus_ring =
+      Color(keyboard_focus_indicator.Red(), keyboard_focus_indicator.Green(),
+            keyboard_focus_indicator.Blue(), /*alpha=*/128);
   if (!HasCustomFocusRingColor())
-    return GetSystemColor(MacSystemColorID::kKeyboardFocusIndicator);
+    return focus_ring;
 
   // Use the custom focus ring color when the system accent color wasn't
   // changed.
@@ -341,7 +348,7 @@ Color LayoutThemeMacRefresh::FocusRingColor() const {
     }
   }
 
-  return GetSystemColor(MacSystemColorID::kKeyboardFocusIndicator);
+  return focus_ring;
 }
 
 bool LayoutThemeMacRefresh::UsesTestModeFocusRingColor() const {

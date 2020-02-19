@@ -88,24 +88,12 @@ public class EntitySuggestionProcessor extends BaseSuggestionViewProcessor {
     }
 
     @Override
-    public void onNativeInitialized() {
-    }
-
-    @Override
-    public void onUrlFocusChange(boolean hasFocus) {
-    }
-
-    @Override
     public void recordSuggestionPresented(OmniboxSuggestion suggestion, PropertyModel model) {
+        // SuggestionUsed bookkeeping handled in C++:
+        // http://cs.chromium.org/Omnibox.SuggestionUsed.RichEntity
         int decorationType = model.get(EntitySuggestionViewProperties.DECORATION_TYPE);
         RecordHistogram.recordEnumeratedHistogram(
                 "Omnibox.RichEntity.DecorationType", decorationType, DECORATION_TYPE_TOTAL_COUNT);
-    }
-
-    @Override
-    public void recordSuggestionUsed(OmniboxSuggestion suggestion, PropertyModel model) {
-        // Bookkeeping handled in C++:
-        // http://cs.chromium.org/Omnibox.SuggestionUsed.RichEntity
     }
 
     private void fetchEntityImage(OmniboxSuggestion suggestion, PropertyModel model) {

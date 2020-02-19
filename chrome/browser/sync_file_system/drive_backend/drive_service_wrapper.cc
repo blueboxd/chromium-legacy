@@ -22,12 +22,10 @@ void DriveServiceWrapper::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_title,
     const drive::AddNewDirectoryOptions& options,
-    const google_apis::FileResourceCallback& callback) {
+    google_apis::FileResourceCallback callback) {
   DCHECK(sequece_checker_.CalledOnValidSequence());
-  drive_service_->AddNewDirectory(parent_resource_id,
-                                  directory_title,
-                                  options,
-                                  callback);
+  drive_service_->AddNewDirectory(parent_resource_id, directory_title, options,
+                                  std::move(callback));
 }
 
 void DriveServiceWrapper::DeleteResource(
@@ -106,9 +104,9 @@ void DriveServiceWrapper::GetRemainingFileList(
 
 void DriveServiceWrapper::GetFileResource(
     const std::string& resource_id,
-    const google_apis::FileResourceCallback& callback) {
+    google_apis::FileResourceCallback callback) {
   DCHECK(sequece_checker_.CalledOnValidSequence());
-  drive_service_->GetFileResource(resource_id, callback);
+  drive_service_->GetFileResource(resource_id, std::move(callback));
 }
 
 void DriveServiceWrapper::GetFileListInDirectory(

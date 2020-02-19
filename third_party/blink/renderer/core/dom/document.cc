@@ -6020,6 +6020,22 @@ net::SiteForCookies Document::SiteForCookies() const {
   return candidate;
 }
 
+mojom::blink::PermissionService* Document::GetPermissionService(
+    ExecutionContext* execution_context) {
+  if (!permission_service_) {
+    execution_context->GetBrowserInterfaceBroker().GetInterface(
+        permission_service_.BindNewPipeAndPassReceiver(
+            execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+    permission_service_.set_disconnect_handler(WTF::Bind(
+        &Document::PermissionServiceConnectionError, WrapWeakPersistent(this)));
+  }
+  return permission_service_.get();
+}
+
+void Document::PermissionServiceConnectionError() {
+  permission_service_.reset();
+}
+
 ScriptPromise Document::hasStorageAccess(ScriptState* script_state) const {
   const bool has_access =
       TopFrameOrigin() &&
@@ -6034,14 +6050,39 @@ ScriptPromise Document::hasStorageAccess(ScriptState* script_state) const {
   return promise;
 }
 
-ScriptPromise Document::requestStorageAccess(ScriptState* script_state) const {
+ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
+  DCHECK(frame_);
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
 
   // TODO (http://crbug.com/989663)
   // Hookup actual logic to Resolve/Reject this request properly.
+
+  // Access the promise first to ensure it is created so that the proper state
+  // can be changed when it is resolved or rejected.
   ScriptPromise promise = resolver->Promise();
-  resolver->Reject();
+
+  const bool has_user_gesture = LocalFrame::HasTransientUserActivation(frame_);
+  if (has_user_gesture) {
+    auto descriptor = mojom::blink::PermissionDescriptor::New();
+    descriptor->name = mojom::blink::PermissionName::STORAGE_ACCESS;
+    GetPermissionService(ExecutionContext::From(script_state))
+        ->RequestPermission(
+            std::move(descriptor), has_user_gesture,
+            WTF::Bind(
+                [](ScriptPromiseResolver* resolver,
+                   mojom::blink::PermissionStatus status) {
+                  DCHECK(resolver);
+                  (status == mojom::blink::PermissionStatus::GRANTED)
+                      ? resolver->Resolve()
+                      : resolver->Reject();
+                },
+                WrapPersistent(resolver)));
+  } else {
+    // Without a user gesture any request for storage access is immediately
+    // denied.
+    resolver->Reject();
+  }
   return promise;
 }
 

@@ -168,7 +168,7 @@ class FakeDriveService : public DriveServiceInterface {
       const google_apis::FileListCallback& callback) override;
   google_apis::CancelCallback GetFileResource(
       const std::string& resource_id,
-      const google_apis::FileResourceCallback& callback) override;
+      google_apis::FileResourceCallback callback) override;
   google_apis::CancelCallback GetAboutResource(
       google_apis::AboutResourceCallback callback) override;
   google_apis::CancelCallback GetStartPageToken(
@@ -192,7 +192,7 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& parent_resource_id,
       const std::string& new_title,
       const base::Time& last_modified,
-      const google_apis::FileResourceCallback& callback) override;
+      google_apis::FileResourceCallback callback) override;
   google_apis::CancelCallback UpdateResource(
       const std::string& resource_id,
       const std::string& parent_resource_id,
@@ -200,7 +200,7 @@ class FakeDriveService : public DriveServiceInterface {
       const base::Time& last_modified,
       const base::Time& last_viewed_by_me,
       const google_apis::drive::Properties& properties,
-      const google_apis::FileResourceCallback& callback) override;
+      google_apis::FileResourceCallback callback) override;
   google_apis::CancelCallback AddResourceToDirectory(
       const std::string& parent_resource_id,
       const std::string& resource_id,
@@ -213,7 +213,7 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& parent_resource_id,
       const std::string& directory_title,
       const AddNewDirectoryOptions& options,
-      const google_apis::FileResourceCallback& callback) override;
+      google_apis::FileResourceCallback callback) override;
   google_apis::CancelCallback InitiateUploadNewFile(
       const std::string& content_type,
       int64_t content_length,
@@ -234,12 +234,12 @@ class FakeDriveService : public DriveServiceInterface {
       int64_t content_length,
       const std::string& content_type,
       const base::FilePath& local_file_path,
-      const google_apis::drive::UploadRangeCallback& callback,
+      google_apis::drive::UploadRangeCallback callback,
       const google_apis::ProgressCallback& progress_callback) override;
   google_apis::CancelCallback GetUploadStatus(
       const GURL& upload_url,
       int64_t content_length,
-      const google_apis::drive::UploadRangeCallback& callback) override;
+      google_apis::drive::UploadRangeCallback callback) override;
   google_apis::CancelCallback MultipartUploadNewFile(
       const std::string& content_type,
       int64_t content_length,
@@ -247,7 +247,7 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& title,
       const base::FilePath& local_file_path,
       const UploadNewFileOptions& options,
-      const google_apis::FileResourceCallback& callback,
+      google_apis::FileResourceCallback callback,
       const google_apis::ProgressCallback& progress_callback) override;
   google_apis::CancelCallback MultipartUploadExistingFile(
       const std::string& content_type,
@@ -255,7 +255,7 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& resource_id,
       const base::FilePath& local_file_path,
       const UploadExistingFileOptions& options,
-      const google_apis::FileResourceCallback& callback,
+      google_apis::FileResourceCallback callback,
       const google_apis::ProgressCallback& progress_callback) override;
   google_apis::CancelCallback AddPermission(
       const std::string& resource_id,
@@ -273,20 +273,19 @@ class FakeDriveService : public DriveServiceInterface {
                   const std::string& parent_resource_id,
                   const std::string& title,
                   bool shared_with_me,
-                  const google_apis::FileResourceCallback& callback);
+                  google_apis::FileResourceCallback callback);
 
   // Adds a new file with the given |resource_id|. If the id already exists,
   // it's an error. This is used for testing cross profile file sharing that
   // needs to have matching resource IDs in different fake service instances.
   // |callback| must not be null.
-  void AddNewFileWithResourceId(
-      const std::string& resource_id,
-      const std::string& content_type,
-      const std::string& content_data,
-      const std::string& parent_resource_id,
-      const std::string& title,
-      bool shared_with_me,
-      const google_apis::FileResourceCallback& callback);
+  void AddNewFileWithResourceId(const std::string& resource_id,
+                                const std::string& content_type,
+                                const std::string& content_data,
+                                const std::string& parent_resource_id,
+                                const std::string& title,
+                                bool shared_with_me,
+                                google_apis::FileResourceCallback callback);
 
   // Adds a new directory with the given |resource_id|.
   // |callback| must not be null.
@@ -295,15 +294,14 @@ class FakeDriveService : public DriveServiceInterface {
       const std::string& parent_resource_id,
       const std::string& directory_title,
       const AddNewDirectoryOptions& options,
-      const google_apis::FileResourceCallback& callback);
+      google_apis::FileResourceCallback callback);
 
   // Sets the last modified time for an entry specified by |resource_id|.
   // On success, returns HTTP_SUCCESS with the parsed entry.
   // |callback| must not be null.
-  void SetLastModifiedTime(
-      const std::string& resource_id,
-      const base::Time& last_modified_time,
-      const google_apis::FileResourceCallback& callback);
+  void SetLastModifiedTime(const std::string& resource_id,
+                           const base::Time& last_modified_time,
+                           google_apis::FileResourceCallback callback);
 
   // Sets the capabilities for an entry specified by |resource_id|.
   // On success, returns HTTP_SUCCESS with the parsed entry.
@@ -311,7 +309,7 @@ class FakeDriveService : public DriveServiceInterface {
   void SetFileCapabilities(
       const std::string& resource_id,
       const google_apis::FileResourceCapabilities& capabilities,
-      const google_apis::FileResourceCallback& callback);
+      google_apis::FileResourceCallback callback);
 
   // Sets the capabilities for the team drive with ID |team_drive_id|.
   // On success, returns true.

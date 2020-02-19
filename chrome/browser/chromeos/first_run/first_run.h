@@ -17,10 +17,13 @@ namespace first_run {
 // Registers preferences related to ChromeOS first-run tutorial.
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-// Maybe launches the help app for the given Profile, depending on user prefs
-// and flags. The app is preloaded immediately, but visible only after the
-// session has begun.
-void MaybeLaunchHelpApp(Profile* profile);
+// Returns true if we should launch the help app for the given Profile.
+// Depends on user prefs and flags.
+bool ShouldLaunchHelpApp(Profile* profile);
+
+// Launches the help app for the given Profile. The app is preloaded
+// immediately, but visible only after the session has begun.
+void LaunchHelpApp(Profile* profile);
 
 // Launches overlay tutorial for current user.
 void LaunchTutorial();

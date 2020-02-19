@@ -85,10 +85,12 @@ void PermissionPromptBubbleView::AddPermissionRequestLine(
   constexpr int kPermissionIconSize = 18;
   icon->SetImage(
       gfx::CreateVectorIcon(vector_id, kPermissionIconSize, icon_color));
+  icon->SetVerticalAlignment(views::ImageView::Alignment::kLeading);
 
   auto* label = line_container->AddChildView(
       std::make_unique<views::Label>(request->GetMessageTextFragment()));
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetMultiLine(true);
 }
 
 void PermissionPromptBubbleView::UpdateAnchorPosition() {
@@ -122,6 +124,12 @@ bool PermissionPromptBubbleView::ShouldShowCloseButton() const {
 base::string16 PermissionPromptBubbleView::GetWindowTitle() const {
   return l10n_util::GetStringFUTF16(IDS_PERMISSIONS_BUBBLE_PROMPT,
                                     name_or_origin_.name_or_origin);
+}
+
+gfx::Size PermissionPromptBubbleView::CalculatePreferredSize() const {
+  const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      DISTANCE_BUBBLE_PREFERRED_WIDTH);
+  return gfx::Size(width, GetHeightForWidth(width));
 }
 
 void PermissionPromptBubbleView::Show() {

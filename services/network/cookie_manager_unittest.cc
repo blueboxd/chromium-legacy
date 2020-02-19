@@ -65,9 +65,9 @@ class SynchronousCookieManager {
   // Caller must guarantee that |*cookie_service| outlives the
   // SynchronousCookieManager.
   explicit SynchronousCookieManager(mojom::CookieManager* cookie_service)
-      : cookie_service_(cookie_service), flush_callback_counter_(0) {}
+      : cookie_service_(cookie_service), callback_counter_(0) {}
 
-  ~SynchronousCookieManager() {}
+  ~SynchronousCookieManager() = default;
 
   std::vector<net::CanonicalCookie> GetAllCookies() {
     base::RunLoop run_loop;
@@ -217,20 +217,31 @@ class SynchronousCookieManager {
   void FlushCookieStore() {
     base::RunLoop run_loop;
     cookie_service_->FlushCookieStore(base::BindLambdaForTesting([&]() {
-      ++flush_callback_counter_;
+      ++callback_counter_;
       run_loop.Quit();
     }));
     run_loop.Run();
   }
 
-  uint32_t callback_count() const { return flush_callback_counter_; }
+  void SetStorageAccessGrantSettings() {
+    std::vector<ContentSettingPatternSource> settings;
+    base::RunLoop run_loop;
+    cookie_service_->SetStorageAccessGrantSettings(
+        std::move(settings), base::BindLambdaForTesting([&]() {
+          ++callback_counter_;
+          run_loop.Quit();
+        }));
+    run_loop.Run();
+  }
+
+  uint32_t callback_count() const { return callback_counter_; }
 
   // No need to wrap Add*Listener and CloneInterface, since their use
   // is purely async.
  private:
 
   mojom::CookieManager* cookie_service_;
-  uint32_t flush_callback_counter_;
+  uint32_t callback_counter_;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCookieManager);
 };
@@ -2332,6 +2343,13 @@ TEST_F(SessionCleanupCookieManagerTest, HttpCookieAllowedOnHttps) {
   InitializeCookieService(store, store);
 
   EXPECT_EQ(1u, service_wrapper()->GetAllCookies().size());
+}
+
+// Each call to SetStorageAccessGrantSettings should run the provided callback
+// when complete.
+TEST_F(CookieManagerTest, SetStorageAccessGrantSettingsRunsCallback) {
+  service_wrapper()->SetStorageAccessGrantSettings();
+  ASSERT_EQ(1U, service_wrapper()->callback_count());
 }
 
 }  // namespace

@@ -1553,8 +1553,9 @@ bool TabStrip::ShouldHideCloseButtonForTab(Tab* tab) const {
 
 void TabStrip::SelectTab(Tab* tab, const ui::Event& event) {
   int model_index = GetModelIndexOf(tab);
+
   if (IsValidModelIndex(model_index)) {
-    if (tab->group().has_value())
+    if (tab->group().has_value() && !tab->IsActive())
       base::RecordAction(base::UserMetricsAction("TabGroups_SwitchGroupedTab"));
 
     // Report histogram metrics for the number of tab hover cards seen before
@@ -3334,7 +3335,14 @@ Tab* TabStrip::FindTabHitByPoint(const gfx::Point& point) {
 }
 
 void TabStrip::SwapLayoutIfNecessary() {
-  bool needs_touch = NeedsTouchLayout();
+  // TODO(crbug.com/1053707): Tab groups is disabled with stacked tabs to
+  // prevent crashes during development. This will not impact users unless tab
+  // groups are manually enabled.
+  // Tab groups should only be rolled out on devices where
+  // features::kWebUITabStrip is enabled which is mutually exclusive with
+  // stacked tabs.
+  bool needs_touch =
+      NeedsTouchLayout() && !base::FeatureList::IsEnabled(features::kTabGroups);
   bool using_touch = touch_layout_ != nullptr;
   if (needs_touch == using_touch)
     return;

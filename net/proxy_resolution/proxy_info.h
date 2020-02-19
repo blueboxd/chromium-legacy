@@ -175,6 +175,7 @@ class NET_EXPORT ProxyInfo {
 
  private:
   friend class ConfiguredProxyResolutionService;
+  friend class ProxyResolutionRequestImpl;
   FRIEND_TEST_ALL_PREFIXES(ProxyInfoTest, UseVsOverrideProxyList);
 
   const ProxyRetryInfoMap& proxy_retry_info() const {

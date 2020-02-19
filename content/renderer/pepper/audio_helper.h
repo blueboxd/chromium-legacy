@@ -27,7 +27,7 @@ class AudioHelper {
 
   // Called when the stream is created.
   void StreamCreated(base::UnsafeSharedMemoryRegion shared_memory_region,
-                     base::SyncSocket::Handle socket);
+                     base::SyncSocket::ScopedHandle socket);
 
   void SetCreateCallback(scoped_refptr<ppapi::TrackedCallback> create_callback);
 
@@ -41,7 +41,7 @@ class AudioHelper {
   // To be implemented by subclasses to call their |SetStreamInfo()|.
   virtual void OnSetStreamInfo(
       base::UnsafeSharedMemoryRegion shared_memory_region,
-      base::SyncSocket::Handle socket_handle) = 0;
+      base::SyncSocket::ScopedHandle socket_handle) = 0;
 
  private:
   scoped_refptr<ppapi::TrackedCallback> create_callback_;

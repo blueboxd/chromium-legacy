@@ -20,7 +20,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.base.metrics.RecordHistogram;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -47,9 +47,6 @@ public class SysUtils {
     private static Integer sAmountOfPhysicalMemoryKB;
 
     private static Boolean sHighEndDiskDevice;
-
-    private static CachedMetrics.BooleanHistogramSample sLowEndMatches =
-            new CachedMetrics.BooleanHistogramSample("Android.SysUtilsLowEndMatches");
 
     private SysUtils() { }
 
@@ -196,7 +193,8 @@ public class SysUtils {
                                 Context.ACTIVITY_SERVICE))
                                .isLowRamDevice();
         }
-        sLowEndMatches.record(isLowEnd == isLowRam);
+        RecordHistogram.recordBooleanHistogram(
+                "Android.SysUtilsLowEndMatches", isLowEnd == isLowRam);
 
         return isLowEnd;
     }

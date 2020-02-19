@@ -61,7 +61,7 @@ CancelCallback FakeDriveServiceWrapper::AddNewDirectory(
     const std::string& parent_resource_id,
     const std::string& directory_name,
     const drive::AddNewDirectoryOptions& options,
-    const FileResourceCallback& callback) {
+    FileResourceCallback callback) {
   if (make_directory_conflict_) {
     FakeDriveService::AddNewDirectory(
         parent_resource_id,
@@ -69,8 +69,8 @@ CancelCallback FakeDriveServiceWrapper::AddNewDirectory(
         options,
         base::Bind(&DidAddFileOrDirectoryForMakingConflict));
   }
-  return FakeDriveService::AddNewDirectory(
-      parent_resource_id, directory_name, options, callback);
+  return FakeDriveService::AddNewDirectory(parent_resource_id, directory_name,
+                                           options, std::move(callback));
 }
 
 FakeDriveUploader::FakeDriveUploader(

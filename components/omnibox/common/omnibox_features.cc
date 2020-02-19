@@ -8,6 +8,12 @@
 
 namespace omnibox {
 
+// Allows Omnibox to dynamically adjust number of offered suggestions to fill in
+// the space between Omnibox an the soft keyboard. The number of suggestions
+// shown will be no less than minimum for the platform (eg. 5 for Android).
+const base::Feature kAdaptiveSuggestionsCount{
+    "OmniboxAdaptiveSuggestionsCount", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature used to hide the scheme from steady state URLs displayed in the
 // toolbar. It is restored during editing.
 const base::Feature kHideFileUrlScheme {
@@ -47,13 +53,6 @@ const base::Feature kHideSteadyStateUrlPathQueryAndRef {
 // Feature used to undo all omnibox elisions on a single click or focus action.
 const base::Feature kOneClickUnelide{"OmniboxOneClickUnelide",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
-
-// This feature simplifies the security indiciator UI for https:// pages.
-// The default behavior is to show no verbose text for EV pages. When disabled,
-// the verbose EV indicator text will be displayed.
-// This feature is used for EV UI removal experiment (https://crbug.com/803501).
-const base::Feature kSimplifyHttpsIndicator{"SimplifyHttpsIndicator",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Feature used to enable local entity suggestions. Similar to rich entities but
 // but location specific. E.g., typing 'starbucks near' could display the local
@@ -184,18 +183,6 @@ const base::Feature kUIExperimentMaxAutocompleteMatches{
 // when the user is on the search results page of the default search provider.
 const base::Feature kQueryInOmnibox{"QueryInOmnibox",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used for showing the URL suggestion favicons as a UI experiment.
-// Already launched on Desktop, and currently under development on Android.
-// This flag is not used on iOS.
-const base::Feature kUIExperimentShowSuggestionFavicons{
-  "OmniboxUIExperimentShowSuggestionFavicons",
-#if defined(OS_ANDROID)
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
-      base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-};
 
 // Feature used to always swap the title and URL.
 const base::Feature kUIExperimentSwapTitleAndUrl{

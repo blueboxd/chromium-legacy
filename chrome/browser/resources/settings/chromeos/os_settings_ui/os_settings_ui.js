@@ -104,6 +104,7 @@ Polymer({
 
   listeners: {
     'refresh-pref': 'onRefreshPref_',
+    'user-action-setting-change': 'onSettingChange_',
   },
 
   /**
@@ -290,6 +291,14 @@ Polymer({
    */
   onRefreshPref_(e) {
     return /** @type {SettingsPrefsElement} */ (this.$.prefs).refresh(e.detail);
+  },
+
+  /**
+   * @param {!CustomEvent<string>} e
+   * @private
+   */
+  onSettingChange_(e) {
+    settings.recordSettingChange();
   },
 
   /**

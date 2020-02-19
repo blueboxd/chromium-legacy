@@ -77,7 +77,10 @@ def _CheckColorFormat(input_api, output_api):
 
     This is banned, please define colors in format of #RRGGBB for opaque
     colors or #AARRGGBB for translucent colors. Note that they should be
-    defined in chrome/android/java/res/values/colors.xml.
+    defined in chrome/android/java/res/values/color_palette.xml.
+
+    If the new added color is a one-off color, please contact UX for approval
+    and then add it to ui/android/java/res/values/one_off_colors.xml
 
     See https://crbug.com/775198 for more information.
   ''', errors)
@@ -86,11 +89,15 @@ def _CheckColorFormat(input_api, output_api):
 
 
 def _CheckColorReferences(input_api, output_api):
-  """Checks no (A)RGB values are defined outside color_palette.xml."""
+  """
+  Checks no (A)RGB values are defined outside color_palette.xml
+  or one_off_colors.xml.
+  """
   errors = []
   warnings = []
   for f in IncludedFiles(input_api):
-    if f.LocalPath() == helpers.COLOR_PALETTE_RELATIVE_PATH:
+    if (f.LocalPath() == helpers.COLOR_PALETTE_RELATIVE_PATH
+        or f.LocalPath() == helpers.ONE_OFF_COLORS_RELATIVE_PATH):
       continue
     # Ignore new references in vector/shape drawable xmls
     contents = input_api.ReadFile(f)
@@ -112,7 +119,10 @@ def _CheckColorReferences(input_api, output_api):
     ui/android/java/res/values/color_palette.xml, listed below.
 
     This is banned, please use the existing color resources or create a new
-    color resource in colors.xml, and reference the color by @color/....
+    color resource in color_palette.xml, and reference the color by @color/....
+
+    If the new added color is a one-off color, please contact UX for approval
+    and then add it to ui/android/java/res/values/one_off_colors.xml.
 
     See https://crbug.com/775198 for more information.
   ''', errors)
@@ -139,10 +149,14 @@ def _CheckColorReferences(input_api, output_api):
 
 
 def _CheckDuplicateColors(input_api, output_api):
-  """Checks colors defined by (A)RGB values in color_palette.xml are unique."""
+  """
+  Checks colors defined by (A)RGB values in color_palette.xml and
+  one_off_colors.xml are unique.
+  """
   errors = []
   for f in IncludedFiles(input_api):
-    if f.LocalPath() != helpers.COLOR_PALETTE_RELATIVE_PATH:
+    if (f.LocalPath() != helpers.COLOR_PALETTE_RELATIVE_PATH
+        and f.LocalPath() != helpers.ONE_OFF_COLORS_RELATIVE_PATH):
       continue
     colors = defaultdict(int)
     contents = input_api.ReadFile(f)
@@ -164,11 +178,12 @@ def _CheckDuplicateColors(input_api, output_api):
             '''
   Android Duplicate Color Declaration Check failed:
     Your new code added new colors by (A)RGB values that are already defined in
-    ui/android/java/res/values/color_palette.xml, listed below.
+    ui/android/java/res/values/color_palette.xml or
+    ui/android/java/res/values/one_off_colors.xml, listed below.
 
-    This is banned, please reference the existing color resource from colors.xml
-    using @color/... and if needed, give the existing color resource a more
-    general name (e.g. modern_grey_100).
+    This is banned, please reference the existing color resource from
+    color_palette.xml or one_off_colors.xml using @color/... and if needed,
+    give the existing color resource a more general name (e.g. modern_grey_100).
 
     See https://crbug.com/775198 for more information.
   ''', errors)
@@ -179,7 +194,7 @@ def _CheckDuplicateColors(input_api, output_api):
 def _CheckSemanticColorsReferences(input_api, output_api):
   """
   Checks colors defined in semantic_colors.xml only referencing
-  resources in color_palette.xml
+  resources in color_palette.xml.
   """
   errors = []
   color_palette = None

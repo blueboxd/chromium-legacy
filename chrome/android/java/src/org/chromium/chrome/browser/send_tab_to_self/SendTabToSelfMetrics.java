@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.send_tab_to_self;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.lang.annotation.Retention;
@@ -56,12 +55,9 @@ public class SendTabToSelfMetrics {
             int NUM_ENTRIES = 3;
         }
 
-        private static final CachedMetrics.EnumeratedHistogramSample CLICK_RESULT_METRIC =
-                new CachedMetrics.EnumeratedHistogramSample(
-                        "SendTabToSelf.Notification", InteractionType.NUM_ENTRIES);
-
         public static void recordClickResult(@InteractionType int result) {
-            CLICK_RESULT_METRIC.record(result);
+            RecordHistogram.recordEnumeratedHistogram(
+                    "SendTabToSelf.Notification", result, InteractionType.NUM_ENTRIES);
         }
     }
 }

@@ -13,7 +13,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.MatchClassificationStyle;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
@@ -23,7 +22,6 @@ import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewPr
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionDrawableState;
 import org.chromium.chrome.browser.omnibox.suggestions.base.SuggestionSpannable;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewProperties.SuggestionIcon;
-import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.ArrayList;
@@ -34,7 +32,6 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
     private final Context mContext;
     private final UrlBarEditingTextStateProvider mUrlBarEditingTextProvider;
     private final Supplier<LargeIconBridge> mIconBridgeSupplier;
-    private boolean mEnableSuggestionFavicons;
     private final int mDesiredFaviconWidthPx;
 
     /**
@@ -70,9 +67,6 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
     }
 
     @Override
-    public void onUrlFocusChange(boolean hasFocus) {}
-
-    @Override
     public void recordSuggestionPresented(OmniboxSuggestion suggestion, PropertyModel model) {
         RecordHistogram.recordEnumeratedHistogram("Omnibox.IconOrFaviconShown",
                 model.get(SuggestionViewProperties.SUGGESTION_ICON_TYPE),
@@ -84,16 +78,6 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
         RecordHistogram.recordEnumeratedHistogram("Omnibox.SuggestionUsed.IconOrFaviconType",
                 model.get(SuggestionViewProperties.SUGGESTION_ICON_TYPE),
                 SuggestionIcon.TOTAL_COUNT);
-    }
-
-    /**
-     * Signals that native initialization has completed.
-     */
-    @Override
-    public void onNativeInitialized() {
-        // Experiment: controls presence of certain answer icon types.
-        mEnableSuggestionFavicons =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS);
     }
 
     /** Decide whether suggestion should receive a refine arrow. */
@@ -144,11 +128,6 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
     }
 
     private void updateSuggestionIcon(OmniboxSuggestion suggestion, PropertyModel model) {
-        if (!(mEnableSuggestionFavicons
-                    || DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext))) {
-            return;
-        }
-
         @SuggestionIcon
         int type = getSuggestionIconType(suggestion);
         @DrawableRes
@@ -229,8 +208,7 @@ public class BasicSuggestionProcessor extends BaseSuggestionViewProcessor {
      */
     private void fetchSuggestionFavicon(
             PropertyModel model, String url, @OmniboxSuggestionType int type) {
-        if (!mEnableSuggestionFavicons || url == null
-                || type == OmniboxSuggestionType.CLIPBOARD_TEXT) {
+        if (url == null || type == OmniboxSuggestionType.CLIPBOARD_TEXT) {
             return;
         }
 

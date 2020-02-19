@@ -39,10 +39,12 @@ void AudioDeviceThread::Callback::InitializeOnAudioThread() {
 // AudioDeviceThread implementation
 
 AudioDeviceThread::AudioDeviceThread(Callback* callback,
-                                     base::SyncSocket::Handle socket,
+                                     base::SyncSocket::ScopedHandle socket,
                                      const char* thread_name,
                                      base::ThreadPriority thread_priority)
-    : callback_(callback), thread_name_(thread_name), socket_(socket) {
+    : callback_(callback),
+      thread_name_(thread_name),
+      socket_(std::move(socket)) {
   CHECK(base::PlatformThread::CreateWithPriority(0, this, &thread_handle_,
                                                  thread_priority));
 

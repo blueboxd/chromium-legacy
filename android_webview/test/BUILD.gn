@@ -150,6 +150,7 @@ shared_library("libstandalonelibwebviewchromium") {
     "//android_webview/lib",
     "//android_webview/lib:webview_entry_point",
     "//android_webview/nonembedded",
+    "//android_webview/public",
     "//base",
     "//components/heap_profiling:test_support",
     "//content/public/test/android:content_native_test_support",

@@ -97,6 +97,11 @@ TEST(SmsParserTest, Whitespace) {
             ParseOrigin("hello world\n@example.com #123 "));
 }
 
+TEST(SmsParserTest, Dashes) {
+  EXPECT_EQ(url::Origin::Create(GURL("https://web-otp-example.com")),
+            ParseOrigin("@web-otp-example.com #123"));
+}
+
 TEST(SmsParserTest, Newlines) {
   EXPECT_EQ(url::Origin::Create(GURL("https://example.com")),
             ParseOrigin("hello world\n@example.com #123\n"));

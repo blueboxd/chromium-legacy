@@ -264,6 +264,12 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
       ui.fire('focus');
       assertEquals(userActionRecorder.pageFocusCount, 1);
     });
+
+    test('userActionPrefChange', function() {
+      assertEquals(userActionRecorder.settingChangeCount, 0);
+      ui.$$('#prefs').fire('user-action-setting-change');
+      assertEquals(userActionRecorder.settingChangeCount, 1);
+    });
   });
 
   mocha.run();

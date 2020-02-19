@@ -8,6 +8,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
+#include "net/cert/asn1_util.h"
 #include "net/cert/internal/parse_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
@@ -116,7 +117,24 @@ CertBuilder::CertBuilder(CRYPTO_BUFFER* orig_cert, CertBuilder* issuer)
     issuer_ = this;
 
   crypto::EnsureOpenSSLInit();
-  InitFromCert(der::Input(x509_util::CryptoBufferAsStringPiece(orig_cert)));
+  if (orig_cert)
+    InitFromCert(der::Input(x509_util::CryptoBufferAsStringPiece(orig_cert)));
+}
+
+// static
+std::unique_ptr<CertBuilder> CertBuilder::FromStaticCert(CRYPTO_BUFFER* cert,
+                                                         EVP_PKEY* key) {
+  std::unique_ptr<CertBuilder> builder =
+      std::make_unique<CertBuilder>(cert, nullptr);
+  // |cert_|, |key_|, and |subject_tlv_| must be initialized for |builder| to
+  // function as the |issuer| of another CertBuilder.
+  builder->cert_ = bssl::UpRef(cert);
+  builder->key_ = bssl::UpRef(key);
+  base::StringPiece subject_tlv;
+  CHECK(asn1::ExtractSubjectFromDERCert(
+      x509_util::CryptoBufferAsStringPiece(cert), &subject_tlv));
+  builder->subject_tlv_ = subject_tlv.as_string();
+  return builder;
 }
 
 CertBuilder::~CertBuilder() = default;
@@ -164,6 +182,24 @@ void CertBuilder::EraseExtension(const der::Input& oid) {
   extensions_.erase(oid.AsString());
 
   Invalidate();
+}
+
+void CertBuilder::SetBasicConstraints(bool is_ca, int path_len) {
+  // From RFC 5280:
+  //
+  //   BasicConstraints ::= SEQUENCE {
+  //        cA                      BOOLEAN DEFAULT FALSE,
+  //        pathLenConstraint       INTEGER (0..MAX) OPTIONAL }
+  bssl::ScopedCBB cbb;
+  CBB basic_constraints;
+  ASSERT_TRUE(CBB_init(cbb.get(), 64));
+  ASSERT_TRUE(CBB_add_asn1(cbb.get(), &basic_constraints, CBS_ASN1_SEQUENCE));
+  if (is_ca)
+    ASSERT_TRUE(CBB_add_asn1_bool(&basic_constraints, true));
+  if (path_len >= 0)
+    ASSERT_TRUE(CBB_add_asn1_uint64(&basic_constraints, path_len));
+
+  SetExtension(BasicConstraintsOid(), FinishCBB(cbb.get()), /*critical=*/true);
 }
 
 void CertBuilder::SetCaIssuersUrl(const GURL& url) {
@@ -269,6 +305,12 @@ void CertBuilder::SetSubjectCommonName(const std::string common_name) {
 }
 
 void CertBuilder::SetSubjectAltName(const std::string& dns_name) {
+  SetSubjectAltNames({dns_name}, {});
+}
+
+void CertBuilder::SetSubjectAltNames(
+    const std::vector<std::string>& dns_names,
+    const std::vector<IPAddress>& ip_addresses) {
   // From RFC 5280:
   //
   //   SubjectAltName ::= GeneralNames
@@ -276,19 +318,56 @@ void CertBuilder::SetSubjectAltName(const std::string& dns_name) {
   //   GeneralNames ::= SEQUENCE SIZE (1..MAX) OF GeneralName
   //
   //   GeneralName ::= CHOICE {
-  //        otherName                       [0]     OtherName,
-  //        rfc822Name                      [1]     IA5String,
+  //        ...
   //        dNSName                         [2]     IA5String,
+  //        ...
+  //        iPAddress                       [7]     OCTET STRING,
   //        ... }
+  ASSERT_GT(dns_names.size() + ip_addresses.size(), 0U);
   bssl::ScopedCBB cbb;
-  CBB general_names, general_name;
-  ASSERT_TRUE(CBB_init(cbb.get(), dns_name.size()));
+  CBB general_names;
+  ASSERT_TRUE(CBB_init(cbb.get(), 64));
   ASSERT_TRUE(CBB_add_asn1(cbb.get(), &general_names, CBS_ASN1_SEQUENCE));
-  ASSERT_TRUE(CBB_add_asn1(&general_names, &general_name,
-                           CBS_ASN1_CONTEXT_SPECIFIC | 2));
-  ASSERT_TRUE(CBBAddBytes(&general_name, dns_name));
-
+  if (!dns_names.empty()) {
+    for (const auto& name : dns_names) {
+      CBB general_name;
+      ASSERT_TRUE(CBB_add_asn1(&general_names, &general_name,
+                               CBS_ASN1_CONTEXT_SPECIFIC | 2));
+      ASSERT_TRUE(CBBAddBytes(&general_name, name));
+      ASSERT_TRUE(CBB_flush(&general_names));
+    }
+  }
+  if (!ip_addresses.empty()) {
+    for (const auto& addr : ip_addresses) {
+      CBB general_name;
+      ASSERT_TRUE(CBB_add_asn1(&general_names, &general_name,
+                               CBS_ASN1_CONTEXT_SPECIFIC | 7));
+      ASSERT_TRUE(
+          CBB_add_bytes(&general_name, addr.bytes().data(), addr.size()));
+      ASSERT_TRUE(CBB_flush(&general_names));
+    }
+  }
   SetExtension(SubjectAltNameOid(), FinishCBB(cbb.get()));
+}
+
+void CertBuilder::SetExtendedKeyUsages(
+    const std::vector<der::Input>& purpose_oids) {
+  // From RFC 5280:
+  //   ExtKeyUsageSyntax ::= SEQUENCE SIZE (1..MAX) OF KeyPurposeId
+  //   KeyPurposeId ::= OBJECT IDENTIFIER
+  ASSERT_GT(purpose_oids.size(), 0U);
+  bssl::ScopedCBB cbb;
+  CBB eku;
+  ASSERT_TRUE(CBB_init(cbb.get(), 64));
+  ASSERT_TRUE(CBB_add_asn1(cbb.get(), &eku, CBS_ASN1_SEQUENCE));
+
+  for (const auto& oid : purpose_oids) {
+    CBB purpose_cbb;
+    ASSERT_TRUE(CBB_add_asn1(&eku, &purpose_cbb, CBS_ASN1_OBJECT));
+    ASSERT_TRUE(CBBAddBytes(&purpose_cbb, oid.AsStringPiece()));
+    ASSERT_TRUE(CBB_flush(&eku));
+  }
+  SetExtension(ExtKeyUsageOid(), FinishCBB(cbb.get()));
 }
 
 void CertBuilder::SetCertificatePolicies(

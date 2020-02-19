@@ -1311,54 +1311,6 @@ bool ChromeDownloadManagerDelegate::ShouldBlockFile(
   if (IsDangerTypeBlocked(danger_type))
     return true;
 
-  if (item &&
-      base::FeatureList::IsEnabled(features::kDisallowUnsafeHttpDownloads)) {
-    // Check field trial for an override of the default unsafe mime-type.
-    const std::string kDefaultUnsafeMimeType = "application/";
-    std::string field_trial_arg = base::GetFieldTrialParamValueByFeature(
-        features::kDisallowUnsafeHttpDownloads,
-        features::kDisallowUnsafeHttpDownloadsParamName);
-    std::vector<base::StringPiece> unsafe_mime_types = base::SplitStringPiece(
-        field_trial_arg, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-    if (unsafe_mime_types.empty())
-      unsafe_mime_types.push_back(kDefaultUnsafeMimeType);
-
-    bool is_final_origin_secure = content::IsOriginSecure(item->GetURL());
-    bool is_redirect_chain_secure = true;
-    for (const auto& url : item->GetUrlChain()) {
-      if (!content::IsOriginSecure(url)) {
-        is_redirect_chain_secure = false;
-        break;
-      }
-    }
-
-    if (!(is_final_origin_secure && is_redirect_chain_secure)) {
-      bool is_unsafe_download = false;
-      for (const auto& prefix : unsafe_mime_types) {
-        if (base::StartsWith(item->GetMimeType(), prefix,
-                             base::CompareCase::INSENSITIVE_ASCII)) {
-          is_unsafe_download = true;
-          break;
-        }
-      }
-      if (is_unsafe_download) {
-        content::WebContents* web_contents =
-            content::DownloadItemUtils::GetWebContents(item);
-        if (web_contents) {
-          web_contents->GetMainFrame()->AddMessageToConsole(
-              blink::mojom::ConsoleMessageLevel::kWarning,
-              base::StringPrintf(
-                  "The download of %s has been blocked. Either the final "
-                  "download origin or one of the origins in the redirect "
-                  "chain leading to the download was insecure. Downloading "
-                  "unsafe file types over HTTP is deprecated.",
-                  item->GetURL().spec().c_str()));
-        }
-        return true;
-      }
-    }
-  }
-
   switch (download_restriction) {
     case (DownloadPrefs::DownloadRestriction::NONE):
       return false;

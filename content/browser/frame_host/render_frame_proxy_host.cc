@@ -457,6 +457,11 @@ void RenderFrameProxyHost::DisableAutoResize() {
   GetAssociatedRenderFrameProxy()->DisableAutoResize();
 }
 
+void RenderFrameProxyHost::DidUpdateVisualProperties(
+    const cc::RenderFrameMetadata& metadata) {
+  GetAssociatedRenderFrameProxy()->DidUpdateVisualProperties(metadata);
+}
+
 void RenderFrameProxyHost::OnRouteMessageEvent(
     const FrameMsg_PostMessage_Params& params) {
   RenderFrameHostImpl* target_rfh = frame_tree_node()->current_frame_host();

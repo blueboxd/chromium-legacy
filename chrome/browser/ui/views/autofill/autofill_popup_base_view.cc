@@ -37,9 +37,19 @@ SkColor AutofillPopupBaseView::GetBackgroundColor() {
       ui::NativeTheme::kColorId_MenuBackgroundColor);
 }
 
+SkColor AutofillPopupBaseView::GetForegroundColor() {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor);
+}
+
 SkColor AutofillPopupBaseView::GetSelectedBackgroundColor() {
   return GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
+}
+
+SkColor AutofillPopupBaseView::GetSelectedForegroundColor() {
+  return GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor);
 }
 
 SkColor AutofillPopupBaseView::GetFooterBackgroundColor() {

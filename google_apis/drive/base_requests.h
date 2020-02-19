@@ -52,8 +52,8 @@ using PrepareCallback = base::OnceCallback<void(DriveApiErrorCode)>;
 
 // Callback used for requests that the server returns FileResource data
 // formatted into JSON value.
-typedef base::Callback<void(DriveApiErrorCode error,
-                            std::unique_ptr<FileResource> entry)>
+typedef base::OnceCallback<void(DriveApiErrorCode error,
+                                std::unique_ptr<FileResource> entry)>
     FileResourceCallback;
 
 // Callback used for DownloadFileRequest and ResumeUploadRequestBase.
@@ -564,7 +564,7 @@ class MultipartUploadRequestBase : public BatchableDelegate {
                              const std::string& content_type,
                              int64_t content_length,
                              const base::FilePath& local_file_path,
-                             const FileResourceCallback& callback,
+                             FileResourceCallback callback,
                              const ProgressCallback& progress_callback);
   ~MultipartUploadRequestBase() override;
 
@@ -595,7 +595,7 @@ class MultipartUploadRequestBase : public BatchableDelegate {
   const std::string metadata_json_;
   const std::string content_type_;
   const base::FilePath local_path_;
-  const FileResourceCallback callback_;
+  FileResourceCallback callback_;
   const ProgressCallback progress_callback_;
 
   // Boundary of multipart body.

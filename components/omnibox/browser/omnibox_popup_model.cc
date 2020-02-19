@@ -41,8 +41,7 @@ OmniboxPopupModel::OmniboxPopupModel(OmniboxPopupView* popup_view,
   edit_model->set_popup_model(this);
 }
 
-OmniboxPopupModel::~OmniboxPopupModel() {
-}
+OmniboxPopupModel::~OmniboxPopupModel() = default;
 
 // static
 void OmniboxPopupModel::ComputeMatchMaxWidths(int contents_width,
@@ -289,9 +288,7 @@ gfx::Image OmniboxPopupModel::GetMatchIcon(const AutocompleteMatch& match,
     return edit_model_->client()->GetSizedIcon(extension_icon);
 
   // Get the favicon for navigational suggestions.
-  if (base::FeatureList::IsEnabled(
-          omnibox::kUIExperimentShowSuggestionFavicons) &&
-      !AutocompleteMatch::IsSearchType(match.type) &&
+  if (!AutocompleteMatch::IsSearchType(match.type) &&
       match.type != AutocompleteMatchType::DOCUMENT_SUGGESTION) {
     // Because the Views UI code calls GetMatchIcon in both the layout and
     // painting code, we may generate multiple OnFaviconFetched callbacks,

@@ -84,18 +84,6 @@ BASE_EXPORT extern "C" NSString* const kCWSSIDDidChangeNotification;
         API_AVAILABLE(macos(10.15));
 @end
 
-NS_CLASS_AVAILABLE_MAC(10_15)
-@interface SFUniversalLink : NSObject
-- (instancetype)initWithWebpageURL:(NSURL*)url;
-@property(readonly) NSURL* webpageURL;
-@property(readonly) NSURL* applicationURL;
-@property(getter=isEnabled) BOOL enabled;
-@end
-
-#else
-
-#import <SafariServices/SafariServices.h>
-
 #endif  // MAC_OS_X_VERSION_10_15
 
 

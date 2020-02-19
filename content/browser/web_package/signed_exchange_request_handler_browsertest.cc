@@ -801,6 +801,31 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerDownloadBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerDownloadBrowserTest,
+                       DownloadInnerResponse) {
+  InstallMockCert();
+  InstallMockCertChainInterceptor();
+  std::unique_ptr<DownloadObserver> observer =
+      std::make_unique<DownloadObserver>(BrowserContext::GetDownloadManager(
+          shell()->web_contents()->GetBrowserContext()));
+
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/empty.html")));
+
+  const std::string load_sxg =
+      "const iframe = document.createElement('iframe');"
+      "iframe.src = './sxg/test.example.org_bad_content_type.sxg';"
+      "document.body.appendChild(iframe);";
+  // Since the inner response has an invalid Content-Type and MIME sniffing
+  // is disabled for Signed Exchange inner response, this should download the
+  // inner response of the exchange.
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(), load_sxg));
+  observer->WaitUntilDownloadCreated();
+  EXPECT_EQ(GURL("https://test.example.org/test/"), observer->observed_url());
+}
+
+IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerDownloadBrowserTest,
                        DataURLDownload) {
   const GURL sxg_url = GURL("data:application/signed-exchange,");
   std::unique_ptr<DownloadObserver> observer =

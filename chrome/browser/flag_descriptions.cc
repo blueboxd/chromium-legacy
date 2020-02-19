@@ -429,13 +429,6 @@ const char kDisallowDocWrittenScriptsUiDescription[] =
     "Disallows fetches for third-party parser-blocking scripts inserted into "
     "the main frame via document.write.";
 
-const char kDisallowUnsafeHttpDownloadsName[] =
-    "Block unsafe downloads over insecure connections";
-const char kDisallowUnsafeHttpDownloadsNameDescription[] =
-    "Disallows downloads of unsafe files (files that can potentially execute "
-    "code), where the final download origin or any origin in the redirect "
-    "chain is insecure.";
-
 const char kEnableAccessibilityObjectModelName[] =
     "Accessibility Object Model v0 (deprecated)";
 const char kEnableAccessibilityObjectModelDescription[] =
@@ -1240,6 +1233,16 @@ const char kOfferStoreUnmaskedWalletCardsDescription[] =
     "Show the checkbox to offer local saving of a credit card downloaded from "
     "the server.";
 
+const char kOmniboxAdaptiveSuggestionsCountName[] =
+    "Adaptive Omnibox Suggestions count";
+const char kOmniboxAdaptiveSuggestionsCountDescription[] =
+    "Dynamically adjust number of presented Omnibox suggestions depending on "
+    "available space. When enabled, this feature will increase (or decrease) "
+    "amount of offered Omnibox suggestions to fill in the space between the "
+    "Omnibox and soft keyboard (if any). See also Max Autocomplete Matches "
+    "flag to adjust the limit of offered suggestions. The number of shown "
+    "suggestions will be no less than the platform default limit.";
+
 const char kOmniboxAssistantVoiceSearchName[] =
     "Omnibox Assistant Voice Search";
 const char kOmniboxAssistantVoiceSearchDescription[] =
@@ -1367,12 +1370,6 @@ const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription[] =
     "user finishes typing. Without this feature, if the default match is "
     "updated right when the user presses Enter, the user may go to a "
     "surprising destination.";
-
-const char kOmniboxUIShowSuggestionFaviconsName[] =
-    "Omnibox UI Show Suggestion Favicons";
-const char kOmniboxUIShowSuggestionFaviconsDescription[] =
-    "Shows favicons instead of generic vector icons for URL suggestions in the "
-    "Omnibox dropdown.";
 
 const char kOmniboxUISwapTitleAndUrlName[] = "Omnibox UI Swap Title and URL";
 const char kOmniboxUISwapTitleAndUrlDescription[] =
@@ -1784,10 +1781,6 @@ const char kSilentDebuggerExtensionApiDescription[] =
     "chrome.debugger API. This is required to debug extension background "
     "pages.";
 
-const char kSimplifyHttpsIndicatorName[] = "Simplify HTTPS indicator UI";
-const char kSimplifyHttpsIndicatorDescription[] =
-    "Change the UI treatment for HTTPS pages.";
-
 const char kIsolateOriginsName[] = "Isolate additional origins";
 const char kIsolateOriginsDescription[] =
     "Requires dedicated processes for an additional set of origins, "
@@ -2162,11 +2155,6 @@ const char kWebUITabStripDemoOptionsDescription[] =
     "enabled.";
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
-const char kWebXrName[] = "WebXR Device API";
-const char kWebXrDescription[] =
-    "Enables access to experimental APIs to interact with Virtual Reality (VR) "
-    "and Augmented Reality (AR) devices.";
-
 const char kWebXrForceRuntimeName[] = "Force WebXr Runtime";
 const char kWebXrForceRuntimeDescription[] =
     "Force the browser to use a particular runtime, even if it would not "
@@ -2174,20 +2162,8 @@ const char kWebXrForceRuntimeDescription[] =
     "attached hardware.";
 
 const char kWebXrRuntimeChoiceNone[] = "No Runtime";
-const char kWebXrRuntimeChoiceOrientationSensors[] = "Orientation sensors";
-const char kWebXrRuntimeChoiceOculus[] = "Oculus";
-const char kWebXrRuntimeChoiceOpenVR[] = "SteamVR (OpenVR)";
 const char kWebXrRuntimeChoiceOpenXR[] = "OpenXR";
 const char kWebXrRuntimeChoiceWindowsMixedReality[] = "Windows Mixed Reality";
-
-const char kWebXrArModuleName[] = "WebXR AR Module";
-const char kWebXrArModuleDescription[] =
-    "Enables access to Augmented Reality features defined in the WebXR AR "
-    "Module";
-
-const char kWebXrHitTestName[] = "WebXR Hit Test";
-const char kWebXrHitTestDescription[] =
-    "Enables access to raycasting against estimated XR scene geometry.";
 
 const char kWebXrIncubationsName[] = "WebXR Incubations";
 const char kWebXrIncubationsDescription[] =
@@ -2684,6 +2660,11 @@ const char kUpdateNotificationSchedulingIntegrationName[] =
 const char kUpdateNotificationSchedulingIntegrationDescription[] =
     "if enable update notification will hook up to notification scheduling "
     "system in native side";
+
+const char kUpdateNotificationServiceImmediateShowOptionName[] =
+    "Update notification service debug options";
+const char kUpdateNotificationServiceImmediateShowOptionDescription[] =
+    "Show update notification right immediately";
 
 const char kUsageStatsDescription[] =
     "When set, enables sharing of per-domain usage stats with the Digital "
@@ -3756,12 +3737,6 @@ const char kDcheckIsFatalDescription[] =
     "By default Chrome will evaluate in this build, but only log failures, "
     "rather than crashing. If enabled, DCHECKs will crash the calling process.";
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
-
-#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
-const char kXRSandboxName[] = "XR device sandboxing";
-const char kXRSandboxDescription[] =
-    "If enabled, Chrome will host VR APIs in a restricted process on desktop.";
-#endif  // ENABLE_VR && !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_NACL)
 const char kNaclName[] = "Native Client";

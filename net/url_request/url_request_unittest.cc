@@ -9530,6 +9530,45 @@ TEST_F(HTTPSSessionTest, DontResumeSessionsForInvalidCertificates) {
   }
 }
 
+class HTTPSCertNetFetchingTest : public HTTPSRequestTest {
+ public:
+  HTTPSCertNetFetchingTest() : context_(true) {}
+
+  void SetUp() override {
+    cert_net_fetcher_ = base::MakeRefCounted<CertNetFetcherURLRequest>();
+    cert_verifier_ = CertVerifier::CreateDefault(cert_net_fetcher_);
+    context_.set_cert_verifier(cert_verifier_.get());
+    context_.SetCTPolicyEnforcer(std::make_unique<DefaultCTPolicyEnforcer>());
+    context_.Init();
+
+    cert_net_fetcher_->SetURLRequestContext(&context_);
+    context_.cert_verifier()->SetConfig(GetCertVerifierConfig());
+#if defined(USE_NSS_CERTS)
+    SetURLRequestContextForNSSHttpIO(&context_);
+#endif
+  }
+
+  void TearDown() override {
+    cert_net_fetcher_->Shutdown();
+#if defined(USE_NSS_CERTS)
+    SetURLRequestContextForNSSHttpIO(nullptr);
+#endif
+  }
+
+ protected:
+  // GetCertVerifierConfig() configures the URLRequestContext that will be used
+  // for making connections to the testserver. This can be overridden in test
+  // subclasses for different behaviour.
+  virtual CertVerifier::Config GetCertVerifierConfig() {
+    CertVerifier::Config config;
+    return config;
+  }
+
+  scoped_refptr<CertNetFetcherURLRequest> cert_net_fetcher_;
+  std::unique_ptr<CertVerifier> cert_verifier_;
+  TestURLRequestContext context_;
+};
+
 // This the fingerprint of the "Testing CA" certificate used by the testserver.
 // See net/data/ssl/certificates/ocsp-test-root.pem.
 static const SHA256HashValue kOCSPTestCertFingerprint = {{
@@ -10222,25 +10261,14 @@ INSTANTIATE_TEST_SUITE_P(OCSPVerify,
                          HTTPSOCSPVerifyTest,
                          testing::ValuesIn(kOCSPVerifyData));
 
-class HTTPSAIATest : public HTTPSOCSPTest {
- public:
-  CertVerifier::Config GetCertVerifierConfig() override {
-    CertVerifier::Config config;
-    return config;
-  }
-};
+class HTTPSAIATest : public HTTPSCertNetFetchingTest {};
 
 TEST_F(HTTPSAIATest, AIAFetching) {
-  SpawnedTestServer::SSLOptions ssl_options(
-      SpawnedTestServer::SSLOptions::CERT_AUTO_AIA_INTERMEDIATE);
-  SpawnedTestServer test_server(
-      SpawnedTestServer::TYPE_HTTPS, ssl_options,
+  EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTPS);
+  test_server.SetSSLConfig(EmbeddedTestServer::CERT_AUTO_AIA_INTERMEDIATE);
+  test_server.AddDefaultHandlers(
       base::FilePath(FILE_PATH_LITERAL("net/data/ssl")));
   ASSERT_TRUE(test_server.Start());
-
-  // Unmark the certificate's OID as EV, which will disable revocation
-  // checking.
-  ev_test_policy_.reset();
 
   TestDelegate d;
   d.set_allow_certificate_errors(true);

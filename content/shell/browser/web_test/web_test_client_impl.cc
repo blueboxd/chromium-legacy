@@ -202,6 +202,8 @@ void WebTestClientImpl::SetPermission(const std::string& name,
     type = PermissionType::WAKE_LOCK_SYSTEM;
   } else if (name == "nfc") {
     type = PermissionType::NFC;
+  } else if (name == "storage-access") {
+    type = PermissionType::STORAGE_ACCESS_GRANT;
   } else {
     NOTREACHED();
     type = PermissionType::NOTIFICATIONS;

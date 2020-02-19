@@ -103,10 +103,9 @@ class MockClient : public mojom::AudioInputStreamClient {
     ASSERT_TRUE(data_pipe->shared_memory.IsValid());
     ASSERT_TRUE(data_pipe->socket.is_valid());
 
-    base::PlatformFile fd;
-    mojo::UnwrapPlatformFile(std::move(data_pipe->socket), &fd);
-    socket_ = std::make_unique<base::CancelableSyncSocket>(fd);
-    EXPECT_NE(socket_->handle(), base::CancelableSyncSocket::kInvalidHandle);
+    socket_ = std::make_unique<base::CancelableSyncSocket>(
+        data_pipe->socket.TakePlatformFile());
+    EXPECT_TRUE(socket_->IsValid());
 
     region_ = std::move(data_pipe->shared_memory);
     EXPECT_TRUE(region_.IsValid());

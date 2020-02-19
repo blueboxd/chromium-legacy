@@ -924,10 +924,6 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
 
   if (should_log_request_as_invalid_in_imported_document_) {
     DCHECK(properties_->IsDetached());
-    // We don't expect the fetcher to be used, so count such unexpected use.
-    UMA_HISTOGRAM_ENUMERATION("HTMLImport.UnexpectedRequest",
-                              factory.GetType());
-
     base::debug::DumpWithoutCrashing();
   }
 

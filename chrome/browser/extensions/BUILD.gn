@@ -418,8 +418,6 @@ jumbo_static_library("extensions") {
     "api/webstore_private/extension_install_status.h",
     "api/webstore_private/webstore_private_api.cc",
     "api/webstore_private/webstore_private_api.h",
-    "app_data_migrator.cc",
-    "app_data_migrator.h",
     "blacklist.cc",
     "blacklist.h",
     "blacklist_check.cc",

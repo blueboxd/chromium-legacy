@@ -28,7 +28,6 @@ import org.chromium.chrome.browser.GlobalDiscardableReferencePool;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherConfig;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcherFactory;
@@ -52,7 +51,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -157,7 +155,6 @@ class AutocompleteMediator
     private long mLastActionUpTimestamp;
     private boolean mIgnoreOmniboxItemSelection = true;
     private boolean mUseDarkColors = true;
-    private boolean mShowSuggestionFavicons;
     private int mLayoutDirection;
 
     private WindowAndroid mWindowAndroid;
@@ -435,9 +432,6 @@ class AutocompleteMediator
     void onNativeInitialized() {
         mNativeInitialized = true;
 
-        mShowSuggestionFavicons =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS);
-
         for (Runnable deferredRunnable : mDeferredNativeRunnables) {
             mHandler.post(deferredRunnable);
         }
@@ -684,7 +678,8 @@ class AutocompleteMediator
         };
 
         Resources resources = mContext.getResources();
-        @StringRes int dialogMessageId = R.string.omnibox_confirm_delete;
+        @StringRes
+        int dialogMessageId = R.string.omnibox_confirm_delete;
         if (isSuggestionFromClipboard(suggestion)) {
             dialogMessageId = R.string.omnibox_confirm_delete_from_clipboard;
         }
@@ -908,9 +903,6 @@ class AutocompleteMediator
             PropertyModel model = processor.createModelForSuggestion(suggestion);
             model.set(SuggestionCommonProperties.LAYOUT_DIRECTION, mLayoutDirection);
             model.set(SuggestionCommonProperties.USE_DARK_COLORS, mUseDarkColors);
-            model.set(SuggestionCommonProperties.SHOW_SUGGESTION_ICONS,
-                    mShowSuggestionFavicons
-                            || DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext));
 
             // Before populating the model, add it to the list of current models.  If the suggestion
             // has an image and the image was already cached, it will be updated synchronously and

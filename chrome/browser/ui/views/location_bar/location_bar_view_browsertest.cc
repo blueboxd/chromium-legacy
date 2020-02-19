@@ -190,7 +190,6 @@ IN_PROC_BROWSER_TEST_F(TouchLocationBarViewBrowserTest,
 const char kMockSecureHostname[] = "example-secure.test";
 
 struct SecurityIndicatorTestParams {
-  bool is_enabled;
   bool use_secure_url;
   net::CertStatus cert_status;
   security_state::SecurityLevel security_level;
@@ -202,12 +201,7 @@ class SecurityIndicatorTest
     : public InProcessBrowserTest,
       public ::testing::WithParamInterface<SecurityIndicatorTestParams> {
  public:
-  SecurityIndicatorTest() : InProcessBrowserTest(), cert_(nullptr) {
-    if (GetParam().is_enabled)
-      feature_list_.InitAndEnableFeature(omnibox::kSimplifyHttpsIndicator);
-    else
-      feature_list_.InitAndDisableFeature(omnibox::kSimplifyHttpsIndicator);
-  }
+  SecurityIndicatorTest() : cert_(nullptr) {}
 
   void SetUpInProcessBrowserTestFixture() override {
     cert_ =
@@ -262,8 +256,8 @@ class SecurityIndicatorTest
   DISALLOW_COPY_AND_ASSIGN(SecurityIndicatorTest);
 };
 
-// Check that the security indicator text is correctly set for the various
-// variations of the Security UI Study (https://crbug.com/803501).
+// Check that the security indicator text is not shown for HTTPS certs
+// (including EV certs).
 IN_PROC_BROWSER_TEST_P(SecurityIndicatorTest, CheckIndicatorText) {
   const GURL kMockSecureURL = GURL("https://example-secure.test");
   const GURL kMockNonsecureURL =
@@ -293,19 +287,11 @@ const base::string16 kEmptyString = base::string16();
 INSTANTIATE_TEST_SUITE_P(
     All,
     SecurityIndicatorTest,
-    ::testing::Values(
-        // Disabled (show EV UI in omnibox)
-        SecurityIndicatorTestParams{false, true, net::CERT_STATUS_IS_EV,
-                                    security_state::EV_SECURE, true, kEvString},
-        SecurityIndicatorTestParams{false, true, 0, security_state::SECURE,
-                                    false, kEmptyString},
-        SecurityIndicatorTestParams{false, false, 0, security_state::NONE,
-                                    false, kEmptyString},
-        // Default (lock-only in omnibox)
-        SecurityIndicatorTestParams{true, true, net::CERT_STATUS_IS_EV,
-                                    security_state::EV_SECURE, false,
-                                    kEmptyString},
-        SecurityIndicatorTestParams{true, true, 0, security_state::SECURE,
-                                    false, kEmptyString},
-        SecurityIndicatorTestParams{true, false, 0, security_state::NONE, false,
-                                    kEmptyString}));
+    ::testing::Values(SecurityIndicatorTestParams{true, net::CERT_STATUS_IS_EV,
+                                                  security_state::EV_SECURE,
+                                                  false, kEmptyString},
+                      SecurityIndicatorTestParams{
+                          true, 0, security_state::SECURE, false, kEmptyString},
+                      SecurityIndicatorTestParams{false, 0,
+                                                  security_state::NONE, false,
+                                                  kEmptyString}));

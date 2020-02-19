@@ -33,10 +33,10 @@ class UpdateNotificationServiceBridge {
   virtual base::Optional<base::TimeDelta> GetThrottleInterval() = 0;
 
   // Updates and persists |count| in Android SharedPreferences.
-  virtual void UpdateUserDismissCount(int count) = 0;
+  virtual void UpdateNegativeActionCount(int count) = 0;
 
   // Returns persisted count from Android SharedPreferences.
-  virtual int GetUserDismissCount() = 0;
+  virtual int GetNegativeActionCount() = 0;
 
   // Launches Chrome activity after user clicked the notification. Launching
   // behavior may be different which depends on |state|.

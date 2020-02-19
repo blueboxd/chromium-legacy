@@ -125,12 +125,12 @@ void XRFrameTransport::FrameSubmit(
     }
 
     // We decompose the cloned handle, and use it to create a
-    // mojo::ScopedHandle which will own cleanup of the handle, and will be
+    // mojo::PlatformHandle which will own cleanup of the handle, and will be
     // passed over IPC.
     gfx::GpuMemoryBufferHandle gpu_handle = gpu_memory_buffer->CloneHandle();
     vr_presentation_provider->SubmitFrameWithTextureHandle(
-        vr_frame_id,
-        mojo::WrapPlatformFile(gpu_handle.dxgi_handle.GetHandle()));
+        vr_frame_id, mojo::PlatformHandle(base::win::ScopedHandle(
+                         gpu_handle.dxgi_handle.GetHandle())));
 #else
     NOTIMPLEMENTED();
 #endif

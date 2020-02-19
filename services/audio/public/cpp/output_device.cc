@@ -62,10 +62,8 @@ void OutputDevice::StreamCreated(
   if (!data_pipe)
     return;
 
-  base::PlatformFile socket_handle;
-  auto result =
-      mojo::UnwrapPlatformFile(std::move(data_pipe->socket), &socket_handle);
-  DCHECK_EQ(result, MOJO_RESULT_OK);
+  DCHECK(data_pipe->socket.is_valid_platform_file());
+  base::ScopedPlatformFile socket_handle = data_pipe->socket.TakePlatformFile();
   base::UnsafeSharedMemoryRegion& shared_memory_region =
       data_pipe->shared_memory;
   DCHECK(shared_memory_region.IsValid());
@@ -75,7 +73,7 @@ void OutputDevice::StreamCreated(
   audio_callback_ = std::make_unique<media::AudioOutputDeviceThreadCallback>(
       audio_parameters_, std::move(shared_memory_region), render_callback_);
   audio_thread_ = std::make_unique<media::AudioDeviceThread>(
-      audio_callback_.get(), socket_handle, "audio::OutputDevice",
+      audio_callback_.get(), std::move(socket_handle), "audio::OutputDevice",
       base::ThreadPriority::REALTIME_AUDIO);
 }
 

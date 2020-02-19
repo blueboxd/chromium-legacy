@@ -4,11 +4,9 @@
 
 package org.chromium.chrome.browser.omnibox.suggestions.basic;
 
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.eq;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import android.app.Activity;
@@ -32,7 +30,6 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
@@ -172,7 +169,6 @@ public class BasicSuggestionProcessorTest {
     }
 
     @Test
-    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS)
     public void getSuggestionIconTypeForSearch_Default() {
         int[][] testCases = {
                 {OmniboxSuggestionType.URL_WHAT_YOU_TYPED, SuggestionIcon.MAGNIFIER},
@@ -207,7 +203,6 @@ public class BasicSuggestionProcessorTest {
     }
 
     @Test
-    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS)
     public void getSuggestionIconTypeForUrl_Default() {
         int[][] testCases = {
                 {OmniboxSuggestionType.URL_WHAT_YOU_TYPED, SuggestionIcon.GLOBE},
@@ -240,7 +235,6 @@ public class BasicSuggestionProcessorTest {
     }
 
     @Test
-    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS)
     public void getSuggestionIconTypeForBookmarks_Default() {
         int[][] testCases = {
                 {OmniboxSuggestionType.URL_WHAT_YOU_TYPED, SuggestionIcon.BOOKMARK},
@@ -296,7 +290,6 @@ public class BasicSuggestionProcessorTest {
     }
 
     @Test
-    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS)
     public void suggestionFavicons_showFaviconWhenAvailable() {
         final ArgumentCaptor<LargeIconCallback> callback =
                 ArgumentCaptor.forClass(LargeIconCallback.class);
@@ -316,7 +309,6 @@ public class BasicSuggestionProcessorTest {
     }
 
     @Test
-    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS)
     public void suggestionFavicons_doNotReplaceFallbackIconWhenNoFaviconIsAvailable() {
         final ArgumentCaptor<LargeIconCallback> callback =
                 ArgumentCaptor.forClass(LargeIconCallback.class);
@@ -332,18 +324,5 @@ public class BasicSuggestionProcessorTest {
         Assert.assertNotNull(icon2);
 
         Assert.assertEquals(icon1, icon2);
-    }
-
-    @Test
-    @Features.DisableFeatures(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS)
-    public void suggestionFavicons_showNoIconsAtAllWhenFeatureIsDisabled() {
-        final ArgumentCaptor<LargeIconCallback> callback =
-                ArgumentCaptor.forClass(LargeIconCallback.class);
-        final String url = "http://url";
-        mProcessor.onNativeInitialized();
-        createUrlSuggestion(OmniboxSuggestionType.URL_WHAT_YOU_TYPED, "", "", url);
-        SuggestionDrawableState icon = mModel.get(BaseSuggestionViewProperties.ICON);
-        Assert.assertNull(icon);
-        verify(mIconBridge, never()).getLargeIconForUrl(eq(url), anyInt(), any());
     }
 }

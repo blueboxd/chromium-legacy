@@ -75,6 +75,7 @@ source_set("gfx") {
   deps = [
     "//android_webview:browser_jni_headers",
     "//android_webview/common",
+    "//android_webview/public",
     "//base",
     "//components/ui_devtools:buildflags",
     "//components/viz/service",

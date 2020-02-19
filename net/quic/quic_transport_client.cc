@@ -5,6 +5,8 @@
 #include "net/quic/quic_transport_client.h"
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
+#include "net/proxy_resolution/proxy_resolution_request.h"
 #include "net/quic/address_utils.h"
 #include "net/quic/crypto/proof_verifier_chromium.h"
 #include "net/quic/quic_chromium_alarm_factory.h"

@@ -64,10 +64,6 @@ class BaseTestServer {
       // as well. The testserver will include the intermediate cert in the TLS
       // handshake.
       CERT_AUTO_WITH_INTERMEDIATE,
-      // Generate an intermediate cert issued by "Testing CA", and generate a
-      // test certificate issued by that intermediate with an AIA record for
-      // retrieving the intermediate.
-      CERT_AUTO_AIA_INTERMEDIATE,
 
       CERT_MISMATCHED_NAME,
       CERT_EXPIRED,

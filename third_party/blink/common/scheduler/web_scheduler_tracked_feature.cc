@@ -81,6 +81,8 @@ const char* FeatureToString(WebSchedulerTrackedFeature feature) {
       return "WakeLock";
     case WebSchedulerTrackedFeature::kWebShare:
       return "WebShare";
+    case WebSchedulerTrackedFeature::kRequestedStorageAccessGrant:
+      return "requested storage access permission";
   }
 }
 

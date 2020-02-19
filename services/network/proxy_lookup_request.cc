@@ -12,6 +12,8 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/log/net_log_with_source.h"
+#include "net/proxy_resolution/configured_proxy_resolution_service.h"
+#include "net/proxy_resolution/proxy_resolution_request.h"
 #include "net/url_request/url_request_context.h"
 #include "services/network/network_context.h"
 #include "services/proxy_resolver/public/mojom/proxy_resolver.mojom.h"

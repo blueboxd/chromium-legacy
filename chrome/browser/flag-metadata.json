@@ -2803,6 +2803,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "omnibox-adaptive-suggestions-count",
+    "owners": [ "ender", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 87
+  },
+  {
     "name": "omnibox-assistant-voice-search",
     "owners": [ "wylieb", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 85
@@ -2966,11 +2971,6 @@
     "name": "omnibox-ui-one-click-unelide",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76
-  },
-  {
-    "name": "omnibox-ui-show-suggestion-favicons",
-    "owners": [ "ender", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 85
   },
   {
     "name": "omnibox-ui-swap-title-and-url",
@@ -3659,6 +3659,11 @@
     "expiry_milestone": 86
   },
   {
+    "name": "update-notification-scheduling-show-immediately",
+    "owners": [ "//chrome/browser/updates/OWNERS" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "updated_cellular_activation_ui",
     "owners": [ "azeemarshad", "khorimoto", "vecore", "cros-system-services@google.com" ],
     "expiry_milestone": 85
@@ -3774,24 +3779,9 @@
     "expiry_milestone": 82
   },
   {
-    "name": "webxr",
-    "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 82
-  },
-  {
-    "name": "webxr-ar-module",
-    "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 82
-  },
-  {
-    "name": "webxr-hit-test",
-    "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 82
-  },
-  {
     "name": "webxr-incubations",
     "owners": [ "//third_party/blink/renderer/modules/xr/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "webxr-runtime",
@@ -3811,11 +3801,6 @@
     "name": "win-use-native-spellchecker",
     "owners": [ "gujen@google.com", "chrome-language@google.com" ],
     "expiry_milestone": 83
-  },
-  {
-    "name": "xr-sandbox",
-    "owners": [ "//chrome/services/isolated_xr_device/OWNERS", "xr-dev@chromium.org" ],
-    "expiry_milestone": 82
   },
   {
     "name": "zero-state-files",

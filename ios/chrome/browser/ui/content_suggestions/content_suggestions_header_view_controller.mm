@@ -90,15 +90,11 @@ using base::UserMetricsAction;
 @synthesize logoIsShowing = _logoIsShowing;
 @synthesize logoFetched = _logoFetched;
 
-#pragma mark - Public
-
-- (instancetype)initWithVoiceSearchEnabled:(BOOL)voiceSearchIsEnabled {
-  self = [super initWithNibName:nil bundle:nil];
-  if (self) {
-    _voiceSearchIsEnabled = voiceSearchIsEnabled;
-  }
-  return self;
+- (instancetype)init {
+  return [super initWithNibName:nil bundle:nil];
 }
+
+#pragma mark - Public
 
 - (UIView*)toolBarView {
   return self.headerView.toolBarView;
@@ -296,16 +292,13 @@ using base::UserMetricsAction;
 
   [self.headerView addViewsToSearchField:self.fakeOmnibox];
 
-  if (self.voiceSearchIsEnabled) {
-    [self.headerView.voiceSearchButton addTarget:self
-                                          action:@selector(loadVoiceSearch:)
-                                forControlEvents:UIControlEventTouchUpInside];
-    [self.headerView.voiceSearchButton addTarget:self
-                                          action:@selector(preloadVoiceSearch:)
-                                forControlEvents:UIControlEventTouchDown];
-  } else {
-    [self.headerView.voiceSearchButton setEnabled:NO];
-  }
+  [self.headerView.voiceSearchButton addTarget:self
+                                        action:@selector(loadVoiceSearch:)
+                              forControlEvents:UIControlEventTouchUpInside];
+  [self.headerView.voiceSearchButton addTarget:self
+                                        action:@selector(preloadVoiceSearch:)
+                              forControlEvents:UIControlEventTouchDown];
+  self.headerView.voiceSearchButton.enabled = self.voiceSearchIsEnabled;
 }
 
 // On NTP in split toolbar mode the omnibox has different location (in the
@@ -564,6 +557,13 @@ using base::UserMetricsAction;
   }
 
   [self shiftTilesDown];
+}
+
+- (void)setVoiceSearchIsEnabled:(BOOL)voiceSearchIsEnabled {
+  if (_voiceSearchIsEnabled == voiceSearchIsEnabled)
+    return;
+  _voiceSearchIsEnabled = voiceSearchIsEnabled;
+  self.headerView.voiceSearchButton.enabled = _voiceSearchIsEnabled;
 }
 
 #pragma mark - UserAccountImageUpdateDelegate

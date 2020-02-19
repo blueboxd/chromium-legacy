@@ -213,14 +213,12 @@ CrSettingsAboutPageTest.prototype = {
 };
 
 TEST_F('CrSettingsAboutPageTest', 'AboutPage', function() {
-  settings_about_page.registerTests();
-  mocha.run();
+  mocha.grep('AboutPageTest_AllBuilds').run();
 });
 
 GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
 TEST_F('CrSettingsAboutPageTest', 'AboutPage_OfficialBuild', function() {
-  settings_about_page.registerOfficialBuildTests();
-  mocha.run();
+  mocha.grep('AboutPageTest_OfficialBuilds').run();
 });
 GEN('#endif');
 

@@ -1035,5 +1035,16 @@
       custom_compare: true,
       inherited: true,
     },
+
+    // This field disables the 'overflow' check in |LayoutBlock::
+    // InlineBlockBaseline()|. For 'inline-block', CSS says that the baseline
+    // is the bottom margin edge if 'overflow' is not visible. But some
+    // elements want to ignore this condition.
+    {
+      name: "ShouldIgnoreOverflowPropertyForInlineBlockBaseline",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      inherited: false,
+    },
   ],
 }

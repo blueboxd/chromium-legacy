@@ -31,6 +31,12 @@ namespace blink {
 
 class HTMLInputElement;
 
+// LayoutObject for text-field <input>s.
+//
+// This class inherits from LayoutTextControl and LayoutBlockFlow. If we'd like
+// to change the base class, we need to make sure that
+// ShouldIgnoreOverflowPropertyForInlineBlockBaseline flag works with the new
+// base class.
 class LayoutTextControlSingleLine : public LayoutTextControl {
  public:
   LayoutTextControlSingleLine(HTMLInputElement*);
@@ -92,9 +98,6 @@ DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutTextControlSingleLine, IsTextField());
 class LayoutTextControlInnerEditor : public LayoutBlockFlow {
  public:
   LayoutTextControlInnerEditor(Element* element) : LayoutBlockFlow(element) {}
-  bool ShouldIgnoreOverflowPropertyForInlineBlockBaseline() const override {
-    return true;
-  }
 
  private:
   bool IsIntrinsicallyScrollable(

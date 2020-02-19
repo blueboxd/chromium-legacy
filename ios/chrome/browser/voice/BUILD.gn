@@ -12,6 +12,8 @@ source_set("voice") {
     "speech_input_locale_config_impl.mm",
     "speech_input_locale_match_config.h",
     "speech_input_locale_match_config.mm",
+    "voice_search_availability.h",
+    "voice_search_availability.mm",
     "voice_search_navigations_tab_helper.h",
     "voice_search_navigations_tab_helper.mm",
   ]
@@ -65,6 +67,23 @@ source_set("tts") {
   ]
 }
 
+source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+
+  sources = [
+    "fake_voice_search_availability.h",
+    "fake_voice_search_availability.mm",
+  ]
+  deps = [
+    ":voice",
+    "//base",
+    "//ios/public/provider/chrome/browser:test_support",
+    "//ios/public/provider/chrome/browser/voice:test_support",
+    "//testing/gtest",
+  ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
@@ -72,16 +91,20 @@ source_set("unit_tests") {
   sources = [
     "text_to_speech_listener_unittest.mm",
     "text_to_speech_parser_unittest.mm",
+    "voice_search_availability_unittest.mm",
     "voice_search_navigations_tab_helper_unittest.mm",
   ]
 
   deps = [
+    ":test_support",
     ":tts",
     ":voice",
     "//base",
     "//base/test:test_support",
     "//ios/web/common",
     "//ios/web/public/test",
+    "//testing/gmock",
     "//testing/gtest",
+    "//third_party/ocmock",
   ]
 }

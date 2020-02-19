@@ -8,6 +8,7 @@
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/performance_manager/graph/policies/policy_features.h"
+#include "chrome/common/performance_manager/mojom/tcmalloc.mojom.h"
 #include "components/performance_manager/graph/graph_impl_operations.h"
 #include "components/performance_manager/graph/page_node_impl.h"
 #include "components/performance_manager/graph/process_node_impl.h"

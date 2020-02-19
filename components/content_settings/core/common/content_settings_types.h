@@ -198,6 +198,13 @@ enum class ContentSettingsType : int32_t {
   // and directories selected through the Native File System API.
   NATIVE_FILE_SYSTEM_READ_GUARD,
 
+  // Access to first party storage in a third-party context. Exceptions are
+  // scoped to the combination of requesting/top-level origin, and are managed
+  // through the Storage Access API. For the time being, this content setting
+  // exists in parallel to third-party cookie rules stored in COOKIES.
+  // TODO(https://crbug.com/989663): Reconcile the two.
+  STORAGE_ACCESS,
+
   NUM_TYPES,
 };
 

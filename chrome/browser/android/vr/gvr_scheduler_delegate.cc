@@ -1121,7 +1121,7 @@ void GvrSchedulerDelegate::SubmitFrame(int16_t frame_index,
 
 void GvrSchedulerDelegate::SubmitFrameWithTextureHandle(
     int16_t frame_index,
-    mojo::ScopedHandle texture_handle) {
+    mojo::PlatformHandle texture_handle) {
   NOTREACHED();
 }
 

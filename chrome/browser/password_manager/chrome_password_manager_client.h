@@ -15,7 +15,7 @@
 #include "base/optional.h"
 #include "build/build_config.h"
 #include "chrome/browser/signin/reauth_result.h"
-#include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
+#include "components/autofill/content/common/mojom/autofill_driver.mojom-forward.h"
 #include "components/password_manager/content/browser/content_credential_manager.h"
 #include "components/password_manager/content/browser/content_password_manager_driver_factory.h"
 #include "components/password_manager/core/browser/http_auth_manager.h"

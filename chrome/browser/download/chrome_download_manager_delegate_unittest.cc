@@ -732,67 +732,6 @@ TEST_F(ChromeDownloadManagerDelegateTest, BlockedByPolicy) {
   VerifyAndClearExpectations();
 }
 
-TEST_F(ChromeDownloadManagerDelegateTest, BlockedByHttpPolicy_HttpTarget) {
-  // Tests blocking unsafe downloads when the download target is over HTTP,
-  // using the default mime-type matching policy.
-  const GURL kUrl("http://example.com/foo");
-  const GURL kReferrerUrl("https://example.org/");
-  const std::string kMimeType("application/vnd.microsoft.portable-executable");
-  std::vector<GURL> kUrlChain;
-  kUrlChain.push_back(kReferrerUrl);
-
-  std::unique_ptr<download::MockDownloadItem> download_item =
-      CreateActiveDownloadItem(0);
-  EXPECT_CALL(*download_item, GetURL()).WillRepeatedly(ReturnRef(kUrl));
-  EXPECT_CALL(*download_item, GetUrlChain())
-      .WillRepeatedly(ReturnRef(kUrlChain));
-  EXPECT_CALL(*download_item, GetMimeType()).WillRepeatedly(Return(kMimeType));
-  DetermineDownloadTargetResult result;
-
-  {
-    // Test default mime-type filter.
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(features::kDisallowUnsafeHttpDownloads);
-    DetermineDownloadTarget(download_item.get(), &result);
-    EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
-              result.interrupt_reason);
-  }
-  {
-    // Test mime-type filter override.
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeatureWithParameters(
-        features::kDisallowUnsafeHttpDownloads,
-        {{"MimeTypeList", "application/pdf,image/,application/postscript"}});
-    DetermineDownloadTarget(download_item.get(), &result);
-    EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_NONE,
-              result.interrupt_reason);
-  }
-}
-
-TEST_F(ChromeDownloadManagerDelegateTest, BlockedByHttpPolicy_HttpChain) {
-  // Tests blocking unsafe downloads when a step in the referrer chain is HTTP,
-  // using the default mime-type matching policy.
-  const GURL kUrl("https://example.com/foo");
-  const GURL kReferrerUrl("http://example.org/");
-  const std::string kMimeType("application/vnd.microsoft.portable-executable");
-  std::vector<GURL> kUrlChain;
-  kUrlChain.push_back(kReferrerUrl);
-
-  std::unique_ptr<download::MockDownloadItem> download_item =
-      CreateActiveDownloadItem(0);
-  EXPECT_CALL(*download_item, GetURL()).WillRepeatedly(ReturnRef(kUrl));
-  EXPECT_CALL(*download_item, GetUrlChain())
-      .WillRepeatedly(ReturnRef(kUrlChain));
-  EXPECT_CALL(*download_item, GetMimeType()).WillRepeatedly(Return(kMimeType));
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(features::kDisallowUnsafeHttpDownloads);
-  DetermineDownloadTargetResult result;
-  DetermineDownloadTarget(download_item.get(), &result);
-  EXPECT_EQ(download::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED,
-            result.interrupt_reason);
-}
-
 TEST_F(ChromeDownloadManagerDelegateTest,
        BlockedAsActiveContent_HttpsTargetOk) {
   // Active content download blocking ought not occur when the chain is secure.

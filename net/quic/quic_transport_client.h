@@ -9,7 +9,6 @@
 #include "net/base/network_isolation_key.h"
 #include "net/dns/host_resolver.h"
 #include "net/log/net_log_with_source.h"
-#include "net/proxy_resolution/configured_proxy_resolution_service.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/quic/quic_chromium_packet_reader.h"
 #include "net/quic/quic_chromium_packet_writer.h"
@@ -23,6 +22,7 @@
 
 namespace net {
 
+class ProxyResolutionRequest;
 class QuicChromiumAlarmFactory;
 class URLRequestContext;
 
@@ -197,8 +197,7 @@ class NET_EXPORT QuicTransportClient
   QuicTransportError error_;
 
   ProxyInfo proxy_info_;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request>
-      proxy_resolution_request_;
+  std::unique_ptr<ProxyResolutionRequest> proxy_resolution_request_;
   std::unique_ptr<HostResolver::ResolveHostRequest> resolve_host_request_;
 
   std::unique_ptr<DatagramClientSocket> socket_;

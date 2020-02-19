@@ -58,7 +58,7 @@ Polymer({
     /** @private */
     errorMessage_: {
       type: String,
-      computed: 'computeErrorMessage_(hintMessage, inputValue)',
+      computed: 'computeErrorMessage_(hintMessage, inputValid)',
     },
   },
 

@@ -350,10 +350,13 @@ void PermissionContextBase::DecidePermission(
   // requesting origin may be the Default Search Engine origin. Extensions are
   // also excluded as currently they can request permission from iframes when
   // embedded in non-secure contexts (https://crbug.com/530507).
+  // Storage access API requests are also excluded as they are expected to
+  // request permissions from the frame origin needing access.
   DCHECK(!base::FeatureList::IsEnabled(features::kPermissionDelegation) ||
          embedding_origin == GURL(chrome::kChromeUINewTabURL).GetOrigin() ||
          requesting_origin.SchemeIs(extensions::kExtensionScheme) ||
-         requesting_origin == embedding_origin);
+         requesting_origin == embedding_origin ||
+         content_settings_type_ == ContentSettingsType::STORAGE_ACCESS);
 
   PermissionRequestManager* permission_request_manager =
       PermissionRequestManager::FromWebContents(web_contents);

@@ -136,6 +136,7 @@ TextControlInnerEditorElement::CreateInnerEditorStyle() const {
           : EUserModify::kReadWritePlaintextOnly);
   text_block_style->SetDisplay(EDisplay::kBlock);
   text_block_style->SetHasLineIfEmpty(true);
+  text_block_style->SetShouldIgnoreOverflowPropertyForInlineBlockBaseline();
 
   if (!IsA<HTMLTextAreaElement>(host)) {
     text_block_style->SetWhiteSpace(EWhiteSpace::kPre);

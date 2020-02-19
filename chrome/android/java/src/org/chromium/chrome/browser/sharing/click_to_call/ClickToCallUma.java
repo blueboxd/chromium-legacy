@@ -16,7 +16,7 @@ import androidx.annotation.MainThread;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.DeviceConditions;
 
 import java.lang.annotation.Retention;
@@ -107,8 +107,8 @@ public class ClickToCallUma {
     }
 
     private static void recordCallMade(long timeFromDialerToCallMs) {
-        new CachedMetrics.MediumTimesHistogramSample("Sharing.ClickToCallPhoneCall")
-                .record(timeFromDialerToCallMs);
+        RecordHistogram.recordMediumTimesHistogram(
+                "Sharing.ClickToCallPhoneCall", timeFromDialerToCallMs);
     }
 
     public static void recordDialerPresent(boolean isDialerPresent) {
@@ -116,14 +116,12 @@ public class ClickToCallUma {
             // We successfully launched the dialer intent, lets record if a call is made.
             CallMetricListener.startMetric(ContextUtils.getApplicationContext());
         }
-        new CachedMetrics.BooleanHistogramSample("Sharing.ClickToCallDialerPresent")
-                .record(isDialerPresent);
+        RecordHistogram.recordBooleanHistogram("Sharing.ClickToCallDialerPresent", isDialerPresent);
     }
 
     public static void recordMessageReceived() {
-        new CachedMetrics
-                .EnumeratedHistogramSample(
-                        "Sharing.ClickToCallReceiveDeviceState", ClickToCallDeviceState.NUM_ENTRIES)
-                .record(getDeviceState(ContextUtils.getApplicationContext()));
+        RecordHistogram.recordEnumeratedHistogram("Sharing.ClickToCallReceiveDeviceState",
+                getDeviceState(ContextUtils.getApplicationContext()),
+                ClickToCallDeviceState.NUM_ENTRIES);
     }
 }

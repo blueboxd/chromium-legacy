@@ -53,6 +53,7 @@ enum class PermissionRequestType {
   PERMISSION_CLIPBOARD_READ_WRITE = 20,
   PERMISSION_VR = 21,
   PERMISSION_AR = 22,
+  PERMISSION_STORAGE_ACCESS = 23,
   // NUM must be the last value in the enum.
   NUM
 };

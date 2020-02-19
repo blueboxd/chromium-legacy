@@ -162,11 +162,6 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDesktopPWAsSharedStoreService;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kDisallowUnsafeHttpDownloads;
-COMPONENT_EXPORT(CHROME_FEATURES)
-extern const char kDisallowUnsafeHttpDownloadsParamName[];
-
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kDnsOverHttps;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::FeatureParam<bool> kDnsOverHttpsFallbackParam;

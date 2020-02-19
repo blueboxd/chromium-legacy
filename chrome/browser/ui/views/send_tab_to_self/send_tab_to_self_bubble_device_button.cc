@@ -22,45 +22,31 @@ namespace send_tab_to_self {
 
 namespace {
 
-enum class DeviceIconType {
-  kDesktop = 0,
-  kPhone = 1,
-};
+// IconView wraps the vector icon to track the color of the current Widget's
+// NativeTheme.
+class IconView : public views::ImageView {
+ public:
+  explicit IconView(const sync_pb::SyncEnums::DeviceType device_type)
+      : vector_icon_{device_type == sync_pb::SyncEnums::TYPE_PHONE
+                         ? &kHardwareSmartphoneIcon
+                         : &kHardwareComputerIcon} {
+    constexpr auto kPrimaryIconBorder = gfx::Insets(6);
+    SetBorder(views::CreateEmptyBorder(kPrimaryIconBorder));
+  }
+  ~IconView() override = default;
 
-SkColor GetColorfromTheme() {
-  const ui::NativeTheme* native_theme =
-      ui::NativeTheme::GetInstanceForNativeUi();
-  return native_theme->GetSystemColor(
-      ui::NativeTheme::kColorId_DefaultIconColor);
-}
-
-gfx::ImageSkia CreateDeviceIcon(DeviceIconType icon_type) {
-  const gfx::VectorIcon* vector_icon;
-  switch (icon_type) {
-    case DeviceIconType::kDesktop:
-      vector_icon = &kHardwareComputerIcon;
-      break;
-    case DeviceIconType::kPhone:
-      vector_icon = &kHardwareSmartphoneIcon;
-      break;
+  // views::View:
+  void OnThemeChanged() override {
+    const SkColor icon_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_DefaultIconColor);
+    SetImage(
+        gfx::CreateVectorIcon(*vector_icon_, kPrimaryIconSize, icon_color));
   }
 
-  constexpr int kPrimaryIconSize = 20;
-  return gfx::CreateVectorIcon(*vector_icon, kPrimaryIconSize,
-                               GetColorfromTheme());
-}
-
-std::unique_ptr<views::ImageView> CreateIconView(
-    const sync_pb::SyncEnums::DeviceType device_type) {
-  gfx::ImageSkia image = CreateDeviceIcon(
-      device_type == sync_pb::SyncEnums::TYPE_PHONE ? DeviceIconType::kPhone
-                                                    : DeviceIconType::kDesktop);
-  auto icon_view = std::make_unique<views::ImageView>();
-  icon_view->SetImage(image);
-  constexpr auto kPrimaryIconBorder = gfx::Insets(6);
-  icon_view->SetBorder(views::CreateEmptyBorder(kPrimaryIconBorder));
-  return icon_view;
-}
+ private:
+  static constexpr int kPrimaryIconSize = 20;
+  const gfx::VectorIcon* vector_icon_;
+};
 
 base::string16 GetLastUpdatedTime(const TargetDeviceInfo& device_info) {
   int time_in_days =
@@ -85,7 +71,7 @@ SendTabToSelfBubbleDeviceButton::SendTabToSelfBubbleDeviceButton(
     const TargetDeviceInfo& device_info,
     int button_tag)
     : HoverButton(button_listener,
-                  CreateIconView(device_info.device_type),
+                  std::make_unique<IconView>(device_info.device_type),
                   base::UTF8ToUTF16(device_info.device_name),
                   GetLastUpdatedTime(device_info)) {
   device_name_ = device_info.device_name;

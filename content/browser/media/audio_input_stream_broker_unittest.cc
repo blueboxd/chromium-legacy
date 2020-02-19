@@ -200,7 +200,7 @@ TEST(AudioInputStreamBrokerTest, StreamCreationSuccess_Propagates) {
   std::move(stream_request_data.created_callback)
       .Run({base::in_place,
             base::ReadOnlySharedMemoryRegion::Create(shmem_size).region,
-            mojo::WrapPlatformFile(socket1.Release())},
+            mojo::PlatformHandle(socket1.Take())},
            kInitiallyMuted, base::UnguessableToken::Create());
 
   EXPECT_CALL(env.renderer_factory_client, OnStreamCreated());

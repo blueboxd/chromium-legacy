@@ -207,7 +207,7 @@ TEST(AudioOutputStreamBrokerTest, StreamCreationSuccess_Propagates) {
   base::SyncSocket::CreatePair(&socket1, &socket2);
   std::move(stream_request_data.created_callback)
       .Run({base::in_place, base::UnsafeSharedMemoryRegion::Create(kShMemSize),
-            mojo::WrapPlatformFile(socket1.Release())});
+            mojo::PlatformHandle(socket1.Take())});
 
   EXPECT_CALL(env.provider_client, OnCreated());
 

@@ -365,16 +365,16 @@ void AudioOutputDevice::OnDeviceAuthorized(
 
 void AudioOutputDevice::OnStreamCreated(
     base::UnsafeSharedMemoryRegion shared_memory_region,
-    base::SyncSocket::Handle socket_handle,
+    base::SyncSocket::ScopedHandle socket_handle,
     bool playing_automatically) {
   TRACE_EVENT0("audio", "AudioOutputDevice::OnStreamCreated")
 
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   DCHECK(shared_memory_region.IsValid());
 #if defined(OS_WIN)
-  DCHECK(socket_handle);
+  DCHECK(socket_handle.IsValid());
 #else
-  DCHECK_GE(socket_handle, 0);
+  DCHECK(socket_handle.is_valid());
 #endif
   DCHECK_GT(shared_memory_region.GetSize(), 0u);
 
@@ -407,7 +407,7 @@ void AudioOutputDevice::OnStreamCreated(
     if (playing_automatically)
       audio_callback_->InitializePlayStartTime();
     audio_thread_.reset(new AudioDeviceThread(
-        audio_callback_.get(), socket_handle, "AudioOutputDevice",
+        audio_callback_.get(), std::move(socket_handle), "AudioOutputDevice",
         base::ThreadPriority::REALTIME_AUDIO));
   }
 }

@@ -120,7 +120,7 @@ grit("media_app_resources") {
 grit("media_app_bundle_resources") {
   if (enable_cros_media_app) {
     # Obtained via src-internal/DEPS.
-    source = "../components/media_app_ui/resources/app/app/media_app_bundle_resources.grd"
+    source = "../components/media_app_ui/resources/pkg/media_app_bundle_resources.grd"
   } else {
     source = "../components/media_app_ui/resources/mock/media_app_bundle_mock_resources.grd"
   }

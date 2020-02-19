@@ -27,6 +27,7 @@
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_config_with_annotation.h"
 #include "net/proxy_resolution/proxy_info.h"
+#include "net/proxy_resolution/proxy_resolution_request.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "url/gurl.h"
 
@@ -44,6 +45,7 @@ class NetLog;
 class PacFileFetcher;
 class ProxyDelegate;
 class ProxyResolverFactory;
+class ProxyResolutionRequestImpl;
 struct PacFileDataWithSource;
 
 // This class can be used to resolve the proxy server to use when loading a
@@ -104,19 +106,6 @@ class NET_EXPORT ConfiguredProxyResolutionService
 
   ~ConfiguredProxyResolutionService() override;
 
-  // Used to track proxy resolution requests that complete asynchronously.
-  class Request {
-   public:
-    virtual ~Request() = default;
-    virtual LoadState GetLoadState() const = 0;
-
-   protected:
-    Request() = default;
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Request);
-  };
-
   // Determines the appropriate proxy for |url| for a |method| request and
   // stores the result in |results|. If |method| is empty, the caller can expect
   // method independent resolution.
@@ -144,7 +133,7 @@ class NET_EXPORT ConfiguredProxyResolutionService
                    const NetworkIsolationKey& network_isolation_key,
                    ProxyInfo* results,
                    CompletionOnceCallback callback,
-                   std::unique_ptr<Request>* request,
+                   std::unique_ptr<ProxyResolutionRequest>* request,
                    const NetLogWithSource& net_log);
 
   // Explicitly trigger proxy fallback for the given |results| by updating our
@@ -284,15 +273,15 @@ class NET_EXPORT ConfiguredProxyResolutionService
   bool quick_check_enabled_for_testing() const { return quick_check_enabled_; }
 
  private:
+  friend class ProxyResolutionRequestImpl;
   FRIEND_TEST_ALL_PREFIXES(ProxyResolutionServiceTest,
                            UpdateConfigAfterFailedAutodetect);
   FRIEND_TEST_ALL_PREFIXES(ProxyResolutionServiceTest,
                            UpdateConfigFromPACToDirect);
   class InitProxyResolver;
   class PacFileDeciderPoller;
-  class RequestImpl;
 
-  typedef std::set<RequestImpl*> PendingRequests;
+  typedef std::set<ProxyResolutionRequestImpl*> PendingRequests;
 
   enum State {
     STATE_NONE,
@@ -300,6 +289,13 @@ class NET_EXPORT ConfiguredProxyResolutionService
     STATE_WAITING_FOR_INIT_PROXY_RESOLVER,
     STATE_READY,
   };
+
+  // We won't always be able to return a good LoadState. For example, the
+  // ConfiguredProxyResolutionService can only get this information from the
+  // InitProxyResolver, which is not always available.
+  bool GetLoadStateIfAvailable(LoadState* load_state) const;
+
+  ProxyResolver* GetProxyResolver() const;
 
   // Resets all the variables associated with the current proxy configuration,
   // and rewinds the current state to |STATE_NONE|. Returns the previous value
@@ -331,10 +327,10 @@ class NET_EXPORT ConfiguredProxyResolutionService
   void SetReady();
 
   // Returns true if |pending_requests_| contains |req|.
-  bool ContainsPendingRequest(RequestImpl* req);
+  bool ContainsPendingRequest(ProxyResolutionRequestImpl* req);
 
   // Removes |req| from the list of pending requests.
-  void RemovePendingRequest(RequestImpl* req);
+  void RemovePendingRequest(ProxyResolutionRequestImpl* req);
 
   // Called when proxy resolution has completed (either synchronously or
   // asynchronously). Handles logging the result, and cleaning out

@@ -1090,7 +1090,7 @@ void UserSessionManager::ChildAccountStatusReceivedCallback(Profile* profile) {
 void UserSessionManager::StopChildStatusObserving(Profile* profile) {
   if (waiting_for_child_account_status_ &&
       !SessionStartupPref::TypeIsManaged(profile->GetPrefs())) {
-    InitializeStartUrls(profile);
+    MaybeLaunchHelpApp(profile);
   }
   waiting_for_child_account_status_ = false;
 }
@@ -1777,29 +1777,14 @@ void UserSessionManager::ActivateWizard(OobeScreenId screen) {
   host->StartWizard(screen);
 }
 
-void UserSessionManager::InitializeStartUrls(Profile* profile) const {
-  // Child account status should be known by the time of this call.
-  std::vector<std::string> start_urls;
-
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-
-  bool can_show_getstarted_guide = user_manager->GetActiveUser()->GetType() ==
-                                   user_manager::USER_TYPE_REGULAR;
-
-  // Only show getting started guide for a new user.
-  const bool should_show_getstarted_guide = user_manager->IsCurrentUserNew();
-
-  if (can_show_getstarted_guide && should_show_getstarted_guide) {
+void UserSessionManager::MaybeLaunchHelpApp(Profile* profile) const {
+  if (first_run::ShouldLaunchHelpApp(profile)) {
     // Don't open default Chrome window if we're going to launch the first-run
     // app. Because we don't want the first-run app to be hidden in the
     // background.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         ::switches::kSilentLaunch);
-    first_run::MaybeLaunchHelpApp(profile);
-  } else {
-    for (size_t i = 0; i < start_urls.size(); ++i) {
-      base::CommandLine::ForCurrentProcess()->AppendArg(start_urls[i]);
-    }
+    first_run::LaunchHelpApp(profile);
   }
 }
 
@@ -1838,7 +1823,7 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
       // URLs via policy.
       if (!SessionStartupPref::TypeIsManaged(profile->GetPrefs())) {
         if (child_service->IsChildAccountStatusKnown())
-          InitializeStartUrls(profile);
+          MaybeLaunchHelpApp(profile);
         else
           waiting_for_child_account_status_ = true;
       }

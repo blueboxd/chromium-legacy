@@ -124,7 +124,7 @@ TEST(AudioInputDeviceTest, CreateStream) {
       .WillOnce(InvokeWithoutArgs([&]() {
         static_cast<AudioInputIPCDelegate*>(device.get())
             ->OnStreamCreated(std::move(duplicated_shared_memory_region),
-                              renderer_socket.Release(), false);
+                              renderer_socket.Take(), false);
       }));
   EXPECT_CALL(*input_ipc, RecordStream());
 

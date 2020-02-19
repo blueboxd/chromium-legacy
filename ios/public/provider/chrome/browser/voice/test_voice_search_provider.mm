@@ -14,6 +14,10 @@ TestVoiceSearchProvider::TestVoiceSearchProvider() {}
 
 TestVoiceSearchProvider::~TestVoiceSearchProvider() {}
 
+bool TestVoiceSearchProvider::IsVoiceSearchEnabled() const {
+  return voice_search_enabled_;
+}
+
 NSArray* TestVoiceSearchProvider::GetAvailableLanguages() const {
   VoiceSearchLanguage* en =
       [[VoiceSearchLanguage alloc] initWithIdentifier:@"en-US"

@@ -41,8 +41,11 @@ class NET_EXPORT TCPServerSocket : public ServerSocket {
   int GetLocalAddress(IPEndPoint* address) const override;
   int Accept(std::unique_ptr<StreamSocket>* socket,
              CompletionOnceCallback callback) override;
+  int Accept(std::unique_ptr<StreamSocket>* socket,
+             CompletionOnceCallback callback,
+             IPEndPoint* peer_address) override;
 
-  // Detachs from the current thread, to allow the socket to be transferred to
+  // Detaches from the current thread, to allow the socket to be transferred to
   // a new thread. Should only be called when the object is no longer used by
   // the old thread.
   void DetachFromThread();
@@ -54,9 +57,11 @@ class NET_EXPORT TCPServerSocket : public ServerSocket {
   // set to NULL in any case.
   int ConvertAcceptedSocket(
       int result,
-      std::unique_ptr<StreamSocket>* output_accepted_socket);
+      std::unique_ptr<StreamSocket>* output_accepted_socket,
+      IPEndPoint* output_accepted_address);
   // Completion callback for calling TCPSocket::Accept().
   void OnAcceptCompleted(std::unique_ptr<StreamSocket>* output_accepted_socket,
+                         IPEndPoint* output_accepted_address,
                          CompletionOnceCallback forward_callback,
                          int result);
 

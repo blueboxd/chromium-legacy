@@ -118,4 +118,36 @@
   <message name="IDS_DRIVE_SUGGEST_PREF" desc="The documentation string of the 'Show Drive Results in Omnibox' preference - short description">
     Google Drive search suggestions
   </message>
+
+  <!-- Sync Accounts page (used by the <settings-sync-account-control> element) -->
+  <message name="IDS_SETTINGS_PEOPLE_SYNCING_TO_ACCOUNT" desc="The text displayed to the user that the profile is currently syncing to a specific account.">
+    Syncing to <ph name="EMAIL">$1<ex>abcd@google.com</ex></ph>
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_SYNC_PAUSED" desc="The label informing the user that sync is currently paused.">
+    Sync is paused
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_SIGN_IN_PROMPT" desc="The text displayed to prompt users to sign in to chrome.">
+    Get Google smarts in Chrome
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_SYNC_TURN_OFF" desc="The label for the button that lets the user turn off profile syncing with their gaia account.">
+    Turn off
+  </message>
+  <message name="IDS_SETTINGS_SETTINGS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing settings between multiple browser instances.">
+    Settings
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_SYNC_NOT_WORKING" desc="The label informing the user that sync is currently not working.">
+    Sync isn't working
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_SYNC_PASSWORDS_NOT_WORKING" desc="The label informing the user that password sync is currently not working.">
+    Error syncing passwords
+  </message>
+  <message name="IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE" desc="Name of the settings page which manages data used by sync.">
+    Manage sync
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_SIGN_OUT" desc="The label of the button that lets user sign-out of Chrome.">
+    Sign out
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_SYNC_ANOTHER_ACCOUNT" desc="The label for the button that lets the user choose another account to sync with.">
+    Use another account
+  </message>
 </grit-part>

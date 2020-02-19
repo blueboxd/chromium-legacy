@@ -75,13 +75,6 @@ class CORE_EXPORT LayoutTextControl : public LayoutBlockFlow {
                                            SubtreeLayoutScope&) override;
 
   LayoutUnit FirstLineBoxBaseline() const override;
-  // We need to override this function because we don't want overflow:hidden on
-  // an <input> to affect the baseline calculation. This is necessary because we
-  // are an inline-block element as an implementation detail which would
-  // normally be affected by this.
-  bool ShouldIgnoreOverflowPropertyForInlineBlockBaseline() const override {
-    return true;
-  }
 
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectTextControl || LayoutBlockFlow::IsOfType(type);

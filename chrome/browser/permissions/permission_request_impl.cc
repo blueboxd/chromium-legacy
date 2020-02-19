@@ -62,6 +62,8 @@ permissions::PermissionRequest::IconId PermissionRequestImpl::GetIconId()
     case ContentSettingsType::VR:
     case ContentSettingsType::AR:
       return IDR_ANDROID_INFOBAR_VR_HEADSET;
+    case ContentSettingsType::STORAGE_ACCESS:
+      return IDR_ANDROID_INFOBAR_PERMISSION_COOKIE;
     default:
       NOTREACHED();
       return IDR_ANDROID_INFOBAR_WARNING;
@@ -92,6 +94,8 @@ permissions::PermissionRequest::IconId PermissionRequestImpl::GetIconId()
     case ContentSettingsType::VR:
     case ContentSettingsType::AR:
       return kVrHeadsetIcon;
+    case ContentSettingsType::STORAGE_ACCESS:
+      return kCookieIcon;
     default:
       NOTREACHED();
       return kExtensionIcon;
@@ -139,6 +143,15 @@ base::string16 PermissionRequestImpl::GetMessageText() const {
     case ContentSettingsType::AR:
       message_id = IDS_AR_INFOBAR_TEXT;
       break;
+    case ContentSettingsType::STORAGE_ACCESS:
+      // TODO(https://crbug.com/989663): Plumb through second context origin for
+      // string instead of using GetOrigin() for both.
+      return l10n_util::GetStringFUTF16(
+          IDS_STORAGE_ACCESS_INFOBAR_TEXT,
+          url_formatter::FormatUrlForSecurityDisplay(
+              GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC),
+          url_formatter::FormatUrlForSecurityDisplay(
+              GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
     default:
       NOTREACHED();
       return base::string16();
@@ -213,6 +226,15 @@ base::string16 PermissionRequestImpl::GetMessageTextFragment() const {
     case ContentSettingsType::AR:
       message_id = IDS_AR_PERMISSION_FRAGMENT;
       break;
+    case ContentSettingsType::STORAGE_ACCESS:
+      // TODO(https://crbug.com/989663): Plumb through second context origin for
+      // string instead of using GetOrigin() for both.
+      return l10n_util::GetStringFUTF16(
+          IDS_STORAGE_ACCESS_PERMISSION_FRAGMENT,
+          url_formatter::FormatUrlForSecurityDisplay(
+              GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC),
+          url_formatter::FormatUrlForSecurityDisplay(
+              GetOrigin(), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
     default:
       NOTREACHED();
       return base::string16();

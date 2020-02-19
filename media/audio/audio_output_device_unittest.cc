@@ -204,7 +204,7 @@ void AudioOutputDeviceTest::CallOnStreamCreated() {
   ASSERT_TRUE(duplicated_memory_region.IsValid());
 
   audio_device_->OnStreamCreated(std::move(duplicated_memory_region),
-                                 renderer_socket_.Release(),
+                                 renderer_socket_.Take(),
                                  /*playing_automatically*/ false);
   task_env_.FastForwardBy(base::TimeDelta());
 }

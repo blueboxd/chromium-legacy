@@ -355,19 +355,6 @@ const FeatureEntry::Choice kWebXrForceRuntimeChoices[] = {
     {flag_descriptions::kWebXrRuntimeChoiceNone, switches::kWebXrForceRuntime,
      switches::kWebXrRuntimeNone},
 
-    {flag_descriptions::kWebXrRuntimeChoiceOrientationSensors,
-     switches::kWebXrForceRuntime, switches::kWebXrRuntimeOrientationSensors},
-
-#if BUILDFLAG(ENABLE_OCULUS_VR)
-    {flag_descriptions::kWebXrRuntimeChoiceOculus, switches::kWebXrForceRuntime,
-     switches::kWebXrRuntimeOculus},
-#endif  // ENABLE_OCULUS_VR
-
-#if BUILDFLAG(ENABLE_OPENVR)
-    {flag_descriptions::kWebXrRuntimeChoiceOpenVR, switches::kWebXrForceRuntime,
-     switches::kWebXrRuntimeOpenVr},
-#endif  // ENABLE_OPENVR
-
 #if BUILDFLAG(ENABLE_OPENXR)
     {flag_descriptions::kWebXrRuntimeChoiceOpenXR, switches::kWebXrForceRuntime,
      switches::kWebXrRuntimeOpenXr},
@@ -2369,26 +2356,12 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kMacV2GPUSandbox)},
 #endif  // OS_MACOSX
 #if BUILDFLAG(ENABLE_VR)
-    {"webxr", flag_descriptions::kWebXrName,
-     flag_descriptions::kWebXrDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kWebXr)},
-    {"webxr-ar-module", flag_descriptions::kWebXrArModuleName,
-     flag_descriptions::kWebXrArModuleDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kWebXrArModule)},
-    {"webxr-hit-test", flag_descriptions::kWebXrHitTestName,
-     flag_descriptions::kWebXrHitTestDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kWebXrHitTest)},
     {"webxr-incubations", flag_descriptions::kWebXrIncubationsName,
      flag_descriptions::kWebXrIncubationsDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebXrIncubations)},
     {"webxr-runtime", flag_descriptions::kWebXrForceRuntimeName,
      flag_descriptions::kWebXrForceRuntimeDescription, kOsDesktop,
      MULTI_VALUE_TYPE(kWebXrForceRuntimeChoices)},
-#if !defined(OS_ANDROID)
-    {"xr-sandbox", flag_descriptions::kXRSandboxName,
-     flag_descriptions::kXRSandboxDescription, kOsWin,
-     FEATURE_VALUE_TYPE(service_manager::features::kXRSandbox)},
-#endif  // !defined(OS_ANDROID)
 #endif  // ENABLE_VR
 #if defined(OS_CHROMEOS)
     {"disable-accelerated-mjpeg-decode",
@@ -2880,6 +2853,10 @@ const FeatureEntry kFeatureEntries[] = {
 #endif  // defined(OS_WIN)
 
 #if defined(OS_ANDROID)
+    {"omnibox-adaptive-suggestions-count",
+     flag_descriptions::kOmniboxAdaptiveSuggestionsCountName,
+     flag_descriptions::kOmniboxAdaptiveSuggestionsCountDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(omnibox::kAdaptiveSuggestionsCount)},
     {"omnibox-assistant-voice-search",
      flag_descriptions::kOmniboxAssistantVoiceSearchName,
      flag_descriptions::kOmniboxAssistantVoiceSearchDescription, kOsAndroid,
@@ -3103,12 +3080,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kOmniboxMaxURLMatchesVariations,
                                     "OmniboxMaxURLMatchesVariations")},
 
-    {"omnibox-ui-show-suggestion-favicons",
-     flag_descriptions::kOmniboxUIShowSuggestionFaviconsName,
-     flag_descriptions::kOmniboxUIShowSuggestionFaviconsDescription,
-     kOsDesktop | kOsAndroid,
-     FEATURE_VALUE_TYPE(omnibox::kUIExperimentShowSuggestionFavicons)},
-
     {"omnibox-ui-swap-title-and-url",
      flag_descriptions::kOmniboxUISwapTitleAndUrlName,
      flag_descriptions::kOmniboxUISwapTitleAndUrlDescription, kOsDesktop,
@@ -3308,6 +3279,17 @@ const FeatureEntry kFeatureEntries[] = {
          chrome::android::kUpdateNotificationSchedulingIntegration)},
 #endif
 
+#if defined(OS_ANDROID)
+    {"update-notification-scheduling-show-immediately",
+     flag_descriptions::kUpdateNotificationServiceImmediateShowOptionName,
+     flag_descriptions::
+         kUpdateNotificationServiceImmediateShowOptionDescription,
+     kOsAndroid,
+     FEATURE_VALUE_TYPE(
+         chrome::android::
+             kUpdateNotificationScheduleServiceImmediateShowOption)},
+#endif
+
     {"tab-hover-cards", flag_descriptions::kTabHoverCardsName,
      flag_descriptions::kTabHoverCardsDescription, kOsDesktop,
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kTabHoverCards,
@@ -3356,10 +3338,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableWebAuthenticationCableV2SupportDescription,
      kOsDesktop, FEATURE_VALUE_TYPE(device::kWebAuthPhoneSupport)},
 #endif  // !defined(OS_ANDROID)
-
-    {"simplify-https-indicator", flag_descriptions::kSimplifyHttpsIndicatorName,
-     flag_descriptions::kSimplifyHttpsIndicatorDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kSimplifyHttpsIndicator)},
 
     {"use-preferred-interval-for-video",
      flag_descriptions::kUsePreferredIntervalForVideoName,
@@ -3570,11 +3548,6 @@ const FeatureEntry kFeatureEntries[] = {
      kOsWin | kOsCrOS,
      FEATURE_VALUE_TYPE(features::kTouchpadOverscrollHistoryNavigation)},
 #endif
-
-    {"disallow-unsafe-http-downloads",
-     flag_descriptions::kDisallowUnsafeHttpDownloadsName,
-     flag_descriptions::kDisallowUnsafeHttpDownloadsNameDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kDisallowUnsafeHttpDownloads)},
 
     {"unsafely-treat-insecure-origin-as-secure",
      flag_descriptions::kTreatInsecureOriginAsSecureName,

@@ -4,6 +4,8 @@
 
 #include "ash/assistant/model/ui/assistant_card_element.h"
 
+#include <utility>
+
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/public/cpp/assistant/assistant_web_view_factory.h"
 #include "base/base64.h"
@@ -14,7 +16,7 @@ namespace ash {
 
 class AssistantCardElement::Processor : public AssistantWebView::Observer {
  public:
-  Processor(AssistantCardElement& card_element, ProcessingCallback callback)
+  Processor(AssistantCardElement* card_element, ProcessingCallback callback)
       : card_element_(card_element), callback_(std::move(callback)) {}
 
   Processor(const Processor& copy) = delete;
@@ -25,7 +27,7 @@ class AssistantCardElement::Processor : public AssistantWebView::Observer {
       contents_view_->RemoveObserver(this);
 
     if (callback_)
-      std::move(callback_).Run(/*success=*/false);
+      std::move(callback_).Run();
   }
 
   void Process() {
@@ -51,7 +53,7 @@ class AssistantCardElement::Processor : public AssistantWebView::Observer {
 
     // Encode the html string to be URL-safe.
     std::string encoded_html;
-    base::Base64Encode(card_element_.html(), &encoded_html);
+    base::Base64Encode(card_element_->html(), &encoded_html);
 
     // Navigate to the data URL which represents the card.
     constexpr char kDataUriPrefix[] = "data:text/html;base64,";
@@ -64,12 +66,13 @@ class AssistantCardElement::Processor : public AssistantWebView::Observer {
     contents_view_->RemoveObserver(this);
 
     // Pass ownership of |contents_view_| to the card element that was being
-    // processed and notify our |callback_| of success.
-    card_element_.set_contents_view(std::move(contents_view_));
-    std::move(callback_).Run(/*success=*/true);
+    // processed and notify our |callback_| of the completion.
+    card_element_->set_contents_view(std::move(contents_view_));
+    std::move(callback_).Run();
   }
 
-  AssistantCardElement& card_element_;
+  // |card_element_| should outlive the Processor.
+  AssistantCardElement* const card_element_;
   ProcessingCallback callback_;
 
   std::unique_ptr<AssistantWebView> contents_view_;
@@ -83,10 +86,13 @@ AssistantCardElement::AssistantCardElement(const std::string& html,
       html_(html),
       fallback_(fallback) {}
 
-AssistantCardElement::~AssistantCardElement() = default;
+AssistantCardElement::~AssistantCardElement() {
+  // |processor_| should be destroyed before |this| has been deleted.
+  processor_.reset();
+}
 
 void AssistantCardElement::Process(ProcessingCallback callback) {
-  processor_ = std::make_unique<Processor>(*this, std::move(callback));
+  processor_ = std::make_unique<Processor>(this, std::move(callback));
   processor_->Process();
 }
 

@@ -43,6 +43,9 @@ GEOMETRY_EXPORT Rect ToNearestRect(const RectF& rect);
 GEOMETRY_EXPORT bool IsNearestRectWithinDistance(const gfx::RectF& rect,
                                                  float distance);
 
+// Returns the Rect after rounding the corners of the RectF to an integer grid.
+GEOMETRY_EXPORT gfx::Rect ToRoundedRect(const gfx::RectF& rect);
+
 // Returns a Rect obtained by flooring the values of the given RectF.
 // Please prefer the previous two functions in new code.
 GEOMETRY_EXPORT Rect ToFlooredRectDeprecated(const RectF& rect);

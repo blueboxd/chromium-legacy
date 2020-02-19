@@ -536,8 +536,9 @@ void ArCoreGl::OnTransportFrameAvailable(const gfx::Transform& uv_transform) {
   webxr_->TryDeferredProcessing();
 }
 
-void ArCoreGl::SubmitFrameWithTextureHandle(int16_t frame_index,
-                                            mojo::ScopedHandle texture_handle) {
+void ArCoreGl::SubmitFrameWithTextureHandle(
+    int16_t frame_index,
+    mojo::PlatformHandle texture_handle) {
   NOTIMPLEMENTED();
 }
 

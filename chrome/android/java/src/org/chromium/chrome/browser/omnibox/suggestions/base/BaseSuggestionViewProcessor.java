@@ -27,6 +27,18 @@ public abstract class BaseSuggestionViewProcessor implements SuggestionProcessor
     private final Context mContext;
     private final SuggestionHost mSuggestionHost;
 
+    @Override
+    public void onUrlFocusChange(boolean hasFocus) {}
+
+    @Override
+    public void recordSuggestionPresented(OmniboxSuggestion suggestion, PropertyModel model) {}
+
+    @Override
+    public void recordSuggestionUsed(OmniboxSuggestion suggestion, PropertyModel model) {}
+
+    @Override
+    public void onNativeInitialized() {}
+
     /**
      * @param host A handle to the object using the suggestions.
      */

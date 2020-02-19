@@ -69,17 +69,15 @@ void CapturedAudioInput::StreamCreated(
   stream_.Bind(std::move(stream));
   stream_client_receiver_.Bind(std::move(client_receiver));
 
-  base::PlatformFile socket_handle;
-  auto result =
-      mojo::UnwrapPlatformFile(std::move(data_pipe->socket), &socket_handle);
-  DCHECK_EQ(result, MOJO_RESULT_OK);
+  DCHECK(data_pipe->socket.is_valid_platform_file());
+  base::ScopedPlatformFile socket_handle = data_pipe->socket.TakePlatformFile();
 
   base::ReadOnlySharedMemoryRegion& shared_memory_region =
       data_pipe->shared_memory;
   DCHECK(shared_memory_region.IsValid());
 
-  delegate_->OnStreamCreated(std::move(shared_memory_region), socket_handle,
-                             initially_muted);
+  delegate_->OnStreamCreated(std::move(shared_memory_region),
+                             std::move(socket_handle), initially_muted);
 }
 
 void CapturedAudioInput::OnError() {

@@ -21,6 +21,8 @@
           type="BINDATA" />
       <include name="IDR_HELP_APP_ICON_192" file="app_icon_192.png"
           type="BINDATA" />
+      <include name="IDR_HELP_APP_ICON_512" file="app_icon_512.png"
+          type="BINDATA" />
     </includes>
   </release>
 </grit>

@@ -331,8 +331,9 @@ void PPB_Audio_Proxy::OnMsgNotifyAudioStreamCreated(
         ->SetStreamInfo(enter.resource()->pp_instance(),
                         base::UnsafeSharedMemoryRegion::Deserialize(
                             handle.TakeSharedMemoryRegion()),
-                        IPC::PlatformFileForTransitToPlatformFile(
-                            socket_handle.descriptor()),
+                        base::SyncSocket::ScopedHandle(
+                            IPC::PlatformFileForTransitToPlatformFile(
+                                socket_handle.descriptor())),
                         config.object()->GetSampleRate(),
                         config.object()->GetSampleFrameCount());
   }

@@ -70,7 +70,6 @@
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -302,9 +301,6 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
 
   // Flush mojo calls to allow async callbacks to run.
   void FlushMojoCallsForAppService() {
-    if (!base::FeatureList::IsEnabled(features::kAppServiceShelf)) {
-      return;
-    }
     apps::AppServiceProxy* proxy =
         apps::AppServiceProxyFactory::GetForProfile(profile());
     if (proxy) {

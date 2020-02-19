@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -33,8 +32,6 @@ import java.util.Set;
 public class LazySubscriptionsManagerTest {
     @Before
     public void setUp() {
-        // This commits and clears any cached metrics.
-        CachedMetrics.commitCachedMetrics();
         ShadowRecordHistogram.reset();
     }
 

@@ -38,7 +38,7 @@ class MEDIA_EXPORT AudioOutputIPCDelegate {
   // Play();
   virtual void OnStreamCreated(
       base::UnsafeSharedMemoryRegion shared_memory_region,
-      base::SyncSocket::Handle socket_handle,
+      base::SyncSocket::ScopedHandle socket_handle,
       bool playing_automatically) = 0;
 
   // Called when the AudioOutputIPC object is going away and/or when the IPC

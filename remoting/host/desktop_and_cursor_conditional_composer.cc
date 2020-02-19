@@ -69,4 +69,21 @@ void DesktopAndCursorConditionalComposer::SetExcludedWindow(
   capturer_->SetExcludedWindow(window);
 }
 
+bool DesktopAndCursorConditionalComposer::GetSourceList(SourceList* sources) {
+  return capturer_->GetSourceList(sources);
+}
+
+bool DesktopAndCursorConditionalComposer::SelectSource(SourceId id) {
+  return capturer_->SelectSource(id);
+}
+
+bool DesktopAndCursorConditionalComposer::FocusOnSelectedSource() {
+  return capturer_->FocusOnSelectedSource();
+}
+
+bool DesktopAndCursorConditionalComposer::IsOccluded(
+    const webrtc::DesktopVector& pos) {
+  return capturer_->IsOccluded(pos);
+}
+
 }  // namespace remoting

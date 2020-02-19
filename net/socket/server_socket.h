@@ -42,6 +42,13 @@ class NET_EXPORT ServerSocket {
   virtual int Accept(std::unique_ptr<StreamSocket>* socket,
                      CompletionOnceCallback callback) = 0;
 
+  // Accepts connection. Callback is called when new connection is accepted.
+  // Note: |peer_address| may or may not be populated depending on the
+  // implementation.
+  virtual int Accept(std::unique_ptr<StreamSocket>* socket,
+                     CompletionOnceCallback callback,
+                     IPEndPoint* peer_address);
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ServerSocket);
 };

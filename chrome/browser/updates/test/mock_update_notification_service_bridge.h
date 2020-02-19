@@ -24,8 +24,8 @@ class MockUpdateNotificationServiceBridge
   MOCK_METHOD0(GetLastShownTimeStamp, base::Optional<base::Time>());
   MOCK_METHOD1(UpdateThrottleInterval, void(base::TimeDelta interval));
   MOCK_METHOD0(GetThrottleInterval, base::Optional<base::TimeDelta>());
-  MOCK_METHOD1(UpdateUserDismissCount, void(int count));
-  MOCK_METHOD0(GetUserDismissCount, int());
+  MOCK_METHOD1(UpdateNegativeActionCount, void(int count));
+  MOCK_METHOD0(GetNegativeActionCount, int());
   MOCK_METHOD1(LaunchChromeActivity, void(int state));
 
  private:

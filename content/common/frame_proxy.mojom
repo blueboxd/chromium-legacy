@@ -5,20 +5,27 @@
 module content.mojom;
 
 import "ui/gfx/geometry/mojom/geometry.mojom";
+import "content/common/render_frame_metadata.mojom";
 
 // Mojo interface for communicating from RenderFrameProxy to
-// RenderFrameProxyHost.
+// RenderFrameProxyHost. Implemented by the browser process, called by renderer
+// processes.
 interface RenderFrameProxyHost {
   // TODO(dtapuska): Keep this interface for now. All methods have moved to
   // blink::RemoteFrameHost but we might still need this.
 };
 
 // Mojo interface for communicating from RenderFrameProxyHost to
-// RenderFrameProxy. The Renderer process implements the below interface.
+// RenderFrameProxy. Implemented by renderer processes, called by the browser
+// process.
 interface RenderFrameProxy {
   // This function enables auto-resize mode from the parent renderer.
   EnableAutoResize(gfx.mojom.Size min_size, gfx.mojom.Size max_size);
 
   // This function disables auto-resize-mode from the parent renderer.
   DisableAutoResize();
+
+  // Informs the completion of an autoresize transaction from the parent
+  // renderer and updates with the provided viz::LocalSurfaceId.
+  DidUpdateVisualProperties(RenderFrameMetadata metadata);
 };

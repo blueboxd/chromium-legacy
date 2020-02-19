@@ -100,7 +100,7 @@ UpdateNotificationConfig::CreateFromFinch() {
 }
 
 UpdateNotificationConfig::UpdateNotificationConfig()
-    : is_enabled(false),
+    : is_enabled(true),
       default_interval(
           base::TimeDelta::FromDays(kDefaultUpdateNotificationInterval)),
       throttle_interval_linear_co_scale(kDefaultThrottleIntervalScale),

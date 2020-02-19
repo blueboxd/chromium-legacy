@@ -46,6 +46,7 @@ enum class PermissionType {
   CLIPBOARD_SANITIZED_WRITE = 24,
   VR = 25,
   AR = 26,
+  STORAGE_ACCESS_GRANT = 27,
 
   // Always keep this at the end.
   NUM,

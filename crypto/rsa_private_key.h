@@ -39,7 +39,7 @@ class CRYPTO_EXPORT RSAPrivateKey {
   // failure.
   static std::unique_ptr<RSAPrivateKey> CreateFromKey(EVP_PKEY* key);
 
-  EVP_PKEY* key() { return key_.get(); }
+  EVP_PKEY* key() const { return key_.get(); }
 
   // Creates a copy of the object.
   std::unique_ptr<RSAPrivateKey> Copy() const;

@@ -291,6 +291,7 @@ jumbo_static_library("content_shell_lib") {
     "//components/keyed_service/content",
     "//components/network_session_configurator/browser",
     "//components/plugins/renderer",
+    "//components/services/storage/test_api",
     "//components/url_formatter",
     "//components/web_cache/renderer",
     "//content:content_resources",

@@ -21,7 +21,9 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.omaha.OmahaBase;
 import org.chromium.chrome.browser.omaha.UpdateStatusProvider;
@@ -76,9 +78,9 @@ public class UpdateNotificationServiceBridge implements UpdateNotificationContro
         switch (mUpdateStatus.updateState) {
             case UPDATE_AVAILABLE: // Intentional fallthrough.
             case INLINE_UPDATE_AVAILABLE: // Intentional fallthrough.
-                // TODO(hesen): Have a debug control switch to enable/disable manually.
-                boolean shouldShowImmediately =
-                        mUpdateStatus.updateState == INLINE_UPDATE_AVAILABLE;
+                boolean shouldShowImmediately = mUpdateStatus.updateState == INLINE_UPDATE_AVAILABLE
+                        || ChromeFeatureList.isEnabled(
+                                ChromeFeatureList.UPDATE_NOTIFICATION_IMMEDIATE_SHOW_OPTION);
                 UpdateNotificationServiceBridgeJni.get().schedule(getUpdateNotificationTitle(),
                         getUpdateNotificationTextBody(), mUpdateStatus.updateState,
                         shouldShowImmediately);
@@ -140,22 +142,22 @@ public class UpdateNotificationServiceBridge implements UpdateNotificationContro
     }
 
     /**
-     * Gets the number of users consecutive dimiss action on update notification from {@link
-     * SharedPreferences}.
+     * Gets the number of users consecutive dismiss or negative button action on update notification
+     * from {@link SharedPreferences}.
      */
     @CalledByNative
-    public static int getUserDismissCount() {
+    public static int getNegativeActionCount() {
         SharedPreferences preferences = OmahaBase.getSharedPreferences();
         return preferences.getInt(PREF_UPDATE_NOTIFICATION_USER_DISMISS_COUNT_KEY, 0);
     }
 
     /**
-     * Updates the number to record users consecutive dimiss action on update notification in {@link
-     * SharedPreferences}.
+     * Updates the number to record users consecutive dismiss or negative button click action on
+     * update notification in {@link SharedPreferences}.
      * @param count A number of users consecutive dimiss action.
      */
     @CalledByNative
-    private static void updateUserDismissCount(int count) {
+    private static void updateNegativeActionCount(int count) {
         SharedPreferences preferences = OmahaBase.getSharedPreferences();
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt(PREF_UPDATE_NOTIFICATION_USER_DISMISS_COUNT_KEY, count);
@@ -168,11 +170,19 @@ public class UpdateNotificationServiceBridge implements UpdateNotificationContro
      * */
     @CalledByNative
     private static void launchChromeActivity(@UpdateState int state) {
-        // TODO(hesen): Record metrics.
         try {
+            RecordHistogram.recordEnumeratedHistogram("GoogleUpdate.Notification.LaunchEvent",
+                    UpdateNotificationControllerImpl.UpdateNotificationReceiver.LaunchEvent.START,
+                    UpdateNotificationControllerImpl.UpdateNotificationReceiver.LaunchEvent
+                            .NUM_ENTRIES);
             UpdateUtils.onUpdateAvailable(ContextUtils.getApplicationContext(), state);
         } catch (IllegalArgumentException e) {
             Log.e(TAG, "Failed to start activity in background.", e);
+            RecordHistogram.recordEnumeratedHistogram("GoogleUpdate.Notification.LaunchEvent",
+                    UpdateNotificationControllerImpl.UpdateNotificationReceiver.LaunchEvent
+                            .START_ACTIVITY_FAILED,
+                    UpdateNotificationControllerImpl.UpdateNotificationReceiver.LaunchEvent
+                            .NUM_ENTRIES);
         }
     }
 }

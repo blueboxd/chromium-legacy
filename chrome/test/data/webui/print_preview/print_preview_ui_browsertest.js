@@ -187,6 +187,12 @@ TEST_F(
           number_settings_section_test.TestNames.BlocksInvalidKeys);
     });
 
+TEST_F(
+    'PrintPreviewNumberSettingsSectionTest', 'UpdatesErrorMessage', function() {
+      this.runMochaTest(
+          number_settings_section_test.TestNames.UpdatesErrorMessage);
+    });
+
 // eslint-disable-next-line no-var
 var PrintPreviewRestoreStateTest = class extends PrintPreviewTest {
   /** @override */

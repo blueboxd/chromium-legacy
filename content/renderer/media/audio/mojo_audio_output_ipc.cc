@@ -236,16 +236,15 @@ void MojoAudioOutputIPC::Created(
   stream_.reset();
   stream_.Bind(std::move(pending_stream));
 
-  base::PlatformFile socket_handle;
-  auto result =
-      mojo::UnwrapPlatformFile(std::move(data_pipe->socket), &socket_handle);
-  DCHECK_EQ(result, MOJO_RESULT_OK);
+  DCHECK(data_pipe->socket.is_valid_platform_file());
+  base::ScopedPlatformFile socket_handle = data_pipe->socket.TakePlatformFile();
 
   base::UnsafeSharedMemoryRegion& shared_memory_region =
       data_pipe->shared_memory;
   DCHECK(shared_memory_region.IsValid());
 
-  delegate_->OnStreamCreated(std::move(shared_memory_region), socket_handle,
+  delegate_->OnStreamCreated(std::move(shared_memory_region),
+                             std::move(socket_handle),
                              expected_state_ == kPlaying);
 
   if (volume_)

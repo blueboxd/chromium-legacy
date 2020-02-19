@@ -88,6 +88,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) TCPServerSocket
   int backlog_;
   std::vector<std::unique_ptr<PendingAccept>> pending_accepts_queue_;
   std::unique_ptr<net::StreamSocket> accepted_socket_;
+  net::IPEndPoint accepted_address_;
   net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   base::WeakPtrFactory<TCPServerSocket> weak_factory_{this};

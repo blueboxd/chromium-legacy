@@ -293,14 +293,14 @@ public abstract class ChromeFeatureList {
             "OfflinePagesDescriptivePendingStatus";
     public static final String OFFLINE_PAGES_LIVE_PAGE_SHARING = "OfflinePagesLivePageSharing";
     public static final String OFFLINE_PAGES_PREFETCHING = "OfflinePagesPrefetching";
+    public static final String OMNIBOX_ADAPTIVE_SUGGESTIONS_COUNT =
+            "OmniboxAdaptiveSuggestionsCount";
     public static final String OMNIBOX_ASSISTANT_VOICE_SEARCH = "OmniboxAssistantVoiceSearch";
     public static final String OMNIBOX_HIDE_SCHEME_IN_STEADY_STATE =
             "OmniboxUIExperimentHideSteadyStateUrlScheme";
     public static final String OMNIBOX_HIDE_TRIVIAL_SUBDOMAINS_IN_STEADY_STATE =
             "OmniboxUIExperimentHideSteadyStateUrlTrivialSubdomains";
     public static final String OMNIBOX_RICH_ENTITY_SUGGESTIONS = "OmniboxRichEntitySuggestions";
-    public static final String OMNIBOX_SHOW_SUGGESTION_FAVICONS =
-            "OmniboxUIExperimentShowSuggestionFavicons";
     public static final String OMNIBOX_SPARE_RENDERER = "OmniboxSpareRenderer";
     public static final String OMNIBOX_SEARCH_ENGINE_LOGO = "OmniboxSearchEngineLogo";
     public static final String OVERLAY_NEW_LAYOUT = "OverlayNewLayout";
@@ -388,6 +388,8 @@ public abstract class ChromeFeatureList {
             "SplitCacheByNetworkIsolationKey";
     public static final String UPDATE_NOTIFICATION_SCHEDULING_INTEGRATION =
             "UpdateNotificationSchedulingIntegration";
+    public static final String UPDATE_NOTIFICATION_IMMEDIATE_SHOW_OPTION =
+            "UpdateNotificationScheduleServiceImmediateShowOption";
 
     @NativeMethods
     interface Natives {

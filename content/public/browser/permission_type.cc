@@ -99,6 +99,8 @@ base::Optional<PermissionType> PermissionDescriptorToPermissionType(
       break;
     case PermissionName::NFC:
       return PermissionType::NFC;
+    case PermissionName::STORAGE_ACCESS:
+      return PermissionType::STORAGE_ACCESS_GRANT;
   }
 
   NOTREACHED();

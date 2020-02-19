@@ -33,12 +33,6 @@ class CONTENT_EXPORT AppCacheUpdateMetricsRecorder {
   // will not be detected/reported through this metric.
   void IncrementExistingResourceCorrupt();
 
-  // IncrementExistingResourceCorruptionRecovery() keeps track of the number of
-  // times we detected a corrupt resource and triggered corruption recovery.
-  // This will only occur when the corruption recovery feature is enabled in
-  // a given Chromium instance.
-  void IncrementExistingResourceCorruptionRecovery();
-
   // IncrementExistingResourceReused() keeps track of the number of times
   // we've determined we can reuse an existing resource.
   void IncrementExistingResourceReused();
@@ -71,7 +65,6 @@ class CONTENT_EXPORT AppCacheUpdateMetricsRecorder {
  private:
   int existing_resource_check_ = 0;
   int existing_resource_corrupt_ = 0;
-  int existing_resource_corruption_recovery_ = 0;
   int existing_resource_reused_ = 0;
   int existing_vary_during_304_ = 0;
   bool canceled_ = false;

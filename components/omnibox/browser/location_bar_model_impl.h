@@ -42,22 +42,6 @@ class LocationBarModelImpl : public LocationBarModel {
   bool IsOfflinePage() const override;
 
  private:
-  struct SecureChipText {
-    base::string16 display_text_;
-    base::string16 accessibility_label_;
-    SecureChipText(base::string16 display_text,
-                   base::string16 accessibility_label)
-        : display_text_(display_text),
-          accessibility_label_(accessibility_label) {}
-    SecureChipText(base::string16 display_text)
-        : display_text_(display_text), accessibility_label_(display_text) {}
-  };
-
-  // Get the security chip labels for the current security state. Always returns
-  // the text corresponding to the currently displayed page, irrespective of any
-  // user input in progress or displayed suggestions.
-  SecureChipText GetSecureChipText() const;
-
   base::string16 GetFormattedURL(
       url_formatter::FormatUrlTypes format_types) const;
 

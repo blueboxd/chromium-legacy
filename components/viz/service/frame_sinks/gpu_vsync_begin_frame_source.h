@@ -34,7 +34,7 @@ class VIZ_SERVICE_EXPORT GpuVSyncBeginFrameSource
   void OnGpuVSync(base::TimeTicks vsync_time, base::TimeDelta vsync_interval);
 
   OutputSurface* const output_surface_;
-  uint64_t next_begin_frame_sequence_number_ = 1;
+  BeginFrameArgsGenerator begin_frame_args_generator_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuVSyncBeginFrameSource);
 };

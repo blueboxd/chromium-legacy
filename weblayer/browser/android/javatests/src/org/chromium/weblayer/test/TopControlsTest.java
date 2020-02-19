@@ -95,16 +95,15 @@ public class TopControlsTest {
         mInitialVisiblePageHeight = getVisiblePageHeight();
         Assert.assertTrue(mInitialVisiblePageHeight > 0);
 
-        // Move by the size of the top-controls.
-        EventUtils.simulateDragFromCenterOfView(
-                activity.getWindow().getDecorView(), 0, -mTopControlsHeight);
-
         // Moving should change the size of the page. Don't attempt to correlate the size as the
         // page doesn't see pixels, and to attempt to compare may result in rounding errors. Poll
         // for this value as there is no good way to detect when done.
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
+                // Move by the size of the top-controls.
+                EventUtils.simulateDragFromCenterOfView(
+                        activity.getWindow().getDecorView(), 0, -mTopControlsHeight);
                 return mInitialVisiblePageHeight != getVisiblePageHeight();
             }
         });
@@ -114,14 +113,13 @@ public class TopControlsTest {
             Assert.assertEquals(View.INVISIBLE, activity.getTopContentsContainer().getVisibility());
         });
 
-        // Move so top-controls are shown again.
-        EventUtils.simulateDragFromCenterOfView(
-                activity.getWindow().getDecorView(), 0, mTopControlsHeight);
-
         // Wait for the page height to match initial height.
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
+                // Move so top-controls are shown again.
+                EventUtils.simulateDragFromCenterOfView(
+                        activity.getWindow().getDecorView(), 0, mTopControlsHeight);
                 return mInitialVisiblePageHeight == getVisiblePageHeight();
             }
         });

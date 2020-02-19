@@ -59,13 +59,12 @@ class MockStream : public media::mojom::AudioInputStream {
 
 class MockDelegate : public media::AudioInputIPCDelegate {
  public:
-  MockDelegate() {}
-  ~MockDelegate() override {}
+  MockDelegate() = default;
+  ~MockDelegate() override = default;
 
   void OnStreamCreated(base::ReadOnlySharedMemoryRegion mem_handle,
-                       base::SyncSocket::Handle socket_handle,
+                       base::SyncSocket::ScopedHandle socket_handle,
                        bool initially_muted) override {
-    base::SyncSocket socket(socket_handle);  // Releases the socket descriptor.
     GotOnStreamCreated(initially_muted);
   }
 
@@ -104,7 +103,7 @@ class FakeStreamCreator {
         stream_client_.BindNewPipeAndPassReceiver(),
         {base::in_place,
          base::ReadOnlySharedMemoryRegion::Create(kMemoryLength).region,
-         mojo::WrapPlatformFile(foreign_socket.Release())},
+         mojo::PlatformHandle(foreign_socket.Take())},
         initially_muted_, base::UnguessableToken::Create());
   }
 

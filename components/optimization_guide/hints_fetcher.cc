@@ -353,10 +353,6 @@ void HintsFetcher::UpdateHostsSuccessfullyFetched() {
 void HintsFetcher::OnURLLoadComplete(
     std::unique_ptr<std::string> response_body) {
   SEQUENCE_CHECKER(sequence_checker_);
-  DCHECK(active_url_loader_);
-
-  if (!active_url_loader_)
-    return;
 
   int response_code = -1;
   if (active_url_loader_->ResponseInfo() &&
@@ -364,9 +360,12 @@ void HintsFetcher::OnURLLoadComplete(
     response_code =
         active_url_loader_->ResponseInfo()->headers->response_code();
   }
-  HandleResponse(response_body ? *response_body : "",
-                 active_url_loader_->NetError(), response_code);
+  auto net_error = active_url_loader_->NetError();
+  // Reset the active URL loader here since actions happening during response
+  // handling may destroy |this|.
   active_url_loader_.reset();
+
+  HandleResponse(response_body ? *response_body : "", net_error, response_code);
 }
 
 std::vector<std::string> HintsFetcher::GetSizeLimitedHostsDueForHintsRefresh(

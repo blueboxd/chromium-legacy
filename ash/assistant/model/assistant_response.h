@@ -67,8 +67,9 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
   bool has_tts() const { return has_tts_; }
   void set_has_tts(bool has_tts) { has_tts_ = has_tts; }
 
-  // Invoke to begin processing the response. Upon completion, |callback| will
-  // be run to indicate success or failure.
+  // Invoke to begin processing the response. The specified |callback| will be
+  // run to indicate whether or not the processor has completed processing of
+  // all UI elements in the response.
   void Process(ProcessingCallback callback);
 
  private:
@@ -77,11 +78,16 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
   friend class base::RefCounted<AssistantResponse>;
   ~AssistantResponse();
 
-  std::vector<std::unique_ptr<AssistantUiElement>> ui_elements_;
   std::vector<AssistantSuggestionPtr> suggestions_;
   ProcessingState processing_state_ = ProcessingState::kUnprocessed;
   bool has_tts_ = false;
 
+  // We specify the declaration order below as intended because we want
+  // |processor_| to be destroyed before |ui_elements_| (we also forced this
+  // order in the destructor), so that when the response processing got
+  // interrupted, the |ProcessingCallback| can have a chance to return false
+  // during the destruction to indicate the failure of completion.
+  std::vector<std::unique_ptr<AssistantUiElement>> ui_elements_;
   std::unique_ptr<Processor> processor_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantResponse);

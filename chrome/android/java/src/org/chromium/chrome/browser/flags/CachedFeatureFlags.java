@@ -70,6 +70,12 @@ public class CachedFeatureFlags {
         }
     };
 
+    /**
+     * Non-dynamic preference keys used historically for specific features.
+     *
+     * Do not add new values to this list. To add a new cached feature flag, just follow the
+     * instructions in the class javadoc.
+     */
     private static final Map<String, String> sNonDynamicPrefKeys = new HashMap<String, String>() {
         {
             put(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD,

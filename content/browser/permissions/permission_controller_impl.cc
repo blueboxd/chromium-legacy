@@ -46,6 +46,9 @@ PermissionToSchedulingFeature(PermissionType permission_name) {
     case PermissionType::PERIODIC_BACKGROUND_SYNC:
       return blink::scheduler::WebSchedulerTrackedFeature::
           kRequestedBackgroundWorkPermission;
+    case PermissionType::STORAGE_ACCESS_GRANT:
+      return blink::scheduler::WebSchedulerTrackedFeature::
+          kRequestedStorageAccessGrant;
     case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
     case PermissionType::DURABLE_STORAGE:
     case PermissionType::FLASH:

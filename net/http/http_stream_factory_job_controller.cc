@@ -24,6 +24,7 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
+#include "net/proxy_resolution/proxy_resolution_request.h"
 #include "net/spdy/spdy_session.h"
 #include "url/url_constants.h"
 

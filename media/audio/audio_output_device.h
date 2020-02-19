@@ -122,7 +122,7 @@ class MEDIA_EXPORT AudioOutputDevice : public AudioRendererSink,
                           const AudioParameters& output_params,
                           const std::string& matched_device_id) override;
   void OnStreamCreated(base::UnsafeSharedMemoryRegion shared_memory_region,
-                       base::SyncSocket::Handle socket_handle,
+                       base::SyncSocket::ScopedHandle socket_handle,
                        bool play_automatically) override;
   void OnIPCClosed() override;
 

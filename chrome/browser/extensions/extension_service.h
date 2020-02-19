@@ -62,7 +62,6 @@ FORWARD_DECLARE_TEST(BlacklistedExtensionSyncServiceTest,
                      SyncBlacklistedExtension);
 
 namespace extensions {
-class AppDataMigrator;
 class ComponentLoader;
 class CrxInstaller;
 class ExtensionActionStorageManager;
@@ -659,9 +658,6 @@ class ExtensionService : public ExtensionServiceInterface,
   std::unique_ptr<SharedModuleService> shared_module_service_;
 
   base::ObserverList<UpdateObserver, true>::Unchecked update_observers_;
-
-  // Migrates app data when upgrading a legacy packaged app to a platform app
-  std::unique_ptr<AppDataMigrator> app_data_migrator_;
 
   // Helper to register and unregister extensions.
   ExtensionRegistrar extension_registrar_;

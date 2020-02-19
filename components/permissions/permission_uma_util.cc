@@ -102,6 +102,8 @@ std::string GetPermissionRequestString(
       return "VR";
     case permissions::PermissionRequestType::PERMISSION_AR:
       return "AR";
+    case permissions::PermissionRequestType::PERMISSION_STORAGE_ACCESS:
+      return "StorageAccess";
     default:
       NOTREACHED();
       return "";
@@ -552,6 +554,10 @@ void PermissionUmaUtil::RecordPermissionAction(
     case ContentSettingsType::AR:
       base::UmaHistogramEnumeration("Permissions.Action.AR", action,
                                     PermissionAction::NUM);
+      break;
+    case ContentSettingsType::STORAGE_ACCESS:
+      base::UmaHistogramEnumeration("Permissions.Action.StorageAccess", action,
+                                    permissions::PermissionAction::NUM);
       break;
     // The user is not prompted for these permissions, thus there is no
     // permission action recorded for them.

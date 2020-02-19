@@ -31,6 +31,7 @@
 #include "net/proxy_resolution/mock_proxy_resolver.h"
 #include "net/proxy_resolution/pac_file_fetcher.h"
 #include "net/proxy_resolution/proxy_config_service.h"
+#include "net/proxy_resolution/proxy_resolution_request.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_with_task_environment.h"
@@ -395,7 +396,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, Direct) {
   ProxyInfo info;
   TestCompletionCallback callback;
   RecordingBoundTestNetLog log;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback.callback(), &request, log.bound());
@@ -437,7 +438,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, OnResolveProxyCallbackAddProxy) {
 
   // First, warm up the ConfiguredProxyResolutionService and fake an error to
   // mark the first server as bad.
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback.callback(), &request, log.bound());
@@ -503,7 +504,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
   RecordingBoundTestNetLog log;
 
   // First, warm up the ConfiguredProxyResolutionService.
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback.callback(), &request, log.bound());
@@ -581,9 +582,8 @@ TEST_F(ConfiguredProxyResolutionServiceTest, CallbackDeletesRequest) {
   GURL url2("http://www.example.com/");
 
   ProxyInfo info;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request, request2;
-  DeletingCallback<ConfiguredProxyResolutionService::Request> callback(
-      &request2);
+  std::unique_ptr<ProxyResolutionRequest> request, request2;
+  DeletingCallback<ProxyResolutionRequest> callback(&request2);
   net::CompletionOnceCallback callback2 =
       base::BindOnce([](int result) { ASSERT_FALSE(true); });
 
@@ -647,9 +647,8 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
   GURL url("http://www.google.com/");
 
   ProxyInfo info;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request, request2;
-  DeletingCallback<ConfiguredProxyResolutionService::Request> callback(
-      &request2),
+  std::unique_ptr<ProxyResolutionRequest> request, request2;
+  DeletingCallback<ProxyResolutionRequest> callback(&request2),
       callback2(&request);
 
   int rv =
@@ -698,7 +697,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, CallbackDeletesSelf) {
   GURL url("http://www.google.com/");
   ProxyInfo info;
 
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   TestCompletionCallback callback1;
   int rv = service->ResolveProxy(url, std::string(), NetworkIsolationKey(),
                                  &info, callback1.callback(), &request1,
@@ -706,15 +705,14 @@ TEST_F(ConfiguredProxyResolutionServiceTest, CallbackDeletesSelf) {
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   GURL url2("http://www.example.com/");
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
-  DeletingCallback<ConfiguredProxyResolutionService::Request> callback2(
-      &request2);
+  std::unique_ptr<ProxyResolutionRequest> request2;
+  DeletingCallback<ProxyResolutionRequest> callback2(&request2);
   rv = service->ResolveProxy(url2, std::string(), NetworkIsolationKey(), &info,
                              callback2.callback(), &request2,
                              NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request3;
+  std::unique_ptr<ProxyResolutionRequest> request3;
   TestCompletionCallback callback3;
   rv = service->ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                              callback3.callback(), &request3,
@@ -767,22 +765,21 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
   GURL url("http://www.google.com/");
   ProxyInfo info;
 
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   TestCompletionCallback callback1;
   int rv = service->ResolveProxy(url, std::string(), NetworkIsolationKey(),
                                  &info, callback1.callback(), &request1,
                                  NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
-  DeletingCallback<ConfiguredProxyResolutionService::Request> callback2(
-      &request2);
+  std::unique_ptr<ProxyResolutionRequest> request2;
+  DeletingCallback<ProxyResolutionRequest> callback2(&request2);
   rv = service->ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                              callback2.callback(), &request2,
                              NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request3;
+  std::unique_ptr<ProxyResolutionRequest> request3;
   TestCompletionCallback callback3;
   rv = service->ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                              callback3.callback(), &request3,
@@ -811,7 +808,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyServiceDeletedBeforeRequest) {
 
   ProxyInfo info;
   TestCompletionCallback callback;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   RecordingBoundTestNetLog log;
 
   int rv;
@@ -855,7 +852,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, CallbackDeletesService) {
   ProxyInfo info;
 
   DeletingCallback<ConfiguredProxyResolutionService> callback(&service);
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv =
       service->ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                             callback.callback(), &request1, NetLogWithSource());
@@ -864,14 +861,14 @@ TEST_F(ConfiguredProxyResolutionServiceTest, CallbackDeletesService) {
   EXPECT_EQ(LOAD_STATE_RESOLVING_PROXY_FOR_URL, request1->GetLoadState());
 
   TestCompletionCallback callback2;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
+  std::unique_ptr<ProxyResolutionRequest> request2;
   rv = service->ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                              callback2.callback(), &request2,
                              NetLogWithSource());
   EXPECT_THAT(rv, IsError(ERR_IO_PENDING));
 
   TestCompletionCallback callback3;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request3;
+  std::unique_ptr<ProxyResolutionRequest> request3;
   rv = service->ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                              callback3.callback(), &request3,
                              NetLogWithSource());
@@ -901,7 +898,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PAC) {
 
   ProxyInfo info;
   TestCompletionCallback callback;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   RecordingBoundTestNetLog log;
 
   int rv =
@@ -965,7 +962,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PAC_NoIdentityOrHash) {
 
   ProxyInfo info;
   TestCompletionCallback callback;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback.callback(), &request, NetLogWithSource());
@@ -998,7 +995,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PAC_FailoverWithoutDirect) {
 
   ProxyInfo info;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback1.callback(), &request1, NetLogWithSource());
@@ -1047,7 +1044,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PAC_RuntimeError) {
 
   ProxyInfo info;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback1.callback(), &request1, NetLogWithSource());
@@ -1106,7 +1103,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PAC_FailoverAfterDirect) {
 
   ProxyInfo info;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback1.callback(), &request1, NetLogWithSource());
@@ -1163,7 +1160,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PAC_ConfigSourcePropagates) {
   GURL url("http://www.google.com/");
   ProxyInfo info;
   TestCompletionCallback callback;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback.callback(), &request, NetLogWithSource());
@@ -1204,7 +1201,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyResolverFails) {
   GURL url("http://www.google.com/");
   ProxyInfo info;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback1.callback(), &request, NetLogWithSource());
@@ -1269,7 +1266,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
   GURL url("http://www.google.com/");
   ProxyInfo info;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback1.callback(), &request, NetLogWithSource());
@@ -1342,7 +1339,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
   GURL url2("https://www.google.com/");
   ProxyInfo info;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1, request2;
+  std::unique_ptr<ProxyResolutionRequest> request1, request2;
   int rv =
       service.ResolveProxy(url1, std::string(), NetworkIsolationKey(), &info,
                            callback1.callback(), &request1, NetLogWithSource());
@@ -1415,7 +1412,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
   GURL url("http://www.google.com/");
   ProxyInfo info;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback1.callback(), &request, NetLogWithSource());
@@ -1469,7 +1466,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
   GURL url("http://www.google.com/");
   ProxyInfo info;
   TestCompletionCallback callback;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback.callback(), &request, NetLogWithSource());
@@ -1517,7 +1514,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
   GURL url("http://www.google.com/");
   ProxyInfo info;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback1.callback(), &request, NetLogWithSource());
@@ -1579,7 +1576,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallback) {
   // Get the proxy information.
   ProxyInfo info;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback1.callback(), &request, NetLogWithSource());
@@ -1717,7 +1714,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallbackToDirect) {
   // Get the proxy information.
   ProxyInfo info;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback1.callback(), &request1, NetLogWithSource());
@@ -1781,7 +1778,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallback_BadConfig) {
   ProxyInfo info;
   TestCompletionCallback callback1;
   TestResolveProxyDelegate delegate;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   service.SetProxyDelegate(&delegate);
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
@@ -1838,7 +1835,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallback_BadConfig) {
   // "just work" the next time we call it.
   ProxyInfo info3;
   TestCompletionCallback callback3;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request3;
+  std::unique_ptr<ProxyResolutionRequest> request3;
   rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info3,
                            callback3.callback(), &request3, NetLogWithSource());
@@ -1886,7 +1883,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallback_BadConfigMandatory) {
   // Get the proxy information.
   ProxyInfo info;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback1.callback(), &request1, NetLogWithSource());
@@ -1921,7 +1918,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallback_BadConfigMandatory) {
   // Fake a PAC failure.
   ProxyInfo info2;
   TestCompletionCallback callback3;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request3;
+  std::unique_ptr<ProxyResolutionRequest> request3;
   rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info2,
                            callback3.callback(), &request3, NetLogWithSource());
@@ -1945,7 +1942,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyFallback_BadConfigMandatory) {
   // "just work" the next time we call it.
   ProxyInfo info3;
   TestCompletionCallback callback4;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request4;
+  std::unique_ptr<ProxyResolutionRequest> request4;
   rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info3,
                            callback4.callback(), &request4, NetLogWithSource());
@@ -1982,8 +1979,8 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ProxyBypassList) {
   int rv;
   GURL url1("http://www.webkit.org");
   GURL url2("http://www.webkit.com");
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
+  std::unique_ptr<ProxyResolutionRequest> request1;
+  std::unique_ptr<ProxyResolutionRequest> request2;
 
   // Request for a .org domain should bypass proxy.
   rv = service.ResolveProxy(url1, std::string(), NetworkIsolationKey(),
@@ -2038,7 +2035,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PerProtocolProxyTests) {
   ProxyConfig config;
   config.proxy_rules().ParseFromString("http=foopy1:8080;https=foopy2:8080");
   config.set_auto_detect(false);
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   {
     ConfiguredProxyResolutionService service(
         std::make_unique<MockProxyConfigService>(config), nullptr, nullptr);
@@ -2099,7 +2096,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
   // Test that the proxy config source is set correctly when resolving proxies
   // using manual proxy rules. Namely, the config source should only be set if
   // any of the rules were applied.
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   {
     ProxyConfig config;
     config.proxy_rules().ParseFromString("https=foopy2:8080");
@@ -2158,7 +2155,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, DefaultProxyFallbackToSOCKS) {
   EXPECT_EQ(ProxyConfig::ProxyRules::Type::PROXY_LIST_PER_SCHEME,
             config.proxy_rules().type);
 
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   {
     ConfiguredProxyResolutionService service(
         std::make_unique<MockProxyConfigService>(config), nullptr, nullptr);
@@ -2232,7 +2229,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, CancelInProgressRequest) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv =
       service.ResolveProxy(url1, std::string(), NetworkIsolationKey(), &info1,
                            callback1.callback(), &request1, NetLogWithSource());
@@ -2247,7 +2244,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, CancelInProgressRequest) {
 
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
+  std::unique_ptr<ProxyResolutionRequest> request2;
   rv =
       service.ResolveProxy(url2, std::string(), NetworkIsolationKey(), &info2,
                            callback2.callback(), &request2, NetLogWithSource());
@@ -2257,7 +2254,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, CancelInProgressRequest) {
 
   ProxyInfo info3;
   TestCompletionCallback callback3;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request3;
+  std::unique_ptr<ProxyResolutionRequest> request3;
   rv =
       service.ResolveProxy(url3, std::string(), NetworkIsolationKey(), &info3,
                            callback3.callback(), &request3, NetLogWithSource());
@@ -2310,7 +2307,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, InitialPACScriptDownload) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv =
       service.ResolveProxy(url1, std::string(), NetworkIsolationKey(), &info1,
                            callback1.callback(), &request1, NetLogWithSource());
@@ -2322,7 +2319,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, InitialPACScriptDownload) {
 
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
+  std::unique_ptr<ProxyResolutionRequest> request2;
   rv =
       service.ResolveProxy(url2, std::string(), NetworkIsolationKey(), &info2,
                            callback2.callback(), &request2, NetLogWithSource());
@@ -2330,7 +2327,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, InitialPACScriptDownload) {
 
   ProxyInfo info3;
   TestCompletionCallback callback3;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request3;
+  std::unique_ptr<ProxyResolutionRequest> request3;
   rv =
       service.ResolveProxy(url3, std::string(), NetworkIsolationKey(), &info3,
                            callback3.callback(), &request3, NetLogWithSource());
@@ -2417,7 +2414,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv =
       service.ResolveProxy(url1, std::string(), NetworkIsolationKey(), &info1,
                            callback1.callback(), &request1, NetLogWithSource());
@@ -2429,7 +2426,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
+  std::unique_ptr<ProxyResolutionRequest> request2;
   rv =
       service.ResolveProxy(url2, std::string(), NetworkIsolationKey(), &info2,
                            callback2.callback(), &request2, NetLogWithSource());
@@ -2479,7 +2476,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, CancelWhilePACFetching) {
   // Start 3 requests.
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   RecordingBoundTestNetLog log1;
   int rv = service.ResolveProxy(GURL("http://request1"), std::string(),
                                 NetworkIsolationKey(), &info1,
@@ -2492,7 +2489,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, CancelWhilePACFetching) {
 
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
+  std::unique_ptr<ProxyResolutionRequest> request2;
   rv = service.ResolveProxy(GURL("http://request2"), std::string(),
                             NetworkIsolationKey(), &info2, callback2.callback(),
                             &request2, NetLogWithSource());
@@ -2500,7 +2497,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, CancelWhilePACFetching) {
 
   ProxyInfo info3;
   TestCompletionCallback callback3;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request3;
+  std::unique_ptr<ProxyResolutionRequest> request3;
   rv = service.ResolveProxy(GURL("http://request3"), std::string(),
                             NetworkIsolationKey(), &info3, callback3.callback(),
                             &request3, NetLogWithSource());
@@ -2581,7 +2578,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv =
       service.ResolveProxy(url1, std::string(), NetworkIsolationKey(), &info1,
                            callback1.callback(), &request1, NetLogWithSource());
@@ -2589,7 +2586,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
+  std::unique_ptr<ProxyResolutionRequest> request2;
   rv =
       service.ResolveProxy(url2, std::string(), NetworkIsolationKey(), &info2,
                            callback2.callback(), &request2, NetLogWithSource());
@@ -2667,7 +2664,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv =
       service.ResolveProxy(url1, std::string(), NetworkIsolationKey(), &info1,
                            callback1.callback(), &request1, NetLogWithSource());
@@ -2675,7 +2672,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
+  std::unique_ptr<ProxyResolutionRequest> request2;
   rv =
       service.ResolveProxy(url2, std::string(), NetworkIsolationKey(), &info2,
                            callback2.callback(), &request2, NetLogWithSource());
@@ -2746,7 +2743,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv = service.ResolveProxy(
       GURL("http://request1"), std::string(), NetworkIsolationKey(), &info1,
       callback1.callback(), &request1, NetLogWithSource());
@@ -2754,7 +2751,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
+  std::unique_ptr<ProxyResolutionRequest> request2;
   rv = service.ResolveProxy(GURL("http://request2"), std::string(),
                             NetworkIsolationKey(), &info2, callback2.callback(),
                             &request2, NetLogWithSource());
@@ -2809,7 +2806,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, BypassDoesntApplyToPac) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv = service.ResolveProxy(
       GURL("http://www.google.com"), std::string(), NetworkIsolationKey(),
       &info1, callback1.callback(), &request1, NetLogWithSource());
@@ -2841,7 +2838,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, BypassDoesntApplyToPac) {
   // Start another request, it should pickup the bypass item.
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
+  std::unique_ptr<ProxyResolutionRequest> request2;
   rv = service.ResolveProxy(GURL("http://www.google.com"), std::string(),
                             NetworkIsolationKey(), &info2, callback2.callback(),
                             &request2, NetLogWithSource());
@@ -2881,7 +2878,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv = service.ResolveProxy(
       GURL("http://www.google.com"), std::string(), NetworkIsolationKey(),
       &info1, callback1.callback(), &request1, NetLogWithSource());
@@ -2915,7 +2912,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   ProxyInfo info;
   TestCompletionCallback callback;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   int rv =
       service.ResolveProxy(url, std::string(), NetworkIsolationKey(), &info,
                            callback.callback(), &request, NetLogWithSource());
@@ -2941,7 +2938,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, UpdateConfigFromPACToDirect) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv = service.ResolveProxy(
       GURL("http://www.google.com"), std::string(), NetworkIsolationKey(),
       &info1, callback1.callback(), &request1, NetLogWithSource());
@@ -2971,7 +2968,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, UpdateConfigFromPACToDirect) {
   // Start another request -- the effective configuration has changed.
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
+  std::unique_ptr<ProxyResolutionRequest> request2;
   rv = service.ResolveProxy(GURL("http://www.google.com"), std::string(),
                             NetworkIsolationKey(), &info2, callback2.callback(),
                             &request2, NetLogWithSource());
@@ -3005,7 +3002,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, NetworkChangeTriggersPacRefetch) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv = service.ResolveProxy(
       GURL("http://request1"), std::string(), NetworkIsolationKey(), &info1,
       callback1.callback(), &request1, NetLogWithSource());
@@ -3049,7 +3046,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, NetworkChangeTriggersPacRefetch) {
   // Start a second request.
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
+  std::unique_ptr<ProxyResolutionRequest> request2;
   rv = service.ResolveProxy(GURL("http://request2"), std::string(),
                             NetworkIsolationKey(), &info2, callback2.callback(),
                             &request2, NetLogWithSource());
@@ -3124,7 +3121,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PACScriptRefetchAfterFailure) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv = service.ResolveProxy(
       GURL("http://request1"), std::string(), NetworkIsolationKey(), &info1,
       callback1.callback(), &request1, NetLogWithSource());
@@ -3186,7 +3183,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PACScriptRefetchAfterFailure) {
   // Start a second request.
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
+  std::unique_ptr<ProxyResolutionRequest> request2;
   rv = service.ResolveProxy(GURL("http://request2"), std::string(),
                             NetworkIsolationKey(), &info2, callback2.callback(),
                             &request2, NetLogWithSource());
@@ -3234,7 +3231,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv = service.ResolveProxy(
       GURL("http://request1"), std::string(), NetworkIsolationKey(), &info1,
       callback1.callback(), &request1, NetLogWithSource());
@@ -3302,7 +3299,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
   // Start a second request.
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
+  std::unique_ptr<ProxyResolutionRequest> request2;
   rv = service.ResolveProxy(GURL("http://request2"), std::string(),
                             NetworkIsolationKey(), &info2, callback2.callback(),
                             &request2, NetLogWithSource());
@@ -3350,7 +3347,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv = service.ResolveProxy(
       GURL("http://request1"), std::string(), NetworkIsolationKey(), &info1,
       callback1.callback(), &request1, NetLogWithSource());
@@ -3415,7 +3412,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
   // Start a second request.
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
+  std::unique_ptr<ProxyResolutionRequest> request2;
   rv = service.ResolveProxy(GURL("http://request2"), std::string(),
                             NetworkIsolationKey(), &info2, callback2.callback(),
                             &request2, NetLogWithSource());
@@ -3462,7 +3459,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PACScriptRefetchAfterSuccess) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv = service.ResolveProxy(
       GURL("http://request1"), std::string(), NetworkIsolationKey(), &info1,
       callback1.callback(), &request1, NetLogWithSource());
@@ -3525,7 +3522,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PACScriptRefetchAfterSuccess) {
   // Start a second request.
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
+  std::unique_ptr<ProxyResolutionRequest> request2;
   rv = service.ResolveProxy(GURL("http://request2"), std::string(),
                             NetworkIsolationKey(), &info2, callback2.callback(),
                             &request2, NetLogWithSource());
@@ -3636,7 +3633,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PACScriptRefetchAfterActivity) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv = service.ResolveProxy(
       GURL("http://request1"), std::string(), NetworkIsolationKey(), &info1,
       callback1.callback(), &request1, NetLogWithSource());
@@ -3682,7 +3679,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PACScriptRefetchAfterActivity) {
   // Start a second request.
   ProxyInfo info2;
   TestCompletionCallback callback2;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request2;
+  std::unique_ptr<ProxyResolutionRequest> request2;
   rv = service.ResolveProxy(GURL("http://request2"), std::string(),
                             NetworkIsolationKey(), &info2, callback2.callback(),
                             &request2, NetLogWithSource());
@@ -3714,7 +3711,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, PACScriptRefetchAfterActivity) {
   // since the PAC script poller experienced a failure.
   ProxyInfo info3;
   TestCompletionCallback callback3;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request3;
+  std::unique_ptr<ProxyResolutionRequest> request3;
   rv = service.ResolveProxy(GURL("http://request3"), std::string(),
                             NetworkIsolationKey(), &info3, callback3.callback(),
                             &request3, NetLogWithSource());
@@ -3742,7 +3739,7 @@ class SanitizeUrlHelper {
 
     ProxyInfo info;
     TestCompletionCallback callback;
-    std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+    std::unique_ptr<ProxyResolutionRequest> request;
     int rv = service_->ResolveProxy(url, std::string(), NetworkIsolationKey(),
                                     &info, callback.callback(), &request,
                                     NetLogWithSource());
@@ -3770,7 +3767,7 @@ class SanitizeUrlHelper {
     // Issue a request and see what URL is sent to the proxy resolver.
     ProxyInfo info;
     TestCompletionCallback callback;
-    std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+    std::unique_ptr<ProxyResolutionRequest> request1;
     int rv = service_->ResolveProxy(
         raw_url, std::string(), NetworkIsolationKey(), &info,
         callback.callback(), &request1, NetLogWithSource());
@@ -3905,7 +3902,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, OnShutdownWithLiveRequest) {
 
   ProxyInfo info;
   TestCompletionCallback callback;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   int rv = service.ResolveProxy(
       GURL("http://request/"), std::string(), NetworkIsolationKey(), &info,
       callback.callback(), &request, NetLogWithSource());
@@ -3940,7 +3937,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, OnShutdownFollowedByRequest) {
 
   ProxyInfo info;
   TestCompletionCallback callback;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+  std::unique_ptr<ProxyResolutionRequest> request;
   int rv = service.ResolveProxy(
       GURL("http://request/"), std::string(), NetworkIsolationKey(), &info,
       callback.callback(), &request, NetLogWithSource());
@@ -4031,7 +4028,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
       ProxyConfigWithAnnotation(config, TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // A normal request should use the proxy.
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   ProxyInfo info1;
   TestCompletionCallback callback1;
   int rv = service->ResolveProxy(
@@ -4046,7 +4043,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest,
     for (auto* scheme : kUrlSchemes) {
       auto url = GURL(std::string(scheme) + std::string(host));
 
-      std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+      std::unique_ptr<ProxyResolutionRequest> request;
       ProxyInfo info;
       TestCompletionCallback callback;
       int rv = service->ResolveProxy(url, std::string(), NetworkIsolationKey(),
@@ -4079,7 +4076,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ImplicitlyBypassWithPac) {
 
   ProxyInfo info1;
   TestCompletionCallback callback1;
-  std::unique_ptr<ConfiguredProxyResolutionService::Request> request1;
+  std::unique_ptr<ProxyResolutionRequest> request1;
   int rv = service.ResolveProxy(
       GURL("http://www.google.com"), std::string(), NetworkIsolationKey(),
       &info1, callback1.callback(), &request1, NetLogWithSource());
@@ -4112,7 +4109,7 @@ TEST_F(ConfiguredProxyResolutionServiceTest, ImplicitlyBypassWithPac) {
     for (auto* scheme : kUrlSchemes) {
       auto url = GURL(std::string(scheme) + std::string(host));
 
-      std::unique_ptr<ConfiguredProxyResolutionService::Request> request;
+      std::unique_ptr<ProxyResolutionRequest> request;
       ProxyInfo info;
       TestCompletionCallback callback;
       int rv = service.ResolveProxy(url, std::string(), NetworkIsolationKey(),

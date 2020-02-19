@@ -132,8 +132,7 @@ base::string16 OmniboxView::SanitizeTextForPaste(const base::string16& text) {
   return StripJavascriptSchemas(output);
 }
 
-OmniboxView::~OmniboxView() {
-}
+OmniboxView::~OmniboxView() = default;
 
 void OmniboxView::OpenMatch(const AutocompleteMatch& match,
                             WindowOpenDisposition disposition,
@@ -197,8 +196,7 @@ gfx::ImageSkia OmniboxView::GetIcon(int dip_size,
     favicon = model_->client()->GetFaviconForDefaultSearchProvider(
         std::move(on_icon_fetched));
 
-  } else if (base::FeatureList::IsEnabled(
-                 omnibox::kUIExperimentShowSuggestionFavicons)) {
+  } else {
     // For site suggestions, display site's favicon.
     favicon = model_->client()->GetFaviconForPageUrl(
         match.destination_url, std::move(on_icon_fetched));
@@ -226,8 +224,7 @@ void OmniboxView::SetUserText(const base::string16& text) {
   SetUserText(text, true);
 }
 
-void OmniboxView::SetUserText(const base::string16& text,
-                              bool update_popup) {
+void OmniboxView::SetUserText(const base::string16& text, bool update_popup) {
   if (model_)
     model_->SetUserText(text);
   SetWindowTextAndCaretPos(text, text.length(), update_popup, true);
@@ -270,7 +267,7 @@ void OmniboxView::GetState(State* state) {
 }
 
 OmniboxView::StateChanges OmniboxView::GetStateChanges(const State& before,
-                                                     const State& after) {
+                                                       const State& after) {
   OmniboxView::StateChanges state_changes;
   state_changes.old_text = &before.text;
   state_changes.new_text = &after.text;

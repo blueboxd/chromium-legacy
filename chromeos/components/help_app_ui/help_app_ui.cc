@@ -23,6 +23,7 @@ content::WebUIDataSource* CreateHostDataSource() {
   source->AddResourcePath("pwa.html", IDR_HELP_APP_PWA_HTML);
   source->AddResourcePath("manifest.json", IDR_HELP_APP_MANIFEST);
   source->AddResourcePath("app_icon_192.png", IDR_HELP_APP_ICON_192);
+  source->AddResourcePath("app_icon_512.png", IDR_HELP_APP_ICON_512);
   return source;
 }
 }  // namespace

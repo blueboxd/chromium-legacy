@@ -37,6 +37,7 @@ class UpdateNotificationServiceImpl : public UpdateNotificationService {
   bool IsReadyToDisplay() const override;
   void OnUserDismiss() override;
   void OnUserClick(const ExtraData& extra) override;
+  void OnUserClickButton(bool is_positive_button) override;
 
   // Called after querying the |ClientOverview| struct from scheduler system
   // completed.
@@ -53,6 +54,9 @@ class UpdateNotificationServiceImpl : public UpdateNotificationService {
 
   // Apply linear throttle logic.
   void ApplyLinearThrottle();
+
+  // Apply negative action including dismiss and unhelpful button.
+  void ApplyNegativeAction();
 
   // Used to schedule notification to show in the future. Must outlive this
   // class.

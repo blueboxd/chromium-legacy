@@ -26,6 +26,7 @@ class PermissionPromptBubbleView : public views::BubbleDialogDelegateView {
   void AddedToWidget() override;
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
+  gfx::Size CalculatePreferredSize() const override;
 
  private:
   void AddPermissionRequestLine(permissions::PermissionRequest* request);

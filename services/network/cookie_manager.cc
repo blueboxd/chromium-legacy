@@ -251,6 +251,15 @@ void CookieManager::SetContentSettingsForLegacyCookieAccess(
   cookie_settings_.set_content_settings_for_legacy_cookie_access(settings);
 }
 
+void CookieManager::SetStorageAccessGrantSettings(
+    const ContentSettingsForOneType& settings,
+    SetStorageAccessGrantSettingsCallback callback) {
+  cookie_settings_.set_storage_access_grants(settings);
+
+  // Signal our storage update is complete.
+  std::move(callback).Run();
+}
+
 // static
 void CookieManager::ConfigureCookieSettings(
     const network::mojom::CookieManagerParams& params,

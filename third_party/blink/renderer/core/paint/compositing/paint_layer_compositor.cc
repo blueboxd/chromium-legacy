@@ -704,7 +704,7 @@ bool PaintLayerCompositor::CanBeComposited(const PaintLayer* layer) const {
 
   const bool has_compositor_animation =
       CompositingReasonFinder::CompositingReasonsForAnimation(
-          *layer->GetLayoutObject().Style()) != CompositingReason::kNone;
+          layer->GetLayoutObject()) != CompositingReason::kNone;
   return layout_view_.GetDocument()
              .GetSettings()
              ->GetAcceleratedCompositingEnabled() &&

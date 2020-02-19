@@ -872,18 +872,18 @@ MultipartUploadRequestBase::MultipartUploadRequestBase(
     const std::string& content_type,
     int64_t content_length,
     const base::FilePath& local_file_path,
-    const FileResourceCallback& callback,
+    FileResourceCallback callback,
     const ProgressCallback& progress_callback)
     : blocking_task_runner_(blocking_task_runner),
       metadata_json_(metadata_json),
       content_type_(content_type),
       local_path_(local_file_path),
-      callback_(callback),
+      callback_(std::move(callback)),
       progress_callback_(progress_callback) {
   DCHECK(!content_type.empty());
   DCHECK_GE(content_length, 0);
   DCHECK(!local_file_path.empty());
-  DCHECK(!callback.is_null());
+  DCHECK(!callback_.is_null());
 }
 
 MultipartUploadRequestBase::~MultipartUploadRequestBase() {
@@ -958,7 +958,7 @@ void MultipartUploadRequestBase::NotifyResult(
 }
 
 void MultipartUploadRequestBase::NotifyError(DriveApiErrorCode code) {
-  callback_.Run(code, std::unique_ptr<FileResource>());
+  std::move(callback_).Run(code, std::unique_ptr<FileResource>());
 }
 
 void MultipartUploadRequestBase::NotifyUploadProgress(int64_t current,
@@ -973,7 +973,8 @@ void MultipartUploadRequestBase::OnDataParsed(
     std::unique_ptr<base::Value> value) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (value)
-    callback_.Run(code, google_apis::FileResource::CreateFrom(*value));
+    std::move(callback_).Run(code,
+                             google_apis::FileResource::CreateFrom(*value));
   else
     NotifyError(DRIVE_PARSE_ERROR);
   std::move(notify_complete_callback).Run();

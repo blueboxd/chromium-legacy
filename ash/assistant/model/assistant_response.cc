@@ -4,8 +4,11 @@
 
 #include "ash/assistant/model/assistant_response.h"
 
+#include <utility>
+
 #include "ash/assistant/model/ui/assistant_ui_element.h"
 #include "base/bind.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 
 namespace ash {
@@ -14,7 +17,7 @@ namespace ash {
 
 class AssistantResponse::Processor {
  public:
-  Processor(AssistantResponse& response, ProcessingCallback callback)
+  Processor(AssistantResponse* response, ProcessingCallback callback)
       : response_(response), callback_(std::move(callback)) {}
 
   Processor(const Processor& copy) = delete;
@@ -22,36 +25,41 @@ class AssistantResponse::Processor {
 
   ~Processor() {
     if (callback_)
-      std::move(callback_).Run(/*success=*/false);
+      std::move(callback_).Run(/*is_completed=*/false);
   }
 
   void Process() {
     // Responses should only be processed once.
-    DCHECK_EQ(ProcessingState::kUnprocessed, response_.processing_state());
-    response_.set_processing_state(ProcessingState::kProcessing);
+    DCHECK_EQ(ProcessingState::kUnprocessed, response_->processing_state());
+    response_->set_processing_state(ProcessingState::kProcessing);
 
     // Completion of |response_| processing is indicated by |processing_count_|
     // reaching zero. This value is decremented as each UI element is processed.
-    processing_count_ = response_.GetUiElements().size();
+    processing_count_ = response_->GetUiElements().size();
 
-    for (const auto& ui_element : response_.GetUiElements()) {
-      // Start asynchronous processing of the UI element. Note that if the UI
-      // element does not require any pre-rendering processing the callback may
-      // be run synchronously.
-      ui_element->Process(
-          base::BindOnce(&AssistantResponse::Processor::OnFinishedProcessing,
-                         base::Unretained(this)));
+    // Try finishing directly if there are no UI elements to be processed.
+    if (processing_count_ == 0) {
+      TryFinishing();
+      return;
     }
 
-    // If any elements are processing asynchronously this will no-op.
-    TryFinishing();
+    for (const auto& ui_element : response_->GetUiElements()) {
+      // Start asynchronous processing of the UI element. Note that if the UI
+      // element does not require any pre-rendering processing the callback may
+      // be run synchronously. Also we must use WeakPtr here because |this| will
+      // destroy before |ui_element| by design.
+      ui_element->Process(
+          base::BindOnce(&AssistantResponse::Processor::OnFinishedProcessing,
+                         weak_ptr_factory_.GetWeakPtr()));
+    }
   }
 
  private:
-  void OnFinishedProcessing(bool success) {
-    // We handle success/failure cases the same because failures will skipped in
-    // view handling. We decrement our |processing_count_| and attempt to finish
-    // response processing. This will no-op if elements are still processing.
+  void OnFinishedProcessing() {
+    // We handle success/failure cases the same because failures will be skipped
+    // in view handling. We decrement our |processing_count_| and attempt to
+    // finish response processing. This will no-op if elements are still
+    // processing.
     --processing_count_;
     TryFinishing();
   }
@@ -61,22 +69,30 @@ class AssistantResponse::Processor {
     if (!callback_ || processing_count_ > 0)
       return;
 
-    // Notify processing success.
-    response_.set_processing_state(ProcessingState::kProcessed);
-    std::move(callback_).Run(/*success=*/true);
+    // Notify processing completion.
+    response_->set_processing_state(ProcessingState::kProcessed);
+    std::move(callback_).Run(/*is_completed=*/true);
   }
 
-  AssistantResponse& response_;
+  // |response_| should outlive the Processor.
+  AssistantResponse* const response_;
   ProcessingCallback callback_;
 
   int processing_count_ = 0;
+  base::WeakPtrFactory<AssistantResponse::Processor> weak_ptr_factory_{this};
 };
 
 // AssistantResponse -----------------------------------------------------------
 
 AssistantResponse::AssistantResponse() = default;
 
-AssistantResponse::~AssistantResponse() = default;
+AssistantResponse::~AssistantResponse() {
+  // Reset |processor_| explicitly in the destructor to guarantee the correct
+  // lifecycle where |this| should outlive the |processor_|. This can also force
+  // |processor_| to be destroyed before |ui_elements_| as we want regardless of
+  // the declaration order.
+  processor_.reset();
+}
 
 void AssistantResponse::AddUiElement(
     std::unique_ptr<AssistantUiElement> ui_element) {
@@ -117,7 +133,7 @@ AssistantResponse::GetSuggestions() const {
 }
 
 void AssistantResponse::Process(ProcessingCallback callback) {
-  processor_ = std::make_unique<Processor>(*this, std::move(callback));
+  processor_ = std::make_unique<Processor>(this, std::move(callback));
   processor_->Process();
 }
 

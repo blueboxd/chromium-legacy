@@ -44,6 +44,8 @@ class GLImage;
 namespace media {
 
 class AcceleratedVideoDecoder;
+template <typename T>
+class ScopedID;
 class VaapiVideoDecoderDelegate;
 class VaapiPicture;
 
@@ -106,7 +108,7 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
   // An input buffer with id provided by the client and awaiting consumption.
   class InputBuffer;
   // A self-cleaning VASurfaceID.
-  class ScopedVASurfaceID;
+  using ScopedVASurfaceID = ScopedID<VASurfaceID>;
 
   // Notify the client that an error has occurred and decoding cannot continue.
   void NotifyError(Error error);

@@ -789,11 +789,10 @@ int SSLServerContextImpl::SocketImpl::Init() {
     return ERR_UNEXPECTED;
 
   // Set certificate and private key.
-  if (context_->key_) {
+  if (context_->pkey_) {
     DCHECK(context_->cert_->cert_buffer());
-    DCHECK(context_->key_->key());
     if (!SetSSLChainAndKey(ssl_.get(), context_->cert_.get(),
-                           context_->key_->key(), nullptr)) {
+                           context_->pkey_.get(), nullptr)) {
       return ERR_UNEXPECTED;
     }
   } else {
@@ -861,9 +860,17 @@ ssl_verify_result_t SSLServerContextImpl::SocketImpl::CertVerifyCallbackImpl(
 
 std::unique_ptr<SSLServerContext> CreateSSLServerContext(
     X509Certificate* certificate,
+    EVP_PKEY* pkey,
+    const SSLServerConfig& ssl_server_config) {
+  return std::make_unique<SSLServerContextImpl>(certificate, pkey,
+                                                ssl_server_config);
+}
+
+std::unique_ptr<SSLServerContext> CreateSSLServerContext(
+    X509Certificate* certificate,
     const crypto::RSAPrivateKey& key,
     const SSLServerConfig& ssl_server_config) {
-  return std::make_unique<SSLServerContextImpl>(certificate, key,
+  return std::make_unique<SSLServerContextImpl>(certificate, key.key(),
                                                 ssl_server_config);
 }
 
@@ -887,12 +894,11 @@ SSLServerContextImpl::SSLServerContextImpl(
 
 SSLServerContextImpl::SSLServerContextImpl(
     X509Certificate* certificate,
-    const crypto::RSAPrivateKey& key,
+    EVP_PKEY* pkey,
     const SSLServerConfig& ssl_server_config)
-    : ssl_server_config_(ssl_server_config),
-      cert_(certificate),
-      key_(key.Copy()) {
-  CHECK(key_);
+    : ssl_server_config_(ssl_server_config), cert_(certificate) {
+  CHECK(pkey);
+  pkey_ = bssl::UpRef(pkey);
   Init();
 }
 
@@ -952,7 +958,7 @@ void SSLServerContextImpl::Init() {
   std::string command("DEFAULT:!AESGCM+AES256:!aPSK");
 
   // SSLPrivateKey only supports ECDHE-based ciphers because it lacks decrypt.
-  if (ssl_server_config_.require_ecdhe || (!key_ && private_key_))
+  if (ssl_server_config_.require_ecdhe || (!pkey_ && private_key_))
     command.append(":!kRSA");
 
   // Remove any disabled ciphers.

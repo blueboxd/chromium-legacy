@@ -26,6 +26,7 @@
 #include "ios/chrome/browser/url_loading/test_url_loading_service.h"
 #include "ios/chrome/browser/url_loading/url_loading_params.h"
 #include "ios/chrome/browser/url_loading/url_loading_service_factory.h"
+#import "ios/chrome/browser/voice/fake_voice_search_availability.h"
 #import "ios/public/provider/chrome/browser/ui/logo_vendor.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/web_task_environment.h"
@@ -67,6 +68,7 @@ class NTPHomeMediatorTest : public PlatformTest {
     dispatcher_ = OCMProtocolMock(@protocol(NTPHomeMediatorDispatcher));
     suggestions_view_controller_ =
         OCMClassMock([ContentSuggestionsViewController class]);
+    voice_availability_.SetVoiceProviderEnabled(true);
     url_loader_ =
         (TestUrlLoadingService*)UrlLoadingServiceFactory::GetForBrowserState(
             chrome_browser_state_.get());
@@ -76,13 +78,15 @@ class NTPHomeMediatorTest : public PlatformTest {
     identity_manager_ =
         IdentityManagerFactory::GetForBrowserState(chrome_browser_state_.get());
     mediator_ = [[NTPHomeMediator alloc]
-          initWithWebState:test_web_state_.get()
-        templateURLService:ios::TemplateURLServiceFactory::GetForBrowserState(
-                               chrome_browser_state_.get())
-         urlLoadingService:url_loader_
-               authService:auth_service_
-           identityManager:identity_manager_
-                logoVendor:logo_vendor_];
+               initWithWebState:test_web_state_.get()
+             templateURLService:ios::TemplateURLServiceFactory::
+                                    GetForBrowserState(
+                                        chrome_browser_state_.get())
+              urlLoadingService:url_loader_
+                    authService:auth_service_
+                identityManager:identity_manager_
+                     logoVendor:logo_vendor_
+        voiceSearchAvailability:&voice_availability_];
     mediator_.suggestionsService =
         IOSChromeContentSuggestionsServiceFactory::GetForBrowserState(
             chrome_browser_state_.get());
@@ -102,6 +106,7 @@ class NTPHomeMediatorTest : public PlatformTest {
   id logo_vendor_;
   id dispatcher_;
   id suggestions_view_controller_;
+  FakeVoiceSearchAvailability voice_availability_;
   NTPHomeMediator* mediator_;
   ToolbarTestNavigationManager* navigation_manager_;
   TestUrlLoadingService* url_loader_;
@@ -208,4 +213,20 @@ TEST_F(NTPHomeMediatorTest, TestOpenMostVisited) {
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(
       ui::PAGE_TRANSITION_AUTO_BOOKMARK,
       url_loader_->last_params.web_params.transition_type));
+}
+
+// Tests that the voice search button is disabled when VoiceOver is turned on
+// and off.
+TEST_F(NTPHomeMediatorTest, DisableVoiceSearch) {
+  [mediator_ setUp];
+
+  // Enable VoiceOver and verify that voice search is disabled for the consumer.
+  OCMExpect([consumer_ setVoiceSearchIsEnabled:NO]);
+  voice_availability_.SetVoiceOverEnabled(true);
+
+  // Disable VoiceOVer and verify that voice search is enabled again.
+  OCMExpect([consumer_ setVoiceSearchIsEnabled:YES]);
+  voice_availability_.SetVoiceOverEnabled(false);
+
+  EXPECT_OCMOCK_VERIFY(consumer_);
 }

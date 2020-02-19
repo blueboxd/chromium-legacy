@@ -56,7 +56,7 @@ class PPB_Audio_Impl : public ppapi::Resource,
 
   // AudioHelper implementation.
   void OnSetStreamInfo(base::UnsafeSharedMemoryRegion shared_memory_region,
-                       base::SyncSocket::Handle socket) override;
+                       base::SyncSocket::ScopedHandle socket) override;
 
   // PluginInstanceThrottler::Observer implementation.
   void OnThrottleStateChange() override;

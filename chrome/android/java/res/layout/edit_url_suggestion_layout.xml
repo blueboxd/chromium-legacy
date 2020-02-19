@@ -41,12 +41,6 @@
 
     </LinearLayout>
 
-    <Space
-        android:id="@+id/edit_url_space"
-        android:layout_width="@dimen/omnibox_suggestion_start_offset_without_icon"
-        android:layout_height="match_parent"
-        android:layout_alignParentStart="true" />
-
     <ImageView
         android:id="@+id/edit_url_favicon"
         android:layout_width="@dimen/omnibox_suggestion_favicon_size"
@@ -54,9 +48,7 @@
         android:layout_centerVertical="true"
         android:layout_marginStart="@dimen/omnibox_suggestion_24dp_icon_margin_start"
         android:layout_marginEnd="@dimen/omnibox_suggestion_24dp_icon_margin_end"
-        android:layout_toEndOf="@id/edit_url_space"
         android:importantForAccessibility="no"
-        android:visibility="gone"
         android:scaleType="centerInside" />
 
     <LinearLayout

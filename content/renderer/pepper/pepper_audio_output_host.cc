@@ -72,13 +72,13 @@ int32_t PepperAudioOutputHost::OnResourceMessageReceived(
 
 void PepperAudioOutputHost::StreamCreated(
     base::UnsafeSharedMemoryRegion shared_memory_region,
-    base::SyncSocket::Handle socket) {
-  OnOpenComplete(PP_OK, std::move(shared_memory_region), socket);
+    base::SyncSocket::ScopedHandle socket) {
+  OnOpenComplete(PP_OK, std::move(shared_memory_region), std::move(socket));
 }
 
 void PepperAudioOutputHost::StreamCreationFailed() {
   OnOpenComplete(PP_ERROR_FAILED, base::UnsafeSharedMemoryRegion(),
-                 base::SyncSocket::kInvalidHandle);
+                 base::SyncSocket::ScopedHandle());
 }
 
 void PepperAudioOutputHost::SetVolume(double volume) {
@@ -150,9 +150,9 @@ int32_t PepperAudioOutputHost::OnClose(
 void PepperAudioOutputHost::OnOpenComplete(
     int32_t result,
     base::UnsafeSharedMemoryRegion shared_memory_region,
-    base::SyncSocket::Handle socket_handle) {
+    base::SyncSocket::ScopedHandle socket_handle) {
   // Make sure the handles are cleaned up.
-  base::SyncSocket scoped_socket(socket_handle);
+  base::SyncSocket scoped_socket(std::move(socket_handle));
 
   if (!open_context_.is_valid()) {
     NOTREACHED();

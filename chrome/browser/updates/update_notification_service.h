@@ -35,6 +35,9 @@ class UpdateNotificationService : public KeyedService {
   // processing custom data.
   virtual void OnUserClick(const ExtraData& extra) = 0;
 
+  // Called when the helpful/unhelpful buttons are clicked.
+  virtual void OnUserClickButton(bool is_positive_button) = 0;
+
   ~UpdateNotificationService() override = default;
 
  protected:

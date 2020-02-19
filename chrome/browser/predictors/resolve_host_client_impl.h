@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/address_list.h"
 #include "services/network/public/cpp/resolve_host_client_base.h"
-#include "services/network/public/mojom/host_resolver.mojom.h"
+#include "services/network/public/mojom/host_resolver.mojom-forward.h"
 
 class GURL;
 

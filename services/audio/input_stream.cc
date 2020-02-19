@@ -219,8 +219,7 @@ void InputStream::OnCreated(bool initially_muted) {
     return;
   }
 
-  mojo::ScopedHandle socket_handle =
-      mojo::WrapPlatformFile(foreign_socket_.Release());
+  mojo::PlatformHandle socket_handle(foreign_socket_.Take());
   DCHECK(socket_handle.is_valid());
 
   std::move(created_callback_)

@@ -137,6 +137,7 @@ TEST_F(ContentSettingsRegistryTest, Inheritance) {
       ContentSettingsType::ADS,                  //
       ContentSettingsType::DURABLE_STORAGE,      //
       ContentSettingsType::LEGACY_COOKIE_ACCESS,
+      ContentSettingsType::STORAGE_ACCESS,
   };
 
   for (const ContentSettingsInfo* info : *registry()) {

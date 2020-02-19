@@ -25,4 +25,9 @@ interface StorageService {
   // effectively destroys the partition and its contents.
   BindPartition(mojo_base.mojom.FilePath? path,
                 pending_receiver<Partition> receiver);
+
+  // Binds a receiving endpoint for the TestApi interface defined in
+  // test_api.mojom. Note that this message is not strongly typed in order to
+  // avoid production dependencies on test interface definitions.
+  BindTestApi(handle<message_pipe> test_api_receiver);
 };

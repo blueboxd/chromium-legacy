@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/mojom/partition.mojom.h"
+#include "components/services/storage/public/mojom/storage_service.mojom.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_sync/background_sync_context_impl.h"
 #include "content/browser/bluetooth/bluetooth_allowed_devices_map.h"
@@ -286,6 +287,10 @@ class CONTENT_EXPORT StoragePartitionImpl
   // Returns the interface used to control the corresponding remote Partition in
   // the Storage Service.
   storage::mojom::Partition* GetStorageServicePartition();
+
+  // Exposes the shared top-level connection to the Storage Service, for tests.
+  static mojo::Remote<storage::mojom::StorageService>&
+  GetStorageServiceForTesting();
 
   // Called by each renderer process for each StoragePartitionService interface
   // it binds in the renderer process. Returns the id of the created receiver.

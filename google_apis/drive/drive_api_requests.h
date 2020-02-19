@@ -209,7 +209,7 @@ class FilesGetRequest : public DriveApiDataRequest<FileResource> {
  public:
   FilesGetRequest(RequestSender* sender,
                   const DriveApiUrlGenerator& url_generator,
-                  const FileResourceCallback& callback);
+                  FileResourceCallback callback);
   ~FilesGetRequest() override;
 
   // Required parameter.
@@ -251,7 +251,7 @@ class FilesInsertRequest : public DriveApiDataRequest<FileResource> {
  public:
   FilesInsertRequest(RequestSender* sender,
                      const DriveApiUrlGenerator& url_generator,
-                     const FileResourceCallback& callback);
+                     FileResourceCallback callback);
   ~FilesInsertRequest() override;
 
   // Optional parameter
@@ -320,7 +320,7 @@ class FilesPatchRequest : public DriveApiDataRequest<FileResource> {
  public:
   FilesPatchRequest(RequestSender* sender,
                     const DriveApiUrlGenerator& url_generator,
-                    const FileResourceCallback& callback);
+                    FileResourceCallback callback);
   ~FilesPatchRequest() override;
 
   // Required parameter.
@@ -401,7 +401,7 @@ class FilesCopyRequest : public DriveApiDataRequest<FileResource> {
   // Upon completion, |callback| will be called. |callback| must not be null.
   FilesCopyRequest(RequestSender* sender,
                    const DriveApiUrlGenerator& url_generator,
-                   const FileResourceCallback& callback);
+                   FileResourceCallback callback);
   ~FilesCopyRequest() override;
 
   // Required parameter.
@@ -628,7 +628,7 @@ class FilesTrashRequest : public DriveApiDataRequest<FileResource> {
  public:
   FilesTrashRequest(RequestSender* sender,
                     const DriveApiUrlGenerator& url_generator,
-                    const FileResourceCallback& callback);
+                    FileResourceCallback callback);
   ~FilesTrashRequest() override;
 
   // Required parameter.
@@ -942,8 +942,8 @@ class InitiateUploadExistingFileRequest : public InitiateUploadRequestBase {
 };
 
 // Callback used for ResumeUpload() and GetUploadStatus().
-typedef base::Callback<void(const UploadRangeResponse& response,
-                            std::unique_ptr<FileResource> new_resource)>
+typedef base::OnceCallback<void(const UploadRangeResponse& response,
+                                std::unique_ptr<FileResource> new_resource)>
     UploadRangeCallback;
 
 //============================ ResumeUploadRequest ===========================
@@ -960,7 +960,7 @@ class ResumeUploadRequest : public ResumeUploadRequestBase {
                       int64_t content_length,
                       const std::string& content_type,
                       const base::FilePath& local_file_path,
-                      const UploadRangeCallback& callback,
+                      UploadRangeCallback callback,
                       const ProgressCallback& progress_callback);
   ~ResumeUploadRequest() override;
 
@@ -970,7 +970,7 @@ class ResumeUploadRequest : public ResumeUploadRequestBase {
                               std::unique_ptr<base::Value> value) override;
 
  private:
-  const UploadRangeCallback callback_;
+  UploadRangeCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ResumeUploadRequest);
 };
@@ -985,7 +985,7 @@ class GetUploadStatusRequest : public GetUploadStatusRequestBase {
   GetUploadStatusRequest(RequestSender* sender,
                          const GURL& upload_url,
                          int64_t content_length,
-                         const UploadRangeCallback& callback);
+                         UploadRangeCallback callback);
   ~GetUploadStatusRequest() override;
 
  protected:
@@ -994,7 +994,7 @@ class GetUploadStatusRequest : public GetUploadStatusRequestBase {
                               std::unique_ptr<base::Value> value) override;
 
  private:
-  const UploadRangeCallback callback_;
+  UploadRangeCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GetUploadStatusRequest);
 };
@@ -1018,7 +1018,7 @@ class MultipartUploadNewFileDelegate : public MultipartUploadRequestBase {
                                  const base::FilePath& local_file_path,
                                  const Properties& properties,
                                  const DriveApiUrlGenerator& url_generator,
-                                 const FileResourceCallback& callback,
+                                 FileResourceCallback callback,
                                  const ProgressCallback& progress_callback);
   ~MultipartUploadNewFileDelegate() override;
 
@@ -1056,7 +1056,7 @@ class MultipartUploadExistingFileDelegate : public MultipartUploadRequestBase {
       const std::string& etag,
       const Properties& properties,
       const DriveApiUrlGenerator& url_generator,
-      const FileResourceCallback& callback,
+      FileResourceCallback callback,
       const ProgressCallback& progress_callback);
   ~MultipartUploadExistingFileDelegate() override;
 

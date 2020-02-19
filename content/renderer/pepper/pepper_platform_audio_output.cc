@@ -90,13 +90,13 @@ void PepperPlatformAudioOutput::OnDeviceAuthorized(
 
 void PepperPlatformAudioOutput::OnStreamCreated(
     base::UnsafeSharedMemoryRegion shared_memory_region,
-    base::SyncSocket::Handle socket_handle,
+    base::SyncSocket::ScopedHandle socket_handle,
     bool playing_automatically) {
   DCHECK(shared_memory_region.IsValid());
 #if defined(OS_WIN)
-  DCHECK(socket_handle);
+  DCHECK(socket_handle.IsValid());
 #else
-  DCHECK_NE(-1, socket_handle);
+  DCHECK(socket_handle.is_valid());
 #endif
   DCHECK_GT(shared_memory_region.GetSize(), 0u);
 
@@ -104,12 +104,14 @@ void PepperPlatformAudioOutput::OnStreamCreated(
     // Must dereference the client only on the main thread. Shutdown may have
     // occurred while the request was in-flight, so we need to NULL check.
     if (client_)
-      client_->StreamCreated(std::move(shared_memory_region), socket_handle);
+      client_->StreamCreated(std::move(shared_memory_region),
+                             std::move(socket_handle));
   } else {
     main_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&PepperPlatformAudioOutput::OnStreamCreated,
-                                  this, std::move(shared_memory_region),
-                                  socket_handle, playing_automatically));
+        FROM_HERE,
+        base::BindOnce(&PepperPlatformAudioOutput::OnStreamCreated, this,
+                       std::move(shared_memory_region),
+                       std::move(socket_handle), playing_automatically));
   }
 }
 

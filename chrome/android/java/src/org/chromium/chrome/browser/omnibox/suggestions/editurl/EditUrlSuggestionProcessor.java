@@ -14,13 +14,12 @@ import android.view.ViewGroup;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.base.metrics.CachedMetrics;
-import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
+import org.chromium.base.metrics.CachedMetrics.ActionEvent;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.omnibox.OmniboxSuggestionType;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestion;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionUiType;
@@ -75,18 +74,14 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         int NUM_ENTRIES = 4;
     }
 
-    /** Cached metrics in the event this code is triggered prior to native being initialized. */
-    private static final EnumeratedHistogramSample ENUMERATED_SUGGESTION_ACTION =
-            new EnumeratedHistogramSample(
-                    "Omnibox.EditUrlSuggestionAction", SuggestionAction.NUM_ENTRIES);
-    private static final CachedMetrics.ActionEvent ACTION_EDIT_URL_SUGGESTION_TAP =
-            new CachedMetrics.ActionEvent("Omnibox.EditUrlSuggestion.Tap");
-    private static final CachedMetrics.ActionEvent ACTION_EDIT_URL_SUGGESTION_COPY =
-            new CachedMetrics.ActionEvent("Omnibox.EditUrlSuggestion.Copy");
-    private static final CachedMetrics.ActionEvent ACTION_EDIT_URL_SUGGESTION_EDIT =
-            new CachedMetrics.ActionEvent("Omnibox.EditUrlSuggestion.Edit");
-    private static final CachedMetrics.ActionEvent ACTION_EDIT_URL_SUGGESTION_SHARE =
-            new CachedMetrics.ActionEvent("Omnibox.EditUrlSuggestion.Share");
+    private static final ActionEvent ACTION_EDIT_URL_SUGGESTION_TAP =
+            new ActionEvent("Omnibox.EditUrlSuggestion.Tap");
+    private static final ActionEvent ACTION_EDIT_URL_SUGGESTION_COPY =
+            new ActionEvent("Omnibox.EditUrlSuggestion.Copy");
+    private static final ActionEvent ACTION_EDIT_URL_SUGGESTION_EDIT =
+            new ActionEvent("Omnibox.EditUrlSuggestion.Edit");
+    private static final ActionEvent ACTION_EDIT_URL_SUGGESTION_SHARE =
+            new ActionEvent("Omnibox.EditUrlSuggestion.Share");
 
     /** The delegate for accessing the location bar for observation and modification. */
     private final LocationBarDelegate mLocationBarDelegate;
@@ -108,9 +103,6 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
 
     /** Whether this processor should ignore all subsequent suggestion. */
     private boolean mIgnoreSuggestions;
-
-    /** Whether suggestion site favicons are enabled. */
-    private boolean mEnableSuggestionFavicons;
 
     /** Edge size (in pixels) of the favicon. Used to request best matching favicon from cache. */
     private final int mDesiredFaviconWidthPx;
@@ -192,7 +184,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     }
 
     private void fetchIcon(PropertyModel model, String url) {
-        if (!mEnableSuggestionFavicons || url == null) return;
+        if (url == null) return;
 
         final LargeIconBridge iconBridge = mIconBridgeSupplier.get();
         if (iconBridge == null) return;
@@ -203,10 +195,7 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
     }
 
     @Override
-    public void onNativeInitialized() {
-        mEnableSuggestionFavicons =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.OMNIBOX_SHOW_SUGGESTION_FAVICONS);
-    }
+    public void onNativeInitialized() {}
 
     @Override
     public void recordSuggestionPresented(OmniboxSuggestion suggestion, PropertyModel model) {}
@@ -245,11 +234,11 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
         assert activityTab != null : "A tab is required to make changes to the location bar.";
 
         if (R.id.url_copy_icon == view.getId()) {
-            ENUMERATED_SUGGESTION_ACTION.record(SuggestionAction.COPY);
+            recordSuggestionAction(SuggestionAction.COPY);
             ACTION_EDIT_URL_SUGGESTION_COPY.record();
             Clipboard.getInstance().copyUrlToClipboard(mLastProcessedSuggestion.getUrl());
         } else if (R.id.url_share_icon == view.getId()) {
-            ENUMERATED_SUGGESTION_ACTION.record(SuggestionAction.SHARE);
+            recordSuggestionAction(SuggestionAction.SHARE);
             ACTION_EDIT_URL_SUGGESTION_SHARE.record();
             mLocationBarDelegate.clearOmniboxFocus();
             // TODO(mdjones): This should only share the displayed URL instead of the background
@@ -260,11 +249,11 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
                     .get()
                     .share(activityTab, false);
         } else if (R.id.url_edit_icon == view.getId()) {
-            ENUMERATED_SUGGESTION_ACTION.record(SuggestionAction.EDIT);
+            recordSuggestionAction(SuggestionAction.EDIT);
             ACTION_EDIT_URL_SUGGESTION_EDIT.record();
             mLocationBarDelegate.setOmniboxEditingText(mLastProcessedSuggestion.getUrl());
         } else {
-            ENUMERATED_SUGGESTION_ACTION.record(SuggestionAction.TAP);
+            recordSuggestionAction(SuggestionAction.TAP);
             ACTION_EDIT_URL_SUGGESTION_TAP.record();
             // If the event wasn't on any of the buttons, treat is as a tap on the general
             // suggestion.
@@ -272,6 +261,11 @@ public class EditUrlSuggestionProcessor implements OnClickListener, SuggestionPr
                 mSelectionHandler.onEditUrlSuggestionSelected(mLastProcessedSuggestion);
             }
         }
+    }
+
+    private void recordSuggestionAction(@SuggestionAction int action) {
+        RecordHistogram.recordEnumeratedHistogram(
+                "Omnibox.EditUrlSuggestionAction", action, SuggestionAction.NUM_ENTRIES);
     }
 
     /**

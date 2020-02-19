@@ -10784,6 +10784,7 @@ Called by update_net_error_codes.py.-->
   <int value="64" label="VR"/>
   <int value="65" label="AR"/>
   <int value="66" label="Native file system read guard"/>
+  <int value="67" label="Storage Access Grants"/>
 </enum>
 
 <enum name="ContentTypeParseableResult">
@@ -26621,7 +26622,7 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="67" label="PublicKeyCredentials"/>
   <int value="68" label="Clipboard"/>
   <int value="69" label="ClientHintUAMobile"/>
-  <int value="70" label="FontAccess"/>
+  <int value="70" label="StorageAccessAPI"/>
 </enum>
 
 <enum name="FeaturePolicyImageCompressionFormat">
@@ -37395,6 +37396,8 @@ from previous Chrome versions.
   <int value="-1532014193" label="disable-encryption-migration"/>
   <int value="-1529907580" label="ImeServiceConnectable:disabled"/>
   <int value="-1528455406" label="OmniboxPedalSuggestions:enabled"/>
+  <int value="-1521296022"
+      label="UpdateNotificationScheduleServiceImmediateShowOption:disabled"/>
   <int value="-1521160841" label="DismissNtpPromos:enabled"/>
   <int value="-1520952503" label="SearchReadyOmnibox:enabled"/>
   <int value="-1520855274" label="PWAFullCodeCache:disabled"/>
@@ -37743,6 +37746,8 @@ from previous Chrome versions.
   <int value="-1156179600" label="OmniboxRichEntitySuggestions:enabled"/>
   <int value="-1155543191" label="CopylessPaste:disabled"/>
   <int value="-1154819618" label="FilesNG:enabled"/>
+  <int value="-1154394293"
+      label="UpdateNotificationScheduleServiceImmediateShowOption:enabled"/>
   <int value="-1154343236" label="VrBrowsingTabsView:disabled"/>
   <int value="-1151766565" label="enable-fullscreen-tab-detaching"/>
   <int value="-1145905507" label="SendTabToSelfWhenSignedIn:disabled"/>
@@ -38007,6 +38012,7 @@ from previous Chrome versions.
   <int value="-836123854" label="wallet-service-use-sandbox"/>
   <int value="-835672415" label="PointerEventV1SpecCapturing:disabled"/>
   <int value="-835331907" label="TabOutlinesInLowContrastThemes:disabled"/>
+  <int value="-835242361" label="OmniboxAdaptiveSuggestionsCount:enabled"/>
   <int value="-834661509" label="ModalPermissionPrompts:disabled"/>
   <int value="-832561975" label="enable-picture-in-picture"/>
   <int value="-825942229" label="tab-management-experiment-type-elderberry"/>
@@ -40313,6 +40319,7 @@ from previous Chrome versions.
   <int value="2004604350" label="AutofillGetPaymentsIdentityFromSync:enabled"/>
   <int value="2004651603" label="NativeFileSystemAPI:disabled"/>
   <int value="2004829262" label="enable-webgl-draft-extensions"/>
+  <int value="2005009211" label="OmniboxAdaptiveSuggestionsCount:disabled"/>
   <int value="2005245012" label="SecurityInterstitialsDarkMode:disabled"/>
   <int value="2005614493" label="tab-management-experiment-type-dill"/>
   <int value="2006413281"
@@ -51050,6 +51057,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="20" label="PERMISSION_CLIPBOARD_READ_WRITE"/>
   <int value="21" label="PERMISSION_VR"/>
   <int value="22" label="PERMISSION_AR"/>
+  <int value="23" label="PERMISSION_STORAGE_ACCESS"/>
 </enum>
 
 <enum name="PermissionStatus">
@@ -54233,6 +54241,7 @@ https://www.dmtf.org/sites/default/files/standards/documents/DSP0134_2.7.1.pdf
 
 <enum name="QuickAnswersResultType">
   <int value="0" label="kNoResult"/>
+  <int value="3982" label="kKnowledgePanelEntityResult"/>
   <int value="5493" label="kDefinitionResult"/>
   <int value="6613" label="kTranslationResult"/>
   <int value="13668" label="kUnitConversionResult"/>
@@ -67820,6 +67829,7 @@ Full version information for the fingerprint enum values:
   <int value="30" label="WebXR"/>
   <int value="31" label="SharedWorker"/>
   <int value="32" label="WebLocks"/>
+  <int value="37" label="RequestedStorageAccessGrant"/>
 </enum>
 
 <enum name="WebShareMethod">

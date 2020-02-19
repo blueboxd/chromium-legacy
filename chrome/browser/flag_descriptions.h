@@ -266,9 +266,6 @@ extern const char kDisableBestEffortTasksDescription[];
 extern const char kDisallowDocWrittenScriptsUiName[];
 extern const char kDisallowDocWrittenScriptsUiDescription[];
 
-extern const char kDisallowUnsafeHttpDownloadsName[];
-extern const char kDisallowUnsafeHttpDownloadsNameDescription[];
-
 extern const char kEnableAccessibilityObjectModelName[];
 extern const char kEnableAccessibilityObjectModelDescription[];
 
@@ -736,6 +733,9 @@ extern const char kUseMultiloginEndpointDescription[];
 extern const char kOfferStoreUnmaskedWalletCardsName[];
 extern const char kOfferStoreUnmaskedWalletCardsDescription[];
 
+extern const char kOmniboxAdaptiveSuggestionsCountName[];
+extern const char kOmniboxAdaptiveSuggestionsCountDescription[];
+
 extern const char kOmniboxAssistantVoiceSearchName[];
 extern const char kOmniboxAssistantVoiceSearchDescription[];
 
@@ -806,9 +806,6 @@ extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
 
 extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateName[];
 extern const char kOmniboxPreserveDefaultMatchAgainstAsyncUpdateDescription[];
-
-extern const char kOmniboxUIShowSuggestionFaviconsName[];
-extern const char kOmniboxUIShowSuggestionFaviconsDescription[];
 
 extern const char kOmniboxUISwapTitleAndUrlName[];
 extern const char kOmniboxUISwapTitleAndUrlDescription[];
@@ -1034,9 +1031,6 @@ extern const char kHistoryManipulationInterventionDescription[];
 extern const char kSilentDebuggerExtensionApiName[];
 extern const char kSilentDebuggerExtensionApiDescription[];
 
-extern const char kSimplifyHttpsIndicatorName[];
-extern const char kSimplifyHttpsIndicatorDescription[];
-
 extern const char kStorageAccessAPIName[];
 extern const char kStorageAccessAPIDescription[];
 
@@ -1247,24 +1241,12 @@ extern const char kWebUITabStripDemoOptionsName[];
 extern const char kWebUITabStripDemoOptionsDescription[];
 #endif  // BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 
-extern const char kWebXrName[];
-extern const char kWebXrDescription[];
-
 extern const char kWebXrForceRuntimeName[];
 extern const char kWebXrForceRuntimeDescription[];
 
 extern const char kWebXrRuntimeChoiceNone[];
-extern const char kWebXrRuntimeChoiceOrientationSensors[];
-extern const char kWebXrRuntimeChoiceOculus[];
-extern const char kWebXrRuntimeChoiceOpenVR[];
 extern const char kWebXrRuntimeChoiceOpenXR[];
 extern const char kWebXrRuntimeChoiceWindowsMixedReality[];
-
-extern const char kWebXrArModuleName[];
-extern const char kWebXrArModuleDescription[];
-
-extern const char kWebXrHitTestName[];
-extern const char kWebXrHitTestDescription[];
 
 extern const char kWebXrIncubationsName[];
 extern const char kWebXrIncubationsDescription[];
@@ -1543,6 +1525,8 @@ extern const char kUpdateMenuTypeInlineUpdateInstallFailed[];
 
 extern const char kUpdateNotificationSchedulingIntegrationName[];
 extern const char kUpdateNotificationSchedulingIntegrationDescription[];
+extern const char kUpdateNotificationServiceImmediateShowOptionName[];
+extern const char kUpdateNotificationServiceImmediateShowOptionDescription[];
 
 extern const char kUsageStatsDescription[];
 extern const char kUsageStatsName[];
@@ -2210,11 +2194,6 @@ extern const char kWebContentsOcclusionDescription[];
 extern const char kDcheckIsFatalName[];
 extern const char kDcheckIsFatalDescription[];
 #endif  // defined(DCHECK_IS_CONFIGURABLE)
-
-#if BUILDFLAG(ENABLE_VR) && !defined(OS_ANDROID)
-extern const char kXRSandboxName[];
-extern const char kXRSandboxDescription[];
-#endif  // ENABLE_VR && !defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_NACL)
 extern const char kNaclName[];

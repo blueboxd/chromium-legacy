@@ -35,8 +35,7 @@ class CORE_EXPORT CompositingReasonFinder {
       const LayoutObject&);
 
   static bool RequiresCompositingForScrollableFrame(const LayoutView&);
-  static CompositingReasons CompositingReasonsForAnimation(
-      const ComputedStyle&);
+  static CompositingReasons CompositingReasonsForAnimation(const LayoutObject&);
   static CompositingReasons CompositingReasonsForWillChange(
       const ComputedStyle&);
   static bool RequiresCompositingFor3DTransform(const LayoutObject&);

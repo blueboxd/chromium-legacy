@@ -78,7 +78,6 @@
 #include "net/dns/dns_response.h"
 #include "net/dns/dns_transaction.h"
 #include "net/dns/dns_util.h"
-#include "net/dns/host_resolver_histograms.h"
 #include "net/dns/host_resolver_mdns_listener_impl.h"
 #include "net/dns/host_resolver_mdns_task.h"
 #include "net/dns/host_resolver_proc.h"
@@ -1073,7 +1072,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
         secure_dns_mode_(secure_dns_mode),
         delegate_(delegate),
         net_log_(job_net_log),
-        query_type_(query_type),
         num_completed_transactions_(0),
         tick_clock_(tick_clock),
         task_start_time_(tick_clock_->NowTicks()) {
@@ -1092,8 +1090,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
       if (secure_ &&
           base::FeatureList::IsEnabled(features::kRequestEsniDnsRecords)) {
         transactions_needed_.push(DnsQueryType::ESNI);
-        dns_histograms::RecordEsniTransactionStatus(
-            dns_histograms::EsniSuccessOrTimeout::kStarted);
       }
     }
     num_needed_transactions_ = transactions_needed_.size();
@@ -1152,11 +1148,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     // Currently, the ESNI transaction timer only gets started
     // when all non-ESNI transactions have completed.
     DCHECK(TaskIsCompleteOrOnlyEsniTransactionsRemain());
-
-    for (size_t i = 0; i < transactions_started_.size(); ++i) {
-      dns_histograms::RecordEsniTransactionStatus(
-          dns_histograms::EsniSuccessOrTimeout::kTimeout);
-    }
 
     num_completed_transactions_ += transactions_started_.size();
     DCHECK(num_completed_transactions_ == num_needed_transactions());
@@ -1254,8 +1245,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     }
 
     saved_results_ = std::move(results);
-
-    MaybeRecordMetricsOnSuccessfulTransaction(dns_query_type);
 
     // If not all transactions are complete, the task cannot yet be completed
     // and the results so far must be saved to merge with additional results.
@@ -1670,48 +1659,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
     }
   }
 
-  // Records transaction metrics (currently only concerning ESNI records).
-  //
-  // In DnsQueryType::ESNI tasks, records the time taken to complete
-  // the task's single transaction.
-  //
-  // In DnsQueryType::UNSPECIFIED tasks, records:
-  // 1) the end-to-end time elapsed at completion of the ESNI transaction;
-  // 2) the end-to-end time after all non-ESNI transactions.
-  // (The goal is to measure the marginal impact on total task time
-  // caused by adding ESNI queries to DnsQueryType::UNSPECIFIED tasks).
-  void MaybeRecordMetricsOnSuccessfulTransaction(
-      DnsQueryType transaction_type) {
-    auto elapsed = tick_clock_->NowTicks() - task_start_time_;
-
-    if (query_type_ != DnsQueryType::ESNI &&
-        query_type_ != DnsQueryType::UNSPECIFIED) {
-      return;
-    }
-
-    if (query_type_ == DnsQueryType::ESNI) {
-      dns_histograms::RecordEsniTimeForEsniTask(elapsed);
-      return;
-    }
-
-    if (transaction_type == DnsQueryType::ESNI) {
-      dns_histograms::RecordEsniTransactionStatus(
-          dns_histograms::EsniSuccessOrTimeout::kSuccess);
-      dns_histograms::RecordEsniTimeForUnspecTask(elapsed);
-      esni_elapsed_for_logging_ = elapsed;
-    } else if (base::FeatureList::IsEnabled(features::kRequestEsniDnsRecords) &&
-               TaskIsCompleteOrOnlyEsniTransactionsRemain()) {
-      dns_histograms::RecordNonEsniTimeForUnspecTask(elapsed);
-      non_esni_elapsed_for_logging_ = elapsed;
-    }
-
-    if (esni_elapsed_for_logging_ != base::TimeDelta() &&
-        non_esni_elapsed_for_logging_ != base::TimeDelta()) {
-      dns_histograms::RecordEsniVersusNonEsniTimes(
-          esni_elapsed_for_logging_, non_esni_elapsed_for_logging_);
-    }
-  }
-
   DnsClient* client_;
   std::string hostname_;
   // TODO(ericorth@chromium.org): Use base::UnownedPtr once available.
@@ -1724,9 +1671,6 @@ class HostResolverManager::DnsTask : public base::SupportsWeakPtr<DnsTask> {
   // The listener to the results of this DnsTask.
   Delegate* delegate_;
   const NetLogWithSource net_log_;
-
-  // The overall query type of the task.
-  DnsQueryType query_type_;
 
   base::queue<DnsQueryType> transactions_needed_;
   base::flat_set<std::unique_ptr<DnsTransaction>, base::UniquePtrComparator>

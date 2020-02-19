@@ -38,13 +38,14 @@ int32_t AudioHelper::GetSharedMemoryImpl(base::UnsafeSharedMemoryRegion** shm) {
 
 void AudioHelper::StreamCreated(
     base::UnsafeSharedMemoryRegion shared_memory_region,
-    base::SyncSocket::Handle socket_handle) {
+    base::SyncSocket::ScopedHandle socket_handle) {
   if (TrackedCallback::IsPending(create_callback_)) {
     // Trusted side of proxy can specify a callback to receive handles. In
     // this case we don't need to map any data or start the thread since it
     // will be handled by the proxy.
     shared_memory_for_create_callback_ = std::move(shared_memory_region);
-    socket_for_create_callback_.reset(new base::SyncSocket(socket_handle));
+    socket_for_create_callback_.reset(
+        new base::SyncSocket(std::move(socket_handle)));
 
     create_callback_->Run(PP_OK);
 
@@ -56,7 +57,7 @@ void AudioHelper::StreamCreated(
     // the I/O thread and back, but this extra complexity doesn't seem worth it
     // just to clean up these handles faster.
   } else {
-    OnSetStreamInfo(std::move(shared_memory_region), socket_handle);
+    OnSetStreamInfo(std::move(shared_memory_region), std::move(socket_handle));
   }
 }
 

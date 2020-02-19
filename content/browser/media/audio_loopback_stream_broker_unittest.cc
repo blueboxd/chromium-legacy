@@ -222,7 +222,7 @@ TEST(AudioLoopbackStreamBrokerTest, StreamCreationSuccess_Propagates) {
   std::move(stream_request_data.created_callback)
       .Run({base::in_place,
             base::ReadOnlySharedMemoryRegion::Create(shmem_size).region,
-            mojo::WrapPlatformFile(socket1.Release())});
+            mojo::PlatformHandle(socket1.Take())});
 
   EXPECT_CALL(env.renderer_factory_client, OnStreamCreated());
 
@@ -252,7 +252,7 @@ TEST(AudioLoopbackStreamBrokerTest, MutedStreamCreation_Mutes) {
   std::move(stream_request_data.created_callback)
       .Run({base::in_place,
             base::ReadOnlySharedMemoryRegion::Create(shmem_size).region,
-            mojo::WrapPlatformFile(socket1.Release())});
+            mojo::PlatformHandle(socket1.Take())});
 
   EXPECT_CALL(env.renderer_factory_client, OnStreamCreated());
 
@@ -282,7 +282,7 @@ TEST(AudioLoopbackStreamBrokerTest, SourceGone_CallsDeleter) {
   std::move(stream_request_data.created_callback)
       .Run({base::in_place,
             base::ReadOnlySharedMemoryRegion::Create(shmem_size).region,
-            mojo::WrapPlatformFile(socket1.Release())});
+            mojo::PlatformHandle(socket1.Take())});
 
   EXPECT_CALL(env.renderer_factory_client, OnStreamCreated());
 

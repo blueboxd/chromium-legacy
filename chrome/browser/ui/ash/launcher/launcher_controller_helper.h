@@ -39,11 +39,6 @@ class LauncherControllerHelper {
   // Note that already running applications are ignored by the restore process.
   virtual bool IsValidIDForCurrentUser(const std::string& app_id) const;
 
-  void LaunchApp(const ash::ShelfID& id,
-                 ash::ShelfLaunchSource source,
-                 int event_flags,
-                 int64_t display_id);
-
   virtual ArcAppListPrefs* GetArcAppListPrefs() const;
 
   Profile* profile() { return profile_; }

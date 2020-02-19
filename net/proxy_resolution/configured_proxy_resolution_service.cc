@@ -35,6 +35,7 @@
 #include "net/proxy_resolution/pac_file_decider.h"
 #include "net/proxy_resolution/pac_file_fetcher.h"
 #include "net/proxy_resolution/proxy_config_service_fixed.h"
+#include "net/proxy_resolution/proxy_resolution_request_impl.h"
 #include "net/proxy_resolution/proxy_resolver.h"
 #include "net/proxy_resolution/proxy_resolver_factory.h"
 #include "net/url_request/url_request_context.h"
@@ -843,207 +844,6 @@ const ConfiguredProxyResolutionService::PacPollPolicy*
     ConfiguredProxyResolutionService::PacFileDeciderPoller::poll_policy_ =
         nullptr;
 
-class ConfiguredProxyResolutionService::RequestImpl
-    : public ConfiguredProxyResolutionService::Request {
- public:
-  RequestImpl(ConfiguredProxyResolutionService* service,
-              const GURL& url,
-              const std::string& method,
-              const NetworkIsolationKey& network_isolation_key,
-              ProxyInfo* results,
-              const CompletionOnceCallback user_callback,
-              const NetLogWithSource& net_log);
-  ~RequestImpl() override;
-
-  // Starts the resolve proxy request.
-  int Start();
-
-  bool is_started() const {
-    // Note that !! casts to bool. (VS gives a warning otherwise).
-    return !!resolve_job_.get();
-  }
-
-  void StartAndCompleteCheckingForSynchronous();
-
-  void CancelResolveJob();
-
-  // Returns true if the request has been completed.
-  bool was_completed() const { return user_callback_.is_null(); }
-
-  // Callback for when the ProxyResolver request has completed.
-  void QueryComplete(int result_code);
-
-  // Helper to call after ProxyResolver completion (both synchronous and
-  // asynchronous). Fixes up the result that is to be returned to user.
-  int QueryDidComplete(int result_code);
-
-  // Helper to call if the request completes synchronously, since in that case
-  // the request will not be added to |pending_requests_| (in
-  // |ConfiguredProxyResolutionService|).
-  int QueryDidCompleteSynchronously(int result_code);
-
-  NetLogWithSource* net_log() { return &net_log_; }
-
-  // Request implementation:
-  LoadState GetLoadState() const override;
-
- private:
-  ProxyResolver* resolver() const { return service_->resolver_.get(); }
-
-  // Note that Request holds a bare pointer to the
-  // ConfiguredProxyResolutionService. Outstanding requests are cancelled during
-  // ~ConfiguredProxyResolutionService, so this is guaranteed to be valid
-  // throughout our lifetime.
-  ConfiguredProxyResolutionService* service_;
-  CompletionOnceCallback user_callback_;
-  ProxyInfo* results_;
-  const GURL url_;
-  const std::string method_;
-  const NetworkIsolationKey network_isolation_key_;
-  std::unique_ptr<ProxyResolver::Request> resolve_job_;
-  MutableNetworkTrafficAnnotationTag traffic_annotation_;
-  NetLogWithSource net_log_;
-  // Time when the request was created.  Stored here rather than in |results_|
-  // because the time in |results_| will be cleared.
-  base::TimeTicks creation_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestImpl);
-};
-
-ConfiguredProxyResolutionService::RequestImpl::RequestImpl(
-    ConfiguredProxyResolutionService* service,
-    const GURL& url,
-    const std::string& method,
-    const NetworkIsolationKey& network_isolation_key,
-    ProxyInfo* results,
-    CompletionOnceCallback user_callback,
-    const NetLogWithSource& net_log)
-    : service_(service),
-      user_callback_(std::move(user_callback)),
-      results_(results),
-      url_(url),
-      method_(method),
-      network_isolation_key_(network_isolation_key),
-      resolve_job_(nullptr),
-      net_log_(net_log),
-      creation_time_(base::TimeTicks::Now()) {
-  DCHECK(!user_callback_.is_null());
-}
-
-ConfiguredProxyResolutionService::RequestImpl::~RequestImpl() {
-  if (service_) {
-    service_->RemovePendingRequest(this);
-    net_log_.AddEvent(NetLogEventType::CANCELLED);
-
-    if (is_started())
-      CancelResolveJob();
-
-    // This should be emitted last, after any message |CancelResolveJob()| may
-    // trigger.
-    net_log_.EndEvent(NetLogEventType::PROXY_RESOLUTION_SERVICE);
-  }
-}
-
-// Starts the resolve proxy request.
-int ConfiguredProxyResolutionService::RequestImpl::Start() {
-  DCHECK(!was_completed());
-  DCHECK(!is_started());
-
-  DCHECK(service_->config_);
-  traffic_annotation_ = MutableNetworkTrafficAnnotationTag(
-      service_->config_->traffic_annotation());
-
-  if (service_->ApplyPacBypassRules(url_, results_))
-    return OK;
-
-  return resolver()->GetProxyForURL(
-      url_, network_isolation_key_, results_,
-      base::BindOnce(
-          &ConfiguredProxyResolutionService::RequestImpl::QueryComplete,
-          base::Unretained(this)),
-      &resolve_job_, net_log_);
-}
-
-void ConfiguredProxyResolutionService::RequestImpl::
-    StartAndCompleteCheckingForSynchronous() {
-  int rv = service_->TryToCompleteSynchronously(url_, results_);
-  if (rv == ERR_IO_PENDING)
-    rv = Start();
-  if (rv != ERR_IO_PENDING)
-    QueryComplete(rv);
-}
-
-void ConfiguredProxyResolutionService::RequestImpl::CancelResolveJob() {
-  DCHECK(is_started());
-  // The request may already be running in the resolver.
-  resolve_job_.reset();
-  DCHECK(!is_started());
-}
-
-int ConfiguredProxyResolutionService::RequestImpl::QueryDidComplete(
-    int result_code) {
-  DCHECK(!was_completed());
-
-  // Clear |resolve_job_| so is_started() returns false while
-  // DidFinishResolvingProxy() runs.
-  resolve_job_.reset();
-
-  // Note that DidFinishResolvingProxy might modify |results_|.
-  int rv = service_->DidFinishResolvingProxy(url_, method_, results_,
-                                             result_code, net_log_);
-
-  // Make a note in the results which configuration was in use at the
-  // time of the resolve.
-  results_->did_use_pac_script_ = true;
-  results_->proxy_resolve_start_time_ = creation_time_;
-  results_->proxy_resolve_end_time_ = TimeTicks::Now();
-
-  // If annotation is not already set, e.g. through TryToCompleteSynchronously
-  // function, use in-progress-resolve annotation.
-  if (!results_->traffic_annotation_.is_valid())
-    results_->set_traffic_annotation(traffic_annotation_);
-
-  // If proxy is set without error, ensure that an annotation is provided.
-  if (result_code != ERR_ABORTED && !rv)
-    DCHECK(results_->traffic_annotation_.is_valid());
-
-  // Reset the state associated with in-progress-resolve.
-  traffic_annotation_.reset();
-
-  return rv;
-}
-
-int ConfiguredProxyResolutionService::RequestImpl::
-    QueryDidCompleteSynchronously(int result_code) {
-  int rv = QueryDidComplete(result_code);
-  service_ = nullptr;
-  return rv;
-}
-
-LoadState ConfiguredProxyResolutionService::RequestImpl::GetLoadState() const {
-  if (service_ &&
-      service_->current_state_ == STATE_WAITING_FOR_INIT_PROXY_RESOLVER) {
-    return service_->init_proxy_resolver_->GetLoadState();
-  }
-
-  if (is_started())
-    return resolve_job_->GetLoadState();
-  return LOAD_STATE_RESOLVING_PROXY_FOR_URL;
-}
-
-// Callback for when the ProxyResolver request has completed.
-void ConfiguredProxyResolutionService::RequestImpl::QueryComplete(
-    int result_code) {
-  result_code = QueryDidComplete(result_code);
-
-  CompletionOnceCallback callback = std::move(user_callback_);
-
-  service_->RemovePendingRequest(this);
-  service_ = nullptr;
-  user_callback_.Reset();
-  std::move(callback).Run(result_code);
-}
-
 // ConfiguredProxyResolutionService
 // -----------------------------------------------------
 
@@ -1160,7 +960,7 @@ int ConfiguredProxyResolutionService::ResolveProxy(
     const NetworkIsolationKey& network_isolation_key,
     ProxyInfo* result,
     CompletionOnceCallback callback,
-    std::unique_ptr<Request>* out_request,
+    std::unique_ptr<ProxyResolutionRequest>* out_request,
     const NetLogWithSource& net_log) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!callback.is_null());
@@ -1191,9 +991,10 @@ int ConfiguredProxyResolutionService::ResolveProxy(
     return rv;
   }
 
-  std::unique_ptr<RequestImpl> req =
-      std::make_unique<RequestImpl>(this, url, method, network_isolation_key,
-                                    result, std::move(callback), net_log);
+  std::unique_ptr<ProxyResolutionRequestImpl> req =
+      std::make_unique<ProxyResolutionRequestImpl>(
+          this, url, method, network_isolation_key, result, std::move(callback),
+          net_log);
 
   if (current_state_ == STATE_READY) {
     // Start the resolve request.
@@ -1258,14 +1059,14 @@ ConfiguredProxyResolutionService::~ConfiguredProxyResolutionService() {
   // callbacks (if it deletes another request), iterating through the set in a
   // for-loop will not work.
   while (!pending_requests_.empty()) {
-    RequestImpl* req = *pending_requests_.begin();
+    ProxyResolutionRequestImpl* req = *pending_requests_.begin();
     req->QueryComplete(ERR_ABORTED);
     pending_requests_.erase(req);
   }
 }
 
 void ConfiguredProxyResolutionService::SuspendAllPendingRequests() {
-  for (RequestImpl* req : pending_requests_) {
+  for (ProxyResolutionRequestImpl* req : pending_requests_) {
     if (req->is_started()) {
       req->CancelResolveJob();
 
@@ -1412,11 +1213,12 @@ void ConfiguredProxyResolutionService::ReportSuccess(const ProxyInfo& result) {
 }
 
 bool ConfiguredProxyResolutionService::ContainsPendingRequest(
-    RequestImpl* req) {
+    ProxyResolutionRequestImpl* req) {
   return pending_requests_.count(req) == 1;
 }
 
-void ConfiguredProxyResolutionService::RemovePendingRequest(RequestImpl* req) {
+void ConfiguredProxyResolutionService::RemovePendingRequest(
+    ProxyResolutionRequestImpl* req) {
   DCHECK(ContainsPendingRequest(req));
   pending_requests_.erase(req);
 }
@@ -1522,6 +1324,20 @@ void ConfiguredProxyResolutionService::OnShutdown() {
 PacFileFetcher* ConfiguredProxyResolutionService::GetPacFileFetcher() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return pac_file_fetcher_.get();
+}
+
+bool ConfiguredProxyResolutionService::GetLoadStateIfAvailable(
+    LoadState* load_state) const {
+  if (current_state_ == STATE_WAITING_FOR_INIT_PROXY_RESOLVER) {
+    *load_state = init_proxy_resolver_->GetLoadState();
+    return true;
+  }
+
+  return false;
+}
+
+ProxyResolver* ConfiguredProxyResolutionService::GetProxyResolver() const {
+  return resolver_.get();
 }
 
 ConfiguredProxyResolutionService::State

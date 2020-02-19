@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/memory/weak_ptr.h"
-#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-forward.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/geometry/rect.h"

@@ -37,6 +37,7 @@ class AuthenticationService;
 class TemplateURLService;
 @protocol SnackbarCommands;
 class UrlLoadingService;
+class VoiceSearchAvailability;
 
 // Mediator for the NTP Home panel, handling the interactions with the
 // suggestions.
@@ -46,12 +47,14 @@ class UrlLoadingService;
                ContentSuggestionsHeaderViewControllerDelegate>
 
 - (nullable instancetype)
-      initWithWebState:(nonnull web::WebState*)webState
-    templateURLService:(nonnull TemplateURLService*)templateURLService
-     urlLoadingService:(nonnull UrlLoadingService*)urlLoadingService
-           authService:(nonnull AuthenticationService*)authService
-       identityManager:(nonnull signin::IdentityManager*)identityManager
-            logoVendor:(nonnull id<LogoVendor>)logoVendor
+           initWithWebState:(nonnull web::WebState*)webState
+         templateURLService:(nonnull TemplateURLService*)templateURLService
+          urlLoadingService:(nonnull UrlLoadingService*)urlLoadingService
+                authService:(nonnull AuthenticationService*)authService
+            identityManager:(nonnull signin::IdentityManager*)identityManager
+                 logoVendor:(nonnull id<LogoVendor>)logoVendor
+    voiceSearchAvailability:
+        (nonnull VoiceSearchAvailability*)voiceSearchAvailability
     NS_DESIGNATED_INITIALIZER;
 
 - (nullable instancetype)init NS_UNAVAILABLE;

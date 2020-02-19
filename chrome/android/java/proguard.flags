@@ -38,6 +38,7 @@
 
 # SearchView is used in website_preferences_menu.xml and is constructed by
 # Android using reflection.
+# TODO(bjoyce): Remove after verifying AndroidX migration is sound.
 -keep class android.support.v7.widget.SearchView {
   public <init>(...);
 }
@@ -45,7 +46,21 @@
 # This class member is referenced in BottomSheetBottomNav as a temporary
 # measure until the support library contains a solution for disabling shifting
 # mode. TODO(twellington): remove once support library has a fix and is rolled.
+# TODO(bjoyce): Remove after verifying AndroidX migration is sound.
 -keepclassmembers class android.support.design.internal.BottomNavigationMenuView {
+    boolean mShiftingMode;
+}
+
+# SearchView is used in website_preferences_menu.xml and is constructed by
+# Android using reflection.
+-keep class androidx.appcompat.widget.SearchView {
+  public <init>(...);
+}
+
+# This class member is referenced in BottomSheetBottomNav as a temporary
+# measure until the support library contains a solution for disabling shifting
+# mode. TODO(twellington): remove once support library has a fix and is rolled.
+-keepclassmembers class com.google.android.material.bottomnavigation.BottomNavigationMenuView {
     boolean mShiftingMode;
 }
 

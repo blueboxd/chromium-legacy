@@ -30,7 +30,7 @@ const base::Feature kEnableZeroStateAppsRanker{
 const base::Feature kEnableQueryBasedMixedTypesRanker{
     "EnableQueryBasedMixedTypesRanker", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableZeroStateMixedTypesRanker{
-    "EnableZeroStateMixedTypesRanker", base::FEATURE_DISABLED_BY_DEFAULT};
+    "EnableZeroStateMixedTypesRanker", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAppReinstallZeroState{
     "EnableAppReinstallZeroState", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableSuggestedFiles{"EnableSuggestedFiles",

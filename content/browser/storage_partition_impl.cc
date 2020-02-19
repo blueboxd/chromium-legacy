@@ -117,7 +117,7 @@ namespace {
 
 const storage::QuotaSettings* g_test_quota_settings;
 
-mojo::Remote<storage::mojom::StorageService>& GetStorageServiceRemote() {
+mojo::Remote<storage::mojom::StorageService>& GetStorageServiceRemoteStorage() {
   // NOTE: This use of sequence-local storage is only to ensure that the Remote
   // only lives as long as the UI-thread sequence, since the UI-thread sequence
   // may be torn down and reinitialized e.g. between unit tests.
@@ -137,9 +137,9 @@ void RunInProcessStorageService(
       std::make_unique<storage::StorageServiceImpl>(std::move(receiver));
 }
 
-storage::mojom::StorageService* GetStorageService() {
+mojo::Remote<storage::mojom::StorageService>& GetStorageServiceRemote() {
   mojo::Remote<storage::mojom::StorageService>& remote =
-      GetStorageServiceRemote();
+      GetStorageServiceRemoteStorage();
   if (!remote) {
     if (base::FeatureList::IsEnabled(features::kStorageServiceOutOfProcess)) {
       remote = ServiceProcessHost::Launch<storage::mojom::StorageService>(
@@ -147,6 +147,7 @@ storage::mojom::StorageService* GetStorageService() {
               .WithSandboxType(SandboxType::kNoSandbox)
               .WithDisplayName("Storage Service")
               .Pass());
+      remote.reset_on_disconnect();
     } else {
       base::PostTask(FROM_HERE, {BrowserThread::IO},
                      base::BindOnce(&RunInProcessStorageService,
@@ -158,7 +159,7 @@ storage::mojom::StorageService* GetStorageService() {
       remote->EnableAggressiveDomStorageFlushing();
     }
   }
-  return remote.get();
+  return remote;
 }
 
 // A callback to create a URLLoaderFactory that is used in tests.
@@ -2437,10 +2438,16 @@ storage::mojom::Partition* StoragePartitionImpl::GetStorageServicePartition() {
       storage_path =
           browser_context_->GetPath().Append(relative_partition_path_);
     }
-    GetStorageService()->BindPartition(
+    GetStorageServiceRemote()->BindPartition(
         storage_path, remote_partition_.BindNewPipeAndPassReceiver());
   }
   return remote_partition_.get();
+}
+
+// static
+mojo::Remote<storage::mojom::StorageService>&
+StoragePartitionImpl::GetStorageServiceForTesting() {
+  return GetStorageServiceRemote();
 }
 
 mojo::ReceiverId StoragePartitionImpl::Bind(

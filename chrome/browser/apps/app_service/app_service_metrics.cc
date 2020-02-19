@@ -32,9 +32,10 @@ enum class DefaultAppName {
   kAudioPlayer = 15,
   kChromeCanvas = 16,
   kCamera = 17,
+  kHelpApp = 18,
   // Add any new values above this one, and update kMaxValue to the highest
   // enumerator value.
-  kMaxValue = kCamera,
+  kMaxValue = kHelpApp,
 };
 
 void RecordDefaultAppLaunch(DefaultAppName default_app_name,
@@ -135,6 +136,8 @@ void RecordAppLaunch(const std::string& app_id,
     RecordDefaultAppLaunch(DefaultAppName::kChromeCanvas, launch_source);
   else if (app_id == extension_misc::kCameraAppId)
     RecordDefaultAppLaunch(DefaultAppName::kCamera, launch_source);
+  else if (app_id == chromeos::default_web_apps::kHelpAppId)
+    RecordDefaultAppLaunch(DefaultAppName::kHelpApp, launch_source);
 
   // Above are default Essential apps; below are built-in apps.
 

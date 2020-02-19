@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/process/process.h"
+#include "components/services/storage/test_api/test_api.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_service.h"
@@ -93,6 +94,7 @@ ShellContentUtilityClient::ShellContentUtilityClient(bool is_browsertest) {
           switches::kProcessType) == switches::kUtilityProcess) {
     network_service_test_helper_ = std::make_unique<NetworkServiceTestHelper>();
     audio_service_test_helper_ = std::make_unique<AudioServiceTestHelper>();
+    storage::InjectTestApiImplementation();
   }
 }
 

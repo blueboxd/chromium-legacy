@@ -255,17 +255,13 @@ class UnifiedSystemTrayView::FocusSearch : public views::FocusSearch {
 
 // static
 SkColor UnifiedSystemTrayView::GetBackgroundColor() {
-  if (!features::IsBackgroundBlurEnabled()) {
-    return AshColorProvider::Get()->DeprecatedGetBaseLayerColor(
-        AshColorProvider::BaseLayerType::kTransparent90,
-        kUnifiedMenuBackgroundColor);
-  }
   auto background_type = Shelf::ForWindow(Shell::GetPrimaryRootWindow())
                              ->shelf_widget()
                              ->GetBackgroundType();
   AshColorProvider::BaseLayerType layer_type =
       (background_type == ShelfBackgroundType::kMaximized ||
-       background_type == ShelfBackgroundType::kInApp)
+       background_type == ShelfBackgroundType::kInApp) ||
+       !features::IsBackgroundBlurEnabled()
           ? AshColorProvider::BaseLayerType::kTransparent90
           : AshColorProvider::BaseLayerType::kTransparent80;
 

@@ -77,7 +77,7 @@ class PPAPI_SHARED_EXPORT PPB_Audio_Shared
   // playback if we're currently set to play.
   void SetStreamInfo(PP_Instance instance,
                      base::UnsafeSharedMemoryRegion shared_memory_region,
-                     base::SyncSocket::Handle socket_handle,
+                     base::SyncSocket::ScopedHandle socket_handle,
                      PP_AudioSampleRate sample_rate,
                      int sample_frame_count);
 

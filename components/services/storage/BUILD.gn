@@ -72,6 +72,7 @@ source_set("storage") {
   ]
 
   public_deps = [
+    ":test_api_stubs",
     "//base",
     "//components/services/storage/dom_storage:local_storage_proto",
     "//components/services/storage/indexed_db/scopes:scopes_metadata_proto",
@@ -88,6 +89,23 @@ source_set("storage") {
     "//components/services/storage/public/cpp",
     "//storage/common",
   ]
+}
+
+# A separate component target which merely defines storage for a global testing
+# API binder implementations to be injected. No actual testing logic should be
+# included in this target.
+component("test_api_stubs") {
+  sources = [
+    "test_api_stubs.cc",
+    "test_api_stubs.h",
+  ]
+
+  public_deps = [
+    "//base",
+    "//mojo/public/cpp/system",
+  ]
+
+  defines = [ "IS_STORAGE_SERVICE_TEST_API_STUBS_IMPL" ]
 }
 
 source_set("tests") {

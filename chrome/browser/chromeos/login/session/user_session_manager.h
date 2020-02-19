@@ -465,8 +465,8 @@ class UserSessionManager
   // Starts out-of-box flow with the specified screen.
   void ActivateWizard(OobeScreenId screen);
 
-  // Adds first-time login URLs.
-  void InitializeStartUrls(Profile* profile) const;
+  // Launches the Help App depending on flags / prefs / user.
+  void MaybeLaunchHelpApp(Profile* profile) const;
 
   // Perform session initialization and either move to additional login flows
   // such as TOS (public sessions), priority pref sync UI (new users) or

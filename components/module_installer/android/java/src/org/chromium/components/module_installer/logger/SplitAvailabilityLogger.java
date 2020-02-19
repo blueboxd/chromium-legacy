@@ -14,7 +14,6 @@ import com.google.android.play.core.splitinstall.SplitInstallManagerFactory;
 import com.google.android.play.core.splitinstall.model.SplitInstallSessionStatus;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.HashMap;
@@ -72,8 +71,7 @@ public class SplitAvailabilityLogger {
 
     private static void recordAvailabilityStatus(String moduleName, int status) {
         String key = "Android.FeatureModules.AvailabilityStatus." + moduleName;
-        EnumeratedHistogramSample sample = new EnumeratedHistogramSample(key, COUNT);
-        sample.record(status);
+        RecordHistogram.recordEnumeratedHistogram(key, status, COUNT);
     }
 
     /**

@@ -130,6 +130,10 @@ std::string URLDataSource::GetAccessControlAllowOriginForOrigin(
 
 void URLDataSource::DisablePolymer2ForHost(const std::string& host) {}
 
+const ui::TemplateReplacements* URLDataSource::GetReplacements() {
+  return nullptr;
+}
+
 bool URLDataSource::ShouldReplaceI18nInJS() {
   return false;
 }

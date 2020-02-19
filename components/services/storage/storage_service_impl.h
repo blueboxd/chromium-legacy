@@ -35,6 +35,7 @@ class StorageServiceImpl : public mojom::StorageService {
   void EnableAggressiveDomStorageFlushing() override;
   void BindPartition(const base::Optional<base::FilePath>& path,
                      mojo::PendingReceiver<mojom::Partition> receiver) override;
+  void BindTestApi(mojo::ScopedMessagePipeHandle test_api_receiver) override;
 
  private:
   friend class PartitionImpl;

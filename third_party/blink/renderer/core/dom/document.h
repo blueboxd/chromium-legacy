@@ -36,10 +36,12 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "base/timer/elapsed_timer.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/site_for_cookies.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/metrics/document_update_reason.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/accessibility/axid.h"
@@ -1100,10 +1102,16 @@ class CORE_EXPORT Document : public ContainerNode,
 
   net::SiteForCookies SiteForCookies() const;
 
+  // Permissions service helper methods to facilitate requesting and checking
+  // storage access permissions.
+  mojom::blink::PermissionService* GetPermissionService(
+      ExecutionContext* execution_context);
+  void PermissionServiceConnectionError();
+
   // Storage Access API methods to check for or request access to storage that
   // may otherwise be blocked.
   ScriptPromise hasStorageAccess(ScriptState* script_state) const;
-  ScriptPromise requestStorageAccess(ScriptState* script_state) const;
+  ScriptPromise requestStorageAccess(ScriptState* script_state);
 
   // The following implements the rule from HTML 4 for what valid names are.
   // To get this right for all the XML cases, we probably have to improve this
@@ -2306,6 +2314,10 @@ class CORE_EXPORT Document : public ContainerNode,
   bool had_find_in_page_render_subtree_active_match_ = false;
 
   HeapHashMap<Member<HTMLFormElement>, TaskHandle> form_to_pending_submission_;
+
+  // Mojo remote used to determine if the document has permission to access
+  // storage or not.
+  mojo::Remote<mojom::blink::PermissionService> permission_service_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;

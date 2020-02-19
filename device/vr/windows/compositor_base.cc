@@ -93,7 +93,7 @@ void XRCompositorCommon::SubmitFrameDrawnIntoTexture(
 
 void XRCompositorCommon::SubmitFrameWithTextureHandle(
     int16_t frame_index,
-    mojo::ScopedHandle texture_handle) {
+    mojo::PlatformHandle texture_handle) {
   TRACE_EVENT1("xr", "SubmitFrameWithTextureHandle", "frameIndex", frame_index);
   webxr_has_pose_ = false;
   // Tell the browser that WebXR has submitted a frame.
@@ -115,17 +115,9 @@ void XRCompositorCommon::SubmitFrameWithTextureHandle(
   pending_frame_->submit_frame_time_ = base::TimeTicks::Now();
 
 #if defined(OS_WIN)
-  MojoPlatformHandle platform_handle;
-  platform_handle.struct_size = sizeof(platform_handle);
-  MojoResult result = MojoUnwrapPlatformHandle(texture_handle.release().value(),
-                                               nullptr, &platform_handle);
-  if (result == MOJO_RESULT_OK) {
-    texture_helper_.SetSourceTexture(
-        base::win::ScopedHandle(
-            reinterpret_cast<HANDLE>(platform_handle.value)),
-        left_webxr_bounds_, right_webxr_bounds_);
-    pending_frame_->webxr_submitted_ = true;
-  }
+  texture_helper_.SetSourceTexture(texture_handle.TakeHandle(),
+                                   left_webxr_bounds_, right_webxr_bounds_);
+  pending_frame_->webxr_submitted_ = true;
 
   // Regardless of success - try to composite what we have.
   MaybeCompositeAndSubmit();
@@ -384,7 +376,7 @@ void XRCompositorCommon::GetEnvironmentIntegrationProvider(
 
 void XRCompositorCommon::SubmitOverlayTexture(
     int16_t frame_id,
-    mojo::ScopedHandle texture_handle,
+    mojo::PlatformHandle texture_handle,
     const gfx::RectF& left_bounds,
     const gfx::RectF& right_bounds,
     SubmitOverlayTextureCallback overlay_submit_callback) {
@@ -403,19 +395,9 @@ void XRCompositorCommon::SubmitOverlayTexture(
   pending_frame_->waiting_for_overlay_ = false;
 
 #if defined(OS_WIN)
-  MojoPlatformHandle platform_handle;
-  platform_handle.struct_size = sizeof(platform_handle);
-  MojoResult result = MojoUnwrapPlatformHandle(texture_handle.release().value(),
-                                               nullptr, &platform_handle);
-  if (result == MOJO_RESULT_OK) {
-    texture_helper_.SetOverlayTexture(
-        base::win::ScopedHandle(
-            reinterpret_cast<HANDLE>(platform_handle.value)),
-        left_bounds, right_bounds);
-    pending_frame_->overlay_submitted_ = true;
-  } else {
-    std::move(overlay_submit_callback_).Run(false);
-  }
+  texture_helper_.SetOverlayTexture(texture_handle.TakeHandle(), left_bounds,
+                                    right_bounds);
+  pending_frame_->overlay_submitted_ = true;
 
   // Regardless of success - try to composite what we have.
   MaybeCompositeAndSubmit();

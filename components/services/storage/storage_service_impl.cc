@@ -6,6 +6,7 @@
 
 #include "components/services/storage/dom_storage/storage_area_impl.h"
 #include "components/services/storage/partition_impl.h"
+#include "components/services/storage/test_api_stubs.h"
 
 namespace storage {
 
@@ -42,6 +43,11 @@ void StorageServiceImpl::BindPartition(
   if (path.has_value())
     persistent_partition_map_[*path] = new_partition.get();
   partitions_.insert(std::move(new_partition));
+}
+
+void StorageServiceImpl::BindTestApi(
+    mojo::ScopedMessagePipeHandle test_api_receiver) {
+  GetTestApiBinderForTesting().Run(std::move(test_api_receiver));
 }
 
 void StorageServiceImpl::RemovePartition(PartitionImpl* partition) {

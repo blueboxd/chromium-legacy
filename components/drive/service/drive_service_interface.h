@@ -125,7 +125,7 @@ class DriveServiceBatchOperationsInterface {
       const std::string& title,
       const base::FilePath& local_file_path,
       const UploadNewFileOptions& options,
-      const google_apis::FileResourceCallback& callback,
+      google_apis::FileResourceCallback callback,
       const google_apis::ProgressCallback& progress_callback) = 0;
 
   // Uploads a file by a single request with multipart body. It's more efficient
@@ -138,7 +138,7 @@ class DriveServiceBatchOperationsInterface {
       const std::string& resource_id,
       const base::FilePath& local_file_path,
       const UploadExistingFileOptions& options,
-      const google_apis::FileResourceCallback& callback,
+      google_apis::FileResourceCallback callback,
       const google_apis::ProgressCallback& progress_callback) = 0;
 };
 
@@ -319,7 +319,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   // |callback| must not be null.
   virtual google_apis::CancelCallback GetFileResource(
       const std::string& resource_id,
-      const google_apis::FileResourceCallback& callback) = 0;
+      google_apis::FileResourceCallback callback) = 0;
 
   // Gets the about resource information from the server.
   // Upon completion, invokes |callback| with results on the calling thread.
@@ -365,7 +365,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
       const std::string& parent_resource_id,
       const std::string& new_title,
       const base::Time& last_modified,
-      const google_apis::FileResourceCallback& callback) = 0;
+      google_apis::FileResourceCallback callback) = 0;
 
   // Updates a resource with |resource_id| to the directory of
   // |parent_resource_id| with renaming to |new_title|.
@@ -381,7 +381,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
       const base::Time& last_modified,
       const base::Time& last_viewed_by_me,
       const google_apis::drive::Properties& properties,
-      const google_apis::FileResourceCallback& callback) = 0;
+      google_apis::FileResourceCallback callback) = 0;
 
   // Adds a resource (document, file, or collection) identified by its
   // |resource_id| to a collection represented by the |parent_resource_id|.
@@ -413,7 +413,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
       const std::string& parent_resource_id,
       const std::string& directory_title,
       const AddNewDirectoryOptions& options,
-      const google_apis::FileResourceCallback& callback) = 0;
+      google_apis::FileResourceCallback callback) = 0;
 
   // Downloads a file with |resourced_id|. The downloaded file will
   // be stored at |local_cache_path| location. Upon completion, invokes
@@ -465,7 +465,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
       int64_t content_length,
       const std::string& content_type,
       const base::FilePath& local_file_path,
-      const google_apis::drive::UploadRangeCallback& callback,
+      google_apis::drive::UploadRangeCallback callback,
       const google_apis::ProgressCallback& progress_callback) = 0;
 
   // Gets the current status of the uploading to |upload_url| from the server.
@@ -475,7 +475,7 @@ class DriveServiceInterface : public DriveServiceBatchOperationsInterface {
   virtual google_apis::CancelCallback GetUploadStatus(
       const GURL& upload_url,
       int64_t content_length,
-      const google_apis::drive::UploadRangeCallback& callback) = 0;
+      google_apis::drive::UploadRangeCallback callback) = 0;
 
   // Authorizes the account |email| to access |resource_id| as a |role|.
   // |callback| must not be null.

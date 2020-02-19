@@ -191,7 +191,7 @@ void StartURLLoader(
 
   const ui::TemplateReplacements* replacements = nullptr;
   if (source->source()->GetMimeType(path) == "text/html" || replace_in_js)
-    replacements = source->GetReplacements();
+    replacements = source->source()->GetReplacements();
 
   // To keep the same behavior as the old WebUI code, we call the source to get
   // the value for |replacements| on the IO thread. Since |replacements| is

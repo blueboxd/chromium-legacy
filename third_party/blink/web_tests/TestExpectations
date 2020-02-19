@@ -6727,3 +6727,4 @@ crbug.com/1050995 [ Fuchsia ] http/tests/pointer-lock/iframe-sandboxed.html [ Ti
 crbug.com/1051774 [ Fuchsia ] http/tests/plugins/navigator-plugins-in-cross-origin-frame.html [ Timeout Pass ]
 crbug.com/1051133 [ Fuchsia ] http/tests/canvas/philip/tests/security.pattern.canvas.fillStyle.html [ Crash Timeout Pass ]
 crbug.com/1051131 [ Fuchsia ] http/tests/appcache/abort-cache-onchecking-resource-404.html [ Timeout Pass ]
+crbug.com/848799 [ Win10 ] http/tests/devtools/coverage/multiple-instances-merge.js [ Pass Timeout ]

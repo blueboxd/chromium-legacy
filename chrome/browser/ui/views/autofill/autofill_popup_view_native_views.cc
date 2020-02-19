@@ -500,8 +500,12 @@ void AutofillPopupItemView::RefreshStyle() {
   SetBackground(CreateBackground());
   SkColor bk_color = is_selected() ? popup_view()->GetSelectedBackgroundColor()
                                    : popup_view()->GetBackgroundColor();
+  SkColor fg_color = is_selected() ? popup_view()->GetSelectedForegroundColor()
+                                   : popup_view()->GetForegroundColor();
   for (views::Label* label : inner_labels_) {
+    label->SetAutoColorReadabilityEnabled(false);
     label->SetBackgroundColor(bk_color);
+    label->SetEnabledColor(fg_color);
   }
   SchedulePaint();
 }

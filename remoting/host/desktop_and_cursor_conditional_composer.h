@@ -35,6 +35,10 @@ class DesktopAndCursorConditionalComposer : public webrtc::DesktopCapturer {
                                   shared_memory_factory) override;
   void CaptureFrame() override;
   void SetExcludedWindow(webrtc::WindowId window) override;
+  bool GetSourceList(SourceList* sources) override;
+  bool SelectSource(SourceId id) override;
+  bool FocusOnSelectedSource() override;
+  bool IsOccluded(const webrtc::DesktopVector& pos) override;
 
  private:
   DesktopAndCursorConditionalComposer(

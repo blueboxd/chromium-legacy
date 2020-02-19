@@ -16,7 +16,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "components/autofill/core/browser/ui/accessory_sheet_data.h"
-#include "components/autofill/core/common/mojom/autofill_types.mojom.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-forward.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/browser/credential_cache.h"
 #include "content/public/browser/web_contents_user_data.h"

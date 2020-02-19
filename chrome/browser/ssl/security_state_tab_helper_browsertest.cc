@@ -1632,6 +1632,11 @@ class DidChangeVisibleSecurityStateTestWithAutoupgradesDisabled
 IN_PROC_BROWSER_TEST_F(
     DidChangeVisibleSecurityStateTestWithAutoupgradesDisabled,
     DidChangeVisibleSecurityStateObserver) {
+  // TODO(crbug.com/1052731, carlosil): The scoped feature list is not always
+  // disabling the feature. Disabling this test if the feature is enabled
+  // while the scoped feature list issue is solved.
+  if (base::FeatureList::IsEnabled(blink::features::kMixedContentAutoupgrade))
+    return;
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 

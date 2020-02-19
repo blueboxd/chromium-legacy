@@ -77,7 +77,7 @@ class FakeAudioOutputIPCDelegate : public media::AudioOutputIPCDelegate {
                           const media::AudioParameters& output_params,
                           const std::string& matched_device_id) override {}
   void OnStreamCreated(base::UnsafeSharedMemoryRegion region,
-                       base::SyncSocket::Handle socket_handle,
+                       base::SyncSocket::ScopedHandle socket_handle,
                        bool playing_automatically) override {}
   void OnIPCClosed() override {}
 };

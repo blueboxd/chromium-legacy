@@ -79,8 +79,10 @@ enum class WebSchedulerTrackedFeature {
   kWakeLock = 35,
   kWebShare = 36,
 
+  kRequestedStorageAccessGrant = 37,
+
   // NB: This enum is used in a bitmask, so kMaxValue must be less than 64.
-  kMaxValue = kWebShare
+  kMaxValue = kRequestedStorageAccessGrant
 };
 
 static_assert(static_cast<uint32_t>(WebSchedulerTrackedFeature::kMaxValue) < 64,

@@ -115,6 +115,34 @@ class ScopedVASurface {
   DISALLOW_COPY_AND_ASSIGN(ScopedVASurface);
 };
 
+// A combination of a numeric ID |id| and a callback to release it. This class
+// makes no assumptions on threading or lifetimes; |release_cb_| must provide
+// for this.
+// ScopedID allows for object-specific release callbacks, whereas
+// unique_ptr::deleter_type (or base::ScopedGeneric) only supports free
+// functions (or class-static methods) for freeing.
+template <typename T>
+class ScopedID {
+ public:
+  using ReleaseCB = base::OnceCallback<void(T)>;
+
+  ScopedID(T id, ReleaseCB release_cb)
+      : id_(id), release_cb_(std::move(release_cb)) {
+    DCHECK(release_cb_);
+    static_assert(std::is_integral<T>::value, "T must be a numeric type.");
+  }
+  ~ScopedID() { std::move(release_cb_).Run(id_); }
+
+  ScopedID& operator=(const ScopedID&) = delete;
+  ScopedID(const ScopedID&) = delete;
+
+  T id() const { return id_; }
+
+ private:
+  const T id_;
+  ReleaseCB release_cb_;
+};
+
 // Adapts |frame_header| to the Vaapi data types, prepping it for consumption by
 // |vaapi_wrapper|
 bool FillVP8DataStructures(VaapiWrapper* vaapi_wrapper,

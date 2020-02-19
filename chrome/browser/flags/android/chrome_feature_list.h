@@ -126,6 +126,8 @@ extern const base::Feature kTrustedWebActivityPostMessage;
 extern const base::Feature kStartSurfaceAndroid;
 extern const base::Feature kUmaBackgroundSessions;
 extern const base::Feature kUpdateNotificationSchedulingIntegration;
+extern const base::Feature
+    kUpdateNotificationScheduleServiceImmediateShowOption;
 extern const base::Feature kUsageStatsFeature;
 extern const base::Feature kUserMediaScreenCapturing;
 extern const base::Feature kVideoPersistence;

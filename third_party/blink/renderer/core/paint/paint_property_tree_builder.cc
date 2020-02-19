@@ -187,7 +187,7 @@ class FragmentPaintPropertyTreeBuilder {
   ALWAYS_INLINE void UpdateClipPathCache();
   ALWAYS_INLINE void UpdateStickyTranslation();
   ALWAYS_INLINE void UpdateTransform();
-  ALWAYS_INLINE void UpdateTransformForNonRootSVG();
+  ALWAYS_INLINE void UpdateTransformForSVGChild();
   ALWAYS_INLINE bool EffectCanUseCurrentClipAsOutputClip() const;
   ALWAYS_INLINE void UpdateEffect();
   ALWAYS_INLINE void UpdateFilter();
@@ -601,18 +601,20 @@ void FragmentPaintPropertyTreeBuilder::UpdateStickyTranslation() {
     context_.current.transform = properties_->StickyTranslation();
 }
 
-static bool NeedsTransformForNonRootSVG(const LayoutObject& object) {
+static bool NeedsTransformForSVGChild(const LayoutObject& object) {
   // TODO(pdr): Check for the presence of a transform instead of the value.
   // Checking for an identity matrix will cause the property tree structure
   // to change during animations if the animation passes through the
   // identity matrix.
+  // TODO(crbug.com/666244): Check CompositingReasonsForAnimation here when we
+  // support composited transform animations in SVG.
   return object.IsSVGChild() && !object.IsText() &&
          !object.LocalToSVGParentTransform().IsIdentity();
 }
 
 // SVG does not use the general transform update of |UpdateTransform|, instead
 // creating a transform node for SVG-specific transforms without 3D.
-void FragmentPaintPropertyTreeBuilder::UpdateTransformForNonRootSVG() {
+void FragmentPaintPropertyTreeBuilder::UpdateTransformForSVGChild() {
   DCHECK(properties_);
   DCHECK(object_.IsSVGChild());
   // SVG does not use paint offset internally, except for SVGForeignObject which
@@ -622,8 +624,10 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformForNonRootSVG() {
 
   if (NeedsPaintPropertyUpdate()) {
     AffineTransform transform = object_.LocalToSVGParentTransform();
-    if (NeedsTransformForNonRootSVG(object_)) {
+    if (NeedsTransformForSVGChild(object_)) {
       // The origin is included in the local transform, so leave origin empty.
+      // TODO(crbug.com/666244): Support composited transform animation for SVG
+      // using similar code as |UpdateTransform| for animations.
       TransformPaintPropertyNode::State state{TransformationMatrix(transform)};
       OnUpdate(properties_->UpdateTransform(*context_.current.transform,
                                             std::move(state)));
@@ -705,7 +709,7 @@ static bool ActiveTransformAnimationIsAxisAligned(
 
 void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
   if (object_.IsSVGChild()) {
-    UpdateTransformForNonRootSVG();
+    UpdateTransformForSVGChild();
     return;
   }
 
@@ -3200,7 +3204,7 @@ bool PaintPropertyTreeBuilder::UpdateFragments() {
        // the paint offset and border box has been computed.
        MayNeedClipPathClip(object_) ||
        NeedsEffect(object_, context_.direct_compositing_reasons) ||
-       NeedsTransformForNonRootSVG(object_) ||
+       NeedsTransformForSVGChild(object_) ||
        NeedsFilter(object_, context_.direct_compositing_reasons) ||
        NeedsCssClip(object_) || NeedsInnerBorderRadiusClip(object_) ||
        NeedsOverflowClip(object_) || NeedsPerspective(object_) ||

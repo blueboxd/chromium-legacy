@@ -220,40 +220,19 @@ const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
 #endif
 }
 
-LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
-    const {
-  // Note that displayed text (the first output) will be implicitly used as the
-  // accessibility text unless no display text has been specified.
+base::string16 LocationBarModelImpl::GetSecureDisplayText() const {
+  // Note that display text will be implicitly used as the accessibility text.
+  // GetSecureAccessibilityText() handles special cases when no display text is set.
 
   if (IsOfflinePage())
-    return SecureChipText(l10n_util::GetStringUTF16(IDS_OFFLINE_VERBOSE_STATE));
+    return l10n_util::GetStringUTF16(IDS_OFFLINE_VERBOSE_STATE);
 
   switch (GetSecurityLevel()) {
     case security_state::WARNING:
-      return SecureChipText(
-          l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE));
-    case security_state::EV_SECURE: {
-      if (base::FeatureList::IsEnabled(omnibox::kSimplifyHttpsIndicator)) {
-        return SecureChipText(base::string16(), l10n_util::GetStringUTF16(
-                                                    IDS_SECURE_VERBOSE_STATE));
-      }
-
-      // Note: Cert is guaranteed non-NULL or the security level would be NONE.
-      scoped_refptr<net::X509Certificate> cert = delegate_->GetCertificate();
-      DCHECK(cert);
-
-      // EV are required to have an organization name and country.
-      DCHECK(!cert->subject().organization_names.empty());
-      DCHECK(!cert->subject().country_name.empty());
-
-      return SecureChipText(l10n_util::GetStringFUTF16(
-          IDS_SECURE_CONNECTION_EV,
-          base::UTF8ToUTF16(cert->subject().organization_names[0]),
-          base::UTF8ToUTF16(cert->subject().country_name)));
-    }
+      return l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE);
+    case security_state::EV_SECURE:
     case security_state::SECURE:
-      return SecureChipText(base::string16(), l10n_util::GetStringUTF16(
-                                                  IDS_SECURE_VERBOSE_STATE));
+      return base::string16();
     case security_state::DANGEROUS: {
       std::unique_ptr<security_state::VisibleSecurityState>
           visible_security_state = delegate_->GetVisibleSecurityState();
@@ -267,29 +246,33 @@ LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
         // interstitials.
         NOTREACHED();
 #endif
-        return SecureChipText(base::string16());
+        return base::string16();
       }
 
       bool fails_malware_check =
           visible_security_state->malicious_content_status !=
           security_state::MALICIOUS_CONTENT_STATUS_NONE;
-      return SecureChipText(l10n_util::GetStringUTF16(
-          fails_malware_check ? IDS_DANGEROUS_VERBOSE_STATE
-                              : IDS_NOT_SECURE_VERBOSE_STATE));
+      return l10n_util::GetStringUTF16(fails_malware_check
+                                           ? IDS_DANGEROUS_VERBOSE_STATE
+                                           : IDS_NOT_SECURE_VERBOSE_STATE);
     }
     default:
-      return SecureChipText(base::string16());
+      return base::string16();
   }
 }
 
-base::string16 LocationBarModelImpl::GetSecureDisplayText() const {
-  return GetSecureChipText().display_text_;
-}
-
 base::string16 LocationBarModelImpl::GetSecureAccessibilityText() const {
-  auto labels = GetSecureChipText();
-  return labels.display_text_.empty() ? labels.accessibility_label_
-                                      : labels.display_text_;
+  auto display_text = GetSecureDisplayText();
+  if (!display_text.empty())
+    return display_text;
+
+  switch (GetSecurityLevel()) {
+    case security_state::EV_SECURE:
+    case security_state::SECURE:
+      return l10n_util::GetStringUTF16(IDS_SECURE_VERBOSE_STATE);
+    default:
+      return base::string16();
+  }
 }
 
 bool LocationBarModelImpl::ShouldDisplayURL() const {

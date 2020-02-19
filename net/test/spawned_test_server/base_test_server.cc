@@ -210,7 +210,6 @@ base::FilePath BaseTestServer::SSLOptions::GetCertificateFile() const {
           FILE_PATH_LITERAL("key_usage_rsa_digitalsignature.pem"));
     case CERT_AUTO:
     case CERT_AUTO_WITH_INTERMEDIATE:
-    case CERT_AUTO_AIA_INTERMEDIATE:
       return base::FilePath();
     default:
       NOTREACHED();
@@ -635,10 +634,6 @@ bool BaseTestServer::GenerateArguments(base::DictionaryValue* arguments) const {
 
   if (type_ == TYPE_HTTPS) {
     arguments->Set("https", std::make_unique<base::Value>());
-
-    if (ssl_options_.server_certificate ==
-        SSLOptions::CERT_AUTO_AIA_INTERMEDIATE)
-      arguments->Set("aia-intermediate", std::make_unique<base::Value>());
 
     std::string ocsp_arg = ssl_options_.GetOCSPArgument();
     if (!ocsp_arg.empty())

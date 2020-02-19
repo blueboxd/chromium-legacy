@@ -77,14 +77,15 @@ UpdateNotificationServiceBridgeAndroid::GetThrottleInterval() {
                              base::TimeDelta::FromMilliseconds(interval)));
 }
 
-void UpdateNotificationServiceBridgeAndroid::UpdateUserDismissCount(int count) {
+void UpdateNotificationServiceBridgeAndroid::UpdateNegativeActionCount(
+    int count) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_UpdateNotificationServiceBridge_updateUserDismissCount(env, count);
+  Java_UpdateNotificationServiceBridge_updateNegativeActionCount(env, count);
 }
 
-int UpdateNotificationServiceBridgeAndroid::GetUserDismissCount() {
+int UpdateNotificationServiceBridgeAndroid::GetNegativeActionCount() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  return Java_UpdateNotificationServiceBridge_getUserDismissCount(env);
+  return Java_UpdateNotificationServiceBridge_getNegativeActionCount(env);
 }
 
 void UpdateNotificationServiceBridgeAndroid::LaunchChromeActivity(int state) {

@@ -10,8 +10,12 @@
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/prefs/pref_service.h"
+#include "net/base/escape.h"
 #include "net/base/mime_util.h"
 #include "third_party/zlib/google/compression_utils.h"
 
@@ -23,6 +27,8 @@ constexpr base::FilePath::CharType kTerminalRoot[] =
 constexpr base::FilePath::CharType kDefaultFile[] =
     FILE_PATH_LITERAL("html/crosh.html");
 constexpr char kDefaultMime[] = "text/html";
+constexpr char kDefaultTheme[] = "#101010";
+constexpr char kPrefKeyTheme[] = "/hterm/profiles/default/background-color";
 
 void ReadFile(const base::FilePath& path,
               content::URLDataSource::GotDataCallback callback) {
@@ -47,6 +53,10 @@ void ReadFile(const base::FilePath& path,
 }
 }  // namespace
 
+TerminalSource::TerminalSource(Profile* profile) : profile_(profile) {}
+
+TerminalSource::~TerminalSource() = default;
+
 std::string TerminalSource::GetSource() {
   return chrome::kChromeUITerminalHost;
 }
@@ -69,6 +79,11 @@ void TerminalSource::StartDataRequest(
   if (reparsed.empty())
     reparsed = kDefaultFile;
   base::FilePath file_path = base::FilePath(kTerminalRoot).Append(reparsed);
+
+  // Replace $i8n{themeColor} in *.html.
+  if (base::EndsWith(reparsed, ".html", base::CompareCase::INSENSITIVE_ASCII))
+    replacements_["themeColor"] = GetThemeColorFromPrefs();
+
   base::PostTask(
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
@@ -86,4 +101,15 @@ std::string TerminalSource::GetMimeType(const std::string& path) {
 bool TerminalSource::ShouldServeMimeTypeAsContentTypeHeader() {
   // TerminalSource pages include js modules which require an explicit MimeType.
   return true;
+}
+
+const ui::TemplateReplacements* TerminalSource::GetReplacements() {
+  return &replacements_;
+}
+
+std::string TerminalSource::GetThemeColorFromPrefs() {
+  const base::DictionaryValue* value = profile_->GetPrefs()->GetDictionary(
+      crostini::prefs::kCrostiniTerminalSettings);
+  const std::string* theme = value->FindStringKey(kPrefKeyTheme);
+  return theme ? net::EscapeForHTML(*theme) : kDefaultTheme;
 }

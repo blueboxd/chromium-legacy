@@ -83,12 +83,6 @@ const extensions::Extension* GetExtensionForTab(Profile* profile,
   return nullptr;
 }
 
-const extensions::Extension* GetExtensionByID(Profile* profile,
-                                              const std::string& id) {
-  return extensions::ExtensionRegistry::Get(profile)->GetExtensionById(
-      id, extensions::ExtensionRegistry::EVERYTHING);
-}
-
 }  // namespace
 
 LauncherControllerHelper::LauncherControllerHelper(Profile* profile)
@@ -146,49 +140,10 @@ std::string LauncherControllerHelper::GetAppID(content::WebContents* tab) {
 
 bool LauncherControllerHelper::IsValidIDForCurrentUser(
     const std::string& app_id) const {
-  if (IsValidIDForArcApp(app_id)) {
+  if (IsValidIDForArcApp(app_id))
     return true;
-  }
 
-  if (base::FeatureList::IsEnabled(features::kAppServiceShelf)) {
-    return IsValidIDFromAppService(app_id);
-  }
-
-  crostini::CrostiniRegistryService* registry_service =
-      crostini::CrostiniRegistryServiceFactory::GetForProfile(profile_);
-  if (registry_service && registry_service->IsCrostiniShelfAppId(app_id)) {
-    return crostini::CrostiniFeatures::Get()->IsUIAllowed(profile_) &&
-           registry_service->GetRegistration(app_id).has_value();
-  }
-
-  if (app_list::IsInternalApp(app_id)) {
-    return true;
-  }
-
-  if (!GetExtensionByID(profile_, app_id)) {
-    return false;
-  }
-
-  return true;
-}
-
-void LauncherControllerHelper::LaunchApp(const ash::ShelfID& id,
-                                         ash::ShelfLaunchSource source,
-                                         int event_flags,
-                                         int64_t display_id) {
-  // Handle recording app launch source from the Shelf in Demo Mode.
-  if (source == ash::ShelfLaunchSource::LAUNCH_FROM_SHELF) {
-    chromeos::DemoSession::RecordAppLaunchSourceIfInDemoMode(
-        chromeos::DemoSession::AppLaunchSource::kShelf);
-  }
-
-  const std::string& app_id = id.app_id;
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile_);
-  DCHECK(proxy);
-  proxy->Launch(app_id, event_flags, apps::mojom::LaunchSource::kFromShelf,
-                display_id);
-  return;
+  return IsValidIDFromAppService(app_id);
 }
 
 ArcAppListPrefs* LauncherControllerHelper::GetArcAppListPrefs() const {
@@ -225,16 +180,26 @@ bool LauncherControllerHelper::IsValidIDForArcApp(
 
 bool LauncherControllerHelper::IsValidIDFromAppService(
     const std::string& app_id) const {
-  apps::AppServiceProxy* proxy =
-      apps::AppServiceProxyFactory::GetForProfile(profile_);
-  if (!proxy) {
-    return false;
-  }
-  apps::mojom::AppType app_type = proxy->AppRegistryCache().GetAppType(app_id);
-  if (app_type == apps::mojom::AppType::kUnknown ||
-      app_type == apps::mojom::AppType::kArc) {
-    return false;
+  if (base::StartsWith(app_id, crostini::kCrostiniAppIdPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    return true;
   }
 
-  return true;
+  apps::AppServiceProxy* proxy =
+      apps::AppServiceProxyFactory::GetForProfile(profile_);
+  if (!proxy)
+    return false;
+
+  bool is_valid = false;
+  proxy->AppRegistryCache().ForOneApp(
+      app_id, [&is_valid](const apps::AppUpdate& update) {
+        if (update.AppType() != apps::mojom::AppType::kArc &&
+            update.AppType() != apps::mojom::AppType::kUnknown &&
+            update.Readiness() != apps::mojom::Readiness::kUnknown &&
+            update.Readiness() != apps::mojom::Readiness::kUninstalledByUser) {
+          is_valid = true;
+        }
+      });
+
+  return is_valid;
 }

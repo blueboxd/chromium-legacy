@@ -157,10 +157,10 @@ int32_t PPB_Audio_Impl::GetSharedMemory(base::UnsafeSharedMemoryRegion** shm) {
 
 void PPB_Audio_Impl::OnSetStreamInfo(
     base::UnsafeSharedMemoryRegion shared_memory_region,
-    base::SyncSocket::Handle socket_handle) {
+    base::SyncSocket::ScopedHandle socket_handle) {
   EnterResourceNoLock<PPB_AudioConfig_API> enter(config_, true);
-  SetStreamInfo(pp_instance(), std::move(shared_memory_region), socket_handle,
-                enter.object()->GetSampleRate(),
+  SetStreamInfo(pp_instance(), std::move(shared_memory_region),
+                std::move(socket_handle), enter.object()->GetSampleRate(),
                 enter.object()->GetSampleFrameCount());
 }
 

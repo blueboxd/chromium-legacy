@@ -47,6 +47,7 @@ bool SchedulingPolicy::IsFeatureSticky(SchedulingPolicy::Feature feature) {
     case Feature::kRequestedBackgroundWorkPermission:
     case Feature::kWebLocks:
     case Feature::kWakeLock:
+    case Feature::kRequestedStorageAccessGrant:
       return true;
   }
 }

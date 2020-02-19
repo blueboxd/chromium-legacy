@@ -97,6 +97,7 @@ void UpdateNotificationServiceImpl::OnClientOverviewQueried(
       notifications::SchedulerClientType::kChromeUpdate,
       std::move(notification_data),
       BuildScheduleParams(data.should_show_immediately));
+  params->enable_ihnr_buttons = true;
   schedule_service_->Schedule(std::move(params));
 }
 
@@ -130,12 +131,16 @@ UpdateNotificationServiceImpl::BuildScheduleParams(
 }
 
 void UpdateNotificationServiceImpl::OnUserDismiss() {
-  int count = bridge_->GetUserDismissCount() + 1;
+  ApplyNegativeAction();
+}
+
+void UpdateNotificationServiceImpl::ApplyNegativeAction() {
+  int count = bridge_->GetNegativeActionCount() + 1;
   if (count >= kNumConsecutiveDismissCountCap) {
     ApplyLinearThrottle();
     count = 0;
   }
-  bridge_->UpdateUserDismissCount(count);
+  bridge_->UpdateNegativeActionCount(count);
 }
 
 void UpdateNotificationServiceImpl::ApplyLinearThrottle() {
@@ -151,6 +156,12 @@ void UpdateNotificationServiceImpl::OnUserClick(const ExtraData& extra) {
   int state = 0;
   DCHECK(base::StringToInt(extra.at(kUpdateStateEnumKey), &state));
   bridge_->LaunchChromeActivity(state);
+}
+
+void UpdateNotificationServiceImpl::OnUserClickButton(bool is_positive_button) {
+  if (!is_positive_button) {
+    ApplyNegativeAction();
+  }
 }
 
 }  // namespace updates

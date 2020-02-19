@@ -4,6 +4,8 @@
 
 #include "ash/assistant/model/ui/assistant_ui_element.h"
 
+#include <utility>
+
 namespace ash {
 
 AssistantUiElement::AssistantUiElement(AssistantUiElementType type)
@@ -13,7 +15,7 @@ AssistantUiElement::~AssistantUiElement() = default;
 
 void AssistantUiElement::Process(ProcessingCallback callback) {
   // By default, Assistant UI elements do not require pre-rendering processing.
-  std::move(callback).Run(/*success=*/true);
+  std::move(callback).Run();
 }
 
 }  // namespace ash

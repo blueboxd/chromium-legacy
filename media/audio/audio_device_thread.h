@@ -65,7 +65,7 @@ class MEDIA_EXPORT AudioDeviceThread : public base::PlatformThread::Delegate {
 
   // Creates and automatically starts the audio thread.
   AudioDeviceThread(Callback* callback,
-                    base::SyncSocket::Handle socket,
+                    base::SyncSocket::ScopedHandle socket,
                     const char* thread_name,
                     base::ThreadPriority thread_priority);
 

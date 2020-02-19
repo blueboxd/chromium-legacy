@@ -9,6 +9,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/scoped_observer.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/features.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
@@ -44,6 +45,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/chrome/browser/url_loading/url_loading_service.h"
+#import "ios/chrome/browser/voice/voice_search_availability.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -69,7 +71,8 @@ const char kNTPHelpURL[] =
 
 @interface NTPHomeMediator () <CRWWebStateObserver,
                                IdentityManagerObserverBridgeDelegate,
-                               SearchEngineObserving> {
+                               SearchEngineObserving,
+                               VoiceSearchAvailabilityObserver> {
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   // Listen for default search engine changes.
   std::unique_ptr<SearchEngineObserverBridge> _searchEngineObserver;
@@ -87,6 +90,8 @@ const char kNTPHelpURL[] =
 @property(nonatomic, assign) AuthenticationService* authService;
 // Logo vendor to display the doodle on the NTP.
 @property(nonatomic, strong) id<LogoVendor> logoVendor;
+// The voice search availability.
+@property(nonatomic, assign) VoiceSearchAvailability* voiceSearchAvailability;
 // The web state associated with this NTP.
 @property(nonatomic, assign) web::WebState* webState;
 // This is the object that knows how to update the Identity Disc UI.
@@ -101,7 +106,9 @@ const char kNTPHelpURL[] =
                urlLoadingService:(UrlLoadingService*)urlLoadingService
                      authService:(AuthenticationService*)authService
                  identityManager:(signin::IdentityManager*)identityManager
-                      logoVendor:(id<LogoVendor>)logoVendor {
+                      logoVendor:(id<LogoVendor>)logoVendor
+         voiceSearchAvailability:
+             (VoiceSearchAvailability*)voiceSearchAvailability {
   self = [super init];
   if (self) {
     _webState = webState;
@@ -114,6 +121,7 @@ const char kNTPHelpURL[] =
     _searchEngineObserver = std::make_unique<SearchEngineObserverBridge>(
         self, self.templateURLService);
     _logoVendor = logoVendor;
+    _voiceSearchAvailability = voiceSearchAvailability;
   }
   return self;
 }
@@ -135,7 +143,11 @@ const char kNTPHelpURL[] =
     self.webState->AddObserver(_webStateObserver.get());
   }
 
+  self.voiceSearchAvailability->AddObserver(self);
+
   [self.consumer setLogoVendor:self.logoVendor];
+  [self.consumer setVoiceSearchIsEnabled:self.voiceSearchAvailability
+                                             ->IsVoiceSearchAvailable()];
 
   self.templateURLService->Load();
   [self searchEngineChanged];
@@ -148,6 +160,10 @@ const char kNTPHelpURL[] =
     [self saveContentOffsetForWebState:_webState];
     _webState->RemoveObserver(_webStateObserver.get());
     _webStateObserver.reset();
+  }
+  if (_voiceSearchAvailability) {
+    _voiceSearchAvailability->RemoveObserver(self);
+    _voiceSearchAvailability = nullptr;
   }
 }
 
@@ -489,6 +505,13 @@ const char kNTPHelpURL[] =
 - (void)onPrimaryAccountCleared:
     (const CoreAccountInfo&)previousPrimaryAccountInfo {
   [self updateAccountImage];
+}
+
+#pragma mark - VoiceSearchAvailabilityObserver
+
+- (void)voiceSearchAvailability:(VoiceSearchAvailability*)availability
+            updatedAvailability:(BOOL)available {
+  [self.consumer setVoiceSearchIsEnabled:available];
 }
 
 #pragma mark - Private

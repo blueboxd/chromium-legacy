@@ -212,15 +212,15 @@ void AudioInputDevice::SetOutputDeviceForAec(
 
 void AudioInputDevice::OnStreamCreated(
     base::ReadOnlySharedMemoryRegion shared_memory_region,
-    base::SyncSocket::Handle socket_handle,
+    base::SyncSocket::ScopedHandle socket_handle,
     bool initially_muted) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   TRACE_EVENT0("audio", "AudioInputDevice::OnStreamCreated");
   DCHECK(shared_memory_region.IsValid());
 #if defined(OS_WIN)
-  DCHECK(socket_handle);
+  DCHECK(socket_handle.IsValid());
 #else
-  DCHECK_GE(socket_handle, 0);
+  DCHECK(socket_handle.is_valid());
 #endif
   DCHECK_GT(shared_memory_region.GetSize(), 0u);
 
@@ -267,9 +267,9 @@ void AudioInputDevice::OnStreamCreated(
       kRequestedSharedMemoryCount, enable_uma_, callback_,
       base::BindRepeating(&AliveChecker::NotifyAlive,
                           base::Unretained(alive_checker_.get())));
-  audio_thread_ =
-      std::make_unique<AudioDeviceThread>(audio_callback_.get(), socket_handle,
-                                          "AudioInputDevice", thread_priority_);
+  audio_thread_ = std::make_unique<AudioDeviceThread>(
+      audio_callback_.get(), std::move(socket_handle), "AudioInputDevice",
+      thread_priority_);
 
   state_ = RECORDING;
   ipc_->RecordStream();

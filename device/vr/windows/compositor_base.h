@@ -19,7 +19,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/system/platform_handle.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 #if defined(OS_WIN)
@@ -119,7 +119,7 @@ class XRCompositorCommon : public base::Thread,
                                    const gpu::SyncToken&,
                                    base::TimeDelta time_waited) final;
   void SubmitFrameWithTextureHandle(int16_t frame_index,
-                                    mojo::ScopedHandle texture_handle) final;
+                                    mojo::PlatformHandle texture_handle) final;
   void UpdateLayerBounds(int16_t frame_id,
                          const gfx::RectF& left_bounds,
                          const gfx::RectF& right_bounds,
@@ -127,7 +127,7 @@ class XRCompositorCommon : public base::Thread,
 
   // ImmersiveOverlay:
   void SubmitOverlayTexture(int16_t frame_id,
-                            mojo::ScopedHandle texture,
+                            mojo::PlatformHandle texture,
                             const gfx::RectF& left_bounds,
                             const gfx::RectF& right_bounds,
                             SubmitOverlayTextureCallback callback) override;

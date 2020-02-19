@@ -13,8 +13,11 @@
 
     <!-- We add an application tag here just so that we can indicate that this
          package needs to link against the android.test library, which is
-         needed when building test cases. -->
-    <application>
+         needed when building test cases.
+
+         Explicitly set the attribute requestLegacyExternalStorage to "true"
+         since it is "false" by default on apps targeting Android Q. -->
+    <application android:requestLegacyExternalStorage="true">
         <uses-library android:name="android.test.runner" />
     </application>
 

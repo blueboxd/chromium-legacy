@@ -732,8 +732,13 @@ void AssistantInteractionController::OnProcessPendingResponse() {
       weak_factory_.GetWeakPtr()));
 }
 
-void AssistantInteractionController::OnPendingResponseProcessed(bool success) {
-  if (!success)
+void AssistantInteractionController::OnPendingResponseProcessed(
+    bool is_completed) {
+  // If the response processing has been interrupted and not completed, we will
+  // ignore it and don't flush to the UI. This can happen if two queries were
+  // sent close enough, and the interaction started by the second query arrived
+  // before the first query's response even finished processing.
+  if (!is_completed)
     return;
 
   // Once the pending response has been processed it is safe to flush to the UI.

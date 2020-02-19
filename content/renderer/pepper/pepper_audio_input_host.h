@@ -38,7 +38,7 @@ class PepperAudioInputHost : public ppapi::host::ResourceHost {
 
   // Called when the stream is created.
   void StreamCreated(base::ReadOnlySharedMemoryRegion shared_memory_region,
-                     base::SyncSocket::Handle socket);
+                     base::SyncSocket::ScopedHandle socket);
   void StreamCreationFailed();
 
  private:
@@ -51,7 +51,7 @@ class PepperAudioInputHost : public ppapi::host::ResourceHost {
 
   void OnOpenComplete(int32_t result,
                       base::ReadOnlySharedMemoryRegion shared_memory_region,
-                      base::SyncSocket::Handle socket_handle);
+                      base::SyncSocket::ScopedHandle socket_handle);
 
   int32_t GetRemoteHandles(
       const base::SyncSocket& socket,

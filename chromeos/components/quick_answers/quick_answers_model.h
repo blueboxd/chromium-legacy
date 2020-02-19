@@ -32,6 +32,7 @@ enum class LoadStatus {
 // Note: Enums labels are at |QuickAnswersResultType|.
 enum class ResultType {
   kNoResult = 0,
+  kKnowledgePanelEntityResult = 3982,
   kDefinitionResult = 5493,
   kTranslationResult = 6613,
   kUnitConversionResult = 13668,

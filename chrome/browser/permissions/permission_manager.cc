@@ -30,6 +30,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
 #include "chrome/browser/storage/durable_storage_permission_context.h"
+#include "chrome/browser/storage_access_api/storage_access_grant_permission_context.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/vr/webxr_permission_context.h"
 #include "chrome/browser/wake_lock/wake_lock_permission_context.h"
@@ -162,6 +163,8 @@ ContentSettingsType PermissionTypeToContentSettingSafe(
       return ContentSettingsType::VR;
     case PermissionType::AR:
       return ContentSettingsType::AR;
+    case PermissionType::STORAGE_ACCESS_GRANT:
+      return ContentSettingsType::STORAGE_ACCESS;
     case PermissionType::NUM:
       break;
   }
@@ -377,6 +380,8 @@ PermissionManager::PermissionManager(Profile* profile) : profile_(profile) {
   permission_contexts_[ContentSettingsType::AR] =
       std::make_unique<WebXrPermissionContext>(profile,
                                                ContentSettingsType::AR);
+  permission_contexts_[ContentSettingsType::STORAGE_ACCESS] =
+      std::make_unique<StorageAccessGrantPermissionContext>(profile);
 }
 
 PermissionManager::~PermissionManager() {
@@ -411,6 +416,12 @@ GURL PermissionManager::GetCanonicalOrigin(ContentSettingsType permission,
   // that is, permissions that can be used by a service worker. This includes
   // durable storage, background sync, etc.
   if (permission == ContentSettingsType::NOTIFICATIONS)
+    return requesting_origin;
+
+  // Storage access grants from the storage access API are paired between the
+  // origin of the frame making the request and the top level origin so we need
+  // to ensure we return the proper origin here.
+  if (permission == ContentSettingsType::STORAGE_ACCESS)
     return requesting_origin;
 
   if (base::FeatureList::IsEnabled(features::kPermissionDelegation)) {

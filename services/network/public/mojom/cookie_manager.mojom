@@ -351,4 +351,9 @@ interface CookieManager {
   // access rules.
   SetContentSettingsForLegacyCookieAccess(
       array<content_settings.mojom.ContentSettingPatternSource> settings);
+
+  // Sets content settings for which storage access grants exist. Will ack
+  // the caller with a callback when settings have been updated.
+  SetStorageAccessGrantSettings(
+      array<content_settings.mojom.ContentSettingPatternSource> settings) => ();
 };

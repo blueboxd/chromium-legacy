@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -193,8 +192,8 @@ public class DecoderServiceHost
     PriorityQueue<DecoderServiceParams> mPendingRequests =
             new PriorityQueue<>(/*initialCapacity=*/1, mRequestComparator);
 
-    // Map of file paths to processing decoding requests.
-    private LinkedHashMap<String, DecoderServiceParams> mProcessingRequests = new LinkedHashMap<>();
+    // The current processing request.
+    private DecoderServiceParams mProcessingRequest;
 
     // The callbacks used to notify the clients when the service is ready.
     List<ServiceReadyCallback> mCallbacks = new ArrayList<ServiceReadyCallback>();
@@ -261,7 +260,7 @@ public class DecoderServiceHost
             mPendingRequests.add(lowPriorityRequest);
         }
 
-        if (mProcessingRequests.size() == 0) dispatchNextDecodeRequest();
+        if (mProcessingRequest == null) dispatchNextDecodeRequest();
     }
 
     /**
@@ -282,20 +281,18 @@ public class DecoderServiceHost
      * Dispatches the next image/video for decoding (from the queue).
      */
     private void dispatchNextDecodeRequest() {
-        DecoderServiceParams params = getNextPending();
-        if (params != null) {
-            mProcessingRequests.put(params.mUri.getPath(), params);
-
-            params.mTimestamp = SystemClock.elapsedRealtime();
-            if (params.mFileType != PickerBitmap.TileTypes.VIDEO) {
-                dispatchDecodeImageRequest(params);
+        // A new decoding request should not be dispatched while something is already in progress.
+        assert mProcessingRequest == null;
+        mProcessingRequest = getNextPending();
+        if (mProcessingRequest != null) {
+            mProcessingRequest.mTimestamp = SystemClock.elapsedRealtime();
+            if (mProcessingRequest.mFileType != PickerBitmap.TileTypes.VIDEO) {
+                dispatchDecodeImageRequest(mProcessingRequest);
             } else {
-                dispatchDecodeVideoRequest(params, params.mFirstFrame);
+                dispatchDecodeVideoRequest(mProcessingRequest, mProcessingRequest.mFirstFrame);
             }
             return;
         }
-
-        if (mProcessingRequests.entrySet().iterator().hasNext()) return;
 
         int totalImageRequests =
                 mSuccessfulImageDecodes + mFailedImageDecodesRuntime + mFailedImageDecodesMemory;
@@ -429,48 +426,48 @@ public class DecoderServiceHost
      */
     public void closeRequest(String filePath, boolean isVideo, boolean fullWidth,
             @Nullable List<Bitmap> bitmaps, String videoDuration, long decodeTime, float ratio) {
-        DecoderServiceParams params = mProcessingRequests.get(filePath);
-        if (params != null) {
-            long endRpcCall = SystemClock.elapsedRealtime();
-            if (isVideo && bitmaps != null) {
-                if (bitmaps != null && bitmaps.size() > 1) {
+        // If this assert triggers, it means that simultaneous requests have been sent for
+        // decoding, which should not happen.
+        assert mProcessingRequest.mUri.getPath().equals(filePath);
+        long endRpcCall = SystemClock.elapsedRealtime();
+        if (isVideo && bitmaps != null) {
+            if (bitmaps != null && bitmaps.size() > 1) {
+                RecordHistogram.recordTimesHistogram(
+                        "Android.PhotoPicker.RequestProcessTimeAnimation",
+                        endRpcCall - mProcessingRequest.mTimestamp);
+            } else {
+                RecordHistogram.recordTimesHistogram(
+                        "Android.PhotoPicker.RequestProcessTimeThumbnail",
+                        endRpcCall - mProcessingRequest.mTimestamp);
+            }
+        } else {
+            RecordHistogram.recordTimesHistogram("Android.PhotoPicker.RequestProcessTime",
+                    endRpcCall - mProcessingRequest.mTimestamp);
+        }
+
+        mProcessingRequest.mCallback.imagesDecodedCallback(
+                filePath, isVideo, fullWidth, bitmaps, videoDuration, ratio);
+
+        if (decodeTime != -1 && bitmaps != null && bitmaps.get(0) != null) {
+            int sizeInKB = bitmaps.get(0).getByteCount() / ConversionUtils.BYTES_PER_KILOBYTE;
+            if (isVideo) {
+                if (bitmaps.size() > 1) {
                     RecordHistogram.recordTimesHistogram(
-                            "Android.PhotoPicker.RequestProcessTimeAnimation",
-                            endRpcCall - params.mTimestamp);
+                            "Android.PhotoPicker.VideoDecodeTimeAnimation", decodeTime);
                 } else {
                     RecordHistogram.recordTimesHistogram(
-                            "Android.PhotoPicker.RequestProcessTimeThumbnail",
-                            endRpcCall - params.mTimestamp);
+                            "Android.PhotoPicker.VideoDecodeTimeThumbnail", decodeTime);
+                    RecordHistogram.recordCustomCountHistogram(
+                            "Android.PhotoPicker.VideoByteCount", sizeInKB, 1, 100000, 50);
                 }
             } else {
                 RecordHistogram.recordTimesHistogram(
-                        "Android.PhotoPicker.RequestProcessTime", endRpcCall - params.mTimestamp);
+                        "Android.PhotoPicker.ImageDecodeTime", decodeTime);
+                RecordHistogram.recordCustomCountHistogram(
+                        "Android.PhotoPicker.ImageByteCount", sizeInKB, 1, 100000, 50);
             }
-
-            params.mCallback.imagesDecodedCallback(
-                    filePath, isVideo, fullWidth, bitmaps, videoDuration, ratio);
-
-            if (decodeTime != -1 && bitmaps != null && bitmaps.get(0) != null) {
-                int sizeInKB = bitmaps.get(0).getByteCount() / ConversionUtils.BYTES_PER_KILOBYTE;
-                if (isVideo) {
-                    if (bitmaps.size() > 1) {
-                        RecordHistogram.recordTimesHistogram(
-                                "Android.PhotoPicker.VideoDecodeTimeAnimation", decodeTime);
-                    } else {
-                        RecordHistogram.recordTimesHistogram(
-                                "Android.PhotoPicker.VideoDecodeTimeThumbnail", decodeTime);
-                        RecordHistogram.recordCustomCountHistogram(
-                                "Android.PhotoPicker.VideoByteCount", sizeInKB, 1, 100000, 50);
-                    }
-                } else {
-                    RecordHistogram.recordTimesHistogram(
-                            "Android.PhotoPicker.ImageDecodeTime", decodeTime);
-                    RecordHistogram.recordCustomCountHistogram(
-                            "Android.PhotoPicker.ImageByteCount", sizeInKB, 1, 100000, 50);
-                }
-            }
-            mProcessingRequests.remove(filePath);
         }
+        mProcessingRequest = null;
 
         dispatchNextDecodeRequest();
     }
@@ -544,12 +541,13 @@ public class DecoderServiceHost
      * @param filePath The path to the image to cancel decoding.
      */
     public void cancelDecodeImage(String filePath) {
+        // It is important not to null out only pending requests and not mProcessingRequest, because
+        // it is used as a signal to see if the decoder is busy.
         Iterator it = mPendingRequests.iterator();
         while (it.hasNext()) {
             DecoderServiceParams param = (DecoderServiceParams) it.next();
             if (param.mUri.getPath().equals(filePath)) it.remove();
         }
-        mProcessingRequests.remove(filePath);
     }
 
     /** Sets a callback to use when the service is ready. For testing use only. */

@@ -42,6 +42,18 @@
 #include "chrome/common/auto_start_linux.h"
 #endif
 
+#if defined(USE_AURA)
+// This test fails http://crbug.com/84854, and is very flaky on CrOS and
+// somewhat flaky on other Linux.
+#define MAYBE_ForceShutdown DISABLED_ForceShutdown
+#else
+#if defined(OS_LINUX) || defined(OS_WIN)
+#define MAYBE_ForceShutdown DISABLED_ForceShutdown
+#else
+#define MAYBE_ForceShutdown ForceShutdown
+#endif
+#endif
+
 namespace {
 
 bool g_good_shutdown = false;
@@ -106,7 +118,8 @@ TEST_F(ServiceProcessStateTest, Singleton) {
   LaunchAndWait("ServiceProcessStateTestSingleton");
 }
 
-TEST_F(ServiceProcessStateTest, ReadyState) {
+// http://crbug.com/396390
+TEST_F(ServiceProcessStateTest, DISABLED_ReadyState) {
   ASSERT_FALSE(CheckServiceProcessReady());
   ServiceProcessState state;
   ASSERT_TRUE(state.Initialize());
@@ -184,7 +197,7 @@ TEST_F(ServiceProcessStateTest, SharedMem) {
   ASSERT_EQ(base::GetCurrentProcId(), pid);
 }
 
-TEST_F(ServiceProcessStateTest, ForceShutdown) {
+TEST_F(ServiceProcessStateTest, MAYBE_ForceShutdown) {
   base::Process process = SpawnChild("ServiceProcessStateTestShutdown");
   ASSERT_TRUE(process.IsValid());
   for (int i = 0; !CheckServiceProcessReady() && i < 10; ++i) {

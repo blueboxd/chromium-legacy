@@ -9,6 +9,7 @@
 #include <set>
 
 #include "base/callback.h"
+#include "base/i18n/rtl.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
@@ -35,7 +36,6 @@
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
-#include "third_party/blink/public/web/web_text_direction.h"
 #include "v8/include/v8.h"
 
 namespace gfx {
@@ -405,13 +405,13 @@ class WebLocalFrame : public WebFrame {
 
   // Returns the text direction at the start and end bounds of the current
   // selection.  If the selection range is empty, it returns false.
-  virtual bool SelectionTextDirection(WebTextDirection& start,
-                                      WebTextDirection& end) const = 0;
+  virtual bool SelectionTextDirection(base::i18n::TextDirection& start,
+                                      base::i18n::TextDirection& end) const = 0;
   // Returns true if the selection range is nonempty and its anchor is first
   // (i.e its anchor is its start).
   virtual bool IsSelectionAnchorFirst() const = 0;
   // Changes the text direction of the selected input node.
-  virtual void SetTextDirection(WebTextDirection) = 0;
+  virtual void SetTextDirection(base::i18n::TextDirection) = 0;
 
   // Selection -----------------------------------------------------------
 

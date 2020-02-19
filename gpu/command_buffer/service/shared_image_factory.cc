@@ -105,7 +105,7 @@ SharedImageFactory::SharedImageFactory(
         std::make_unique<ExternalVkImageFactory>(context_state);
   }
   interop_backing_factory_ = std::make_unique<SharedImageBackingFactoryAHB>(
-      workarounds, gpu_feature_info, context_state);
+      workarounds, gpu_feature_info);
 #elif defined(OS_MACOSX)
   // OSX
   DCHECK(!using_vulkan_);

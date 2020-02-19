@@ -933,7 +933,7 @@ void UiControllerAndroid::OnKeyValueChanged(const std::string& key,
 void UiControllerAndroid::OnTextFocusLost() {
   // We set a delay to avoid having the keyboard flickering when the focus goes
   // from one text field to another
-  base::PostDelayedTask(
+  content::GetUIThreadTaskRunner({})->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&UiControllerAndroid::HideKeyboardIfFocusNotOnText,
                      weak_ptr_factory_.GetWeakPtr()),

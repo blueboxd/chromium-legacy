@@ -51,8 +51,7 @@ const char kAsanDefaultOptions[] =
 #elif defined(OS_MACOSX)
 const char* kAsanDefaultOptions =
     "check_printf=1 use_sigaltstack=1 strip_path_prefix=/../../ "
-    "fast_unwind_on_fatal=1 detect_stack_use_after_return=1 "
-    "detect_odr_violation=0 ";
+    "fast_unwind_on_fatal=1 detect_stack_use_after_return=1 ";
 
 #elif defined(OS_WIN)
 const char* kAsanDefaultOptions =
@@ -95,7 +94,7 @@ SANITIZER_HOOK_ATTRIBUTE const char *__asan_default_suppressions() {
 const char kTsanDefaultOptions[] =
     "detect_deadlocks=1 second_deadlock_stack=1 report_signal_unsafe=0 "
     "report_thread_leaks=0 print_suppressions=1 history_size=7 "
-    "strict_memcmp=0 strip_path_prefix=/../../ ";
+    "strip_path_prefix=/../../ ";
 
 SANITIZER_HOOK_ATTRIBUTE const char *__tsan_default_options() {
   return kTsanDefaultOptions;
@@ -111,12 +110,9 @@ SANITIZER_HOOK_ATTRIBUTE const char *__tsan_default_suppressions() {
 
 #if defined(MEMORY_SANITIZER)
 // Default options for MemorySanitizer:
-//   intercept_memcmp=0 - do not detect uninitialized memory in memcmp() calls.
-//     Pending cleanup, see http://crbug.com/523428
 //   strip_path_prefix=/../../ - prefixes up to and including this
 //     substring will be stripped from source file paths in symbolized reports.
-const char kMsanDefaultOptions[] =
-    "intercept_memcmp=0 strip_path_prefix=/../../ ";
+const char kMsanDefaultOptions[] = "strip_path_prefix=/../../ ";
 
 SANITIZER_HOOK_ATTRIBUTE const char *__msan_default_options() {
   return kMsanDefaultOptions;

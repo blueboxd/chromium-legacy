@@ -235,7 +235,8 @@ bool BaseFile::ValidateDataInFile(int64_t offset,
     return true;
 
   std::unique_ptr<char[]> buffer(new char[data_len]);
-  if (file_.Read(offset, buffer.get(), data_len) <= 0)
+  int bytes_read = file_.Read(offset, buffer.get(), data_len);
+  if (bytes_read < 0 || static_cast<size_t>(bytes_read) < data_len)
     return false;
 
   return memcmp(data, buffer.get(), data_len) == 0;

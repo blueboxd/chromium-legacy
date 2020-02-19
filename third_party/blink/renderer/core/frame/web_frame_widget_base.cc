@@ -71,6 +71,7 @@ void WebFrameWidgetBase::Close() {
   local_root_ = nullptr;
   client_ = nullptr;
   request_animation_after_delay_timer_.reset();
+  widget_base_.SetCompositorHosts(nullptr, nullptr);
 }
 
 WebLocalFrame* WebFrameWidgetBase::LocalRoot() const {
@@ -432,6 +433,13 @@ WebLocalFrame* WebFrameWidgetBase::FocusedWebLocalFrameInWidget() const {
   return WebLocalFrameImpl::FromFrame(FocusedLocalFrameInWidget());
 }
 
+void WebFrameWidgetBase::SetCompositorHosts(cc::LayerTreeHost* layer_tree_host,
+                                            cc::AnimationHost* animation_host) {
+  widget_base_.SetCompositorHosts(layer_tree_host, animation_host);
+  GetPage()->AnimationHostInitialized(*AnimationHost(),
+                                      GetLocalFrameViewForAnimationScrolling());
+}
+
 void WebFrameWidgetBase::RequestAnimationAfterDelay(
     const base::TimeDelta& delay) {
   DCHECK(request_animation_after_delay_timer_.get());
@@ -453,7 +461,7 @@ base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>
 WebFrameWidgetBase::EnsureCompositorMutatorDispatcher(
     scoped_refptr<base::SingleThreadTaskRunner>* mutator_task_runner) {
   if (!mutator_task_runner_) {
-    Client()->SetLayerTreeMutator(
+    widget_base_.LayerTreeHost()->SetLayerTreeMutator(
         AnimationWorkletMutatorDispatcherImpl::CreateCompositorThreadClient(
             &mutator_dispatcher_, &mutator_task_runner_));
   }
@@ -463,13 +471,17 @@ WebFrameWidgetBase::EnsureCompositorMutatorDispatcher(
   return mutator_dispatcher_;
 }
 
+cc::AnimationHost* WebFrameWidgetBase::AnimationHost() const {
+  return widget_base_.AnimationHost();
+}
+
 base::WeakPtr<PaintWorkletPaintDispatcher>
 WebFrameWidgetBase::EnsureCompositorPaintDispatcher(
     scoped_refptr<base::SingleThreadTaskRunner>* paint_task_runner) {
   // We check paint_task_runner_ not paint_dispatcher_ because the dispatcher is
   // a base::WeakPtr that should only be used on the compositor thread.
   if (!paint_task_runner_) {
-    Client()->SetPaintWorkletLayerPainterClient(
+    widget_base_.LayerTreeHost()->SetPaintWorkletLayerPainter(
         PaintWorkletPaintDispatcher::CreateCompositorThreadPainter(
             &paint_dispatcher_));
     paint_task_runner_ = Thread::CompositorThread()->GetTaskRunner();

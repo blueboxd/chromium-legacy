@@ -244,4 +244,41 @@ public class DecoderServiceHostTest implements DecoderServiceHost.ServiceReadyCa
 
         host.unbind(mContext);
     }
+
+    @Test
+    @LargeTest
+    public void testCancelation() throws Throwable {
+        DecoderServiceHost host = new DecoderServiceHost(this, mContext);
+        host.bind(mContext);
+        waitForDecoder();
+
+        String green = "green100x100.jpg";
+        String yellow = "yellow100x100.jpg";
+        String red = "red100x100.jpg";
+        String filePath = "chrome/test/data/android/photo_picker/";
+        String greenPath = UrlUtils.getIsolatedTestFilePath(filePath + green);
+        String yellowPath = UrlUtils.getIsolatedTestFilePath(filePath + yellow);
+        String redPath = UrlUtils.getIsolatedTestFilePath(filePath + red);
+
+        host.decodeImage(Uri.fromFile(new File(greenPath)), PickerBitmap.TileTypes.PICTURE, 10,
+                /*fullWidth=*/false, this);
+        host.decodeImage(Uri.fromFile(new File(yellowPath)), PickerBitmap.TileTypes.PICTURE, 10,
+                /*fullWidth=*/false, this);
+
+        // Now add and subsequently remove the request.
+        host.decodeImage(Uri.fromFile(new File(redPath)), PickerBitmap.TileTypes.PICTURE, 10,
+                /*fullWidth=*/false, this);
+        host.cancelDecodeImage(redPath);
+
+        // First decoding result should be the green image.
+        waitForThumbnailDecode();
+        Assert.assertEquals(greenPath, mLastDecodedPath);
+
+        // Next is the yellow image, and asserts in DecoderServiceHost (designed to catch when
+        // multiple simultaneous decoding requests are started) should not fire.
+        waitForThumbnailDecode();
+        Assert.assertEquals(yellowPath, mLastDecodedPath);
+
+        host.unbind(mContext);
+    }
 }

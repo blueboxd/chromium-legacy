@@ -61,7 +61,7 @@ class DedicatedWorkerService;
 class DevToolsBackgroundServicesContext;
 class DOMStorageContext;
 class GeneratedCodeCacheContext;
-class IndexedDBContext;
+class IndexedDBContextImpl;
 class NativeFileSystemEntryFactory;
 class PlatformNotificationContext;
 class ServiceWorkerContext;
@@ -128,7 +128,7 @@ class CONTENT_EXPORT StoragePartition {
   virtual storage::DatabaseTracker* GetDatabaseTracker() = 0;
   virtual DOMStorageContext* GetDOMStorageContext() = 0;
   virtual storage::mojom::IndexedDBControl& GetIndexedDBControl() = 0;
-  virtual IndexedDBContext* GetIndexedDBContext() = 0;
+  virtual IndexedDBContextImpl* GetIndexedDBContextImplForTesting() = 0;
   virtual NativeFileSystemEntryFactory* GetNativeFileSystemEntryFactory() = 0;
   virtual ServiceWorkerContext* GetServiceWorkerContext() = 0;
   virtual DedicatedWorkerService* GetDedicatedWorkerService() = 0;

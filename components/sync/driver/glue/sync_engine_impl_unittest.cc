@@ -78,7 +78,6 @@ class TestSyncEngineHost : public SyncEngineHostStub {
                            const std::string&,
                            const std::string&,
                            const std::string&,
-                           const std::string&,
                            bool success) override {
     EXPECT_EQ(expect_success_, success);
     std::move(set_engine_types_).Run(initial_types);
@@ -690,6 +689,19 @@ TEST_F(SyncEngineImplTest, DownloadControlTypesRestart) {
   InitializeBackend(true);
   EXPECT_EQ(CONFIGURE_REASON_NEWLY_ENABLED_DATA_TYPE,
             fake_manager_->GetAndResetConfigureReason());
+}
+
+TEST_F(SyncEngineImplTest, TestStartupWithOldSyncData) {
+  const char* nonsense = "slon";
+  base::FilePath temp_directory =
+      temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir));
+  base::FilePath sync_file = temp_directory.AppendASCII("SyncData.sqlite3");
+  ASSERT_TRUE(base::CreateDirectory(temp_directory));
+  ASSERT_NE(-1, base::WriteFile(sync_file, nonsense, strlen(nonsense)));
+
+  InitializeBackend(true);
+
+  EXPECT_FALSE(base::PathExists(sync_file));
 }
 
 // If bookmarks encounter an error that results in disabling without purging

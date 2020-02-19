@@ -88,6 +88,8 @@ namespace autofill {
 using form_util::FindFormAndFieldForFormControlElement;
 using form_util::UnownedCheckoutFormElementsAndFieldSetsToFormData;
 using mojom::SubmissionSource;
+using ShowAll = PasswordAutofillAgent::ShowAll;
+using GenerationShowing = PasswordAutofillAgent::GenerationShowing;
 
 namespace {
 
@@ -654,8 +656,8 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
   element_ = element;
   if (form_util::IsAutofillableInputElement(input_element) &&
       password_autofill_agent_->ShowSuggestions(
-          *input_element, options.show_full_suggestion_list,
-          is_generation_popup_possibly_visible_)) {
+          *input_element, ShowAll(options.show_full_suggestion_list),
+          GenerationShowing(is_generation_popup_possibly_visible_))) {
     is_popup_possibly_visible_ = true;
     return;
   }

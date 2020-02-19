@@ -9,6 +9,7 @@
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/events/gesture_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"
@@ -122,7 +123,7 @@ void MediaControlTimelineElement::DefaultEventHandler(Event& event) {
   MediaControlInputElement::DefaultEventHandler(event);
 
   if (IsA<MouseEvent>(event) || event.IsKeyboardEvent() ||
-      event.IsGestureEvent() || IsA<PointerEvent>(event)) {
+      IsA<GestureEvent>(event) || IsA<PointerEvent>(event)) {
     MaybeRecordInteracted();
   }
 

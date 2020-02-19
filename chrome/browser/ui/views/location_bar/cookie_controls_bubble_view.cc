@@ -272,12 +272,10 @@ void CookieControlsBubbleView::WindowClosing() {
 
 void CookieControlsBubbleView::OnDialogAccepted() {
   if (intermediate_step_ == IntermediateStep::kTurnOffButton) {
-    base::RecordAction(UserMetricsAction("CookieControls.Bubble.TurnOff"));
     controller_->OnCookieBlockingEnabledForSite(false);
   } else {
     DCHECK_EQ(status_, CookieControlsController::Status::kDisabledForSite);
     DCHECK_EQ(intermediate_step_, IntermediateStep::kNone);
-    base::RecordAction(UserMetricsAction("CookieControls.Bubble.TurnOn"));
     controller_->OnCookieBlockingEnabledForSite(true);
   }
 }

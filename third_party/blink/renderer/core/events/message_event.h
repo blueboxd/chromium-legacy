@@ -210,27 +210,16 @@ class CORE_EXPORT MessageEvent final : public Event {
     kDataTypeArrayBuffer
   };
 
-  class V8GCAwareString final {
-    DISALLOW_NEW();
+  size_t SizeOfExternalMemoryInBytes();
 
-   public:
-    V8GCAwareString() = default;
-    V8GCAwareString(const String&);
+  void RegisterAmountOfExternallyAllocatedMemory();
 
-    ~V8GCAwareString();
-
-    V8GCAwareString& operator=(const String&);
-
-    const String& data() const { return string_; }
-
-   private:
-    String string_;
-  };
+  void UnregisterAmountOfExternallyAllocatedMemory();
 
   DataType data_type_;
   WorldSafeV8Reference<v8::Value> data_as_v8_value_;
   Member<UnpackedSerializedScriptValue> data_as_serialized_script_value_;
-  V8GCAwareString data_as_string_;
+  String data_as_string_;
   Member<Blob> data_as_blob_;
   Member<DOMArrayBuffer> data_as_array_buffer_;
   bool is_data_dirty_ = true;
@@ -246,6 +235,7 @@ class CORE_EXPORT MessageEvent final : public Event {
   Member<UserActivation> user_activation_;
   bool transfer_user_activation_ = false;
   bool allow_autoplay_ = false;
+  size_t amount_of_external_memory_ = 0;
 };
 
 }  // namespace blink

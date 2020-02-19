@@ -31,10 +31,10 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_MENU_ITEM_INFO_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_MENU_ITEM_INFO_H_
 
+#include "base/i18n/rtl.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/blink/public/web/web_text_direction.h"
 
 namespace blink {
 
@@ -44,7 +44,7 @@ struct WebMenuItemInfo {
   WebMenuItemInfo()
       : type(kOption),
         action(0),
-        text_direction(kWebTextDirectionDefault),
+        text_direction(base::i18n::TextDirection::UNKNOWN_DIRECTION),
         has_text_direction_override(false),
         enabled(false),
         checked(false) {}
@@ -53,7 +53,7 @@ struct WebMenuItemInfo {
   WebString tool_tip;
   Type type;
   unsigned action;
-  WebTextDirection text_direction;
+  base::i18n::TextDirection text_direction;
   WebVector<WebMenuItemInfo> sub_menu_items;
   bool has_text_direction_override;
   bool enabled;

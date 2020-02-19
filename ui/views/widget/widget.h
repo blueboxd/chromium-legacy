@@ -153,18 +153,17 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   struct VIEWS_EXPORT InitParams {
     enum Type {
-      TYPE_WINDOW,      // A decorated Window, like a frame window.
-                        // Widgets of TYPE_WINDOW will have a NonClientView.
-      TYPE_WINDOW_FRAMELESS,
-                        // An undecorated Window.
-      TYPE_CONTROL,     // A control, like a button.
-      TYPE_POPUP,       // An undecorated Window, with transient properties.
-      TYPE_MENU,        // An undecorated Window, with transient properties
-                        // specialized to menus.
+      TYPE_WINDOW,  // A decorated Window, like a frame window.
+                    // Widgets of TYPE_WINDOW will have a NonClientView.
+      TYPE_WINDOW_FRAMELESS,  // An undecorated Window.
+      TYPE_CONTROL,           // A control, like a button.
+      TYPE_POPUP,  // An undecorated Window, with transient properties.
+      TYPE_MENU,   // An undecorated Window, with transient properties
+                   // specialized to menus.
       TYPE_TOOLTIP,
       TYPE_BUBBLE,
-      TYPE_DRAG,        // An undecorated Window, used during a drag-and-drop to
-                        // show the drag image.
+      TYPE_DRAG,  // An undecorated Window, used during a drag-and-drop to
+                  // show the drag image.
     };
 
     enum class WindowOpacity {

@@ -78,15 +78,12 @@ void RenderViewContextMenuMac::UpdateTextDirection(
     base::i18n::TextDirection direction) {
   DCHECK_NE(direction, base::i18n::UNKNOWN_DIRECTION);
 
-  blink::WebTextDirection dir = blink::kWebTextDirectionLeftToRight;
   int command_id = IDC_WRITING_DIRECTION_LTR;
-  if (direction == base::i18n::RIGHT_TO_LEFT) {
-    dir = blink::kWebTextDirectionRightToLeft;
+  if (direction == base::i18n::RIGHT_TO_LEFT)
     command_id = IDC_WRITING_DIRECTION_RTL;
-  }
 
   content::RenderViewHost* view_host = GetRenderViewHost();
-  view_host->GetWidget()->UpdateTextDirection(dir);
+  view_host->GetWidget()->UpdateTextDirection(direction);
   view_host->GetWidget()->NotifyTextDirection();
 
   RenderViewContextMenu::RecordUsedItem(command_id);

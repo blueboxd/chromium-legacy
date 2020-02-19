@@ -24,7 +24,7 @@ void RetryTimer::Start(
   if (max_wait_time <= base::TimeDelta::FromSeconds(0)) {
     remaining_attempts_ = 1;
   } else {
-    remaining_attempts_ = 1 + max_wait_time / period_;
+    remaining_attempts_ = (max_wait_time + period_) / period_;
   }
   DCHECK_GE(remaining_attempts_, 1);
   RunTask();

@@ -164,9 +164,6 @@ void WebFrameWidgetImpl::Close() {
 
   WebFrameWidgetBase::Close();
 
-  animation_host_ = nullptr;
-  root_layer_ = nullptr;
-
   self_keep_alive_.Clear();
 }
 
@@ -853,6 +850,10 @@ PageWidgetEventHandler* WebFrameWidgetImpl::GetPageWidgetEventHandler() {
   return this;
 }
 
+LocalFrameView* WebFrameWidgetImpl::GetLocalFrameViewForAnimationScrolling() {
+  return LocalRootImpl()->GetFrame()->View();
+}
+
 WebInputEventResult WebFrameWidgetImpl::HandleKeyEvent(
     const WebKeyboardEvent& event) {
   DCHECK((event.GetType() == WebInputEvent::kRawKeyDown) ||
@@ -985,14 +986,6 @@ Element* WebFrameWidgetImpl::FocusedElement() const {
   return document->FocusedElement();
 }
 
-void WebFrameWidgetImpl::SetAnimationHost(cc::AnimationHost* animation_host) {
-  DCHECK(Client());
-  animation_host_ = animation_host;
-
-  GetPage()->AnimationHostInitialized(*animation_host_,
-                                      LocalRootImpl()->GetFrame()->View());
-}
-
 PaintLayerCompositor* WebFrameWidgetImpl::Compositor() const {
   LocalFrame* frame = LocalRootImpl()->GetFrame();
   if (!frame || !frame->GetDocument() || !frame->GetDocument()->GetLayoutView())
@@ -1002,9 +995,7 @@ PaintLayerCompositor* WebFrameWidgetImpl::Compositor() const {
 }
 
 void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
-  root_layer_ = std::move(layer);
-
-  if (!root_layer_) {
+  if (!layer) {
     // This notifies the WebFrameWidgetImpl that its LocalFrame tree is being
     // detached.
     return;
@@ -1019,13 +1010,7 @@ void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
                                        View()->MinimumPageScaleFactor(),
                                        View()->MaximumPageScaleFactor());
 
-  // TODO(danakj): SetIsAcceleratedCompositingActive() also sets the root layer
-  // if it's not null..
-  Client()->SetRootLayer(root_layer_);
-}
-
-cc::AnimationHost* WebFrameWidgetImpl::AnimationHost() const {
-  return animation_host_;
+  widget_base_.LayerTreeHost()->SetRootLayer(layer);
 }
 
 HitTestResult WebFrameWidgetImpl::CoreHitTestResultAt(

@@ -35,7 +35,7 @@ interface WaylandBufferManagerHost {
   // very first CommitBuffer request comes from viz to browser process.
   // If the buffer has been committed at least once, it is not possible to
   // reassign it to another AcceleratedWidget.
-  CreateDmabufBasedBuffer(handle dmabuf_fd,
+  CreateDmabufBasedBuffer(handle<platform> dmabuf_fd,
                           gfx.mojom.Size size,
                           array<uint32> strides,
                           array<uint32> offsets,
@@ -52,7 +52,7 @@ interface WaylandBufferManagerHost {
   // very first CommitBuffer request comes from viz to browser process. If
   // the buffer has been committed at least once, it is not possible to
   // reassign it to another AcceleratedWidget.
-  CreateShmBasedBuffer(handle shm_fd,
+  CreateShmBasedBuffer(handle<platform> shm_fd,
                        uint64 length,
                        gfx.mojom.Size size,
                        uint32 buffer_id);

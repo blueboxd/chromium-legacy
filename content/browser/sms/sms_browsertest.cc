@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/test/metrics/histogram_tester.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/sms/sms_fetcher_impl.h"
@@ -132,6 +133,7 @@ class SmsBrowserTest : public ContentBrowserTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
+  base::HistogramTester histogram_tester;
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -168,7 +170,9 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
 
   ASSERT_FALSE(GetSmsFetcher()->HasSubscribers());
 
+  content::FetchHistogramsFromChildProcesses();
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kSuccess);
+  histogram_tester.ExpectTotalCount("Blink.Sms.Receive.TimeSuccess", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOneSmsRequestPerOrigin) {
@@ -576,6 +580,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsReceivedAfterTabIsClosed) {
 }
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
+  base::HistogramTester histogram_tester;
   GURL url = GetTestUrl(nullptr, "simple_page.html");
   EXPECT_TRUE(NavigateToURL(shell(), url));
 
@@ -610,7 +615,9 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
 
   EXPECT_EQ("AbortError", EvalJs(shell(), "error"));
 
+  content::FetchHistogramsFromChildProcesses();
   ExpectOutcomeUKM(url, blink::SMSReceiverOutcome::kCancelled);
+  histogram_tester.ExpectTotalCount("Blink.Sms.Receive.TimeCancel", 1);
 }
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AbortAfterSmsRetrieval) {

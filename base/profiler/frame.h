@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "base/sampling_heap_profiler/module_cache.h"
+#include "base/profiler/module_cache.h"
 
 namespace base {
 

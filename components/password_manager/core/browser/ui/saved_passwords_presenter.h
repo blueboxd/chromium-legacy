@@ -7,8 +7,12 @@
 
 #include <vector>
 
+#include "base/containers/span.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string_piece_forward.h"
+#include "components/password_manager/core/browser/password_store.h"
+#include "components/password_manager/core/browser/password_store_consumer.h"
 
 namespace autofill {
 struct PasswordForm;
@@ -27,8 +31,11 @@ namespace password_manager {
 // in the new password to be checked, whereas other password edit operations
 // (such as visiting a change password form and then updating the password in
 // Chrome) should not trigger a check.
-class SavedPasswordsPresenter {
+class SavedPasswordsPresenter : public PasswordStore::Observer,
+                                public PasswordStoreConsumer {
  public:
+  using SavedPasswordsView = base::span<const autofill::PasswordForm>;
+
   // Observer interface. Clients can implement this to get notified about
   // changes to the list of saved passwords or if a given password was edited
   // Clients can register and de-register themselves, and are expected to do so
@@ -38,41 +45,56 @@ class SavedPasswordsPresenter {
     // Notifies the observer when a password is edited or the list of saved
     // passwords changed.
     //
-    // OnEdited() will be invoked asynchronously if EditPassword() is invoked
-    // with a password that was present in the store. |password.password_value|
-    // will be equal to |new_password| in this case.
+    // OnEdited() will be invoked synchronously if EditPassword() is invoked
+    // with a password that was present in |passwords_|.
+    // |password.password_value| will be equal to |new_password| in this case.
     virtual void OnEdited(const autofill::PasswordForm& password) {}
     // OnSavedPasswordsChanged() gets invoked asynchronously after a change to
     // the underlying password store happens. This might be due to a call to
     // EditPassword(), but can also happen if passwords are added or removed due
-    // to other reasons. Clients are then expected to call GetSavedPassword() in
-    // order to obtain the new list of credentials.
-    virtual void OnSavedPasswordsChanged() {}
+    // to other reasons.
+    virtual void OnSavedPasswordsChanged(SavedPasswordsView passwords) {}
   };
 
-  SavedPasswordsPresenter();
-  virtual ~SavedPasswordsPresenter();
+  explicit SavedPasswordsPresenter(scoped_refptr<PasswordStore> store);
+  ~SavedPasswordsPresenter() override;
 
-  // Edits |password|. This will ask the password store to change the underlying
-  // password_value to |new_password|. This will also notify clients that an
-  // edit event happened in case |password| was present in the store.
-  virtual void EditPassword(const autofill::PasswordForm& password,
-                            base::StringPiece16 new_password) = 0;
+  // Initializes the presenter and makes it issue the first request for all
+  // saved passwords.
+  void Init();
 
-  // Returns a list of the currently saved credentials. Note that this is not a
-  // read-only view, as it combines the result of multiple password stores that
-  // change independently. This list is created on demand and callers should be
-  // mindful to not create unnecessary copies.
-  virtual std::vector<autofill::PasswordForm> GetSavedPasswords() = 0;
+  // Tries to edit |password|. After checking whether |password| is present in
+  // |passwords_|, this will ask the password store to change the underlying
+  // password_value to |new_password| in case it was found. This will also
+  // notify clients that an edit event happened in case |password| was present
+  // in |passwords_|.
+  bool EditPassword(const autofill::PasswordForm& password,
+                    base::string16 new_password);
+
+  // Returns a list of the currently saved credentials.
+  SavedPasswordsView GetSavedPasswords() const;
 
   // Allows clients and register and de-register themselves.
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
  private:
+  // PasswordStore::Observer
+  void OnLoginsChanged(const PasswordStoreChangeList& changes) override;
+
+  // PasswordStoreConsumer:
+  void OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
+
   // Notify observers about changes in the compromised credentials.
   void NotifyEdited(const autofill::PasswordForm& password);
   void NotifySavedPasswordsChanged();
+
+  // The password store containing the saved passwords.
+  scoped_refptr<PasswordStore> store_;
+
+  // Cache of the most recently obtained saved passwords.
+  std::vector<autofill::PasswordForm> passwords_;
 
   base::ObserverList<Observer, /*check_empty=*/true> observers_;
 };

@@ -8,13 +8,13 @@
 #include <numeric>
 #include <utility>
 
+#include "base/profiler/module_cache.h"
 #include "base/profiler/profile_builder.h"
 #include "base/profiler/stack_buffer.h"
 #include "base/profiler/stack_copier.h"
 #include "base/profiler/stack_sampler_impl.h"
 #include "base/profiler/suspendable_thread_delegate.h"
 #include "base/profiler/unwinder.h"
-#include "base/sampling_heap_profiler/module_cache.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "testing/gmock/include/gmock/gmock.h"

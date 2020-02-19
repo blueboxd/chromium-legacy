@@ -99,7 +99,7 @@ void CGaiaCredentialProviderModule::InitializeCrashReporting() {
             crash_reporter::switches::kCrashpadHandler &&
         ::InterlockedCompareExchange(&crashpad_initialized_, 1, 0) == 0) {
       ConfigureGcpCrashReporting(*cmd_line);
-      LOGFN(INFO) << "Crash reporting was initialized.";
+      LOGFN(VERBOSE) << "Crash reporting was initialized.";
     }
   }
 }
@@ -125,14 +125,21 @@ BOOL CGaiaCredentialProviderModule::DllMain(HINSTANCE /*hinstance*/,
                            true,    // Enable timestamp.
                            false);  // Enable tickcount.
       logging::SetEventSource("GCPW", GCPW_CATEGORY, MSG_LOG_MESSAGE);
+      if (GetGlobalFlagOrDefault(kRegEnableVerboseLogging, 0))
+        logging::SetMinLogLevel(logging::LOG_VERBOSE);
 
-      LOGFN(INFO) << "DllMain(DLL_PROCESS_ATTACH) Build: "
+      wchar_t process_name[MAX_PATH] = {0};
+      GetModuleFileName(nullptr, process_name, MAX_PATH);
+
+      LOGFN(INFO) << "GCPW Initialized in " << process_name
+                  << " GCPW Version: " << (CHROME_VERSION_STRING)
+                  << " Windows Build: "
                   << base::win::OSInfo::GetInstance()->Kernel32BaseVersion()
                   << " Version:" << GetWindowsVersion();
       break;
     }
     case DLL_PROCESS_DETACH:
-      LOGFN(INFO) << "DllMain(DLL_PROCESS_DETACH)";
+      LOGFN(VERBOSE) << "DllMain(DLL_PROCESS_DETACH)";
 
       // When this DLL is loaded for testing, don't reset the command line
       // since it causes tests to crash.

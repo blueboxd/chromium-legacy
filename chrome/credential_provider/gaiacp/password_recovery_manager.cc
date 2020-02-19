@@ -496,7 +496,7 @@ HRESULT PasswordRecoveryManager::StoreWindowsPasswordIfNeeded(
         return hr;
       }
 
-      LOGFN(INFO) << "Encrypted and stored secret for sid=" << sid;
+      LOGFN(VERBOSE) << "Encrypted and stored secret for sid=" << sid;
     } else {
       LOGFN(ERROR) << "base::JSONWriter::Write failed";
       return E_FAIL;
@@ -557,7 +557,7 @@ HRESULT PasswordRecoveryManager::RecoverWindowsPasswordIfPossible(
     *recovered_password = decrypted_password;
   SecurelyClearString(decrypted_password);
 
-  LOGFN(INFO) << "Decrypted the secret for sid=" << sid;
+  LOGFN(VERBOSE) << "Decrypted the secret for sid=" << sid;
 
   return hr;
 }

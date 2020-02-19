@@ -762,13 +762,6 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::CleanupLockRequired(
       std::find(outer_->workers_.begin(), outer_->workers_.end(), worker);
   DCHECK(worker_iter != outer_->workers_.end());
   outer_->workers_.erase(worker_iter);
-
-  ++outer_->num_workers_cleaned_up_for_testing_;
-#if DCHECK_IS_ON()
-  outer_->some_workers_cleaned_up_for_testing_ = true;
-#endif
-  if (outer_->num_workers_cleaned_up_for_testing_cv_)
-    outer_->num_workers_cleaned_up_for_testing_cv_->Signal();
 }
 
 void ThreadGroupImpl::WorkerThreadDelegateImpl::OnWorkerBecomesIdleLockRequired(
@@ -805,6 +798,19 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::OnMainExit(
 #if defined(OS_WIN)
   worker_only().win_thread_environment.reset();
 #endif  // defined(OS_WIN)
+
+  // Count cleaned up workers for tests. It's important to do this here instead
+  // of at the end of CleanupLockRequired() because some side-effects of
+  // cleaning up happen outside the lock (e.g. recording histograms) and
+  // resuming from tests must happen-after that point or checks on the main
+  // thread will be flaky (crbug.com/1047733).
+  CheckedAutoLock auto_lock(outer_->lock_);
+  ++outer_->num_workers_cleaned_up_for_testing_;
+#if DCHECK_IS_ON()
+  outer_->some_workers_cleaned_up_for_testing_ = true;
+#endif
+  if (outer_->num_workers_cleaned_up_for_testing_cv_)
+    outer_->num_workers_cleaned_up_for_testing_cv_->Signal();
 }
 
 void ThreadGroupImpl::WorkerThreadDelegateImpl::BlockingStarted(

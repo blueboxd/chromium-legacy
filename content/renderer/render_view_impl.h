@@ -226,9 +226,9 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   base::StringPiece GetSessionStorageNamespaceId() override;
   void PrintPage(blink::WebLocalFrame* frame) override;
   void SetValidationMessageDirection(base::string16* main_text,
-                                     blink::WebTextDirection main_text_hint,
+                                     base::i18n::TextDirection main_text_hint,
                                      base::string16* sub_text,
-                                     blink::WebTextDirection sub_text_hint);
+                                     base::i18n::TextDirection sub_text_hint);
   void SetMouseOverURL(const blink::WebURL& url) override;
   void SetKeyboardFocusURL(const blink::WebURL& url) override;
   bool AcceptsLoadDrops() override;

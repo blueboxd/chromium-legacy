@@ -193,10 +193,10 @@ class CORE_EXPORT WebLocalFrameImpl final
   bool ExecuteCommand(const WebString&) override;
   bool ExecuteCommand(const WebString&, const WebString& value) override;
   bool IsCommandEnabled(const WebString&) const override;
-  bool SelectionTextDirection(WebTextDirection& start,
-                              WebTextDirection& end) const override;
+  bool SelectionTextDirection(base::i18n::TextDirection& start,
+                              base::i18n::TextDirection& end) const override;
   bool IsSelectionAnchorFirst() const override;
-  void SetTextDirection(WebTextDirection) override;
+  void SetTextDirection(base::i18n::TextDirection) override;
   bool HasSelection() const override;
   WebRange SelectionRange() const override;
   WebString SelectionAsText() const override;

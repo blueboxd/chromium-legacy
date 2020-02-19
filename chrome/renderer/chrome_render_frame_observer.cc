@@ -15,8 +15,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/lock.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
@@ -33,6 +35,7 @@
 #include "components/web_cache/renderer/web_cache_impl.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/window_features_converter.h"
 #include "extensions/common/constants.h"
@@ -131,6 +134,21 @@ SkBitmap Downscale(const SkBitmap& image,
                                        static_cast<int>(scaled_size.height()));
 }
 
+#if defined(OS_ANDROID)
+base::Lock& GetFrameHeaderMapLock() {
+  static base::NoDestructor<base::Lock> s;
+  return *s;
+}
+
+using FrameHeaderMap = std::map<int, std::string>;
+
+FrameHeaderMap& GetFrameHeaderMap() {
+  GetFrameHeaderMapLock().AssertAcquired();
+  static base::NoDestructor<FrameHeaderMap> s;
+  return *s;
+}
+#endif
+
 }  // namespace
 
 ChromeRenderFrameObserver::ChromeRenderFrameObserver(
@@ -158,7 +176,20 @@ ChromeRenderFrameObserver::ChromeRenderFrameObserver(
 }
 
 ChromeRenderFrameObserver::~ChromeRenderFrameObserver() {
+#if defined(OS_ANDROID)
+  base::AutoLock auto_lock(GetFrameHeaderMapLock());
+  GetFrameHeaderMap().erase(routing_id());
+#endif
 }
+
+#if defined(OS_ANDROID)
+std::string ChromeRenderFrameObserver::GetCCTClientHeader(int render_frame_id) {
+  base::AutoLock auto_lock(GetFrameHeaderMapLock());
+  auto frame_map = GetFrameHeaderMap();
+  auto iter = frame_map.find(render_frame_id);
+  return iter == frame_map.end() ? std::string() : iter->second;
+}
+#endif
 
 void ChromeRenderFrameObserver::OnInterfaceRequestForFrame(
     const std::string& interface_name,
@@ -304,6 +335,13 @@ void ChromeRenderFrameObserver::GetWebApplicationInfo(
 
   std::move(callback).Run(web_app_info);
 }
+
+#if defined(OS_ANDROID)
+void ChromeRenderFrameObserver::SetCCTClientHeader(const std::string& header) {
+  base::AutoLock auto_lock(GetFrameHeaderMapLock());
+  GetFrameHeaderMap()[routing_id()] = header;
+}
+#endif
 
 void ChromeRenderFrameObserver::SetClientSidePhishingDetection(
     bool enable_phishing_detection) {

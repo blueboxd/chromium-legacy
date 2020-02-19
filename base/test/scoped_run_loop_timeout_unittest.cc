@@ -61,5 +61,19 @@ TEST(ScopedRunLoopTimeoutTest, RunTasksUntilTimeout) {
   EXPECT_FATAL_FAILURE(static_loop.Run(), "Run() timed out.");
 }
 
+TEST(ScopedRunLoopTimeoutTest, OnTimeoutLog) {
+  TaskEnvironment task_environment;
+  RunLoop run_loop;
+
+  static constexpr auto kArbitraryTimeout = TimeDelta::FromMilliseconds(10);
+  ScopedRunLoopTimeout run_timeout(
+      FROM_HERE, kArbitraryTimeout,
+      BindRepeating([]() -> std::string { return "I like kittens!"; }));
+
+  // EXPECT_FATAL_FAILURE() can only reference globals and statics.
+  static RunLoop& static_loop = run_loop;
+  EXPECT_FATAL_FAILURE(static_loop.Run(), "Run() timed out.\nI like kittens!");
+}
+
 }  // namespace test
 }  // namespace base

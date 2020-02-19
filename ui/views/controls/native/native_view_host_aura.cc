@@ -55,9 +55,8 @@ class NativeViewHostAura::ClippingWindowDelegate : public aura::WindowDelegate {
     // Ask the hosted native view's delegate because directly calling
     // aura::Window::CanFocus() will call back into this when checking whether
     // parents can focus.
-    return native_view_ && native_view_->delegate()
-        ? native_view_->delegate()->CanFocus()
-        : true;
+    return !native_view_ || !native_view_->delegate() ||
+           native_view_->delegate()->CanFocus();
   }
   void OnCaptureLost() override {}
   void OnPaint(const ui::PaintContext& context) override {}

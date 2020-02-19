@@ -22,4 +22,12 @@ void RecordSmsOutcome(SMSReceiverOutcome outcome,
   UMA_HISTOGRAM_ENUMERATION("Blink.Sms.Receive.Outcome", outcome);
 }
 
+void RecordSmsSuccessTime(base::TimeDelta duration) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("Blink.Sms.Receive.TimeSuccess", duration);
+}
+
+void RecordSmsCancelTime(base::TimeDelta duration) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("Blink.Sms.Receive.TimeCancel", duration);
+}
+
 }  // namespace blink

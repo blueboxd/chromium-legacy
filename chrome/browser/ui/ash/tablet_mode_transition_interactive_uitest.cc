@@ -6,7 +6,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -36,8 +36,9 @@ class TabletModeTransitionTest : public UIPerformanceTest {
     int wait_ms = (base::SysInfo::IsRunningOnChromeOS() ? 5000 : 0) +
                   (additional_browsers + 1) * cost_per_browser;
     base::RunLoop run_loop;
-    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                          base::TimeDelta::FromMilliseconds(wait_ms));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(wait_ms));
     run_loop.Run();
 
     // The uma stats we are interested in measure the animations directly so we

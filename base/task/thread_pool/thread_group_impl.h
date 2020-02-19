@@ -116,8 +116,9 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // Waits until all workers are idle.
   void WaitForAllWorkersIdleForTesting();
 
-  // Waits until |n| workers have cleaned up (since the last call to
-  // WaitForWorkersCleanedUpForTesting() or Start() if it wasn't called yet).
+  // Waits until |n| workers have cleaned up (went through
+  // WorkerThreadDelegateImpl::OnMainExit()) since the last call to
+  // WaitForWorkersCleanedUpForTesting() (or Start() if that wasn't called yet).
   void WaitForWorkersCleanedUpForTesting(size_t n);
 
   // Returns the number of workers in this thread group.
@@ -312,8 +313,9 @@ class BASE_EXPORT ThreadGroupImpl : public ThreadGroup {
   // Indicates to the delegates that workers are not permitted to cleanup.
   bool worker_cleanup_disallowed_for_testing_ GUARDED_BY(lock_) = false;
 
-  // Counts the number of workers cleaned up since the last call to
-  // WaitForWorkersCleanedUpForTesting() (or Start() if it wasn't called yet).
+  // Counts the number of workers cleaned up (went through
+  // WorkerThreadDelegateImpl::OnMainExit()) since the last call to
+  // WaitForWorkersCleanedUpForTesting() (or Start() if that wasn't called yet).
   // |some_workers_cleaned_up_for_testing_| is true if this was ever
   // incremented. Tests with a custom |suggested_reclaim_time_| can wait on a
   // specific number of workers being cleaned up via

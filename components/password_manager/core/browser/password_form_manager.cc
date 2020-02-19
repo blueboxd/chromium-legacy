@@ -927,6 +927,12 @@ bool PasswordFormManager::UsePossibleUsername(
       return false;
   }
 
+#if defined(OS_ANDROID)
+  // Do not trust local heuristics on Android.
+  // TODO(https://crbug.com/1051914): Make local heuristics more reliable.
+  return false;
+#endif  // defined(OS_ANDROID)
+
   // Check whether it is already learned from previous user actions whether
   // |possible_username| corresponds to the valid username form.
   const FieldInfoManager* field_info_manager = client_->GetFieldInfoManager();

@@ -5939,8 +5939,8 @@ class InputMethodStateAuraTest : public InputMethodAuraTestBase {
 TEST_F(InputMethodStateAuraTest, GetCaretBounds) {
   WidgetHostMsg_SelectionBounds_Params params;
   params.is_anchor_first = true;
-  params.anchor_dir = blink::kWebTextDirectionLeftToRight;
-  params.focus_dir = blink::kWebTextDirectionLeftToRight;
+  params.anchor_dir = base::i18n::LEFT_TO_RIGHT;
+  params.focus_dir = base::i18n::LEFT_TO_RIGHT;
   params.anchor_rect = gfx::Rect(0, 0, 10, 10);
   for (auto index : active_view_sequence_) {
     ActivateViewForTextInputManager(views_[index], ui::TEXT_INPUT_TYPE_TEXT);
@@ -6275,8 +6275,8 @@ TEST_F(RenderWidgetHostViewAuraInputMethodTest, OnCaretBoundsChanged) {
 
   WidgetHostMsg_SelectionBounds_Params params;
   params.is_anchor_first = true;
-  params.anchor_dir = blink::kWebTextDirectionLeftToRight;
-  params.focus_dir = blink::kWebTextDirectionLeftToRight;
+  params.anchor_dir = base::i18n::LEFT_TO_RIGHT;
+  params.focus_dir = base::i18n::LEFT_TO_RIGHT;
   params.anchor_rect = gfx::Rect(0, 0, 10, 10);
   params.focus_rect = gfx::Rect(10, 10, 10, 10);
   parent_view_->SelectionBoundsChanged(params);

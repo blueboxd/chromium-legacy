@@ -47,9 +47,13 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
     return false;
 
   const uint32_t fourcc_format = GetFourCCFormatFromBufferFormat(format);
-  auto modifiers = buffer_manager_->GetModifiersForBufferFormat(format);
+  auto gbm_usage = ui::BufferUsageToGbmFlags(usage);
+  std::vector<uint64_t> modifiers;
+  if (!(gbm_usage & GBM_BO_USE_LINEAR))
+    modifiers = buffer_manager_->GetModifiersForBufferFormat(format);
+
   gbm_bo_ = buffer_manager_->gbm_device()->CreateBufferWithModifiers(
-      fourcc_format, size, ui::BufferUsageToGbmFlags(usage), modifiers);
+      fourcc_format, size, gbm_usage, modifiers);
   if (!gbm_bo_) {
     LOG(ERROR) << "Cannot create bo with format= "
                << gfx::BufferFormatToString(format) << " and usage "

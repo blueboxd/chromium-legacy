@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -166,6 +167,25 @@ int PersistedData::GetDaysSinceLastActive(const std::string& id) const {
   return activity_data_service_
              ? activity_data_service_->GetDaysSinceLastActive(id)
              : kDaysUnknown;
+}
+
+base::Version PersistedData::GetProductVersion(const std::string& id) const {
+  return base::Version(GetString(id, "pv"));
+}
+
+void PersistedData::SetProductVersion(const std::string& id,
+                                      const base::Version& pv) {
+  DCHECK(pv.IsValid());
+  SetString(id, "pv", pv.GetString());
+}
+
+std::string PersistedData::GetFingerprint(const std::string& id) const {
+  return GetString(id, "fp");
+}
+
+void PersistedData::SetFingerprint(const std::string& id,
+                                   const std::string& fingerprint) {
+  SetString(id, "fp", fingerprint);
 }
 
 void PersistedData::RegisterPrefs(PrefRegistrySimple* registry) {

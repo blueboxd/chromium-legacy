@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/memory_pressure_listener.h"
-#include "base/sampling_heap_profiler/module_cache.h"
+#include "base/profiler/module_cache.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/strings/stringprintf.h"
 #include "content/public/browser/render_process_host.h"

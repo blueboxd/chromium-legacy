@@ -368,8 +368,6 @@ used when committed.
     to Mojo and services in Chromium, with examples
 *   [Mojo API Reference](/mojo/README.md) - Detailed reference documentation for
     all things Mojo
-*   [The Service Manager &amp; Services](/services/service_manager/README.md) -
-    Services system overview, API references, example services
 *   [Service Development Guidelines](/services/README.md) - Guidelines for
     service development in the Chromium tree
 *   [Servicifying Chromium Features](servicification.md) - General advice for

@@ -202,7 +202,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // RenderWidgetHost implementation.
   const viz::FrameSinkId& GetFrameSinkId() override;
-  void UpdateTextDirection(blink::WebTextDirection direction) override;
+  void UpdateTextDirection(base::i18n::TextDirection direction) override;
   void NotifyTextDirection() override;
   void Focus() override;
   void Blur() override;
@@ -833,7 +833,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnUpdateScreenRectsAck();
   void OnRequestSetBounds(const gfx::Rect& bounds);
   void OnSetTooltipText(const base::string16& tooltip_text,
-                        blink::WebTextDirection text_direction_hint);
+                        base::i18n::TextDirection text_direction_hint);
   void OnSetCursor(const WebCursor& cursor);
   void OnAutoscrollStart(const gfx::PointF& position);
   void OnAutoscrollFling(const gfx::Vector2dF& velocity);
@@ -1104,7 +1104,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Set when we update the text direction of the selected input element.
   bool text_direction_updated_ = false;
-  blink::WebTextDirection text_direction_ = blink::kWebTextDirectionLeftToRight;
+  base::i18n::TextDirection text_direction_ = base::i18n::LEFT_TO_RIGHT;
 
   // Indicates if Char and KeyUp events should be suppressed or not. Usually all
   // events are sent to the renderer directly in sequence. However, if a

@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatcher.h"
 #include "third_party/blink/renderer/core/events/ui_event_with_key_state.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -52,7 +53,10 @@ class CORE_EXPORT GestureEvent final : public UIEventWithKeyState {
   WebGestureEvent native_event_;
 };
 
-DEFINE_EVENT_TYPE_CASTS(GestureEvent);
+template <>
+struct DowncastTraits<GestureEvent> {
+  static bool AllowFrom(const Event& event) { return event.IsGestureEvent(); }
+};
 
 }  // namespace blink
 

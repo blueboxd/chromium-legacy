@@ -175,16 +175,14 @@ bool WebViewFrameWidget::ScrollFocusedEditableElementIntoView() {
   return web_view_->ScrollFocusedEditableElementIntoView();
 }
 
-void WebViewFrameWidget::SetAnimationHost(cc::AnimationHost* host) {
-  web_view_->SetAnimationHost(host);
-}
-
-void WebViewFrameWidget::SetRootLayer(scoped_refptr<cc::Layer> layer) {
-  web_view_->SetRootLayer(layer);
-}
-
-cc::AnimationHost* WebViewFrameWidget::AnimationHost() const {
-  return web_view_->AnimationHost();
+void WebViewFrameWidget::SetRootLayer(scoped_refptr<cc::Layer> root_layer) {
+  if (!web_view_->does_composite()) {
+    DCHECK(!root_layer);
+    return;
+  }
+  cc::LayerTreeHost* layer_tree_host = widget_base_.LayerTreeHost();
+  layer_tree_host->SetRootLayer(root_layer);
+  web_view_->DidChangeRootLayer(!!root_layer);
 }
 
 WebHitTestResult WebViewFrameWidget::HitTestResultAt(const gfx::Point& point) {
@@ -206,6 +204,14 @@ void WebViewFrameWidget::Trace(Visitor* visitor) {
 
 PageWidgetEventHandler* WebViewFrameWidget::GetPageWidgetEventHandler() {
   return web_view_.get();
+}
+
+LocalFrameView* WebViewFrameWidget::GetLocalFrameViewForAnimationScrolling() {
+  // Scrolling for the root frame is special we need to pass null indicating
+  // we are at the top of the tree when setting up the Animation. Which will
+  // cause ownership of the timeline and animation host.
+  // See ScrollingCoordinator::AnimationHostInitialized.
+  return nullptr;
 }
 
 }  // namespace blink

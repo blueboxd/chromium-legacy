@@ -136,15 +136,14 @@ class SmsServiceTest : public RenderViewHostTestHarness {
   SmsServiceTest() {}
   ~SmsServiceTest() override {}
 
-  std::unique_ptr<base::HistogramSamples> GetHistogramSamplesSinceTestStart(
-      const std::string& name) {
-    return histogram_tester_.GetHistogramSamplesSinceCreation(name);
-  }
-
   void ExpectDestroyedReasonCount(SmsReceiverDestroyedReason bucket,
                                   int32_t count) {
     histogram_tester_.ExpectBucketCount("Blink.Sms.Receive.DestroyedReason",
                                         bucket, count);
+  }
+
+  const base::HistogramTester& histogram_tester() const {
+    return histogram_tester_;
   }
 
  private:
@@ -617,14 +616,9 @@ TEST_F(SmsServiceTest, RecordTimeMetricsForContinueOnSuccess) {
 
   loop.Run();
 
-  std::unique_ptr<base::HistogramSamples> continue_samples(
-      GetHistogramSamplesSinceTestStart(
-          "Blink.Sms.Receive.TimeContinueOnSuccess"));
-  EXPECT_EQ(1, continue_samples->TotalCount());
-
-  std::unique_ptr<base::HistogramSamples> receive_samples(
-      GetHistogramSamplesSinceTestStart("Blink.Sms.Receive.TimeSmsReceive"));
-  EXPECT_EQ(1, receive_samples->TotalCount());
+  histogram_tester().ExpectTotalCount("Blink.Sms.Receive.TimeContinueOnSuccess",
+                                      1);
+  histogram_tester().ExpectTotalCount("Blink.Sms.Receive.TimeSmsReceive", 1);
 }
 
 TEST_F(SmsServiceTest, RecordMetricsForCancelOnSuccess) {
@@ -648,14 +642,9 @@ TEST_F(SmsServiceTest, RecordMetricsForCancelOnSuccess) {
 
   loop.Run();
 
-  std::unique_ptr<base::HistogramSamples> samples(
-      GetHistogramSamplesSinceTestStart(
-          "Blink.Sms.Receive.TimeCancelOnSuccess"));
-  EXPECT_EQ(1, samples->TotalCount());
-
-  std::unique_ptr<base::HistogramSamples> receive_samples(
-      GetHistogramSamplesSinceTestStart("Blink.Sms.Receive.TimeSmsReceive"));
-  EXPECT_EQ(1, receive_samples->TotalCount());
+  histogram_tester().ExpectTotalCount("Blink.Sms.Receive.TimeCancelOnSuccess",
+                                      1);
+  histogram_tester().ExpectTotalCount("Blink.Sms.Receive.TimeSmsReceive", 1);
 }
 
 TEST_F(SmsServiceTest, RecordMetricsForNewPage) {

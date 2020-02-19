@@ -549,7 +549,7 @@ PROXY_METHOD1_SLOW(nullable id<MTLArgumentEncoder>,
                    newArgumentEncoderWithArguments,
                    NSArray<MTLArgumentDescriptor*>*)
 
-#if defined(MAC_OS_X_VERSION_10_14)
+// macOS 10.14
 PROXY_METHOD1_SLOW(nullable id<MTLTexture>,
                    newSharedTextureWithDescriptor,
                    MTLTextureDescriptor*)
@@ -573,9 +573,8 @@ PROXY_METHOD0(nullable id<MTLSharedEvent>, newSharedEvent)
 PROXY_METHOD1(nullable id<MTLSharedEvent>,
               newSharedEventWithHandle,
               MTLSharedEventHandle*)
-#endif  // MAC_OS_X_VERSION_10_14
 
-#if defined(MAC_OS_X_VERSION_10_15)
+// macOS 10.15
 PROXY_METHOD0(BOOL, hasUnifiedMemory)
 PROXY_METHOD0(MTLDeviceLocation, location)
 PROXY_METHOD0(NSUInteger, locationNumber)
@@ -593,7 +592,6 @@ PROXY_METHOD2_SLOW(nullable id<MTLCounterSampleBuffer>,
                    error,
                    NSError**)
 PROXY_METHOD2(void, sampleTimestamps, NSUInteger*, gpuTimestamp, NSUInteger*)
-#endif  // MAC_OS_X_VERSION_10_15
 
 #pragma clang diagnostic pop
 @end

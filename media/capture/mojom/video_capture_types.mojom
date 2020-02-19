@@ -304,7 +304,7 @@ struct MailboxBufferHandleSet {
 };
 
 struct SharedMemoryViaRawFileDescriptor {
-  handle file_descriptor_handle;
+  handle<platform> file_descriptor_handle;
   uint32 shared_memory_size_in_bytes;
 };
 

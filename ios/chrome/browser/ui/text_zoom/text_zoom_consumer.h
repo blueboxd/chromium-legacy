@@ -11,6 +11,8 @@
 - (void)setZoomInEnabled:(BOOL)enabled;
 // Tells the consumer that the user can currently zoom out.
 - (void)setZoomOutEnabled:(BOOL)enabled;
+// Tells the consumer that the user can currently reset the zoom level.
+- (void)setResetZoomEnabled:(BOOL)enabled;
 
 @end
 

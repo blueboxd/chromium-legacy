@@ -87,7 +87,7 @@ void WidgetExample::BuildButton(View* container,
 }
 
 void WidgetExample::ShowWidget(View* sender, Widget::InitParams params) {
-  // Setup shared Widget heirarchy and bounds parameters.
+  // Setup shared Widget hierarchy and bounds parameters.
   params.parent = sender->GetWidget()->GetNativeView();
   params.bounds = gfx::Rect(sender->GetBoundsInScreen().CenterPoint(),
                             gfx::Size(300, 200));

@@ -43,6 +43,9 @@ class FontSizeTabHelper : public web::WebStateObserver,
   // Returns whether the user can still zoom out. (I.e., They have not reached
   // the min zoom level.).
   bool CanUserZoomOut() const;
+  // Returns whether the user can reset the zoom level. (I.e., They are not at
+  // the default zoom level.)
+  bool CanUserResetZoom() const;
 
   // Remove any stored zoom levels from the provided |PrefService|.
   static void ClearUserZoomPrefs(PrefService* pref_service);

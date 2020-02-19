@@ -149,17 +149,16 @@ BASE_EXPORT int MacOSXMinorVersion();
 //   Chromium, remove the #ifdef that switches between TEST_DEPLOYMENT_TARGET
 //   and IGNORE_DEPLOYMENT_TARGET.
 
+// Versions of macOS supported at runtime but whose SDK is not supported for
+// building.
 DEFINE_IS_OS_FUNCS_CR_MIN_REQUIRED(10, TEST_DEPLOYMENT_TARGET)
 DEFINE_IS_OS_FUNCS(11, TEST_DEPLOYMENT_TARGET)
 DEFINE_IS_OS_FUNCS(12, TEST_DEPLOYMENT_TARGET)
 DEFINE_IS_OS_FUNCS(13, TEST_DEPLOYMENT_TARGET)
-
-#ifdef MAC_OS_X_VERSION_10_14
 DEFINE_IS_OS_FUNCS(14, TEST_DEPLOYMENT_TARGET)
-#else
-DEFINE_IS_OS_FUNCS(14, IGNORE_DEPLOYMENT_TARGET)
-#endif
 
+// Versions of macOS supported at runtime and whose SDK is supported for
+// building.
 #ifdef MAC_OS_X_VERSION_10_15
 DEFINE_IS_OS_FUNCS(15, TEST_DEPLOYMENT_TARGET)
 #else

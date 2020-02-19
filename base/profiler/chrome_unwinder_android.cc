@@ -9,9 +9,9 @@
 #include "base/debug/proc_maps_linux.h"
 #include "base/no_destructor.h"
 #include "base/numerics/checked_math.h"
+#include "base/profiler/module_cache.h"
 #include "base/profiler/native_unwinder.h"
 #include "base/profiler/profile_builder.h"
-#include "base/sampling_heap_profiler/module_cache.h"
 #include "build/build_config.h"
 
 extern "C" {

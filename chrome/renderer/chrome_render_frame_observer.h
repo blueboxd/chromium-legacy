@@ -46,6 +46,12 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
     return &associated_interfaces_;
   }
 
+#if defined(OS_ANDROID)
+  // This is called on the main thread for subresources or worker threads for
+  // dedicated workers.
+  static std::string GetCCTClientHeader(int render_frame_id);
+#endif
+
  private:
   enum TextCaptureType { PRELIMINARY_CAPTURE, FINAL_CAPTURE };
 
@@ -88,6 +94,9 @@ class ChromeRenderFrameObserver : public content::RenderFrameObserver,
   void RequestReloadImageForContextNode() override;
   void SetClientSidePhishingDetection(bool enable_phishing_detection) override;
   void GetWebApplicationInfo(GetWebApplicationInfoCallback callback) override;
+#if defined(OS_ANDROID)
+  void SetCCTClientHeader(const std::string& header) override;
+#endif
 
   void OnRenderFrameObserverRequest(
       mojo::PendingAssociatedReceiver<chrome::mojom::ChromeRenderFrame>

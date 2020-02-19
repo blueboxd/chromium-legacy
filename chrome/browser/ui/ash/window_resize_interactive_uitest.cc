@@ -6,7 +6,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/ash/ash_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -130,8 +130,8 @@ class WindowResizeTest
     // Make sure startup tasks won't affect measurement.
     if (base::SysInfo::IsRunningOnChromeOS()) {
       base::RunLoop run_loop;
-      base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                            base::TimeDelta::FromSeconds(5));
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(5));
       run_loop.Run();
     }
 
@@ -200,8 +200,9 @@ IN_PROC_BROWSER_TEST_P(WindowResizeTest, Multi) {
   ui_controls::SendMouseMove(start_point.x(), start_point.y());
   base::RunLoop run_loop;
   // Wait to trigger resize handle.
-  base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                        base::TimeDelta::FromMilliseconds(500));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      base::TimeDelta::FromMilliseconds(500));
   run_loop.Run();
   start_point.Offset(0, 50);
   auto producer = std::make_unique<MultiPointProducer>(start_point);

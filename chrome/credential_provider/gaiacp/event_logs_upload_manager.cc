@@ -399,7 +399,7 @@ GURL EventLogsUploadManager::GetGcpwServiceUploadEventViewerLogsUrl() {
 
 HRESULT EventLogsUploadManager::UploadEventViewerLogs(
     const std::string& access_token) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
 
   DWORD log_upload_level = GetGlobalFlagOrDefault(kEventLogUploadLevelRegKey,
                                                   kDefaultUploadLogLevel);
@@ -465,8 +465,8 @@ HRESULT EventLogsUploadManager::UploadEventViewerLogs(
     ++num_upload_requests_made;
   }
 
-  LOGFN(INFO) << num_event_logs_uploaded_ << " events uploaded with "
-              << num_upload_requests_made << " requests.";
+  LOGFN(VERBOSE) << num_event_logs_uploaded_ << " events uploaded with "
+                 << num_upload_requests_made << " requests.";
   upload_status_ = S_OK;
   return upload_status_;
 }

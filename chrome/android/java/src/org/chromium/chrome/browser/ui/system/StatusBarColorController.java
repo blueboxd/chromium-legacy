@@ -19,9 +19,6 @@ import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
-import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
@@ -31,6 +28,7 @@ import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.toolbar.ToolbarColors;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator;
 import org.chromium.chrome.browser.widget.ScrimView;
 import org.chromium.components.browser_ui.styles.ChromeColors;
@@ -250,15 +248,9 @@ public class StatusBarColorController
             boolean supportsDarkStatusIcons = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
             if (!supportsDarkStatusIcons) return Color.BLACK;
 
-            if (!ChromeFeatureList.isInitialized()
-                    || (!ChromeFeatureList.isEnabled(
-                                ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID)
-                            && !DeviceClassManager.enableAccessibilityLayout()
-                            && !CachedFeatureFlags.isGridTabSwitcherEnabled())) {
-                return mStandardPrimaryBgColor;
-            }
-
-            return mIsIncognito ? mIncognitoPrimaryBgColor : mStandardPrimaryBgColor;
+            return (mIsIncognito && ToolbarColors.canUseIncognitoToolbarThemeColorInOverview())
+                    ? mIncognitoPrimaryBgColor
+                    : mStandardPrimaryBgColor;
         }
 
         // Return status bar color in standard NewTabPage. If location bar is not shown in NTP, we

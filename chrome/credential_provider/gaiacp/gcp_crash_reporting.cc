@@ -65,7 +65,7 @@ void ConfigureGcpCrashReporting(const base::CommandLine& command_line) {
   HRESULT hr = GetCommandLineForEntrypoint(
       CURRENT_MODULE(), kRunAsCrashpadHandlerEntryPoint, &dll_main_cmd_line);
   if (hr == S_FALSE) {
-    LOGFN(INFO) << "Failed to get command line to run crashpad handler";
+    LOGFN(WARNING) << "Failed to get command line to run crashpad handler";
     return;
   }
   if (FAILED(hr)) {

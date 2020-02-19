@@ -2014,7 +2014,7 @@ void LayoutObject::MarkContainerChainForOverflowRecalcIfNeeded(
       bool already_needs_layout_overflow_recalc = false;
       if (mark_container_chain_layout_overflow_recalc) {
         already_needs_layout_overflow_recalc =
-            object->SelfNeedsLayoutOverflowRecalc();
+            object->ChildNeedsLayoutOverflowRecalc();
         if (!already_needs_layout_overflow_recalc)
           object->SetChildNeedsLayoutOverflowRecalc();
       }

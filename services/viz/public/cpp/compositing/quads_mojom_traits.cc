@@ -137,11 +137,14 @@ bool StructTraits<viz::mojom::TextureQuadStateDataView, viz::DrawQuad>::Read(
 
   quad->resources.count = 1;
   quad->premultiplied_alpha = data.premultiplied_alpha();
+  gfx::ProtectedVideoType protected_video_type =
+      gfx::ProtectedVideoType::kClear;
   if (!data.ReadUvTopLeft(&quad->uv_top_left) ||
       !data.ReadUvBottomRight(&quad->uv_bottom_right) ||
-      !data.ReadProtectedVideoType(&quad->protected_video_type)) {
+      !data.ReadProtectedVideoType(&protected_video_type)) {
     return false;
   }
+  quad->protected_video_type = protected_video_type;
   quad->background_color = data.background_color();
   base::span<float> vertex_opacity_array(quad->vertex_opacity);
   if (!data.ReadVertexOpacity(&vertex_opacity_array))

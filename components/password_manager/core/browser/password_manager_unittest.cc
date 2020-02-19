@@ -3405,7 +3405,14 @@ TEST_F(PasswordManagerTest, UsernameFirstFlow) {
   ASSERT_TRUE(form_manager_to_save);
   form_manager_to_save->Save();
 
+#if defined(OS_ANDROID)
+  // Local heuristics on Android for username first flow are not supported, so
+  // the username should not be taken from the username form.
+  EXPECT_TRUE(saved_form.username_value.empty());
+#else
   EXPECT_EQ(username, saved_form.username_value);
+#endif  // defined(OS_ANDROID)
+
   EXPECT_EQ(password, saved_form.password_value);
 }
 

@@ -249,6 +249,8 @@ class ASH_EXPORT ShelfLayoutManager
     return state_.visibility_state;
   }
 
+  bool is_active_session_state() const { return state_.IsActiveSessionState(); }
+
   bool is_shelf_auto_hidden() const { return state_.IsShelfAutoHidden(); }
 
   void LockAutoHideState(bool lock_auto_hide_state) {

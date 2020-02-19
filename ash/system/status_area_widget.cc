@@ -189,6 +189,14 @@ void StatusAreaWidget::UpdateLayout(bool animate) {
   const LayoutInputs new_layout_inputs = GetLayoutInputs();
   if (layout_inputs_ == new_layout_inputs)
     return;
+
+  // Having a window which is visible but does not have an opacity is an
+  // illegal state.
+  if (new_layout_inputs.opacity)
+    ShowInactive();
+  else
+    Hide();
+
   ui::Layer* layer = GetNativeView()->layer();
   ui::ScopedLayerAnimationSettings animation_setter(layer->GetAnimator());
   layer->SetOpacity(new_layout_inputs.opacity);

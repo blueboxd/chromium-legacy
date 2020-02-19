@@ -92,8 +92,8 @@ HRESULT InitializeReauthCredential(
     if (FAILED(hr))
       LOGFN(ERROR) << "reauth->SetEmailForReauth hr=" << putHR(hr);
   } else {
-    LOGFN(INFO) << "reauth for sid " << sid
-                << " doesn't contain the email association";
+    LOGFN(VERBOSE) << "reauth for sid " << sid
+                   << " doesn't contain the email association";
   }
 
   return S_OK;
@@ -176,8 +176,8 @@ unsigned __stdcall BackgroundTokenHandleUpdater::PeriodicTokenHandleUpdate(
     bool user_access_changed =
         AssociatedUserValidator::Get()->IsAuthEnforcedOnAssociatedUsers();
     if (user_access_changed) {
-      LOGFN(INFO) << "A user token handle has been invalidated. Refreshing "
-                     "credentials";
+      LOGFN(VERBOSE) << "A user token handle has been invalidated. Refreshing "
+                        "credentials";
     }
 
     event_handler->UpdateCredentialsIfNeeded(user_access_changed);
@@ -287,13 +287,13 @@ CGaiaCredentialProvider::CGaiaCredentialProvider() {}
 CGaiaCredentialProvider::~CGaiaCredentialProvider() {}
 
 HRESULT CGaiaCredentialProvider::FinalConstruct() {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   CleanupOlderVersions();
   return S_OK;
 }
 
 void CGaiaCredentialProvider::FinalRelease() {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   CHECK(!token_handle_updater_);
   ClearTransient();
   // Unlock all the users that had their access locked due to invalid token
@@ -302,7 +302,7 @@ void CGaiaCredentialProvider::FinalRelease() {
 }
 
 HRESULT CGaiaCredentialProvider::DestroyCredentials() {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   for (auto it = users_.begin(); it != users_.end(); ++it)
     (*it)->Terminate();
 
@@ -311,7 +311,7 @@ HRESULT CGaiaCredentialProvider::DestroyCredentials() {
 }
 
 void CGaiaCredentialProvider::ClearTransient() {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   CHECK(!token_handle_updater_);
   // Reset event support.
   advise_context_ = 0;
@@ -380,7 +380,7 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
     return hr;
   }
 
-  LOGFN(INFO) << "count=" << count;
+  LOGFN(VERBOSE) << "count=" << count;
 
   std::vector<base::string16> reauth_cred_sids;
   for (DWORD i = 0; i < count; ++i) {
@@ -468,7 +468,7 @@ HRESULT CGaiaCredentialProvider::CreateReauthCredentials(
     // credential created.
     reauth_cred_sids.push_back(sid);
 
-    LOGFN(INFO) << "Reauth SID : " << sid;
+    LOGFN(VERBOSE) << "Reauth SID : " << sid;
   }
 
   // Deny sign in access for users that have a reauth credential added to them.
@@ -509,7 +509,7 @@ void CGaiaCredentialProvider::AddCredentialAndCheckAutoLogon(
 
 void CGaiaCredentialProvider::RecreateCredentials(
     GaiaCredentialComPtrStorage* auto_logon_credential) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   DCHECK(user_array_);
 
   DestroyCredentials();
@@ -570,7 +570,7 @@ HRESULT CGaiaCredentialProvider::OnUserAuthenticatedImpl(
       events_->CredentialsChanged(advise_context_);
   }
 
-  LOGFN(INFO) << "Signing in authenticated sid=" << OLE2CW(sid);
+  LOGFN(VERBOSE) << "Signing in authenticated sid=" << OLE2CW(sid);
   return S_OK;
 }
 
@@ -632,7 +632,7 @@ HRESULT CGaiaCredentialProvider::OnUserAuthenticated(
 
 HRESULT CGaiaCredentialProvider::SetUserArray(
     ICredentialProviderUserArray* users) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   CHECK(!token_handle_updater_);
 
   if (!IsUsageScenarioSupported(cpus_))
@@ -661,7 +661,7 @@ HRESULT CGaiaCredentialProvider::SetUsageScenario(
   cpus_ = cpus;
   cpus_flags_ = flags;
 
-  LOGFN(INFO) << " cpu=" << cpus << " flags=" << std::setbase(16) << flags;
+  LOGFN(VERBOSE) << " cpu=" << cpus << " flags=" << std::setbase(16) << flags;
   return IsUsageScenarioSupported(cpus_) ? S_OK : E_NOTIMPL;
 }
 
@@ -814,8 +814,8 @@ HRESULT CGaiaCredentialProvider::GetCredentialCount(
     *autologin_with_default = *default_index != CREDENTIAL_PROVIDER_NO_DEFAULT;
   }
 
-  LOGFN(INFO) << " count=" << *count << " default=" << *default_index
-              << " auto=" << *autologin_with_default;
+  LOGFN(VERBOSE) << " count=" << *count << " default=" << *default_index
+                 << " auto=" << *autologin_with_default;
   return S_OK;
 }
 
@@ -832,7 +832,7 @@ HRESULT CGaiaCredentialProvider::GetCredentialAt(
   hr = users_[index]->QueryInterface(IID_ICredentialProviderCredential,
                                      (void**)ppcpc);
 
-  LOGFN(INFO) << "hr=" << putHR(hr) << " index=" << index;
+  LOGFN(VERBOSE) << "hr=" << putHR(hr) << " index=" << index;
   return hr;
 }
 

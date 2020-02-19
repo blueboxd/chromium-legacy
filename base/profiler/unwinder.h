@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "base/profiler/frame.h"
+#include "base/profiler/module_cache.h"
 #include "base/profiler/register_context.h"
-#include "base/sampling_heap_profiler/module_cache.h"
 
 namespace base {
 

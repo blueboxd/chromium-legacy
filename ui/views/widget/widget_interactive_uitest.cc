@@ -169,11 +169,13 @@ class NestedLoopCaptureView : public View {
 ui::WindowShowState GetWidgetShowState(const Widget* widget) {
   // Use IsMaximized/IsMinimized/IsFullScreen instead of GetWindowPlacement
   // because the former is implemented on all platforms but the latter is not.
-  return widget->IsFullscreen() ? ui::SHOW_STATE_FULLSCREEN :
-      widget->IsMaximized() ? ui::SHOW_STATE_MAXIMIZED :
-      widget->IsMinimized() ? ui::SHOW_STATE_MINIMIZED :
-      widget->IsActive() ? ui::SHOW_STATE_NORMAL :
-                           ui::SHOW_STATE_INACTIVE;
+  if (widget->IsFullscreen())
+    return ui::SHOW_STATE_FULLSCREEN;
+  if (widget->IsMaximized())
+    return ui::SHOW_STATE_MAXIMIZED;
+  if (widget->IsMinimized())
+    return ui::SHOW_STATE_MINIMIZED;
+  return widget->IsActive() ? ui::SHOW_STATE_NORMAL : ui::SHOW_STATE_INACTIVE;
 }
 
 // Give the OS an opportunity to process messages for an activation change, when

@@ -411,6 +411,12 @@ void SharingSyncPreference::ClearLocalSharingInfo() {
   }
 }
 
+void SharingSyncPreference::SetDeviceInfoTrackerForTesting(
+    syncer::DeviceInfoTracker* tracker) {
+  DCHECK(tracker);
+  device_info_tracker_ = tracker;
+}
+
 // static
 base::Optional<syncer::DeviceInfo::SharingInfo>
 SharingSyncPreference::GetLocalSharingInfo(PrefService* prefs) {

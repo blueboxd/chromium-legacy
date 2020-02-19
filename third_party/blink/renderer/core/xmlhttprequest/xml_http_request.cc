@@ -68,6 +68,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/core/url/url_search_params.h"
+#include "third_party/blink/renderer/core/xmlhttprequest/main_thread_disallow_synchronous_xhr_scope.h"
 #include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request_upload.h"
 #include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -1100,18 +1101,6 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
   if (async_) {
     UseCounter::Count(&execution_context,
                       WebFeature::kXMLHttpRequestAsynchronous);
-    if (execution_context.IsDocument()) {
-      // Update histogram for usage of async xhr within pagedismissal.
-      auto pagedismissal = GetDocument()->PageDismissalEventBeingDispatched();
-      if (pagedismissal != Document::kNoDismissal) {
-        UseCounter::Count(&execution_context,
-                          WebFeature::kAsyncXhrInPageDismissal);
-        DEFINE_STATIC_LOCAL(EnumerationHistogram,
-                            asyncxhr_pagedismissal_histogram,
-                            ("XHR.Async.PageDismissal", 5));
-        asyncxhr_pagedismissal_histogram.Count(pagedismissal);
-      }
-    }
     if (upload_)
       request.SetReportUploadProgress(true);
 
@@ -1136,33 +1125,16 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
               WebFeature::kXMLHttpRequestSynchronousInSameOriginSubframe);
         }
       }
-      // Update histogram for usage of sync xhr within pagedismissal.
-      auto pagedismissal = GetDocument()->PageDismissalEventBeingDispatched();
-      if (pagedismissal != Document::kNoDismissal) {
-        // Disallow synchronous requests on page dismissal unless enabled by
-        // origin trial or enterprise policy.
-        if (!RuntimeEnabledFeatures::AllowSyncXHRInPageDismissalEnabled(
-                &execution_context)) {
-          UseCounter::Count(&execution_context,
-                            WebFeature::kForbiddenSyncXhrInPageDismissal);
-          DEFINE_STATIC_LOCAL(EnumerationHistogram,
-                              forbidden_syncxhr_pagedismissal_histogram,
-                              ("XHR.Sync.PageDismissal_forbidden", 5));
-          forbidden_syncxhr_pagedismissal_histogram.Count(pagedismissal);
-          HandleNetworkError();
-          ThrowForLoadFailureIfNeeded(exception_state,
-                                      "Synchronous XHR in page dismissal. See "
-                                      "https://www.chromestatus.com/feature/"
-                                      "4664843055398912 for more details.");
-          return;
-        } else {
-          UseCounter::Count(&execution_context,
-                            WebFeature::kSyncXhrInPageDismissal);
-          DEFINE_STATIC_LOCAL(EnumerationHistogram,
-                              syncxhr_pagedismissal_histogram,
-                              ("XHR.Sync.PageDismissal", 5));
-          syncxhr_pagedismissal_histogram.Count(pagedismissal);
-        }
+      if (MainThreadDisallowSynchronousXHRScope::
+              ShouldDisallowSynchronousXHR() &&
+          !RuntimeEnabledFeatures::AllowSyncXHRInPageDismissalEnabled(
+              &execution_context)) {
+        HandleNetworkError();
+        ThrowForLoadFailureIfNeeded(exception_state,
+                                    "Synchronous XHR in page dismissal. See "
+                                    "https://www.chromestatus.com/feature/"
+                                    "4664843055398912 for more details.");
+        return;
       }
     } else {
       DCHECK(execution_context.IsWorkerGlobalScope());

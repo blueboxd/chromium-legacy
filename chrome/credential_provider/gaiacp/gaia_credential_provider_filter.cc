@@ -33,12 +33,12 @@ CGaiaCredentialProviderFilter::CGaiaCredentialProviderFilter() = default;
 CGaiaCredentialProviderFilter::~CGaiaCredentialProviderFilter() = default;
 
 HRESULT CGaiaCredentialProviderFilter::FinalConstruct() {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   return S_OK;
 }
 
 void CGaiaCredentialProviderFilter::FinalRelease() {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
 }
 
 HRESULT CGaiaCredentialProviderFilter::Filter(

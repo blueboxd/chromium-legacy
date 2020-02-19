@@ -1,0 +1,15 @@
+This is a testharness.js-based test.
+PASS Basic nonce tests for meh in HTML namespace
+PASS Ensure that removal of content attribute does not affect IDL attribute for meh in HTML namespace
+PASS Basic nonce tests for div in HTML namespace
+PASS Ensure that removal of content attribute does not affect IDL attribute for div in HTML namespace
+PASS Basic nonce tests for script in HTML namespace
+PASS Ensure that removal of content attribute does not affect IDL attribute for script in HTML namespace
+FAIL Basic nonce tests for meh in SVG namespace assert_equals: IDL attribute is modified after content attribute set expected "x" but got ""
+FAIL Ensure that removal of content attribute does not affect IDL attribute for meh in SVG namespace assert_equals: IDL attribute is modified after content attribute set expected "x" but got ""
+FAIL Basic nonce tests for svg in SVG namespace assert_equals: IDL attribute is modified after content attribute set expected "x" but got ""
+FAIL Ensure that removal of content attribute does not affect IDL attribute for svg in SVG namespace assert_equals: IDL attribute is modified after content attribute set expected "x" but got ""
+FAIL Basic nonce tests for script in SVG namespace assert_equals: IDL attribute is modified after content attribute set expected "x" but got ""
+FAIL Ensure that removal of content attribute does not affect IDL attribute for script in SVG namespace assert_equals: IDL attribute is modified after content attribute set expected "x" but got ""
+Harness: the test ran to completion.
+

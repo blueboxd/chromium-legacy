@@ -85,8 +85,11 @@ class TargetThread : public SimpleThread {
 }  // namespace
 
 // ASAN moves local variables outside of the stack extents, which breaks the
-// sentinels. TSAN hangs on the AsyncSafeWaitableEvent FUTEX_WAIT call.
-#if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
+// sentinels.
+// MSan complains that the memcmp() reads uninitialized memory.
+// TSAN hangs on the AsyncSafeWaitableEvent FUTEX_WAIT call.
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    defined(THREAD_SANITIZER)
 #define MAYBE_CopyStack DISABLED_CopyStack
 #elif defined(OS_CHROMEOS)
 // https://crbug.com/1042974

@@ -138,7 +138,6 @@ using blink::WebInputEvent;
 using blink::WebKeyboardEvent;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
-using blink::WebTextDirection;
 
 namespace content {
 namespace {
@@ -1886,7 +1885,8 @@ void RenderWidgetHostImpl::ResetStateForCreatedRenderWidget(
   frame_token_message_queue_->Reset();
 }
 
-void RenderWidgetHostImpl::UpdateTextDirection(WebTextDirection direction) {
+void RenderWidgetHostImpl::UpdateTextDirection(
+    base::i18n::TextDirection direction) {
   text_direction_updated_ = true;
   text_direction_ = direction;
 }
@@ -2114,7 +2114,7 @@ void RenderWidgetHostImpl::OnClose() {
 
 void RenderWidgetHostImpl::OnSetTooltipText(
     const base::string16& tooltip_text,
-    WebTextDirection text_direction_hint) {
+    base::i18n::TextDirection text_direction_hint) {
   if (!GetView())
     return;
 
@@ -2133,11 +2133,11 @@ void RenderWidgetHostImpl::OnSetTooltipText(
   // but we use the current approach to match Fx & IE's behavior.
   base::string16 wrapped_tooltip_text = tooltip_text;
   if (!tooltip_text.empty()) {
-    if (text_direction_hint == blink::kWebTextDirectionLeftToRight) {
+    if (text_direction_hint == base::i18n::LEFT_TO_RIGHT) {
       // Force the tooltip to have LTR directionality.
       wrapped_tooltip_text =
           base::i18n::GetDisplayStringInLTRDirectionality(wrapped_tooltip_text);
-    } else if (text_direction_hint == blink::kWebTextDirectionRightToLeft &&
+    } else if (text_direction_hint == base::i18n::RIGHT_TO_LEFT &&
                !base::i18n::IsRTL()) {
       // Force the tooltip to have RTL directionality.
       base::i18n::WrapStringWithRTLFormatting(&wrapped_tooltip_text);

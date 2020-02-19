@@ -165,9 +165,7 @@ void Slider::PrepareForMove(const int new_x) {
   float value = GetAnimatingValue();
 
   const int thumb_x = value * (content.width() - kThumbWidth);
-  const int candidate_x = (base::i18n::IsRTL() ?
-      width() - (new_x - inset.left()) :
-      new_x - inset.left()) - thumb_x;
+  const int candidate_x = GetMirroredXInView(new_x - inset.left()) - thumb_x;
   if (candidate_x >= 0 && candidate_x < kThumbWidth)
     initial_button_offset_ = candidate_x;
   else

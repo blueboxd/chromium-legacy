@@ -475,6 +475,7 @@ void KioskAppData::StartFetch() {
 }
 
 void KioskAppData::OnWebstoreRequestFailure(const std::string& extension_id) {
+  LOG(WARNING) << "Webstore request failure for app_id=" << extension_id;
   SetStatus(STATUS_ERROR);
 }
 

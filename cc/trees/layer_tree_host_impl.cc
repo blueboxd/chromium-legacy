@@ -5916,6 +5916,11 @@ bool LayerTreeHostImpl::ScrollAnimationUpdateTarget(
     // event, the LatencyInfo associated with the input event will not be
     // added as a swap promise and we won't get any swap results.
     NotifySwapPromiseMonitorsOfSetNeedsRedraw();
+
+    // The animation is no longer targeting a snap position. By clearing the
+    // target, this will ensure that we attempt to resnap at the end of this
+    // animation.
+    scroll_animating_snap_target_ids_ = TargetSnapAreaElementIds();
   }
 
   return animation_updated;

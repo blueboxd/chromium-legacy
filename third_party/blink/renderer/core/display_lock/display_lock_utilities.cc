@@ -298,24 +298,23 @@ Element* DisplayLockUtilities::NearestLockedExclusiveAncestor(
   return nullptr;
 }
 
-bool DisplayLockUtilities::IsInUnlockedOrActivatableSubtree(
-    const Node& node,
-    DisplayLockActivationReason activation_reason) {
+bool DisplayLockUtilities::IsInNonActivatableLockedSubtree(const Node& node) {
   if (!RuntimeEnabledFeatures::DisplayLockingEnabled(
           node.GetExecutionContext()) ||
       node.GetDocument().LockedDisplayLockCount() == 0 ||
       node.GetDocument().DisplayLockBlockingAllActivationCount() == 0 ||
       !node.CanParticipateInFlatTree()) {
-    return true;
+    return false;
   }
 
   for (auto* element = NearestLockedExclusiveAncestor(node); element;
        element = NearestLockedExclusiveAncestor(*element)) {
-    if (!element->GetDisplayLockContext()->IsActivatable(activation_reason)) {
-      return false;
+    if (!element->GetDisplayLockContext()->IsActivatable(
+            DisplayLockActivationReason::kAny)) {
+      return true;
     }
   }
-  return true;
+  return false;
 }
 
 bool DisplayLockUtilities::IsInLockedSubtreeCrossingFrames(

@@ -1529,6 +1529,20 @@ TEST(TimeDelta, MaxConversions) {
       "");
 }
 
+TEST(TimeDelta, MinConversions) {
+  constexpr TimeDelta kMin = TimeDelta::Min();
+
+  EXPECT_EQ(kMin.InDays(), std::numeric_limits<int>::min());
+  EXPECT_EQ(kMin.InHours(), std::numeric_limits<int>::min());
+  EXPECT_EQ(kMin.InMinutes(), std::numeric_limits<int>::min());
+  EXPECT_EQ(kMin.InSecondsF(), -std::numeric_limits<double>::infinity());
+  EXPECT_EQ(kMin.InSeconds(), std::numeric_limits<int64_t>::min());
+  EXPECT_EQ(kMin.InMillisecondsF(), -std::numeric_limits<double>::infinity());
+  EXPECT_EQ(kMin.InMilliseconds(), std::numeric_limits<int64_t>::min());
+  EXPECT_EQ(kMin.InMillisecondsRoundedUp(),
+            std::numeric_limits<int64_t>::min());
+}
+
 TEST(TimeDelta, NumericOperators) {
   constexpr double d = 0.5;
   EXPECT_EQ(TimeDelta::FromMilliseconds(500),
@@ -1634,8 +1648,13 @@ TEST(TimeDelta, Overflows) {
   // evaluation at the same time.
   static_assert(TimeDelta::Max().is_max(), "");
   static_assert(-TimeDelta::Max() < TimeDelta(), "");
-  static_assert(-TimeDelta::Max() > TimeDelta::Min(), "");
+  static_assert(-TimeDelta::Max() == TimeDelta::Min(), "");
   static_assert(TimeDelta() > -TimeDelta::Max(), "");
+
+  static_assert(TimeDelta::Min().is_min(), "");
+  static_assert(-TimeDelta::Min() > TimeDelta(), "");
+  static_assert(-TimeDelta::Min() == TimeDelta::Max(), "");
+  static_assert(TimeDelta() < -TimeDelta::Min(), "");
 
   TimeDelta large_delta = TimeDelta::Max() - TimeDelta::FromMilliseconds(1);
   TimeDelta large_negative = -large_delta;
@@ -1653,6 +1672,26 @@ TEST(TimeDelta, Overflows) {
   EXPECT_TRUE((large_delta * -2).is_min());
   EXPECT_TRUE((large_delta / 0.5).is_max());
   EXPECT_TRUE((large_delta / -0.5).is_min());
+
+  EXPECT_EQ(TimeDelta::FromSeconds(1) / TimeDelta::FromSeconds(0),
+            std::numeric_limits<int64_t>::max());
+
+  EXPECT_EQ(TimeDelta::Max() / TimeDelta::FromSeconds(10),
+            std::numeric_limits<int64_t>::max());
+  EXPECT_EQ(TimeDelta::Max() / TimeDelta::FromSeconds(-10),
+            std::numeric_limits<int64_t>::min());
+  EXPECT_EQ(TimeDelta::Min() / TimeDelta::FromSeconds(10),
+            std::numeric_limits<int64_t>::min());
+  EXPECT_EQ(TimeDelta::Min() / TimeDelta::FromSeconds(-10),
+            std::numeric_limits<int64_t>::max());
+
+  EXPECT_EQ(TimeDelta::FromSeconds(10) / TimeDelta::Min(), 0);
+  EXPECT_EQ(TimeDelta::FromSeconds(10) / TimeDelta::Max(), 0);
+
+  EXPECT_EQ(TimeDelta::FromSeconds(10) % TimeDelta::Min(),
+            TimeDelta::FromSeconds(10));
+  EXPECT_EQ(TimeDelta::FromSeconds(10) % TimeDelta::Max(),
+            TimeDelta::FromSeconds(10));
 
   // Test that double conversions overflow to infinity.
   EXPECT_EQ((large_delta + kOneSecond).InSecondsF(),

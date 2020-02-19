@@ -17,7 +17,6 @@
 #include "content/browser/devtools/protocol/browser_handler.h"
 #include "content/browser/devtools/protocol/network.h"
 #include "content/browser/devtools/protocol/network_handler.h"
-#include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -170,8 +169,6 @@ class StorageHandler::CacheStorageObserver : CacheStorageContextImpl::Observer {
 // informs the StorageHandler on the UI thread for origins of interest.
 // Created on the UI thread but predominantly used and deleted on the IDB
 // thread.
-// Registered on creation as an observer in IndexedDBContextImpl, unregistered
-// on destruction.
 class StorageHandler::IndexedDBObserver
     : public storage::mojom::IndexedDBObserver {
  public:

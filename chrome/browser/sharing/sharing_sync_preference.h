@@ -112,6 +112,9 @@ class SharingSyncPreference {
 
   void ClearLocalSharingInfo();
 
+  // Replaces DeviceInfoTracker for testing.
+  void SetDeviceInfoTrackerForTesting(syncer::DeviceInfoTracker* tracker);
+
  private:
   friend class SharingSyncPreferenceTest;
 

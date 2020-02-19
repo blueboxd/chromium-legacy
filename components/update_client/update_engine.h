@@ -32,6 +32,7 @@ class TimeTicks;
 namespace update_client {
 
 class Configurator;
+class PersistedData;
 struct UpdateContext;
 
 // Handles updates for a group of components. Updates for different groups
@@ -127,7 +128,8 @@ struct UpdateContext : public base::RefCounted<UpdateContext> {
       UpdateClient::CrxDataCallback crx_data_callback,
       const UpdateEngine::NotifyObserversCallback& notify_observers_callback,
       UpdateEngine::Callback callback,
-      CrxDownloader::Factory crx_downloader_factory);
+      CrxDownloader::Factory crx_downloader_factory,
+      PersistedData* persisted_data);
 
   scoped_refptr<Configurator> config;
 
@@ -188,6 +190,9 @@ struct UpdateContext : public base::RefCounted<UpdateContext> {
   // every protocol request. It is also used as a key in various data stuctures
   // to uniquely identify an update context.
   const std::string session_id;
+
+  // Persists data using the prefs service. Not owned by this class.
+  PersistedData* persisted_data = nullptr;
 
  private:
   friend class base::RefCounted<UpdateContext>;

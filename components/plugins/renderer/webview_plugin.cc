@@ -303,7 +303,7 @@ blink::WebScreenInfo WebViewPlugin::WebViewHelper::GetScreenInfo() {
 
 void WebViewPlugin::WebViewHelper::SetToolTipText(
     const WebString& text,
-    blink::WebTextDirection hint) {
+    base::i18n::TextDirection hint) {
   if (plugin_->container_)
     plugin_->container_->GetElement().SetAttribute("title", text);
 }

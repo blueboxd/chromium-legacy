@@ -246,20 +246,10 @@ test("device_unittests") {
     deps += [ "//third_party/ocmock" ]
     ldflags = [ "-ObjC" ]
     libs = [
+      "CoreBluetooth.framework",
       "IOBluetooth.framework",
       "IOKit.framework",
     ]
-
-    # In the OSX 10.10 SDK, CoreBluetooth became a top level framework.
-    # Previously, it was nested in IOBluetooth. In order for Chrome to run on
-    # OSes older than OSX 10.10, the top level CoreBluetooth framework must be
-    # weakly linked.
-    if (mac_sdk_version == "10.10") {
-      ldflags += [
-        "-weak_framework",
-        "CoreBluetooth",
-      ]
-    }
   }
 
   if (is_win) {

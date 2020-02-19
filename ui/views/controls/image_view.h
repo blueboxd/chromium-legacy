@@ -81,8 +81,6 @@ class VIEWS_EXPORT ImageView : public View {
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void PreferredSizeChanged() override;
 
- protected:
-
  private:
   friend class ImageViewTest;
 

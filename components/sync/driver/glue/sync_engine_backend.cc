@@ -73,6 +73,12 @@ bool ShouldEnableUSSNigori() {
          base::FeatureList::IsEnabled(switches::kSyncUSSNigori);
 }
 
+// Checks if there is at least one experiment for USS is disabled.
+bool ShouldClearDirectoryOnEmptyBirthday() {
+  return !base::FeatureList::IsEnabled(switches::kSyncUSSPasswords) ||
+         !base::FeatureList::IsEnabled(switches::kSyncUSSNigori);
+}
+
 }  // namespace
 
 SyncEngineBackend::SyncEngineBackend(const std::string& name,
@@ -306,6 +312,10 @@ void SyncEngineBackend::DoOnIncomingInvalidation(
 void SyncEngineBackend::DoInitialize(SyncEngine::InitParams params) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  if (params.birthday.empty() && ShouldClearDirectoryOnEmptyBirthday()) {
+    syncable::Directory::DeleteDirectoryFiles(sync_data_folder_);
+  }
+
   // Make sure that the directory exists before initializing the backend.
   // If it already exists, this will do no harm.
   if (!base::CreateDirectory(sync_data_folder_)) {
@@ -458,8 +468,7 @@ void SyncEngineBackend::DoInitialProcessControlTypes() {
       FROM_HERE, &SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop,
       registrar_->GetLastConfiguredTypes(), js_backend_, debug_info_listener_,
       base::Passed(sync_manager_->GetModelTypeConnectorProxy()),
-      sync_manager_->cache_guid(), sync_manager_->birthday(),
-      sync_manager_->bag_of_chips(),
+      sync_manager_->birthday(), sync_manager_->bag_of_chips(),
       sync_manager_->GetEncryptionHandler()->GetLastKeystoreKey());
 
   js_backend_.Reset();

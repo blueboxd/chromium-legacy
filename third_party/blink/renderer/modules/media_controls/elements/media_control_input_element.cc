@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/events/gesture_event.h"
 #include "third_party/blink/renderer/core/html/forms/html_label_element.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_span_element.h"
@@ -223,7 +224,7 @@ void MediaControlInputElement::DefaultEventHandler(Event& event) {
 
   // Unhover the element if the hover is triggered by a tap on
   // a touch screen device to avoid showing hover circle indefinitely.
-  if (event.IsGestureEvent() && IsHovered())
+  if (IsA<GestureEvent>(event) && IsHovered())
     SetHovered(false);
 
   HTMLInputElement::DefaultEventHandler(event);

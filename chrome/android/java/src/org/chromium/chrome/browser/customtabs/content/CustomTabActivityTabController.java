@@ -372,6 +372,9 @@ public class CustomTabActivityTabController
     private Tab createTab() {
         WebContents webContents = takeWebContents();
         Tab tab = mTabFactory.createTab(webContents, mCustomTabDelegateFactory.get());
+
+        mConnection.setClientDataHeaderForNewTab(mSession, webContents);
+
         TabAssociatedApp.from(tab).setAppId(mConnection.getClientPackageNameForSession(mSession));
 
         if (mIntentDataProvider.shouldEnableEmbeddedMediaExperience()) {

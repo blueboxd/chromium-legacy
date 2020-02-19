@@ -338,8 +338,7 @@ void InputHandlerProxy::DispatchSingleInputEvent(
   current_overscroll_params_.reset();
 
   InputHandlerProxy::EventDisposition disposition = RouteToTypeSpecificHandler(
-      event_with_callback->event(), event_with_callback.get(),
-      original_latency_info);
+      event_with_callback.get(), original_latency_info);
 
   blink::WebGestureEvent::Type type = event_with_callback->event().GetType();
   switch (type) {
@@ -473,7 +472,6 @@ bool HasModifier(const WebInputEvent& event) {
 
 InputHandlerProxy::EventDisposition
 InputHandlerProxy::RouteToTypeSpecificHandler(
-    const blink::WebInputEvent& event,
     EventWithCallback* event_with_callback,
     const LatencyInfo& original_latency_info) {
   DCHECK(input_handler_);
@@ -481,6 +479,7 @@ InputHandlerProxy::RouteToTypeSpecificHandler(
   if (force_input_to_main_thread_)
     return DID_NOT_HANDLE;
 
+  const blink::WebInputEvent& event = event_with_callback->event();
   if (IsGestureScroll(event.GetType()) &&
       (snap_fling_controller_->FilterEventForSnap(
           GestureScrollEventType(event.GetType())))) {

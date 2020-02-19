@@ -47,4 +47,8 @@ interface ChromeRenderFrame {
 
   // Requests the web application info from the renderer.
   GetWebApplicationInfo() => (WebApplicationInfo web_application_info);
+
+  // Sets a header identifying the CCT session.
+  [EnableIf=is_android]
+  SetCCTClientHeader(string header);
 };

@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/time/time.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/sms/sms_receiver_outcome.h"
 
@@ -22,6 +23,17 @@ namespace blink {
 void RecordSmsOutcome(SMSReceiverOutcome outcome,
                       ukm::SourceId source_id,
                       ukm::UkmRecorder* ukm_recorder);
+
+// Records the time from when the API is called to when the user successfully
+// receives the SMS and presses verify to move on with the verification flow.
+// This uses the same histogram as SmsReceiver API to provide continuity with
+// previous iterations of the API.
+void RecordSmsSuccessTime(base::TimeDelta duration);
+
+// Records the time from when the API is called to when the user dismisses the
+// infobar to abort SMS retrieval. This uses the same histogram as SmsReceiver
+// API to provide continuity with previous iterations of the API.
+void RecordSmsCancelTime(base::TimeDelta duration);
 
 }  // namespace blink
 

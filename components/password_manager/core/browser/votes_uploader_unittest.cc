@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/form_data.h"
@@ -461,9 +462,14 @@ TEST_F(VotesUploaderTest, SaveSingleUsernameVote) {
   // Init store and expect that adding field info is called.
   scoped_refptr<MockPasswordStore> store = new MockPasswordStore;
   store->Init(syncer::SyncableService::StartSyncFlare(), /*prefs=*/nullptr);
+
+#if defined(OS_ANDROID)
+  EXPECT_CALL(*store, AddFieldInfoImpl).Times(0);
+#else
   EXPECT_CALL(*store,
               AddFieldInfoImpl(FieldInfoHasData(
                   kFormSignature, kUsernameFieldSignature, SINGLE_USERNAME)));
+#endif  // defined(OS_ANDROID)
 
   // Init FieldInfoManager.
   FieldInfoManagerImpl field_info_manager(store);

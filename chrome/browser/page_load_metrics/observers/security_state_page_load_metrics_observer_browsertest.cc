@@ -11,6 +11,7 @@
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/reputation/reputation_web_contents_observer.h"
 #include "chrome/browser/reputation/safety_tip_test_utils.h"
 #include "chrome/browser/ui/browser.h"
@@ -565,7 +566,8 @@ IN_PROC_BROWSER_TEST_F(SecurityStatePageLoadMetricsBrowserTest,
   // Ensure that the tab is open for more than 0 ms, even in the face of bots
   // with bad clocks.
   base::RunLoop run_loop;
-  base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), kMinForegroundTime);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), kMinForegroundTime);
   run_loop.Run();
   CloseAllTabs();
 

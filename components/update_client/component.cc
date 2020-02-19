@@ -22,6 +22,7 @@
 #include "components/update_client/configurator.h"
 #include "components/update_client/network.h"
 #include "components/update_client/patcher.h"
+#include "components/update_client/persisted_data.h"
 #include "components/update_client/protocol_definition.h"
 #include "components/update_client/protocol_serializer.h"
 #include "components/update_client/task_traits.h"
@@ -892,6 +893,11 @@ void Component::StateUpdated::DoHandle() {
 
   component.crx_component_->version = component.next_version_;
   component.crx_component_->fingerprint = component.next_fp_;
+
+  component.update_context_.persisted_data->SetProductVersion(
+      component.id(), component.crx_component_->version);
+  component.update_context_.persisted_data->SetFingerprint(
+      component.id(), component.crx_component_->fingerprint);
 
   component.AppendEvent(component.MakeEventUpdateComplete());
 

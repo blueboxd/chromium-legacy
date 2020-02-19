@@ -176,7 +176,7 @@ std::unique_ptr<WinHttpUrlFetcher> WinHttpUrlFetcher::Create(const GURL& url) {
 
 WinHttpUrlFetcher::WinHttpUrlFetcher(const GURL& url)
     : url_(url), session_(nullptr), request_(nullptr) {
-  LOGFN(INFO) << "url=" << url.spec() << " (scheme and port ignored)";
+  LOGFN(VERBOSE) << "url=" << url.spec() << " (scheme and port ignored)";
 
   ScopedWinHttpHandle::Handle session = ::WinHttpOpen(
       L"GaiaCP/1.0 (Windows NT)", WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,

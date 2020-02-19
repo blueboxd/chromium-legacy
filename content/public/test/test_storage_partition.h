@@ -22,7 +22,7 @@ class AppCacheService;
 class BackgroundSyncContext;
 class DevToolsBackgroundServicesContext;
 class DOMStorageContext;
-class IndexedDBContext;
+class IndexedDBContextImpl;
 class NativeFileSystemEntryFactory;
 class PlatformNotificationContext;
 class ServiceWorkerContext;
@@ -108,10 +108,10 @@ class TestStoragePartition : public StoragePartition {
 
   storage::mojom::IndexedDBControl& GetIndexedDBControl() override;
 
-  void set_indexed_db_context(IndexedDBContext* context) {
+  void set_indexed_db_context(IndexedDBContextImpl* context) {
     indexed_db_context_ = context;
   }
-  IndexedDBContext* GetIndexedDBContext() override;
+  IndexedDBContextImpl* GetIndexedDBContextImplForTesting() override;
   NativeFileSystemEntryFactory* GetNativeFileSystemEntryFactory() override;
 
   void set_service_worker_context(ServiceWorkerContext* context) {
@@ -219,7 +219,7 @@ class TestStoragePartition : public StoragePartition {
   storage::DatabaseTracker* database_tracker_ = nullptr;
   DOMStorageContext* dom_storage_context_ = nullptr;
   mojo::Remote<storage::mojom::IndexedDBControl> indexed_db_control_;
-  IndexedDBContext* indexed_db_context_ = nullptr;
+  IndexedDBContextImpl* indexed_db_context_ = nullptr;
   ServiceWorkerContext* service_worker_context_ = nullptr;
   DedicatedWorkerService* dedicated_worker_service_ = nullptr;
   SharedWorkerService* shared_worker_service_ = nullptr;

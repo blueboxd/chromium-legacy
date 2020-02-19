@@ -400,6 +400,7 @@
 #include "chrome/android/modules/extra_icu/provider/module_provider.h"
 #include "chrome/browser/android/app_hooks.h"
 #include "chrome/browser/android/chrome_context_util.h"
+#include "chrome/browser/android/customtabs/client_data_header_web_contents_observer.h"
 #include "chrome/browser/android/devtools_manager_delegate_android.h"
 #include "chrome/browser/android/ntp/new_tab_page_url_handler.h"
 #include "chrome/browser/android/service_tab_launcher.h"
@@ -4267,14 +4268,28 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
       IdentityManagerFactory::GetForProfile(profile);
   bool is_signed_in = identity_manager && identity_manager->HasPrimaryAccount();
 
+#if defined(OS_ANDROID)
+  std::string client_data_header;
+  auto* web_contents = WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+  auto* client_data_header_observer =
+      customtabs::ClientDataHeaderWebContentsObserver::FromWebContents(
+          web_contents);
+  if (client_data_header_observer)
+    client_data_header = client_data_header_observer->header();
+#endif
+
   chrome::mojom::DynamicParams dynamic_params = {
       profile->GetPrefs()->GetBoolean(prefs::kForceGoogleSafeSearch),
       profile->GetPrefs()->GetInteger(prefs::kForceYouTubeRestrict),
       profile->GetPrefs()->GetString(prefs::kAllowedDomainsForApps),
       variations::VariationsHttpHeaderProvider::GetInstance()
           ->GetClientDataHeader(is_signed_in)};
-  result.push_back(std::make_unique<GoogleURLLoaderThrottle>(
-      profile->IsOffTheRecord(), std::move(dynamic_params)));
+  result.push_back(
+      std::make_unique<GoogleURLLoaderThrottle>(profile->IsOffTheRecord(),
+#if defined(OS_ANDROID)
+                                                client_data_header,
+#endif
+                                                std::move(dynamic_params)));
 
   result.push_back(std::make_unique<ProtocolHandlerThrottle>(
       ProtocolHandlerRegistryFactory::GetForBrowserContext(browser_context)));

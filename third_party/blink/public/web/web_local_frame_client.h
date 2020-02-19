@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "base/i18n/rtl.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
@@ -73,7 +74,6 @@
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
-#include "third_party/blink/public/web/web_text_direction.h"
 #include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/events/types/scroll_types.h"
 #include "v8/include/v8.h"

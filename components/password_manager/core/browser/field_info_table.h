@@ -25,6 +25,8 @@ struct FieldInfo {
 
 bool operator==(const FieldInfo& lhs, const FieldInfo& rhs);
 
+// Manages field types deduced from the user local actions. On Android these
+// types are not reliable, so this class does nothing.
 class FieldInfoTable {
  public:
   FieldInfoTable() = default;
@@ -36,6 +38,8 @@ class FieldInfoTable {
   // Creates the table if it doesn't exist. Returns true if the table already
   // exists or was created successfully.
   bool CreateTableIfNecessary();
+
+  bool DropTableIfExists();
 
   // Adds information about the field. Returns true if the SQL completed
   // successfully.

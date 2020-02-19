@@ -305,7 +305,7 @@ HRESULT WaitForProcess(base::win::ScopedHandle::Handle process_handle,
                        DWORD* exit_code,
                        char* output_buffer,
                        int buffer_size) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   DCHECK(exit_code);
   DCHECK_GT(buffer_size, 0);
 
@@ -324,24 +324,24 @@ HRESULT WaitForProcess(base::win::ScopedHandle::Handle process_handle,
     switch (ret) {
       case WAIT_OBJECT_0: {
         int index = ret - WAIT_OBJECT_0;
-        LOGFN(INFO) << "WAIT_OBJECT_" << index;
+        LOGFN(VERBOSE) << "WAIT_OBJECT_" << index;
         if (!::ReadFile(output_handle, buffer, length, &length, nullptr)) {
           hr = HRESULT_FROM_WIN32(::GetLastError());
           if (hr != HRESULT_FROM_WIN32(ERROR_BROKEN_PIPE))
             LOGFN(ERROR) << "ReadFile(" << index << ") hr=" << putHR(hr);
         } else {
-          LOGFN(INFO) << "ReadFile(" << index << ") length=" << length;
+          LOGFN(VERBOSE) << "ReadFile(" << index << ") length=" << length;
           buffer[length] = 0;
         }
         break;
       }
       case WAIT_IO_COMPLETION:
         // This is normal.  Just ignore.
-        LOGFN(INFO) << "WaitForMultipleObjectsEx WAIT_IO_COMPLETION";
+        LOGFN(VERBOSE) << "WaitForMultipleObjectsEx WAIT_IO_COMPLETION";
         break;
       case WAIT_TIMEOUT: {
         // User took too long to log in, so kill UI process.
-        LOGFN(INFO) << "WaitForMultipleObjectsEx WAIT_TIMEOUT, killing UI";
+        LOGFN(VERBOSE) << "WaitForMultipleObjectsEx WAIT_TIMEOUT, killing UI";
         ::TerminateProcess(process_handle, kUiecTimeout);
         is_done = true;
         break;
@@ -358,7 +358,7 @@ HRESULT WaitForProcess(base::win::ScopedHandle::Handle process_handle,
     // Copy the read buffer to the output buffer. If the pipe was broken,
     // we can break our loop and wait for the process to die.
     if (hr == HRESULT_FROM_WIN32(ERROR_BROKEN_PIPE)) {
-      LOGFN(INFO) << "Stop waiting for output buffer";
+      LOGFN(VERBOSE) << "Stop waiting for output buffer";
       break;
     } else {
       strcat_s(output_buffer, buffer_size, buffer);
@@ -371,13 +371,13 @@ HRESULT WaitForProcess(base::win::ScopedHandle::Handle process_handle,
   DWORD ret = ::WaitForSingleObject(process_handle, 10000);
   if (ret == 0) {
     if (::GetExitCodeProcess(process_handle, exit_code)) {
-      LOGFN(INFO) << "Process terminated with exit code " << *exit_code;
+      LOGFN(VERBOSE) << "Process terminated with exit code " << *exit_code;
     } else {
-      LOGFN(INFO) << "Process terminated without exit code";
+      LOGFN(WARNING) << "Process terminated without exit code";
       *exit_code = kUiecAbort;
     }
   } else {
-    LOGFN(INFO) << "UI did not terminiate within 10 seconds, killing now";
+    LOGFN(WARNING) << "UI did not terminiate within 10 seconds, killing now";
     ::TerminateProcess(process_handle, kUiecKilled);
     *exit_code = kUiecKilled;
   }
@@ -418,7 +418,7 @@ HRESULT CreateLogonToken(const wchar_t* domain,
 }
 
 HRESULT CreateJobForSignin(base::win::ScopedHandle* job) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   DCHECK(job);
 
   job->Set(::CreateJobObject(nullptr, nullptr));
@@ -498,7 +498,7 @@ HRESULT InitializeStdHandles(CommDirection direction,
                              StdHandlesToCreate to_create,
                              ScopedStartupInfo* startupinfo,
                              StdParentHandles* parent_handles) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   DCHECK(startupinfo);
   DCHECK(parent_handles);
 
@@ -713,8 +713,15 @@ bool VerifyStartupSentinel() {
     // Keep writing to the sentinel file until we have reached
     // |kMaxConsecutiveCrashCount| at which point it is assumed that GCPW
     // is crashing continuously and should be disabled.
-    if (!startup_sentinel.IsValid() ||
-        startup_sentinel.GetLength() >= kMaxConsecutiveCrashCount) {
+    if (!startup_sentinel.IsValid()) {
+      LOGFN(ERROR) << "Could not open the sentinel path "
+                   << startup_sentinel_path.value();
+      return false;
+    }
+
+    if (startup_sentinel.GetLength() >= kMaxConsecutiveCrashCount) {
+      LOGFN(ERROR) << "Sentinel file length indicates "
+                   << startup_sentinel.GetLength() << " possible crashes";
       return false;
     }
 

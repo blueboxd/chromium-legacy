@@ -14,7 +14,16 @@
 
 namespace viz {
 
-TextureDrawQuad::TextureDrawQuad() = default;
+TextureDrawQuad::TextureDrawQuad()
+    : y_flipped(false),
+      nearest_neighbor(false),
+      premultiplied_alpha(false),
+      secure_output_only(false),
+      protected_video_type(gfx::ProtectedVideoType::kClear) {
+  static_assert(static_cast<int>(gfx::ProtectedVideoType::kMaxValue) < 4,
+                "protected_video_type needs more bits in order to represent "
+                "all the enum values");
+}
 
 TextureDrawQuad::TextureDrawQuad(const TextureDrawQuad& other) = default;
 

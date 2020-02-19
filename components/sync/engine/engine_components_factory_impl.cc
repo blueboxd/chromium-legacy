@@ -64,12 +64,12 @@ std::unique_ptr<syncable::DirectoryBackingStore>
 EngineComponentsFactoryImpl::BuildDirectoryBackingStore(
     StorageOption storage,
     const std::string& dir_name,
-    const base::RepeatingCallback<std::string()>& cache_guid_generator,
+    const std::string& cache_guid,
     const base::FilePath& backing_filepath) {
   if (storage == STORAGE_ON_DISK) {
     return std::unique_ptr<syncable::DirectoryBackingStore>(
-        new syncable::OnDiskDirectoryBackingStore(
-            dir_name, cache_guid_generator, backing_filepath));
+        new syncable::OnDiskDirectoryBackingStore(dir_name, cache_guid,
+                                                  backing_filepath));
   } else {
     NOTREACHED();
     return std::unique_ptr<syncable::DirectoryBackingStore>();

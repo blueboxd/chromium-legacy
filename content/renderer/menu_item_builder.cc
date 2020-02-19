@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/i18n/rtl.h"
 #include "content/public/common/menu_item.h"
 
 namespace content {
@@ -17,7 +18,7 @@ MenuItem MenuItemBuilder::Build(const blink::WebMenuItemInfo& item) {
   result.tool_tip = item.tool_tip.Utf16();
   result.type = static_cast<MenuItem::Type>(item.type);
   result.action = item.action;
-  result.rtl = (item.text_direction == blink::kWebTextDirectionRightToLeft);
+  result.rtl = (item.text_direction == base::i18n::RIGHT_TO_LEFT);
   result.has_directional_override = item.has_text_direction_override;
   result.enabled = item.enabled;
   result.checked = item.checked;

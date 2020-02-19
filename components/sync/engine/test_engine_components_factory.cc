@@ -50,7 +50,7 @@ std::unique_ptr<syncable::DirectoryBackingStore>
 TestEngineComponentsFactory::BuildDirectoryBackingStore(
     StorageOption storage,
     const std::string& dir_name,
-    const base::RepeatingCallback<std::string()>& cache_guid_generator,
+    const std::string& cache_guid,
     const base::FilePath& backing_filepath) {
   if (storage_used_)
     *storage_used_ = storage;
@@ -58,12 +58,11 @@ TestEngineComponentsFactory::BuildDirectoryBackingStore(
   switch (storage_override_) {
     case STORAGE_IN_MEMORY:
       return std::unique_ptr<syncable::DirectoryBackingStore>(
-          new syncable::InMemoryDirectoryBackingStore(dir_name,
-                                                      cache_guid_generator));
+          new syncable::InMemoryDirectoryBackingStore(dir_name, cache_guid));
     case STORAGE_ON_DISK:
       return std::unique_ptr<syncable::DirectoryBackingStore>(
-          new syncable::OnDiskDirectoryBackingStore(
-              dir_name, cache_guid_generator, backing_filepath));
+          new syncable::OnDiskDirectoryBackingStore(dir_name, cache_guid,
+                                                    backing_filepath));
     case STORAGE_INVALID:
       return std::unique_ptr<syncable::DirectoryBackingStore>(
           new syncable::InvalidDirectoryBackingStore());

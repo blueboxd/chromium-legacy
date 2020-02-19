@@ -109,7 +109,7 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   // Called by the GPU and asks to import a wl_buffer based on a gbm file
   // descriptor using zwp_linux_dmabuf protocol. Check comments in the
   // ui/ozone/public/mojom/wayland/wayland_connection.mojom.
-  void CreateDmabufBasedBuffer(mojo::ScopedHandle dmabuf_fd,
+  void CreateDmabufBasedBuffer(mojo::PlatformHandle dmabuf_fd,
                                const gfx::Size& size,
                                const std::vector<uint32_t>& strides,
                                const std::vector<uint32_t>& offsets,
@@ -120,7 +120,7 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   // Called by the GPU and asks to import a wl_buffer based on a shared memory
   // file descriptor using wl_shm protocol. Check comments in the
   // ui/ozone/public/mojom/wayland/wayland_connection.mojom.
-  void CreateShmBasedBuffer(mojo::ScopedHandle shm_fd,
+  void CreateShmBasedBuffer(mojo::PlatformHandle shm_fd,
                             uint64_t length,
                             const gfx::Size& size,
                             uint32_t buffer_id) override;

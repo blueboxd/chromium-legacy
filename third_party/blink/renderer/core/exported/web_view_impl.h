@@ -68,7 +68,6 @@
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace cc {
-class Layer;
 struct BeginMainFrameMetrics;
 class ScopedDeferMainFrameUpdate;
 }
@@ -366,8 +365,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   WebSettingsImpl* SettingsImpl();
 
-  cc::AnimationHost* AnimationHost() const { return animation_host_; }
-
   BrowserControls& GetBrowserControls();
   // Called anytime browser controls layout height or content offset have
   // changed.
@@ -444,7 +441,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   // These are temporary methods to allow WebViewFrameWidget to delegate to
   // WebViewImpl. We expect to eventually move these out.
-  void SetAnimationHost(cc::AnimationHost*);
   void SetSuppressFrameRequestsWorkaroundFor704763Only(bool);
   void BeginFrame(base::TimeTicks last_frame_time,
                   bool record_main_frame_metrics);
@@ -505,7 +501,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   void ConfigureAutoResizeMode();
 
-  void SetIsAcceleratedCompositingActive(bool);
   void DoComposite();
   void ReallocateRenderer();
 
@@ -537,7 +532,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
 
   float DeviceScaleFactor() const;
 
-  void SetRootLayer(scoped_refptr<cc::Layer>);
+  void DidChangeRootLayer(bool root_layer_exists);
 
   LocalFrame* FocusedLocalFrameInWidget() const;
   LocalFrame* FocusedLocalFrameAvailableForIme() const;
@@ -661,9 +656,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   // the client return a null compositor. We should make things more consistent
   // and clear.
   const bool does_composite_;
-  cc::AnimationHost* animation_host_ = nullptr;
 
-  scoped_refptr<cc::Layer> root_layer_;
   bool matches_heuristics_for_gpu_rasterization_ = false;
 
   std::unique_ptr<FullscreenController> fullscreen_controller_;

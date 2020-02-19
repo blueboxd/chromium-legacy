@@ -92,10 +92,8 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WebHitTestResult HitTestResultAt(const gfx::Point&) override;
 
   // WebFrameWidgetBase overrides:
-  void SetAnimationHost(cc::AnimationHost*) override;
   bool ForSubframe() const override { return false; }
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
-  cc::AnimationHost* AnimationHost() const override;
   HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
 
@@ -103,6 +101,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
 
  private:
   PageWidgetEventHandler* GetPageWidgetEventHandler() override;
+  LocalFrameView* GetLocalFrameViewForAnimationScrolling() override;
 
   scoped_refptr<WebViewImpl> web_view_;
 

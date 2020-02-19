@@ -42,6 +42,7 @@ _CONFIG = [
             'base::File',
             'base::FilePath',
             'base::GetUniqueIdForProcess',
+            "base::i18n::TextDirection",
             'base::Location',
             'base::MakeRefCounted',
             'base::Optional',
@@ -267,6 +268,7 @@ _CONFIG = [
             # cc::Layers.
             'cc::Layer',
             'cc::LayerClient',
+            'cc::LayerTreeHost',
             'cc::PictureLayer',
             'cc::SurfaceLayer',
 
@@ -547,6 +549,8 @@ _CONFIG = [
             'cc::ContentLayerClient',
             'cc::DisplayItemList',
             'cc::DrawRecordOp',
+
+            # blink paint tree debugging namespace
             'paint_property_tree_printer::UpdateDebugNames',
         ],
     },
@@ -726,7 +730,7 @@ _CONFIG = [
         ],
         'allowed': [
             'base::data',
-            # TODO(crbug.com/960665): Remove it once it is replaced with a WTF equivalent.
+            # TODO(crbug.com/960665): Remove base::queue once it is replaced with a WTF equivalent.
             'base::queue',
             'base::SharedMemory',
             'base::StringPiece',

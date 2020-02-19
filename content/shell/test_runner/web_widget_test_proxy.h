@@ -71,7 +71,7 @@ class TEST_RUNNER_EXPORT WebWidgetTestProxy : public content::RenderWidget {
   void RequestPointerUnlock() override;
   bool IsPointerLocked() override;
   void SetToolTipText(const blink::WebString& text,
-                      blink::WebTextDirection hint) override;
+                      base::i18n::TextDirection hint) override;
   void StartDragging(network::mojom::ReferrerPolicy policy,
                      const blink::WebDragData& data,
                      blink::WebDragOperationsMask mask,

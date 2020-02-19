@@ -7,6 +7,7 @@
 #include <cstddef>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
@@ -15,6 +16,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
@@ -148,6 +150,14 @@ void EmitUmaMetricWithEmitTimeMinutes(const std::string& histogram_name) {
   base::Time::Exploded now_exploded;
   base::Time::Now().UTCExplode(&now_exploded);
   base::UmaHistogramExactLinear(histogram_name, now_exploded.minute, 60);
+}
+
+std::string GenerateCacheGUID() {
+  // Generate a GUID with 128 bits of randomness.
+  const int kGuidBytes = 128 / 8;
+  std::string guid;
+  base::Base64Encode(base::RandBytesAsString(kGuidBytes), &guid);
+  return guid;
 }
 
 }  // namespace
@@ -499,6 +509,19 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   // Clear any old errors the first time sync starts.
   if (!user_settings_->IsFirstSetupComplete()) {
     last_actionable_error_ = SyncProtocolError();
+  }
+
+  // If either the cache GUID or the birthday are uninitialized, it means we
+  // haven't completed a first sync cycle (OnEngineInitialized()). Theoretically
+  // both or neither should be empty, but just in case, we regenerate the cache
+  // GUID if either of them is missing, to avoid protocol violations (fetching
+  // updates requires that the request either has a birthday, or there should be
+  // no progress marker).
+  if (sync_prefs_.GetCacheGuid().empty() || sync_prefs_.GetBirthday().empty()) {
+    // TODO(crbug.com/923285): This doesn't seem to belong here, or if it does,
+    // all preferences should be cleared via SyncPrefs::ClearPreferences().
+    sync_prefs_.ClearDirectoryConsistencyPreferences();
+    sync_prefs_.SetCacheGuid(GenerateCacheGUID());
   }
 
   InitializeBackendTaskRunnerIfNeeded();
@@ -872,7 +895,6 @@ void ProfileSyncService::OnEngineInitialized(
     ModelTypeSet initial_types,
     const WeakHandle<JsBackend>& js_backend,
     const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
-    const std::string& cache_guid,
     const std::string& birthday,
     const std::string& bag_of_chips,
     const std::string& last_keystore_key,
@@ -899,12 +921,9 @@ void ProfileSyncService::OnEngineInitialized(
     return;
   }
 
-  DCHECK(!cache_guid.empty());
-
   sync_js_controller_.AttachJsBackend(js_backend);
 
   // Save initialization data to preferences.
-  sync_prefs_.SetCacheGuid(cache_guid);
   sync_prefs_.SetBirthday(birthday);
   sync_prefs_.SetBagOfChips(bag_of_chips);
 
@@ -1252,6 +1271,11 @@ void ProfileSyncService::OnPreferredDataTypesPrefChange() {
 SyncClient* ProfileSyncService::GetSyncClientForTest() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return sync_client_.get();
+}
+
+// static
+std::string ProfileSyncService::GenerateCacheGUIDForTest() {
+  return GenerateCacheGUID();
 }
 
 void ProfileSyncService::AddObserver(SyncServiceObserver* observer) {

@@ -136,25 +136,18 @@ void LogHTMLForm(SavePasswordProgressLogger* logger,
                       GURL(form.Action().Utf8()));
 }
 
-
 // Returns true if there are any suggestions to be derived from |fill_data|.
-// Unless |show_all| is true, only considers suggestions with usernames having
-// |current_username| as a prefix.
-bool CanShowSuggestion(const PasswordFormFillData& fill_data,
-                       const base::string16& current_username,
-                       bool show_all,
-                       bool is_password_field) {
-  base::string16 current_username_lower = base::i18n::ToLower(current_username);
-  if (show_all || is_password_field ||
-      base::StartsWith(base::i18n::ToLower(fill_data.username_field.value),
-                       current_username_lower, base::CompareCase::SENSITIVE)) {
+// Only considers suggestions with usernames having |typed_username| as prefix.
+bool CanShowUsernameSuggestion(const PasswordFormFillData& fill_data,
+                               const base::string16& typed_username) {
+  base::string16 typed_username_lower = base::i18n::ToLower(typed_username);
+  if (base::StartsWith(base::i18n::ToLower(fill_data.username_field.value),
+                       typed_username_lower, base::CompareCase::SENSITIVE)) {
     return true;
   }
 
   for (const auto& login : fill_data.additional_logins) {
-    if (show_all || is_password_field ||
-        base::StartsWith(base::i18n::ToLower(login.first),
-                         current_username_lower,
+    if (base::StartsWith(base::i18n::ToLower(login.first), typed_username_lower,
                          base::CompareCase::SENSITIVE)) {
       return true;
     }
@@ -405,6 +398,11 @@ void AnnotateFieldWithParsingResult(WebDocument doc,
       WebString::FromASCII(text));
 }
 
+bool HasDocumentWithValidFrame(const WebInputElement& element) {
+  WebFrame* frame = element.GetDocument().GetFrame();
+  return frame && frame->View();
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -535,7 +533,7 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
   }
 
   // Show the popup with the list of available usernames.
-  return ShowSuggestions(element, false, false);
+  return ShowSuggestions(element, ShowAll(false), GenerationShowing(false));
 }
 
 void PasswordAutofillAgent::DidEndTextFieldEditing() {
@@ -723,14 +721,14 @@ bool PasswordAutofillAgent::FindPasswordInfoForElement(
   if (!element.IsPasswordFieldForAutofill()) {
     *username_element = element;
   } else {
+    *password_element = element;
+
     // If there is a password field, but a request to the store hasn't been sent
     // yet, then do fetch saved credentials now.
     if (!sent_request_to_store_) {
       SendPasswordForms(false);
       return false;
     }
-
-    *password_element = element;
 
     auto iter = web_input_to_password_info_.find(element);
     if (iter == web_input_to_password_info_.end()) {
@@ -846,16 +844,17 @@ bool PasswordAutofillAgent::TryToShowTouchToFill(
   return true;
 }
 
-bool PasswordAutofillAgent::ShowSuggestions(const WebInputElement& element,
-                                            bool show_all,
-                                            bool generation_popup_showing) {
+bool PasswordAutofillAgent::ShowSuggestions(
+    const WebInputElement& element,
+    ShowAll show_all,
+    GenerationShowing generation_popup_showing) {
   WebInputElement username_element;
   WebInputElement password_element;
-  PasswordInfo* password_info;
+  PasswordInfo* password_info = nullptr;
+  FindPasswordInfoForElement(element, UseFallbackData(true), &username_element,
+                             &password_element, &password_info);
 
-  if (!FindPasswordInfoForElement(element, UseFallbackData(true),
-                                  &username_element, &password_element,
-                                  &password_info)) {
+  if (!password_info) {
     MaybeCheckSafeBrowsingReputation(element);
     return false;
   }
@@ -870,13 +869,6 @@ bool PasswordAutofillAgent::ShowSuggestions(const WebInputElement& element,
   if (element.Value().length() > kMaximumTextSizeForAutocomplete)
     return false;
 
-  // If the element is a password field, do not to show a popup if the user has
-  // already accepted a password suggestion on another password field.
-  if (element.IsPasswordFieldForAutofill() &&
-      (password_info->password_field_suggestion_was_accepted &&
-       element != password_info->password_field))
-    return true;
-
   if (generation_popup_showing)
     return false;
 
@@ -887,8 +879,36 @@ bool PasswordAutofillAgent::ShowSuggestions(const WebInputElement& element,
   if (touch_to_fill_state_ == TouchToFillState::kIsShowing)
     return true;
 
-  return ShowSuggestionPopup(*password_info, element, show_all,
-                             element.IsPasswordFieldForAutofill());
+  if (!HasDocumentWithValidFrame(element))
+    return false;
+
+  // If a username element is focused, show suggestions unless all possible
+  // usernames are filtered.
+  if (!element.IsPasswordFieldForAutofill()) {
+    if (show_all || CanShowUsernameSuggestion(password_info->fill_data,
+                                              element.Value().Utf16())) {
+      ShowSuggestionPopup(element.Value().Utf16(), element, show_all,
+                          OnPasswordField(false));
+      return true;
+    }
+    return false;
+  }
+
+  // If the element is a password field, do not to show a popup if the user has
+  // already accepted a password suggestion on another password field.
+  if (password_info->password_field_suggestion_was_accepted &&
+      element != password_info->password_field)
+    return true;
+
+  // Show suggestions for password fields only while they are empty.
+  if (!element.IsAutofilled() && !element.Value().IsEmpty()) {
+    HidePopup();
+    return false;
+  }
+
+  ShowSuggestionPopup(base::string16(), element, show_all,
+                      OnPasswordField(true));
+  return true;
 }
 
 bool PasswordAutofillAgent::FrameCanAccessPasswordManager() {
@@ -1270,8 +1290,8 @@ void PasswordAutofillAgent::TouchToFillClosed(bool show_virtual_keyboard) {
     // to the keyboard accessory, as otherwise it would result in a flickering
     // of the popup, due to showing the keyboard at the same time.
     if (IsKeyboardAccessoryEnabled()) {
-      ShowSuggestions(focused_input_element_, /*show_all=*/false,
-                      /*generation_popup_showing=*/false);
+      ShowSuggestions(focused_input_element_, ShowAll(false),
+                      GenerationShowing(false));
     }
   }
 }
@@ -1382,26 +1402,12 @@ PasswordAutofillAgent::GetFormDataFromUnownedInputElements() {
 ////////////////////////////////////////////////////////////////////////////////
 // PasswordAutofillAgent, private:
 
-bool PasswordAutofillAgent::ShowSuggestionPopup(
-    const PasswordInfo& password_info,
+void PasswordAutofillAgent::ShowSuggestionPopup(
+    const base::string16& typed_username,
     const WebInputElement& user_input,
-    bool show_all,
-    bool show_on_password_field) {
-  DCHECK(!user_input.IsNull());
-  WebFrame* frame = user_input.GetDocument().GetFrame();
-  if (!frame)
-    return false;
-
-  WebView* webview = frame->View();
-  if (!webview)
-    return false;
-
-  if (user_input.IsPasswordFieldForAutofill() && !user_input.IsAutofilled() &&
-      !user_input.Value().IsEmpty()) {
-    HidePopup();
-    return false;
-  }
-
+    ShowAll show_all,
+    OnPasswordField show_on_password_field) {
+  username_query_prefix_ = typed_username;
   FormData form;
   FormFieldData field;
   form_util::FindFormAndFieldForFormControlElement(
@@ -1413,19 +1419,9 @@ bool PasswordAutofillAgent::ShowSuggestionPopup(
   if (show_on_password_field)
     options |= IS_PASSWORD_FIELD;
 
-  base::string16 username_string(user_input.IsPasswordFieldForAutofill()
-                                     ? base::string16()
-                                     : user_input.Value().Utf16());
-
-  username_query_prefix_ = username_string;
-  if (!CanShowSuggestion(password_info.fill_data, username_string, show_all,
-                         show_on_password_field)) {
-    return false;
-  }
   GetPasswordManagerDriver()->ShowPasswordSuggestions(
-      field.text_direction, username_string, options,
+      field.text_direction, typed_username, options,
       render_frame()->ElementBoundsInWindow(user_input));
-  return true;
 }
 
 void PasswordAutofillAgent::CleanupOnDocumentShutdown() {

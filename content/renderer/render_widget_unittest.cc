@@ -153,7 +153,7 @@ class MockHandledEventCallback {
 class MockWebWidget : public blink::WebWidget {
  public:
   // WebWidget implementation.
-  void SetAnimationHost(cc::AnimationHost*) override {}
+  void SetCompositorHosts(cc::LayerTreeHost*, cc::AnimationHost*) override {}
   blink::WebURL GetURLForDebugTrace() override { return {}; }
   blink::WebHitTestResult HitTestResultAt(const gfx::Point&) override {
     return {};

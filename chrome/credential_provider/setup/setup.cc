@@ -34,12 +34,16 @@
 #include "chrome/credential_provider/eventlog/gcp_eventlog_messages.h"
 #include "chrome/credential_provider/gaiacp/gcp_utils.h"
 #include "chrome/credential_provider/gaiacp/logging.h"
+#include "chrome/credential_provider/gaiacp/mdm_utils.h"
+#include "chrome/credential_provider/gaiacp/reg_utils.h"
 #include "chrome/credential_provider/setup/gcp_installer_crash_reporting.h"
 #include "chrome/credential_provider/setup/setup_lib.h"
 #include "components/crash/content/app/crash_switches.h"
 #include "components/crash/content/app/run_as_crashpad_handler_win.h"
 #include "content/public/common/content_switches.h"
 
+using credential_provider::GetGlobalFlagOrDefault;
+using credential_provider::kRegEnableVerboseLogging;
 using credential_provider::putHR;
 
 namespace {
@@ -91,6 +95,11 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
                        true,    // Enable timestamp.
                        false);  // Enable tickcount.
 
+  logging::SetEventSource("GCPW", GCPW_CATEGORY, MSG_LOG_MESSAGE);
+
+  if (GetGlobalFlagOrDefault(kRegEnableVerboseLogging, 1))
+    logging::SetMinLogLevel(logging::LOG_VERBOSE);
+
   if (cmdline->HasSwitch(switches::kLoggingLevel)) {
     std::string log_level =
         cmdline->GetSwitchValueASCII(switches::kLoggingLevel);
@@ -102,8 +111,6 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
       LOGFN(WARNING) << "Bad log level: " << log_level;
     }
   }
-
-  logging::SetEventSource("GCPW", GCPW_CATEGORY, MSG_LOG_MESSAGE);
 
   // Make sure the process exits cleanly on unexpected errors.
   base::EnableTerminationOnHeapCorruption();
@@ -184,8 +191,8 @@ int APIENTRY wWinMain(HINSTANCE hInstance,
           base::win::ScopedHandle parent_handle(
               base::win::Uint32ToHandle(parent_handle_value));
           DWORD ret = ::WaitForSingleObject(parent_handle.Get(), 5000);
-          LOGFN(INFO) << "Waited for parent(" << parent_handle.Get()
-                      << "): ret=" << ret;
+          LOGFN(VERBOSE) << "Waited for parent(" << parent_handle.Get()
+                         << "): ret=" << ret;
         }
       }
 

@@ -36,21 +36,27 @@ void PasswordGenerationEditingPopupViewAndroid::Dismissed(
 }
 
 PasswordGenerationEditingPopupViewAndroid::
-    ~PasswordGenerationEditingPopupViewAndroid() {}
+    ~PasswordGenerationEditingPopupViewAndroid() = default;
 
 void PasswordGenerationEditingPopupViewAndroid::Show() {
   ui::ViewAndroid* view_android = controller_->container_view();
 
-  DCHECK(view_android);
+  if (!view_android)
+    return;
 
   popup_ = view_android->AcquireAnchorView();
   const ScopedJavaLocalRef<jobject> view = popup_.view();
   if (view.is_null())
     return;
+
+  ui::WindowAndroid* window_android = view_android->GetWindowAndroid();
+  if (!window_android)
+    return;
+
   JNIEnv* env = base::android::AttachCurrentThread();
   java_object_.Reset(Java_PasswordGenerationPopupBridge_create(
       env, view, reinterpret_cast<intptr_t>(this),
-      view_android->GetWindowAndroid()->GetJavaObject()));
+      window_android->GetJavaObject()));
 
   UpdateBoundsAndRedrawPopup();
 }
@@ -77,8 +83,9 @@ void PasswordGenerationEditingPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
     return;
 
   ui::ViewAndroid* view_android = controller_->container_view();
+  if (!view_android)
+    return;
 
-  DCHECK(view_android);
   view_android->SetAnchorRect(view, controller_->element_bounds());
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> help =

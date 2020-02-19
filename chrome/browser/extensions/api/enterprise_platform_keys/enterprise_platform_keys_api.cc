@@ -9,9 +9,9 @@
 #include "base/bind.h"
 #include "base/task/post_task.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service_factory.h"
 #include "chrome/browser/chromeos/platform_keys/platform_keys.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
 #include "chrome/browser/extensions/api/platform_keys/platform_keys_api.h"
 #include "chrome/common/extensions/api/enterprise_platform_keys.h"
 #include "chrome/common/extensions/api/enterprise_platform_keys_internal.h"
@@ -57,8 +57,8 @@ EnterprisePlatformKeysInternalGenerateKeyFunction::Run() {
   if (!platform_keys::ValidateToken(params->token_id, &platform_keys_token_id))
     return RespondNow(Error(platform_keys::kErrorInvalidToken));
 
-  chromeos::PlatformKeysService* service =
-      chromeos::PlatformKeysServiceFactory::GetForBrowserContext(
+  chromeos::ExtensionPlatformKeysService* service =
+      chromeos::ExtensionPlatformKeysServiceFactory::GetForBrowserContext(
           browser_context());
   DCHECK(service);
 

@@ -22,12 +22,12 @@ CGaiaCredential::CGaiaCredential() = default;
 CGaiaCredential::~CGaiaCredential() = default;
 
 HRESULT CGaiaCredential::FinalConstruct() {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   return S_OK;
 }
 
 void CGaiaCredential::FinalRelease() {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
 }
 
 HRESULT CGaiaCredential::GetUserGlsCommandline(

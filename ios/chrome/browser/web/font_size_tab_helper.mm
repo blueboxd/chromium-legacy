@@ -192,6 +192,12 @@ bool FontSizeTabHelper::CanUserZoomOut() const {
   return NewMultiplierAfterZoom(ZOOM_OUT).has_value();
 }
 
+bool FontSizeTabHelper::CanUserResetZoom() const {
+  base::Optional<double> new_multiplier = NewMultiplierAfterZoom(ZOOM_RESET);
+  return new_multiplier.has_value() &&
+         new_multiplier.value() != GetCurrentUserZoomMultiplier();
+}
+
 int FontSizeTabHelper::GetFontSize() const {
   // Multiply by 100 as the web property needs a percentage.
   return SystemSuggestedFontSizeMultiplier() * GetCurrentUserZoomMultiplier() *

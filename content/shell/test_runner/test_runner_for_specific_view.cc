@@ -526,14 +526,14 @@ void TestRunnerForSpecificView::SetPageVisibility(
 
 void TestRunnerForSpecificView::SetTextDirection(
     const std::string& direction_name) {
-  // Map a direction name to a WebTextDirection value.
-  blink::WebTextDirection direction;
+  // Map a direction name to a base::i18n::TextDirection value.
+  base::i18n::TextDirection direction;
   if (direction_name == "auto")
-    direction = blink::kWebTextDirectionDefault;
+    direction = base::i18n::UNKNOWN_DIRECTION;
   else if (direction_name == "rtl")
-    direction = blink::kWebTextDirectionRightToLeft;
+    direction = base::i18n::RIGHT_TO_LEFT;
   else if (direction_name == "ltr")
-    direction = blink::kWebTextDirectionLeftToRight;
+    direction = base::i18n::LEFT_TO_RIGHT;
   else
     return;
 

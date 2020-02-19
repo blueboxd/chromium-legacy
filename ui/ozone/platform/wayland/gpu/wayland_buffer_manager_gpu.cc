@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/process/process.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_gpu.h"
 
@@ -174,9 +173,8 @@ void WaylandBufferManagerGpu::CreateDmabufBasedBufferInternal(
   DCHECK(io_thread_runner_->BelongsToCurrentThread());
   DCHECK(remote_host_);
   remote_host_->CreateDmabufBasedBuffer(
-      mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(dmabuf_fd))),
-      size, strides, offsets, modifiers, current_format, planes_count,
-      buffer_id);
+      mojo::PlatformHandle(std::move(dmabuf_fd)), size, strides, offsets,
+      modifiers, current_format, planes_count, buffer_id);
 }
 
 void WaylandBufferManagerGpu::CreateShmBasedBufferInternal(
@@ -186,9 +184,8 @@ void WaylandBufferManagerGpu::CreateShmBasedBufferInternal(
     uint32_t buffer_id) {
   DCHECK(io_thread_runner_->BelongsToCurrentThread());
   DCHECK(remote_host_);
-  remote_host_->CreateShmBasedBuffer(
-      mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(shm_fd))), length,
-      size, buffer_id);
+  remote_host_->CreateShmBasedBuffer(mojo::PlatformHandle(std::move(shm_fd)),
+                                     length, size, buffer_id);
 }
 
 void WaylandBufferManagerGpu::CommitBufferInternal(

@@ -33,7 +33,7 @@
 #include <cstdio>
 
 #include "base/debug/stack_trace.h"
-#include "base/sampling_heap_profiler/module_cache.h"
+#include "base/profiler/module_cache.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"

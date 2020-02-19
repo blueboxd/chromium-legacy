@@ -128,7 +128,7 @@ HRESULT RegisterDlls(const base::FilePath& dest_path,
 
     if (register_server_fn) {
       hr = static_cast<HRESULT>((*register_server_fn)());
-      LOGFN(INFO) << "Registered name=" << names[i] << " hr=" << putHR(hr);
+      LOGFN(VERBOSE) << "Registered name=" << names[i] << " hr=" << putHR(hr);
     } else {
       LOGFN(ERROR) << "Failed to register name=" << names[i];
       hr = E_NOTIMPL;
@@ -162,7 +162,7 @@ HRESULT UnregisterDlls(const base::FilePath& dest_path,
     FARPROC pfn = reinterpret_cast<FARPROC>(
         library.GetFunctionPointer("DllUnregisterServer"));
     HRESULT hr = pfn ? static_cast<HRESULT>((*pfn)()) : E_UNEXPECTED;
-    LOGFN(INFO) << "Unregistered name=" << names[i] << " hr=" << putHR(hr);
+    LOGFN(VERBOSE) << "Unregistered name=" << names[i] << " hr=" << putHR(hr);
     has_failures |= FAILED(hr);
   }
 
@@ -204,7 +204,7 @@ HRESULT DoInstall(const base::FilePath& installer_path,
     return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
 
   base::FilePath dest_path = gcp_path.Append(product_version);
-  LOGFN(INFO) << "Install to: " << dest_path;
+  LOGFN(VERBOSE) << "Install to: " << dest_path;
 
   // Make sure nothing under the destination directory is pending delete
   // after reboot, so that files installed now won't get deleted later.
@@ -310,8 +310,6 @@ HRESULT RelaunchUninstaller(const base::FilePath& installer_path) {
   }
   base::win::ScopedHandle this_process_handle(this_process_handle_handle);
 
-  LOGFN(INFO) << "This process handle: " << this_process_handle_handle;
-
   base::CommandLine cmdline(new_installer_path);
   cmdline.AppendSwitch(switches::kUninstall);
   cmdline.AppendSwitchPath(switches::kInstallPath, installer_path.DirName());
@@ -319,7 +317,7 @@ HRESULT RelaunchUninstaller(const base::FilePath& installer_path) {
                              base::NumberToString16(base::win::HandleToUint32(
                                  this_process_handle_handle)));
 
-  LOGFN(INFO) << "Cmd: " << cmdline.GetCommandLineString();
+  LOGFN(VERBOSE) << "Cmd: " << cmdline.GetCommandLineString();
 
   base::LaunchOptions options;
   options.handles_to_inherit.push_back(this_process_handle_handle);

@@ -422,8 +422,9 @@ TEST_F(LoginShelfViewTest, ClickShutdownButtonOnLockScreen) {
 
 // Tests that shutdown button can be clicked on the lock screen for active
 // session that starts with side shelf. See https://crbug.com/1050192.
+// The test is flaky: https://crbug.com/1053980
 TEST_F(LoginShelfViewTest,
-       ClickShutdownButtonOnLockScreenWithVerticalInSessionShelf) {
+       DISABLED_ClickShutdownButtonOnLockScreenWithVerticalInSessionShelf) {
   CreateUserSessions(1);
   SetShelfAlignmentPref(
       Shell::Get()->session_controller()->GetPrimaryUserPrefService(),

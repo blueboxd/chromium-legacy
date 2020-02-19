@@ -42,6 +42,10 @@ int TimeDelta::InDays() const {
     // Preserve max to prevent overflow.
     return std::numeric_limits<int>::max();
   }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return std::numeric_limits<int>::min();
+  }
   return static_cast<int>(delta_ / Time::kMicrosecondsPerDay);
 }
 
@@ -49,6 +53,10 @@ int TimeDelta::InDaysFloored() const {
   if (is_max()) {
     // Preserve max to prevent overflow.
     return std::numeric_limits<int>::max();
+  }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return std::numeric_limits<int>::min();
   }
   int result = delta_ / Time::kMicrosecondsPerDay;
   int64_t remainder = delta_ - (result * Time::kMicrosecondsPerDay);
@@ -63,6 +71,10 @@ int TimeDelta::InHours() const {
     // Preserve max to prevent overflow.
     return std::numeric_limits<int>::max();
   }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return std::numeric_limits<int>::min();
+  }
   return static_cast<int>(delta_ / Time::kMicrosecondsPerHour);
 }
 
@@ -70,6 +82,10 @@ int TimeDelta::InMinutes() const {
   if (is_max()) {
     // Preserve max to prevent overflow.
     return std::numeric_limits<int>::max();
+  }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return std::numeric_limits<int>::min();
   }
   return static_cast<int>(delta_ / Time::kMicrosecondsPerMinute);
 }
@@ -79,6 +95,10 @@ double TimeDelta::InSecondsF() const {
     // Preserve max to prevent overflow.
     return std::numeric_limits<double>::infinity();
   }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return -std::numeric_limits<double>::infinity();
+  }
   return static_cast<double>(delta_) / Time::kMicrosecondsPerSecond;
 }
 
@@ -86,6 +106,10 @@ int64_t TimeDelta::InSeconds() const {
   if (is_max()) {
     // Preserve max to prevent overflow.
     return std::numeric_limits<int64_t>::max();
+  }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return std::numeric_limits<int64_t>::min();
   }
   return delta_ / Time::kMicrosecondsPerSecond;
 }
@@ -95,6 +119,10 @@ double TimeDelta::InMillisecondsF() const {
     // Preserve max to prevent overflow.
     return std::numeric_limits<double>::infinity();
   }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return -std::numeric_limits<double>::infinity();
+  }
   return static_cast<double>(delta_) / Time::kMicrosecondsPerMillisecond;
 }
 
@@ -103,6 +131,10 @@ int64_t TimeDelta::InMilliseconds() const {
     // Preserve max to prevent overflow.
     return std::numeric_limits<int64_t>::max();
   }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return std::numeric_limits<int64_t>::min();
+  }
   return delta_ / Time::kMicrosecondsPerMillisecond;
 }
 
@@ -110,6 +142,10 @@ int64_t TimeDelta::InMillisecondsRoundedUp() const {
   if (is_max()) {
     // Preserve max to prevent overflow.
     return std::numeric_limits<int64_t>::max();
+  }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return std::numeric_limits<int64_t>::min();
   }
   int64_t result = delta_ / Time::kMicrosecondsPerMillisecond;
   int64_t remainder = delta_ - (result * Time::kMicrosecondsPerMillisecond);
@@ -124,6 +160,10 @@ double TimeDelta::InMicrosecondsF() const {
     // Preserve max to prevent overflow.
     return std::numeric_limits<double>::infinity();
   }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return -std::numeric_limits<double>::infinity();
+  }
   return static_cast<double>(delta_);
 }
 
@@ -131,6 +171,10 @@ int64_t TimeDelta::InNanoseconds() const {
   if (is_max()) {
     // Preserve max to prevent overflow.
     return std::numeric_limits<int64_t>::max();
+  }
+  if (is_min()) {
+    // Preserve min to prevent underflow.
+    return std::numeric_limits<int64_t>::min();
   }
   return delta_ * Time::kNanosecondsPerMicrosecond;
 }
@@ -177,6 +221,10 @@ time_t Time::ToTimeT() const {
     // Preserve max without offset to prevent overflow.
     return std::numeric_limits<time_t>::max();
   }
+  if (is_min()) {
+    // Preserve min without offset to prevent underflow.
+    return std::numeric_limits<time_t>::min();
+  }
   if (std::numeric_limits<int64_t>::max() - kTimeTToMicrosecondsOffset <= us_) {
     DLOG(WARNING) << "Overflow when converting base::Time with internal " <<
                      "value " << us_ << " to time_t.";
@@ -198,6 +246,10 @@ double Time::ToDoubleT() const {
   if (is_max()) {
     // Preserve max without offset to prevent overflow.
     return std::numeric_limits<double>::infinity();
+  }
+  if (is_min()) {
+    // Preserve min without offset to prevent underflow.
+    return -std::numeric_limits<double>::infinity();
   }
   return (static_cast<double>(us_ - kTimeTToMicrosecondsOffset) /
           static_cast<double>(kMicrosecondsPerSecond));
@@ -233,6 +285,10 @@ double Time::ToJsTimeIgnoringNull() const {
     // Preserve max without offset to prevent overflow.
     return std::numeric_limits<double>::infinity();
   }
+  if (is_min()) {
+    // Preserve min without offset to prevent underflow.
+    return -std::numeric_limits<double>::infinity();
+  }
   return (static_cast<double>(us_ - kTimeTToMicrosecondsOffset) /
           kMicrosecondsPerMillisecond);
 }
@@ -250,6 +306,10 @@ int64_t Time::ToJavaTime() const {
   if (is_max()) {
     // Preserve max without offset to prevent overflow.
     return std::numeric_limits<int64_t>::max();
+  }
+  if (is_min()) {
+    // Preserve min without offset to prevent underflow.
+    return std::numeric_limits<int64_t>::min();
   }
   return ((us_ - kTimeTToMicrosecondsOffset) /
           kMicrosecondsPerMillisecond);

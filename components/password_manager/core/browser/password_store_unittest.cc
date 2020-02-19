@@ -19,6 +19,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
@@ -1557,6 +1558,9 @@ TEST_F(PasswordStoreTest, RemoveCompromisedCredentialsCreatedBetween) {
   store->ShutdownOnUIThread();
 }
 
+#if !defined(OS_ANDROID)
+// TODO(https://crbug.com/1051914): Enable on Android after making local
+// heuristics reliable.
 TEST_F(PasswordStoreTest, GetAllFieldInfo) {
   FieldInfo field_info1{1001 /*form_signature*/, 1 /* field_signature */,
                         autofill::USERNAME, base::Time::FromTimeT(1)};
@@ -1609,5 +1613,6 @@ TEST_F(PasswordStoreTest, RemoveFieldInfo) {
 
   store->ShutdownOnUIThread();
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace password_manager

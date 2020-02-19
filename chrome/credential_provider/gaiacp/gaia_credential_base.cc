@@ -153,7 +153,7 @@ HRESULT GetExistingAccountMappingFromCD(
       "https://www.googleapis.com/admin/directory/v1/users/"
       "%s?projection=full&viewType=domain_public",
       escape_url_encoded_email.c_str());
-  LOGFN(INFO) << "Encoded URL : " << get_cd_user_url;
+  LOGFN(VERBOSE) << "Encoded URL : " << get_cd_user_url;
   auto fetcher = WinHttpUrlFetcher::Create(GURL(get_cd_user_url));
   fetcher->SetRequestHeader("Accept", "application/json");
   fetcher->SetHttpRequestTimeout(kHttpTimeout);
@@ -166,7 +166,7 @@ HRESULT GetExistingAccountMappingFromCD(
   std::string cd_user_response_json_string =
       std::string(cd_user_response.begin(), cd_user_response.end());
   if (FAILED(hr)) {
-    LOGFN(INFO) << "fetcher->Fetch hr=" << putHR(hr);
+    LOGFN(ERROR) << "fetcher->Fetch hr=" << putHR(hr);
     *error_text =
         CGaiaCredentialBase::AllocErrorString(IDS_INTERNAL_ERROR_BASE);
     return hr;
@@ -329,13 +329,13 @@ HRESULT GetUserAndDomainInfo(
 
   OSUserManager* os_user_manager = OSUserManager::Get();
   DCHECK(os_user_manager);
-  LOGFN(INFO) << "Get user sid for user " << user_name << " and domain name "
-              << domain_name;
+  LOGFN(VERBOSE) << "Get user sid for user " << user_name << " and domain name "
+                 << domain_name;
   HRESULT hr = os_user_manager->GetUserSID(domain_name.c_str(),
                                            user_name.c_str(), existing_sid);
 
   if (existing_sid->length() > 0) {
-    LOGFN(INFO) << "Found existing SID = " << *existing_sid;
+    LOGFN(VERBOSE) << "Found existing SID = " << *existing_sid;
     return S_OK;
   }
 
@@ -458,12 +458,12 @@ HRESULT MakeUsernameForAccount(const base::Value& result,
   // user already.  If so, return the OS username of that user.
   HRESULT hr = GetSidFromId(*gaia_id, sid, sid_length);
   if (FAILED(hr)) {
-    LOGFN(INFO) << "Failed fetching Sid from Id : " << putHR(hr);
+    LOGFN(VERBOSE) << "Failed fetching Sid from Id : " << putHR(hr);
     // If there is no gaia id user property available in the registry,
     // fallback to email address mapping.
     hr = GetSidFromEmail(email, sid, sid_length);
     if (FAILED(hr))
-      LOGFN(INFO) << "Failed fetching Sid from email : " << putHR(hr);
+      LOGFN(VERBOSE) << "Failed fetching Sid from email : " << putHR(hr);
   }
 
   bool has_existing_user_sid = false;
@@ -473,11 +473,11 @@ HRESULT MakeUsernameForAccount(const base::Value& result,
     // This makes sure that we don't invoke the network calls on every login
     // attempt and instead fallback to the SID to gaia id mapping created by
     // GCPW.
-    LOGFN(INFO) << "Found existing SID created in GCPW registry entry = "
-                << sid;
+    LOGFN(VERBOSE) << "Found existing SID created in GCPW registry entry = "
+                   << sid;
     has_existing_user_sid = true;
   } else if (CGaiaCredentialBase::IsCloudAssociationEnabled()) {
-    LOGFN(INFO) << "Lookup cloud association.";
+    LOGFN(VERBOSE) << "Lookup cloud association.";
 
     std::string refresh_token = GetDictStringUTF8(result, kKeyRefreshToken);
     hr = FindExistingUserSidIfAvailable(refresh_token, email, sid, sid_length,
@@ -496,7 +496,7 @@ HRESULT MakeUsernameForAccount(const base::Value& result,
     }
 
   } else {
-    LOGFN(INFO) << "Fallback to create a new local user account";
+    LOGFN(VERBOSE) << "Fallback to create a new local user account";
   }
 
   if (has_existing_user_sid) {
@@ -508,7 +508,7 @@ HRESULT MakeUsernameForAccount(const base::Value& result,
     return hr;
   }
 
-  LOGFN(INFO) << "No existing user found associated to gaia id:" << *gaia_id;
+  LOGFN(VERBOSE) << "No existing user found associated to gaia id:" << *gaia_id;
   wcscpy_s(domain, domain_length, OSUserManager::GetLocalDomain().c_str());
   username[0] = 0;
   sid[0] = 0;
@@ -565,7 +565,7 @@ HRESULT WaitForLoginUIAndGetResult(
     std::string* json_result,
     DWORD* exit_code,
     BSTR* status_text) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   DCHECK(uiprocinfo);
   DCHECK(json_result);
   DCHECK(exit_code);
@@ -583,12 +583,12 @@ HRESULT WaitForLoginUIAndGetResult(
                               &output_buffer[0], kBufferSize);
   // output_buffer contains sensitive information like the password. Don't log
   // it.
-  LOGFN(INFO) << "exit_code=" << *exit_code;
+  LOGFN(VERBOSE) << "exit_code=" << *exit_code;
 
   // Killed internally in the GLS or killed externally by selecting
   // another credential while GLS is running.
   if (*exit_code == kUiecAbort || *exit_code == kUiecKilled) {
-    LOGFN(ERROR) << "Aborted hr=" << putHR(hr);
+    LOGFN(WARNING) << "Aborted hr=" << putHR(hr);
     return E_ABORT;
   } else if (*exit_code != kUiecSuccess) {
     LOGFN(ERROR) << "Error hr=" << putHR(hr);
@@ -746,8 +746,8 @@ HRESULT CreateNewUser(OSUserManager* manager,
       } else {
         next_username += next_username_suffix;
       }
-      LOGFN(INFO) << "Username '" << new_username
-                  << "' already exists. Trying '" << next_username << "'";
+      LOGFN(VERBOSE) << "Username '" << new_username
+                     << "' already exists. Trying '" << next_username << "'";
 
       errno_t err = wcscpy_s(new_username, base::size(new_username),
                              next_username.c_str());
@@ -803,7 +803,7 @@ HRESULT CGaiaCredentialBase::OnDllRegisterServer() {
                                            base::size(gaia_username));
 
   if (SUCCEEDED(hr)) {
-    LOGFN(INFO) << "Expecting gaia user '" << gaia_username << "' to exist.";
+    LOGFN(VERBOSE) << "Expecting gaia user '" << gaia_username << "' to exist.";
     wchar_t password[32];
     HRESULT hr = policy->RetrievePrivateData(kLsaKeyGaiaPassword, password,
                                              base::size(password));
@@ -1028,7 +1028,7 @@ HRESULT CGaiaCredentialBase::GetBitmapValueImpl(DWORD field_id,
 }
 
 void CGaiaCredentialBase::ResetInternalState() {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   username_.Empty();
   domain_.Empty();
   wait_for_report_result_ = false;
@@ -1088,7 +1088,7 @@ HRESULT CGaiaCredentialBase::GetBaseGlsCommandline(
 
   command_line->SetProgram(gls_path);
 
-  LOGFN(INFO) << "App exe: " << command_line->GetProgram().value();
+  LOGFN(VERBOSE) << "App exe: " << command_line->GetProgram().value();
 
   command_line->AppendSwitch(kGcpwSigninSwitch);
 
@@ -1133,7 +1133,7 @@ HRESULT CGaiaCredentialBase::GetGlsCommandline(
     return hr;
   }
 
-  LOGFN(INFO) << "Command line: " << command_line->GetCommandLineString();
+  LOGFN(VERBOSE) << "Command line: " << command_line->GetCommandLineString();
   return S_OK;
 }
 
@@ -1150,7 +1150,7 @@ HRESULT CGaiaCredentialBase::HandleAutologon(
     CREDENTIAL_PROVIDER_GET_SERIALIZATION_RESPONSE* cpgsr,
     CREDENTIAL_PROVIDER_CREDENTIAL_SERIALIZATION* cpcs) {
   USES_CONVERSION;
-  LOGFN(INFO) << "user-sid=" << get_sid().m_str;
+  LOGFN(VERBOSE) << "user-sid=" << get_sid().m_str;
   DCHECK(cpgsr);
   DCHECK(cpcs);
 
@@ -1304,11 +1304,11 @@ void CGaiaCredentialBase::TellOmahaDidRun() {
   LONG sts = key.Create(HKEY_CURRENT_USER, kRegUpdaterClientStateAppPath,
                         KEY_SET_VALUE | KEY_WOW64_32KEY);
   if (sts != ERROR_SUCCESS) {
-    LOGFN(INFO) << "Unable to open omaha key sts=" << sts;
+    LOGFN(VERBOSE) << "Unable to open omaha key sts=" << sts;
   } else {
     sts = key.WriteValue(L"dr", L"1");
     if (sts != ERROR_SUCCESS)
-      LOGFN(INFO) << "Unable to write omaha dr value sts=" << sts;
+      LOGFN(WARNING) << "Unable to write omaha dr value sts=" << sts;
   }
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
@@ -1352,13 +1352,13 @@ HRESULT CGaiaCredentialBase::GetInstallDirectory(base::FilePath* path) {
 // ICredentialProviderCredential //////////////////////////////////////////////
 
 HRESULT CGaiaCredentialBase::Advise(ICredentialProviderCredentialEvents* cpce) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   events_ = cpce;
   return S_OK;
 }
 
 HRESULT CGaiaCredentialBase::UnAdvise(void) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   events_.Reset();
 
   return S_OK;
@@ -1366,7 +1366,7 @@ HRESULT CGaiaCredentialBase::UnAdvise(void) {
 
 HRESULT CGaiaCredentialBase::SetSelected(BOOL* auto_login) {
   *auto_login = CanAttemptWindowsLogon();
-  LOGFN(INFO) << "auto-login=" << *auto_login;
+  LOGFN(VERBOSE) << "auto-login=" << *auto_login;
 
   // After this point the user is able to interact with the winlogon and thus
   // can avoid potential crash loops so the startup sentinel can be deleted.
@@ -1375,7 +1375,7 @@ HRESULT CGaiaCredentialBase::SetSelected(BOOL* auto_login) {
 }
 
 HRESULT CGaiaCredentialBase::SetDeselected(void) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
 
   // This check is trying to handle the scenario when GetSerialization finishes
   // with cpgsr set as CPGSR_RETURN_CREDENTIAL_FINISHED which indicates that
@@ -1432,8 +1432,8 @@ HRESULT CGaiaCredentialBase::GetFieldState(
     default:
       break;
   }
-  LOGFN(INFO) << "hr=" << putHR(hr) << " field=" << field_id
-              << " state=" << *pcpfs << " inter-state=" << *pcpfis;
+  LOGFN(VERBOSE) << "hr=" << putHR(hr) << " field=" << field_id
+                 << " state=" << *pcpfs << " inter-state=" << *pcpfis;
   return hr;
 }
 
@@ -1526,7 +1526,7 @@ HRESULT CGaiaCredentialBase::GetSerialization(
     wchar_t** status_text,
     CREDENTIAL_PROVIDER_STATUS_ICON* status_icon) {
   USES_CONVERSION;
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   DCHECK(status_text);
   DCHECK(status_icon);
 
@@ -1573,7 +1573,7 @@ HRESULT CGaiaCredentialBase::GetSerialization(
 
       hr = S_OK;
     } else {
-      LOGFN(INFO) << "HandleAutologon hr=" << putHR(hr);
+      LOGFN(VERBOSE) << "HandleAutologon hr=" << putHR(hr);
       TellOmahaDidRun();
 
       // If there is no internet connection, just abort right away.
@@ -1645,7 +1645,7 @@ HRESULT CGaiaCredentialBase::GetSerialization(
 }
 
 HRESULT CGaiaCredentialBase::CreateAndRunLogonStub() {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
 
   base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
   HRESULT hr = GetGlsCommandline(&command_line);
@@ -1692,7 +1692,7 @@ HRESULT CGaiaCredentialBase::CreateAndRunLogonStub() {
   uintptr_t wait_thread = _beginthreadex(nullptr, 0, WaitForLoginUI,
                                          puiprocinfo, 0, &wait_thread_id);
   if (wait_thread != 0) {
-    LOGFN(INFO) << "Started wait thread id=" << wait_thread_id;
+    LOGFN(VERBOSE) << "Started wait thread id=" << wait_thread_id;
     ::CloseHandle(reinterpret_cast<HANDLE>(wait_thread));
   } else {
     HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
@@ -1707,7 +1707,7 @@ HRESULT CGaiaCredentialBase::CreateAndRunLogonStub() {
   // CGaiaCredentialProvider whether the serialization eventually succeeds or
   // fails, so that CGaiaCredentialProvider can in turn inform winlogon about
   // what happened.
-  LOGFN(INFO) << "cleaning up";
+  LOGFN(VERBOSE) << "cleaning up";
   return S_OK;
 }
 
@@ -1759,7 +1759,7 @@ HRESULT CGaiaCredentialBase::CreateGaiaLogonToken(
 
   wchar_t* sid_string;
   if (::ConvertSidToStringSid(*sid, &sid_string)) {
-    LOGFN(INFO) << "logon-sid=" << sid_string;
+    LOGFN(VERBOSE) << "logon-sid=" << sid_string;
     LocalFree(sid_string);
   } else {
     LOGFN(ERROR) << "logon-sid=<can't get string>";
@@ -1773,7 +1773,7 @@ HRESULT CGaiaCredentialBase::ForkGaiaLogonStub(
     OSProcessManager* process_manager,
     const base::CommandLine& command_line,
     UIProcessInfo* uiprocinfo) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   DCHECK(process_manager);
   DCHECK(uiprocinfo);
 
@@ -1802,8 +1802,8 @@ HRESULT CGaiaCredentialBase::ForkGaiaLogonStub(
     return hr;
   }
 
-  LOGFN(INFO) << "pid=" << uiprocinfo->procinfo.process_id()
-              << " tid=" << uiprocinfo->procinfo.thread_id();
+  LOGFN(VERBOSE) << "pid=" << uiprocinfo->procinfo.process_id()
+                 << " tid=" << uiprocinfo->procinfo.thread_id();
 
   // Don't create a job here with UI restrictions, since win10 does not allow
   // nested jobs unless all jobs don't specify UI restrictions.  Since chrome
@@ -1829,7 +1829,7 @@ HRESULT CGaiaCredentialBase::ForkGaiaLogonStub(
   // the destruction of the desktop since one is not created.
   DWORD ret = ::WaitForInputIdle(uiprocinfo->procinfo.process_handle(), 10000);
   if (ret != 0)
-    LOGFN(INFO) << "WaitForInputIdle, ret=" << ret;
+    LOGFN(VERBOSE) << "WaitForInputIdle, ret=" << ret;
 
   return S_OK;
 }
@@ -1837,7 +1837,7 @@ HRESULT CGaiaCredentialBase::ForkGaiaLogonStub(
 HRESULT CGaiaCredentialBase::ForkPerformPostSigninActionsStub(
     const base::Value& dict,
     BSTR* status_text) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   DCHECK(status_text);
 
   ScopedStartupInfo startupinfo;
@@ -1858,7 +1858,7 @@ HRESULT CGaiaCredentialBase::ForkPerformPostSigninActionsStub(
     // This happens in tests.  It means this code is running inside the
     // unittest exe and not the credential provider dll.  Just ignore saving
     // the account info.
-    LOGFN(INFO) << "Not running SAIS";
+    LOGFN(VERBOSE) << "Not running SAIS";
     return S_OK;
   } else if (FAILED(hr)) {
     LOGFN(ERROR) << "GetCommandLineForEntryPoint hr=" << putHR(hr);
@@ -1888,7 +1888,7 @@ HRESULT CGaiaCredentialBase::ForkPerformPostSigninActionsStub(
   std::string json;
   if (base::JSONWriter::Write(dict, &json)) {
     const DWORD buffer_size = json.length() + 1;
-    LOGFN(INFO) << "Json size: " << buffer_size;
+    LOGFN(VERBOSE) << "Json size: " << buffer_size;
 
     DWORD written = 0;
     // First, write the buffer size then write the buffer content.
@@ -1968,13 +1968,13 @@ unsigned __stdcall CGaiaCredentialBase::WaitForLoginUI(void* param) {
       LOGFN(ERROR) << "uiprocinfo->credential->ReportError hr=" << putHR(hr);
   }
 
-  LOGFN(INFO) << "done";
+  LOGFN(VERBOSE) << "done";
   return 0;
 }
 
 // static
 HRESULT CGaiaCredentialBase::SaveAccountInfo(const base::Value& properties) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
 
   base::string16 sid = GetDictString(properties, kKeySID);
   if (sid.empty()) {
@@ -2041,7 +2041,7 @@ HRESULT CGaiaCredentialBase::SaveAccountInfo(const base::Value& properties) {
 HRESULT CGaiaCredentialBase::PerformPostSigninActions(
     const base::Value& properties,
     bool com_initialized) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   HRESULT hr = S_OK;
 
   if (com_initialized) {
@@ -2116,8 +2116,8 @@ HRESULT CGaiaCredentialBase::ReportResult(
     NTSTATUS substatus,
     wchar_t** ppszOptionalStatusText,
     CREDENTIAL_PROVIDER_STATUS_ICON* pcpsiOptionalStatusIcon) {
-  LOGFN(INFO) << "status=" << putHR(status)
-              << " substatus=" << putHR(substatus);
+  LOGFN(VERBOSE) << "status=" << putHR(status)
+                 << " substatus=" << putHR(substatus);
 
   if (status == STATUS_SUCCESS && authentication_results_) {
     // Update the sid, domain, username and password in
@@ -2178,7 +2178,7 @@ HRESULT CGaiaCredentialBase::GetUserSid(wchar_t** sid) {
 }
 
 HRESULT CGaiaCredentialBase::Initialize(IGaiaCredentialProvider* provider) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   DCHECK(provider);
 
   provider_ = provider;
@@ -2186,7 +2186,7 @@ HRESULT CGaiaCredentialBase::Initialize(IGaiaCredentialProvider* provider) {
 }
 
 HRESULT CGaiaCredentialBase::Terminate() {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   SetDeselected();
   provider_.Reset();
   return S_OK;
@@ -2196,7 +2196,7 @@ void CGaiaCredentialBase::TerminateLogonProcess() {
   // Terminate login UI process if started.  This is best effort since it may
   // have already terminated.
   if (logon_ui_process_ != INVALID_HANDLE_VALUE) {
-    LOGFN(INFO) << "Attempting to kill logon UI process";
+    LOGFN(VERBOSE) << "Attempting to kill logon UI process";
     ::TerminateProcess(logon_ui_process_, kUiecKilled);
     logon_ui_process_ = INVALID_HANDLE_VALUE;
   }
@@ -2207,7 +2207,7 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
                                                   BSTR* username,
                                                   BSTR* sid,
                                                   BSTR* error_text) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   DCHECK(domain);
   DCHECK(username);
   DCHECK(sid);
@@ -2452,7 +2452,7 @@ HRESULT CGaiaCredentialBase::ReportError(LONG status,
                                          LONG substatus,
                                          BSTR status_text) {
   USES_CONVERSION;
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
 
   // Provider may be unset if the GLS process ended as a result of a kill
   // request coming from Terminate() which would release the |provider_|

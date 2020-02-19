@@ -15,6 +15,10 @@
 class PrefRegistrySimple;
 class PrefService;
 
+namespace base {
+class Version;
+}  // namespace base
+
 namespace update_client {
 
 class ActivityDataService;
@@ -98,6 +102,14 @@ class PersistedData {
   // update check/last active of the specified |id|.
   int GetDaysSinceLastRollCall(const std::string& id) const;
   int GetDaysSinceLastActive(const std::string& id) const;
+
+  // These functions access |pv| data for the specified |id|.
+  base::Version GetProductVersion(const std::string& id) const;
+  void SetProductVersion(const std::string& id, const base::Version& pv);
+
+  // These functions access the fingerprint for the specified |id|.
+  std::string GetFingerprint(const std::string& id) const;
+  void SetFingerprint(const std::string& id, const std::string& fingerprint);
 
  private:
   int GetInt(const std::string& id, const std::string& key, int fallback) const;

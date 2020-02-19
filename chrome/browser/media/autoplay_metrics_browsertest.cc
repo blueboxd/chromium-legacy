@@ -31,8 +31,6 @@ class AutoplayMetricsBrowserTest : public InProcessBrowserTest {
   void TryAutoplay(ukm::TestUkmRecorder& ukm_recorder,
                    const content::ToRenderFrameHost& adapter) {
     base::RunLoop run_loop;
-    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                          base::TimeDelta::FromSeconds(10));
     ukm_recorder.SetOnAddEntryCallback(Entry::kEntryName,
                                        run_loop.QuitClosure());
     EXPECT_TRUE(ExecuteScriptWithoutUserGesture(adapter.render_frame_host(),

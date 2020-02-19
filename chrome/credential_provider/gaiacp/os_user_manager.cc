@@ -288,7 +288,7 @@ HRESULT OSUserManager::AddUser(const wchar_t* username,
     wchar_t* sidstr = nullptr;
     if (::ConvertSidToStringSid(user_info->usri4_user_sid, &sidstr)) {
       *sid = SysAllocString(T2COLE(sidstr));
-      LOGFN(INFO) << "sid=" << sidstr;
+      LOGFN(VERBOSE) << "sid=" << sidstr;
       ::LocalFree(sidstr);
     } else {
       LOGFN(ERROR) << "Could not convert SID to string";

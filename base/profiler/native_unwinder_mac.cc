@@ -10,9 +10,9 @@
 #include <sys/ptrace.h>
 
 #include "base/logging.h"
+#include "base/profiler/module_cache.h"
 #include "base/profiler/native_unwinder.h"
 #include "base/profiler/profile_builder.h"
-#include "base/sampling_heap_profiler/module_cache.h"
 
 extern "C" {
 void _sigtramp(int, int, struct sigset*);

@@ -71,8 +71,8 @@ unsigned __stdcall CheckReauthStatus(void* param) {
     std::vector<char> response;
     hr = reauth_info->fetcher->Fetch(&response);
     if (FAILED(hr)) {
-      LOGFN(INFO) << "fetcher.Fetch sid=" << reauth_info->sid
-                  << " hr=" << putHR(hr);
+      LOGFN(ERROR) << "fetcher.Fetch sid=" << reauth_info->sid
+                   << " hr=" << putHR(hr);
       return 1;
     }
 
@@ -86,7 +86,7 @@ unsigned __stdcall CheckReauthStatus(void* param) {
 
     base::Optional<int> expires_in = properties->FindIntKey("expires_in");
     if (properties->FindKey("error") || !expires_in || expires_in.value() < 0) {
-      LOGFN(INFO) << "Needs reauth sid=" << reauth_info->sid;
+      LOGFN(VERBOSE) << "Needs reauth sid=" << reauth_info->sid;
       return 0;
     }
   }
@@ -199,8 +199,9 @@ bool AssociatedUserValidator::IsOnlineLoginStale(
       last_login_millis, &last_login_size);
 
   if (FAILED(hr)) {
-    LOGFN(INFO) << "GetUserProperty for " << kKeyLastSuccessfulOnlineLoginMillis
-                << " failed. hr=" << putHR(hr);
+    LOGFN(VERBOSE) << "GetUserProperty for "
+                   << kKeyLastSuccessfulOnlineLoginMillis
+                   << " failed. hr=" << putHR(hr);
     // Fallback to the less obstructive option to not enforce login via google
     // when fetching the registry entry fails.
     return false;
@@ -212,8 +213,8 @@ bool AssociatedUserValidator::IsOnlineLoginStale(
   hr = GetGlobalFlag(base::UTF8ToUTF16(kKeyValidityPeriodInDays),
                      &validity_period_days);
   if (FAILED(hr)) {
-    LOGFN(INFO) << "GetGlobalFlag for " << kKeyValidityPeriodInDays
-                << " failed. hr=" << putHR(hr);
+    LOGFN(VERBOSE) << "GetGlobalFlag for " << kKeyValidityPeriodInDays
+                   << " failed. hr=" << putHR(hr);
     // Fallback to the less obstructive option to not enforce login via google
     // when fetching the registry entry fails.
     return false;
@@ -304,12 +305,12 @@ bool AssociatedUserValidator::DenySigninForUsersWithInvalidTokenHandles(
   base::AutoLock locker(validator_lock_);
 
   if (block_deny_access_update_) {
-    LOGFN(INFO) << "Block the deny access update";
+    LOGFN(VERBOSE) << "Block the deny access update";
     return false;
   }
 
   if (!IsUserAccessBlockingEnforced(cpus)) {
-    LOGFN(INFO) << "User Access Blocking not enforced.";
+    LOGFN(VERBOSE) << "User Access Blocking not enforced.";
     return false;
   }
 
@@ -330,7 +331,7 @@ bool AssociatedUserValidator::DenySigninForUsersWithInvalidTokenHandles(
     // Note that logon hours cannot be changed on domain joined AD user account.
     if (GetAuthEnforceReason(sid) != EnforceAuthReason::NOT_ENFORCED &&
         !manager->IsUserDomainJoined(sid)) {
-      LOGFN(INFO) << "Revoking access for sid=" << sid;
+      LOGFN(VERBOSE) << "Revoking access for sid=" << sid;
       HRESULT hr = ModifyUserAccess(policy, sid, false);
       if (FAILED(hr)) {
         LOGFN(ERROR) << "ModifyUserAccess sid=" << sid << " hr=" << putHR(hr);
@@ -340,7 +341,7 @@ bool AssociatedUserValidator::DenySigninForUsersWithInvalidTokenHandles(
       }
     } else if (manager->IsUserDomainJoined(sid)) {
       // TODO(crbug.com/973160): Description provided in the bug.
-      LOGFN(INFO) << "Not denying signin for AD user accounts.";
+      LOGFN(VERBOSE) << "Not denying signin for AD user accounts.";
     }
   }
 
@@ -383,7 +384,7 @@ void AssociatedUserValidator::AllowSigninForAllAssociatedUsers(
 void AssociatedUserValidator::AllowSigninForUsersWithInvalidTokenHandles() {
   base::AutoLock locker(validator_lock_);
 
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
   for (auto& sid : locked_user_sids_) {
     HRESULT hr = ModifyUserAccess(policy, sid, true);
@@ -518,9 +519,9 @@ AssociatedUserValidator::GetAuthEnforceReason(const base::string16& sid) {
     base::string16 store_key = GetUserPasswordLsaStoreKey(sid);
     auto policy = ScopedLsaPolicy::Create(POLICY_ALL_ACCESS);
     if (!policy->PrivateDataExists(store_key.c_str())) {
-      LOGFN(INFO) << "Enforcing re-auth due to missing password lsa store "
-                     "data for user "
-                  << sid;
+      LOGFN(VERBOSE) << "Enforcing re-auth due to missing password lsa store "
+                        "data for user "
+                     << sid;
       return AssociatedUserValidator::EnforceAuthReason::
           MISSING_PASSWORD_RECOVERY_INFO;
     }

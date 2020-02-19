@@ -7,6 +7,8 @@
 
 #include <memory>
 #include "base/bind.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -19,6 +21,8 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
+
+using base::UserMetricsAction;
 
 CookieControlsController::CookieControlsController(
     content::WebContents* web_contents) {
@@ -76,9 +80,11 @@ CookieControlsController::Status CookieControlsController::GetStatus(
 void CookieControlsController::OnCookieBlockingEnabledForSite(
     bool block_third_party_cookies) {
   if (block_third_party_cookies) {
+    base::RecordAction(UserMetricsAction("CookieControls.Bubble.TurnOn"));
     should_reload_ = false;
     cookie_settings_->ResetThirdPartyCookieSetting(GetWebContents()->GetURL());
   } else {
+    base::RecordAction(UserMetricsAction("CookieControls.Bubble.TurnOff"));
     should_reload_ = true;
     cookie_settings_->SetThirdPartyCookieSetting(
         GetWebContents()->GetURL(), ContentSetting::CONTENT_SETTING_ALLOW);

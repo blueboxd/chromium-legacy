@@ -262,7 +262,7 @@ void ExternalPopupMenu::GetPopupMenuInfo(WebPopupMenuInfo& info,
     }
     popup_item.enabled = !item_element.IsDisabledFormControl();
     const ComputedStyle& style = *owner_element.ItemComputedStyle(item_element);
-    popup_item.text_direction = ToWebTextDirection(style.Direction());
+    popup_item.text_direction = ToBaseTextDirection(style.Direction());
     popup_item.has_text_direction_override = IsOverride(style.GetUnicodeBidi());
   }
 

@@ -13,12 +13,12 @@ COtherUserGaiaCredential::COtherUserGaiaCredential() = default;
 COtherUserGaiaCredential::~COtherUserGaiaCredential() = default;
 
 HRESULT COtherUserGaiaCredential::FinalConstruct() {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   return S_OK;
 }
 
 void COtherUserGaiaCredential::FinalRelease() {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
 }
 
 }  // namespace credential_provider

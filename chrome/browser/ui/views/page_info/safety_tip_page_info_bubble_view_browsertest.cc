@@ -9,9 +9,9 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/engagement/site_engagement_score.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -782,7 +782,8 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     // Ensure that the tab is open for more than 0 ms, even in the face of bots
     // with bad clocks.
     base::RunLoop run_loop;
-    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
     run_loop.Run();
     NavigateToURL(browser(), GURL("about:blank"),
                   WindowOpenDisposition::CURRENT_TAB);
@@ -799,7 +800,8 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     TriggerWarningFromBlocklist(browser(), kNavigatedUrl,
                                 WindowOpenDisposition::CURRENT_TAB);
     base::RunLoop run_loop;
-    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
     run_loop.Run();
     CloseWarningLeaveSite(browser());
     auto samples = histograms.GetAllSamples(
@@ -815,7 +817,8 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     TriggerWarningFromBlocklist(browser(), kNavigatedUrl,
                                 WindowOpenDisposition::CURRENT_TAB);
     base::RunLoop run_loop;
-    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
     run_loop.Run();
     CloseWarningIgnore(views::Widget::ClosedReason::kCloseButtonClicked);
     auto base_samples = histograms.GetAllSamples(
@@ -836,7 +839,8 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     TriggerWarningFromBlocklist(browser(), kNavigatedUrl,
                                 WindowOpenDisposition::CURRENT_TAB);
     base::RunLoop run_loop;
-    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
     run_loop.Run();
     CloseWarningIgnore(views::Widget::ClosedReason::kEscKeyPressed);
     auto base_samples = histograms.GetAllSamples(

@@ -1,7 +1,7 @@
 include_rules = [
     "+base/i18n/rtl.h",
     "+base/time/time_override.h",
-    "+base/sampling_heap_profiler/module_cache.h",
+    "+base/profiler/module_cache.h",
     "+base/sampling_heap_profiler/poisson_allocation_sampler.h",
     "+base/sampling_heap_profiler/sampling_heap_profiler.h",
     # for base::GetUniqueIdForProcess

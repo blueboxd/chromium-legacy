@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/version.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/update_client/activity_data_service.h"
 #include "components/update_client/persisted_data.h"
@@ -50,6 +51,15 @@ TEST(PersistedDataTest, Simple) {
   EXPECT_FALSE(pf2.empty());
   // The following has a 1 / 2^128 chance of being flaky.
   EXPECT_NE(pf1, pf2);
+
+  EXPECT_FALSE(metadata->GetProductVersion("someappid").IsValid());
+  metadata->SetProductVersion("someappid", base::Version("1.0"));
+  EXPECT_EQ(base::Version("1.0"), metadata->GetProductVersion("someappid"));
+
+  EXPECT_TRUE(metadata->GetFingerprint("someappid").empty());
+  metadata->SetFingerprint("someappid", "somefingerprint");
+  EXPECT_STREQ("somefingerprint",
+               metadata->GetFingerprint("someappid").c_str());
 }
 
 TEST(PersistedDataTest, SharedPref) {

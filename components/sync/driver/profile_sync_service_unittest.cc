@@ -1538,6 +1538,14 @@ TEST_F(ProfileSyncServiceTest, GetExperimentalAuthenticationKeyLocalSync) {
   EXPECT_FALSE(service()->GetExperimentalAuthenticationKey());
 }
 
+TEST_F(ProfileSyncServiceTest, GenerateCacheGUID) {
+  const std::string guid1 = ProfileSyncService::GenerateCacheGUIDForTest();
+  const std::string guid2 = ProfileSyncService::GenerateCacheGUIDForTest();
+  EXPECT_EQ(24U, guid1.size());
+  EXPECT_EQ(24U, guid2.size());
+  EXPECT_NE(guid1, guid2);
+}
+
 // Regression test for crbug.com/1043642, can be removed once
 // ProfileSyncService usages after shutdown are addressed.
 TEST_F(ProfileSyncServiceTestWithStopSyncInPausedState,

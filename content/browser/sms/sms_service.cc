@@ -102,7 +102,6 @@ void SmsService::OnReceive(const std::string& one_time_code,
 
 void SmsService::Abort() {
   DCHECK(callback_);
-
   Process(SmsStatus::kAborted, base::nullopt, base::nullopt);
 }
 

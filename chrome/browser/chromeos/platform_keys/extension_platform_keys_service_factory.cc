@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service_factory.h"
+#include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service_factory.h"
 
 #include <memory>
 
@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -30,7 +30,7 @@ namespace {
 // This delegate selects a certificate by showing the certificate selection
 // dialog to the user.
 class DefaultSelectDelegate
-    : public chromeos::PlatformKeysService::SelectDelegate {
+    : public chromeos::ExtensionPlatformKeysService::SelectDelegate {
  public:
   DefaultSelectDelegate() {}
   ~DefaultSelectDelegate() override {}
@@ -71,33 +71,35 @@ class DefaultSelectDelegate
 }  // namespace
 
 // static
-PlatformKeysService* PlatformKeysServiceFactory::GetForBrowserContext(
+ExtensionPlatformKeysService*
+ExtensionPlatformKeysServiceFactory::GetForBrowserContext(
     content::BrowserContext* context) {
-  return static_cast<PlatformKeysService*>(
+  return static_cast<ExtensionPlatformKeysService*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
 // static
-PlatformKeysServiceFactory* PlatformKeysServiceFactory::GetInstance() {
-  return base::Singleton<PlatformKeysServiceFactory>::get();
+ExtensionPlatformKeysServiceFactory*
+ExtensionPlatformKeysServiceFactory::GetInstance() {
+  return base::Singleton<ExtensionPlatformKeysServiceFactory>::get();
 }
 
-PlatformKeysServiceFactory::PlatformKeysServiceFactory()
+ExtensionPlatformKeysServiceFactory::ExtensionPlatformKeysServiceFactory()
     : BrowserContextKeyedServiceFactory(
-          "PlatformKeysService",
+          "ExtensionPlatformKeysService",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(extensions::ExtensionSystemFactory::GetInstance());
 }
 
-PlatformKeysServiceFactory::~PlatformKeysServiceFactory() {
-}
+ExtensionPlatformKeysServiceFactory::~ExtensionPlatformKeysServiceFactory() {}
 
-content::BrowserContext* PlatformKeysServiceFactory::GetBrowserContextToUse(
+content::BrowserContext*
+ExtensionPlatformKeysServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
-KeyedService* PlatformKeysServiceFactory::BuildServiceInstanceFor(
+KeyedService* ExtensionPlatformKeysServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   extensions::StateStore* const store =
       extensions::ExtensionSystem::Get(context)->state_store();
@@ -107,9 +109,10 @@ KeyedService* PlatformKeysServiceFactory::BuildServiceInstanceFor(
 
   Profile* const profile = Profile::FromBrowserContext(context);
 
-  PlatformKeysService* const service = new PlatformKeysService(
-      policy_connector->IsManaged(), profile->GetPrefs(),
-      policy_connector->policy_service(), context, store);
+  ExtensionPlatformKeysService* const service =
+      new ExtensionPlatformKeysService(
+          policy_connector->IsManaged(), profile->GetPrefs(),
+          policy_connector->policy_service(), context, store);
 
   service->SetSelectDelegate(std::make_unique<DefaultSelectDelegate>());
   return service;

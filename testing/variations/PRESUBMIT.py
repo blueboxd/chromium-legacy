@@ -26,7 +26,8 @@ FIELDTRIAL_CONFIG_TOO_LONG_ERROR_MSG = \
   "entries. To check if an entry is obsolete, do a code search for its "\
   "'enable_features' and 'disable_features' strings and verify there are "\
   "no results other than the files related to the testing config. "\
-  "See crbug.com/1045530 for more details." % FIELDTRIAL_CONFIG_FILE_NAME
+  "Automating this is tracked under crbug.com/1053702." % \
+  FIELDTRIAL_CONFIG_FILE_NAME
 
 
 def PrettyPrint(contents):

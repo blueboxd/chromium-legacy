@@ -153,7 +153,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
       browser = shell();
     StoragePartition* partition = BrowserContext::GetDefaultStoragePartition(
         browser->web_contents()->GetBrowserContext());
-    return static_cast<IndexedDBContextImpl*>(partition->GetIndexedDBContext());
+    return partition->GetIndexedDBContextImplForTesting();
   }
 
   void SetQuota(int per_host_quota_kilobytes) {

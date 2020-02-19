@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_SAMPLING_HEAP_PROFILER_MODULE_CACHE_H_
-#define BASE_SAMPLING_HEAP_PROFILER_MODULE_CACHE_H_
+#ifndef BASE_PROFILER_MODULE_CACHE_H_
+#define BASE_PROFILER_MODULE_CACHE_H_
 
 #include <memory>
 #include <string>
@@ -110,4 +110,4 @@ class BASE_EXPORT ModuleCache {
 
 }  // namespace base
 
-#endif  // BASE_SAMPLING_HEAP_PROFILER_MODULE_CACHE_H_
+#endif  // BASE_PROFILER_MODULE_CACHE_H_

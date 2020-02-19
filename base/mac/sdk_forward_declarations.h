@@ -75,16 +75,7 @@ BASE_EXPORT extern "C" NSString* const kCWSSIDDidChangeNotification;
 //
 // ----------------------------------------------------------------------------
 
-#if !defined(MAC_OS_X_VERSION_10_15) || \
-    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_15
-
-@interface NSScreen (ForwardDeclare)
-@property(readonly)
-    CGFloat maximumPotentialExtendedDynamicRangeColorComponentValue
-        API_AVAILABLE(macos(10.15));
-@end
-
-#endif  // MAC_OS_X_VERSION_10_15
-
+// Chromium currently is building with the most recent SDK. WWDC is not far
+// away, though....
 
 #endif  // BASE_MAC_SDK_FORWARD_DECLARATIONS_H_

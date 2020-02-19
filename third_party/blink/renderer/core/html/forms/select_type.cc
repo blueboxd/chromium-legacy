@@ -339,7 +339,8 @@ class ListBoxSelectType final : public SelectType {
 
 bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
   const auto* mouse_event = DynamicTo<MouseEvent>(event);
-  if (event.type() == event_type_names::kGesturetap && event.IsGestureEvent()) {
+  const auto* gesture_event = DynamicTo<GestureEvent>(event);
+  if (event.type() == event_type_names::kGesturetap && gesture_event) {
     select_->focus();
     // Calling focus() may cause us to lose our layoutObject or change the
     // layoutObject type, in which case do not want to handle the event.
@@ -347,10 +348,9 @@ bool ListBoxSelectType::DefaultEventHandler(const Event& event) {
       return false;
 
     // Convert to coords relative to the list box if needed.
-    const auto& gesture_event = ToGestureEvent(event);
-    if (HTMLOptionElement* option = EventTargetOption(gesture_event)) {
+    if (HTMLOptionElement* option = EventTargetOption(*gesture_event)) {
       if (!select_->IsDisabledFormControl()) {
-        select_->UpdateSelectedState(option, true, gesture_event.shiftKey());
+        select_->UpdateSelectedState(option, true, gesture_event->shiftKey());
         select_->ListBoxOnChange();
       }
       return true;

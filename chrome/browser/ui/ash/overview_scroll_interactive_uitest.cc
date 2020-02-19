@@ -5,7 +5,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/perf/drag_event_generator.h"
@@ -37,8 +37,9 @@ class OverviewScrollTest : public UIPerformanceTest {
     int warmup_ms = (base::SysInfo::IsRunningOnChromeOS() ? 5000 : 1000) +
                     additional_browsers * 100;
     base::RunLoop run_loop;
-    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                          base::TimeDelta::FromMilliseconds(warmup_ms));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitClosure(),
+        base::TimeDelta::FromMilliseconds(warmup_ms));
     run_loop.Run();
   }
 

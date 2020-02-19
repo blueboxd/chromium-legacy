@@ -47,25 +47,45 @@ static inline bool IsValidSource(EventTarget* source) {
          IsA<HTMLPortalElement>(source->ToNode());
 }
 
-MessageEvent::V8GCAwareString::V8GCAwareString(const String& value)
-    : string_(value) {
-  const int64_t size = string_.length();
-  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(size);
+size_t MessageEvent::SizeOfExternalMemoryInBytes() {
+  switch (data_type_) {
+    case kDataTypeNull:
+      return 0;
+    case kDataTypeScriptValue:
+      // This is not external memory.
+      return 0;
+    case kDataTypeSerializedScriptValue: {
+      size_t result = 0;
+      for (auto const& array_buffer :
+           data_as_serialized_script_value_->ArrayBuffers()) {
+        result += array_buffer->ByteLengthAsSizeT();
+      }
+
+      return result;
+    }
+    case kDataTypeString:
+      return data_as_string_.length();
+    case kDataTypeBlob:
+      return static_cast<size_t>(data_as_blob_->size());
+    case kDataTypeArrayBuffer:
+      return data_as_array_buffer_->ByteLengthAsSizeT();
+  }
 }
 
-MessageEvent::V8GCAwareString::~V8GCAwareString() {
-  const int64_t size = string_.length();
-  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(-size);
+void MessageEvent::RegisterAmountOfExternallyAllocatedMemory() {
+  CHECK_EQ(amount_of_external_memory_, 0u);
+  size_t size = SizeOfExternalMemoryInBytes();
+
+  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+      static_cast<int64_t>(size));
+  amount_of_external_memory_ = size;
 }
 
-MessageEvent::V8GCAwareString& MessageEvent::V8GCAwareString::operator=(
-    const String& other) {
-  const int64_t old_size = string_.length();
-  const int64_t new_size = other.length();
-  string_ = other;
-  v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(new_size -
-                                                                   old_size);
-  return *this;
+void MessageEvent::UnregisterAmountOfExternallyAllocatedMemory() {
+  if (amount_of_external_memory_ > 0) {
+    v8::Isolate::GetCurrent()->AdjustAmountOfExternalAllocatedMemory(
+        -static_cast<int64_t>(amount_of_external_memory_));
+  }
 }
 
 MessageEvent::MessageEvent() : data_type_(kDataTypeScriptValue) {}
@@ -121,6 +141,7 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
       ports_(ports),
       user_activation_(user_activation) {
   DCHECK(IsValidSource(source_.Get()));
+  RegisterAmountOfExternallyAllocatedMemory();
 }
 
 MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
@@ -143,6 +164,7 @@ MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
       transfer_user_activation_(transfer_user_activation),
       allow_autoplay_(allow_autoplay) {
   DCHECK(IsValidSource(source_.Get()));
+  RegisterAmountOfExternallyAllocatedMemory();
 }
 
 MessageEvent::MessageEvent(const String& origin, EventTarget* source)
@@ -157,21 +179,29 @@ MessageEvent::MessageEvent(const String& data, const String& origin)
     : Event(event_type_names::kMessage, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeString),
       data_as_string_(data),
-      origin_(origin) {}
+      origin_(origin) {
+  RegisterAmountOfExternallyAllocatedMemory();
+}
 
 MessageEvent::MessageEvent(Blob* data, const String& origin)
     : Event(event_type_names::kMessage, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeBlob),
       data_as_blob_(data),
-      origin_(origin) {}
+      origin_(origin) {
+  RegisterAmountOfExternallyAllocatedMemory();
+}
 
 MessageEvent::MessageEvent(DOMArrayBuffer* data, const String& origin)
     : Event(event_type_names::kMessage, Bubbles::kNo, Cancelable::kNo),
       data_type_(kDataTypeArrayBuffer),
       data_as_array_buffer_(data),
-      origin_(origin) {}
+      origin_(origin) {
+  RegisterAmountOfExternallyAllocatedMemory();
+}
 
-MessageEvent::~MessageEvent() = default;
+MessageEvent::~MessageEvent() {
+  UnregisterAmountOfExternallyAllocatedMemory();
+}
 
 MessageEvent* MessageEvent::Create(const AtomicString& type,
                                    const MessageEventInit* initializer,
@@ -240,6 +270,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
   user_activation_ = user_activation;
   transfer_user_activation_ = transfer_user_activation;
   allow_autoplay_ = allow_autoplay;
+  RegisterAmountOfExternallyAllocatedMemory();
 }
 
 void MessageEvent::initMessageEvent(const AtomicString& type,
@@ -263,6 +294,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
   source_ = source;
   ports_ = ports;
   is_ports_dirty_ = true;
+  RegisterAmountOfExternallyAllocatedMemory();
 }
 
 ScriptValue MessageEvent::data(ScriptState* script_state) {
@@ -294,7 +326,7 @@ ScriptValue MessageEvent::data(ScriptState* script_state) {
       break;
 
     case MessageEvent::kDataTypeString:
-      value = V8String(isolate, data_as_string_.data());
+      value = V8String(isolate, data_as_string_);
       break;
 
     case MessageEvent::kDataTypeBlob:
@@ -370,7 +402,7 @@ v8::Local<v8::Object> MessageEvent::AssociateWithWrapper(
     case kDataTypeString:
       V8PrivateProperty::GetSymbol(isolate,
                                    kPrivatePropertyMessageEventCachedData)
-          .Set(wrapper, V8String(isolate, data_as_string_.data()));
+          .Set(wrapper, V8String(isolate, data_as_string_));
       break;
     case kDataTypeBlob:
       break;

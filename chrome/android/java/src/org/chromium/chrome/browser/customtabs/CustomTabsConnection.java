@@ -811,6 +811,20 @@ public class CustomTabsConnection {
         maybePrefetchResources(session, intent);
     }
 
+    /**
+     * Called each time a CCT tab is created to check if a client data header was set and if so
+     * forward it along to the native side.
+     * @param session Session identifier.
+     * @param webContents the WebContents of the new tab.
+     */
+    public void setClientDataHeaderForNewTab(
+            CustomTabsSessionToken session, WebContents webContents) {
+        String header = mClientManager.getClientDataHeaderValue(session);
+        if (!TextUtils.isEmpty(header)) {
+            CustomTabsConnectionJni.get().setClientDataHeader(webContents, header);
+        }
+    }
+
     private void maybePreconnectToRedirectEndpoint(
             CustomTabsSessionToken session, String url, Intent intent) {
         // For the preconnection to not be a no-op, we need more than just the native library.
@@ -1030,13 +1044,6 @@ public class CustomTabsConnection {
     }
 
     /**
-     * See {@link ClientManager#setClientDataHeaderValue}.
-     */
-    String getClientDataHeaderValueForSession(CustomTabsSessionToken session) {
-        return mClientManager.getClientDataHeaderValue(session);
-    }
-
-    /**
      * Extracts the creator package name from the intent.
      * @param intent The intent to get the package name from.
      * @return the package name which can be null.
@@ -1203,10 +1210,13 @@ public class CustomTabsConnection {
     /**
      * Notifies the application that the user has selected to open the page in their browser.
      * @param session Session identifier.
+     * @param webContents the WebContents of the tab being taken out of CCT.
      * @return true if success. To protect Chrome exceptions in the client application are swallowed
      *     and false is returned.
      */
-    boolean notifyOpenInBrowser(CustomTabsSessionToken session) {
+    boolean notifyOpenInBrowser(CustomTabsSessionToken session, WebContents webContents) {
+        // Reset the client data header for the WebContents since it's not a CCT tab anymore.
+        if (webContents != null) CustomTabsConnectionJni.get().setClientDataHeader(webContents, "");
         return safeExtraCallback(session, OPEN_IN_BROWSER_CALLBACK,
                 getExtrasBundleForNavigationEventForSession(session));
     }
@@ -1584,5 +1594,6 @@ public class CustomTabsConnection {
         void createAndStartDetachedResourceRequest(Profile profile, CustomTabsSessionToken session,
                 String url, String origin, int referrerPolicy,
                 @DetachedResourceRequestMotivation int motivation);
+        void setClientDataHeader(WebContents webContents, String header);
     }
 }

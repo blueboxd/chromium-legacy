@@ -21,13 +21,6 @@ namespace gfx {
 
 namespace {
 
-#if !defined(MAC_OS_X_VERSION_10_15) || \
-    MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_15
-CFStringRef kCGColorSpaceITUR_2020_PQ_EOTF =
-    CFSTR("kCGColorSpaceITUR_2020_PQ_EOTF");
-CFStringRef kCGColorSpaceITUR_2020_HLG = CFSTR("kCGColorSpaceITUR_2020_HLG");
-#endif  // MAC_OS_X_VERSION_10_15
-
 void AddIntegerValue(CFMutableDictionaryRef dictionary,
                      const CFStringRef key,
                      int32_t value) {

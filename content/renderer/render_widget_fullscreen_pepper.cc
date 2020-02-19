@@ -40,7 +40,6 @@ using blink::WebMouseWheelEvent;
 using blink::WebRect;
 using blink::WebSize;
 using blink::WebString;
-using blink::WebTextDirection;
 using blink::WebTextInputType;
 using blink::WebVector;
 using blink::WebWidget;
@@ -137,12 +136,11 @@ class PepperWidget : public WebWidget {
                         const blink::WebURL& local_main_frame_url)
       : widget_(widget), local_main_frame_url_(local_main_frame_url) {}
 
-  virtual ~PepperWidget() {}
+  virtual ~PepperWidget() = default;
 
   // WebWidget API
-  void SetAnimationHost(cc::AnimationHost*) override {
-    // Does nothing, as the LayerTreeView can be accessed from the RenderWidget
-    // directly.
+  void SetCompositorHosts(cc::LayerTreeHost*, cc::AnimationHost*) override {
+    // These pointers are not stored as they aren't needed.
   }
 
   void Close() override { delete this; }
@@ -330,7 +328,7 @@ void RenderWidgetFullscreenPepper::PepperDidChangeCursor(
 void RenderWidgetFullscreenPepper::SetLayer(scoped_refptr<cc::Layer> layer) {
   layer_ = layer.get();
   if (!layer_) {
-    RenderWidget::SetRootLayer(nullptr);
+    layer_tree_host()->SetRootLayer(nullptr);
     return;
   }
   UpdateLayerBounds();

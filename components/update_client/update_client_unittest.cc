@@ -195,11 +195,12 @@ class UpdateClientTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
   base::RunLoop runloop_;
 
-  scoped_refptr<update_client::TestConfigurator> config_ =
-      base::MakeRefCounted<TestConfigurator>();
   std::unique_ptr<TestingPrefServiceSimple> pref_ =
       std::make_unique<TestingPrefServiceSimple>();
-  std::unique_ptr<update_client::PersistedData> metadata_;
+  scoped_refptr<update_client::TestConfigurator> config_ =
+      base::MakeRefCounted<TestConfigurator>(pref_.get());
+  std::unique_ptr<update_client::PersistedData> metadata_ =
+      std::make_unique<PersistedData>(pref_.get(), nullptr);
 
   DISALLOW_COPY_AND_ASSIGN(UpdateClientTest);
 };
@@ -208,7 +209,6 @@ constexpr int UpdateClientTest::kNumWorkerThreads_;
 
 UpdateClientTest::UpdateClientTest() {
   PersistedData::RegisterPrefs(pref_->registry());
-  metadata_ = std::make_unique<PersistedData>(pref_.get(), nullptr);
 }
 
 UpdateClientTest::~UpdateClientTest() {
@@ -2286,7 +2286,8 @@ TEST_F(UpdateClientTest, OneCrxNoUpdateQueuedCall) {
 }
 
 // Tests the install of one CRX. Tests the installer is invoked with the
-// run and arguments values of the manifest object.
+// run and arguments values of the manifest object. Tests that "pv" and "fp"
+// are persisted.
 TEST_F(UpdateClientTest, OneCrxInstall) {
   class DataCallbackMock {
    public:
@@ -2359,6 +2360,7 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       package.name = "jebgalgnebhfojomionfpkfelancnnkf.crx";
       package.hash_sha256 =
           "7ab32f071cd9b5ef8e0d7913be161f532d98b3e9fa284a7cd8059c3409ce0498";
+      package.fingerprint = "some-fingerprint";
 
       ProtocolParser::Result result;
       result.extension_id = id;
@@ -2446,18 +2448,27 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       base::MakeRefCounted<UpdateClientImpl>(
           config(), base::MakeRefCounted<MockPingManager>(config()),
           &MockUpdateChecker::Create, &MockCrxDownloader::Create);
+  {
+    EXPECT_FALSE(config()->GetPrefService()->FindPreference(
+        "updateclientdata.apps.jebgalgnebhfojomionfpkfelancnnkf.pv"));
+    EXPECT_FALSE(config()->GetPrefService()->FindPreference(
+        "updateclientdata.apps.jebgalgnebhfojomionfpkfelancnnkf.fp"));
+  }
 
   MockObserver observer;
   InSequence seq;
   EXPECT_CALL(observer, OnEvent(Events::COMPONENT_CHECKING_FOR_UPDATES,
-                                "jebgalgnebhfojomionfpkfelancnnkf")).Times(1);
+                                "jebgalgnebhfojomionfpkfelancnnkf"))
+      .Times(1);
   EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_FOUND,
-                                "jebgalgnebhfojomionfpkfelancnnkf")).Times(1);
+                                "jebgalgnebhfojomionfpkfelancnnkf"))
+      .Times(1);
   EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_DOWNLOADING,
                                 "jebgalgnebhfojomionfpkfelancnnkf"))
       .Times(AtLeast(1));
   EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_READY,
-                                "jebgalgnebhfojomionfpkfelancnnkf")).Times(1);
+                                "jebgalgnebhfojomionfpkfelancnnkf"))
+      .Times(1);
   EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATED,
                                 "jebgalgnebhfojomionfpkfelancnnkf"))
       .Times(1)
@@ -2481,6 +2492,15 @@ TEST_F(UpdateClientTest, OneCrxInstall) {
       base::BindOnce(&CompletionCallbackMock::Callback, quit_closure()));
 
   RunThreads();
+
+  const base::DictionaryValue* dict =
+      config()->GetPrefService()->GetDictionary("updateclientdata");
+  std::string pv;
+  dict->GetString("apps.jebgalgnebhfojomionfpkfelancnnkf.pv", &pv);
+  EXPECT_STREQ("1.0", pv.c_str());
+  std::string fingerprint;
+  dict->GetString("apps.jebgalgnebhfojomionfpkfelancnnkf.fp", &fingerprint);
+  EXPECT_STREQ("some-fingerprint", fingerprint.c_str());
 
   update_client->RemoveObserver(&observer);
 }

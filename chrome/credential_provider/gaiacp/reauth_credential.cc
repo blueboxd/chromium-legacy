@@ -25,12 +25,12 @@ CReauthCredential::CReauthCredential() = default;
 CReauthCredential::~CReauthCredential() = default;
 
 HRESULT CReauthCredential::FinalConstruct() {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   return S_OK;
 }
 
 void CReauthCredential::FinalRelease() {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
 }
 
 // CGaiaCredentialBase /////////////////////////////////////////////////////////
@@ -183,7 +183,7 @@ HRESULT CReauthCredential::GetStringValueImpl(DWORD field_id, wchar_t** value) {
 HRESULT CReauthCredential::GetUserSid(wchar_t** sid) {
   USES_CONVERSION;
   DCHECK(sid);
-  LOGFN(INFO) << "sid=" << OLE2CW(get_os_user_sid());
+  LOGFN(VERBOSE) << "sid=" << OLE2CW(get_os_user_sid());
 
   HRESULT hr = ::SHStrDupW(OLE2CW(get_os_user_sid()), sid);
   if (FAILED(hr))

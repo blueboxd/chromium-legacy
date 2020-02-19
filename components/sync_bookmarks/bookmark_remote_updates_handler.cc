@@ -275,11 +275,15 @@ void BookmarkRemoteUpdatesHandler::Process(
         const bookmarks::BookmarkNode* old_node = old_entity->bookmark_node();
         const bookmarks::BookmarkNode* new_node =
             tracked_entity->bookmark_node();
-        CHECK(old_node->type() == bookmarks::BookmarkNode::URL);
-        CHECK(new_node->type() == bookmarks::BookmarkNode::URL);
-        CHECK(old_node->url() == new_node->url());
+        // |old_node| may be null when |old_entity| is a tombstone pending
+        // commit.
+        if (old_node != nullptr) {
+          CHECK(old_node->type() == bookmarks::BookmarkNode::URL);
+          CHECK(new_node->type() == bookmarks::BookmarkNode::URL);
+          CHECK(old_node->url() == new_node->url());
+          bookmark_model_->Remove(old_node);
+        }
         bookmark_tracker_->Remove(update_entity.originator_client_item_id);
-        bookmark_model_->Remove(old_node);
         continue;
       }
 

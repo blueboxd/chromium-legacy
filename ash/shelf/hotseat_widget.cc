@@ -452,23 +452,36 @@ gfx::Rect HotseatWidget::GetTargetBounds() const {
 
 void HotseatWidget::UpdateLayout(bool animate) {
   const LayoutInputs new_layout_inputs = GetLayoutInputs();
-  if (layout_inputs_.has_value() && *layout_inputs_ == new_layout_inputs)
+  if (layout_inputs_ == new_layout_inputs)
     return;
-  ui::Layer* layer = GetNativeView()->layer();
-  ui::ScopedLayerAnimationSettings animation_setter(layer->GetAnimator());
-  animation_setter.SetTransitionDuration(
-      animate ? ShelfConfig::Get()->shelf_animation_duration()
-              : base::TimeDelta::FromMilliseconds(0));
-  animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
-  animation_setter.SetPreemptionStrategy(
-      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
-  animation_setter.SetAnimationMetricsReporter(
-      shelf_->GetHotseatTransitionMetricsReporter());
 
-  layer->SetOpacity(new_layout_inputs.opacity);
-  SetBounds(new_layout_inputs.bounds);
-  layout_inputs_ = new_layout_inputs;
-  delegate_view_->UpdateTranslucentBackground();
+  // Never show this widget outside of an active session.
+  if (!new_layout_inputs.is_active_session_state)
+    Hide();
+
+  ui::Layer* layer = GetNativeView()->layer();
+  {
+    ui::ScopedLayerAnimationSettings animation_setter(layer->GetAnimator());
+    animation_setter.SetTransitionDuration(
+        animate ? ShelfConfig::Get()->shelf_animation_duration()
+                : base::TimeDelta::FromMilliseconds(0));
+    animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
+    animation_setter.SetPreemptionStrategy(
+        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+    animation_setter.SetAnimationMetricsReporter(
+        shelf_->GetHotseatTransitionMetricsReporter());
+
+    layer->SetOpacity(new_layout_inputs.opacity);
+    SetBounds(new_layout_inputs.bounds);
+    layout_inputs_ = new_layout_inputs;
+    delegate_view_->UpdateTranslucentBackground();
+  }
+
+  // Setting visibility during an animation causes the visibility property to
+  // animate. Set the visibility property without an animation.
+  if (new_layout_inputs.opacity && new_layout_inputs.is_active_session_state) {
+    ShowInactive();
+  }
 }
 
 gfx::Size HotseatWidget::GetTranslucentBackgroundSize() const {
@@ -525,7 +538,9 @@ void HotseatWidget::SetState(HotseatState state) {
 }
 
 HotseatWidget::LayoutInputs HotseatWidget::GetLayoutInputs() const {
-  return {target_bounds_, CalculateOpacity()};
+  const ShelfLayoutManager* layout_manager = shelf_->shelf_layout_manager();
+  return {target_bounds_, CalculateOpacity(),
+          layout_manager->is_active_session_state()};
 }
 
 }  // namespace ash

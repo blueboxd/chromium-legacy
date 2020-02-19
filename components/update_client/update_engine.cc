@@ -35,7 +35,8 @@ UpdateContext::UpdateContext(
     UpdateClient::CrxDataCallback crx_data_callback,
     const UpdateEngine::NotifyObserversCallback& notify_observers_callback,
     UpdateEngine::Callback callback,
-    CrxDownloader::Factory crx_downloader_factory)
+    CrxDownloader::Factory crx_downloader_factory,
+    PersistedData* persisted_data)
     : config(config),
       is_foreground(is_foreground),
       enabled_component_updates(config->EnabledComponentUpdates()),
@@ -44,7 +45,8 @@ UpdateContext::UpdateContext(
       notify_observers_callback(notify_observers_callback),
       callback(std::move(callback)),
       crx_downloader_factory(crx_downloader_factory),
-      session_id(base::StrCat({"{", base::GenerateGUID(), "}"})) {
+      session_id(base::StrCat({"{", base::GenerateGUID(), "}"})),
+      persisted_data(persisted_data) {
   for (const auto& id : ids) {
     components.insert(
         std::make_pair(id, std::make_unique<Component>(*this, id)));
@@ -86,11 +88,6 @@ void UpdateEngine::Update(bool is_foreground,
   }
 
   if (IsThrottled(is_foreground)) {
-    // TODO(xiaochu): remove this log after https://crbug.com/851151 is fixed.
-    VLOG(1) << "Background update is throttled for following components:";
-    for (const auto& id : ids) {
-      VLOG(1) << "id:" << id;
-    }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), Error::RETRY_LATER));
     return;
@@ -98,7 +95,8 @@ void UpdateEngine::Update(bool is_foreground,
 
   const auto update_context = base::MakeRefCounted<UpdateContext>(
       config_, is_foreground, ids, std::move(crx_data_callback),
-      notify_observers_callback_, std::move(callback), crx_downloader_factory_);
+      notify_observers_callback_, std::move(callback), crx_downloader_factory_,
+      metadata_.get());
   DCHECK(!update_context->session_id.empty());
 
   const auto result = update_contexts_.insert(
@@ -414,7 +412,7 @@ void UpdateEngine::SendUninstallPing(const std::string& id,
   const auto update_context = base::MakeRefCounted<UpdateContext>(
       config_, false, std::vector<std::string>{id},
       UpdateClient::CrxDataCallback(), UpdateEngine::NotifyObserversCallback(),
-      std::move(callback), nullptr);
+      std::move(callback), nullptr, metadata_.get());
   DCHECK(!update_context->session_id.empty());
 
   const auto result = update_contexts_.insert(

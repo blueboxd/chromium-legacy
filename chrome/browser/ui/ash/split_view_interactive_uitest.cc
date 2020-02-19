@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/system/sys_info.h"
-#include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/ash/ash_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -72,7 +72,8 @@ class SplitViewTest
 
     if (!warmup.is_zero()) {
       base::RunLoop run_loop;
-      base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), warmup);
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, run_loop.QuitClosure(), warmup);
       run_loop.Run();
     }
   }

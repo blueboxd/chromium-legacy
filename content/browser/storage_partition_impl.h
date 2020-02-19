@@ -137,7 +137,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   IdleManager* GetIdleManager();
   LockManager* GetLockManager();  // override; TODO: Add to interface
   storage::mojom::IndexedDBControl& GetIndexedDBControl() override;
-  IndexedDBContextImpl* GetIndexedDBContext() override;
+  IndexedDBContextImpl* GetIndexedDBContextImplForTesting() override;
   NativeFileSystemEntryFactory* GetNativeFileSystemEntryFactory() override;
   CacheStorageContextImpl* GetCacheStorageContext() override;
   ServiceWorkerContextWrapper* GetServiceWorkerContext() override;
@@ -332,6 +332,10 @@ class CONTENT_EXPORT StoragePartitionImpl
   class QuotaManagedDataDeletionHelper;
   class URLLoaderFactoryForBrowserProcess;
 
+  // TODO(enne): temporary access to get IndexedDBContextImpl until
+  // construction of IndexedDBDispatcherHost moves into storage service.
+  friend class RenderProcessHostImpl;
+
   friend class BackgroundSyncManagerTest;
   friend class BackgroundSyncServiceImplTestHarness;
   friend class CookieStoreManagerTest;
@@ -426,6 +430,8 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   network::mojom::URLLoaderFactory*
   GetURLLoaderFactoryForBrowserProcessInternal(bool corb_enabled);
+
+  IndexedDBContextImpl* GetIndexedDBContextInternal();
 
   // Raw pointer that should always be valid. The BrowserContext owns the
   // StoragePartitionImplMap which then owns StoragePartitionImpl. When the

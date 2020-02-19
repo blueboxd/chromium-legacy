@@ -1526,9 +1526,10 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       indexed_db_factory_(
           new IndexedDBDispatcherHost(
               id_,
-              storage_partition_impl_->GetIndexedDBContext()),
+              storage_partition_impl_->GetIndexedDBContextInternal()),
           base::OnTaskRunnerDeleter(
-              storage_partition_impl_->GetIndexedDBContext()->IDBTaskRunner())),
+              storage_partition_impl_->GetIndexedDBContextInternal()
+                  ->IDBTaskRunner())),
       channel_connected_(false),
       sent_render_process_ready_(false),
       push_messaging_manager_(

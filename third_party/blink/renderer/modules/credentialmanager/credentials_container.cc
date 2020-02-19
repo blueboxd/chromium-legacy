@@ -477,6 +477,7 @@ void OnGetAssertionComplete(
 }
 
 void OnSmsReceive(ScriptPromiseResolver* resolver,
+                  base::TimeTicks start_time,
                   mojom::blink::SmsStatus status,
                   const WTF::String& otp,
                   const WTF::String& sms) {
@@ -487,7 +488,6 @@ void OnSmsReceive(ScriptPromiseResolver* resolver,
   ukm::SourceId source_id = document.UkmSourceID();
   ukm::UkmRecorder* recorder = document.UkmRecorder();
 
-  // TODO(crbug.com/1045231): Add performance metrics.
   if (status == mojom::blink::SmsStatus::kTimeout) {
     RecordSmsOutcome(SMSReceiverOutcome::kTimeout, source_id, recorder);
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -500,10 +500,12 @@ void OnSmsReceive(ScriptPromiseResolver* resolver,
     return;
   } else if (status == mojom::blink::SmsStatus::kCancelled) {
     RecordSmsOutcome(SMSReceiverOutcome::kCancelled, source_id, recorder);
+    RecordSmsCancelTime(base::TimeTicks::Now() - start_time);
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kAbortError, "OTP retrieval was cancelled."));
     return;
   }
+  RecordSmsSuccessTime(base::TimeTicks::Now() - start_time);
   RecordSmsOutcome(SMSReceiverOutcome::kSuccess, source_id, recorder);
   resolver->Resolve(MakeGarbageCollected<OtpCredential>(otp));
 }
@@ -641,7 +643,8 @@ ScriptPromise CredentialsContainer::get(
 
     auto* sms_receiver =
         CredentialManagerProxy::From(script_state)->SmsReceiver();
-    sms_receiver->Receive(WTF::Bind(&OnSmsReceive, WrapPersistent(resolver)));
+    sms_receiver->Receive(WTF::Bind(&OnSmsReceive, WrapPersistent(resolver),
+                                    base::TimeTicks::Now()));
     return promise;
   }
 

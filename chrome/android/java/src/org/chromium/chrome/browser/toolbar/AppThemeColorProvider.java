@@ -10,9 +10,6 @@ import org.chromium.chrome.browser.ThemeColorProvider;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
-import org.chromium.chrome.browser.device.DeviceClassManager;
-import org.chromium.chrome.browser.flags.CachedFeatureFlags;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 
@@ -81,13 +78,9 @@ public class AppThemeColorProvider extends ThemeColorProvider implements Incogni
     }
 
     private void updateTheme() {
-        final boolean isAccessibilityEnabled = DeviceClassManager.enableAccessibilityLayout();
-        final boolean isHorizontalTabSwitcherEnabled =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
-        final boolean isTabGridEnabled = CachedFeatureFlags.isGridTabSwitcherEnabled();
         final boolean shouldUseIncognitoBackground = mIsIncognito
-                && (isAccessibilityEnabled || isHorizontalTabSwitcherEnabled || isTabGridEnabled
-                        || !mIsOverviewVisible);
+                && (!mIsOverviewVisible
+                        || ToolbarColors.canUseIncognitoToolbarThemeColorInOverview());
 
         updatePrimaryColor(
                 shouldUseIncognitoBackground ? mIncognitoPrimaryColor : mStandardPrimaryColor,

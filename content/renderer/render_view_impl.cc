@@ -207,7 +207,6 @@ using blink::WebSecurityPolicy;
 using blink::WebSettings;
 using blink::WebSize;
 using blink::WebString;
-using blink::WebTextDirection;
 using blink::WebTouchEvent;
 using blink::WebURL;
 using blink::WebURLError;
@@ -1489,22 +1488,22 @@ void RenderViewImpl::PropagatePageZoomToNewlyAttachedFrame(
 
 void RenderViewImpl::SetValidationMessageDirection(
     base::string16* wrapped_main_text,
-    blink::WebTextDirection main_text_hint,
+    base::i18n::TextDirection main_text_hint,
     base::string16* wrapped_sub_text,
-    blink::WebTextDirection sub_text_hint) {
-  if (main_text_hint == blink::kWebTextDirectionLeftToRight) {
+    base::i18n::TextDirection sub_text_hint) {
+  if (main_text_hint == base::i18n::LEFT_TO_RIGHT) {
     *wrapped_main_text =
         base::i18n::GetDisplayStringInLTRDirectionality(*wrapped_main_text);
-  } else if (main_text_hint == blink::kWebTextDirectionRightToLeft &&
+  } else if (main_text_hint == base::i18n::RIGHT_TO_LEFT &&
              !base::i18n::IsRTL()) {
     base::i18n::WrapStringWithRTLFormatting(wrapped_main_text);
   }
 
   if (!wrapped_sub_text->empty()) {
-    if (sub_text_hint == blink::kWebTextDirectionLeftToRight) {
+    if (sub_text_hint == base::i18n::RIGHT_TO_LEFT) {
       *wrapped_sub_text =
           base::i18n::GetDisplayStringInLTRDirectionality(*wrapped_sub_text);
-    } else if (sub_text_hint == blink::kWebTextDirectionRightToLeft) {
+    } else if (sub_text_hint == base::i18n::LEFT_TO_RIGHT) {
       base::i18n::WrapStringWithRTLFormatting(wrapped_sub_text);
     }
   }

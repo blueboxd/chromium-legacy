@@ -61,7 +61,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hinstance,
 // Used to determine whether the DLL can be unloaded by OLE.
 STDAPI DllCanUnloadNow(void) {
   HRESULT hr = _AtlModule.DllCanUnloadNow();
-  LOGFN(INFO) << "hr=" << putHR(hr);
+  LOGFN(VERBOSE) << "hr=" << putHR(hr);
   return hr;
 }
 
@@ -90,14 +90,14 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
 // DllRegisterServer - Adds entries to the system registry.
 STDAPI DllRegisterServer(void) {
   HRESULT hr = credential_provider::CGaiaCredentialBase::OnDllRegisterServer();
-  LOGFN(INFO) << "CGaiaCredential::OnDllRegisterServer hr=" << putHR(hr);
+  LOGFN(VERBOSE) << "CGaiaCredential::OnDllRegisterServer hr=" << putHR(hr);
 
   if (SUCCEEDED(hr)) {
     // Registers object.  FALSE means don't register typelib.  The default
     // behaviour is assume the typelib has ID 1.  But in this case grit can't
     // be forced to use an ID of 1 when writing the rc file.
     hr = _AtlModule.DllRegisterServer(FALSE);
-    LOGFN(INFO) << "_AtlModule.DllRegisterServer hr=" << putHR(hr);
+    LOGFN(VERBOSE) << "_AtlModule.DllRegisterServer hr=" << putHR(hr);
   }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -139,11 +139,11 @@ STDAPI DllUnregisterServer(void) {
 
   HRESULT hr =
       credential_provider::CGaiaCredentialBase::OnDllUnregisterServer();
-  LOGFN(INFO) << "CGaiaCredential::OnDllUnregisterServer hr=" << putHR(hr);
+  LOGFN(VERBOSE) << "CGaiaCredential::OnDllUnregisterServer hr=" << putHR(hr);
   all_succeeded &= SUCCEEDED(hr);
 
   hr = _AtlModule.DllUnregisterServer(FALSE);
-  LOGFN(INFO) << "_AtlModule.DllUnregisterServer hr=" << putHR(hr);
+  LOGFN(VERBOSE) << "_AtlModule.DllUnregisterServer hr=" << putHR(hr);
   all_succeeded &= SUCCEEDED(hr);
 
   return all_succeeded ? S_OK : E_FAIL;
@@ -155,13 +155,13 @@ void CALLBACK PerformPostSigninActionsW(HWND /*hwnd*/,
                                         HINSTANCE /*hinst*/,
                                         wchar_t* /*pszCmdLine*/,
                                         int /*show*/) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
 
   _AtlModule.InitializeCrashReporting();
 
   HANDLE hStdin = ::GetStdHandle(STD_INPUT_HANDLE);  // No need to close.
   if (hStdin == INVALID_HANDLE_VALUE) {
-    LOGFN(INFO) << "No stdin";
+    LOGFN(VERBOSE) << "No stdin";
     return;
   }
 
@@ -218,7 +218,7 @@ void CALLBACK PerformPostSigninActionsW(HWND /*hwnd*/,
 
   credential_provider::SecurelyClearDictionaryValue(&properties);
 
-  LOGFN(INFO) << "Done";
+  LOGFN(VERBOSE) << "Done";
 }
 
 void CALLBACK RunAsCrashpadHandlerW(HWND /*hwnd*/,

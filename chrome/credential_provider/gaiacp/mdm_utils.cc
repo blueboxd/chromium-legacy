@@ -31,6 +31,7 @@
 
 namespace credential_provider {
 
+constexpr wchar_t kRegEnableVerboseLogging[] = L"enable_verbose_logging";
 constexpr wchar_t kRegInitializeCrashReporting[] = L"init_crash_reporting";
 constexpr wchar_t kRegMdmUrl[] = L"mdm";
 constexpr wchar_t kRegMdmEnableForcePasswordReset[] =
@@ -297,13 +298,13 @@ HRESULT RegisterWithGoogleDeviceManagement(const base::string16& mdm_url,
   hr = LookupLocalizedNameForWellKnownSid(WinBuiltinAdministratorsSid,
                                           &local_administrators_group_name);
   if (FAILED(hr)) {
-    LOGFN(INFO) << "Failed to fetch name for administrators group";
+    LOGFN(WARNING) << "Failed to fetch name for administrators group";
   }
 
   base::string16 builtin_administrator_name = L"";
   hr = GetLocalizedNameBuiltinAdministratorAccount(&builtin_administrator_name);
   if (FAILED(hr)) {
-    LOGFN(INFO) << "Failed to fetch name for builtin administrator account";
+    LOGFN(WARNING) << "Failed to fetch name for builtin administrator account";
   }
 
   // Build the json data needed by the server.
@@ -410,7 +411,7 @@ bool IsGemEnabled() {
 }
 
 HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
 
   // Only enroll with MDM if configured.
   base::string16 mdm_url = GetMdmUrl();
@@ -420,7 +421,7 @@ HRESULT EnrollToGoogleMdmIfNeeded(const base::Value& properties) {
   // TODO(crbug.com/935577): Check if machine is already enrolled because
   // attempting to enroll when already enrolled causes a crash.
   if (IsEnrolledWithGoogleMdm(mdm_url)) {
-    LOGFN(INFO) << "Already enrolled to Google MDM";
+    LOGFN(VERBOSE) << "Already enrolled to Google MDM";
     return S_OK;
   }
 

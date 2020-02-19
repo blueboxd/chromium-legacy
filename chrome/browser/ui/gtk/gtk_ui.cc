@@ -75,6 +75,7 @@
 #include "ui/gfx/x/x11.h"        // nogncheck
 #include "ui/gfx/x/x11_types.h"  // nogncheck
 #elif defined(USE_OZONE)
+#include "ui/base/ime/input_method.h"
 #include "ui/ozone/public/ozone_platform.h"
 #endif
 
@@ -420,13 +421,15 @@ GtkUi::~GtkUi() {
 
 void GtkUi::Initialize() {
 #if defined(USE_OZONE)
-  // Linux ozone platforms may set LinuxInputMethodContextFactory instance at
-  // InitializeUI step (which is called in Toolkit initialization step), so
-  // at this point if it's not set LinuxUI (i.e: GtkUi) implementation is
-  // used. For example, ozone/x11 uses GtkUi context factory, but
-  // ozone/wayland uses it's own implementation.
-  if (!ui::LinuxInputMethodContextFactory::instance())
+  // Linux ozone platforms may want to set LinuxInputMethodContextFactory
+  // instance instead of using GtkUi context factory. This step is made upon
+  // CreateInputMethod call. If the factory is not set, use the GtkUi context
+  // factory.
+  if (!ui::OzonePlatform::GetInstance()->CreateInputMethod(
+          nullptr, gfx::kNullAcceleratedWidget)) {
+    DCHECK(!ui::LinuxInputMethodContextFactory::instance());
     ui::LinuxInputMethodContextFactory::SetInstance(this);
+  }
 #endif
 
   GtkSettings* settings = gtk_settings_get_default();

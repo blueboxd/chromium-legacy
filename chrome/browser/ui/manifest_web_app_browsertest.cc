@@ -3,8 +3,8 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -70,7 +70,8 @@ IN_PROC_BROWSER_TEST_F(ManifestWebAppTestWithFocusModeEnabled, MetricsTest) {
 
   const base::TimeDelta duration = base::TimeDelta::FromSeconds(5);
   base::RunLoop run_loop;
-  base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), duration);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), duration);
   run_loop.Run();
 
   CloseBrowserSynchronously(app_browser);

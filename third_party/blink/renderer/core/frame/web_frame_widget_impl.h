@@ -128,13 +128,11 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   PaintLayerCompositor* Compositor() const;
 
   // WebFrameWidgetBase overrides:
-  void SetAnimationHost(cc::AnimationHost*) override;
   bool ForSubframe() const override { return true; }
   void IntrinsicSizingInfoChanged(const IntrinsicSizingInfo&) override;
   void DidCreateLocalRootView() override;
 
   void SetRootLayer(scoped_refptr<cc::Layer>) override;
-  cc::AnimationHost* AnimationHost() const override;
   HitTestResult CoreHitTestResultAt(const gfx::Point&) override;
   void ZoomToFindInPageRect(const WebRect& rect_in_root_frame) override;
 
@@ -165,6 +163,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   WebInputEventResult HandleCharEvent(const WebKeyboardEvent&) override;
 
   PageWidgetEventHandler* GetPageWidgetEventHandler() override;
+  LocalFrameView* GetLocalFrameViewForAnimationScrolling() override;
 
   LocalFrame* FocusedLocalFrameAvailableForIme() const;
 
@@ -181,9 +180,6 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   // If set, the (plugin) element which has mouse capture.
   Member<HTMLPlugInElement> mouse_capture_element_;
-
-  cc::AnimationHost* animation_host_ = nullptr;
-  scoped_refptr<cc::Layer> root_layer_;
 
   // Metrics gathering timing information
   base::Optional<base::TimeTicks> raf_aligned_input_start_time_;

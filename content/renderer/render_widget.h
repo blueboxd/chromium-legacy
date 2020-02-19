@@ -60,7 +60,6 @@
 #include "third_party/blink/public/platform/web_text_input_info.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_page_popup.h"
-#include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/public/web/web_widget_client.h"
 #include "ui/base/ime/text_input_mode.h"
@@ -364,10 +363,6 @@ class CONTENT_EXPORT RenderWidget
                       const gfx::Rect& window_screen_rect) override;
 
   // blink::WebWidgetClient
-  void SetLayerTreeMutator(std::unique_ptr<cc::LayerTreeMutator>) override;
-  void SetPaintWorkletLayerPainterClient(
-      std::unique_ptr<cc::PaintWorkletLayerPainter>) override;
-  void SetRootLayer(scoped_refptr<cc::Layer> layer) override;
   void ScheduleAnimation() override;
   void SetShowFPSCounter(bool show) override;
   void SetShowLayoutShiftRegions(bool) override;
@@ -389,7 +384,7 @@ class CONTENT_EXPORT RenderWidget
   blink::WebRect WindowRect() override;
   blink::WebRect ViewRect() override;
   void SetToolTipText(const blink::WebString& text,
-                      blink::WebTextDirection hint) override;
+                      base::i18n::TextDirection hint) override;
   void SetWindowRect(const blink::WebRect&) override;
   void DidHandleGestureEvent(const blink::WebGestureEvent& event,
                              bool event_cancelled) override;
@@ -727,7 +722,7 @@ class CONTENT_EXPORT RenderWidget
   void OnShowContextMenu(ui::MenuSourceType source_type,
                          const gfx::Point& location);
 
-  void OnSetTextDirection(blink::WebTextDirection direction);
+  void OnSetTextDirection(base::i18n::TextDirection direction);
   void OnGetFPS();
   void OnUpdateScreenRects(const gfx::Rect& widget_screen_rect,
                            const gfx::Rect& window_screen_rect);

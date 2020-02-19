@@ -1441,26 +1441,7 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
   {
     shelf_->shelf_widget()->UpdateLayout(animate);
     hotseat_widget->UpdateLayout(animate);
-
-    // Having a window which is visible but does not have an opacity is an
-    // illegal state. We therefore hide the shelf here if required.
-    if (!target_opacity_) {
-      nav_widget->Hide();
-      status_widget->Hide();
-    }
-
     status_widget->UpdateLayout(animate);
-
-    const base::TimeDelta animation_duration =
-        animate ? ShelfConfig::Get()->shelf_animation_duration()
-                : base::TimeDelta();
-
-    // Nav widget handles its own bounds animations so we use AnimateOpacity to
-    // create a separate ScopedLayerAnimationSettings for nav widget opacity.
-    AnimateOpacity(nav_widget, target_opacity_, animation_duration,
-                   gfx::Tween::EASE_OUT);
-
-    // Let the navigation widget handle its own layout changes.
     nav_widget->UpdateLayout(animate);
 
     // Do not update the work area during overview animation.
@@ -1491,23 +1472,6 @@ void ShelfLayoutManager::UpdateBoundsAndOpacity(bool animate) {
                                                insets);
       }
     }
-  }
-
-  // Never show the navigation widget or the hotseat outside of an active
-  // session.
-  if (!state_.IsActiveSessionState()) {
-    nav_widget->Hide();
-    hotseat_widget->Hide();
-  }
-
-  // Setting visibility during an animation causes the visibility property to
-  // animate. Set the visibility property without an animation.
-  if (target_opacity_) {
-    if (state_.IsActiveSessionState()) {
-      nav_widget->ShowInactive();
-      hotseat_widget->ShowInactive();
-    }
-    status_widget->Show();
   }
 }
 

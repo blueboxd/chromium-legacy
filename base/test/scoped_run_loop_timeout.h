@@ -5,6 +5,9 @@
 #ifndef BASE_TEST_SCOPED_RUN_LOOP_TIMEOUT_H_
 #define BASE_TEST_SCOPED_RUN_LOOP_TIMEOUT_H_
 
+#include <string>
+
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
@@ -57,6 +60,12 @@ class ScopedRunLoopTimeout {
  public:
   ScopedRunLoopTimeout(const Location& from_here, TimeDelta timeout);
   ~ScopedRunLoopTimeout();
+
+  // Invokes |on_timeout_log| if |timeout| expires, and appends it to the
+  // logged error message.
+  ScopedRunLoopTimeout(const Location& from_here,
+                       TimeDelta timeout,
+                       RepeatingCallback<std::string()> on_timeout_log);
 
   ScopedRunLoopTimeout(const ScopedRunLoopTimeout&) = delete;
   ScopedRunLoopTimeout& operator=(const ScopedRunLoopTimeout&) = delete;

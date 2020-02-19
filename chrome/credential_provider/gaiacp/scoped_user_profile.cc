@@ -339,7 +339,7 @@ HRESULT UpdateProfilePicturesForWindows8AndNewer(
     std::vector<char> response;
     HRESULT hr = fetcher->Fetch(&response);
     if (FAILED(hr)) {
-      LOGFN(INFO) << "fetcher.Fetch hr=" << putHR(hr);
+      LOGFN(ERROR) << "fetcher.Fetch hr=" << putHR(hr);
       continue;
     }
 
@@ -402,7 +402,7 @@ ScopedUserProfile::ScopedUserProfile(const base::string16& sid,
                                      const base::string16& domain,
                                      const base::string16& username,
                                      const base::string16& password) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   // Load the user's profile so that their regsitry hive is available.
   base::win::ScopedHandle::Handle handle;
 
@@ -467,7 +467,7 @@ HRESULT ScopedUserProfile::ExtractAssociationInformation(
   if (last_online_login_millis->empty()) {
     // This may return empty when there exists no successful login attempt.
     // Need not fail the call and instead fallback to returning S_OK.
-    LOGFN(INFO) << "LastSuccessfulOnlineLoginMillis is empty";
+    LOGFN(VERBOSE) << "LastSuccessfulOnlineLoginMillis is empty";
     *last_online_login_millis = L"0";
   }
 
@@ -513,7 +513,7 @@ HRESULT ScopedUserProfile::RegisterAssociation(
 }
 
 HRESULT ScopedUserProfile::SaveAccountInfo(const base::Value& properties) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
 
   base::string16 sid;
   base::string16 id;
@@ -538,7 +538,7 @@ HRESULT ScopedUserProfile::SaveAccountInfo(const base::Value& properties) {
     wchar_t key_name[128];
     swprintf_s(key_name, base::size(key_name), L"%s\\%s\\%s", sid.c_str(),
                kRegHkcuAccountsPath, id.c_str());
-    LOGFN(INFO) << "HKU\\" << key_name;
+    LOGFN(VERBOSE) << "HKU\\" << key_name;
 
     base::win::RegKey key;
     LONG sts = key.Create(HKEY_USERS, key_name, KEY_READ | KEY_WRITE);
@@ -617,7 +617,7 @@ HRESULT ScopedUserProfile::SaveAccountInfo(const base::Value& properties) {
 ScopedUserProfile::ScopedUserProfile() {}
 
 bool ScopedUserProfile::WaitForProfileCreation(const base::string16& sid) {
-  LOGFN(INFO);
+  LOGFN(VERBOSE);
   wchar_t profile_dir[MAX_PATH];
   bool created = false;
 
@@ -625,17 +625,17 @@ bool ScopedUserProfile::WaitForProfileCreation(const base::string16& sid) {
     ::Sleep(1000);
     DWORD length = base::size(profile_dir);
     if (::GetUserProfileDirectoryW(token_.Get(), profile_dir, &length)) {
-      LOGFN(INFO) << "GetUserProfileDirectoryW " << i << " " << profile_dir;
+      LOGFN(VERBOSE) << "GetUserProfileDirectoryW " << i << " " << profile_dir;
       created = true;
       break;
     } else {
       HRESULT hr = HRESULT_FROM_WIN32(::GetLastError());
-      LOGFN(INFO) << "GetUserProfileDirectoryW hr=" << putHR(hr);
+      LOGFN(VERBOSE) << "GetUserProfileDirectoryW hr=" << putHR(hr);
     }
   }
 
   if (!created)
-    LOGFN(INFO) << "Profile not created yet???";
+    LOGFN(WARNING) << "Profile not created yet!";
 
   created = false;
 
@@ -646,13 +646,13 @@ bool ScopedUserProfile::WaitForProfileCreation(const base::string16& sid) {
   wchar_t key_name[128];
   swprintf_s(key_name, base::size(key_name), L"%s\\%s", sid.c_str(),
              kRegHkcuAccountsPath);
-  LOGFN(INFO) << "HKU\\" << key_name;
+  LOGFN(VERBOSE) << "HKU\\" << key_name;
 
   for (int i = 0; i < kWaitForProfileCreationRetryCount; ++i) {
     ::Sleep(1000);
     LONG sts = key.Create(HKEY_USERS, key_name, KEY_READ | KEY_WRITE);
     if (sts == ERROR_SUCCESS) {
-      LOGFN(INFO) << "Registry hive created " << i;
+      LOGFN(VERBOSE) << "Registry hive created " << i;
       created = true;
       break;
     }

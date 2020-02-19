@@ -17,6 +17,9 @@ namespace credential_provider {
 
 // Mdm registry value key name.
 
+// Enables verbose logging in GCPW.
+extern const wchar_t kRegEnableVerboseLogging[];
+
 // Determines if crash reporting is initialized for credential provider DLL.
 extern const wchar_t kRegInitializeCrashReporting[];
 

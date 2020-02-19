@@ -526,6 +526,7 @@ if (is_android) {
     data_deps = [ "//testing/buildbot/filters:android_browsertests_filters" ]
 
     sources = [
+      "../browser/android/customtabs/custom_tabs_browsertest.cc",
       "../browser/android/webapk/webapk_icon_hasher_browsertest.cc",
       "../browser/engagement/important_sites_util_browsertest.cc",
       "../browser/games/games_service_browsertest.cc",
@@ -560,6 +561,7 @@ if (is_android) {
       "$root_out_dir/browser_tests.pak",
       "//components/test/data/payments/",
       "//chrome/test/data/banners/",
+      "//chrome/test/data/android/customtabs/",
       "//chrome/test/data/ssl/",
     ]
   }

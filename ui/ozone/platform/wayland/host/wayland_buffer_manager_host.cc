@@ -12,7 +12,6 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/linux/drm_util_linux.h"
 #include "ui/ozone/platform/wayland/host/wayland_connection.h"
 #include "ui/ozone/platform/wayland/host/wayland_drm.h"
@@ -679,7 +678,7 @@ void WaylandBufferManagerHost::SetWaylandBufferManagerGpu(
 }
 
 void WaylandBufferManagerHost::CreateDmabufBasedBuffer(
-    mojo::ScopedHandle dmabuf_fd,
+    mojo::PlatformHandle dmabuf_fd,
     const gfx::Size& size,
     const std::vector<uint32_t>& strides,
     const std::vector<uint32_t>& offsets,
@@ -693,7 +692,7 @@ void WaylandBufferManagerHost::CreateDmabufBasedBuffer(
   TRACE_EVENT2("wayland", "WaylandBufferManagerHost::CreateDmabufBasedBuffer",
                "Format", format, "Buffer id", buffer_id);
 
-  base::ScopedFD fd = mojo::UnwrapPlatformHandle(std::move(dmabuf_fd)).TakeFD();
+  base::ScopedFD fd = dmabuf_fd.TakeFD();
 
   // Validate data and ask surface to create a buffer associated with the
   // |buffer_id|.
@@ -723,7 +722,7 @@ void WaylandBufferManagerHost::CreateDmabufBasedBuffer(
   }
 }
 
-void WaylandBufferManagerHost::CreateShmBasedBuffer(mojo::ScopedHandle shm_fd,
+void WaylandBufferManagerHost::CreateShmBasedBuffer(mojo::PlatformHandle shm_fd,
                                                     uint64_t length,
                                                     const gfx::Size& size,
                                                     uint32_t buffer_id) {
@@ -733,7 +732,7 @@ void WaylandBufferManagerHost::CreateShmBasedBuffer(mojo::ScopedHandle shm_fd,
   TRACE_EVENT1("wayland", "WaylandBufferManagerHost::CreateShmBasedBuffer",
                "Buffer id", buffer_id);
 
-  base::ScopedFD fd = mojo::UnwrapPlatformHandle(std::move(shm_fd)).TakeFD();
+  base::ScopedFD fd = shm_fd.TakeFD();
   // Validate data and create a buffer associated with the |buffer_id|.
   if (!ValidateDataFromGpu(fd, length, size, buffer_id) ||
       !CreateBuffer(size, buffer_id)) {

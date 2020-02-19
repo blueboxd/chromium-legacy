@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "chrome/android/chrome_jni_headers/CustomTabsConnection_jni.h"
+#include "chrome/browser/android/customtabs/client_data_header_web_contents_observer.h"
 #include "chrome/browser/android/customtabs/detached_resource_request.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -65,6 +66,16 @@ static void JNI_CustomTabsConnection_CreateAndStartDetachedResourceRequest(
   DetachedResourceRequest::CreateAndStart(
       native_profile, native_url, native_origin, url_request_referrer_policy,
       request_motivation, std::move(cb));
+}
+
+static void JNI_CustomTabsConnection_SetClientDataHeader(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jweb_contents,
+    const base::android::JavaParamRef<jstring>& jheader) {
+  auto* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
+  ClientDataHeaderWebContentsObserver::CreateForWebContents(web_contents);
+  ClientDataHeaderWebContentsObserver::FromWebContents(web_contents)
+      ->SetHeader(base::android::ConvertJavaStringToUTF8(jheader));
 }
 
 }  // namespace customtabs

@@ -69,7 +69,7 @@ class ViewHierarchyChangedTestHost : public NativeViewHost {
     return num_parent_changes_;
   }
 
-  // Overriden from NativeViewHost:
+  // NativeViewHost:
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override {
     gfx::NativeView parent_before =

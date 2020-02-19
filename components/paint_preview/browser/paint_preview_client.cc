@@ -98,7 +98,7 @@ PaintPreviewClient::PaintPreviewData::PaintPreviewData() = default;
 PaintPreviewClient::PaintPreviewData::~PaintPreviewData() = default;
 
 PaintPreviewClient::PaintPreviewData& PaintPreviewClient::PaintPreviewData::
-operator=(PaintPreviewData&& rhs) noexcept = default;
+operator=(PaintPreviewData&& rhs) = default;
 
 PaintPreviewClient::PaintPreviewData::PaintPreviewData(
     PaintPreviewData&& other) noexcept = default;

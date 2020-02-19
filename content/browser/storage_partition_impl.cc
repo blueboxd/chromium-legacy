@@ -1277,8 +1277,8 @@ StoragePartitionImpl::~StoragePartitionImpl() {
   if (GetServiceWorkerContext())
     GetServiceWorkerContext()->Shutdown();
 
-  if (GetIndexedDBContext())
-    GetIndexedDBContext()->Shutdown();
+  if (GetIndexedDBContextInternal())
+    GetIndexedDBContextInternal()->Shutdown();
 
   if (GetCacheStorageContext())
     GetCacheStorageContext()->Shutdown();
@@ -1627,7 +1627,7 @@ storage::mojom::IndexedDBControl& StoragePartitionImpl::GetIndexedDBControl() {
   if (indexed_db_control_.is_bound())
     return *indexed_db_control_;
 
-  IndexedDBContextImpl* idb_context = GetIndexedDBContext();
+  IndexedDBContextImpl* idb_context = GetIndexedDBContextInternal();
   idb_context->IDBTaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(&IndexedDBContextImpl::Bind,
@@ -1637,7 +1637,12 @@ storage::mojom::IndexedDBControl& StoragePartitionImpl::GetIndexedDBControl() {
   return *indexed_db_control_;
 }
 
-IndexedDBContextImpl* StoragePartitionImpl::GetIndexedDBContext() {
+IndexedDBContextImpl*
+StoragePartitionImpl::GetIndexedDBContextImplForTesting() {
+  return GetIndexedDBContextInternal();
+}
+
+IndexedDBContextImpl* StoragePartitionImpl::GetIndexedDBContextInternal() {
   DCHECK(initialized_);
   return indexed_db_context_.get();
 }

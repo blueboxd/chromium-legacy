@@ -166,7 +166,6 @@
 using content::BrowserContext;
 using content::BrowserThread;
 using content::DOMStorageContext;
-using content::IndexedDBContext;
 using content::PluginService;
 
 namespace extensions {

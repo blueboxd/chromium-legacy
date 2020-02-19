@@ -196,8 +196,8 @@ void RenderViewContextMenuViews::ExecuteCommand(int command_id,
       content::RenderViewHost* view_host = GetRenderViewHost();
       view_host->GetWidget()->UpdateTextDirection(
           (command_id == IDC_WRITING_DIRECTION_RTL)
-              ? blink::kWebTextDirectionRightToLeft
-              : blink::kWebTextDirectionLeftToRight);
+              ? base::i18n::RIGHT_TO_LEFT
+              : base::i18n::LEFT_TO_RIGHT);
       view_host->GetWidget()->NotifyTextDirection();
       RenderViewContextMenu::RecordUsedItem(command_id);
       break;

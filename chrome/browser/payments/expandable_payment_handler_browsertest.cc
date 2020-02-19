@@ -44,8 +44,8 @@ class ExpandablePaymentHandlerBrowserTest : public PlatformBrowserTest {
     PlatformBrowserTest::SetUpOnMainThread();
   }
 
-  GURL GetHttpPageUrl(const std::string path) {
-    return http_server_.GetURL(path);
+  GURL GetHttpPageUrl() {
+    return http_server_.GetURL("/maxpay.com/merchant.html");
   }
 
   content::WebContents* GetActiveWebContents() {
@@ -116,8 +116,7 @@ IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest,
   EXPECT_EQ("open_window_failed",
             content::EvalJs(
                 GetActiveWebContents(),
-                "launchAndWaitUntilReady('" +
-                    GetHttpPageUrl("/maxpay.com/merchant.html").spec() + "')"));
+                "launchAndWaitUntilReady('" + GetHttpPageUrl().spec() + "')"));
 }
 
 // Make sure openWindow() can be resolved into window client.
@@ -133,23 +132,6 @@ IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest, WindowClientReady) {
   EXPECT_EQ(true,
             content::EvalJs(test_controller_.GetPaymentHandlerWebContents(),
                             "isWindowClientReady()"));
-}
-
-// Make sure merchants can abort the payment.
-IN_PROC_BROWSER_TEST_F(ExpandablePaymentHandlerBrowserTest, PaymentAborted) {
-  std::string expected = "success";
-  EXPECT_EQ(expected, content::EvalJs(GetActiveWebContents(), "install()"));
-  EXPECT_EQ("app_is_ready",
-            content::EvalJs(
-                GetActiveWebContents(),
-                "launchAndWaitUntilReady('./payment_handler_window.html')"));
-
-  DCHECK(test_controller_.GetPaymentHandlerWebContents());
-  EXPECT_EQ("aborted",
-            content::EvalJs(test_controller_.GetPaymentHandlerWebContents(),
-                            "abort()"));
-  EXPECT_EQ("The website has aborted the payment",
-            content::EvalJs(GetActiveWebContents(), "getResult()"));
 }
 }  // namespace
 }  // namespace payments

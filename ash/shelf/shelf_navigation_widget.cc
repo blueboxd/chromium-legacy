@@ -422,6 +422,16 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
   const bool back_button_shown = IsBackButtonShown();
   const bool home_button_shown = IsHomeButtonShown();
 
+  const ShelfLayoutManager* layout_manager = shelf_->shelf_layout_manager();
+  // Having a window which is visible but does not have an opacity is an
+  // illegal state. Also, never show this widget outside of an active session.
+  if (layout_manager->GetOpacity() &&
+      layout_manager->is_active_session_state()) {
+    ShowInactive();
+  } else {
+    Hide();
+  }
+
   // If the widget is currently active, and all the buttons will be hidden,
   // focus out to the status area (the widget's focus manager does not properly
   // handle the case where the widget does not have another view to focus - it
@@ -446,6 +456,7 @@ void ShelfNavigationWidget::UpdateLayout(bool animate) {
   nav_animation_setter.SetPreemptionStrategy(
       ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
 
+  GetLayer()->SetOpacity(layout_manager->GetOpacity());
   SetBounds(target_bounds_);
 
   views::View* const back_button = delegate_->back_button();

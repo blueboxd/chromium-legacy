@@ -6,7 +6,7 @@
 
 #import "content/browser/accessibility/browser_accessibility_mac.h"
 
-#include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #import "content/browser/accessibility/browser_accessibility_cocoa.h"
 #include "content/browser/accessibility/browser_accessibility_manager_mac.h"
@@ -87,7 +87,7 @@ void BrowserAccessibilityMac::ReplaceNativeObject() {
   base::scoped_nsobject<BrowserAccessibilityCocoa> retained_destroyed_node(
       [old_native_obj retain]);
 
-  base::PostDelayedTask(
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(
           [](base::scoped_nsobject<BrowserAccessibilityCocoa> destroyed) {

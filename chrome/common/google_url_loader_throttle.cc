@@ -4,7 +4,9 @@
 
 #include "chrome/common/google_url_loader_throttle.h"
 
+#include "build/build_config.h"
 #include "chrome/common/net/safe_search_util.h"
+#include "components/google/core/common/google_util.h"
 #include "components/variations/net/variations_http_headers.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
@@ -12,11 +14,26 @@
 #include "extensions/common/extension_urls.h"
 #endif
 
+namespace {
+
+#if defined(OS_ANDROID)
+const char kClientDataHeader[] = "X-CCT-Client-Data";
+#endif
+
+}  // namespace
+
 GoogleURLLoaderThrottle::GoogleURLLoaderThrottle(
     bool is_off_the_record,
+#if defined(OS_ANDROID)
+    const std::string& client_data_header,
+#endif
     chrome::mojom::DynamicParams dynamic_params)
     : is_off_the_record_(is_off_the_record),
-      dynamic_params_(std::move(dynamic_params)) {}
+#if defined(OS_ANDROID)
+      client_data_header_(client_data_header),
+#endif
+      dynamic_params_(std::move(dynamic_params)) {
+}
 
 GoogleURLLoaderThrottle::~GoogleURLLoaderThrottle() {}
 
@@ -55,6 +72,13 @@ void GoogleURLLoaderThrottle::WillStartRequest(
     request->headers.SetHeader(safe_search_util::kGoogleAppsAllowedDomains,
                                dynamic_params_.allowed_domains_for_apps);
   }
+
+#if defined(OS_ANDROID)
+  if (!client_data_header_.empty() &&
+      google_util::IsGoogleAssociatedDomainUrl(request->url)) {
+    request->headers.SetHeader(kClientDataHeader, client_data_header_);
+  }
+#endif
 }
 
 void GoogleURLLoaderThrottle::WillRedirectRequest(
@@ -89,6 +113,13 @@ void GoogleURLLoaderThrottle::WillRedirectRequest(
     modified_headers->SetHeader(safe_search_util::kGoogleAppsAllowedDomains,
                                 dynamic_params_.allowed_domains_for_apps);
   }
+
+#if defined(OS_ANDROID)
+  if (!client_data_header_.empty() &&
+      !google_util::IsGoogleAssociatedDomainUrl(redirect_info->new_url)) {
+    to_be_removed_headers->push_back(kClientDataHeader);
+  }
+#endif
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

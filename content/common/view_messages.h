@@ -44,7 +44,6 @@
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/platform/web_text_autosizer_page_info.h"
-#include "third_party/blink/public/web/web_text_direction.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/point.h"

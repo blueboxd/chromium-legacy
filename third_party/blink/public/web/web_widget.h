@@ -47,11 +47,11 @@
 #include "third_party/blink/public/web/web_hit_test_result.h"
 #include "third_party/blink/public/web/web_ime_text_span.h"
 #include "third_party/blink/public/web/web_range.h"
-#include "third_party/blink/public/web/web_text_direction.h"
 
 namespace cc {
 struct ApplyViewportChangesArgs;
 class AnimationHost;
+class LayerTreeHost;
 }
 
 namespace gfx {
@@ -63,10 +63,10 @@ class WebCoalescedInputEvent;
 
 class WebWidget {
  public:
-  // Called during set up of the WebWidget to declare the AnimationHost for
+  // Called during set up of the WebWidget to declare the layer compositor for
   // the widget to use. This does not pass ownership, but the caller must keep
-  // the pointer valid until Close() is called.
-  virtual void SetAnimationHost(cc::AnimationHost*) = 0;
+  // the pointers valid until Close() is called.
+  virtual void SetCompositorHosts(cc::LayerTreeHost*, cc::AnimationHost*) = 0;
 
   // This method closes and deletes the WebWidget.
   virtual void Close() {}

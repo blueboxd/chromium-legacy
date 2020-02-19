@@ -7,7 +7,7 @@
 #include "ash/public/cpp/pagination/pagination_model_observer.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -56,8 +56,8 @@ class LauncherPageSwitchesTest : public UIPerformanceTest,
     test::PopulateDummyAppListItems(100);
     if (base::SysInfo::IsRunningOnChromeOS()) {
       base::RunLoop run_loop;
-      base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                            base::TimeDelta::FromSeconds(5));
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(5));
       run_loop.Run();
     }
 
@@ -158,8 +158,8 @@ class LauncherPageDragTest : public UIPerformanceTest {
 
     if (base::SysInfo::IsRunningOnChromeOS()) {
       base::RunLoop run_loop;
-      base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                            base::TimeDelta::FromSeconds(5));
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(5));
       run_loop.Run();
     }
   }

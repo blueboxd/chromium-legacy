@@ -131,7 +131,6 @@
 #include "third_party/blink/public/web/web_range.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_serialized_script_value.h"
-#include "third_party/blink/public/web/web_text_direction.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
 #include "third_party/blink/renderer/bindings/core/v8/isolated_world_csp.h"
@@ -148,7 +147,6 @@
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
-
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/editing/editor.h"
 #include "third_party/blink/renderer/core/editing/ephemeral_range.h"
@@ -256,6 +254,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -1120,8 +1119,9 @@ bool WebLocalFrameImpl::IsCommandEnabled(const WebString& name) const {
   return GetFrame()->GetEditor().IsCommandEnabled(name);
 }
 
-bool WebLocalFrameImpl::SelectionTextDirection(WebTextDirection& start,
-                                               WebTextDirection& end) const {
+bool WebLocalFrameImpl::SelectionTextDirection(
+    base::i18n::TextDirection& start,
+    base::i18n::TextDirection& end) const {
   FrameSelection& selection = frame_->Selection();
   if (!selection.IsAvailable()) {
     // plugins/mouse-capture-inside-shadow.html reaches here
@@ -1136,9 +1136,9 @@ bool WebLocalFrameImpl::SelectionTextDirection(WebTextDirection& start,
           .ToNormalizedEphemeralRange()
           .IsNull())
     return false;
-  start = ToWebTextDirection(PrimaryDirectionOf(
+  start = ToBaseTextDirection(PrimaryDirectionOf(
       *selection.ComputeVisibleSelectionInDOMTree().Start().AnchorNode()));
-  end = ToWebTextDirection(PrimaryDirectionOf(
+  end = ToBaseTextDirection(PrimaryDirectionOf(
       *selection.ComputeVisibleSelectionInDOMTree().End().AnchorNode()));
   return true;
 }
@@ -1153,7 +1153,7 @@ bool WebLocalFrameImpl::IsSelectionAnchorFirst() const {
   return selection.GetSelectionInDOMTree().IsBaseFirst();
 }
 
-void WebLocalFrameImpl::SetTextDirection(WebTextDirection direction) {
+void WebLocalFrameImpl::SetTextDirection(base::i18n::TextDirection direction) {
   // The Editor::SetBaseWritingDirection() function checks if we can change
   // the text direction of the selected node and updates its DOM "dir"
   // attribute and its CSS "direction" property.
@@ -1163,15 +1163,15 @@ void WebLocalFrameImpl::SetTextDirection(WebTextDirection direction) {
     return;
 
   switch (direction) {
-    case kWebTextDirectionDefault:
+    case base::i18n::TextDirection::UNKNOWN_DIRECTION:
       editor.SetBaseWritingDirection(WritingDirection::kNatural);
       break;
 
-    case kWebTextDirectionLeftToRight:
+    case base::i18n::TextDirection::LEFT_TO_RIGHT:
       editor.SetBaseWritingDirection(WritingDirection::kLeftToRight);
       break;
 
-    case kWebTextDirectionRightToLeft:
+    case base::i18n::TextDirection::RIGHT_TO_LEFT:
       editor.SetBaseWritingDirection(WritingDirection::kRightToLeft);
       break;
 

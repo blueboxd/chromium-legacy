@@ -88,9 +88,8 @@ NavigationPolicy NavigationPolicyFromEventInternal(const Event* event) {
     return NavigationPolicyFromEventModifiers(
         0, key_event->ctrlKey(), key_event->shiftKey(), key_event->altKey(),
         key_event->metaKey());
-  } else if (event->IsGestureEvent()) {
+  } else if (const auto* gesture_event = DynamicTo<GestureEvent>(event)) {
     // The click is simulated when triggering the gesture-tap event
-    const GestureEvent* gesture_event = ToGestureEvent(event);
     return NavigationPolicyFromEventModifiers(
         0, gesture_event->ctrlKey(), gesture_event->shiftKey(),
         gesture_event->altKey(), gesture_event->metaKey());

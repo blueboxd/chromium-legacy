@@ -10,7 +10,7 @@
 #include "base/base_export.h"
 #include "base/optional.h"
 #include "base/profiler/frame.h"
-#include "base/sampling_heap_profiler/module_cache.h"
+#include "base/profiler/module_cache.h"
 #include "base/time/time.h"
 
 namespace base {

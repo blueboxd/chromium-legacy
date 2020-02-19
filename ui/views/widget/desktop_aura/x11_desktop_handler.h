@@ -18,10 +18,6 @@
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/x11_desktop_handler_observer.h"
 
-namespace base {
-template <typename T> struct DefaultSingletonTraits;
-}
-
 namespace ui {
 class XScopedEventSelector;
 }

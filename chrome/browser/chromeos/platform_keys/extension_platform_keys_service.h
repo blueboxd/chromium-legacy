@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_PLATFORM_KEYS_SERVICE_H_
-#define CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_PLATFORM_KEYS_SERVICE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_EXTENSION_PLATFORM_KEYS_SERVICE_H_
+#define CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_EXTENSION_PLATFORM_KEYS_SERVICE_H_
 
 #include <memory>
 #include <string>
@@ -22,7 +22,7 @@ class PrefService;
 namespace content {
 class BrowserContext;
 class WebContents;
-}
+}  // namespace content
 
 namespace extensions {
 class StateStore;
@@ -31,7 +31,7 @@ class StateStore;
 namespace net {
 class X509Certificate;
 typedef std::vector<scoped_refptr<X509Certificate>> CertificateList;
-}
+}  // namespace net
 
 namespace policy {
 class PolicyService;
@@ -39,7 +39,7 @@ class PolicyService;
 
 namespace chromeos {
 
-class PlatformKeysService : public KeyedService {
+class ExtensionPlatformKeysService : public KeyedService {
  public:
   // The SelectDelegate is used to select a single certificate from all
   // certificates matching a request (see SelectClientCertificates). E.g. this
@@ -76,13 +76,14 @@ class PlatformKeysService : public KeyedService {
   // |KeyPermissions| for details.
   // |browser_context| and |state_store| must not be null and outlive this
   // object.
-  explicit PlatformKeysService(bool profile_is_managed,
-                               PrefService* profile_prefs,
-                               policy::PolicyService* profile_policies,
-                               content::BrowserContext* browser_context,
-                               extensions::StateStore* state_store);
+  explicit ExtensionPlatformKeysService(
+      bool profile_is_managed,
+      PrefService* profile_prefs,
+      policy::PolicyService* profile_policies,
+      content::BrowserContext* browser_context,
+      extensions::StateStore* state_store);
 
-  ~PlatformKeysService() override;
+  ~ExtensionPlatformKeysService() override;
 
   // Sets the delegate which will be used for interactive
   // SelectClientCertificates calls.
@@ -205,11 +206,11 @@ class PlatformKeysService : public KeyedService {
   KeyPermissions key_permissions_;
   std::unique_ptr<SelectDelegate> select_delegate_;
   base::queue<std::unique_ptr<Task>> tasks_;
-  base::WeakPtrFactory<PlatformKeysService> weak_factory_{this};
+  base::WeakPtrFactory<ExtensionPlatformKeysService> weak_factory_{this};
 
-  DISALLOW_COPY_AND_ASSIGN(PlatformKeysService);
+  DISALLOW_COPY_AND_ASSIGN(ExtensionPlatformKeysService);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_PLATFORM_KEYS_SERVICE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_PLATFORM_KEYS_EXTENSION_PLATFORM_KEYS_SERVICE_H_

@@ -150,7 +150,6 @@ using blink::WebRange;
 using blink::WebRect;
 using blink::WebSize;
 using blink::WebString;
-using blink::WebTextDirection;
 using blink::WebTouchEvent;
 using blink::WebTouchPoint;
 using blink::WebVector;
@@ -559,7 +558,8 @@ void RenderWidget::Initialize(ShowCallback show_callback,
     layer_tree_view_->SetVisible(true);
 
   webwidget_ = web_widget;
-  web_widget->SetAnimationHost(layer_tree_view_->animation_host());
+  web_widget->SetCompositorHosts(layer_tree_view_->layer_tree_host(),
+                                 layer_tree_view_->animation_host());
   // Note that this calls into the WebWidget.
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              CompositorViewportRect(), screen_info);
@@ -1257,20 +1257,6 @@ void RenderWidget::DidCommitCompositorFrame() {
 void RenderWidget::DidCompletePageScaleAnimation() {
   if (delegate())
     delegate()->DidCompletePageScaleAnimationForWidget();
-}
-
-void RenderWidget::SetLayerTreeMutator(
-    std::unique_ptr<cc::LayerTreeMutator> mutator) {
-  layer_tree_host_->SetLayerTreeMutator(std::move(mutator));
-}
-
-void RenderWidget::SetPaintWorkletLayerPainterClient(
-    std::unique_ptr<cc::PaintWorkletLayerPainter> client) {
-  layer_tree_host_->SetPaintWorkletLayerPainter(std::move(client));
-}
-
-void RenderWidget::SetRootLayer(scoped_refptr<cc::Layer> layer) {
-  layer_tree_host_->SetRootLayer(std::move(layer));
 }
 
 void RenderWidget::ScheduleAnimation() {
@@ -2060,7 +2046,7 @@ WebRect RenderWidget::ViewRect() {
 }
 
 void RenderWidget::SetToolTipText(const blink::WebString& text,
-                                  WebTextDirection hint) {
+                                  base::i18n::TextDirection hint) {
   Send(new WidgetHostMsg_SetTooltipText(routing_id_, text.Utf16(), hint));
 }
 
@@ -2296,7 +2282,7 @@ void RenderWidget::SetWindowRectSynchronously(
   }
 }
 
-void RenderWidget::OnSetTextDirection(WebTextDirection direction) {
+void RenderWidget::OnSetTextDirection(base::i18n::TextDirection direction) {
   if (auto* frame = GetFocusedWebLocalFrameInWidget())
     frame->SetTextDirection(direction);
 }

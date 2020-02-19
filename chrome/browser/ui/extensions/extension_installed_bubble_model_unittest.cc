@@ -96,7 +96,7 @@ TEST_F(ExtensionInstalledBubbleModelTest, OmniboxExtension) {
   // An extension with a regular action and an omnibox keyword...
   auto builder = extensions::ExtensionBuilder("Foo");
   AddOmniboxKeyword(&builder, "fookey");
-  AddRegularAction(&builder);
+  builder.AddFlags(extensions::Extension::WAS_INSTALLED_BY_DEFAULT);
   auto extension = builder.Build();
   extension_service()->AddExtension(extension.get());
 

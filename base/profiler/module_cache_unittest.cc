@@ -4,7 +4,7 @@
 
 #include <memory>
 
-#include "base/sampling_heap_profiler/module_cache.h"
+#include "base/profiler/module_cache.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -63,8 +63,7 @@ class FakeModule : public ModuleCache::Module {
 };
 
 #if (defined(OS_POSIX) && !defined(OS_IOS) && !defined(ARCH_CPU_ARM64)) || \
-    (defined(OS_FUCHSIA) && !defined(ARCH_CPU_ARM64)) || \
-    defined(OS_WIN)
+    (defined(OS_FUCHSIA) && !defined(ARCH_CPU_ARM64)) || defined(OS_WIN)
 #define MAYBE_TEST(TestSuite, TestName) TEST(TestSuite, TestName)
 #else
 #define MAYBE_TEST(TestSuite, TestName) TEST(TestSuite, DISABLED_##TestName)

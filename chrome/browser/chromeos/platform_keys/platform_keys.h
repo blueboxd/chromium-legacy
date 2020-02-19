@@ -58,8 +58,8 @@ struct ClientCertificateRequest {
 
 namespace subtle {
 // Functions of this namespace shouldn't be called directly from the context of
-// an extension. Instead use PlatformKeysService which enforces restrictions
-// upon extensions.
+// an extension. Instead use ExtensionPlatformKeysService which enforces
+// restrictions upon extensions.
 
 typedef base::Callback<void(const std::string& public_key_spki_der,
                             const std::string& error_message)>

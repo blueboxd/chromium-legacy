@@ -265,6 +265,7 @@ static_library("common") {
   deps = [
     "//build:branding_buildflags",
     "//components/crash/content/app",
+    "//components/google/core/common",
     "//components/metrics:call_stack_profile_builder",
     "//components/page_load_metrics/common:common",
   ]

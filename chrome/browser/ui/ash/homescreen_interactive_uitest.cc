@@ -5,8 +5,8 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "base/run_loop.h"
-#include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -36,8 +36,8 @@ class HomescreenTest : public UIPerformanceTest {
     // Make sure startup tasks won't affect measurement.
     if (base::SysInfo::IsRunningOnChromeOS()) {
       base::RunLoop run_loop;
-      base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(),
-                            base::TimeDelta::FromSeconds(5));
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromSeconds(5));
       run_loop.Run();
     }
 

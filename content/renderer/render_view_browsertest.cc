@@ -143,7 +143,6 @@ using blink::WebLocalFrame;
 using blink::WebMouseEvent;
 using blink::WebRuntimeFeatures;
 using blink::WebString;
-using blink::WebTextDirection;
 using blink::WebURLError;
 
 namespace content {
@@ -287,7 +286,7 @@ class RenderViewImplTest : public RenderViewTest {
   }
 
   void ReceiveSetTextDirection(RenderWidget* widget,
-                               blink::WebTextDirection direction) {
+                               base::i18n::TextDirection direction) {
     // Emulates receiving an IPC message.
     widget->OnSetTextDirection(direction);
   }
@@ -1688,11 +1687,11 @@ TEST_F(RenderViewImplTest, OnSetTextDirection) {
   render_thread_->sink().ClearMessages();
 
   static const struct {
-    WebTextDirection direction;
+    base::i18n::TextDirection direction;
     const wchar_t* expected_result;
   } kTextDirection[] = {
-      {blink::kWebTextDirectionRightToLeft, L"rtl,rtl"},
-      {blink::kWebTextDirectionLeftToRight, L"ltr,ltr"},
+      {base::i18n::RIGHT_TO_LEFT, L"rtl,rtl"},
+      {base::i18n::LEFT_TO_RIGHT, L"ltr,ltr"},
   };
   for (auto& test_case : kTextDirection) {
     // Set the text direction of the <textarea> element.

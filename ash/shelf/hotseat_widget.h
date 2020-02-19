@@ -127,9 +127,11 @@ class ASH_EXPORT HotseatWidget : public ShelfComponent,
   struct LayoutInputs {
     gfx::Rect bounds;
     float opacity = 0.0f;
+    bool is_active_session_state = false;
 
     bool operator==(const LayoutInputs& other) const {
-      return bounds == other.bounds && opacity == other.opacity;
+      return bounds == other.bounds && opacity == other.opacity &&
+             is_active_session_state == other.is_active_session_state;
     }
   };
 

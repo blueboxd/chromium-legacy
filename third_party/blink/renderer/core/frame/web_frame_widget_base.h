@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/widget/widget_base.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace cc {
@@ -31,6 +32,7 @@ class PointF;
 namespace blink {
 class AnimationWorkletMutatorDispatcherImpl;
 class HitTestResult;
+class LocalFrameView;
 class Page;
 class PageWidgetEventHandler;
 class PaintWorkletPaintDispatcher;
@@ -73,7 +75,7 @@ class CORE_EXPORT WebFrameWidgetBase
   // Sets the root layer. The |layer| can be null when detaching the root layer.
   virtual void SetRootLayer(scoped_refptr<cc::Layer> layer) = 0;
 
-  virtual cc::AnimationHost* AnimationHost() const = 0;
+  cc::AnimationHost* AnimationHost() const;
 
   virtual HitTestResult CoreHitTestResultAt(const gfx::Point&) = 0;
 
@@ -106,6 +108,7 @@ class CORE_EXPORT WebFrameWidgetBase
       cc::ElementId scroll_latched_element_id) override;
 
   WebLocalFrame* FocusedWebLocalFrameInWidget() const override;
+  void SetCompositorHosts(cc::LayerTreeHost*, cc::AnimationHost*) override;
 
   // Called when a drag-n-drop operation should begin.
   void StartDragging(network::mojom::ReferrerPolicy,
@@ -166,6 +169,11 @@ class CORE_EXPORT WebFrameWidgetBase
 
   virtual PageWidgetEventHandler* GetPageWidgetEventHandler() = 0;
 
+  // Return the LocalFrameView used for animation scrolling. This is overridden
+  // by WebViewFrameWidget and should eventually be removed once null does not
+  // need to be passed for the main frame.
+  virtual LocalFrameView* GetLocalFrameViewForAnimationScrolling() = 0;
+
   // A copy of the web drop data object we received from the browser.
   Member<DataObject> current_drag_data_;
 
@@ -178,6 +186,10 @@ class CORE_EXPORT WebFrameWidgetBase
   // When not equal to DragOperationNone, the drag data can be dropped onto the
   // current drop target in this WebView (the drop target can accept the drop).
   WebDragOperation drag_operation_ = kWebDragOperationNone;
+
+  // Base functionality all widgets have. This is a member as to avoid
+  // complicated inheritance structures.
+  WidgetBase widget_base_;
 
  private:
   void CancelDrag();

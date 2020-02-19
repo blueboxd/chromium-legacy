@@ -47049,9 +47049,11 @@ Called by update_net_trust_anchors.py.-->
 
 <enum name="NTSTATUS">
   <int value="-1073741818" label="0xC0000006 - STATUS_IN_PAGE_ERROR"/>
+  <int value="-1073741810" label="0xC000000E - STATUS_NO_SUCH_DEVICE"/>
   <int value="-1073741808" label="0xC0000010 - STATUS_INVALID_DEVICE_REQUEST"/>
   <int value="-1073741803" label="0xC0000015 - STATUS_NONEXISTENT_SECTOR"/>
   <int value="-1073741790" label="0xC0000022 - STATUS_ACCESS_DENIED"/>
+  <int value="-1073741764" label="0xC000003C - STATUS_DATA_OVERRUN"/>
   <int value="-1073741697" label="0xC000007F - STATUS_DISK_FULL"/>
   <int value="-1073741668" label="0xC000009C - STATUS_DEVICE_DATA_ERROR"/>
   <int value="-1073741667" label="0xC000009D - STATUS_DEVICE_NOT_CONNECTED"/>
@@ -70046,6 +70048,7 @@ Full version information for the fingerprint enum values:
   <int value="401" label="THREAD_MODE_NOT_BACKGROUND"/>
   <int value="402" label="PROCESS_MODE_ALREADY_BACKGROUND"/>
   <int value="403" label="PROCESS_MODE_NOT_BACKGROUND"/>
+  <int value="483" label="ERROR_DEVICE_HARDWARE_ERROR"/>
   <int value="487" label="INVALID_ADDRESS"/>
   <int value="500" label="USER_PROFILE_LOAD"/>
   <int value="534" label="ARITHMETIC_OVERFLOW"/>
@@ -70319,9 +70322,11 @@ Full version information for the fingerprint enum values:
   <int value="998" label="NOACCESS"/>
   <int value="999" label="SWAPERROR"/>
   <int value="1011" label="ERROR_CANTOPEN"/>
+  <int value="1117" label="ERROR_IO_DEVICE"/>
   <int value="1223" label="ERROR_CANCELLED"/>
   <int value="1346" label="ERROR_BAD_IMPERSONATION_LEVEL"/>
   <int value="1392" label="ERROR_FILE_CORRUPT"/>
+  <int value="1393" label="ERROR_DISK_CORRUPT"/>
   <int value="1450" label="ERROR_NO_SYSTEM_RESOURCES"/>
   <int value="1453" label="ERROR_WORKING_SET_QUOTA"/>
   <int value="1717" label="RPC_S_UNKNOWN_IF"/>

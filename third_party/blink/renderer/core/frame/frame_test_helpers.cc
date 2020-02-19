@@ -243,14 +243,18 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
     widget_client = std::make_unique<TestWebWidgetClient>();
     // TODO(dcheng): The main frame widget currently has a special case.
     // Eliminate this once WebView is no longer a WebWidget.
-    WebFrameWidget::CreateForMainFrame(widget_client.get(), frame);
+    WebFrameWidget* frame_widget =
+        WebFrameWidget::CreateForMainFrame(widget_client.get(), frame);
+    // The WebWidget requires the compositor to be set before it is used.
+    frame_widget->SetCompositorHosts(widget_client->layer_tree_host(),
+                                     widget_client->animation_host());
   } else if (frame->Parent()->IsWebRemoteFrame()) {
     widget_client = std::make_unique<TestWebWidgetClient>();
     WebFrameWidget* frame_widget =
         WebFrameWidget::CreateForChildLocalRoot(widget_client.get(), frame);
-    // The WebWidget requires an AnimationHost to be set, either by the
-    // WebWidgetClient itself or by someone else. We do that here.
-    frame_widget->SetAnimationHost(widget_client->animation_host());
+    // The WebWidget requires the compositor to be set before it is used.
+    frame_widget->SetCompositorHosts(widget_client->layer_tree_host(),
+                                     widget_client->animation_host());
     frame_widget->Resize(WebSize());
   }
   if (widget_client)
@@ -287,9 +291,9 @@ WebLocalFrameImpl* CreateLocalChild(WebRemoteFrame& parent,
       CreateDefaultClientIfNeeded(widget_client, owned_widget_client);
   WebFrameWidget* frame_widget =
       WebFrameWidget::CreateForChildLocalRoot(widget_client, frame);
-  // The WebWidget requires an AnimationHost to be set, either by the
-  // WebWidgetClient itself or by someone else. We do that here.
-  frame_widget->SetAnimationHost(widget_client->animation_host());
+  // The WebWidget requires the compositor to be set before it is used.
+  frame_widget->SetCompositorHosts(widget_client->layer_tree_host(),
+                                   widget_client->animation_host());
   // Set an initial size for subframes.
   if (frame->Parent())
     frame_widget->Resize(WebSize());
@@ -346,13 +350,13 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
 
   test_web_widget_client_ = CreateDefaultClientIfNeeded(
       web_widget_client, owned_test_web_widget_client_);
-  // TODO(danakj): Make this part of attaching the main frame's WebFrameWidget.
-  // This happens before CreateForMainFrame as the WebFrameWidget binding to the
-  // WebLocalFrameImpl sets up animations.
-  web_view_->SetAnimationHost(test_web_widget_client_->animation_host());
   // TODO(dcheng): The main frame widget currently has a special case.
   // Eliminate this once WebView is no longer a WebWidget.
-  blink::WebFrameWidget::CreateForMainFrame(test_web_widget_client_, frame);
+  WebFrameWidget* widget =
+      blink::WebFrameWidget::CreateForMainFrame(test_web_widget_client_, frame);
+  // The WebWidget requires the compositor to be set before it is used.
+  widget->SetCompositorHosts(test_web_widget_client_->layer_tree_host(),
+                             test_web_widget_client_->animation_host());
   // We inform the WebView when it has a local main frame attached once the
   // WebFrame it fully set up and the WebWidgetClient is initialized (which is
   // the case by this point).
@@ -431,8 +435,6 @@ WebViewImpl* WebViewHelper::InitializeRemoteWithOpener(
 
   test_web_widget_client_ = CreateDefaultClientIfNeeded(
       web_widget_client, owned_test_web_widget_client_);
-  web_view_->SetAnimationHost(test_web_widget_client_->animation_host());
-
   return web_view_;
 }
 
@@ -656,10 +658,6 @@ TestWebWidgetClient::TestWebWidgetClient(
     content::LayerTreeViewDelegate* delegate) {
   layer_tree_view_ = layer_tree_view_factory_.Initialize(delegate);
   animation_host_ = layer_tree_view_->animation_host();
-}
-
-void TestWebWidgetClient::SetRootLayer(scoped_refptr<cc::Layer> layer) {
-  layer_tree_host()->SetRootLayer(std::move(layer));
 }
 
 void TestWebWidgetClient::SetBackgroundColor(SkColor color) {

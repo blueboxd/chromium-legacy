@@ -310,7 +310,7 @@ class MediaControlsImpl::MediaElementMutationCallback
 
 bool MediaControlsImpl::IsTouchEvent(Event* event) {
   auto* mouse_event = DynamicTo<MouseEvent>(event);
-  return IsA<TouchEvent>(event) || event->IsGestureEvent() ||
+  return IsA<TouchEvent>(event) || IsA<GestureEvent>(event) ||
          (mouse_event && mouse_event->FromTouch());
 }
 
@@ -1615,10 +1615,11 @@ void MediaControlsImpl::MaybeJump(int seconds) {
 }
 
 bool MediaControlsImpl::IsOnLeftSide(Event* event) {
-  if (!event->IsGestureEvent())
+  auto* gesture_event = DynamicTo<GestureEvent>(event);
+  if (!gesture_event)
     return false;
 
-  float tap_x = ToGestureEvent(event)->NativeEvent().PositionInWidget().x();
+  float tap_x = gesture_event->NativeEvent().PositionInWidget().x();
 
   DOMRect* rect = getBoundingClientRect();
   double middle = rect->x() + (rect->width() / 2);

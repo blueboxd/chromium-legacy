@@ -7,7 +7,6 @@
 #include "base/bind.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "services/video_capture/public/mojom/scoped_access_permission.mojom.h"
 
 namespace video_capture {
@@ -49,7 +48,7 @@ void CloneSharedBufferToRawFileDescriptorHandle(
   auto sub_struct = media::mojom::SharedMemoryViaRawFileDescriptor::New();
   sub_struct->shared_memory_size_in_bytes = platform_region.GetSize();
   base::subtle::ScopedFDPair fds = platform_region.PassPlatformHandle();
-  sub_struct->file_descriptor_handle = mojo::WrapPlatformFile(fds.fd.release());
+  sub_struct->file_descriptor_handle = mojo::PlatformHandle(std::move(fds.fd));
   (*target)->set_shared_memory_via_raw_file_descriptor(std::move(sub_struct));
 #else
   NOTREACHED() << "Cannot convert buffer handle to "
@@ -191,16 +190,9 @@ void BroadcastingReceiver::BufferContext::
   const size_t handle_size =
       buffer_handle_->get_shared_memory_via_raw_file_descriptor()
           ->shared_memory_size_in_bytes;
-  base::PlatformFile raw_platform_file;
-  MojoResult result = mojo::UnwrapPlatformFile(
-      std::move(buffer_handle_->get_shared_memory_via_raw_file_descriptor()
-                    ->file_descriptor_handle),
-      &raw_platform_file);
-  if (result != MOJO_RESULT_OK) {
-    NOTREACHED();
-    return;
-  }
-  base::ScopedFD platform_file(raw_platform_file);
+  base::ScopedFD platform_file =
+      buffer_handle_->get_shared_memory_via_raw_file_descriptor()
+          ->file_descriptor_handle.TakeFD();
   base::UnguessableToken guid = base::UnguessableToken::Create();
   base::subtle::PlatformSharedMemoryRegion platform_region =
       base::subtle::PlatformSharedMemoryRegion::Take(

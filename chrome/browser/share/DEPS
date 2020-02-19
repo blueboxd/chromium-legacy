@@ -5,7 +5,6 @@ include_rules = [
 
   "+chrome/android/java/src/org/chromium/chrome/browser/ActivityTabProvider.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/ChromeActivity.java",
-  "+chrome/android/java/src/org/chromium/chrome/browser/flags/ChromeFeatureList.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/modules/ModuleInstallUi.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/tab/Tab.java",
   "+chrome/android/java/src/org/chromium/chrome/browser/tabmodel/TabCreatorManager.java",

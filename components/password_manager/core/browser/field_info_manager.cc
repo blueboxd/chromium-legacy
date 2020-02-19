@@ -5,6 +5,7 @@
 #include "components/password_manager/core/browser/field_info_manager.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "build/build_config.h"
 #include "components/password_manager/core/browser/field_info_table.h"
 #include "components/password_manager/core/browser/password_store.h"
 
@@ -21,9 +22,13 @@ FieldInfoManagerImpl::~FieldInfoManagerImpl() = default;
 void FieldInfoManagerImpl::AddFieldType(uint64_t form_signature,
                                         uint32_t field_signature,
                                         autofill::ServerFieldType field_type) {
+#if !defined(OS_ANDROID)
+  // TODO(https://crbug.com/1051914): Enable on Android after making local
+  // heuristics reliable.
   field_types_[std::make_pair(form_signature, field_signature)] = field_type;
   store_->AddFieldInfo(
       {form_signature, field_signature, field_type, base::Time::Now()});
+#endif  // !defined(OS_ANDROID)
 }
 
 autofill::ServerFieldType FieldInfoManagerImpl::GetFieldType(

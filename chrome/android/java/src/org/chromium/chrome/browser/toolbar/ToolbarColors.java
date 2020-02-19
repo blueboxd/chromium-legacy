@@ -16,6 +16,9 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.device.DeviceClassManager;
+import org.chromium.chrome.browser.flags.CachedFeatureFlags;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
@@ -147,5 +150,16 @@ public class ToolbarColors {
      */
     public static ColorStateList getThemedToolbarIconTint(Context context, boolean useLight) {
         return AppCompatResources.getColorStateList(context, getThemedToolbarIconTintRes(useLight));
+    }
+
+    /**
+     * Returns whether the incognito toolbar theme color can be used in overview mode.
+     */
+    public static boolean canUseIncognitoToolbarThemeColorInOverview() {
+        final boolean isAccessibilityEnabled = DeviceClassManager.enableAccessibilityLayout();
+        final boolean isHorizontalTabSwitcherEnabled = ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.HORIZONTAL_TAB_SWITCHER_ANDROID);
+        final boolean isTabGridEnabled = CachedFeatureFlags.isGridTabSwitcherEnabled();
+        return (isAccessibilityEnabled || isHorizontalTabSwitcherEnabled || isTabGridEnabled);
     }
 }

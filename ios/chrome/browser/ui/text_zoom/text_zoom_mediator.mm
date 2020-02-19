@@ -129,6 +129,8 @@
 - (void)updateConsumerState {
   [self.consumer setZoomInEnabled:self.fontSizeTabHelper->CanUserZoomIn()];
   [self.consumer setZoomOutEnabled:self.fontSizeTabHelper->CanUserZoomOut()];
+  [self.consumer
+      setResetZoomEnabled:self.fontSizeTabHelper->CanUserResetZoom()];
 }
 
 #pragma mark - CRWWebStateObserver

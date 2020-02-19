@@ -103,7 +103,7 @@ bool WebWidgetTestProxy::IsPointerLocked() {
 }
 
 void WebWidgetTestProxy::SetToolTipText(const blink::WebString& text,
-                                        blink::WebTextDirection hint) {
+                                        base::i18n::TextDirection hint) {
   RenderWidget::SetToolTipText(text, hint);
   GetTestRunner()->SetToolTipText(text);
 }

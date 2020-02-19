@@ -208,4 +208,8 @@ const CGFloat kDividerWidth = 1;
   self.decrementButton.enabled = enabled;
 }
 
+- (void)setResetZoomEnabled:(BOOL)enabled {
+  self.resetButton.enabled = enabled;
+}
+
 @end

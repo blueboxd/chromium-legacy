@@ -1233,12 +1233,6 @@ void WebViewImpl::Close() {
   // frame tree.
   AsView().page->WillBeDestroyed();
 
-  // The main frame being detached in WillBeDestroyed() will make use of this
-  // |animation_host_| through its WebFrameWidget, before causing the
-  // WebWidgetClient and the AnimationHost to be destroyed. So this is nulled
-  // out after detaching the main frame.
-  animation_host_ = nullptr;
-
   // TODO(bokan): Temporary debugging added to diagnose
   // https://crbug.com/992315. Somehow we're synchronously calling
   // WebViewImpl::Close while handling an input event.
@@ -3181,22 +3175,18 @@ bool WebViewImpl::TabsToLinks() const {
   return tabs_to_links_;
 }
 
-void WebViewImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
+void WebViewImpl::DidChangeRootLayer(bool root_layer_exists) {
   if (!MainFrameImpl()) {
-    DCHECK(!layer);
+    DCHECK(!root_layer_exists);
     return;
   }
-
-  root_layer_ = std::move(layer);
-  WebWidgetClient* widget_client = MainFrameImpl()->FrameWidgetImpl()->Client();
-  if (root_layer_) {
+  if (root_layer_exists) {
     UpdateDeviceEmulationTransform();
-    widget_client->SetRootLayer(root_layer_);
   } else {
-    widget_client->SetRootLayer(nullptr);
-
+    WebWidgetClient* widget_client =
+        MainFrameImpl()->FrameWidgetImpl()->Client();
     // When the document in an already-attached main frame is being replaced by
-    // a navigation then SetRootLayer(nullptr) will be called. Since we are
+    // a navigation then DidChangeRootLayer(false) will be called. Since we are
     // navigating, defer BeginMainFrames until the new document is ready for
     // them.
     //
@@ -3210,13 +3200,6 @@ void WebViewImpl::InvalidateRect(const IntRect& rect) {
   // This is only for WebViewPlugin.
   if (!does_composite_ && AsView().client)
     AsView().client->DidInvalidateRect(rect);
-}
-
-void WebViewImpl::SetAnimationHost(cc::AnimationHost* animation_host) {
-  DCHECK(does_composite_);
-  animation_host_ = animation_host;
-
-  AsView().page->AnimationHostInitialized(*animation_host_, nullptr);
 }
 
 void WebViewImpl::ApplyViewportChanges(const ApplyViewportChangesArgs& args) {

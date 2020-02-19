@@ -11,7 +11,7 @@
 
 #include "base/base_export.h"
 #include "base/macros.h"
-#include "base/sampling_heap_profiler/module_cache.h"
+#include "base/profiler/module_cache.h"
 #include "build/build_config.h"
 
 namespace base {

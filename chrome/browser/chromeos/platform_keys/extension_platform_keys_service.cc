@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/platform_keys/platform_keys_service.h"
+#include "chrome/browser/chromeos/platform_keys/extension_platform_keys_service.h"
 
 #include <stddef.h>
 
@@ -50,7 +50,7 @@ std::vector<KeyPermissions::KeyLocation> TokenIdsToKeyLocations(
 
 }  // namespace
 
-class PlatformKeysService::Task {
+class ExtensionPlatformKeysService::Task {
  public:
   Task() {}
   virtual ~Task() {}
@@ -61,7 +61,7 @@ class PlatformKeysService::Task {
   DISALLOW_ASSIGN(Task);
 };
 
-class PlatformKeysService::GenerateRSAKeyTask : public Task {
+class ExtensionPlatformKeysService::GenerateRSAKeyTask : public Task {
  public:
   enum class Step {
     GENERATE_KEY,
@@ -78,7 +78,7 @@ class PlatformKeysService::GenerateRSAKeyTask : public Task {
                      const std::string& extension_id,
                      const GenerateKeyCallback& callback,
                      KeyPermissions* key_permissions,
-                     PlatformKeysService* service,
+                     ExtensionPlatformKeysService* service,
                      content::BrowserContext* browser_context)
       : token_id_(token_id),
         modulus_length_(modulus_length),
@@ -175,14 +175,14 @@ class PlatformKeysService::GenerateRSAKeyTask : public Task {
   std::unique_ptr<KeyPermissions::PermissionsForExtension>
       extension_permissions_;
   KeyPermissions* const key_permissions_;
-  PlatformKeysService* const service_;
+  ExtensionPlatformKeysService* const service_;
   content::BrowserContext* const browser_context_;
   base::WeakPtrFactory<GenerateRSAKeyTask> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GenerateRSAKeyTask);
 };
 
-class PlatformKeysService::SignTask : public Task {
+class ExtensionPlatformKeysService::SignTask : public Task {
  public:
   enum class Step {
     GET_EXTENSION_PERMISSIONS,
@@ -206,7 +206,7 @@ class PlatformKeysService::SignTask : public Task {
            const std::string& extension_id,
            const SignCallback& callback,
            KeyPermissions* key_permissions,
-           PlatformKeysService* service)
+           ExtensionPlatformKeysService* service)
       : token_id_(token_id),
         data_(data),
         public_key_spki_der_(public_key_spki_der),
@@ -331,13 +331,13 @@ class PlatformKeysService::SignTask : public Task {
       extension_permissions_;
   KeyPermissions* const key_permissions_;
   std::vector<KeyPermissions::KeyLocation> key_locations_;
-  PlatformKeysService* const service_;
+  ExtensionPlatformKeysService* const service_;
   base::WeakPtrFactory<SignTask> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SignTask);
 };
 
-class PlatformKeysService::SelectTask : public Task {
+class ExtensionPlatformKeysService::SelectTask : public Task {
  public:
   enum class Step {
     GET_EXTENSION_PERMISSIONS,
@@ -364,7 +364,7 @@ class PlatformKeysService::SelectTask : public Task {
              const SelectCertificatesCallback& callback,
              content::WebContents* web_contents,
              KeyPermissions* key_permissions,
-             PlatformKeysService* service)
+             ExtensionPlatformKeysService* service)
       : request_(request),
         input_client_certificates_(std::move(input_client_certificates)),
         interactive_(interactive),
@@ -651,19 +651,17 @@ class PlatformKeysService::SelectTask : public Task {
   std::unique_ptr<KeyPermissions::PermissionsForExtension>
       extension_permissions_;
   KeyPermissions* const key_permissions_;
-  PlatformKeysService* const service_;
+  ExtensionPlatformKeysService* const service_;
   base::WeakPtrFactory<SelectTask> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SelectTask);
 };
 
-PlatformKeysService::SelectDelegate::SelectDelegate() {
-}
+ExtensionPlatformKeysService::SelectDelegate::SelectDelegate() {}
 
-PlatformKeysService::SelectDelegate::~SelectDelegate() {
-}
+ExtensionPlatformKeysService::SelectDelegate::~SelectDelegate() {}
 
-PlatformKeysService::PlatformKeysService(
+ExtensionPlatformKeysService::ExtensionPlatformKeysService(
     bool profile_is_managed,
     PrefService* profile_prefs,
     policy::PolicyService* profile_policies,
@@ -678,25 +676,25 @@ PlatformKeysService::PlatformKeysService(
   DCHECK(state_store);
 }
 
-PlatformKeysService::~PlatformKeysService() {
-}
+ExtensionPlatformKeysService::~ExtensionPlatformKeysService() {}
 
-void PlatformKeysService::SetSelectDelegate(
+void ExtensionPlatformKeysService::SetSelectDelegate(
     std::unique_ptr<SelectDelegate> delegate) {
   select_delegate_ = std::move(delegate);
 }
 
-void PlatformKeysService::GenerateRSAKey(const std::string& token_id,
-                                         unsigned int modulus_length,
-                                         const std::string& extension_id,
-                                         const GenerateKeyCallback& callback) {
+void ExtensionPlatformKeysService::GenerateRSAKey(
+    const std::string& token_id,
+    unsigned int modulus_length,
+    const std::string& extension_id,
+    const GenerateKeyCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   StartOrQueueTask(std::make_unique<GenerateRSAKeyTask>(
       token_id, modulus_length, extension_id, callback, &key_permissions_, this,
       browser_context_));
 }
 
-void PlatformKeysService::SignRSAPKCS1Digest(
+void ExtensionPlatformKeysService::SignRSAPKCS1Digest(
     const std::string& token_id,
     const std::string& data,
     const std::string& public_key_spki_der,
@@ -709,7 +707,7 @@ void PlatformKeysService::SignRSAPKCS1Digest(
       hash_algorithm, extension_id, callback, &key_permissions_, this)));
 }
 
-void PlatformKeysService::SignRSAPKCS1Raw(
+void ExtensionPlatformKeysService::SignRSAPKCS1Raw(
     const std::string& token_id,
     const std::string& data,
     const std::string& public_key_spki_der,
@@ -723,7 +721,7 @@ void PlatformKeysService::SignRSAPKCS1Raw(
                    &key_permissions_, this)));
 }
 
-void PlatformKeysService::SelectClientCertificates(
+void ExtensionPlatformKeysService::SelectClientCertificates(
     const platform_keys::ClientCertificateRequest& request,
     std::unique_ptr<net::CertificateList> client_certificates,
     bool interactive,
@@ -736,13 +734,14 @@ void PlatformKeysService::SelectClientCertificates(
       callback, web_contents, &key_permissions_, this));
 }
 
-void PlatformKeysService::StartOrQueueTask(std::unique_ptr<Task> task) {
+void ExtensionPlatformKeysService::StartOrQueueTask(
+    std::unique_ptr<Task> task) {
   tasks_.push(std::move(task));
   if (tasks_.size() == 1)
     tasks_.front()->Start();
 }
 
-void PlatformKeysService::TaskFinished(Task* task) {
+void ExtensionPlatformKeysService::TaskFinished(Task* task) {
   DCHECK(!tasks_.empty());
   DCHECK(task == tasks_.front().get());
   // Remove all finished tasks from the queue (should be at most one).

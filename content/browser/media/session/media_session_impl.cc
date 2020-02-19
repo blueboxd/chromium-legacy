@@ -26,7 +26,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/favicon_url.h"
 #include "media/base/media_content_type.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
@@ -280,31 +279,31 @@ void MediaSessionImpl::TitleWasSet(NavigationEntry* entry) {
 }
 
 void MediaSessionImpl::DidUpdateFaviconURL(
-    const std::vector<FaviconURL>& candidates) {
+    const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   std::vector<media_session::MediaImage> icons;
 
   for (auto& icon : candidates) {
     // We only want either favicons or the touch icons. There is another type of
     // touch icon which is "precomposed". This means it might have rounded
     // corners, etc. but it is not predictable so we cannot show them in the UI.
-    if (icon.icon_type != blink::mojom::FaviconIconType::kFavicon &&
-        icon.icon_type != blink::mojom::FaviconIconType::kTouchIcon) {
+    if (icon->icon_type != blink::mojom::FaviconIconType::kFavicon &&
+        icon->icon_type != blink::mojom::FaviconIconType::kTouchIcon) {
       continue;
     }
 
-    std::vector<gfx::Size> sizes = icon.icon_sizes;
+    std::vector<gfx::Size> sizes = icon->icon_sizes;
 
     // If we are a favicon and we do not have a size then we should assume the
     // default size for favicons.
-    if (icon.icon_type == blink::mojom::FaviconIconType::kFavicon &&
+    if (icon->icon_type == blink::mojom::FaviconIconType::kFavicon &&
         sizes.empty())
       sizes.push_back(gfx::Size(gfx::kFaviconSize, gfx::kFaviconSize));
 
-    if (sizes.empty() || !icon.icon_url.is_valid())
+    if (sizes.empty() || !icon->icon_url.is_valid())
       continue;
 
     media_session::MediaImage image;
-    image.src = icon.icon_url;
+    image.src = icon->icon_url;
     image.sizes = sizes;
     icons.push_back(image);
   }

@@ -1,7 +1,7 @@
 main frame - DidStartNavigation
 main frame - ReadyToCommitNavigation
 main frame - didCommitLoadForFrame
-main frame - didReceiveTitle: Below viewport images with loading='lazy' and changed to loading='eager' load and do not block the window load event
+main frame - TitleWasSet: Below viewport images with loading='lazy' and changed to loading='eager' load and do not block the window load event
 main frame - didFinishDocumentLoadForFrame
 main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame

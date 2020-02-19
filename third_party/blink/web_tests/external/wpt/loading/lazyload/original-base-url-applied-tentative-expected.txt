@@ -1,9 +1,8 @@
 main frame - DidStartNavigation
 main frame - ReadyToCommitNavigation
 main frame - didCommitLoadForFrame
-main frame - didReceiveTitle: Deferred iframes and images with loading='lazy' use the original base URL specified at the parse time
+main frame - TitleWasSet: Deferred iframes and images with loading='lazy' use the original base URL specified at the parse time
 main frame - didCommitLoadForFrame
-frame "<!--framePath //<!--frame0-->-->" - didReceiveTitle: 
 main frame - didFinishDocumentLoadForFrame
 main frame - didCommitLoadForFrame
 main frame - didHandleOnloadEventsForFrame
@@ -12,7 +11,6 @@ frame "<!--framePath //<!--frame0-->-->" - BeginNavigation request to 'http://we
 frame "<!--framePath //<!--frame0-->-->" - DidStartNavigation
 frame "<!--framePath //<!--frame0-->-->" - ReadyToCommitNavigation
 frame "<!--framePath //<!--frame0-->-->" - didCommitLoadForFrame
-frame "<!--framePath //<!--frame0-->-->" - didReceiveTitle: 
 frame "<!--framePath //<!--frame0-->-->" - didFinishDocumentLoadForFrame
 frame "<!--framePath //<!--frame0-->-->" - didHandleOnloadEventsForFrame
 frame "<!--framePath //<!--frame0-->-->" - didFinishLoadForFrame

@@ -31,6 +31,7 @@ namespace arc {
 using AXBooleanProperty = mojom::AccessibilityBooleanProperty;
 using AXEventData = mojom::AccessibilityEventData;
 using AXEventType = mojom::AccessibilityEventType;
+using AXIntProperty = mojom::AccessibilityIntProperty;
 using AXIntListProperty = mojom::AccessibilityIntListProperty;
 using AXNodeInfoData = mojom::AccessibilityNodeInfoData;
 using AXNodeInfoDataPtr = mojom::AccessibilityNodeInfoDataPtr;
@@ -215,6 +216,8 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(AXEventData* event_data) {
       chrome_focused_bounds_ = chrome_focused_node->GetBounds();
     }
   }
+
+  HandleLiveRegions(&event_bundle.events);
 
   event_bundle.updates.emplace_back();
 
@@ -524,6 +527,68 @@ void AXTreeSourceArc::ApplyCachedProperties() {
       it = cached_roles_.erase(it);
     }
   }
+}
+
+void AXTreeSourceArc::HandleLiveRegions(std::vector<ui::AXEvent>* events) {
+  std::map<int32_t, std::string> new_live_region_map;
+
+  // Cache current live region's name.
+  for (auto const& it : tree_map_) {
+    if (!it.second->IsNode())
+      continue;
+
+    AccessibilityInfoDataWrapper* node_info = it.second.get();
+    int32_t live_region_type_int = 0;
+    if (!GetProperty(node_info->GetNode()->int_properties,
+                     AXIntProperty::LIVE_REGION, &live_region_type_int))
+      continue;
+
+    mojom::AccessibilityLiveRegionType live_region_type =
+        static_cast<mojom::AccessibilityLiveRegionType>(live_region_type_int);
+    if (live_region_type == mojom::AccessibilityLiveRegionType::NONE)
+      continue;
+
+    // |node_info| has a live region property.
+    std::stack<AccessibilityInfoDataWrapper*> stack;
+    stack.push(node_info);
+    while (!stack.empty()) {
+      AccessibilityInfoDataWrapper* node = stack.top();
+      stack.pop();
+      DCHECK(node);
+      DCHECK(node->IsNode());
+      static_cast<AccessibilityNodeInfoDataWrapper*>(node)
+          ->set_container_live_status(live_region_type);
+
+      ui::AXNodeData data;
+      SerializeNode(node, &data);
+      std::string name;
+      data.GetStringAttribute(ax::mojom::StringAttribute::kName, &name);
+      new_live_region_map[node->GetId()] = name;
+
+      std::vector<int32_t> children;
+      if (GetProperty(node->GetNode()->int_list_properties,
+                      AXIntListProperty::CHILD_NODE_IDS, &children)) {
+        for (const int32_t child : children)
+          stack.push(GetFromId(child));
+      }
+    }
+  }
+
+  // Compare to the previous one, and add an event if needed.
+  for (const auto& it : new_live_region_map) {
+    auto prev_it = live_region_name_cache_.find(it.first);
+    if (prev_it == live_region_name_cache_.end())
+      continue;
+
+    if (prev_it->second != it.second) {
+      events->emplace_back();
+      ui::AXEvent& event = events->back();
+      event.event_type = ax::mojom::Event::kLiveRegionChanged;
+      event.id = it.first;
+    }
+  }
+
+  std::swap(live_region_name_cache_, new_live_region_map);
 }
 
 void AXTreeSourceArc::Reset() {

@@ -58,11 +58,6 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   void SetUVTopLeft(const gfx::PointF& top_left);
   void SetUVBottomRight(const gfx::PointF& bottom_right);
 
-  // 1--2
-  // |  |
-  // 0--3
-  void SetVertexOpacity(const float vertex_opacity[4]);
-
   void SetTransferableResource(
       const viz::TransferableResource& resource,
       std::unique_ptr<viz::SingleReleaseCallback> release_callback);
@@ -94,7 +89,6 @@ class CC_EXPORT TextureLayerImpl : public LayerImpl {
   bool nearest_neighbor_ = false;
   gfx::PointF uv_top_left_ = gfx::PointF();
   gfx::PointF uv_bottom_right_ = gfx::PointF(1.f, 1.f);
-  float vertex_opacity_[4] = {1.f, 1.f, 1.f, 1.f};
 
   // True while the |transferable_resource_| is owned by this layer, and
   // becomes false once it is passed to another layer or to the

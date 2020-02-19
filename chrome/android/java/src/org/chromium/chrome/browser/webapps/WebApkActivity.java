@@ -62,11 +62,6 @@ public class WebApkActivity extends WebappActivity {
     }
 
     @Override
-    public String getWebApkPackageName() {
-        return getWebApkInfo().webApkPackageName();
-    }
-
-    @Override
     public void onResume() {
         super.onResume();
         mStartTime = SystemClock.elapsedRealtime();
@@ -77,40 +72,6 @@ public class WebApkActivity extends WebappActivity {
         super.recordIntentToCreationTime(timeMs);
 
         RecordHistogram.recordTimesHistogram("MobileStartup.IntentToCreationTime.WebApk", timeMs);
-    }
-
-    @Override
-    protected void onDeferredStartupWithStorage(WebappDataStorage storage) {
-        super.onDeferredStartupWithStorage(storage);
-
-        WebApkInfo info = getWebApkInfo();
-        WebApkUma.recordShellApkVersion(info.shellApkVersion(), info.distributor());
-        storage.incrementLaunchCount();
-
-        getComponent().resolveWebApkUpdateManager().updateIfNeeded(storage, info);
-    }
-
-    @Override
-    protected void onDeferredStartupWithNullStorage(
-            WebappDisclosureSnackbarController disclosureSnackbarController) {
-        // WebappDataStorage objects are cleared if a user clears Chrome's data. Recreate them
-        // for WebAPKs since we need to store metadata for updates and disclosure notifications.
-        WebappRegistry.getInstance().register(
-                getWebApkInfo().id(), new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                        if (isActivityFinishingOrDestroyed()) return;
-
-                        onDeferredStartupWithStorage(storage);
-                        // Set force == true to indicate that we need to show a privacy
-                        // disclosure for the newly installed unbound WebAPKs which
-                        // have no storage yet. We can't simply default to a showing if the
-                        // storage has a default value as we don't want to show this disclosure
-                        // for pre-existing unbound WebAPKs.
-                        disclosureSnackbarController.maybeShowDisclosure(
-                                WebApkActivity.this, storage, true /* force */);
-                    }
-                });
     }
 
     @Override

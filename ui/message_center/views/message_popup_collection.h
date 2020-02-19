@@ -48,7 +48,7 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   void NotifyPopupResized();
 
   // Notify the popup is closed. Called from MessagePopupView.
-  void NotifyPopupClosed(MessagePopupView* popup);
+  virtual void NotifyPopupClosed(MessagePopupView* popup);
 
   // MessageCenterObserver:
   void OnNotificationAdded(const std::string& notification_id) override;
@@ -103,6 +103,9 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // Returns true if the display which notifications show on is the primary
   // display.
   virtual bool IsPrimaryDisplayForNotification() const = 0;
+
+  // Called when a new popup item is added.
+  virtual void NotifyPopupAdded(MessagePopupView* popup) {}
 
   // virtual for testing.
   virtual MessagePopupView* CreatePopup(const Notification& notification);

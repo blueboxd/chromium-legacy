@@ -495,13 +495,7 @@ void LocalFrameClientImpl::DispatchDidStartProvisionalLoad(
 
 void LocalFrameClientImpl::DispatchDidReceiveTitle(const String& title) {
   if (web_frame_->Client()) {
-    web_frame_->Client()->DidReceiveTitle(title, kWebTextDirectionLeftToRight);
-  }
-}
-
-void LocalFrameClientImpl::DispatchDidChangeIcons(IconType type) {
-  if (web_frame_->Client()) {
-    web_frame_->Client()->DidChangeIcon(static_cast<WebIconURL::Type>(type));
+    web_frame_->Client()->DidReceiveTitle(title);
   }
 }
 

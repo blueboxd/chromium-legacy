@@ -153,16 +153,26 @@ class ExternalProtocolHandlerTest : public testing::Test {
   void DoTest(ExternalProtocolHandler::BlockState block_state,
               shell_integration::DefaultWebClientState os_state,
               Action expected_action) {
-    DoTest(block_state, os_state, expected_action,
-           GURL("mailto:test@test.com"));
+    DoTest(block_state, os_state, expected_action, GURL("mailto:test@test.com"),
+           url::Origin::Create(GURL("https://example.test")),
+           url::Origin::Create(GURL("https://precursor.test")));
   }
 
+  // Launches |url| in the current WebContents and checks that the
+  // ExternalProtocolHandler's delegate is called with the correct action (as
+  // given in |expected_action|). |initiating_origin| is passed to the
+  // ExternalProtocolHandler to attribute the request to launch the URL to a
+  // particular site. If |initiating_origin| is opaque (in production, an
+  // example would be a sandboxed iframe), then the delegate should be passed
+  // the origin's precursor origin. The precursor origin is the origin that
+  // created |initiating_origin|, and the expected precursor origin, if any, is
+  // provided in |expected_initiating_precursor_origin|.
   void DoTest(ExternalProtocolHandler::BlockState block_state,
               shell_integration::DefaultWebClientState os_state,
               Action expected_action,
-              const GURL& url) {
-    url::Origin initiating_origin =
-        url::Origin::Create(GURL("https://example.test"));
+              const GURL& url,
+              const url::Origin& initiating_origin,
+              const url::Origin& expected_initiating_precursor_origin) {
     EXPECT_FALSE(delegate_.has_prompted());
     EXPECT_FALSE(delegate_.has_launched());
     EXPECT_FALSE(delegate_.has_blocked());
@@ -182,7 +192,12 @@ class ExternalProtocolHandlerTest : public testing::Test {
     EXPECT_EQ(expected_action == Action::BLOCK, delegate_.has_blocked());
     if (expected_action == Action::PROMPT) {
       ASSERT_TRUE(delegate_.initiating_origin().has_value());
-      EXPECT_EQ(initiating_origin, delegate_.initiating_origin().value());
+      if (initiating_origin.opaque()) {
+        EXPECT_EQ(expected_initiating_precursor_origin,
+                  delegate_.initiating_origin().value());
+      } else {
+        EXPECT_EQ(initiating_origin, delegate_.initiating_origin().value());
+      }
     } else {
       EXPECT_FALSE(delegate_.initiating_origin().has_value());
     }
@@ -264,7 +279,8 @@ TEST_F(ExternalProtocolHandlerTest,
 TEST_F(ExternalProtocolHandlerTest, TestUrlEscape) {
   GURL url("alert:test message\" --bad%2B\r\n 文本 \"file");
   DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::NOT_DEFAULT,
-         Action::PROMPT, url);
+         Action::PROMPT, url, url::Origin::Create(GURL("https://example.test")),
+         url::Origin::Create(GURL("https://precursor.test")));
   // Expect that the "\r\n" has been removed, and all other illegal URL
   // characters have been escaped.
   EXPECT_EQ("alert:test%20message%22%20--bad%2B%20%E6%96%87%E6%9C%AC%20%22file",
@@ -328,4 +344,16 @@ TEST_F(ExternalProtocolHandlerTest, TestSetBlockState) {
   EXPECT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
   EXPECT_TRUE(
       profile_->GetPrefs()->GetDictionary(prefs::kExcludedSchemes)->empty());
+}
+
+// Test that an opaque initiating origin gets transformed to its precursor
+// origin when the dialog is shown.
+TEST_F(ExternalProtocolHandlerTest, TestOpaqueInitiatingOrigin) {
+  url::Origin precursor_origin =
+      url::Origin::Create(GURL("https://precursor.test"));
+  url::Origin opaque_origin =
+      url::Origin::Resolve(GURL("data:text/html,hi"), precursor_origin);
+  DoTest(ExternalProtocolHandler::UNKNOWN, shell_integration::NOT_DEFAULT,
+         Action::PROMPT, GURL("mailto:test@test.test"), opaque_origin,
+         precursor_origin);
 }

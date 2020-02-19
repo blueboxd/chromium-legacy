@@ -131,6 +131,12 @@ class ExternalProtocolHandler {
   // This is implemented separately on each platform.
   // TODO(davidsac): Consider refactoring this to take a WebContents directly.
   // crbug.com/668289
+  //
+  // The dialog displays |initiating_origin| to the user so that they can
+  // attribute the external protocol request to a site that initiated it. If an
+  // opaque origin (for example, an origin inside a sandboxed iframe) initiated
+  // the request, then |initiating_origin| should be set to the precursor origin
+  // (that is, the origin that created the opaque origin).
   static void RunExternalProtocolDialog(
       const GURL& url,
       content::WebContents* web_contents,

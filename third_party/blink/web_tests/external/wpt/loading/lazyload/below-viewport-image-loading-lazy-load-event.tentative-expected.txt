@@ -1,7 +1,7 @@
 main frame - DidStartNavigation
 main frame - ReadyToCommitNavigation
 main frame - didCommitLoadForFrame
-main frame - didReceiveTitle: Below-viewport loading=lazy images do not block the window load event when scrolled into viewport
+main frame - TitleWasSet: Below-viewport loading=lazy images do not block the window load event when scrolled into viewport
 main frame - didFinishDocumentLoadForFrame
 main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame

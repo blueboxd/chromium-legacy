@@ -27,6 +27,7 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/url_constants.h"
+#include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "ui/gfx/text_elider.h"
 
 #if defined(OS_ANDROID)
@@ -542,7 +543,7 @@ const base::string16& NavigationEntryImpl::GetTitleForDisplay() {
   }
 #endif
 
-  gfx::ElideString(title, kMaxTitleChars, &cached_display_title_);
+  gfx::ElideString(title, blink::mojom::kMaxTitleChars, &cached_display_title_);
   return cached_display_title_;
 }
 

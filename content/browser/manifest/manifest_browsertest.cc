@@ -25,6 +25,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest_manager.mojom.h"
 
 namespace content {
@@ -128,7 +129,8 @@ class ManifestBrowserTest : public ContentBrowserTest,
   }
 
   // WebContentsObserver:
-  void DidUpdateFaviconURL(const std::vector<FaviconURL>& candidates) override {
+  void DidUpdateFaviconURL(
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override {
     manifests_reported_when_favicon_url_updated_.push_back(
         reported_manifest_urls_.size());
   }

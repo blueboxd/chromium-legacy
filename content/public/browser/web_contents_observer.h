@@ -51,7 +51,6 @@ class WebContentsImpl;
 struct AXEventNotificationDetails;
 struct AXLocationChangeNotificationDetails;
 struct EntryChangedDetails;
-struct FaviconURL;
 struct FocusedNodeDetails;
 struct LoadCommittedDetails;
 struct MediaPlayerId;
@@ -441,11 +440,12 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // Called when the user agent override for a WebContents has been changed.
   virtual void UserAgentOverrideSet(const std::string& user_agent) {}
 
-  // Invoked when new FaviconURL candidates are received from the renderer
-  // process. If the instance is created after the page is loaded, it is
-  // recommended to call WebContents::GetFaviconURLs() to get the current list
-  // as this callback will not be executed unless there is an update.
-  virtual void DidUpdateFaviconURL(const std::vector<FaviconURL>& candidates) {}
+  // Invoked when new blink::mojom::FaviconURLPtr candidates are received from
+  // the renderer process. If the instance is created after the page is loaded,
+  // it is recommended to call WebContents::GetFaviconURLs() to get the current
+  // list as this callback will not be executed unless there is an update.
+  virtual void DidUpdateFaviconURL(
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) {}
 
   // Called when an audio change occurs.
   virtual void OnAudioStateChanged(bool audible) {}

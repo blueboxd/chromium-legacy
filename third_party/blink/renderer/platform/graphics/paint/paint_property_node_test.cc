@@ -32,16 +32,11 @@ class PaintPropertyNodeTest : public testing::Test {
     // grandchild1 grandchild2
 
     transform.root = &TransformPaintPropertyNode::Root();
-    transform.ancestor =
-        CreateTransform(*transform.root, TransformationMatrix());
-    transform.child1 =
-        CreateTransform(*transform.ancestor, TransformationMatrix());
-    transform.child2 =
-        CreateTransform(*transform.ancestor, TransformationMatrix());
-    transform.grandchild1 =
-        CreateTransform(*transform.child1, TransformationMatrix());
-    transform.grandchild2 =
-        CreateTransform(*transform.child2, TransformationMatrix());
+    transform.ancestor = Create2DTranslation(*transform.root, 0, 0);
+    transform.child1 = Create2DTranslation(*transform.ancestor, 0, 0);
+    transform.child2 = Create2DTranslation(*transform.ancestor, 0, 0);
+    transform.grandchild1 = Create2DTranslation(*transform.child1, 0, 0);
+    transform.grandchild2 = Create2DTranslation(*transform.child2, 0, 0);
 
     clip.root = &ClipPaintPropertyNode::Root();
     clip.ancestor =
@@ -321,8 +316,7 @@ TEST_F(PaintPropertyNodeTest, ChangeDirectCompositingReason) {
   ResetAllChanged();
   ExpectUnchangedState();
   TransformPaintPropertyNode::State state;
-  state.direct_compositing_reasons =
-      CompositingReason::kActiveTransformAnimation;
+  state.direct_compositing_reasons = CompositingReason::kWillChangeTransform;
   transform.child1->Update(*transform.ancestor, std::move(state));
 
   EXPECT_CHANGE_EQ(PaintPropertyChangeType::kChangedOnlyNonRerasterValues,

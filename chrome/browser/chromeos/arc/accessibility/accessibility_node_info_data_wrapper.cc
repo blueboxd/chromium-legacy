@@ -441,6 +441,20 @@ void AccessibilityNodeInfoDataWrapper::Serialize(
   if (GetProperty(AXIntProperty::TEXT_SELECTION_END, &val) && val >= 0)
     out_data->AddIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, val);
 
+  if (GetProperty(AXIntProperty::LIVE_REGION, &val) && val >= 0 &&
+      static_cast<mojom::AccessibilityLiveRegionType>(val) !=
+          mojom::AccessibilityLiveRegionType::NONE) {
+    out_data->AddStringAttribute(
+        ax::mojom::StringAttribute::kLiveStatus,
+        ToLiveStatusString(
+            static_cast<mojom::AccessibilityLiveRegionType>(val)));
+  }
+  if (container_live_status_ != mojom::AccessibilityLiveRegionType::NONE) {
+    out_data->AddStringAttribute(
+        ax::mojom::StringAttribute::kContainerLiveStatus,
+        ToLiveStatusString(container_live_status_));
+  }
+
   std::vector<int32_t> standard_action_ids;
   if (GetProperty(AXIntListProperty::STANDARD_ACTION_IDS,
                   &standard_action_ids)) {

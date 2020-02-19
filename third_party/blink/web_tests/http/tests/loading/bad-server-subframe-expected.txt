@@ -1,16 +1,13 @@
 main frame - DidStartNavigation
 main frame - ReadyToCommitNavigation
 main frame - didCommitLoadForFrame
-frame "f1" - didReceiveTitle: 
 frame "f1" - BeginNavigation request to 'http://localhost:54321/', http method GET
 frame "f1" - DidStartNavigation
-main frame - didReceiveTitle: 
 main frame - didFinishDocumentLoadForFrame
 frame "f1" - didFailProvisionalLoadWithError
 frame "f1" - DidStartNavigation
 frame "f1" - ReadyToCommitNavigation
 frame "f1" - didCommitLoadForFrame
-frame "f1" - didReceiveTitle: Error
 frame "f1" - didFinishDocumentLoadForFrame
 frame "f1" - didHandleOnloadEventsForFrame
 frame "f1" - didFinishLoadForFrame

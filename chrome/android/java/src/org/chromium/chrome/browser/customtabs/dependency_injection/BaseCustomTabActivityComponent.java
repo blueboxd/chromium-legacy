@@ -17,6 +17,8 @@ import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarC
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbarCoordinator;
 import org.chromium.chrome.browser.dependency_injection.ChromeActivityComponent;
 import org.chromium.chrome.browser.webapps.SplashController;
+import org.chromium.chrome.browser.webapps.WebApkActivityCoordinator;
+import org.chromium.chrome.browser.webapps.WebappActivityCoordinator;
 
 /**
  * Contains accessors which are shared between {@link CustomTabActivityComponent} and
@@ -35,4 +37,6 @@ public interface BaseCustomTabActivityComponent extends ChromeActivityComponent 
     SplashController resolveSplashController();
     TabObserverRegistrar resolveTabObserverRegistrar();
     TwaFinishHandler resolveTwaFinishHandler();
+    WebappActivityCoordinator resolveWebappActivityCoordinator();
+    WebApkActivityCoordinator resolveWebApkActivityCoordinator();
 }

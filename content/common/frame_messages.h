@@ -33,7 +33,6 @@
 #include "content/common/savable_subframe.h"
 #include "content/public/common/common_param_traits.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/common/favicon_url.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/previews_state.h"
@@ -55,7 +54,6 @@
 #include "third_party/blink/public/common/navigation/triggering_event_info.h"
 #include "third_party/blink/public/mojom/choosers/file_chooser.mojom.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
-#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
@@ -113,8 +111,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::ScrollbarMode,
                           blink::mojom::ScrollbarMode::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(content::StopFindAction,
                           content::STOP_FIND_ACTION_LAST)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::mojom::FaviconIconType,
-                          blink::mojom::FaviconIconType::kMaxValue)
 IPC_ENUM_TRAITS(blink::mojom::WebSandboxFlags)  // Bitmask
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTreeScopeType,
                           blink::WebTreeScopeType::kMaxValue)
@@ -197,12 +193,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::CustomContextMenuContext)
   IPC_STRUCT_TRAITS_MEMBER(request_id)
   IPC_STRUCT_TRAITS_MEMBER(render_widget_id)
   IPC_STRUCT_TRAITS_MEMBER(link_followed)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::FaviconURL)
-  IPC_STRUCT_TRAITS_MEMBER(icon_url)
-  IPC_STRUCT_TRAITS_MEMBER(icon_type)
-  IPC_STRUCT_TRAITS_MEMBER(icon_sizes)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FrameOwnerProperties)
@@ -710,12 +700,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_DidChangeFrameOwnerProperties,
                     int32_t /* subframe_routing_id */,
                     content::FrameOwnerProperties /* frame_owner_properties */)
 
-// Changes the title for the page in the UI when the page is navigated or the
-// title changes. Sent for top-level frames.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_UpdateTitle,
-                    base::string16 /* title */,
-                    blink::WebTextDirection /* title direction */)
-
 // Following message is used to communicate the values received by the
 // callback binding the JS to Cpp.
 // An instance of browser that has an automation host listening to it can
@@ -976,10 +960,6 @@ IPC_MESSAGE_ROUTED2(FrameHostMsg_AdvanceFocus,
 // Request that the host send its overlay routing token for this render frame
 // via SetOverlayRoutingToken.
 IPC_MESSAGE_ROUTED0(FrameHostMsg_RequestOverlayRoutingToken)
-
-// Notification that the urls for the favicon of a site has been determined.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_UpdateFaviconURL,
-                    std::vector<content::FaviconURL> /* candidates */)
 
 // A message from HTML-based UI.  When (trusted) Javascript calls
 // send(message, args), this message is sent to the browser.

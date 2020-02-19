@@ -954,6 +954,8 @@ static bool ShowsHandCursor(Node* node, LocalFrame* frame) {
           frame->GetEventHandler().UseHandCursor(node, node->IsLink()));
 }
 
+// This is for tap (link) highlight and is tested in
+// link_highlight_impl_test.cc.
 Node* WebViewImpl::BestTapNode(
     const GestureEventWithHitTestResults& targeted_tap_event) {
   TRACE_EVENT0("input", "WebViewImpl::bestTapNode");
@@ -1000,6 +1002,14 @@ Node* WebViewImpl::BestTapNode(
   } while (cursor_defining_ancestor &&
            ShowsHandCursor(cursor_defining_ancestor,
                            page->DeprecatedLocalMainFrame()));
+
+  // This happens in cases like:
+  // <div style="display: contents; cursor: pointer">Text</div>.
+  // The text node inherits cursor: pointer and the div doesn't have a
+  // LayoutObject, so |best_touch_node| is the text node here. We should not
+  // return the text node because it can't have touch actions.
+  if (best_touch_node->IsTextNode())
+    return nullptr;
 
   return best_touch_node;
 }

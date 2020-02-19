@@ -85,7 +85,6 @@ suite('DragManager', () => {
       title: 'Tab 2',
     },
   ];
-  const delegateWindowId = 1001;
 
   const strings = {
     tabIdDataType: 'application/tab-id',
@@ -117,14 +116,12 @@ suite('DragManager', () => {
       tabElement.tab = tab;
       delegate.appendChild(tabElement);
     });
-    dragManager = new DragManager(delegate, delegateWindowId);
+    dragManager = new DragManager(delegate);
     delegate.addEventListener('dragstart', e => dragManager.startDrag(e));
     delegate.addEventListener('dragend', e => dragManager.stopDrag(e));
     delegate.addEventListener('dragleave', () => dragManager.cancelDrag());
-    delegate.addEventListener(
-        'dragover', (e) => dragManager.continueDrag(e, delegateWindowId));
-    delegate.addEventListener(
-        'drop', (e) => dragManager.drop(e, delegateWindowId));
+    delegate.addEventListener('dragover', (e) => dragManager.continueDrag(e));
+    delegate.addEventListener('drop', (e) => dragManager.drop(e));
   });
 
   test('DragStartSetsDragImage', () => {
@@ -172,10 +169,8 @@ suite('DragManager', () => {
     });
     dragOverTab.dispatchEvent(dragOverEvent);
     assertEquals(dragOverEvent.dataTransfer.dropEffect, 'move');
-    const [tabId, windowId, newIndex] =
-        await testTabsApiProxy.whenCalled('moveTab');
+    const [tabId, newIndex] = await testTabsApiProxy.whenCalled('moveTab');
     assertEquals(tabId, tabs[draggedIndex].id);
-    assertEquals(delegateWindowId, windowId);
     assertEquals(newIndex, dragOverIndex);
   });
 
@@ -322,10 +317,8 @@ suite('DragManager', () => {
     });
     delegate.dispatchEvent(dropEvent);
 
-    const [tabId, windowId, index] =
-        await testTabsApiProxy.whenCalled('moveTab');
+    const [tabId, index] = await testTabsApiProxy.whenCalled('moveTab');
     assertEquals(droppedTabId, tabId);
-    assertEquals(delegateWindowId, windowId);
     assertEquals(-1, index);
   });
 });

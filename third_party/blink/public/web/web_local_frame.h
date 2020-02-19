@@ -155,12 +155,6 @@ class WebLocalFrame : public WebFrame {
 
   // Basic properties ---------------------------------------------------
 
-  // The urls of the given combination types of favicon (if any) specified by
-  // the document loaded in this frame. The iconTypesMask is a bit-mask of
-  // WebIconURL::Type values, used to select from the available set of icon
-  // URLs
-  virtual WebVector<WebIconURL> IconURLs(int icon_types_mask) const = 0;
-
   virtual WebDocument GetDocument() const = 0;
 
   // The name of this frame. If no name is given, empty string is returned.

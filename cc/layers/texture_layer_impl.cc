@@ -53,7 +53,6 @@ void TextureLayerImpl::PushPropertiesTo(LayerImpl* layer) {
   texture_layer->SetFlipped(flipped_);
   texture_layer->SetUVTopLeft(uv_top_left_);
   texture_layer->SetUVBottomRight(uv_bottom_right_);
-  texture_layer->SetVertexOpacity(vertex_opacity_);
   texture_layer->SetPremultipliedAlpha(premultiplied_alpha_);
   texture_layer->SetBlendBackgroundColor(blend_background_color_);
   texture_layer->SetForceTextureToOpaque(force_texture_to_opaque_);
@@ -146,14 +145,11 @@ void TextureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
   if (visible_quad_rect.IsEmpty())
     return;
 
-  if (!vertex_opacity_[0] && !vertex_opacity_[1] && !vertex_opacity_[2] &&
-      !vertex_opacity_[3])
-    return;
-
+  float vertex_opacity[] = {1.0f, 1.0f, 1.0f, 1.0f};
   auto* quad = render_pass->CreateAndAppendDrawQuad<viz::TextureDrawQuad>();
   quad->SetNew(shared_quad_state, quad_rect, visible_quad_rect, needs_blending,
                resource_id_, premultiplied_alpha_, uv_top_left_,
-               uv_bottom_right_, bg_color, vertex_opacity_, flipped_,
+               uv_bottom_right_, bg_color, vertex_opacity, flipped_,
                nearest_neighbor_, /*secure_output_only=*/false,
                gfx::ProtectedVideoType::kClear);
   quad->set_resource_size_in_pixels(transferable_resource_.size);
@@ -230,16 +226,6 @@ void TextureLayerImpl::SetUVTopLeft(const gfx::PointF& top_left) {
 
 void TextureLayerImpl::SetUVBottomRight(const gfx::PointF& bottom_right) {
   uv_bottom_right_ = bottom_right;
-}
-
-// 1--2
-// |  |
-// 0--3
-void TextureLayerImpl::SetVertexOpacity(const float vertex_opacity[4]) {
-  vertex_opacity_[0] = vertex_opacity[0];
-  vertex_opacity_[1] = vertex_opacity[1];
-  vertex_opacity_[2] = vertex_opacity[2];
-  vertex_opacity_[3] = vertex_opacity[3];
 }
 
 void TextureLayerImpl::SetTransferableResource(

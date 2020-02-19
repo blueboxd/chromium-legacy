@@ -530,9 +530,8 @@ void DownloadItemImpl::ValidateMixedContentDownload() {
   MaybeCompleteDownload();
 }
 
-void DownloadItemImpl::StealDangerousDownload(
-    bool delete_file_afterward,
-    const AcquireFileCallback& callback) {
+void DownloadItemImpl::StealDangerousDownload(bool delete_file_afterward,
+                                              AcquireFileCallback callback) {
   DVLOG(20) << __func__ << "() download = " << DebugString(true);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(IsDangerous());
@@ -543,9 +542,9 @@ void DownloadItemImpl::StealDangerousDownload(
       base::PostTaskAndReplyWithResult(
           GetDownloadTaskRunner().get(), FROM_HERE,
           base::BindOnce(&DownloadFileDetach, base::Passed(&download_file_)),
-          base::BindOnce(callback));
+          base::BindOnce(std::move(callback)));
     } else {
-      callback.Run(GetFullPath());
+      std::move(callback).Run(GetFullPath());
     }
     destination_info_.current_path.clear();
     Remove();
@@ -554,9 +553,9 @@ void DownloadItemImpl::StealDangerousDownload(
     base::PostTaskAndReplyWithResult(
         GetDownloadTaskRunner().get(), FROM_HERE,
         base::BindOnce(&MakeCopyOfDownloadFile, download_file_.get()),
-        base::BindOnce(callback));
+        base::BindOnce(std::move(callback)));
   } else {
-    callback.Run(GetFullPath());
+    std::move(callback).Run(GetFullPath());
   }
 }
 

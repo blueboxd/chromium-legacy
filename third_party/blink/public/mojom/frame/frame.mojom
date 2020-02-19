@@ -7,6 +7,7 @@ module blink.mojom;
 import "cc/mojom/touch_action.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
+import "mojo/public/mojom/base/text_direction.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/content_security_policy.mojom";
 import "skia/public/mojom/skcolor.mojom";
@@ -14,6 +15,7 @@ import "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
 import "third_party/blink/public/mojom/devtools/inspector_issue.mojom";
 import "third_party/blink/public/mojom/feature_policy/feature_policy.mojom";
+import "third_party/blink/public/mojom/favicon/favicon_url.mojom";
 import "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom";
 import "third_party/blink/public/mojom/frame/frame_policy.mojom";
 import "third_party/blink/public/mojom/frame/fullscreen.mojom";
@@ -51,6 +53,10 @@ struct FindInPageResultAXParams {
   // The character offset into the text of the end object.
   int32 end_offset;
 };
+
+// The maximum number of characters of the document's title that we're willing
+// to accept in the browser process.
+const uint16 kMaxTitleChars = 4096; // 4 * 1024;
 
 // Implemented in Browser, this interface defines frame-specific methods that
 // will be invoked from the render process (e.g. content::RenderFrameHostImpl).
@@ -208,6 +214,12 @@ interface LocalFrameHost {
   // should render fallback content.
   RenderFallbackContentInParentProcess();
 
+  // Changes the title for the page in the UI when the page is navigated or the
+  // title changes. Sent for top-level frames. This can be null when loading an
+  // initial empty document (and in some tests).
+  UpdateTitle(mojo_base.mojom.String16? title,
+              mojo_base.mojom.TextDirection title_direction);
+
   // Indicates that the user activation state in the current frame has been
   // updated, so the replicated states need to be synced (in the browser process
   // as well as in all other renderer processes).
@@ -261,6 +273,9 @@ interface LocalFrameHost {
   // A request to check whether WebGL is explicitly blocked.
   [Sync]
   Are3DAPIsBlocked() => (bool blocked);
+
+  // Notifies that the urls for the favicon of a site has been determined.
+  UpdateFaviconURL(array<FaviconURL> favicon_urls);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

@@ -2585,8 +2585,9 @@ TEST_P(VisualViewportTest, DeviceEmulation) {
   UpdateAllLifecyclePhasesExceptPaint();
   EXPECT_TRUE(GetFrame()->View()->VisualViewportNeedsRepaint());
   ASSERT_TRUE(visual_viewport.GetDeviceEmulationTransformNode());
-  EXPECT_EQ(FloatSize(-params.viewport_offset.x(), -params.viewport_offset.y()),
-            visual_viewport.GetDeviceEmulationTransformNode()->Translation2D());
+  EXPECT_EQ(TransformationMatrix().Translate(-params.viewport_offset.x(),
+                                             -params.viewport_offset.y()),
+            visual_viewport.GetDeviceEmulationTransformNode()->Matrix());
   UpdateAllLifecyclePhases();
   EXPECT_FALSE(GetFrame()->View()->VisualViewportNeedsRepaint());
 

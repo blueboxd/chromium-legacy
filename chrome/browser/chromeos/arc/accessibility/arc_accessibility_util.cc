@@ -117,6 +117,20 @@ base::Optional<mojom::AccessibilityActionType> ConvertToAndroidAction(
   }
 }
 
+std::string ToLiveStatusString(mojom::AccessibilityLiveRegionType type) {
+  switch (type) {
+    case mojom::AccessibilityLiveRegionType::NONE:
+      return "none";
+    case mojom::AccessibilityLiveRegionType::POLITE:
+      return "polite";
+    case mojom::AccessibilityLiveRegionType::ASSERTIVE:
+      return "assertive";
+    default:
+      NOTREACHED();
+  }
+  return std::string();  // Dummy.
+}
+
 bool IsImportantInAndroid(AXNodeInfoData* node) {
   if (!node)
     return false;

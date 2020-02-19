@@ -236,7 +236,7 @@ TEST_P(PaintChunksToCcLayerTest, EffectGroupingNested) {
 TEST_P(PaintChunksToCcLayerTest, EffectFilterGroupingNestedWithTransforms) {
   // This test verifies nested effects with transforms are grouped properly.
   auto t1 = CreateTransform(t0(), TransformationMatrix().Scale(2.f));
-  auto t2 = CreateTransform(*t1, TransformationMatrix().Translate(-50, -50));
+  auto t2 = Create2DTranslation(*t1, -50, -50);
   auto e1 = CreateOpacityEffect(e0(), *t2, &c0(), 0.5);
 
   CompositorFilterOperations filter;
@@ -576,8 +576,7 @@ TEST_P(PaintChunksToCcLayerTest,
 TEST_P(PaintChunksToCcLayerTest, VisualRect) {
   auto layer_transform =
       CreateTransform(t0(), TransformationMatrix().Scale(20));
-  auto chunk_transform = CreateTransform(
-      *layer_transform, TransformationMatrix().Translate(50, 100));
+  auto chunk_transform = Create2DTranslation(*layer_transform, 50, 100);
 
   TestChunks chunks;
   chunks.AddChunk(*chunk_transform, c0(), e0());
@@ -740,7 +739,7 @@ TEST_P(PaintChunksToCcLayerTest, CombineClips) {
 
 TEST_P(PaintChunksToCcLayerTest, CombineClipsAcrossTransform) {
   FloatRoundedRect clip_rect(0, 0, 100, 100);
-  auto identity = CreateTransform(t0(), TransformationMatrix());
+  auto identity = Create2DTranslation(t0(), 0, 0);
   auto non_identity =
       CreateTransform(*identity, TransformationMatrix().Scale(2));
   auto non_invertible =
@@ -867,9 +866,9 @@ TEST_P(PaintChunksToCcLayerTest, ChunksSamePropertyTreeState) {
 }
 
 TEST_P(PaintChunksToCcLayerTest, NoOpForIdentityTransforms) {
-  auto t1 = CreateTransform(t0(), TransformationMatrix());
-  auto t2 = CreateTransform(*t1, TransformationMatrix());
-  auto t3 = CreateTransform(*t2, TransformationMatrix());
+  auto t1 = Create2DTranslation(t0(), 0, 0);
+  auto t2 = Create2DTranslation(*t1, 0, 0);
+  auto t3 = Create2DTranslation(*t2, 0, 0);
   auto c1 = CreateClip(c0(), *t2, FloatRoundedRect(0, 0, 100, 100));
   auto c2 = CreateClip(*c1, *t3, FloatRoundedRect(0, 0, 200, 50));
 

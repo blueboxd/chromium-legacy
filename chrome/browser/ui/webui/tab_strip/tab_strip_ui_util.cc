@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "components/tab_groups/tab_group_id.h"
+#include "content/public/browser/web_contents.h"
 
 namespace tab_strip_ui {
 
@@ -38,6 +39,30 @@ Browser* GetBrowserWithGroupId(Profile* profile, std::string group_id_string) {
   }
 
   return nullptr;
+}
+
+void MoveTabAcrossWindows(Browser* source_browser,
+                          int from_index,
+                          Browser* target_browser,
+                          int to_index,
+                          base::Optional<tab_groups::TabGroupId> to_group_id) {
+  bool was_active =
+      source_browser->tab_strip_model()->active_index() == from_index;
+  bool was_pinned = source_browser->tab_strip_model()->IsTabPinned(from_index);
+
+  std::unique_ptr<content::WebContents> detached_contents =
+      source_browser->tab_strip_model()->DetachWebContentsAt(from_index);
+
+  int add_types = TabStripModel::ADD_NONE;
+  if (was_active) {
+    add_types |= TabStripModel::ADD_ACTIVE;
+  }
+  if (was_pinned) {
+    add_types |= TabStripModel::ADD_PINNED;
+  }
+
+  target_browser->tab_strip_model()->InsertWebContentsAt(
+      to_index, std::move(detached_contents), add_types, to_group_id);
 }
 
 }  // namespace tab_strip_ui

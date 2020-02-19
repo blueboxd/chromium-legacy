@@ -1,7 +1,6 @@
 main frame - DidStartNavigation
 main frame - ReadyToCommitNavigation
 main frame - didCommitLoadForFrame
-main frame - didReceiveTitle: Test behavior of in viewport invisible lazy images
 main frame - didFinishDocumentLoadForFrame
 main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame

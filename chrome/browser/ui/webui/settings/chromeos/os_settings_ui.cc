@@ -64,6 +64,7 @@
 #include "chrome/browser/ui/webui/settings/chromeos/parental_controls_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/plugin_vm_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/pref_names.h"
+#include "chrome/browser/ui/webui/settings/chromeos/quick_unlock_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/search/settings_user_action_tracker.h"
 #include "chrome/browser/ui/webui/settings/chromeos/wallpaper_handler.h"
 #include "chrome/browser/ui/webui/settings/downloads_handler.h"
@@ -316,6 +317,8 @@ void OSSettingsUI::InitOSWebUIHandlers(content::WebUIDataSource* html_source) {
   }
   web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::PointerHandler>());
+  web_ui()->AddMessageHandler(
+      std::make_unique<chromeos::settings::QuickUnlockHandler>());
   web_ui()->AddMessageHandler(
       std::make_unique<chromeos::settings::StorageHandler>(profile,
                                                            html_source));

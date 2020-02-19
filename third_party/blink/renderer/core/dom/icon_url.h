@@ -31,9 +31,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ICON_URL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ICON_URL_H_
 
-#include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace blink {
 
@@ -47,7 +47,7 @@ enum IconType {
 struct IconURL {
   DISALLOW_NEW();
   IconType icon_type_;
-  Vector<IntSize> sizes_;
+  Vector<gfx::Size> sizes_;
   String mime_type_;
   KURL icon_url_;
   bool is_default_icon_;
@@ -55,7 +55,7 @@ struct IconURL {
   IconURL() : icon_type_(kInvalidIcon), is_default_icon_(false) {}
 
   IconURL(const KURL& url,
-          const Vector<IntSize>& sizes,
+          const Vector<gfx::Size>& sizes,
           const String& mime_type,
           IconType type)
       : icon_type_(type),

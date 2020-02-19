@@ -228,7 +228,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItemImpl
   void ValidateDangerousDownload() override;
   void ValidateMixedContentDownload() override;
   void StealDangerousDownload(bool need_removal,
-                              const AcquireFileCallback& callback) override;
+                              AcquireFileCallback callback) override;
   void Pause() override;
   void Resume(bool user_resume) override;
   void Cancel(bool user_cancel) override;

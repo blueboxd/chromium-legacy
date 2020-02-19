@@ -17,4 +17,14 @@ enum FaviconIconType {
   kTouchPrecomposedIcon,
 };
 
-// TODO: Define FaviconURL struct here too.
+// The favicon url from the document.
+struct FaviconURL {
+  // The url of the icon.
+  url.mojom.Url icon_url;
+
+  // The type of the icon
+  FaviconIconType icon_type;
+
+  // Icon's bitmaps' size
+  array<gfx.mojom.Size> icon_sizes;
+};

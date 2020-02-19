@@ -803,7 +803,65 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
 }
 
 #if defined(OS_ANDROID)
-TEST_F(RenderViewImplTest, OnNavigationLoadDataWithBaseURL) {
+namespace {
+class UpdateTitleLocalFrameHost : public LocalFrameHostInterceptor {
+ public:
+  explicit UpdateTitleLocalFrameHost(
+      blink::AssociatedInterfaceProvider* provider)
+      : LocalFrameHostInterceptor(provider) {}
+
+  MOCK_METHOD2(UpdateTitle,
+               void(const base::Optional<::base::string16>& title,
+                    base::i18n::TextDirection title_direction));
+};
+
+class UpdateTitleTestRenderFrame : public TestRenderFrame {
+ public:
+  static RenderFrameImpl* CreateTestRenderFrame(
+      RenderFrameImpl::CreateParams params) {
+    return new UpdateTitleTestRenderFrame(std::move(params));
+  }
+
+  ~UpdateTitleTestRenderFrame() override = default;
+
+  blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override {
+    blink::AssociatedInterfaceProvider* associated_interface_provider =
+        RenderFrameImpl::GetRemoteAssociatedInterfaces();
+
+    // Attach our fake local frame host at the very first call to
+    // GetRemoteAssociatedInterfaces.
+    if (!local_frame_host_) {
+      local_frame_host_ = std::make_unique<UpdateTitleLocalFrameHost>(
+          associated_interface_provider);
+    }
+    return associated_interface_provider;
+  }
+
+  UpdateTitleLocalFrameHost* title_mock_frame_host() {
+    return local_frame_host_.get();
+  }
+
+ private:
+  explicit UpdateTitleTestRenderFrame(RenderFrameImpl::CreateParams params)
+      : TestRenderFrame(std::move(params)) {}
+
+  std::unique_ptr<UpdateTitleLocalFrameHost> local_frame_host_;
+};
+}  // namespace
+
+class RenderViewImplUpdateTitleTest : public RenderViewImplTest {
+ public:
+  RenderViewImplUpdateTitleTest()
+      : RenderViewImplTest(&UpdateTitleTestRenderFrame::CreateTestRenderFrame) {
+  }
+
+  UpdateTitleLocalFrameHost* title_mock_frame_host() {
+    return static_cast<UpdateTitleTestRenderFrame*>(frame())
+        ->title_mock_frame_host();
+  }
+};
+
+TEST_F(RenderViewImplUpdateTitleTest, OnNavigationLoadDataWithBaseURL) {
   auto common_params = CreateCommonNavigationParams();
   common_params->url = GURL("data:text/html,");
   common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
@@ -813,20 +871,19 @@ TEST_F(RenderViewImplTest, OnNavigationLoadDataWithBaseURL) {
   auto commit_params = CreateCommitNavigationParams();
   commit_params->data_url_as_string =
       "data:text/html,<html><head><title>Data page</title></head></html>";
-
-  render_thread_->sink().ClearMessages();
+  FrameLoadWaiter waiter(frame());
   frame()->Navigate(std::move(common_params), std::move(commit_params));
-  const IPC::Message* frame_title_msg = nullptr;
-  do {
-    base::RunLoop().RunUntilIdle();
-    frame_title_msg = render_thread_->sink().GetUniqueMessageMatching(
-        FrameHostMsg_UpdateTitle::ID);
-  } while (!frame_title_msg);
+  waiter.Wait();
 
-  // Check post data sent to browser matches.
-  FrameHostMsg_UpdateTitle::Param title_params;
-  EXPECT_TRUE(FrameHostMsg_UpdateTitle::Read(frame_title_msg, &title_params));
-  EXPECT_EQ(base::ASCIIToUTF16("Data page"), std::get<0>(title_params));
+  // While LocalFrame is initialized, it's called with an empty title.
+  const base::Optional<::base::string16> null_title;
+  EXPECT_CALL(*title_mock_frame_host(), UpdateTitle(null_title, testing::_))
+      .Times(1);
+
+  const base::Optional<::base::string16>& title =
+      base::make_optional(base::ASCIIToUTF16("Data page"));
+  EXPECT_CALL(*title_mock_frame_host(), UpdateTitle(title, testing::_))
+      .Times(1);
 }
 #endif
 
@@ -2234,28 +2291,6 @@ TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
             WebFrameContentDumper::DumpWebViewAsText(view()->GetWebView(),
                                                      kMaxOutputCharacters)
                 .Ascii());
-}
-
-// Ensure the render view sends favicon url update events correctly.
-TEST_F(RenderViewImplTest, SendFaviconURLUpdateEvent) {
-  // An event should be sent when a favicon url exists.
-  LoadHTML("<html>"
-           "<head>"
-           "<link rel='icon' href='http://www.google.com/favicon.ico'>"
-           "</head>"
-           "</html>");
-  EXPECT_TRUE(render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_UpdateFaviconURL::ID));
-  render_thread_->sink().ClearMessages();
-
-  // An event should not be sent if no favicon url exists. This is an assumption
-  // made by some of Chrome's favicon handling.
-  LoadHTML("<html>"
-           "<head>"
-           "</head>"
-           "</html>");
-  EXPECT_FALSE(render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_UpdateFaviconURL::ID));
 }
 
 TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {

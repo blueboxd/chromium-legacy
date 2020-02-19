@@ -72,7 +72,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/context_menu_params.h"
-#include "content/public/common/favicon_url.h"
 #include "content/public/common/isolated_world_ids.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/page_state.h"
@@ -765,30 +764,6 @@ class MHTMLHandleWriterDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(MHTMLHandleWriterDelegate);
 };
-
-blink::mojom::FaviconIconType ToFaviconType(blink::WebIconURL::Type type) {
-  switch (type) {
-    case blink::WebIconURL::kTypeFavicon:
-      return blink::mojom::FaviconIconType::kFavicon;
-    case blink::WebIconURL::kTypeTouch:
-      return blink::mojom::FaviconIconType::kTouchIcon;
-    case blink::WebIconURL::kTypeTouchPrecomposed:
-      return blink::mojom::FaviconIconType::kTouchPrecomposedIcon;
-    case blink::WebIconURL::kTypeInvalid:
-      return blink::mojom::FaviconIconType::kInvalid;
-  }
-  NOTREACHED();
-  return blink::mojom::FaviconIconType::kInvalid;
-}
-
-std::vector<gfx::Size> ConvertToFaviconSizes(
-    const blink::WebVector<blink::WebSize>& web_sizes) {
-  std::vector<gfx::Size> result;
-  result.reserve(web_sizes.size());
-  for (const blink::WebSize& web_size : web_sizes)
-    result.push_back(gfx::Size(web_size));
-  return result;
-}
 
 // Use this for histograms with dynamically generated names, which otherwise
 // can't use the UMA_HISTOGRAM_MEMORY_MB macro without code duplication.
@@ -4506,17 +4481,11 @@ void RenderFrameImpl::RunScriptsAtDocumentElementAvailable() {
   // Do not use |this|! ContentClient might have deleted them by now!
 }
 
-void RenderFrameImpl::DidReceiveTitle(const blink::WebString& title,
-                                      blink::WebTextDirection direction) {
+void RenderFrameImpl::DidReceiveTitle(const blink::WebString& title) {
   // Ignore all but top level navigations.
   if (!frame_->Parent()) {
     base::trace_event::TraceLog::GetInstance()->UpdateProcessLabel(
         routing_id_, title.Utf8());
-
-    base::string16 title16 = title.Utf16();
-    base::string16 shortened_title = title16.substr(0, kMaxTitleChars);
-    Send(new FrameHostMsg_UpdateTitle(routing_id_,
-                                      shortened_title, direction));
   } else {
     // Set process title for sub-frames in traces.
     GURL loading_url = GetLoadingUrl();
@@ -4532,36 +4501,6 @@ void RenderFrameImpl::DidReceiveTitle(const blink::WebString& title,
 
   // Also check whether we have new encoding name.
   UpdateEncoding(frame_, frame_->View()->PageEncoding().Utf8());
-}
-
-void RenderFrameImpl::DidChangeIcon(blink::WebIconURL::Type icon_type) {
-  SendUpdateFaviconURL();
-}
-
-void RenderFrameImpl::SendUpdateFaviconURL() {
-  if (frame_->Parent())
-    return;
-
-  blink::WebIconURL::Type icon_types_mask =
-      static_cast<blink::WebIconURL::Type>(
-          blink::WebIconURL::kTypeFavicon |
-          blink::WebIconURL::kTypeTouchPrecomposed |
-          blink::WebIconURL::kTypeTouch);
-
-  WebVector<blink::WebIconURL> icon_urls = frame_->IconURLs(icon_types_mask);
-  if (icon_urls.empty())
-    return;
-
-  std::vector<FaviconURL> urls;
-  urls.reserve(icon_urls.size());
-  for (const blink::WebIconURL& icon_url : icon_urls) {
-    urls.push_back(FaviconURL(icon_url.GetIconURL(),
-                              ToFaviconType(icon_url.IconType()),
-                              ConvertToFaviconSizes(icon_url.Sizes())));
-  }
-  DCHECK_EQ(icon_urls.size(), urls.size());
-
-  Send(new FrameHostMsg_UpdateFaviconURL(GetRoutingID(), urls));
 }
 
 void RenderFrameImpl::DidFinishDocumentLoad() {
@@ -5640,8 +5579,6 @@ void RenderFrameImpl::DidStopLoading() {
   // current history navigation (if this was one), so we don't need to track
   // this state anymore.
   history_subframe_unique_names_.clear();
-
-  SendUpdateFaviconURL();
 
   Send(new FrameHostMsg_DidStopLoading(routing_id_));
 }

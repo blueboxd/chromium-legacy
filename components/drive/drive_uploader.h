@@ -38,11 +38,10 @@ class DriveServiceInterface;
 // |upload_location| will be returned when the uploading process is started but
 // terminated before the completion due to some errors. It can be used to
 // resume it.
-typedef base::Callback<void(
+using UploadCompletionCallback = base::OnceCallback<void(
     google_apis::DriveApiErrorCode error,
     const GURL& upload_location,
-    std::unique_ptr<google_apis::FileResource> resource_entry)>
-    UploadCompletionCallback;
+    std::unique_ptr<google_apis::FileResource> resource_entry)>;
 
 class DriveUploaderInterface {
  public:
@@ -86,7 +85,7 @@ class DriveUploaderInterface {
       const std::string& title,
       const std::string& content_type,
       const UploadNewFileOptions& options,
-      const UploadCompletionCallback& callback,
+      UploadCompletionCallback callback,
       const google_apis::ProgressCallback& progress_callback) = 0;
 
   // Uploads an existing file (a file that already exists on Drive).
@@ -105,7 +104,7 @@ class DriveUploaderInterface {
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const UploadExistingFileOptions& options,
-      const UploadCompletionCallback& callback,
+      UploadCompletionCallback callback,
       const google_apis::ProgressCallback& progress_callback) = 0;
 
   // Resumes the uploading process terminated before the completion.
@@ -118,7 +117,7 @@ class DriveUploaderInterface {
       const GURL& upload_location,
       const base::FilePath& local_file_path,
       const std::string& content_type,
-      const UploadCompletionCallback& callback,
+      UploadCompletionCallback callback,
       const google_apis::ProgressCallback& progress_callback) = 0;
 };
 
@@ -141,20 +140,20 @@ class DriveUploader : public DriveUploaderInterface {
       const std::string& title,
       const std::string& content_type,
       const UploadNewFileOptions& options,
-      const UploadCompletionCallback& callback,
+      UploadCompletionCallback callback,
       const google_apis::ProgressCallback& progress_callback) override;
   google_apis::CancelCallback UploadExistingFile(
       const std::string& resource_id,
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const UploadExistingFileOptions& options,
-      const UploadCompletionCallback& callback,
+      UploadCompletionCallback callback,
       const google_apis::ProgressCallback& progress_callback) override;
   google_apis::CancelCallback ResumeUploadFile(
       const GURL& upload_location,
       const base::FilePath& local_file_path,
       const std::string& content_type,
-      const UploadCompletionCallback& callback,
+      UploadCompletionCallback callback,
       const google_apis::ProgressCallback& progress_callback) override;
 
  private:

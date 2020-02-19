@@ -15,7 +15,6 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/common/favicon_url.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
 #include "ui/gfx/image/image.h"
 
@@ -174,7 +173,7 @@ void ContentFaviconDriver::OnFaviconDeleted(
 }
 
 void ContentFaviconDriver::DidUpdateFaviconURL(
-    const std::vector<content::FaviconURL>& candidates) {
+    const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   // Ignore the update if there is no last committed navigation entry. This can
   // occur when loading an initially blank page.
   content::NavigationEntry* entry =
@@ -184,13 +183,17 @@ void ContentFaviconDriver::DidUpdateFaviconURL(
 
   // We update |favicon_urls_| even if the list is believed to be partial
   // (checked below), because callers of our getter favicon_urls() expect so.
-  favicon_urls_ = candidates;
+  std::vector<blink::mojom::FaviconURL> favicon_urls;
+  for (const auto& candidate : candidates)
+    favicon_urls.push_back(*candidate);
+  favicon_urls_ = favicon_urls;
 
   if (!document_on_load_completed_)
     return;
 
   OnUpdateCandidates(entry->GetURL(),
-                     FaviconURLsFromContentFaviconURLs(candidates),
+                     FaviconURLsFromContentFaviconURLs(favicon_urls_.value_or(
+                         std::vector<blink::mojom::FaviconURL>())),
                      manifest_url_);
 }
 

@@ -269,20 +269,6 @@ using TokenFrameMap = std::unordered_map<base::UnguessableToken,
 base::LazyInstance<TokenFrameMap>::Leaky g_token_frame_map =
     LAZY_INSTANCE_INITIALIZER;
 
-// Translate a WebKit text direction into a base::i18n one.
-base::i18n::TextDirection WebTextDirectionToChromeTextDirection(
-    blink::WebTextDirection dir) {
-  switch (dir) {
-    case blink::kWebTextDirectionLeftToRight:
-      return base::i18n::LEFT_TO_RIGHT;
-    case blink::kWebTextDirectionRightToLeft:
-      return base::i18n::RIGHT_TO_LEFT;
-    default:
-      NOTREACHED();
-      return base::i18n::UNKNOWN_DIRECTION;
-  }
-}
-
 // Returns true if |url| & |base_url| represents a WebView loadDataWithBaseUrl
 // navigation.
 bool IsLoadDataWithBaseURL(const GURL& url, const GURL& base_url) {
@@ -1708,7 +1694,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnDidChangeFramePolicy)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeFrameOwnerProperties,
                         OnDidChangeFrameOwnerProperties)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateTitle, OnUpdateTitle)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_EventBundle, OnAccessibilityEvents)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_LocationChanges,
                         OnAccessibilityLocationChanges)
@@ -3268,6 +3253,11 @@ void RenderFrameHostImpl::ScaleFactorChanged(float scale) {
   delegate_->OnPageScaleFactorChanged(this, scale);
 }
 
+void RenderFrameHostImpl::UpdateFaviconURL(
+    std::vector<blink::mojom::FaviconURLPtr> favicon_urls) {
+  delegate_->UpdateFaviconURL(this, std::move(favicon_urls));
+}
+
 void RenderFrameHostImpl::RequestTextSurroundingSelection(
     blink::mojom::LocalFrame::GetTextSurroundingSelectionCallback callback,
     int max_length) {
@@ -3589,20 +3579,23 @@ void RenderFrameHostImpl::OnDidChangeFrameOwnerProperties(
   }
 }
 
-void RenderFrameHostImpl::OnUpdateTitle(
-    const base::string16& title,
-    blink::WebTextDirection title_direction) {
+void RenderFrameHostImpl::UpdateTitle(
+    const base::Optional<::base::string16>& title,
+    base::i18n::TextDirection title_direction) {
   // This message should only be sent for top-level frames.
   if (frame_tree_node_->parent())
     return;
 
-  if (title.length() > kMaxTitleChars) {
-    NOTREACHED() << "Renderer sent too many characters in title.";
+  base::string16 received_title;
+  if (title.has_value())
+    received_title = title.value();
+
+  if (received_title.length() > blink::mojom::kMaxTitleChars) {
+    mojo::ReportBadMessage("Renderer sent too many characters in title.");
     return;
   }
 
-  delegate_->UpdateTitle(
-      this, title, WebTextDirectionToChromeTextDirection(title_direction));
+  delegate_->UpdateTitle(this, received_title, title_direction);
 }
 
 void RenderFrameHostImpl::UpdateEncoding(const std::string& encoding_name) {

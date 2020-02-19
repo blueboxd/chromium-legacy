@@ -86,8 +86,7 @@ VerdictCacheManager* ServicesDelegate::GetVerdictCacheManager(
     Profile* profile) const {
   DCHECK(profile);
   auto it = cache_manager_map_.find(profile);
-  DCHECK(it != cache_manager_map_.end());
-  return it->second.get();
+  return it != cache_manager_map_.end() ? it->second.get() : nullptr;
 }
 
 void ServicesDelegate::ShutdownServices() {

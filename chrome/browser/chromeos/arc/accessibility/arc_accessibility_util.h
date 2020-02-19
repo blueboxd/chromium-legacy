@@ -21,6 +21,8 @@ ax::mojom::Event ToAXEvent(mojom::AccessibilityEventType arc_event_type,
 base::Optional<mojom::AccessibilityActionType> ConvertToAndroidAction(
     ax::mojom::Action action);
 
+std::string ToLiveStatusString(mojom::AccessibilityLiveRegionType type);
+
 bool IsImportantInAndroid(mojom::AccessibilityNodeInfoData* node);
 
 bool HasImportantProperty(mojom::AccessibilityNodeInfoData* node);

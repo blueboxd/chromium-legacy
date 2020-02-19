@@ -4046,10 +4046,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAppServiceIntentHandlingDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kAppServiceIntentHandling)},
 
-    {"app-service-shelf", flag_descriptions::kAppServiceShelfName,
-     flag_descriptions::kAppServiceShelfDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(features::kAppServiceShelf)},
-
     {"ash-swiping-from-left-edge-to-go-back",
      flag_descriptions::kAshSwipingFromLeftEdgeToGoBackName,
      flag_descriptions::kAshSwipingFromLeftEdgeToGoBackDescription, kOsCrOS,

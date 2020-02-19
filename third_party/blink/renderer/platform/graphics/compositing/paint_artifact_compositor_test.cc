@@ -4378,8 +4378,7 @@ TEST_P(PaintArtifactCompositorTest,
        DirectTransformAnimationCausesRenderSurfaceFor2dAxisMisalignedClip) {
   // When a clip is affected by an animated transform, we should get a render
   // surface for the effect node.
-  auto t1 = CreateTransform(t0(), TransformationMatrix(), FloatPoint3D(),
-                            CompositingReason::kActiveTransformAnimation);
+  auto t1 = CreateAnimatingTransform(t0());
   auto e1 = CreateOpacityEffect(e0(), *t1, nullptr, 1.f);
   auto c1 = CreateClip(c0(), t0(), FloatRoundedRect(50, 50, 50, 50));
   TestPaintArtifact artifact;
@@ -4398,8 +4397,7 @@ TEST_P(PaintArtifactCompositorTest,
        IndirectTransformAnimationCausesRenderSurfaceFor2dAxisMisalignedClip) {
   // When a clip is affected by an animated transform, we should get a render
   // surface for the effect node.
-  auto t1 = CreateTransform(t0(), TransformationMatrix(), FloatPoint3D(),
-                            CompositingReason::kActiveTransformAnimation);
+  auto t1 = CreateAnimatingTransform(t0());
   auto t2 = Create2DTranslation(*t1, 10, 20);
   auto e1 = CreateOpacityEffect(e0(), *t2, nullptr, 1.f);
   auto c1 = CreateClip(c0(), t0(), FloatRoundedRect(50, 50, 50, 50));

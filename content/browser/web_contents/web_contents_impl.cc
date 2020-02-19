@@ -906,7 +906,6 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                         OnDidDisplayContentWithCertificateErrors)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidRunContentWithCertificateErrors,
                         OnDidRunContentWithCertificateErrors)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_UpdateFaviconURL, OnUpdateFaviconURL)
 #if BUILDFLAG(ENABLE_PLUGINS)
     IPC_MESSAGE_HANDLER(FrameHostMsg_PepperInstanceCreated,
                         OnPepperInstanceCreated)
@@ -5160,9 +5159,9 @@ void WebContentsImpl::SendPpapiBrokerPermissionResult(int process_id,
 }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 
-void WebContentsImpl::OnUpdateFaviconURL(
-    RenderFrameHostImpl* source,
-    const std::vector<FaviconURL>& candidates) {
+void WebContentsImpl::UpdateFaviconURL(
+    RenderFrameHost* source,
+    std::vector<blink::mojom::FaviconURLPtr> candidates) {
   // Ignore favicons for non-main frame.
   if (source->GetParent()) {
     NOTREACHED();
@@ -5176,10 +5175,10 @@ void WebContentsImpl::OnUpdateFaviconURL(
   if (!source->IsCurrent())
     return;
 
-  favicon_urls_ = candidates;
+  favicon_urls_ = std::move(candidates);
 
   for (auto& observer : observers_)
-    observer.DidUpdateFaviconURL(candidates);
+    observer.DidUpdateFaviconURL(favicon_urls_);
 }
 
 void WebContentsImpl::SetIsOverlayContent(bool is_overlay_content) {
@@ -6822,7 +6821,8 @@ ukm::SourceId WebContentsImpl::GetLastCommittedSourceId() {
   return last_committed_source_id_;
 }
 
-std::vector<FaviconURL> WebContentsImpl::GetFaviconURLs() {
+const std::vector<blink::mojom::FaviconURLPtr>&
+WebContentsImpl::GetFaviconURLs() {
   return favicon_urls_;
 }
 

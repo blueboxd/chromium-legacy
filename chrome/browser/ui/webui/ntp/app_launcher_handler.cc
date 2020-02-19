@@ -61,7 +61,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/favicon_url.h"
 #include "extensions/browser/app_sorting.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"

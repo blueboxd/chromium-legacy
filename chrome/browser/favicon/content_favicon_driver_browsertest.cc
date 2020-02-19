@@ -40,6 +40,7 @@
 #include "net/url_request/url_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "ui/gfx/image/image_unittest_util.h"
 #include "url/url_constants.h"
 
@@ -110,7 +111,10 @@ class PendingTaskWaiter : public content::WebContentsObserver {
 
  private:
   // content::WebContentsObserver:
-  void DidStopLoading() override { TestUrlAndTitle(); }
+  void DidUpdateFaviconURL(
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override {
+    TestUrlAndTitle();
+  }
 
   void TitleWasSet(content::NavigationEntry* entry) override {
     TestUrlAndTitle();
@@ -183,10 +187,10 @@ class PageLoadStopper : public content::WebContentsObserver {
   }
 
   void DidUpdateFaviconURL(
-      const std::vector<content::FaviconURL>& candidates) override {
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override {
     last_favicon_candidates_.clear();
-    for (const content::FaviconURL& candidate : candidates)
-      last_favicon_candidates_.push_back(candidate.icon_url);
+    for (const auto& candidate : candidates)
+      last_favicon_candidates_.push_back(candidate->icon_url);
   }
 
   bool stop_on_finish_;

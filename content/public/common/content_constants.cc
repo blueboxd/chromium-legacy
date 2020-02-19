@@ -23,7 +23,6 @@ const char kFlashPluginSplMimeType[] = "application/futuresplash";
 const char kFlashPluginSplExtension[] = "spl";
 const char kFlashPluginSplDescription[] = "FutureSplash Player";
 
-const size_t kMaxTitleChars = 4 * 1024;
 const size_t kMaxURLDisplayChars = 32 * 1024;
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)

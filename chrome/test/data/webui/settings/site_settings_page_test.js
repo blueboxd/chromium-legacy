@@ -35,7 +35,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#cookies').click();
+        page.$$(`#${settings.ContentSettingsTypes.COOKIES}`).click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -45,7 +45,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#location').click();
+        page.$$(`#${settings.ContentSettingsTypes.GEOLOCATION}`).click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -55,7 +55,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#camera').click();
+        page.$$(`#${settings.ContentSettingsTypes.CAMERA}`).click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -65,7 +65,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#microphone').click();
+        page.$$(`#${settings.ContentSettingsTypes.MIC}`).click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -75,7 +75,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#sensors').click();
+        page.$$(`#${settings.ContentSettingsTypes.SENSORS}`).click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -85,7 +85,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#notifications').click();
+        page.$$(`#${settings.ContentSettingsTypes.NOTIFICATIONS}`).click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -96,7 +96,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#javascript').click();
+        page.$$(`#${settings.ContentSettingsTypes.JAVASCRIPT}`).click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -106,7 +106,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#flash').click();
+        page.$$(`#${settings.ContentSettingsTypes.PLUGINS}`).click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -116,7 +116,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#images').click();
+        page.$$(`#${settings.ContentSettingsTypes.IMAGES}`).click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -126,7 +126,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#popups').click();
+        page.$$(`#${settings.ContentSettingsTypes.POPUPS}`).click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -136,7 +136,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#backgroundSync').click();
+        page.$$(`#${settings.ContentSettingsTypes.BACKGROUND_SYNC}`).click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -147,7 +147,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#sound').click();
+        page.$$(`#${settings.ContentSettingsTypes.SOUND}`).click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -159,7 +159,7 @@ cr.define('settings_site_settings_page', function() {
               settings.routes.SITE_SETTINGS);
           testBrowserProxy.reset();
 
-          page.$$('#ads').click();
+          page.$$(`#${settings.ContentSettingsTypes.ADS}`).click();
           result =
               await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
           assertEquals(
@@ -170,7 +170,8 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#automaticDownloads').click();
+        page.$$(`#${settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS}`)
+            .click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -181,7 +182,8 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#unsandboxedPlugins').click();
+        page.$$(`#${settings.ContentSettingsTypes.UNSANDBOXED_PLUGINS}`)
+            .click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -194,7 +196,8 @@ cr.define('settings_site_settings_page', function() {
               settings.routes.SITE_SETTINGS);
           testBrowserProxy.reset();
 
-          page.$$('#protocolHandlers').click();
+          page.$$(`#${settings.ContentSettingsTypes.PROTOCOL_HANDLERS}`)
+              .click();
           result =
               await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
           assertEquals(
@@ -205,7 +208,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#midiDevices').click();
+        page.$$(`#${settings.ContentSettingsTypes.MIDI_DEVICES}`).click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -216,7 +219,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#zoomLevels').click();
+        page.$$(`#${settings.ContentSettingsTypes.ZOOM_LEVELS}`).click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -226,7 +229,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#usbDevices').click();
+        page.$$(`#${settings.ContentSettingsTypes.USB_DEVICES}`).click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -236,7 +239,7 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#serialPorts').click();
+        page.$$(`#${settings.ContentSettingsTypes.SERIAL_PORTS}`).click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -250,7 +253,8 @@ cr.define('settings_site_settings_page', function() {
               settings.routes.SITE_SETTINGS);
           testBrowserProxy.reset();
 
-          page.$$('#nativeFileSystemWrite').click();
+          page.$$(`#${settings.ContentSettingsTypes.NATIVE_FILE_SYSTEM_WRITE}`)
+              .click();
           result =
               await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
           assertEquals(
@@ -273,18 +277,21 @@ cr.define('settings_site_settings_page', function() {
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#protectedContent').click();
-        result =
-            await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
-        assertEquals(
-            settings.SettingsPageInteractions
-                .PRIVACY_SITE_SETTINGS_PROTECTED_CONTENT,
-            result);
+        if (cr.isChromeOS) {
+          page.$$(`#${settings.ContentSettingsTypes.PROTECTED_CONTENT}`)
+              .click();
+          result =
+              await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
+          assertEquals(
+              settings.SettingsPageInteractions
+                  .PRIVACY_SITE_SETTINGS_PROTECTED_CONTENT,
+              result);
+        }
 
         settings.Router.getInstance().navigateTo(settings.routes.SITE_SETTINGS);
         testBrowserProxy.reset();
 
-        page.$$('#clipboard').click();
+        page.$$(`#${settings.ContentSettingsTypes.CLIPBOARD}`).click();
         result =
             await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
         assertEquals(
@@ -296,7 +303,7 @@ cr.define('settings_site_settings_page', function() {
               settings.routes.SITE_SETTINGS);
           testBrowserProxy.reset();
 
-          page.$$('#paymentHandler').click();
+          page.$$(`#${settings.ContentSettingsTypes.PAYMENT_HANDLER}`).click();
           result =
               await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
           assertEquals(
@@ -310,7 +317,7 @@ cr.define('settings_site_settings_page', function() {
               settings.routes.SITE_SETTINGS);
           testBrowserProxy.reset();
 
-          page.$$('#mixedScript').click();
+          page.$$(`#${settings.ContentSettingsTypes.MIXEDSCRIPT}`).click();
           result =
               await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
           assertEquals(
@@ -324,7 +331,8 @@ cr.define('settings_site_settings_page', function() {
               settings.routes.SITE_SETTINGS);
           testBrowserProxy.reset();
 
-          page.$$('#bluetoothScanning').click();
+          page.$$(`#${settings.ContentSettingsTypes.BLUETOOTH_SCANNING}`)
+              .click();
           result =
               await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
           assertEquals(
@@ -338,7 +346,7 @@ cr.define('settings_site_settings_page', function() {
               settings.routes.SITE_SETTINGS);
           testBrowserProxy.reset();
 
-          page.$$('#ar').click();
+          page.$$(`#${settings.ContentSettingsTypes.AR}`).click();
           result =
               await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
           assertEquals(
@@ -350,7 +358,7 @@ cr.define('settings_site_settings_page', function() {
               settings.routes.SITE_SETTINGS);
           testBrowserProxy.reset();
 
-          page.$$('#vr').click();
+          page.$$(`#${settings.ContentSettingsTypes.VR}`).click();
           result =
               await testBrowserProxy.whenCalled('recordSettingsPageHistogram');
           assertEquals(

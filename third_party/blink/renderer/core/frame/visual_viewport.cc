@@ -174,8 +174,9 @@ PaintPropertyChangeType VisualViewport::UpdatePaintPropertyNodesIfNeeded(
   }
 
   {
-    TransformPaintPropertyNode::State state{
-        TransformationMatrix().Scale(Scale())};
+    TransformPaintPropertyNode::State state;
+    if (scale_ != 1.f)
+      state.transform_and_origin = {TransformationMatrix().Scale(scale_)};
     state.flags.in_subtree_of_page_scale = false;
     state.direct_compositing_reasons = CompositingReason::kWillChangeTransform;
     state.compositor_element_id = page_scale_element_id_;

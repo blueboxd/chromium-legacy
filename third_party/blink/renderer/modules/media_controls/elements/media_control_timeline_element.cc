@@ -38,8 +38,8 @@ const int kThumbRadius = 6;
 
 // Only respond to main button of primary pointer(s).
 bool IsValidPointerEvent(const blink::Event& event) {
-  DCHECK(event.IsPointerEvent());
-  const blink::PointerEvent& pointer_event = ToPointerEvent(event);
+  DCHECK(blink::IsA<blink::PointerEvent>(event));
+  const auto& pointer_event = blink::To<blink::PointerEvent>(event);
   return pointer_event.isPrimary() &&
          pointer_event.button() ==
              static_cast<int16_t>(blink::WebPointerProperties::Button::kLeft);
@@ -122,7 +122,7 @@ void MediaControlTimelineElement::DefaultEventHandler(Event& event) {
   MediaControlInputElement::DefaultEventHandler(event);
 
   if (IsA<MouseEvent>(event) || event.IsKeyboardEvent() ||
-      event.IsGestureEvent() || event.IsPointerEvent()) {
+      event.IsGestureEvent() || IsA<PointerEvent>(event)) {
     MaybeRecordInteracted();
   }
 

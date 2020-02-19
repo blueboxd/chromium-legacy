@@ -121,7 +121,6 @@ class WebContentsImpl;
 class WebContentsView;
 class WebContentsViewDelegate;
 struct AXEventNotificationDetails;
-struct FaviconURL;
 struct LoadNotificationDetails;
 struct MHTMLGenerationParams;
 
@@ -501,7 +500,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   base::UnguessableToken GetAudioGroupId() override;
   bool CompletedFirstVisuallyNonEmptyPaint() override;
   ukm::SourceId GetLastCommittedSourceId() override;
-  std::vector<FaviconURL> GetFaviconURLs() override;
+  void UpdateFaviconURL(
+      RenderFrameHost* source,
+      std::vector<blink::mojom::FaviconURLPtr> candidates) override;
+  const std::vector<blink::mojom::FaviconURLPtr>& GetFaviconURLs() override;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaWebContents() override;
@@ -1398,8 +1400,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                        int ppb_broker_route_id,
                                        bool result);
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
-  void OnUpdateFaviconURL(RenderFrameHostImpl* source,
-                          const std::vector<FaviconURL>& candidates);
   void OnShowValidationMessage(RenderViewHostImpl* source,
                                const gfx::Rect& anchor_in_root_view,
                                const base::string16& main_text,
@@ -1985,7 +1985,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   // Represents the favicon urls candidates from the page.
   // Empty std::vector until the first update from the renderer.
-  std::vector<FaviconURL> favicon_urls_;
+  std::vector<blink::mojom::FaviconURLPtr> favicon_urls_;
 
   // This time is used to record the last time we saw a screen orientation
   // change.

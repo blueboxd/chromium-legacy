@@ -316,13 +316,27 @@ void ExternalProtocolHandler::LaunchUrl(
 
   g_accept_requests = false;
 
+  base::Optional<url::Origin> initiating_origin_or_precursor;
+  if (initiating_origin) {
+    // Transform the initiating origin to its precursor origin if it is
+    // opaque. |initiating_origin| is shown in the UI to attribute the external
+    // protocol request to a particular site, and showing an opaque origin isn't
+    // useful.
+    if (initiating_origin->opaque()) {
+      initiating_origin_or_precursor = url::Origin::Create(
+          initiating_origin->GetTupleOrPrecursorTupleIfOpaque().GetURL());
+    } else {
+      initiating_origin_or_precursor = initiating_origin;
+    }
+  }
+
   // The worker creates tasks with references to itself and puts them into
   // message loops.
-  shell_integration::DefaultWebClientWorkerCallback callback =
-      base::Bind(&OnDefaultProtocolClientWorkerFinished, escaped_url,
-                 render_process_host_id, render_view_routing_id,
-                 block_state == UNKNOWN, page_transition, has_user_gesture,
-                 initiating_origin, g_external_protocol_handler_delegate);
+  shell_integration::DefaultWebClientWorkerCallback callback = base::Bind(
+      &OnDefaultProtocolClientWorkerFinished, escaped_url,
+      render_process_host_id, render_view_routing_id, block_state == UNKNOWN,
+      page_transition, has_user_gesture, initiating_origin_or_precursor,
+      g_external_protocol_handler_delegate);
 
   // Start the check process running. This will send tasks to a worker task
   // runner and when the answer is known will send the result back to

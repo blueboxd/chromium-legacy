@@ -12,11 +12,11 @@
 #include "chrome/browser/resource_coordinator/site_characteristics_data_store.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/favicon_url.h"
 #include "content/public/test/mock_navigation_handle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 
 namespace resource_coordinator {
 
@@ -181,7 +181,7 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
 
   // Send dummy events to simulate the initial title/favicon update (as these
   // are ignored).
-  observer()->DidUpdateFaviconURL({});
+  observer()->DidUpdateFaviconURL(std::vector<blink::mojom::FaviconURLPtr>());
   observer()->TitleWasSet(nullptr);
 
   EXPECT_CALL(*mock_writer, NotifySiteLoaded());

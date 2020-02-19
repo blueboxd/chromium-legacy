@@ -65,26 +65,6 @@ void TextureLayer::SetUV(const gfx::PointF& top_left,
   SetNeedsCommit();
 }
 
-void TextureLayer::SetVertexOpacity(float bottom_left,
-                                    float top_left,
-                                    float top_right,
-                                    float bottom_right) {
-  // Indexing according to the quad vertex generation:
-  // 1--2
-  // |  |
-  // 0--3
-  if (vertex_opacity_[0] == bottom_left &&
-      vertex_opacity_[1] == top_left &&
-      vertex_opacity_[2] == top_right &&
-      vertex_opacity_[3] == bottom_right)
-    return;
-  vertex_opacity_[0] = bottom_left;
-  vertex_opacity_[1] = top_left;
-  vertex_opacity_[2] = top_right;
-  vertex_opacity_[3] = bottom_right;
-  SetNeedsCommit();
-}
-
 void TextureLayer::SetPremultipliedAlpha(bool premultiplied_alpha) {
   if (premultiplied_alpha_ == premultiplied_alpha)
     return;
@@ -216,7 +196,6 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
   texture_layer->SetNearestNeighbor(nearest_neighbor_);
   texture_layer->SetUVTopLeft(uv_top_left_);
   texture_layer->SetUVBottomRight(uv_bottom_right_);
-  texture_layer->SetVertexOpacity(vertex_opacity_);
   texture_layer->SetPremultipliedAlpha(premultiplied_alpha_);
   texture_layer->SetBlendBackgroundColor(blend_background_color_);
   texture_layer->SetForceTextureToOpaque(force_texture_to_opaque_);

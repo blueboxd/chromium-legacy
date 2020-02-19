@@ -54,6 +54,33 @@ NetworkStatePropertiesPtr CreateCellularNetwork(int signal_strength) {
   return network;
 }
 
+class FakeNightLightDelegate : public NightLightControllerImpl::Delegate {
+ public:
+  FakeNightLightDelegate() = default;
+  ~FakeNightLightDelegate() override = default;
+  FakeNightLightDelegate(const FakeNightLightDelegate&) = delete;
+  FakeNightLightDelegate& operator=(const FakeNightLightDelegate&) = delete;
+
+  void SetFakeNow(TimeOfDay time) { fake_now_ = time.ToTimeToday(); }
+  void SetFakeSunset(TimeOfDay time) { fake_sunset_ = time.ToTimeToday(); }
+  void SetFakeSunrise(TimeOfDay time) { fake_sunrise_ = time.ToTimeToday(); }
+
+  // NightLightControllerImpl::Delegate:
+  base::Time GetNow() const override { return fake_now_; }
+  base::Time GetSunsetTime() const override { return fake_sunset_; }
+  base::Time GetSunriseTime() const override { return fake_sunrise_; }
+  bool SetGeoposition(
+      const NightLightController::SimpleGeoposition& position) override {
+    return false;
+  }
+  bool HasGeoposition() const override { return false; }
+
+ private:
+  base::Time fake_now_;
+  base::Time fake_sunset_;
+  base::Time fake_sunrise_;
+};
+
 }  // namespace
 
 class UserSettingsEventLoggerTest : public AshTestBase {
@@ -157,8 +184,7 @@ TEST_F(UserSettingsEventLoggerTest, TestLogBluetoothEvent) {
                                      UserSettingsEvent::Event::BLUETOOTH);
   TestUkmRecorder::ExpectEntryMetric(entry, "SettingType",
                                      UserSettingsEvent::Event::QUICK_SETTINGS);
-  // TODO(crbug/1014839): Test that |is_paired_bluetooth_device| is set
-  // correctly.
+  // |is_paired_bluetooth_device| is tested manually.
 }
 
 TEST_F(UserSettingsEventLoggerTest, TestLogNightLightEvent) {
@@ -190,6 +216,32 @@ TEST_F(UserSettingsEventLoggerTest, TestLogNightLightEvent) {
   TestUkmRecorder::ExpectEntryMetric(entry, "PreviousValue", true);
   TestUkmRecorder::ExpectEntryMetric(entry, "CurrentValue", false);
   TestUkmRecorder::ExpectEntryMetric(entry, "HasNightLightSchedule", false);
+}
+
+TEST_F(UserSettingsEventLoggerTest, TestNightLightSunsetFeature) {
+  auto night_light_delegate = std::make_unique<FakeNightLightDelegate>();
+  auto* night_light = night_light_delegate.get();
+  Shell::Get()->night_light_controller()->SetDelegateForTesting(
+      std::move(night_light_delegate));
+
+  // Set fake sunrise and sunset to 6am and 6pm.
+  night_light->SetFakeSunrise(TimeOfDay(6 * 60));
+  night_light->SetFakeSunset(TimeOfDay(18 * 60));
+
+  // Log events at 3am, 12pm, and 11pm.
+  night_light->SetFakeNow(TimeOfDay(3 * 60));
+  logger_->LogNightLightUkmEvent(false);
+  night_light->SetFakeNow(TimeOfDay(12 * 60));
+  logger_->LogNightLightUkmEvent(false);
+  night_light->SetFakeNow(TimeOfDay(23 * 60));
+  logger_->LogNightLightUkmEvent(false);
+
+  const auto& entries = GetUkmEntries();
+  ASSERT_EQ(3ul, entries.size());
+
+  TestUkmRecorder::ExpectEntryMetric(entries[0], "IsAfterSunset", true);
+  TestUkmRecorder::ExpectEntryMetric(entries[1], "IsAfterSunset", false);
+  TestUkmRecorder::ExpectEntryMetric(entries[2], "IsAfterSunset", true);
 }
 
 TEST_F(UserSettingsEventLoggerTest, TestLogQuietModeEvent) {

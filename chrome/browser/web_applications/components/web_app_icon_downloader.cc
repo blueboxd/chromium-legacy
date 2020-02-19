@@ -10,7 +10,6 @@
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/favicon_url.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
@@ -46,8 +45,7 @@ void WebAppIconDownloader::Start() {
   if (need_favicon_urls_) {
     // The call to `GetFaviconURLsFromWebContents()` is to allow this method to
     // be mocked by unit tests.
-    const std::vector<content::FaviconURL> favicon_urls =
-        GetFaviconURLsFromWebContents();
+    const auto& favicon_urls = GetFaviconURLsFromWebContents();
     if (!favicon_urls.empty()) {
       need_favicon_urls_ = false;
       FetchIcons(favicon_urls);
@@ -66,17 +64,17 @@ int WebAppIconDownloader::DownloadImage(const GURL& url) {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-std::vector<content::FaviconURL>
+const std::vector<blink::mojom::FaviconURLPtr>&
 WebAppIconDownloader::GetFaviconURLsFromWebContents() {
   return web_contents()->GetFaviconURLs();
 }
 
 void WebAppIconDownloader::FetchIcons(
-    const std::vector<content::FaviconURL>& favicon_urls) {
+    const std::vector<blink::mojom::FaviconURLPtr>& favicon_urls) {
   std::vector<GURL> urls;
   for (const auto& favicon_url : favicon_urls) {
-    if (favicon_url.icon_type != blink::mojom::FaviconIconType::kInvalid)
-      urls.push_back(favicon_url.icon_url);
+    if (favicon_url->icon_type != blink::mojom::FaviconIconType::kInvalid)
+      urls.push_back(favicon_url->icon_url);
   }
   FetchIcons(urls);
 }
@@ -148,7 +146,7 @@ void WebAppIconDownloader::DidFinishNavigation(
 }
 
 void WebAppIconDownloader::DidUpdateFaviconURL(
-    const std::vector<content::FaviconURL>& candidates) {
+    const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   // Only consider the first candidates we are given. This prevents pages that
   // change their favicon from spamming us.
   if (!need_favicon_urls_)

@@ -97,6 +97,11 @@ SmbUrl SmbShareFinder::GetResolvedUrl(const SmbUrl& url) const {
   return url.ReplaceHost(ip_address);
 }
 
+net::IPAddress SmbShareFinder::GetResolvedHost(const std::string& host) const {
+  DCHECK(!host.empty());
+  return scanner_.ResolveHost(host);
+}
+
 bool SmbShareFinder::TryResolveUrl(const SmbUrl& url,
                                    SmbUrl* updated_url) const {
   *updated_url = GetResolvedUrl(url);

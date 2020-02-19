@@ -328,27 +328,6 @@ void WebFrameTestClient::DownloadURL(
   }
 }
 
-void WebFrameTestClient::DidReceiveTitle(const blink::WebString& title,
-                                         blink::WebTextDirection direction) {
-  if (test_runner()->ShouldDumpFrameLoadCallbacks() &&
-      web_frame_test_proxy_->GetWebFrame()) {
-    PrintFrameDescription(delegate_, web_frame_test_proxy_->GetWebFrame());
-    delegate_->PrintMessage(std::string(" - didReceiveTitle: ") + title.Utf8() +
-                            "\n");
-  }
-
-  if (test_runner()->ShouldDumpTitleChanges())
-    delegate_->PrintMessage(std::string("TITLE CHANGED: '") + title.Utf8() +
-                            "'\n");
-}
-
-void WebFrameTestClient::DidChangeIcon(blink::WebIconURL::Type icon_type) {
-  if (test_runner()->ShouldDumpIconChanges()) {
-    PrintFrameDescription(delegate_, web_frame_test_proxy_->GetWebFrame());
-    delegate_->PrintMessage(std::string(" - didChangeIcons\n"));
-  }
-}
-
 void WebFrameTestClient::DidStartLoading() {
   test_runner()->AddLoadingFrame(web_frame_test_proxy_->GetWebFrame());
 }

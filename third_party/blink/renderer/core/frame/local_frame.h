@@ -456,6 +456,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   void FinishedLoading(FrameLoader::NavigationFinishState);
 
+  void UpdateFaviconURL();
+
   using IsCapturingMediaCallback = base::RepeatingCallback<bool()>;
   void SetIsCapturingMediaCallback(IsCapturingMediaCallback callback);
   bool IsCapturingMedia() const;

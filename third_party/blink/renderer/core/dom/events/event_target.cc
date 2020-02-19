@@ -180,7 +180,7 @@ void CountFiringEventListeners(const Event& event,
   }
   if (CheckTypeThenUseCount(event, event_type_names::kPointerdown,
                             WebFeature::kPointerDownFired, document)) {
-    if (event.IsPointerEvent() &&
+    if (IsA<PointerEvent>(event) &&
         static_cast<const PointerEvent&>(event).pointerType() == "touch") {
       UseCounter::Count(document, WebFeature::kPointerDownFiredForTouch);
     }

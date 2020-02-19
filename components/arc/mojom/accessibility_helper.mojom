@@ -252,6 +252,14 @@ struct AccessibilityRangeInfoData {
   float current;
 };
 
+// These fields are taken from View.ACCESSIBILITY_LIVE_REGION_*.
+[Extensible]
+enum AccessibilityLiveRegionType {
+  NONE,
+  POLITE,
+  ASSERTIVE,
+};
+
 // These fields are taken from AccessibilityWindowInfo's window types.
 [Extensible]
 enum AccessibilityWindowType {

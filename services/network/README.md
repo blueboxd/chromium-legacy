@@ -24,9 +24,7 @@ See https://bugs.chromium.org/p/chromium/issues/detail?id=598073
 See the design doc
 https://docs.google.com/document/d/1wAHLw9h7gGuqJNCgG1mP1BmLtCGfZ2pys-PdZQ1vg7M/edit?pref=2&pli=1#
 
-# Buildbots
-
-## Network Service Linux
+# Buildbot
 
 The [Network Service
 Linux](https://ci.chromium.org/p/chromium/builders/ci/Network%20Service%20Linux)
@@ -48,17 +46,11 @@ Its steps are:
   (https://crbug.com/1036230).
 * **`network_service_in_process_content_browsertests`**: Same as above but for
   `content_browsertests`. We might consider removing this from the bot, since
-  the Mojo Android bot also runs this which gives enough coverage, but maybe we
-  can remove the Desktop flag and group policy first.
+  the Android bots run `content_browsertests` which should give enough coverage,
+  but maybe we can remove the Desktop flag and group policy first.
 * **`network_service_web_request_proxy_browser_tests`**: Runs `browser_tests`
   while forcing the "network request proxying" code path that is taken when the
   browser has an extension installed that uses the
   [Web Request API](https://developer.chrome.com/extensions/webRequest)
   (`--enable-features=ForceWebRequestProxyForTest`). This step has caught bugs
   that would be Stable Release Blockers, so it's important to keep it.
-
-## Mojo Android (FYI)
-
-The [Mojo
-Android](https://ci.chromium.org/p/chromium/builders/ci/Mojo%20Android) FYI
-buildbot runs some tests in experimental configurations.

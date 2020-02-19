@@ -1696,9 +1696,10 @@ void MediaControlsImpl::ShowCursor() {
 }
 
 bool MediaControlsImpl::ContainsRelatedTarget(Event* event) {
-  if (!event->IsPointerEvent())
+  auto* pointer_event = DynamicTo<PointerEvent>(event);
+  if (!pointer_event)
     return false;
-  EventTarget* related_target = ToPointerEvent(event)->relatedTarget();
+  EventTarget* related_target = pointer_event->relatedTarget();
   if (!related_target)
     return false;
   return contains(related_target->ToNode());

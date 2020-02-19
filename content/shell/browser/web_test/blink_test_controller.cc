@@ -159,6 +159,32 @@ std::string DumpHistoryForWebContents(WebContents* web_contents) {
   return result;
 }
 
+std::vector<std::string> DumpTitleWasSet(WebContents* web_contents) {
+  base::Optional<bool> load = BlinkTestController::Get()
+                                  ->accumulated_web_test_runtime_flags_changes()
+                                  .FindBoolPath("dump_frame_load_callbacks");
+
+  base::Optional<bool> title_changed =
+      BlinkTestController::Get()
+          ->accumulated_web_test_runtime_flags_changes()
+          .FindBoolPath("dump_title_changes");
+
+  std::vector<std::string> logs;
+
+  if (load.has_value() && load.value()) {
+    // TitleWasSet is only available on top-level frames.
+    std::string log = "main frame";
+    logs.emplace_back(
+        log + " - TitleWasSet: " + base::UTF16ToUTF8(web_contents->GetTitle()));
+  }
+
+  if (title_changed.has_value() && title_changed.value()) {
+    logs.emplace_back("TITLE CHANGED: '" +
+                      base::UTF16ToUTF8(web_contents->GetTitle()) + "'");
+  }
+  return logs;
+}
+
 std::string DumpFailLoad(WebContents* web_contents,
                          RenderFrameHost* render_frame_host) {
   base::Optional<bool> result =
@@ -856,6 +882,15 @@ void BlinkTestController::DevToolsProcessCrashed() {
   devtools_window_ = nullptr;
 }
 
+void BlinkTestController::TitleWasSet(NavigationEntry* entry) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  std::vector<std::string> logs = DumpTitleWasSet(main_window_->web_contents());
+  if (logs.empty())
+    return;
+  for (auto log : logs)
+    printer_->AddMessage(log);
+}
+
 void BlinkTestController::DidFailLoad(RenderFrameHost* render_frame_host,
                                       const GURL& validated_url,
                                       int error_code) {
@@ -871,6 +906,17 @@ void BlinkTestController::WebContentsDestroyed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   printer_->AddErrorMessage("FAIL: main window was destroyed");
   DiscardMainWindow();
+}
+
+void BlinkTestController::DidUpdateFaviconURL(
+    const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
+  bool should_dump_icon_changes = false;
+  accumulated_web_test_runtime_flags_changes_.GetBoolean(
+      "dump_icon_changes", &should_dump_icon_changes);
+  if (should_dump_icon_changes) {
+    std::string log = IsMainWindow(web_contents()) ? "main frame " : "frame ";
+    printer_->AddMessageRaw(log + "- didChangeIcons\n");
+  }
 }
 
 void BlinkTestController::RenderProcessHostDestroyed(

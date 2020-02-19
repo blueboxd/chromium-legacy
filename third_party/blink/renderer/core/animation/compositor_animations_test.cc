@@ -1758,7 +1758,9 @@ namespace {
 
 void UpdateDummyTransformNode(ObjectPaintProperties& properties,
                               CompositingReasons reasons) {
-  TransformPaintPropertyNode::State state;
+  // Initialize with TransformationMatrix() to avoid 2d translation optimization
+  // in case of transform animation.
+  TransformPaintPropertyNode::State state{TransformationMatrix()};
   state.direct_compositing_reasons = reasons;
   properties.UpdateTransform(TransformPaintPropertyNode::Root(),
                              std::move(state));

@@ -43,6 +43,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-blink.h"
@@ -159,6 +160,21 @@ inline float ParentPageZoomFactor(LocalFrame* frame) {
 inline float ParentTextZoomFactor(LocalFrame* frame) {
   auto* parent_local_frame = DynamicTo<LocalFrame>(frame->Tree().Parent());
   return parent_local_frame ? parent_local_frame->TextZoomFactor() : 1;
+}
+
+mojom::blink::FaviconIconType ToFaviconType(IconType type) {
+  switch (type) {
+    case kInvalidIcon:
+      return mojom::blink::FaviconIconType::kInvalid;
+    case kFavicon:
+      return mojom::blink::FaviconIconType::kFavicon;
+    case kTouchIcon:
+      return mojom::blink::FaviconIconType::kTouchIcon;
+    case kTouchPrecomposedIcon:
+      return mojom::blink::FaviconIconType::kTouchPrecomposedIcon;
+  }
+  NOTREACHED();
+  return mojom::blink::FaviconIconType::kInvalid;
 }
 
 }  // namespace
@@ -1848,6 +1864,32 @@ void LocalFrame::FinishedLoading(FrameLoader::NavigationFinishState state) {
     DCHECK(!IsLoading());
     SetLifecycleState(pending_lifecycle_state_.value());
   }
+}
+
+void LocalFrame::UpdateFaviconURL() {
+  if (!IsMainFrame())
+    return;
+
+  // The URL to the icon may be in the header. As such, only
+  // ask the loader for the icon if it's finished loading.
+  if (!GetDocument()->LoadEventFinished())
+    return;
+
+  int icon_types_mask = kFavicon | kTouchIcon | kTouchPrecomposedIcon;
+  Vector<IconURL> icon_urls = GetDocument()->IconURLs(icon_types_mask);
+  if (icon_urls.IsEmpty())
+    return;
+
+  Vector<mojom::blink::FaviconURLPtr> urls;
+  urls.ReserveCapacity(icon_urls.size());
+  for (const auto& icon_url : icon_urls) {
+    urls.push_back(mojom::blink::FaviconURL::New(
+        icon_url.icon_url_, ToFaviconType(icon_url.icon_type_),
+        icon_url.sizes_));
+  }
+  DCHECK_EQ(icon_urls.size(), urls.size());
+
+  GetLocalFrameHostRemote().UpdateFaviconURL(std::move(urls));
 }
 
 void LocalFrame::SetIsCapturingMediaCallback(

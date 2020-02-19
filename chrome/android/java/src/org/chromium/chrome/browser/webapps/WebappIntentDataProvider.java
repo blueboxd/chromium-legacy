@@ -68,6 +68,11 @@ public class WebappIntentDataProvider extends BrowserServicesIntentDataProvider 
     }
 
     @Override
+    public boolean isWebApkActivity() {
+        return mWebApkExtras != null;
+    }
+
+    @Override
     @Nullable
     public WebappExtras getWebappExtras() {
         return mWebappExtras;

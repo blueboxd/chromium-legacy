@@ -290,6 +290,7 @@ TEST_F(SmbFsMounterTest, MountOptions) {
         EXPECT_EQ(password_buf, kPassword);
         EXPECT_TRUE(options->allow_ntlm);
         EXPECT_FALSE(options->skip_connect);
+        EXPECT_EQ(options->resolved_host, net::IPAddress(1, 2, 3, 4));
 
         delegate_remote = std::move(delegate);
         std::move(callback).Run(mojom::MountError::kOk,
@@ -301,6 +302,7 @@ TEST_F(SmbFsMounterTest, MountOptions) {
   mount_options.workgroup = kWorkgroup;
   mount_options.password = kPassword;
   mount_options.allow_ntlm = true;
+  mount_options.resolved_host = net::IPAddress(1, 2, 3, 4);
   std::unique_ptr<SmbFsMounter> mounter = std::make_unique<TestSmbFsMounter>(
       kSharePath, mount_options, &mock_delegate_, base::FilePath(kMountPath),
       chromeos::MOUNT_ERROR_NONE,

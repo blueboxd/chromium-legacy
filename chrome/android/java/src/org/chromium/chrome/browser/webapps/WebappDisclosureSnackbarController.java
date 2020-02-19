@@ -4,10 +4,19 @@
 
 package org.chromium.chrome.browser.webapps;
 
+import androidx.annotation.Nullable;
+
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.dependency_injection.ActivityScope;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.webapk.lib.common.WebApkConstants;
+
+import javax.inject.Inject;
 
 /**
  * Unbound WebAPKs are part of Chrome. They have access to cookies and report metrics the same way
@@ -18,7 +27,53 @@ import org.chromium.webapk.lib.common.WebApkConstants;
  * as long as the app is open. It should remain active even across pause/resume and should show the
  * next time the app is opened if it hasn't been acknowledged.
  */
-public class WebappDisclosureSnackbarController implements SnackbarManager.SnackbarController {
+@ActivityScope
+public class WebappDisclosureSnackbarController
+        implements SnackbarManager.SnackbarController, PauseResumeWithNativeObserver {
+    private final ChromeActivity mActivity;
+    private final BrowserServicesIntentDataProvider mIntentDataProvider;
+
+    @Inject
+    public WebappDisclosureSnackbarController(ChromeActivity<?> activity,
+            BrowserServicesIntentDataProvider intentDataProvider,
+            WebappDeferredStartupWithStorageHandler deferredStartupWithStorageHandler,
+            ActivityLifecycleDispatcher lifecycleDispatcher) {
+        mActivity = activity;
+        mIntentDataProvider = intentDataProvider;
+
+        lifecycleDispatcher.register(this);
+
+        deferredStartupWithStorageHandler.addTask((storage, didCreateStorage) -> {
+            if (activity.isActivityFinishingOrDestroyed()) return;
+
+            onDeferredStartupWithStorage(storage, didCreateStorage);
+        });
+    }
+
+    public void onDeferredStartupWithStorage(
+            @Nullable WebappDataStorage storage, boolean didCreateStorage) {
+        if (didCreateStorage) {
+            // Set force == true to indicate that we need to show a privacy disclosure for the newly
+            // installed unbound WebAPKs which have no storage yet. We can't simply default to a
+            // showing if the storage has a default value as we don't want to show this disclosure
+            // for pre-existing unbound WebAPKs.
+            maybeShowDisclosure(storage, true /* force */);
+        }
+    }
+
+    @Override
+    public void onResumeWithNative() {
+        WebappExtras webappExtras = mIntentDataProvider.getWebappExtras();
+        WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(
+                mIntentDataProvider.getWebappExtras().id);
+        if (storage != null) {
+            maybeShowDisclosure(storage, false /* force */);
+        }
+    }
+
+    @Override
+    public void onPauseWithNative() {}
+
     /**
      * @param actionData an instance of WebappInfo
      */
@@ -37,45 +92,41 @@ public class WebappDisclosureSnackbarController implements SnackbarManager.Snack
 
     /**
      * Shows the disclosure informing the user the Webapp is running in Chrome.
-     * @param activity Webapp activity to show disclosure for.
      * @param storage Storage for the Webapp.
      * @param force Whether to force showing the Snackbar (if no storage is available on start).
      */
-    public void maybeShowDisclosure(
-            WebappActivity activity, WebappDataStorage storage, boolean force) {
+    private void maybeShowDisclosure(WebappDataStorage storage, boolean force) {
         if (storage == null) return;
 
         // If forced we set the bit to show the disclosure. This persists to future instances.
         if (force) storage.setShowDisclosure();
 
-        if (shouldShowDisclosure(activity, storage)) {
-            activity.getSnackbarManager().showSnackbar(
-                    Snackbar.make(activity.getResources().getString(
+        if (shouldShowDisclosure(storage)) {
+            mActivity.getSnackbarManager().showSnackbar(
+                    Snackbar.make(mActivity.getResources().getString(
                                           R.string.app_running_in_chrome_disclosure),
                                     this, Snackbar.TYPE_PERSISTENT,
                                     Snackbar.UMA_WEBAPK_PRIVACY_DISCLOSURE)
-                            .setAction(
-                                    activity.getResources().getString(R.string.ok), storage)
+                            .setAction(mActivity.getResources().getString(R.string.ok), storage)
                             .setSingleLine(false));
         }
     }
 
     /**
-     * Restricts showing to TWAs and unbound WebAPKs that haven't dismissed the disclosure.
-     * @param activity Webapp activity.
+     * Restricts showing to unbound WebAPKs that haven't dismissed the disclosure.
      * @param storage Storage for the Webapp.
      * @return boolean indicating whether to show the privacy disclosure.
      */
-    private boolean shouldShowDisclosure(WebappActivity activity, WebappDataStorage storage) {
+    private boolean shouldShowDisclosure(WebappDataStorage storage) {
         // Show only if the correct flag is set.
         if (!storage.shouldShowDisclosure()) {
             return false;
         }
 
-        // This will be null for Webapps or bound WebAPKs.
-        String packageName = activity.getWebApkPackageName();
         // Show for unbound WebAPKs.
-        return packageName != null
-                && !packageName.startsWith(WebApkConstants.WEBAPK_PACKAGE_PREFIX);
+        WebApkExtras webApkExtras = mIntentDataProvider.getWebApkExtras();
+        return webApkExtras != null && webApkExtras.webApkPackageName != null
+                && !webApkExtras.webApkPackageName.startsWith(
+                        WebApkConstants.WEBAPK_PACKAGE_PREFIX);
     }
 }

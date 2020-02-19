@@ -58,20 +58,20 @@ class FakeDriveUploader : public drive::DriveUploaderInterface {
       const std::string& title,
       const std::string& content_type,
       const drive::UploadNewFileOptions& options,
-      const drive::UploadCompletionCallback& callback,
+      drive::UploadCompletionCallback callback,
       const google_apis::ProgressCallback& progress_callback) override;
   google_apis::CancelCallback UploadExistingFile(
       const std::string& resource_id,
       const base::FilePath& local_file_path,
       const std::string& content_type,
       const drive::UploadExistingFileOptions& options,
-      const drive::UploadCompletionCallback& callback,
+      drive::UploadCompletionCallback callback,
       const google_apis::ProgressCallback& progress_callback) override;
   google_apis::CancelCallback ResumeUploadFile(
       const GURL& upload_location,
       const base::FilePath& local_file_path,
       const std::string& content_type,
-      const drive::UploadCompletionCallback& callback,
+      drive::UploadCompletionCallback callback,
       const google_apis::ProgressCallback& progress_callback) override;
 
   void set_make_file_conflict(bool enable) {

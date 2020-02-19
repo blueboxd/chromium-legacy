@@ -13,10 +13,12 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom-forward.h"
 
 namespace ash {
 
+class AssistantResponseObserver;
 class AssistantUiElement;
 
 // Models a renderable Assistant response.
@@ -38,6 +40,10 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
   };
 
   AssistantResponse();
+
+  // Adds/removes the specified |observer|.
+  void AddObserver(AssistantResponseObserver* observer);
+  void RemoveObserver(AssistantResponseObserver* observer);
 
   // Adds the specified |ui_element| that should be rendered for the
   // interaction.
@@ -73,6 +79,9 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
   void Process(ProcessingCallback callback);
 
  private:
+  void NotifyUiElementAdded(const AssistantUiElement* ui_element);
+  void NotifySuggestionsAdded(const std::vector<AssistantSuggestion*>&);
+
   class Processor;
 
   friend class base::RefCounted<AssistantResponse>;
@@ -89,6 +98,8 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantResponse
   // during the destruction to indicate the failure of completion.
   std::vector<std::unique_ptr<AssistantUiElement>> ui_elements_;
   std::unique_ptr<Processor> processor_;
+
+  base::ObserverList<AssistantResponseObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantResponse);
 };

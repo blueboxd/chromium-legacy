@@ -36,7 +36,6 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
-#include "third_party/blink/public/web/web_icon_url.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "v8/include/v8.h"

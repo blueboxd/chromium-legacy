@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EVENTS_POINTER_EVENT_H_
 
 #include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
@@ -97,7 +98,10 @@ class CORE_EXPORT PointerEvent final : public MouseEvent {
   HeapVector<Member<PointerEvent>> predicted_events_;
 };
 
-DEFINE_EVENT_TYPE_CASTS(PointerEvent);
+template <>
+struct DowncastTraits<PointerEvent> {
+  static bool AllowFrom(const Event& event) { return event.IsPointerEvent(); }
+};
 
 }  // namespace blink
 

@@ -59,12 +59,8 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
     // the transform is identity or a 2d translation, the translation_2d version
     // should be used instead.
     TransformAndOrigin(const TransformationMatrix& matrix,
-                       const FloatPoint3D& origin = FloatPoint3D(),
-                       bool disable_optimization = false) {
-      if (!disable_optimization && matrix.IsIdentityOr2DTranslation())
-        translation_2d_ = matrix.To2DTranslation();
-      else
-        matrix_and_origin_.reset(new MatrixAndOrigin{matrix, origin});
+                       const FloatPoint3D& origin = FloatPoint3D()) {
+      matrix_and_origin_.reset(new MatrixAndOrigin{matrix, origin});
     }
 
     bool IsIdentityOr2DTranslation() const { return !matrix_and_origin_; }
@@ -426,6 +422,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       // The scroll compositor element id should be stored on the scroll node.
       DCHECK(!state_.compositor_element_id);
     }
+    DCHECK(!HasActiveTransformAnimation() || !IsIdentityOr2DTranslation());
 #endif
   }
 

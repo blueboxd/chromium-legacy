@@ -18,7 +18,6 @@ import android.text.TextUtils;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ActivityState;
@@ -87,8 +86,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     private TabObserverRegistrar mTabObserverRegistrar;
     private CustomTabDelegateFactory mDelegateFactory;
 
-    private WebappDisclosureSnackbarController mDisclosureSnackbarController;
-
     private boolean mIsInitialized;
     private Integer mBrandColor;
 
@@ -140,7 +137,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
      */
     public WebappActivity() {
         mWebappInfo = createWebappInfo(null);
-        mDisclosureSnackbarController = new WebappDisclosureSnackbarController();
     }
 
     @Override
@@ -395,49 +391,10 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
     }
 
     @Override
-    public void onResumeWithNative() {
-        super.onResumeWithNative();
-        WebappActionsNotificationManager.maybeShowNotification(getActivityTab(), mWebappInfo);
-        WebappDataStorage storage =
-                WebappRegistry.getInstance().getWebappDataStorage(mWebappInfo.id());
-        if (storage != null) {
-            mDisclosureSnackbarController.maybeShowDisclosure(this, storage, false /* force */);
-        }
-    }
-
-    @Override
-    public void onPauseWithNative() {
-        WebappActionsNotificationManager.cancelNotification();
-        super.onPauseWithNative();
-    }
-
-    @Override
-    protected void initDeferredStartupForActivity() {
-        super.initDeferredStartupForActivity();
-
-        WebappDataStorage storage =
-                WebappRegistry.getInstance().getWebappDataStorage(mWebappInfo.id());
-        if (storage != null) {
-            onDeferredStartupWithStorage(storage);
-        } else {
-            onDeferredStartupWithNullStorage(mDisclosureSnackbarController);
-        }
-    }
-
-    @Override
     protected void recordIntentToCreationTime(long timeMs) {
         super.recordIntentToCreationTime(timeMs);
 
         RecordHistogram.recordTimesHistogram("MobileStartup.IntentToCreationTime.WebApp", timeMs);
-    }
-
-    protected void onDeferredStartupWithStorage(WebappDataStorage storage) {
-        updateStorage(storage);
-    }
-
-    protected void onDeferredStartupWithNullStorage(
-            WebappDisclosureSnackbarController disclosureSnackbarController) {
-        // Overridden in WebApkActivity
     }
 
     @Override
@@ -477,25 +434,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
     public static WebappInfo popWebappInfo(String id) {
         return Holder.sWebappInfoMap.remove(id);
-    }
-
-    protected void updateStorage(WebappDataStorage storage) {
-        // The information in the WebappDataStorage may have been purged by the
-        // user clearing their history or not launching the web app recently.
-        // Restore the data if necessary.
-        storage.updateFromWebappInfo(mWebappInfo);
-
-        // A recent last used time is the indicator that the web app is still
-        // present on the home screen, and enables sources such as notifications to
-        // launch web apps. Thus, we do not update the last used time when the web
-        // app is not directly launched from the home screen, as this interferes
-        // with the heuristic.
-        if (mWebappInfo.isLaunchedFromHomescreen()) {
-            // TODO(yusufo): WebappRegistry#unregisterOldWebapps uses this information to delete
-            // WebappDataStorage objects for legacy webapps which haven't been used in a while.
-            // That will need to be updated to not delete anything for a TWA which remains installed
-            storage.updateLastUsedTime();
-        }
     }
 
     protected CustomTabTabObserver createTabObserver() {
@@ -562,14 +500,6 @@ public class WebappActivity extends BaseCustomTabActivity<WebappActivityComponen
 
     public @WebappScopePolicy.Type int scopePolicy() {
         return WebappScopePolicy.Type.LEGACY;
-    }
-
-    /**
-     * @return The package name if this Activity is associated with an APK. Null if there is no
-     *         associated Android native client.
-     */
-    public @Nullable String getWebApkPackageName() {
-        return null;
     }
 
     @Override

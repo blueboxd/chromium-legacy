@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/dom/dom_token_list.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
@@ -71,7 +72,7 @@ void MediaControlVolumeSliderElement::DefaultEventHandler(Event& event) {
   MediaControlInputElement::DefaultEventHandler(event);
 
   if (IsA<MouseEvent>(event) || event.IsKeyboardEvent() ||
-      event.IsGestureEvent() || event.IsPointerEvent()) {
+      event.IsGestureEvent() || IsA<PointerEvent>(event)) {
     MaybeRecordInteracted();
   }
 

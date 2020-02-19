@@ -129,6 +129,10 @@ void SmbFsMounter::OnMountDone(
 
   mojom::MountOptionsPtr mount_options = mojom::MountOptions::New();
   mount_options->share_path = share_path_;
+  if (options_.resolved_host.IsIPv4()) {
+    // TODO(crbug.com/1051291): Support IPv6.
+    mount_options->resolved_host = options_.resolved_host;
+  }
   mount_options->username = options_.username;
   mount_options->workgroup = options_.workgroup;
   mount_options->allow_ntlm = options_.allow_ntlm;

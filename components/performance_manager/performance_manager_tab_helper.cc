@@ -276,7 +276,7 @@ void PerformanceManagerTabHelper::WebContentsDestroyed() {
 }
 
 void PerformanceManagerTabHelper::DidUpdateFaviconURL(
-    const std::vector<content::FaviconURL>& candidates) {
+    const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   // TODO(siggi): This logic belongs in the policy layer rather than here.
   if (!first_time_favicon_set_) {
     first_time_favicon_set_ = true;

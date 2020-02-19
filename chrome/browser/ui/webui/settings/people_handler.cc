@@ -63,7 +63,6 @@
 #include "ui/gfx/image/image.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chromeos/constants/chromeos_features.h"
 #else
 #include "chrome/browser/signin/signin_util.h"
@@ -319,10 +318,6 @@ void PeopleHandler::RegisterMessages() {
       base::BindRepeating(&PeopleHandler::HandleAttemptUserExit,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "RequestPinLoginState",
-      base::BindRepeating(&PeopleHandler::HandleRequestPinLoginState,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "TurnOnSync", base::BindRepeating(&PeopleHandler::HandleTurnOnSync,
                                         base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
@@ -427,12 +422,6 @@ void PeopleHandler::DisplayGaiaLoginInNewTabOrWindow(
     browser->window()->ShowAvatarBubbleFromAvatarButton(
         BrowserWindow::AVATAR_BUBBLE_MODE_SIGNIN, access_point, false);
   }
-}
-#endif
-
-#if defined(OS_CHROMEOS)
-void PeopleHandler::OnPinLoginAvailable(bool is_available) {
-  FireWebUIListener("pin-login-available-changed", base::Value(is_available));
 }
 #endif
 
@@ -728,13 +717,6 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
 void PeopleHandler::HandleAttemptUserExit(const base::ListValue* args) {
   DVLOG(1) << "Signing out the user to fix a sync error.";
   chrome::AttemptUserExit();
-}
-
-void PeopleHandler::HandleRequestPinLoginState(const base::ListValue* args) {
-  AllowJavascript();
-  chromeos::quick_unlock::PinBackend::GetInstance()->HasLoginSupport(
-      base::BindOnce(&PeopleHandler::OnPinLoginAvailable,
-                     weak_factory_.GetWeakPtr()));
 }
 
 void PeopleHandler::HandleTurnOnSync(const base::ListValue* args) {

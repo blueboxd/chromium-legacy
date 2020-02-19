@@ -84,7 +84,6 @@ class RenderWidgetHostView;
 class WebContentsDelegate;
 struct CustomContextMenuContext;
 struct DropData;
-struct FaviconURL;
 struct MHTMLGenerationParams;
 
 // WebContents is the core class in content/. A WebContents renders web content
@@ -1054,7 +1053,7 @@ class WebContents : public PageNavigator,
   // WebContentsObserver::DidUpdateFaviconURL() since the last navigation start.
   // Consider using FaviconDriver in components/favicon if possible for more
   // reliable favicon-related state.
-  virtual std::vector<FaviconURL> GetFaviconURLs() = 0;
+  virtual const std::vector<blink::mojom::FaviconURLPtr>& GetFaviconURLs() = 0;
 
  private:
   // This interface should only be implemented inside content.

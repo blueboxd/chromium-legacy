@@ -118,7 +118,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   };
 
   // Callback used with AcquireFileAndDeleteDownload().
-  typedef base::Callback<void(const base::FilePath&)> AcquireFileCallback;
+  using AcquireFileCallback = base::OnceCallback<void(const base::FilePath&)>;
   using RenameDownloadCallback = base::OnceCallback<void(DownloadRenameResult)>;
   // Used to represent an invalid download ID.
   static const uint32_t kInvalidId;
@@ -186,7 +186,7 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadItem : public base::SupportsUserData {
   // Note: It is important for |callback| to be valid since the downloaded file
   // will not be cleaned up if the callback fails.
   virtual void StealDangerousDownload(bool delete_file_afterward,
-                                      const AcquireFileCallback& callback) = 0;
+                                      AcquireFileCallback callback) = 0;
 
   // Pause a download.  Will have no effect if the download is already
   // paused.

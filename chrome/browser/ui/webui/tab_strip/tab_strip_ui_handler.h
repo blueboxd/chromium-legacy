@@ -54,13 +54,15 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, MoveGroup);
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, MoveGroupAcrossProfiles);
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, MoveGroupAcrossWindows);
+  FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, MoveTab);
+  FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, MoveTabAcrossProfiles);
+  FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, MoveTabAcrossWindows);
   FRIEND_TEST_ALL_PREFIXES(TabStripUIHandlerTest, UngroupTab);
 
   void HandleCreateNewTab(const base::ListValue* args);
   base::DictionaryValue GetTabData(content::WebContents* contents, int index);
   base::DictionaryValue GetTabGroupData(TabGroup* group);
   void HandleGetTabs(const base::ListValue* args);
-  void HandleGetWindowId(const base::ListValue* args);
   void HandleGetGroupVisualData(const base::ListValue* args);
   void HandleGetThemeColors(const base::ListValue* args);
   void HandleCloseContainer(const base::ListValue* args);
@@ -70,6 +72,7 @@ class TabStripUIHandler : public content::WebUIMessageHandler,
   void HandleGroupTab(const base::ListValue* args);
   void HandleUngroupTab(const base::ListValue* args);
   void HandleMoveGroup(const base::ListValue* args);
+  void HandleMoveTab(const base::ListValue* args);
   void HandleSetThumbnailTracked(const base::ListValue* args);
   void HandleReportTabActivationDuration(const base::ListValue* args);
   void HandleReportTabDataReceivedDuration(const base::ListValue* args);

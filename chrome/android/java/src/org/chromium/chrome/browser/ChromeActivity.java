@@ -366,7 +366,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         ChromeActivityCommonsModule commonsModule = overridenCommonsFactory == null
                 ? new ChromeActivityCommonsModule(this, getLifecycleDispatcher())
-                : overridenCommonsFactory.create(this);
+                : overridenCommonsFactory.create(this, getLifecycleDispatcher());
 
         return createComponent(commonsModule);
     }

@@ -105,7 +105,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
                                        bool content_initiated) override;
   void DispatchDidStartProvisionalLoad(DocumentLoader*) override;
   void DispatchDidReceiveTitle(const String&) override;
-  void DispatchDidChangeIcons(IconType) override;
   void DispatchDidCommitLoad(HistoryItem*,
                              WebHistoryCommitType,
                              GlobalObjectReusePolicy) override;

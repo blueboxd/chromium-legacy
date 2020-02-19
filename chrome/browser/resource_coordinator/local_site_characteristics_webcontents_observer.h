@@ -12,6 +12,7 @@
 #include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom-forward.h"
 #include "url/origin.h"
 
 namespace content {
@@ -37,7 +38,7 @@ class LocalSiteCharacteristicsWebContentsObserver
       content::NavigationHandle* navigation_handle) override;
   void TitleWasSet(content::NavigationEntry* entry) override;
   void DidUpdateFaviconURL(
-      const std::vector<content::FaviconURL>& candidates) override;
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
   void OnAudioStateChanged(bool audible) override;
 
   // TabLoadTracker::Observer:

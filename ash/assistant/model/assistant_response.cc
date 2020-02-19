@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/assistant/model/assistant_response_observer.h"
 #include "ash/assistant/model/ui/assistant_ui_element.h"
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
@@ -94,9 +95,18 @@ AssistantResponse::~AssistantResponse() {
   processor_.reset();
 }
 
+void AssistantResponse::AddObserver(AssistantResponseObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AssistantResponse::RemoveObserver(AssistantResponseObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void AssistantResponse::AddUiElement(
     std::unique_ptr<AssistantUiElement> ui_element) {
   ui_elements_.push_back(std::move(ui_element));
+  NotifyUiElementAdded(ui_elements_.back().get());
 }
 
 const std::vector<std::unique_ptr<AssistantUiElement>>&
@@ -106,8 +116,14 @@ AssistantResponse::GetUiElements() const {
 
 void AssistantResponse::AddSuggestions(
     std::vector<AssistantSuggestionPtr> suggestions) {
-  for (AssistantSuggestionPtr& suggestion : suggestions)
+  std::vector<AssistantSuggestion*> ptrs;
+
+  for (AssistantSuggestionPtr& suggestion : suggestions) {
     suggestions_.push_back(std::move(suggestion));
+    ptrs.push_back(suggestions_.back().get());
+  }
+
+  NotifySuggestionsAdded(ptrs);
 }
 
 const chromeos::assistant::mojom::AssistantSuggestion*
@@ -135,6 +151,18 @@ AssistantResponse::GetSuggestions() const {
 void AssistantResponse::Process(ProcessingCallback callback) {
   processor_ = std::make_unique<Processor>(this, std::move(callback));
   processor_->Process();
+}
+
+void AssistantResponse::NotifyUiElementAdded(
+    const AssistantUiElement* ui_element) {
+  for (auto& observer : observers_)
+    observer.OnUiElementAdded(ui_element);
+}
+
+void AssistantResponse::NotifySuggestionsAdded(
+    const std::vector<AssistantSuggestion*>& suggestions) {
+  for (auto& observer : observers_)
+    observer.OnSuggestionsAdded(suggestions);
 }
 
 }  // namespace ash

@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.ui.RootUiCoordinator;
+import org.chromium.chrome.browser.webapps.WebappActivityCoordinator;
 
 /**
  * Contains functionality which is shared between {@link WebappActivity} and
@@ -44,6 +45,7 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     protected CustomTabToolbarColorController mToolbarColorController;
     protected CustomTabStatusBarColorProvider mStatusBarColorProvider;
     protected CustomTabActivityTabFactory mTabFactory;
+    protected @Nullable WebappActivityCoordinator mWebappActivityCoordinator;
 
     // This is to give the right package name while using the client's resources during an
     // overridePendingTransition call.
@@ -76,6 +78,14 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
 
         component.resolveCompositorContentInitializer();
         component.resolveTaskDescriptionHelper();
+
+        BrowserServicesIntentDataProvider intentDataProvider = getIntentDataProvider();
+        if (intentDataProvider.isWebappOrWebApkActivity()) {
+            mWebappActivityCoordinator = component.resolveWebappActivityCoordinator();
+        }
+        if (intentDataProvider.isWebApkActivity()) {
+            component.resolveWebApkActivityCoordinator();
+        }
     }
 
     /**
@@ -208,6 +218,14 @@ public abstract class BaseCustomTabActivity<C extends BaseCustomTabActivityCompo
     @Override
     public int getBaseStatusBarColor(Tab tab) {
         return mStatusBarColorProvider.getBaseStatusBarColor(tab, super.getBaseStatusBarColor(tab));
+    }
+
+    @Override
+    public void initDeferredStartupForActivity() {
+        if (mWebappActivityCoordinator != null) {
+            mWebappActivityCoordinator.initDeferredStartupForActivity();
+        }
+        super.initDeferredStartupForActivity();
     }
 
     @Override

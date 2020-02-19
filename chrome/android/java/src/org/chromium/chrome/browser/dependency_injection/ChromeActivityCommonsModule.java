@@ -39,7 +39,10 @@ public class ChromeActivityCommonsModule {
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
 
     /** See {@link ModuleFactoryOverrides} */
-    public interface Factory { ChromeActivityCommonsModule create(ChromeActivity<?> activity); }
+    public interface Factory {
+        ChromeActivityCommonsModule create(ChromeActivity<?> activity,
+                ActivityLifecycleDispatcher activityLifecycleDispatcher);
+    }
 
     public ChromeActivityCommonsModule(
             ChromeActivity<?> activity, ActivityLifecycleDispatcher lifecycleDispatcher) {

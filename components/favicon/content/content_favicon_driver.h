@@ -13,13 +13,8 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "content/public/common/favicon_url.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "url/gurl.h"
-
-namespace content {
-struct FaviconURL;
-class WebContents;
-}
 
 namespace favicon {
 
@@ -38,8 +33,8 @@ class ContentFaviconDriver
 
   // Returns the current tab's favicon URLs. If this is empty,
   // DidUpdateFaviconURL has not yet been called for the current navigation.
-  std::vector<content::FaviconURL> favicon_urls() const {
-    return favicon_urls_.value_or(std::vector<content::FaviconURL>());
+  std::vector<blink::mojom::FaviconURL> favicon_urls() const {
+    return favicon_urls_.value_or(std::vector<blink::mojom::FaviconURL>());
   }
 
   // Saves the favicon for the last committed navigation entry to the thumbnail
@@ -76,7 +71,7 @@ class ContentFaviconDriver
 
   // content::WebContentsObserver implementation.
   void DidUpdateFaviconURL(
-      const std::vector<content::FaviconURL>& candidates) override;
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
   void DidUpdateWebManifestURL(
       const base::Optional<GURL>& manifest_url) override;
   void DidStartNavigation(
@@ -88,7 +83,7 @@ class ContentFaviconDriver
   bool document_on_load_completed_;
   GURL bypass_cache_page_url_;
   // nullopt until the actual list is reported via DidUpdateFaviconURL().
-  base::Optional<std::vector<content::FaviconURL>> favicon_urls_;
+  base::Optional<std::vector<blink::mojom::FaviconURL>> favicon_urls_;
   // Web Manifest URL or empty URL if none.
   GURL manifest_url_;
 

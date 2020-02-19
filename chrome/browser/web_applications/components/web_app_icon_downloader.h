@@ -15,12 +15,9 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/web_applications/components/web_app_install_utils.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 
 class SkBitmap;
-
-namespace content {
-struct FaviconURL;
-}
 
 namespace gfx {
 class Size;
@@ -67,11 +64,12 @@ class WebAppIconDownloader : public content::WebContentsObserver {
 
   // Queries WebContents for the page's current favicon URLs.
   // This is overridden in testing.
-  virtual std::vector<content::FaviconURL> GetFaviconURLsFromWebContents();
+  virtual const std::vector<blink::mojom::FaviconURLPtr>&
+  GetFaviconURLsFromWebContents();
 
   // Fetches icons for the given urls.
   // |callback_| is run when all downloads complete.
-  void FetchIcons(const std::vector<content::FaviconURL>& favicon_urls);
+  void FetchIcons(const std::vector<blink::mojom::FaviconURLPtr>& favicon_urls);
   void FetchIcons(const std::vector<GURL>& urls);
 
   // Icon download callback.
@@ -85,7 +83,7 @@ class WebAppIconDownloader : public content::WebContentsObserver {
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidUpdateFaviconURL(
-      const std::vector<content::FaviconURL>& candidates) override;
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
 
   // Whether we need to fetch favicons from the renderer.
   bool need_favicon_urls_;

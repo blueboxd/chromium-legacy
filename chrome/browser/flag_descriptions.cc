@@ -3008,10 +3008,6 @@ const char kAppServiceIntentHandlingName[] = "App Service Intent Handling";
 const char kAppServiceIntentHandlingDescription[] =
     "Use the App Service to provide data for intent handling.";
 
-const char kAppServiceShelfName[] = "App Service Shelf";
-const char kAppServiceShelfDescription[] =
-    "Use the App Service to provide data to the UI Shelf";
-
 const char kArcApplicationZoomName[] = "Allow zooming of Android apps";
 const char kArcApplicationZoomDescription[] =
     "Allow Android apps to be zoomed in/out using ctrl+/-.";

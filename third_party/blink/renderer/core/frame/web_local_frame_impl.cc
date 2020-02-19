@@ -119,7 +119,6 @@
 #include "third_party/blink/public/web/web_form_element.h"
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_history_item.h"
-#include "third_party/blink/public/web/web_icon_url.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_manifest_manager.h"
@@ -642,14 +641,6 @@ WebString WebLocalFrameImpl::AssignedName() const {
 
 void WebLocalFrameImpl::SetName(const WebString& name) {
   GetFrame()->Tree().SetName(name, FrameTree::kReplicate);
-}
-
-WebVector<WebIconURL> WebLocalFrameImpl::IconURLs(int icon_types_mask) const {
-  // The URL to the icon may be in the header. As such, only
-  // ask the loader for the icon if it's finished loading.
-  if (GetFrame()->GetDocument()->LoadEventFinished())
-    return GetFrame()->GetDocument()->IconURLs(icon_types_mask);
-  return WebVector<WebIconURL>();
 }
 
 void WebLocalFrameImpl::SetContentSettingsClient(

@@ -50,9 +50,6 @@ class TEST_RUNNER_EXPORT WebFrameTestProxy : public content::RenderFrameImpl {
   void DownloadURL(const blink::WebURLRequest& request,
                    network::mojom::RedirectMode cross_origin_redirect_behavior,
                    mojo::ScopedMessagePipeHandle blob_url_token) override;
-  void DidReceiveTitle(const blink::WebString& title,
-                       blink::WebTextDirection direction) override;
-  void DidChangeIcon(blink::WebIconURL::Type icon_type) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
   void DidChangeSelection(bool is_selection_empty) override;

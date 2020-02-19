@@ -99,6 +99,10 @@ void FakeLocalFrameHost::GoToEntryAtOffset(int32_t offset,
 
 void FakeLocalFrameHost::RenderFallbackContentInParentProcess() {}
 
+void FakeLocalFrameHost::UpdateTitle(
+    const WTF::String& title,
+    mojo_base::mojom::blink::TextDirection title_direction) {}
+
 void FakeLocalFrameHost::UpdateUserActivationState(
     mojom::blink::UserActivationUpdateType update_type) {}
 
@@ -142,6 +146,9 @@ void FakeLocalFrameHost::RunBeforeUnloadConfirm(
 void FakeLocalFrameHost::Are3DAPIsBlocked(Are3DAPIsBlockedCallback callback) {
   std::move(callback).Run(true);
 }
+
+void FakeLocalFrameHost::UpdateFaviconURL(
+    WTF::Vector<blink::mojom::blink::FaviconURLPtr> favicon_urls) {}
 
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {

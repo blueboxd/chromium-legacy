@@ -1731,9 +1731,6 @@ extern const char kAppServiceInstanceRegistryDescription[];
 extern const char kAppServiceIntentHandlingName[];
 extern const char kAppServiceIntentHandlingDescription[];
 
-extern const char kAppServiceShelfName[];
-extern const char kAppServiceShelfDescription[];
-
 extern const char kArcApplicationZoomName[];
 extern const char kArcApplicationZoomDescription[];
 

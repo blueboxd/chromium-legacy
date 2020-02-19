@@ -495,8 +495,10 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
   GetLocalFrameClient().DidFinishSameDocumentNavigation(
       history_item_.Get(), commit_type, initiating_document);
   probe::DidNavigateWithinDocument(frame_);
-  if (!was_loading)
+  if (!was_loading) {
     GetLocalFrameClient().DidStopLoading();
+    frame_->UpdateFaviconURL();
+  }
 }
 
 const KURL& DocumentLoader::UrlForHistory() const {

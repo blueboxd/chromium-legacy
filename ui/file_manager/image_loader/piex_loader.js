@@ -8,12 +8,12 @@ console.log('[PiexLoader] wasm mode loaded');
  * Declares the piex-wasm Module interface. The Module has many interfaces
  * but only declare the parts required for PIEX work.
  * @typedef {{
- *   calledRun: boolean,
- *   onAbort: function((!Error|string)):undefined,
- *   HEAP8: !Uint8Array,
- *   _malloc: function(number):number,
- *   _free: function(number):undefined,
- *   image: function(number, number):PiexWasmImageResult
+ *  calledRun: boolean,
+ *  onAbort: function((!Error|string)):undefined,
+ *  HEAP8: !Uint8Array,
+ *  _malloc: function(number):number,
+ *  _free: function(number):undefined,
+ *  image: function(number, number):PiexWasmImageResult
  * }}
  */
 let PiexWasmModule;
@@ -58,29 +58,21 @@ function wasmModuleFailed() {
 
 /**
  * @typedef {{
- *   id: number,
- *   thumbnail: !ArrayBuffer,
- *   mimeType: (string|undefined),
- *   orientation: number,
- *   colorSpace: ColorSpace,
- *   ifd: ?string
+ *  thumbnail: !ArrayBuffer,
+ *  mimeType: (string|undefined),
+ *  orientation: number,
+ *  colorSpace: ColorSpace,
+ *  ifd: ?string
  * }}
  */
 let ImagePreviewResponseData;
 
 /**
- *
  * @param {!ImagePreviewResponseData} data The preview image data.
  * @constructor
  * @struct
  */
 function PiexLoaderResponse(data) {
-  /**
-   * @public {number}
-   * @const
-   */
-  this.id = data.id;
-
   /**
    * @public {!ArrayBuffer}
    * @const
@@ -107,7 +99,7 @@ function PiexLoaderResponse(data) {
   this.colorSpace = data.colorSpace;
 
   /**
-   * JSON encoded RAW image photographic details (Piex Wasm module only).
+   * JSON encoded RAW image photographic details.
    * @public {?string}
    * @const
    */
@@ -120,10 +112,7 @@ function PiexLoaderResponse(data) {
  * @struct
  */
 function PiexLoader() {
-  /**
-   * @private {number}
-   */
-  this.requestIdCount_ = 0;
+  // TODO(crbug.com/1039141): make this an ES6 class.
 }
 
 /**
@@ -220,16 +209,8 @@ let PiexWasmImageResult;
 class ImageBuffer {
   /**
    * @param {!ArrayBuffer} buffer - raw image source data.
-   * @param {number} id - caller-defined id.
    */
-  constructor(buffer, id) {
-    /**
-     * @type {number}
-     * @const
-     * @private
-     */
-    this.id = id;
-
+  constructor(buffer) {
     /**
      * @type {!Uint8Array}
      * @const
@@ -301,7 +282,6 @@ class ImageBuffer {
       ifd: this.details(result, preview.orientation),
       orientation: preview.orientation,
       colorSpace: preview.colorSpace,
-      id: this.id,
     };
   }
 
@@ -322,7 +302,6 @@ class ImageBuffer {
         thumbnail: new ArrayBuffer(0),
         colorSpace: ColorSpace.SRGB,
         orientation: 1,
-        id: this.id,
         ifd: null,
       };
     }
@@ -344,7 +323,6 @@ class ImageBuffer {
       ifd: this.details(result, thumbnail.orientation),
       orientation: thumbnail.orientation,
       colorSpace: thumbnail.colorSpace,
-      id: this.id,
     };
   }
 
@@ -365,7 +343,6 @@ class ImageBuffer {
         thumbnail: new ArrayBuffer(0),
         colorSpace: ColorSpace.SRGB,
         orientation: 1,
-        id: this.id,
         ifd: null,
       };
     }
@@ -440,7 +417,6 @@ class ImageBuffer {
       ifd: this.details(result, thumbnail.orientation),
       orientation: thumbnail.orientation,
       colorSpace: thumbnail.colorSpace,
-      id: this.id,
     };
   }
 
@@ -497,15 +473,14 @@ class ImageBuffer {
  * @return {!Promise<!PiexLoaderResponse>}
  */
 PiexLoader.prototype.load = function(url) {
-  const requestId = this.requestIdCount_++;
-
   let imageBuffer;
+
   return readFromFileSystem(url)
       .then((buffer) => {
         if (wasmModuleFailed() === true) {
           return Promise.reject('piex wasm module failed');
         }
-        imageBuffer = new ImageBuffer(buffer, requestId);
+        imageBuffer = new ImageBuffer(buffer);
         return imageBuffer.process();
       })
       .then((result) => {

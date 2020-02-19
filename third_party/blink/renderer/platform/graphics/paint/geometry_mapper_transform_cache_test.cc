@@ -137,9 +137,9 @@ class GeometryMapperTransformCacheTest : public testing::Test {
 };
 
 TEST_F(GeometryMapperTransformCacheTest, All2dTranslations) {
-  auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
-  auto t2 = CreateTransform(*t1, TransformationMatrix());
-  auto t3 = CreateTransform(*t2, TransformationMatrix().Translate(7, 8));
+  auto t1 = Create2DTranslation(t0(), 1, 2);
+  auto t2 = Create2DTranslation(*t1, 0, 0);
+  auto t3 = Create2DTranslation(*t2, 7, 8);
 
   Check2dTranslationToRoot(t0(), 0, 0);
   Check2dTranslationToRoot(*t1, 1, 2);
@@ -148,9 +148,9 @@ TEST_F(GeometryMapperTransformCacheTest, All2dTranslations) {
 }
 
 TEST_F(GeometryMapperTransformCacheTest, RootAsPlaneRootWithIntermediateScale) {
-  auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
+  auto t1 = Create2DTranslation(t0(), 1, 2);
   auto t2 = CreateTransform(*t1, TransformationMatrix().Scale(3));
-  auto t3 = CreateTransform(*t2, TransformationMatrix().Translate(7, 8));
+  auto t3 = Create2DTranslation(*t2, 7, 8);
 
   Check2dTranslationToRoot(t0(), 0, 0);
   Check2dTranslationToRoot(*t1, 1, 2);
@@ -162,9 +162,9 @@ TEST_F(GeometryMapperTransformCacheTest, RootAsPlaneRootWithIntermediateScale) {
 
 TEST_F(GeometryMapperTransformCacheTest,
        IntermediatePlaneRootSameAs2dTranslationRoot) {
-  auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
+  auto t1 = Create2DTranslation(t0(), 1, 2);
   auto t2 = CreateTransform(*t1, TransformationMatrix().Rotate3d(0, 45, 0));
-  auto t3 = CreateTransform(*t2, TransformationMatrix().Translate(7, 8));
+  auto t3 = Create2DTranslation(*t2, 7, 8);
 
   Check2dTranslationToRoot(t0(), 0, 0);
   Check2dTranslationToRoot(*t1, 1, 2);
@@ -176,10 +176,10 @@ TEST_F(GeometryMapperTransformCacheTest,
 
 TEST_F(GeometryMapperTransformCacheTest,
        IntermediatePlaneRootDifferent2dTranslationRoot) {
-  auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
+  auto t1 = Create2DTranslation(t0(), 1, 2);
   auto t2 = CreateTransform(*t1, TransformationMatrix().Rotate3d(0, 45, 0));
   auto t3 = CreateTransform(*t2, TransformationMatrix().Scale(3));
-  auto t4 = CreateTransform(*t3, TransformationMatrix().Translate(7, 8));
+  auto t4 = Create2DTranslation(*t3, 7, 8);
 
   Check2dTranslationToRoot(t0(), 0, 0);
   Check2dTranslationToRoot(*t1, 1, 2);
@@ -199,9 +199,9 @@ TEST_F(GeometryMapperTransformCacheTest,
 }
 
 TEST_F(GeometryMapperTransformCacheTest, TransformUpdate) {
-  auto t1 = CreateTransform(t0(), TransformationMatrix().Translate(1, 2));
-  auto t2 = CreateTransform(*t1, TransformationMatrix());
-  auto t3 = CreateTransform(*t2, TransformationMatrix().Translate(7, 8));
+  auto t1 = Create2DTranslation(t0(), 1, 2);
+  auto t2 = Create2DTranslation(*t1, 0, 0);
+  auto t3 = Create2DTranslation(*t2, 7, 8);
 
   Check2dTranslationToRoot(t0(), 0, 0);
   Check2dTranslationToRoot(*t1, 1, 2);

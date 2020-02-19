@@ -60,6 +60,7 @@ include_rules = [
     "+mojo/public/cpp/base",
     "+mojo/public/cpp/bindings",
     "+mojo/public/cpp/system",
+    "+mojo/public/mojom/base",
     "+services/device/public/mojom/wake_lock.mojom-blink.h",
     "+services/metrics/public",
     "+services/network/public/cpp/cors/cors_error_status.h",

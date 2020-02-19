@@ -13,13 +13,10 @@
 #include "base/macros.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom-forward.h"
 #include "url/gurl.h"
 
 class SkBitmap;
-
-namespace content {
-struct FaviconURL;
-}
 
 namespace gfx {
 class Size;
@@ -48,7 +45,7 @@ class IconHelper : public content::WebContentsObserver {
 
   // From WebContentsObserver
   void DidUpdateFaviconURL(
-      const std::vector<content::FaviconURL>& candidates) override;
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
   void DidStartNavigationToPendingEntry(
       const GURL& url,
       content::ReloadType reload_type) override;

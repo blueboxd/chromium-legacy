@@ -383,8 +383,9 @@ void SmbService::MountInternal(
   DCHECK(user);
 
   if (IsSmbFsEnabled()) {
-    // TODO(amistry): Pass resolved host address to smbfs.
     SmbFsShare::MountOptions smbfs_options;
+    smbfs_options.resolved_host =
+        share_finder_->GetResolvedHost(info.share_url().GetHost());
     smbfs_options.username = info.username();
     smbfs_options.workgroup = info.workgroup();
     smbfs_options.password = password;

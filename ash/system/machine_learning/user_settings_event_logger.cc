@@ -119,14 +119,15 @@ void UserSettingsEventLogger::LogNightLightUkmEvent(const bool enabled) {
   event->set_previous_value(!enabled ? 1 : 0);
   event->set_current_value(enabled ? 1 : 0);
 
-  const auto& schedule_type =
-      Shell::Get()->night_light_controller()->GetScheduleType();
+  const auto* night_light_controller = Shell::Get()->night_light_controller();
+  const auto schedule_type = night_light_controller->GetScheduleType();
   const bool has_night_light_schedule =
       schedule_type != NightLightController::ScheduleType::kNone;
   UMA_HISTOGRAM_BOOLEAN("Ash.Shelf.UkmLogger.HasNightLightSchedule",
                         has_night_light_schedule);
   features->set_has_night_light_schedule(has_night_light_schedule);
-  // TODO(crbug/1014839): Set the |is_after_sunset| feature field.
+  features->set_is_after_sunset(
+      night_light_controller->IsNowWithinSunsetSunrise());
 
   PopulateSharedFeatures(&settings_event);
   SendToUkm(settings_event);

@@ -34,6 +34,7 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -170,6 +171,12 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void RunBeforeUnloadConfirm(RenderFrameHost* render_frame_host,
                                       bool is_reload,
                                       JavaScriptDialogCallback callback) {}
+
+  // Notifies when new blink::mojom::FaviconURLPtr candidates are received from
+  // the renderer process.
+  virtual void UpdateFaviconURL(
+      RenderFrameHost* source,
+      std::vector<blink::mojom::FaviconURLPtr> candidates) {}
 
   // Called when a file selection is to be done.
   // Overrides of this function must call either listener->FileSelected() or

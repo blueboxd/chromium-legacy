@@ -9,8 +9,6 @@
 
 #include "components/favicon/core/favicon_url.h"
 #include "components/favicon_base/favicon_types.h"
-#include "content/public/common/favicon_url.h"
-#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 
 namespace favicon {
 namespace {
@@ -34,14 +32,14 @@ favicon_base::IconType IconTypeFromContentIconType(
 }  // namespace
 
 FaviconURL FaviconURLFromContentFaviconURL(
-    const content::FaviconURL& favicon_url) {
+    const blink::mojom::FaviconURL& favicon_url) {
   return FaviconURL(favicon_url.icon_url,
                     IconTypeFromContentIconType(favicon_url.icon_type),
                     favicon_url.icon_sizes);
 }
 
 std::vector<FaviconURL> FaviconURLsFromContentFaviconURLs(
-    const std::vector<content::FaviconURL>& favicon_urls) {
+    const std::vector<blink::mojom::FaviconURL>& favicon_urls) {
   std::vector<FaviconURL> result;
   result.reserve(favicon_urls.size());
   std::transform(favicon_urls.begin(), favicon_urls.end(),

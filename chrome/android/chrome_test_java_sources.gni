@@ -517,6 +517,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/webapps/ActivityAssignerTest.java",
   "javatests/src/org/chromium/chrome/browser/webapps/WebApkActivityTest.java",
   "javatests/src/org/chromium/chrome/browser/webapps/WebApkActivityTestRule.java",
+  "javatests/src/org/chromium/chrome/browser/webapps/WebApkInitializationTest.java",
   "javatests/src/org/chromium/chrome/browser/webapps/WebApkIntegrationTest.java",
   "javatests/src/org/chromium/chrome/browser/webapps/WebApkUpdateDataFetcherTest.java",
   "javatests/src/org/chromium/chrome/browser/webapps/WebApkUpdateManagerTest.java",

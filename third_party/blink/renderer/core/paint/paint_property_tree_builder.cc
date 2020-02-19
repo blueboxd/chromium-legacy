@@ -612,6 +612,15 @@ static bool NeedsTransformForSVGChild(const LayoutObject& object) {
          !object.LocalToSVGParentTransform().IsIdentity();
 }
 
+static void SetTransformNodeStateFromAffineTransform(
+    TransformPaintPropertyNode::State& state,
+    const AffineTransform& transform) {
+  if (transform.IsIdentityOrTranslation())
+    state.transform_and_origin = {FloatSize(transform.E(), transform.F())};
+  else
+    state.transform_and_origin = {TransformationMatrix(transform)};
+}
+
 // SVG does not use the general transform update of |UpdateTransform|, instead
 // creating a transform node for SVG-specific transforms without 3D.
 void FragmentPaintPropertyTreeBuilder::UpdateTransformForSVGChild() {
@@ -628,7 +637,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformForSVGChild() {
       // The origin is included in the local transform, so leave origin empty.
       // TODO(crbug.com/666244): Support composited transform animation for SVG
       // using similar code as |UpdateTransform| for animations.
-      TransformPaintPropertyNode::State state{TransformationMatrix(transform)};
+      TransformPaintPropertyNode::State state;
+      SetTransformNodeStateFromAffineTransform(state, transform);
       OnUpdate(properties_->UpdateTransform(*context_.current.transform,
                                             std::move(state)));
     } else {
@@ -740,10 +750,12 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransform() {
         bool disable_2d_translation_optimization =
             full_context_.direct_compositing_reasons &
             CompositingReason::kActiveTransformAnimation;
-        state.transform_and_origin =
-            TransformPaintPropertyNode::TransformAndOrigin(
-                matrix, TransformOrigin(box),
-                disable_2d_translation_optimization);
+        if (!disable_2d_translation_optimization &&
+            matrix.IsIdentityOr2DTranslation()) {
+          state.transform_and_origin = {matrix.To2DTranslation()};
+        } else {
+          state.transform_and_origin = {matrix, TransformOrigin(box)};
+        }
 
         // TODO(trchen): transform-style should only be respected if a
         // PaintLayer is created. If a node with transform-style: preserve-3d
@@ -1723,8 +1735,8 @@ void FragmentPaintPropertyTreeBuilder::UpdateReplacedContentTransform() {
       NOTREACHED();
     }
     if (!content_to_parent_space.IsIdentity()) {
-      TransformPaintPropertyNode::State state{
-          TransformationMatrix(content_to_parent_space)};
+      TransformPaintPropertyNode::State state;
+      SetTransformNodeStateFromAffineTransform(state, content_to_parent_space);
       state.flags.flattens_inherited_transform =
           context_.current.should_flatten_inherited_transform;
       OnUpdate(properties_->UpdateReplacedContentTransform(

@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/public/web/web_icon_url.h"
 #include "third_party/blink/renderer/core/dom/icon_url.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 
@@ -44,7 +43,7 @@ IconURL IconURL::DefaultFavicon(const KURL& document_url) {
     url.SetPort(document_url.Port());
   url.SetPath("/favicon.ico");
 
-  IconURL result(url, Vector<IntSize>(), g_empty_string, kFavicon);
+  IconURL result(url, {}, g_empty_string, kFavicon);
   result.is_default_icon_ = true;
   return result;
 }
@@ -55,10 +54,5 @@ bool operator==(const IconURL& lhs, const IconURL& rhs) {
          lhs.icon_url_ == rhs.icon_url_ && lhs.sizes_ == rhs.sizes_ &&
          lhs.mime_type_ == rhs.mime_type_;
 }
-
-STATIC_ASSERT_ENUM(WebIconURL::kTypeInvalid, kInvalidIcon);
-STATIC_ASSERT_ENUM(WebIconURL::kTypeFavicon, kFavicon);
-STATIC_ASSERT_ENUM(WebIconURL::kTypeTouch, kTouchIcon);
-STATIC_ASSERT_ENUM(WebIconURL::kTypeTouchPrecomposed, kTouchPrecomposedIcon);
 
 }  // namespace blink

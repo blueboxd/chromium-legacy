@@ -43,7 +43,7 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_METHOD0(OpenDownload, void());
   MOCK_METHOD0(ShowDownloadInShell, void());
   MOCK_METHOD0(ValidateDangerousDownload, void());
-  MOCK_METHOD2(StealDangerousDownload, void(bool, const AcquireFileCallback&));
+  MOCK_METHOD2(StealDangerousDownload, void(bool, AcquireFileCallback));
   MOCK_METHOD3(UpdateProgress, void(int64_t, int64_t, const std::string&));
   MOCK_METHOD1(Cancel, void(bool));
   MOCK_METHOD0(MarkAsComplete, void());

@@ -25,6 +25,10 @@ namespace aura {
 class Window;
 }
 
+namespace ui {
+struct AXEvent;
+}
+
 namespace arc {
 class AXTreeSourceArcTest;
 
@@ -138,6 +142,10 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
 
   void ApplyCachedProperties();
 
+  // Compare previous live region and current live region, and add event to the
+  // given vector if there is any difference.
+  void HandleLiveRegions(std::vector<ui::AXEvent>* events);
+
   // Resets tree state.
   void Reset();
 
@@ -184,6 +192,9 @@ class AXTreeSourceArc : public ui::AXTreeSource<AccessibilityInfoDataWrapper*,
   // Mapping from AccessibilityInfoDataWrapper ID to its cached computed bounds.
   // This simplifies bounds calculations.
   std::map<int32_t, gfx::Rect> cached_computed_bounds_;
+
+  // Cache from node id to computed name for live region.
+  std::map<int32_t, std::string> live_region_name_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(AXTreeSourceArc);
 };

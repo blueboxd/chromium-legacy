@@ -8,6 +8,7 @@
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 
@@ -67,6 +68,9 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void DispatchLoad() override;
   void GoToEntryAtOffset(int32_t offset, bool has_user_gesture) override;
   void RenderFallbackContentInParentProcess() override;
+  void UpdateTitle(
+      const WTF::String& title,
+      mojo_base::mojom::blink::TextDirection title_direction) override;
   void UpdateUserActivationState(
       mojom::blink::UserActivationUpdateType update_type) override;
   void HandleAccessibilityFindInPageResult(
@@ -86,6 +90,8 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void RunBeforeUnloadConfirm(bool is_reload,
                               RunBeforeUnloadConfirmCallback callback) override;
   void Are3DAPIsBlocked(Are3DAPIsBlockedCallback callback) override;
+  void UpdateFaviconURL(
+      WTF::Vector<blink::mojom::blink::FaviconURLPtr> favicon_urls) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

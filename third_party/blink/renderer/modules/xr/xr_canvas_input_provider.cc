@@ -27,7 +27,7 @@ class XRCanvasInputEventListener : public NativeEventListener {
     if (!input_provider_->ShouldProcessEvents())
       return;
 
-    PointerEvent* pointer_event = ToPointerEvent(event);
+    auto* pointer_event = To<PointerEvent>(event);
     DCHECK(pointer_event);
     if (!pointer_event->isPrimary())
       return;

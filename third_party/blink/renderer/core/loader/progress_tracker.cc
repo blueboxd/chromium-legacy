@@ -112,6 +112,7 @@ void ProgressTracker::ProgressCompleted() {
   SendFinalProgress();
   Reset();
   GetLocalFrameClient()->DidStopLoading();
+  frame_->UpdateFaviconURL();
   probe::FrameStoppedLoading(frame_);
 }
 

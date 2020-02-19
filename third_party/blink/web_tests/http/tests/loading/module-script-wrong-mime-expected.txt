@@ -2,7 +2,6 @@ main frame - DidStartNavigation
 main frame - ReadyToCommitNavigation
 main frame - didCommitLoadForFrame
 CONSOLE ERROR: Failed to load module script: The server responded with a non-JavaScript, CSS MIME type of "text/plain". Strict MIME type checking is enforced for module scripts per HTML spec.
-main frame - didReceiveTitle: 
 main frame - didFinishDocumentLoadForFrame
 main frame - didHandleOnloadEventsForFrame
 main frame - didFinishLoadForFrame

@@ -8,6 +8,16 @@
 
 namespace content {
 
+AppCacheUpdateMetricsRecorder::AppCacheUpdateMetricsRecorder() = default;
+
+void AppCacheUpdateMetricsRecorder::IncrementExistingCorruptionFixedInUpdate() {
+#if DCHECK_IS_ON()
+  DCHECK(!finalized_) << "UploadMetrics() already called";
+#endif  // DCHECK_IS_ON()
+
+  existing_corruption_fixed_in_update_++;
+}
+
 void AppCacheUpdateMetricsRecorder::IncrementExistingResourceCheck() {
 #if DCHECK_IS_ON()
   DCHECK(!finalized_) << "UploadMetrics() already called";
@@ -22,6 +32,14 @@ void AppCacheUpdateMetricsRecorder::IncrementExistingResourceCorrupt() {
 #endif  // DCHECK_IS_ON()
 
   existing_resource_corrupt_++;
+}
+
+void AppCacheUpdateMetricsRecorder::IncrementExistingResourceNotCorrupt() {
+#if DCHECK_IS_ON()
+  DCHECK(!finalized_) << "UploadMetrics() already called";
+#endif  // DCHECK_IS_ON()
+
+  existing_resource_not_corrupt_++;
 }
 
 void AppCacheUpdateMetricsRecorder::IncrementExistingResourceReused() {
@@ -63,10 +81,15 @@ void AppCacheUpdateMetricsRecorder::UploadMetrics() {
   finalized_ = true;
 #endif  // DCHECK_IS_ON()
 
+  base::UmaHistogramExactLinear(
+      "appcache.UpdateJob.ExistingCorruptionFixedInUpdate",
+      existing_corruption_fixed_in_update_, 50);
   base::UmaHistogramExactLinear("appcache.UpdateJob.ExistingResourceCheck",
                                 existing_resource_check_, 50);
   base::UmaHistogramExactLinear("appcache.UpdateJob.ExistingResourceCorrupt",
                                 existing_resource_corrupt_, 50);
+  base::UmaHistogramExactLinear("appcache.UpdateJob.ExistingResourceNotCorrupt",
+                                existing_resource_not_corrupt_, 50);
   base::UmaHistogramExactLinear("appcache.UpdateJob.ExistingResourceReused",
                                 existing_resource_reused_, 50);
   base::UmaHistogramExactLinear("appcache.UpdateJob.ExistingVaryDuring304",

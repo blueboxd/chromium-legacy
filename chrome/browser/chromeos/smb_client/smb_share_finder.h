@@ -53,6 +53,10 @@ class SmbShareFinder : public base::SupportsWeakPtr<SmbShareFinder> {
   // otherwise returns |url|.
   SmbUrl GetResolvedUrl(const SmbUrl& url) const;
 
+  // Returns the IP address of |host|. |host| MUST be non-empty. If |host|
+  // cannot be resolved, returns the empty/invalid IPAddress.
+  net::IPAddress GetResolvedHost(const std::string& host) const;
+
   // Attempts to resolve |url|. If able to resolve |url|, returns true and sets
   // |resolved_url| the the resolved url. If unable, returns false and sets
   // |resolved_url| to |url|.

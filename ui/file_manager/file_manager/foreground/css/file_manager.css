@@ -422,8 +422,8 @@ body.files-ng div.splitter {
   display: flex;
   flex: none;
   justify-content: center;
-  margin-inline-end: calc(16px - 6px);
   margin: 0;
+  margin-inline-end: calc(16px - 6px);
   position: relative;
   width: 32px;
   z-index: 500;  /* Must be below the contextmenu (600). */
@@ -436,8 +436,8 @@ body:not(.files-ng) div.splitter .splitter-button {
 body.files-ng div.splitter .splitter-button {
   --hover-bg-color: rgba(0, 0, 0, 4%);
   --ink-color: rgba(0, 0, 0, 88%);
-  border-radius: 50%;
   border: none;
+  border-radius: 50%;
   cursor: col-resize;
   height: 32px;
   min-width: 32px;
@@ -459,8 +459,8 @@ body.files-ng div.splitter.splitter-active .splitter-button:not(:active) {
 
 body.files-ng div.splitter .splitter-button .icon {
   -webkit-mask-image: url(../images/common/dragger.svg);
-  -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
+  -webkit-mask-repeat: no-repeat;
   height: 20px;
   padding: 6px;
   width: 20px;
@@ -673,12 +673,14 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
 
 .dialog-header.files-ng #search-wrapper {
   align-items: center;
+  border-radius: 4px;
   height: 40px;
 }
 
 .dialog-header.files-ng #search-wrapper.has-cursor,
 .dialog-header.files-ng #search-wrapper.hide-pending {
   background-color: var(--google-grey-100);
+  margin-inline-end: 16px;
 }
 
 .dialog-header #search-box cr-input {
@@ -691,16 +693,6 @@ html[dir='rtl'] .dialog-header button.icon-button > files-toggle-ripple {
   transition: width 200ms ease;
   vertical-align: middle;
   width: 0;
-}
-
-.dialog-header:not(.files-ng) #search-box cr-input {
-  --cr-input-border-bottom: 1px solid rgba(255, 255, 255, 50%);
-  --cr-input-placeholder-color: rgba(255, 255, 255, 50%);
-}
-
-.dialog-header.files-ng #search-box cr-input {
-  --cr-input-border-bottom: 1px solid rgba(0, 0, 0, 50%);
-  --cr-input-placeholder-color: rgba(0, 0, 0, 50%);
 }
 
 .dialog-header:not(.files-ng) #search-button > .icon {
@@ -1039,13 +1031,21 @@ body.check-select #search-button {
 }
 
 .dialog-header:not(.files-ng) #search-box cr-input {
+  --cr-input-border-bottom: 1px solid rgba(255, 255, 255, 50%);
   --cr-input-color: white;
   --cr-input-focus-color: white;
+  --cr-input-placeholder-color: rgba(255, 255, 255, 50%);
 }
 
 .dialog-header.files-ng #search-box cr-input {
+  --cr-input-border-bottom: transparent;
   --cr-input-color: var(--google-grey-800);
-  --cr-input-focus-color: var(--google-grey-700);
+  --cr-input-focus-color: transparent;
+  --cr-input-placeholder-color: rgba(0, 0, 0, 50%);
+}
+
+.dialog-header.files-ng #search-box cr-input::part(input) {
+  caret-color: var(--cr-input-color);
 }
 
 body.check-select #search-box {
@@ -1105,9 +1105,14 @@ html[dir='rtl'] #search-box .clear {
   right: auto;
 }
 
-#search-box.has-cursor .clear,
-#search-box.has-text .clear {
+.dialog-header:not(.files-ng) #search-box.has-cursor .clear,
+.dialog-header:not(.files-ng) #search-box.has-text .clear {
   display: block;
+}
+
+.dialog-header.files-ng #search-box.has-cursor .clear,
+.dialog-header.files-ng #search-box.has-text .clear {
+  display: flex;
 }
 
 #search-box.has-text .clear {

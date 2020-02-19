@@ -137,9 +137,6 @@ class TabListElement extends CustomElement {
     /** @private {!Function} */
     this.windowBlurListener_ = () => this.onWindowBlur_();
 
-    /** @private @const {number} */
-    this.windowId_;
-
     /** @private {!Function} */
     this.contextMenuListener_ = e => this.onContextMenu_(e);
 
@@ -174,10 +171,9 @@ class TabListElement extends CustomElement {
     this.addEventListener(
         'dragover',
         e => dragManager.continueDrag(
-            /** @type {!DragEvent} */ (e), this.windowId_));
+            /** @type {!DragEvent} */ (e)));
     this.addEventListener(
-        'drop',
-        e => dragManager.drop(/** @type {!DragEvent} */ (e), this.windowId_));
+        'drop', e => dragManager.drop(/** @type {!DragEvent} */ (e)));
 
     if (loadTimeData.getBoolean('showDemoOptions')) {
       this.$('#demoOptions').style.display = 'block';
@@ -265,10 +261,6 @@ class TabListElement extends CustomElement {
     this.tabStripEmbedderProxy_.getLayout().then(
         layout => this.applyCSSDictionary_(layout));
     this.fetchAndUpdateColors_();
-
-    this.tabStripEmbedderProxy_.getWindowId().then(windowId => {
-      this.windowId_ = windowId;
-    });
 
     const getTabsStartTimestamp = Date.now();
     this.tabsApi_.getTabs().then(tabs => {

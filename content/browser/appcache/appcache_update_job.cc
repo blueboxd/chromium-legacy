@@ -134,14 +134,13 @@ ResourceCheck CanUseExistingResource(
   bool found_corruption = false;
   static constexpr base::Time::Exploded kInvalidTimePlaceholderExploded = {
       2019, 7, 0, 7, 0, 0, 0, 0};
-  constexpr base::Time default_initialized_time;
-  if (request_time == default_initialized_time) {
+  if (request_time.is_null()) {
     bool conversion_succeeded = base::Time::FromUTCExploded(
         kInvalidTimePlaceholderExploded, &request_time);
     DCHECK(conversion_succeeded);
     found_corruption = true;
   }
-  if (response_time == default_initialized_time) {
+  if (response_time.is_null()) {
     bool conversion_succeeded = base::Time::FromUTCExploded(
         kInvalidTimePlaceholderExploded, &response_time);
     DCHECK(conversion_succeeded);
@@ -150,6 +149,8 @@ ResourceCheck CanUseExistingResource(
 
   if (found_corruption) {
     update_metrics.IncrementExistingResourceCorrupt();
+  } else {
+    update_metrics.IncrementExistingResourceNotCorrupt();
   }
 
   // Record the max age / expiry value on this entry in days.

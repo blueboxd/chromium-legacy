@@ -27,6 +27,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom-forward.h"
 
 namespace chromecast {
 
@@ -123,7 +124,7 @@ class CastWebContentsImpl : public CastWebContents,
   void DidFirstVisuallyNonEmptyPaint() override;
   void WebContentsDestroyed() override;
   void DidUpdateFaviconURL(
-      const std::vector<content::FaviconURL>& candidates) override;
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
   void MediaStartedPlaying(const MediaPlayerInfo& video_type,
                            const content::MediaPlayerId& id) override;
   void MediaStoppedPlaying(

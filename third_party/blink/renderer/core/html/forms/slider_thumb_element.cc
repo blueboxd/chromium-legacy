@@ -196,7 +196,7 @@ void SliderThumbElement::StopDragging() {
 }
 
 void SliderThumbElement::DefaultEventHandler(Event& event) {
-  if (event.IsPointerEvent() &&
+  if (IsA<PointerEvent>(event) &&
       event.type() == event_type_names::kLostpointercapture) {
     StopDragging();
     return;

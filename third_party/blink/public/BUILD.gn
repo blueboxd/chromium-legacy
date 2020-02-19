@@ -336,7 +336,6 @@ source_set("blink_headers") {
     "web/web_history_commit_type.h",
     "web/web_history_item.h",
     "web/web_hit_test_result.h",
-    "web/web_icon_url.h",
     "web/web_image.h",
     "web/web_image_cache.h",
     "web/web_ime_text_span.h",

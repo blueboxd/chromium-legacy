@@ -320,10 +320,8 @@ void LinkStyle::Process() {
     if (!GetDocument().GetContentSecurityPolicy()->AllowImageFromSource(
             params.href))
       return;
-    if (GetDocument().GetFrame() && GetDocument().GetFrame()->Client()) {
-      GetDocument().GetFrame()->Client()->DispatchDidChangeIcons(
-          owner_->RelAttribute().GetIconType());
-    }
+    if (GetDocument().GetFrame())
+      GetDocument().GetFrame()->UpdateFaviconURL();
   }
 
   if (!sheet_ && !owner_->LoadLink(params))

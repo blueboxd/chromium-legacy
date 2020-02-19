@@ -365,7 +365,6 @@ crbug.com/982194 external/wpt/css/css-grid/alignment/grid-self-alignment-baselin
 crbug.com/982194 external/wpt/css/css-grid/animation/grid-template-columns-001.html [ Failure ]
 crbug.com/982194 external/wpt/css/css-grid/animation/grid-template-rows-001.html [ Failure ]
 crbug.com/982194 external/wpt/css/css-grid/grid-child-percent-basis-resize-1.html [ Failure ]
-crbug.com/982194 external/wpt/css/css-grid/grid-model/grid-container-ignores-first-letter-002.html [ Pass ]
 crbug.com/982194 external/wpt/css/css-images/tiled-gradients.html [ Failure ]
 crbug.com/982194 external/wpt/css/css-intrinsic-size/intrinsic-size-015.html [ Crash Pass ]
 crbug.com/982194 external/wpt/css/css-lists/content-property/marker-text-matches-circle.html [ Failure ]

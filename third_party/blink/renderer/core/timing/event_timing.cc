@@ -33,7 +33,7 @@ bool ShouldLogEvent(const Event& event) {
 }
 
 bool IsEventTypeForEventTiming(const Event& event) {
-  return (IsA<MouseEvent>(event) || event.IsPointerEvent() ||
+  return (IsA<MouseEvent>(event) || IsA<PointerEvent>(event) ||
           event.IsTouchEvent() || event.IsKeyboardEvent() ||
           event.IsWheelEvent() || event.IsInputEvent() ||
           event.IsCompositionEvent()) &&
@@ -72,9 +72,10 @@ std::unique_ptr<EventTiming> EventTiming::Create(LocalDOMWindow* window,
   if (!should_report_for_event_timing && !should_log_event)
     return nullptr;
 
+  auto* pointer_event = DynamicTo<PointerEvent>(&event);
   base::TimeTicks event_timestamp =
-      event.IsPointerEvent() ? ToPointerEvent(&event)->OldestPlatformTimeStamp()
-                             : event.PlatformTimeStamp();
+      pointer_event ? pointer_event->OldestPlatformTimeStamp()
+                    : event.PlatformTimeStamp();
 
   base::TimeTicks processing_start = Now();
   if (should_log_event) {

@@ -4,6 +4,8 @@
 
 module smbfs.mojom;
 
+import "chromeos/components/smbfs/mojom/ip_address.mojom";
+
 // This file is shared between Chrome and Chrome OS.
 // In Chrome, this file is located at:
 // //chromeos/components/smbfs/mojom/smbfs.mojom
@@ -85,6 +87,9 @@ struct MountOptions {
   // have the hostname as entered by the user and NOT resolved to an IP address
   // (unless the user entered an IP address as the hostname).
   string share_path;
+
+  // Resolved IP address of the share's hostname.
+  IPAddress? resolved_host;
 
   // Authentication parameters.
   string username;

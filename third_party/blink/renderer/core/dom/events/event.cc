@@ -273,10 +273,10 @@ void Event::SetTarget(EventTarget* target) {
 }
 
 void Event::SetRelatedTargetIfExists(EventTarget* related_target) {
-  if (auto* event = DynamicTo<MouseEvent>(this)) {
-    event->SetRelatedTarget(related_target);
-  } else if (IsPointerEvent()) {
-    ToPointerEvent(this)->SetRelatedTarget(related_target);
+  if (auto* mouse_event = DynamicTo<MouseEvent>(this)) {
+    mouse_event->SetRelatedTarget(related_target);
+  } else if (auto* pointer_event = DynamicTo<PointerEvent>(this)) {
+    pointer_event->SetRelatedTarget(related_target);
   } else if (auto* focus_event = DynamicTo<FocusEvent>(this)) {
     focus_event->SetRelatedTarget(related_target);
   }

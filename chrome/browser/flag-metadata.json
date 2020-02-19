@@ -128,10 +128,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "app-service-shelf",
-    "owners": [ "//chrome/services/app_service/OWNERS" ],
-    "expiry_milestone": 82
-  },{
     "name": "arc-application-zoom",
     "owners": [ "sarakato" ],
     "expiry_milestone": 81

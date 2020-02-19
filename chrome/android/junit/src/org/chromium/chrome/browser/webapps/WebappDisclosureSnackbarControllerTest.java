@@ -9,6 +9,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -19,12 +20,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.android.util.concurrent.RoboExecutorService;
 import org.robolectric.annotation.Config;
 
+import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
 /**
@@ -43,23 +49,41 @@ public class WebappDisclosureSnackbarControllerTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        // Run AsyncTasks synchronously.
+        PostTask.setPrenativeThreadPoolExecutorForTesting(new RoboExecutorService());
 
         doReturn("test text").when(mResources).getString(anyInt());
         doReturn(mManager).when(mActivity).getSnackbarManager();
         doReturn(mResources).when(mActivity).getResources();
     }
 
+    private WebappDisclosureSnackbarController buildControllerForWebApk(String webApkPackageName) {
+        BrowserServicesIntentDataProvider intentDataProvider =
+                new WebApkInfoBuilder(webApkPackageName, "https://pwa.rocks/")
+                        .build()
+                        .getProvider();
+        return new WebappDisclosureSnackbarController(mActivity, intentDataProvider,
+                mock(WebappDeferredStartupWithStorageHandler.class),
+                mock(ActivityLifecycleDispatcher.class));
+    }
+
+    private WebappDataStorage registerStorageForWebApk(String packageName) {
+        String id = WebappRegistry.webApkIdForPackage(packageName);
+        WebappRegistry.getInstance().register(id, (storage) -> {});
+        return WebappRegistry.getInstance().getWebappDataStorage(id);
+    }
+
     public void verifyShownThenDismissedOnNewCreateStorage(String packageName) {
-        WebappDisclosureSnackbarController controller = new WebappDisclosureSnackbarController();
-        WebappDataStorage storage = WebappDataStorage.open(packageName);
+        WebappDisclosureSnackbarController controller = buildControllerForWebApk(packageName);
+        WebappDataStorage storage = registerStorageForWebApk(packageName);
 
         // Simulates the case that shows the disclosure when creating a new storage.
-        controller.maybeShowDisclosure(mActivity, storage, true);
+        controller.onDeferredStartupWithStorage(storage, true /* didCreateStorage */);
         verify(mManager, times(1)).showSnackbar(any(Snackbar.class));
         assertTrue(storage.shouldShowDisclosure());
 
-        // Simulate a restart or a resume (has storage so `force = false`).
-        controller.maybeShowDisclosure(mActivity, storage, false);
+        // Simulate a restart or a resume.
+        controller.onResumeWithNative();
         verify(mManager, times(2)).showSnackbar(any(Snackbar.class));
         assertTrue(storage.shouldShowDisclosure());
 
@@ -68,36 +92,34 @@ public class WebappDisclosureSnackbarControllerTest {
 
         // Simulate resuming or starting again this time no disclosure should show.
         assertFalse(storage.shouldShowDisclosure());
-        controller.maybeShowDisclosure(mActivity, storage, false);
+        controller.onResumeWithNative();
         verify(mManager, times(2)).showSnackbar(any(Snackbar.class));
 
         storage.delete();
     }
 
     public void verifyNotShownOnExistingStorageWithoutShouldShowDisclosure(String packageName) {
-        WebappDisclosureSnackbarController controller = new WebappDisclosureSnackbarController();
-        WebappDataStorage storage = WebappDataStorage.open(packageName);
+        WebappDisclosureSnackbarController controller = buildControllerForWebApk(packageName);
+        WebappDataStorage storage = registerStorageForWebApk(packageName);
 
         // Simulate that starting with existing storage will not cause the disclosure to show.
         assertFalse(storage.shouldShowDisclosure());
-        controller.maybeShowDisclosure(mActivity, storage, false);
+        controller.onDeferredStartupWithStorage(storage, false /* didCreateStorage */);
         verify(mManager, times(0)).showSnackbar(any(Snackbar.class));
 
         storage.delete();
     }
 
     public void verifyNeverShown(String packageName) {
-        WebappDisclosureSnackbarController controller = new WebappDisclosureSnackbarController();
-        WebappDataStorage storage = WebappDataStorage.open(packageName);
+        WebappDisclosureSnackbarController controller = buildControllerForWebApk(packageName);
+        WebappDataStorage storage = registerStorageForWebApk(packageName);
 
-        // Try to show the disclosure the first time (fake having no storage on startup by setting
-        // `force = true`) this shouldn't work as the app was installed via Chrome.
-        controller.maybeShowDisclosure(mActivity, storage, true);
+        // Try to show the disclosure the first time.
+        controller.onDeferredStartupWithStorage(storage, true /* didCreateStorage */);
         verify(mManager, times(0)).showSnackbar(any(Snackbar.class));
 
-        // Try to the disclosure again this time emulating a restart or a resume (fake having
-        // storage `force = false`) again this shouldn't work.
-        controller.maybeShowDisclosure(mActivity, storage, false);
+        // Try to the disclosure again this time emulating a restart or a resume.
+        controller.onResumeWithNative();
         verify(mManager, times(0)).showSnackbar(any(Snackbar.class));
 
         storage.delete();
@@ -107,8 +129,6 @@ public class WebappDisclosureSnackbarControllerTest {
     @Feature({"Webapps"})
     public void testUnboundWebApkShowDisclosure() {
         String packageName = "unbound";
-        doReturn(packageName).when(mActivity).getWebApkPackageName();
-
         verifyShownThenDismissedOnNewCreateStorage(packageName);
     }
 
@@ -122,17 +142,6 @@ public class WebappDisclosureSnackbarControllerTest {
     @Feature({"Webapps"})
     public void testBoundWebApkNoDisclosure() {
         String packageName = WebApkConstants.WEBAPK_PACKAGE_PREFIX + ".bound";
-        doReturn(packageName).when(mActivity).getWebApkPackageName();
-
-        verifyNeverShown(packageName);
-    }
-
-    @Test
-    @Feature({"Webapps"})
-    public void testWebappNoDisclosure() {
-        String packageName = "webapp";
-        // Don't set a client package name, it should be null for Webapps.
-
         verifyNeverShown(packageName);
     }
 }

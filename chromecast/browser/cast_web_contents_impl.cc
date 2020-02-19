@@ -35,7 +35,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/common/bindings_policy.h"
-#include "content/public/common/favicon_url.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/net_errors.h"
@@ -886,7 +885,7 @@ void CastWebContentsImpl::WebContentsDestroyed() {
 }
 
 void CastWebContentsImpl::DidUpdateFaviconURL(
-    const std::vector<content::FaviconURL>& candidates) {
+    const std::vector<blink::mojom::FaviconURLPtr>& candidates) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (candidates.empty())
@@ -898,17 +897,17 @@ void CastWebContentsImpl::DidUpdateFaviconURL(
   //  2) apple-touch-icon
   //  3) icon
   for (auto& favicon : candidates) {
-    if (favicon.icon_type ==
+    if (favicon->icon_type ==
         blink::mojom::FaviconIconType::kTouchPrecomposedIcon) {
-      icon_url = favicon.icon_url;
+      icon_url = favicon->icon_url;
       break;
-    } else if ((favicon.icon_type ==
+    } else if ((favicon->icon_type ==
                 blink::mojom::FaviconIconType::kTouchIcon) &&
                !found_touch_icon) {
       found_touch_icon = true;
-      icon_url = favicon.icon_url;
+      icon_url = favicon->icon_url;
     } else if (!found_touch_icon) {
-      icon_url = favicon.icon_url;
+      icon_url = favicon->icon_url;
     }
   }
 

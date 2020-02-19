@@ -22,6 +22,7 @@
 #include "chromeos/disks/mount_point.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/invitation.h"
+#include "net/base/ip_address.h"
 
 namespace smbfs {
 
@@ -49,6 +50,9 @@ class COMPONENT_EXPORT(SMBFS) SmbFsMounter {
     MountOptions();
     MountOptions(const MountOptions&);
     ~MountOptions();
+
+    // Resolved IP address for share's hostname.
+    net::IPAddress resolved_host;
 
     // Authentication options.
     std::string username;

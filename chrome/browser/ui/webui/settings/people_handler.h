@@ -157,7 +157,6 @@ class PeopleHandler : public SettingsPageUIHandler,
       const base::ListValue* args);
 #if defined(OS_CHROMEOS)
   void HandleAttemptUserExit(const base::ListValue* args);
-  void HandleRequestPinLoginState(const base::ListValue* args);
   void HandleTurnOnSync(const base::ListValue* args);
   void HandleTurnOffSync(const base::ListValue* args);
 #endif
@@ -177,10 +176,6 @@ class PeopleHandler : public SettingsPageUIHandler,
   // This function is virtual so that tests can override.
   virtual void DisplayGaiaLoginInNewTabOrWindow(
       signin_metrics::AccessPoint access_point);
-#endif
-
-#if defined(OS_CHROMEOS)
-  void OnPinLoginAvailable(bool is_available);
 #endif
 
   void OnQueryHistoryRecordingCompletion(

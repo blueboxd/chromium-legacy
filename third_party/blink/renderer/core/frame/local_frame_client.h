@@ -132,7 +132,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                                                bool content_initiated) {}
   virtual void DispatchDidStartProvisionalLoad(DocumentLoader*) = 0;
   virtual void DispatchDidReceiveTitle(const String&) = 0;
-  virtual void DispatchDidChangeIcons(IconType) = 0;
   virtual void DispatchDidCommitLoad(HistoryItem*,
                                      WebHistoryCommitType,
                                      GlobalObjectReusePolicy) = 0;

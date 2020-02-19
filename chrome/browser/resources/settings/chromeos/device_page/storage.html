@@ -203,30 +203,36 @@
     </div>
     <cr-link-row id="myFilesSize" class="hr" on-click="onMyFilesTap_"
         label="$i18n{storageItemMyFiles}"
-        sub-label="$i18n{storageSizeComputing}" external></cr-link-row>
+        sub-label="$i18n{storageSizeComputing}" external>
+    </cr-link-row>
     <cr-link-row id="browsingDataSize" class="hr" on-click="onBrowsingDataTap_"
         label="$i18n{storageItemBrowsingData}"
-        sub-label="$i18n{storageSizeComputing}" external></cr-link-row>
+        sub-label="$i18n{storageSizeComputing}" external>
+    </cr-link-row>
     <cr-link-row id="appsSize" class="hr" on-click="onAppsTap_"
         label="$i18n{storageItemApps}"
-        sub-label="$i18n{storageSizeComputing}" external></cr-link-row>
+        sub-label="$i18n{storageSizeComputing}" external>
+    </cr-link-row>
     <template is="dom-if" if="[[showCrostiniStorage_]]">
       <cr-link-row id="crostiniSize" class="hr" on-click="onCrostiniTap_"
           label="$i18n{storageItemCrostini}"
           sub-label="$i18n{storageSizeComputing}"
-          role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
+          role-description="$i18n{subpageArrowRoleDescription}">
+      </cr-link-row>
     </template>
     <template is="dom-if" if="[[!isGuest_]]">
       <cr-link-row id="otherUsersSize" class="hr" on-click="onOtherUsersTap_"
           label="$i18n{storageItemOtherUsers}"
           sub-label="$i18n{storageSizeComputing}"
-          role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
+          role-description="$i18n{subpageArrowRoleDescription}">
+      </cr-link-row>
     </template>
     <template is="dom-if" if="[[androidEnabled]]">
       <cr-link-row id="externalStoragePreferences" class="hr"
           on-click="onExternalStoragePreferencesTap_"
           label="$i18n{storageExternal}"
-          role-description="$i18n{subpageArrowRoleDescription}"></cr-link-row>
+          role-description="$i18n{subpageArrowRoleDescription}">
+      </cr-link-row>
     </template>
   </template>
   <script src="storage.js"></script>

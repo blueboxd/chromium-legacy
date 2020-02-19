@@ -1,7 +1,5 @@
-frame "<!--framePath //<!--frame0-->-->" - didReceiveTitle: 
 frame "<!--framePath //<!--frame0-->-->" - BeginNavigation request to 'resources/subframe-that-removes-itself.html', http method GET
 frame "<!--framePath //<!--frame0-->-->" - DidStartNavigation
-main frame - didReceiveTitle: 
 main frame - didFinishDocumentLoadForFrame
 frame "<!--framePath //<!--frame0-->-->" - ReadyToCommitNavigation
 frame "<!--framePath //<!--frame0-->-->" - didCommitLoadForFrame

@@ -411,6 +411,72 @@ TEST_F(TabStripUIHandlerTest, MoveGroupAcrossProfiles) {
   new_browser.get()->tab_strip_model()->CloseAllTabs();
 }
 
+TEST_F(TabStripUIHandlerTest, MoveTab) {
+  AddTab(browser(), GURL("http://foo"));
+  AddTab(browser(), GURL("http://foo"));
+
+  content::WebContents* contents_prev_at_0 =
+      browser()->tab_strip_model()->GetWebContentsAt(0);
+  content::WebContents* contents_prev_at_1 =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+
+  // Move tab at index 0 to index 1.
+  base::ListValue args;
+  args.AppendInteger(
+      extensions::ExtensionTabUtil::GetTabId(contents_prev_at_0));
+  args.AppendInteger(1);
+  handler()->HandleMoveTab(&args);
+
+  ASSERT_EQ(1, browser()->tab_strip_model()->GetIndexOfWebContents(
+                   contents_prev_at_0));
+  ASSERT_EQ(0, browser()->tab_strip_model()->GetIndexOfWebContents(
+                   contents_prev_at_1));
+}
+
+TEST_F(TabStripUIHandlerTest, MoveTabAcrossProfiles) {
+  AddTab(browser(), GURL("http://foo"));
+
+  TestingProfile* different_profile =
+      profile_manager()->CreateTestingProfile("different_profile");
+  std::unique_ptr<BrowserWindow> new_window(CreateBrowserWindow());
+  std::unique_ptr<Browser> new_browser = CreateBrowser(
+      different_profile, browser()->type(), false, new_window.get());
+  AddTab(new_browser.get(), GURL("http://foo"));
+
+  base::ListValue args;
+  args.AppendInteger(extensions::ExtensionTabUtil::GetTabId(
+      new_browser->tab_strip_model()->GetWebContentsAt(0)));
+  args.AppendInteger(1);
+  handler()->HandleMoveTab(&args);
+
+  ASSERT_FALSE(browser()->tab_strip_model()->ContainsIndex(1));
+
+  // Close all tabs before destructing.
+  new_browser.get()->tab_strip_model()->CloseAllTabs();
+}
+
+TEST_F(TabStripUIHandlerTest, MoveTabAcrossWindows) {
+  AddTab(browser(), GURL("http://foo"));
+
+  std::unique_ptr<BrowserWindow> new_window(CreateBrowserWindow());
+  std::unique_ptr<Browser> new_browser =
+      CreateBrowser(profile(), browser()->type(), false, new_window.get());
+  AddTab(new_browser.get(), GURL("http://foo"));
+  content::WebContents* moved_contents =
+      new_browser.get()->tab_strip_model()->GetWebContentsAt(0);
+
+  base::ListValue args;
+  args.AppendInteger(extensions::ExtensionTabUtil::GetTabId(
+      new_browser->tab_strip_model()->GetWebContentsAt(0)));
+  args.AppendInteger(1);
+  handler()->HandleMoveTab(&args);
+
+  ASSERT_EQ(moved_contents, browser()->tab_strip_model()->GetWebContentsAt(1));
+
+  // Close all tabs before destructing.
+  new_browser.get()->tab_strip_model()->CloseAllTabs();
+}
+
 TEST_F(TabStripUIHandlerTest, UngroupTab) {
   // Add a tab inside of a group.
   AddTab(browser(), GURL("http://foo"));

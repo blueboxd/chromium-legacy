@@ -123,7 +123,7 @@ void HTMLLinkElement::ParseAttribute(
     }
   } else if (name == html_names::kSizesAttr) {
     sizes_->DidUpdateAttributeValue(params.old_value, value);
-    WebVector<WebSize> web_icon_sizes =
+    WebVector<gfx::Size> web_icon_sizes =
         WebIconSizesParser::ParseIconSizes(value);
     icon_sizes_.resize(SafeCast<wtf_size_t>(web_icon_sizes.size()));
     for (wtf_size_t i = 0; i < icon_sizes_.size(); ++i)
@@ -430,7 +430,7 @@ IconType HTMLLinkElement::GetIconType() const {
   return rel_attribute_.GetIconType();
 }
 
-const Vector<IntSize>& HTMLLinkElement::IconSizes() const {
+const Vector<gfx::Size>& HTMLLinkElement::IconSizes() const {
   return icon_sizes_;
 }
 

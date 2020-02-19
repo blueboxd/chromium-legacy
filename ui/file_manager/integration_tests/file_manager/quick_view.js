@@ -1069,6 +1069,48 @@
   };
 
   /**
+   * Tests opening Quick View on an RAW .NEF image and that the dimensions
+   * shown in the metadata box respect the image EXIF orientation.
+   */
+  testcase.openQuickViewImageRawWithOrientation = async () => {
+    const caller = getCaller();
+
+    /**
+     * The <webview> resides in the <files-safe-media type="image"> shadow DOM,
+     * which is a child of the #quick-view shadow DOM.
+     */
+    const webView =
+        ['#quick-view', 'files-safe-media[type="image"]', 'webview'];
+
+    // Open Files app on Downloads containing ENTRIES.rawNef.
+    const appId =
+        await setupAndWaitUntilReady(RootPath.DOWNLOADS, [ENTRIES.rawNef], []);
+
+    // Open the file in Quick View.
+    await openQuickView(appId, ENTRIES.rawNef.nameText);
+
+    // Wait for the Quick View <webview> to load and display its content.
+    function checkWebViewImageLoaded(elements) {
+      let haveElements = Array.isArray(elements) && elements.length === 1;
+      if (haveElements) {
+        haveElements = elements[0].styles.display.includes('block');
+      }
+      if (!haveElements || elements[0].attributes.loaded !== '') {
+        return pending(caller, 'Waiting for <webview> to load.');
+      }
+      return;
+    }
+    await repeatUntil(async () => {
+      return checkWebViewImageLoaded(await remoteCall.callRemoteTestUtil(
+          'deepQueryAllElements', appId, [webView, ['display']]));
+    });
+
+    // Check: the Dimensions shown in the metadata box are correct.
+    const size = await getQuickViewMetadataBoxField(appId, 'Dimensions');
+    chrome.test.assertEq('1324 x 4028', size);
+  };
+
+  /**
    * Tests that opening a broken image in Quick View displays the "no-preview
    * available" generic icon and has a [load-error] attribute.
    */

@@ -28,6 +28,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/mediasession/media_session.mojom.h"
 
 #if defined(OS_ANDROID)
@@ -137,7 +138,8 @@ class MediaSessionImpl : public MediaSession,
   void OnWebContentsFocused(RenderWidgetHost*) override;
   void OnWebContentsLostFocus(RenderWidgetHost*) override;
   void TitleWasSet(NavigationEntry* entry) override;
-  void DidUpdateFaviconURL(const std::vector<FaviconURL>& candidates) override;
+  void DidUpdateFaviconURL(
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
   void MediaPictureInPictureChanged(bool is_picture_in_picture) override;
 
   // MediaSessionService-related methods

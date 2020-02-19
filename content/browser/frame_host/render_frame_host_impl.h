@@ -23,6 +23,7 @@
 #include "base/containers/id_map.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/gtest_prod_util.h"
+#include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -90,6 +91,7 @@
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom.h"
 #include "third_party/blink/public/mojom/contacts/contacts_manager.mojom.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
@@ -1374,6 +1376,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void DispatchLoad() override;
   void GoToEntryAtOffset(int32_t offset, bool has_user_gesture) override;
   void RenderFallbackContentInParentProcess() override;
+  void UpdateTitle(const base::Optional<::base::string16>& title,
+                   base::i18n::TextDirection title_direction) override;
   void UpdateUserActivationState(
       blink::mojom::UserActivationUpdateType update_type) override;
   void HandleAccessibilityFindInPageResult(
@@ -1393,6 +1397,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void RunBeforeUnloadConfirm(bool is_reload,
                               RunBeforeUnloadConfirmCallback callback) override;
   void Are3DAPIsBlocked(Are3DAPIsBlockedCallback callback) override;
+  void UpdateFaviconURL(
+      std::vector<blink::mojom::FaviconURLPtr> favicon_urls) override;
 
   // blink::LocalMainFrameHost overrides:
   void ScaleFactorChanged(float scale) override;
@@ -1555,8 +1561,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                               const blink::FramePolicy& frame_policy);
   void OnDidChangeFrameOwnerProperties(int32_t frame_routing_id,
                                        const FrameOwnerProperties& properties);
-  void OnUpdateTitle(const base::string16& title,
-                     blink::WebTextDirection title_direction);
   void OnForwardResourceTimingToParent(
       const ResourceTimingInfo& resource_timing);
   void OnAccessibilityEvents(

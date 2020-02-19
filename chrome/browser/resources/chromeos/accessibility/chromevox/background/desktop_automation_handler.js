@@ -16,9 +16,7 @@ goog.require('CustomAutomationEvent');
 goog.require('editing.TextEditHandler');
 
 goog.scope(function() {
-const AutomationEvent = chrome.automation.AutomationEvent;
 const AutomationNode = chrome.automation.AutomationNode;
-const Dir = constants.Dir;
 const EventType = chrome.automation.EventType;
 const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
@@ -66,7 +64,7 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
     // Note that live region changes from views are really announcement
     // events. Their target nodes contain no live region semantics and have no
     // relation to live regions which are supported in |LiveRegions|.
-    this.addListener_(EventType.LIVE_REGION_CHANGED, this.onEventFromViews);
+    this.addListener_(EventType.LIVE_REGION_CHANGED, this.onLiveRegionChanged);
 
     this.addListener_(EventType.LOAD_COMPLETE, this.onLoadComplete);
     this.addListener_(EventType.MENU_END, this.onMenuEnd);
@@ -98,15 +96,6 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
   /** @override */
   willHandleEvent_(evt) {
     return false;
-  }
-
-  /**
-   * @param {!ChromeVoxEvent} evt
-   */
-  onEventFromViews(evt) {
-    if (evt.target.root.role == RoleType.DESKTOP) {
-      this.onEventDefault(evt);
-    }
   }
 
   /**
@@ -290,6 +279,32 @@ DesktopAutomationHandler = class extends BaseAutomationHandler {
 
     // Refresh the handler, if needed, now that ChromeVox focus is up to date.
     this.createTextEditHandlerIfNeeded_(node);
+  }
+
+  /**
+   * @param {!ChromeVoxEvent} evt
+   */
+  onLiveRegionChanged(evt) {
+    if (evt.target.root.role == RoleType.DESKTOP ||
+        evt.target.root.role == RoleType.APPLICATION) {
+      if (evt.target.containerLiveStatus != 'assertive' &&
+          evt.target.containerLiveStatus != 'polite') {
+        return;
+      }
+
+      const output = new Output();
+      if (evt.target.containerLiveStatus == 'assertive') {
+        output.withQueueMode(QueueMode.CATEGORY_FLUSH);
+      } else {
+        output.withQueueMode(QueueMode.QUEUE);
+      }
+
+      output
+          .withRichSpeechAndBraille(
+              cursors.Range.fromNode(evt.target), null, evt.type)
+          .withSpeechCategory(TtsCategory.LIVE)
+          .go();
+    }
   }
 
   /**

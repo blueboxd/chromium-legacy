@@ -3637,31 +3637,42 @@ TEST_F(WebContentsImplTest, Bluetooth) {
 }
 
 TEST_F(WebContentsImplTest, FaviconURLsSet) {
-  const FaviconURL kFavicon(GURL("https://example.com/favicon.ico"),
-                            blink::mojom::FaviconIconType::kFavicon, {});
+  std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
+  const auto kFavicon =
+      blink::mojom::FaviconURL(GURL("https://example.com/favicon.ico"),
+                               blink::mojom::FaviconIconType::kFavicon, {});
 
   contents()->NavigateAndCommit(GURL("https://example.com"));
   EXPECT_EQ(0u, contents()->GetFaviconURLs().size());
 
-  contents()->OnUpdateFaviconURL(contents()->GetMainFrame(), {kFavicon});
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(kFavicon));
+  contents()->UpdateFaviconURL(contents()->GetMainFrame(),
+                               std::move(favicon_urls));
   EXPECT_EQ(1u, contents()->GetFaviconURLs().size());
 
-  contents()->OnUpdateFaviconURL(contents()->GetMainFrame(),
-                                 {kFavicon, kFavicon});
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(kFavicon));
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(kFavicon));
+  contents()->UpdateFaviconURL(contents()->GetMainFrame(),
+                               std::move(favicon_urls));
   EXPECT_EQ(2u, contents()->GetFaviconURLs().size());
 
-  contents()->OnUpdateFaviconURL(contents()->GetMainFrame(), {kFavicon});
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(kFavicon));
+  contents()->UpdateFaviconURL(contents()->GetMainFrame(),
+                               std::move(favicon_urls));
   EXPECT_EQ(1u, contents()->GetFaviconURLs().size());
 }
 
 TEST_F(WebContentsImplTest, FaviconURLsResetWithNavigation) {
-  const FaviconURL kFavicon(GURL("https://example.com/favicon.ico"),
-                            blink::mojom::FaviconIconType::kFavicon, {});
+  std::vector<blink::mojom::FaviconURLPtr> favicon_urls;
+  favicon_urls.push_back(blink::mojom::FaviconURL::New(
+      GURL("https://example.com/favicon.ico"),
+      blink::mojom::FaviconIconType::kFavicon, std::vector<gfx::Size>()));
 
   contents()->NavigateAndCommit(GURL("https://example.com"));
   EXPECT_EQ(0u, contents()->GetFaviconURLs().size());
 
-  contents()->OnUpdateFaviconURL(contents()->GetMainFrame(), {kFavicon});
+  contents()->UpdateFaviconURL(contents()->GetMainFrame(),
+                               std::move(favicon_urls));
   EXPECT_EQ(1u, contents()->GetFaviconURLs().size());
 
   contents()->NavigateAndCommit(GURL("https://example.com/navigation.html"));

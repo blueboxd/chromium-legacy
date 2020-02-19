@@ -45,7 +45,6 @@ suite('TabList', () => {
       title: 'Tab 3',
     },
   ];
-  const currentWindowId = 1000;
 
   function pinTabAt(tab, index) {
     const changeInfo = {index: index, pinned: true};
@@ -81,7 +80,6 @@ suite('TabList', () => {
     callbackRouter = testTabsApiProxy.callbackRouter;
 
     testTabStripEmbedderProxy = new TestTabStripEmbedderProxy();
-    testTabStripEmbedderProxy.setWindowId(currentWindowId);
     testTabStripEmbedderProxy.setColors({
       '--background-color': 'white',
       '--foreground-color': 'black',
@@ -98,10 +96,7 @@ suite('TabList', () => {
     tabList = document.createElement('tabstrip-tab-list');
     document.body.appendChild(tabList);
 
-    return Promise.all([
-      testTabsApiProxy.whenCalled('getTabs'),
-      testTabStripEmbedderProxy.whenCalled('getWindowId'),
-    ]);
+    return testTabsApiProxy.whenCalled('getTabs');
   });
 
   teardown(() => {

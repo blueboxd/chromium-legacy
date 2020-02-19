@@ -62,11 +62,12 @@ export class DragManager {
     this.tabsProxy_ = TabsApiProxy.getInstance();
   }
 
-  /**
-   * @param {!DragEvent} event
-   * @param {number} windowId
-   */
-  continueDrag(event, windowId) {
+  cancelDrag() {
+    this.dropPlaceholder_.remove();
+  }
+
+  /** @param {!DragEvent} event */
+  continueDrag(event) {
     event.preventDefault();
 
     if (!this.draggedItem_) {
@@ -78,7 +79,7 @@ export class DragManager {
     if (isTabGroupElement(this.draggedItem_)) {
       this.continueDragWithGroupElement_(event);
     } else if (isTabElement(this.draggedItem_)) {
-      this.continueDragWithTabElement_(event, windowId);
+      this.continueDragWithTabElement_(event);
     }
   }
 
@@ -113,10 +114,9 @@ export class DragManager {
 
   /**
    * @param {!DragEvent} event
-   * @param {number} windowId
    * @private
    */
-  continueDragWithTabElement_(event, windowId) {
+  continueDragWithTabElement_(event) {
     const composedPath = /** @type {!Array<!Element>} */ (event.composedPath());
     const dragOverTabElement =
         /** @type {?TabElement} */ (composedPath.find(isTabElement));
@@ -145,19 +145,13 @@ export class DragManager {
     }
 
     const dragOverIndex = this.delegate_.getIndexOfTab(dragOverTabElement);
-    this.tabsProxy_.moveTab(this.draggedItem_.tab.id, windowId, dragOverIndex);
-  }
-
-
-  cancelDrag() {
-    this.dropPlaceholder_.remove();
+    this.tabsProxy_.moveTab(this.draggedItem_.tab.id, dragOverIndex);
   }
 
   /**
    * @param {!DragEvent} event
-   * @param {number} windowId
    */
-  drop(event, windowId) {
+  drop(event) {
     if (this.draggedItem_) {
       // If there is a valid dragged item, the drag originated from this TabList
       // and is handled already by previous dragover events.
@@ -172,7 +166,7 @@ export class DragManager {
         // Invalid tab ID. Return silently.
         return;
       }
-      this.tabsProxy_.moveTab(tabId, windowId, -1);
+      this.tabsProxy_.moveTab(tabId, -1);
     } else if (event.dataTransfer.types.includes(getGroupIdDataType())) {
       const groupId = event.dataTransfer.getData(getGroupIdDataType());
       this.tabsProxy_.moveGroup(groupId, -1);

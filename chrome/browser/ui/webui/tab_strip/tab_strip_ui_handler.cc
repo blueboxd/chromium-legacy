@@ -346,9 +346,6 @@ void TabStripUIHandler::RegisterMessages() {
       "getTabs",
       base::Bind(&TabStripUIHandler::HandleGetTabs, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "getWindowId", base::Bind(&TabStripUIHandler::HandleGetWindowId,
-                                base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "getGroupVisualData",
       base::Bind(&TabStripUIHandler::HandleGetGroupVisualData,
                  base::Unretained(this)));
@@ -364,6 +361,9 @@ void TabStripUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "moveGroup",
       base::Bind(&TabStripUIHandler::HandleMoveGroup, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "moveTab",
+      base::Bind(&TabStripUIHandler::HandleMoveTab, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setThumbnailTracked",
       base::Bind(&TabStripUIHandler::HandleSetThumbnailTracked,
@@ -485,14 +485,6 @@ void TabStripUIHandler::HandleGetTabs(const base::ListValue* args) {
     tabs.Append(GetTabData(tab_strip_model->GetWebContentsAt(i), i));
   }
   ResolveJavascriptCallback(callback_id, tabs);
-}
-
-void TabStripUIHandler::HandleGetWindowId(const base::ListValue* args) {
-  AllowJavascript();
-  const base::Value& callback_id = args->GetList()[0];
-  ResolveJavascriptCallback(
-      callback_id,
-      base::Value(extensions::ExtensionTabUtil::GetWindowId(browser_)));
 }
 
 void TabStripUIHandler::HandleGetGroupVisualData(const base::ListValue* args) {
@@ -631,26 +623,43 @@ void TabStripUIHandler::HandleMoveGroup(const base::ListValue* args) {
       new_group_id,
       base::Optional<tab_groups::TabGroupVisualData>{*group->visual_data()});
 
-  content::WebContents* active_web_contents =
-      source_browser->tab_strip_model()->GetActiveWebContents();
-
   std::vector<int> source_tab_indices = group->ListTabs();
   int tab_count = source_tab_indices.size();
   for (int i = 0; i < tab_count; i++) {
     // The index needs to account for the tabs being detached, as they will
     // cause the indices to shift.
-    int index = source_tab_indices[i] - i;
-    std::unique_ptr<content::WebContents> detached_contents =
-        source_browser->tab_strip_model()->DetachWebContentsAt(index);
-
-    int add_types = TabStripModel::ADD_NONE;
-    if (detached_contents.get() == active_web_contents) {
-      add_types |= TabStripModel::ADD_ACTIVE;
-    }
-
-    target_browser->tab_strip_model()->InsertWebContentsAt(
-        to_index + i, std::move(detached_contents), add_types, new_group_id);
+    int from_index = source_tab_indices[i] - i;
+    tab_strip_ui::MoveTabAcrossWindows(
+        source_browser, from_index, target_browser, to_index + i, new_group_id);
   }
+}
+
+void TabStripUIHandler::HandleMoveTab(const base::ListValue* args) {
+  int tab_id = args->GetList()[0].GetInt();
+  int to_index = args->GetList()[1].GetInt();
+  if (to_index == -1) {
+    to_index = browser_->tab_strip_model()->count();
+  }
+
+  Browser* source_browser;
+  int from_index = -1;
+  if (!extensions::ExtensionTabUtil::GetTabById(tab_id, browser_->profile(),
+                                                true, &source_browser, nullptr,
+                                                nullptr, &from_index)) {
+    return;
+  }
+
+  if (source_browser->profile() != browser_->profile()) {
+    return;
+  }
+
+  if (source_browser == browser_) {
+    browser_->tab_strip_model()->MoveWebContentsAt(from_index, to_index, false);
+    return;
+  }
+
+  tab_strip_ui::MoveTabAcrossWindows(source_browser, from_index, browser_,
+                                     to_index);
 }
 
 void TabStripUIHandler::HandleCloseContainer(const base::ListValue* args) {

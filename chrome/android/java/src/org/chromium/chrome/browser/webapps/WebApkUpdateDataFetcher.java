@@ -75,6 +75,7 @@ public class WebApkUpdateDataFetcher extends EmptyTabObserver {
      * Puts the object in a state where it is safe to be destroyed.
      */
     public void destroy() {
+        if (mTab == null) return;
         mTab.removeObserver(this);
         WebApkUpdateDataFetcherJni.get().destroy(mNativePointer, WebApkUpdateDataFetcher.this);
         mNativePointer = 0;

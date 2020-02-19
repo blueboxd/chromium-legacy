@@ -41,6 +41,7 @@
 #include "components/performance_manager/public/mojom/coordination_unit.mojom-blink.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/mojom/base/text_direction.mojom-blink.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
@@ -1856,6 +1857,11 @@ void Document::UpdateTitle(const String& title) {
 }
 
 void Document::DispatchDidReceiveTitle() {
+  if (GetFrame() && !GetFrame()->Tree().Parent()) {
+    String shortened_title = title_.Substring(0, mojom::blink::kMaxTitleChars);
+    GetFrame()->GetLocalFrameHostRemote().UpdateTitle(
+        shortened_title, mojo_base::mojom::blink::TextDirection::LEFT_TO_RIGHT);
+  }
   frame_->Client()->DispatchDidReceiveTitle(title_);
 }
 

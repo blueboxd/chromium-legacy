@@ -65,6 +65,7 @@
 #include "net/base/load_flags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "ui/base/page_transition_types.h"
 
@@ -262,7 +263,8 @@ class PluginFaviconMessageObserver : public WebContentsObserver {
     plugin_crashed_ = true;
   }
 
-  void DidUpdateFaviconURL(const std::vector<FaviconURL>& candidates) override {
+  void DidUpdateFaviconURL(
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override {
     favicon_received_ = true;
   }
 
@@ -499,7 +501,7 @@ TEST_P(RenderFrameHostManagerTest, ChromeSchemeProcesses) {
 TEST_P(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   const GURL kChromeURL(GetWebUIURL("foo"));
   const GURL kDestUrl("http://www.google.com/");
-  std::vector<FaviconURL> icons;
+  std::vector<blink::mojom::FaviconURLPtr> icons;
 
   // Navigate our first tab to a chrome url and then to the destination.
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kChromeURL);
@@ -508,8 +510,7 @@ TEST_P(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   // Send an update favicon message and make sure it works.
   {
     PluginFaviconMessageObserver observer(contents());
-    EXPECT_TRUE(ntp_rfh->OnMessageReceived(
-        FrameHostMsg_UpdateFaviconURL(ntp_rfh->GetRoutingID(), icons)));
+    ntp_rfh->UpdateFaviconURL(std::move(icons));
     EXPECT_TRUE(observer.favicon_received());
   }
   // Create one more frame in the same SiteInstance where ntp_rfh
@@ -529,8 +530,7 @@ TEST_P(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   // The new RVH should be able to update its favicon.
   {
     PluginFaviconMessageObserver observer(contents());
-    EXPECT_TRUE(dest_rfh->OnMessageReceived(
-        FrameHostMsg_UpdateFaviconURL(dest_rfh->GetRoutingID(), icons)));
+    dest_rfh->UpdateFaviconURL(std::move(icons));
     EXPECT_TRUE(observer.favicon_received());
   }
 
@@ -538,20 +538,19 @@ TEST_P(RenderFrameHostManagerTest, FilterMessagesWhileSwappedOut) {
   // filtered out and not take effect.
   {
     PluginFaviconMessageObserver observer(contents());
-    EXPECT_TRUE(ntp_rfh->OnMessageReceived(
-        FrameHostMsg_UpdateFaviconURL(ntp_rfh->GetRoutingID(), icons)));
+    ntp_rfh->UpdateFaviconURL(std::move(icons));
     EXPECT_FALSE(observer.favicon_received());
   }
 }
 
-// Test that the FrameHostMsg_UpdateFaviconURL IPC message is ignored if the
+// Test that the UpdateFaviconURL function is ignored if the
 // renderer is in the pending deletion state. The favicon code assumes
-// that it only gets FrameHostMsg_UpdateFaviconURL messages for the most
+// that it only gets UpdateFaviconURL function for the most
 // recently committed navigation for each WebContentsImpl.
 TEST_P(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingUnload) {
   const GURL kChromeURL(GetWebUIURL("foo"));
   const GURL kDestUrl("http://www.google.com/");
-  std::vector<FaviconURL> icons;
+  std::vector<blink::mojom::FaviconURLPtr> icons;
 
   // Navigate our first tab to a chrome url and then to the destination.
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), kChromeURL);
@@ -560,8 +559,7 @@ TEST_P(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingUnload) {
   // Send an update favicon message and make sure it works.
   {
     PluginFaviconMessageObserver observer(contents());
-    EXPECT_TRUE(ntp_rfh->OnMessageReceived(
-        FrameHostMsg_UpdateFaviconURL(ntp_rfh->GetRoutingID(), icons)));
+    ntp_rfh->UpdateFaviconURL(std::move(icons));
     EXPECT_TRUE(observer.favicon_received());
   }
 
@@ -581,8 +579,7 @@ TEST_P(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingUnload) {
   // The new RFH should be able to update its favicons.
   {
     PluginFaviconMessageObserver observer(contents());
-    EXPECT_TRUE(dest_rfh->OnMessageReceived(
-        FrameHostMsg_UpdateFaviconURL(dest_rfh->GetRoutingID(), icons)));
+    dest_rfh->UpdateFaviconURL(std::move(icons));
     EXPECT_TRUE(observer.favicon_received());
   }
 
@@ -590,8 +587,7 @@ TEST_P(RenderFrameHostManagerTest, UpdateFaviconURLWhilePendingUnload) {
   // be ignored.
   {
     PluginFaviconMessageObserver observer(contents());
-    EXPECT_TRUE(ntp_rfh->OnMessageReceived(
-        FrameHostMsg_UpdateFaviconURL(ntp_rfh->GetRoutingID(), icons)));
+    ntp_rfh->UpdateFaviconURL(std::move(icons));
     EXPECT_FALSE(observer.favicon_received());
   }
 }

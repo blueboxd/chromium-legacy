@@ -379,4 +379,26 @@ TEST_P(LinkHighlightImplTest, MultiColumn) {
   EXPECT_EQ(layer_count_before_highlight, LayerCount());
 }
 
+TEST_P(LinkHighlightImplTest, DisplayContents) {
+  WebViewImpl* web_view_impl = web_view_helper_.GetWebView();
+
+  int page_width = 640;
+  int page_height = 480;
+  web_view_impl->MainFrameWidget()->Resize(WebSize(page_width, page_height));
+  UpdateAllLifecyclePhases();
+
+  WebGestureEvent touch_event(WebInputEvent::kGestureShowPress,
+                              WebInputEvent::kNoModifiers,
+                              WebInputEvent::GetStaticTimeStampForTests(),
+                              WebGestureDevice::kTouchscreen);
+  // This will touch the div with display:contents and cursor:pointer.
+  touch_event.SetPositionInWidget(gfx::PointF(20, 400));
+
+  GestureEventWithHitTestResults targeted_event = GetTargetedEvent(touch_event);
+  EXPECT_FALSE(web_view_impl->BestTapNode(targeted_event));
+
+  web_view_impl->EnableTapHighlightAtPoint(targeted_event);
+  EXPECT_FALSE(GetLinkHighlightImpl());
+}
+
 }  // namespace blink

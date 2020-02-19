@@ -18,6 +18,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom-forward.h"
 
 namespace performance_manager {
 
@@ -69,7 +70,7 @@ class PerformanceManagerTabHelper
   void TitleWasSet(content::NavigationEntry* entry) override;
   void WebContentsDestroyed() override;
   void DidUpdateFaviconURL(
-      const std::vector<content::FaviconURL>& candidates) override;
+      const std::vector<blink::mojom::FaviconURLPtr>& candidates) override;
 
   // WebContentsProxyImpl overrides.
   content::WebContents* GetWebContents() const override;

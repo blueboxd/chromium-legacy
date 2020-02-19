@@ -484,7 +484,7 @@ TEST_P(GeometryMapperTest, TwoClips) {
 }
 
 TEST_P(GeometryMapperTest, TwoClipsTransformAbove) {
-  auto transform = CreateTransform(t0(), TransformationMatrix());
+  auto transform = Create2DTranslation(t0(), 0, 0);
 
   FloatRoundedRect clip_rect1(
       FloatRect(10, 10, 50, 50),
@@ -814,8 +814,8 @@ TEST_P(GeometryMapperTest, InvertedClip) {
 TEST_P(GeometryMapperTest, Precision) {
   auto t1 = CreateTransform(t0(), TransformationMatrix().Scale(32767));
   auto t2 = CreateTransform(*t1, TransformationMatrix().Rotate(1));
-  auto t3 = CreateTransform(*t2, TransformationMatrix());
-  auto t4 = CreateTransform(*t3, TransformationMatrix());
+  auto t3 = Create2DTranslation(*t2, 0, 0);
+  auto t4 = Create2DTranslation(*t3, 0, 0);
   EXPECT_TRUE(
       GeometryMapper::SourceToDestinationProjection(*t4, *t4).IsIdentity());
   EXPECT_TRUE(

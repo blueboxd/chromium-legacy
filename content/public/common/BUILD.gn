@@ -123,8 +123,6 @@ jumbo_source_set("common_sources") {
     "cursor_info.h",
     "drop_data.cc",
     "drop_data.h",
-    "favicon_url.cc",
-    "favicon_url.h",
     "font_cache_dispatcher_win.h",
     "frame_navigate_params.cc",
     "frame_navigate_params.h",

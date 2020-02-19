@@ -187,8 +187,7 @@ inline scoped_refptr<TransformPaintPropertyNode> CreateTransform(
     const TransformationMatrix& matrix,
     const FloatPoint3D& origin = FloatPoint3D(),
     CompositingReasons compositing_reasons = CompositingReason::kNone) {
-  TransformPaintPropertyNode::State state{
-      TransformPaintPropertyNode::TransformAndOrigin(matrix, origin)};
+  TransformPaintPropertyNode::State state{{matrix, origin}};
   state.direct_compositing_reasons = compositing_reasons;
   return TransformPaintPropertyNode::Create(parent, std::move(state));
 }
@@ -197,8 +196,7 @@ inline scoped_refptr<TransformPaintPropertyNode> CreateAnimatingTransform(
     const TransformPaintPropertyNode& parent,
     const TransformationMatrix& matrix = TransformationMatrix(),
     const FloatPoint3D& origin = FloatPoint3D()) {
-  TransformPaintPropertyNode::State state{
-      TransformPaintPropertyNode::TransformAndOrigin(matrix, origin)};
+  TransformPaintPropertyNode::State state{{matrix, origin}};
   state.direct_compositing_reasons =
       CompositingReason::kActiveTransformAnimation;
   state.compositor_element_id = CompositorElementIdFromUniqueObjectId(

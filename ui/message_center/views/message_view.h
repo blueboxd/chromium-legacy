@@ -51,13 +51,17 @@ class MESSAGE_CENTER_EXPORT MessageView
  public:
   static const char kViewClassName[];
 
-  class SlideObserver {
+  class Observer {
    public:
-    virtual ~SlideObserver() = default;
+    virtual ~Observer() = default;
 
     virtual void OnSlideStarted(const std::string& notification_id) {}
     virtual void OnSlideChanged(const std::string& notification_id) {}
+    virtual void OnPreSlideOut(const std::string& notification_id) {}
     virtual void OnSlideOut(const std::string& notification_id) {}
+    virtual void OnCloseButtonPressed(const std::string& notification_id) {}
+    virtual void OnSettingsButtonPressed(const std::string& notification_id) {}
+    virtual void OnSnoozeButtonPressed(const std::string& notification_id) {}
   };
 
   enum class Mode {
@@ -137,8 +141,8 @@ class MESSAGE_CENTER_EXPORT MessageView
   void OnWillChangeFocus(views::View* before, views::View* now) override;
   void OnDidChangeFocus(views::View* before, views::View* now) override;
 
-  void AddSlideObserver(SlideObserver* observer);
-  void RemoveSlideObserver(SlideObserver* observer);
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   Mode GetMode() const;
 
@@ -171,6 +175,8 @@ class MESSAGE_CENTER_EXPORT MessageView
 
   bool is_nested() const { return is_nested_; }
 
+  base::ObserverList<Observer>::Unchecked* observers() { return &observers_; }
+
  private:
   friend class test::MessagePopupCollectionTest;
 
@@ -199,7 +205,7 @@ class MESSAGE_CENTER_EXPORT MessageView
   bool setting_mode_ = false;
 
   views::SlideOutController slide_out_controller_;
-  base::ObserverList<SlideObserver>::Unchecked slide_observers_;
+  base::ObserverList<Observer>::Unchecked observers_;
 
   // True if |this| is embedded in another view. Equivalent to |!top_level| in
   // MessageViewFactory parlance.

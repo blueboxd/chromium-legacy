@@ -250,8 +250,11 @@ VerdictCacheManager* SafeBrowsingService::GetVerdictCacheManager(
 
 base::WeakPtr<VerdictCacheManager>
 SafeBrowsingService::GetVerdictCacheManagerWeakPtr(Profile* profile) const {
-  if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
-    return services_delegate_->GetVerdictCacheManager(profile)->GetWeakPtr();
+  if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled)) {
+    VerdictCacheManager* cache_manager =
+        services_delegate_->GetVerdictCacheManager(profile);
+    return cache_manager ? cache_manager->GetWeakPtr() : nullptr;
+  }
   return nullptr;
 }
 

@@ -6693,23 +6693,30 @@ Vector<IconURL> Document::IconURLs(int icon_types_mask) {
   // required by the spec.
   for (HTMLLinkElement* link_element = first_element; link_element;
        link_element = find_next_candidate(*link_element)) {
-    if (!(link_element->GetIconType() & icon_types_mask))
+    if (!((1 << static_cast<int>(link_element->GetIconType())) &
+          icon_types_mask)) {
       continue;
+    }
     if (link_element->Href().IsEmpty())
       continue;
 
     IconURL new_url(link_element->Href(), link_element->IconSizes(),
                     link_element->GetType(), link_element->GetIconType());
-    if (link_element->GetIconType() == kFavicon) {
-      if (first_favicon.icon_type_ != kInvalidIcon)
+    if (link_element->GetIconType() ==
+        mojom::blink::FaviconIconType::kFavicon) {
+      if (first_favicon.icon_type_ != mojom::blink::FaviconIconType::kInvalid)
         secondary_icons.push_back(first_favicon);
       first_favicon = new_url;
-    } else if (link_element->GetIconType() == kTouchIcon) {
-      if (first_touch_icon.icon_type_ != kInvalidIcon)
+    } else if (link_element->GetIconType() ==
+               mojom::blink::FaviconIconType::kTouchIcon) {
+      if (first_touch_icon.icon_type_ !=
+          mojom::blink::FaviconIconType::kInvalid)
         secondary_icons.push_back(first_touch_icon);
       first_touch_icon = new_url;
-    } else if (link_element->GetIconType() == kTouchPrecomposedIcon) {
-      if (first_touch_precomposed_icon.icon_type_ != kInvalidIcon)
+    } else if (link_element->GetIconType() ==
+               mojom::blink::FaviconIconType::kTouchPrecomposedIcon) {
+      if (first_touch_precomposed_icon.icon_type_ !=
+          mojom::blink::FaviconIconType::kInvalid)
         secondary_icons.push_back(first_touch_precomposed_icon);
       first_touch_precomposed_icon = new_url;
     } else {
@@ -6718,14 +6725,18 @@ Vector<IconURL> Document::IconURLs(int icon_types_mask) {
   }
 
   Vector<IconURL> icon_urls;
-  if (first_favicon.icon_type_ != kInvalidIcon)
+  if (first_favicon.icon_type_ != mojom::blink::FaviconIconType::kInvalid) {
     icon_urls.push_back(first_favicon);
-  else if (url_.ProtocolIsInHTTPFamily() && icon_types_mask & kFavicon)
+  } else if (url_.ProtocolIsInHTTPFamily() &&
+             icon_types_mask & 1 << static_cast<int>(
+                                   mojom::blink::FaviconIconType::kFavicon)) {
     icon_urls.push_back(IconURL::DefaultFavicon(url_));
+  }
 
-  if (first_touch_icon.icon_type_ != kInvalidIcon)
+  if (first_touch_icon.icon_type_ != mojom::blink::FaviconIconType::kInvalid)
     icon_urls.push_back(first_touch_icon);
-  if (first_touch_precomposed_icon.icon_type_ != kInvalidIcon)
+  if (first_touch_precomposed_icon.icon_type_ !=
+      mojom::blink::FaviconIconType::kInvalid)
     icon_urls.push_back(first_touch_precomposed_icon);
   for (int i = secondary_icons.size() - 1; i >= 0; --i)
     icon_urls.push_back(secondary_icons[i]);

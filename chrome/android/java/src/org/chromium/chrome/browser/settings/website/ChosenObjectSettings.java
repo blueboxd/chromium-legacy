@@ -131,7 +131,8 @@ public class ChosenObjectSettings extends PreferenceFragmentCompat {
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.menu_id_targeted_help) {
             HelpAndFeedback.getInstance().show(getActivity(),
-                    getString(R.string.help_context_settings), Profile.getLastUsedProfile(), null);
+                    getString(R.string.help_context_settings), Profile.getLastUsedRegularProfile(),
+                    null);
             return true;
         }
         return false;

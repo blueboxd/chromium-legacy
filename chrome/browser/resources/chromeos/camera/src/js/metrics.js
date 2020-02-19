@@ -30,11 +30,18 @@ analytics.EventBuilder.prototype.dimen = function(i, v) {
 };
 
 /**
- * Promise for Google Analytics tracker.
- * @type {Promise<analytics.Tracker>}
+ * Google Analytics tracker.
+ * @type {?Promise<analytics.Tracker>}
+ */
+let ga = null;
+
+/**
+ * Creates Google Analytics tracker object.
+ * @param {boolean} isTesting
+ * @return {!Promise<analytics.Tracker>}
  * @suppress {checkTypes}
  */
-const ga = (function() {
+function createGA(isTesting) {
   const id = 'UA-134822711-1';
   const service = analytics.getService('chrome-camera-app');
 
@@ -51,10 +58,19 @@ const ga = (function() {
   return Promise
       .all([getConfig(), browserProxy.isCrashReportingEnabled(), initBuilder()])
       .then(([config, enabled]) => {
+        enabled = enabled && !isTesting;
         config.setTrackingPermitted(enabled);
         return service.getTracker(id);
       });
-})();
+}
+
+/**
+ * Initializes metrics with parameters.
+ * @param {boolean} isTesting Whether is collecting logs for running testing.
+ */
+export function initMetrics(isTesting) {
+  ga = createGA(isTesting);
+}
 
 /**
  * Returns event builder for the metrics type: launch.
@@ -172,5 +188,9 @@ export const Type = {
  * @param {...*} args Optional rest parameters for logging metrics.
  */
 export function log(type, ...args) {
+  if (ga === null) {
+    console.error('log() should not be called before metrics initialization.');
+    ga = createGA(false);
+  }
   ga.then((tracker) => tracker.send(type(...args)));
 }

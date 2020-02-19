@@ -19,6 +19,10 @@ interface RenderFrameProxyHost {
 // RenderFrameProxy. Implemented by renderer processes, called by the browser
 // process.
 interface RenderFrameProxy {
+  // Notifies the remote frame that the process rendering the child frame's
+  // contents has terminated.
+  ChildProcessGone();
+
   // This function enables auto-resize mode from the parent renderer.
   EnableAutoResize(gfx.mojom.Size min_size, gfx.mojom.Size max_size);
 

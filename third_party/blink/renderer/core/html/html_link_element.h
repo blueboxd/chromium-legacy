@@ -73,7 +73,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
 
   const AtomicString& GetType() const;
 
-  IconType GetIconType() const;
+  mojom::blink::FaviconIconType GetIconType() const;
 
   // the icon sizes as parsed from the HTML attribute
   const Vector<gfx::Size>& IconSizes() const;

@@ -1144,7 +1144,6 @@ crbug.com/994172 virtual/layout_ng_block_frag/fast/multicol/balance-line-underfl
 crbug.com/994172 virtual/layout_ng_block_frag/fast/multicol/balance-line-underflow-2.html [ Pass Crash ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/basic-rtl.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/break-before-first-line-in-first-child.html [ Failure ]
-crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/break-in-scrollable.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/caret-range-anonymous-block.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/caret-range-anonymous-block-rtl.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_block_frag/fast/multicol/caret-range-outside-columns.html [ Failure ]
@@ -2868,6 +2867,13 @@ crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-004.html [ Fail
 crbug.com/641245 external/wpt/css/motion/offset-path-ray-contain-005.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] virtual/omt-worker-fetch/external/wpt/workers/abrupt-completion.html [ Timeout ]
+crbug.com/626703 [ Mac ] virtual/omt-worker-fetch/external/wpt/workers/abrupt-completion.html [ Timeout ]
+crbug.com/626703 [ Win ] virtual/omt-worker-fetch/external/wpt/workers/abrupt-completion.html [ Timeout ]
+crbug.com/626703 [ Mac10.14 ] external/wpt/webxr/events_referenceSpace_reset_inline.https.html [ Timeout ]
+crbug.com/626703 [ Linux ] external/wpt/workers/abrupt-completion.html [ Timeout ]
+crbug.com/626703 [ Mac ] external/wpt/workers/abrupt-completion.html [ Timeout ]
+crbug.com/626703 [ Win ] external/wpt/workers/abrupt-completion.html [ Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/css-grid/grid-model/grid-overflow-padding-001.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/css-grid/grid-model/grid-overflow-padding-001.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/css-grid/grid-model/grid-overflow-padding-001.html [ Failure ]

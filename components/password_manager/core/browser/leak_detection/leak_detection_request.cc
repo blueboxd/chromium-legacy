@@ -41,13 +41,12 @@ constexpr char kPostMethod[] = "POST";
 constexpr char kProtobufContentType[] = "application/x-protobuf";
 
 google::internal::identity::passwords::leak::check::v1::LookupSingleLeakRequest
-MakeLookupSingleLeakRequest(std::string username_hash_prefix,
-                            std::string encrypted_payload) {
+MakeLookupSingleLeakRequest(LookupSingleLeakPayload payload) {
   google::internal::identity::passwords::leak::check::v1::
       LookupSingleLeakRequest request;
-  request.set_username_hash_prefix(std::move(username_hash_prefix));
+  request.set_username_hash_prefix(std::move(payload.username_hash_prefix));
   request.set_username_hash_prefix_length(kUsernameHashPrefixLength);
-  request.set_encrypted_lookup_hash(std::move(encrypted_payload));
+  request.set_encrypted_lookup_hash(std::move(payload.encrypted_payload));
   return request;
 }
 
@@ -62,8 +61,7 @@ LeakDetectionRequest::~LeakDetectionRequest() = default;
 void LeakDetectionRequest::LookupSingleLeak(
     network::mojom::URLLoaderFactory* url_loader_factory,
     const std::string& access_token,
-    std::string username_hash_prefix,
-    std::string encrypted_payload,
+    LookupSingleLeakPayload payload,
     LookupSingleLeakCallback callback) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("lookup_single_password_leak", R"(
@@ -118,9 +116,7 @@ void LeakDetectionRequest::LookupSingleLeak(
   simple_url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
   simple_url_loader_->AttachStringForUpload(
-      MakeLookupSingleLeakRequest(std::move(username_hash_prefix),
-                                  std::move(encrypted_payload))
-          .SerializeAsString(),
+      MakeLookupSingleLeakRequest(std::move(payload)).SerializeAsString(),
       kProtobufContentType);
   simple_url_loader_->DownloadToString(
       url_loader_factory,

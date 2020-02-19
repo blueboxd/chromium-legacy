@@ -33,10 +33,27 @@ TEST(LeakDetectionRequestUtils, PrepareSingleLeakRequestData) {
   EXPECT_CALL(
       callback,
       Run(AllOf(
-          Field(&LookupSingleLeakData::username_hash_prefix,
-                ElementsAre(61, 112, -45)),
-          Field(&LookupSingleLeakData::encrypted_payload, testing::Ne("")),
+          Field(&LookupSingleLeakData::payload,
+                AllOf(Field(&LookupSingleLeakPayload::username_hash_prefix,
+                            ElementsAre(61, 112, -45)),
+                      Field(&LookupSingleLeakPayload::encrypted_payload,
+                            testing::Ne("")))),
           Field(&LookupSingleLeakData::encryption_key, testing::Ne("")))));
+  task_env.RunUntilIdle();
+}
+
+TEST(LeakDetectionRequestUtils, PrepareSingleLeakRequestDataWithKey) {
+  base::test::SingleThreadTaskEnvironment task_env;
+  auto task_runner = task_env.GetMainThreadTaskRunner();
+  base::MockOnceCallback<void(LookupSingleLeakPayload)> callback;
+
+  PrepareSingleLeakRequestData(task_runner.get(), "random_key", "jonsnow",
+                               "1234", callback.Get());
+  EXPECT_CALL(callback,
+              Run(AllOf(Field(&LookupSingleLeakPayload::username_hash_prefix,
+                              ElementsAre(61, 112, -45)),
+                        Field(&LookupSingleLeakPayload::encrypted_payload,
+                              testing::Ne("")))));
   task_env.RunUntilIdle();
 }
 

@@ -9,8 +9,10 @@
 #include "base/containers/span.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
+#include "base/task_runner_util.h"
 #include "components/password_manager/core/browser/leak_detection/encryption_utils.h"
 #include "components/password_manager/core/browser/leak_detection/single_lookup_response.h"
 #include "crypto/sha2.h"
@@ -18,22 +20,47 @@
 namespace password_manager {
 namespace {
 
+// Produce |username_hash_prefix| and scrypt hash of the arguments.
+// Scrypt computation is actually long.
+LookupSingleLeakPayload ProduceHashes(base::StringPiece username,
+                                      base::StringPiece password) {
+  std::string canonicalized_username = CanonicalizeUsername(username);
+  LookupSingleLeakPayload payload;
+  payload.username_hash_prefix = BucketizeUsername(canonicalized_username);
+  payload.encrypted_payload =
+      ScryptHashUsernameAndPassword(canonicalized_username, password);
+  if (payload.encrypted_payload.empty())
+    return LookupSingleLeakPayload();
+  return payload;
+}
+
 // Despite the function is short, it executes long. That's why it should be done
 // asynchronously.
-LookupSingleLeakData PrepareLookupSingleLeakData(const std::string& username,
-                                                 const std::string& password) {
-  std::string canonicalized_username = CanonicalizeUsername(username);
+LookupSingleLeakData PrepareLookupSingleLeakData(base::StringPiece username,
+                                                 base::StringPiece password) {
   LookupSingleLeakData data;
-  data.username_hash_prefix = BucketizeUsername(canonicalized_username);
-  std::string scrypt_hash =
-      ScryptHashUsernameAndPassword(canonicalized_username, password);
-  if (scrypt_hash.empty())
+  data.payload = ProduceHashes(username, password);
+  if (data.payload.encrypted_payload.empty())
     return LookupSingleLeakData();
-  data.encrypted_payload = CipherEncrypt(
-      ScryptHashUsernameAndPassword(canonicalized_username, password),
-      &data.encryption_key);
-  return data.encrypted_payload.empty() ? LookupSingleLeakData()
-                                        : std::move(data);
+  data.payload.encrypted_payload =
+      CipherEncrypt(data.payload.encrypted_payload, &data.encryption_key);
+  return data.payload.encrypted_payload.empty() ? LookupSingleLeakData()
+                                                : std::move(data);
+}
+
+// Despite the function is short, it executes long. That's why it should be done
+// asynchronously.
+LookupSingleLeakPayload PrepareLookupSingleLeakDataWithKey(
+    const std::string& encryption_key,
+    base::StringPiece username,
+    base::StringPiece password) {
+  LookupSingleLeakPayload payload = ProduceHashes(username, password);
+  if (payload.encrypted_payload.empty())
+    return LookupSingleLeakPayload();
+  payload.encrypted_payload =
+      CipherEncryptWithKey(payload.encrypted_payload, encryption_key);
+  return payload.encrypted_payload.empty() ? LookupSingleLeakPayload()
+                                           : std::move(payload);
 }
 
 // Searches |reencrypted_lookup_hash| in the |encrypted_leak_match_prefixes|
@@ -85,6 +112,19 @@ void PrepareSingleLeakRequestData(const std::string& username,
       {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&PrepareLookupSingleLeakData, username, password),
+      std::move(callback));
+}
+
+void PrepareSingleLeakRequestData(
+    base::TaskRunner* task_runner,
+    const std::string& encryption_key,
+    const std::string& username,
+    const std::string& password,
+    base::OnceCallback<void(LookupSingleLeakPayload)> callback) {
+  base::PostTaskAndReplyWithResult(
+      task_runner, FROM_HERE,
+      base::BindOnce(&PrepareLookupSingleLeakDataWithKey, encryption_key,
+                     username, password),
       std::move(callback));
 }
 

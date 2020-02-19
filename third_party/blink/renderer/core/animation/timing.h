@@ -57,6 +57,12 @@ static inline base::Optional<double> ValueOrUnresolved(double a) {
   return IsNull(a) ? base::nullopt : base::Optional<double>(a);
 }
 
+// TODO(crbug.com/1050474): Remove both ValueOrUnresolved().
+static inline base::Optional<double> ValueOrUnresolved(
+    const base::Optional<double>& value) {
+  return value;
+}
+
 struct CORE_EXPORT Timing {
   USING_FAST_MALLOC(Timing);
 

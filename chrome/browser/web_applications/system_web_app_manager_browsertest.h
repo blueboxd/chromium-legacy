@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_SYSTEM_WEB_APP_MANAGER_BROWSERTEST_H_
-#define CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_SYSTEM_WEB_APP_MANAGER_BROWSERTEST_H_
+#ifndef CHROME_BROWSER_WEB_APPLICATIONS_SYSTEM_WEB_APP_MANAGER_BROWSERTEST_H_
+#define CHROME_BROWSER_WEB_APPLICATIONS_SYSTEM_WEB_APP_MANAGER_BROWSERTEST_H_
 
 #include <memory>
 
@@ -24,10 +24,6 @@ namespace content {
 class WebContents;
 }
 
-namespace extensions {
-class Extension;
-}
-
 namespace web_app {
 
 enum class SystemAppType;
@@ -41,11 +37,6 @@ class SystemWebAppManagerBrowserTest : public InProcessBrowserTest {
   explicit SystemWebAppManagerBrowserTest(bool install_mock = true);
 
   ~SystemWebAppManagerBrowserTest() override;
-
-  // Gets the Extension* from the HostedAppBrowserController associated with
-  // |browser|.
-  static const extensions::Extension* GetExtensionForAppBrowser(
-      Browser* browser);
 
   // Returns the SystemWebAppManager for browser()->profile(). This will be a
   // TestSystemWebAppManager if initialized with |install_mock| true.
@@ -80,4 +71,4 @@ class SystemWebAppManagerBrowserTest : public InProcessBrowserTest {
 
 }  // namespace web_app
 
-#endif  // CHROME_BROWSER_WEB_APPLICATIONS_EXTENSIONS_SYSTEM_WEB_APP_MANAGER_BROWSERTEST_H_
+#endif  // CHROME_BROWSER_WEB_APPLICATIONS_SYSTEM_WEB_APP_MANAGER_BROWSERTEST_H_

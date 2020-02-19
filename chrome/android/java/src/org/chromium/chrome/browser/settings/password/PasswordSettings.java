@@ -175,7 +175,8 @@ public class PasswordSettings
         }
         if (id == R.id.menu_id_targeted_help) {
             HelpAndFeedback.getInstance().show(getActivity(),
-                    getString(R.string.help_context_passwords), Profile.getLastUsedProfile(), null);
+                    getString(R.string.help_context_passwords), Profile.getLastUsedRegularProfile(),
+                    null);
             return true;
         }
         return super.onOptionsItemSelected(item);

@@ -251,8 +251,7 @@ void AuthenticatedLeakCheck::DoLeakRequest(
   encryption_key_ = std::move(data.encryption_key);
   request_ = network_request_factory_->CreateNetworkRequest();
   request_->LookupSingleLeak(
-      url_loader_factory.get(), access_token,
-      std::move(data.username_hash_prefix), std::move(data.encrypted_payload),
+      url_loader_factory.get(), access_token, std::move(data.payload),
       TimeCallback(
           base::BindOnce(&AuthenticatedLeakCheck::OnLookupSingleLeakResponse,
                          weak_ptr_factory_.GetWeakPtr()),

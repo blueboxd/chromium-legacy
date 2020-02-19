@@ -463,7 +463,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     case IDC_OPEN_IN_PWA_WINDOW:
       base::RecordAction(base::UserMetricsAction("OpenActiveTabInPwaWindow"));
-      web_app::ReparentWebAppForSecureActiveTab(browser_);
+      web_app::ReparentWebAppForActiveTab(browser_);
       break;
     case IDC_MOVE_TAB_TO_NEW_WINDOW:
       MoveActiveTabToNewWindow(browser_);

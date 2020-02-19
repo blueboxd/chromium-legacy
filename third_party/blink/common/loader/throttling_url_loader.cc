@@ -449,7 +449,7 @@ void ThrottlingURLLoader::StartNow() {
     start_info_->task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(&ThrottlingURLLoader::OnReceiveRedirect,
-                       base::Unretained(this), std::move(redirect_info),
+                       weak_factory_.GetWeakPtr(), std::move(redirect_info),
                        std::move(response_head)));
     return;
   }

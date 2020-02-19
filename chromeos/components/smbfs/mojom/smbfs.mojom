@@ -12,6 +12,10 @@ import "chromeos/components/smbfs/mojom/ip_address.mojom";
 // In Chrome OS, this file is located at:
 // //platform2/smbfs/mojom/smbfs.mojom
 
+// Name used to identify the bootstrap message pipe. To be used with
+// mojo::{Incoming,Outgoing}Invitation.
+const string kBootstrapPipeName = "smbfs-bootstrap";
+
 // Implemented by SmbFs, used from Chrome.
 interface SmbFsBootstrap {
   // Connect to an SMB share. This method must only be called once.

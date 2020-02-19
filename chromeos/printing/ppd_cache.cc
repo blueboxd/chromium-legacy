@@ -60,30 +60,31 @@ PpdCache::FindResult FindImpl(const base::FilePath& cache_dir,
   base::File file(FilePathForKey(cache_dir, key),
                   base::File::FLAG_OPEN | base::File::FLAG_READ);
 
-  if (file.IsValid()) {
-    int64_t len = file.GetLength();
-    if (len >= static_cast<int64_t>(crypto::kSHA256Length) &&
-        len <= static_cast<int64_t>(kMaxPpdSizeBytes) +
-                   static_cast<int64_t>(crypto::kSHA256Length)) {
-      std::unique_ptr<char[]> buf(new char[len]);
-      if (file.ReadAtCurrentPos(buf.get(), len) == len) {
-        base::StringPiece contents(buf.get(), len - crypto::kSHA256Length);
-        base::StringPiece checksum(buf.get() + len - crypto::kSHA256Length,
-                                   crypto::kSHA256Length);
-        if (crypto::SHA256HashString(contents) == checksum) {
-          base::File::Info info;
-          if (file.GetInfo(&info)) {
-            result.success = true;
-            result.age = base::Time::Now() - info.last_modified;
-            result.contents = std::string(contents);
-          }
-        } else {
-          LOG(ERROR) << "Bad checksum for cache key " << key;
-        }
-      }
-    }
+  base::File::Info info;
+  if (!file.IsValid() || !file.GetInfo(&info))
+    return result;
+
+  if (info.size < static_cast<int64_t>(crypto::kSHA256Length) ||
+      info.size > static_cast<int64_t>(kMaxPpdSizeBytes) +
+                      static_cast<int64_t>(crypto::kSHA256Length)) {
+    return result;
   }
 
+  std::vector<char> buf(info.size);
+  if (file.ReadAtCurrentPos(buf.data(), info.size) != info.size)
+    return result;
+
+  base::StringPiece contents(buf.data(), info.size - crypto::kSHA256Length);
+  base::StringPiece checksum(buf.data() + info.size - crypto::kSHA256Length,
+                             crypto::kSHA256Length);
+  if (crypto::SHA256HashString(contents) != checksum) {
+    LOG(ERROR) << "Bad checksum for cache key " << key;
+    return result;
+  }
+
+  result.success = true;
+  result.age = base::Time::Now() - info.last_modified;
+  result.contents = std::string(contents);
   return result;
 }
 

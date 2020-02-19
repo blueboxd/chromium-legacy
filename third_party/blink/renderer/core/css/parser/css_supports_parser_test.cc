@@ -218,6 +218,30 @@ TEST_F(CSSSupportsParserTest, ConsumeGeneralEnclosed) {
   EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("()"));
   EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("color:red"));
   EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("asdf"));
+
+  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("(asdf)"));
+  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("( asdf )"));
+  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("(3)"));
+  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("max(1, 2)"));
+  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("asdf(1, 2)"));
+  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("asdf(1, 2)\t"));
+
+  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed(""));
+  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("("));
+  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed(")"));
+  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("()"));
+  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("color:red"));
+  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("asdf"));
+
+  // Invalid <any-value>:
+  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("(asdf})"));
+  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("(asd]f)"));
+  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("(\"as\ndf\")"));
+  EXPECT_EQ(Result::kParseFailure, ConsumeGeneralEnclosed("(url(as'df))"));
+
+  // Valid <any-value>
+  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("(as;df)"));
+  EXPECT_EQ(Result::kUnknown, ConsumeGeneralEnclosed("(as ! df)"));
 }
 
 TEST_F(CSSSupportsParserTest, AtSupportsCondition) {

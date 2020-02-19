@@ -30,7 +30,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.components.signin.util.PatternMatcher;
 
@@ -89,8 +89,6 @@ public class AccountManagerFacade {
     private final AtomicReference<AccountManagerResult<List<Account>>> mFilteredAccounts =
             new AtomicReference<>();
     private final CountDownLatch mPopulateAccountCacheLatch = new CountDownLatch(1);
-    private final CachedMetrics.TimesHistogramSample mPopulateAccountCacheWaitingTimeHistogram =
-            new CachedMetrics.TimesHistogramSample("Signin.AndroidPopulateAccountCacheWaitingTime");
 
     private final ArrayList<Runnable> mCallbacksWaitingForCachePopulation = new ArrayList<>();
 
@@ -306,7 +304,8 @@ public class AccountManagerFacade {
                 mPopulateAccountCacheLatch.await();
                 maybeAccounts = mFilteredAccounts.get();
                 if (ThreadUtils.runningOnUiThread()) {
-                    mPopulateAccountCacheWaitingTimeHistogram.record(
+                    RecordHistogram.recordTimesHistogram(
+                            "Signin.AndroidPopulateAccountCacheWaitingTime",
                             SystemClock.elapsedRealtime() - now);
                 }
             } catch (InterruptedException e) {

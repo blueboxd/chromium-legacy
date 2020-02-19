@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check_impl.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/task_environment.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_delegate_interface.h"
 #include "components/password_manager/core/browser/leak_detection/mock_leak_detection_delegate.h"
@@ -15,6 +16,11 @@
 namespace password_manager {
 namespace {
 
+LeakCheckCredential TestCredential(base::StringPiece username) {
+  return LeakCheckCredential(base::ASCIIToUTF16(username),
+                             base::ASCIIToUTF16("password123"));
+}
+
 class BulkLeakCheckTest : public testing::Test {
  public:
   BulkLeakCheckTest()
@@ -24,6 +30,7 @@ class BulkLeakCheckTest : public testing::Test {
             base::MakeRefCounted<network::TestSharedURLLoaderFactory>()) {}
 
   MockBulkLeakCheckDelegateInterface& delegate() { return delegate_; }
+  BulkLeakCheckImpl& bulk_check() { return bulk_check_; }
 
  private:
   base::test::TaskEnvironment task_env_;
@@ -36,6 +43,15 @@ TEST_F(BulkLeakCheckTest, Create) {
   EXPECT_CALL(delegate(), OnFinishedCredential).Times(0);
   EXPECT_CALL(delegate(), OnError).Times(0);
   // Destroying |leak_check_| doesn't trigger anything.
+}
+
+TEST_F(BulkLeakCheckTest, CheckCredentials) {
+  EXPECT_CALL(delegate(), OnFinishedCredential).Times(0);
+  EXPECT_CALL(delegate(), OnError).Times(0);
+
+  std::vector<LeakCheckCredential> credentials;
+  credentials.push_back(TestCredential("user1"));
+  bulk_check().CheckCredentials(std::move(credentials));
 }
 
 }  // namespace

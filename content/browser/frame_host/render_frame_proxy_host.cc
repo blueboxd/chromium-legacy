@@ -462,6 +462,10 @@ void RenderFrameProxyHost::DidUpdateVisualProperties(
   GetAssociatedRenderFrameProxy()->DidUpdateVisualProperties(metadata);
 }
 
+void RenderFrameProxyHost::ChildProcessGone() {
+  GetAssociatedRenderFrameProxy()->ChildProcessGone();
+}
+
 void RenderFrameProxyHost::OnRouteMessageEvent(
     const FrameMsg_PostMessage_Params& params) {
   RenderFrameHostImpl* target_rfh = frame_tree_node()->current_frame_host();

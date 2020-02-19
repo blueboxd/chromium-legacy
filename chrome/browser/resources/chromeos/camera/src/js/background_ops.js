@@ -52,6 +52,12 @@ export class BackgroundOps {
   getPerfLogger() {}
 
   /**
+   * @return {boolean} Returns whether window is created for running tests.
+   * @abstract
+   */
+  isTesting() {}
+
+  /**
    * Called by foreground window when it's active.
    * @abstract
    */

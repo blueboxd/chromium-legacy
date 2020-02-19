@@ -43,7 +43,8 @@ IconURL IconURL::DefaultFavicon(const KURL& document_url) {
     url.SetPort(document_url.Port());
   url.SetPath("/favicon.ico");
 
-  IconURL result(url, {}, g_empty_string, kFavicon);
+  IconURL result(url, {}, g_empty_string,
+                 mojom::blink::FaviconIconType::kFavicon);
   result.is_default_icon_ = true;
   return result;
 }

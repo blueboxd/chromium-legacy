@@ -823,7 +823,7 @@ void InkDropImpl::AnimationStarted(
 
 void InkDropImpl::AnimationEnded(InkDropHighlight::AnimationType animation_type,
                                  InkDropAnimationEndedReason reason) {
-  if (animation_type == InkDropHighlight::FADE_OUT &&
+  if (animation_type == InkDropHighlight::AnimationType::kFadeOut &&
       reason == InkDropAnimationEndedReason::SUCCESS) {
     DestroyInkDropHighlight();
   }

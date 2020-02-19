@@ -39,6 +39,8 @@ class WebAppTabHelper : public WebAppTabHelperBase,
   const base::UnguessableToken& GetAudioFocusGroupIdForTesting() const override;
 
   // content::WebContentsObserver:
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override;

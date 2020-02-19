@@ -146,8 +146,7 @@ void CrossProcessFrameConnector::RenderProcessGone() {
   if (IsVisible())
     MaybeLogCrash(CrashVisibility::kCrashedWhileVisible);
 
-  frame_proxy_in_parent_renderer_->Send(new FrameMsg_ChildFrameProcessGone(
-      frame_proxy_in_parent_renderer_->GetRoutingID()));
+  frame_proxy_in_parent_renderer_->ChildProcessGone();
 
   auto* parent_view = GetParentRenderWidgetHostView();
   if (parent_view && parent_view->host()->delegate())

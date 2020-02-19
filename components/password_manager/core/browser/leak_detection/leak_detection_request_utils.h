@@ -7,10 +7,17 @@
 
 #include "base/callback.h"
 #include "base/strings/string_piece_forward.h"
+#include "base/task_runner.h"
 
 namespace password_manager {
 
 struct SingleLookupResponse;
+
+// Contains the payload for analysing one credential against the leaks.
+struct LookupSingleLeakPayload {
+  std::string username_hash_prefix;
+  std::string encrypted_payload;
+};
 
 // Stores all the data needed for one credential lookup.
 struct LookupSingleLeakData {
@@ -22,8 +29,7 @@ struct LookupSingleLeakData {
   LookupSingleLeakData(const LookupSingleLeakData&) = delete;
   LookupSingleLeakData& operator=(const LookupSingleLeakData&) = delete;
 
-  std::string username_hash_prefix;
-  std::string encrypted_payload;
+  LookupSingleLeakPayload payload;
 
   std::string encryption_key;
 };
@@ -53,6 +59,16 @@ using SingleLeakResponseAnalysisCallback =
 void PrepareSingleLeakRequestData(const std::string& username,
                                   const std::string& password,
                                   SingleLeakRequestDataCallback callback);
+
+// Asynchronously creates a data payload for a credential check with the given
+// encryption key. The task is posted to |task_runner|.
+// Callback is invoked on the calling thread with the protobuf.
+void PrepareSingleLeakRequestData(
+    base::TaskRunner* task_runner,
+    const std::string& encryption_key,
+    const std::string& username,
+    const std::string& password,
+    base::OnceCallback<void(LookupSingleLeakPayload)> callback);
 
 // Analyses the |response| asynchronously and checks if the credential was
 // leaked. |callback| is invoked on the calling thread.

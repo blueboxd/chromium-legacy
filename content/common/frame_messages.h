@@ -523,10 +523,6 @@ IPC_STRUCT_TRAITS_END()
 // -----------------------------------------------------------------------------
 // Messages sent from the browser to the renderer.
 
-// Notifies the embedding frame that the process rendering the child frame's
-// contents has terminated.
-IPC_MESSAGE_ROUTED0(FrameMsg_ChildFrameProcessGone)
-
 // Sent in response to a FrameHostMsg_ContextMenu to let the renderer know that
 // the menu has been closed.
 IPC_MESSAGE_ROUTED1(FrameMsg_ContextMenuClosed,

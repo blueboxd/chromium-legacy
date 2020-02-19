@@ -136,4 +136,15 @@ TEST(EncryptionUtils, CipherIsCommutative) {
               ElementsAreArray(CipherDecrypt(cipher, key_client)));
 }
 
+TEST(EncryptionUtils, CreateNewKey) {
+  const std::string key = CreateNewKey();
+  SCOPED_TRACE(testing::Message()
+               << "key=" << testing::PrintToString(StringAsArray(key)));
+  constexpr char kRandomString[] = "very_secret";
+
+  std::string cipher = CipherEncryptWithKey(kRandomString, key);
+  EXPECT_THAT(CalculateECCurveHash(kRandomString),
+              ElementsAreArray(CipherDecrypt(cipher, key)));
+}
+
 }  // namespace password_manager

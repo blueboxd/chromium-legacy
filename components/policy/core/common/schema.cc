@@ -221,10 +221,6 @@ bool SchemaTypeToValueType(const std::string& schema_type,
                                  kSchemaTypesToValueTypesEnd, value_type);
 }
 
-bool StrategyAllowInvalid(SchemaOnErrorStrategy strategy) {
-  return strategy == SCHEMA_ALLOW_INVALID;
-}
-
 bool StrategyAllowUnknown(SchemaOnErrorStrategy strategy) {
   return strategy != SCHEMA_STRICT;
 }
@@ -1219,7 +1215,6 @@ bool Schema::Validate(const base::Value& value,
         if (!StrategyAllowUnknown(strategy))
           return false;
       } else {
-        bool all_subschemas_are_valid = true;
         for (const auto& subschema : schema_list) {
           std::string new_error;
           const bool validation_result = subschema.Validate(
@@ -1230,13 +1225,10 @@ bool Schema::Validate(const base::Value& value,
           }
           if (!validation_result) {
             // Invalid property was detected.
-            all_subschemas_are_valid = false;
-            if (!StrategyAllowInvalid(strategy))
-              return false;
+            return false;
           }
         }
-        if (all_subschemas_are_valid)
-          present_properties.insert(dict_item.first);
+        present_properties.insert(dict_item.first);
       }
     }
 
@@ -1259,7 +1251,7 @@ bool Schema::Validate(const base::Value& value,
         AddListIndexPrefixToPath(index, error_path);
         *error = std::move(new_error);
       }
-      if (!validation_result && !StrategyAllowInvalid(strategy))
+      if (!validation_result)
         return false;  // Invalid list item was detected.
     }
   } else if (value.is_int()) {
@@ -1314,7 +1306,6 @@ bool Schema::Normalize(base::Value* value,
           return false;
         drop_list.push_back(dict_item.first);
       } else {
-        bool all_subschemas_are_valid = true;
         for (const auto& subschema : schema_list) {
           std::string new_error;
           const bool normalization_result = subschema.Normalize(
@@ -1325,15 +1316,12 @@ bool Schema::Normalize(base::Value* value,
           }
           if (!normalization_result) {
             // Invalid property was detected.
-            all_subschemas_are_valid = false;
-            if (!StrategyAllowInvalid(strategy))
-              return false;
+            return false;
             drop_list.push_back(dict_item.first);
             break;
           }
         }
-        if (all_subschemas_are_valid)
-          present_properties.insert(dict_item.first);
+        present_properties.insert(dict_item.first);
       }
     }
 
@@ -1370,8 +1358,7 @@ bool Schema::Normalize(base::Value* value,
       }
       if (!normalization_result) {
         // Invalid list item was detected.
-        if (!StrategyAllowInvalid(strategy))
-          return false;
+        return false;
       } else {
         if (write_index != index)
           list[write_index] = std::move(list_item);

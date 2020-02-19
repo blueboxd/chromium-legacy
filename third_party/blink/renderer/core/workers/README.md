@@ -178,6 +178,8 @@ in the following files and directories to avoid breakage.
 
 # References
 
+- [ES Modules for Shared Workers](https://docs.google.com/document/d/1sSdYdSOLd5zvnNGeVNlBqfTZs_VRPIrrigV3SlMnWjg/edit?usp=sharing) (Feb 19, 2020)
 - [WorkerGlobalScope Initialization](https://docs.google.com/document/d/1JCv8TD2nPLNC2iRCp_D1OM4I3uTS0HoEobuTymaMqgw/edit?usp=sharing) (April 1, 2019)
 - [Worker / Worklet Internals](https://docs.google.com/presentation/d/1GZJ3VnLIO_Pw0jr9nRw6_-trg68ol-AkliMxJ6jo6Bo/edit?usp=sharing) (April 19, 2018)
+- [ES Modules for Dedicated Workers](https://docs.google.com/document/d/1IMGWAK7Wq37mLehwkbysNRBBnhQBo3z2MbYyMkViEnY/edit?usp=sharing) (Mar 8, 2018)
 - [Design of UseCounter for workers](https://docs.google.com/document/d/1VyYZnhjBdk-MzCRAcX37TM5-yjwTY40U_J9rWnEAo8c/edit?usp=sharing) (Feb 14, 2017)

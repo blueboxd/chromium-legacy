@@ -99,8 +99,8 @@ base::Optional<AppId> FindInstalledAppWithUrlInScope(Profile* profile,
                                                      const GURL& url,
                                                      bool window_only) {
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile);
-  return provider ? provider->registrar().FindInstalledAppWithUrlInScope(
-                        url, window_only)
+  return provider ? provider->registrar().FindAppWithUrlInScope(
+                        url, window_only, /*local_only=*/true)
                   : base::nullopt;
 }
 

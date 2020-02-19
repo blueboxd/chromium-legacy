@@ -48,17 +48,13 @@ bool IsSignedExchangeHandlingEnabled(BrowserContext* context) {
   if (!GetContentClient()->browser()->AllowSignedExchange(context))
     return false;
 
-  return base::FeatureList::IsEnabled(features::kSignedHTTPExchange) ||
-         base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kEnableExperimentalWebPlatformFeatures);
+  return base::FeatureList::IsEnabled(features::kSignedHTTPExchange);
 }
 
 bool IsSignedExchangeReportingForDistributorsEnabled() {
   return base::FeatureList::IsEnabled(network::features::kReporting) &&
-         (base::FeatureList::IsEnabled(
-              features::kSignedExchangeReportingForDistributors) ||
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kEnableExperimentalWebPlatformFeatures));
+         base::FeatureList::IsEnabled(
+             features::kSignedExchangeReportingForDistributors);
 }
 
 bool ShouldHandleAsSignedHTTPExchange(

@@ -164,10 +164,19 @@ NGBreakAppeal CalculateBreakAppealInside(const NGConstraintSpace& space,
 }
 
 void SetupFragmentation(const NGConstraintSpace& parent_space,
+                        const NGLayoutInputNode& child,
                         LayoutUnit fragmentainer_offset_delta,
                         NGConstraintSpaceBuilder* builder,
                         bool is_new_fc) {
   DCHECK(parent_space.HasBlockFragmentation());
+
+  // If the child is truly unbreakable, it won't participate in block
+  // fragmentation. If it's too tall to fit, it will either overflow the
+  // fragmentainer or get brutally sliced into pieces (without looking for
+  // allowed breakpoints, since there are none, by definition), depending on
+  // fragmentation type (multicol vs. printing).
+  if (child.IsMonolithic())
+    return;
 
   builder->SetFragmentainerBlockSize(parent_space.FragmentainerBlockSize());
   builder->SetFragmentainerOffsetAtBfc(parent_space.FragmentainerOffsetAtBfc() +

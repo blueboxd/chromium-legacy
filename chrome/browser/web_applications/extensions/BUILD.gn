@@ -81,12 +81,7 @@ source_set("unit_tests") {
 source_set("browser_tests") {
   testonly = true
 
-  sources = [
-    "bookmark_app_registrar_browsertest.cc",
-    "system_web_app_manager_browsertest.cc",
-    "system_web_app_manager_browsertest.h",
-    "web_app_audio_focus_browsertest.cc",
-  ]
+  sources = [ "web_app_audio_focus_browsertest.cc" ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
@@ -103,7 +98,6 @@ source_set("browser_tests") {
     "//chrome/browser/web_applications/components",
     "//chrome/test:test_support",
     "//chrome/test:test_support_ui",
-    "//components/permissions:permissions",
     "//extensions:test_support",
     "//extensions/browser",
     "//extensions/common",

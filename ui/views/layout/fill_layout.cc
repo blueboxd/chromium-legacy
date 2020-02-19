@@ -42,8 +42,7 @@ ProposedLayout FillLayout::CalculateProposedLayout(
   for (View* child : host_view()->children()) {
     if (ShouldIncludeChild(child)) {
       layout.child_layouts.push_back(
-          ChildLayout{child, child->GetVisible(), contents_bounds,
-                      SizeBounds(contents_bounds.size())});
+          {child, child->GetVisible(), contents_bounds});
     }
   }
 

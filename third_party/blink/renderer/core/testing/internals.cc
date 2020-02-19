@@ -33,6 +33,7 @@
 #include "cc/layers/picture_layer.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
+#include "third_party/blink/public/mojom/favicon/favicon_url.mojom-blink.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
@@ -2331,11 +2332,18 @@ Vector<String> Internals::IconURLs(Document* document,
 }
 
 Vector<String> Internals::shortcutIconURLs(Document* document) const {
-  return IconURLs(document, kFavicon);
+  int icon_types_mask =
+      1 << static_cast<int>(mojom::blink::FaviconIconType::kFavicon);
+  return IconURLs(document, icon_types_mask);
 }
 
 Vector<String> Internals::allIconURLs(Document* document) const {
-  return IconURLs(document, kFavicon | kTouchIcon | kTouchPrecomposedIcon);
+  int icon_types_mask =
+      1 << static_cast<int>(mojom::blink::FaviconIconType::kFavicon) |
+      1 << static_cast<int>(mojom::blink::FaviconIconType::kTouchIcon) |
+      1 << static_cast<int>(
+          mojom::blink::FaviconIconType::kTouchPrecomposedIcon);
+  return IconURLs(document, icon_types_mask);
 }
 
 int Internals::numberOfPages(float page_width,

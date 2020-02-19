@@ -2499,8 +2499,11 @@ if (!is_android) {
         sources += [ "../browser/chromeos/web_applications/sample_system_web_app_integration_browsertest.cc" ]
       }
       if (use_cups) {
-        sources +=
-            [ "../browser/chromeos/extensions/printing/printing_apitest.cc" ]
+        sources += [
+          "../browser/chromeos/extensions/printing/fake_print_job_controller.cc",
+          "../browser/chromeos/extensions/printing/fake_print_job_controller.h",
+          "../browser/chromeos/extensions/printing/printing_apitest.cc",
+        ]
         deps += [ "//printing:test_support" ]
       }
       if (enable_assistant_integration_tests) {

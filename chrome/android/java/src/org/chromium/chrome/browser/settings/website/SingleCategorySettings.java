@@ -391,8 +391,8 @@ public class SingleCategorySettings extends PreferenceFragmentCompat
             if (mCategory.showSites(SiteSettingsCategory.Type.PROTECTED_MEDIA)) {
                 helpContextResId = R.string.help_context_protected_content;
             }
-            HelpAndFeedback.getInstance().show(
-                    getActivity(), getString(helpContextResId), Profile.getLastUsedProfile(), null);
+            HelpAndFeedback.getInstance().show(getActivity(), getString(helpContextResId),
+                    Profile.getLastUsedRegularProfile(), null);
             return true;
         }
         if (handleSearchNavigation(item, mSearchItem, mSearch, getActivity())) {

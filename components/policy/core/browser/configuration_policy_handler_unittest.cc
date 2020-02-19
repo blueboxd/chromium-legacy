@@ -753,19 +753,9 @@ TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValueInvalid) {
   policy_map.LoadFrom(policy_map_dict, POLICY_LEVEL_RECOMMENDED,
                       POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD);
 
-  TestSchemaValidatingPolicyHandler handler(schema, SCHEMA_ALLOW_INVALID);
+  TestSchemaValidatingPolicyHandler handler(schema, SCHEMA_ALLOW_UNKNOWN);
   std::unique_ptr<base::Value> output_value;
-  ASSERT_TRUE(handler.CheckAndGetValueForTest(policy_map, &output_value));
-  ASSERT_TRUE(output_value);
-
-  base::DictionaryValue* dict = nullptr;
-  ASSERT_TRUE(output_value->GetAsDictionary(&dict));
-
-  // Test that CheckAndGetValue() actually dropped invalid properties.
-  int int_value = -1;
-  EXPECT_TRUE(dict->GetInteger("OneToThree", &int_value));
-  EXPECT_EQ(2, int_value);
-  EXPECT_FALSE(dict->HasKey("Colors"));
+  EXPECT_FALSE(handler.CheckAndGetValueForTest(policy_map, &output_value));
 }
 
 TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValueUnknown) {
@@ -807,7 +797,7 @@ TEST(SchemaValidatingPolicyHandlerTest, CheckAndGetValueUnknown) {
   policy_map.LoadFrom(policy_map_dict, POLICY_LEVEL_RECOMMENDED,
                       POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD);
 
-  TestSchemaValidatingPolicyHandler handler(schema, SCHEMA_ALLOW_INVALID);
+  TestSchemaValidatingPolicyHandler handler(schema, SCHEMA_ALLOW_UNKNOWN);
   std::unique_ptr<base::Value> output_value;
   ASSERT_TRUE(handler.CheckAndGetValueForTest(policy_map, &output_value));
   ASSERT_TRUE(output_value);

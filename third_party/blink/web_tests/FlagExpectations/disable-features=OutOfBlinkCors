@@ -64,3 +64,10 @@ crbug.com/835821 virtual/stable/http/tests/sendbeacon/beacon-blob-with-non-simpl
 # Following tests were added for m82 and Blink CORS does not pay attentions for them.
 crbug.com/906850 external/wpt/mixed-content/gen/top.http-rp/opt-in/sharedworker-classic/same-https.swap-scheme.https.html [ Failure ]
 crbug.com/906850 external/wpt/mixed-content/gen/top.http-rp/opt-in/sharedworker-module/same-https.swap-scheme.https.html [ Failure ]
+
+# Expectation differs from m82.
+crbug.com/1050438 http/tests/workers/shared-worker-redirect.html [ Failure ]
+crbug.com/1050438 virtual/omt-worker-fetch/http/tests/workers/shared-worker-redirect.html [ Failure ]
+
+# XHRReplayData support for Blink CORS was dropped from m82.
+crbug.com/958524 http/tests/inspector-protocol/network/xhr-post-replay-cors.js [ Failure ]

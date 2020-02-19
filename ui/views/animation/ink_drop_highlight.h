@@ -36,7 +36,7 @@ class InkDropHighlightObserver;
 // focus).
 class VIEWS_EXPORT InkDropHighlight {
  public:
-  enum AnimationType { FADE_IN, FADE_OUT };
+  enum class AnimationType { kFadeIn, kFadeOut };
 
   // Creates a highlight with a specified painter.
   InkDropHighlight(const gfx::PointF& center_point,
@@ -132,7 +132,7 @@ class VIEWS_EXPORT InkDropHighlight {
   // The opacity for the fully visible state of the highlight.
   float visible_opacity_;
 
-  // True if the last animation to be initiated was a FADE_IN, and false
+  // True if the last animation to be initiated was a kFadeIn, and false
   // otherwise.
   bool last_animation_initiated_was_fade_in_;
 

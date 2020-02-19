@@ -1626,6 +1626,43 @@ void CrostiniManager::UpgradeContainer(const ContainerId& key,
   }
 }
 
+void CrostiniManager::EnsureVmRunning(const ContainerId& key,
+                                      CrostiniResultCallback callback) {
+  const auto& vm_name = key.vm_name;
+  const auto& container_name = key.container_name;
+  if (vm_name.empty()) {
+    LOG(ERROR) << "vm_name is required";
+    std::move(callback).Run(CrostiniResult::CLIENT_ERROR);
+    return;
+  }
+  if (container_name.empty()) {
+    LOG(ERROR) << "container_name is required";
+    std::move(callback).Run(CrostiniResult::CLIENT_ERROR);
+    return;
+  }
+
+  CrostiniResultCallback inner_callback = base::BindOnce(
+      [](CrostiniResultCallback final_callback, CrostiniResult result) {
+        if (result == CrostiniResult::SUCCESS ||
+            result == CrostiniResult::RESTART_ABORTED) {
+          // RESTART_ABORTED is expected when we successfully abort after
+          // launching the VM, turn it into a success since that's what we were
+          // asked for.
+          std::move(final_callback).Run(CrostiniResult::SUCCESS);
+        } else {
+          std::move(final_callback).Run(result);
+        }
+      },
+      std::move(callback));
+
+  if (!IsVmRunning(vm_name)) {
+    RestartCrostini(vm_name, container_name, std::move(inner_callback),
+                    new AbortOnVmStartObserver(weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    std::move(inner_callback).Run(CrostiniResult::SUCCESS);
+  }
+}
+
 void CrostiniManager::CancelUpgradeContainer(const ContainerId& key,
                                              CrostiniResultCallback callback) {
   const auto& vm_name = key.vm_name;

@@ -49,7 +49,7 @@ import org.chromium.base.Log;
 import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.StrictModeContext;
-import org.chromium.base.metrics.CachedMetrics;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
@@ -700,10 +700,8 @@ public class ShareHelper {
             } catch (NameNotFoundException exception) {
                 // Use the default null values.
             }
-            CachedMetrics.BooleanHistogramSample isLastSharedAppInfoRetrieved =
-                    new CachedMetrics.BooleanHistogramSample(
-                            "Android.IsLastSharedAppInfoRetrieved");
-            isLastSharedAppInfoRetrieved.record(retrieved);
+            RecordHistogram.recordBooleanHistogram(
+                    "Android.IsLastSharedAppInfoRetrieved", retrieved);
         }
 
         return new Pair<>(directShareIcon, directShareTitle);

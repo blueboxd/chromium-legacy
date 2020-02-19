@@ -2011,18 +2011,26 @@ void LayoutObject::MarkContainerChainForOverflowRecalcIfNeeded(
                  ? object->Parent()
                  : object->Container();
     if (object) {
-      bool no_changes = true;
-      if (mark_container_chain_layout_overflow_recalc &&
-          !object->SelfNeedsLayoutOverflowRecalc()) {
-        object->SetChildNeedsLayoutOverflowRecalc();
-        no_changes = false;
+      bool already_needs_layout_overflow_recalc = false;
+      if (mark_container_chain_layout_overflow_recalc) {
+        already_needs_layout_overflow_recalc =
+            object->SelfNeedsLayoutOverflowRecalc();
+        if (!already_needs_layout_overflow_recalc)
+          object->SetChildNeedsLayoutOverflowRecalc();
       }
-      if (!object->SelfPaintingLayerNeedsVisualOverflowRecalc()) {
-        object->MarkSelfPaintingLayerForVisualOverflowRecalc();
-        no_changes = false;
+
+      if (object->HasLayer()) {
+        auto* box_model_object = ToLayoutBoxModelObject(object);
+        if (box_model_object->HasSelfPaintingLayer()) {
+          auto* layer = box_model_object->Layer();
+          if (layer->NeedsVisualOverflowRecalc()) {
+            if (already_needs_layout_overflow_recalc)
+              return;
+          } else {
+            layer->SetNeedsVisualOverflowRecalc();
+          }
+        }
       }
-      if (no_changes)
-        return;
     }
 
   } while (object);

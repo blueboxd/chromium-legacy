@@ -162,21 +162,6 @@ inline float ParentTextZoomFactor(LocalFrame* frame) {
   return parent_local_frame ? parent_local_frame->TextZoomFactor() : 1;
 }
 
-mojom::blink::FaviconIconType ToFaviconType(IconType type) {
-  switch (type) {
-    case kInvalidIcon:
-      return mojom::blink::FaviconIconType::kInvalid;
-    case kFavicon:
-      return mojom::blink::FaviconIconType::kFavicon;
-    case kTouchIcon:
-      return mojom::blink::FaviconIconType::kTouchIcon;
-    case kTouchPrecomposedIcon:
-      return mojom::blink::FaviconIconType::kTouchPrecomposedIcon;
-  }
-  NOTREACHED();
-  return mojom::blink::FaviconIconType::kInvalid;
-}
-
 }  // namespace
 
 template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
@@ -1875,7 +1860,11 @@ void LocalFrame::UpdateFaviconURL() {
   if (!GetDocument()->LoadEventFinished())
     return;
 
-  int icon_types_mask = kFavicon | kTouchIcon | kTouchPrecomposedIcon;
+  int icon_types_mask =
+      1 << static_cast<int>(mojom::blink::FaviconIconType::kFavicon) |
+      1 << static_cast<int>(mojom::blink::FaviconIconType::kTouchIcon) |
+      1 << static_cast<int>(
+          mojom::blink::FaviconIconType::kTouchPrecomposedIcon);
   Vector<IconURL> icon_urls = GetDocument()->IconURLs(icon_types_mask);
   if (icon_urls.IsEmpty())
     return;
@@ -1884,8 +1873,7 @@ void LocalFrame::UpdateFaviconURL() {
   urls.ReserveCapacity(icon_urls.size());
   for (const auto& icon_url : icon_urls) {
     urls.push_back(mojom::blink::FaviconURL::New(
-        icon_url.icon_url_, ToFaviconType(icon_url.icon_type_),
-        icon_url.sizes_));
+        icon_url.icon_url_, icon_url.icon_type_, icon_url.sizes_));
   }
   DCHECK_EQ(icon_urls.size(), urls.size());
 

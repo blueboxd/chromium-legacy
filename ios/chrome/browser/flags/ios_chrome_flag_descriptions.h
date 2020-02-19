@@ -269,6 +269,10 @@ extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
 extern const char kOmniboxOnDeviceHeadSuggestionsName[];
 extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
 
+// Title and description for the flag to control Omnibox on-focus suggestions.
+extern const char kOmniboxOnFocusSuggestionsName[];
+extern const char kOmniboxOnFocusSuggestionsDescription[];
+
 // Title and description for the flag to enable the new design of the page info.
 extern const char kPageInfoRefactoringName[];
 extern const char kPageInfoRefactoringDescription[];

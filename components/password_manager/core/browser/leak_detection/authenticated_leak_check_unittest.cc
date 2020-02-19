@@ -27,6 +27,7 @@ namespace {
 using ::testing::_;
 using ::testing::ByMove;
 using ::testing::ElementsAre;
+using ::testing::Field;
 using ::testing::Return;
 using ::testing::StrictMock;
 
@@ -41,12 +42,11 @@ const int64_t kMockElapsedTime =
 class MockLeakDetectionRequest : public LeakDetectionRequestInterface {
  public:
   // LeakDetectionRequestInterface:
-  MOCK_METHOD5(LookupSingleLeak,
-               void(network::mojom::URLLoaderFactory*,
-                    const std::string&,
-                    std::string,
-                    std::string,
-                    LookupSingleLeakCallback));
+  MOCK_METHOD(void, LookupSingleLeak,
+              (network::mojom::URLLoaderFactory*,
+               const std::string&,
+               LookupSingleLeakPayload,
+               LookupSingleLeakCallback), (override));
 };
 
 struct TestLeakDetectionRequest : public LeakDetectionRequestInterface {
@@ -54,10 +54,9 @@ struct TestLeakDetectionRequest : public LeakDetectionRequestInterface {
   // LeakDetectionRequestInterface:
   void LookupSingleLeak(network::mojom::URLLoaderFactory* url_loader_factory,
                         const std::string& access_token,
-                        std::string username_hash_prefix,
-                        std::string encrypted_payload,
+                        LookupSingleLeakPayload payload,
                         LookupSingleLeakCallback callback) override {
-    encrypted_payload_ = std::move(encrypted_payload);
+    encrypted_payload_ = std::move(payload.encrypted_payload);
     callback_ = std::move(callback);
   }
 
@@ -191,8 +190,13 @@ TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenBeforeEncryption) {
 
   auto network_request = std::make_unique<MockLeakDetectionRequest>();
   EXPECT_CALL(*network_request,
-              LookupSingleLeak(_, access_token, ElementsAre(-67, 116, -87),
-                               testing::Ne(""), _));
+              LookupSingleLeak(
+                  _, access_token,
+                  AllOf(Field(&LookupSingleLeakPayload::username_hash_prefix,
+                              ElementsAre(-67, 116, -87)),
+                        Field(&LookupSingleLeakPayload::encrypted_payload,
+                              testing::Ne(""))),
+                  _));
   EXPECT_CALL(*request_factory(), CreateNetworkRequest)
       .WillOnce(Return(ByMove(std::move(network_request))));
   // Crypto stuff is done here.
@@ -220,8 +224,13 @@ TEST_F(AuthenticatedLeakCheckTest, GetAccessTokenAfterEncryption) {
   const std::string access_token = "access_token";
   auto network_request = std::make_unique<MockLeakDetectionRequest>();
   EXPECT_CALL(*network_request,
-              LookupSingleLeak(_, access_token, ElementsAre(-67, 116, -87),
-                               testing::Ne(""), _));
+              LookupSingleLeak(
+                  _, access_token,
+                  AllOf(Field(&LookupSingleLeakPayload::username_hash_prefix,
+                              ElementsAre(-67, 116, -87)),
+                        Field(&LookupSingleLeakPayload::encrypted_payload,
+                              testing::Ne(""))),
+                  _));
   EXPECT_CALL(*request_factory(), CreateNetworkRequest)
       .WillOnce(Return(ByMove(std::move(network_request))));
 

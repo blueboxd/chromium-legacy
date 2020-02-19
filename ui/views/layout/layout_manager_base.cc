@@ -12,29 +12,6 @@
 
 namespace views {
 
-namespace {
-
-// Adjusts |child_available_size| by adding the difference between the host
-// view's size and the size available to it.
-SizeBounds AdjustAvailableSizeForParentAvailableSize(
-    const View* host,
-    const SizeBounds& child_available_size) {
-  if (!host || !host->parent() || child_available_size == SizeBounds())
-    return child_available_size;
-
-  SizeBounds host_additional_size = host->parent()->GetAvailableSize(host);
-  host_additional_size.Enlarge(-host->width(), -host->height());
-  return SizeBounds(
-      child_available_size.width() && host_additional_size.width()
-          ? *child_available_size.width() + *host_additional_size.width()
-          : child_available_size.width(),
-      child_available_size.height() && host_additional_size.height()
-          ? *child_available_size.height() + *host_additional_size.height()
-          : child_available_size.height());
-}
-
-}  // anonymous namespace
-
 LayoutManagerBase::~LayoutManagerBase() = default;
 
 gfx::Size LayoutManagerBase::GetPreferredSize(const View* host) const {
@@ -67,10 +44,8 @@ SizeBounds LayoutManagerBase::GetAvailableSize(const View* host,
   DCHECK_EQ(host_view_, host);
   if (cached_layout_size_) {
     for (const auto& child_layout : cached_layout_.child_layouts)
-      if (child_layout.child_view == view) {
-        return AdjustAvailableSizeForParentAvailableSize(
-            host, child_layout.available_size);
-      }
+      if (child_layout.child_view == view)
+        return child_layout.available_size;
   }
   return SizeBounds();
 }

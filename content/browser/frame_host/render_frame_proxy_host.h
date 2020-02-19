@@ -168,8 +168,8 @@ class CONTENT_EXPORT RenderFrameProxyHost
   // Requests a viz::LocalSurfaceId to disable auto-resize mode from the parent
   // renderer.
   void DisableAutoResize();
-
   void DidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
+  void ChildProcessGone();
 
   blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfacesTesting();
   bool IsInertForTesting();

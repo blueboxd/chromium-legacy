@@ -38,22 +38,7 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   using ToolbarIconMap = std::map<ToolbarActionsModel::ActionId,
                                   std::unique_ptr<ToolbarActionView>>;
 
-  // Determines how the container displays - specifically whether the menu and
-  // popped out action can be hidden.
-  enum class DisplayMode {
-    // In normal mode, the menu icon and popped-out action is always visible.
-    // Normal mode is used for the main toolbar and in windows where there is
-    // always enough space to show at least two icons.
-    kNormal,
-    // In compact mode, one or both of the menu icon and popped-out action may
-    // be hidden. Compact mode is used in smaller windows (e.g. webapps) where
-    // there may not be enough space to display the buttons.
-    kCompact,
-  };
-
-  explicit ExtensionsToolbarContainer(
-      Browser* browser,
-      DisplayMode display_mode = DisplayMode::kNormal);
+  explicit ExtensionsToolbarContainer(Browser* browser);
   ~ExtensionsToolbarContainer() override;
 
   ExtensionsToolbarButton* extensions_button() const {
@@ -204,7 +189,6 @@ class ExtensionsToolbarContainer : public ToolbarIconContainerView,
   ScopedObserver<ToolbarActionsModel, ToolbarActionsModel::Observer>
       model_observer_;
   ExtensionsToolbarButton* const extensions_button_;
-  DisplayMode display_mode_;
 
   // TODO(pbos): Create actions and icons only for pinned pinned / popped out
   // actions (lazily). Currently code expects GetActionForId() to return

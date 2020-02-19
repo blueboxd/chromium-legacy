@@ -590,9 +590,6 @@ void BookmarkRemoteUpdatesHandler::ProcessConflict(
     // Both have been deleted, delete the corresponding entity from the tracker.
     bookmark_tracker_->Remove(update_entity.id);
     DLOG(WARNING) << "Conflict: CHANGES_MATCH";
-    UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
-                              syncer::ConflictResolution::kChangesMatch,
-                              syncer::ConflictResolution::kTypeSize);
     return;
   }
 
@@ -602,9 +599,6 @@ void BookmarkRemoteUpdatesHandler::ProcessConflict(
     bookmark_tracker_->UpdateServerVersion(update_entity.id,
                                            update.response_version);
     DLOG(WARNING) << "Conflict: USE_LOCAL";
-    UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
-                              syncer::ConflictResolution::kUseLocal,
-                              syncer::ConflictResolution::kTypeSize);
     return;
   }
 
@@ -614,9 +608,6 @@ void BookmarkRemoteUpdatesHandler::ProcessConflict(
     bookmark_tracker_->Remove(update_entity.id);
     ProcessCreate(update);
     DLOG(WARNING) << "Conflict: USE_REMOTE";
-    UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
-                              syncer::ConflictResolution::kUseRemote,
-                              syncer::ConflictResolution::kTypeSize);
     return;
   }
 
@@ -668,18 +659,12 @@ void BookmarkRemoteUpdatesHandler::ProcessConflict(
 
     // The changes are identical so there isn't a real conflict.
     DLOG(WARNING) << "Conflict: CHANGES_MATCH";
-    UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
-                              syncer::ConflictResolution::kChangesMatch,
-                              syncer::ConflictResolution::kTypeSize);
     return;
   }
 
   // Conflict where data don't match and no remote deletion, and hence server
   // wins. Update the model from server data.
   DLOG(WARNING) << "Conflict: USE_REMOTE";
-  UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
-                            syncer::ConflictResolution::kUseRemote,
-                            syncer::ConflictResolution::kTypeSize);
   ApplyRemoteUpdate(update, tracked_entity, new_parent_entity, bookmark_model_,
                     bookmark_tracker_, favicon_service_);
 }

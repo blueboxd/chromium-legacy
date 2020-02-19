@@ -124,21 +124,21 @@ TEST_F(InkDropHighlightTest,
   ink_drop_highlight()->FadeIn(base::TimeDelta::FromSeconds(1));
 
   EXPECT_TRUE(observer()->AnimationHasStarted());
-  EXPECT_EQ(InkDropHighlight::FADE_IN,
+  EXPECT_EQ(InkDropHighlight::AnimationType::kFadeIn,
             observer()->last_animation_started_context());
 
   test_api()->CompleteAnimations();
   EXPECT_TRUE(observer()->AnimationHasEnded());
-  EXPECT_EQ(InkDropHighlight::FADE_IN,
+  EXPECT_EQ(InkDropHighlight::AnimationType::kFadeIn,
             observer()->last_animation_started_context());
 
   ink_drop_highlight()->FadeOut(base::TimeDelta::FromSeconds(1),
                                 false /* explode */);
-  EXPECT_EQ(InkDropHighlight::FADE_OUT,
+  EXPECT_EQ(InkDropHighlight::AnimationType::kFadeOut,
             observer()->last_animation_started_context());
 
   test_api()->CompleteAnimations();
-  EXPECT_EQ(InkDropHighlight::FADE_OUT,
+  EXPECT_EQ(InkDropHighlight::AnimationType::kFadeOut,
             observer()->last_animation_started_context());
 }
 
@@ -162,7 +162,7 @@ TEST_F(InkDropHighlightTest, VerifyObserversAreNotifiedOfPreemptedAnimations) {
                                 false /* explode */);
 
   EXPECT_EQ(2, observer()->last_animation_ended_ordinal());
-  EXPECT_EQ(InkDropHighlight::FADE_IN,
+  EXPECT_EQ(InkDropHighlight::AnimationType::kFadeIn,
             observer()->last_animation_ended_context());
   EXPECT_EQ(InkDropAnimationEndedReason::PRE_EMPTED,
             observer()->last_animation_ended_reason());
@@ -193,7 +193,7 @@ TEST_F(InkDropHighlightTest, AnimationsAbortedDuringDeletion) {
   DestroyHighlight();
   EXPECT_EQ(1, observer()->last_animation_started_ordinal());
   EXPECT_EQ(2, observer()->last_animation_ended_ordinal());
-  EXPECT_EQ(InkDropHighlight::FADE_IN,
+  EXPECT_EQ(InkDropHighlight::AnimationType::kFadeIn,
             observer()->last_animation_ended_context());
   EXPECT_EQ(InkDropAnimationEndedReason::PRE_EMPTED,
             observer()->last_animation_ended_reason());

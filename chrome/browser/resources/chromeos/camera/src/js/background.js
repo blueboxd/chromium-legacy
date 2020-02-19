@@ -236,6 +236,13 @@ class CCAWindow {
   }
 
   /**
+   * @override
+   */
+  isTesting() {
+    return onAppWindowCreatedForTesting !== null;
+  }
+
+  /**
    * Suspends the app window.
    */
   suspend() {

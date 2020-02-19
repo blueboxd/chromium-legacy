@@ -659,7 +659,8 @@ NGBreakStatus NGColumnLayoutAlgorithm::LayoutSpanner(
   margin_strut->Append(margins.block_start, /* is_quirky */ false);
 
   LayoutUnit block_offset = intrinsic_block_size_ + margin_strut->Sum();
-  auto spanner_space = CreateConstraintSpaceForSpanner(block_offset);
+  auto spanner_space =
+      CreateConstraintSpaceForSpanner(spanner_node, block_offset);
 
   const NGEarlyBreak* early_break_in_child = nullptr;
   if (early_break_ && early_break_->Type() == NGEarlyBreak::kBlock &&
@@ -987,6 +988,7 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForBalancing(
 }
 
 NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForSpanner(
+    const NGBlockNode& spanner,
     LayoutUnit block_offset) const {
   NGConstraintSpaceBuilder space_builder(
       ConstraintSpace(), Style().GetWritingMode(), /* is_new_fc */ true);
@@ -994,7 +996,7 @@ NGConstraintSpace NGColumnLayoutAlgorithm::CreateConstraintSpaceForSpanner(
   space_builder.SetPercentageResolutionSize(content_box_size_);
 
   if (ConstraintSpace().HasBlockFragmentation()) {
-    SetupFragmentation(ConstraintSpace(), block_offset, &space_builder,
+    SetupFragmentation(ConstraintSpace(), spanner, block_offset, &space_builder,
                        /* is_new_fc */ true);
   }
 

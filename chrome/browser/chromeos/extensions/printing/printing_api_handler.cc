@@ -248,6 +248,11 @@ void PrintingAPIHandler::OnPrinterStatusRetrieved(
           /*error=*/base::nullopt));
 }
 
+void PrintingAPIHandler::SetPrintJobControllerForTesting(
+    std::unique_ptr<PrintJobController> print_job_controller) {
+  print_job_controller_ = std::move(print_job_controller);
+}
+
 void PrintingAPIHandler::OnPrintJobCreated(
     base::WeakPtr<chromeos::CupsPrintJob> job) {
   DispatchJobStatusChangedEvent(api::printing::JOB_STATUS_PENDING, job);

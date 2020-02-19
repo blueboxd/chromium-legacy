@@ -138,4 +138,11 @@ std::string CipherDecrypt(const std::string& ciphertext,
   return std::string();
 }
 
+std::string CreateNewKey() {
+  using ::private_join_and_compute::ECCommutativeCipher;
+  auto cipher = ECCommutativeCipher::CreateWithNewKey(
+      NID_X9_62_prime256v1, ECCommutativeCipher::SHA256);
+  return cipher.ValueOrDie()->GetPrivateKeyBytes();
+}
+
 }  // namespace password_manager

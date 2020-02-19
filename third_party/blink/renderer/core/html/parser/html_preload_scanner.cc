@@ -469,9 +469,10 @@ class TokenPreloadScanner::StartTagScanner {
       img_src_url_ = attribute_value;
     } else if (Match(attribute_name, html_names::kRelAttr)) {
       LinkRelAttribute rel(attribute_value);
-      link_is_style_sheet_ = rel.IsStyleSheet() && !rel.IsAlternate() &&
-                             rel.GetIconType() == kInvalidIcon &&
-                             !rel.IsDNSPrefetch();
+      link_is_style_sheet_ =
+          rel.IsStyleSheet() && !rel.IsAlternate() &&
+          rel.GetIconType() == mojom::blink::FaviconIconType::kInvalid &&
+          !rel.IsDNSPrefetch();
       link_is_preconnect_ = rel.IsPreconnect();
       link_is_preload_ = rel.IsLinkPreload();
       link_is_modulepreload_ = rel.IsModulePreload();

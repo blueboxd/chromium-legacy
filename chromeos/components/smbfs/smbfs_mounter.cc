@@ -16,7 +16,6 @@
 namespace smbfs {
 
 namespace {
-constexpr char kMessagePipeName[] = "smbfs-bootstrap";
 constexpr char kMountUrlPrefix[] = "smbfs://";
 constexpr base::TimeDelta kMountTimeout = base::TimeDelta::FromSeconds(20);
 }  // namespace
@@ -93,7 +92,7 @@ void SmbFsMounter::Mount(SmbFsMounter::DoneCallback callback) {
     mojo_fd_pending_ = true;
 
     bootstrap_.Bind(mojo::PendingRemote<mojom::SmbFsBootstrap>(
-        bootstrap_invitation_.AttachMessagePipe(kMessagePipeName),
+        bootstrap_invitation_.AttachMessagePipe(mojom::kBootstrapPipeName),
         mojom::SmbFsBootstrap::Version_));
   }
   bootstrap_.set_disconnect_handler(

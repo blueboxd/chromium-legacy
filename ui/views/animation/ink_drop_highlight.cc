@@ -35,9 +35,9 @@ constexpr float kDefaultOpacity = 0.128f;
 
 std::string ToString(InkDropHighlight::AnimationType animation_type) {
   switch (animation_type) {
-    case InkDropHighlight::FADE_IN:
+    case InkDropHighlight::AnimationType::kFadeIn:
       return std::string("FADE_IN");
-    case InkDropHighlight::FADE_OUT:
+    case InkDropHighlight::AnimationType::kFadeOut:
       return std::string("FADE_OUT");
   }
   NOTREACHED()
@@ -112,11 +112,12 @@ bool InkDropHighlight::IsFadingInOrVisible() const {
 void InkDropHighlight::FadeIn(const base::TimeDelta& duration) {
   layer_->SetOpacity(kHiddenOpacity);
   layer_->SetVisible(true);
-  AnimateFade(FADE_IN, duration, size_, size_);
+  AnimateFade(AnimationType::kFadeIn, duration, size_, size_);
 }
 
 void InkDropHighlight::FadeOut(const base::TimeDelta& duration, bool explode) {
-  AnimateFade(FADE_OUT, duration, size_, explode ? explode_size_ : size_);
+  AnimateFade(AnimationType::kFadeOut, duration, size_,
+              explode ? explode_size_ : size_);
 }
 
 test::InkDropHighlightTestApi* InkDropHighlight::GetTestApi() {
@@ -130,7 +131,8 @@ void InkDropHighlight::AnimateFade(AnimationType animation_type,
   const base::TimeDelta effective_duration =
       gfx::Animation::ShouldRenderRichAnimation() ? duration
                                                   : base::TimeDelta();
-  last_animation_initiated_was_fade_in_ = animation_type == FADE_IN;
+  last_animation_initiated_was_fade_in_ =
+      animation_type == AnimationType::kFadeIn;
 
   layer_->SetTransform(CalculateTransform(initial_size));
 
@@ -151,7 +153,8 @@ void InkDropHighlight::AnimateFade(AnimationType animation_type,
 
   std::unique_ptr<ui::LayerAnimationElement> opacity_element =
       ui::LayerAnimationElement::CreateOpacityElement(
-          animation_type == FADE_IN ? visible_opacity_ : kHiddenOpacity,
+          animation_type == AnimationType::kFadeIn ? visible_opacity_
+                                                   : kHiddenOpacity,
           effective_duration);
   ui::LayerAnimationSequence* opacity_sequence =
       new ui::LayerAnimationSequence(std::move(opacity_element));
@@ -207,7 +210,7 @@ bool InkDropHighlight::AnimationEndedCallback(
     const ui::CallbackLayerAnimationObserver& observer) {
   // AnimationEndedCallback() may be invoked when this is being destroyed and
   // |layer_| may be null.
-  if (animation_type == FADE_OUT && layer_)
+  if (animation_type == AnimationType::kFadeOut && layer_)
     layer_->SetVisible(false);
 
   if (observer_) {

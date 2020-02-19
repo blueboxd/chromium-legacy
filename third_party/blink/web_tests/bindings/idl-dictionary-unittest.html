@@ -273,14 +273,6 @@ if (window.internals && internals.dictionaryTest) {
     shouldThrow('dictionaryTest.set({ longMemberWithEnforceRange: 2147483648 })');
     debug('');
 
-    debug('Test for [ImplementedAs] and [DeprecateAs] member');
-    dictionaryTest.set({
-        deprecateLongMember: 42
-    });
-    dict = dictionaryTest.get();
-    shouldBe('dict.longMember', '42');
-    debug('');
-
     debug('Test for passing EventTarget');
     dictionaryTest.set({
         eventTargetOrNullMember: window

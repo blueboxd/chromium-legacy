@@ -58,10 +58,10 @@ class ClientTagBasedRemoteUpdateHandler {
                                  std::string* storage_key_to_clear);
 
   // Resolve a conflict between |update| and the pending commit in |entity|.
-  ConflictResolution ResolveConflict(UpdateResponseData update,
-                                     ProcessorEntity* entity,
-                                     EntityChangeList* changes,
-                                     std::string* storage_key_to_clear);
+  void ResolveConflict(UpdateResponseData update,
+                       ProcessorEntity* entity,
+                       EntityChangeList* changes,
+                       std::string* storage_key_to_clear);
 
   // Gets the entity for the given tag hash, or null if there isn't one.
   ProcessorEntity* GetEntityForTagHash(const ClientTagHash& tag_hash);

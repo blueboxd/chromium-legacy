@@ -57,6 +57,16 @@ void WebAppTabHelper::SetAppId(const AppId& app_id) {
   OnAssociatedAppChanged();
 }
 
+void WebAppTabHelper::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  const GURL& url = navigation_handle->GetURL();
+  const AppId app_id = FindAppIdWithUrlInScope(url);
+  SetAppId(app_id);
+}
+
 void WebAppTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
@@ -64,11 +74,8 @@ void WebAppTabHelper::DidFinishNavigation(
 
   is_error_page_ = navigation_handle->IsErrorPage();
 
-  const GURL& url = navigation_handle->GetURL();
-  const AppId app_id = FindAppIdWithUrlInScope(url);
-  SetAppId(app_id);
-
-  provider_->manifest_update_manager().MaybeUpdate(url, app_id, web_contents());
+  provider_->manifest_update_manager().MaybeUpdate(navigation_handle->GetURL(),
+                                                   GetAppId(), web_contents());
 
   ReinstallPlaceholderAppIfNecessary(navigation_handle->GetURL());
 }

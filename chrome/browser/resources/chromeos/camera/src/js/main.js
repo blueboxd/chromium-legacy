@@ -264,6 +264,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   assert(window['backgroundOps'] !== undefined);
   const /** !BackgroundOps */ bgOps = window['backgroundOps'];
+
+  metrics.initMetrics(bgOps.isTesting());
+
   const perfLogger = bgOps.getPerfLogger();
 
   // Setup listener for performance events.

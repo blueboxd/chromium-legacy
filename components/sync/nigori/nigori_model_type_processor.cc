@@ -167,9 +167,6 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
     // of reapplying pending local changes after processing the remote update.
     entity_->RecordForcedUpdate(updates[0]);
     error = bridge_->ApplySyncChanges(std::move(updates[0].entity));
-    UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict",
-                              ConflictResolution::kUseRemote,
-                              ConflictResolution::kTypeSize);
     UMA_HISTOGRAM_ENUMERATION("Sync.ResolveSimpleConflict",
                               ConflictResolver::NIGORI_MERGE,
                               ConflictResolver::CONFLICT_RESOLUTION_SIZE);

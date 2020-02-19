@@ -997,16 +997,12 @@ TEST_F(
   response_data2.response_version++;
   updates.push_back(std::move(response_data2));
 
-  base::HistogramTester histogram_tester;
   updates_handler()->Process(updates,
                              /*got_new_encryption_requirements=*/false);
 
   // There should have been conflict, and it should have been resolved by
   // removing local entity since both changes are deletions.
   EXPECT_THAT(tracker()->GetEntityForSyncId(kId), IsNull());
-  histogram_tester.ExpectBucketCount(
-      "Sync.ResolveConflict",
-      /*sample=*/syncer::ConflictResolution::kChangesMatch, /*count=*/1);
 }
 
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
@@ -1084,7 +1080,6 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
       syncer::UniquePosition::InitialPosition(
           syncer::UniquePosition::RandomSuffix())));
 
-  base::HistogramTester histogram_tester;
   updates_handler()->Process(updates,
                              /*got_new_encryption_requirements=*/false);
 
@@ -1093,10 +1088,6 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   EXPECT_THAT(tracker()->GetEntityForSyncId(kId), IsNull());
   // Make sure the bookmark hasn't been resurrected.
   EXPECT_THAT(bookmark_bar_node->children().size(), Eq(0u));
-
-  histogram_tester.ExpectBucketCount(
-      "Sync.ResolveConflict",
-      /*sample=*/syncer::ConflictResolution::kChangesMatch, /*count=*/1);
 }
 
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
@@ -1137,7 +1128,6 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
       syncer::UniquePosition::InitialPosition(
           syncer::UniquePosition::RandomSuffix())));
 
-  base::HistogramTester histogram_tester;
   updates_handler()->Process(updates,
                              /*got_new_encryption_requirements=*/false);
 
@@ -1147,10 +1137,6 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
   EXPECT_THAT(bookmark_bar_node->children().size(), Eq(1u));
-
-  histogram_tester.ExpectBucketCount(
-      "Sync.ResolveConflict",
-      /*sample=*/syncer::ConflictResolution::kUseLocal, /*count=*/1);
 }
 
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
@@ -1199,7 +1185,6 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
       syncer::UniquePosition::InitialPosition(
           syncer::UniquePosition::RandomSuffix())));
 
-  base::HistogramTester histogram_tester;
   updates_handler()->Process(updates,
                              /*got_new_encryption_requirements=*/false);
 
@@ -1211,10 +1196,6 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
 
   // The bookmark should have been resurrected.
   EXPECT_THAT(bookmark_bar_node->children().size(), Eq(1u));
-
-  histogram_tester.ExpectBucketCount(
-      "Sync.ResolveConflict",
-      /*sample=*/syncer::ConflictResolution::kUseRemote, /*count=*/1);
 }
 
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
@@ -1257,17 +1238,12 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
       /*version=*/1,
       /*unique_position=*/kPosition));
 
-  base::HistogramTester histogram_tester;
   updates_handler()->Process(updates,
                              /*got_new_encryption_requirements=*/false);
 
   // There should have been conflict but both local and remote updates should
   // match. The conflict should have been resolved.
   EXPECT_THAT(tracker()->GetEntityForSyncId(kId)->IsUnsynced(), Eq(false));
-
-  histogram_tester.ExpectBucketCount(
-      "Sync.ResolveConflict",
-      /*sample=*/syncer::ConflictResolution::kChangesMatch, /*count=*/1);
 }
 
 TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
@@ -1313,7 +1289,6 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
       syncer::UniquePosition::InitialPosition(
           syncer::UniquePosition::RandomSuffix())));
 
-  base::HistogramTester histogram_tester;
   updates_handler.Process(updates, /*got_new_encryption_requirements=*/false);
 
   // There should have been conflict, and it should have been resolved with the
@@ -1324,10 +1299,6 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(1u));
   EXPECT_THAT(bookmark_bar_node->children().front()->GetTitle(),
               Eq(ASCIIToUTF16(kNewRemoteTitle)));
-
-  histogram_tester.ExpectBucketCount(
-      "Sync.ResolveConflict",
-      /*sample=*/syncer::ConflictResolution::kUseRemote, /*count=*/1);
 }
 
 }  // namespace

@@ -46,9 +46,6 @@ class ResourceLoadingHintsAgent
 
  private:
   // content::RenderFrameObserver:
-  void DidStartNavigation(
-      const GURL& url,
-      base::Optional<blink::WebNavigationType> navigation_type) override;
   void DidCreateNewDocument() override;
   void OnDestruct() override;
 
@@ -66,6 +63,8 @@ class ResourceLoadingHintsAgent
 
   bool IsMainFrame() const;
 
+  bool did_create_new_document_ = false;
+
   std::vector<std::string> subresource_patterns_to_block_;
   base::Optional<int64_t> ukm_source_id_;
 
@@ -74,6 +73,7 @@ class ResourceLoadingHintsAgent
 
   subresource_redirect::SubresourceRedirectHintsAgent
       subresource_redirect_hints_agent_;
+  blink::mojom::CompressPublicImagesHintsPtr images_hints_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadingHintsAgent);
 };

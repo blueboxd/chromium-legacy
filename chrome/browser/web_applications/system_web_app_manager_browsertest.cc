@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/web_applications/extensions/system_web_app_manager_browsertest.h"
+#include "chrome/browser/web_applications/system_web_app_manager_browsertest.h"
 
 #include <string>
 #include <utility>
@@ -14,17 +14,14 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
-#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/native_file_system/native_file_system_permission_request_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/test/test_system_web_app_installation.h"
 #include "chrome/browser/web_applications/test/test_web_app_provider.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/extensions/manifest_handlers/app_theme_color_info.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/permissions/permission_util.h"
 #include "content/public/browser/web_contents.h"
@@ -53,14 +50,6 @@ SystemWebAppManagerBrowserTest::SystemWebAppManagerBrowserTest(
 }
 
 SystemWebAppManagerBrowserTest::~SystemWebAppManagerBrowserTest() = default;
-
-// static
-const extensions::Extension*
-SystemWebAppManagerBrowserTest::GetExtensionForAppBrowser(Browser* browser) {
-  return static_cast<extensions::HostedAppBrowserController*>(
-             browser->app_controller())
-      ->GetExtensionForTesting();
-}
 
 SystemWebAppManager& SystemWebAppManagerBrowserTest::GetManager() {
   return WebAppProvider::Get(browser()->profile())->system_web_app_manager();
@@ -129,20 +118,31 @@ content::EvalJsResult EvalJs(content::WebContents* web_contents,
 
 // Test that System Apps install correctly with a manifest.
 IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest, Install) {
-  const extensions::Extension* app = GetExtensionForAppBrowser(
-      WaitForSystemAppInstallAndLaunch(GetMockAppType()));
-  EXPECT_EQ("Test System App", app->name());
-  EXPECT_EQ(SkColorSetRGB(0, 0xFF, 0),
-            extensions::AppThemeColorInfo::GetThemeColor(app));
-  EXPECT_TRUE(app->from_bookmark());
-  EXPECT_EQ(extensions::Manifest::EXTERNAL_COMPONENT, app->location());
+  Browser* app_browser = WaitForSystemAppInstallAndLaunch(GetMockAppType());
 
-  // The app should be a PWA.
-  base::Optional<AppId> app_id = web_app::FindInstalledAppWithUrlInScope(
-      browser()->profile(), content::GetWebUIURL("test-system-app/"));
-  DCHECK(app_id);
-  EXPECT_EQ(*app_id, app->id());
-  EXPECT_TRUE(GetManager().IsSystemWebApp(app->id()));
+  AppId app_id = app_browser->app_controller()->GetAppId();
+  EXPECT_EQ(GetManager().GetAppIdForSystemApp(GetMockAppType()), app_id);
+  EXPECT_TRUE(GetManager().IsSystemWebApp(app_id));
+
+  Profile* profile = app_browser->profile();
+  AppRegistrar& registrar =
+      WebAppProviderBase::GetProviderBase(profile)->registrar();
+
+  EXPECT_EQ("Test System App", registrar.GetAppShortName(app_id));
+  EXPECT_EQ(SkColorSetRGB(0, 0xFF, 0), registrar.GetAppThemeColor(app_id));
+  EXPECT_TRUE(registrar.HasExternalAppWithInstallSource(
+      app_id, web_app::ExternalInstallSource::kSystemInstalled));
+  EXPECT_EQ(
+      registrar.FindAppWithUrlInScope(content::GetWebUIURL("test-system-app/")),
+      app_id);
+
+  if (!base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
+    const extensions::Extension* extension =
+        extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
+            app_id);
+    EXPECT_TRUE(extension->from_bookmark());
+    EXPECT_EQ(extensions::Manifest::EXTERNAL_COMPONENT, extension->location());
+  }
 }
 
 // Check the toolbar is not shown for system web apps for pages on the chrome://
@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
   content::TestNavigationObserver navigation_observer(launch_url);
   navigation_observer.StartWatchingNewWebContents();
   content::WebContents* web_contents =
-      OpenApplication(browser()->profile(), params);
+      apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
   navigation_observer.Wait();
 
   // Set up a Promise that resolves to launchParams, when launchQueue's consumer
@@ -235,7 +235,7 @@ IN_PROC_BROWSER_TEST_F(SystemWebAppManagerBrowserTest,
                                              &temp_file_path2));
   params.launch_files = {temp_file_path2};
   content::WebContents* web_contents2 =
-      OpenApplication(browser()->profile(), params);
+      apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
 
   // WebContents* should be the same because we are passing launchParams to the
   // opened application.
@@ -292,7 +292,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchFilesBrowserTest,
   content::TestNavigationObserver navigation_observer(launch_url);
   navigation_observer.StartWatchingNewWebContents();
   content::WebContents* web_contents =
-      OpenApplication(browser()->profile(), params);
+      apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
   navigation_observer.Wait();
 
   // Set up a Promise that resolves to launchParams, when launchQueue's consumer
@@ -356,7 +356,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerLaunchFilesBrowserTest,
                                              &temp_file_path2));
   params.launch_files = {temp_file_path2};
   content::WebContents* web_contents2 =
-      OpenApplication(browser()->profile(), params);
+      apps::LaunchService::Get(browser()->profile())->OpenApplication(params);
 
   // WebContents* should be the same because we are passing launchParams to the
   // opened application.

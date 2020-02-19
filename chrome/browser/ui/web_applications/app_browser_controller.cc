@@ -117,10 +117,6 @@ AppBrowserController::~AppBrowserController() {
   browser()->tab_strip_model()->RemoveObserver(this);
 }
 
-bool AppBrowserController::CreatedForInstalledPwa() const {
-  return false;
-}
-
 bool AppBrowserController::ShouldShowCustomTabBar() const {
   if (!IsInstalled())
     return false;

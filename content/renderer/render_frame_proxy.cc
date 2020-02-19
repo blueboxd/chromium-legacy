@@ -374,7 +374,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxy, msg)
-    IPC_MESSAGE_HANDLER(FrameMsg_ChildFrameProcessGone, OnChildFrameProcessGone)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
     IPC_MESSAGE_HANDLER(FrameMsg_ViewChanged, OnViewChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_DidUpdateName, OnDidUpdateName)
@@ -413,7 +412,7 @@ void RenderFrameProxy::OnDeleteProxy() {
   web_frame_->Detach();
 }
 
-void RenderFrameProxy::OnChildFrameProcessGone() {
+void RenderFrameProxy::ChildProcessGone() {
   crashed_ = true;
   compositing_helper_->ChildFrameGone(local_frame_size(),
                                       screen_info().device_scale_factor);

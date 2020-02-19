@@ -47,7 +47,7 @@ class CORE_EXPORT LinkRelAttribute {
   explicit LinkRelAttribute(const String&);
 
   bool IsStyleSheet() const { return is_style_sheet_; }
-  IconType GetIconType() const { return icon_type_; }
+  mojom::blink::FaviconIconType GetIconType() const { return icon_type_; }
   bool IsAlternate() const { return is_alternate_; }
   bool IsDNSPrefetch() const { return is_dns_prefetch_; }
   bool IsPreconnect() const { return is_preconnect_; }
@@ -63,7 +63,7 @@ class CORE_EXPORT LinkRelAttribute {
   bool IsMonetization() const { return is_monetization_; }
 
  private:
-  IconType icon_type_;
+  mojom::blink::FaviconIconType icon_type_;
   bool is_style_sheet_ : 1;
   bool is_alternate_ : 1;
   bool is_dns_prefetch_ : 1;

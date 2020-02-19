@@ -36,44 +36,29 @@ ExtensionsToolbarContainer::DropInfo::DropInfo(
     size_t index)
     : action_id(action_id), index(index) {}
 
-ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser,
-                                                       DisplayMode display_mode)
+ExtensionsToolbarContainer::ExtensionsToolbarContainer(Browser* browser)
     : ToolbarIconContainerView(/*uses_highlight=*/true),
       browser_(browser),
       model_(ToolbarActionsModel::Get(browser_->profile())),
       model_observer_(this),
-      extensions_button_(new ExtensionsToolbarButton(browser_, this)),
-      display_mode_(display_mode) {
+      extensions_button_(new ExtensionsToolbarButton(browser_, this)) {
   // The container shouldn't show unless / until we have extensions available.
   SetVisible(false);
 
   model_observer_.Add(model_);
   // Do not flip the Extensions icon in RTL.
   extensions_button_->EnableCanvasFlippingForRTLUI(false);
-
-  const views::FlexSpecification hide_icon_flex_specification =
-      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferredSnapToZero,
-                               views::MaximumFlexSizeRule::kPreferred)
-          .WithWeight(0);
-  switch (display_mode) {
-    case DisplayMode::kNormal:
-      // In normal mode, the menu icon is always shown.
-      extensions_button_->SetProperty(views::kFlexBehaviorKey,
-                                      views::FlexSpecification());
-      break;
-    case DisplayMode::kCompact:
-      // In compact mode, the menu icon can be hidden but has the highest
-      // priority.
-      extensions_button_->SetProperty(
-          views::kFlexBehaviorKey, hide_icon_flex_specification.WithOrder(1));
-      break;
-  }
+  extensions_button_->SetProperty(views::kFlexBehaviorKey,
+                                  views::FlexSpecification());
   extensions_button_->SetID(VIEW_ID_EXTENSIONS_MENU_BUTTON);
   AddMainButton(extensions_button_);
   target_layout_manager()
       ->SetFlexAllocationOrder(views::FlexAllocationOrder::kReverse)
       .SetDefault(views::kFlexBehaviorKey,
-                  hide_icon_flex_specification.WithOrder(3));
+                  views::FlexSpecification(
+                      views::MinimumFlexSizeRule::kPreferredSnapToZero,
+                      views::MaximumFlexSizeRule::kPreferred)
+                      .WithWeight(0));
   CreateActions();
 
   // TODO(pbos): Consider splitting out tab-strip observing into another class.
@@ -154,28 +139,11 @@ void ExtensionsToolbarContainer::UpdateIconVisibility(
   // Popped out action uses a flex rule that causes it to always be visible
   // regardless of space; default for actions is to drop out when there is
   // insufficient space. So if an action is being forced visible, it should have
-  // a rule that gives it higher priority, and if it does not, it should use the
-  // default.
+  // the always-show flex rule, and if it not, it should not.
   const bool must_show = ShouldForceVisibility(extension_id);
   if (must_show) {
-    switch (display_mode_) {
-      case DisplayMode::kNormal:
-        // In normal mode, the icon's visibility is forced.
-        action_view->SetProperty(views::kFlexBehaviorKey,
-                                 views::FlexSpecification());
-        break;
-      case DisplayMode::kCompact:
-        // In compact mode, the icon can still drop out, but receives precedence
-        // over other actions.
-        action_view->SetProperty(
-            views::kFlexBehaviorKey,
-            views::FlexSpecification(
-                views::MinimumFlexSizeRule::kPreferredSnapToZero,
-                views::MaximumFlexSizeRule::kPreferred)
-                .WithWeight(0)
-                .WithOrder(2));
-        break;
-    }
+    action_view->SetProperty(views::kFlexBehaviorKey,
+                             views::FlexSpecification());
   } else {
     action_view->ClearProperty(views::kFlexBehaviorKey);
   }

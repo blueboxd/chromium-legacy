@@ -55,6 +55,9 @@ std::string CipherReEncrypt(const std::string& already_encrypted,
 std::string CipherDecrypt(const std::string& ciphertext,
                           const std::string& key);
 
+// Returns a new key suitable for the encryption functions above.
+std::string CreateNewKey();
+
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LEAK_DETECTION_ENCRYPTION_UTILS_H_

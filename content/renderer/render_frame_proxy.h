@@ -221,7 +221,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   // IPC handlers
   void OnDeleteProxy();
-  void OnChildFrameProcessGone();
   void OnCompositorFrameSwapped(const IPC::Message& message);
   void OnUpdateOpener(int opener_routing_id);
   void OnViewChanged(const FrameMsg_ViewChanged_Params& params);
@@ -236,6 +235,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void DisableAutoResize() override;
   void DidUpdateVisualProperties(
       const cc::RenderFrameMetadata& metadata) override;
+  void ChildProcessGone() override;
 
   // ChildFrameCompositor:
   cc::Layer* GetLayer() override;

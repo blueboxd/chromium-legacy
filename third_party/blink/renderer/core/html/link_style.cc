@@ -311,7 +311,8 @@ void LinkStyle::Process() {
 
   WTF::TextEncoding charset = GetCharset();
 
-  if (owner_->RelAttribute().GetIconType() != kInvalidIcon &&
+  if (owner_->RelAttribute().GetIconType() !=
+          mojom::blink::FaviconIconType::kInvalid &&
       params.href.IsValid() && !params.href.IsEmpty()) {
     if (!owner_->ShouldLoadLink())
       return;

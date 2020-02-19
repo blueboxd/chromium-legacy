@@ -468,6 +468,7 @@ void AnimatingLayoutManager::LayoutImpl() {
         GetMainAxis(orientation(), current_layout_.host_size);
     if (current_main > host_main ||
         (bounds_main && current_main > *bounds_main)) {
+      DCHECK(!bounds_main || *bounds_main >= host_main);
       last_available_host_size_ = available_size;
       ResetLayoutToSize(host_size);
     } else if (available_size != last_available_host_size_) {

@@ -189,7 +189,7 @@ public class ClearBrowsingDataTabsFragment extends Fragment {
         if (item.getItemId() == R.id.menu_id_targeted_help) {
             HelpAndFeedback.getInstance().show(getActivity(),
                     getString(R.string.help_context_clear_browsing_data),
-                    Profile.getLastUsedProfile(), null);
+                    Profile.getLastUsedRegularProfile(), null);
             return true;
         }
         return false;

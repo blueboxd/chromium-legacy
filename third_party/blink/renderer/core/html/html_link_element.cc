@@ -426,7 +426,7 @@ bool HTMLLinkElement::Async() const {
   return FastHasAttribute(html_names::kAsyncAttr);
 }
 
-IconType HTMLLinkElement::GetIconType() const {
+mojom::blink::FaviconIconType HTMLLinkElement::GetIconType() const {
   return rel_attribute_.GetIconType();
 }
 

@@ -9,6 +9,7 @@
 #include <string>
 
 #include "components/password_manager/core/browser/leak_detection/leak_detection_request_factory.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
 
 namespace network {
 class SimpleURLLoader;
@@ -47,8 +48,7 @@ class LeakDetectionRequest : public LeakDetectionRequestInterface {
   // invoked with |nullptr|, otherwise a SingleLookupResponse is returned.
   void LookupSingleLeak(network::mojom::URLLoaderFactory* url_loader_factory,
                         const std::string& access_token,
-                        std::string username_hash_prefix,
-                        std::string encrypted_payload,
+                        LookupSingleLeakPayload payload,
                         LookupSingleLeakCallback callback) override;
 
  private:

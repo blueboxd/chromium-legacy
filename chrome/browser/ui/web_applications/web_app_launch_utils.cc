@@ -58,24 +58,14 @@ Browser* ReparentWebContentsWithBrowserCreateParams(
 
 namespace web_app {
 
-base::Optional<AppId> GetPwaForSecureActiveTab(Browser* browser) {
-  switch (browser->location_bar_model()->GetSecurityLevel()) {
-    case security_state::SECURITY_LEVEL_COUNT:
-      NOTREACHED();
-      FALLTHROUGH;
-    case security_state::NONE:
-    case security_state::WARNING:
-    case security_state::DANGEROUS:
-      return base::nullopt;
-    case security_state::EV_SECURE:
-    case security_state::SECURE:
-    case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
-      break;
-  }
-  content::WebContents* web_contents =
-      browser->tab_strip_model()->GetActiveWebContents();
+base::Optional<AppId> GetWebAppForActiveTab(Browser* browser) {
   WebAppProvider* provider = WebAppProvider::Get(browser->profile());
   if (!provider)
+    return base::nullopt;
+
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (!web_contents)
     return base::nullopt;
 
   return provider->registrar().FindAppWithUrlInScope(
@@ -102,8 +92,8 @@ void PrunePreScopeNavigationHistory(const GURL& scope,
   }
 }
 
-Browser* ReparentWebAppForSecureActiveTab(Browser* browser) {
-  base::Optional<AppId> app_id = GetPwaForSecureActiveTab(browser);
+Browser* ReparentWebAppForActiveTab(Browser* browser) {
+  base::Optional<AppId> app_id = GetWebAppForActiveTab(browser);
   if (!app_id)
     return nullptr;
   return ReparentWebContentsIntoAppBrowser(

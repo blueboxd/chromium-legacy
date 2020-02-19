@@ -41,8 +41,6 @@ enum SchemaOnErrorStrategy {
   SCHEMA_STRICT = 0,
   // Unknown properties in any dictionary will be ignored.
   SCHEMA_ALLOW_UNKNOWN,
-  // Mismatched values will be ignored.
-  SCHEMA_ALLOW_INVALID,
 };
 
 // Schema validation options for Schema::ParseToDictAndValidate().

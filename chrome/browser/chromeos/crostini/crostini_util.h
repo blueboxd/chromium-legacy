@@ -211,6 +211,7 @@ base::string16 GetTimeRemainingMessage(base::TimeTicks start, int percent);
 // Splits the range between |min_size| and |available_space| into enough
 // evenly-spaced intervals you can use them as ticks on a slider. Will return an
 // empty set if the range is invalid (e.g. any numbers are negative).
+// The number of ticks will fit in a signed integer.
 std::vector<int64_t> GetTicksForDiskSize(int64_t min_size,
                                          int64_t available_space);
 

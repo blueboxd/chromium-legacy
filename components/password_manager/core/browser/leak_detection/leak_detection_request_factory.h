@@ -18,6 +18,7 @@ class URLLoaderFactory;
 
 namespace password_manager {
 
+struct LookupSingleLeakPayload;
 struct SingleLookupResponse;
 
 // Interface for the class making the network requests for leak detection.
@@ -45,8 +46,7 @@ class LeakDetectionRequestInterface {
   virtual void LookupSingleLeak(
       network::mojom::URLLoaderFactory* url_loader_factory,
       const std::string& access_token,
-      std::string username_hash_prefix,
-      std::string encrypted_payload,
+      LookupSingleLeakPayload payload,
       LookupSingleLeakCallback callback) = 0;
 };
 

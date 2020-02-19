@@ -2420,8 +2420,8 @@ NGConstraintSpace NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     // fragmentation line.
     if (is_new_fc)
       fragmentainer_offset_delta = *child_bfc_block_offset;
-    SetupFragmentation(ConstraintSpace(), fragmentainer_offset_delta, &builder,
-                       is_new_fc);
+    SetupFragmentation(ConstraintSpace(), child, fragmentainer_offset_delta,
+                       &builder, is_new_fc);
     builder.SetEarlyBreakAppeal(container_builder_.BreakAppeal());
   }
 

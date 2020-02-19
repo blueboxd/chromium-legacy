@@ -2272,22 +2272,17 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DeleteSelectionCrash) {
   RunHtmlTest(FILE_PATH_LITERAL("delete-selection-crash.html"));
 }
 
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DisplayLockingActivatable) {
-  RunDisplayLockingTest(FILE_PATH_LITERAL("activatable.html"));
-}
-
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       DisplayLockingActivatableActivated) {
-  RunDisplayLockingTest(FILE_PATH_LITERAL("activatable-activated.html"));
-}
-
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        DisplayLockingNonActivatable) {
   RunDisplayLockingTest(FILE_PATH_LITERAL("non-activatable.html"));
 }
 
-// crbug.com/1043480: disabled due to flakiness.
-IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DISABLED_DisplayLockingAll) {
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       DisplayLockingViewportActivation) {
+  RunDisplayLockingTest(FILE_PATH_LITERAL("viewport-activation.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DisplayLockingAll) {
   RunDisplayLockingTest(FILE_PATH_LITERAL("all.html"));
 }
 

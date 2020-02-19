@@ -94,7 +94,7 @@ class PWAMixedContentBrowserTestWithAutoupgradesDisabled
   base::test::ScopedFeatureList feature_list;
 };
 
-// Tests that mixed content is not loaded inside PWA windows.
+// Tests that mixed content is loaded inside PWA windows.
 IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTest, MixedContentInPWA) {
   ASSERT_TRUE(https_server()->Start());
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -103,7 +103,7 @@ IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTest, MixedContentInPWA) {
   const AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
   CHECK(app_browser);
-  CheckMixedContentFailedToLoad(app_browser);
+  web_app::CheckMixedContentFailedToLoad(app_browser);
 }
 
 // Tests that creating a shortcut app but not installing a PWA is available for
@@ -130,8 +130,8 @@ IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTestWithAutoupgradesDisabled,
   const AppId app_id = InstallPWA(app_url);
   Browser* const app_browser = LaunchWebAppBrowserAndWait(app_id);
 
-  // Mixed content is not allowed in PWAs.
-  CheckMixedContentFailedToLoad(app_browser);
+  // Mixed content should be able to load in web app windows.
+  CheckMixedContentLoaded(app_browser);
 
   chrome::OpenInChrome(app_browser);
   ASSERT_EQ(browser(), chrome::FindLastActive());
@@ -141,7 +141,7 @@ IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTestWithAutoupgradesDisabled,
                                          ->GetLastCommittedURL());
 
   // The WebContents is just reparented, so mixed content is still not loaded.
-  CheckMixedContentFailedToLoad(browser());
+  CheckMixedContentLoaded(browser());
   EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
             kEnabled);
 
@@ -150,13 +150,11 @@ IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTestWithAutoupgradesDisabled,
   chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
   url_observer.Wait();
 
-  // After reloading, mixed content should successfully load because the
-  // WebContents is no longer in a PWA window.
-
+  // After reloading, mixed content should successfully load.
   CheckMixedContentLoaded(browser());
   EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
-            kNotPresent);
-  EXPECT_EQ(ReparentWebAppForSecureActiveTab(browser()), nullptr);
+            kEnabled);
+  EXPECT_NE(ReparentWebAppForActiveTab(browser()), nullptr);
 }
 
 // Tests that when calling ReparentWebContentsIntoAppBrowser, mixed
@@ -177,7 +175,7 @@ IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTestWithAutoupgradesDisabled,
   // A regular tab should be able to load mixed content.
   CheckMixedContentLoaded(browser());
   EXPECT_EQ(GetAppMenuCommandState(IDC_OPEN_IN_PWA_WINDOW, browser()),
-            kNotPresent);
+            kEnabled);
 
   Browser* app_browser =
       ReparentWebContentsIntoAppBrowser(tab_contents, app_id);
@@ -188,9 +186,7 @@ IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTestWithAutoupgradesDisabled,
                                          ->GetLastCommittedURL());
 
   // After reparenting, the WebContents should still have its mixed content
-  // loaded. Note that in practice, this should never happen for PWAs. Users
-  // won't be able to reparent WebContents if there is mixed content loaded
-  // in them.
+  // loaded.
   CheckMixedContentLoaded(app_browser);
 
   ui_test_utils::UrlLoadObserver url_observer(
@@ -198,9 +194,8 @@ IN_PROC_BROWSER_TEST_P(PWAMixedContentBrowserTestWithAutoupgradesDisabled,
   chrome::Reload(app_browser, WindowOpenDisposition::CURRENT_TAB);
   url_observer.Wait();
 
-  // After reloading, mixed content should fail to load, because the WebContents
-  // is now in a PWA window.
-  CheckMixedContentFailedToLoad(app_browser);
+  // Mixed content should be able to load in web app windows.
+  CheckMixedContentLoaded(app_browser);
 }
 
 // Tests that mixed content is not loaded inside iframes in PWA windows.
@@ -235,10 +230,10 @@ IN_PROC_BROWSER_TEST_P(
   content::RenderFrameHost* main_frame =
       app_browser->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
   content::RenderFrameHost* iframe = content::ChildFrameAt(main_frame, 0);
-  EXPECT_FALSE(TryToLoadImage(
+  EXPECT_TRUE(TryToLoadImage(
       iframe, embedded_test_server()->GetURL("foo.com", kImagePath)));
 
-  CheckMixedContentFailedToLoad(app_browser);
+  CheckMixedContentLoaded(app_browser);
 }
 
 // Tests that iframes can't dynamically load mixed content in a regular browser

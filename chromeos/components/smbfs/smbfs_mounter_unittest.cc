@@ -564,7 +564,7 @@ MULTIPROCESS_TEST_MAIN(SmbFsMain) {
       });
 
   bootstrap_receiver.Bind(mojo::PendingReceiver<mojom::SmbFsBootstrap>(
-      invitation.ExtractMessagePipe("smbfs-bootstrap")));
+      invitation.ExtractMessagePipe(mojom::kBootstrapPipeName)));
 
   run_loop.Run();
 

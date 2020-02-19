@@ -40,10 +40,6 @@ class SubresourceRedirectHintsAgent {
   SubresourceRedirectHintsAgent& operator=(
       const SubresourceRedirectHintsAgent&) = delete;
 
-  // Called when a navigation starts to clear the state from previous
-  // navigation.
-  void DidStartNavigation();
-
   void SetCompressPublicImagesHints(
       blink::mojom::CompressPublicImagesHintsPtr images_hints);
 

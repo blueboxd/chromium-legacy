@@ -546,6 +546,35 @@ TEST_F(ThrottlingURLLoaderTest, ModifyURLAndDeferRedirect) {
   EXPECT_EQ(0u, client_.on_complete_called());
 }
 
+// Regression test for crbug.com/1053700.
+TEST_F(ThrottlingURLLoaderTest,
+       RedirectCallbackShouldNotBeCalledAfterDestruction) {
+  throttle_->set_modify_url_in_will_start(GURL("http://example.org/foo"));
+  base::RunLoop run_loop;
+  bool called = false;
+  throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
+      [&](blink::URLLoaderThrottle::Delegate* /* delegate */, bool* defer,
+          std::vector<std::string>* /* removed_headers */,
+          net::HttpRequestHeaders* /* modified_headers */) {
+        *defer = true;
+        called = true;
+      }));
+
+  // We don't use CreateLoaderAndStart because we don't want to call
+  // FlushForTesting().
+  network::ResourceRequest request;
+  request.url = request_url;
+  loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
+      factory_.shared_factory(), std::move(throttles_), 0, 0, 0, &request,
+      &client_, TRAFFIC_ANNOTATION_FOR_TESTS,
+      base::ThreadTaskRunnerHandle::Get());
+
+  loader_ = nullptr;
+
+  run_loop.RunUntilIdle();
+  EXPECT_FALSE(called);
+}
+
 TEST_F(ThrottlingURLLoaderTest, CancelBeforeRedirect) {
   throttle_->set_will_redirect_request_callback(base::BindLambdaForTesting(
       [](blink::URLLoaderThrottle::Delegate* delegate, bool* /* defer */,

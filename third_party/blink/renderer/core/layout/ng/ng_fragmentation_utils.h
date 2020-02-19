@@ -93,6 +93,7 @@ inline void AdjustForFragmentation(const NGBlockBreakToken* break_token,
 // formatting context starts in a previous fragmentainer; the offset from the
 // current fragmentainer block-start.
 void SetupFragmentation(const NGConstraintSpace& parent_space,
+                        const NGLayoutInputNode& child,
                         LayoutUnit fragmentainer_offset_delta,
                         NGConstraintSpaceBuilder*,
                         bool is_new_fc);

@@ -239,7 +239,7 @@ public class SettingsActivity extends ChromeBaseAppCompatActivity
             return true;
         } else if (item.getItemId() == R.id.menu_id_general_help) {
             HelpAndFeedback.getInstance().show(this, getString(R.string.help_context_settings),
-                    Profile.getLastUsedProfile(), null);
+                    Profile.getLastUsedRegularProfile(), null);
             return true;
         }
         return super.onOptionsItemSelected(item);

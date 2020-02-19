@@ -181,13 +181,9 @@ ProcessorEntity* ClientTagBasedRemoteUpdateHandler::ProcessUpdate(
   // moved away into ResolveConflict().
   const std::string update_encryption_key_name = update.encryption_key_name;
   const bool update_is_tombstone = data.is_deleted();
-  ConflictResolution resolution_type = ConflictResolution::kTypeSize;
   if (entity && entity->IsUnsynced()) {
-    // Handle conflict resolution.
-    resolution_type = ResolveConflict(std::move(update), entity, entity_changes,
-                                      storage_key_to_clear);
-    UMA_HISTOGRAM_ENUMERATION("Sync.ResolveConflict", resolution_type,
-                              ConflictResolution::kTypeSize);
+    ResolveConflict(std::move(update), entity, entity_changes,
+                    storage_key_to_clear);
   } else {
     // Handle simple create/delete/update.
     base::Optional<EntityChange::ChangeType> change_type;
@@ -240,14 +236,14 @@ ProcessorEntity* ClientTagBasedRemoteUpdateHandler::ProcessUpdate(
   return entity;
 }
 
-ConflictResolution ClientTagBasedRemoteUpdateHandler::ResolveConflict(
+void ClientTagBasedRemoteUpdateHandler::ResolveConflict(
     UpdateResponseData update,
     ProcessorEntity* entity,
     EntityChangeList* changes,
     std::string* storage_key_to_clear) {
   const EntityData& remote_data = update.entity;
 
-  ConflictResolution resolution_type = ConflictResolution::kTypeSize;
+  ConflictResolution resolution_type = ConflictResolution::kChangesMatch;
 
   // Determine the type of resolution.
   if (entity->MatchesData(remote_data)) {
@@ -310,13 +306,7 @@ ConflictResolution ClientTagBasedRemoteUpdateHandler::ResolveConflict(
                                                    std::move(update.entity)));
       }
       break;
-    case ConflictResolution::kUseNewDEPRECATED:
-    case ConflictResolution::kTypeSize:
-      NOTREACHED();
-      break;
   }
-
-  return resolution_type;
 }
 
 ProcessorEntity* ClientTagBasedRemoteUpdateHandler::CreateEntity(

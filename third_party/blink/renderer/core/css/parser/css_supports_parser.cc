@@ -41,6 +41,30 @@ CSSSupportsParser::Result EvalUnknown(CSSSupportsParser::Result result) {
              : result;
 }
 
+// https://drafts.csswg.org/css-syntax/#typedef-any-value
+bool IsNextTokenAllowedForAnyValue(CSSParserTokenRange& range) {
+  switch (range.Peek().GetType()) {
+    case kBadStringToken:
+    case kEOFToken:
+    case kBadUrlToken:
+      return false;
+    case kRightParenthesisToken:
+    case kRightBracketToken:
+    case kRightBraceToken:
+      return range.Peek().GetBlockType() == CSSParserToken::kBlockEnd;
+    default:
+      return true;
+  }
+}
+
+// https://drafts.csswg.org/css-syntax/#typedef-any-value
+bool ConsumeAnyValue(CSSParserTokenRange& range) {
+  DCHECK(!range.AtEnd());
+  while (IsNextTokenAllowedForAnyValue(range))
+    range.Consume();
+  return range.AtEnd();
+}
+
 }  // namespace
 
 CSSSupportsParser::Result CSSSupportsParser::SupportsCondition(
@@ -169,15 +193,13 @@ CSSSupportsParser::Result CSSSupportsParser::ConsumeGeneralEnclosed(
   if (range.Peek().GetType() == kFunctionToken ||
       range.Peek().GetType() == kLeftParenthesisToken) {
     auto block = range.ConsumeBlock();
-    range.ConsumeWhitespace();
     // Note that <any-value> matches a sequence of one or more tokens, hence the
     // block-range can't be empty.
     // https://drafts.csswg.org/css-syntax-3/#typedef-any-value
-    //
-    // TODO(andruud): This is not entirely accurate, as we need to check for
-    // <bad-string-token>, etc.
-    if (!block.AtEnd())
-      return Result::kUnknown;
+    if (block.AtEnd() || !ConsumeAnyValue(block))
+      return Result::kParseFailure;
+    range.ConsumeWhitespace();
+    return Result::kUnknown;
   }
   return Result::kParseFailure;
 }

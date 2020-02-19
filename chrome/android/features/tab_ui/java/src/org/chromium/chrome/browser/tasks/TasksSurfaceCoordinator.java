@@ -47,7 +47,7 @@ public class TasksSurfaceCoordinator implements TasksSurface {
         View.OnClickListener incognitoLearnMoreClickListener = v -> {
             HelpAndFeedback.getInstance().show(activity,
                     activity.getString(R.string.help_context_incognito_learn_more),
-                    Profile.getLastUsedProfile(), null);
+                    Profile.getLastUsedRegularProfile().getOffTheRecordProfile(), null);
         };
         // TODO(crbug.com/1040091): Add parameter for CookieSettingsBridge to control the cookie
         // controls toggle on the IncognitoNTP.

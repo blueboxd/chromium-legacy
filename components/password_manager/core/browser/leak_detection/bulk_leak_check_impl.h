@@ -5,8 +5,14 @@
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LEAK_DETECTION_BULK_LEAK_CHECK_IMPL_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_LEAK_DETECTION_BULK_LEAK_CHECK_IMPL_H_
 
+#include <memory>
+
+#include "base/containers/circular_deque.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_request_utils.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -41,6 +47,12 @@ class BulkLeakCheckImpl : public BulkLeakCheck {
   size_t GetPendingChecksCount() const override;
 
  private:
+  struct CredentialHolder;
+
+  // Called when a payload for one credential is ready.
+  void OnPayloadReady(CredentialHolder* holder,
+                      LookupSingleLeakPayload payload);
+
   // Delegate for the instance. Should outlive |this|.
   BulkLeakCheckDelegateInterface* const delegate_;
 
@@ -50,6 +62,26 @@ class BulkLeakCheckImpl : public BulkLeakCheck {
   // URL loader factory required for the network request to the identity
   // endpoint.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  // The key used to encrypt/decrypt all the payloads for all the credentials.
+  // Creating it once saves CPU time.
+  const std::string encryption_key_;
+
+  // The queue of the requests waiting for the payload compilation happening on
+  // the background thread. When the payload is ready, the element is moved to
+  // |waiting_token_| queue.
+  base::circular_deque<std::unique_ptr<CredentialHolder>> waiting_encryption_;
+
+  // The queue of the requests waiting for the payload compilation happening on
+  // the background thread.
+  base::circular_deque<std::unique_ptr<CredentialHolder>> waiting_token_;
+
+  // Task runner for preparing the payload. It takes a lot of memory. Therefore,
+  // those tasks aren't parallelized.
+  scoped_refptr<base::SequencedTaskRunner> payload_task_runner_;
+
+  // Weak pointers for different callbacks.
+  base::WeakPtrFactory<BulkLeakCheckImpl> weak_ptr_factory_{this};
 };
 
 }  // namespace password_manager

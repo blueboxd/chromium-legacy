@@ -590,6 +590,7 @@ class CrostiniManager : public KeyedService,
   bool IsContainerUpgradeable(const ContainerId& container_id);
   bool ShouldPromptContainerUpgrade(const ContainerId& container_id);
   void UpgradePromptShown(const ContainerId& container_id);
+  void EnsureVmRunning(const ContainerId& key, CrostiniResultCallback callback);
 
  private:
   class CrostiniRestarter;

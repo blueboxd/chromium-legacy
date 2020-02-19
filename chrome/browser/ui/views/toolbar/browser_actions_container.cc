@@ -437,6 +437,7 @@ int BrowserActionsContainer::GetHeightForWidth(int width) const {
 }
 
 gfx::Size BrowserActionsContainer::GetMinimumSize() const {
+  DCHECK(interactive_);
   return gfx::Size(GetResizeAreaWidth(),
                    toolbar_actions_bar_->GetViewSize().height());
 }

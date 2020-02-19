@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/dom/raw_data_document_parser.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/events/touch_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -577,7 +578,7 @@ void ImageEventListener::Invoke(ExecutionContext*, Event* event) {
     doc_->ImageClicked(mouse_event->x(), mouse_event->y());
   } else if ((event->type() == event_type_names::kTouchend ||
               event->type() == event_type_names::kTouchcancel) &&
-             event->IsTouchEvent()) {
+             IsA<TouchEvent>(event)) {
     doc_->UpdateImageStyle();
   }
 }

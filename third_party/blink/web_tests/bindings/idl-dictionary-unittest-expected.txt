@@ -1,4 +1,3 @@
-CONSOLE WARNING: line 277: 'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.
 IDL dictionary unittest
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -161,10 +160,6 @@ Test for [Clamp] and [EnforceRange] member
 PASS dict.longMember is -2147483648
 PASS dict.longMemberWithClamp is 2147483647
 PASS dictionaryTest.set({ longMemberWithEnforceRange: 2147483648 }) threw exception TypeError: Failed to execute 'set' on 'DictionaryTest': Value is outside the 'long' value range..
-
-
-Test for [ImplementedAs] and [DeprecateAs] member
-PASS dict.longMember is 42
 
 
 Test for passing EventTarget

@@ -150,6 +150,7 @@ Polymer({
   onFingerprintDeleteTapped_(e) {
     this.browserProxy_.removeEnrollment(e.model.index).then(success => {
       if (success) {
+        settings.recordSettingChange();
         this.updateFingerprintsList_();
       }
     });

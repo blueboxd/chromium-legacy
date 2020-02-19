@@ -20,6 +20,8 @@ using signin_metrics::PromoAction;
 // Coordinator that handles the user consent before the user signs in.
 @property(nonatomic, strong)
     UnifiedConsentCoordinator* unifiedConsentCoordinator;
+// Coordinator that handles adding a user account.
+@property(nonatomic, strong) SigninCoordinator* addAccountSigninCoordinator;
 // View controller that handles the sign-in UI.
 @property(nonatomic, strong) UserSigninViewController* viewController;
 // Suggested identity shown at sign-in.
@@ -65,6 +67,19 @@ using signin_metrics::PromoAction;
 
   [self.unifiedConsentCoordinator start];
 
+  self.addAccountSigninCoordinator = [SigninCoordinator
+      addAccountCoordinatorWithBaseViewController:self.viewController
+                                          browser:self.browser
+                                      accessPoint:self.accessPoint];
+
+  __weak UserSigninCoordinator* weakSelf = self;
+  self.addAccountSigninCoordinator.signinCompletion =
+      ^(SigninCoordinatorResult signinResult, ChromeIdentity* identity) {
+        if (signinResult == SigninCoordinatorResultSuccess) {
+          weakSelf.defaultIdentity = identity;
+        }
+      };
+
   // Display UnifiedConsentViewController within the host.
   self.viewController.unifiedConsentViewController =
       self.unifiedConsentCoordinator.viewController;
@@ -75,6 +90,8 @@ using signin_metrics::PromoAction;
 
 - (void)stop {
   [super stop];
+  [self.addAccountSigninCoordinator stop];
+  self.addAccountSigninCoordinator = nil;
   self.unifiedConsentCoordinator = nil;
 }
 
@@ -92,7 +109,8 @@ using signin_metrics::PromoAction;
 
 - (void)unifiedConsentCoordinatorDidTapOnAddAccount:
     (UnifiedConsentCoordinator*)coordinator {
-  // TODO(crbug.com/971989): Needs implementation.
+  DCHECK_EQ(self.unifiedConsentCoordinator, coordinator);
+  [self.addAccountSigninCoordinator start];
 }
 
 - (void)unifiedConsentCoordinatorNeedPrimaryButtonUpdate:

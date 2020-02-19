@@ -208,6 +208,7 @@ Polymer({
           // Triggers the UI to update error messages.
           this.updateErrorMessages_(error);
         });
+    settings.recordSettingChange();
   },
 
   /** @private */
@@ -253,6 +254,7 @@ Polymer({
       // Triggers the UI to update error messages.
       this.updateConfigErrorMessage_(result);
     });
+    settings.recordSettingChange();
   },
 
   onAdvancedConfigClose_(event) {

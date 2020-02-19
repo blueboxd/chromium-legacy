@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.settings.website;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.page_info.CookieControlsStatus;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -21,7 +22,7 @@ public class CookieControlsBridge {
          * Called when the cookie blocking status for the current page changes.
          * @param status An enum indicating the cookie blocking status.
          */
-        public void onCookieBlockingStatusChanged(@CookieControlsControllerStatus int status);
+        public void onCookieBlockingStatusChanged(@CookieControlsStatus int status);
 
         /**
          * Called when there is an update in the cookies that are currently being blocked.
@@ -73,7 +74,7 @@ public class CookieControlsBridge {
     }
 
     @CalledByNative
-    private void onCookieBlockingStatusChanged(@CookieControlsControllerStatus int status) {
+    private void onCookieBlockingStatusChanged(@CookieControlsStatus int status) {
         mObserver.onCookieBlockingStatusChanged(status);
     }
 

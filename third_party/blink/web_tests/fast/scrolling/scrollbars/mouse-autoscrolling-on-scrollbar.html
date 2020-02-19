@@ -37,15 +37,18 @@
 
   const scroller = document.getElementById("scroller");
   const scrollerRect = scroller.getBoundingClientRect();
+  const onMacPlatform =  navigator.userAgent.search(/\bMac OS X\b/) != -1;
 
   const TRACK_WIDTH = calculateScrollbarThickness();
   const BUTTON_WIDTH = TRACK_WIDTH;
   const SCROLL_CORNER = TRACK_WIDTH;
   const SCROLL_DELTA = 400;
   const MAX_SCROLLER_OFFSET = 1915;
-  const PRESS_DURATION = 1000;
 
   promise_test (async () => {
+    if(onMacPlatform)
+      return;
+
     await waitForCompositorCommit();
     scroller.scrollTop = 0;
 
@@ -79,11 +82,10 @@
     `scroller.scrollTop = ${scroller.scrollTop} never went beyond ${SCROLL_DELTA}`);
     await mouseUpAt(trackscroll_x, trackscroll_y);
 
-    // Verify that the track autoscroll actually stops as expected. Since track
-    // autoscroll in this particular case is 1480 px/sec (i.e 74 * 20), holding the
-    // pointer pressed for 1000ms (i.e PRESS_DURATION) would've continued scrolling to
-    // around 1100px. The fact it stops short even though the pointer remains pressed
-    // verifies that the track autoscroll was canceled.
+    // Verify that the track autoscroll actually stops as expected. Autoscroll velocity
+    // in this particular case is 1480 px/sec (i.e 74 * 20). There is currently a bug in
+    // the main thread autoscrolling code that causes autoscrolling to happen at a
+    // much lower velocity (crbug.com/1053398)
     assert_less_than(scroller.scrollTop, 800, "Track autosroll did not end.");
 
     const current_offset = scroller.scrollTop;
@@ -92,6 +94,13 @@
   },"Test track autoscroll down and autoscroll stop.");
 
   promise_test (async () => {
+    // Scrollbars on Mac don't have arrows. This test is irrelevant. Infinite auto
+    // scroll can't be tested for track scrolls since autoscrolling aborts the as
+    // soon as the thumb reaches the pointer. Regular autoscrolling still has coverage
+    // on all platforms.
+    if(onMacPlatform)
+      return;
+
     await waitForCompositorCommit();
     scroller.scrollTop = MAX_SCROLLER_OFFSET;
 
@@ -122,6 +131,10 @@
   },"Test infinite scrolling when content is extended dynamically.");
 
   promise_test (async () => {
+    // Scrollbars on Mac don't have arrows. This test is irrelevant.
+    if(onMacPlatform)
+      return;
+
     scroller.scrollTop = 0;
     const SCROLL_TOP = 100;
 

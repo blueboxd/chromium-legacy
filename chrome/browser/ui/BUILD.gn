@@ -816,6 +816,7 @@ jumbo_static_library("ui") {
       "//components/javascript_dialogs/android:jni_headers",
       "//components/navigation_interception",
       "//components/optimization_guide/proto:optimization_guide_proto",
+      "//components/page_info/android:android",
       "//components/subresource_filter/core/browser",
       "//crypto:platform",
       "//device/vr/buildflags",
@@ -4366,10 +4367,6 @@ if (is_chromeos) {
 }
 
 if (is_android) {
-  java_cpp_enum("cookie_controls_controller_status_javagen") {
-    sources = [ "cookie_controls/cookie_controls_controller.h" ]
-  }
-
   java_cpp_enum("tab_model_enums_java") {
     sources = [ "android/tab_model/tab_model.h" ]
   }

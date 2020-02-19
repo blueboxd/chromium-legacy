@@ -15,6 +15,7 @@ js_type_check("closure_compile") {
 js_library("change_picture") {
   deps = [
     ":change_picture_browser_proxy",
+    "..:metrics_recorder",
     "..:os_route",
     "//third_party/polymer/v1_0/components-chromium/iron-selector:iron-selector-extracted",
     "//ui/webui/resources/cr_elements/chromeos/cr_picture:cr_picture_list",

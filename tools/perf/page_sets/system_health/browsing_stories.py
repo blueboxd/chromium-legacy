@@ -261,7 +261,7 @@ class RedditMobileStory2019(_ArticleBrowsingStory):
   IS_SINGLE_PAGE_APP = True
   ITEM_SELECTOR = '.PostHeader__post-title-line'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.YEAR_2019]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
 
   def _DidLoadDocument(self, action_runner):
     # We encountered ads disguised as articles on the Reddit one so far. The
@@ -287,7 +287,7 @@ class TwitterMobileStory2019(_ArticleBrowsingStory):
   ITEM_SELECTOR = ('[class="css-901oao r-hkyrab r-1qd0xha r-1b43r93 r-16dba41 '
       'r-ad9z0x r-bcqeeo r-bnwqim r-qvutc0"]')
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.YEAR_2019]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
 
   def _WaitForNavigation(self, action_runner):
     action_runner.WaitForElement(selector=('[class="css-901oao css-16my406 '
@@ -908,7 +908,9 @@ class GoogleMapsMobileStory2019(system_health_story.SystemHealthStory):
   NAME = 'browse:tools:maps:2019'
   URL = 'https://maps.google.com/maps?force=pwa&source=mlpwa'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
+  TAGS = [
+      story_tags.HEALTH_CHECK, story_tags.EMERGING_MARKET, story_tags.YEAR_2019
+  ]
 
   _MAPS_SEARCH_BOX_SELECTOR = '.ml-searchbox-pwa-textarea'
   _MAPS_SEARCH_BOX_FORM = '[id="ml-searchboxform"]'
@@ -1108,8 +1110,10 @@ class GoogleEarthStory(_BrowsingStory):
   _EARTH_BUTTON_SELECTOR = '[aria-labelledby="widget-minimap-caption"]'
   _EARTH_ZOOM_IN_SELECTOR = '[aria-label="Zoom in"]'
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.WEBGL,
-          story_tags.YEAR_2016]
+  TAGS = [
+      story_tags.HEALTH_CHECK, story_tags.JAVASCRIPT_HEAVY, story_tags.WEBGL,
+      story_tags.YEAR_2016
+  ]
 
   def _DidLoadDocument(self, action_runner):
     # Zommin three times.
@@ -1149,7 +1153,9 @@ class GoogleSheetsDesktopStory(system_health_story.SystemHealthStory):
          '16jfsJs14QrWKhsbxpdJXgoYumxNpnDt08DTK82Puc2A/' +
          'edit#gid=896027318&range=C:C')
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2019]
+  TAGS = [
+      story_tags.HEALTH_CHECK, story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2019
+  ]
 
   # This map translates page-specific event names to event names needed for
   # the reported_by_page:* metric.
@@ -1439,7 +1445,9 @@ class PinterestMobileStory2019(_InfiniteScrollStory):
   NAME = 'browse:social:pinterest_infinite_scroll:2019'
   URL = 'https://www.pinterest.co.uk'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.INFINITE_SCROLL, story_tags.YEAR_2019]
+  TAGS = [
+      story_tags.HEALTH_CHECK, story_tags.INFINITE_SCROLL, story_tags.YEAR_2019
+  ]
   # TODO(crbug.com/862077): Story breaks if login is skipped during replay.
   SKIP_LOGIN = False
 
@@ -1451,8 +1459,10 @@ class TumblrStory2018(_InfiniteScrollStory):
   NAME = 'browse:social:tumblr_infinite_scroll:2018'
   URL = 'https://techcrunch.tumblr.com/'
   SCROLL_DISTANCE = 20000
-  TAGS = [story_tags.INFINITE_SCROLL, story_tags.JAVASCRIPT_HEAVY,
-          story_tags.YEAR_2018]
+  TAGS = [
+      story_tags.HEALTH_CHECK, story_tags.INFINITE_SCROLL,
+      story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2018
+  ]
 
   def _Login(self, action_runner):
     tumblr_login.LoginDesktopAccount(action_runner, 'tumblr')

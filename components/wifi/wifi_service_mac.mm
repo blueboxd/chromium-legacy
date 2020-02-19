@@ -396,17 +396,28 @@ void WiFiServiceMac::SetEventObservers(
 
   // Subscribe to OS notifications.
   if (!networks_changed_observer_.is_null()) {
-    void (^ns_observer) (NSNotification* notification) =
-        ^(NSNotification* notification) {
-            DVLOG(1) << "Received CWSSIDDidChangeNotification";
-            task_runner_->PostTask(
-                FROM_HERE,
-                base::BindOnce(&WiFiServiceMac::OnWlanObserverNotification,
-                               base::Unretained(this)));
+    void (^ns_observer)(NSNotification* notification) = ^(
+        NSNotification* notification) {
+      DVLOG(1) << "Received CoreWLAN notification that the SSID changed";
+      task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&WiFiServiceMac::OnWlanObserverNotification,
+                                    base::Unretained(this)));
     };
 
+    // A notification with the symbol kCWSSIDDidChangeNotification started being
+    // broadcast on SSID change starting with 10.6 and continuing on through
+    // 10.15. However, that symbol was marked as deprecated after macOS 10.10,
+    // and actually was removed starting with the macOS 10.9 SDK.
+    //
+    // Starting with 10.8, a set of parallel notifications with explicitly-
+    // specified string names started being broadcast. The parallel notification
+    // for that symbol is @"com.apple.coreWLAN.notification.ssid.legacy".
+    //
+    // Given the choice between a symbol that is marked as "deprecated" in the
+    // docs and actually removed from the SDK, and an undocumented string that
+    // is secretly broadcast, the string is the safer choice.
     wlan_observer_ = [[NSNotificationCenter defaultCenter]
-        addObserverForName:kCWSSIDDidChangeNotification
+        addObserverForName:@"com.apple.coreWLAN.notification.ssid.legacy"
                     object:nil
                      queue:nil
                 usingBlock:ns_observer];

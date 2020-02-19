@@ -125,11 +125,13 @@ Polymer({
   /** @private */
   onTurnOnSyncButtonClick_() {
     this.browserProxy_.setOsSyncFeatureEnabled(true);
+    settings.recordSettingChange();
   },
 
   /** @private */
   onTurnOffSyncButtonClick_() {
     this.browserProxy_.setOsSyncFeatureEnabled(false);
+    settings.recordSettingChange();
   },
 
   /**

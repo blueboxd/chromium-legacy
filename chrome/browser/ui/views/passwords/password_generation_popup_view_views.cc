@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/passwords/password_generation_popup_view_views.h"
 
+#include <algorithm>
+#include <memory>
+
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller.h"
@@ -57,9 +60,10 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
   void reset_controller() { controller_ = nullptr; }
 
  private:
-  // View:
+  // Implements the View interface.
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
+  bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
 
@@ -102,6 +106,11 @@ void PasswordGenerationPopupViewViews::GeneratedPasswordBox::OnMouseExited(
     const ui::MouseEvent& event) {
   if (controller_)
     controller_->SelectionCleared();
+}
+
+bool PasswordGenerationPopupViewViews::GeneratedPasswordBox::OnMousePressed(
+    const ui::MouseEvent& event) {
+  return event.GetClickCount() == 1;
 }
 
 void PasswordGenerationPopupViewViews::GeneratedPasswordBox::OnMouseReleased(

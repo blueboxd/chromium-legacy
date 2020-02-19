@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_UI_PASSWORDS_PASSWORD_GENERATION_POPUP_CONTROLLER_IMPL_H_
 
 #include <stddef.h>
+#include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -129,14 +131,10 @@ class PasswordGenerationPopupControllerImpl
   // PasswordGenerationPopupController implementation:
   void Hide(autofill::PopupHidingReason reason) override;
   void ViewDestroyed() override;
-  void SetSelectionAtPoint(const gfx::Point& point) override;
-  bool AcceptSelectedLine() override;
   void SelectionCleared() override;
-  bool HasSelection() const override;
   void SetSelected() override;
   void PasswordAccepted() override;
   gfx::NativeView container_view() const override;
-  gfx::Rect popup_bounds() const override;
   const gfx::RectF& element_bounds() const override;
   bool IsRTL() const override;
   const std::vector<autofill::Suggestion> GetSuggestions() override;

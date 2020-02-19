@@ -20,23 +20,22 @@ namespace {
 
 class MockCookieControlsView : public CookieControlsView {
  public:
-  MOCK_METHOD2(OnStatusChanged, void(CookieControlsController::Status, int));
+  MOCK_METHOD2(OnStatusChanged, void(CookieControlsStatus, int));
   MOCK_METHOD1(OnBlockedCookiesCountChanged, void(int));
 };
 
 }  // namespace
 
 // More readable output for test expectation.
-std::ostream& operator<<(std::ostream& os,
-                         const CookieControlsController::Status& status) {
+std::ostream& operator<<(std::ostream& os, const CookieControlsStatus& status) {
   switch (status) {
-    case CookieControlsController::Status::kDisabled:
+    case CookieControlsStatus::kDisabled:
       return os << "kDisabled";
-    case CookieControlsController::Status::kEnabled:
+    case CookieControlsStatus::kEnabled:
       return os << "kEnabled";
-    case CookieControlsController::Status::kDisabledForSite:
+    case CookieControlsStatus::kDisabledForSite:
       return os << "kDisabledForSite";
-    case CookieControlsController::Status::kUninitialized:
+    case CookieControlsStatus::kUninitialized:
       return os << "kUninitialized";
   }
 }
@@ -79,16 +78,14 @@ class CookieControlsTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(CookieControlsTest, NewTabPage) {
-  EXPECT_CALL(*mock(),
-              OnStatusChanged(CookieControlsController::Status::kDisabled, 0));
+  EXPECT_CALL(*mock(), OnStatusChanged(CookieControlsStatus::kDisabled, 0));
   cookie_controls()->Update(web_contents());
 }
 
 TEST_F(CookieControlsTest, SomeWebSite) {
   // Visiting a website should enable the UI.
   NavigateAndCommit(GURL("https://example.com"));
-  EXPECT_CALL(*mock(),
-              OnStatusChanged(CookieControlsController::Status::kEnabled, 0));
+  EXPECT_CALL(*mock(), OnStatusChanged(CookieControlsStatus::kEnabled, 0));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
@@ -106,21 +103,18 @@ TEST_F(CookieControlsTest, SomeWebSite) {
 
   // Navigating somewhere else should reset the cookie count.
   NavigateAndCommit(GURL("https://somethingelse.com"));
-  EXPECT_CALL(*mock(),
-              OnStatusChanged(CookieControlsController::Status::kEnabled, 0));
+  EXPECT_CALL(*mock(), OnStatusChanged(CookieControlsStatus::kEnabled, 0));
   cookie_controls()->Update(web_contents());
 }
 
 TEST_F(CookieControlsTest, PreferenceDisabled) {
   NavigateAndCommit(GURL("https://example.com"));
-  EXPECT_CALL(*mock(),
-              OnStatusChanged(CookieControlsController::Status::kEnabled, 0));
+  EXPECT_CALL(*mock(), OnStatusChanged(CookieControlsStatus::kEnabled, 0));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Disabling the feature should disable the UI.
-  EXPECT_CALL(*mock(),
-              OnStatusChanged(CookieControlsController::Status::kDisabled, 0));
+  EXPECT_CALL(*mock(), OnStatusChanged(CookieControlsStatus::kDisabled, 0));
   profile()->GetPrefs()->SetInteger(
       prefs::kCookieControlsMode,
       static_cast<int>(content_settings::CookieControlsMode::kOff));
@@ -129,36 +123,31 @@ TEST_F(CookieControlsTest, PreferenceDisabled) {
 
 TEST_F(CookieControlsTest, DisableForSite) {
   NavigateAndCommit(GURL("https://example.com"));
-  EXPECT_CALL(*mock(),
-              OnStatusChanged(CookieControlsController::Status::kEnabled, 0));
+  EXPECT_CALL(*mock(), OnStatusChanged(CookieControlsStatus::kEnabled, 0));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Disabling cookie blocking for example.com should update the ui.
-  EXPECT_CALL(
-      *mock(),
-      OnStatusChanged(CookieControlsController::Status::kDisabledForSite, 0));
+  EXPECT_CALL(*mock(),
+              OnStatusChanged(CookieControlsStatus::kDisabledForSite, 0));
   cookie_controls()->OnCookieBlockingEnabledForSite(false);
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Visiting some other site, should switch back to kEnabled.
   NavigateAndCommit(GURL("https://somethingelse.com"));
-  EXPECT_CALL(*mock(),
-              OnStatusChanged(CookieControlsController::Status::kEnabled, 0));
+  EXPECT_CALL(*mock(), OnStatusChanged(CookieControlsStatus::kEnabled, 0));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Visiting example.com should set status to kDisabledForSite.
   NavigateAndCommit(GURL("https://example.com"));
-  EXPECT_CALL(
-      *mock(),
-      OnStatusChanged(CookieControlsController::Status::kDisabledForSite, 0));
+  EXPECT_CALL(*mock(),
+              OnStatusChanged(CookieControlsStatus::kDisabledForSite, 0));
   cookie_controls()->Update(web_contents());
   testing::Mock::VerifyAndClearExpectations(mock());
 
   // Enabling example.com again should change status to kEnabled.
-  EXPECT_CALL(*mock(),
-              OnStatusChanged(CookieControlsController::Status::kEnabled, 0));
+  EXPECT_CALL(*mock(), OnStatusChanged(CookieControlsStatus::kEnabled, 0));
   cookie_controls()->OnCookieBlockingEnabledForSite(true);
   testing::Mock::VerifyAndClearExpectations(mock());
 }

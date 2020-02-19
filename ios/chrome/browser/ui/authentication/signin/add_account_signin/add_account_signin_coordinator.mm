@@ -13,7 +13,6 @@
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/authentication/signin/add_account_signin/add_account_signin_mediator.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_coordinator+protected.h"
-#import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_coordinator.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_interaction_manager.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"

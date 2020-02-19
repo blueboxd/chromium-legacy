@@ -7,7 +7,9 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/dom_distiller/core/url_utils.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -17,11 +19,13 @@ using dom_distiller::url_utils::IsDistilledPage;
 ReaderModeIconView::ReaderModeIconView(
     CommandUpdater* command_updater,
     IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
-    PageActionIconView::Delegate* page_action_icon_delegate)
+    PageActionIconView::Delegate* page_action_icon_delegate,
+    PrefService* pref_service)
     : PageActionIconView(command_updater,
                          IDC_DISTILL_PAGE,
                          icon_label_bubble_delegate,
-                         page_action_icon_delegate) {}
+                         page_action_icon_delegate),
+      pref_service_(pref_service) {}
 
 ReaderModeIconView::~ReaderModeIconView() {
   content::WebContents* contents = web_contents();
@@ -47,6 +51,14 @@ void ReaderModeIconView::UpdateImpl() {
     SetVisible(true);
     SetActive(true);
   } else {
+    // If the reader mode option shouldn't be shown to the user per their pref
+    // in appearance settings, simply hide the icon.
+    // TODO(katie): In this case, we should not even check if a page is
+    // distillable.
+    if (!dom_distiller::ShowReaderModeOption(pref_service_)) {
+      SetVisible(false);
+      return;
+    }
     // If the currently active web contents has changed since last time, stop
     // observing the old web contents and start observing the new one.
     // (WebContentsObserver::web_contents() is not updated until the call to

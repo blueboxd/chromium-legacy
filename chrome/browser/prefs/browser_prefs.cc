@@ -93,6 +93,8 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_prefs.h"
 #include "components/dom_distiller/core/distilled_page_prefs.h"
+#include "components/dom_distiller/core/dom_distiller_features.h"
+#include "components/dom_distiller/core/pref_names.h"
 #include "components/feature_engagement/buildflags.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/image_fetcher/core/cache/image_cache.h"
@@ -834,8 +836,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   chrome_browser_net::NetErrorTabHelper::RegisterProfilePrefs(registry);
   chrome_browser_net::RegisterPredictionOptionsProfilePrefs(registry);
   chrome_prefs::RegisterProfilePrefs(registry);
-  dom_distiller::DistilledPagePrefs::RegisterProfilePrefs(registry);
   DocumentProvider::RegisterProfilePrefs(registry);
+  dom_distiller::DistilledPagePrefs::RegisterProfilePrefs(registry);
+  dom_distiller::RegisterProfilePrefs(registry);
   DownloadPrefs::RegisterProfilePrefs(registry);
   HostContentSettingsMap::RegisterProfilePrefs(registry);
   image_fetcher::ImageCache::RegisterProfilePrefs(registry);

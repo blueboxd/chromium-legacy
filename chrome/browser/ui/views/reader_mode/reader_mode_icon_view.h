@@ -19,6 +19,7 @@ namespace views {
 class BubbleDialogDelegateView;
 }
 class CommandUpdater;
+class PrefService;
 
 // A location bar icon that toggles Reader Mode for the current page.
 class ReaderModeIconView : public PageActionIconView,
@@ -27,7 +28,8 @@ class ReaderModeIconView : public PageActionIconView,
  public:
   ReaderModeIconView(CommandUpdater* command_updater,
                      IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
-                     PageActionIconView::Delegate* page_action_icon_delegate);
+                     PageActionIconView::Delegate* page_action_icon_delegate,
+                     PrefService* pref_service);
   ~ReaderModeIconView() override;
 
  protected:
@@ -47,6 +49,9 @@ class ReaderModeIconView : public PageActionIconView,
   void OnExecuting(PageActionIconView::ExecuteSource execute_source) override {}
 
   void OnResult(const dom_distiller::DistillabilityResult& result) override;
+
+ private:
+  PrefService* pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ReaderModeIconView);
 };

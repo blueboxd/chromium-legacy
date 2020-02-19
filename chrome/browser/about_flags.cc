@@ -426,7 +426,14 @@ const FeatureEntry::FeatureVariation kCCTModuleCacheVariations[] = {
     {"30 minutes", kCCTModuleCache_ThirtyMinutes,
      base::size(kCCTModuleCache_ThirtyMinutes), nullptr},
 };
+#else  // !defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kReaderModeOfferInSettings[] = {
+    {switches::kReaderModeDiscoverabilityParamName,
+     switches::kReaderModeOfferInSettings}};
 
+const FeatureEntry::FeatureVariation kReaderModeDiscoverabilityVariations[] = {
+    {"available in settings", kReaderModeOfferInSettings,
+     base::size(kReaderModeOfferInSettings), nullptr}};
 #endif  // OS_ANDROID
 
 #if !defined(OS_CHROMEOS)
@@ -1597,7 +1604,9 @@ const FeatureEntry kFeatureEntries[] = {
 #if !defined(OS_ANDROID)
     {"enable-reader-mode", flag_descriptions::kEnableReaderModeName,
      flag_descriptions::kEnableReaderModeDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(dom_distiller::kReaderMode)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(dom_distiller::kReaderMode,
+                                    kReaderModeDiscoverabilityVariations,
+                                    "ReaderMode")},
 #endif  // !defined(OS_ANDROID)
 #if defined(WEBRTC_USE_PIPEWIRE)
     {"enable-webrtc-pipewire-capturer",

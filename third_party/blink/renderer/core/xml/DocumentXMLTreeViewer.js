@@ -116,16 +116,13 @@ function processShortTextOnlyElement(parentElement, node)
 function processComplexElement(parentElement, node)
 {
     var collapsible = createCollapsible();
-    collapsible.expanded.start.appendChild(createTag(node, false, false));
+    collapsible.start.appendChild(createTag(node, false, false));
 
     for (var child = node.firstChild; child; child = child.nextSibling)
-      processNode(collapsible.expanded.content, child);
+        processNode(collapsible.expandedContent, child);
 
-    collapsible.expanded.end.appendChild(createTag(node, true, false));
+    collapsible.end.appendChild(createTag(node, true, false));
 
-    collapsible.collapsed.content.appendChild(createTag(node, false, false));
-    collapsible.collapsed.content.appendChild(createText('...'));
-    collapsible.collapsed.content.appendChild(createTag(node, true, false));
     parentElement.appendChild(collapsible);
 }
 
@@ -138,13 +135,10 @@ function processComment(parentElement, node)
     } else {
         var collapsible = createCollapsible();
 
-        collapsible.expanded.start.appendChild(createComment('<!--'));
-        collapsible.expanded.content.appendChild(createComment(node.nodeValue));
-        collapsible.expanded.end.appendChild(createComment('-->'));
+        collapsible.start.appendChild(createComment('<!--'));
+        collapsible.expandedContent.appendChild(createComment(node.nodeValue));
+        collapsible.end.appendChild(createComment('-->'));
 
-        collapsible.collapsed.content.appendChild(createComment('<!--'));
-        collapsible.collapsed.content.appendChild(createComment('...'));
-        collapsible.collapsed.content.appendChild(createComment('-->'));
         parentElement.appendChild(collapsible);
     }
 }
@@ -158,13 +152,9 @@ function processCDATA(parentElement, node)
     } else {
         var collapsible = createCollapsible();
 
-        collapsible.expanded.start.appendChild(createText('<![CDATA['));
-        collapsible.expanded.content.appendChild(createText(node.nodeValue));
-        collapsible.expanded.end.appendChild(createText(']]>'));
-
-        collapsible.collapsed.content.appendChild(createText('<![CDATA['));
-        collapsible.collapsed.content.appendChild(createText('...'));
-        collapsible.collapsed.content.appendChild(createText(']]>'));
+        collapsible.start.appendChild(createText('<![CDATA['));
+        collapsible.expandedContent.appendChild(createText(node.nodeValue));
+        collapsible.end.appendChild(createText(']]>'));
         parentElement.appendChild(collapsible);
     }
 }
@@ -178,13 +168,10 @@ function processProcessingInstruction(parentElement, node)
     } else {
         var collapsible = createCollapsible();
 
-        collapsible.expanded.start.appendChild(createComment('<?' + node.nodeName));
-        collapsible.expanded.content.appendChild(createComment(node.nodeValue));
-        collapsible.expanded.end.appendChild(createComment('?>'));
+        collapsible.start.appendChild(createComment('<?' + node.nodeName));
+        collapsible.expandedContent.appendChild(createComment(node.nodeValue));
+        collapsible.end.appendChild(createComment('?>'));
 
-        collapsible.collapsed.content.appendChild(createComment('<?' + node.nodeName));
-        collapsible.collapsed.content.appendChild(createComment('...'));
-        collapsible.collapsed.content.appendChild(createComment('?>'));
         parentElement.appendChild(collapsible);
     }
 }
@@ -212,28 +199,23 @@ function createCollapsible()
 {
     var collapsible = createHTMLElement('div');
     collapsible.classList.add('collapsible');
-    collapsible.expanded = createHTMLElement('div');
-    collapsible.expanded.classList.add('expanded');
-    collapsible.appendChild(collapsible.expanded);
 
-    collapsible.expanded.start = createLine();
-    collapsible.expanded.start.appendChild(createCollapseButton());
-    collapsible.expanded.appendChild(collapsible.expanded.start);
+    collapsible.start = createLine();
+    collapsible.start.appendChild(createCollapsibleButton());
+    collapsible.appendChild(collapsible.start);
 
-    collapsible.expanded.content = createHTMLElement('div');
-    collapsible.expanded.content.classList.add('collapsible-content');
-    collapsible.expanded.appendChild(collapsible.expanded.content);
+    collapsible.expandedContent = createHTMLElement('div');
+    collapsible.expandedContent.classList.add('expanded-content');
+    collapsible.appendChild(collapsible.expandedContent);
 
-    collapsible.expanded.end = createLine();
-    collapsible.expanded.appendChild(collapsible.expanded.end);
+    // Collapsed content.
+    collapsible.collapsedContent = createText('...');
+    collapsible.collapsedContent.classList.add('collapsed-content');
+    collapsible.collapsedContent.classList.add('hidden');
+    collapsible.appendChild(collapsible.collapsedContent);
 
-    collapsible.collapsed = createHTMLElement('div');
-    collapsible.collapsed.classList.add('collapsed');
-    collapsible.collapsed.classList.add('hidden');
-    collapsible.appendChild(collapsible.collapsed);
-    collapsible.collapsed.content = createLine();
-    collapsible.collapsed.content.appendChild(createExpandButton());
-    collapsible.collapsed.appendChild(collapsible.collapsed.content);
+    collapsible.end = createLine();
+    collapsible.appendChild(collapsible.end);
 
     return collapsible;
 }
@@ -245,17 +227,10 @@ function createButton()
     return button;
 }
 
-function createCollapseButton(str)
-{
+function createCollapsibleButton(str) {
     var button = createButton();
+    button.classList.add('collapsible-button');
     button.classList.add('collapse-button');
-    return button;
-}
-
-function createExpandButton(str)
-{
-    var button = createButton();
-    button.classList.add('expand-button');
     return button;
 }
 
@@ -336,21 +311,35 @@ function createAttribute(attributeNode)
     return attribute;
 }
 
-function expandFunction(sectionId)
-{
-    return function()
-    {
-        document.querySelector('#' + sectionId + ' > .expanded').className = 'expanded';
-        document.querySelector('#' + sectionId + ' > .collapsed').className = 'collapsed hidden';
-    };
-}
+function toggleFunction(sectionId) {
+    return function() {
+        var collapsedContent =
+            document.querySelector('#' + sectionId + ' > .collapsed-content');
+        var expandedContent =
+            document.querySelector('#' + sectionId + ' > .expanded-content');
+        var collapsible_button = document.querySelector(
+            '#' + sectionId + ' > .line > .collapsible-button');
 
-function collapseFunction(sectionId)
-{
-    return function()
-    {
-        document.querySelector('#' + sectionId + ' > .expanded').className = 'expanded hidden';
-        document.querySelector('#' + sectionId + ' > .collapsed').className = 'collapsed';
+        if (collapsedContent) {
+            if (collapsedContent.className.includes('hidden'))
+                collapsedContent.className = 'collapsed-content';
+            else
+                collapsedContent.className = 'collapsed-content hidden';
+        }
+
+        if (expandedContent) {
+            if (expandedContent.className.includes('hidden'))
+                expandedContent.className = 'expanded-content';
+            else
+                expandedContent.className = 'expanded-content hidden';
+        }
+
+        if (collapsible_button) {
+            if (collapsible_button.className.includes('expand-button'))
+                collapsible_button.className = 'collapsible-button collapse-button';
+            else
+                collapsible_button.className = 'collapsible-button expand-button';
+        }
     };
 }
 
@@ -361,15 +350,9 @@ function initButtons()
         var sectionId = 'collapsible' + i;
         sections[i].id = sectionId;
 
-        var expandedPart = sections[i].querySelector('#' + sectionId + ' > .expanded');
-        var collapseButton = expandedPart.querySelector('.collapse-button');
-        collapseButton.onclick = collapseFunction(sectionId);
+        var collapseButton = sections[i].querySelector('.collapsible-button');
+        collapseButton.onclick = toggleFunction(sectionId);
         collapseButton.onmousedown = handleButtonMouseDown;
-
-        var collapsedPart = sections[i].querySelector('#' + sectionId + ' > .collapsed');
-        var expandButton = collapsedPart.querySelector('.expand-button');
-        expandButton.onclick = expandFunction(sectionId);
-        expandButton.onmousedown = handleButtonMouseDown;
     }
 }
 

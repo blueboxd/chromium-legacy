@@ -187,6 +187,7 @@ Polymer({
     const behavior = /** @type {settings.IdleBehavior} */
         (parseInt(this.$.idleSelect.value, 10));
     settings.DevicePageBrowserProxyImpl.getInstance().setIdleBehavior(behavior);
+    settings.recordSettingChange();
   },
 
   /** @private */
@@ -196,6 +197,7 @@ Polymer({
     settings.DevicePageBrowserProxyImpl.getInstance().setLidClosedBehavior(
         this.$.lidClosedToggle.checked ? settings.LidClosedBehavior.SUSPEND :
                                          settings.LidClosedBehavior.DO_NOTHING);
+    settings.recordSettingChange();
   },
 
   /**

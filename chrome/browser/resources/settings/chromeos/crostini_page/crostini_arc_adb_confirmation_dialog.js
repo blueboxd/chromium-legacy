@@ -41,8 +41,10 @@ Polymer({
   onRestartTap_() {
     if (this.isEnabling_()) {
       settings.CrostiniBrowserProxyImpl.getInstance().enableArcAdbSideload();
+      settings.recordSettingChange();
     } else if (this.isDisabling_()) {
       settings.CrostiniBrowserProxyImpl.getInstance().disableArcAdbSideload();
+      settings.recordSettingChange();
     } else {
       assertNotReached();
     }

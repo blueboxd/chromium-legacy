@@ -256,6 +256,7 @@ Polymer({
               this.onPrinterEditSucceeded_.bind(this),
               this.onPrinterEditFailed_.bind(this));
     }
+    settings.recordSettingChange();
   },
 
   /**

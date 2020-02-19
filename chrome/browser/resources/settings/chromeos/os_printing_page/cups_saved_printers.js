@@ -164,6 +164,7 @@ Polymer({
   onRemoveTap_() {
     this.browserProxy_.removeCupsPrinter(
         this.activePrinter.printerId, this.activePrinter.printerName);
+    settings.recordSettingChange();
     this.activePrinter = null;
     this.activeListEntryIndex_ = -1;
     this.closeActionMenu_();

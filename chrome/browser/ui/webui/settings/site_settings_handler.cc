@@ -96,6 +96,17 @@ enum class AllSitesAction {
   kMaxValue = kEnterSiteDetails,
 };
 
+enum class AllSitesAction2 {
+  kLoadPage = 0,
+  kResetSiteGroupPermissions = 1,
+  kResetOriginPermissions = 2,
+  kClearAllData = 3,
+  kClearSiteGroupData = 4,
+  kClearOriginData = 5,
+  kEnterSiteDetails = 6,
+  kMaxValue = kEnterSiteDetails,
+};
+
 // Return an appropriate API Permission ID for the given string name.
 extensions::APIPermission::APIPermission::ID APIPermissionFromGroupName(
     std::string type) {
@@ -312,8 +323,8 @@ void UpdateDataFromCookiesTree(
   CreateOrAppendSiteGroupEntry(all_sites_map, origin);
 }
 
-void LogAllSitesAction(AllSitesAction action) {
-  UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.AllSitesAction", action);
+void LogAllSitesAction(AllSitesAction2 action) {
+  UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.AllSitesAction2", action);
 }
 
 }  // namespace
@@ -715,7 +726,7 @@ void SiteSettingsHandler::HandleGetAllSites(const base::ListValue* args) {
   ConvertSiteGroupMapToListValue(all_sites_map_, origin_permission_set_,
                                  &result, profile, app_registrar_);
 
-  LogAllSitesAction(AllSitesAction::kLoadPage);
+  LogAllSitesAction(AllSitesAction2::kLoadPage);
 
   send_sites_list_ = true;
 
@@ -1469,18 +1480,16 @@ void SiteSettingsHandler::HandleClearEtldPlus1DataAndCookies(
   }
   for (auto* node : nodes_to_delete)
     cookies_tree_model_->DeleteCookieNode(node);
-
-  LogAllSitesAction(AllSitesAction::kClearData);
 }
 
 void SiteSettingsHandler::HandleRecordAction(const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   int action;
   CHECK(args->GetInteger(0, &action));
-  DCHECK_LE(action, static_cast<int>(AllSitesAction::kMaxValue));
-  DCHECK_GE(action, static_cast<int>(AllSitesAction::kLoadPage));
+  DCHECK_LE(action, static_cast<int>(AllSitesAction2::kMaxValue));
+  DCHECK_GE(action, static_cast<int>(AllSitesAction2::kLoadPage));
 
-  LogAllSitesAction(static_cast<AllSitesAction>(action));
+  LogAllSitesAction(static_cast<AllSitesAction2>(action));
 }
 
 void SiteSettingsHandler::SetCookiesTreeModelForTesting(

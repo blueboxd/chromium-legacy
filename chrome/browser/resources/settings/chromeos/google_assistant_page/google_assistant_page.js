@@ -138,11 +138,13 @@ Polymer({
   /** @private */
   onGoogleAssistantSettingsTapped_() {
     this.browserProxy_.showGoogleAssistantSettings();
+    settings.recordSettingChange();
   },
 
   /** @private */
   onRetrainVoiceModelTapped_() {
     this.browserProxy_.retrainAssistantVoiceModel();
+    settings.recordSettingChange();
   },
 
   /** @private */

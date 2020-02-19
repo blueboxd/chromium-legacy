@@ -213,7 +213,10 @@ bool ShouldUseBuiltinCertVerifier(PrefService* local_state) {
   if (builtin_cert_verifier_enabled_pref->IsManaged())
     return builtin_cert_verifier_enabled_pref->GetValue()->GetBool();
 #endif
-
+  // Note: intentionally checking the feature state here rather than falling
+  // back to CertVerifierImpl::kDefault, as browser-side network context
+  // initializition for TrialComparisonCertVerifier depends on knowing which
+  // verifier will be used.
   return base::FeatureList::IsEnabled(
       net::features::kCertVerifierBuiltinFeature);
 }
@@ -766,7 +769,9 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
 
 #if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
   network_context_params->use_builtin_cert_verifier =
-      ShouldUseBuiltinCertVerifier(local_state_);
+      ShouldUseBuiltinCertVerifier(local_state_)
+          ? network::mojom::NetworkContextParams::CertVerifierImpl::kBuiltin
+          : network::mojom::NetworkContextParams::CertVerifierImpl::kSystem;
 #endif
 
   return network_context_params;

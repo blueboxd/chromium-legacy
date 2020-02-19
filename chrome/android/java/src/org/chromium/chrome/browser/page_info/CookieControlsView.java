@@ -16,7 +16,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.settings.website.CookieControlsControllerStatus;
+import org.chromium.components.page_info.CookieControlsStatus;
 
 /**
  * View showing a toggle and a description for third-party cookie blocking for a site.
@@ -58,10 +58,10 @@ public class CookieControlsView
         mParams.onUiClosingCallback.run();
     }
 
-    public void setCookieBlockingStatus(@CookieControlsControllerStatus int status) {
-        mLastSwitchState = status == CookieControlsControllerStatus.ENABLED;
+    public void setCookieBlockingStatus(@CookieControlsStatus int status) {
+        mLastSwitchState = status == CookieControlsStatus.ENABLED;
         mSwitch.setChecked(mLastSwitchState);
-        mSwitch.setEnabled(status != CookieControlsControllerStatus.DISABLED);
+        mSwitch.setEnabled(status != CookieControlsStatus.DISABLED);
     }
 
     public void setBlockedCookiesCount(int blockedCookies) {

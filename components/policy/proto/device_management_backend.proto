@@ -2082,6 +2082,9 @@ message RemoteCommand {
 
     // Retrieve a list of available diagnostics routines.
     DEVICE_GET_AVAILABLE_DIAGNOSTIC_ROUTINES = 9;
+
+    // Run a given diagnostics routine on the platform.
+    DEVICE_RUN_DIAGNOSTIC_ROUTINE = 10;
   }
 
   // The command type.
@@ -2101,6 +2104,8 @@ message RemoteCommand {
   // |DEVICE_SCREENSHOT|: {"fileUploadUrl" : url_string}.
   // |DEVICE_SET_VOLUME|: {"volume": volume_value}, where volume_value must be
   // an integer between 0 and 100.
+  // |DEVICE_RUN_DIAGNOSTIC_ROUTINE|: {"routine" : routine_enum, "params" :
+  // params_dict}, where params_dict varies by routine.
   optional string payload = 4;
 
   // An identifier for the target this command is for. This is the same as

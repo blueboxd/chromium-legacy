@@ -148,6 +148,7 @@ Polymer({
     if (!enabled) {
       // No authentication check is required to disable.
       this.browserProxy_.setSmartLockSignInEnabled(false /* enabled */);
+      settings.recordSettingChange();
       return;
     }
 
@@ -171,6 +172,7 @@ Polymer({
     if (this.authToken_ !== '') {
       this.browserProxy_.setSmartLockSignInEnabled(
           true /* enabled */, this.authToken_);
+      settings.recordSettingChange();
     }
 
     // Always require password entry if re-enabling SignIn with Smart Lock.

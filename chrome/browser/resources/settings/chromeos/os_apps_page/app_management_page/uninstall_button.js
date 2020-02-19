@@ -79,6 +79,7 @@ Polymer({
    */
   onClick_() {
     app_management.BrowserProxy.getInstance().handler.uninstall(this.app_.id);
+    settings.recordSettingChange();
     app_management.util.recordAppManagementUserAction(
         this.app_.type, AppManagementUserAction.UninstallDialogLaunched);
   },

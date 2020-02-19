@@ -233,9 +233,6 @@ TEST_F(AutofillKeyboardAccessoryAdapterTest, MapSelectedLineToChangedIndices) {
 
   EXPECT_CALL(*controller(), selected_line()).WillRepeatedly(Return(0));
   EXPECT_EQ(adapter_as_controller()->selected_line(), 1);
-
-  EXPECT_CALL(*controller(), AcceptSelectedLine());
-  adapter_as_controller()->AcceptSelectedLine();
 }
 
 }  // namespace autofill

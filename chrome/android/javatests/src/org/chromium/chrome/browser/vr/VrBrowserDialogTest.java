@@ -60,9 +60,6 @@ public class VrBrowserDialogTest {
 
     @Before
     public void setUp() {
-        // Need to ensure that the SERVER_PORT used is fixed for RenderTests
-        mVrTestRule.getEmbeddedTestServerRule().setServerPort(XrTestFramework.SERVER_PORT);
-
         mVrBrowserTestFramework = new VrBrowserTestFramework(mVrTestRule);
 
         // Notifications on O+ are handled via Android Notification Channels, and thus can cause

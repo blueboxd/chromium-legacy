@@ -64,6 +64,7 @@ Polymer({
   onRemoveSharedPathClick_(event) {
     settings.PluginVmBrowserProxyImpl.getInstance().removePluginVmSharedPath(
         PLUGIN_VM, event.model.item.path);
+    settings.recordSettingChange();
   },
 });
 })();

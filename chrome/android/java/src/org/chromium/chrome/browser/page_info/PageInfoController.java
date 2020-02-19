@@ -41,13 +41,13 @@ import org.chromium.chrome.browser.previews.PreviewsUma;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.website.ContentSettingValues;
 import org.chromium.chrome.browser.settings.website.CookieControlsBridge;
-import org.chromium.chrome.browser.settings.website.CookieControlsControllerStatus;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.components.page_info.CookieControlsStatus;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
@@ -611,7 +611,7 @@ public class PageInfoController implements ModalDialogProperties.Controller,
     }
 
     @Override
-    public void onBlockedCookiesCountChanged(@CookieControlsControllerStatus int blockedCookies) {
+    public void onBlockedCookiesCountChanged(@CookieControlsStatus int blockedCookies) {
         mView.getCookieControlsView().setBlockedCookiesCount(blockedCookies);
     }
 

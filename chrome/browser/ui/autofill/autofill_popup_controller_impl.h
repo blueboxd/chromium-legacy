@@ -90,12 +90,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
                               base::i18n::TextDirection text_direction);
   ~AutofillPopupControllerImpl() override;
 
-  // AutofillPopupViewDelegate implementation.
-  void SetSelectionAtPoint(const gfx::Point& point) override;
-  bool AcceptSelectedLine() override;
   void SelectionCleared() override;
-  bool HasSelection() const override;
-  gfx::Rect popup_bounds() const override;
   gfx::NativeView container_view() const override;
   const gfx::RectF& element_bounds() const override;
   void SetElementBounds(const gfx::RectF& bounds);
@@ -163,6 +158,10 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // |elided_labels_|.
   void ElideValueAndLabelForRow(int row, int available_width);
 #endif
+
+  // The user has accepted the currently selected line. Returns whether there
+  // was a selection to accept.
+  bool AcceptSelectedLine();
 
   // Clear the internal state of the controller. This is needed to ensure that
   // when the popup is reused it doesn't leak values between uses.

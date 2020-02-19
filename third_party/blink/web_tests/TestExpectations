@@ -2728,12 +2728,6 @@ crbug.com/332189 external/wpt/css/css-transitions/no-transition-from-ua-to-block
 
 crbug.com/552085 external/wpt/css/css-cascade/important-prop.html [ Failure ]
 
-# Failures on Mac scrollbars for compositor threaded scrollbar scrolling.
-crbug.com/953847 [ Mac ] fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
-crbug.com/953847 [ Mac ] virtual/threaded-prefer-compositing/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
-crbug.com/953847 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
-crbug.com/953847 [ Mac ] virtual/compositor_threaded_scrollbar_scrolling/fast/scrolling/scrollbars/mouse-autoscrolling-on-scrollbar.html [ Failure Timeout ]
-
 # Some control characters still not visible
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-001.html [ Failure ]
 crbug.com/893490 [ Mac ] external/wpt/css/css-text/white-space/control-chars-002.html [ Failure ]

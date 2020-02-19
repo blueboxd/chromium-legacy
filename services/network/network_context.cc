@@ -37,6 +37,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
 #include "crypto/sha2.h"
+#include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
@@ -331,6 +332,21 @@ std::string HashesToBase64String(const net::HashValueVector& hashes) {
   }
   return str;
 }
+
+#if BUILDFLAG(BUILTIN_CERT_VERIFIER_FEATURE_SUPPORTED)
+bool UsingBuiltinCertVerifier(
+    mojom::NetworkContextParams::CertVerifierImpl mode) {
+  switch (mode) {
+    case mojom::NetworkContextParams::CertVerifierImpl::kDefault:
+      return base::FeatureList::IsEnabled(
+          net::features::kCertVerifierBuiltinFeature);
+    case mojom::NetworkContextParams::CertVerifierImpl::kBuiltin:
+      return true;
+    case mojom::NetworkContextParams::CertVerifierImpl::kSystem:
+      return false;
+  }
+}
+#endif
 
 }  // namespace
 
@@ -1711,7 +1727,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext() {
       cert_verifier = std::make_unique<net::CachingCertVerifier>(
           std::make_unique<net::CoalescingCertVerifier>(
               std::make_unique<net::MultiThreadedCertVerifier>(
-                  params_->use_builtin_cert_verifier
+                  UsingBuiltinCertVerifier(params_->use_builtin_cert_verifier)
                       ? net::CertVerifyProc::CreateBuiltinVerifyProc(
                             cert_net_fetcher_)
                       : net::CertVerifyProc::CreateSystemVerifyProc(
@@ -2297,7 +2313,7 @@ void NetworkContext::TrustAnchorUsed() {
 scoped_refptr<net::CertVerifyProc> NetworkContext::CreateCertVerifyProcForUser(
     scoped_refptr<net::CertNetFetcher> net_fetcher,
     crypto::ScopedPK11Slot user_public_slot) {
-  if (params_->use_builtin_cert_verifier) {
+  if (UsingBuiltinCertVerifier(params_->use_builtin_cert_verifier)) {
     return net::CreateCertVerifyProcBuiltin(
         std::move(net_fetcher),
         std::make_unique<SystemTrustStoreProviderChromeOS>(
@@ -2310,7 +2326,7 @@ scoped_refptr<net::CertVerifyProc> NetworkContext::CreateCertVerifyProcForUser(
 scoped_refptr<net::CertVerifyProc>
 NetworkContext::CreateCertVerifyProcWithoutUserSlots(
     scoped_refptr<net::CertNetFetcher> net_fetcher) {
-  if (params_->use_builtin_cert_verifier) {
+  if (UsingBuiltinCertVerifier(params_->use_builtin_cert_verifier)) {
     return net::CreateCertVerifyProcBuiltin(
         std::move(net_fetcher),
         std::make_unique<SystemTrustStoreProviderChromeOS>());

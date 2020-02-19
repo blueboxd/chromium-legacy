@@ -61,6 +61,7 @@ js_library("keyboard") {
 js_library("stylus") {
   deps = [
     ":device_page_browser_proxy",
+    "..:metrics_recorder",
     "../../prefs:prefs_types",
     "//ui/webui/resources/cr_elements/policy:cr_policy_indicator",
     "//ui/webui/resources/js:cr",
@@ -127,6 +128,7 @@ js_library("night_light_slider") {
 js_library("power") {
   deps = [
     ":device_page_browser_proxy",
+    "..:metrics_recorder",
     "../..:router",
     "../../prefs:prefs_types",
     "//ui/webui/resources/js:i18n_behavior",

@@ -310,29 +310,8 @@ void AutofillPopupControllerImpl::OnSuggestionsChanged() {
   view_->OnSuggestionsChanged();
 }
 
-void AutofillPopupControllerImpl::SetSelectionAtPoint(const gfx::Point& point) {
-  SetSelectedLine(layout_model_.LineFromY(point.y()));
-}
-
-bool AutofillPopupControllerImpl::AcceptSelectedLine() {
-  if (!selected_line_)
-    return false;
-
-  DCHECK_LT(*selected_line_, GetLineCount());
-
-  if (!CanAccept(suggestions_[*selected_line_].frontend_id))
-    return false;
-
-  AcceptSuggestion(*selected_line_);
-  return true;
-}
-
 void AutofillPopupControllerImpl::SelectionCleared() {
   SetSelectedLine(base::nullopt);
-}
-
-bool AutofillPopupControllerImpl::HasSelection() const {
-  return selected_line_.has_value();
 }
 
 void AutofillPopupControllerImpl::AcceptSuggestion(int index) {
@@ -347,10 +326,6 @@ void AutofillPopupControllerImpl::AcceptSuggestion(int index) {
 #endif
   delegate_->DidAcceptSuggestion(suggestion.value, suggestion.frontend_id,
                                  index);
-}
-
-gfx::Rect AutofillPopupControllerImpl::popup_bounds() const {
-  return layout_model_.popup_bounds();
 }
 
 gfx::NativeView AutofillPopupControllerImpl::container_view() const {
@@ -565,6 +540,19 @@ void AutofillPopupControllerImpl::ElideValueAndLabelForRow(
       label_size, gfx::ELIDE_TAIL);
 }
 #endif
+
+bool AutofillPopupControllerImpl::AcceptSelectedLine() {
+  if (!selected_line_)
+    return false;
+
+  DCHECK_LT(*selected_line_, GetLineCount());
+
+  if (!CanAccept(suggestions_[*selected_line_].frontend_id))
+    return false;
+
+  AcceptSuggestion(*selected_line_);
+  return true;
+}
 
 void AutofillPopupControllerImpl::ClearState() {
   // Don't clear view_, because otherwise the popup will have to get regenerated

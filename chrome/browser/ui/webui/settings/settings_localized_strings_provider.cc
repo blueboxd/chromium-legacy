@@ -50,6 +50,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/browsing_data/core/features.h"
 #include "components/content_settings/core/common/features.h"
+#include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
@@ -294,11 +295,15 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
     {"tabsToLinks", IDS_SETTINGS_TABS_TO_LINKS_PREF},
     {"warnBeforeQuitting", IDS_SETTINGS_WARN_BEFORE_QUITTING_PREF},
 #endif
+    {"readerMode", IDS_SETTINGS_READER_MODE},
+    {"readerModeDescription", IDS_SETTINGS_READER_MODE_DESCRIPTION},
   };
   AddLocalizedStringsBulk(html_source, kLocalizedStrings);
 
   html_source->AddString("presetZoomFactors",
                          zoom::GetPresetZoomFactorsAsJSON());
+  html_source->AddBoolean("showReaderModeOption",
+                          dom_distiller::OfferReaderModeInSettings());
 }
 
 void AddChangePasswordStrings(content::WebUIDataSource* html_source) {

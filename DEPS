@@ -334,9 +334,9 @@ vars = {
   # Also, if you change these, update buildtools/DEPS too. Also update the
   # libc++ svn_revision in //buildtools/deps_revisions.gni.
   'clang_format_revision': '96636aa0e9f047f17447f2d45a094d0b59ed7917',
-  'libcxx_revision': '78d6a7767ed57b50122a161b91f59f19c9bd0d19',
-  'libcxxabi_revision': '0d529660e32d77d9111912d73f2c74fc5fa2a858',
-  'libunwind_revision': '69d9b84cca8354117b9fe9705a4430d789ee599b',
+  'libcxx_revision': 'd9040c75cfea5928c804ab7c235fed06a63f743a',
+  'libcxxabi_revision': '196ba1aaa8ac285d94f4ea8d9836390a45360533',
+  'libunwind_revision': '43bb9f872232f531bac80093ceb4de61c64b9ab7',
 }
 
 # Only these hosts are allowed for dependencies in this DEPS file.
@@ -381,13 +381,16 @@ deps = {
     'condition': 'host_os == "mac"',
   },
   'src/buildtools/third_party/libc++/trunk':
-    Var('chromium_git') + '/chromium/llvm-project/libcxx.git' + '@' +
+    Var('chromium_git') +
+    '/external/github.com/llvm/llvm-project/libcxx.git' + '@' +
     Var('libcxx_revision'),
   'src/buildtools/third_party/libc++abi/trunk':
-    Var('chromium_git') + '/chromium/llvm-project/libcxxabi.git' + '@' +
+    Var('chromium_git') +
+    '/external/github.com/llvm/llvm-project/libcxxabi.git' + '@' +
     Var('libcxxabi_revision'),
   'src/buildtools/third_party/libunwind/trunk':
-    Var('chromium_git') + '/external/llvm.org/libunwind.git' + '@' +
+    Var('chromium_git') +
+    '/external/github.com/llvm/llvm-project/libunwind.git' + '@' +
     Var('libunwind_revision'),
   'src/buildtools/win': {
     'packages': [

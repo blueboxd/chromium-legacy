@@ -61,20 +61,20 @@ void CookieControlsController::Update(content::WebContents* web_contents) {
     observer.OnStatusChanged(GetStatus(web_contents), GetBlockedCookieCount());
 }
 
-CookieControlsController::Status CookieControlsController::GetStatus(
+CookieControlsStatus CookieControlsController::GetStatus(
     content::WebContents* web_contents) {
   if (!cookie_settings_->IsCookieControlsEnabled())
-    return CookieControlsController::Status::kDisabled;
+    return CookieControlsStatus::kDisabled;
 
   const GURL& url = web_contents->GetURL();
   if (url.SchemeIs(content::kChromeUIScheme) ||
       url.SchemeIs(extensions::kExtensionScheme)) {
-    return CookieControlsController::Status::kDisabled;
+    return CookieControlsStatus::kDisabled;
   }
 
   return cookie_settings_->IsThirdPartyAccessAllowed(web_contents->GetURL())
-             ? CookieControlsController::Status::kDisabledForSite
-             : CookieControlsController::Status::kEnabled;
+             ? CookieControlsStatus::kDisabledForSite
+             : CookieControlsStatus::kEnabled;
 }
 
 void CookieControlsController::OnCookieBlockingEnabledForSite(

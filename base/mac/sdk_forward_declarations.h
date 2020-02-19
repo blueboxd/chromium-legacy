@@ -20,15 +20,6 @@
 #include "base/base_export.h"
 
 // ----------------------------------------------------------------------------
-// Old symbols that used to be in the macOS SDK but are no longer.
-// ----------------------------------------------------------------------------
-
-// kCWSSIDDidChangeNotification is available in the CoreWLAN.framework for OSX
-// versions 10.6 through 10.10 but stopped being included starting with the 10.9
-// SDK. Remove when 10.10 is no longer supported by Chromium.
-BASE_EXPORT extern "C" NSString* const kCWSSIDDidChangeNotification;
-
-// ----------------------------------------------------------------------------
 // Definitions from SDKs newer than the one that Chromium compiles against.
 //
 // HOW TO DO THIS:

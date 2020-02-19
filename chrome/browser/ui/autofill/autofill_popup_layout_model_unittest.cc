@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <vector>
 
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
@@ -36,11 +37,7 @@ class TestAutofillPopupViewDelegate : public AutofillPopupViewDelegate {
 
   void Hide(PopupHidingReason reason) override {}
   void ViewDestroyed() override {}
-  void SetSelectionAtPoint(const gfx::Point& point) override {}
-  bool AcceptSelectedLine() override { return true; }
   void SelectionCleared() override {}
-  bool HasSelection() const override { return false; }
-  gfx::Rect popup_bounds() const override { return gfx::Rect(0, 0, 100, 100); }
   gfx::NativeView container_view() const override { return container_view_; }
   const gfx::RectF& element_bounds() const override { return element_bounds_; }
   bool IsRTL() const override { return false; }

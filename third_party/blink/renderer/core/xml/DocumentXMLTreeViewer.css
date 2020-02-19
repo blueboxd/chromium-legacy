@@ -13,6 +13,10 @@ div.collapsible > div.hidden {
     display:none;
 }
 
+div.collapsible > span.hidden {
+    display:none;
+}
+
 .pretty-print {
     margin-top: 1em;
     margin-left: 20px;
@@ -24,14 +28,15 @@ div.collapsible > div.hidden {
     display: none;
 }
 
-.collapsible-content {
+.expanded-content {
     margin-left: 1em;
 }
+
 .comment {
     white-space: pre;
 }
 
-.button {
+.collapsible-button {
     -webkit-user-select: none;
     cursor: pointer;
     display: inline-block;

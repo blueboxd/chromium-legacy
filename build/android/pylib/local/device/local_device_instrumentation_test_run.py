@@ -658,9 +658,10 @@ class LocalDeviceInstrumentationTestRun(
       # steps that involve ADB. These steps should NOT depend on any info in
       # the results! Things such as whether the test CRASHED have not yet been
       # determined.
-      post_test_steps = [restore_flags, restore_timeout_scale,
-                         handle_coverage_data, handle_render_test_data,
-                         pull_ui_screen_captures]
+      post_test_steps = [
+          restore_flags, restore_timeout_scale, handle_coverage_data,
+          handle_render_test_data, pull_ui_screen_captures
+      ]
       if self._env.concurrent_adb:
         reraiser_thread.RunAsync(post_test_steps)
       else:
@@ -696,6 +697,15 @@ class LocalDeviceInstrumentationTestRun(
       # Attach screenshot to the test to help with debugging the dialog boxes.
       self._SaveScreenshot(device, screenshot_device_file, test_display_name,
                            results, 'dialog_box_screenshot')
+
+    # The crash result can be set above or in
+    # InstrumentationTestRun.GenerateTestResults. If a test crashes,
+    # subprocesses such as the one used by EmbeddedTestServerRule can be left
+    # alive in a bad state, so kill them now.
+    for r in results:
+      if r.GetType() == base_test_result.ResultType.CRASH:
+        for apk in self._test_instance.additional_apks:
+          device.ForceStop(apk.GetPackageName())
 
     # Handle failures by:
     #   - optionally taking a screenshot

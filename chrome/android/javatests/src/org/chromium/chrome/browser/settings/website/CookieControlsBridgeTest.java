@@ -28,6 +28,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.CookieControlsMode;
+import org.chromium.components.page_info.CookieControlsStatus;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -47,7 +48,7 @@ public class CookieControlsBridgeTest {
         }
 
         @Override
-        public void onCookieBlockingStatusChanged(@CookieControlsControllerStatus int status) {
+        public void onCookieBlockingStatusChanged(@CookieControlsStatus int status) {
             mStatus = status;
             mHelper.notifyCalled();
         }
@@ -75,7 +76,7 @@ public class CookieControlsBridgeTest {
         mCallbackHandler = new TestCallbackHandler(mCallbackHelper);
         mActivityTestRule.startMainActivityOnBlankPage();
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
-        mStatus = CookieControlsControllerStatus.UNINITIALIZED;
+        mStatus = CookieControlsStatus.UNINITIALIZED;
         mBlockedCookies = -1;
     }
 
@@ -93,7 +94,7 @@ public class CookieControlsBridgeTest {
     @RetryOnFailure
     public void testCookieBridgeWithTPCookiesDisabled() throws Exception {
         int expectedCookiesToBlock = 0;
-        int expectedStatus = CookieControlsControllerStatus.DISABLED;
+        int expectedStatus = CookieControlsStatus.DISABLED;
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Set CookieControlsMode Pref to Off
             PrefServiceBridge.getInstance().setInteger(
@@ -125,7 +126,7 @@ public class CookieControlsBridgeTest {
     @RetryOnFailure
     public void testCookieBridgeWith3PCookiesEnabled() throws Exception {
         int expectedCookiesToBlock = 0;
-        int expectedStatus = CookieControlsControllerStatus.ENABLED;
+        int expectedStatus = CookieControlsStatus.ENABLED;
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Set CookieControlsMode Pref to On
             PrefServiceBridge.getInstance().setInteger(
@@ -157,7 +158,7 @@ public class CookieControlsBridgeTest {
     @RetryOnFailure
     public void testCookieBridgeWithChangingBlockedCookiesCount() throws Exception {
         int expectedCookiesToBlock = 0;
-        int expectedStatus = CookieControlsControllerStatus.ENABLED;
+        int expectedStatus = CookieControlsStatus.ENABLED;
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Set CookieControlsMode Pref to On
             PrefServiceBridge.getInstance().setInteger(
@@ -197,7 +198,7 @@ public class CookieControlsBridgeTest {
     @RetryOnFailure
     public void testCookieBridgeWithIncognitoSetting() throws Exception {
         int expectedCookiesToBlock = 0;
-        int expectedStatus = CookieControlsControllerStatus.DISABLED;
+        int expectedStatus = CookieControlsStatus.DISABLED;
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Set CookieControlsMode Pref to IncognitoOnly
             PrefServiceBridge.getInstance().setInteger(
@@ -220,7 +221,7 @@ public class CookieControlsBridgeTest {
         Assert.assertEquals(expectedCookiesToBlock, mBlockedCookies);
 
         // Make new incognito page now
-        expectedStatus = CookieControlsControllerStatus.ENABLED;
+        expectedStatus = CookieControlsStatus.ENABLED;
         Tab incognitoTab = mActivityTestRule.loadUrlInNewTab(url, true);
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mCookieControlsBridge =

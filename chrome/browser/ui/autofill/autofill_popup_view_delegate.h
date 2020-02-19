@@ -34,23 +34,9 @@ class AutofillPopupViewDelegate {
   // Called whent the popup view was destroyed.
   virtual void ViewDestroyed() = 0;
 
-  // The user has selected |point|, e.g. by hovering the mouse cursor. |point|
-  // must be in popup coordinates.
-  virtual void SetSelectionAtPoint(const gfx::Point& point) = 0;
-
-  // The user has accepted the currently selected line. Returns whether there
-  // was a selection to accept.
-  virtual bool AcceptSelectedLine() = 0;
-
   // The user cleared the current selection, e.g. by moving the mouse cursor
   // out of the popup bounds.
   virtual void SelectionCleared() = 0;
-
-  // Returns true if any of the suggestions is selected.
-  virtual bool HasSelection() const = 0;
-
-  // The actual bounds of the popup.
-  virtual gfx::Rect popup_bounds() const = 0;
 
   // The view that the form field element sits in.
   virtual gfx::NativeView container_view() const = 0;

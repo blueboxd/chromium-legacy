@@ -400,6 +400,9 @@ public abstract class XrTestFramework {
 
         // WebXr requires HTTPS, so configure the server to by default use it.
         mRule.getEmbeddedTestServerRule().setServerUsesHttps(true);
+        // Tests that use RenderTestRule need a static port, as the port shows up in the URL. It
+        // doesn't hurt to use the same port in non-RenderTests, so set here.
+        mRule.getEmbeddedTestServerRule().setServerPort(SERVER_PORT);
     }
 
     /**

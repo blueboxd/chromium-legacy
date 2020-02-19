@@ -341,6 +341,7 @@ Polymer({
     this.$.arc.reset();
     this.step_ = settings.FingerprintSetupStep.MOVE_FINGER;
     this.browserProxy_.startEnroll(this.authToken);
+    settings.recordSettingChange();
   },
 
   /**

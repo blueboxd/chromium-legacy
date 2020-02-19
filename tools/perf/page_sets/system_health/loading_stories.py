@@ -124,13 +124,15 @@ class LoadVkDesktopStory2018(_LoadingStory):
   NAME = 'load:social:vk:2018'
   URL = 'https://vk.com/sbeatles'
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
-  TAGS = [story_tags.INTERNATIONAL, story_tags.YEAR_2018]
+  TAGS = [
+      story_tags.HEALTH_CHECK, story_tags.INTERNATIONAL, story_tags.YEAR_2018
+  ]
 
 
 class LoadInstagramDesktopStory2018(_LoadingStory):
   NAME = 'load:social:instagram:2018'
   URL = 'https://www.instagram.com/selenagomez/'
-  TAGS = [story_tags.YEAR_2018]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2018]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
 
@@ -169,7 +171,9 @@ class LoadBbcMobileStory2019(_LoadingStory):
 class LoadCnnStory2018(_LoadingStory):
   NAME = 'load:news:cnn:2018'
   URL = 'https://edition.cnn.com'
-  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2018]
+  TAGS = [
+      story_tags.HEALTH_CHECK, story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2018
+  ]
 
 
 class LoadFlipboardDesktopStory(_LoadingStory):
@@ -381,7 +385,7 @@ class LoadGmailStory2019(_LoadingStory):
   NAME = 'load:tools:gmail:2019'
   # Needs to be http and not https.
   URL = 'http://mail.google.com/'
-  TAGS = [story_tags.YEAR_2019]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
   SKIP_LOGIN = False
 
   def _Login(self, action_runner):
@@ -436,7 +440,9 @@ class LoadDropboxStory2019(_LoadingStory):
 class LoadWeatherStory2019(_LoadingStory):
   NAME = 'load:tools:weather:2019'
   URL = 'https://weather.com/en-GB/weather/today/l/USCA0286:1:US'
-  TAGS = [story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2019]
+  TAGS = [
+      story_tags.HEALTH_CHECK, story_tags.JAVASCRIPT_HEAVY, story_tags.YEAR_2019
+  ]
 
 
 class LoadDriveStory2019(_LoadingStory):

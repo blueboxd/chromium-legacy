@@ -168,6 +168,7 @@ Polymer({
             console.error('Unexpected error removing account: ' + error);
           }
         });
+    settings.recordSettingChange();
     this.closeActionMenu_();
   },
 
@@ -178,6 +179,7 @@ Polymer({
   onSetAsActiveAccountClick_() {
     this.browserProxy_.setAsActiveAccount(
         /** @type {!settings.KerberosAccount} */ (this.selectedAccount_));
+    settings.recordSettingChange();
     this.closeActionMenu_();
   },
 

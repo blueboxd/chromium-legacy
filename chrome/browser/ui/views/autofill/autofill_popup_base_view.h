@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_AUTOFILL_AUTOFILL_POPUP_BASE_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_AUTOFILL_AUTOFILL_POPUP_BASE_VIEW_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
@@ -68,12 +70,6 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
   friend class AutofillPopupBaseViewTest;
 
   // views::Views implementation.
-  void OnMouseCaptureLost() override;
-  bool OnMouseDragged(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
-  void OnMouseMoved(const ui::MouseEvent& event) override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnMouseReleased(const ui::MouseEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::WidgetFocusChangeListener implementation.
@@ -86,10 +82,6 @@ class AutofillPopupBaseView : public views::WidgetDelegateView,
 
   // Stop observing the widget.
   void RemoveWidgetObservers();
-
-  void SetSelection(const gfx::Point& point);
-  void AcceptSelection(const gfx::Point& point);
-  void ClearSelection();
 
   // Hide the controller of this view. This assumes that doing so will
   // eventually hide this view in the process.

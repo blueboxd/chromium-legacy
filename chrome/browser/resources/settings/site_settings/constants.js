@@ -104,7 +104,7 @@ cr.define('settings', function() {
   const INVALID_CATEGORY_SUBTYPE = '';
 
   /**
-   * Contains the possible record action types.
+   * Contains the record action types logged before M82.
    * This should be kept in sync with the |AllSitesAction| enum in
    * chrome/browser/ui/webui/settings/site_settings_handler.cc
    * @enum {number}
@@ -114,6 +114,23 @@ cr.define('settings', function() {
     RESET_PERMISSIONS: 1,
     CLEAR_DATA: 2,
     ENTER_SITE_DETAILS: 3,
+  };
+
+
+  /**
+   * Contains the possible record action types.
+   * This should be kept in sync with the |AllSitesAction2| enum in
+   * chrome/browser/ui/webui/settings/site_settings_handler.cc
+   * @enum {number}
+   */
+  const AllSitesAction2 = {
+    LOAD_PAGE: 0,
+    RESET_SITE_GROUP_PERMISSIONS: 1,
+    RESET_ORIGIN_PERMISSIONS: 2,
+    CLEAR_ALL_DATA: 3,
+    CLEAR_SITE_GROUP_DATA: 4,
+    CLEAR_ORIGIN_DATA: 5,
+    ENTER_SITE_DETAILS: 6,
   };
 
   /**
@@ -127,6 +144,16 @@ cr.define('settings', function() {
   };
 
   /**
+   * Contains types of dialogs on the AllSites page,
+   * used for logging userActions.
+   * @enum {string}
+   */
+  const ALL_SITES_DIALOG = {
+    CLEAR_DATA: 'ClearData',
+    RESET_PERMISSIONS: 'ResetPermissions',
+  };
+
+  /**
    * String representation of the wildcard used for universal
    * match for SiteExceptions.
    * @type {string}
@@ -136,7 +163,9 @@ cr.define('settings', function() {
   // #cr_define_end
   return {
     ALL_SITES,
+    ALL_SITES_DIALOG,
     AllSitesAction,
+    AllSitesAction2,
     ChooserType,
     ContentSetting,
     ContentSettingsTypes,

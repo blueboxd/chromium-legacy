@@ -152,6 +152,7 @@ Polymer({
     this.browserProxy_.setPreferredNoteTakingAppEnabledOnLockScreen(
         this.selectedApp_.lockScreenSupport ==
         settings.NoteAppLockScreenSupport.SUPPORTED);
+    settings.recordSettingChange();
   },
 
   /** @private */
@@ -161,6 +162,7 @@ Polymer({
 
     if (app && !app.preferred) {
       this.browserProxy_.setPreferredNoteTakingApp(app.value);
+      settings.recordSettingChange();
     }
   },
 

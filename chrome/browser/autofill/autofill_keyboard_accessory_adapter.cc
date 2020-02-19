@@ -180,28 +180,9 @@ void AutofillKeyboardAccessoryAdapter::ViewDestroyed() {
   delete this;  // Remove dangling weak reference.
 }
 
-void AutofillKeyboardAccessoryAdapter::SetSelectionAtPoint(
-    const gfx::Point& point) {
-  if (controller_)
-    controller_->SetSelectionAtPoint(point);
-}
-
-bool AutofillKeyboardAccessoryAdapter::AcceptSelectedLine() {
-  return controller_ && controller_->AcceptSelectedLine();
-}
-
 void AutofillKeyboardAccessoryAdapter::SelectionCleared() {
   if (controller_)
     controller_->SelectionCleared();
-}
-
-bool AutofillKeyboardAccessoryAdapter::HasSelection() const {
-  return controller_ && controller_->HasSelection();
-}
-
-gfx::Rect AutofillKeyboardAccessoryAdapter::popup_bounds() const {
-  DCHECK(controller_) << "Call OnSuggestionsChanged only from its owner!";
-  return controller_->popup_bounds();
 }
 
 gfx::NativeView AutofillKeyboardAccessoryAdapter::container_view() const {

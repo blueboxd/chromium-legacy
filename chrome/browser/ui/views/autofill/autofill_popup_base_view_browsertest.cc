@@ -90,24 +90,6 @@ class AutofillPopupBaseViewTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AutofillPopupBaseViewTest);
 };
 
-IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, DoubleClickTest) {
-  gfx::RectF bounds(0, 0, 5, 5);
-  EXPECT_CALL(mock_delegate_, element_bounds())
-      .WillRepeatedly(ReturnRef(bounds));
-
-  view_->SetPreferredSize(gfx::Size(10, 10));
-  ShowView();
-
-  gfx::Point point = view_->GetLocalBounds().CenterPoint();
-  ui::MouseEvent mouse_down(ui::ET_MOUSE_PRESSED, point, point,
-                            ui::EventTimeForNow(), 0, 0);
-  EXPECT_TRUE(static_cast<views::View*>(view_)->OnMousePressed(mouse_down));
-
-  // Ignore double clicks.
-  mouse_down.SetClickCount(2);
-  EXPECT_FALSE(static_cast<views::View*>(view_)->OnMousePressed(mouse_down));
-}
-
 // Regression test for crbug.com/391316
 IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, CorrectBoundsTest) {
   gfx::RectF bounds(100, 150, 5, 5);
@@ -126,25 +108,6 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, CorrectBoundsTest) {
   gfx::Insets border = view_->GetWidget()->GetRootView()->border()->GetInsets();
   expected_point.Offset(-border.left(), -border.top());
   EXPECT_EQ(expected_point, display_point);
-}
-
-IN_PROC_BROWSER_TEST_F(AutofillPopupBaseViewTest, MouseExitedTest) {
-  gfx::RectF bounds(0, 0, 5, 5);
-  EXPECT_CALL(mock_delegate_, element_bounds())
-      .WillRepeatedly(ReturnRef(bounds));
-  for (bool has_selection : {true, false}) {
-    EXPECT_CALL(mock_delegate_, HasSelection()).WillOnce(Return(has_selection));
-    EXPECT_CALL(mock_delegate_, SelectionCleared())
-        .Times(has_selection ? 1 : 0);
-
-    ShowView();
-
-    ui::MouseEvent exit_event(ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(),
-                              ui::EventTimeForNow(), 0, 0);
-    static_cast<views::View*>(view_)->OnMouseExited(exit_event);
-
-    base::RunLoop().RunUntilIdle();
-  }
 }
 
 }  // namespace autofill

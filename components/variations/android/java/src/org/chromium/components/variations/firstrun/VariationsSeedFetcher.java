@@ -15,8 +15,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.metrics.CachedMetrics.SparseHistogramSample;
-import org.chromium.base.metrics.CachedMetrics.TimesHistogramSample;
+import org.chromium.base.metrics.RecordHistogram;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -202,22 +201,17 @@ public class VariationsSeedFetcher {
     }
 
     private void recordFetchResultOrCode(int resultOrCode) {
-        SparseHistogramSample histogram =
-                new SparseHistogramSample("Variations.FirstRun.SeedFetchResult");
-        histogram.record(resultOrCode);
+        RecordHistogram.recordSparseHistogram("Variations.FirstRun.SeedFetchResult", resultOrCode);
     }
 
     private void recordSeedFetchTime(long timeDeltaMillis) {
         Log.i(TAG, "Fetched first run seed in " + timeDeltaMillis + " ms");
-        TimesHistogramSample histogram =
-                new TimesHistogramSample("Variations.FirstRun.SeedFetchTime");
-        histogram.record(timeDeltaMillis);
+        RecordHistogram.recordTimesHistogram("Variations.FirstRun.SeedFetchTime", timeDeltaMillis);
     }
 
     private void recordSeedConnectTime(long timeDeltaMillis) {
-        TimesHistogramSample histogram =
-                new TimesHistogramSample("Variations.FirstRun.SeedConnectTime");
-        histogram.record(timeDeltaMillis);
+        RecordHistogram.recordTimesHistogram(
+                "Variations.FirstRun.SeedConnectTime", timeDeltaMillis);
     }
 
     /**

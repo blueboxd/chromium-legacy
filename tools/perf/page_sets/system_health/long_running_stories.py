@@ -94,7 +94,7 @@ class LongRunningGmailMobileForegroundStory(_LongRunningGmailMobileBase):
 
 class LongRunningGmailDesktopForegroundStory(_LongRunningGmailDesktopBase):
   NAME = 'long_running:tools:gmail-foreground'
-  TAGS = [story_tags.YEAR_2016]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
 
 class LongRunningGmailMobileBackgroundStory(_LongRunningGmailMobileBase):

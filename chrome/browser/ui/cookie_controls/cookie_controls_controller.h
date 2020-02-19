@@ -8,6 +8,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
+#include "components/page_info/android/cookie_controls_status.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_contents.h"
 
@@ -20,23 +21,8 @@ class CookieSettings;
 }
 
 class CookieControlsView;
-
-// A controller for CookieControlsIconView and CookieControlsBubbleView.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.settings.website
-// GENERATED_JAVA_CLASS_NAME_OVERRIDE: CookieControlsControllerStatus
 class CookieControlsController {
  public:
-  enum class Status {
-    kUninitialized,
-    // Third-Party cookie blocking is enabled.
-    kEnabled,
-    // Third-Party cookie blocking is disabled.
-    kDisabled,
-    // Third-Party cookie blocking is enabled in general but was disabled
-    // for this site.
-    kDisabledForSite,
-  };
-
   explicit CookieControlsController(content::WebContents* web_contents);
   ~CookieControlsController();
 
@@ -74,8 +60,8 @@ class CookieControlsController {
     DISALLOW_COPY_AND_ASSIGN(TabObserver);
   };
 
-  // Determine the CookieControlsController::Status based on |web_contents|.
-  Status GetStatus(content::WebContents* web_contents);
+  // Determine the CookieControlsStatus based on |web_contents|.
+  CookieControlsStatus GetStatus(content::WebContents* web_contents);
 
   // Updates the blocked cookie count of |icon_|.
   void PresentBlockedCookieCounter();

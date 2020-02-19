@@ -9,6 +9,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 
@@ -76,9 +77,11 @@ public class CredentialLeakDialogBridge {
 
     private void showHelpArticle() {
         if (mActivity.get() == null) return;
+
+        Profile profile = ((TabImpl) mActivity.get().getActivityTabProvider().get()).getProfile();
         HelpAndFeedback.getInstance().show(mActivity.get(),
-                mActivity.get().getString(R.string.help_context_password_leak_detection),
-                Profile.getLastUsedProfile(), null);
+                mActivity.get().getString(R.string.help_context_password_leak_detection), profile,
+                null);
     }
 
     @NativeMethods

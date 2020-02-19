@@ -31,6 +31,7 @@ js_library("cups_add_printer_dialog_elements") {
 
 js_library("cups_edit_printer_dialog") {
   deps = [
+    "..:metrics_recorder",
     "../localized_link:localized_link",
     "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
     "//ui/webui/resources/cr_components/chromeos/network:network_listener_behavior",
@@ -46,6 +47,7 @@ js_library("cups_nearby_printers") {
     ":cups_printers_entry",
     ":cups_printers_entry_list_behavior",
     ":cups_printers_entry_manager",
+    "..:metrics_recorder",
     "//ui/webui/resources/js:list_property_update_behavior",
     "//ui/webui/resources/js:web_ui_listener_behavior",
   ]
@@ -113,6 +115,7 @@ js_library("cups_saved_printers") {
     ":cups_printers_entry",
     ":cups_printers_entry_list_behavior",
     ":cups_printers_entry_manager",
+    "..:metrics_recorder",
     "//ui/webui/resources/cr_elements/cr_action_menu:cr_action_menu",
     "//ui/webui/resources/js:list_property_update_behavior",
     "//ui/webui/resources/js:web_ui_listener_behavior",

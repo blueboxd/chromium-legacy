@@ -44,7 +44,7 @@ class BackgroundFacebookMobileStory2019(_BackgroundStory):
   NAME = 'background:social:facebook:2019'
   URL = 'https://www.facebook.com/rihanna'
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
-  TAGS = [story_tags.YEAR_2019]
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
 
 
 class BackgroundNytimesMobileStory2019(browsing_stories.NytimesMobileStory2019):

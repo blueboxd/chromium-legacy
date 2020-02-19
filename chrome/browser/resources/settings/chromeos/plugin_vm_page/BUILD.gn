@@ -11,6 +11,7 @@ js_type_check("closure_compile") {
     ":plugin_vm_remove_confirmation_dialog",
     ":plugin_vm_shared_paths",
     ":plugin_vm_subpage",
+    "..:metrics_recorder",
   ]
 }
 

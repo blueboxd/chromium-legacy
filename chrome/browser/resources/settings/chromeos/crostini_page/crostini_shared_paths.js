@@ -85,6 +85,7 @@ Polymer({
             this.$$('#removeSharedPathFailedDialog').showModal();
           }
         });
+    settings.recordSettingChange();
   },
 
   /**

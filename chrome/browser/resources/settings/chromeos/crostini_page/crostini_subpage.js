@@ -188,6 +188,7 @@ Polymer({
    */
   onRemoveClick_() {
     settings.CrostiniBrowserProxyImpl.getInstance().requestRemoveCrostini();
+    settings.recordSettingChange();
   },
 
   /**

@@ -17,7 +17,7 @@ from .utils.compat import formatExceptionTrace
 from .tlsrecordlayer import TLSRecordLayer
 from .session import Session
 from .constants import *
-from .utils.cryptomath import getRandomBytes
+from .utils.cryptomath import getRandomBytes, MD5, SHA1, SHA256
 from .errors import *
 from .messages import *
 from .mathtls import *
@@ -50,6 +50,24 @@ class KeyExchange(object):
         premaster secret. Raises TLSLocalAlert on error.
         """
         raise NotImplementedError()
+
+    def sign(self, inpBytes):
+        algorithm = None
+        if self.serverHello.server_version >= (3, 3):
+            # Negotiate a signature algorithm.
+            peerPrefs = self.clientHello.signature_algorithms
+            if (HashAlgorithm.sha256, SignatureAlgorithm.rsa) in peerPrefs:
+                algorithm = (HashAlgorithm.sha256, SignatureAlgorithm.rsa)
+                inpBytes = RSAKey.addPKCS1SHA256Prefix(SHA256(inpBytes))
+            elif (HashAlgorithm.sha1, SignatureAlgorithm.rsa) in peerPrefs:
+                algorithm = (HashAlgorithm.sha1, SignatureAlgorithm.rsa)
+                inpBytes = RSAKey.addPKCS1SHA1Prefix(SHA1(inpBytes))
+            else:
+                raise TLSLocalAlert(AlertDescription.handshake_failure,
+                                   "no common signature algorithms")
+        else:
+            inpBytes = MD5(inpBytes) + SHA1(inpBytes)
+        return algorithm, self.privateKey.sign(inpBytes)
 
 class RSAKeyExchange(KeyExchange):
     def makeServerKeyExchange(self):
@@ -108,12 +126,9 @@ DE2BCBF6 95581718 3995497C EA956AE5 15D22618 98FA0510
         version = self.serverHello.server_version
         serverKeyExchange = ServerKeyExchange(self.cipherSuite, version)
         serverKeyExchange.createDH(self.dh_p, self.dh_g, dh_Ys)
-        hashBytes = serverKeyExchange.hash(self.clientHello.random,
-                                           self.serverHello.random)
-        if version >= (3,3):
-            # TODO: Signature algorithm negotiation not supported.
-            hashBytes = RSAKey.addPKCS1SHA1Prefix(hashBytes)
-        serverKeyExchange.signature = self.privateKey.sign(hashBytes)
+        serverKeyExchange.signature_algorithm, serverKeyExchange.signature = \
+            self.sign(serverKeyExchange.signingPayload(self.clientHello.random,
+                                                       self.serverHello.random))
         return serverKeyExchange
 
     def processClientKeyExchange(self, clientKeyExchange):
@@ -135,12 +150,9 @@ class ECDHE_RSAKeyExchange(KeyExchange):
         version = self.serverHello.server_version
         serverKeyExchange = ServerKeyExchange(self.cipherSuite, version)
         serverKeyExchange.createECDH(NamedCurve.secp256r1, bytearray(public))
-        hashBytes = serverKeyExchange.hash(self.clientHello.random,
-                                           self.serverHello.random)
-        if version >= (3,3):
-            # TODO: Signature algorithm negotiation not supported.
-            hashBytes = RSAKey.addPKCS1SHA1Prefix(hashBytes)
-        serverKeyExchange.signature = self.privateKey.sign(hashBytes)
+        serverKeyExchange.signature_algorithm, serverKeyExchange.signature = \
+            self.sign(serverKeyExchange.signingPayload(self.clientHello.random,
+                                                       self.serverHello.random))
         return serverKeyExchange
 
     def processClientKeyExchange(self, clientKeyExchange):

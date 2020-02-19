@@ -94,6 +94,14 @@ Polymer({
         return map;
       },
     },
+
+    /** @private */
+    showReaderModeOption_: {
+      type: Boolean,
+      value() {
+        return loadTimeData.getBoolean('showReaderModeOption');
+      },
+    },
   },
 
   /** @private {?settings.AppearanceBrowserProxy} */

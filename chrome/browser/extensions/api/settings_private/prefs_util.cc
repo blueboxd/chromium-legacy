@@ -21,6 +21,7 @@
 #include "components/browsing_data/core/pref_names.h"
 #include "components/component_updater/pref_names.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/dom_distiller/core/pref_names.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/language/core/browser/pref_names.h"
@@ -199,6 +200,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[::prefs::kConfirmToQuitEnabled] =
       settings_api::PrefType::PREF_TYPE_BOOLEAN;
 #endif
+  (*s_whitelist)[dom_distiller::prefs::kOfferReaderMode] =
+      settings_api::PrefType::PREF_TYPE_BOOLEAN;
 
   // On startup.
   (*s_whitelist)[::prefs::kRestoreOnStartup] =

@@ -122,6 +122,13 @@ typedef interface ICredentialDialog ICredentialDialog;
 #endif 	/* __ICredentialDialog_FWD_DEFINED__ */
 
 
+#ifndef __IPolicyStatus_FWD_DEFINED__
+#define __IPolicyStatus_FWD_DEFINED__
+typedef interface IPolicyStatus IPolicyStatus;
+
+#endif 	/* __IPolicyStatus_FWD_DEFINED__ */
+
+
 #ifndef __IGoogleUpdate3Web_FWD_DEFINED__
 #define __IGoogleUpdate3Web_FWD_DEFINED__
 typedef interface IGoogleUpdate3Web IGoogleUpdate3Web;
@@ -476,6 +483,18 @@ typedef struct CredentialDialogMachineClass CredentialDialogMachineClass;
 #endif /* __cplusplus */
 
 #endif 	/* __CredentialDialogMachineClass_FWD_DEFINED__ */
+
+
+#ifndef __PolicyStatusClass_FWD_DEFINED__
+#define __PolicyStatusClass_FWD_DEFINED__
+
+#ifdef __cplusplus
+typedef class PolicyStatusClass PolicyStatusClass;
+#else
+typedef struct PolicyStatusClass PolicyStatusClass;
+#endif /* __cplusplus */
+
+#endif 	/* __PolicyStatusClass_FWD_DEFINED__ */
 
 
 #ifndef __ProcessLauncherClass_FWD_DEFINED__
@@ -3265,6 +3284,230 @@ EXTERN_C const IID IID_ICredentialDialog;
 #endif 	/* __ICredentialDialog_INTERFACE_DEFINED__ */
 
 
+#ifndef __IPolicyStatus_INTERFACE_DEFINED__
+#define __IPolicyStatus_INTERFACE_DEFINED__
+
+/* interface IPolicyStatus */
+/* [unique][helpstring][uuid][dual][object] */ 
+
+
+EXTERN_C const IID IID_IPolicyStatus;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("F63F6F8B-ACD5-413C-A44B-0409136D26CB")
+    IPolicyStatus : public IDispatch
+    {
+    public:
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_lastCheckPeriodMinutes( 
+            /* [retval][out] */ DWORD *minutes) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_updatesSuppressedTimes( 
+            /* [out] */ DWORD *start_hour,
+            /* [out] */ DWORD *start_min,
+            /* [out] */ DWORD *duration_min,
+            /* [out] */ VARIANT_BOOL *are_updates_suppressed) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_downloadPreferenceGroupPolicy( 
+            /* [retval][out] */ BSTR *pref) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_packageCacheSizeLimitMBytes( 
+            /* [retval][out] */ DWORD *limit) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_packageCacheExpirationTimeDays( 
+            /* [retval][out] */ DWORD *days) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_effectivePolicyForAppInstalls( 
+            /* [in] */ BSTR app_id,
+            /* [retval][out] */ DWORD *policy) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_effectivePolicyForAppUpdates( 
+            /* [in] */ BSTR app_id,
+            /* [retval][out] */ DWORD *policy) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_targetVersionPrefix( 
+            /* [in] */ BSTR app_id,
+            /* [retval][out] */ BSTR *prefix) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_isRollbackToTargetVersionAllowed( 
+            /* [in] */ BSTR app_id,
+            /* [retval][out] */ VARIANT_BOOL *rollback_allowed) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct IPolicyStatusVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            IPolicyStatus * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            IPolicyStatus * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            IPolicyStatus * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount )( 
+            IPolicyStatus * This,
+            /* [out] */ UINT *pctinfo);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfo )( 
+            IPolicyStatus * This,
+            /* [in] */ UINT iTInfo,
+            /* [in] */ LCID lcid,
+            /* [out] */ ITypeInfo **ppTInfo);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames )( 
+            IPolicyStatus * This,
+            /* [in] */ REFIID riid,
+            /* [size_is][in] */ LPOLESTR *rgszNames,
+            /* [range][in] */ UINT cNames,
+            /* [in] */ LCID lcid,
+            /* [size_is][out] */ DISPID *rgDispId);
+        
+        /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
+            IPolicyStatus * This,
+            /* [annotation][in] */ 
+            _In_  DISPID dispIdMember,
+            /* [annotation][in] */ 
+            _In_  REFIID riid,
+            /* [annotation][in] */ 
+            _In_  LCID lcid,
+            /* [annotation][in] */ 
+            _In_  WORD wFlags,
+            /* [annotation][out][in] */ 
+            _In_  DISPPARAMS *pDispParams,
+            /* [annotation][out] */ 
+            _Out_opt_  VARIANT *pVarResult,
+            /* [annotation][out] */ 
+            _Out_opt_  EXCEPINFO *pExcepInfo,
+            /* [annotation][out] */ 
+            _Out_opt_  UINT *puArgErr);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_lastCheckPeriodMinutes )( 
+            IPolicyStatus * This,
+            /* [retval][out] */ DWORD *minutes);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_updatesSuppressedTimes )( 
+            IPolicyStatus * This,
+            /* [out] */ DWORD *start_hour,
+            /* [out] */ DWORD *start_min,
+            /* [out] */ DWORD *duration_min,
+            /* [out] */ VARIANT_BOOL *are_updates_suppressed);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_downloadPreferenceGroupPolicy )( 
+            IPolicyStatus * This,
+            /* [retval][out] */ BSTR *pref);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_packageCacheSizeLimitMBytes )( 
+            IPolicyStatus * This,
+            /* [retval][out] */ DWORD *limit);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_packageCacheExpirationTimeDays )( 
+            IPolicyStatus * This,
+            /* [retval][out] */ DWORD *days);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_effectivePolicyForAppInstalls )( 
+            IPolicyStatus * This,
+            /* [in] */ BSTR app_id,
+            /* [retval][out] */ DWORD *policy);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_effectivePolicyForAppUpdates )( 
+            IPolicyStatus * This,
+            /* [in] */ BSTR app_id,
+            /* [retval][out] */ DWORD *policy);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_targetVersionPrefix )( 
+            IPolicyStatus * This,
+            /* [in] */ BSTR app_id,
+            /* [retval][out] */ BSTR *prefix);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_isRollbackToTargetVersionAllowed )( 
+            IPolicyStatus * This,
+            /* [in] */ BSTR app_id,
+            /* [retval][out] */ VARIANT_BOOL *rollback_allowed);
+        
+        END_INTERFACE
+    } IPolicyStatusVtbl;
+
+    interface IPolicyStatus
+    {
+        CONST_VTBL struct IPolicyStatusVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define IPolicyStatus_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define IPolicyStatus_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define IPolicyStatus_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define IPolicyStatus_GetTypeInfoCount(This,pctinfo)	\
+    ( (This)->lpVtbl -> GetTypeInfoCount(This,pctinfo) ) 
+
+#define IPolicyStatus_GetTypeInfo(This,iTInfo,lcid,ppTInfo)	\
+    ( (This)->lpVtbl -> GetTypeInfo(This,iTInfo,lcid,ppTInfo) ) 
+
+#define IPolicyStatus_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)	\
+    ( (This)->lpVtbl -> GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) ) 
+
+#define IPolicyStatus_Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)	\
+    ( (This)->lpVtbl -> Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) ) 
+
+
+#define IPolicyStatus_get_lastCheckPeriodMinutes(This,minutes)	\
+    ( (This)->lpVtbl -> get_lastCheckPeriodMinutes(This,minutes) ) 
+
+#define IPolicyStatus_get_updatesSuppressedTimes(This,start_hour,start_min,duration_min,are_updates_suppressed)	\
+    ( (This)->lpVtbl -> get_updatesSuppressedTimes(This,start_hour,start_min,duration_min,are_updates_suppressed) ) 
+
+#define IPolicyStatus_get_downloadPreferenceGroupPolicy(This,pref)	\
+    ( (This)->lpVtbl -> get_downloadPreferenceGroupPolicy(This,pref) ) 
+
+#define IPolicyStatus_get_packageCacheSizeLimitMBytes(This,limit)	\
+    ( (This)->lpVtbl -> get_packageCacheSizeLimitMBytes(This,limit) ) 
+
+#define IPolicyStatus_get_packageCacheExpirationTimeDays(This,days)	\
+    ( (This)->lpVtbl -> get_packageCacheExpirationTimeDays(This,days) ) 
+
+#define IPolicyStatus_get_effectivePolicyForAppInstalls(This,app_id,policy)	\
+    ( (This)->lpVtbl -> get_effectivePolicyForAppInstalls(This,app_id,policy) ) 
+
+#define IPolicyStatus_get_effectivePolicyForAppUpdates(This,app_id,policy)	\
+    ( (This)->lpVtbl -> get_effectivePolicyForAppUpdates(This,app_id,policy) ) 
+
+#define IPolicyStatus_get_targetVersionPrefix(This,app_id,prefix)	\
+    ( (This)->lpVtbl -> get_targetVersionPrefix(This,app_id,prefix) ) 
+
+#define IPolicyStatus_get_isRollbackToTargetVersionAllowed(This,app_id,rollback_allowed)	\
+    ( (This)->lpVtbl -> get_isRollbackToTargetVersionAllowed(This,app_id,rollback_allowed) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __IPolicyStatus_INTERFACE_DEFINED__ */
+
+
 #ifndef __IGoogleUpdate3Web_INTERFACE_DEFINED__
 #define __IGoogleUpdate3Web_INTERFACE_DEFINED__
 
@@ -4931,11 +5174,11 @@ EXTERN_C const IID IID_IOneClickProcessLauncher;
 #endif 	/* __IOneClickProcessLauncher_INTERFACE_DEFINED__ */
 
 
-/* interface __MIDL_itf_google_update_idl_0000_0023 */
+/* interface __MIDL_itf_google_update_idl_0000_0024 */
 /* [local] */ 
 
 typedef /* [public][public] */ 
-enum __MIDL___MIDL_itf_google_update_idl_0000_0023_0001
+enum __MIDL___MIDL_itf_google_update_idl_0000_0024_0001
     {
         COMPLETION_CODE_SUCCESS	= 1,
         COMPLETION_CODE_SUCCESS_CLOSE_UI	= ( COMPLETION_CODE_SUCCESS + 1 ) ,
@@ -4951,8 +5194,8 @@ enum __MIDL___MIDL_itf_google_update_idl_0000_0023_0001
 
 
 
-extern RPC_IF_HANDLE __MIDL_itf_google_update_idl_0000_0023_v0_0_c_ifspec;
-extern RPC_IF_HANDLE __MIDL_itf_google_update_idl_0000_0023_v0_0_s_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_google_update_idl_0000_0024_v0_0_c_ifspec;
+extern RPC_IF_HANDLE __MIDL_itf_google_update_idl_0000_0024_v0_0_s_ifspec;
 
 #ifndef __IProgressWndEvents_INTERFACE_DEFINED__
 #define __IProgressWndEvents_INTERFACE_DEFINED__
@@ -5609,6 +5852,14 @@ EXTERN_C const CLSID CLSID_CredentialDialogMachineClass;
 
 class DECLSPEC_UUID("25461599-633d-42b1-84fb-7cd68d026e53")
 CredentialDialogMachineClass;
+#endif
+
+EXTERN_C const CLSID CLSID_PolicyStatusClass;
+
+#ifdef __cplusplus
+
+class DECLSPEC_UUID("521FDB42-7130-4806-822A-FC5163FAD983")
+PolicyStatusClass;
 #endif
 
 EXTERN_C const CLSID CLSID_ProcessLauncherClass;

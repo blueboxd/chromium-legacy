@@ -271,6 +271,7 @@ Polymer({
 
   /** @private */
   onRelaunchClick_() {
+    settings.recordSettingChange();
     this.lifetimeBrowserProxy_.relaunch();
   },
 
@@ -463,6 +464,7 @@ Polymer({
 
   /** @private */
   onRelaunchAndPowerwashClick_() {
+    settings.recordSettingChange();
     if (this.currentUpdateStatusEvent_.rollback) {
       // Wipe already initiated, simply relaunch.
       this.lifetimeBrowserProxy_.relaunch();

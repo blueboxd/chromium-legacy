@@ -61,3 +61,5 @@ Local Modifications:
   downgrade signal.
 - patches/thread_safe_python_rsa_key.patch: Make Python_RSAKey thread safe,
   inspired by tlslite-ng implementation.
+- patches/signature_algorithms.patch: Add basic signature algorithms
+  negotiation.

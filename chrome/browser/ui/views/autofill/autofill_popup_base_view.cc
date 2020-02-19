@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/autofill/autofill_popup_base_view.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
@@ -203,66 +206,6 @@ void AutofillPopupBaseView::OnNativeFocusChanged(gfx::NativeView focused_now) {
     HideController(PopupHidingReason::kFocusChanged);
 }
 
-void AutofillPopupBaseView::OnMouseCaptureLost() {
-  ClearSelection();
-}
-
-bool AutofillPopupBaseView::OnMouseDragged(const ui::MouseEvent& event) {
-  if (HitTestPoint(event.location())) {
-    SetSelection(event.location());
-
-    // We must return true in order to get future OnMouseDragged and
-    // OnMouseReleased events.
-    return true;
-  }
-
-  // If we move off of the popup, we lose the selection.
-  ClearSelection();
-  return false;
-}
-
-void AutofillPopupBaseView::OnMouseExited(const ui::MouseEvent& event) {
-  // There is no need to post a ClearSelection task if no row is selected.
-  if (!delegate_ || !delegate_->HasSelection())
-    return;
-
-  // Pressing return causes the cursor to hide, which will generate an
-  // OnMouseExited event. Pressing return should activate the current selection
-  // via AcceleratorPressed, so we need to let that run first.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&AutofillPopupBaseView::ClearSelection,
-                                weak_ptr_factory_.GetWeakPtr()));
-}
-
-void AutofillPopupBaseView::OnMouseMoved(const ui::MouseEvent& event) {
-  // A synthesized mouse move will be sent when the popup is first shown.
-  // Don't preview a suggestion if the mouse happens to be hovering there.
-#if defined(OS_WIN)
-  // TODO(rouslan): Use event.time_stamp() and ui::EventTimeForNow() when they
-  // become comparable. http://crbug.com/453559
-  if (base::Time::Now() - show_time_ <= base::TimeDelta::FromMilliseconds(50))
-    return;
-#else
-  if (event.flags() & ui::EF_IS_SYNTHESIZED)
-    return;
-#endif
-
-  if (HitTestPoint(event.location()))
-    SetSelection(event.location());
-  else
-    ClearSelection();
-}
-
-bool AutofillPopupBaseView::OnMousePressed(const ui::MouseEvent& event) {
-  return event.GetClickCount() == 1;
-}
-
-void AutofillPopupBaseView::OnMouseReleased(const ui::MouseEvent& event) {
-  // We only care about the left click.
-  if (event.IsOnlyLeftMouseButton() && HitTestPoint(event.location()))
-    AcceptSelection(event.location());
-}
-
 void AutofillPopupBaseView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   // TODO(aleventhal) The correct role spec-wise to use here is kMenu, however
   // as of NVDA 2018.2.1, firing a menu event with kMenu breaks left/right
@@ -272,24 +215,6 @@ void AutofillPopupBaseView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kPane;
   node_data->SetName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA));
-}
-
-void AutofillPopupBaseView::SetSelection(const gfx::Point& point) {
-  if (delegate_)
-    delegate_->SetSelectionAtPoint(point);
-}
-
-void AutofillPopupBaseView::AcceptSelection(const gfx::Point& point) {
-  if (!delegate_)
-    return;
-
-  delegate_->SetSelectionAtPoint(point);
-  delegate_->AcceptSelectedLine();
-}
-
-void AutofillPopupBaseView::ClearSelection() {
-  if (delegate_)
-    delegate_->SelectionCleared();
 }
 
 void AutofillPopupBaseView::HideController(PopupHidingReason reason) {

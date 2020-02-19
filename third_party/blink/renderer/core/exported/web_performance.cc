@@ -65,6 +65,10 @@ double WebPerformance::NavigationStart() const {
   return MillisecondsToSeconds(private_->timing()->navigationStart());
 }
 
+base::TimeTicks WebPerformance::NavigationStartAsMonotonicTime() const {
+  return private_->timing()->NavigationStartAsMonotonicTime();
+}
+
 double WebPerformance::InputForNavigationStart() const {
   return MillisecondsToSeconds(private_->timing()->inputStart());
 }
@@ -156,6 +160,10 @@ double WebPerformance::FirstImagePaint() const {
 
 double WebPerformance::FirstContentfulPaint() const {
   return MillisecondsToSeconds(private_->timing()->FirstContentfulPaint());
+}
+
+base::TimeTicks WebPerformance::FirstContentfulPaintAsMonotonicTime() const {
+  return private_->timing()->FirstContentfulPaintAsMonotonicTime();
 }
 
 double WebPerformance::FirstMeaningfulPaint() const {

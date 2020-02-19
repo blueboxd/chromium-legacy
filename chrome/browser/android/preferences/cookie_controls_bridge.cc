@@ -24,9 +24,8 @@ CookieControlsBridge::CookieControlsBridge(
   controller_->Update(web_contents);
 }
 
-void CookieControlsBridge::OnStatusChanged(
-    CookieControlsController::Status new_status,
-    int blocked_cookies) {
+void CookieControlsBridge::OnStatusChanged(CookieControlsStatus new_status,
+                                           int blocked_cookies) {
   if (status_ != new_status) {
     status_ = new_status;
     JNIEnv* env = base::android::AttachCurrentThread();

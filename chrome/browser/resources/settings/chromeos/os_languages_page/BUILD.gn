@@ -43,6 +43,7 @@ js_library("os_languages_section") {
 
 js_library("os_languages_page") {
   deps = [
+    "..:metrics_recorder",
     "..:os_route",
     "../..:lifetime_browser_proxy",
     "../..:router",

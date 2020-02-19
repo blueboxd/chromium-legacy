@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_TIMING_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_TIMING_H_
 
+#include "base/time/time.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -86,6 +87,11 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
 
   // The below are non-spec timings, for Page Load UMA metrics.
 
+  // The time immediately after the user agent finishes prompting to unload the
+  // previous document, or if there is no previous document, the same value as
+  // fetchStart.  Intended to be used for correlation with other events internal
+  // to blink. Not to be exposed to JavaScript.
+  base::TimeTicks NavigationStartAsMonotonicTime() const;
   // The time the first paint operation was performed.
   uint64_t FirstPaint() const;
   // The time the first paint operation for image was performed.
@@ -93,6 +99,10 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   // The time of the first 'contentful' paint. A contentful paint is a paint
   // that includes content of some kind (for example, text or image content).
   uint64_t FirstContentfulPaint() const;
+  // The first 'contentful' paint as full-resolution monotonic time. Intended to
+  // be used for correlation with other events internal to blink. Not to be
+  // exposed to JavaScript.
+  base::TimeTicks FirstContentfulPaintAsMonotonicTime() const;
   // The time of the first 'meaningful' paint, A meaningful paint is a paint
   // where the page's primary content is visible.
   uint64_t FirstMeaningfulPaint() const;

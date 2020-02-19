@@ -59,6 +59,7 @@ js_library("multidevice_page") {
     ":multidevice_browser_proxy",
     ":multidevice_constants",
     ":multidevice_feature_behavior",
+    "..:metrics_recorder",
     "..:os_route",
     "../..:router",
     "../../controls:password_prompt_dialog",
@@ -80,6 +81,7 @@ js_library("multidevice_smartlock_subpage") {
   deps = [
     ":multidevice_constants",
     ":multidevice_feature_behavior",
+    "..:metrics_recorder",
     "..:os_route",
     "../..:settings_routes",
     "../../prefs:prefs_behavior",

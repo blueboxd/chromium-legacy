@@ -30,6 +30,7 @@ Polymer({
 
   /** @private */
   onRestartTap_() {
+    settings.recordSettingChange();
     settings.LifetimeBrowserProxyImpl.getInstance().factoryReset(
         this.requestTpmFirmwareUpdate);
   },

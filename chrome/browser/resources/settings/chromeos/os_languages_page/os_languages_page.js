@@ -322,6 +322,7 @@ Polymer({
   onMoveToTopTap_() {
     /** @type {!CrActionMenuElement} */ (this.$.menu.get()).close();
     this.languageHelper.moveLanguageToFront(this.detailLanguage_.language.code);
+    settings.recordSettingChange();
   },
 
   /**
@@ -332,6 +333,7 @@ Polymer({
     /** @type {!CrActionMenuElement} */ (this.$.menu.get()).close();
     this.languageHelper.moveLanguage(
         this.detailLanguage_.language.code, true /* upDirection */);
+    settings.recordSettingChange();
   },
 
   /**
@@ -342,6 +344,7 @@ Polymer({
     /** @type {!CrActionMenuElement} */ (this.$.menu.get()).close();
     this.languageHelper.moveLanguage(
         this.detailLanguage_.language.code, false /* upDirection */);
+    settings.recordSettingChange();
   },
 
   /**
@@ -351,6 +354,7 @@ Polymer({
   onRemoveLanguageTap_() {
     /** @type {!CrActionMenuElement} */ (this.$.menu.get()).close();
     this.languageHelper.disableLanguage(this.detailLanguage_.language.code);
+    settings.recordSettingChange();
   },
 
   /**
@@ -448,6 +452,7 @@ Polymer({
    * @private
    */
   onRestartTap_() {
+    settings.recordSettingChange();
     settings.LifetimeBrowserProxyImpl.getInstance().signOutAndRestart();
   },
 

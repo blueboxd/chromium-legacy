@@ -47,5 +47,6 @@ Polymer({
     const deviceInfo = event.model.item;
     settings.CrostiniBrowserProxyImpl.getInstance().setCrostiniUsbDeviceShared(
         deviceInfo.guid, event.target.checked);
+    settings.recordSettingChange();
   },
 });

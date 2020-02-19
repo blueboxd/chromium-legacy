@@ -753,7 +753,14 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   network_context_params->enable_expect_ct_reporting = true;
 
 #if BUILDFLAG(TRIAL_COMPARISON_CERT_VERIFIER_SUPPORTED)
-  if (!in_memory && !network_context_params->use_builtin_cert_verifier &&
+  // Require the use_builtin_cert_verifier to be explicitly initialized, as
+  // using the TrialComparisonCertVerifier requires knowing whether Chrome is
+  // using the system verifier.
+  DCHECK_NE(network_context_params->use_builtin_cert_verifier,
+            network::mojom::NetworkContextParams::CertVerifierImpl::kDefault);
+  if (!in_memory &&
+      network_context_params->use_builtin_cert_verifier ==
+          network::mojom::NetworkContextParams::CertVerifierImpl::kSystem &&
       TrialComparisonCertVerifierController::MaybeAllowedForProfile(profile_)) {
     mojo::PendingRemote<network::mojom::TrialComparisonCertVerifierConfigClient>
         config_client;
@@ -807,7 +814,9 @@ ProfileNetworkContextService::CreateNetworkContextParams(
   // Note: On non-ChromeOS platforms, the |use_builtin_cert_verifier| param
   // value is inherited from CreateDefaultNetworkContextParams.
   network_context_params->use_builtin_cert_verifier =
-      using_builtin_cert_verifier_;
+      using_builtin_cert_verifier_
+          ? network::mojom::NetworkContextParams::CertVerifierImpl::kBuiltin
+          : network::mojom::NetworkContextParams::CertVerifierImpl::kSystem;
 
   bool profile_supports_policy_certs = false;
   if (chromeos::ProfileHelper::IsSigninProfile(profile_))

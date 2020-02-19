@@ -334,7 +334,8 @@ Polymer({
    */
   onOriginTap_(e) {
     this.navigateToSiteDetails_(this.siteGroup.origins[e.model.index].origin);
-    this.browserProxy.recordAction(settings.AllSitesAction.ENTER_SITE_DETAILS);
+    this.browserProxy.recordAction(settings.AllSitesAction2.ENTER_SITE_DETAILS);
+    chrome.metricsPrivate.recordUserAction('AllSites_EnterSiteDetails');
   },
 
   /**
@@ -347,7 +348,8 @@ Polymer({
     if (!this.grouped_(this.siteGroup)) {
       this.navigateToSiteDetails_(this.siteGroup.origins[0].origin);
       this.browserProxy.recordAction(
-          settings.AllSitesAction.ENTER_SITE_DETAILS);
+          settings.AllSitesAction2.ENTER_SITE_DETAILS);
+      chrome.metricsPrivate.recordUserAction('AllSites_EnterSiteDetails');
       return;
     }
     this.toggleCollapsible_();

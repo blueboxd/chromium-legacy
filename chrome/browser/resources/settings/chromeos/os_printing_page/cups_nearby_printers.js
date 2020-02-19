@@ -103,6 +103,7 @@ Polymer({
             this.onAddNearbyPrintersSucceeded_.bind(
                 this, item.printerInfo.printerName),
             this.onAddNearbyPrinterFailed_.bind(this));
+    settings.recordSettingChange();
   },
 
   /**
@@ -140,6 +141,7 @@ Polymer({
             this.onQueryDiscoveredPrinterSucceeded_.bind(
                 this, item.printerInfo.printerName),
             queryDiscoveredPrinterFailed);
+    settings.recordSettingChange();
   },
 
   /**

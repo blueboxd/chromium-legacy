@@ -150,6 +150,7 @@ Polymer({
     app_management.BrowserProxy.getInstance().handler.setPermission(
         this.app_.id, newPermission);
 
+    settings.recordSettingChange();
     app_management.util.recordAppManagementUserAction(
         this.app_.type,
         this.getUserMetricActionForPermission_(

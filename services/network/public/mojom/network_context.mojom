@@ -377,10 +377,14 @@ struct NetworkContextParams {
   [EnableIf=is_chromeos]
   AdditionalCertificates? initial_additional_certificates;
 
-  // If true, the built-in cert verifier will be used. If false, the platform
-  // cert verifier will be used.
+  // Specifies which cert verifier implementation to use.
+  //   kDefault - Decided by base::Feature
+  //   kBuiltin - Use CertVerifyProcBuiltin
+  //   kSystem  - Use the system CertVerifyProc implementation
   [EnableIf=is_builtin_cert_verifier_feature_supported]
-  bool use_builtin_cert_verifier = false;
+  enum CertVerifierImpl {kDefault, kBuiltin, kSystem};
+  [EnableIf=is_builtin_cert_verifier_feature_supported]
+  CertVerifierImpl use_builtin_cert_verifier = kDefault;
 
   // Parameters for the cert verifier comparison trial. This is a temporary
   // interface and embedders should not use it.

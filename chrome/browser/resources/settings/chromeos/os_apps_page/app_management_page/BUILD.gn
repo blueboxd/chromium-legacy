@@ -135,6 +135,7 @@ js_library("permission_item") {
     ":store_client",
     ":toggle_row",
     ":util",
+    "../..:metrics_recorder",
   ]
 }
 
@@ -143,6 +144,7 @@ js_library("pin_to_shelf_item") {
     ":browser_proxy",
     ":toggle_row",
     ":types",
+    "../..:metrics_recorder",
   ]
 }
 
@@ -199,6 +201,7 @@ js_library("uninstall_button") {
   deps = [
     ":store_client",
     ":util",
+    "../..:metrics_recorder",
     "//ui/webui/resources/cr_elements/cr_button:cr_button",
     "//ui/webui/resources/cr_elements/policy:cr_tooltip_icon",
     "//ui/webui/resources/js:i18n_behavior",

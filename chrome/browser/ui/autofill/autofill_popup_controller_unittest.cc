@@ -161,7 +161,6 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   using AutofillPopupControllerImpl::GetRootAXPlatformNodeForWebContents;
   using AutofillPopupControllerImpl::GetSuggestionAt;
   using AutofillPopupControllerImpl::GetWeakPtr;
-  using AutofillPopupControllerImpl::popup_bounds;
   using AutofillPopupControllerImpl::RemoveSelectedLine;
   using AutofillPopupControllerImpl::selected_line;
   using AutofillPopupControllerImpl::SelectNextLine;

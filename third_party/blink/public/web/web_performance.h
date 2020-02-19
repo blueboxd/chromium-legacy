@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PERFORMANCE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PERFORMANCE_H_
 
+#include "base/time/time.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
@@ -66,6 +67,7 @@ class WebPerformance {
   // These functions return time in seconds (not milliseconds) since the epoch.
   BLINK_EXPORT double InputForNavigationStart() const;
   BLINK_EXPORT double NavigationStart() const;
+  BLINK_EXPORT base::TimeTicks NavigationStartAsMonotonicTime() const;
   BLINK_EXPORT double UnloadEventEnd() const;
   BLINK_EXPORT double RedirectStart() const;
   BLINK_EXPORT double RedirectEnd() const;
@@ -88,6 +90,7 @@ class WebPerformance {
   BLINK_EXPORT double FirstPaint() const;
   BLINK_EXPORT double FirstImagePaint() const;
   BLINK_EXPORT double FirstContentfulPaint() const;
+  BLINK_EXPORT base::TimeTicks FirstContentfulPaintAsMonotonicTime() const;
   BLINK_EXPORT double FirstMeaningfulPaint() const;
   BLINK_EXPORT double FirstMeaningfulPaintCandidate() const;
   BLINK_EXPORT double LargestImagePaint() const;

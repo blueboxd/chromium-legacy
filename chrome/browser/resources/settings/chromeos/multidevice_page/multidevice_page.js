@@ -265,6 +265,7 @@ Polymer({
       this.browserProxy_.setFeatureEnabledState(
           this.featureToBeEnabledOnceAuthenticated_, true /* enabled */,
           this.authToken_);
+      settings.recordSettingChange();
 
       // Reset |this.authToken_| now that it has been used. This ensures that
       // users cannot keep an old auth token and reuse it on an subsequent
@@ -300,6 +301,7 @@ Polymer({
     // features does not require authentication.
     if (!enabled || !this.isAuthenticationRequiredToEnable_(feature)) {
       this.browserProxy_.setFeatureEnabledState(feature, enabled);
+      settings.recordSettingChange();
       return;
     }
 
@@ -344,6 +346,7 @@ Polymer({
   /** @private */
   onForgetDeviceRequested_() {
     this.browserProxy_.removeHostDevice();
+    settings.recordSettingChange();
     settings.Router.getInstance().navigateTo(settings.routes.MULTIDEVICE);
   },
 

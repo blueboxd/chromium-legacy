@@ -4,7 +4,7 @@ Story,Description,Platforms,Tags
 background:media:imgur:2019,,mobile,"2019,health_check"
 background:news:nytimes:2019,,mobile,"2019,javascript_heavy"
 background:search:google:2019,,mobile,"2019,health_check"
-background:social:facebook:2019,,mobile,2019
+background:social:facebook:2019,,mobile,"2019,health_check"
 background:tools:gmail:2019,,mobile,"2019,health_check"
 browse:chrome:newtab:2019,Story that loads new tab page and performs searches.,mobile,"2019,emerging_market"
 browse:chrome:omnibox:2019,Story that peforms search by using omnibox search provider,mobile,"2019,emerging_market"
@@ -27,7 +27,7 @@ browse:news:nytimes:2018,The third top website in http://www.alexa.com/topsites/
 browse:news:nytimes:2019,The third top website in http://www.alexa.com/topsites/category/News,mobile,2019
 browse:news:qq:2019,,mobile,"2019,health_check,international"
 browse:news:reddit:2018,The top website in http://www.alexa.com/topsites/category/News,desktop,2018
-browse:news:reddit:2019,,mobile,2019
+browse:news:reddit:2019,,mobile,"2019,health_check"
 browse:news:toi:2019,,mobile,"2019,emerging_market"
 browse:news:washingtonpost:2019,Progressive website,mobile,2019
 browse:search:amp:2018,Story for Google's Accelerated Mobile Pages (AMP).,mobile,2018
@@ -41,16 +41,16 @@ browse:shopping:lazada:2019,,mobile,"2019,emerging_market"
 browse:social:facebook:2019,,mobile,"2019,emerging_market"
 browse:social:facebook_infinite_scroll:2018,,"desktop,mobile","2018,infinite_scroll"
 browse:social:instagram:2019,,mobile,"2019,emerging_market"
-browse:social:pinterest_infinite_scroll:2019,,mobile,"2019,infinite_scroll"
-browse:social:tumblr_infinite_scroll:2018,,"desktop,mobile","2018,infinite_scroll,javascript_heavy"
+browse:social:pinterest_infinite_scroll:2019,,mobile,"2019,health_check,infinite_scroll"
+browse:social:tumblr_infinite_scroll:2018,,"desktop,mobile","2018,health_check,infinite_scroll,javascript_heavy"
 browse:social:twitter:2018,,desktop,2018
-browse:social:twitter:2019,,mobile,2019
+browse:social:twitter:2019,,mobile,"2019,health_check"
 browse:social:twitter_infinite_scroll:2018,,desktop,"2018,infinite_scroll"
 browse:tech:discourse_infinite_scroll:2018,,"desktop,mobile","2018,infinite_scroll"
 browse:tools:docs_scrolling,Google Docs scrolling story:,desktop,"2020,javascript_heavy"
-browse:tools:earth,Google Earth story:,desktop,"2016,javascript_heavy,webgl"
-browse:tools:maps:2019,Google maps story:,"desktop,mobile","2019,emerging_market,javascript_heavy,webgl"
-browse:tools:sheets:2019,,desktop,"2019,javascript_heavy"
+browse:tools:earth,Google Earth story:,desktop,"2016,health_check,javascript_heavy,webgl"
+browse:tools:maps:2019,Google maps story:,"desktop,mobile","2019,emerging_market,health_check,javascript_heavy,webgl"
+browse:tools:sheets:2019,,desktop,"2019,health_check,javascript_heavy"
 browse_accessibility:media:youtube,Tests interacting with the YouTube home page.,desktop,"2016,accessibility,keyboard_input"
 browse_accessibility:tech:codesearch:2018,Tests scrolling an element within a page.,desktop,"2018,accessibility,scroll"
 load:chrome:blank,Story that loads the about:blank page.,"desktop,mobile","2016,health_check"
@@ -70,7 +70,7 @@ load:media:soundcloud:2018,,"desktop,mobile",2018
 load:media:youtube:2018,,"desktop,mobile","2018,emerging_market,health_check"
 load:news:bbc:2018,,desktop,2018
 load:news:bbc:2019,,mobile,2019
-load:news:cnn:2018,,"desktop,mobile","2018,javascript_heavy"
+load:news:cnn:2018,,"desktop,mobile","2018,health_check,javascript_heavy"
 load:news:flipboard,,desktop,2016
 load:news:hackernews:2018,,desktop,2018
 load:news:irctc:2019,,mobile,"2019,emerging_market,health_check"
@@ -92,23 +92,23 @@ load:search:taobao:2018,,desktop,"2018,international"
 load:search:taobao:2019,,mobile,"2019,health_check,international"
 load:search:yahoo:2018,,"desktop,mobile",2018
 load:search:yandex:2018,,"desktop,mobile","2018,international"
-load:social:instagram:2018,,desktop,2018
+load:social:instagram:2018,,desktop,"2018,health_check"
 load:social:instagram:2019,,mobile,2019
 load:social:pinterest:2019,,"desktop,mobile","2019,javascript_heavy"
 load:social:twitter:2019,,mobile,2019
-load:social:vk:2018,,desktop,"2018,international"
+load:social:vk:2018,,desktop,"2018,health_check,international"
 load:tools:chat:2020,,desktop,2020
 load:tools:docs:2019,Load a typical google doc page (2019).,"desktop,mobile","2019,health_check"
 load:tools:drive:2019,,"desktop,mobile","2019,javascript_heavy"
 load:tools:dropbox:2019,,mobile,2019
-load:tools:gmail:2019,,"desktop,mobile",2019
+load:tools:gmail:2019,,"desktop,mobile","2019,health_check"
 load:tools:stackoverflow:2018,Load a typical question & answer page of stackoverflow.com,"desktop,mobile","2018,health_check"
-load:tools:weather:2019,,"desktop,mobile","2019,javascript_heavy"
+load:tools:weather:2019,,"desktop,mobile","2019,health_check,javascript_heavy"
 load_accessibility:media:wikipedia:2018,"Wikipedia page on Accessibility. Long, but very simple, clean layout.",desktop,"2018,accessibility"
 load_accessibility:shopping:amazon:2018,Amazon results page. Good example of a site with a data table.,desktop,"2018,accessibility"
 long_running:tools:gmail-background,,"desktop,mobile",2016
-long_running:tools:gmail-foreground,,"desktop,mobile",2016
+long_running:tools:gmail-foreground,,"desktop,mobile","2016,health_check"
 multitab:misc:typical24,"Load 24 different web sites in 24 tabs, then cycle through each tab.",desktop,"2016,tabs_switching"
 multitab:misc:typical24:2018,"Load 24 different web sites in 24 tabs, then cycle through each tab.",desktop,"2018,international,tabs_switching"
-play:media:google_play_music,"Browse the songs list in music.google.com, then play a song.",desktop,2016
+play:media:google_play_music,"Browse the songs list in music.google.com, then play a song.",desktop,"2016,health_check"
 play:media:soundcloud:2018,"Load soundcloud.com, search for ""Smooth Jazz"", then play a song.",desktop,2018

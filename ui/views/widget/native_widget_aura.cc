@@ -109,8 +109,8 @@ NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
 
 // static
 void NativeWidgetAura::RegisterNativeWidgetForWindow(
-      internal::NativeWidgetPrivate* native_widget,
-      aura::Window* window) {
+    internal::NativeWidgetPrivate* native_widget,
+    aura::Window* window) {
   window->SetProperty(kNativeWidgetPrivateKey, native_widget);
 }
 
@@ -230,8 +230,8 @@ void NativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
   if (parent) {
     parent->AddChild(window_);
   } else {
-    aura::client::ParentWindowWithContext(
-        window_, context->GetRootWindow(), window_bounds);
+    aura::client::ParentWindowWithContext(window_, context->GetRootWindow(),
+                                          window_bounds);
   }
 
   window_->AddObserver(this);
@@ -400,8 +400,7 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
   gfx::Rect window_bounds(
       parent_bounds.x() + (parent_bounds.width() - size.width()) / 2,
       parent_bounds.y() + (parent_bounds.height() - size.height()) / 2,
-      size.width(),
-      size.height());
+      size.width(), size.height());
   // Don't size the window bigger than the parent, otherwise the user may not be
   // able to close or move it.
   window_bounds.AdjustToFit(parent_bounds);
@@ -409,7 +408,7 @@ void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
   // Convert the bounds back relative to the parent.
   gfx::Point origin = window_bounds.origin();
   aura::Window::ConvertPointToTarget(window_->GetRootWindow(),
-      window_->parent(), &origin);
+                                     window_->parent(), &origin);
   window_bounds.set_origin(origin);
   window_->SetBounds(window_bounds);
 }
@@ -419,8 +418,8 @@ void NativeWidgetAura::GetWindowPlacement(
     ui::WindowShowState* show_state) const {
   // The interface specifies returning restored bounds, not current bounds.
   *bounds = GetRestoredBounds();
-  *show_state = window_ ? window_->GetProperty(aura::client::kShowStateKey) :
-      ui::SHOW_STATE_DEFAULT;
+  *show_state = window_ ? window_->GetProperty(aura::client::kShowStateKey)
+                        : ui::SHOW_STATE_DEFAULT;
 }
 
 bool NativeWidgetAura::SetWindowTitle(const base::string16& title) {
@@ -648,12 +647,12 @@ void NativeWidgetAura::Minimize() {
 
 bool NativeWidgetAura::IsMaximized() const {
   return window_ && window_->GetProperty(aura::client::kShowStateKey) ==
-      ui::SHOW_STATE_MAXIMIZED;
+                        ui::SHOW_STATE_MAXIMIZED;
 }
 
 bool NativeWidgetAura::IsMinimized() const {
   return window_ && window_->GetProperty(aura::client::kShowStateKey) ==
-      ui::SHOW_STATE_MINIMIZED;
+                        ui::SHOW_STATE_MINIMIZED;
 }
 
 void NativeWidgetAura::Restore() {
@@ -670,7 +669,7 @@ void NativeWidgetAura::SetFullscreen(bool fullscreen) {
 
 bool NativeWidgetAura::IsFullscreen() const {
   return window_ && window_->GetProperty(aura::client::kShowStateKey) ==
-      ui::SHOW_STATE_FULLSCREEN;
+                        ui::SHOW_STATE_FULLSCREEN;
 }
 
 void NativeWidgetAura::SetCanAppearInExistingFullscreenSpaces(
@@ -868,8 +867,8 @@ int NativeWidgetAura::GetNonClientComponent(const gfx::Point& point) const {
 }
 
 bool NativeWidgetAura::ShouldDescendIntoChildForEventHandling(
-      aura::Window* child,
-      const gfx::Point& location) {
+    aura::Window* child,
+    const gfx::Point& location) {
   return delegate_->ShouldDescendIntoChildForEventHandling(
       window_->layer(), child, child->layer(), location);
 }
@@ -1026,14 +1025,14 @@ void NativeWidgetAura::OnWindowFocused(aura::Window* gained_focus,
 
 void NativeWidgetAura::OnDragEntered(const ui::DropTargetEvent& event) {
   DCHECK(drop_helper_.get() != nullptr);
-  last_drop_operation_ = drop_helper_->OnDragOver(event.data(),
-      event.location(), event.source_operations());
+  last_drop_operation_ = drop_helper_->OnDragOver(
+      event.data(), event.location(), event.source_operations());
 }
 
 int NativeWidgetAura::OnDragUpdated(const ui::DropTargetEvent& event) {
   DCHECK(drop_helper_.get() != nullptr);
-  last_drop_operation_ = drop_helper_->OnDragOver(event.data(),
-      event.location(), event.source_operations());
+  last_drop_operation_ = drop_helper_->OnDragOver(
+      event.data(), event.location(), event.source_operations());
   return last_drop_operation_;
 }
 
@@ -1046,7 +1045,7 @@ int NativeWidgetAura::OnPerformDrop(const ui::DropTargetEvent& event,
                                     std::unique_ptr<ui::OSExchangeData> data) {
   DCHECK(drop_helper_.get() != nullptr);
   return drop_helper_->OnDrop(event.data(), event.location(),
-      last_drop_operation_);
+                              last_drop_operation_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1223,8 +1222,8 @@ void NativeWidgetPrivate::ReparentNativeView(gfx::NativeView native_view,
     // matches our previous behaviour; the global stacking client would almost
     // always reattach the window to the same RootWindow.
     aura::Window* root_window = native_view->GetRootWindow();
-    aura::client::ParentWindowWithContext(
-        native_view, root_window, root_window->GetBoundsInScreen());
+    aura::client::ParentWindowWithContext(native_view, root_window,
+                                          root_window->GetBoundsInScreen());
   }
 
   // And now, notify them that they have a brand new parent.

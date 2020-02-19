@@ -108,6 +108,14 @@ cast_test_group("cast_tests") {
       "//components/exo:exo_unittests",
       "//sandbox/linux:sandbox_linux_unittests",
     ]
+
+    sandbox_linux_unittests_filter = {
+      test_name = "sandbox_linux_unittests"
+
+      # TODO(b/148974697): re-enable this.
+      gtest_excludes = [ "BaselinePolicy.SystemEperm" ]
+    }
+    filters += [ sandbox_linux_unittests_filter ]
   }
 
   if (is_linux || is_fuchsia) {

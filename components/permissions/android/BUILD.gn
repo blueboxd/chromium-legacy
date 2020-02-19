@@ -9,6 +9,11 @@ generate_jni("jni") {
       [ "java/src/org/chromium/components/permissions/PermissionUmaUtil.java" ]
 }
 
+android_resources("java_resources") {
+  resource_dirs = [ "res" ]
+  custom_package = "org.chromium.components.permissions"
+}
+
 android_library("java") {
   sources =
       [ "java/src/org/chromium/components/permissions/PermissionUmaUtil.java" ]

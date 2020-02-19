@@ -37,8 +37,8 @@ class BASE_EXPORT MessagePump {
     virtual ~Delegate() = default;
 
     // Called before work performed internal to the message pump is executed,
-    // including waiting for a wake up. Currently only called on Windows.
-    // TODO(wittman): Implement for other platforms.
+    // including waiting for a wake up.
+    // TODO(crbug.com/851163): Implement for all platforms.
     virtual void BeforeDoInternalWork() = 0;
 
     struct NextWorkInfo {

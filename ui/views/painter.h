@@ -23,7 +23,7 @@ class ImageSkia;
 class InsetsF;
 class Rect;
 class Size;
-}
+}  // namespace gfx
 
 namespace ui {
 class LayerOwner;

@@ -28,7 +28,6 @@
 #include "chrome/browser/notifications/platform_notification_service_factory.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
@@ -38,6 +37,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_request_manager.h"
 #include "components/permissions/permission_result.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
@@ -128,8 +128,8 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
   }
 
   bool RequestAndAcceptPermission() {
-    return "granted" ==
-           RequestAndRespondToPermission(PermissionRequestManager::ACCEPT_ALL);
+    return "granted" == RequestAndRespondToPermission(
+                            permissions::PermissionRequestManager::ACCEPT_ALL);
   }
 
   double GetEngagementScore(const GURL& origin) const {
@@ -161,10 +161,10 @@ class PlatformNotificationServiceBrowserTest : public InProcessBrowserTest {
   }
 
   std::string RequestAndRespondToPermission(
-      PermissionRequestManager::AutoResponseType bubble_response) {
+      permissions::PermissionRequestManager::AutoResponseType bubble_response) {
     std::string result;
     content::WebContents* web_contents = GetActiveWebContents(browser());
-    PermissionRequestManager::FromWebContents(web_contents)
+    permissions::PermissionRequestManager::FromWebContents(web_contents)
         ->set_auto_response_for_test(bubble_response);
     EXPECT_TRUE(RunScript("RequestPermission();", &result));
     return result;

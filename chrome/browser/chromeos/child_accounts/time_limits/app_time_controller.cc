@@ -365,8 +365,9 @@ void AppTimeController::ShowAppTimeLimitNotification(
 }
 
 void AppTimeController::OnAppLimitReached(const AppId& app_id,
-                                          base::TimeDelta time_limit) {
-  app_service_wrapper_->PauseApp(app_id, time_limit);
+                                          base::TimeDelta time_limit,
+                                          bool was_active) {
+  app_service_wrapper_->PauseApp(app_id, time_limit, was_active);
 }
 
 void AppTimeController::OnAppLimitRemoved(const AppId& app_id) {

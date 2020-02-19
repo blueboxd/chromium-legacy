@@ -320,8 +320,7 @@ void LabelButton::Layout() {
     const int spacing = (image_size.width() > 0 && label_size.width() > 0)
                             ? GetImageLabelSpacing()
                             : 0;
-    const int total_width = image_size.width() + label_size.width() +
-        spacing;
+    const int total_width = image_size.width() + label_size.width() + spacing;
     image_origin.Offset((child_area.width() - total_width) / 2, 0);
   } else if (horizontal_alignment == gfx::ALIGN_RIGHT) {
     image_origin.Offset(child_area.width() - image_size.width(), 0);

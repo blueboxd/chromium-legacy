@@ -15,7 +15,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
-import org.chromium.chrome.browser.modaldialog.TabModalPresenter;
+import org.chromium.chrome.browser.modaldialog.ChromeTabModalPresenter;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -97,8 +97,9 @@ class PasswordManagerDialogMediator implements View.OnLayoutChangeListener {
     private boolean hasSufficientSpaceForIllustration(int heightPx) {
         // If |mResources| is null, it means that the dialog was not initialized yet.
         if (mResources == null) return false;
-        heightPx -= TabModalPresenter.getContainerTopMargin(mResources, mContainerHeightResource);
-        heightPx -= TabModalPresenter.getContainerBottomMargin(mFullscreenManager);
+        heightPx -=
+                ChromeTabModalPresenter.getContainerTopMargin(mResources, mContainerHeightResource);
+        heightPx -= ChromeTabModalPresenter.getContainerBottomMargin(mFullscreenManager);
         return heightPx >= mResources.getDimensionPixelSize(
                        R.dimen.password_manager_dialog_min_vertical_space_to_show_illustration);
     }

@@ -209,6 +209,13 @@ public class TabListCoordinator implements Destroyable {
 
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setHasFixedSize(true);
+        if (mMode == TabListMode.STRIP
+                && CachedFeatureFlags.isDuetTabStripIntegrationAndroidEnabled()
+                && CachedFeatureFlags.isBottomToolbarEnabled()) {
+            // TODO(crbug.com/1045944): Disable item animation for now for Duet-TabStrip Integration
+            //  to avoid crash.
+            mRecyclerView.setItemAnimator(null);
+        }
         if (recyclerListener != null) mRecyclerView.setRecyclerListener(recyclerListener);
 
         if (dynamicResourceLoader != null) {

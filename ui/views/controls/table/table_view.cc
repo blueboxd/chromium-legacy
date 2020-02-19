@@ -72,15 +72,15 @@ void GetModelIndexToRangeStart(TableGrouper* grouper,
 // Returns the color id for the background of selected text. |has_focus|
 // indicates if the table has focus.
 ui::NativeTheme::ColorId text_background_color_id(bool has_focus) {
-  return has_focus ?
-      ui::NativeTheme::kColorId_TableSelectionBackgroundFocused :
-      ui::NativeTheme::kColorId_TableSelectionBackgroundUnfocused;
+  return has_focus
+             ? ui::NativeTheme::kColorId_TableSelectionBackgroundFocused
+             : ui::NativeTheme::kColorId_TableSelectionBackgroundUnfocused;
 }
 
 // Returns the color id for text. |has_focus| indicates if the table has focus.
 ui::NativeTheme::ColorId selected_text_color_id(bool has_focus) {
-  return has_focus ? ui::NativeTheme::kColorId_TableSelectedText :
-      ui::NativeTheme::kColorId_TableSelectedTextUnfocused;
+  return has_focus ? ui::NativeTheme::kColorId_TableSelectedText
+                   : ui::NativeTheme::kColorId_TableSelectedTextUnfocused;
 }
 
 // Whether the platform "command" key is down.
@@ -92,7 +92,7 @@ bool IsCmdOrCtrl(const ui::Event& event) {
 #endif
 }
 
-} // namespace
+}  // namespace
 
 // Used as the comparator to sort the contents of the table.
 struct TableView::SortHelper {
@@ -745,7 +745,7 @@ void TableView::OnPaintImpl(gfx::Canvas* canvas) {
     SortItemsAndUpdateMapping(/*schedule_paint=*/false);
 
   canvas->DrawColor(GetNativeTheme()->GetSystemColor(
-                        ui::NativeTheme::kColorId_TableBackground));
+      ui::NativeTheme::kColorId_TableBackground));
 
   if (!GetRowCount() || visible_columns_.empty())
     return;
@@ -754,12 +754,12 @@ void TableView::OnPaintImpl(gfx::Canvas* canvas) {
   if (region.min_column == -1)
     return;  // No need to paint anything.
 
-  const SkColor selected_bg_color = GetNativeTheme()->GetSystemColor(
-      text_background_color_id(HasFocus()));
-  const SkColor fg_color = GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TableText);
-  const SkColor selected_fg_color = GetNativeTheme()->GetSystemColor(
-      selected_text_color_id(HasFocus()));
+  const SkColor selected_bg_color =
+      GetNativeTheme()->GetSystemColor(text_background_color_id(HasFocus()));
+  const SkColor fg_color =
+      GetNativeTheme()->GetSystemColor(ui::NativeTheme::kColorId_TableText);
+  const SkColor selected_fg_color =
+      GetNativeTheme()->GetSystemColor(selected_text_color_id(HasFocus()));
   const int cell_margin = GetCellMargin();
   const int cell_element_spacing = GetCellElementSpacing();
   for (int i = region.min_row; i < region.max_row; ++i) {
@@ -816,7 +816,7 @@ void TableView::OnPaintImpl(gfx::Canvas* canvas) {
   grouping_flags.setAntiAlias(true);
   const int group_indicator_x = GetMirroredXInView(
       GetCellBounds(0, 0).x() + cell_margin + kGroupingIndicatorSize / 2);
-  for (int i = region.min_row; i < region.max_row; ) {
+  for (int i = region.min_row; i < region.max_row;) {
     const int model_index = ViewToModel(i);
     GroupRange range;
     grouper_->GetGroupRange(model_index, &range);
@@ -881,8 +881,8 @@ void TableView::SortItemsAndUpdateMapping(bool schedule_paint) {
 }
 
 int TableView::CompareRows(int model_row1, int model_row2) {
-  const int sort_result = model_->CompareValues(
-      model_row1, model_row2, sort_descriptors_[0].column_id);
+  const int sort_result = model_->CompareValues(model_row1, model_row2,
+                                                sort_descriptors_[0].column_id);
   if (sort_result == 0 && sort_descriptors_.size() > 1) {
     // Try the secondary sort.
     return SwapCompareResult(
@@ -1155,8 +1155,7 @@ void TableView::ConfigureSelectionModelForEvent(
     model->set_anchor(ViewToModel(view_index));
     model->set_active(ViewToModel(view_index));
     SelectRowsInRangeFrom(view_index,
-                          !model->IsSelected(ViewToModel(view_index)),
-                          model);
+                          !model->IsSelected(ViewToModel(view_index)), model);
   }
 }
 

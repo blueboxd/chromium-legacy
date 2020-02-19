@@ -580,7 +580,8 @@ HRESULT GlsRunnerTestBase::FinishLogonProcess(
       expected_success, expected_credentials_change_fired,
       expected_error_message, local_testing_cred);
 
-  if (!fake_os_user_manager()->DoesPasswordChangeFail()) {
+  if (!fake_os_user_manager()->DoesOperationFail(
+          FAILEDOPERATIONS::CHANGE_PASSWORD)) {
     EXPECT_EQ(hr, S_OK);
   }
 

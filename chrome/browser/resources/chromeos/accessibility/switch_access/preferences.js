@@ -92,7 +92,7 @@ class SwitchAccessPreferences {
             break;
           case SAConstants.Preference.AUTO_SCAN_TIME:
             if (pref.type === chrome.settingsPrivate.PrefType.NUMBER) {
-              AutoScanManager.setDefaultScanTime(
+              AutoScanManager.setPrimaryScanTime(
                   /** @type {number} */ (pref.value));
             }
             break;

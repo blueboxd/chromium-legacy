@@ -113,9 +113,7 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  void set_listener(SliderListener* listener) {
-    listener_ = listener;
-  }
+  void set_listener(SliderListener* listener) { listener_ = listener; }
 
   void NotifyPendingAccessibilityValueChanged();
 

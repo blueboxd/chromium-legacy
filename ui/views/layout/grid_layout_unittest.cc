@@ -16,8 +16,7 @@
 
 namespace views {
 
-void ExpectViewBoundsEquals(int x, int y, int w, int h,
-                            const View* view) {
+void ExpectViewBoundsEquals(int x, int y, int w, int h, const View* view) {
   EXPECT_EQ(x, view->x());
   EXPECT_EQ(y, view->y());
   EXPECT_EQ(w, view->width());
@@ -85,9 +84,7 @@ class LayoutOnAddView : public View {
 // A view with fixed circumference that trades height for width.
 class FlexibleView : public View {
  public:
-  explicit FlexibleView(int circumference) {
-    circumference_ = circumference;
-  }
+  explicit FlexibleView(int circumference) { circumference_ = circumference; }
 
   gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(0, circumference_ / 2);
@@ -98,7 +95,7 @@ class FlexibleView : public View {
   }
 
  private:
-   int circumference_;
+  int circumference_;
 };
 
 class GridLayoutTest : public testing::Test {
@@ -175,10 +172,10 @@ TEST_F(GridLayoutTest, TwoColumns) {
   auto v1 = CreateSizedView(gfx::Size(10, 20));
   auto v2 = CreateSizedView(gfx::Size(20, 20));
   ColumnSet* c1 = layout()->AddColumnSet(0);
-  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                0, GridLayout::USE_PREF, 0, 0);
-  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                0, GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                GridLayout::USE_PREF, 0, 0);
   layout()->StartRow(0, 0);
   auto* v1_ptr = layout()->AddView(std::move(v1));
   auto* v2_ptr = layout()->AddView(std::move(v2));
@@ -259,10 +256,10 @@ TEST_F(GridLayoutTest, LinkedSizes) {
 
 TEST_F(GridLayoutTest, ColSpan1) {
   ColumnSet* c1 = layout()->AddColumnSet(0);
-  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                0, GridLayout::USE_PREF, 0, 0);
-  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                1, GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 1,
+                GridLayout::USE_PREF, 0, 0);
   layout()->StartRow(0, 0);
   auto* v1 = layout()->AddView(CreateSizedView(gfx::Size(100, 20)), 2, 1);
   layout()->StartRow(0, 0);
@@ -279,10 +276,10 @@ TEST_F(GridLayoutTest, ColSpan1) {
 
 TEST_F(GridLayoutTest, ColSpan2) {
   ColumnSet* c1 = layout()->AddColumnSet(0);
-  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                1, GridLayout::USE_PREF, 0, 0);
-  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                0, GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 1,
+                GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                GridLayout::USE_PREF, 0, 0);
   layout()->StartRow(0, 0);
   auto* v1 = layout()->AddView(CreateSizedView(gfx::Size(100, 20)), 2, 1);
   layout()->StartRow(0, 0);
@@ -300,10 +297,10 @@ TEST_F(GridLayoutTest, ColSpan2) {
 
 TEST_F(GridLayoutTest, ColSpan3) {
   ColumnSet* c1 = layout()->AddColumnSet(0);
-  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                0, GridLayout::USE_PREF, 0, 0);
-  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                0, GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                GridLayout::USE_PREF, 0, 0);
   layout()->StartRow(0, 0);
   auto* v1 = layout()->AddView(CreateSizedView(gfx::Size(100, 20)), 2, 1);
   layout()->StartRow(0, 0);
@@ -319,7 +316,6 @@ TEST_F(GridLayoutTest, ColSpan3) {
   ExpectViewBoundsEquals(0, 20, 10, 20, v2);
   ExpectViewBoundsEquals(50, 20, 10, 20, v3);
 }
-
 
 TEST_F(GridLayoutTest, ColSpan4) {
   ColumnSet* set = layout()->AddColumnSet(0);
@@ -350,12 +346,12 @@ TEST_F(GridLayoutTest, ColSpan4) {
 TEST_F(GridLayoutTest, ColSpanStartSecondColumn) {
   ColumnSet* set = layout()->AddColumnSet(0);
 
-  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
-                 GridLayout::USE_PREF, 0, 0);
-  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
-                 GridLayout::USE_PREF, 0, 0);
-  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
-                 GridLayout::FIXED, 10, 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0, GridLayout::USE_PREF, 0,
+                 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0, GridLayout::USE_PREF, 0,
+                 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0, GridLayout::FIXED, 10,
+                 0);
 
   layout()->StartRow(0, 0);
   auto* v1 = layout()->AddView(CreateSizedView(gfx::Size(10, 10)));
@@ -372,10 +368,10 @@ TEST_F(GridLayoutTest, ColSpanStartSecondColumn) {
 
 TEST_F(GridLayoutTest, SameSizeColumns) {
   ColumnSet* c1 = layout()->AddColumnSet(0);
-  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                0, GridLayout::USE_PREF, 0, 0);
-  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                0, GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                GridLayout::USE_PREF, 0, 0);
   c1->LinkColumnSizes({0, 1});
   layout()->StartRow(0, 0);
   auto* v1 = layout()->AddView(CreateSizedView(gfx::Size(50, 20)));
@@ -392,10 +388,10 @@ TEST_F(GridLayoutTest, SameSizeColumns) {
 
 TEST_F(GridLayoutTest, HorizontalResizeTest1) {
   ColumnSet* c1 = layout()->AddColumnSet(0);
-  c1->AddColumn(GridLayout::FILL, GridLayout::LEADING,
-                1, GridLayout::USE_PREF, 0, 0);
-  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                0, GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(GridLayout::FILL, GridLayout::LEADING, 1, GridLayout::USE_PREF,
+                0, 0);
+  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                GridLayout::USE_PREF, 0, 0);
   layout()->StartRow(0, 0);
   auto* v1 = layout()->AddView(CreateSizedView(gfx::Size(50, 20)));
   auto* v2 = layout()->AddView(CreateSizedView(gfx::Size(10, 10)));
@@ -408,10 +404,10 @@ TEST_F(GridLayoutTest, HorizontalResizeTest1) {
 
 TEST_F(GridLayoutTest, HorizontalResizeTest2) {
   ColumnSet* c1 = layout()->AddColumnSet(0);
-  c1->AddColumn(GridLayout::FILL, GridLayout::LEADING,
-                1, GridLayout::USE_PREF, 0, 0);
-  c1->AddColumn(GridLayout::TRAILING, GridLayout::LEADING,
-                1, GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(GridLayout::FILL, GridLayout::LEADING, 1, GridLayout::USE_PREF,
+                0, 0);
+  c1->AddColumn(GridLayout::TRAILING, GridLayout::LEADING, 1,
+                GridLayout::USE_PREF, 0, 0);
   layout()->StartRow(0, 0);
   auto* v1 = layout()->AddView(CreateSizedView(gfx::Size(50, 20)));
   auto* v2 = layout()->AddView(CreateSizedView(gfx::Size(10, 10)));
@@ -426,12 +422,12 @@ TEST_F(GridLayoutTest, HorizontalResizeTest2) {
 // resizable column.
 TEST_F(GridLayoutTest, HorizontalResizeTest3) {
   ColumnSet* c1 = layout()->AddColumnSet(0);
-  c1->AddColumn(GridLayout::FILL, GridLayout::LEADING,
-                1, GridLayout::USE_PREF, 0, 0);
-  c1->AddColumn(GridLayout::FILL, GridLayout::LEADING,
-                1, GridLayout::USE_PREF, 0, 0);
-  c1->AddColumn(GridLayout::TRAILING, GridLayout::LEADING,
-                0, GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(GridLayout::FILL, GridLayout::LEADING, 1, GridLayout::USE_PREF,
+                0, 0);
+  c1->AddColumn(GridLayout::FILL, GridLayout::LEADING, 1, GridLayout::USE_PREF,
+                0, 0);
+  c1->AddColumn(GridLayout::TRAILING, GridLayout::LEADING, 0,
+                GridLayout::USE_PREF, 0, 0);
   layout()->StartRow(0, 0);
   auto* v1 = layout()->AddView(CreateSizedView(gfx::Size(10, 10)));
   auto* v2 = layout()->AddView(CreateSizedView(gfx::Size(10, 10)));
@@ -446,8 +442,8 @@ TEST_F(GridLayoutTest, HorizontalResizeTest3) {
 
 TEST_F(GridLayoutTest, TestVerticalResize1) {
   ColumnSet* c1 = layout()->AddColumnSet(0);
-  c1->AddColumn(GridLayout::FILL, GridLayout::FILL,
-                1, GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(GridLayout::FILL, GridLayout::FILL, 1, GridLayout::USE_PREF, 0,
+                0);
   layout()->StartRow(1, 0);
   auto* v1 = layout()->AddView(CreateSizedView(gfx::Size(50, 20)));
   layout()->StartRow(0, 0);
@@ -465,8 +461,8 @@ TEST_F(GridLayoutTest, TestVerticalResize1) {
 TEST_F(GridLayoutTest, Border) {
   host()->SetBorder(CreateEmptyBorder(1, 2, 3, 4));
   ColumnSet* c1 = layout()->AddColumnSet(0);
-  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                0, GridLayout::USE_PREF, 0, 0);
+  c1->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                GridLayout::USE_PREF, 0, 0);
   layout()->StartRow(0, 0);
   auto* v1 = layout()->AddView(CreateSizedView(gfx::Size(10, 20)));
 
@@ -519,12 +515,8 @@ TEST_F(GridLayoutTest, FixedSize) {
 TEST_F(GridLayoutTest, RowSpanWithPaddingRow) {
   ColumnSet* set = layout()->AddColumnSet(0);
 
-  set->AddColumn(GridLayout::CENTER,
-                 GridLayout::CENTER,
-                 0,
-                 GridLayout::FIXED,
-                 10,
-                 10);
+  set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::FIXED,
+                 10, 10);
 
   layout()->StartRow(0, 0);
   layout()->AddView(CreateSizedView(gfx::Size(10, 10)), 1, 2);
@@ -534,18 +526,10 @@ TEST_F(GridLayoutTest, RowSpanWithPaddingRow) {
 TEST_F(GridLayoutTest, RowSpan) {
   ColumnSet* set = layout()->AddColumnSet(0);
 
-  set->AddColumn(GridLayout::LEADING,
-                 GridLayout::LEADING,
-                 0,
-                 GridLayout::USE_PREF,
-                 0,
-                 0);
-  set->AddColumn(GridLayout::LEADING,
-                 GridLayout::LEADING,
-                 0,
-                 GridLayout::USE_PREF,
-                 0,
-                 0);
+  set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                 GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                 GridLayout::USE_PREF, 0, 0);
 
   layout()->StartRow(0, 0);
   layout()->AddView(CreateSizedView(gfx::Size(20, 10)));
@@ -564,10 +548,10 @@ TEST_F(GridLayoutTest, RowSpan) {
 TEST_F(GridLayoutTest, RowSpan2) {
   ColumnSet* set = layout()->AddColumnSet(0);
 
-  set->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                 0, GridLayout::USE_PREF, 0, 0);
-  set->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                 0,GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                 GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                 GridLayout::USE_PREF, 0, 0);
 
   layout()->StartRow(0, 0);
   layout()->AddView(CreateSizedView(gfx::Size(20, 20)));
@@ -589,10 +573,10 @@ TEST_F(GridLayoutTest, RowSpan2) {
 TEST_F(GridLayoutTest, FixedViewWidth) {
   ColumnSet* set = layout()->AddColumnSet(0);
 
-  set->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                 0, GridLayout::USE_PREF, 0, 0);
-  set->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                 0,GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                 GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                 GridLayout::USE_PREF, 0, 0);
 
   layout()->StartRow(0, 0);
   auto* view =
@@ -611,10 +595,10 @@ TEST_F(GridLayoutTest, FixedViewWidth) {
 TEST_F(GridLayoutTest, FixedViewHeight) {
   ColumnSet* set = layout()->AddColumnSet(0);
 
-  set->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                 0, GridLayout::USE_PREF, 0, 0);
-  set->AddColumn(GridLayout::LEADING, GridLayout::LEADING,
-                 0,GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                 GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::LEADING, GridLayout::LEADING, 0,
+                 GridLayout::USE_PREF, 0, 0);
 
   layout()->StartRow(0, 0);
   auto* view =
@@ -635,10 +619,10 @@ TEST_F(GridLayoutTest, FixedViewHeight) {
 TEST_F(GridLayoutTest, ColumnSpanResizing) {
   ColumnSet* set = layout()->AddColumnSet(0);
 
-  set->AddColumn(GridLayout::FILL, GridLayout::CENTER,
-                 2, GridLayout::USE_PREF, 0, 0);
-  set->AddColumn(GridLayout::FILL, GridLayout::CENTER,
-                 4, GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 2, GridLayout::USE_PREF,
+                 0, 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 4, GridLayout::USE_PREF,
+                 0, 0);
 
   layout()->StartRow(0, 0);
   // span_view spans two columns and is twice as big the views added below.
@@ -669,16 +653,16 @@ TEST_F(GridLayoutTest, ColumnSpanResizing) {
 // preferred sizes.
 TEST_F(GridLayoutTest, ColumnResizingOnGetPreferredSize) {
   ColumnSet* set = layout()->AddColumnSet(0);
-  set->AddColumn(GridLayout::FILL, GridLayout::CENTER,
-                 1, GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1, GridLayout::USE_PREF,
+                 0, 0);
 
   set = layout()->AddColumnSet(1);
-  set->AddColumn(GridLayout::FILL, GridLayout::CENTER,
-                 1, GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1, GridLayout::USE_PREF,
+                 0, 0);
 
   set = layout()->AddColumnSet(2);
-  set->AddColumn(GridLayout::FILL, GridLayout::CENTER,
-                 1, GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1, GridLayout::USE_PREF,
+                 0, 0);
 
   // Make a row containing a flexible view that trades width for height.
   layout()->StartRow(0, 0);
@@ -705,8 +689,8 @@ TEST_F(GridLayoutTest, ColumnResizingOnGetPreferredSize) {
 
 TEST_F(GridLayoutTest, MinimumPreferredSize) {
   ColumnSet* set = layout()->AddColumnSet(0);
-  set->AddColumn(GridLayout::FILL, GridLayout::FILL,
-                 0, GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0, GridLayout::USE_PREF, 0,
+                 0);
   layout()->StartRow(0, 0);
   layout()->AddView(CreateSizedView(gfx::Size(10, 20)));
 

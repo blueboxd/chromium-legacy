@@ -5,9 +5,12 @@
 #ifndef ASH_PUBLIC_CPP_AMBIENT_PHOTO_CONTROLLER_H_
 #define ASH_PUBLIC_CPP_AMBIENT_PHOTO_CONTROLLER_H_
 
+#include <string>
+
 #include "ash/public/cpp/ash_public_export.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
 
 namespace gfx {
 class ImageSkia;
@@ -19,9 +22,27 @@ namespace ash {
 // mode in ash.
 class ASH_PUBLIC_EXPORT PhotoController {
  public:
+  // TODO(b/148462355): Add fields of weather and time info.
+  // The contents shown in the Ambient mode.
+  // Corresponding to backdrop::ScreenUpdate::Topic.
+  struct Topic {
+    Topic();
+    ~Topic();
+    Topic(const Topic&);
+    Topic& operator=(const Topic&);
+
+    // Image url.
+    std::string url;
+
+    // Optional for non-cropped portrait style images. The same image as in
+    // |url| but it is not cropped, which is better for portrait displaying.
+    base::Optional<std::string> portrait_image_url;
+  };
+
   static PhotoController* Get();
 
-  using PhotoDownloadCallback = base::OnceCallback<void(const gfx::ImageSkia&)>;
+  using PhotoDownloadCallback =
+      base::OnceCallback<void(bool success, const gfx::ImageSkia&)>;
 
   // Get next image.
   virtual void GetNextImage(PhotoDownloadCallback callback) = 0;

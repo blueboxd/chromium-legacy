@@ -41,7 +41,7 @@ class MenuRunnerImpl;
 namespace test {
 class TestMenuItemViewShown;
 class TestMenuItemViewNotShown;
-}
+}  // namespace test
 
 class ImageView;
 class MenuController;
@@ -142,7 +142,8 @@ class VIEWS_EXPORT MenuItemView : public View {
   // Returns the accessible name to be used with screen readers. Mnemonics are
   // removed and the menu item accelerator text is appended.
   static base::string16 GetAccessibleNameForMenuItem(
-      const base::string16& item_text, const base::string16& accelerator_text);
+      const base::string16& item_text,
+      const base::string16& accelerator_text);
 
   // Hides and cancels the menu. This does nothing if the menu is not open.
   void Cancel();
@@ -305,9 +306,7 @@ class VIEWS_EXPORT MenuItemView : public View {
 
   // Do we have icons? This only has effect on the top menu. Turning this on
   // makes the menus slightly wider and taller.
-  void set_has_icons(bool has_icons) {
-    has_icons_ = has_icons;
-  }
+  void set_has_icons(bool has_icons) { has_icons_ = has_icons; }
   bool has_icons() const { return has_icons_; }
 
   // Returns the descendant with the specified command.
@@ -367,10 +366,10 @@ class VIEWS_EXPORT MenuItemView : public View {
   int GetBottomMargin() const;
 
  private:
-  friend class internal::MenuRunnerImpl;  // For access to ~MenuItemView.
-  friend class test::TestMenuItemViewShown;  // for access to |submenu_|;
+  friend class internal::MenuRunnerImpl;        // For access to ~MenuItemView.
+  friend class test::TestMenuItemViewShown;     // for access to |submenu_|;
   friend class test::TestMenuItemViewNotShown;  // for access to |submenu_|;
-  friend class TestMenuItemView;             // For access to AddEmptyMenus();
+  friend class TestMenuItemView;  // For access to AddEmptyMenus();
 
   enum class PaintButtonMode { kNormal, kForDrag };
 

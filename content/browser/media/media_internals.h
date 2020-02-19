@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "content/browser/media/media_internals_audio_focus_helper.h"
 #include "content/common/content_export.h"
+#include "content/common/media/media_log_records.mojom.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "media/audio/audio_logging.h"
@@ -116,11 +117,16 @@ class CONTENT_EXPORT MediaInternals : public media::AudioLogFactory,
       int render_process_id = -1,
       int render_frame_id = MSG_ROUTING_NONE);
 
+  static void CreateMediaLogRecords(
+      int render_process_id,
+      mojo::PendingReceiver<content::mojom::MediaInternalLogRecords> receiver);
+
  private:
   // Needs access to SendUpdate.
   friend class MediaInternalsAudioFocusHelper;
 
   class AudioLogImpl;
+  class MediaInternalLogRecordsImpl;
   // Inner class to handle reporting pipelinestatus to UMA
   class MediaInternalsUMAHandler;
 

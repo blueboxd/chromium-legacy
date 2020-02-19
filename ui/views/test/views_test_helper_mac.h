@@ -15,9 +15,9 @@ namespace test {
 class ScopedFakeFullKeyboardAccess;
 class ScopedFakeNSWindowFocus;
 class ScopedFakeNSWindowFullscreen;
-}
+}  // namespace test
 class ScopedAnimationDurationScaleMode;
-}
+}  // namespace ui
 
 namespace views {
 

@@ -22,8 +22,7 @@ public class ProfileCardCoordinatorImpl implements ProfileCardCoordinator {
     private ProfileCardData mProfileCardData;
 
     @Override
-    public void update(View anchorView, ProfileCardData profileCardData) {
-        if (mProfileCardData == profileCardData) return;
+    public void init(View anchorView, ProfileCardData profileCardData) {
         ViewRectProvider rectProvider = new ViewRectProvider(anchorView);
         mView = new ProfileCardView(anchorView.getContext());
         mProfileCardData = profileCardData;
@@ -36,5 +35,10 @@ public class ProfileCardCoordinatorImpl implements ProfileCardCoordinator {
     @Override
     public void show() {
         mMediator.show();
+    }
+
+    @Override
+    public void hide() {
+        mMediator.hide();
     }
 }

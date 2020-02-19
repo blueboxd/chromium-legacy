@@ -15,13 +15,16 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
+#include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_factory.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service_workers_observer.h"
 #include "chrome/browser/prerender/isolated/prefetched_mainframe_response_container.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
@@ -376,6 +379,23 @@ TEST_F(IsolatedPrerenderTabHelperTest, NonHTML) {
   EXPECT_EQ(IsolatedPrerenderTabHelper::FromWebContents(web_contents())
                 ->prefetched_responses_size_for_testing(),
             0U);
+}
+
+TEST_F(IsolatedPrerenderTabHelperTest, UserSettingDisabled) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kPrefetchSRPNavigationPredictions_HTMLOnly);
+
+  profile()->GetPrefs()->SetInteger(
+      prefs::kNetworkPredictionOptions,
+      chrome_browser_net::NETWORK_PREDICTION_NEVER);
+
+  GURL doc_url("https://www.google.com/search?q=cats");
+  GURL prediction_url("https://www.cat-food.com/");
+  MakeNavigationPrediction(web_contents(), doc_url, {prediction_url});
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(RequestCount(), 0);
 }
 
 TEST_F(IsolatedPrerenderTabHelperTest, SuccessCase) {

@@ -26,7 +26,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "sandbox/win/src/sandbox.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -118,18 +117,12 @@ class ArgumentVerifyingFakeArchiver : public mojom::ZipArchiver {
 
   ~ArgumentVerifyingFakeArchiver() override = default;
 
-  void Archive(mojo::ScopedHandle src_file_handle,
-               mojo::ScopedHandle zip_file_handle,
+  void Archive(mojo::PlatformHandle src_file_handle,
+               mojo::PlatformHandle zip_file_handle,
                const std::string& filename_in_zip,
                const std::string& password,
                ArchiveCallback callback) override {
-    HANDLE raw_src_file_handle;
-    if (mojo::UnwrapPlatformFile(std::move(src_file_handle),
-                                 &raw_src_file_handle) != MOJO_RESULT_OK) {
-      std::move(callback).Run(ZipArchiverResultCode::kErrorInvalidParameter);
-      return;
-    }
-    base::File src_file(raw_src_file_handle);
+    base::File src_file(src_file_handle.TakeHandle());
     if (!src_file.IsValid()) {
       std::move(callback).Run(ZipArchiverResultCode::kErrorInvalidParameter);
       return;
@@ -141,13 +134,7 @@ class ArgumentVerifyingFakeArchiver : public mojom::ZipArchiver {
       return;
     }
 
-    HANDLE raw_zip_file_handle;
-    if (mojo::UnwrapPlatformFile(std::move(zip_file_handle),
-                                 &raw_zip_file_handle) != MOJO_RESULT_OK) {
-      std::move(callback).Run(ZipArchiverResultCode::kErrorInvalidParameter);
-      return;
-    }
-    base::File zip_file(raw_zip_file_handle);
+    base::File zip_file(zip_file_handle.TakeHandle());
     if (!zip_file.IsValid()) {
       std::move(callback).Run(ZipArchiverResultCode::kErrorInvalidParameter);
       return;

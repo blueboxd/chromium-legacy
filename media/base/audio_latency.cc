@@ -61,7 +61,9 @@ bool AudioLatency::IsResamplingPassthroughSupported(LatencyType type) {
 int AudioLatency::GetHighLatencyBufferSize(int sample_rate,
                                            int preferred_buffer_size) {
   // Empirically, we consider 20ms of samples to be high latency.
+#if !defined(USE_CRAS)
   const double twenty_ms_size = 2.0 * sample_rate / 100;
+#endif
 
 #if defined(OS_WIN)
   preferred_buffer_size = std::max(preferred_buffer_size, 1);
@@ -84,7 +86,12 @@ int AudioLatency::GetHighLatencyBufferSize(int sample_rate,
   //
   // On Linux, the minimum hardware buffer size is 512, so the lower calculated
   // values are unused.  OSX may have a value as low as 128.
+#if defined(USE_CRAS)
+  const double eighty_ms_size = 8.0 * sample_rate / 100;
+  const int high_latency_buffer_size = RoundUpToPowerOfTwo(eighty_ms_size);
+#else
   const int high_latency_buffer_size = RoundUpToPowerOfTwo(twenty_ms_size);
+#endif  // defined(USE_CRAS)
 #endif  // defined(OS_WIN)
 
   return std::max(preferred_buffer_size, high_latency_buffer_size);

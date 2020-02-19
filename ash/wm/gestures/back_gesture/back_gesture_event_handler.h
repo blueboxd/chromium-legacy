@@ -17,6 +17,7 @@ class Window;
 namespace ash {
 
 class BackGestureAffordance;
+class BackGestureContextualNudgeControllerImpl;
 
 class BackGestureEventHandler : public display::DisplayObserver,
                                 public ui::EventHandler,
@@ -78,6 +79,9 @@ class BackGestureEventHandler : public display::DisplayObserver,
   // Used to show the affordance while swiping from left edge to go to the
   // previout page.
   std::unique_ptr<BackGestureAffordance> back_gesture_affordance_;
+
+  // Used to decide when to show/hide the back gesture contextual nudge.
+  std::unique_ptr<BackGestureContextualNudgeControllerImpl> nudge_controller_;
 
   // True if back gesture dragged from splitview divider.
   bool dragged_from_splitview_divider_ = false;

@@ -319,9 +319,11 @@ class VariableRowHeightScrollHelper {
   // determined by querying the Controller for the appropriate row to scroll
   // to.
   int GetPageScrollIncrement(ScrollView* scroll_view,
-                             bool is_horizontal, bool is_positive);
+                             bool is_horizontal,
+                             bool is_positive);
   int GetLineScrollIncrement(ScrollView* scroll_view,
-                             bool is_horizontal, bool is_positive);
+                             bool is_horizontal,
+                             bool is_positive);
 
  protected:
   // Returns the row information for the row at the specified location. This

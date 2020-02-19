@@ -30,6 +30,7 @@
 
 #include "cc/layers/content_layer_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_delegate.h"
@@ -48,7 +49,6 @@ namespace blink {
 
 class EffectPaintPropertyNode;
 class GraphicsContext;
-class Node;
 
 class CORE_EXPORT LinkHighlightImpl final : public CompositorAnimationDelegate,
                                             public CompositorAnimationClient {
@@ -66,7 +66,9 @@ class CORE_EXPORT LinkHighlightImpl final : public CompositorAnimationDelegate,
   // CompositorAnimationClient implementation.
   CompositorAnimation* GetCompositorAnimation() const override;
 
-  Node* GetNode() const { return node_; }
+  LayoutObject* GetLayoutObject() const {
+    return node_ ? node_->GetLayoutObject() : nullptr;
+  }
 
   CompositorElementId ElementIdForTesting() const { return element_id_; }
 
@@ -111,7 +113,7 @@ class CORE_EXPORT LinkHighlightImpl final : public CompositorAnimationDelegate,
   };
   Vector<LinkHighlightFragment> fragments_;
 
-  Persistent<Node> node_;
+  WeakPersistent<Node> node_;
   std::unique_ptr<CompositorAnimation> compositor_animation_;
   scoped_refptr<EffectPaintPropertyNode> effect_;
 

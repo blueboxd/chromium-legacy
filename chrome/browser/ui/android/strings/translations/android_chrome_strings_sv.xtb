@@ -450,9 +450,6 @@
 <translation id="4521489764227272523">Markerad data har tagits bort från Chrome och från synkroniserade enheter.
 
 Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />, t.ex. sökningar och aktivitet på andra tjänster från Google.</translation>
-<translation id="4527374721149092498">Läs om olika ämnen på webbplatser utan att lämna sidan. Med funktionen Tryck för att söka skickas ett ord och dess kontext till Google Sök. Sedan visas definitioner, bilder, sökresultat och annan information.
-
-Tryck på ett ord du vill söka efter. Om du vill ändra söktermen trycker du länge för att markera. Om du vill finjustera sökningen öppnar du panelen genom att dra den uppåt. Tryck på expanderingsikonen för att skapa en ny flik och tryck sedan på sökrutan.</translation>
 <translation id="4532845899244822526">Välj mapp</translation>
 <translation id="4538018662093857852">Aktivera begränsat läge</translation>
 <translation id="4550003330909367850">Ange ett skärmlås på enheten om du vill visa eller kopiera lösenordet här.</translation>
@@ -668,7 +665,6 @@ Tryck på ett ord du vill söka efter. Om du vill ändra söktermen trycker du l
 <translation id="604996488070107836">Det gick inte att ladda ned <ph name="FILE_NAME" /> på grund av ett okänt fel.</translation>
 <translation id="605721222689873409">ÅÅ</translation>
 <translation id="6064125863973209585">Slutförda nedladdningar</translation>
-<translation id="6075798973483050474">Redigera startsidan</translation>
 <translation id="6092062101542170135">Fortsätt genom att aktivera NFC i Android-inställningarna</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> timmar kvar</translation>
 <translation id="6108923351542677676">Konfigurationen pågår ...</translation>
@@ -691,9 +687,6 @@ Tryck på ett ord du vill söka efter. Om du vill ändra söktermen trycker du l
 <translation id="6232535412751077445">Om du aktiverar Do Not Track inkluderas en begäran i din surftrafik. Eventuella effekter beror på om webbplatsen svarar på begäran och hur begäran tolkas.
 
 Vissa webbplatser kan till exempel svara på begäran genom att visa annonser som inte baseras på andra webbplatser du har besökt. Många webbplatser samlar ändå in och använder din webbinformation – till exempel för att förbättra säkerheten, tillhandahålla innehåll, annonser och rekommendationer samt generera rapportstatistik.</translation>
-<translation id="6238003486329291387">Läs om olika ämnen på webbplatser utan att lämna sidan. Med funktionen Tryck för att söka skickas ett ord och dess kontext till Google Sök. Sedan visas definitioner, bilder, sökresultat och annan information.
-
-Tryck länge på ett ord för att söka efter det. Om du vill finjustera sökningen ändrar du markeringen. Du kan också öppna panelen genom att dra den uppåt. Tryck på expanderingsikonen för att skapa en ny flik och tryck sedan på sökrutan.</translation>
 <translation id="624789221780392884">Uppdateringen är klar</translation>
 <translation id="6255999984061454636">Förslag på innehåll</translation>
 <translation id="6270391203985052864">Webbplatser får be om tillåtelse att skicka aviseringar</translation>

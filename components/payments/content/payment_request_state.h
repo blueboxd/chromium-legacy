@@ -163,6 +163,9 @@ class PaymentRequestState : public PaymentAppFactory::Delegate,
   // "basic-card", but false for "https://bobpay.com".
   void AreRequestedMethodsSupported(MethodsSupportedCallback callback);
 
+  // Resets pending MethodsSupportedCallback after abort.
+  void OnAbort();
+
   // Returns authenticated user email, or empty string.
   std::string GetAuthenticatedEmail() const;
 

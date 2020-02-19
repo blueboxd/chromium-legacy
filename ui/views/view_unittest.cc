@@ -221,13 +221,9 @@ class TestView : public View {
   }
 
   // Exposed as public for testing.
-  void DoFocus() {
-    views::View::Focus();
-  }
+  void DoFocus() { views::View::Focus(); }
 
-  void DoBlur() {
-    views::View::Blur();
-  }
+  void DoBlur() { views::View::Blur(); }
 
   void set_can_process_events_within_subtree(bool can_process) {
     can_process_events_within_subtree_ = can_process;
@@ -541,9 +537,7 @@ class ScopedTestPaintWidget {
     widget_->GetRootView()->SetBounds(0, 0, 25, 26);
   }
 
-  ~ScopedTestPaintWidget() {
-    widget_->CloseNow();
-  }
+  ~ScopedTestPaintWidget() { widget_->CloseNow(); }
 
   Widget* operator->() { return widget_; }
 
@@ -1330,15 +1324,19 @@ void TestView::OnDidSchedulePaint(const gfx::Rect& rect) {
 namespace {
 
 void RotateCounterclockwise(gfx::Transform* transform) {
+  // clang-format off
   transform->matrix().set3x3(0, -1, 0,
                              1,  0, 0,
                              0,  0, 1);
+  // clang-format on
 }
 
 void RotateClockwise(gfx::Transform* transform) {
+  // clang-format off
   transform->matrix().set3x3( 0, 1, 0,  // NOLINT
                              -1, 0, 0,
                               0, 0, 1);
+  // clang-format on
 }
 
 }  // namespace
@@ -2528,8 +2526,7 @@ TEST_F(ViewTest, NativeViewHierarchyChanged) {
   child_params.parent = toplevel1->GetNativeView();
   child->Init(std::move(child_params));
 
-  ToplevelWidgetObserverView* observer_view =
-      new ToplevelWidgetObserverView();
+  ToplevelWidgetObserverView* observer_view = new ToplevelWidgetObserverView();
   EXPECT_EQ(nullptr, observer_view->toplevel());
 
   child->SetContentsView(observer_view);
@@ -2556,9 +2553,7 @@ class TransformPaintView : public TestView {
   TransformPaintView() = default;
   ~TransformPaintView() override = default;
 
-  void ClearScheduledPaintRect() {
-    scheduled_paint_rect_ = gfx::Rect();
-  }
+  void ClearScheduledPaintRect() { scheduled_paint_rect_ = gfx::Rect(); }
 
   gfx::Rect scheduled_paint_rect() const { return scheduled_paint_rect_; }
 
@@ -2803,7 +2798,7 @@ class VisibleBoundsView : public View {
  private:
   // Overridden from View:
   bool GetNeedsNotificationWhenVisibleBoundsChange() const override {
-     return true;
+    return true;
   }
   void OnVisibleBoundsChanged() override { received_notification_ = true; }
 
@@ -3854,8 +3849,7 @@ class TestLayerAnimator : public ui::LayerAnimator {
 };
 
 TestLayerAnimator::TestLayerAnimator()
-    : ui::LayerAnimator(base::TimeDelta::FromMilliseconds(0)) {
-}
+    : ui::LayerAnimator(base::TimeDelta::FromMilliseconds(0)) {}
 
 void TestLayerAnimator::SetBounds(const gfx::Rect& bounds) {
   last_bounds_ = bounds;
@@ -3895,9 +3889,7 @@ class ViewLayerTest : public ViewsTestBase {
   ~ViewLayerTest() override = default;
 
   // Returns the Layer used by the RootView.
-  ui::Layer* GetRootLayer() {
-    return widget()->GetLayer();
-  }
+  ui::Layer* GetRootLayer() { return widget()->GetLayer(); }
 
   void SetUp() override {
     SetUpPixelCanvas();
@@ -4146,14 +4138,12 @@ TEST_F(ViewLayerTest, BoundInRTL) {
   View* v1 = new View;
   v1->SetPaintToLayer();
   v1->SetBounds(10, 10, 20, 10);
-  EXPECT_EQ(gfx::Rect(10, 10, 20, 10),
-            v1->layer()->bounds());
+  EXPECT_EQ(gfx::Rect(10, 10, 20, 10), v1->layer()->bounds());
 
   // Once |v1| is attached to the widget, its layer will get RTL-appropriate
   // bounds.
   view->AddChildView(v1);
-  EXPECT_EQ(gfx::Rect(content_width - 30, 10, 20, 10),
-            v1->layer()->bounds());
+  EXPECT_EQ(gfx::Rect(content_width - 30, 10, 20, 10), v1->layer()->bounds());
   gfx::Rect l1bounds = v1->layer()->bounds();
 
   // Now attach a View to the widget first, then create a layer for it. Make
@@ -4163,8 +4153,7 @@ TEST_F(ViewLayerTest, BoundInRTL) {
   EXPECT_FALSE(v2->layer());
   view->AddChildView(v2);
   v2->SetPaintToLayer();
-  EXPECT_EQ(gfx::Rect(content_width - 80, 10, 30, 10),
-            v2->layer()->bounds());
+  EXPECT_EQ(gfx::Rect(content_width - 80, 10, 30, 10), v2->layer()->bounds());
   gfx::Rect l2bounds = v2->layer()->bounds();
 
   view->SetPaintToLayer();
@@ -4199,19 +4188,16 @@ TEST_F(ViewLayerTest, ResizeParentInRTL) {
   View* v1 = view->AddChildView(std::make_unique<View>());
   v1->SetPaintToLayer();
   v1->SetBounds(10, 10, 20, 10);
-  EXPECT_EQ(gfx::Rect(content_width - 30, 10, 20, 10),
-            v1->layer()->bounds());
+  EXPECT_EQ(gfx::Rect(content_width - 30, 10, 20, 10), v1->layer()->bounds());
 
   // Attach a paints-to-layer child view to |v1|.
   View* v2 = new View;
   v2->SetPaintToLayer();
   v2->SetBounds(3, 5, 6, 4);
-  EXPECT_EQ(gfx::Rect(3, 5, 6, 4),
-            v2->layer()->bounds());
+  EXPECT_EQ(gfx::Rect(3, 5, 6, 4), v2->layer()->bounds());
   v1->AddChildView(v2);
   // Check that |v2| now has RTL-appropriate bounds.
-  EXPECT_EQ(gfx::Rect(11, 5, 6, 4),
-            v2->layer()->bounds());
+  EXPECT_EQ(gfx::Rect(11, 5, 6, 4), v2->layer()->bounds());
 
   // Attach a non-layer child view to |v1|, and give it a paints-to-layer child.
   View* v3 = new View;
@@ -4219,29 +4205,23 @@ TEST_F(ViewLayerTest, ResizeParentInRTL) {
   View* v4 = new View;
   v4->SetPaintToLayer();
   v4->SetBounds(2, 4, 6, 4);
-  EXPECT_EQ(gfx::Rect(2, 4, 6, 4),
-            v4->layer()->bounds());
+  EXPECT_EQ(gfx::Rect(2, 4, 6, 4), v4->layer()->bounds());
   v3->AddChildView(v4);
-  EXPECT_EQ(gfx::Rect(10, 4, 6, 4),
-            v4->layer()->bounds());
+  EXPECT_EQ(gfx::Rect(10, 4, 6, 4), v4->layer()->bounds());
   v1->AddChildView(v3);
   // Check that |v4| now has RTL-appropriate bounds.
-  EXPECT_EQ(gfx::Rect(11, 5, 6, 4),
-            v4->layer()->bounds());
+  EXPECT_EQ(gfx::Rect(11, 5, 6, 4), v4->layer()->bounds());
 
   // Resize |v1|. Make sure that |v2| and |v4|'s layers have been moved
   // correctly to RTL-appropriate bounds.
   v1->SetSize(gfx::Size(30, 10));
-  EXPECT_EQ(gfx::Rect(21, 5, 6, 4),
-            v2->layer()->bounds());
-  EXPECT_EQ(gfx::Rect(21, 5, 6, 4),
-            v4->layer()->bounds());
+  EXPECT_EQ(gfx::Rect(21, 5, 6, 4), v2->layer()->bounds());
+  EXPECT_EQ(gfx::Rect(21, 5, 6, 4), v4->layer()->bounds());
 
   // Move and resize |v3|. Make sure that |v4|'s layer has been moved correctly
   // to RTL-appropriate bounds.
   v3->SetBounds(2, 1, 12, 8);
-  EXPECT_EQ(gfx::Rect(20, 5, 6, 4),
-            v4->layer()->bounds());
+  EXPECT_EQ(gfx::Rect(20, 5, 6, 4), v4->layer()->bounds());
 }
 
 // Makes sure a transform persists after toggling the visibility.
@@ -4291,14 +4271,14 @@ TEST_F(ViewLayerTest, ToggleVisibilityWithLayer) {
   View* v1 = new View;
   v1->SetPaintToLayer();
   EXPECT_TRUE(v1->layer());
-  EXPECT_FALSE(LayerIsAncestor(widget()->GetCompositor()->root_layer(),
-                               v1->layer()));
+  EXPECT_FALSE(
+      LayerIsAncestor(widget()->GetCompositor()->root_layer(), v1->layer()));
 
   // Once the view is attached to a widget, its layer should be attached to the
   // root layer and visible.
   content_view->AddChildView(v1);
-  EXPECT_TRUE(LayerIsAncestor(widget()->GetCompositor()->root_layer(),
-                              v1->layer()));
+  EXPECT_TRUE(
+      LayerIsAncestor(widget()->GetCompositor()->root_layer(), v1->layer()));
   EXPECT_TRUE(v1->layer()->IsDrawn());
 
   v1->SetVisible(false);
@@ -4326,22 +4306,22 @@ TEST_F(ViewLayerTest, OrphanLayerAfterViewRemove) {
   View* v2 = new View;
   v1->AddChildView(v2);
   v2->SetPaintToLayer();
-  EXPECT_TRUE(LayerIsAncestor(widget()->GetCompositor()->root_layer(),
-                              v2->layer()));
+  EXPECT_TRUE(
+      LayerIsAncestor(widget()->GetCompositor()->root_layer(), v2->layer()));
   EXPECT_TRUE(v2->layer()->IsDrawn());
 
   content_view->RemoveChildView(v1);
 
-  EXPECT_FALSE(LayerIsAncestor(widget()->GetCompositor()->root_layer(),
-                               v2->layer()));
+  EXPECT_FALSE(
+      LayerIsAncestor(widget()->GetCompositor()->root_layer(), v2->layer()));
 
   // Reparent |v2|.
   v1->RemoveChildView(v2);
   content_view->AddChildView(v2);
   delete v1;
   v1 = nullptr;
-  EXPECT_TRUE(LayerIsAncestor(widget()->GetCompositor()->root_layer(),
-                              v2->layer()));
+  EXPECT_TRUE(
+      LayerIsAncestor(widget()->GetCompositor()->root_layer(), v2->layer()));
   EXPECT_TRUE(v2->layer()->IsDrawn());
 }
 
@@ -5376,8 +5356,8 @@ TEST_F(ViewTest, AttachChildViewWithComplicatedLayers) {
   // Attach parent_view to grand_parent_view. children layers of parent_view
   // should not change.
   grand_parent_view->AddChildView(parent_view);
-  const std::vector<ui::Layer*>& layers_after_attached
-      = parent_view->layer()->children();
+  const std::vector<ui::Layer*>& layers_after_attached =
+      parent_view->layer()->children();
   EXPECT_EQ(2u, layers_after_attached.size());
   EXPECT_EQ(layers_after_attached[0], grand_child_view->layer());
   EXPECT_EQ(layers_after_attached[1], child_view1->layer());

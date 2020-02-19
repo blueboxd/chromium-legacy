@@ -30,8 +30,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -39,6 +37,8 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_request_id.h"
+#include "components/permissions/permission_request_manager.h"
+#include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
@@ -149,7 +149,7 @@ class GeolocationPermissionContextTests
   // owned by the browser context
   GeolocationPermissionContext* geolocation_permission_context_;
   std::vector<std::unique_ptr<content::WebContents>> extra_tabs_;
-  std::vector<std::unique_ptr<MockPermissionPromptFactory>>
+  std::vector<std::unique_ptr<permissions::MockPermissionPromptFactory>>
       mock_permission_prompt_factories_;
 
   // A map between renderer child id and a pair represending the bridge id and
@@ -281,13 +281,13 @@ void GeolocationPermissionContextTests::TearDown() {
 void GeolocationPermissionContextTests::SetupRequestManager(
     content::WebContents* web_contents) {
   // Create PermissionRequestManager.
-  PermissionRequestManager::CreateForWebContents(web_contents);
-  PermissionRequestManager* permission_request_manager =
-      PermissionRequestManager::FromWebContents(web_contents);
+  permissions::PermissionRequestManager::CreateForWebContents(web_contents);
+  permissions::PermissionRequestManager* permission_request_manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents);
 
   // Create a MockPermissionPromptFactory for the PermissionRequestManager.
   mock_permission_prompt_factories_.push_back(
-      std::make_unique<MockPermissionPromptFactory>(
+      std::make_unique<permissions::MockPermissionPromptFactory>(
           permission_request_manager));
 }
 
@@ -333,7 +333,7 @@ void GeolocationPermissionContextTests::RequestManagerDocumentLoadCompleted() {
 
 void GeolocationPermissionContextTests::RequestManagerDocumentLoadCompleted(
     content::WebContents* web_contents) {
-  PermissionRequestManager::FromWebContents(web_contents)
+  permissions::PermissionRequestManager::FromWebContents(web_contents)
       ->DocumentOnLoadCompletedInMainFrame();
 }
 
@@ -360,8 +360,8 @@ bool GeolocationPermissionContextTests::HasActivePrompt() {
 
 bool GeolocationPermissionContextTests::HasActivePrompt(
     content::WebContents* web_contents) {
-  PermissionRequestManager* manager =
-      PermissionRequestManager::FromWebContents(web_contents);
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents);
   return manager->IsRequestInProgress();
 }
 
@@ -371,30 +371,30 @@ void GeolocationPermissionContextTests::AcceptPrompt() {
 
 void GeolocationPermissionContextTests::AcceptPrompt(
     content::WebContents* web_contents) {
-  PermissionRequestManager* manager =
-      PermissionRequestManager::FromWebContents(web_contents);
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents);
   manager->Accept();
   base::RunLoop().RunUntilIdle();
 }
 
 void GeolocationPermissionContextTests::DenyPrompt() {
-  PermissionRequestManager* manager =
-      PermissionRequestManager::FromWebContents(web_contents());
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents());
   manager->Deny();
   base::RunLoop().RunUntilIdle();
 }
 
 void GeolocationPermissionContextTests::ClosePrompt() {
-  PermissionRequestManager* manager =
-      PermissionRequestManager::FromWebContents(web_contents());
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents());
   manager->Closing();
   base::RunLoop().RunUntilIdle();
 }
 
 base::string16 GeolocationPermissionContextTests::GetPromptText() {
-  PermissionRequestManager* manager =
-      PermissionRequestManager::FromWebContents(web_contents());
-  permissions::PermissionRequest* request = manager->requests_.front();
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents());
+  permissions::PermissionRequest* request = manager->Requests().front();
   return base::ASCIIToUTF16(request->GetOrigin().spec()) +
          request->GetMessageTextFragment();
 }

@@ -215,6 +215,8 @@ public class AssistantVoiceSearchService implements TemplateUrlService.TemplateU
             return false;
         }
 
+        // AGSA will throw an exception if Chrome isn't Google signed.
+        if (!mExternalAuthUtils.isChromeGoogleSigned()) return false;
         if (!mExternalAuthUtils.isGoogleSigned(IntentHandler.PACKAGE_GSA)) return false;
 
         return mMinMemoryMb <= availableMemoryMb && mMinAndroidSdkVersion <= Build.VERSION.SDK_INT

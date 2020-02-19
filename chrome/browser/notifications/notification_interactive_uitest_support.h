@@ -7,9 +7,9 @@
 
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/permissions/permission_request_manager.h"
 #include "ui/message_center/message_center_observer.h"
 
 class MessageCenterChangeObserver {
@@ -86,7 +86,7 @@ class NotificationsTest : public InProcessBrowserTest {
  private:
   std::string RequestAndRespondToPermission(
       Browser* browser,
-      PermissionRequestManager::AutoResponseType bubble_response);
+      permissions::PermissionRequestManager::AutoResponseType bubble_response);
 
   base::test::ScopedFeatureList feature_list_;
 };

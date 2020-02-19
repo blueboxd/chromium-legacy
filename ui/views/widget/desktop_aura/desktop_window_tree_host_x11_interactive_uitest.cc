@@ -32,8 +32,7 @@ class ActivationWaiter : public X11PropertyChangeWaiter {
  public:
   explicit ActivationWaiter(XID window)
       : X11PropertyChangeWaiter(ui::GetX11RootWindow(), "_NET_ACTIVE_WINDOW"),
-        window_(window) {
-  }
+        window_(window) {}
 
   ~ActivationWaiter() override = default;
 
@@ -62,9 +61,7 @@ class MouseMoveCounterHandler : public ui::EventHandler {
       ++count_;
   }
 
-  int num_mouse_moves() const {
-    return count_;
-  }
+  int num_mouse_moves() const { return count_; }
 
  private:
   int count_ = 0;

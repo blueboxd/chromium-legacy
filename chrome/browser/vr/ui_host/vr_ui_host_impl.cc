@@ -230,9 +230,9 @@ void VRUiHostImpl::SetWebXRWebContents(content::WebContents* contents) {
 
     PollCapturingState();
 
-    PermissionRequestManager::CreateForWebContents(contents);
+    permissions::PermissionRequestManager::CreateForWebContents(contents);
     permission_request_manager_ =
-        PermissionRequestManager::FromWebContents(contents);
+        permissions::PermissionRequestManager::FromWebContents(contents);
     // Attaching a permission request manager to WebContents can fail, so a
     // DCHECK would be inappropriate here. If it fails, the user won't get
     // notified about permission prompts, but other than that the session would

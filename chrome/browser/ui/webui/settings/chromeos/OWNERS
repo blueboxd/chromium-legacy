@@ -1,3 +1,5 @@
+file://chrome/browser/resources/settings/chromeos/OWNERS
+
 per-file multidevice_handler*=file://chromeos/components/multidevice/OWNERS
 
-# COMPONENT: UI>Settings
+# COMPONENT: OS>Systems>Settings

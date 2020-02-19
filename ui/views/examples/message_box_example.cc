@@ -19,8 +19,7 @@ using base::ASCIIToUTF16;
 namespace views {
 namespace examples {
 
-MessageBoxExample::MessageBoxExample() : ExampleBase("Message Box View") {
-}
+MessageBoxExample::MessageBoxExample() : ExampleBase("Message Box View") {}
 
 MessageBoxExample::~MessageBoxExample() = default;
 
@@ -41,10 +40,10 @@ void MessageBoxExample::CreateExampleView(View* container) {
 
   const int button_column = 1;
   column_set = layout->AddColumnSet(button_column);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
-                        0.5f, GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
-                        0.5f, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0.5f,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0.5f,
+                        GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0 /* no expand */, button_column);
 

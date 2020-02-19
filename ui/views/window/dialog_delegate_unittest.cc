@@ -70,9 +70,7 @@ class TestDialog : public DialogDelegateView {
   base::string16 GetWindowTitle() const override { return title_; }
   View* GetInitiallyFocusedView() override { return input_; }
 
-  void CheckAndResetStates(bool canceled,
-                           bool accepted,
-                           bool closed) {
+  void CheckAndResetStates(bool canceled, bool accepted, bool closed) {
     EXPECT_EQ(canceled, canceled_);
     canceled_ = false;
     EXPECT_EQ(accepted, accepted_);
@@ -178,12 +176,12 @@ TEST_F(DialogTest, AcceptAndCancel) {
 
   // Check that return/escape accelerators accept/close dialogs.
   EXPECT_EQ(dialog()->input(), dialog()->GetFocusManager()->GetFocusedView());
-  const ui::KeyEvent return_event(
-      ui::ET_KEY_PRESSED, ui::VKEY_RETURN, ui::EF_NONE);
+  const ui::KeyEvent return_event(ui::ET_KEY_PRESSED, ui::VKEY_RETURN,
+                                  ui::EF_NONE);
   SimulateKeyEvent(return_event);
   dialog()->CheckAndResetStates(false, true, false);
-  const ui::KeyEvent escape_event(
-      ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE, ui::EF_NONE);
+  const ui::KeyEvent escape_event(ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE,
+                                  ui::EF_NONE);
   SimulateKeyEvent(escape_event);
   dialog()->CheckAndResetStates(false, false, true);
 

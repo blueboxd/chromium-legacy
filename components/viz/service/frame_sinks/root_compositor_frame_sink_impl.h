@@ -50,7 +50,9 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
 
   // mojom::DisplayPrivate:
   void SetDisplayVisible(bool visible) override;
+#if defined(OS_WIN)
   void DisableSwapUntilResize(DisableSwapUntilResizeCallback callback) override;
+#endif
   void Resize(const gfx::Size& size) override;
   void SetDisplayColorMatrix(const gfx::Transform& color_matrix) override;
   void SetDisplayColorSpaces(

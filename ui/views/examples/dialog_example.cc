@@ -114,8 +114,10 @@ class DialogExample::Dialog : public Delegate<DialogDelegateView> {
 DialogExample::DialogExample()
     : ExampleBase("Dialog"),
       mode_model_({
-          base::ASCIIToUTF16("Modeless"), base::ASCIIToUTF16("Window Modal"),
-          base::ASCIIToUTF16("Child Modal"), base::ASCIIToUTF16("System Modal"),
+          base::ASCIIToUTF16("Modeless"),
+          base::ASCIIToUTF16("Window Modal"),
+          base::ASCIIToUTF16("Child Modal"),
+          base::ASCIIToUTF16("System Modal"),
           base::ASCIIToUTF16("Fake Modeless (non-bubbles)"),
       }) {}
 

@@ -8,30 +8,23 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/permissions/test/mock_permission_request.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-TestPermissionBubbleViewDelegate::TestPermissionBubbleViewDelegate()
-    : PermissionPrompt::Delegate() {
-}
+TestPermissionBubbleViewDelegate::TestPermissionBubbleViewDelegate() = default;
 
-TestPermissionBubbleViewDelegate::~TestPermissionBubbleViewDelegate() {}
+TestPermissionBubbleViewDelegate::~TestPermissionBubbleViewDelegate() = default;
 
 const std::vector<permissions::PermissionRequest*>&
 TestPermissionBubbleViewDelegate::Requests() {
   return requests_;
-}
-
-PermissionPrompt::DisplayNameOrOrigin
-TestPermissionBubbleViewDelegate::GetDisplayNameOrOrigin() {
-  return {base::string16(), false /* is_origin */};
 }
 
 PermissionBubbleBrowserTest::PermissionBubbleBrowserTest() {
@@ -44,7 +37,7 @@ void PermissionBubbleBrowserTest::SetUpOnMainThread() {
   ExtensionBrowserTest::SetUpOnMainThread();
 
   // Add a single permission request.
-  requests_.push_back(std::make_unique<MockPermissionRequest>(
+  requests_.push_back(std::make_unique<permissions::MockPermissionRequest>(
       "Request 1", l10n_util::GetStringUTF8(IDS_PERMISSION_ALLOW),
       l10n_util::GetStringUTF8(IDS_PERMISSION_DENY)));
 

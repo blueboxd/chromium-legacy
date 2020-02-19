@@ -8,7 +8,6 @@
 #include <lib/ui/scenic/cpp/view_token_pair.h>
 #include <lib/zx/eventpair.h>
 
-#include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/ozone/platform/scenic/scenic_gpu_host.h"
 #include "ui/ozone/platform/scenic/scenic_surface_factory.h"
 
@@ -53,7 +52,7 @@ void ScenicSurface::SetTextureToImage(const scenic::Image& image) {
   material_.SetTexture(image);
 }
 
-mojo::ScopedHandle ScenicSurface::CreateView() {
+mojo::PlatformHandle ScenicSurface::CreateView() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Scenic will associate the View and ViewHolder regardless of which it
@@ -68,8 +67,7 @@ mojo::ScopedHandle ScenicSurface::CreateView() {
       /*requested_presentation_time=*/0,
       /*requested_prediction_span=*/0,
       [](fuchsia::scenic::scheduling::FuturePresentationTimes info) {});
-  return mojo::WrapPlatformHandle(
-      mojo::PlatformHandle(std::move(tokens.view_holder_token.value)));
+  return mojo::PlatformHandle(std::move(tokens.view_holder_token.value));
 }
 
 }  // namespace ui

@@ -7,11 +7,11 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "chrome/browser/permissions/permission_request_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_bubble_view.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_impl.h"
+#include "components/permissions/permission_request_impl.h"
 #include "ui/views/widget/widget.h"
 
 namespace test {
@@ -25,18 +25,18 @@ class TestPermissionRequestOwner {
   explicit TestPermissionRequestOwner(ContentSettingsType type) {
     bool user_gesture = true;
     auto decided = [](ContentSetting) {};
-    request_ = std::make_unique<PermissionRequestImpl>(
+    request_ = std::make_unique<permissions::PermissionRequestImpl>(
         GURL("https://example.com"), type, user_gesture, base::Bind(decided),
         base::Bind(&TestPermissionRequestOwner::DeleteThis,
                    base::Unretained(this)));
   }
 
-  PermissionRequestImpl* request() { return request_.get(); }
+  permissions::PermissionRequestImpl* request() { return request_.get(); }
 
  private:
   void DeleteThis() { delete this; }
 
-  std::unique_ptr<PermissionRequestImpl> request_;
+  std::unique_ptr<permissions::PermissionRequestImpl> request_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPermissionRequestOwner);
 };
@@ -44,13 +44,14 @@ class TestPermissionRequestOwner {
 }  // namespace
 
 PermissionRequestManagerTestApi::PermissionRequestManagerTestApi(
-    PermissionRequestManager* manager)
+    permissions::PermissionRequestManager* manager)
     : manager_(manager) {}
 
 PermissionRequestManagerTestApi::PermissionRequestManagerTestApi(
     Browser* browser)
-    : PermissionRequestManagerTestApi(PermissionRequestManager::FromWebContents(
-          browser->tab_strip_model()->GetActiveWebContents())) {}
+    : PermissionRequestManagerTestApi(
+          permissions::PermissionRequestManager::FromWebContents(
+              browser->tab_strip_model()->GetActiveWebContents())) {}
 
 void PermissionRequestManagerTestApi::AddSimpleRequest(
     ContentSettingsType type) {

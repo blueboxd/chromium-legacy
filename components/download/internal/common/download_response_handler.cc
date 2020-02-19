@@ -103,7 +103,6 @@ void DownloadResponseHandler::OnReceiveResponse(
     has_strong_validators_ = head->headers->HasStrongValidators();
     RecordDownloadHttpResponseCode(head->headers->response_code(),
                                    is_background_mode_);
-    RecordDownloadContentDisposition(create_info_->content_disposition);
   }
 
   // Blink verifies that the requester of this download is allowed to set a

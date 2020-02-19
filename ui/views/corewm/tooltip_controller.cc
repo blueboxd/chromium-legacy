@@ -49,10 +49,10 @@ bool IsValidTarget(aura::Window* event_target, aura::Window* target) {
 
   void* event_target_grouping_id = event_target->GetNativeWindowProperty(
       TooltipManager::kGroupingPropertyKey);
-  void* target_grouping_id = target->GetNativeWindowProperty(
-      TooltipManager::kGroupingPropertyKey);
+  void* target_grouping_id =
+      target->GetNativeWindowProperty(TooltipManager::kGroupingPropertyKey);
   return event_target_grouping_id &&
-      event_target_grouping_id == target_grouping_id;
+         event_target_grouping_id == target_grouping_id;
 }
 
 // Returns the target (the Window tooltip text comes from) based on the event.
@@ -196,8 +196,7 @@ void TooltipController::OnMouseEvent(ui::MouseEvent* event) {
       aura::Window* target = nullptr;
       // Avoid a call to display::Screen::GetWindowAtScreenPoint() since it can
       // be very expensive on X11 in cases when the tooltip is hidden anyway.
-      if (tooltips_enabled_ &&
-          !aura::Env::GetInstance()->IsMouseButtonDown() &&
+      if (tooltips_enabled_ && !aura::Env::GetInstance()->IsMouseButtonDown() &&
           !IsDragDropInProgress()) {
         target = GetTooltipTarget(*event, &curr_mouse_loc_);
       }
@@ -321,9 +320,10 @@ void TooltipController::UpdateIfRequired() {
       if (tooltip_defer_timer_.IsRunning()) {
         tooltip_defer_timer_.Reset();
       } else {
-        tooltip_defer_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(
-                                                  kDelayForTooltipUpdateInMs),
-                                   this, &TooltipController::ShowTooltip);
+        tooltip_defer_timer_.Start(
+            FROM_HERE,
+            base::TimeDelta::FromMilliseconds(kDelayForTooltipUpdateInMs), this,
+            &TooltipController::ShowTooltip);
       }
     } else {
       ShowTooltip();  // Allow tooltip to show up without delay for unit tests.

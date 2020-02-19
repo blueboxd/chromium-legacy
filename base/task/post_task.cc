@@ -71,13 +71,9 @@ TaskExecutor* GetTaskExecutorForTraits(const TaskTraits& traits) {
 }  // namespace
 
 bool PostTask(const Location& from_here, OnceClosure task) {
-  return PostDelayedTask(from_here, std::move(task), TimeDelta());
-}
-
-bool PostDelayedTask(const Location& from_here,
-                     OnceClosure task,
-                     TimeDelta delay) {
-  return PostDelayedTask(from_here, {ThreadPool()}, std::move(task), delay);
+  // TODO(skyostil): Make task traits required here too.
+  return PostDelayedTask(from_here, {ThreadPool()}, std::move(task),
+                         TimeDelta());
 }
 
 bool PostTaskAndReply(const Location& from_here,

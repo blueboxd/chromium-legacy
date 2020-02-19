@@ -35,4 +35,14 @@ library UpdaterLib {
   {
     [default] interface IUnknown;
   }
+
+  [
+    uuid(415FD747-D79E-42D7-93AC-1BA6E5FD4E93),
+    helpstring("Updater Service Class")
+  ]
+  coclass UpdaterServiceClass
+  {
+    [default] interface IUnknown;
+  }
+
 };

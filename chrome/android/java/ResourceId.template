@@ -12,6 +12,7 @@ public class ResourceId {
 #define LINK_RESOURCE_ID(c_id,java_id) java_id,
 #define DECLARE_RESOURCE_ID(c_id,java_id) java_id,
 #include "chrome/browser/android/resource_id.h"
+#include "components/permissions/android/resource_id.h"
         };
 
         if (enumeratedId >= 0 && enumeratedId < resourceList.length) {

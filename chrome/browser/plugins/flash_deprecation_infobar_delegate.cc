@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/feature_list.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/plugins/plugin_utils.h"
@@ -21,6 +20,7 @@
 #include "components/infobars/core/infobar.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
@@ -75,7 +75,7 @@ FlashDeprecationInfoBarDelegate::GetIdentifier() const {
 }
 
 const gfx::VectorIcon& FlashDeprecationInfoBarDelegate::GetVectorIcon() const {
-  return kExtensionIcon;
+  return vector_icons::kExtensionIcon;
 }
 
 base::string16 FlashDeprecationInfoBarDelegate::GetLinkText() const {

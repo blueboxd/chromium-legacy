@@ -13,8 +13,7 @@ ViewsTouchEditingControllerFactory::ViewsTouchEditingControllerFactory() =
     default;
 
 ui::TouchEditingControllerDeprecated*
-ViewsTouchEditingControllerFactory::Create(
-    ui::TouchEditable* client_view) {
+ViewsTouchEditingControllerFactory::Create(ui::TouchEditable* client_view) {
   return new views::TouchSelectionControllerImpl(client_view);
 }
 

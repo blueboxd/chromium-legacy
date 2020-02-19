@@ -97,9 +97,7 @@ TEST_F(NativeWidgetAuraTest, CenterWindowLargeParent) {
   NativeWidgetAura* window = Init(parent.get(), widget.get());
 
   window->CenterWindow(gfx::Size(100, 100));
-  EXPECT_EQ(gfx::Rect((640 - 100) / 2,
-                      (480 - 100) / 2,
-                      100, 100),
+  EXPECT_EQ(gfx::Rect((640 - 100) / 2, (480 - 100) / 2, 100, 100),
             window->GetNativeWindow()->bounds());
   widget->CloseNow();
 }
@@ -114,9 +112,7 @@ TEST_F(NativeWidgetAuraTest, CenterWindowSmallParent) {
   NativeWidgetAura* window = Init(parent.get(), widget.get());
 
   window->CenterWindow(gfx::Size(100, 100));
-  EXPECT_EQ(gfx::Rect((480 - 100) / 2,
-                      (320 - 100) / 2,
-                      100, 100),
+  EXPECT_EQ(gfx::Rect((480 - 100) / 2, (320 - 100) / 2, 100, 100),
             window->GetNativeWindow()->bounds());
   widget->CloseNow();
 }
@@ -158,9 +154,7 @@ class TestWindowObserver : public aura::WindowObserver {
   explicit TestWindowObserver(gfx::NativeWindow window) : window_(window) {
     window_->AddObserver(this);
   }
-  ~TestWindowObserver() override {
-    window_->RemoveObserver(this);
-  }
+  ~TestWindowObserver() override { window_->RemoveObserver(this); }
 
   // aura::WindowObserver:
   void OnWindowPropertyChanged(aura::Window* window,
@@ -181,7 +175,7 @@ class TestWindowObserver : public aura::WindowObserver {
   int count_ = 0;
   ui::WindowShowState state_ = ui::WindowShowState::SHOW_STATE_DEFAULT;
 
- DISALLOW_COPY_AND_ASSIGN(TestWindowObserver);
+  DISALLOW_COPY_AND_ASSIGN(TestWindowObserver);
 };
 
 // Tests that window transitions from normal to minimized and back do not
@@ -377,16 +371,10 @@ class GestureTrackingView : public View {
  public:
   GestureTrackingView() = default;
 
-  void set_consume_gesture_event(bool value) {
-    consume_gesture_event_ = value;
-  }
+  void set_consume_gesture_event(bool value) { consume_gesture_event_ = value; }
 
-  void clear_got_gesture_event() {
-    got_gesture_event_ = false;
-  }
-  bool got_gesture_event() const {
-    return got_gesture_event_;
-  }
+  void clear_got_gesture_event() { got_gesture_event_ = false; }
+  bool got_gesture_event() const { return got_gesture_event_; }
 
   // View overrides:
   void OnGestureEvent(ui::GestureEvent* event) override {
@@ -475,9 +463,9 @@ TEST_F(NativeWidgetAuraTest, PreferViewLayersToChildWindows) {
   child->Show();
 
   // Point is over |child|.
-  EXPECT_EQ(child->GetNativeWindow(),
-            parent->GetNativeWindow()->GetEventHandlerForPoint(
-                gfx::Point(50, 50)));
+  EXPECT_EQ(
+      child->GetNativeWindow(),
+      parent->GetNativeWindow()->GetEventHandlerForPoint(gfx::Point(50, 50)));
 
   // Create a view with a layer and stack it at the bottom (below |child|).
   View* view_with_layer = new View;
@@ -486,29 +474,28 @@ TEST_F(NativeWidgetAuraTest, PreferViewLayersToChildWindows) {
   view_with_layer->SetPaintToLayer();
 
   // Make sure that |child| still gets the event.
-  EXPECT_EQ(child->GetNativeWindow(),
-            parent->GetNativeWindow()->GetEventHandlerForPoint(
-                gfx::Point(20, 20)));
+  EXPECT_EQ(
+      child->GetNativeWindow(),
+      parent->GetNativeWindow()->GetEventHandlerForPoint(gfx::Point(20, 20)));
 
   // Move |view_with_layer| to the top and make sure it gets the
   // event when the point is within |view_with_layer|'s bounds.
-  view_with_layer->layer()->parent()->StackAtTop(
-      view_with_layer->layer());
-  EXPECT_EQ(parent->GetNativeWindow(),
-            parent->GetNativeWindow()->GetEventHandlerForPoint(
-                gfx::Point(20, 20)));
+  view_with_layer->layer()->parent()->StackAtTop(view_with_layer->layer());
+  EXPECT_EQ(
+      parent->GetNativeWindow(),
+      parent->GetNativeWindow()->GetEventHandlerForPoint(gfx::Point(20, 20)));
 
   // Point is over |child|, it should get the event.
-  EXPECT_EQ(child->GetNativeWindow(),
-            parent->GetNativeWindow()->GetEventHandlerForPoint(
-                gfx::Point(70, 70)));
+  EXPECT_EQ(
+      child->GetNativeWindow(),
+      parent->GetNativeWindow()->GetEventHandlerForPoint(gfx::Point(70, 70)));
 
   delete view_with_layer;
   view_with_layer = nullptr;
 
-  EXPECT_EQ(child->GetNativeWindow(),
-            parent->GetNativeWindow()->GetEventHandlerForPoint(
-                gfx::Point(20, 20)));
+  EXPECT_EQ(
+      child->GetNativeWindow(),
+      parent->GetNativeWindow()->GetEventHandlerForPoint(gfx::Point(20, 20)));
 
   // Work around for bug in NativeWidgetAura.
   // TODO: fix bug and remove this.
@@ -620,10 +607,8 @@ class MoveTestWidgetDelegate : public WidgetDelegateView {
 TEST_F(NativeWidgetAuraTest, OnWidgetMovedInvokedAfterAcquireLayer) {
   // |delegate| deletes itself when the widget is destroyed.
   MoveTestWidgetDelegate* delegate = new MoveTestWidgetDelegate;
-  Widget* widget =
-      Widget::CreateWindowWithContextAndBounds(delegate,
-                                               root_window(),
-                                               gfx::Rect(10, 10, 100, 200));
+  Widget* widget = Widget::CreateWindowWithContextAndBounds(
+      delegate, root_window(), gfx::Rect(10, 10, 100, 200));
   widget->Show();
   delegate->ClearGotMove();
   // Simulate a maximize with animation.

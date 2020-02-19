@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+﻿// Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -35,7 +35,7 @@ class TimeDelta;
 namespace gfx {
 class Point;
 class Rect;
-}
+}  // namespace gfx
 
 namespace ui {
 class Accelerator;
@@ -61,7 +61,7 @@ class WidgetRemovalsObserver;
 namespace internal {
 class NativeWidgetPrivate;
 class RootView;
-}
+}  // namespace internal
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget class
@@ -399,8 +399,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Returns all Widgets owned by |native_view| (including child widgets, but
   // not including itself).
-  static void GetAllOwnedWidgets(gfx::NativeView native_view,
-                                 Widgets* owned);
+  static void GetAllOwnedWidgets(gfx::NativeView native_view, Widgets* owned);
 
   // Re-parent a NativeView and notify all Widgets in |native_view|'s hierarchy
   // of the change.
@@ -762,9 +761,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     return const_cast<NonClientView*>(
         const_cast<const Widget*>(this)->non_client_view());
   }
-  const NonClientView* non_client_view() const {
-    return non_client_view_;
-  }
+  const NonClientView* non_client_view() const { return non_client_view_; }
 
   ClientView* client_view() {
     return const_cast<ClientView*>(
@@ -785,8 +782,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Returns the widget's layer, if any.
   ui::Layer* GetLayer() {
-    return const_cast<ui::Layer*>(
-        const_cast<const Widget*>(this)->GetLayer());
+    return const_cast<ui::Layer*>(const_cast<const Widget*>(this)->GetLayer());
   }
   const ui::Layer* GetLayer() const;
 

@@ -132,13 +132,22 @@ input[type="week" i]::-webkit-calendar-picker-indicator {
   background-repeat: no-repeat;
   background-size: contain;
   height: 1.2em;
+  margin-inline-start: 24px;
   opacity: 1;
   outline: none;
   padding-bottom: 2px;
-  padding-inline-start: 27px;
+  padding-inline-start: 3px;
   padding-inline-end: 3px;
   padding-top: 2px;
   width: 1.2em;
+}
+
+input[type="date" i]::-webkit-calendar-picker-indicator:focus,
+input[type="datetime-local" i]::-webkit-calendar-picker-indicator:focus,
+input[type="month" i]::-webkit-calendar-picker-indicator:focus,
+input[type="week" i]::-webkit-calendar-picker-indicator:focus {
+  outline: solid 2px -webkit-focus-ring-color;
+  outline-offset: -2px;
 }
 
 input[type="time" i]::-webkit-calendar-picker-indicator {
@@ -147,13 +156,19 @@ input[type="time" i]::-webkit-calendar-picker-indicator {
   background-repeat: no-repeat;
   background-size: contain;
   height: 1.05em;
+  margin-inline-start: 8px;
   opacity: 1;
   outline: none;
   padding-bottom: 3px;
-  padding-inline-start: 11px;
+  padding-inline-start: 3px;
   padding-inline-end: 3px;
   padding-top: 3px;
   width: 1.05em;
+}
+
+input[type="time" i]::-webkit-calendar-picker-indicator:focus {
+  outline: solid 2px -webkit-focus-ring-color;
+  outline-offset: -2px;
 }
 
 input::-webkit-calendar-picker-indicator:hover {

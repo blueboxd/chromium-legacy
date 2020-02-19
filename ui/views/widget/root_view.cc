@@ -39,8 +39,7 @@ class MouseEnterExitEvent : public ui::MouseEvent {
       : ui::MouseEvent(event,
                        static_cast<View*>(nullptr),
                        static_cast<View*>(nullptr)) {
-    DCHECK(type == ui::ET_MOUSE_ENTERED ||
-           type == ui::ET_MOUSE_EXITED);
+    DCHECK(type == ui::ET_MOUSE_ENTERED || type == ui::ET_MOUSE_EXITED);
     SetType(type);
   }
 
@@ -85,8 +84,7 @@ class AnnounceTextView : public View {
 //   - Shows keyboard-triggered context menus.
 class PreEventDispatchHandler : public ui::EventHandler {
  public:
-  explicit PreEventDispatchHandler(View* owner)
-      : owner_(owner) {
+  explicit PreEventDispatchHandler(View* owner) : owner_(owner) {
     owner_->AddPreTargetHandler(this);
   }
   ~PreEventDispatchHandler() override { owner_->RemovePreTargetHandler(this); }
@@ -132,8 +130,7 @@ class PreEventDispatchHandler : public ui::EventHandler {
 class PostEventDispatchHandler : public ui::EventHandler {
  public:
   PostEventDispatchHandler()
-      : touch_dnd_enabled_(::switches::IsTouchDragDropEnabled()) {
-  }
+      : touch_dnd_enabled_(::switches::IsTouchDragDropEnabled()) {}
   ~PostEventDispatchHandler() override = default;
 
  private:
@@ -145,13 +142,12 @@ class PostEventDispatchHandler : public ui::EventHandler {
 
     View* target = static_cast<View*>(event->target());
     gfx::Point location = event->location();
-    if (touch_dnd_enabled_ &&
-        event->type() == ui::ET_GESTURE_LONG_PRESS &&
+    if (touch_dnd_enabled_ && event->type() == ui::ET_GESTURE_LONG_PRESS &&
         (!target->drag_controller() ||
-         target->drag_controller()->CanStartDragForView(
-             target, location, location))) {
+         target->drag_controller()->CanStartDragForView(target, location,
+                                                        location))) {
       if (target->DoDrag(*event, location,
-          ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH)) {
+                         ui::DragDropTypes::DRAG_EVENT_SOURCE_TOUCH)) {
         event->StopPropagation();
         return;
       }
@@ -210,8 +206,8 @@ RootView::~RootView() {
 // Tree operations -------------------------------------------------------------
 
 void RootView::SetContentsView(View* contents_view) {
-  DCHECK(contents_view && GetWidget()->native_widget()) <<
-      "Can't be called until after the native widget is created!";
+  DCHECK(contents_view && GetWidget()->native_widget())
+      << "Can't be called until after the native widget is created!";
   // The ContentsView must be set up _after_ the window is created so that its
   // Widget pointer is valid.
   SetLayoutManager(std::make_unique<FillLayout>());
@@ -321,8 +317,7 @@ void RootView::OnEventProcessingStarted(ui::Event* event) {
   // removal of the final touch point or if no gesture handler has already
   // been set.
   if (gesture_event->type() == ui::ET_GESTURE_END &&
-      (gesture_event->details().touch_points() > 1 ||
-       !gesture_handler_)) {
+      (gesture_event->details().touch_points() > 1 || !gesture_handler_)) {
     event->SetHandled();
     return;
   }
@@ -344,8 +339,7 @@ void RootView::OnEventProcessingFinished(ui::Event* event) {
   // If |event| was not handled and |gesture_handler_| was not set by the
   // dispatch of a previous gesture event, then no default gesture handler
   // should be set prior to the next gesture event being received.
-  if (event->IsGestureEvent() &&
-      !event->handled() &&
+  if (event->IsGestureEvent() && !event->handled() &&
       !gesture_handler_set_before_processing_) {
     gesture_handler_ = nullptr;
   }
@@ -391,7 +385,7 @@ bool RootView::OnMousePressed(const ui::MouseEvent& event) {
        mouse_pressed_handler_ && (mouse_pressed_handler_ != this);
        mouse_pressed_handler_ = mouse_pressed_handler_->parent()) {
     DVLOG(1) << "OnMousePressed testing "
-        << mouse_pressed_handler_->GetClassName();
+             << mouse_pressed_handler_->GetClassName();
     if (!mouse_pressed_handler_->GetEnabled()) {
       // Disabled views should eat events instead of propagating them upwards.
       hit_disabled_view = true;
@@ -429,7 +423,7 @@ bool RootView::OnMousePressed(const ui::MouseEvent& event) {
     if (mouse_pressed_event.handled()) {
       last_click_handler_ = mouse_pressed_handler_;
       DVLOG(1) << "OnMousePressed handled by "
-          << mouse_pressed_handler_->GetClassName();
+               << mouse_pressed_handler_->GetClassName();
       return true;
     }
   }

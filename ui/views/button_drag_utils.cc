@@ -50,7 +50,8 @@ void SetDragImage(const GURL& url,
       nullptr, title.empty() ? base::UTF8ToUTF16(url.spec()) : title);
   button.SetTextSubpixelRenderingEnabled(false);
   const ui::NativeTheme* theme = widget.GetNativeTheme();
-  button.SetTextColor(views::Button::STATE_NORMAL,
+  button.SetTextColor(
+      views::Button::STATE_NORMAL,
       theme->GetSystemColor(ui::NativeTheme::kColorId_TextfieldDefaultColor));
 
   SkColor bg_color = theme->GetSystemColor(
@@ -65,8 +66,9 @@ void SetDragImage(const GURL& url,
   button.SetMaxSize(gfx::Size(kLinkDragImageMaxWidth, 0));
   if (icon.isNull()) {
     button.SetImage(views::Button::STATE_NORMAL,
-                    *ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-                        IDR_DEFAULT_FAVICON).ToImageSkia());
+                    *ui::ResourceBundle::GetSharedInstance()
+                         .GetImageNamed(IDR_DEFAULT_FAVICON)
+                         .ToImageSkia());
   } else {
     button.SetImage(views::Button::STATE_NORMAL, icon);
   }

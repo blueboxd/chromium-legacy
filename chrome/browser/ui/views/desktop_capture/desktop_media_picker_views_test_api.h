@@ -9,6 +9,10 @@
 
 class DesktopMediaPickerViews;
 
+namespace ui {
+class KeyEvent;
+}  // namespace ui
+
 namespace views {
 class Checkbox;
 class TableView;
@@ -28,11 +32,12 @@ class DesktopMediaPickerViewsTestApi {
 
   void FocusAudioCheckbox();
   void PressMouseOnSourceAtIndex(size_t index, bool double_click = false);
+  void PressKeyOnSourceAtIndex(size_t index, const ui::KeyEvent& event);
   void SelectTabForSourceType(content::DesktopMediaID::Type source_type);
   views::Checkbox* GetAudioShareCheckbox();
 
   bool HasSourceAtIndex(size_t index) const;
-  void FocusSourceAtIndex(size_t index);
+  void FocusSourceAtIndex(size_t index, bool select = true);
   void DoubleTapSourceAtIndex(size_t index);
   base::Optional<int> GetSelectedSourceId() const;
   views::View* GetSelectedListView();

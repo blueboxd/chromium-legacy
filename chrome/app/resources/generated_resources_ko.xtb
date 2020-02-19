@@ -3357,6 +3357,7 @@
 <translation id="5689516760719285838">위치</translation>
 <translation id="56907980372820799">데이터 연결</translation>
 <translation id="5691511426247308406">가족</translation>
+<translation id="5691772641933328258">지문을 인식할 수 없음</translation>
 <translation id="5692183275898619210">인쇄 완료</translation>
 <translation id="5696143504434933566">'<ph name="EXTENSION_NAME" />'의 악용사례 신고</translation>
 <translation id="5696679855467848181">현재 사용 중인 PPD 파일: <ph name="PPD_NAME" /></translation>
@@ -5662,7 +5663,6 @@
 <translation id="8864458770072227512">기기에서 <ph name="EMAIL" />이(가) 삭제되었습니다.</translation>
 <translation id="8867228703146808825">빌드 세부정보를 클립보드에 복사</translation>
 <translation id="8868626022555786497">사용 중</translation>
-<translation id="8870318296973696995">홈페이지</translation>
 <translation id="8870413625673593573">최근에 닫은 탭</translation>
 <translation id="8871551568777368300">관리자가 고정함</translation>
 <translation id="8871696467337989339">지원되지 않는 명령줄 플래그(<ph name="BAD_FLAG" />)를 사용 중이므로 안정성과 보안에 문제가 발생합니다.</translation>

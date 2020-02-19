@@ -10,11 +10,23 @@ namespace content {
 
 void RenderMediaEventHandler::SendQueuedMediaEvents(
     std::vector<media::MediaLogRecord> events_to_send) {
-  RenderThread::Get()->Send(new ViewHostMsg_MediaLogRecords(events_to_send));
+  GetMediaInternalRecordLogRemote().Log(events_to_send);
 }
+
+RenderMediaEventHandler::RenderMediaEventHandler() = default;
+RenderMediaEventHandler::~RenderMediaEventHandler() = default;
 
 // This media log doesn't care, since the RenderThread outlives us for
 // chrome://media-internals.
 void RenderMediaEventHandler::OnWebMediaPlayerDestroyed() {}
+
+content::mojom::MediaInternalLogRecords&
+RenderMediaEventHandler::GetMediaInternalRecordLogRemote() {
+  if (!media_internal_log_remote_) {
+    RenderThread::Get()->BindHostReceiver(
+        media_internal_log_remote_.BindNewPipeAndPassReceiver());
+  }
+  return *media_internal_log_remote_;
+}
 
 }  // namespace content

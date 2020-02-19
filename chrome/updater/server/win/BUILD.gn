@@ -8,6 +8,8 @@ source_set("win") {
   sources = [
     "server.cc",
     "server.h",
+    "service_main.cc",
+    "service_main.h",
   ]
 
   configs -= [ "//build/config/win:winver" ]

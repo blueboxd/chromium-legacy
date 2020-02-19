@@ -71,9 +71,10 @@ AppServiceWrapper::AppServiceWrapper(Profile* profile) : profile_(profile) {
 AppServiceWrapper::~AppServiceWrapper() = default;
 
 void AppServiceWrapper::PauseApp(const AppId& app_id,
-                                 base::TimeDelta daily_limit) {
+                                 base::TimeDelta daily_limit,
+                                 bool show_dialog) {
   apps::PauseData details;
-  details.should_show_pause_dialog = true;
+  details.should_show_pause_dialog = show_dialog;
   details.hours = daily_limit.InHours();
   details.minutes =
       (daily_limit - base::TimeDelta::FromHours(details.hours)).InMinutes();

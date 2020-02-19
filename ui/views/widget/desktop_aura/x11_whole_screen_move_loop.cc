@@ -36,16 +36,14 @@
 namespace views {
 
 // XGrabKey requires the modifier mask to explicitly be specified.
-const unsigned int kModifiersMasks[] = {
-  0,                                // No additional modifier.
-  Mod2Mask,                         // Num lock
-  LockMask,                         // Caps lock
-  Mod5Mask,                         // Scroll lock
-  Mod2Mask | LockMask,
-  Mod2Mask | Mod5Mask,
-  LockMask | Mod5Mask,
-  Mod2Mask | LockMask | Mod5Mask
-};
+const unsigned int kModifiersMasks[] = {0,         // No additional modifier.
+                                        Mod2Mask,  // Num lock
+                                        LockMask,  // Caps lock
+                                        Mod5Mask,  // Scroll lock
+                                        Mod2Mask | LockMask,
+                                        Mod2Mask | Mod5Mask,
+                                        LockMask | Mod5Mask,
+                                        Mod2Mask | LockMask | Mod5Mask};
 
 X11WholeScreenMoveLoop::X11WholeScreenMoveLoop(X11MoveLoopDelegate* delegate)
     : delegate_(delegate),
@@ -164,7 +162,7 @@ bool X11WholeScreenMoveLoop::RunMoveLoop(aura::Window* source,
   std::unique_ptr<ui::ScopedEventDispatcher> old_dispatcher =
       std::move(nested_dispatcher_);
   nested_dispatcher_ =
-         ui::PlatformEventSource::GetInstance()->OverrideDispatcher(this);
+      ui::PlatformEventSource::GetInstance()->OverrideDispatcher(this);
 
   // We are handling a mouse drag outside of the aura::Window system. We must
   // manually make aura think that the mouse button is pressed so that we don't

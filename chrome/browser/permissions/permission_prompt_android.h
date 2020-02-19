@@ -10,9 +10,9 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "components/permissions/permission_prompt.h"
 
 namespace content {
 class WebContents;
@@ -21,14 +21,14 @@ namespace infobars {
 class InfoBar;
 }
 
-class PermissionPromptAndroid : public PermissionPrompt,
+class PermissionPromptAndroid : public permissions::PermissionPrompt,
                                 public infobars::InfoBarManager::Observer {
  public:
   PermissionPromptAndroid(content::WebContents* web_contents,
                           Delegate* delegate);
   ~PermissionPromptAndroid() override;
 
-  // PermissionPrompt:
+  // permissions::PermissionPrompt:
   void UpdateAnchorPosition() override;
   TabSwitchingBehavior GetTabSwitchingBehavior() override;
 

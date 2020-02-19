@@ -185,7 +185,8 @@ void OAuth2LoginManager::StoreOAuth2Token() {
 
   signin::IdentityManager* identity_manager = GetIdentityManager();
   // The primary account must be already set at this point.
-  DCHECK(identity_manager->HasUnconsentedPrimaryAccount());
+  DCHECK(
+      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kNotRequired));
   const CoreAccountInfo primary_account_info =
       identity_manager->GetPrimaryAccountInfo(
           signin::ConsentLevel::kNotRequired);

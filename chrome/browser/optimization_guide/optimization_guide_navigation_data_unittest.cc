@@ -20,6 +20,13 @@ using testing::AnyOf;
 using testing::HasSubstr;
 using testing::Not;
 
+typedef struct {
+  optimization_guide::proto::ClientModelFeature feature;
+  base::StringPiece ukm_metric_name;
+  float feature_value;
+  int expected_value;
+} ClientHostModelFeaturesTestCase;
+
 TEST(OptimizationGuideNavigationDataTest, RecordMetricsNoDataNoCommit) {
   base::test::TaskEnvironment env;
 
@@ -975,4 +982,58 @@ TEST(OptimizationGuideNavigationDataTest, DeepCopy) {
       0.12,
       *data_copy.GetModelPredictionScoreForOptimizationTarget(
           optimization_guide::proto::OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD));
+}
+
+TEST(OptimizationGuideNavigationDataTest,
+     RecordMetricsPredictionModelHostModelFeatures) {
+  base::test::TaskEnvironment env;
+  ClientHostModelFeaturesTestCase test_cases[] = {
+      {optimization_guide::proto::
+           CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_MEAN,
+       ukm::builders::OptimizationGuide::
+           kPredictionModelFeatureNavigationToFCPSessionMeanName,
+       2.0, 2},
+      {optimization_guide::proto::
+           CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_STANDARD_DEVIATION,
+       ukm::builders::OptimizationGuide::
+           kPredictionModelFeatureNavigationToFCPSessionStdDevName,
+       3.0, 3},
+      {optimization_guide::proto::CLIENT_MODEL_FEATURE_PAGE_TRANSITION,
+       ukm::builders::OptimizationGuide::
+           kPredictionModelFeaturePageTransitionName,
+       20.0, 20},
+      {optimization_guide::proto::CLIENT_MODEL_FEATURE_SAME_ORIGIN_NAVIGATION,
+       ukm::builders::OptimizationGuide::
+           kPredictionModelFeatureIsSameOriginNavigationName,
+       1.0, 1},
+      {optimization_guide::proto::CLIENT_MODEL_FEATURE_SITE_ENGAGEMENT_SCORE,
+       ukm::builders::OptimizationGuide::
+           kPredictionModelFeatureSiteEngagementScoreName,
+       5.5, 10},
+      {optimization_guide::proto::
+           CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE,
+       ukm::builders::OptimizationGuide::
+           kPredictionModelFeatureEffectiveConnectionTypeName,
+       3.0, 3},
+      {optimization_guide::proto::
+           CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_PREVIOUS_PAGE_LOAD,
+       ukm::builders::OptimizationGuide::
+           kPredictionModelFeaturePreviousPageLoadNavigationToFCPName,
+       200.0, 200},
+  };
+
+  for (const auto& test_case : test_cases) {
+    ukm::TestAutoSetUkmRecorder ukm_recorder;
+    OptimizationGuideNavigationData data(/*navigation_id=*/1);
+    data.SetValueForModelFeature(test_case.feature, test_case.feature_value);
+    data.RecordMetrics(/*has_committed=*/false);
+
+    auto entries = ukm_recorder.GetEntriesByName(
+        ukm::builders::OptimizationGuide::kEntryName);
+    EXPECT_EQ(1u, entries.size());
+    auto* entry = entries[0];
+    EXPECT_TRUE(ukm_recorder.EntryHasMetric(entry, test_case.ukm_metric_name));
+    ukm_recorder.ExpectEntryMetric(entry, test_case.ukm_metric_name,
+                                   test_case.expected_value);
+  }
 }

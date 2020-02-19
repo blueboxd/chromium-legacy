@@ -1040,7 +1040,6 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // will be given a chance.
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& event);
 
-
   // See field for description.
   void set_notify_enter_exit_on_child(bool notify) {
     notify_enter_exit_on_child_ = notify;

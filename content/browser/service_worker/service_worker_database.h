@@ -57,8 +57,9 @@ class CONTENT_EXPORT ServiceWorkerDatabase {
 
   static const char* StatusToString(Status status);
 
-  using FeatureToTokensMap = std::map<std::string /* feature_name */,
-                                      std::vector<std::string /* token */>>;
+  using FeatureToTokensMap =
+      base::flat_map<std::string /* feature_name */,
+                     std::vector<std::string /* token */>>;
 
   struct CONTENT_EXPORT RegistrationData {
     // These values are immutable for the life of a registration.

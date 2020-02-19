@@ -3358,6 +3358,7 @@
 <translation id="5689516760719285838">მდებარეობა</translation>
 <translation id="56907980372820799">მონაცემების მიბმა</translation>
 <translation id="5691511426247308406">ოჯახი</translation>
+<translation id="5691772641933328258">თითის ანაბეჭდის ამოცნობა ვერ მოხერხდა</translation>
 <translation id="5692183275898619210">ბეჭდვა დასრულდა</translation>
 <translation id="5696143504434933566">„<ph name="EXTENSION_NAME" />“-ის მხრიდან დარღვევის შესახებ შეტყობინება</translation>
 <translation id="5696679855467848181">ამჟამად გამოყენებული PPD ფაილი: <ph name="PPD_NAME" /></translation>
@@ -5661,7 +5662,6 @@
 <translation id="8864458770072227512"><ph name="EMAIL" /> ამოიშალა ამ მოწყობილობიდან</translation>
 <translation id="8867228703146808825">ანაწყობის დეტალების კოპირება გაცვლის ბუფერში</translation>
 <translation id="8868626022555786497">გამოყენებული</translation>
-<translation id="8870318296973696995">საწყისი გვერდი</translation>
 <translation id="8870413625673593573">ბოლოს დახურული</translation>
 <translation id="8871551568777368300">ჩამაგრებულია ადმინისტრატორის მიერ</translation>
 <translation id="8871696467337989339">თქვენ იყენებთ ბრძანების სტრიქონის ალამს, რომელიც არაა მხარდაჭერილი: <ph name="BAD_FLAG" />. ეს სტაბილურობაზე და უსაფრთხოებაზე იქონიებს უარყოფით გავლენას.</translation>

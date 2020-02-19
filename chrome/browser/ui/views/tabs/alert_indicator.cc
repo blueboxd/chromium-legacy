@@ -118,7 +118,7 @@ gfx::Image GetTabAlertIndicatorImage(TabAlertState alert_state,
       icon = &kPictureInPictureAltIcon;
       break;
     case TabAlertState::VR_PRESENTING_IN_HEADSET:
-      icon = &kVrHeadsetIcon;
+      icon = &vector_icons::kVrHeadsetIcon;
       break;
   }
   DCHECK(icon);

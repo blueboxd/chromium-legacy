@@ -182,11 +182,6 @@ class IdentityManager : public KeyedService,
   // account for sync.
   bool HasPrimaryAccount(ConsentLevel consent = ConsentLevel::kSync) const;
 
-  // Deprecated, use HasPrimaryAccount(ConsentLevel::kNotRequired) instead.
-  // Returns whether the user's unconsented primary account (see ./README.md) is
-  // available.
-  bool HasUnconsentedPrimaryAccount() const;
-
   // Creates an AccessTokenFetcher given the passed-in information.
   std::unique_ptr<AccessTokenFetcher> CreateAccessTokenFetcherForAccount(
       const CoreAccountId& account_id,

@@ -11,11 +11,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/media/webrtc/desktop_media_picker_manager.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/vr/model/capturing_state_model.h"
 #include "chrome/browser/vr/service/browser_xr_runtime.h"
 #include "chrome/browser/vr/service/vr_ui_host.h"
 #include "components/bubble/bubble_manager.h"
+#include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -28,7 +28,7 @@ class VRBrowserRendererThreadWin;
 // Concrete implementation of VRBrowserRendererHost, part of the "browser"
 // component. Used on the browser's main thread.
 class VRUiHostImpl : public VRUiHost,
-                     public PermissionRequestManager::Observer,
+                     public permissions::PermissionRequestManager::Observer,
                      public BrowserXRRuntimeObserver,
                      public BubbleManager::BubbleManagerObserver,
                      public DesktopMediaPickerManager::DialogObserver {
@@ -107,7 +107,7 @@ class VRUiHostImpl : public VRUiHost,
   std::unique_ptr<VRBrowserRendererThreadWin> ui_rendering_thread_;
   device::mojom::VRDisplayInfoPtr info_;
   content::WebContents* web_contents_ = nullptr;
-  PermissionRequestManager* permission_request_manager_ = nullptr;
+  permissions::PermissionRequestManager* permission_request_manager_ = nullptr;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   base::CancelableClosure external_prompt_timeout_task_;

@@ -107,6 +107,11 @@
            use_base_dir="false"
            type="BINDATA"
            preprocess="true" />
+  <include name="IDR_SETTINGS_LIFETIME_BROWSER_PROXY_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/lifetime_browser_proxy.m.js"
+           use_base_dir="false"
+           type="BINDATA"
+           preprocess="true" />
   <include name="IDR_SETTINGS_MENU_SETTINGS_MENU_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/settings_menu/settings_menu.m.js"
            use_base_dir="false"
@@ -244,4 +249,15 @@
            file="${root_gen_dir}/chrome/browser/resources/settings/site_favicon.m.js"
            use_base_dir="false"
            type="BINDATA" />
+  <if expr="not chromeos">
+    <include name="IDR_SETTINGS_SYSTEM_PAGE_BROWSER_PROXY_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/system_page/system_page_browser_proxy.m.js"
+             use_base_dir="false"
+             type="BINDATA" />
+    <include name="IDR_SETTINGS_SYSTEM_PAGE_M_JS"
+             file="${root_gen_dir}/chrome/browser/resources/settings/system_page/system_page.m.js"
+             use_base_dir="false"
+             type="BINDATA"
+             preprocess="true" />
+  </if>
 </grit-part>

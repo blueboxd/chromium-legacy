@@ -164,7 +164,8 @@ void ProfileMenuView::OnManageGoogleAccountButtonClicked() {
   Profile* profile = browser()->profile();
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  DCHECK(identity_manager->HasUnconsentedPrimaryAccount());
+  DCHECK(
+      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kNotRequired));
 
   NavigateToGoogleAccountPage(
       profile, identity_manager
@@ -520,7 +521,8 @@ void ProfileMenuView::BuildFeatureButtons() {
       IdentityManagerFactory::GetForProfile(profile);
   const bool is_guest = profile->IsGuestSession();
   const bool has_unconsented_account =
-      !is_guest && identity_manager->HasUnconsentedPrimaryAccount();
+      !is_guest &&
+      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kNotRequired);
   const bool has_primary_account =
       !is_guest && identity_manager->HasPrimaryAccount();
 

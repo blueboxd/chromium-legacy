@@ -1781,6 +1781,130 @@ TEST_P(AppListPresenterDelegateTest,
   GetAppListTestHelper()->CheckVisibility(false);
 }
 
+// Tests that the app list window's bounds height (from the shelf) in kPeeking
+// state is the same whether the app list is shown on the primary display
+// or the secondary display fir different display placements.
+TEST_F(AppListPresenterDelegateTest, AppListPeekingStateHeightOnMultiDisplay) {
+  UpdateDisplay("800x1000, 800x600");
+
+  const std::vector<display::DisplayPlacement::Position> placements = {
+      display::DisplayPlacement::LEFT, display::DisplayPlacement::RIGHT,
+      display::DisplayPlacement::BOTTOM, display::DisplayPlacement::TOP};
+  for (const display::DisplayPlacement::Position placement : placements) {
+    SCOPED_TRACE(testing::Message() << "Testing placement " << placement);
+
+    GetAppListTestHelper()->CheckVisibility(false);
+    Shell::Get()->display_manager()->SetLayoutForCurrentDisplays(
+        display::test::CreateDisplayLayout(display_manager(), placement, 0));
+
+    GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+    GetAppListTestHelper()->CheckVisibility(true);
+    SetAppListStateAndWait(AppListViewState::kPeeking);
+
+    views::Widget* app_list_widget = GetAppListView()->GetWidget();
+    EXPECT_EQ(Shell::GetAllRootWindows()[0],
+              app_list_widget->GetNativeWindow()->GetRootWindow());
+    const display::Display primary_display =
+        display::Screen::GetScreen()->GetDisplayNearestView(
+            app_list_widget->GetNativeWindow());
+    const int primary_display_height =
+        app_list_widget->GetWindowBoundsInScreen().y() -
+        primary_display.bounds().bottom();
+
+    GetAppListTestHelper()->Dismiss();
+    GetAppListTestHelper()->CheckVisibility(false);
+    const int primary_display_closed_height =
+        app_list_widget->GetWindowBoundsInScreen().y() -
+        primary_display.bounds().bottom();
+
+    GetAppListTestHelper()->ShowAndRunLoop(GetSecondaryDisplay().id());
+    GetAppListTestHelper()->CheckVisibility(true);
+    SetAppListStateAndWait(AppListViewState::kPeeking);
+
+    app_list_widget = GetAppListView()->GetWidget();
+    EXPECT_EQ(Shell::GetAllRootWindows()[1],
+              app_list_widget->GetNativeWindow()->GetRootWindow());
+    const display::Display secondary_display =
+        display::Screen::GetScreen()->GetDisplayNearestView(
+            app_list_widget->GetNativeWindow());
+    const int secondary_display_height =
+        app_list_widget->GetWindowBoundsInScreen().y() -
+        secondary_display.bounds().bottom();
+
+    EXPECT_EQ(secondary_display_height, primary_display_height);
+
+    GetAppListTestHelper()->Dismiss();
+    GetAppListTestHelper()->CheckVisibility(false);
+
+    const int secondary_display_closed_height =
+        app_list_widget->GetWindowBoundsInScreen().y() -
+        secondary_display.bounds().bottom();
+    EXPECT_EQ(secondary_display_closed_height, primary_display_closed_height);
+  }
+}
+
+// Tests that the app list window's bounds height (from the shelf) in kHalf
+// state is the same whether the app list is shown on the primary display
+// or the secondary display fir different display placements.
+TEST_F(AppListPresenterDelegateTest, AppListHalfStateHeightOnMultiDisplay) {
+  UpdateDisplay("800x1000, 800x600");
+
+  const std::vector<display::DisplayPlacement::Position> placements = {
+      display::DisplayPlacement::LEFT, display::DisplayPlacement::RIGHT,
+      display::DisplayPlacement::BOTTOM, display::DisplayPlacement::TOP};
+  for (const display::DisplayPlacement::Position placement : placements) {
+    SCOPED_TRACE(testing::Message() << "Testing placement " << placement);
+
+    GetAppListTestHelper()->CheckVisibility(false);
+    Shell::Get()->display_manager()->SetLayoutForCurrentDisplays(
+        display::test::CreateDisplayLayout(display_manager(), placement, 0));
+
+    GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+    GetAppListTestHelper()->CheckVisibility(true);
+    SetAppListStateAndWait(AppListViewState::kHalf);
+
+    views::Widget* app_list_widget = GetAppListView()->GetWidget();
+    EXPECT_EQ(Shell::GetAllRootWindows()[0],
+              app_list_widget->GetNativeWindow()->GetRootWindow());
+    const display::Display primary_display =
+        display::Screen::GetScreen()->GetDisplayNearestView(
+            app_list_widget->GetNativeWindow());
+    const int primary_display_height =
+        app_list_widget->GetWindowBoundsInScreen().y() -
+        primary_display.bounds().bottom();
+
+    GetAppListTestHelper()->Dismiss();
+    GetAppListTestHelper()->CheckVisibility(false);
+    const int primary_display_closed_height =
+        app_list_widget->GetWindowBoundsInScreen().y() -
+        primary_display.bounds().bottom();
+
+    GetAppListTestHelper()->ShowAndRunLoop(GetSecondaryDisplay().id());
+    GetAppListTestHelper()->CheckVisibility(true);
+    SetAppListStateAndWait(AppListViewState::kHalf);
+
+    app_list_widget = GetAppListView()->GetWidget();
+    EXPECT_EQ(Shell::GetAllRootWindows()[1],
+              app_list_widget->GetNativeWindow()->GetRootWindow());
+    const display::Display secondary_display =
+        display::Screen::GetScreen()->GetDisplayNearestView(
+            app_list_widget->GetNativeWindow());
+    const int secondary_display_height =
+        app_list_widget->GetWindowBoundsInScreen().y() -
+        secondary_display.bounds().bottom();
+
+    EXPECT_EQ(secondary_display_height, primary_display_height);
+
+    GetAppListTestHelper()->Dismiss();
+    GetAppListTestHelper()->CheckVisibility(false);
+
+    const int secondary_display_closed_height =
+        app_list_widget->GetWindowBoundsInScreen().y() -
+        secondary_display.bounds().bottom();
+    EXPECT_EQ(secondary_display_closed_height, primary_display_closed_height);
+  }
+}
+
 // Tests that a fling from Fullscreen/Peeking closes the app list.
 TEST_P(AppListPresenterDelegateTest,
        FlingDownClosesAppListFromFullscreenAndPeeking) {

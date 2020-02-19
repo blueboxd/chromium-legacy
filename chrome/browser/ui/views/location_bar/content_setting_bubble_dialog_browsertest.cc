@@ -10,9 +10,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_request_limiter.h"
-#include "chrome/browser/permissions/mock_permission_request.h"
-#include "chrome/browser/permissions/notification_permission_ui_selector.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
@@ -28,6 +25,9 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/notification_permission_ui_selector.h"
+#include "components/permissions/permission_request_manager.h"
+#include "components/permissions/test/mock_permission_request.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -37,20 +37,21 @@
 
 namespace {
 
-using QuietUiReason = NotificationPermissionUiSelector::QuietUiReason;
+using QuietUiReason =
+    permissions::NotificationPermissionUiSelector::QuietUiReason;
 
 // Test implementation of NotificationPermissionUiSelector that always forces
 // the quiet UI to be used for surfacing notification permission requests.
 class TestQuietNotificationPermissionUiSelector
-    : public NotificationPermissionUiSelector {
+    : public permissions::NotificationPermissionUiSelector {
  public:
-  TestQuietNotificationPermissionUiSelector(
+  explicit TestQuietNotificationPermissionUiSelector(
       QuietUiReason simulated_reason_for_quiet_ui)
       : simulated_reason_for_quiet_ui_(simulated_reason_for_quiet_ui) {}
   ~TestQuietNotificationPermissionUiSelector() override = default;
 
  protected:
-  // NotificationPermissionUiSelector:
+  // permissions::NotificationPermissionUiSelector:
   void SelectUiToUse(permissions::PermissionRequest* request,
                      DecisionMadeCallback callback) override {
     std::move(callback).Run(UiToUse::kQuietUi, simulated_reason_for_quiet_ui_);
@@ -84,7 +85,8 @@ class ContentSettingBubbleDialogTest : public DialogBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::Optional<MockPermissionRequest> notification_permission_request_;
+  base::Optional<permissions::MockPermissionRequest>
+      notification_permission_request_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingBubbleDialogTest);
 };
@@ -153,7 +155,7 @@ void ContentSettingBubbleDialogTest::TriggerQuietNotificationPermissionRequest(
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   auto* permission_request_manager =
-      PermissionRequestManager::FromWebContents(web_contents);
+      permissions::PermissionRequestManager::FromWebContents(web_contents);
   permission_request_manager
       ->set_notification_permission_ui_selector_for_testing(
           std::make_unique<TestQuietNotificationPermissionUiSelector>(

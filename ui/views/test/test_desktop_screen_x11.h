@@ -9,7 +9,8 @@
 #include "ui/views/widget/desktop_aura/desktop_screen_x11.h"
 
 namespace base {
-template<typename T> struct DefaultSingletonTraits;
+template <typename T>
+struct DefaultSingletonTraits;
 }
 
 namespace views {

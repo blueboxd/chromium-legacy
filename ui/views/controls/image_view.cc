@@ -111,9 +111,8 @@ bool ImageView::IsImageEqual(const gfx::ImageSkia& img) const {
   // to SetImage(). The expectation is that SetImage() with different pixels is
   // treated as though the image changed. For this reason we compare not only
   // the backing store but also the pixels of the last image we painted.
-  return image_.BackedBySameObjectAs(img) &&
-      last_paint_scale_ != 0.0f &&
-      last_painted_bitmap_pixels_ == GetBitmapPixels(img, last_paint_scale_);
+  return image_.BackedBySameObjectAs(img) && last_paint_scale_ != 0.0f &&
+         last_painted_bitmap_pixels_ == GetBitmapPixels(img, last_paint_scale_);
 }
 
 void ImageView::UpdateImageOrigin() {

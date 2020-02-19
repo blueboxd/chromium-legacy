@@ -2,6 +2,23 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+source_set("policy") {
+  sources = [
+    "browser_policy_connector_ios.h",
+    "browser_policy_connector_ios.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//components/policy/core/common",
+    "//services/network/public/cpp",
+  ]
+
+  public_deps = [ "//components/policy/core/browser" ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
 source_set("feature_flags") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [

@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/android/scoped_hardware_buffer_fence_sync.h"
+#include "base/bind_helpers.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_context.h"
@@ -68,7 +69,7 @@ void CodecImage::NotifyUnused() {
   // that we did in Initialize.
   ReleaseCodecBuffer();
   codec_buffer_wait_coordinator_.reset();
-  promotion_hint_cb_ = PromotionHintAggregator::NotifyPromotionHintCB();
+  promotion_hint_cb_ = base::NullCallback();
 
   for (auto& cb : unused_cbs_)
     std::move(cb).Run(this);

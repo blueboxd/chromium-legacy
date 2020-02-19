@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
+#include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_features.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_params.h"
 #include "chrome/browser/prerender/isolated/isolated_prerender_service.h"
@@ -241,6 +242,11 @@ void IsolatedPrerenderTabHelper::OnPredictionUpdated(
   if (!data_reduction_proxy::DataReductionProxySettings::
           IsDataSaverEnabledByUser(profile_->IsOffTheRecord(),
                                    profile_->GetPrefs())) {
+    return;
+  }
+
+  // This checks whether the user has enabled pre* actions in the settings UI.
+  if (!chrome_browser_net::CanPreresolveAndPreconnectUI(profile_->GetPrefs())) {
     return;
   }
 

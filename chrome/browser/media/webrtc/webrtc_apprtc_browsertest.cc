@@ -13,12 +13,12 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_common.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/permissions/permission_request_manager.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
@@ -226,8 +226,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
   chrome::AddTabAt(browser(), GURL(), -1, true);
   content::WebContents* left_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  PermissionRequestManager::FromWebContents(left_tab)
-      ->set_auto_response_for_test(PermissionRequestManager::ACCEPT_ALL);
+  permissions::PermissionRequestManager::FromWebContents(left_tab)
+      ->set_auto_response_for_test(
+          permissions::PermissionRequestManager::ACCEPT_ALL);
   InfoBarResponder left_infobar_responder(
       InfoBarService::FromWebContents(left_tab), InfoBarResponder::ACCEPT);
   ui_test_utils::NavigateToURL(browser(), room_url);
@@ -243,8 +244,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcApprtcBrowserTest, MANUAL_WorksOnApprtc) {
   chrome::AddTabAt(browser(), GURL(), -1, true);
   content::WebContents* right_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
-  PermissionRequestManager::FromWebContents(right_tab)
-      ->set_auto_response_for_test(PermissionRequestManager::ACCEPT_ALL);
+  permissions::PermissionRequestManager::FromWebContents(right_tab)
+      ->set_auto_response_for_test(
+          permissions::PermissionRequestManager::ACCEPT_ALL);
   InfoBarResponder right_infobar_responder(
       InfoBarService::FromWebContents(right_tab), InfoBarResponder::ACCEPT);
   ui_test_utils::NavigateToURL(browser(), room_url);

@@ -81,8 +81,7 @@ ExampleMenuModel::ExampleMenuModel() : ui::SimpleMenuModel(this) {
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddRadioItem(COMMAND_SELECT_ASCII, ASCIIToUTF16("ASCII"),
                GROUP_MAKE_DECISION);
-  AddRadioItem(COMMAND_SELECT_UTF8, ASCIIToUTF16("UTF-8"),
-               GROUP_MAKE_DECISION);
+  AddRadioItem(COMMAND_SELECT_UTF8, ASCIIToUTF16("UTF-8"), GROUP_MAKE_DECISION);
   AddRadioItem(COMMAND_SELECT_UTF16, ASCIIToUTF16("UTF-16"),
                GROUP_MAKE_DECISION);
   AddSeparator(ui::NORMAL_SEPARATOR);
@@ -190,15 +189,14 @@ ui::SimpleMenuModel* ExampleMenuButton::GetMenuModel() {
 
 }  // namespace
 
-MenuExample::MenuExample() : ExampleBase("Menu") {
-}
+MenuExample::MenuExample() : ExampleBase("Menu") {}
 
 MenuExample::~MenuExample() = default;
 
 void MenuExample::CreateExampleView(View* container) {
   // We add a button to open a menu.
-  ExampleMenuButton* menu_button = new ExampleMenuButton(
-      ASCIIToUTF16("Open a menu"));
+  ExampleMenuButton* menu_button =
+      new ExampleMenuButton(ASCIIToUTF16("Open a menu"));
   container->SetLayoutManager(std::make_unique<FillLayout>());
   container->AddChildView(menu_button);
 }

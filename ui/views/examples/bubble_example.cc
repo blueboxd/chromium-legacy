@@ -21,32 +21,46 @@ namespace examples {
 
 namespace {
 
-SkColor colors[] = { SK_ColorWHITE, SK_ColorGRAY, SK_ColorCYAN, 0xFFC1B1E1 };
+SkColor colors[] = {SK_ColorWHITE, SK_ColorGRAY, SK_ColorCYAN, 0xFFC1B1E1};
 
 BubbleBorder::Arrow arrows[] = {
-    BubbleBorder::TOP_LEFT, BubbleBorder::TOP_CENTER,
-    BubbleBorder::TOP_RIGHT, BubbleBorder::RIGHT_TOP,
+    BubbleBorder::TOP_LEFT,     BubbleBorder::TOP_CENTER,
+    BubbleBorder::TOP_RIGHT,    BubbleBorder::RIGHT_TOP,
     BubbleBorder::RIGHT_CENTER, BubbleBorder::RIGHT_BOTTOM,
     BubbleBorder::BOTTOM_RIGHT, BubbleBorder::BOTTOM_CENTER,
-    BubbleBorder::BOTTOM_LEFT, BubbleBorder::LEFT_BOTTOM,
-    BubbleBorder::LEFT_CENTER, BubbleBorder::LEFT_TOP };
+    BubbleBorder::BOTTOM_LEFT,  BubbleBorder::LEFT_BOTTOM,
+    BubbleBorder::LEFT_CENTER,  BubbleBorder::LEFT_TOP};
 
 base::string16 GetArrowName(BubbleBorder::Arrow arrow) {
   switch (arrow) {
-    case BubbleBorder::TOP_LEFT:      return ASCIIToUTF16("TOP_LEFT");
-    case BubbleBorder::TOP_RIGHT:     return ASCIIToUTF16("TOP_RIGHT");
-    case BubbleBorder::BOTTOM_LEFT:   return ASCIIToUTF16("BOTTOM_LEFT");
-    case BubbleBorder::BOTTOM_RIGHT:  return ASCIIToUTF16("BOTTOM_RIGHT");
-    case BubbleBorder::LEFT_TOP:      return ASCIIToUTF16("LEFT_TOP");
-    case BubbleBorder::RIGHT_TOP:     return ASCIIToUTF16("RIGHT_TOP");
-    case BubbleBorder::LEFT_BOTTOM:   return ASCIIToUTF16("LEFT_BOTTOM");
-    case BubbleBorder::RIGHT_BOTTOM:  return ASCIIToUTF16("RIGHT_BOTTOM");
-    case BubbleBorder::TOP_CENTER:    return ASCIIToUTF16("TOP_CENTER");
-    case BubbleBorder::BOTTOM_CENTER: return ASCIIToUTF16("BOTTOM_CENTER");
-    case BubbleBorder::LEFT_CENTER:   return ASCIIToUTF16("LEFT_CENTER");
-    case BubbleBorder::RIGHT_CENTER:  return ASCIIToUTF16("RIGHT_CENTER");
-    case BubbleBorder::NONE:          return ASCIIToUTF16("NONE");
-    case BubbleBorder::FLOAT:         return ASCIIToUTF16("FLOAT");
+    case BubbleBorder::TOP_LEFT:
+      return ASCIIToUTF16("TOP_LEFT");
+    case BubbleBorder::TOP_RIGHT:
+      return ASCIIToUTF16("TOP_RIGHT");
+    case BubbleBorder::BOTTOM_LEFT:
+      return ASCIIToUTF16("BOTTOM_LEFT");
+    case BubbleBorder::BOTTOM_RIGHT:
+      return ASCIIToUTF16("BOTTOM_RIGHT");
+    case BubbleBorder::LEFT_TOP:
+      return ASCIIToUTF16("LEFT_TOP");
+    case BubbleBorder::RIGHT_TOP:
+      return ASCIIToUTF16("RIGHT_TOP");
+    case BubbleBorder::LEFT_BOTTOM:
+      return ASCIIToUTF16("LEFT_BOTTOM");
+    case BubbleBorder::RIGHT_BOTTOM:
+      return ASCIIToUTF16("RIGHT_BOTTOM");
+    case BubbleBorder::TOP_CENTER:
+      return ASCIIToUTF16("TOP_CENTER");
+    case BubbleBorder::BOTTOM_CENTER:
+      return ASCIIToUTF16("BOTTOM_CENTER");
+    case BubbleBorder::LEFT_CENTER:
+      return ASCIIToUTF16("LEFT_CENTER");
+    case BubbleBorder::RIGHT_CENTER:
+      return ASCIIToUTF16("RIGHT_CENTER");
+    case BubbleBorder::NONE:
+      return ASCIIToUTF16("NONE");
+    case BubbleBorder::FLOAT:
+      return ASCIIToUTF16("FLOAT");
   }
   return ASCIIToUTF16("INVALID");
 }

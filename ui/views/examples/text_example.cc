@@ -47,10 +47,24 @@ const wchar_t kRightToLeftText[] =
     L"\x5e9\x5dc\x5d5\x5dd \x5d4\x5e2\x5d5\x5dc\x5dd! "
     L"\x5e9\x5dc\x5d5\x5dd \x5d4\x5e2\x5d5\x5dc\x5dd!";
 
-const char* kTextExamples[] = { "Short", "Long", "Ampersands", "RTL Hebrew", };
+const char* kTextExamples[] = {
+    "Short",
+    "Long",
+    "Ampersands",
+    "RTL Hebrew",
+};
 const char* kElideBehaviors[] = {"Elide", "No Elide"};
-const char* kPrefixOptions[] = { "Default", "Show", "Hide", };
-const char* kHorizontalAligments[] = { "Default", "Left", "Center", "Right", };
+const char* kPrefixOptions[] = {
+    "Default",
+    "Show",
+    "Hide",
+};
+const char* kHorizontalAligments[] = {
+    "Default",
+    "Left",
+    "Center",
+    "Right",
+};
 constexpr const char* kWeightLabels[] = {
     "Thin",     "Extra Light", "Light",      "Normal", "Medium",
     "Semibold", "Bold",        "Extra Bold", "Black",
@@ -152,11 +166,11 @@ void TextExample::CreateExampleView(View* container) {
 
   ColumnSet* column_set = layout->AddColumnSet(0);
   column_set->AddPaddingColumn(0, 8);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL,
-                        0.1f, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0.1f,
+                        GridLayout::USE_PREF, 0, 0);
   for (int i = 0; i < kNumColumns - 1; i++)
-    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
-                          0.1f, GridLayout::USE_PREF, 0, 0);
+    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0.1f,
+                          GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, 8);
 
   h_align_cb_ = AddCombobox(layout, "H-Align", kHorizontalAligments,
@@ -180,8 +194,8 @@ void TextExample::CreateExampleView(View* container) {
   layout->AddPaddingRow(0, 20);
   column_set = layout->AddColumnSet(1);
   column_set->AddPaddingColumn(0, 16);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
-                        1, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                        GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, 16);
   layout->StartRow(1, 1);
   text_view_ = layout->AddView(std::move(text_view));
@@ -204,8 +218,7 @@ void TextExample::ButtonPressed(Button* button, const ui::Event& event) {
 void TextExample::OnPerformAction(Combobox* combobox) {
   int flags = text_view_->flags();
   if (combobox == h_align_cb_) {
-    flags &= ~(gfx::Canvas::TEXT_ALIGN_LEFT |
-               gfx::Canvas::TEXT_ALIGN_CENTER |
+    flags &= ~(gfx::Canvas::TEXT_ALIGN_LEFT | gfx::Canvas::TEXT_ALIGN_CENTER |
                gfx::Canvas::TEXT_ALIGN_RIGHT);
     switch (combobox->GetSelectedIndex()) {
       case 0:

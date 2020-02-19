@@ -30,9 +30,7 @@ class X11PropertyChangeWaiter : public ui::XEventDispatcher {
   // Returns whether the run loop can exit.
   virtual bool ShouldKeepOnWaiting(XEvent* event);
 
-  XID xwindow() const {
-    return x_window_;
-  }
+  XID xwindow() const { return x_window_; }
 
  private:
   // ui::XEventDispatcher:

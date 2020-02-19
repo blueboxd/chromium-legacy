@@ -81,7 +81,8 @@ class AppTimeController : public SystemClockClient::Observer,
 
   // AppActivityRegistry::AppStateObserver:
   void OnAppLimitReached(const AppId& app_id,
-                         base::TimeDelta time_limit) override;
+                         base::TimeDelta time_limit,
+                         bool was_active) override;
   void OnAppLimitRemoved(const AppId& app_id) override;
   void OnAppInstalled(const AppId& app_id) override;
 

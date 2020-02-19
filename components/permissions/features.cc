@@ -17,5 +17,12 @@ const base::Feature kBlockPromptsIfDismissedOften{
 const base::Feature kBlockPromptsIfIgnoredOften{
     "BlockPromptsIfIgnoredOften", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Once the user declines a notification permission prompt in a WebContents,
+// automatically dismiss subsequent prompts in the same WebContents, from any
+// origin, until the next user-initiated navigation.
+const base::Feature kBlockRepeatedNotificationPermissionPrompts{
+    "BlockRepeatedNotificationPermissionPrompts",
+    base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace permissions

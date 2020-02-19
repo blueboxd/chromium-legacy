@@ -579,7 +579,7 @@
     },
     {
       name: "DeclarativeShadowDOM",
-      status: "test",
+      status: "experimental",
     },
     {
       name: "DecodeJpeg420ImagesToYUV",

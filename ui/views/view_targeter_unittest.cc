@@ -145,8 +145,8 @@ TEST_F(ViewTargeterTest, ViewTargeterForKeyEvents) {
   ui::KeyEvent key_event('a', ui::VKEY_A, ui::DomCode::NONE, ui::EF_NONE);
 
   // The focused view should be the initial target of the event.
-  ui::EventTarget* current_target = targeter->FindTargetForEvent(root_view,
-                                                                 &key_event);
+  ui::EventTarget* current_target =
+      targeter->FindTargetForEvent(root_view, &key_event);
   EXPECT_EQ(grandchild, static_cast<View*>(current_target));
 
   // Verify that FindNextBestTarget() will return the parent view of the
@@ -157,8 +157,8 @@ TEST_F(ViewTargeterTest, ViewTargeterForKeyEvents) {
   EXPECT_EQ(content, static_cast<View*>(current_target));
   current_target = targeter->FindNextBestTarget(content, &key_event);
   EXPECT_EQ(widget.GetRootView(), static_cast<View*>(current_target));
-  current_target = targeter->FindNextBestTarget(widget.GetRootView(),
-                                                &key_event);
+  current_target =
+      targeter->FindNextBestTarget(widget.GetRootView(), &key_event);
   EXPECT_EQ(nullptr, static_cast<View*>(current_target));
 }
 
@@ -167,8 +167,7 @@ TEST_F(ViewTargeterTest, ViewTargeterForKeyEvents) {
 // for scroll events.
 TEST_F(ViewTargeterTest, ViewTargeterForScrollEvents) {
   Widget widget;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.bounds = gfx::Rect(0, 0, 200, 200);
   widget.Init(std::move(init_params));
@@ -191,15 +190,10 @@ TEST_F(ViewTargeterTest, ViewTargeterForScrollEvents) {
 
   // The event falls within the bounds of |child| and |content| but not
   // |grandchild|, so |child| should be the initial target for the event.
-  ui::ScrollEvent scroll(ui::ET_SCROLL,
-                         gfx::Point(60, 60),
-                         ui::EventTimeForNow(),
-                         0,
-                         0, 3,
-                         0, 3,
-                         2);
-  ui::EventTarget* current_target = targeter->FindTargetForEvent(root_view,
-                                                                 &scroll);
+  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(60, 60),
+                         ui::EventTimeForNow(), 0, 0, 3, 0, 3, 2);
+  ui::EventTarget* current_target =
+      targeter->FindTargetForEvent(root_view, &scroll);
   EXPECT_EQ(child, static_cast<View*>(current_target));
 
   // Verify that FindNextBestTarget() will return the parent view of the
@@ -208,21 +202,15 @@ TEST_F(ViewTargeterTest, ViewTargeterForScrollEvents) {
   EXPECT_EQ(content, static_cast<View*>(current_target));
   current_target = targeter->FindNextBestTarget(content, &scroll);
   EXPECT_EQ(widget.GetRootView(), static_cast<View*>(current_target));
-  current_target = targeter->FindNextBestTarget(widget.GetRootView(),
-                                                &scroll);
+  current_target = targeter->FindNextBestTarget(widget.GetRootView(), &scroll);
   EXPECT_EQ(nullptr, static_cast<View*>(current_target));
 
   // The event falls outside of the original specified bounds of |content|,
   // |child|, and |grandchild|. But since |content| is the contents view,
   // and contents views are resized to fill the entire area of the root
   // view, the event's initial target should still be |content|.
-  scroll = ui::ScrollEvent(ui::ET_SCROLL,
-                           gfx::Point(150, 150),
-                           ui::EventTimeForNow(),
-                           0,
-                           0, 3,
-                           0, 3,
-                           2);
+  scroll = ui::ScrollEvent(ui::ET_SCROLL, gfx::Point(150, 150),
+                           ui::EventTimeForNow(), 0, 0, 3, 0, 3, 2);
   current_target = targeter->FindTargetForEvent(root_view, &scroll);
   EXPECT_EQ(content, static_cast<View*>(current_target));
 }
@@ -582,10 +570,10 @@ TEST_F(ViewTargeterTest, DoesIntersectRect) {
 
   // Verify that hit-testing is performed correctly when using the
   // call-through function ViewTargeter::DoesIntersectRect().
-  EXPECT_TRUE(view_targeter->DoesIntersectRect(root_view,
-                                               gfx::Rect(0, 0, 50, 50)));
-  EXPECT_FALSE(view_targeter->DoesIntersectRect(root_view,
-                                                gfx::Rect(-20, -20, 10, 10)));
+  EXPECT_TRUE(
+      view_targeter->DoesIntersectRect(root_view, gfx::Rect(0, 0, 50, 50)));
+  EXPECT_FALSE(
+      view_targeter->DoesIntersectRect(root_view, gfx::Rect(-20, -20, 10, 10)));
 }
 
 // Tests that calls made directly on the hit-testing methods in View

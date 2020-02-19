@@ -4,9 +4,10 @@
 
 #include "ui/views/controls/menu/menu_config.h"
 
-#include <windows.h>
-#include <uxtheme.h>
+#include <windows.h>  // Must come before other Windows system headers.
+
 #include <Vssym32.h>
+#include <uxtheme.h>
 
 #include "base/logging.h"
 #include "base/win/scoped_gdi_object.h"

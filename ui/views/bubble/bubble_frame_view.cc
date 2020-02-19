@@ -618,9 +618,9 @@ void BubbleFrameView::MirrorArrowIfOutOfBounds(
   if (GetOverflowLength(available_bounds, window_bounds, vertical) > 0) {
     BubbleBorder::Arrow arrow = bubble_border_->arrow();
     // Mirror the arrow and get the new bounds.
-    bubble_border_->set_arrow(
-        vertical ? BubbleBorder::vertical_mirror(arrow) :
-                   BubbleBorder::horizontal_mirror(arrow));
+    bubble_border_->set_arrow(vertical
+                                  ? BubbleBorder::vertical_mirror(arrow)
+                                  : BubbleBorder::horizontal_mirror(arrow));
     gfx::Rect mirror_bounds =
         bubble_border_->GetBounds(anchor_rect, client_size);
     // Restore the original arrow if mirroring doesn't show more of the bubble.

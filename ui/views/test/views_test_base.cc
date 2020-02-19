@@ -131,8 +131,7 @@ void ViewsTestBase::RunPendingMessages() {
   run_loop.RunUntilIdle();
 }
 
-Widget::InitParams ViewsTestBase::CreateParams(
-    Widget::InitParams::Type type) {
+Widget::InitParams ViewsTestBase::CreateParams(Widget::InitParams::Type type) {
   Widget::InitParams params(type);
   params.context = GetContext();
   return params;

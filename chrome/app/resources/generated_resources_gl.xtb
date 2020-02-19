@@ -3358,6 +3358,7 @@ Instala a aplicación Family Link no teu dispositivo e poderás xestionar a conf
 <translation id="5689516760719285838">Localización</translation>
 <translation id="56907980372820799">Ligar datos</translation>
 <translation id="5691511426247308406">Familia</translation>
+<translation id="5691772641933328258">Non se recoñeceu a impresión dixital</translation>
 <translation id="5692183275898619210">Finalizou a impresión</translation>
 <translation id="5696143504434933566">Informar dun uso inadecuado de <ph name="EXTENSION_NAME" /></translation>
 <translation id="5696679855467848181">Ficheiro PPD actual en uso: <ph name="PPD_NAME" /></translation>
@@ -5662,7 +5663,6 @@ Mantén o ficheiro de clave nun lugar seguro, xa que o precisarás para crear no
 <translation id="8864458770072227512"><ph name="EMAIL" /> quitouse deste dispositivo</translation>
 <translation id="8867228703146808825">Copia os detalles da compilación no portapapeis</translation>
 <translation id="8868626022555786497">En uso</translation>
-<translation id="8870318296973696995">Páxina de inicio</translation>
 <translation id="8870413625673593573">Pechados recentemente</translation>
 <translation id="8871551568777368300">Fixado polo administrador</translation>
 <translation id="8871696467337989339">Estás utilizando unha función experimental de liña de comandos non compatible: <ph name="BAD_FLAG" />. Isto afectará á estabilidade e á seguranza.</translation>

@@ -2,9 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format on
+// #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+// clang-format off
+
 cr.define('settings', function() {
   /** @interface */
-  class LifetimeBrowserProxy {
+  /* #export */ class LifetimeBrowserProxy {
     // Triggers a browser restart.
     restart() {}
 
@@ -25,10 +29,8 @@ cr.define('settings', function() {
     // </if>
   }
 
-  /**
-   * @implements {settings.LifetimeBrowserProxy}
-   */
-  class LifetimeBrowserProxyImpl {
+  /** @implements {settings.LifetimeBrowserProxy} */
+  /* #export */ class LifetimeBrowserProxyImpl {
     /** @override */
     restart() {
       chrome.send('restart');

@@ -409,6 +409,7 @@ Polymer({
         this.$.deviceDialog.close();
       }
     });
+    settings.recordSettingChange();
   },
 
   /**
@@ -423,6 +424,7 @@ Polymer({
             chrome.runtime.lastError.message);
       }
     });
+    settings.recordSettingChange();
   },
 
   /**
@@ -437,6 +439,7 @@ Polymer({
             chrome.runtime.lastError.message);
       }
     });
+    settings.recordSettingChange();
   },
 
   /** @private */

@@ -4,9 +4,14 @@
 
 /** @fileoverview Handles interprocess communication for the system page. */
 
+// clang-format on
+// #import {addSingletonGetter} from 'chrome://resources/js/cr.m.js';
+// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+// clang-format off
+
 cr.define('settings', function() {
   /** @interface */
-  class SystemPageBrowserProxy {
+  /* #export */ class SystemPageBrowserProxy {
     /** Shows the native system proxy settings. */
     showProxySettings() {}
 
@@ -17,10 +22,8 @@ cr.define('settings', function() {
     wasHardwareAccelerationEnabledAtStartup() {}
   }
 
-  /**
-   * @implements {settings.SystemPageBrowserProxy}
-   */
-  class SystemPageBrowserProxyImpl {
+  /** @implements {settings.SystemPageBrowserProxy} */
+  /* #export */ class SystemPageBrowserProxyImpl {
     /** @override */
     showProxySettings() {
       chrome.send('showProxySettings');

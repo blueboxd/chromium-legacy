@@ -19,8 +19,8 @@ namespace aura {
 namespace client {
 class DragDropClient;
 class FocusClient;
-}
-}
+}  // namespace client
+}  // namespace aura
 
 namespace ui {
 enum class DomCode;

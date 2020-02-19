@@ -31,8 +31,6 @@
 #endif
 
 namespace {
-// The number of Fullscreen badges
-const int kNumberOfFullScrenBadges = 1;
 // The minimum number of non-Fullscreen badges to display the overflow popup
 // menu.
 const int kMinimumNonFullScreenBadgesForOverflow = 2;
@@ -155,8 +153,6 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
 - (void)updateBadgesForActiveWebState {
   if (self.webState) {
     self.badges = [self.badgeTabHelper->GetInfobarBadgeItems() mutableCopy];
-    if (self.offTheRecordBadge)
-      [self.badges addObject:self.offTheRecordBadge];
   } else {
     self.badges = [NSMutableArray<id<BadgeItem>> array];
   }
@@ -171,18 +167,14 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
   if (!self.badges)
     [self updateBadgesForActiveWebState];
 
-  // Show the overflow badge if there are multiple BadgeItems.  Otherwise, use
-  // the first badge if it's not fullscreen.
-  NSUInteger fullscreenBadgeCount = self.offTheRecordBadge ? 1U : 0U;
   BOOL shouldDisplayOverflowBadge =
-      self.badges.count - fullscreenBadgeCount > 1;
+      self.badges.count >= kMinimumNonFullScreenBadgesForOverflow;
   id<BadgeItem> displayedBadge = nil;
   if (shouldDisplayOverflowBadge) {
     displayedBadge = [[BadgeTappableItem alloc]
         initWithBadgeType:BadgeType::kBadgeTypeOverflow];
   } else {
-    id<BadgeItem> firstBadge = [self.badges firstObject];
-    displayedBadge = firstBadge.fullScreen ? nil : firstBadge;
+    displayedBadge = [self.badges firstObject];
   }
   // Update the consumer with the new badge items.
   [self.consumer setupWithDisplayedBadge:displayedBadge
@@ -367,7 +359,7 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
 // non-fullscreen badges.
 - (void)updateConsumerReadStatus {
   for (id<BadgeItem> item in self.badges) {
-    if (!item.fullScreen && !(item.badgeState & BadgeStateRead)) {
+    if (!(item.badgeState & BadgeStateRead)) {
       [self.consumer markDisplayedBadgeAsRead:NO];
       return;
     }
@@ -385,29 +377,19 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
   // multiple non-fullscreen badges, additional logic below determines what
   // badge will be shown.
   id<BadgeItem> displayedBadge;
-  // The fullscreen badge to show. There currently should only be one fullscreen
-  // badge at a given time.
-  id<BadgeItem> fullScreenBadge;
   // The badge that is current displaying its banner. This will be set as the
   // displayedBadge if there are multiple badges.
   id<BadgeItem> presentingBadge;
   for (id<BadgeItem> item in self.badges) {
-    if (item.fullScreen) {
-      fullScreenBadge = item;
-    } else {
       if (item.badgeState & BadgeStatePresented) {
         presentingBadge = item;
       }
       displayedBadge = item;
-    }
   }
 
   // Figure out what displayedBadge should be showing if there are multiple
   // non-Fullscreen badges.
   NSInteger count = [self.badges count];
-  if (fullScreenBadge) {
-    count -= kNumberOfFullScrenBadges;
-  }
   if (count >= kMinimumNonFullScreenBadgesForOverflow) {
     // If a badge's banner is being presented, then show that badge as the
     // displayed badge. Otherwise, show the overflow badge.
@@ -421,7 +403,7 @@ const int kMinimumNonFullScreenBadgesForOverflow = 2;
     displayedBadge.badgeState |= BadgeStateRead;
   }
   [self.consumer updateDisplayedBadge:displayedBadge
-                      fullScreenBadge:fullScreenBadge];
+                      fullScreenBadge:self.offTheRecordBadge];
   [self updateConsumerReadStatus];
 }
 

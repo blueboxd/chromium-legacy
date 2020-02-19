@@ -308,7 +308,8 @@ int UpdaterSetupMain(int argc, const char* const* argv) {
 
 }  // namespace setup
 
-int Uninstall() {
+int Uninstall(bool is_machine) {
+  ALLOW_UNUSED_LOCAL(is_machine);
   if (!setup::RemoveFromLaunchd())
     return -1;
 

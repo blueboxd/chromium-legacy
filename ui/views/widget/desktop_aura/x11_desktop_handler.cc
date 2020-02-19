@@ -108,16 +108,14 @@ bool X11DesktopHandler::DispatchXEvent(XEvent* event) {
   return false;
 }
 
-void X11DesktopHandler::OnWindowInitialized(aura::Window* window) {
-}
+void X11DesktopHandler::OnWindowInitialized(aura::Window* window) {}
 
 void X11DesktopHandler::OnWillDestroyEnv() {
   g_handler = nullptr;
   delete this;
 }
 
-void X11DesktopHandler::OnWindowCreatedOrDestroyed(int event_type,
-                                                   XID window) {
+void X11DesktopHandler::OnWindowCreatedOrDestroyed(int event_type, XID window) {
   // Menus created by Chrome can be drag and drop targets. Since they are
   // direct children of the screen root window and have override_redirect
   // we cannot use regular _NET_CLIENT_LIST_STACKING property to find them

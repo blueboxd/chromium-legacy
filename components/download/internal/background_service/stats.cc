@@ -308,11 +308,6 @@ void LogEntryEvent(DownloadEvent event) {
                             DownloadEvent::COUNT);
 }
 
-void LogEntryResumptionCount(uint32_t resume_count) {
-  UMA_HISTOGRAM_COUNTS_100("Download.Service.Entry.ResumptionCount",
-                           resume_count);
-}
-
 void LogEntryRetryCount(uint32_t retry_count) {
   UMA_HISTOGRAM_COUNTS_100("Download.Service.Entry.RetryCount", retry_count);
 }

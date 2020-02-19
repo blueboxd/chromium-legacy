@@ -21,9 +21,10 @@ using base::ASCIIToUTF16;
 
 namespace {
 const char kLabelButton[] = "Label Button";
-const char kLongText[] = "Start of Really Really Really Really Really Really "
-                         "Really Really Really Really Really Really Really "
-                         "Really Really Really Really Really Long Button Text";
+const char kLongText[] =
+    "Start of Really Really Really Really Really Really "
+    "Really Really Really Really Really Really Really "
+    "Really Really Really Really Really Long Button Text";
 }  // namespace
 
 namespace views {

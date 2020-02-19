@@ -12,9 +12,9 @@
 #include "base/no_destructor.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/android_theme_resources.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/grit/generated_resources.h"
 #include "components/permissions/permission_request.h"
+#include "components/permissions/permission_request_manager.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
@@ -168,7 +168,7 @@ void RequestPerDeviceProvisioningPermission(
   DCHECK(web_contents) << "WebContents not available.";
 
   auto* permission_request_manager =
-      PermissionRequestManager::FromWebContents(web_contents);
+      permissions::PermissionRequestManager::FromWebContents(web_contents);
   if (!permission_request_manager) {
     std::move(callback).Run(false);
     return;

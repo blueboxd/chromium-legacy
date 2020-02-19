@@ -1805,8 +1805,8 @@ bool Textfield::ShouldDoLearning() {
 }
 
 #if defined(OS_WIN) || defined(OS_CHROMEOS)
-// TODO(https://crbug.com/952355): Implement this method to support Korean IME reconversion feature
-// on native text fields (e.g. find bar).
+// TODO(https://crbug.com/952355): Implement this method to support Korean IME
+// reconversion feature on native text fields (e.g. find bar).
 bool Textfield::SetCompositionFromExistingText(
     const gfx::Range& range,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
@@ -1824,8 +1824,8 @@ void Textfield::GetActiveTextInputControlLayoutBounds(
     base::Optional<gfx::Rect>* control_bounds,
     base::Optional<gfx::Rect>* selection_bounds) {}
 
-// TODO(https://crbug.com/952355): Implement this method once TSF supports reconversion
-// features on native text fields.
+// TODO(https://crbug.com/952355): Implement this method once TSF supports
+// reconversion features on native text fields.
 void Textfield::SetActiveCompositionForAccessibility(
     const gfx::Range& range,
     const base::string16& active_composition_text,
@@ -2194,9 +2194,9 @@ void Textfield::UpdateSelectionClipboard() {
 
 void Textfield::UpdateBackgroundColor() {
   const SkColor color = GetBackgroundColor();
-    SetBackground(
-        CreateBackgroundFromPainter(Painter::CreateSolidRoundRectPainter(
-            color, FocusableBorder::kCornerRadiusDp)));
+  SetBackground(
+      CreateBackgroundFromPainter(Painter::CreateSolidRoundRectPainter(
+          color, FocusableBorder::kCornerRadiusDp)));
   // Disable subpixel rendering when the background color is not opaque because
   // it draws incorrect colors around the glyphs in that case.
   // See crbug.com/115198

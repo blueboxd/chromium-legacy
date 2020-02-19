@@ -26709,6 +26709,11 @@ to ensure that the crash string is shown properly on the user-facing crash UI.
   <int value="8" label="Refresh throttled"/>
 </enum>
 
+<enum name="FeedSendFeedbackType">
+  <int value="0" label="Feedback tapped on card"/>
+  <int value="1" label="Feedback tapped on page from card"/>
+</enum>
+
 <enum name="FeedSpinnerType">
   <int value="1" label="Initial load"/>
   <int value="2" label="Zero state refresh"/>
@@ -67807,6 +67812,8 @@ Full version information for the fingerprint enum values:
 </enum>
 
 <enum name="WebSchedulerTrackedFeature">
+<!-- Generated from third_party/blink/public/common/scheduler/web_scheduler_tracked_feature.h.-->
+
   <int value="0" label="WebSocket"/>
   <int value="1" label="WebRTC"/>
   <int value="2" label="MainResourceHasCacheControlNoCache"/>
@@ -67831,15 +67838,19 @@ Full version information for the fingerprint enum values:
   <int value="21" label="RequestedMIDIPermission"/>
   <int value="22" label="RequestedAudioCapturePermission"/>
   <int value="23" label="RequestedVideoCapturePermission"/>
-  <int value="24" label="RequestedSensorsPermission"/>
-  <int value="25" label="RequestedBackgroundWorkPermission"/>
-  <int value="26" label="BroadcastChannel"/>
-  <int value="27" label="IndexedDBConnection"/>
-  <int value="28" label="WebGL"/>
-  <int value="29" label="WebVR"/>
-  <int value="30" label="WebXR"/>
-  <int value="31" label="SharedWorker"/>
-  <int value="32" label="WebLocks"/>
+  <int value="24" label="RequestedBackForwardCacheBlockedSensors"/>
+  <int value="25" label="Unused"/>
+  <int value="26" label="RequestedBackgroundWorkPermission"/>
+  <int value="27" label="BroadcastChannel"/>
+  <int value="28" label="IndexedDBConnection"/>
+  <int value="29" label="WebGL"/>
+  <int value="30" label="WebVR"/>
+  <int value="31" label="WebXR"/>
+  <int value="32" label="SharedWorker"/>
+  <int value="33" label="WebLocks"/>
+  <int value="34" label="WebHID"/>
+  <int value="35" label="WakeLock"/>
+  <int value="36" label="WebShare"/>
   <int value="37" label="RequestedStorageAccessGrant"/>
 </enum>
 

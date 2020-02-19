@@ -868,8 +868,8 @@
   },
   {
     "name": "double-tap-to-zoom-in-tablet-mode",
-    "owners": [ "afakhry" ],
-    "expiry_milestone": 80
+    "owners": [ "afakhry", "tbuckley" ],
+    "expiry_milestone": 85
   },
   {
     "name": "download-auto-resumption-native",
@@ -2037,7 +2037,7 @@
   {
     "name": "enable-vulkan",
     "owners": [ "penghuang" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 90
   },
   {
     "name": "enable-web-authentication-ble-support",
@@ -3708,7 +3708,7 @@
   {
     "name": "use-preferred-interval-for-video",
     "owners": [ "jiahe.zhang@intel.com", "khushalsagar" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "use-search-click-for-right-click",

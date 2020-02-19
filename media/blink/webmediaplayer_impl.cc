@@ -717,7 +717,7 @@ void WebMediaPlayerImpl::DoLoad(LoadType load_type,
       buffered_data_source_host_->AddBufferedByteRange(0, data.size());
 
       DCHECK(!mb_data_source_);
-      data_source_.reset(new MemoryDataSource(std::move(data)));
+      data_source_ = std::make_unique<MemoryDataSource>(std::move(data));
       DataSourceInitialized(true);
       return;
     }
@@ -1407,7 +1407,8 @@ void WebMediaPlayerImpl::SetContentDecryptionModule(
   // on the wrong thread in some failure conditions. Blink should prevent
   // multiple simultaneous calls.
   DCHECK(!set_cdm_result_);
-  set_cdm_result_.reset(new blink::WebContentDecryptionModuleResult(result));
+  set_cdm_result_ =
+      std::make_unique<blink::WebContentDecryptionModuleResult>(result);
 
   SetCdmInternal(cdm);
 }
@@ -1991,13 +1992,13 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
       recorder.InitWithNewPipeAndPassReceiver());
 
   // Create capabilities reporter and synchronize its initial state.
-  video_decode_stats_reporter_.reset(new VideoDecodeStatsReporter(
+  video_decode_stats_reporter_ = std::make_unique<VideoDecodeStatsReporter>(
       std::move(recorder),
       base::BindRepeating(&WebMediaPlayerImpl::GetPipelineStatistics,
                           base::Unretained(this)),
       pipeline_metadata_.video_decoder_config.profile(),
       pipeline_metadata_.natural_size, key_system_, cdm_config_,
-      frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
+      frame_->GetTaskRunner(blink::TaskType::kInternalMedia));
 
   if (delegate_->IsFrameHidden())
     video_decode_stats_reporter_->OnHidden();
@@ -2125,7 +2126,7 @@ void WebMediaPlayerImpl::OnBufferingStateChangeInternal(
     // HAVE_NOTHING.
     if (ready_state_ == WebMediaPlayer::kReadyStateHaveEnoughData &&
         !seeking_) {
-      underflow_timer_.reset(new base::ElapsedTimer());
+      underflow_timer_ = std::make_unique<base::ElapsedTimer>();
       watch_time_reporter_->OnUnderflow();
     }
 
@@ -2685,7 +2686,7 @@ void WebMediaPlayerImpl::StartPipeline() {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   Demuxer::EncryptedMediaInitDataCB encrypted_media_init_data_cb =
-      BindToCurrentLoop(base::Bind(
+      BindToCurrentLoop(base::BindRepeating(
           &WebMediaPlayerImpl::OnEncryptedMediaInitData, weak_this_));
 
   vfc_task_runner_->PostTask(
@@ -2707,11 +2708,11 @@ void WebMediaPlayerImpl::StartPipeline() {
     // reporter.
     video_decode_stats_reporter_.reset();
 
-    demuxer_.reset(new MediaUrlDemuxer(
+    demuxer_ = std::make_unique<MediaUrlDemuxer>(
         media_task_runner_, loaded_url_,
         frame_->GetDocument().SiteForCookies().RepresentativeUrl(),
         frame_->GetDocument().TopFrameOrigin(),
-        allow_media_player_renderer_credentials_, demuxer_found_hls_));
+        allow_media_player_renderer_credentials_, demuxer_found_hls_);
     pipeline_controller_->Start(Pipeline::StartType::kNormal, demuxer_.get(),
                                 this, false, false);
     return;
@@ -2728,9 +2729,9 @@ void WebMediaPlayerImpl::StartPipeline() {
         BindToCurrentLoop(base::Bind(
             &WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated, weak_this_));
 
-    demuxer_.reset(new FFmpegDemuxer(
+    demuxer_ = std::make_unique<FFmpegDemuxer>(
         media_task_runner_, data_source_.get(), encrypted_media_init_data_cb,
-        media_tracks_updated_cb, media_log_.get(), IsLocalFile(loaded_url_)));
+        media_tracks_updated_cb, media_log_.get(), IsLocalFile(loaded_url_));
 #else
     OnError(PipelineStatus::DEMUXER_ERROR_COULD_NOT_OPEN);
     return;
@@ -3209,7 +3210,7 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
   }
 
   // Create the watch time reporter and synchronize its initial state.
-  watch_time_reporter_.reset(new WatchTimeReporter(
+  watch_time_reporter_ = std::make_unique<WatchTimeReporter>(
       mojom::PlaybackProperties::New(
           pipeline_metadata_.has_audio, has_video, false, false,
           !!chunk_demuxer_, is_encrypted_, embedded_media_experience_enabled_),
@@ -3219,7 +3220,7 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
       base::BindRepeating(&WebMediaPlayerImpl::GetPipelineStatistics,
                           base::Unretained(this)),
       media_metrics_provider_.get(),
-      frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
+      frame_->GetTaskRunner(blink::TaskType::kInternalMedia));
   watch_time_reporter_->OnVolumeChange(volume_);
   watch_time_reporter_->OnDurationChanged(GetPipelineMediaDuration());
 

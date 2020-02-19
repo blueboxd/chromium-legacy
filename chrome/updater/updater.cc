@@ -23,6 +23,7 @@
 
 #if defined(OS_WIN)
 #include "chrome/updater/server/win/server.h"
+#include "chrome/updater/server/win/service_main.h"
 #include "chrome/updater/win/install_app.h"
 #include "chrome/updater/win/setup/uninstall.h"
 #endif
@@ -107,7 +108,7 @@ int UpdaterInstallApp() {
 
 int UpdaterUninstall() {
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  return Uninstall();
+  return Uninstall(false);
 #else
   return -1;
 #endif
@@ -123,6 +124,11 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
     return RunServer(
         std::make_unique<UpdateService>(base::MakeRefCounted<Configurator>()));
   }
+#endif
+
+#if defined(OS_WIN)
+  if (command_line->HasSwitch(kComServiceSwitch))
+    return ServiceMain::RunComService(command_line);
 #endif
 
   if (command_line->HasSwitch(kCrashMeSwitch)) {

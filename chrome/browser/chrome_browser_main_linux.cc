@@ -24,7 +24,9 @@
 #include "media/audio/audio_manager.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if !defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS)
+#include "chrome/installer/util/google_update_settings.h"
+#else
 #include "base/command_line.h"
 #include "base/linux_util.h"
 #include "chrome/common/chrome_paths_internal.h"
@@ -81,10 +83,23 @@ void ChromeBrowserMainPartsLinux::PreProfileInit() {
 void ChromeBrowserMainPartsLinux::PostProfileInit() {
   ChromeBrowserMainPartsPosix::PostProfileInit();
 
-  bool enabled = (crash_reporter::IsCrashpadEnabled() &&
-                  crash_reporter::GetUploadsEnabled()) ||
-                 breakpad::IsCrashReporterEnabled();
-  g_browser_process->metrics_service()->RecordBreakpadRegistration(enabled);
+  bool breakpad_registered;
+  if (crash_reporter::IsCrashpadEnabled()) {
+    // If we're using crashpad, there's no breakpad and crashpad is always
+    // registered as a crash handler. Since setting |breakpad_registered| to
+    // true all the time isn't useful, we overload the meaning of the breakpad
+    // registration metric to mean "is crash reporting enabled", since that's
+    // what breakpad registration effectively meant in the days before crashpad.
+#if defined(OS_CHROMEOS)
+    breakpad_registered = GoogleUpdateSettings::GetCollectStatsConsent();
+#else
+    breakpad_registered = crash_reporter::GetUploadsEnabled();
+#endif
+  } else {
+    breakpad_registered = breakpad::IsCrashReporterEnabled();
+  }
+  g_browser_process->metrics_service()->RecordBreakpadRegistration(
+      breakpad_registered);
 }
 
 void ChromeBrowserMainPartsLinux::PostMainMessageLoopStart() {

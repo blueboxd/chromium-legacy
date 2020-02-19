@@ -1,0 +1,16 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("ui") {
+  sources = [
+    "consent_view_controller.h",
+    "consent_view_controller.mm",
+  ]
+  deps = [
+    "//ios/chrome/common/ui/confirmation_alert",
+    "//ios/chrome/credential_provider_extension/ui/resources",
+  ]
+  libs = [ "UIKit.framework" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}

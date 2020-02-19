@@ -450,9 +450,6 @@
 <translation id="4521489764227272523">Izbrani podatki so bili odstranjeni iz Chroma in sinhroniziranih naprav.
 
 V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in dejavnosti iz drugih Googlovih storitev, na <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
-<translation id="4527374721149092498">Preberite več o temah na spletnih mestih, ne da bi vam bilo treba zapustiti stran. Funkcija »Iskanje z dotikom« pošlje besedo in njeno sobesedilo Iskanju Google in vrne definicije, slike, rezultate iskanja in druge podrobnosti.
-
-Dotaknite se poljubne besede, če želite ustvariti iskanje zanjo. Če želite prilagoditi iskalno poizvedbo, jo za dalj časa pritisnite, da jo izberete. Če želite izboljšati iskanje, s podrsanjem odprite podokno, dotaknite se ikone za razširitev, da odprete nov zavihek, nato pa se dotaknite iskalnega polja.</translation>
 <translation id="4532845899244822526">Izbira mape</translation>
 <translation id="4538018662093857852">Vklop lahkega načina</translation>
 <translation id="4550003330909367850">Če si želite ogledati geslo ali ga kopirati sem, v napravi nastavite zaklepanje zaslona.</translation>
@@ -668,7 +665,6 @@ Dotaknite se poljubne besede, če želite ustvariti iskanje zanjo. Če želite p
 <translation id="604996488070107836">Prenos datoteke <ph name="FILE_NAME" /> ni uspel zaradi neznane napake.</translation>
 <translation id="605721222689873409">LL</translation>
 <translation id="6064125863973209585">Dokončani prenosi</translation>
-<translation id="6075798973483050474">Urejanje domače strani</translation>
 <translation id="6092062101542170135">Če želite nadaljevati, v nastavitvah za Android vklopite tehnologijo NFC</translation>
 <translation id="60923314841986378">Še <ph name="HOURS" /> h</translation>
 <translation id="6108923351542677676">Poteka nastavitev …</translation>
@@ -691,9 +687,6 @@ Dotaknite se poljubne besede, če želite ustvariti iskanje zanjo. Če želite p
 <translation id="6232535412751077445">Če omogočite možnost »Ne sledi«, bo zahteva vključena v vaš promet brskanja. Učinek je odvisen od odziva spletnega mesta na zahtevo in od tega, kako si zahtevo razlaga.
 
 Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažejo oglase, ki ne temeljijo na drugih spletnih mestih, ki ste jih obiskali. Veliko spletnih mest bo še vedno zbiralo in uporabljalo vaše podatke o brskanju, na primer za izboljšanje varnosti, zagotavljanje vsebine, oglasov in priporočil ter za pridobivanje statističnih podatkov za poročanje.</translation>
-<translation id="6238003486329291387">Preberite več o temah na spletnih mestih, ne da bi vam bilo treba zapustiti stran. Funkcija »Iskanje z dotikom« pošlje besedo in njeno sobesedilo Iskanju Google in vrne definicije, slike, rezultate iskanja in druge podrobnosti.
-
-Za dalj časa pritisnite poljubno besedo, če želite ustvariti iskanje zanjo. Če želite izboljšati iskanje, prilagodite izbor. Prav tako lahko s podrsanjem odprete podokno, se dotaknete ikone za razširitev, da odprete nov zavihek, nato pa se dotaknete iskalnega polja.</translation>
 <translation id="624789221780392884">Posodobitev je pripravljena</translation>
 <translation id="6255999984061454636">Predlogi za vsebino</translation>
 <translation id="6270391203985052864">Spletna mesta vas lahko vprašajo, ali želite, da vam pošiljajo obvestila</translation>

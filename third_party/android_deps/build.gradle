@@ -125,7 +125,7 @@ dependencies {
     // buildCompile targets have supports_android = false.
     buildCompile "com.google.guava:guava:27.0.1-jre"
 
-    def daggerVersion = '2.17'
+    def daggerVersion = '2.26'
     compile "com.google.dagger:dagger:${daggerVersion}"
     buildCompile "com.google.dagger:dagger-compiler:${daggerVersion}"
 

@@ -355,6 +355,14 @@ void BrowserContext::ForEachStoragePartition(
   partition_map->ForEach(std::move(callback));
 }
 
+size_t BrowserContext::GetStoragePartitionCount(
+    BrowserContext* browser_context) {
+  StoragePartitionImplMap* partition_map =
+      static_cast<StoragePartitionImplMap*>(
+          browser_context->GetUserData(kStoragePartitionMapKeyName));
+  return partition_map ? partition_map->size() : 0;
+}
+
 StoragePartition* BrowserContext::GetDefaultStoragePartition(
     BrowserContext* browser_context) {
   return GetStoragePartition(browser_context, nullptr);

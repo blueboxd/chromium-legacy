@@ -35,6 +35,7 @@ js_library("bluetooth_page") {
 js_library("bluetooth_subpage") {
   deps = [
     ":bluetooth_system_on_extensions",
+    "..:metrics_recorder",
     "..:os_route",
     "../..:router",
     "//ui/webui/resources/cr_components/chromeos:bluetooth_dialog",

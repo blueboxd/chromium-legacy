@@ -13,7 +13,7 @@ namespace ui {
 struct AXActionData;
 struct AXNodeData;
 struct AXTreeData;
-}
+}  // namespace ui
 
 namespace views {
 

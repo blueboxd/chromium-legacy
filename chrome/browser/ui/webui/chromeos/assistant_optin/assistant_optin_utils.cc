@@ -226,7 +226,8 @@ void RecordActivityControlConsent(Profile* profile,
                                   bool opted_in) {
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
   // This function doesn't care about browser sync consent.
-  DCHECK(identity_manager->HasUnconsentedPrimaryAccount());
+  DCHECK(
+      identity_manager->HasPrimaryAccount(signin::ConsentLevel::kNotRequired));
   const CoreAccountId account_id =
       identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kNotRequired);
 

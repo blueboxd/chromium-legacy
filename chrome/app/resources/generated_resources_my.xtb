@@ -3360,6 +3360,7 @@
 <translation id="5689516760719285838">တည်နေရာ</translation>
 <translation id="56907980372820799">လင့် ဒေတာ</translation>
 <translation id="5691511426247308406">မိသားစု</translation>
+<translation id="5691772641933328258">လက်ဗွေကို မသိပါ</translation>
 <translation id="5692183275898619210">ပုံနှိပ်ထုတ်ယူပြီးပြီ</translation>
 <translation id="5696143504434933566">"<ph name="EXTENSION_NAME" />" သည် အလွဲသုံးစားလုပ်ကြောင်း တိုင်ကြားရန်</translation>
 <translation id="5696679855467848181">လက်ရှိအသုံးပြုနေသည့် PPD ဖိုင်− <ph name="PPD_NAME" /></translation>
@@ -5661,7 +5662,6 @@
 <translation id="8864458770072227512"><ph name="EMAIL" /> ကို ဤစက်ပစ္စည်းမှနေ၍ ဖယ်ရှားလိုက်ပါပြီ</translation>
 <translation id="8867228703146808825">တည်ဆောက်ပုံအသေးစိတ်ကို ကလစ်ဘုတ်သို့ မိတ္တူကူးရန်</translation>
 <translation id="8868626022555786497">အသုံးပြုနေသည်</translation>
-<translation id="8870318296973696995">ပင်မ စာမျက်နှာ</translation>
 <translation id="8870413625673593573">မကြာမီက ပိတ်ခဲ့</translation>
 <translation id="8871551568777368300">စီမံခန့်ခွဲသူမှ တွယ်ထားသည်</translation>
 <translation id="8871696467337989339">သင်သည် မထောက်ပံ့သည့် command-line အလံအားအသုံးပြုနေသည်: <ph name="BAD_FLAG" />။ တည်ငြိမ်မှုနှင့် လုံခြုံမှု၌ ခံရပါမည်။</translation>

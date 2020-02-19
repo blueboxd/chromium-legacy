@@ -83,6 +83,14 @@ class OptimizationGuideNavigationData {
       optimization_guide::proto::OptimizationTarget optimization_target,
       double model_prediction_score);
 
+  // Returns the value of the model feature if it has been provided.
+  base::Optional<float> GetValueForModelFeatureForTesting(
+      optimization_guide::proto::ClientModelFeature model_feature);
+  // Sets the value provided to the model for a particular model feature.
+  void SetValueForModelFeature(
+      optimization_guide::proto::ClientModelFeature model_feature,
+      float value);
+
   // Whether the hint cache had a hint for the navigation before commit.
   base::Optional<bool> has_hint_before_commit() const {
     return has_hint_before_commit_;
@@ -194,6 +202,10 @@ class OptimizationGuideNavigationData {
   // evaluation.
   base::flat_map<optimization_guide::proto::OptimizationTarget, double>
       optimization_target_model_prediction_scores_;
+
+  // The features used to make a prediction for any target.
+  base::flat_map<optimization_guide::proto::ClientModelFeature, float>
+      prediction_model_features_;
 
   // Whether the hint cache had a hint for the navigation before commit.
   base::Optional<bool> has_hint_before_commit_;

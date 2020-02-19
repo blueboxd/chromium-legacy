@@ -21,8 +21,6 @@
 #include "base/strings/safe_sprintf.h"
 #include "cc/base/math_util.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/permissions/permission_request_impl.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
@@ -32,6 +30,8 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_request_impl.h"
+#include "components/permissions/permission_request_manager.h"
 #include "content/public/test/browser_test_utils.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/dns/mock_host_resolver.h"
@@ -1298,11 +1298,11 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestPermissionBubble) {
   // Fire a geolocation permission request, which should show a permission
   // request bubble resulting in top chrome unhiding.
   auto decided = [](ContentSetting) {};
-  PermissionRequestImpl permission_request(
+  permissions::PermissionRequestImpl permission_request(
       url, ContentSettingsType::GEOLOCATION, true /* user_gesture */,
       base::BindRepeating(decided), base::DoNothing() /* delete_callback */);
   auto* permission_manager =
-      PermissionRequestManager::FromWebContents(active_contents);
+      permissions::PermissionRequestManager::FromWebContents(active_contents);
   TopControlsShownRatioWaiter waiter(top_controls_slide_controller());
   permission_manager->AddRequest(&permission_request);
   waiter.WaitForRatio(1.f);

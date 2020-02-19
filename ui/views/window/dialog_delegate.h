@@ -321,8 +321,7 @@ class VIEWS_EXPORT DialogDelegate : public WidgetDelegate {
 // to call View's GetWidget() for the common case where a DialogDelegate
 // implementation is-a View. Note that DialogDelegateView is not owned by
 // view's hierarchy and is expected to be deleted on DeleteDelegate call.
-class VIEWS_EXPORT DialogDelegateView : public DialogDelegate,
-                                        public View {
+class VIEWS_EXPORT DialogDelegateView : public DialogDelegate, public View {
  public:
   DialogDelegateView();
   ~DialogDelegateView() override;

@@ -11,13 +11,13 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/permissions/permission_request_manager.h"
+#include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
@@ -140,10 +140,13 @@ using RegisterProtocolHandlerExtensionBrowserTest =
     extensions::ExtensionBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(RegisterProtocolHandlerExtensionBrowserTest, Basic) {
-  PermissionRequestManager* manager = PermissionRequestManager::FromWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents());
-  auto prompt_factory = std::make_unique<MockPermissionPromptFactory>(manager);
-  prompt_factory->set_response_type(PermissionRequestManager::ACCEPT_ALL);
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(
+          browser()->tab_strip_model()->GetActiveWebContents());
+  auto prompt_factory =
+      std::make_unique<permissions::MockPermissionPromptFactory>(manager);
+  prompt_factory->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
 
   const extensions::Extension* extension =
       LoadExtension(test_data_dir_.AppendASCII("protocol_handler"));

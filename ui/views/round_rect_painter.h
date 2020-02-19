@@ -13,7 +13,7 @@
 namespace gfx {
 class Canvas;
 class Size;
-}
+}  // namespace gfx
 
 namespace views {
 

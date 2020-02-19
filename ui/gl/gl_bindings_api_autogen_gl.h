@@ -311,6 +311,8 @@ void glDeleteBuffersARBFn(GLsizei n, const GLuint* buffers) override;
 void glDeleteFencesAPPLEFn(GLsizei n, const GLuint* fences) override;
 void glDeleteFencesNVFn(GLsizei n, const GLuint* fences) override;
 void glDeleteFramebuffersEXTFn(GLsizei n, const GLuint* framebuffers) override;
+void glDeleteMemoryObjectsEXTFn(GLsizei n,
+                                const GLuint* memoryObjects) override;
 void glDeletePathsNVFn(GLuint path, GLsizei range) override;
 void glDeleteProgramFn(GLuint program) override;
 void glDeleteProgramPipelinesFn(GLsizei n, const GLuint* pipelines) override;

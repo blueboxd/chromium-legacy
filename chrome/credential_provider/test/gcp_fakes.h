@@ -32,6 +32,13 @@ class WaitableEvent;
 
 namespace credential_provider {
 
+enum class FAILEDOPERATIONS {
+  ADD_USER,
+  CHANGE_PASSWORD,
+  GET_USER_FULLNAME,
+  SET_USER_FULLNAME
+};
+
 void InitializeRegistryOverrideForTesting(
     registry_util::RegistryOverrideManager* registry_override);
 
@@ -121,14 +128,6 @@ class FakeOSUserManager : public OSUserManager {
 
   bool IsDeviceDomainJoined() override;
 
-  void SetShouldFailUserCreation(bool should_fail) {
-    should_fail_user_creation_ = should_fail;
-  }
-
-  void SetShouldUserCreationFailureReason(HRESULT hr) {
-    fail_user_creation_hr_ = hr;
-  }
-
   void SetIsDeviceDomainJoined(bool is_device_domain_joined) {
     is_device_domain_joined_ = is_device_domain_joined;
   }
@@ -186,23 +185,23 @@ class FakeOSUserManager : public OSUserManager {
   size_t GetUserCount() const { return username_to_info_.size(); }
   std::vector<std::pair<base::string16, base::string16>> GetUsers() const;
 
-  void ShouldFailChangePassword(bool status, HRESULT failure_reason) {
-    fail_change_password_ = status;
-    if (status)
-      failed_change_password_hr_ = failure_reason;
+  void SetFailureReason(FAILEDOPERATIONS failed_operaetion,
+                        HRESULT failure_reason) {
+    failure_reasons_[failed_operaetion] = failure_reason;
   }
 
-  bool DoesPasswordChangeFail() { return fail_change_password_; }
+  bool DoesOperationFail(FAILEDOPERATIONS op) {
+    return failure_reasons_.find(op) != failure_reasons_.end();
+  }
+
+  void RestoreOperation(FAILEDOPERATIONS op) { failure_reasons_.erase(op); }
 
  private:
   OSUserManager* original_manager_;
   DWORD next_rid_ = 0;
   std::map<base::string16, UserInfo> username_to_info_;
-  bool should_fail_user_creation_ = false;
   bool is_device_domain_joined_ = false;
-  bool fail_change_password_ = false;
-  HRESULT failed_change_password_hr_ = E_FAIL;
-  HRESULT fail_user_creation_hr_ = E_FAIL;
+  std::map<FAILEDOPERATIONS, HRESULT> failure_reasons_;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

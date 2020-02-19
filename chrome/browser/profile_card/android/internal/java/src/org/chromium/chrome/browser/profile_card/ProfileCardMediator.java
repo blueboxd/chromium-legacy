@@ -36,4 +36,8 @@ class ProfileCardMediator {
     public void show() {
         mModel.set(IS_VISIBLE, true);
     }
+
+    public void hide() {
+        mModel.set(IS_VISIBLE, false);
+    }
 }

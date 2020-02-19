@@ -32,6 +32,7 @@
 #include "ios/web/public/thread/web_thread.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/pref_names.h"
+#include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #import "ios/web_view/internal/sync/web_view_device_info_sync_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_model_type_store_service_factory.h"
 #import "ios/web_view/internal/sync/web_view_profile_invalidation_provider_factory.h"
@@ -90,6 +91,11 @@ WebViewSyncClient::~WebViewSyncClient() {}
 PrefService* WebViewSyncClient::GetPrefService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   return browser_state_->GetPrefs();
+}
+
+signin::IdentityManager* WebViewSyncClient::GetIdentityManager() {
+  DCHECK_CURRENTLY_ON(web::WebThread::UI);
+  return WebViewIdentityManagerFactory::GetForBrowserState(browser_state_);
 }
 
 base::FilePath WebViewSyncClient::GetLocalSyncBackendFolder() {

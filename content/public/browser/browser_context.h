@@ -139,6 +139,9 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
       base::RepeatingCallback<void(StoragePartition*)>;
   static void ForEachStoragePartition(BrowserContext* browser_context,
                                       StoragePartitionCallback callback);
+  // Returns the number of StoragePartitions that exist for the given
+  // |browser_context|.
+  static size_t GetStoragePartitionCount(BrowserContext* browser_context);
   static void AsyncObliterateStoragePartition(
       BrowserContext* browser_context,
       const std::string& partition_domain,

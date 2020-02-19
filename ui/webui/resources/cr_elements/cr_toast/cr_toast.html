@@ -42,6 +42,14 @@
         z-index: 1;
       }
 
+      :host-context([dir=ltr]) {
+        left: 0;
+      }
+
+      :host-context([dir=rtl]) {
+        right: 0;
+      }
+
       :host([open]) {
         opacity: 1;
         transform: translateY(0);

@@ -71,6 +71,18 @@ typedef struct UpdaterClass UpdaterClass;
 #endif 	/* __UpdaterClass_FWD_DEFINED__ */
 
 
+#ifndef __UpdaterServiceClass_FWD_DEFINED__
+#define __UpdaterServiceClass_FWD_DEFINED__
+
+#ifdef __cplusplus
+typedef class UpdaterServiceClass UpdaterServiceClass;
+#else
+typedef struct UpdaterServiceClass UpdaterServiceClass;
+#endif /* __cplusplus */
+
+#endif 	/* __UpdaterServiceClass_FWD_DEFINED__ */
+
+
 /* header files for imported files */
 #include "oaidl.h"
 #include "ocidl.h"
@@ -187,6 +199,14 @@ EXTERN_C const CLSID CLSID_UpdaterClass;
 
 class DECLSPEC_UUID("158428A4-6014-4978-83BA-9FAD0DABE791")
 UpdaterClass;
+#endif
+
+EXTERN_C const CLSID CLSID_UpdaterServiceClass;
+
+#ifdef __cplusplus
+
+class DECLSPEC_UUID("415FD747-D79E-42D7-93AC-1BA6E5FD4E93")
+UpdaterServiceClass;
 #endif
 #endif /* __UpdaterLib_LIBRARY_DEFINED__ */
 

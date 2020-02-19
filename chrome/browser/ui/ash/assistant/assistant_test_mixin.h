@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -66,6 +67,17 @@ class AssistantTestMixin : public InProcessBrowserTestMixin {
   // Submits a text query. Can only be used when the Assistant UI is visible and
   // displaying the query input text field.
   void SendTextQuery(const std::string& query);
+
+  // Check if the |expected_value| is equal to the result of running
+  // |value_callback|.  This method will block and continuously try the
+  // comparison above until it succeeds, or timeout.
+  //
+  // NOTE: This is a template method. If you need to use it with a new type,
+  // you may see a link error. You will need to manually instantiate for the
+  // new type.  Please see .cc file for examples.
+  template <typename T>
+  void ExpectResult(T expected_value,
+                    base::RepeatingCallback<T()> value_callback);
 
   // Waits until a card response is rendered that contains the given text.
   // If |expected_response| is not received in |wait_timeout|, this will fail

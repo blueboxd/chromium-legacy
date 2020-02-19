@@ -134,8 +134,10 @@ class VIEWS_EXPORT GridLayout : public LayoutManager {
   void AddPaddingRow(float vertical_resize, int size);
 
   // A convenience for AddPaddingRow followed by StartRow.
-  void StartRowWithPadding(float vertical_resize, int column_set_id,
-                           float padding_resize, int padding);
+  void StartRowWithPadding(float vertical_resize,
+                           int column_set_id,
+                           float padding_resize,
+                           int padding);
 
   // Starts a new row with the specified column set and height (0 for
   // unspecified height).

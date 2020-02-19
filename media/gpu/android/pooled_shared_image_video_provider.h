@@ -97,9 +97,6 @@ class MEDIA_GPU_EXPORT PooledSharedImageVideoProvider
     ~PendingRequest();
     ImageSpec spec;
     ImageReadyCB cb;
-    std::unique_ptr<CodecOutputBuffer> output_buffer;
-    scoped_refptr<gpu::TextureOwner> texture_owner;
-    PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb;
   };
 
   // Called by |provider_| when a new image is created.

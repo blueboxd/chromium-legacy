@@ -152,7 +152,9 @@ void NativeMenuWin::AddSeparatorItemAt(int menu_index, int model_index) {
   InsertMenuItem(menu_, menu_index, TRUE, &mii);
 }
 
-void NativeMenuWin::SetMenuItemState(int menu_index, bool enabled, bool checked,
+void NativeMenuWin::SetMenuItemState(int menu_index,
+                                     bool enabled,
+                                     bool checked,
                                      bool is_default) {
   if (IsSeparatorItemAt(menu_index))
     return;
@@ -205,8 +207,7 @@ void NativeMenuWin::UpdateMenuItemInfoForString(MENUITEMINFO* mii,
 
   // Give Windows a pointer to the label string.
   mii->fMask |= MIIM_STRING;
-  mii->dwTypeData =
-      const_cast<wchar_t*>(items_[model_index]->label.c_str());
+  mii->dwTypeData = const_cast<wchar_t*>(items_[model_index]->label.c_str());
 }
 
 void NativeMenuWin::ResetNativeMenu() {

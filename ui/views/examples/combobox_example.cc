@@ -36,8 +36,7 @@ class ComboboxModelExample : public ui::ComboboxModel {
 
 }  // namespace
 
-ComboboxExample::ComboboxExample() : ExampleBase("Combo Box") {
-}
+ComboboxExample::ComboboxExample() : ExampleBase("Combo Box") {}
 
 ComboboxExample::~ComboboxExample() = default;
 

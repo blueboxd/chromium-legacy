@@ -101,7 +101,7 @@ void TooltipManagerAura::UpdateTooltip() {
   }
 }
 
-void TooltipManagerAura::TooltipTextChanged(View* view)  {
+void TooltipManagerAura::TooltipTextChanged(View* view) {
   aura::Window* root_window = GetWindow()->GetRootWindow();
   if (wm::GetTooltipClient(root_window)) {
     gfx::Point view_point =

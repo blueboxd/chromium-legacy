@@ -41,6 +41,11 @@ class NGBaseLayoutAlgorithmTest
   std::pair<scoped_refptr<const NGPhysicalBoxFragment>, NGConstraintSpace>
   RunBlockLayoutAlgorithmForElement(Element* element);
 
+  scoped_refptr<const NGPhysicalBoxFragment> RunFieldsetLayoutAlgorithm(
+      NGBlockNode node,
+      const NGConstraintSpace& space,
+      const NGBreakToken* break_token = nullptr);
+
   scoped_refptr<const NGPhysicalBoxFragment> GetBoxFragmentByElementId(
       const char*);
 

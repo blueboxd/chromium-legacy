@@ -17,6 +17,7 @@ import re
 from blinkpy.common.system.log_utils import configure_logging
 from blinkpy.web_tests.models import test_expectations
 from blinkpy.web_tests.models.typ_types import ResultType
+from collections import defaultdict
 
 _log = logging.getLogger(__name__)
 
@@ -25,7 +26,10 @@ _log = logging.getLogger(__name__)
 HARNESS_ERROR = 1
 # The test has at least one failing subtest in its baseline file.
 SUBTEST_FAIL = 1 << 1
-# Next status: 1 << 2
+# The test should be skipped
+SKIP_TEST = 1 << 2
+
+# Next status: 1 << 3
 
 
 class WPTMetadataBuilder(object):
@@ -64,20 +68,10 @@ class WPTMetadataBuilder(object):
             import shutil
             shutil.rmtree(self.metadata_output_dir)
 
-        failing_baseline_tests = self.get_tests_with_baselines()
-        _log.info("Found %d tests with failing baselines", len(failing_baseline_tests))
-        for test_name, test_status_bitmap in failing_baseline_tests:
-            filename, file_contents = self.get_metadata_filename_and_contents(test_name, 'FAIL', test_status_bitmap)
-            if not filename or not file_contents:
-                continue
-            self._write_to_file(filename, file_contents)
-
-        skipped_tests = self.get_test_names_to_skip()
-        _log.info("Found %d tests with skip expectations", len(skipped_tests))
-        for test_name in skipped_tests:
-            if test_name in failing_baseline_tests:
-                _log.error("Test %s has a baseline but is also skipped" % test_name)
-            filename, file_contents = self.get_metadata_filename_and_contents(test_name, 'SKIP')
+        tests_for_metadata = self.get_tests_needing_metadata()
+        _log.info("Found %d tests requiring metadata", len(tests_for_metadata))
+        for test_name, test_status_bitmap in tests_for_metadata.items():
+            filename, file_contents = self.get_metadata_filename_and_contents(test_name, test_status_bitmap)
             if not filename or not file_contents:
                 continue
             self._write_to_file(filename, file_contents)
@@ -97,46 +91,62 @@ class WPTMetadataBuilder(object):
         with open(filename, "a") as metadata_file:
             metadata_file.write(file_contents)
 
-    def get_test_names_to_skip(self):
-        """Determines which tests in the expectation file need metadata.
+    def get_tests_needing_metadata(self):
+        """Determines which tests need metadata files.
+
+        This function loops over the tests to be run and checks whether each test
+        has an expectation (eg: in TestExpectations) and/or a baseline (ie:
+        test-name-expected.txt). The existence of those things will determine
+        the information that will be emitted into the tests's metadata file.
 
         Returns:
-            A list of test names that need metadata.
+            A dict. The key is the string test name and the value is an integer
+            bitmap of statuses for the test.
         """
-        return self.expectations.get_tests_with_expected_result(ResultType.Skip)
+        tests_needing_metadata = defaultdict(int)
+        for test_name in self.port.tests(paths=["external/wpt"]):
+            # First check for expectations. If a test is skipped then we do not
+            # look for more statuses
+            expectation_line = self.expectations.get_expectations(test_name)
+            test_statuses = expectation_line.results
+            self._handle_test_with_expectation(test_name, test_statuses, tests_needing_metadata)
+            if self._test_was_skipped(test_name, tests_needing_metadata):
+                # Do not consider other statuses if a test is skipped
+                continue
 
-    def get_tests_with_baselines(self):
-        """Determines which tests have baselines that need metadata.
-
-        This is currently tests with baseline files containing failing subtests,
-        or tests with harness errors.
-        Failing subtests are those with statuses in (FAIL, NOTRUN, TIMEOUT).
-
-        Returns:
-            A list of pairs, the first being the test name, and the second being
-            a an integer indicating the status. The status is a bitmap of
-            constants |HARNESS_ERROR| and/or |SUBTEST_FAILURE|.
-        """
-        failing_baseline_tests = []
-        for test in self.port.tests(paths=['external/wpt']):
-            test_baseline = self.port.expected_text(test)
+            # Check if the test has a baseline
+            test_baseline = self.port.expected_text(test_name)
             if not test_baseline:
                 continue
-            status_bitmap = 0
-            if re.search("^(FAIL|NOTRUN|TIMEOUT)", test_baseline, re.MULTILINE):
-                status_bitmap |= SUBTEST_FAIL
-            if re.search("^Harness Error\.", test_baseline, re.MULTILINE):
-                status_bitmap |= HARNESS_ERROR
-            if status_bitmap > 0:
-                failing_baseline_tests.append([test, status_bitmap])
-            else:
-                # Treat this as an error because we don't want it to happen.
-                # Either the non-FAIL statuses need to be handled here, or the
-                # baseline is all PASS which should just be deleted.
-                _log.error("Test %s has a non-FAIL baseline" % test)
-        return failing_baseline_tests
+            self._handle_test_with_baseline(test_name, test_baseline, tests_needing_metadata)
+        return tests_needing_metadata
 
-    def get_metadata_filename_and_contents(self, chromium_test_name, test_status, test_status_bitmap=0):
+    def _handle_test_with_expectation(self, test_name, test_statuses, status_dict):
+        """Handles a single test expectation and updates |status_dict|."""
+        # TODO(lpz): This will handle more statuses in the future, such as flakes.
+        if ResultType.Skip in test_statuses:
+            status_dict[test_name] |= SKIP_TEST
+
+    def _test_was_skipped(self, test_name, status_dict):
+        """Returns whether |test_name| is marked as skipped in |status_dict|."""
+        return test_name in status_dict and (status_dict[test_name] & SKIP_TEST)
+
+    def _handle_test_with_baseline(self, test_name, test_baseline, status_dict):
+        """Handles a single test baseline and updates |status_dict|."""
+        status_bitmap = 0
+        if re.search(r"^(FAIL|NOTRUN|TIMEOUT)", test_baseline, re.MULTILINE):
+            status_bitmap |= SUBTEST_FAIL
+        if re.search(r"^Harness Error\.", test_baseline, re.MULTILINE):
+            status_bitmap |= HARNESS_ERROR
+        if status_bitmap > 0:
+            status_dict[test_name] |= status_bitmap
+        else:
+            # Treat this as an error because we don't want it to happen.
+            # Either the non-FAIL statuses need to be handled here, or the
+            # baseline is all PASS which should just be deleted.
+            _log.error("Test %s has a non-FAIL baseline" % test_name)
+
+    def get_metadata_filename_and_contents(self, chromium_test_name, test_status_bitmap=0):
         """Determines the metadata filename and contents for the specified test.
 
         The metadata filename is derived from the test name but will differ if
@@ -146,9 +156,6 @@ class WPTMetadataBuilder(object):
         Args:
             chromium_test_name: A Chromium test name from the expectation file,
                 which starts with `external/wpt`.
-            test_status: The expected status of this test. Possible values:
-                'SKIP' - skip this test (or directory).
-                'FAIL' - the test is expected to fail, not applicable to dirs.
             test_status_bitmap: An integer containing additional data about the
                 status, such as enumerating flaky statuses, or whether a test has
                 a combination of harness error and subtest failure.
@@ -158,8 +165,6 @@ class WPTMetadataBuilder(object):
             the second is the contents to write to that file. Or None if the
             test does not need a metadata file.
         """
-        assert test_status in ('SKIP', 'FAIL')
-
         # Ignore expectations for non-WPT tests
         if not chromium_test_name or not chromium_test_name.startswith('external/wpt'):
             return None, None
@@ -200,18 +205,14 @@ class WPTMetadataBuilder(object):
             test_file_parts[-1] += ".ini"
             metadata_filename = os.path.join(self.metadata_output_dir,
                                              *test_file_parts)
-            _log.debug("Creating a test ini file %s with status %s",
-                       metadata_filename, test_status)
+            _log.debug("Creating a test ini file %s with status_bitmap %s", metadata_filename, test_status_bitmap)
 
             # The contents of the metadata file is two lines:
             # 1. the last part of the WPT test path (ie the filename) inside
             #    square brackets - this could differ from the metadata filename.
             # 2. an indented line with the test status and reason
             wpt_test_file_name_part = wpt_test_name_parts[-1]
-            if test_status == 'SKIP':
-                metadata_file_contents = self._get_test_disabled_string(wpt_test_file_name_part)
-            elif test_status == 'FAIL':
-                metadata_file_contents = self._get_test_failed_string(wpt_test_file_name_part, test_status_bitmap)
+            metadata_file_contents = self._get_test_failed_string(wpt_test_file_name_part, test_status_bitmap)
 
         return metadata_filename, metadata_file_contents
 
@@ -223,6 +224,15 @@ class WPTMetadataBuilder(object):
 
     def _get_test_failed_string(self, test_name, test_status_bitmap):
         result = "[%s]\n" % test_name
+
+        # A skipped test is a little special in that it doesn't happen along with
+        # any other status. So we compare directly against SKIP_TEST and also
+        # return right away.
+        if test_status_bitmap == SKIP_TEST:
+            result += "  disabled: wpt_metadata_builder.py\n"
+            return result
+
+        # Other test statuses can exist together.
         if test_status_bitmap & HARNESS_ERROR:
             result += "  expected: ERROR\n"
         if test_status_bitmap & SUBTEST_FAIL:

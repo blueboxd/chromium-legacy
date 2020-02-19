@@ -154,9 +154,7 @@ TEST_F(StyledLabelTest, BasicWrapping) {
   // Also respect the border.
   styled()->SetBorder(CreateEmptyBorder(3, 3, 3, 3));
   styled()->SetBounds(
-      0,
-      0,
-      styled()->GetInsets().width() + label_preferred_size.width(),
+      0, 0, styled()->GetInsets().width() + label_preferred_size.width(),
       styled()->GetInsets().height() + 2 * label_preferred_size.height());
   styled()->Layout();
   ASSERT_EQ(2u, styled()->children().size());
@@ -432,8 +430,8 @@ TEST_F(StyledLabelTest, StyledRangeWithTooltip) {
                           StyledLabel::RangeStyleInfo::CreateForLink());
 
   // Break line inside the range with the tooltip.
-  Label label(ASCIIToUTF16(
-       text + tooltip_text.substr(0, tooltip_text.size() - 3)));
+  Label label(
+      ASCIIToUTF16(text + tooltip_text.substr(0, tooltip_text.size() - 3)));
   gfx::Size label_preferred_size = label.GetPreferredSize();
   int pref_height = styled()->GetHeightForWidth(label_preferred_size.width());
   EXPECT_EQ(label_preferred_size.height() * 3,
@@ -471,9 +469,7 @@ TEST_F(StyledLabelTest, SetTextContextAndDefaultStyle) {
   Label label(ASCIIToUTF16(text), style::CONTEXT_DIALOG_TITLE,
               style::STYLE_DISABLED);
 
-  styled()->SetBounds(0,
-                      0,
-                      label.GetPreferredSize().width(),
+  styled()->SetBounds(0, 0, label.GetPreferredSize().width(),
                       label.GetPreferredSize().height());
 
   // Make sure we have the same sizing as a label with the same style.

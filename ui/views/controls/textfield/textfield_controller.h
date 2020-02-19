@@ -37,8 +37,7 @@ class VIEWS_EXPORT TextfieldController {
   // Called to get notified about keystrokes in the edit.
   // Returns true if the message was handled and should not be processed
   // further. If it returns false the processing continues.
-  virtual bool HandleKeyEvent(Textfield* sender,
-                              const ui::KeyEvent& key_event);
+  virtual bool HandleKeyEvent(Textfield* sender, const ui::KeyEvent& key_event);
 
   // Called to get notified about mouse events in the edit.
   // Returns true if the message was handled and should not be processed

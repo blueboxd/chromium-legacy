@@ -17,7 +17,7 @@ class ScreenPositionClient;
 namespace test {
 class AuraTestHelper;
 }
-}
+}  // namespace aura
 
 namespace views {
 

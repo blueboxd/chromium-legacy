@@ -328,8 +328,8 @@ void Combobox::SetSelectedRow(int row) {
 }
 
 base::string16 Combobox::GetTextForRow(int row) {
-  return model()->IsItemSeparatorAt(row) ? base::string16() :
-                                           model()->GetItemAt(row);
+  return model()->IsItemSeparatorAt(row) ? base::string16()
+                                         : model()->GetItemAt(row);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -9,8 +9,7 @@
 namespace views {
 namespace test {
 
-SliderTestApi::SliderTestApi(Slider* slider) : slider_(slider) {
-}
+SliderTestApi::SliderTestApi(Slider* slider) : slider_(slider) {}
 
 SliderTestApi::~SliderTestApi() = default;
 

@@ -56,6 +56,12 @@ struct BatteryInfo {
   string model_name;
   // Current battery charge (Ah)
   double charge_now;
+  // Current battery current (A)
+  double current_now;
+  // Technology of the battery
+  string technology;
+  // Status of the battery
+  string status;
   // Information related to a Smart Battery. Included when the main battery is a
   // Smart Battery.
   SmartBatteryInfo? smart_battery_info;

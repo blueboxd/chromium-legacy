@@ -3355,6 +3355,7 @@
 <translation id="5689516760719285838">स्थान</translation>
 <translation id="56907980372820799">लिङ्क डाटा</translation>
 <translation id="5691511426247308406">परिवार</translation>
+<translation id="5691772641933328258">फिंगरप्रिन्ट पहिचान गरिएन</translation>
 <translation id="5692183275898619210">छाप्ने काम सम्पन्न भयो</translation>
 <translation id="5696143504434933566"><ph name="EXTENSION_NAME" /> को दुरुपयोगबारे रिपोर्ट गर्नुहोस्</translation>
 <translation id="5696679855467848181">हाल प्रयोगमा रहेको PPD फाइल: <ph name="PPD_NAME" /></translation>
@@ -5658,7 +5659,6 @@
 <translation id="8864458770072227512">यो यन्त्रबाट <ph name="EMAIL" /> हटाइयो</translation>
 <translation id="8867228703146808825">बिल्डसम्बन्धी विवरणहरू प्रतिलिपि गरेर क्लिपबोर्डमा राख्नुहोस्</translation>
 <translation id="8868626022555786497">प्रयोगमा रहेको</translation>
-<translation id="8870318296973696995">गृह पृष्ठ</translation>
 <translation id="8870413625673593573">हालै बन्द गरिएको</translation>
 <translation id="8871551568777368300">प्रशासकद्वारा पिन गरिएको</translation>
 <translation id="8871696467337989339">तपाईंले समर्थन  आदेश-नयाँ झण्डा उपयोग गर्दै छन् <ph name="BAD_FLAG" /> । स्थिरता र सुरक्षा भोग्नेछन्।</translation>

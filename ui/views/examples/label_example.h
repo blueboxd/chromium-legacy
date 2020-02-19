@@ -41,24 +41,24 @@ class VIEWS_EXAMPLES_EXPORT LabelExample : public ExampleBase,
                        const base::string16& new_contents) override;
 
  private:
-   // Add a customizable label and various controls to modify its presentation.
-   void AddCustomLabel(View* container);
+  // Add a customizable label and various controls to modify its presentation.
+  void AddCustomLabel(View* container);
 
-   // Creates and adds a combobox to the layout.
-   Combobox* AddCombobox(GridLayout* layout,
-                         const char* name,
-                         const char** strings,
-                         int count);
+  // Creates and adds a combobox to the layout.
+  Combobox* AddCombobox(GridLayout* layout,
+                        const char* name,
+                        const char** strings,
+                        int count);
 
-   Textfield* textfield_ = nullptr;
-   Combobox* alignment_ = nullptr;
-   Combobox* elide_behavior_ = nullptr;
-   Checkbox* multiline_ = nullptr;
-   Checkbox* shadows_ = nullptr;
-   Checkbox* selectable_ = nullptr;
-   Label* custom_label_ = nullptr;
+  Textfield* textfield_ = nullptr;
+  Combobox* alignment_ = nullptr;
+  Combobox* elide_behavior_ = nullptr;
+  Checkbox* multiline_ = nullptr;
+  Checkbox* shadows_ = nullptr;
+  Checkbox* selectable_ = nullptr;
+  Label* custom_label_ = nullptr;
 
-   DISALLOW_COPY_AND_ASSIGN(LabelExample);
+  DISALLOW_COPY_AND_ASSIGN(LabelExample);
 };
 
 }  // namespace examples

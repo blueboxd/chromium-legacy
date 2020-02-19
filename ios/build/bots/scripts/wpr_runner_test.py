@@ -9,6 +9,7 @@ import os
 import subprocess
 import unittest
 
+import iossim_util
 import test_runner
 import test_runner_test
 import wpr_runner
@@ -38,6 +39,8 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
               lambda a, b: True)
     self.mock(wpr_runner.WprProxySimulatorTestRunner,
               'copy_trusted_certificate', lambda a: True)
+    self.mock(iossim_util, 'get_simulator',
+              lambda a, b: 'E4E66320-177A-450A-9BA1-488D85B7278E')
 
   def test_app_not_found(self):
     """Ensures AppNotFoundError is raised."""
@@ -178,7 +181,7 @@ class WprProxySimulatorTestRunnerTest(test_runner_test.TestCase):
     self.mock(subprocess, 'Popen', popen)
 
     tr.xctest_path = 'fake.xctest'
-    cmd = tr.get_launch_command(test_filter=test_filter, invert=invert)
+    cmd = {'invert': invert, 'test_filter': test_filter}
     return tr._run(cmd=cmd, shards=1)
 
   def test_run_no_filter(self):

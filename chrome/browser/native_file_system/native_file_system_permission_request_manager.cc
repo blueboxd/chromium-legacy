@@ -7,8 +7,8 @@
 #include "base/command_line.h"
 #include "base/task/post_task.h"
 #include "chrome/browser/ui/browser_dialogs.h"
-#include "chrome/common/chrome_switches.h"
 #include "components/permissions/permission_util.h"
+#include "components/permissions/switches.h"
 #include "content/public/browser/browser_task_traits.h"
 
 bool operator==(
@@ -38,7 +38,7 @@ void NativeFileSystemPermissionRequestManager::AddRequest(
     RequestData data,
     base::OnceCallback<void(permissions::PermissionAction result)> callback) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDenyPermissionPrompts)) {
+          permissions::switches::kDenyPermissionPrompts)) {
     std::move(callback).Run(permissions::PermissionAction::DENIED);
     return;
   }

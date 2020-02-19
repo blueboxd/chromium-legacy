@@ -477,16 +477,25 @@ void AppActivityRegistry::Add(const AppId& app_id) {
 
 void AppActivityRegistry::SetAppState(const AppId& app_id, AppState app_state) {
   DCHECK(base::Contains(activity_registry_, app_id));
-  AppActivity& app_activity = activity_registry_.at(app_id).activity;
+  AppDetails& app_details = activity_registry_.at(app_id);
+  AppActivity& app_activity = app_details.activity;
   AppState previous_state = app_activity.app_state();
   app_activity.SetAppState(app_state);
 
   if (app_activity.app_state() == AppState::kLimitReached) {
+    bool was_active = false;
+    if (app_activity.is_active()) {
+      was_active = true;
+      app_details.active_windows.clear();
+      app_activity.SetAppInactive(base::Time::Now());
+    }
+
     for (auto& observer : app_state_observers_) {
       const base::Optional<AppLimit>& limit =
           activity_registry_.at(app_id).limit;
       DCHECK(limit->daily_limit());
-      observer.OnAppLimitReached(app_id, limit->daily_limit().value());
+      observer.OnAppLimitReached(app_id, limit->daily_limit().value(),
+                                 was_active);
     }
     return;
   }
@@ -654,9 +663,6 @@ void AppActivityRegistry::CheckTimeLimitForApp(const AppId& app_id) {
     if (ContributesToWebTimeLimit(app_id, GetAppState(app_id))) {
       WebTimeLimitReached(base::Time::Now());
     } else {
-      // Set app activity state as time limit reached.
-      details.active_windows.clear();
-      details.activity.SetAppInactive(base::Time::Now());
       SetAppState(app_id, AppState::kLimitReached);
     }
 
@@ -696,10 +702,6 @@ void AppActivityRegistry::WebTimeLimitReached(base::Time timestamp) {
     if (details.activity.app_state() == AppState::kLimitReached)
       return;
 
-    if (details.activity.is_active()) {
-      details.active_windows.clear();
-      details.activity.SetAppInactive(timestamp);
-    }
     SetAppState(app_id, AppState::kLimitReached);
   }
 }

@@ -175,6 +175,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   // The web origin to use for the WebSocket.
   const url::Origin origin_;
 
+  // For 3rd-party cookie permission checking.
+  net::SiteForCookies site_for_cookies_;
+
   // handshake_succeeded_ is used by WebSocketManager to manage counters for
   // per-renderer WebSocket throttling.
   bool handshake_succeeded_ = false;

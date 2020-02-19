@@ -336,10 +336,7 @@ class VIEWS_EXPORT TreeView : public View,
                  int* row);
 
   // Invoked to paint a single node.
-  void PaintRow(gfx::Canvas* canvas,
-                InternalNode* node,
-                int row,
-                int depth);
+  void PaintRow(gfx::Canvas* canvas, InternalNode* node, int row, int depth);
 
   // Paints the expand control given the specified nodes bounds.
   void PaintExpandControl(gfx::Canvas* canvas,

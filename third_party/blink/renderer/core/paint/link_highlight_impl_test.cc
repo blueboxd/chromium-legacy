@@ -196,14 +196,14 @@ TEST_P(LinkHighlightImplTest, resetDuringNodeRemoval) {
   web_view_impl->EnableTapHighlightAtPoint(targeted_event);
   const auto* highlight = GetLinkHighlightImpl();
   ASSERT_TRUE(highlight);
-  EXPECT_EQ(touch_node, highlight->GetNode());
+  EXPECT_EQ(touch_node->GetLayoutObject(), highlight->GetLayoutObject());
 
   touch_node->remove(IGNORE_EXCEPTION_FOR_TESTING);
   UpdateAllLifecyclePhases();
 
   ASSERT_EQ(highlight, GetLinkHighlightImpl());
   ASSERT_TRUE(highlight);
-  EXPECT_FALSE(highlight->GetNode());
+  EXPECT_FALSE(highlight->GetLayoutObject());
 }
 
 // A lifetime test: delete LayerTreeView while running LinkHighlights.
@@ -395,6 +395,8 @@ TEST_P(LinkHighlightImplTest, DisplayContents) {
   touch_event.SetPositionInWidget(gfx::PointF(20, 400));
 
   GestureEventWithHitTestResults targeted_event = GetTargetedEvent(touch_event);
+  const Node* touched_node = targeted_event.GetHitTestResult().InnerNode();
+  EXPECT_TRUE(touched_node->IsTextNode());
   EXPECT_FALSE(web_view_impl->BestTapNode(targeted_event));
 
   web_view_impl->EnableTapHighlightAtPoint(targeted_event);

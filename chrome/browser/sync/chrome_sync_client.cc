@@ -30,6 +30,7 @@
 #include "chrome/browser/sharing/sharing_message_bridge.h"
 #include "chrome/browser/sharing/sharing_message_bridge_factory.h"
 #include "chrome/browser/sharing/sharing_message_model_type_controller.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/bookmark_sync_service_factory.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/model_type_store_service_factory.h"
@@ -234,6 +235,11 @@ ChromeSyncClient::~ChromeSyncClient() {}
 PrefService* ChromeSyncClient::GetPrefService() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return profile_->GetPrefs();
+}
+
+signin::IdentityManager* ChromeSyncClient::GetIdentityManager() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return IdentityManagerFactory::GetForProfile(profile_);
 }
 
 base::FilePath ChromeSyncClient::GetLocalSyncBackendFolder() {

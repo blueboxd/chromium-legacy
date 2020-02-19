@@ -450,9 +450,6 @@
 <translation id="4521489764227272523">De geselecteerde gegevens zijn verwijderd uit Chrome en van je gesynchroniseerde apparaten.
 
 Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekopdrachten en activiteit uit andere Google-services) beschikbaar zijn via <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="4527374721149092498">Bekijk informatie over onderwerpen op websites zonder de pagina te verlaten. 'Tikken om te zoeken' stuurt een woord en contextuele informatie voor het woord naar Google Zoeken, waarna er definities, afbeeldingen, zoekresultaten en andere gegevens worden weergegeven.
-
-Tik op een woord om er een zoekopdracht voor te maken. Als je de zoekterm wilt aanpassen, selecteer je deze door er lang op te drukken. Als je je zoekopdracht wilt verfijnen, schuif je het deelvenster open, tik je op het uitvouwicoon om een nieuw tabblad te maken en tik je daarna op het zoekvak.</translation>
 <translation id="4532845899244822526">Map kiezen</translation>
 <translation id="4538018662093857852">Lite-versie inschakelen</translation>
 <translation id="4550003330909367850">Als je hier je wachtwoord wilt bekijken of kopiëren, stel je schermvergrendeling in op dit apparaat.</translation>
@@ -668,7 +665,6 @@ Tik op een woord om er een zoekopdracht voor te maken. Als je de zoekterm wilt a
 <translation id="604996488070107836">Download van <ph name="FILE_NAME" /> mislukt vanwege een onbekende fout.</translation>
 <translation id="605721222689873409">JJ</translation>
 <translation id="6064125863973209585">Voltooide downloads</translation>
-<translation id="6075798973483050474">Homepage bewerken</translation>
 <translation id="6092062101542170135">Schakel NFC in bij de Android-instellingen om door te gaan</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> uur resterend</translation>
 <translation id="6108923351542677676">Instellen wordt uitgevoerd...</translation>
@@ -691,9 +687,6 @@ Tik op een woord om er een zoekopdracht voor te maken. Als je de zoekterm wilt a
 <translation id="6232535412751077445">Als je 'Niet bijhouden' inschakelt, wordt hiervoor een verzoek opgenomen in je browseverkeer. Het resultaat daarvan hangt af van of een website reageert op het verzoek en hoe het verzoek wordt geïnterpreteerd.
 
 Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te geven die niet zijn gebaseerd op andere websites die je hebt bezocht. Toch blijven veel websites je browsegegevens nog verzamelen en gebruiken, bijvoorbeeld om de beveiliging te verbeteren, om content, services, advertenties en aanbevelingen te leveren en om rapportagestatistieken te genereren.</translation>
-<translation id="6238003486329291387">Bekijk informatie over onderwerpen op websites zonder de pagina te verlaten. 'Tikken om te zoeken' stuurt een woord en contextuele informatie voor het woord naar Google Zoeken, waarna er definities, afbeeldingen, zoekresultaten en andere gegevens worden weergegeven.
-
-Druk lang op een woord om er een zoekopdracht voor te maken. Pas de selectie aan om je zoekopdracht te verfijnen. Je kunt het deelvenster ook openschuiven, op het uitvouwicoon tikken om een nieuw tabblad te maken en daarna op het zoekvak tikken.</translation>
 <translation id="624789221780392884">Update gereed</translation>
 <translation id="6255999984061454636">Contentsuggesties</translation>
 <translation id="6270391203985052864">Sites kunnen vragen of ze je meldingen mogen sturen</translation>

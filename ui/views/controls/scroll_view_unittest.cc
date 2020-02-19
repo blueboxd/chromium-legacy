@@ -278,9 +278,7 @@ class WidgetScrollViewTest : public test::WidgetTest,
   WidgetScrollViewTest() = default;
 
   // Call this before adding the ScrollView to test with overlay scrollbars.
-  void SetUseOverlayScrollers() {
-    use_overlay_scrollers_ = true;
-  }
+  void SetUseOverlayScrollers() { use_overlay_scrollers_ = true; }
 
   // Adds a ScrollView with the given |contents_view| and does layout.
   ScrollView* AddScrollViewWithContents(std::unique_ptr<View> contents,

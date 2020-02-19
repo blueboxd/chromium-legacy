@@ -536,4 +536,10 @@ void SetDefaultPasswordStore(PrefService* pref_service,
       .SetDefaultStore(default_store);
 }
 
+void ClearAccountStorageSettingsForAllUsers(PrefService* pref_service) {
+  DCHECK(pref_service);
+  pref_service->ClearPref(
+      password_manager::prefs::kAccountStoragePerAccountSettings);
+}
+
 }  // namespace password_manager_util

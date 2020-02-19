@@ -9,12 +9,12 @@
 #include "ash/public/cpp/tablet_mode.h"
 #include "base/auto_reset.h"
 #include "base/bind.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/common/url_constants.h"
+#include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/focused_node_details.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
@@ -98,7 +98,7 @@ content::BrowserControlsState GetBrowserControlsStateConstraints(
 
   // Keep top-chrome visible while a permission bubble is visible.
   auto* permission_manager =
-      PermissionRequestManager::FromWebContents(contents);
+      permissions::PermissionRequestManager::FromWebContents(contents);
   if (permission_manager && permission_manager->IsRequestInProgress())
     return content::BROWSER_CONTROLS_STATE_SHOWN;
 
@@ -154,8 +154,9 @@ void SynchronizeVisualProperties(content::WebContents* contents) {
 // when certain events happen on the webcontents. It also keeps track of the
 // current top controls shown ratio for this tab so that it stays in sync with
 // the corresponding value that the tab's renderer has.
-class TopControlsSlideTabObserver : public content::WebContentsObserver,
-                                    public PermissionRequestManager::Observer {
+class TopControlsSlideTabObserver
+    : public content::WebContentsObserver,
+      public permissions::PermissionRequestManager::Observer {
  public:
   TopControlsSlideTabObserver(content::WebContents* web_contents,
                               TopControlsSlideControllerChromeOS* owner)
@@ -166,14 +167,14 @@ class TopControlsSlideTabObserver : public content::WebContentsObserver,
     // top chrome height in the renderer.
     SynchronizeVisualProperties(web_contents);
     auto* permission_manager =
-        PermissionRequestManager::FromWebContents(web_contents);
+        permissions::PermissionRequestManager::FromWebContents(web_contents);
     if (permission_manager)
       permission_manager->AddObserver(this);
   }
 
   ~TopControlsSlideTabObserver() override {
     auto* permission_manager =
-        PermissionRequestManager::FromWebContents(web_contents());
+        permissions::PermissionRequestManager::FromWebContents(web_contents());
     if (permission_manager)
       permission_manager->RemoveObserver(this);
   }

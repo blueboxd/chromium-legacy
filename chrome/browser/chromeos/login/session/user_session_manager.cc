@@ -1432,7 +1432,7 @@ void UserSessionManager::InitProfilePreferences(
                 ->SetUnconsentedPrimaryAccount(account_info->account_id);
           }
         }
-        CHECK(identity_manager->HasUnconsentedPrimaryAccount());
+        CHECK(identity_manager->HasPrimaryAccount(ConsentLevel::kNotRequired));
         CHECK_EQ(
             identity_manager->GetPrimaryAccountInfo(ConsentLevel::kNotRequired)
                 .gaia,

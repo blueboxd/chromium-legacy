@@ -446,6 +446,8 @@ static void GL_BINDING_CALL
 Mock_glDeleteFramebuffers(GLsizei n, const GLuint* framebuffers);
 static void GL_BINDING_CALL
 Mock_glDeleteFramebuffersEXT(GLsizei n, const GLuint* framebuffers);
+static void GL_BINDING_CALL
+Mock_glDeleteMemoryObjectsEXT(GLsizei n, const GLuint* memoryObjects);
 static void GL_BINDING_CALL Mock_glDeletePathsCHROMIUM(GLuint path,
                                                        GLsizei range);
 static void GL_BINDING_CALL Mock_glDeletePathsNV(GLuint path, GLsizei range);

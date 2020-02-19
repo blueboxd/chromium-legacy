@@ -15,9 +15,7 @@
 namespace views {
 
 FocusSearch::FocusSearch(View* root, bool cycle, bool accessibility_mode)
-    : root_(root),
-      cycle_(cycle),
-      accessibility_mode_(accessibility_mode) {
+    : root_(root), cycle_(cycle), accessibility_mode_(accessibility_mode) {
 #if defined(OS_MACOSX)
   // On Mac, only the keyboard accessibility mode defined in FocusManager is
   // used. No special accessibility mode should be applicable for a
@@ -111,8 +109,8 @@ View* FocusSearch::FindNextFocusableView(
 
 bool FocusSearch::IsViewFocusableCandidate(View* v, int skip_group_id) {
   return IsFocusable(v) &&
-      (v->IsGroupFocusTraversable() || skip_group_id == -1 ||
-       v->GetGroup() != skip_group_id);
+         (v->IsGroupFocusTraversable() || skip_group_id == -1 ||
+          v->GetGroup() != skip_group_id);
 }
 
 bool FocusSearch::IsFocusable(View* v) {

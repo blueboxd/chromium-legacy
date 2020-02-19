@@ -450,9 +450,6 @@
 <translation id="4521489764227272523">Seçilmiş data Chrome və sinxronizasiya olunmuş cihazınızdan silindi. 
 
 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> linkində Google hesabınızın digər Google xidmətlərində axtarış və fəaliyyət kimi başqa formalı axtarış tarixçəsi ola bilər.</translation>
-<translation id="4527374721149092498">Səhifədən çıxmadan veb saytdakı mövzular haqqında öyrənin. "Axtarmaq üçün toxunun" xüsusiyyəti sözü və onun işləndiyi konteksti Google Axtarışa göndərir, əvəzində izahlar, şəkillər, axtarış nəticələri və digər detalları əldə edir.
-
-Hər hansı söz üzrə axtarış icra etmək üçün onun üzərinə toxunun. Axtarış sözünü tənzimləmək üçün onun üzərinə basıb saxlayaraq seçin. Axtarışınızı dəqiqləşdirmək üçün paneli sürüşdürərək açın, yeni tabel yaratmaq üçün genişləndirmə nişanına toxunun, sonra isə axtarış qutusuna toxunun.</translation>
 <translation id="4532845899244822526">Qovluq seçin</translation>
 <translation id="4538018662093857852">Layt rejimini deaktiv edin</translation>
 <translation id="4550003330909367850">Parola burada baxmaq və ya kopyalamaq üçün cihazda ekran kilidi ayarlayın.</translation>
@@ -668,7 +665,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="604996488070107836">Naməlum xəta səbəbindən <ph name="FILE_NAME" /> faylı endirilmədi.</translation>
 <translation id="605721222689873409">İİ</translation>
 <translation id="6064125863973209585">Tamamlanmış endirmələr</translation>
-<translation id="6075798973483050474">Əsas səhifə redaktə edin</translation>
 <translation id="6092062101542170135">Davam etmək üçün Android ayarlarında NFC'ni yandırın</translation>
 <translation id="60923314841986378"><ph name="HOURS" /> saat qaldı</translation>
 <translation id="6108923351542677676">Quraşdırma icra olunur...</translation>
@@ -689,9 +685,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="6210748933810148297"><ph name="EMAIL" /> deyil?</translation>
 <translation id="6221633008163990886">Parolları eksport etmək üçün kiliddən çıxarın</translation>
 <translation id="6232535412751077445">İzlənilməyin qadağan edilməsi o deməkdir ki, sorğu brauzer trafikinizə daxil ediləcək. İstənilən effekt saytın sorğuya cavab verməsindən və sorğunun necə anlaşılmasından asılıdır.  Məsələn, bəzi saytlar bu sorğuya ziyarət etdiyiniz saytlarda olmayan reklamları göstərməklə cavab verə bilər. Bir çox saytlar hələ də brauzinq datanızı toplayacaq və istifadə edəcək. Məqsədləri güvənliyin artırılması, kontent, xidmət, reklam, tövsiyə təqdim edilməsi və raport statistikasının yaradılması ola bilər.</translation>
-<translation id="6238003486329291387">Səhifədən çıxmadan veb saytdakı mövzular haqqında öyrənin. "Axtarmaq üçün toxunun" xüsusiyyəti sözü və onun işləndiyi konteksti Google Axtarışa göndərir, əvəzində izahlar, şəkillər, axtarış nəticələri və digər detalları əldə edir.
-
-İstənilən söz üzrə axtarış icra etmək məqsədilə onun üzərinə basıb saxlayın. Axtarışınızı dəqiqləşdirmək üçün seçimi tənzimləyin. Həmçinin paneli sürüşdürərək aça, yeni tabel yaratmaq üçün genişləndirmə nişanına toxuna, sonra isə axtarış qutusuna toxuna bilərsiniz.</translation>
 <translation id="624789221780392884">Yükləmə hazırdır</translation>
 <translation id="6255999984061454636">Kontent təklifləri</translation>
 <translation id="6270391203985052864">Saytlar bildiriş göndərilməsini tələb edə bilər</translation>

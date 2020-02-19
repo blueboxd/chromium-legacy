@@ -5,6 +5,7 @@
 #include "media/gpu/android/video_frame_factory_impl.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
@@ -116,8 +117,7 @@ class VideoFrameFactoryImplTest : public testing::Test {
 
     impl_->CreateVideoFrame(std::move(output_buffer), base::TimeDelta(),
                             video_frame_params_.natural_size,
-                            PromotionHintAggregator::NotifyPromotionHintCB(),
-                            output_cb_.Get());
+                            base::NullCallback(), output_cb_.Get());
     base::RunLoop().RunUntilIdle();
 
     // TODO(liberato): Verify that it requested a shared image.
@@ -209,9 +209,8 @@ TEST_F(VideoFrameFactoryImplTest, CreateVideoFrameFailsIfUnsupportedFormat) {
   EXPECT_CALL(output_cb, Run(scoped_refptr<VideoFrame>(nullptr)));
   EXPECT_CALL(*image_provider_raw_, MockRequestImage()).Times(0);
 
-  impl_->CreateVideoFrame(
-      std::move(output_buffer), base::TimeDelta(), natural_size,
-      PromotionHintAggregator::NotifyPromotionHintCB(), output_cb.Get());
+  impl_->CreateVideoFrame(std::move(output_buffer), base::TimeDelta(),
+                          natural_size, base::NullCallback(), output_cb.Get());
   base::RunLoop().RunUntilIdle();
 }
 

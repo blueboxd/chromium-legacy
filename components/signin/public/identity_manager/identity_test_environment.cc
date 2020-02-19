@@ -277,7 +277,7 @@ AccountInfo IdentityTestEnvironment::MakePrimaryAccountAvailable(
 
 AccountInfo IdentityTestEnvironment::MakeUnconsentedPrimaryAccountAvailable(
     const std::string& email) {
-  DCHECK(!identity_manager()->HasUnconsentedPrimaryAccount());
+  DCHECK(!identity_manager()->HasPrimaryAccount(ConsentLevel::kNotRequired));
 #if defined(OS_CHROMEOS)
   // Chrome OS sets the unconsented primary account during login and does not
   // allow signout.
@@ -293,7 +293,7 @@ AccountInfo IdentityTestEnvironment::MakeUnconsentedPrimaryAccountAvailable(
       MakeAccountAvailableWithCookies(email, GetTestGaiaIdForEmail(email));
   base::RunLoop().RunUntilIdle();
 #endif
-  DCHECK(identity_manager()->HasUnconsentedPrimaryAccount());
+  DCHECK(identity_manager()->HasPrimaryAccount(ConsentLevel::kNotRequired));
   DCHECK_EQ(email, identity_manager()
                        ->GetPrimaryAccountInfo(ConsentLevel::kNotRequired)
                        .email);

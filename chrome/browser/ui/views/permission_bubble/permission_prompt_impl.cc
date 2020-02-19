@@ -7,17 +7,17 @@
 #include <memory>
 
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_bubble_view.h"
+#include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 
 // static
-std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(
-    content::WebContents* web_contents,
-    Delegate* delegate) {
+std::unique_ptr<permissions::PermissionPrompt>
+permissions::PermissionPrompt::Create(content::WebContents* web_contents,
+                                      Delegate* delegate) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser) {
     DLOG(WARNING) << "Permission prompt suppressed because the WebContents is "
@@ -34,8 +34,8 @@ PermissionPromptImpl::PermissionPromptImpl(Browser* browser,
     : prompt_bubble_(nullptr),
       web_contents_(web_contents),
       showing_quiet_prompt_(false) {
-  PermissionRequestManager* manager =
-      PermissionRequestManager::FromWebContents(web_contents_);
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents_);
   if (manager->ShouldCurrentRequestUseQuietUI()) {
     showing_quiet_prompt_ = true;
     // Shows the prompt as an indicator in the right side of the omnibox.
@@ -60,8 +60,8 @@ void PermissionPromptImpl::UpdateAnchorPosition() {
     prompt_bubble_->UpdateAnchorPosition();
 }
 
-PermissionPrompt::TabSwitchingBehavior
+permissions::PermissionPrompt::TabSwitchingBehavior
 PermissionPromptImpl::GetTabSwitchingBehavior() {
-  return PermissionPrompt::TabSwitchingBehavior::
+  return permissions::PermissionPrompt::TabSwitchingBehavior::
       kDestroyPromptButKeepRequestPending;
 }

@@ -2261,20 +2261,17 @@ HRESULT CGaiaCredentialBase::ValidateOrCreateUser(const base::Value& result,
     base::string16 os_account_fullname;
     hr = OSUserManager::Get()->GetUserFullname(found_domain, found_username,
                                                &os_account_fullname);
-    if (FAILED(hr)) {
-      LOGFN(ERROR) << "GetUserFullname hr=" << putHR(hr);
-      return hr;
-    }
-
-    base::string16 profile_fullname = GetDictString(result, kKeyFullname);
-    if (SUCCEEDED(hr) &&
-        os_account_fullname.compare(profile_fullname.c_str()) != 0) {
-      hr = OSUserManager::Get()->SetUserFullname(found_domain, found_username,
-                                                 profile_fullname.c_str());
-      if (FAILED(hr)) {
-        LOGFN(ERROR) << "SetUserFullname hr=" << putHR(hr);
-        return hr;
+    if (SUCCEEDED(hr)) {
+      base::string16 profile_fullname = GetDictString(result, kKeyFullname);
+      if (os_account_fullname.compare(profile_fullname.c_str()) != 0) {
+        hr = OSUserManager::Get()->SetUserFullname(found_domain, found_username,
+                                                   profile_fullname.c_str());
+        // Failing to set Windows account full name shouldn't fail login.
+        if (FAILED(hr))
+          LOGFN(ERROR) << "SetUserFullname hr=" << putHR(hr);
       }
+    } else {
+      LOGFN(ERROR) << "GetUserFullname hr=" << putHR(hr);
     }
 
     *username = ::SysAllocString(found_username);
@@ -2340,6 +2337,7 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
                                                  BSTR* status_text) {
   USES_CONVERSION;
   DCHECK(status_text);
+  *status_text = nullptr;
 
   // Logon UI process is no longer needed and should already be finished by now
   // so clear the handle so that calls to HandleAutoLogon do not block further
@@ -2380,6 +2378,10 @@ HRESULT CGaiaCredentialBase::OnUserAuthenticated(BSTR authentication_info,
     hr = ValidateOrCreateUser(*properties, &domain_, &username_, &user_sid_,
                               status_text);
     if (FAILED(hr)) {
+      // In case an error text isn't set in any failure path, have one to use as
+      // the last resort.
+      if (*status_text == nullptr)
+        *status_text = AllocErrorString(IDS_INVALID_UI_RESPONSE_BASE);
       LOGFN(ERROR) << "ValidateOrCreateUser hr=" << putHR(hr);
       return hr;
     }

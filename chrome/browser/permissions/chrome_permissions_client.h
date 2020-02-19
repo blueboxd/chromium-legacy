@@ -23,6 +23,16 @@ class ChromePermissionsClient : public permissions::PermissionsClient {
                       const content::WebContents* web_contents,
                       const GURL& requesting_origin,
                       GetUkmSourceIdCallback callback) override;
+  permissions::PermissionRequest::IconId GetOverrideIconId(
+      ContentSettingsType type) override;
+  std::unique_ptr<permissions::NotificationPermissionUiSelector>
+  CreateNotificationPermissionUiSelector(
+      content::BrowserContext* browser_context) override;
+  void OnPromptResolved(content::BrowserContext* browser_context,
+                        permissions::PermissionRequestType request_type,
+                        permissions::PermissionAction action) override;
+  base::Optional<url::Origin> GetAutoApprovalOrigin(
+      const permissions::PermissionRequest* request) override;
 
  private:
   friend base::NoDestructor<ChromePermissionsClient>;

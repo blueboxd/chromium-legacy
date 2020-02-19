@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/multidevice_setup/multidevice_setup_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/back_gesture_contextual_nudge_delegate.h"
 #include "chrome/browser/ui/ash/chrome_accessibility_delegate.h"
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_ui.h"
@@ -110,3 +111,8 @@ ChromeShellDelegate::CreateScreenshotDelegate() {
   return std::make_unique<ChromeScreenshotGrabber>();
 }
 
+std::unique_ptr<ash::BackGestureContextualNudgeDelegate>
+ChromeShellDelegate::CreateBackGestureContextualNudgeDelegate(
+    ash::BackGestureContextualNudgeController* controller) {
+  return std::make_unique<BackGestureContextualNudgeDelegate>(controller);
+}

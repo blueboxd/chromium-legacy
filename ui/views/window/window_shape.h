@@ -21,6 +21,6 @@ VIEWS_EXPORT void GetDefaultWindowMask(const gfx::Size& size,
                                        float scale,
                                        SkPath* window_mask);
 
-} // namespace views
+}  // namespace views
 
 #endif  // UI_VIEWS_WINDOW_WINDOW_SHAPE_H_

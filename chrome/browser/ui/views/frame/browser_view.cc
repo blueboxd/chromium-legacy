@@ -35,7 +35,6 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/native_window_notification_source.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
@@ -140,6 +139,7 @@
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_popup_view.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/permissions/permission_request_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/password_protection/metrics_util.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -2591,8 +2591,11 @@ void BrowserView::Layout() {
   // permission bubble may be anchored. For that we must update its anchor
   // position.
   WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
-  if (contents && PermissionRequestManager::FromWebContents(contents))
-    PermissionRequestManager::FromWebContents(contents)->UpdateAnchorPosition();
+  if (contents &&
+      permissions::PermissionRequestManager::FromWebContents(contents)) {
+    permissions::PermissionRequestManager::FromWebContents(contents)
+        ->UpdateAnchorPosition();
+  }
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
   if (webui_tab_strip_)

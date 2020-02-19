@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/assistant/assistant_test_mixin.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
+#include "chromeos/audio/cras_audio_handler.h"
 
 namespace chromeos {
 namespace assistant {
@@ -60,6 +61,28 @@ IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldDisplayCardResponse) {
 
   tester()->SendTextQuery("What is the highest mountain in the world?");
   tester()->ExpectCardResponse("Mount Everest");
+}
+
+IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnUpVolume) {
+  tester()->StartAssistantAndWaitForReady();
+
+  ShowAssistantUi();
+
+  EXPECT_TRUE(tester()->IsVisible());
+
+  auto* cras = chromeos::CrasAudioHandler::Get();
+  constexpr int kStartVolumePercent = 50;
+  cras->SetOutputVolumePercent(kStartVolumePercent);
+  EXPECT_EQ(kStartVolumePercent, cras->GetOutputVolumePercent());
+
+  tester()->SendTextQuery("turn up volume");
+
+  tester()->ExpectResult(true, base::BindRepeating(
+                                   [](chromeos::CrasAudioHandler* cras) {
+                                     return cras->GetOutputVolumePercent() >
+                                            kStartVolumePercent;
+                                   },
+                                   cras));
 }
 
 }  // namespace assistant

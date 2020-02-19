@@ -229,7 +229,7 @@ void ScenicSurfaceFactory::CreateScenicSessionOnMainThread(
 
 void ScenicSurfaceFactory::AttachSurfaceToWindow(
     gfx::AcceleratedWidget window,
-    mojo::ScopedHandle surface_view_holder_token_mojo) {
+    mojo::PlatformHandle surface_view_holder_token_mojo) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   gpu_host_->AttachSurfaceToWindow(window,
                                    std::move(surface_view_holder_token_mojo));

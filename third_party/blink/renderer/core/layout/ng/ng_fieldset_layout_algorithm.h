@@ -27,6 +27,7 @@ class CORE_EXPORT NGFieldsetLayoutAlgorithm
   base::Optional<MinMaxSize> ComputeMinMaxSize(
       const MinMaxSizeInput&) const override;
 
+ private:
   const NGConstraintSpace CreateConstraintSpaceForLegend(
       NGBlockNode legend,
       LogicalSize available_size);

@@ -40,4 +40,3 @@ void SliderExample::SliderValueChanged(Slider* sender,
 
 }  // namespace examples
 }  // namespace views
-

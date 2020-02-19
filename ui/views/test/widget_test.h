@@ -22,7 +22,7 @@ namespace internal {
 class InputMethodDelegate;
 }
 class EventSink;
-}
+}  // namespace ui
 
 namespace views {
 

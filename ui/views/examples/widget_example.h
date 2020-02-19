@@ -28,11 +28,11 @@ class VIEWS_EXAMPLES_EXPORT WidgetExample : public ExampleBase,
  private:
   // Button tags used to identify various commands.
   enum Command {
-    POPUP,        // Show a popup widget.
-    DIALOG,       // Show a dialog widget.
-    MODAL_DIALOG, // Show a modal dialog widget.
-    CHILD,        // Show a child widget.
-    CLOSE_WIDGET, // Close the sender button's widget.
+    POPUP,         // Show a popup widget.
+    DIALOG,        // Show a dialog widget.
+    MODAL_DIALOG,  // Show a modal dialog widget.
+    CHILD,         // Show a child widget.
+    CLOSE_WIDGET,  // Close the sender button's widget.
   };
 
   // Construct a button with the specified |label| and |tag| in |container|.

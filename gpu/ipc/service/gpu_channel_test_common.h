@@ -10,6 +10,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/unsafe_shared_memory_region.h"
+#include "gpu/command_buffer/common/activity_flags.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,6 +65,7 @@ class GpuChannelTestCommon : public testing::Test {
   std::unique_ptr<Scheduler> scheduler_;
   std::unique_ptr<TestGpuChannelManagerDelegate> channel_manager_delegate_;
   std::unique_ptr<GpuChannelManager> channel_manager_;
+  GpuProcessActivityFlags activity_flags_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuChannelTestCommon);
 };

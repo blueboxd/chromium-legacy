@@ -23,6 +23,7 @@
 #include "ios/chrome/browser/overlays/test/fake_overlay_presentation_context.h"
 #import "ios/chrome/browser/ui/badges/badge_consumer.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
+#import "ios/chrome/browser/ui/badges/badge_type.h"
 #include "ios/chrome/browser/ui/badges/badge_type_util.h"
 #import "ios/chrome/browser/ui/infobars/test_infobar_delegate.h"
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
@@ -55,19 +56,23 @@ enum class TestParam {
 // Fake of BadgeConsumer.
 @interface FakeBadgeConsumer : NSObject <BadgeConsumer>
 @property(nonatomic, strong) id<BadgeItem> displayedBadge;
-@property(nonatomic, assign) BOOL hasFullscreenBadge;
+@property(nonatomic, assign) BOOL hasFullscreenOffTheRecordBadge;
 @property(nonatomic, assign) BOOL hasUnreadBadge;
 @end
 
 @implementation FakeBadgeConsumer
 - (void)setupWithDisplayedBadge:(id<BadgeItem>)displayedBadgeItem
                 fullScreenBadge:(id<BadgeItem>)fullscreenBadgeItem {
-  self.hasFullscreenBadge = fullscreenBadgeItem != nil;
+  self.hasFullscreenOffTheRecordBadge =
+      fullscreenBadgeItem != nil &&
+      fullscreenBadgeItem.badgeType == BadgeType::kBadgeTypeIncognito;
   self.displayedBadge = displayedBadgeItem;
 }
 - (void)updateDisplayedBadge:(id<BadgeItem>)displayedBadgeItem
              fullScreenBadge:(id<BadgeItem>)fullscreenBadgeItem {
-  self.hasFullscreenBadge = fullscreenBadgeItem != nil;
+  self.hasFullscreenOffTheRecordBadge =
+      fullscreenBadgeItem != nil &&
+      fullscreenBadgeItem.badgeType == BadgeType::kBadgeTypeIncognito;
   self.displayedBadge = displayedBadgeItem;
 }
 - (void)markDisplayedBadgeAsRead:(BOOL)read {
@@ -168,7 +173,8 @@ class BadgeMediatorTest : public testing::TestWithParam<TestParam> {
 TEST_P(BadgeMediatorTest, BadgeMediatorTestNoInfobar) {
   InsertActivatedWebState(/*index=*/0);
   EXPECT_FALSE(badge_consumer_.displayedBadge);
-  EXPECT_EQ(is_off_the_record(), badge_consumer_.hasFullscreenBadge);
+  EXPECT_EQ(is_off_the_record(),
+            badge_consumer_.hasFullscreenOffTheRecordBadge);
 }
 
 // Test that the BadgeMediator responds with one new badge when an infobar is

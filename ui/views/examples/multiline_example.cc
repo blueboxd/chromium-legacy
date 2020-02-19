@@ -124,7 +124,8 @@ MultilineExample::MultilineExample() : ExampleBase("Multiline RenderText") {}
 MultilineExample::~MultilineExample() = default;
 
 void MultilineExample::CreateExampleView(View* container) {
-  const base::string16 kTestString = base::WideToUTF16(L"qwerty"
+  const base::string16 kTestString = base::WideToUTF16(
+      L"qwerty"
       L"\x627\x644\x631\x626\x64A\x633\x64A\x629"
       L"asdfgh");
 
@@ -154,10 +155,10 @@ void MultilineExample::CreateExampleView(View* container) {
       container->SetLayoutManager(std::make_unique<views::GridLayout>());
 
   ColumnSet* column_set = layout->AddColumnSet(0);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER,
-      0.0f, GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
-      1.0f, GridLayout::FIXED, 0, 0);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0.0f,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0f,
+                        GridLayout::FIXED, 0, 0);
 
   layout->StartRow(0, 0);
   layout->AddView(std::make_unique<Label>(ASCIIToUTF16("gfx::RenderText:")));

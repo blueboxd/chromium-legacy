@@ -57,8 +57,7 @@ bool IsOpaque(SkColor color) {
 
 namespace views {
 
-Label::Label() : Label(base::string16()) {
-}
+Label::Label() : Label(base::string16()) {}
 
 Label::Label(const base::string16& text)
     : Label(text, style::CONTEXT_LABEL, style::STYLE_PRIMARY) {}
@@ -701,8 +700,9 @@ bool Label::OnMousePressed(const ui::MouseEvent& event) {
 #endif
 
   return selection_controller_->OnMousePressed(
-      event, false, had_focus ? SelectionController::FOCUSED
-                              : SelectionController::UNFOCUSED);
+      event, false,
+      had_focus ? SelectionController::FOCUSED
+                : SelectionController::UNFOCUSED);
 }
 
 bool Label::OnMouseDragged(const ui::MouseEvent& event) {

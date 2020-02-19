@@ -113,6 +113,35 @@ const char kAudioLogUpdateFunction[] = "media.updateAudioComponent";
 
 namespace content {
 
+// This class works as a receiver of logs of events occurring in the
+// media pipeline. Media logs send by the renderer process to the
+// browser process is handled by the below implementation in the
+// browser side.
+class MediaInternals::MediaInternalLogRecordsImpl
+    : public content::mojom::MediaInternalLogRecords {
+ public:
+  MediaInternalLogRecordsImpl(content::MediaInternals* media_internals,
+                              int render_process_id);
+  ~MediaInternalLogRecordsImpl() override = default;
+  void Log(const std::vector<::media::MediaLogRecord>& arr) override;
+
+ private:
+  content::MediaInternals* const media_internals_;
+  const int render_process_id_;
+  DISALLOW_COPY_AND_ASSIGN(MediaInternalLogRecordsImpl);
+};
+
+MediaInternals::MediaInternalLogRecordsImpl::MediaInternalLogRecordsImpl(
+    content::MediaInternals* media_internals,
+    int render_process_id)
+    : media_internals_(media_internals),
+      render_process_id_(render_process_id) {}
+
+void MediaInternals::MediaInternalLogRecordsImpl::Log(
+    const std::vector<::media::MediaLogRecord>& events) {
+  media_internals_->OnMediaEvents(render_process_id_, events);
+}
+
 class MediaInternals::AudioLogImpl : public media::mojom::AudioLog,
                                      public media::AudioLog {
  public:
@@ -568,6 +597,16 @@ void MediaInternals::CreateMojoAudioLog(
   mojo::MakeSelfOwnedReceiver(
       CreateAudioLogImpl(component, component_id, render_process_id,
                          render_frame_id),
+      std::move(receiver));
+}
+
+// static
+void MediaInternals::CreateMediaLogRecords(
+    int render_process_id,
+    mojo::PendingReceiver<content::mojom::MediaInternalLogRecords> receiver) {
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<MediaInternalLogRecordsImpl>(
+          MediaInternals::GetInstance(), render_process_id),
       std::move(receiver));
 }
 

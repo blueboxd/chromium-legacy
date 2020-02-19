@@ -1213,20 +1213,15 @@ bool View::OnMouseDragged(const ui::MouseEvent& event) {
   return false;
 }
 
-void View::OnMouseReleased(const ui::MouseEvent& event) {
-}
+void View::OnMouseReleased(const ui::MouseEvent& event) {}
 
-void View::OnMouseCaptureLost() {
-}
+void View::OnMouseCaptureLost() {}
 
-void View::OnMouseMoved(const ui::MouseEvent& event) {
-}
+void View::OnMouseMoved(const ui::MouseEvent& event) {}
 
-void View::OnMouseEntered(const ui::MouseEvent& event) {
-}
+void View::OnMouseEntered(const ui::MouseEvent& event) {}
 
-void View::OnMouseExited(const ui::MouseEvent& event) {
-}
+void View::OnMouseExited(const ui::MouseEvent& event) {}
 
 void View::SetMouseHandler(View* new_mouse_handler) {
   // |new_mouse_handler| may be nullptr.
@@ -1247,8 +1242,8 @@ bool View::OnMouseWheel(const ui::MouseWheelEvent& event) {
 }
 
 void View::OnKeyEvent(ui::KeyEvent* event) {
-  bool consumed = (event->type() == ui::ET_KEY_PRESSED) ? OnKeyPressed(*event) :
-                                                          OnKeyReleased(*event);
+  bool consumed = (event->type() == ui::ET_KEY_PRESSED) ? OnKeyPressed(*event)
+                                                        : OnKeyReleased(*event);
   if (consumed)
     event->StopPropagation();
 }
@@ -1261,9 +1256,9 @@ void View::OnMouseEvent(ui::MouseEvent* event) {
       return;
 
     case ui::ET_MOUSE_MOVED:
-      if ((event->flags() & (ui::EF_LEFT_MOUSE_BUTTON |
-                             ui::EF_RIGHT_MOUSE_BUTTON |
-                             ui::EF_MIDDLE_MOUSE_BUTTON)) == 0) {
+      if ((event->flags() &
+           (ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON |
+            ui::EF_MIDDLE_MOUSE_BUTTON)) == 0) {
         OnMouseMoved(*event);
         return;
       }
@@ -1296,15 +1291,13 @@ void View::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
-void View::OnScrollEvent(ui::ScrollEvent* event) {
-}
+void View::OnScrollEvent(ui::ScrollEvent* event) {}
 
 void View::OnTouchEvent(ui::TouchEvent* event) {
   NOTREACHED() << "Views should not receive touch events.";
 }
 
-void View::OnGestureEvent(ui::GestureEvent* event) {
-}
+void View::OnGestureEvent(ui::GestureEvent* event) {}
 
 const ui::InputMethod* View::GetInputMethod() const {
   Widget* widget = const_cast<Widget*>(GetWidget());
@@ -1420,9 +1413,8 @@ bool View::CanHandleAccelerators() const {
   // check if they are focused instead. ChromeOS also behaves different than
   // Linux when an extension popup is about to handle the accelerator.
   bool child = widget && widget->GetTopLevelWidget() != widget;
-  bool focus_in_child =
-      widget &&
-      widget->GetRootView()->Contains(GetFocusManager()->GetFocusedView());
+  bool focus_in_child = widget && widget->GetRootView()->Contains(
+                                      GetFocusManager()->GetFocusedView());
   if ((child && !focus_in_child) || (!child && !widget->IsActive()))
     return false;
 #endif
@@ -1554,22 +1546,19 @@ bool View::CanDrop(const OSExchangeData& data) {
   return false;
 }
 
-void View::OnDragEntered(const ui::DropTargetEvent& event) {
-}
+void View::OnDragEntered(const ui::DropTargetEvent& event) {}
 
 int View::OnDragUpdated(const ui::DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_NONE;
 }
 
-void View::OnDragExited() {
-}
+void View::OnDragExited() {}
 
 int View::OnPerformDrop(const ui::DropTargetEvent& event) {
   return ui::DragDropTypes::DRAG_NONE;
 }
 
-void View::OnDragDone() {
-}
+void View::OnDragDone() {}
 
 // static
 bool View::ExceededDragThreshold(const gfx::Vector2d& delta) {
@@ -1694,16 +1683,13 @@ bool View::GetNeedsNotificationWhenVisibleBoundsChange() const {
   return false;
 }
 
-void View::OnVisibleBoundsChanged() {
-}
+void View::OnVisibleBoundsChanged() {}
 
 // Tree operations -------------------------------------------------------------
 
-void View::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
-}
+void View::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {}
 
-void View::VisibilityChanged(View* starting_from, bool is_visible) {
-}
+void View::VisibilityChanged(View* starting_from, bool is_visible) {}
 
 void View::NativeViewHierarchyChanged() {
   FocusManager* focus_manager = GetFocusManager();
@@ -1987,8 +1973,7 @@ void View::OnFocus() {
   NotifyAccessibilityEvent(ax::mojom::Event::kFocus, true);
 }
 
-void View::OnBlur() {
-}
+void View::OnBlur() {}
 
 void View::Focus() {
   OnFocus();
@@ -2020,9 +2005,9 @@ void View::TooltipTextChanged() {
 // Drag and drop ---------------------------------------------------------------
 
 int View::GetDragOperations(const gfx::Point& press_pt) {
-  return drag_controller_ ?
-      drag_controller_->GetDragOperationsForView(this, press_pt) :
-      ui::DragDropTypes::DRAG_NONE;
+  return drag_controller_
+             ? drag_controller_->GetDragOperationsForView(this, press_pt)
+             : ui::DragDropTypes::DRAG_NONE;
 }
 
 void View::WriteDragData(const gfx::Point& press_pt, OSExchangeData* data) {
@@ -2710,10 +2695,10 @@ void View::CreateMaskLayer() {
 // Input -----------------------------------------------------------------------
 
 bool View::ProcessMousePressed(const ui::MouseEvent& event) {
-  int drag_operations =
-      (enabled_ && event.IsOnlyLeftMouseButton() &&
-       HitTestPoint(event.location())) ?
-       GetDragOperations(event.location()) : 0;
+  int drag_operations = (enabled_ && event.IsOnlyLeftMouseButton() &&
+                         HitTestPoint(event.location()))
+                            ? GetDragOperations(event.location())
+                            : 0;
   ContextMenuController* context_menu_controller =
       event.IsRightMouseButton() ? context_menu_controller_ : nullptr;
   View::DragInfo* drag_info = GetDragInfo();

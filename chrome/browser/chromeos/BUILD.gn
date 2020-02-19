@@ -1473,6 +1473,8 @@ source_set("chromeos") {
     "login/screens/fingerprint_setup_screen.h",
     "login/screens/gaia_screen.cc",
     "login/screens/gaia_screen.h",
+    "login/screens/gesture_navigation_screen.cc",
+    "login/screens/gesture_navigation_screen.h",
     "login/screens/hid_detection_screen.cc",
     "login/screens/hid_detection_screen.h",
     "login/screens/kiosk_autolaunch_screen.cc",

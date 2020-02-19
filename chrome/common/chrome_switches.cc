@@ -151,10 +151,6 @@ const char kDebugEnableFrameToggle[]        = "debug-enable-frame-toggle";
 // apps.
 const char kDebugPackedApps[]               = "debug-packed-apps";
 
-// Prevents permission prompts from appearing by denying instead of showing
-// prompts.
-const char kDenyPermissionPrompts[] = "deny-permission-prompts";
-
 // Passes command line parameters to the DevTools front-end.
 const char kDevToolsFlags[]                 = "devtools-flags";
 

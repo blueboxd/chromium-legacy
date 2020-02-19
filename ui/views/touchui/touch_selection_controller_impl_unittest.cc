@@ -112,7 +112,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     params.bounds = gfx::Rect(0, 0, 200, 200);
     widget_->Init(std::move(params));
     widget_->Show();
-}
+  }
 
  protected:
   static bool IsCursorHandleVisibleFor(
@@ -151,27 +151,27 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
     else
       handle = controller->GetHandle2View();
 
-    gfx::Point grip_location = gfx::Point(handle->size().width() / 2,
-                                          handle->size().height() / 2);
+    gfx::Point grip_location =
+        gfx::Point(handle->size().width() / 2, handle->size().height() / 2);
     base::TimeTicks time_stamp = base::TimeTicks();
     {
       ui::GestureEventDetails details(ui::ET_GESTURE_SCROLL_BEGIN);
-      ui::GestureEvent scroll_begin(
-          grip_location.x(), grip_location.y(), 0, time_stamp, details);
+      ui::GestureEvent scroll_begin(grip_location.x(), grip_location.y(), 0,
+                                    time_stamp, details);
       handle->OnGestureEvent(&scroll_begin);
     }
     test_cursor_client_->DisableMouseEvents();
     {
       ui::GestureEventDetails details(ui::ET_GESTURE_SCROLL_UPDATE);
       gfx::Point update_location = grip_location + v;
-      ui::GestureEvent scroll_update(
-          update_location.x(), update_location.y(), 0, time_stamp, details);
+      ui::GestureEvent scroll_update(update_location.x(), update_location.y(),
+                                     0, time_stamp, details);
       handle->OnGestureEvent(&scroll_update);
     }
     {
       ui::GestureEventDetails details(ui::ET_GESTURE_SCROLL_END);
-      ui::GestureEvent scroll_end(
-          grip_location.x(), grip_location.y(), 0, time_stamp, details);
+      ui::GestureEvent scroll_end(grip_location.x(), grip_location.y(), 0,
+                                  time_stamp, details);
       handle->OnGestureEvent(&scroll_end);
     }
     test_cursor_client_->EnableMouseEvents();
@@ -259,7 +259,7 @@ class TouchSelectionControllerImplTest : public ViewsTestBase {
       DCHECK(anchor == focus);
       EXPECT_EQ(cursor_bounds, GetExpectedHandleBounds(anchor)) << from_str;
     }
-    if (check_direction)  {
+    if (check_direction) {
       if (CompareTextSelectionBounds(anchor, focus) < 0) {
         EXPECT_EQ(gfx::SelectionBound::LEFT, anchor.type()) << from_str;
         EXPECT_EQ(gfx::SelectionBound::RIGHT, focus.type()) << from_str;
@@ -446,7 +446,9 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectCallbackTest) {
 
 TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   CreateTextfield();
-  textfield_->SetText(WideToUTF16(L"abc\x05e1\x05e2\x05e3" L"def"));
+  textfield_->SetText(
+      WideToUTF16(L"abc\x05e1\x05e2\x05e3"
+                  L"def"));
   // Tap the textfield to invoke touch selection.
   ui::GestureEventDetails details(ui::ET_GESTURE_TAP);
   details.set_tap_count(1);
@@ -514,7 +516,9 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   // Drag selection handle 1 to right by 1 char.
   x = gfx::Canvas::GetStringWidth(WideToUTF16(L"d"), font_list);
   SimulateSelectionHandleDrag(gfx::Vector2d(x, 0), 1);
-  EXPECT_EQ(WideToUTF16(L"\x05e2\x05e3" L"d"), textfield_->GetSelectedText());
+  EXPECT_EQ(WideToUTF16(L"\x05e2\x05e3"
+                        L"d"),
+            textfield_->GetSelectedText());
   VerifyHandlePositions(true, true, FROM_HERE);
 
   // Select [\x5e1] from left to right.
@@ -533,7 +537,9 @@ TEST_F(TouchSelectionControllerImplTest, SelectRectInBidiCallbackTest) {
   // Drag selection handle 2 to right by 1 char.
   x = gfx::Canvas::GetStringWidth(WideToUTF16(L"d"), font_list);
   SimulateSelectionHandleDrag(gfx::Vector2d(x, 0), 2);
-  EXPECT_EQ(WideToUTF16(L"\x05e2\x05e3" L"d"), textfield_->GetSelectedText());
+  EXPECT_EQ(WideToUTF16(L"\x05e2\x05e3"
+                        L"d"),
+            textfield_->GetSelectedText());
   VerifyHandlePositions(false, true, FROM_HERE);
 
   // Select [\x05r3] from right to left.
@@ -634,14 +640,11 @@ TEST_F(TouchSelectionControllerImplTest,
 // inside its boundaries.
 class TestTouchEditable : public ui::TouchEditable {
  public:
-  explicit TestTouchEditable(aura::Window* window)
-      : window_(window) {
+  explicit TestTouchEditable(aura::Window* window) : window_(window) {
     DCHECK(window);
   }
 
-  void set_bounds(const gfx::Rect& bounds) {
-    bounds_ = bounds;
-  }
+  void set_bounds(const gfx::Rect& bounds) { bounds_ = bounds; }
 
   void set_cursor_rect(const gfx::RectF& cursor_rect) {
     cursor_bound_.SetEdge(cursor_rect.origin(), cursor_rect.bottom_left());

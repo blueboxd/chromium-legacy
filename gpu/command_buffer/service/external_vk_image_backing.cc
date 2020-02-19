@@ -707,6 +707,7 @@ GLuint ExternalVkImageBacking::ProduceGLTextureInternal() {
     api->glTexStorageMem2DEXTFn(GL_TEXTURE_2D, 1, internal_format,
                                 size().width(), size().height(), memory_object,
                                 0);
+    api->glDeleteMemoryObjectsEXTFn(1, &memory_object);
     if (is_brga8) {
       api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
       api->glTexParameteriFn(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_R, GL_BLUE);

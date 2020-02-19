@@ -639,7 +639,7 @@ TEST_F(GcpGaiaCredentialBaseTest, FailedUserCreation) {
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
   // Fail user creation.
-  fake_os_user_manager()->SetShouldFailUserCreation(true);
+  fake_os_user_manager()->SetFailureReason(FAILEDOPERATIONS::ADD_USER, E_FAIL);
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
@@ -654,9 +654,8 @@ TEST_F(GcpGaiaCredentialBaseTest, FailedUserCreation_PasswordTooShort) {
   ASSERT_EQ(S_OK, InitializeProviderAndGetCredential(0, &cred));
 
   // Fail user creation.
-  fake_os_user_manager()->SetShouldFailUserCreation(true);
-  fake_os_user_manager()->SetShouldUserCreationFailureReason(
-      HRESULT_FROM_WIN32(NERR_PasswordTooShort));
+  fake_os_user_manager()->SetFailureReason(
+      FAILEDOPERATIONS::ADD_USER, HRESULT_FROM_WIN32(NERR_PasswordTooShort));
 
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
@@ -2464,7 +2463,8 @@ TEST_P(GcpGaiaCredentialBasePasswordChangeFailureTest, Fail) {
     base::string16 expected_error_msg = GetStringResource(message_id);
 
     // Set reason for failing the password change attempt.
-    fake_os_user_manager()->ShouldFailChangePassword(true, net_api_status);
+    fake_os_user_manager()->SetFailureReason(FAILEDOPERATIONS::CHANGE_PASSWORD,
+                                             net_api_status);
 
     // Create provider and start logon.
     Microsoft::WRL::ComPtr<ICredentialProviderCredential> cred;
@@ -2747,7 +2747,11 @@ INSTANTIATE_TEST_SUITE_P(All,
                          GcpGaiaCredentialBaseUploadDeviceDetailsTest,
                          ::testing::Values(0, 1, 2));
 
-TEST_F(GcpGaiaCredentialBaseTest, FullNameUpdated) {
+class GcpGaiaCredentialBaseFullNameUpdateTest
+    : public GcpGaiaCredentialBaseTest,
+      public ::testing::WithParamInterface<std::tuple<HRESULT, HRESULT>> {};
+
+TEST_P(GcpGaiaCredentialBaseFullNameUpdateTest, FullNameUpdated) {
   USES_CONVERSION;
 
   CredentialProviderSigninDialogTestDataStorage test_data_storage;
@@ -2766,9 +2770,9 @@ TEST_F(GcpGaiaCredentialBaseTest, FullNameUpdated) {
                 OLE2CW(email), &sid));
 
   base::string16 current_full_name;
-  ASSERT_EQ(S_OK, OSUserManager::Get()->GetUserFullname(
-                      OSUserManager::GetLocalDomain().c_str(), username,
-                      &current_full_name));
+  ASSERT_EQ(S_OK, fake_os_user_manager()->GetUserFullname(
+                      fake_os_user_manager()->GetLocalDomain().c_str(),
+                      username, &current_full_name));
   ASSERT_EQ(current_full_name, (BSTR)full_name);
 
   // Create provider and start logon.
@@ -2787,14 +2791,37 @@ TEST_F(GcpGaiaCredentialBaseTest, FullNameUpdated) {
   std::string new_full_name = "New Name";
   ASSERT_EQ(S_OK, test->SetGaiaFullNameOverride(new_full_name));
 
+  HRESULT get_fullname_hr = std::get<0>(GetParam());
+  HRESULT set_fullname_hr = std::get<1>(GetParam());
+  if (FAILED(get_fullname_hr)) {
+    fake_os_user_manager()->SetFailureReason(
+        FAILEDOPERATIONS::GET_USER_FULLNAME, get_fullname_hr);
+  }
+  if (FAILED(set_fullname_hr)) {
+    fake_os_user_manager()->SetFailureReason(
+        FAILEDOPERATIONS::SET_USER_FULLNAME, set_fullname_hr);
+  }
+
   ASSERT_EQ(S_OK, StartLogonProcessAndWait());
 
+  fake_os_user_manager()->RestoreOperation(FAILEDOPERATIONS::GET_USER_FULLNAME);
+  fake_os_user_manager()->RestoreOperation(FAILEDOPERATIONS::SET_USER_FULLNAME);
+
   base::string16 updated_full_name;
-  ASSERT_EQ(S_OK, OSUserManager::Get()->GetUserFullname(
-                      OSUserManager::GetLocalDomain().c_str(), username,
-                      &updated_full_name));
-  ASSERT_EQ(updated_full_name, base::UTF8ToUTF16(new_full_name));
+  ASSERT_EQ(S_OK, fake_os_user_manager()->GetUserFullname(
+                      fake_os_user_manager()->GetLocalDomain().c_str(),
+                      username, &updated_full_name));
+  if (FAILED(get_fullname_hr) || FAILED(set_fullname_hr)) {
+    ASSERT_NE(updated_full_name, base::UTF8ToUTF16(new_full_name));
+  } else {
+    ASSERT_EQ(updated_full_name, base::UTF8ToUTF16(new_full_name));
+  }
 }
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         GcpGaiaCredentialBaseFullNameUpdateTest,
+                         ::testing::Combine(::testing::Values(S_OK, E_FAIL),
+                                            ::testing::Values(S_OK, E_FAIL)));
 
 // Test event logs upload to GEM service with different failure scenarios.
 // Parameters are:

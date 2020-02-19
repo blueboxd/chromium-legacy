@@ -61,6 +61,7 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/fingerprint_setup_screen.h"
+#include "chrome/browser/chromeos/login/screens/gesture_navigation_screen.h"
 #include "chrome/browser/chromeos/login/screens/hid_detection_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_autolaunch_screen.h"
 #include "chrome/browser/chromeos/login/screens/kiosk_enable_screen.h"
@@ -110,6 +111,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/fingerprint_setup_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/gesture_navigation_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/hid_detection_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_autolaunch_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_enable_screen_handler.h"
@@ -186,6 +188,7 @@ const chromeos::StaticOobeScreenId kResumableScreens[] = {
     chromeos::TermsOfServiceScreenView::kScreenId,
     chromeos::SyncConsentScreenView::kScreenId,
     chromeos::FingerprintSetupScreenView::kScreenId,
+    chromeos::GestureNavigationScreenView::kScreenId,
     chromeos::ArcTermsOfServiceScreenView::kScreenId,
     chromeos::AutoEnrollmentCheckScreenView::kScreenId,
     chromeos::RecommendAppsScreenView::kScreenId,
@@ -572,6 +575,10 @@ std::vector<std::unique_ptr<BaseScreen>> WizardController::CreateScreens() {
       oobe_ui->GetView<FingerprintSetupScreenHandler>(),
       base::BindRepeating(&WizardController::OnFingerprintSetupScreenExit,
                           weak_factory_.GetWeakPtr())));
+  append(std::make_unique<GestureNavigationScreen>(
+      oobe_ui->GetView<GestureNavigationScreenHandler>(),
+      base::BindRepeating(&WizardController::OnGestureNavigationScreenExit,
+                          weak_factory_.GetWeakPtr())));
   append(std::make_unique<MarketingOptInScreen>(
       oobe_ui->GetView<MarketingOptInScreenHandler>(),
       base::BindRepeating(&WizardController::OnMarketingOptInScreenExit,
@@ -746,6 +753,10 @@ void WizardController::ShowAssistantOptInFlowScreen() {
 
 void WizardController::ShowMultiDeviceSetupScreen() {
   SetCurrentScreen(GetScreen(MultiDeviceSetupScreenView::kScreenId));
+}
+
+void WizardController::ShowGestureNavigationScreen() {
+  SetCurrentScreen(GetScreen(GestureNavigationScreenView::kScreenId));
 }
 
 void WizardController::ShowDiscoverScreen() {
@@ -1183,6 +1194,12 @@ void WizardController::OnAssistantOptInFlowScreenExit() {
 void WizardController::OnMultiDeviceSetupScreenExit() {
   OnScreenExit(MultiDeviceSetupScreenView::kScreenId, 0 /* exit_code */);
 
+  ShowGestureNavigationScreen();
+}
+
+void WizardController::OnGestureNavigationScreenExit() {
+  OnScreenExit(GestureNavigationScreenView::kScreenId, 0 /* exit_code */);
+
   OnOobeFlowFinished();
 }
 
@@ -1195,7 +1212,6 @@ void WizardController::OnChangedMetricsReportingState(bool enabled) {
   StatsReportingController::Get()->SetEnabled(
       ProfileManager::GetActiveUserProfile(), enabled);
   if (crash_reporter::IsCrashpadEnabled()) {
-    crash_reporter::SetUploadConsent(enabled);
     return;
   }
 
@@ -1513,6 +1529,8 @@ void WizardController::AdvanceToScreen(OobeScreenId screen) {
     ShowAssistantOptInFlowScreen();
   } else if (screen == MultiDeviceSetupScreenView::kScreenId) {
     ShowMultiDeviceSetupScreen();
+  } else if (screen == GestureNavigationScreenView::kScreenId) {
+    ShowGestureNavigationScreen();
   } else if (screen == DiscoverScreenView::kScreenId) {
     ShowDiscoverScreen();
   } else if (screen == FingerprintSetupScreenView::kScreenId) {

@@ -26,8 +26,8 @@ namespace client {
 class DragDropClient;
 class ScreenPositionClient;
 class WindowParentingClient;
-}
-}
+}  // namespace client
+}  // namespace aura
 
 namespace wm {
 class CompoundEventFilter;
@@ -36,7 +36,7 @@ class FocusController;
 class ShadowController;
 class VisibilityController;
 class WindowModalityController;
-}
+}  // namespace wm
 
 namespace views {
 namespace corewm {
@@ -87,9 +87,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   wm::CompoundEventFilter* root_window_event_filter() {
     return root_window_event_filter_.get();
   }
-  aura::WindowTreeHost* host() {
-    return host_.get();
-  }
+  aura::WindowTreeHost* host() { return host_.get(); }
 
   aura::Window* content_window() { return content_window_; }
 

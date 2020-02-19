@@ -491,8 +491,7 @@ Polymer({
         'documentSettings.isPdf, documentSettings.hasCssMediaStyles, ' +
         'documentSettings.hasSelection)',
     'updateHeaderFooterAvailable_(' +
-        'margins, settings.margins.value, ' +
-        'settings.customMargins.value, settings.mediaSize.value)',
+        'margins, settings.margins.value, settings.mediaSize.value)',
   ],
 
   /** @private {boolean} */
@@ -798,28 +797,19 @@ Polymer({
     }
 
     // Otherwise, availability depends on the margins.
-    let available = false;
     const marginsType =
         /** @type {!MarginsType} */ (this.getSettingValue('margins'));
-    switch (marginsType) {
-      case MarginsType.DEFAULT:
-        available = !this.margins ||
-            this.margins.get(CustomMarginsOrientation.TOP) > 0 ||
-            this.margins.get(CustomMarginsOrientation.BOTTOM) > 0;
-        break;
-      case MarginsType.NO_MARGINS:
-        break;
-      case MarginsType.MINIMUM:
-        available = true;
-        break;
-      case MarginsType.CUSTOM:
-        const margins = this.getSettingValue('customMargins');
-        available = margins.marginTop > 0 || margins.marginBottom > 0;
-        break;
-      default:
-        break;
+    if (marginsType === MarginsType.NO_MARGINS) {
+      return false;
     }
-    return available;
+
+    if (marginsType === MarginsType.MINIMUM) {
+      return true;
+    }
+
+    return !this.margins ||
+        this.margins.get(CustomMarginsOrientation.TOP) > 0 ||
+        this.margins.get(CustomMarginsOrientation.BOTTOM) > 0;
   },
 
   /**

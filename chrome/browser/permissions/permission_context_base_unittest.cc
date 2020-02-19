@@ -21,8 +21,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -33,8 +31,10 @@
 #include "components/permissions/features.h"
 #include "components/permissions/permission_decision_auto_blocker.h"
 #include "components/permissions/permission_request_id.h"
+#include "components/permissions/permission_request_manager.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
+#include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/variations/variations_associated_data.h"
@@ -193,7 +193,8 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     DCHECK(response == CONTENT_SETTING_ALLOW ||
            response == CONTENT_SETTING_BLOCK ||
            response == CONTENT_SETTING_ASK);
-    using AutoResponseType = PermissionRequestManager::AutoResponseType;
+    using AutoResponseType =
+        permissions::PermissionRequestManager::AutoResponseType;
     AutoResponseType decision = AutoResponseType::DISMISS;
     if (response == CONTENT_SETTING_ALLOW)
       decision = AutoResponseType::ACCEPT_ALL;
@@ -732,10 +733,11 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
   // ChromeRenderViewHostTestHarness:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
-    PermissionRequestManager::CreateForWebContents(web_contents());
-    PermissionRequestManager* manager =
-        PermissionRequestManager::FromWebContents(web_contents());
-    prompt_factory_.reset(new MockPermissionPromptFactory(manager));
+    permissions::PermissionRequestManager::CreateForWebContents(web_contents());
+    permissions::PermissionRequestManager* manager =
+        permissions::PermissionRequestManager::FromWebContents(web_contents());
+    prompt_factory_.reset(
+        new permissions::MockPermissionPromptFactory(manager));
   }
 
   void TearDown() override {
@@ -743,7 +745,7 @@ class PermissionContextBaseTests : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  std::unique_ptr<MockPermissionPromptFactory> prompt_factory_;
+  std::unique_ptr<permissions::MockPermissionPromptFactory> prompt_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionContextBaseTests);
 };

@@ -7,13 +7,13 @@
 #include "base/base64url.h"
 #include "base/rand_util.h"
 #include "base/strings/string_piece.h"
-#include "chrome/browser/ui/views/webauthn/authenticator_qr_code.h"
+#include "chrome/common/qr_code_generator/qr_code_generator.h"
 #include "device/fido/cable/cable_discovery_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 
-using QRCode = AuthenticatorQRCode;
+using QRCode = QRCodeGenerator;
 
 namespace {
 

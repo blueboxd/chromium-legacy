@@ -8,6 +8,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -28,7 +29,7 @@ void CustodianProfileDownloaderService::DownloadProfile(
   // The user must be logged in. "Unconsented" because this class doesn't care
   // about browser sync consent.
   if (!IdentityManagerFactory::GetForProfile(custodian_profile_)
-           ->HasUnconsentedPrimaryAccount()) {
+           ->HasPrimaryAccount(signin::ConsentLevel::kNotRequired)) {
     return;
   }
 

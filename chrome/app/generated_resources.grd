@@ -5704,25 +5704,7 @@ the Bookmarks menu.">
         Reset to default zoom level
       </message>
 
-      <!-- Accessibility permission -->
-      <message name="IDS_ACCESSIBILITY_EVENTS_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site that wants to respond to accessibility events, for example if the user is using a screen reader and the site has custom accessibility features. Follows a prompt: 'This site would like to:'">
-        Respond to Accessibility Events
-      </message>
-      <if expr="is_android">
-        <message name="IDS_ACCESSIBILITY_EVENTS_INFOBAR_TEXT" desc="Text requesting permission for a site to listen to accessibility events, for example if the user has a screen reader or braille device enabled">
-          <ph name="URL">$1<ex>maps.google.com</ex></ph> wants to respond to accessibility events
-        </message>
-      </if>
-
       <!-- Clipboard permission -->
-      <message name="IDS_CLIPBOARD_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site that wants to read data from the system clipboard. Follows a prompt: 'This site would like to:'">
-        See text and images copied to the clipboard
-      </message>
-      <if expr="is_android">
-        <message name="IDS_CLIPBOARD_INFOBAR_TEXT" desc="Text requesting permission for a site to read data from the system clipboard">
-          <ph name="URL">$1<ex>maps.google.com</ex></ph> wants to see text and images copied to the clipboard
-        </message>
-      </if>
       <message name="IDS_ALLOWED_CLIPBOARD_TITLE" desc="Title of the info bubble shown when a site has been allowed access to read the contents of the system clipboard.">
         Clipboard read access allowed
       </message>
@@ -6114,9 +6096,6 @@ the Bookmarks menu.">
       <!-- Clear Browsing Data -->
       <message name="IDS_CLEAR_BROWSING_DATA_TITLE" desc="Dialog title">
         Clear browsing data
-      </message>
-      <message name="IDS_FLASH_PERMISSION_FRAGMENT" desc="Permission asked in the permission bubble when a URL wants to use Flash Plugins on the page. Preceded by the prompt 'This site would like to:'. 'Flash' is the name of a plugin and should not be translated.">
-        Run Flash
       </message>
       <message name="IDS_CLEAR_BROWSING_DATA_HISTORY_NOTICE" desc="A dialog informing the user that their Chrome browsing history was deleted, but other forms of history can still be found on Google My Activity.">
         The selected data has been removed from Chrome and synced devices. Your Google Account may have other forms of browsing history like searches and activity from other Google services at <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>myactivity.google.com<ph name="END_LINK">&lt;/a&gt;</ph>.
@@ -8225,12 +8204,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </if>
 
       <!-- Web and message center notifications -->
-      <message name="IDS_NOTIFICATIONS_INFOBAR_TEXT" desc="Text requesting permission for Web Notifications.">
-        <ph name="site">$1<ex>mail.google.com</ex></ph> wants to send you notifications
-      </message>
-      <message name="IDS_NOTIFICATION_PERMISSIONS_FRAGMENT" desc="Permission sentence fragment to show following the prompt 'This site wants to:' in a permissions request">
-        Show notifications
-      </message>
       <message name="IDS_NOTIFICATION_BUTTON_SETTINGS" desc="Short button label to go to the notification settings panel">
         Settings
       </message>
@@ -8255,12 +8228,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
         <message name="IDS_NOTIFICATION_QUIET_PERMISSION_INFOBAR_TITLE" desc="Title of an infobar that informs the user that notifications are blocked. [CHAR_LIMIT=32]">
           Notifications blocked
-        </message>
-        <message name="IDS_NOTIFICATION_QUIET_PERMISSION_PROMPT_TITLE" desc="Text used as notification title when requesting permission for Web Notifications via a notification.">
-          Notifications for <ph name="ORIGIN">$1<ex>example.com</ex></ph> are blocked
-        </message>
-        <message name="IDS_NOTIFICATION_QUIET_PERMISSION_PROMPT_MESSAGE" desc="Text used as notification message when requesting permission for Web Notifications via a notification.">
-          Notifications are automatically blocked for all sites except ones you allow
         </message>
       </if>
 
@@ -8698,19 +8665,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </if>
 
       <!-- Geolocation messages -->
-      <if expr="not is_android">
-        <message name="IDS_GEOLOCATION_INFOBAR_TEXT" desc="Text requesting permission for a site to access the user's physical location">
-          <ph name="URL">$1<ex>maps.google.com</ex></ph> wants to use your computer's location
-        </message>
-      </if>
-      <if expr="is_android">
-        <message name="IDS_GEOLOCATION_INFOBAR_TEXT" desc="Mobile: Text requesting permission for a site to access the user's physical location">
-          <ph name="URL">$1<ex>maps.google.com</ex></ph> wants to use your device's location
-        </message>
-      </if>
-      <message name="IDS_GEOLOCATION_INFOBAR_PERMISSION_FRAGMENT" desc="Permission fragment used in the permission bubble, after 'This site wants to:' asking for permission to access the user's physical location.">
-        Know your location
-      </message>
       <message name="IDS_GEOLOCATION_BUBBLE_SECTION_ALLOWED" desc="Heading for a section in the geolocation bubble listing all sites which are currently tracking the user's location.">
         This page contains elements from the following sites that are tracking your location:
       </message>
@@ -8734,12 +8688,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
 
       <!-- Web MIDI messages -->
-      <message name="IDS_MIDI_SYSEX_INFOBAR_TEXT" desc="Text requesting permission for a site to access MIDI devices with system exclusive messages.">
-        <ph name="URL">$1<ex>www.google.com</ex></ph> wants to get full control of your MIDI devices
-      </message>
-      <message name="IDS_MIDI_SYSEX_PERMISSION_FRAGMENT" desc="Permission asked in the permission bubble when a URL wants to access MIDI devices with system exclusive messages, along with other permissions requests. Preceded by the prompt 'This site would like to:'">
-        Use your MIDI devices
-      </message>
       <message name="IDS_MIDI_SYSEX_ALLOWED_TOOLTIP" desc="Location bar icon tooltip text when a page is allowed to use MIDI system exclusive messages.">
         This page has full control of MIDI devices.
       </message>
@@ -8844,17 +8792,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </if>
 
       <!-- Protected media identifier permission infobar -->
-      <if expr="is_android or chromeos">
-        <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_PERMISSION_FRAGMENT" desc="Permission fragment shown in the permissions bubble when a web page requests access to the computer's protected media identifier.">
-          Know your unique device identifier
-        </message>
-        <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_PER_ORIGIN_PROVISIONING_INFOBAR_TEXT" desc="Text requesting permission for a site to access protected media identifier. It shows the origin of the URL.">
-          <ph name="URL">$1<ex>https://www.youtube.com</ex></ph> wants to play protected content. Your device’s identity will be verified by Google.
-        </message>
-        <message name="IDS_PROTECTED_MEDIA_IDENTIFIER_PER_DEVICE_PROVISIONING_INFOBAR_TEXT" desc="Text requesting permission for a site to access protected media identifier. It shows the origin of the URL.">
-          <ph name="URL">$1<ex>https://www.youtube.com</ex></ph> wants to play protected content. Your device's identity will be verified by Google and may be accessed by this site.
-        </message>
-      </if>
       <message name="IDS_MANAGE_PASSWORDS_CONFIRM_GENERATED_TEXT" desc="A message that the browser shows after saving a password it has autogenerated for the user. This message appears in a bubble and contains a link to all the user's saved autogenerated passwords. The link text is a separate string in the translation console and appears here as placeholder text.">
         View and manage saved passwords in your <ph name="SAVED_PASSWORDS_STORE">$1<ex>Google Account</ex></ph>
       </message>
@@ -9063,61 +9000,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO_INFOBAR_TEXT" desc="Text requesting permission for a site to access the computer's microphone and camera.">
         <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to use your camera and microphone
       </message>
-      <message name="IDS_MEDIA_CAPTURE_AUDIO_ONLY_INFOBAR_TEXT" desc="Text requesting permission for a site to access the computer's microphone.">
-        <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to use your microphone
-      </message>
-      <message name="IDS_MEDIA_CAPTURE_VIDEO_ONLY_INFOBAR_TEXT" desc="Text requesting permission for a site to access the computer's camera.">
-        <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to use your camera
-      </message>
       <message name="IDS_MEDIA_CAPTURE_SCREEN_INFOBAR_TEXT" desc="Text requesting permission for a site to access the device's screen.">
         <ph name="HOST">$1<ex>html5rocks.com</ex></ph> wants to share your screen
       </message>
-      <message name="IDS_MEDIA_CAPTURE_AUDIO_ONLY_PERMISSION_FRAGMENT" desc="Permission fragment shown in the permissions bubble when a web page requests access to the computer's microphone.">
-        Use your microphone
-      </message>
-      <message name="IDS_MEDIA_CAPTURE_VIDEO_ONLY_PERMISSION_FRAGMENT" desc="Permission fragment shown in the permissions bubble when a web page requests access to the computer's camera.">
-        Use your camera
-      </message>
-
-      <!-- NFC permission -->
-      <message name="IDS_NFC_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site that wants to use NFC. Follows a prompt: 'This site would like to:'">
-        Use NFC devices
-      </message>
-      <if expr="is_android">
-        <message name="IDS_NFC_INFOBAR_TEXT" desc="Text requesting permission for a site to use NFC">
-          <ph name="URL">$1<ex>google.com</ex></ph> wants to send and receive info when you tap your phone on an NFC device
-        </message>
-      </if>
-
-      <!-- WebXr permissions -->
-      <message name="IDS_VR_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site that wants to use VR. Follows a prompt: 'This site would like to:">
-        Use virtual reality devices and data
-      </message>
-      <message name="IDS_AR_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site that wants to use AR. Follows a prompt: 'This site would like to:">
-        Track camera position and map your room
-      </message>
-      <if expr="is_android">
-        <message name="IDS_VR_INFOBAR_TEXT" desc="Text requesting permission for a site to use VR">
-          <ph name="URL">$1<ex>google.com</ex></ph> wants to use your virtual reality device and data
-        </message>
-        <message name="IDS_AR_INFOBAR_TEXT" desc="Text requesting permission for a site to use AR">
-          <ph name="URL">$1<ex>google.com</ex></ph> wants to track camera position and map your room
-        </message>
-      </if>
-
-      <!-- Storage Access API permissions -->
-      <message name="IDS_STORAGE_ACCESS_PERMISSION_FRAGMENT" desc="Permission request shown if the user is visiting a site needs access to its data while it is embedded into another site. Follows a prompt: 'This site would like to:">
-        Access cookies and site data.
-
-Do you want to allow <ph name="EMBEDDED_URL">$1<ex>news.site</ex></ph> to use cookies and site data on <ph name="TOP_LEVEL_URL">$2<ex>content_domain.site</ex></ph>?
-
-This will otherwise be blocked by your privacy settings. This will allow the content you interacted with to work correctly, but may allow <ph name="EMBEDDED_URL">$1<ex>news.site</ex></ph> to track your activity.
-      </message>
-      <if expr="is_android">
-        <message name="IDS_STORAGE_ACCESS_INFOBAR_TEXT" desc="Permission request shown if the user is visiting a site needs access to its data while it is embedded into another site.">
-          <ph name="EMBEDDED_URL">$1<ex>news.site</ex></ph> wants to use cookies and site data on <ph name="TOP_LEVEL_URL">$2<ex>content_domain.site</ex></ph>
-        </message>
-      </if>
 
       <!-- Sensor messages -->
       <message name="IDS_SENSORS_ALLOWED_TOOLTIP" desc="Location bar icon tooltip text when a page is allowed to use device's sensors.">

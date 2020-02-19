@@ -8,9 +8,9 @@ import android.os.Handler;
 import android.support.annotation.DrawableRes;
 
 import org.chromium.base.Log;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.payments.handler.toolbar.PaymentHandlerToolbarCoordinator.PaymentHandlerToolbarObserver;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
+import org.chromium.components.omnibox.SecurityStatusIcon;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
@@ -41,6 +41,7 @@ import java.net.URISyntaxException;
     private Handler mHideProgressBarHandler;
     /** Postfixed with "Ref" to distinguish from mWebContent in WebContentsObserver. */
     private final WebContents mWebContentsRef;
+    private final boolean mIsSmallDevice;
 
     /**
      * Build a new mediator that handle events from outside the payment handler toolbar component.
@@ -48,10 +49,12 @@ import java.net.URISyntaxException;
      *         the payment handler toolbar component.
      * @param webContents The web-contents that loads the payment app.
      * @param observer The observer of this toolbar.
+     * @param isSmallDevice Whether the device screen is considered small.
      */
-    /* package */ PaymentHandlerToolbarMediator(
-            PropertyModel model, WebContents webContents, PaymentHandlerToolbarObserver observer) {
+    /* package */ PaymentHandlerToolbarMediator(PropertyModel model, WebContents webContents,
+            PaymentHandlerToolbarObserver observer, boolean isSmallDevice) {
         super(webContents);
+        mIsSmallDevice = isSmallDevice;
         mWebContentsRef = webContents;
         mModel = model;
         mObserver = observer;
@@ -91,6 +94,8 @@ import java.net.URISyntaxException;
             Log.e(TAG, "Failed to instantiate a URI with the url \"%s\".", url);
             mObserver.onToolbarError();
         }
+        mModel.set(PaymentHandlerToolbarProperties.SECURITY_ICON,
+                getSecurityIconResource(ConnectionSecurityLevel.NONE));
     }
 
     @Override
@@ -114,21 +119,10 @@ import java.net.URISyntaxException;
     }
 
     @DrawableRes
-    private static int getSecurityIconResource(@ConnectionSecurityLevel int securityLevel) {
-        switch (securityLevel) {
-            case ConnectionSecurityLevel.NONE:
-            case ConnectionSecurityLevel.WARNING:
-                return R.drawable.omnibox_info;
-            case ConnectionSecurityLevel.DANGEROUS:
-                return R.drawable.omnibox_not_secure_warning;
-            case ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT:
-            case ConnectionSecurityLevel.SECURE:
-            case ConnectionSecurityLevel.EV_SECURE:
-                return R.drawable.omnibox_https_valid;
-            default:
-                assert false;
-        }
-        return 0;
+    private int getSecurityIconResource(@ConnectionSecurityLevel int securityLevel) {
+        return SecurityStatusIcon.getSecurityIconResource(securityLevel,
+                SecurityStateModel.shouldShowDangerTriangleForWarningLevel(), mIsSmallDevice,
+                /*skipIconForNeutralState=*/true);
     }
 
     @Override

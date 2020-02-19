@@ -21,6 +21,10 @@ namespace invalidation {
 class InvalidationService;
 }  // namespace invalidation
 
+namespace signin {
+class IdentityManager;
+}
+
 namespace syncer {
 
 class SyncApiComponentFactory;
@@ -42,6 +46,8 @@ class SyncClient {
 
   // Returns the current profile's preference service.
   virtual PrefService* GetPrefService() = 0;
+
+  virtual signin::IdentityManager* GetIdentityManager() = 0;
 
   virtual base::FilePath GetSyncDataPath() = 0;
 

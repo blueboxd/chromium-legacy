@@ -22,8 +22,7 @@ namespace views {
 class AccessiblePaneViewFocusSearch : public FocusSearch {
  public:
   explicit AccessiblePaneViewFocusSearch(AccessiblePaneView* pane_view)
-      : FocusSearch(pane_view, true, true),
-        accessible_pane_view_(pane_view) {}
+      : FocusSearch(pane_view, true, true), accessible_pane_view_(pane_view) {}
 
  protected:
   View* GetParent(View* v) override {
@@ -166,7 +165,6 @@ views::FocusTraversable* AccessiblePaneView::GetPaneFocusTraversable() {
 
 bool AccessiblePaneView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
-
   views::View* focused_view = focus_manager_->GetFocusedView();
   if (!ContainsForFocusSearch(this, focused_view))
     return false;

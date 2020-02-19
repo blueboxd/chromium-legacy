@@ -1648,8 +1648,8 @@ void AppListView::ApplyBoundsAnimation(AppListViewState target_state,
 
   // When closing the view should animate to the shelf bounds. The workspace
   // area will not reflect an autohidden shelf so ask for the proper bounds.
-  const int y_for_closed_state =
-      delegate_->GetTargetYForAppListHide(GetWidget()->GetNativeView());
+  const int y_for_closed_state = delegate_->GetTargetYForAppListHide(
+      GetWidget()->GetNativeView()->GetRootWindow());
   if (target_state == AppListViewState::kClosed) {
     target_bounds.set_y(y_for_closed_state);
   }
@@ -2292,7 +2292,7 @@ int AppListView::GetPreferredWidgetYForState(AppListViewState state) const {
       return display.bounds().height() -
              AppListConfig::instance().peeking_app_list_height();
     case AppListViewState::kHalf:
-      return std::max(work_area_bounds.y(),
+      return std::max(work_area_bounds.y() - display.bounds().y(),
                       display.bounds().height() - kHalfAppListHeight);
     case AppListViewState::kFullscreenAllApps:
     case AppListViewState::kFullscreenSearch:

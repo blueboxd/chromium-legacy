@@ -28,7 +28,7 @@ namespace ui {
 class MouseEvent;
 class ScopedEventDispatcher;
 class XScopedEventSelector;
-}
+}  // namespace ui
 
 namespace views {
 

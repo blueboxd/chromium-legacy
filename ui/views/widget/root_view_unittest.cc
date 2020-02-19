@@ -144,8 +144,8 @@ TEST_F(RootViewTest, ContextMenuFromKeyEvent) {
   controller.Reset();
 
   // A context menu should be shown for a keypress of Shift+F10.
-  ui::KeyEvent menu_key_event(
-      ui::ET_KEY_PRESSED, ui::VKEY_F10, ui::EF_SHIFT_DOWN);
+  ui::KeyEvent menu_key_event(ui::ET_KEY_PRESSED, ui::VKEY_F10,
+                              ui::EF_SHIFT_DOWN);
   details = root_view->OnEventFromSource(&menu_key_event);
   EXPECT_FALSE(details.target_destroyed);
   EXPECT_FALSE(details.dispatcher_destroyed);
@@ -183,8 +183,7 @@ class GestureHandlingView : public View {
 // show a context menu.
 TEST_F(RootViewTest, ContextMenuFromLongPress) {
   Widget widget;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.bounds = gfx::Rect(100, 100);
   widget.Init(std::move(init_params));
@@ -257,8 +256,7 @@ TEST_F(RootViewTest, ContextMenuFromLongPress) {
 // Tests that context menus are not shown for disabled views on a long press.
 TEST_F(RootViewTest, ContextMenuFromLongPressOnDisabledView) {
   Widget widget;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   init_params.bounds = gfx::Rect(100, 100);
   widget.Init(std::move(init_params));
@@ -339,9 +337,7 @@ class DeleteViewOnEvent : public View {
   DeleteViewOnEvent(ui::EventType delete_event_type, bool* was_destroyed)
       : delete_event_type_(delete_event_type), was_destroyed_(was_destroyed) {}
 
-  ~DeleteViewOnEvent() override {
-      *was_destroyed_ = true;
-  }
+  ~DeleteViewOnEvent() override { *was_destroyed_ = true; }
 
   void OnEvent(ui::Event* event) override {
     if (event->type() == delete_event_type_)
@@ -410,8 +406,7 @@ class NestedEventOnEvent : public View {
 // Verifies deleting a View in OnMouseExited() doesn't crash.
 TEST_F(RootViewTest, DeleteViewOnMouseExitDispatch) {
   Widget widget;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
@@ -430,8 +425,7 @@ TEST_F(RootViewTest, DeleteViewOnMouseExitDispatch) {
   // Generate a mouse move event which ensures that |mouse_moved_handler_|
   // is set in the RootView class.
   ui::MouseEvent moved_event(ui::ET_MOUSE_MOVED, gfx::Point(15, 15),
-                             gfx::Point(15, 15), ui::EventTimeForNow(), 0,
-                             0);
+                             gfx::Point(15, 15), ui::EventTimeForNow(), 0, 0);
   root_view->OnMouseMoved(moved_event);
   ASSERT_FALSE(view_destroyed);
 
@@ -449,8 +443,7 @@ TEST_F(RootViewTest, DeleteViewOnMouseExitDispatch) {
 // Verifies deleting a View in OnMouseEntered() doesn't crash.
 TEST_F(RootViewTest, DeleteViewOnMouseEnterDispatch) {
   Widget widget;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget.Init(std::move(init_params));
   widget.SetBounds(gfx::Rect(10, 10, 500, 500));
@@ -470,8 +463,7 @@ TEST_F(RootViewTest, DeleteViewOnMouseEnterDispatch) {
 
   // Move the mouse within |widget| but outside of |child|.
   ui::MouseEvent moved_event(ui::ET_MOUSE_MOVED, gfx::Point(15, 15),
-                             gfx::Point(15, 15), ui::EventTimeForNow(), 0,
-                             0);
+                             gfx::Point(15, 15), ui::EventTimeForNow(), 0, 0);
   root_view->OnMouseMoved(moved_event);
   ASSERT_FALSE(view_destroyed);
 
@@ -639,15 +631,11 @@ namespace {
 // View class which deletes its owning Widget when it gets a mouse exit event.
 class DeleteWidgetOnMouseExit : public View {
  public:
-  explicit DeleteWidgetOnMouseExit(Widget* widget)
-      : widget_(widget) {
-  }
+  explicit DeleteWidgetOnMouseExit(Widget* widget) : widget_(widget) {}
 
   ~DeleteWidgetOnMouseExit() override = default;
 
-  void OnMouseExited(const ui::MouseEvent& event) override {
-    delete widget_;
-  }
+  void OnMouseExited(const ui::MouseEvent& event) override { delete widget_; }
 
  private:
   Widget* widget_;
@@ -661,8 +649,7 @@ class DeleteWidgetOnMouseExit : public View {
 // View::OnMouseExited().
 TEST_F(RootViewTest, DeleteWidgetOnMouseExitDispatch) {
   Widget* widget = new Widget;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget->Init(std::move(init_params));
   widget->SetBounds(gfx::Rect(10, 10, 500, 500));
@@ -681,8 +668,7 @@ TEST_F(RootViewTest, DeleteWidgetOnMouseExitDispatch) {
 
   // Move the mouse within |child|.
   ui::MouseEvent moved_event(ui::ET_MOUSE_MOVED, gfx::Point(115, 115),
-                             gfx::Point(115, 115), ui::EventTimeForNow(), 0,
-                             0);
+                             gfx::Point(115, 115), ui::EventTimeForNow(), 0, 0);
   root_view->OnMouseMoved(moved_event);
   ASSERT_TRUE(widget_deletion_observer.IsWidgetAlive());
 
@@ -699,8 +685,7 @@ TEST_F(RootViewTest, DeleteWidgetOnMouseExitDispatch) {
 // of a mouse exited event which was propagated from one of its children.
 TEST_F(RootViewTest, DeleteWidgetOnMouseExitDispatchFromChild) {
   Widget* widget = new Widget;
-  Widget::InitParams init_params =
-      CreateParams(Widget::InitParams::TYPE_POPUP);
+  Widget::InitParams init_params = CreateParams(Widget::InitParams::TYPE_POPUP);
   init_params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget->Init(std::move(init_params));
   widget->SetBounds(gfx::Rect(10, 10, 500, 500));

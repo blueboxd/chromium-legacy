@@ -88,6 +88,8 @@ class ProfileSyncService : public SyncService,
     ~InitParams();
 
     std::unique_ptr<SyncClient> sync_client;
+    // TODO(treib): Remove this and instead retrieve it via
+    // SyncClient::GetIdentityManager (but mind LocalSync).
     signin::IdentityManager* identity_manager = nullptr;
     // TODO(crbug.com/1029481): This vector only ever has one entry; replace by
     // just a pointer.

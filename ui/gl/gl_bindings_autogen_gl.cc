@@ -813,6 +813,12 @@ void DriverGL::InitializeDynamicBindings(const GLVersionInfo* ver,
             GetGLProcAddress("glDeleteFramebuffersEXT"));
   }
 
+  if (ext.b_GL_EXT_memory_object) {
+    fn.glDeleteMemoryObjectsEXTFn =
+        reinterpret_cast<glDeleteMemoryObjectsEXTProc>(
+            GetGLProcAddress("glDeleteMemoryObjectsEXT"));
+  }
+
   if (ext.b_GL_NV_path_rendering) {
     fn.glDeletePathsNVFn = reinterpret_cast<glDeletePathsNVProc>(
         GetGLProcAddress("glDeletePathsNV"));
@@ -3455,6 +3461,11 @@ void GLApiBase::glDeleteFencesNVFn(GLsizei n, const GLuint* fences) {
 void GLApiBase::glDeleteFramebuffersEXTFn(GLsizei n,
                                           const GLuint* framebuffers) {
   driver_->fn.glDeleteFramebuffersEXTFn(n, framebuffers);
+}
+
+void GLApiBase::glDeleteMemoryObjectsEXTFn(GLsizei n,
+                                           const GLuint* memoryObjects) {
+  driver_->fn.glDeleteMemoryObjectsEXTFn(n, memoryObjects);
 }
 
 void GLApiBase::glDeletePathsNVFn(GLuint path, GLsizei range) {
@@ -6809,6 +6820,12 @@ void TraceGLApi::glDeleteFramebuffersEXTFn(GLsizei n,
                                            const GLuint* framebuffers) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteFramebuffersEXT")
   gl_api_->glDeleteFramebuffersEXTFn(n, framebuffers);
+}
+
+void TraceGLApi::glDeleteMemoryObjectsEXTFn(GLsizei n,
+                                            const GLuint* memoryObjects) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glDeleteMemoryObjectsEXT")
+  gl_api_->glDeleteMemoryObjectsEXTFn(n, memoryObjects);
 }
 
 void TraceGLApi::glDeletePathsNVFn(GLuint path, GLsizei range) {
@@ -10849,6 +10866,14 @@ void LogGLApi::glDeleteFramebuffersEXTFn(GLsizei n,
                  << "(" << n << ", " << static_cast<const void*>(framebuffers)
                  << ")");
   gl_api_->glDeleteFramebuffersEXTFn(n, framebuffers);
+}
+
+void LogGLApi::glDeleteMemoryObjectsEXTFn(GLsizei n,
+                                          const GLuint* memoryObjects) {
+  GL_SERVICE_LOG("glDeleteMemoryObjectsEXT"
+                 << "(" << n << ", " << static_cast<const void*>(memoryObjects)
+                 << ")");
+  gl_api_->glDeleteMemoryObjectsEXTFn(n, memoryObjects);
 }
 
 void LogGLApi::glDeletePathsNVFn(GLuint path, GLsizei range) {
@@ -15571,6 +15596,11 @@ void NoContextGLApi::glDeleteFencesNVFn(GLsizei n, const GLuint* fences) {
 void NoContextGLApi::glDeleteFramebuffersEXTFn(GLsizei n,
                                                const GLuint* framebuffers) {
   NoContextHelper("glDeleteFramebuffersEXT");
+}
+
+void NoContextGLApi::glDeleteMemoryObjectsEXTFn(GLsizei n,
+                                                const GLuint* memoryObjects) {
+  NoContextHelper("glDeleteMemoryObjectsEXT");
 }
 
 void NoContextGLApi::glDeletePathsNVFn(GLuint path, GLsizei range) {

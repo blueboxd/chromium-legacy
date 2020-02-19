@@ -26,7 +26,7 @@ namespace content {
 class BrowserContext;
 class RenderFrameHost;
 struct GlobalRequestID;
-}
+}  // namespace content
 
 namespace views {
 

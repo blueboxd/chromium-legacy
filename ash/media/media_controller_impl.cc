@@ -127,6 +127,56 @@ void MediaControllerImpl::HandleMediaPlayPause() {
     client_->HandleMediaPlayPause();
 }
 
+void MediaControllerImpl::HandleMediaPlay() {
+  if (Shell::Get()->session_controller()->IsScreenLocked() &&
+      !AreLockScreenMediaKeysEnabled()) {
+    return;
+  }
+
+  ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kPlay);
+
+  // If the |client_| is force handling the keys then we should forward them.
+  if (client_ && force_media_client_key_handling_) {
+    client_->HandleMediaPlay();
+    return;
+  }
+
+  // If media session media key handling is enabled. Fire play using the media
+  // session service.
+  if (ShouldUseMediaSession()) {
+    GetMediaSessionController()->Resume();
+    return;
+  }
+
+  if (client_)
+    client_->HandleMediaPlay();
+}
+
+void MediaControllerImpl::HandleMediaPause() {
+  if (Shell::Get()->session_controller()->IsScreenLocked() &&
+      !AreLockScreenMediaKeysEnabled()) {
+    return;
+  }
+
+  ui::RecordMediaHardwareKeyAction(ui::MediaHardwareKeyAction::kPause);
+
+  // If the |client_| is force handling the keys then we should forward them.
+  if (client_ && force_media_client_key_handling_) {
+    client_->HandleMediaPause();
+    return;
+  }
+
+  // If media session media key handling is enabled. Fire pause using the media
+  // session service.
+  if (ShouldUseMediaSession()) {
+    GetMediaSessionController()->Suspend();
+    return;
+  }
+
+  if (client_)
+    client_->HandleMediaPause();
+}
+
 void MediaControllerImpl::HandleMediaNextTrack() {
   if (Shell::Get()->session_controller()->IsScreenLocked() &&
       !AreLockScreenMediaKeysEnabled()) {

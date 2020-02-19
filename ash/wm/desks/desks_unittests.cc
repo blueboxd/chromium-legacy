@@ -1019,6 +1019,12 @@ TEST_F(DesksTest, RemoveActiveDeskFromOverview) {
   EXPECT_EQ(1, desk_1_observer.notify_counts());
   EXPECT_EQ(0, desk_2_observer.notify_counts());
 
+  // Make sure that the desks_bar_view window is still visible, i.e. it moved to
+  // the newly-activated desk's container.
+  EXPECT_TRUE(desks_bar_view->GetWidget()->IsVisible());
+  EXPECT_TRUE(DoesActiveDeskContainWindow(
+      desks_bar_view->GetWidget()->GetNativeWindow()));
+
   // desk_1 will become active, and windows from desk_2 and desk_1 will merge
   // and added in the overview grid in the order of MRU.
   ASSERT_EQ(1u, controller->desks().size());

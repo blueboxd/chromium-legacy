@@ -194,6 +194,7 @@ void SkiaGoldPixelDiff::Init(const std::string& screenshot_prefix) {
   }
   initialized_ = true;
   prefix_ = screenshot_prefix;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::CreateNewTempDirectory(FILE_PATH_LITERAL("SkiaGoldTemp"),
                                &working_dir_);
 

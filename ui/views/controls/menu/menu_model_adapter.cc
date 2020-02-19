@@ -124,7 +124,6 @@ MenuItemView* MenuModelAdapter::AppendMenuItemFromModel(ui::MenuModel* model,
   return AddMenuItemFromModelAt(model, model_index, menu, menu_index, item_id);
 }
 
-
 MenuItemView* MenuModelAdapter::AppendMenuItem(MenuItemView* menu,
                                                ui::MenuModel* model,
                                                int index) {

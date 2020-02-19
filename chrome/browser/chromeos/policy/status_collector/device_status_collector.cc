@@ -787,6 +787,7 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       battery_info_out->set_serial(battery_info->serial_number);
       battery_info_out->set_manufacturer(battery_info->vendor);
       battery_info_out->set_cycle_count(battery_info->cycle_count);
+      battery_info_out->set_technology(battery_info->technology);
       // Convert Ah to mAh:
       battery_info_out->set_design_capacity(
           std::lround(battery_info->charge_full_design * 1000));
@@ -1293,6 +1294,9 @@ void DeviceStatusCollector::SampleProbeData(
     // Convert Ah to mAh:
     battery_sample.set_remaining_capacity(
         std::lround(battery->charge_now * 1000));
+    // Convert A to mA:
+    battery_sample.set_current(std::lround(battery->current_now * 1000));
+    battery_sample.set_status(battery->status);
     // Convert 0.1 Kelvin to Celsius:
     const auto& smart_info = battery->smart_battery_info;
     if (!smart_info.is_null()) {

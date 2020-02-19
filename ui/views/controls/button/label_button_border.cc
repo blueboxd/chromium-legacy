@@ -32,9 +32,8 @@ void PaintHelper(LabelButtonAssetBorder* border,
                  ui::NativeTheme::State state,
                  const gfx::Rect& rect,
                  const ui::NativeTheme::ExtraParams& extra) {
-  Painter* painter =
-      border->GetPainter(extra.button.is_focused,
-                         Button::GetButtonStateFrom(state));
+  Painter* painter = border->GetPainter(extra.button.is_focused,
+                                        Button::GetButtonStateFrom(state));
   // Paint any corresponding unfocused painter if there is no focused painter.
   if (!painter && extra.button.is_focused)
     painter = border->GetPainter(false, Button::GetButtonStateFrom(state));

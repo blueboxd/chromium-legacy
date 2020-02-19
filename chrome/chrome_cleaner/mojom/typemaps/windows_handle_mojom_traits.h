@@ -19,7 +19,7 @@ struct EnumTraits<chrome_cleaner::mojom::PredefinedHandle, HANDLE> {
 
 template <>
 struct UnionTraits<chrome_cleaner::mojom::WindowsHandleDataView, HANDLE> {
-  static mojo::ScopedHandle raw_handle(HANDLE handle);
+  static mojo::PlatformHandle raw_handle(HANDLE handle);
   static chrome_cleaner::mojom::PredefinedHandle special_handle(HANDLE handle);
   static chrome_cleaner::mojom::WindowsHandleDataView::Tag GetTag(
       HANDLE handle);

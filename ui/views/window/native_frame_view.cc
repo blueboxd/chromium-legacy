@@ -41,7 +41,7 @@ gfx::Rect NativeFrameView::GetWindowBoundsForClientBounds(
   // empty size.
   gfx::Rect window_bounds = client_bounds;
   if (window_bounds.IsEmpty())
-    window_bounds.set_size(gfx::Size(1,1));
+    window_bounds.set_size(gfx::Size(1, 1));
   return window_bounds;
 #endif
 }
@@ -80,8 +80,9 @@ gfx::Size NativeFrameView::CalculatePreferredSize() const {
   // |GetWindowBoundsForClientBounds()|.
   return client_preferred_size;
 #else
-  return frame_->non_client_view()->GetWindowBoundsForClientBounds(
-      gfx::Rect(client_preferred_size)).size();
+  return frame_->non_client_view()
+      ->GetWindowBoundsForClientBounds(gfx::Rect(client_preferred_size))
+      .size();
 #endif
 }
 

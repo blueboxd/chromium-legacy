@@ -26,13 +26,9 @@ class MinimizeAndMaximizeStateControlDelegate : public WidgetDelegateView {
   MinimizeAndMaximizeStateControlDelegate() = default;
   ~MinimizeAndMaximizeStateControlDelegate() override = default;
 
-  void set_can_maximize(bool can_maximize) {
-    can_maximize_ = can_maximize;
-  }
+  void set_can_maximize(bool can_maximize) { can_maximize_ = can_maximize; }
 
-  void set_can_minimize(bool can_minimize) {
-    can_minimize_ = can_minimize;
-  }
+  void set_can_minimize(bool can_minimize) { can_minimize_ = can_minimize; }
 
   // WidgetDelegate:
   bool CanMaximize() const override { return can_maximize_; }
@@ -52,18 +48,14 @@ class CustomFrameViewTest : public ViewsTestBase {
   CustomFrameViewTest() = default;
   ~CustomFrameViewTest() override = default;
 
-  CustomFrameView* custom_frame_view() {
-    return custom_frame_view_;
-  }
+  CustomFrameView* custom_frame_view() { return custom_frame_view_; }
 
   MinimizeAndMaximizeStateControlDelegate*
-        minimize_and_maximize_state_control_delegate() {
+  minimize_and_maximize_state_control_delegate() {
     return minimize_and_maximize_state_control_delegate_;
   }
 
-  Widget* widget() {
-    return widget_;
-  }
+  Widget* widget() { return widget_; }
 
   // ViewsTestBase:
   void SetUp() override;
@@ -86,17 +78,11 @@ class CustomFrameViewTest : public ViewsTestBase {
     return custom_frame_view_->maximize_button_;
   }
 
-  ImageButton* restore_button() {
-    return custom_frame_view_->restore_button_;
-  }
+  ImageButton* restore_button() { return custom_frame_view_->restore_button_; }
 
-  ImageButton* close_button() {
-    return custom_frame_view_->close_button_;
-  }
+  ImageButton* close_button() { return custom_frame_view_->close_button_; }
 
-  gfx::Rect title_bounds() {
-    return custom_frame_view_->title_bounds_;
-  }
+  gfx::Rect title_bounds() { return custom_frame_view_->title_bounds_; }
 
   void SetWindowButtonOrder(
       const std::vector<views::FrameButton> leading_buttons,
@@ -111,7 +97,7 @@ class CustomFrameViewTest : public ViewsTestBase {
 
   // Delegate of |widget_| which controls minimizing and maximizing
   MinimizeAndMaximizeStateControlDelegate*
-        minimize_and_maximize_state_control_delegate_;
+      minimize_and_maximize_state_control_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomFrameViewTest);
 };
@@ -140,8 +126,8 @@ void CustomFrameViewTest::TearDown() {
 void CustomFrameViewTest::SetWindowButtonOrder(
     const std::vector<views::FrameButton> leading_buttons,
     const std::vector<views::FrameButton> trailing_buttons) {
-  WindowButtonOrderProvider::GetInstance()->
-      SetWindowButtonOrder(leading_buttons, trailing_buttons);
+  WindowButtonOrderProvider::GetInstance()->SetWindowButtonOrder(
+      leading_buttons, trailing_buttons);
 }
 
 // Tests that there is a default button ordering before initialization causes
@@ -228,7 +214,7 @@ TEST_F(CustomFrameViewTest, CannotMaximizeHidesButton) {
   Widget* parent = widget();
   CustomFrameView* view = custom_frame_view();
   MinimizeAndMaximizeStateControlDelegate* delegate =
-        minimize_and_maximize_state_control_delegate();
+      minimize_and_maximize_state_control_delegate();
   delegate->set_can_maximize(false);
 
   view->Init(parent);

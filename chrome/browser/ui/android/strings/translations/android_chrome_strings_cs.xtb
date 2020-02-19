@@ -450,9 +450,6 @@
 <translation id="4521489764227272523">Vybraná data byla z Chromu a synchronizovaných zařízení odstraněna.
 
 Na stránce <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> mohou být k dispozici další druhy historie prohlížení zaznamenané ve vašem účtu Google, například vyhledávací dotazy a aktivita z ostatních služeb Google.</translation>
-<translation id="4527374721149092498">Vyhledávejte informace o tématech zmíněných na stránce, aniž byste stránku museli opustit. Klepnutím na Vyhledat odešlete slovo a okolní kontext do Vyhledávání Google, které vrátí definice, obrázky, výsledky vyhledávání a další podrobnosti.
-
-Dlouhým stisknutím jakéhokoli slova z něj vytvoříte vyhledávací dotaz. Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. Chcete-li vyhledávací dotaz upřesnit, přejetím prstem otevřete panel, klepnutím na ikonu rozbalení vytvořte novou kartu a klepněte na vyhledávací pole.</translation>
 <translation id="4532845899244822526">Výběr složky</translation>
 <translation id="4538018662093857852">Zapnout zjednodušený režim</translation>
 <translation id="4550003330909367850">Chcete-li zde zobrazovat či kopírovat hesla, nastavte v tomto zařízení zámek obrazovky.</translation>
@@ -668,7 +665,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="604996488070107836">Stažení souboru <ph name="FILE_NAME" /> se nezdařilo z důvodu neznámé chyby.</translation>
 <translation id="605721222689873409">RR</translation>
 <translation id="6064125863973209585">Dokončená stahování</translation>
-<translation id="6075798973483050474">Upravit domovskou stránku</translation>
 <translation id="6092062101542170135">Chcete-li pokračovat, zapněte NFC v nastavení zařízení Android</translation>
 <translation id="60923314841986378">Zbývá: <ph name="HOURS" /> h</translation>
 <translation id="6108923351542677676">Probíhá nastavování…</translation>
@@ -691,9 +687,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="6232535412751077445">Pokud povolíte požadavek Do Not Track, bude připojován k datům provozu prohlížení. Účinek tohoto požadavku závisí na tom, zda na něj budou webové stránky reagovat a jak jej budou interpretovat.
 
 Některé weby mohou například na tento požadavek reagovat tak, že vám zobrazí reklamy, které nejsou založeny na ostatních navštívených webových stránkách. Řada webů bude i nadále shromažďovat vaše údaje o prohlížení a používat je například ke zlepšení zabezpečení, poskytování obsahu, reklam a doporučení a ke generování statistik pro přehledy.</translation>
-<translation id="6238003486329291387">Vyhledávejte informace o tématech zmíněných na stránce, aniž byste stránku museli opustit. Klepnutím na Vyhledat odešlete slovo a okolní kontext do Vyhledávání Google, které vrátí definice, obrázky, výsledky vyhledávání a další podrobnosti.
-
-Dlouhým stisknutím jakéhokoli slova z něj vytvoříte vyhledávací dotaz. Chcete-li vyhledávací dotaz upřesnit, upravte výběr. Také můžete panel přejetím prstem otevřít, klepnutím na ikonu rozbalení vytvořit novou kartu a potom klepnout na vyhledávací pole.</translation>
 <translation id="624789221780392884">Je připravena aktualizace</translation>
 <translation id="6255999984061454636">Návrhy obsahu</translation>
 <translation id="6270391203985052864">Weby mohou žádat o oprávnění zasílat vám oznámení</translation>

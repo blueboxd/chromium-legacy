@@ -61,3 +61,4 @@
 // <include src="security_token_pin.js">
 // <include src="update_required_card.js">
 // <include src="packaged_license_screen.js">
+// <include src="gesture_navigation.js">

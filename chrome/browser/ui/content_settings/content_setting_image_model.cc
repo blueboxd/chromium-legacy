@@ -18,7 +18,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/download/download_request_limiter.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -33,6 +32,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/features.h"
+#include "components/permissions/permission_request_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/web_contents.h"
@@ -222,16 +222,16 @@ struct ContentSettingsImageDetails {
 };
 
 const ContentSettingsImageDetails kImageDetails[] = {
-    {ContentSettingsType::COOKIES, kCookieIcon, IDS_BLOCKED_COOKIES_MESSAGE, 0,
-     IDS_ACCESSED_COOKIES_MESSAGE},
+    {ContentSettingsType::COOKIES, vector_icons::kCookieIcon,
+     IDS_BLOCKED_COOKIES_MESSAGE, 0, IDS_ACCESSED_COOKIES_MESSAGE},
     {ContentSettingsType::IMAGES, kPhotoIcon, IDS_BLOCKED_IMAGES_MESSAGE, 0, 0},
     {ContentSettingsType::JAVASCRIPT, kCodeIcon, IDS_BLOCKED_JAVASCRIPT_MESSAGE,
      0, 0},
-    {ContentSettingsType::PLUGINS, kExtensionIcon, IDS_BLOCKED_PLUGINS_MESSAGE,
-     IDS_BLOCKED_PLUGIN_EXPLANATORY_TEXT, 0},
+    {ContentSettingsType::PLUGINS, vector_icons::kExtensionIcon,
+     IDS_BLOCKED_PLUGINS_MESSAGE, IDS_BLOCKED_PLUGIN_EXPLANATORY_TEXT, 0},
     {ContentSettingsType::MIXEDSCRIPT, kMixedContentIcon,
      IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT, 0, 0},
-    {ContentSettingsType::PPAPI_BROKER, kExtensionIcon,
+    {ContentSettingsType::PPAPI_BROKER, vector_icons::kExtensionIcon,
      IDS_BLOCKED_PPAPI_BROKER_MESSAGE, 0, IDS_ALLOWED_PPAPI_BROKER_MESSAGE},
     {ContentSettingsType::SOUND, kTabAudioIcon, IDS_BLOCKED_SOUND_TITLE, 0, 0},
     {ContentSettingsType::ADS, kAdsIcon, IDS_BLOCKED_ADS_PROMPT_TOOLTIP,
@@ -606,7 +606,8 @@ bool ContentSettingClipboardReadWriteImageModel::UpdateAndGetVisibility(
   if (!blocked && !allowed)
     return false;
 
-  set_icon(kContentPasteIcon, allowed ? gfx::kNoneIcon : kBlockedBadgeIcon);
+  set_icon(vector_icons::kContentPasteIcon,
+           allowed ? gfx::kNoneIcon : kBlockedBadgeIcon);
   set_tooltip(l10n_util::GetStringUTF16(
       allowed ? IDS_ALLOWED_CLIPBOARD_MESSAGE : IDS_BLOCKED_CLIPBOARD_MESSAGE));
   return true;
@@ -875,7 +876,8 @@ ContentSettingNotificationsImageModel::ContentSettingNotificationsImageModel()
 
 bool ContentSettingNotificationsImageModel::UpdateAndGetVisibility(
     WebContents* web_contents) {
-  auto* manager = PermissionRequestManager::FromWebContents(web_contents);
+  auto* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents);
   auto* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
@@ -886,7 +888,8 @@ bool ContentSettingNotificationsImageModel::UpdateAndGetVisibility(
   set_should_show_promo(
       QuietNotificationPermissionUiState::ShouldShowPromo(profile));
   if (manager->ReasonForUsingQuietUi() ==
-      PermissionRequestManager::QuietUiReason::kTriggeredByCrowdDeny) {
+      permissions::PermissionRequestManager::QuietUiReason::
+          kTriggeredByCrowdDeny) {
     set_explanatory_string_id(0);
   } else {
     set_explanatory_string_id(IDS_NOTIFICATIONS_OFF_EXPLANATORY_TEXT);

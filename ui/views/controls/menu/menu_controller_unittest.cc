@@ -947,8 +947,7 @@ TEST_F(MenuControllerTest, InitialSelectedItem) {
   ASSERT_NE(nullptr, first_selectable);
   EXPECT_EQ(2, first_selectable->GetCommand());
   // The last selectable item should be item "Four".
-  MenuItemView* last_selectable =
-      FindInitialSelectableMenuItemUp(menu_item());
+  MenuItemView* last_selectable = FindInitialSelectableMenuItemUp(menu_item());
   ASSERT_NE(nullptr, last_selectable);
   EXPECT_EQ(4, last_selectable->GetCommand());
 

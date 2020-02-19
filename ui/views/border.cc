@@ -138,11 +138,9 @@ class EmptyBorder : public Border {
   DISALLOW_COPY_AND_ASSIGN(EmptyBorder);
 };
 
-EmptyBorder::EmptyBorder(const gfx::Insets& insets) : insets_(insets) {
-}
+EmptyBorder::EmptyBorder(const gfx::Insets& insets) : insets_(insets) {}
 
-void EmptyBorder::Paint(const View& view, gfx::Canvas* canvas) {
-}
+void EmptyBorder::Paint(const View& view, gfx::Canvas* canvas) {}
 
 gfx::Insets EmptyBorder::GetInsets() const {
   return insets_;

@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
-#include "mojo/public/cpp/system/handle.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/public/platform_window_surface.h"
 
@@ -43,7 +43,7 @@ class ScenicSurface : public ui::PlatformWindowSurface {
 
   // Creates a View for this surface, and returns a ViewHolderToken handle
   // that can be used to attach it into a scene graph.
-  mojo::ScopedHandle CreateView();
+  mojo::PlatformHandle CreateView();
 
   void AssertBelongsToCurrentThread() {
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

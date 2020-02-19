@@ -5,9 +5,9 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/permissions/permission_request_manager.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -17,11 +17,12 @@ namespace extensions {
 namespace {
 
 // Used to observe the creation of permission prompt without responding.
-class PermissionRequestObserver : public PermissionRequestManager::Observer {
+class PermissionRequestObserver
+    : public permissions::PermissionRequestManager::Observer {
  public:
   explicit PermissionRequestObserver(content::WebContents* web_contents)
-      : request_manager_(
-            PermissionRequestManager::FromWebContents(web_contents)),
+      : request_manager_(permissions::PermissionRequestManager::FromWebContents(
+            web_contents)),
         request_shown_(false) {
     request_manager_->AddObserver(this);
   }
@@ -39,7 +40,7 @@ class PermissionRequestObserver : public PermissionRequestManager::Observer {
     request_manager_->RemoveObserver(this);
   }
 
-  PermissionRequestManager* request_manager_;
+  permissions::PermissionRequestManager* request_manager_;
   bool request_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionRequestObserver);
@@ -89,10 +90,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcFromWebAccessibleResourceTest,
   GURL url = GetTestServerInsecureUrl("/extensions/test_file.html?succeed");
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  PermissionRequestManager* request_manager =
-      PermissionRequestManager::FromWebContents(web_contents);
+  permissions::PermissionRequestManager* request_manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents);
   request_manager->set_auto_response_for_test(
-      PermissionRequestManager::ACCEPT_ALL);
+      permissions::PermissionRequestManager::ACCEPT_ALL);
   PermissionRequestObserver permission_request_observer(web_contents);
   extensions::ResultCatcher catcher;
   ui_test_utils::NavigateToURL(browser(), url);
@@ -112,10 +113,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcFromWebAccessibleResourceTest,
   GURL url = GetTestServerInsecureUrl("/extensions/test_file.html?fail");
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  PermissionRequestManager* request_manager =
-      PermissionRequestManager::FromWebContents(web_contents);
+  permissions::PermissionRequestManager* request_manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents);
   request_manager->set_auto_response_for_test(
-      PermissionRequestManager::DENY_ALL);
+      permissions::PermissionRequestManager::DENY_ALL);
   PermissionRequestObserver permission_request_observer(web_contents);
   extensions::ResultCatcher catcher;
   ui_test_utils::NavigateToURL(browser(), url);

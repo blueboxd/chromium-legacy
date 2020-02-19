@@ -15,12 +15,9 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/permissions/mock_permission_request.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -29,8 +26,12 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/features.h"
 #include "components/permissions/permission_request.h"
+#include "components/permissions/permission_request_manager.h"
 #include "components/permissions/permission_uma_util.h"
+#include "components/permissions/test/mock_permission_prompt_factory.h"
+#include "components/permissions/test/mock_permission_request.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -61,8 +62,9 @@ class ContentSettingImageModelTest : public BrowserWithTestWindowTest {
     AddTab(browser(), GURL("http://www.google.com"));
     controller_ = &web_contents()->GetController();
     NavigateAndCommit(controller_, GURL("http://www.google.com"));
-    PermissionRequestManager::CreateForWebContents(web_contents());
-    manager_ = PermissionRequestManager::FromWebContents(web_contents());
+    permissions::PermissionRequestManager::CreateForWebContents(web_contents());
+    manager_ =
+        permissions::PermissionRequestManager::FromWebContents(web_contents());
   }
 
   void WaitForBubbleToBeShown() {
@@ -71,8 +73,8 @@ class ContentSettingImageModelTest : public BrowserWithTestWindowTest {
   }
 
  protected:
-  MockPermissionRequest request_;
-  PermissionRequestManager* manager_ = nullptr;
+  permissions::MockPermissionRequest request_;
+  permissions::PermissionRequestManager* manager_ = nullptr;
   content::NavigationController* controller_ = nullptr;
 
  private:
@@ -391,7 +393,7 @@ TEST_F(ContentSettingImageModelTest, NotificationsPrompt) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitWithFeatures(
       {features::kQuietNotificationPrompts},
-      {features::kBlockRepeatedNotificationPermissionPrompts});
+      {permissions::features::kBlockRepeatedNotificationPermissionPrompts});
 
   auto* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());

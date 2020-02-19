@@ -52,6 +52,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.autofill_assistant.proto.ActionProto;
@@ -472,6 +473,7 @@ public class AutofillAssistantBottomsheetTest {
      * When the keyboard is shown, the continue button becomes invisible.
      */
     @Test
+    @DisabledTest(message = "Test is flaky, see crbug.com/1054058")
     @MediumTest
     public void testOpeningKeyboardMakesContinueChipInvisible() {
         ArrayList<ActionProto> list = new ArrayList<>();

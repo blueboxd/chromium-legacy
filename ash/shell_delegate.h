@@ -27,6 +27,8 @@ namespace ash {
 
 class AccessibilityDelegate;
 class ScreenshotDelegate;
+class BackGestureContextualNudgeDelegate;
+class BackGestureContextualNudgeController;
 
 // Delegate of the Shell.
 class ASH_EXPORT ShellDelegate {
@@ -43,6 +45,11 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a accessibility delegate. Shell takes ownership of the delegate.
   virtual AccessibilityDelegate* CreateAccessibilityDelegate() = 0;
+
+  // Creates a back gesture contextual nudge delegate for |controller|.
+  virtual std::unique_ptr<BackGestureContextualNudgeDelegate>
+  CreateBackGestureContextualNudgeDelegate(
+      BackGestureContextualNudgeController* controller) = 0;
 
   // Check whether the current tab of the browser window can go back.
   virtual bool CanGoBack(gfx::NativeWindow window) const = 0;

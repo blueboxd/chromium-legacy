@@ -106,14 +106,6 @@ inline bool PostTask(OnceClosure task,
   return PostTask(from_here, std::move(task));
 }
 
-// Equivalent to calling PostDelayedTask with default TaskTraits.
-//
-// Use PostDelayedTask to specify a BEST_EFFORT priority if the task doesn't
-// have to run as soon as |delay| expires.
-BASE_EXPORT bool PostDelayedTask(const Location& from_here,
-                                 OnceClosure task,
-                                 TimeDelta delay);
-
 // Equivalent to calling PostTaskAndReply with default TaskTraits.
 BASE_EXPORT bool PostTaskAndReply(const Location& from_here,
                                   OnceClosure task,

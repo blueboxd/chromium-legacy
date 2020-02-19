@@ -1,0 +1,43 @@
+// Copyright 2020 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This file maps permissions resource IDs to Android resource IDs.
+
+// Presence of regular include guards is checked by:
+// 1. cpplint
+// 2. a custom presubmit in src/PRESUBMIT.py
+// 3. clang (but it only checks the guard is correct if present)
+// Disable the first two with these magic comments:
+// NOLINT(build/header_guard)
+// no-include-guard-because-multiply-included
+
+// LINK_RESOURCE_ID is used for IDs that come from a .grd file.
+#ifndef LINK_RESOURCE_ID
+#error "LINK_RESOURCE_ID should be defined before including this file"
+#endif
+// DECLARE_RESOURCE_ID is used for IDs that don't have .grd entries, and
+// are only declared in this file.
+#ifndef DECLARE_RESOURCE_ID
+#error "DECLARE_RESOURCE_ID should be defined before including this file"
+#endif
+
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_ACCESSIBILITY_EVENTS,
+                    R.drawable.infobar_accessibility_events)
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_CLIPBOARD, R.drawable.infobar_clipboard)
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_GEOLOCATION,
+                    R.drawable.infobar_geolocation)
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_MEDIA_STREAM_CAMERA,
+                    R.drawable.infobar_camera)
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_MEDIA_STREAM_MIC,
+                    R.drawable.infobar_microphone)
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_MIDI, R.drawable.infobar_midi)
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_NFC, R.drawable.ic_infobar_nfc)
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_NOTIFICATIONS,
+                    R.drawable.infobar_desktop_notifications)
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_PROTECTED_MEDIA_IDENTIFIER,
+                    R.drawable.infobar_protected_media_identifier)
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_WARNING, R.drawable.infobar_warning)
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_VR_HEADSET, R.drawable.vr_headset)
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_PERMISSION_COOKIE,
+                    R.drawable.permission_cookie)

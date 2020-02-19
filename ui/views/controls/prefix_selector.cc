@@ -38,13 +38,11 @@ bool PrefixSelector::ShouldContinueSelection() const {
 }
 
 void PrefixSelector::SetCompositionText(
-    const ui::CompositionText& composition) {
-}
+    const ui::CompositionText& composition) {}
 
 void PrefixSelector::ConfirmCompositionText(bool keep_selection) {}
 
-void PrefixSelector::ClearCompositionText() {
-}
+void PrefixSelector::ClearCompositionText() {}
 
 void PrefixSelector::InsertText(const base::string16& text) {
   OnTextInput(text);
@@ -124,7 +122,7 @@ bool PrefixSelector::DeleteRange(const gfx::Range& range) {
 }
 
 bool PrefixSelector::GetTextFromRange(const gfx::Range& range,
-                                        base::string16* text) const {
+                                      base::string16* text) const {
   return false;
 }
 
@@ -137,8 +135,7 @@ bool PrefixSelector::ChangeTextDirectionAndLayoutAlignment(
   return true;
 }
 
-void PrefixSelector::ExtendSelectionAndDelete(size_t before, size_t after) {
-}
+void PrefixSelector::ExtendSelectionAndDelete(size_t before, size_t after) {}
 
 void PrefixSelector::EnsureCaretNotInRect(const gfx::Rect& rect) {}
 
@@ -225,7 +222,7 @@ bool PrefixSelector::TextAtRowMatchesText(int row,
   const base::string16 model_text(
       base::i18n::ToLower(prefix_delegate_->GetTextForRow(row)));
   return (model_text.size() >= lower_text.size()) &&
-      (model_text.compare(0, lower_text.size(), lower_text) == 0);
+         (model_text.compare(0, lower_text.size(), lower_text) == 0);
 }
 
 void PrefixSelector::ClearText() {

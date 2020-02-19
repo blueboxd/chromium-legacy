@@ -53,8 +53,7 @@ void DesktopCaptureClient::SetCapture(aura::Window* new_capture_window) {
 
   // We should only ever be told to capture a child of |root_|. Otherwise
   // things are going to be really confused.
-  DCHECK(!new_capture_window ||
-         (new_capture_window->GetRootWindow() == root_));
+  DCHECK(!new_capture_window || (new_capture_window->GetRootWindow() == root_));
   DCHECK(!capture_window_ || capture_window_->GetRootWindow());
 
   aura::Window* old_capture_window = capture_window_;

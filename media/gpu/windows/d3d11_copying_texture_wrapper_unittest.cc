@@ -56,16 +56,15 @@ class MockVideoProcessorProxy : public VideoProcessorProxy {
 
 class MockTexture2DWrapper : public Texture2DWrapper {
  public:
-  MockTexture2DWrapper() : Texture2DWrapper(nullptr) {}
+  MockTexture2DWrapper() {}
 
-  bool ProcessTexture(const D3D11PictureBuffer* owner_pb,
+  bool ProcessTexture(ComD3D11Texture2D texture,
+                      size_t array_slice,
                       MailboxHolderArray* mailbox_dest) override {
     return MockProcessTexture();
   }
 
-  bool Init(GetCommandBufferHelperCB get_helper_cb,
-            size_t array_slice,
-            gfx::Size size) override {
+  bool Init(GetCommandBufferHelperCB get_helper_cb) override {
     return MockInit();
   }
 
@@ -149,13 +148,13 @@ INSTANTIATE_TEST_CASE_P(CopyingTexture2DWrapperTest,
 // make sure that any failures result in a total failure.
 TEST_P(D3D11CopyingTexture2DWrapperTest,
        CopyingTextureWrapperProcessesCorrectly) {
+  gfx::Size size;
   auto wrapper = std::make_unique<CopyingTexture2DWrapper>(
-      ExpectTextureWrapper(), ExpectProcessorProxy(), nullptr);
-  auto picture_buffer =
-      base::MakeRefCounted<D3D11PictureBuffer>(nullptr, gfx::Size(0, 0), 0);
+      size, ExpectTextureWrapper(), ExpectProcessorProxy(), nullptr);
 
-  EXPECT_EQ(wrapper->Init(CreateMockHelperCB(), 0, {}), InitSucceeds());
-  EXPECT_EQ(wrapper->ProcessTexture(picture_buffer.get(), nullptr),
+  MailboxHolderArray mailboxes;
+  EXPECT_EQ(wrapper->Init(CreateMockHelperCB()), InitSucceeds());
+  EXPECT_EQ(wrapper->ProcessTexture(nullptr, 0, &mailboxes),
             ProcessTextureSucceeds());
 }
 

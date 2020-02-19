@@ -11,8 +11,10 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ambient/ambient_mode_state.h"
+#include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ambient/photo_controller.h"
 #include "chromeos/constants/chromeos_features.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -25,6 +27,14 @@ bool CanStartAmbientMode() {
 }
 
 }  // namespace
+
+// static
+void AmbientController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  if (chromeos::features::IsAmbientModeEnabled()) {
+    registry->RegisterStringPref(ash::ambient::prefs::kAmbientBackdropClientId,
+                                 std::string());
+  }
+}
 
 AmbientController::AmbientController(AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller) {
@@ -146,10 +156,14 @@ void AmbientController::GetNextImage() {
       &AmbientController::OnPhotoDownloaded, weak_factory_.GetWeakPtr()));
 }
 
-void AmbientController::OnPhotoDownloaded(const gfx::ImageSkia& image) {
-  if (!image.isNull())
-    model_.AddNextImage(image);
+void AmbientController::OnPhotoDownloaded(bool success,
+                                          const gfx::ImageSkia& image) {
+  // TODO(b/148485116): Implement retry logic.
+  if (!success)
+    return;
 
+  DCHECK(!image.isNull());
+  model_.AddNextImage(image);
   ScheduleRefreshImage();
 }
 

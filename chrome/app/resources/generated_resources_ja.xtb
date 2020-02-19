@@ -3359,6 +3359,7 @@
 <translation id="5689516760719285838">位置情報</translation>
 <translation id="56907980372820799">データをリンク</translation>
 <translation id="5691511426247308406">ファミリー</translation>
+<translation id="5691772641933328258">指紋を認識できません</translation>
 <translation id="5692183275898619210">印刷完了</translation>
 <translation id="5696143504434933566">「<ph name="EXTENSION_NAME" />」の不正行為を報告する</translation>
 <translation id="5696679855467848181">現在使用中の PPD ファイル: <ph name="PPD_NAME" /></translation>
@@ -5664,7 +5665,6 @@
 <translation id="8864458770072227512"><ph name="EMAIL" /> はこのデバイスから削除されました</translation>
 <translation id="8867228703146808825">ビルドの詳細をクリップボードにコピーします</translation>
 <translation id="8868626022555786497">使用中</translation>
-<translation id="8870318296973696995">ホームページ</translation>
 <translation id="8870413625673593573">最近閉じたタブ</translation>
 <translation id="8871551568777368300">管理者によって固定</translation>
 <translation id="8871696467337989339">サポートされていないコマンドライン フラグ <ph name="BAD_FLAG" /> を使用しています。これにより、安全性とセキュリティが損なわれます。</translation>

@@ -69,6 +69,7 @@ public class AssistantVoiceSearchServiceUnitTest {
     public void setUp() throws NameNotFoundException {
         MockitoAnnotations.initMocks(this);
 
+        doReturn(true).when(mExternalAuthUtils).isChromeGoogleSigned();
         doReturn(true).when(mExternalAuthUtils).isGoogleSigned(IntentHandler.PACKAGE_GSA);
 
         mPackageInfo = new PackageInfo();
@@ -97,6 +98,14 @@ public class AssistantVoiceSearchServiceUnitTest {
     @Feature("OmniboxAssistantVoiceSearch")
     public void testStartVoiceRecognition_StartsAssistantVoiceSearch() {
         Assert.assertTrue(mAssistantVoiceSearchService.shouldRequestAssistantVoiceSearch());
+    }
+
+    @Test
+    @Feature("OmniboxAssistantVoiceSearch")
+    public void testStartVoiceRecognition_StartsAssistantVoiceSearch_ChromeNotSigned() {
+        doReturn(false).when(mExternalAuthUtils).isChromeGoogleSigned();
+
+        Assert.assertFalse(mAssistantVoiceSearchService.shouldRequestAssistantVoiceSearch());
     }
 
     @Test

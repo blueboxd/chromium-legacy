@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
-#include "content/public/browser/indexed_db_context.h"
 #include "content/public/browser/web_ui_controller.h"
 
 namespace base {

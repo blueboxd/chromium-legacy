@@ -155,16 +155,16 @@ gfx::Size SubmenuView::CalculatePreferredSize() const {
       const MenuItemView* menu = static_cast<const MenuItemView*>(child);
       const MenuItemView::MenuItemDimensions& dimensions =
           menu->GetDimensions();
-      max_simple_width = std::max(
-          max_simple_width, dimensions.standard_width);
+      max_simple_width = std::max(max_simple_width, dimensions.standard_width);
       max_minor_text_width_ =
           std::max(max_minor_text_width_, dimensions.minor_text_width);
-      max_complex_width = std::max(max_complex_width,
-          dimensions.standard_width + dimensions.children_width);
+      max_complex_width =
+          std::max(max_complex_width,
+                   dimensions.standard_width + dimensions.children_width);
       touchable_minimum_width = dimensions.standard_width;
     } else {
-      max_complex_width = std::max(max_complex_width,
-                                   child->GetPreferredSize().width());
+      max_complex_width =
+          std::max(max_complex_width, child->GetPreferredSize().width());
     }
   }
   if (max_minor_text_width_ > 0)
@@ -172,10 +172,10 @@ gfx::Size SubmenuView::CalculatePreferredSize() const {
 
   // Finish calculating our optimum width.
   gfx::Insets insets = GetInsets();
-  int width = std::max(max_complex_width,
-                       std::max(max_simple_width + max_minor_text_width_ +
-                                    insets.width(),
-                                minimum_preferred_width_ - 2 * insets.width()));
+  int width = std::max(
+      max_complex_width,
+      std::max(max_simple_width + max_minor_text_width_ + insets.width(),
+               minimum_preferred_width_ - 2 * insets.width()));
 
   if (parent_menu_item_->GetMenuController() &&
       parent_menu_item_->GetMenuController()->use_touchable_layout()) {
@@ -315,8 +315,8 @@ bool SubmenuView::OnMouseWheel(const ui::MouseWheelEvent& e) {
       if (scrolled_to_top(*i))
         i = next_iter;
     }
-    ScrollRectToVisible(gfx::Rect(gfx::Point(0, scroll_target),
-                                  vis_bounds.size()));
+    ScrollRectToVisible(
+        gfx::Rect(gfx::Point(0, scroll_target), vis_bounds.size()));
     vis_bounds = GetVisibleBounds();
   }
 

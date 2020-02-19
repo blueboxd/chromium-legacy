@@ -211,8 +211,7 @@ TEST_F(BubbleBorderTest, IsArrowAtCenter) {
 }
 
 TEST_F(BubbleBorderTest, GetSizeForContentsSizeTest) {
-  views::BubbleBorder border(BubbleBorder::NONE,
-                             BubbleBorder::NO_SHADOW,
+  views::BubbleBorder border(BubbleBorder::NONE, BubbleBorder::NO_SHADOW,
                              SK_ColorWHITE);
 
   const gfx::Insets kInsets = border.GetInsets();
@@ -282,8 +281,8 @@ TEST_F(BubbleBorderTest, GetSizeForContentsSizeTest) {
       {BubbleBorder::FLOAT, kMediumSize, kMediumNoArrow}};
 
   for (size_t i = 0; i < base::size(cases); ++i) {
-    SCOPED_TRACE(base::StringPrintf("i=%d arrow=%d",
-        static_cast<int>(i), cases[i].arrow));
+    SCOPED_TRACE(base::StringPrintf("i=%d arrow=%d", static_cast<int>(i),
+                                    cases[i].arrow));
 
     border.set_arrow(cases[i].arrow);
     EXPECT_EQ(cases[i].expected_without_arrow,

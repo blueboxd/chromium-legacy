@@ -57,7 +57,7 @@ TEST_F('SwitchAccessAutoScanManagerTest', 'SetEnabled', function() {
   this.runWithLoadedTree('', (desktop) => {
     console.error('RUNNING TEST');
     assertFalse(
-        AutoScanManager.isRunning(),
+        AutoScanManager.instance.isRunning_(),
         'Auto scan manager is running prematurely');
     assertEquals(
         0, NavigationManager.moveForwardCount,
@@ -67,7 +67,8 @@ TEST_F('SwitchAccessAutoScanManagerTest', 'SetEnabled', function() {
     NavigationManager.instance
         .onMoveForwardForTesting_ = this.newCallback(() => {
       assertTrue(
-          AutoScanManager.isRunning(), 'Auto scan manager has stopped running');
+          AutoScanManager.instance.isRunning_(),
+          'Auto scan manager has stopped running');
       assertGT(
           NavigationManager.moveForwardCount, 0,
           'Switch Access has not moved forward');
@@ -76,7 +77,9 @@ TEST_F('SwitchAccessAutoScanManagerTest', 'SetEnabled', function() {
     });
 
     AutoScanManager.setEnabled(true);
-    assertTrue(AutoScanManager.isRunning(), 'Auto scan manager is not running');
+    assertTrue(
+        AutoScanManager.instance.isRunning_(),
+        'Auto scan manager is not running');
     assertEquals(1, intervalCount, 'There is not exactly 1 interval');
   });
 });
@@ -84,7 +87,7 @@ TEST_F('SwitchAccessAutoScanManagerTest', 'SetEnabled', function() {
 TEST_F('SwitchAccessAutoScanManagerTest', 'SetEnabledMultiple', function() {
   this.runWithLoadedTree('', (desktop) => {
     assertFalse(
-        AutoScanManager.isRunning(),
+        AutoScanManager.instance.isRunning_(),
         'Auto scan manager is running prematurely');
     assertEquals(0, intervalCount, 'Incorrect initialization of intervalCount');
 
@@ -92,7 +95,9 @@ TEST_F('SwitchAccessAutoScanManagerTest', 'SetEnabledMultiple', function() {
     AutoScanManager.setEnabled(true);
     AutoScanManager.setEnabled(true);
 
-    assertTrue(AutoScanManager.isRunning(), 'Auto scan manager is not running');
+    assertTrue(
+        AutoScanManager.instance.isRunning_(),
+        'Auto scan manager is not running');
     assertEquals(1, intervalCount, 'There is not exactly 1 interval');
   });
 });
@@ -100,17 +105,20 @@ TEST_F('SwitchAccessAutoScanManagerTest', 'SetEnabledMultiple', function() {
 TEST_F('SwitchAccessAutoScanManagerTest', 'EnableAndDisable', function() {
   this.runWithLoadedTree('', (desktop) => {
     assertFalse(
-        AutoScanManager.isRunning(),
+        AutoScanManager.instance.isRunning_(),
         'Auto scan manager is running prematurely');
     assertEquals(0, intervalCount, 'Incorrect initialization of intervalCount');
 
     AutoScanManager.setEnabled(true);
-    assertTrue(AutoScanManager.isRunning(), 'Auto scan manager is not running');
+    assertTrue(
+        AutoScanManager.instance.isRunning_(),
+        'Auto scan manager is not running');
     assertEquals(1, intervalCount, 'There is not exactly 1 interval');
 
     AutoScanManager.setEnabled(false);
     assertFalse(
-        AutoScanManager.isRunning(), 'Auto scan manager did not stop running');
+        AutoScanManager.instance.isRunning_(),
+        'Auto scan manager did not stop running');
     assertEquals(0, intervalCount, 'Interval was not removed');
   });
 });
@@ -119,7 +127,7 @@ TEST_F(
     'SwitchAccessAutoScanManagerTest', 'RestartIfRunningMultiple', function() {
       this.runWithLoadedTree('', (desktop) => {
         assertFalse(
-            AutoScanManager.isRunning(),
+            AutoScanManager.instance.isRunning_(),
             'Auto scan manager is running prematurely');
         assertEquals(
             0, NavigationManager.moveForwardCount,
@@ -133,7 +141,8 @@ TEST_F(
         AutoScanManager.restartIfRunning();
 
         assertTrue(
-            AutoScanManager.isRunning(), 'Auto scan manager is not running');
+            AutoScanManager.instance.isRunning_(),
+            'Auto scan manager is not running');
         assertEquals(1, intervalCount, 'There is not exactly 1 interval');
       });
     });
@@ -142,46 +151,47 @@ TEST_F(
     'SwitchAccessAutoScanManagerTest', 'RestartIfRunningWhenOff', function() {
       this.runWithLoadedTree('', (desktop) => {
         assertFalse(
-            AutoScanManager.isRunning(),
+            AutoScanManager.instance.isRunning_(),
             'Auto scan manager is running at start.');
         AutoScanManager.restartIfRunning();
         assertFalse(
-            AutoScanManager.isRunning(),
+            AutoScanManager.instance.isRunning_(),
             'Auto scan manager enabled by restartIfRunning');
       });
     });
 
-TEST_F('SwitchAccessAutoScanManagerTest', 'SetDefaultScanTime', function() {
+TEST_F('SwitchAccessAutoScanManagerTest', 'SetPrimaryScanTime', function() {
   this.runWithLoadedTree('', (desktop) => {
     assertFalse(
-        AutoScanManager.isRunning(),
+        AutoScanManager.instance.isRunning_(),
         'Auto scan manager is running prematurely');
     assertEquals(
         UNDEFINED_INTERVAL_DELAY, intervalDelay,
         'Interval delay improperly initialized');
 
-    AutoScanManager.setDefaultScanTime(2);
+    AutoScanManager.setPrimaryScanTime(2);
     assertFalse(
-        AutoScanManager.isRunning(),
+        AutoScanManager.instance.isRunning_(),
         'Setting default scan time started auto-scanning');
     assertEquals(
-        2, AutoScanManager.instance.defaultScanTime_,
+        2, AutoScanManager.instance.primaryScanTime_,
         'Default scan time set improperly');
     assertEquals(
         UNDEFINED_INTERVAL_DELAY, intervalDelay,
         'Interval delay set prematurely');
 
     AutoScanManager.setEnabled(true);
-    assertTrue(AutoScanManager.isRunning(), 'Auto scan did not start');
+    assertTrue(
+        AutoScanManager.instance.isRunning_(), 'Auto scan did not start');
     assertEquals(
-        2, AutoScanManager.instance.defaultScanTime_,
+        2, AutoScanManager.instance.primaryScanTime_,
         'Default scan time has changed');
     assertEquals(2, intervalDelay, 'Interval delay not set');
 
-    AutoScanManager.setDefaultScanTime(5);
-    assertTrue(AutoScanManager.isRunning(), 'Auto scan stopped');
+    AutoScanManager.setPrimaryScanTime(5);
+    assertTrue(AutoScanManager.instance.isRunning_(), 'Auto scan stopped');
     assertEquals(
-        5, AutoScanManager.instance.defaultScanTime_,
+        5, AutoScanManager.instance.primaryScanTime_,
         'Default scan time did not change when set a second time');
     assertEquals(5, intervalDelay, 'Interval delay did not update');
   });

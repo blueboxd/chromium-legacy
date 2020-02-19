@@ -58,20 +58,6 @@
 
 namespace policy {
 
-namespace {
-
-bool ProviderHasPolicies(const ConfigurationPolicyProvider* provider) {
-  if (!provider)
-    return false;
-  for (const auto& pair : provider->policies()) {
-    if (!pair.second->empty())
-      return true;
-  }
-  return false;
-}
-
-}  // namespace
-
 ChromeBrowserPolicyConnector::ChromeBrowserPolicyConnector()
     : BrowserPolicyConnector(base::Bind(&BuildHandlerList)) {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)

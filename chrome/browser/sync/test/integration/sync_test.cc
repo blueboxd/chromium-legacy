@@ -56,6 +56,7 @@
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/sync/base/invalidation_helper.h"
 #include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/profile_sync_service.h"
@@ -177,7 +178,8 @@ syncer::FCMNetworkHandler* GetFCMNetworkHandler(
   // Delivering FCM notifications does not work if explicitly signed-out.
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile);
-  if (!identity_manager || !identity_manager->HasUnconsentedPrimaryAccount())
+  if (!identity_manager ||
+      !identity_manager->HasPrimaryAccount(signin::ConsentLevel::kNotRequired))
     return nullptr;
 
   auto it = profile_to_fcm_network_handler_map->find(profile);

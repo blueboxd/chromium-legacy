@@ -5,11 +5,11 @@
 #include "chrome/browser/storage_access_api/storage_access_grant_permission_context.h"
 
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/permissions/permission_request_id.h"
+#include "components/permissions/permission_request_manager.h"
+#include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -36,11 +36,12 @@ class StorageAccessGrantPermissionContextTest
     NavigateAndCommit(GURL(kInsecureURL));
 
     // Create PermissionRequestManager.
-    PermissionRequestManager::CreateForWebContents(web_contents());
+    permissions::PermissionRequestManager::CreateForWebContents(web_contents());
 
     mock_permission_prompt_factory_ =
-        std::make_unique<MockPermissionPromptFactory>(
-            PermissionRequestManager::FromWebContents(web_contents()));
+        std::make_unique<permissions::MockPermissionPromptFactory>(
+            permissions::PermissionRequestManager::FromWebContents(
+                web_contents()));
   }
 
   void TearDown() override {
@@ -49,7 +50,8 @@ class StorageAccessGrantPermissionContextTest
   }
 
  private:
-  std::unique_ptr<MockPermissionPromptFactory> mock_permission_prompt_factory_;
+  std::unique_ptr<permissions::MockPermissionPromptFactory>
+      mock_permission_prompt_factory_;
 };
 
 TEST_F(StorageAccessGrantPermissionContextTest, InsecureOriginsAreAllowed) {
@@ -96,8 +98,8 @@ TEST_F(StorageAccessGrantPermissionContextTest,
   base::RunLoop().RunUntilIdle();
 
   // We should get a prompt showing up right now.
-  PermissionRequestManager* manager =
-      PermissionRequestManager::FromWebContents(web_contents());
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents());
   DCHECK(manager);
   EXPECT_TRUE(manager->IsRequestInProgress());
 

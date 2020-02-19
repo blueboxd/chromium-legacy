@@ -41,9 +41,7 @@ class DesktopViewInputTest : public View {
   }
 
   // Resets state maintained by this class.
-  void Reset() {
-    received_gesture_event_ = false;
-  }
+  void Reset() { received_gesture_event_ = false; }
 
   bool received_gesture_event() const { return received_gesture_event_; }
 

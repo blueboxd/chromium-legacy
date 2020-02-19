@@ -144,10 +144,49 @@
   <message name="IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE" desc="Name of the settings page which manages data used by sync.">
     Manage sync
   </message>
+  <message name="IDS_SETTINGS_PEOPLE_SYNC_ANOTHER_ACCOUNT" desc="The label for the button that lets the user choose another account to sync with.">
+    Use another account
+  </message>
+
+  <!-- Signout Subpage (strings used by the <settings-signout-dialog> element) -->
+  <message name="IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM" desc="The text to display on the button to confirm the user wishes to stop syncing.">
+    Clear and Sign Out
+  </message>
   <message name="IDS_SETTINGS_PEOPLE_SIGN_OUT" desc="The label of the button that lets user sign-out of Chrome.">
     Sign out
   </message>
-  <message name="IDS_SETTINGS_PEOPLE_SYNC_ANOTHER_ACCOUNT" desc="The label for the button that lets the user choose another account to sync with.">
-    Use another account
+  <!-- Sync Control Subpage (strings used by the <settings-sync-controls> element) -->
+  <message name="IDS_SETTINGS_AUTOFILL_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing autofill settings between multiple browser instances.">
+    Addresses, phone numbers, and more
+  </message>
+  <message name="IDS_SETTINGS_HISTORY_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing history between multiple browser instances.">
+    History
+  </message>
+  <message name="IDS_SETTINGS_EXTENSIONS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing extensions between multiple browser instances.">
+    Extensions
+  </message>
+  <message name="IDS_SETTINGS_OPEN_TABS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing open tabs between multiple browser instances.">
+    Open Tabs
+  </message>
+  <message name="IDS_SETTINGS_SYNC_EVERYTHING_CHECKBOX_LABEL" desc="Label for the checkbox which causes all properties to be synced.">
+    Sync everything
+  </message>
+  <message name="IDS_SETTINGS_APPS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing apps between multiple browser instances.">
+    Apps
+  </message>
+  <message name="IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_LABEL" desc="Title for a section that shows options for various Google services">
+    Other Google services
+  </message>
+  <message name="IDS_SETTINGS_SYNC_EVERYTHING_HINT" desc="Hint for the radio button which causes all properties to be synced.">
+    Sync all data types including ones that might be added in the future
+  </message>
+  <message name="IDS_SETTINGS_CUSTOMIZE_SYNC" desc="Label for the radio button to customize sync data types.">
+    Customize sync
+  </message>
+  <message name="IDS_SETTINGS_CUSTOMIZE_SYNC_HINT" desc="Hint or the radio button to customize sync data types.">
+    Sync only selected data types
+  </message>
+  <message name="IDS_SETTINGS_SYNC_DATA" desc="Title for sync data types list.">
+    Sync data
   </message>
 </grit-part>

@@ -3360,6 +3360,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5689516760719285838">Lieu</translation>
 <translation id="56907980372820799">Associer les données</translation>
 <translation id="5691511426247308406">Famille</translation>
+<translation id="5691772641933328258">Empreinte digitale non reconnue</translation>
 <translation id="5692183275898619210">Impression terminée</translation>
 <translation id="5696143504434933566">Signaler un abus de « <ph name="EXTENSION_NAME" /> »</translation>
 <translation id="5696679855467848181">Fichier PPD en cours d'utilisation : <ph name="PPD_NAME" /></translation>
@@ -5664,7 +5665,6 @@ Conservez votre fichier de clé en lieu sûr. Vous en aurez besoin lors de la cr
 <translation id="8864458770072227512">L'adresse <ph name="EMAIL" /> a été supprimée de cet appareil</translation>
 <translation id="8867228703146808825">Copier les renseignements de la version dans le presse-papier</translation>
 <translation id="8868626022555786497">Utilisé</translation>
-<translation id="8870318296973696995">Page d'accueil</translation>
 <translation id="8870413625673593573">Éléments récemment fermés</translation>
 <translation id="8871551568777368300">Épinglé par l'administrateur</translation>
 <translation id="8871696467337989339">Vous utilisez un indicateur de ligne de commande qui n'est pas pris en charge, <ph name="BAD_FLAG" />, ce qui va nuire à la stabilité et à la sécurité.</translation>

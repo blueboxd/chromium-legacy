@@ -70,7 +70,8 @@ void DesktopMediaListController::OnSourceSelectionChanged() {
 }
 
 void DesktopMediaListController::AcceptSource() {
-  dialog_->AcceptSource();
+  if (GetSelection())
+    dialog_->AcceptSource();
 }
 
 void DesktopMediaListController::AcceptSpecificSource(

@@ -128,6 +128,11 @@ constexpr char kFakeBatteryModel[] = "fake_battery_model";
 constexpr int kExpectedBatteryChargeNow = 5281;  // (mAh)
 constexpr double kFakeBatteryChargeNow =
     kExpectedBatteryChargeNow / 1000.0;  // (Ah)
+constexpr int kExpectedBatteryCurrentNow = 87659;  // (mA)
+constexpr double kFakeBatteryCurrentNow =
+    kExpectedBatteryCurrentNow / 1000.0;  // (A)
+constexpr char kFakeBatteryTechnology[] = "fake_battery_technology";
+constexpr char kFakeBatteryStatus[] = "fake_battery_status";
 // Cached VPD test values:
 constexpr char kFakeSkuNumber[] = "fake_sku_number";
 // CPU test values:
@@ -432,6 +437,7 @@ void GetFakeCrosHealthdData(
       kFakeBatteryCycleCount, kFakeBatteryVoltageNow, kFakeBatteryVendor,
       kFakeBatterySerial, kFakeBatteryChargeFullDesign, kFakeBatteryChargeFull,
       kFakeBatteryVoltageMinDesign, kFakeBatteryModel, kFakeBatteryChargeNow,
+      kFakeBatteryCurrentNow, kFakeBatteryTechnology, kFakeBatteryStatus,
       smart_battery_info.Clone());
   chromeos::cros_healthd::mojom::CachedVpdInfo cached_vpd_info(kFakeSkuNumber);
   chromeos::cros_healthd::mojom::CpuInfo cpu_info(
@@ -462,6 +468,8 @@ void GetFakeCrosHealthdData(
   fake_battery_sample.set_voltage(kExpectedBatteryVoltageNow);
   fake_battery_sample.set_remaining_capacity(kExpectedBatteryChargeNow);
   fake_battery_sample.set_temperature(kFakeSmartBatteryTemperature);
+  fake_battery_sample.set_current(kExpectedBatteryCurrentNow);
+  fake_battery_sample.set_status(kFakeBatteryStatus);
   auto sample = std::make_unique<policy::SampledData>();
   sample->cpu_samples[fake_cpu_temp_sample.cpu_label()] = fake_cpu_temp_sample;
   sample->battery_samples[battery_info.model_name] = fake_battery_sample;
@@ -2544,6 +2552,7 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   EXPECT_EQ(battery.cycle_count(), kFakeBatteryCycleCount);
   EXPECT_EQ(battery.design_min_voltage(), kExpectedBatteryVoltageMinDesign);
   EXPECT_EQ(battery.manufacture_date(), kFakeSmartBatteryManufactureDate);
+  EXPECT_EQ(battery.technology(), kFakeBatteryTechnology);
 
   // Verify the battery sample data.
   ASSERT_EQ(battery.samples_size(), 1);
@@ -2551,6 +2560,8 @@ TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
   EXPECT_EQ(battery_sample.voltage(), kExpectedBatteryVoltageNow);
   EXPECT_EQ(battery_sample.remaining_capacity(), kExpectedBatteryChargeNow);
   EXPECT_EQ(battery_sample.temperature(), kFakeSmartBatteryTemperature);
+  EXPECT_EQ(battery_sample.current(), kExpectedBatteryCurrentNow);
+  EXPECT_EQ(battery_sample.status(), kFakeBatteryStatus);
 
   // Verify the storage data.
   ASSERT_TRUE(device_status_.has_storage_status());

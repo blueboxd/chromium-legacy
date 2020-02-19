@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "chrome/browser/permissions/crowd_deny_safe_browsing_request.h"
-#include "chrome/browser/permissions/notification_permission_ui_selector.h"
+#include "components/permissions/notification_permission_ui_selector.h"
 
 class Profile;
 
@@ -32,7 +32,7 @@ class Origin;
 // Each instance of this class is long-lived and can support multiple requests,
 // but only one at a time.
 class ContextualNotificationPermissionUiSelector
-    : public NotificationPermissionUiSelector {
+    : public permissions::NotificationPermissionUiSelector {
  public:
   // Constructs an instance in the context of the given |profile|.
   explicit ContextualNotificationPermissionUiSelector(Profile* profile);

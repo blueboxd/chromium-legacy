@@ -29,7 +29,6 @@
 #include "chrome/browser/gcm/instance_id/instance_id_profile_service_factory.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/notification_handler.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/push_messaging/push_messaging_app_identifier.h"
 #include "chrome/browser/push_messaging/push_messaging_constants.h"
@@ -54,6 +53,7 @@
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
@@ -250,8 +250,8 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
     return gcm_driver_->GetAppHandler(kPushMessagingAppIdentifierPrefix);
   }
 
-  PermissionRequestManager* GetPermissionRequestManager() {
-    return PermissionRequestManager::FromWebContents(
+  permissions::PermissionRequestManager* GetPermissionRequestManager() {
+    return permissions::PermissionRequestManager::FromWebContents(
         GetBrowser()->tab_strip_model()->GetActiveWebContents());
   }
 
@@ -368,7 +368,7 @@ class PushMessagingBrowserTest : public InProcessBrowserTest {
 void PushMessagingBrowserTest::RequestAndAcceptPermission() {
   std::string script_result;
   GetPermissionRequestManager()->set_auto_response_for_test(
-      PermissionRequestManager::ACCEPT_ALL);
+      permissions::PermissionRequestManager::ACCEPT_ALL);
   ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
   ASSERT_EQ("permission status - granted", script_result);
 }
@@ -376,7 +376,7 @@ void PushMessagingBrowserTest::RequestAndAcceptPermission() {
 void PushMessagingBrowserTest::RequestAndDenyPermission() {
   std::string script_result;
   GetPermissionRequestManager()->set_auto_response_for_test(
-      PermissionRequestManager::DENY_ALL);
+      permissions::PermissionRequestManager::DENY_ALL);
   ASSERT_TRUE(RunScript("requestNotificationPermission();", &script_result));
   ASSERT_EQ("permission status - denied", script_result);
 }
@@ -588,7 +588,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest,
   ASSERT_EQ("ok - service worker registered", script_result);
 
   GetPermissionRequestManager()->set_auto_response_for_test(
-      PermissionRequestManager::ACCEPT_ALL);
+      permissions::PermissionRequestManager::ACCEPT_ALL);
   ASSERT_TRUE(RunScript("documentSubscribePush()", &script_result));
   // Both of these methods EXPECT that they succeed.
   ASSERT_NO_FATAL_FAILURE(EndpointToToken(script_result));
@@ -1823,7 +1823,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, CrossOriginFrame) {
   // permission to be denied.
 
   GetPermissionRequestManager()->set_auto_response_for_test(
-      PermissionRequestManager::ACCEPT_ALL);
+      permissions::PermissionRequestManager::ACCEPT_ALL);
 
   std::string script_result;
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
@@ -1861,7 +1861,7 @@ IN_PROC_BROWSER_TEST_F(PushMessagingBrowserTest, CrossOriginFrame) {
                                       std::string(), CONTENT_SETTING_ALLOW);
 
   GetPermissionRequestManager()->set_auto_response_for_test(
-      PermissionRequestManager::DENY_ALL);
+      permissions::PermissionRequestManager::DENY_ALL);
 
   ASSERT_TRUE(content::ExecuteScriptAndExtractString(
       subframe, "requestNotificationPermission();", &script_result));

@@ -2780,7 +2780,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="4878653975845355462">El administrador ha desactivado los fondos personalizados</translation>
 <translation id="4878718769565915065">No se ha podido añadir una huella digital a esta llave de seguridad</translation>
 <translation id="4879491255372875719">Automático (predeterminado)</translation>
-<translation id="4880328057631981605">Nombre de punto de acceso</translation>
+<translation id="4880328057631981605">Nombre del punto de acceso</translation>
 <translation id="4880827082731008257">Buscar en el historial</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4882312758060467256">Tiene acceso a este sitio web</translation>
@@ -3358,6 +3358,7 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="5689516760719285838">Ubicación</translation>
 <translation id="56907980372820799">Vincular datos</translation>
 <translation id="5691511426247308406">Familia</translation>
+<translation id="5691772641933328258">Huella digital no reconocida</translation>
 <translation id="5692183275898619210">Impresión terminada</translation>
 <translation id="5696143504434933566">Denunciar uso inadecuado de <ph name="EXTENSION_NAME" /></translation>
 <translation id="5696679855467848181">Archivo PPD en uso: <ph name="PPD_NAME" /></translation>
@@ -5663,7 +5664,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8864458770072227512">Se ha eliminado <ph name="EMAIL" /> del dispositivo</translation>
 <translation id="8867228703146808825">Copiar detalles de compilación al portapapeles</translation>
 <translation id="8868626022555786497">En uso</translation>
-<translation id="8870318296973696995">Página de inicio</translation>
 <translation id="8870413625673593573">Cerrado recientemente</translation>
 <translation id="8871551568777368300">Fijada por el administrador</translation>
 <translation id="8871696467337989339">No se admite el indicador de línea de comandos (<ph name="BAD_FLAG" />) que estás utilizando, ya que afecta a la estabilidad y a la seguridad</translation>

@@ -56,8 +56,7 @@ class StackingClientListWaiter : public X11PropertyChangeWaiter {
   StackingClientListWaiter(XID* expected_windows, size_t count)
       : X11PropertyChangeWaiter(ui::GetX11RootWindow(),
                                 "_NET_CLIENT_LIST_STACKING"),
-        expected_windows_(expected_windows, expected_windows + count) {
-  }
+        expected_windows_(expected_windows, expected_windows + count) {}
 
   ~StackingClientListWaiter() override = default;
 
@@ -111,9 +110,7 @@ class X11TopmostWindowFinderTest : public ViewsInteractiveUITestBase {
   // Creates and shows an X window with |bounds|.
   XID CreateAndShowXWindow(const gfx::Rect& bounds) {
     XID root = DefaultRootWindow(xdisplay());
-    XID xid = XCreateSimpleWindow(xdisplay(),
-                                  root,
-                                  0, 0, 1, 1,
+    XID xid = XCreateSimpleWindow(xdisplay(), root, 0, 0, 1, 1,
                                   0,   // border_width
                                   0,   // border
                                   0);  // background
@@ -132,15 +129,10 @@ class X11TopmostWindowFinderTest : public ViewsInteractiveUITestBase {
     changes.y = bounds.y();
     changes.width = bounds.width();
     changes.height = bounds.height();
-    XConfigureWindow(xdisplay(),
-                     xid,
-                     CWX | CWY | CWWidth | CWHeight,
-                     &changes);
+    XConfigureWindow(xdisplay(), xid, CWX | CWY | CWWidth | CWHeight, &changes);
   }
 
-  Display* xdisplay() {
-    return gfx::GetXDisplay();
-  }
+  Display* xdisplay() { return gfx::GetXDisplay(); }
 
   // Returns the topmost X window at the passed in screen position.
   XID FindTopmostXWindowAt(int screen_x, int screen_y) {
@@ -208,7 +200,7 @@ TEST_F(X11TopmostWindowFinderTest, Basic) {
   aura::Window* window3 = widget3->GetNativeWindow();
   XID xid3 = window3->GetHost()->GetAcceleratedWidget();
 
-  XID xids[] = { xid1, xid2, xid3 };
+  XID xids[] = {xid1, xid2, xid3};
   StackingClientListWaiter waiter(xids, base::size(xids));
   waiter.Wait();
   ui::X11EventSource::GetInstance()->DispatchXEvents();
@@ -251,7 +243,7 @@ TEST_F(X11TopmostWindowFinderTest, Minimized) {
   XID xid1 = window1->GetHost()->GetAcceleratedWidget();
   XID xid2 = CreateAndShowXWindow(gfx::Rect(300, 100, 100, 100));
 
-  XID xids[] = { xid1, xid2 };
+  XID xids[] = {xid1, xid2};
   StackingClientListWaiter stack_waiter(xids, base::size(xids));
   stack_waiter.Wait();
   ui::X11EventSource::GetInstance()->DispatchXEvents();
@@ -300,7 +292,7 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangular) {
       region2(gfx::CreateRegionFromSkRegion(skregion2));
   XShapeCombineRegion(xdisplay(), xid2, ShapeBounding, 0, 0, region2.get(),
                       false);
-  XID xids[] = { xid1, xid2 };
+  XID xids[] = {xid1, xid2};
   StackingClientListWaiter stack_waiter(xids, base::size(xids));
   stack_waiter.Wait();
   ui::X11EventSource::GetInstance()->DispatchXEvents();
@@ -331,7 +323,7 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangularEmptyShape) {
   // Widget takes ownership of |shape1|.
   widget1->SetShape(std::move(shape1));
 
-  XID xids[] = { xid1 };
+  XID xids[] = {xid1};
   StackingClientListWaiter stack_waiter(xids, base::size(xids));
   stack_waiter.Wait();
   ui::X11EventSource::GetInstance()->DispatchXEvents();
@@ -354,7 +346,7 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangularNullShape) {
   // Remove the shape - this is now just a normal window.
   widget1->SetShape(nullptr);
 
-  XID xids[] = { xid1 };
+  XID xids[] = {xid1};
   StackingClientListWaiter stack_waiter(xids, base::size(xids));
   stack_waiter.Wait();
   ui::X11EventSource::GetInstance()->DispatchXEvents();
@@ -370,15 +362,12 @@ TEST_F(X11TopmostWindowFinderTest, Menu) {
   XID root = DefaultRootWindow(xdisplay());
   XSetWindowAttributes swa;
   swa.override_redirect = x11::True;
-  XID menu_xid = XCreateWindow(xdisplay(),
-                               root,
-                               0, 0, 1, 1,
-                               0,                  // border width
-                               CopyFromParent,     // depth
+  XID menu_xid = XCreateWindow(xdisplay(), root, 0, 0, 1, 1,
+                               0,               // border width
+                               CopyFromParent,  // depth
                                InputOutput,
-                               CopyFromParent,     // visual
-                               CWOverrideRedirect,
-                               &swa);
+                               CopyFromParent,  // visual
+                               CWOverrideRedirect, &swa);
   {
     ui::SetAtomProperty(menu_xid, "_NET_WM_WINDOW_TYPE", "ATOM",
                         gfx::GetAtom("_NET_WM_WINDOW_TYPE_MENU"));
@@ -388,7 +377,7 @@ TEST_F(X11TopmostWindowFinderTest, Menu) {
   ui::X11EventSource::GetInstance()->DispatchXEvents();
 
   // |menu_xid| is never added to _NET_CLIENT_LIST_STACKING.
-  XID xids[] = { xid };
+  XID xids[] = {xid};
   StackingClientListWaiter stack_waiter(xids, base::size(xids));
   stack_waiter.Wait();
 

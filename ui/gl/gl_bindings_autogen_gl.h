@@ -347,6 +347,9 @@ typedef void(GL_BINDING_CALL* glDeleteFencesNVProc)(GLsizei n,
 typedef void(GL_BINDING_CALL* glDeleteFramebuffersEXTProc)(
     GLsizei n,
     const GLuint* framebuffers);
+typedef void(GL_BINDING_CALL* glDeleteMemoryObjectsEXTProc)(
+    GLsizei n,
+    const GLuint* memoryObjects);
 typedef void(GL_BINDING_CALL* glDeletePathsNVProc)(GLuint path, GLsizei range);
 typedef void(GL_BINDING_CALL* glDeleteProgramProc)(GLuint program);
 typedef void(GL_BINDING_CALL* glDeleteProgramPipelinesProc)(
@@ -2068,6 +2071,7 @@ struct ProcsGL {
   glDeleteFencesAPPLEProc glDeleteFencesAPPLEFn;
   glDeleteFencesNVProc glDeleteFencesNVFn;
   glDeleteFramebuffersEXTProc glDeleteFramebuffersEXTFn;
+  glDeleteMemoryObjectsEXTProc glDeleteMemoryObjectsEXTFn;
   glDeletePathsNVProc glDeletePathsNVFn;
   glDeleteProgramProc glDeleteProgramFn;
   glDeleteProgramPipelinesProc glDeleteProgramPipelinesFn;
@@ -2806,6 +2810,8 @@ class GL_EXPORT GLApi {
   virtual void glDeleteFencesNVFn(GLsizei n, const GLuint* fences) = 0;
   virtual void glDeleteFramebuffersEXTFn(GLsizei n,
                                          const GLuint* framebuffers) = 0;
+  virtual void glDeleteMemoryObjectsEXTFn(GLsizei n,
+                                          const GLuint* memoryObjects) = 0;
   virtual void glDeletePathsNVFn(GLuint path, GLsizei range) = 0;
   virtual void glDeleteProgramFn(GLuint program) = 0;
   virtual void glDeleteProgramPipelinesFn(GLsizei n,
@@ -4297,6 +4303,8 @@ class GL_EXPORT GLApi {
 #define glDeleteFencesNV ::gl::g_current_gl_context->glDeleteFencesNVFn
 #define glDeleteFramebuffersEXT \
   ::gl::g_current_gl_context->glDeleteFramebuffersEXTFn
+#define glDeleteMemoryObjectsEXT \
+  ::gl::g_current_gl_context->glDeleteMemoryObjectsEXTFn
 #define glDeletePathsNV ::gl::g_current_gl_context->glDeletePathsNVFn
 #define glDeleteProgram ::gl::g_current_gl_context->glDeleteProgramFn
 #define glDeleteProgramPipelines \

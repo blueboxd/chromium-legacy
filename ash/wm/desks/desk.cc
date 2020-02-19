@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/public/cpp/app_types.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -43,6 +44,12 @@ void UpdateBackdropController(aura::Window* desk_container) {
 // Returns true if |window| can be managed by the desk, and therefore can be
 // moved out of the desk when the desk is removed.
 bool CanMoveWindowOutOfDeskContainer(aura::Window* window) {
+  // The desks bar widget is an activatable window placed in the active desk's
+  // container, therefore it should be allowed to move outside of its desk when
+  // its desk is removed.
+  if (window->id() == kShellWindowId_DesksBarWindow)
+    return true;
+
   // We never move transient descendants directly, this is taken care of by
   // `wm::TransientWindowManager::OnWindowHierarchyChanged()`.
   auto* transient_root = ::wm::GetTransientRoot(window);
@@ -312,6 +319,9 @@ void Desk::MoveWindowToDesk(aura::Window* window, Desk* target_desk) {
   DCHECK(window);
   DCHECK(base::Contains(windows_, window));
   DCHECK(this != target_desk);
+  // The desks bar should not be allowed to move individually to another desk.
+  // Only as part of `MoveWindowsToDesk()` when the desk is removed.
+  DCHECK_NE(window->id(), kShellWindowId_DesksBarWindow);
 
   {
     ScopedWindowPositionerDisabler window_positioner_disabler;

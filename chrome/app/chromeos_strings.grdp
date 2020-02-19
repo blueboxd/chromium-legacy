@@ -4155,6 +4155,32 @@
     Try again.
   </message>
 
+  <!-- Strings for Oobe gesture navigation education screen -->
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_INTRO_TITLE" desc="The title in the gesture navigation education intro screen.">
+    Introducing a new way to navigate with gestures
+  </message>
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_INTRO_NEXT_BUTTON" desc="The label for the button which advances to the next page in the gesture navigation education intro screen.">
+    Get started
+  </message>
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_HOME_TITLE" desc="The title in the gesture navigation education home screen.">
+    Go Home
+  </message>
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_HOME_DESCRIPTION" desc="The description for the gesture navigation education home screen.">
+    To get to the Homescreen at any time, swipe up from the bottom.
+  </message>
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_BACK_TITLE" desc="The title in the gesture navigation education back screen.">
+    Go Back
+  </message>
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_BACK_DESCRIPTION" desc="The description for the gesture navigation education back screen.">
+    To return to the previous screen, swipe from the side.
+  </message>
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_OVERVIEW_TITLE" desc="The title in the gesture navigation education overview screen.">
+    Switch to open apps
+  </message>
+  <message name="IDS_OOBE_GESTURE_NAVIGATION_OVERVIEW_DESCRIPTION" desc="The description for the gesture navigation education overview screen.">
+    To see all open app windows, swipe up from the bottom and hold.
+  </message>
+
   <!-- Mojo service names (displayed in task manager) -->
   <message name="IDS_ASH_ASH_SERVICE_NAME" desc="Name of the internal software service that manages windows. Appears in the task manager.">
     Window manager

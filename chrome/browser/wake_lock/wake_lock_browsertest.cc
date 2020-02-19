@@ -5,11 +5,11 @@
 #include <string>
 
 #include "base/command_line.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
@@ -23,11 +23,12 @@ namespace {
 // Trimmed down version of the class found in geolocation_browsertest.cc.
 // Used to observe the creation of a single permission request without
 // responding.
-class PermissionRequestObserver : public PermissionRequestManager::Observer {
+class PermissionRequestObserver
+    : public permissions::PermissionRequestManager::Observer {
  public:
   explicit PermissionRequestObserver(content::WebContents* web_contents)
-      : request_manager_(
-            PermissionRequestManager::FromWebContents(web_contents)),
+      : request_manager_(permissions::PermissionRequestManager::FromWebContents(
+            web_contents)),
         request_shown_(false) {
     request_manager_->AddObserver(this);
   }
@@ -45,7 +46,7 @@ class PermissionRequestObserver : public PermissionRequestManager::Observer {
     request_manager_->RemoveObserver(this);
   }
 
-  PermissionRequestManager* request_manager_;
+  permissions::PermissionRequestManager* request_manager_;
   bool request_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionRequestObserver);

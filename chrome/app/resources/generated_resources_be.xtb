@@ -3359,6 +3359,7 @@
 <translation id="5689516760719285838">Месцазнаходжанне</translation>
 <translation id="56907980372820799">Звязаць даныя</translation>
 <translation id="5691511426247308406">Сям'я</translation>
+<translation id="5691772641933328258">Адбітак пальца не распазнаны</translation>
 <translation id="5692183275898619210">Друкаванне завершана</translation>
 <translation id="5696143504434933566">Паскардзіцца на пашырэнне "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="5696679855467848181">Файл PPD, які зараз выкарыстоўваецца: <ph name="PPD_NAME" /></translation>
@@ -5663,7 +5664,6 @@
 <translation id="8864458770072227512">Уліковы запіс <ph name="EMAIL" /> выдалены з гэтай прылады</translation>
 <translation id="8867228703146808825">Скапіраваць звесткі пра зборку ў буфер абмену</translation>
 <translation id="8868626022555786497">Выкарыстоўваецца</translation>
-<translation id="8870318296973696995">Галоўная старонка</translation>
 <translation id="8870413625673593573">Нядаўна закрытыя</translation>
 <translation id="8871551568777368300">Замацавана адміністратарам</translation>
 <translation id="8871696467337989339">Вы выкарыстоўваеце эксперыментальны параметр каманднага радка, які не падтрымліваецца: <ph name="BAD_FLAG" />. Стабільнасць і бяспека пагоршацца.</translation>

@@ -166,10 +166,12 @@ void RootCompositorFrameSinkImpl::SetDisplayVisible(bool visible) {
   display_->SetVisible(visible);
 }
 
+#if defined(OS_WIN)
 void RootCompositorFrameSinkImpl::DisableSwapUntilResize(
     DisableSwapUntilResizeCallback callback) {
   display_->DisableSwapUntilResize(std::move(callback));
 }
+#endif
 
 void RootCompositorFrameSinkImpl::Resize(const gfx::Size& size) {
   display_->Resize(size);

@@ -1134,7 +1134,7 @@
 <translation id="2537178555904266562">Не удалось синхронизировать пароли.</translation>
 <translation id="2537296579376733324">Все файлы cookie только на этом сайте</translation>
 <translation id="2537395079978992874"><ph name="ORIGIN" /> может просматривать и изменять указанные ниже файлы и папки.</translation>
-<translation id="2537464584626495441">Откройте электронный ключ на телефоне</translation>
+<translation id="2537464584626495441">Откройте на телефоне приложение для аутентификации</translation>
 <translation id="2538361623464451692">Синхронизация отключена</translation>
 <translation id="2540449034743108469">Чтобы включить прослушиватель событий для расширений, нажмите "Запустить".</translation>
 <translation id="2541002089857695151">Оптимизировать трансляцию в полноэкранном режиме?</translation>
@@ -3357,6 +3357,7 @@
 <translation id="5689516760719285838">Геоданные</translation>
 <translation id="56907980372820799">Связать аккаунты</translation>
 <translation id="5691511426247308406">Семейство</translation>
+<translation id="5691772641933328258">Не удалось распознать отпечаток</translation>
 <translation id="5692183275898619210">Печать завершена</translation>
 <translation id="5696143504434933566">Пожаловаться на расширение "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="5696679855467848181">PPD-файл, используемый сейчас: <ph name="PPD_NAME" /></translation>
@@ -5661,7 +5662,6 @@
 <translation id="8864458770072227512">Аккаунт <ph name="EMAIL" /> удален с устройства.</translation>
 <translation id="8867228703146808825">Скопировать данные о сборке в буфер обмена</translation>
 <translation id="8868626022555786497">Занято</translation>
-<translation id="8870318296973696995">Главная страница</translation>
 <translation id="8870413625673593573">Недавно закрытые</translation>
 <translation id="8871551568777368300">Закреплено администратором</translation>
 <translation id="8871696467337989339">Вы используете неподдерживаемый флаг командной строки: <ph name="BAD_FLAG" />. Стабильность и безопасность будут нарушены.</translation>

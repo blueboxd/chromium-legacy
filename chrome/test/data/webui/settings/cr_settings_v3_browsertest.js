@@ -167,6 +167,22 @@ TEST_F('CrSettingsSubpageV3Test', 'All', function() {
   mocha.run();
 });
 
+GEN('#if !defined(OS_CHROMEOS)');
+
+// eslint-disable-next-line no-var
+var CrSettingsSystemPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/system_page_tests.m.js';
+  }
+};
+
+TEST_F('CrSettingsSystemPageV3Test', 'All', function() {
+  mocha.run();
+});
+
+GEN('#endif  // !defined(OS_CHROMEOS)');
+
 // eslint-disable-next-line no-var
 var CrSettingsTextareaV3Test = class extends CrSettingsV3BrowserTest {
   /** @override */

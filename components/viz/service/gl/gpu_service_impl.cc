@@ -329,6 +329,7 @@ void GpuServiceImpl::InitializeWithHost(
     owned_sync_point_manager_ = std::make_unique<gpu::SyncPointManager>();
     sync_point_manager = owned_sync_point_manager_.get();
   }
+  sync_point_manager_ = sync_point_manager;
 
   if (!shared_image_manager) {
     // When using real buffers for testing overlay configurations, we need
@@ -343,6 +344,7 @@ void GpuServiceImpl::InitializeWithHost(
     // SharedImageManager.
     DCHECK(!features::ShouldUseRealBuffersForPageFlipTest());
   }
+  shared_image_manager_ = shared_image_manager;
 
   shutdown_event_ = shutdown_event;
   if (!shutdown_event_) {
@@ -353,23 +355,33 @@ void GpuServiceImpl::InitializeWithHost(
   }
 
   scheduler_ = std::make_unique<gpu::Scheduler>(
-      main_runner_, sync_point_manager, gpu_preferences_);
+      main_runner_, sync_point_manager_, gpu_preferences_);
+
+  default_offscreen_surface_ = std::move(default_offscreen_surface);
+  activity_flags_.emplace(std::move(activity_flags));
 
   // Defer creation of the render thread. This is to prevent it from handling
   // IPC messages before the sandbox has been enabled and all other necessary
   // initialization has succeeded.
+  InitializeGpuChannelManager();
+
+  if (watchdog_thread())
+    watchdog_thread()->AddPowerObserver();
+}
+
+void GpuServiceImpl::InitializeGpuChannelManager() {
+  DCHECK(!gpu_channel_manager_ && !media_gpu_channel_manager_);
+
   gpu_channel_manager_ = std::make_unique<gpu::GpuChannelManager>(
       gpu_preferences_, this, watchdog_thread_.get(), main_runner_, io_runner_,
-      scheduler_.get(), sync_point_manager, shared_image_manager,
+      scheduler_.get(), sync_point_manager_, shared_image_manager_,
       gpu_memory_buffer_factory_.get(), gpu_feature_info_,
-      std::move(activity_flags), std::move(default_offscreen_surface),
+      &activity_flags_.value(), default_offscreen_surface_,
       image_decode_accelerator_worker_.get(), vulkan_context_provider(),
       metal_context_provider_.get(), dawn_context_provider());
 
-  media_gpu_channel_manager_.reset(
-      new media::MediaGpuChannelManager(gpu_channel_manager_.get()));
-  if (watchdog_thread())
-    watchdog_thread()->AddPowerObserver();
+  media_gpu_channel_manager_ = std::make_unique<media::MediaGpuChannelManager>(
+      gpu_channel_manager_.get());
 }
 
 void GpuServiceImpl::Bind(
@@ -914,9 +926,23 @@ void GpuServiceImpl::OnBackgroundCleanup() {
   }
   DVLOG(1) << "GPU: Performing background cleanup";
   gpu_channel_manager_->OnBackgroundCleanup();
-#else
-  NOTREACHED();
+
+  if (features::IsUsingSkiaRenderer()) {
+    // Release context providers and related on low-end device to save memory.
+    gpu_memory_buffer_factory_.reset();
+#if BUILDFLAG(ENABLE_VULKAN)
+    vulkan_context_provider_.reset();
 #endif
+#if BUILDFLAG(SKIA_USE_DAWN)
+    dawn_context_provider_.reset();
+#endif
+    gpu_channel_manager_.reset();
+    media_gpu_channel_manager_.reset();
+  }
+
+#else   // defined(OS_ANDROID)
+  NOTREACHED();
+#endif  // !defined(OS_ANDROID)
 }
 
 void GpuServiceImpl::OnBackgrounded() {
@@ -934,8 +960,54 @@ void GpuServiceImpl::OnBackgroundedOnMainThread() {
 }
 
 void GpuServiceImpl::OnForegrounded() {
+  DCHECK(io_runner_->BelongsToCurrentThread());
   if (watchdog_thread_)
     watchdog_thread_->OnForegrounded();
+
+#if defined(OS_ANDROID)
+  if (features::IsUsingSkiaRenderer()) {
+    main_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&GpuServiceImpl::OnForegroundedOnMainThread, weak_ptr_));
+  }
+#endif  // defined(OS_ANDROID)
+}
+
+void GpuServiceImpl::OnForegroundedOnMainThread() {
+#if defined(OS_ANDROID)
+  if (gpu_channel_manager())
+    return;
+  DCHECK(features::IsUsingSkiaRenderer());
+
+#if BUILDFLAG(ENABLE_VULKAN)
+  if (vulkan_implementation_) {
+    size_t max_resource_cache_bytes;
+    size_t max_glyph_cache_texture_bytes;
+    gpu::DetermineGrCacheLimitsFromAvailableMemory(
+        &max_resource_cache_bytes, &max_glyph_cache_texture_bytes);
+    GrContextOptions context_options;
+    context_options.fGlyphCacheTextureMaximumBytes =
+        max_glyph_cache_texture_bytes;
+    if (gpu_preferences_.force_max_texture_size) {
+      context_options.fMaxTextureSizeOverride =
+          gpu_preferences_.force_max_texture_size;
+    }
+    vulkan_context_provider_ = VulkanInProcessContextProvider::Create(
+        vulkan_implementation_, context_options);
+  }
+#endif  // BUILDFLAG(ENABLE_VULKAN)
+
+#if BUILDFLAG(SKIA_USE_DAWN)
+  if (gpu_preferences_.gr_context_type == gpu::GrContextType::kDawn) {
+    dawn_context_provider_ = DawnContextProvider::Create();
+  }
+#endif  // BUILDFLAG(SKIA_USE_DAWN)
+
+  gpu_memory_buffer_factory_ =
+      gpu::GpuMemoryBufferFactory::CreateNativeType(vulkan_context_provider());
+
+  InitializeGpuChannelManager();
+#endif  // defined(OS_ANDROID)
 }
 
 #if !defined(OS_ANDROID)

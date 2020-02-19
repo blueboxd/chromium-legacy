@@ -27,27 +27,6 @@ namespace {
 base::LazyInstance<BackgroundSyncLauncher>::DestructorAtExit
     g_background_sync_launcher = LAZY_INSTANCE_INITIALIZER;
 
-unsigned int GetStoragePartitionCount(BrowserContext* browser_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(browser_context);
-
-  int num_partitions = 0;
-  BrowserContext::ForEachStoragePartition(
-      browser_context,
-      base::BindRepeating(
-          [](int* num_partitions, StoragePartition* storage_partition) {
-            (*num_partitions)++;
-          },
-          &num_partitions));
-
-  // It's valid for a profile to not have any storage partitions. This DCHECK
-  // is to ensure that we're not waking up Chrome for no reason, because that's
-  // expensive and unnecessary.
-  DCHECK(num_partitions);
-
-  return num_partitions;
-}
-
 }  // namespace
 
 // static
@@ -89,7 +68,7 @@ void BackgroundSyncLauncher::FireBackgroundSyncEventsImpl(
   if (sync_type == blink::mojom::BackgroundSyncType::PERIODIC)
     last_browser_wakeup_for_periodic_sync_ = base::Time::Now();
   base::RepeatingClosure done_closure = base::BarrierClosure(
-      GetStoragePartitionCount(browser_context),
+      content::BrowserContext::GetStoragePartitionCount(browser_context),
       base::BindOnce(base::android::RunRunnableAndroid,
                      base::android::ScopedJavaGlobalRef<jobject>(j_runnable)));
 
@@ -138,7 +117,7 @@ void BackgroundSyncLauncher::GetSoonestWakeupDeltaImpl(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   base::RepeatingClosure done_closure = base::BarrierClosure(
-      GetStoragePartitionCount(browser_context),
+      content::BrowserContext::GetStoragePartitionCount(browser_context),
       base::BindOnce(&BackgroundSyncLauncher::SendSoonestWakeupDelta,
                      base::Unretained(this), sync_type, std::move(callback)));
 

@@ -3359,6 +3359,7 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="5689516760719285838">Жайгашкан жер</translation>
 <translation id="56907980372820799">Шилтеме дайындары</translation>
 <translation id="5691511426247308406">Үй-бүлөлүк</translation>
+<translation id="5691772641933328258">Манжа изи таанылган жок</translation>
 <translation id="5692183275898619210">Басылып чыгарылды</translation>
 <translation id="5696143504434933566">"<ph name="EXTENSION_NAME" />" адепсиздиги тууралуу кабарлоо</translation>
 <translation id="5696679855467848181">Учурда колдонулуп жаткан PPD файлы: <ph name="PPD_NAME" /></translation>
@@ -5663,7 +5664,6 @@ Family Link колдонмосун түзмөгүңүзгө орнотуп, бу
 <translation id="8864458770072227512"><ph name="EMAIL" /> бул түзмөктөн өчүрүлдү</translation>
 <translation id="8867228703146808825">Кураманын чоо-жайын алмашуу буферине көчүрүңүз</translation>
 <translation id="8868626022555786497">Колдонулууда</translation>
-<translation id="8870318296973696995">Башкы бет</translation>
 <translation id="8870413625673593573">Жакында жабылган</translation>
 <translation id="8871551568777368300">Администратор тарабынан төөнөлгөн</translation>
 <translation id="8871696467337989339">Колдоого алынбаган буйрук сап желегин колдонуп жатасыз: <ph name="BAD_FLAG" />. Туруктуулук менен коопсуздук жабыркап калышы мүмкүн.</translation>

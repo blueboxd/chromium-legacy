@@ -35,9 +35,7 @@ class NativeViewHierarchyChangedTestView : public View {
  public:
   NativeViewHierarchyChangedTestView() = default;
 
-  void ResetCount() {
-    notification_count_ = 0;
-  }
+  void ResetCount() { notification_count_ = 0; }
 
   int notification_count() const { return notification_count_; }
 
@@ -61,13 +59,9 @@ class ViewHierarchyChangedTestHost : public NativeViewHost {
  public:
   ViewHierarchyChangedTestHost() = default;
 
-  void ResetParentChanges() {
-    num_parent_changes_ = 0;
-  }
+  void ResetParentChanges() { num_parent_changes_ = 0; }
 
-  int num_parent_changes() const {
-    return num_parent_changes_;
-  }
+  int num_parent_changes() const { return num_parent_changes_; }
 
   // NativeViewHost:
   void ViewHierarchyChanged(

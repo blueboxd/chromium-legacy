@@ -6,8 +6,9 @@
 
 #include <memory>
 
-#include "base/strings/string16.h"
+#include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/bubble_anchor_util_views.h"
@@ -15,6 +16,8 @@
 #include "chrome/browser/ui/views/title_origin_label.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/permissions/permission_request.h"
+#include "components/url_formatter/elide_url.h"
+#include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -28,10 +31,10 @@
 
 PermissionPromptBubbleView::PermissionPromptBubbleView(
     Browser* browser,
-    PermissionPrompt::Delegate* delegate)
+    permissions::PermissionPrompt::Delegate* delegate)
     : browser_(browser),
       delegate_(delegate),
-      name_or_origin_(delegate->GetDisplayNameOrOrigin()) {
+      name_or_origin_(GetDisplayNameOrOrigin()) {
   DCHECK(browser_);
   DCHECK(delegate_);
 
@@ -46,12 +49,15 @@ PermissionPromptBubbleView::PermissionPromptBubbleView(
       ui::DIALOG_BUTTON_CANCEL, l10n_util::GetStringUTF16(IDS_PERMISSION_DENY));
   set_close_on_deactivate(false);
 
-  DialogDelegate::set_accept_callback(base::BindOnce(
-      &PermissionPrompt::Delegate::Accept, base::Unretained(delegate)));
-  DialogDelegate::set_cancel_callback(base::BindOnce(
-      &PermissionPrompt::Delegate::Deny, base::Unretained(delegate)));
-  DialogDelegate::set_close_callback(base::BindOnce(
-      &PermissionPrompt::Delegate::Closing, base::Unretained(delegate)));
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(&permissions::PermissionPrompt::Delegate::Accept,
+                     base::Unretained(delegate)));
+  DialogDelegate::set_cancel_callback(
+      base::BindOnce(&permissions::PermissionPrompt::Delegate::Deny,
+                     base::Unretained(delegate)));
+  DialogDelegate::set_close_callback(
+      base::BindOnce(&permissions::PermissionPrompt::Delegate::Closing,
+                     base::Unretained(delegate)));
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -149,4 +155,25 @@ void PermissionPromptBubbleView::Show() {
 
   SizeToContents();
   UpdateAnchorPosition();
+}
+
+PermissionPromptBubbleView::DisplayNameOrOrigin
+PermissionPromptBubbleView::GetDisplayNameOrOrigin() {
+  const std::vector<permissions::PermissionRequest*>& requests =
+      delegate_->Requests();
+  DCHECK(!requests.empty());
+  GURL origin_url = requests[0]->GetOrigin();
+
+  if (origin_url.SchemeIs(extensions::kExtensionScheme)) {
+    base::string16 extension_name =
+        extensions::ui_util::GetEnabledExtensionNameForUrl(origin_url,
+                                                           browser_->profile());
+    if (!extension_name.empty())
+      return {extension_name, false /* is_origin */};
+  }
+
+  // Web URLs should be displayed as the origin in the URL.
+  return {url_formatter::FormatUrlForSecurityDisplay(
+              origin_url, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC),
+          true /* is_origin */};
 }

@@ -17,6 +17,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabImpl;
+import org.chromium.components.url_formatter.SchemeDisplay;
+import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
@@ -47,11 +50,17 @@ public class ArConsentDialog implements ModalDialogProperties.Controller {
     private ModalDialogManager mModalDialogManager;
     private long mNativeArConsentDialog;
     private WindowAndroid mWindowAndroid;
+    // URL of the page entering AR.
+    private String mUrl;
 
     @CalledByNative
     private static ArConsentDialog showDialog(long instance, @NonNull final Tab tab) {
-        ArConsentDialog dialog = new ArConsentDialog(instance);
+        WebContents webContents = tab.getWebContents();
+        String url = webContents.getLastCommittedUrl();
+        ArConsentDialog dialog = new ArConsentDialog(instance, url);
+
         dialog.show(((TabImpl) tab).getActivity());
+
         return dialog;
     }
 
@@ -61,17 +70,21 @@ public class ArConsentDialog implements ModalDialogProperties.Controller {
         mModalDialogManager.dismissAllDialogs(DialogDismissalCause.UNKNOWN);
     }
 
-    private ArConsentDialog(long arConsentDialog) {
+    private ArConsentDialog(long arConsentDialog, String url) {
         mNativeArConsentDialog = arConsentDialog;
+        mUrl = url;
     }
 
     public void show(ChromeActivity activity) {
         mWindowAndroid = activity.getWindowAndroid();
         Resources resources = activity.getResources();
+
+        String dialogTitle = resources.getString(R.string.ar_immersive_mode_consent_title,
+                UrlFormatter.formatUrlForSecurityDisplay(mUrl, SchemeDisplay.OMIT_HTTP_AND_HTTPS));
+
         PropertyModel model = new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                                       .with(ModalDialogProperties.CONTROLLER, this)
-                                      .with(ModalDialogProperties.TITLE, resources,
-                                              R.string.ar_immersive_mode_consent_title)
+                                      .with(ModalDialogProperties.TITLE, dialogTitle)
                                       .with(ModalDialogProperties.MESSAGE, resources,
                                               R.string.ar_immersive_mode_consent_message)
                                       .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources,

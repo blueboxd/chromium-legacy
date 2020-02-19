@@ -95,9 +95,9 @@ void WebView::SetEmbedFullscreenWidgetMode(bool enable) {
 }
 
 void WebView::LoadInitialURL(const GURL& url) {
-  GetWebContents()->GetController().LoadURL(
-      url, content::Referrer(), ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
-      std::string());
+  GetWebContents()->GetController().LoadURL(url, content::Referrer(),
+                                            ui::PAGE_TRANSITION_AUTO_TOPLEVEL,
+                                            std::string());
 }
 
 void WebView::SetFastResize(bool fast_resize) {
@@ -187,8 +187,7 @@ void WebView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   holder_->SetBoundsRect(holder_bounds);
 }
 
-void WebView::ViewHierarchyChanged(
-    const ViewHierarchyChangedDetails& details) {
+void WebView::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
   if (details.is_add)
     AttachWebContentsNativeView();
 }

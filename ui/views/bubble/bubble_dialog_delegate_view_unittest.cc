@@ -80,8 +80,8 @@ class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
     should_show_window_title_ = should_show_window_title;
   }
 
-  using BubbleDialogDelegateView::SetAnchorRect;
   using BubbleDialogDelegateView::GetBubbleFrameView;
+  using BubbleDialogDelegateView::SetAnchorRect;
   using BubbleDialogDelegateView::SizeToContents;
 
  private:

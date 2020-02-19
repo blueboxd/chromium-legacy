@@ -27,12 +27,12 @@
 namespace gfx {
 class ImageSkia;
 class Rect;
-}
+}  // namespace gfx
 
 namespace ui {
 class ContextFactory;
 class TouchEditingControllerFactory;
-}
+}  // namespace ui
 
 namespace views {
 
@@ -61,10 +61,10 @@ class VIEWS_EXPORT ViewsDelegate {
                                             internal::NativeWidgetDelegate*)>;
 #if defined(OS_WIN)
   enum AppbarAutohideEdge {
-    EDGE_TOP    = 1 << 0,
-    EDGE_LEFT   = 1 << 1,
+    EDGE_TOP = 1 << 0,
+    EDGE_LEFT = 1 << 1,
     EDGE_BOTTOM = 1 << 2,
-    EDGE_RIGHT  = 1 << 3,
+    EDGE_RIGHT = 1 << 3,
   };
 #endif
 

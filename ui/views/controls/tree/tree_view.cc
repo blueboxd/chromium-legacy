@@ -103,8 +103,8 @@ TreeView::TreeView()
                       .GetImageNamed(IDR_FOLDER_OPEN)
                       .ToImageSkia();
   }
-  text_offset_ = closed_icon_.width() + kImagePadding + kImagePadding +
-      kArrowRegionSize;
+  text_offset_ =
+      closed_icon_.width() + kImagePadding + kImagePadding + kArrowRegionSize;
 }
 
 TreeView::~TreeView() {
@@ -383,8 +383,8 @@ bool TreeView::IsExpanded(TreeModelNode* model_node) {
     // to add NULL checks every where we look up the parent.
     return true;
   }
-  InternalNode* node = GetInternalNodeForModelNode(
-      model_node, DONT_CREATE_IF_NOT_LOADED);
+  InternalNode* node =
+      GetInternalNodeForModelNode(model_node, DONT_CREATE_IF_NOT_LOADED);
   if (!node)
     return false;
 
@@ -624,8 +624,7 @@ void TreeView::TreeNodeChanged(TreeModel* model, TreeModelNode* model_node) {
 }
 
 void TreeView::ContentsChanged(Textfield* sender,
-                               const base::string16& new_contents) {
-}
+                               const base::string16& new_contents) {}
 
 bool TreeView::HandleKeyEvent(Textfield* sender,
                               const ui::KeyEvent& key_event) {
@@ -647,8 +646,7 @@ bool TreeView::HandleKeyEvent(Textfield* sender,
   }
 }
 
-void TreeView::OnWillChangeFocus(View* focused_before, View* focused_now) {
-}
+void TreeView::OnWillChangeFocus(View* focused_before, View* focused_now) {}
 
 void TreeView::OnDidChangeFocus(View* focused_before, View* focused_now) {
   CommitEdit();
@@ -699,8 +697,8 @@ bool TreeView::OnKeyPressed(const ui::KeyEvent& event) {
     case ui::VKEY_F2:
       if (!editing_) {
         TreeModelNode* selected_node = GetSelectedNode();
-        if (selected_node && (!controller_ ||
-                              controller_->CanEdit(this, selected_node))) {
+        if (selected_node &&
+            (!controller_ || controller_->CanEdit(this, selected_node))) {
           StartEditing(selected_node);
         }
       }
@@ -708,8 +706,8 @@ bool TreeView::OnKeyPressed(const ui::KeyEvent& event) {
 
     case ui::VKEY_UP:
     case ui::VKEY_DOWN:
-      IncrementSelection(event.key_code() == ui::VKEY_UP ?
-                         INCREMENT_PREVIOUS : INCREMENT_NEXT);
+      IncrementSelection(event.key_code() == ui::VKEY_UP ? INCREMENT_PREVIOUS
+                                                         : INCREMENT_NEXT);
       return true;
 
     case ui::VKEY_LEFT:
@@ -735,15 +733,15 @@ bool TreeView::OnKeyPressed(const ui::KeyEvent& event) {
 void TreeView::OnPaint(gfx::Canvas* canvas) {
   // Don't invoke View::OnPaint so that we can render our own focus border.
   canvas->DrawColor(GetNativeTheme()->GetSystemColor(
-                        ui::NativeTheme::kColorId_TreeBackground));
+      ui::NativeTheme::kColorId_TreeBackground));
 
   int min_y, max_y;
   {
     SkRect sk_clip_rect;
     if (canvas->sk_canvas()->getLocalClipBounds(&sk_clip_rect)) {
       // Pixels partially inside the clip rect should be included.
-      gfx::Rect clip_rect = gfx::ToEnclosingRect(
-          gfx::SkRectToRectF(sk_clip_rect));
+      gfx::Rect clip_rect =
+          gfx::ToEnclosingRect(gfx::SkRectToRectF(sk_clip_rect));
       min_y = clip_rect.y();
       max_y = clip_rect.bottom();
     } else {
@@ -837,8 +835,8 @@ bool TreeView::IsRoot(const InternalNode* node) const {
 
 void TreeView::UpdateNodeTextWidth(InternalNode* node) {
   int width = 0, height = 0;
-  gfx::Canvas::SizeStringInt(node->model_node()->GetTitle(), font_list_,
-                             &width, &height, 0, gfx::Canvas::NO_ELLIPSIS);
+  gfx::Canvas::SizeStringInt(node->model_node()->GetTitle(), font_list_, &width,
+                             &height, 0, gfx::Canvas::NO_ELLIPSIS);
   node->set_text_width(width);
 }
 
@@ -1085,9 +1083,10 @@ void TreeView::PaintExpandControl(gfx::Canvas* canvas,
   gfx::Rect arrow_bounds = node_bounds;
   arrow_bounds.Inset(gfx::Insets((node_bounds.height() - arrow.height()) / 2,
                                  (kArrowRegionSize - arrow.width()) / 2));
-  canvas->DrawImageInt(arrow, base::i18n::IsRTL()
-                                  ? arrow_bounds.right() - arrow.width()
-                                  : arrow_bounds.x(),
+  canvas->DrawImageInt(arrow,
+                       base::i18n::IsRTL()
+                           ? arrow_bounds.right() - arrow.width()
+                           : arrow_bounds.x(),
                        arrow_bounds.y());
 }
 

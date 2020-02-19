@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -85,6 +86,7 @@ public class PaymentHandlerEnableDelegationsTest {
 
     @Test
     @Feature({"Payments"})
+    @DisabledTest(message = "Test is flaky, see crbug.com/1054103")
     @MediumTest
     public void testShippingDelegation() throws Throwable {
         installPaymentHandlerWithDelegations("['shippingAddress']");
@@ -98,6 +100,7 @@ public class PaymentHandlerEnableDelegationsTest {
 
     @Test
     @Feature({"Payments"})
+    @DisabledTest(message = "Test is flaky, see crbug.com/1054108")
     @MediumTest
     public void testContactDelegation() throws Throwable {
         installPaymentHandlerWithDelegations("['payerName', 'payerEmail', 'payerPhone']");
@@ -113,6 +116,7 @@ public class PaymentHandlerEnableDelegationsTest {
 
     @Test
     @Feature({"Payments"})
+    @DisabledTest(message = "Test is flaky, see crbug.com/1054062")
     @MediumTest
     public void testShippingAndContactInfoDelegation() throws Throwable {
         installPaymentHandlerWithDelegations(

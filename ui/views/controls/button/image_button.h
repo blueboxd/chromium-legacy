@@ -24,18 +24,10 @@ class VIEWS_EXPORT ImageButton : public Button {
   METADATA_HEADER(ImageButton);
 
   // An enum describing the horizontal alignment of images on Buttons.
-  enum HorizontalAlignment {
-    ALIGN_LEFT = 0,
-    ALIGN_CENTER,
-    ALIGN_RIGHT
-  };
+  enum HorizontalAlignment { ALIGN_LEFT = 0, ALIGN_CENTER, ALIGN_RIGHT };
 
   // An enum describing the vertical alignment of images on Buttons.
-  enum VerticalAlignment {
-    ALIGN_TOP = 0,
-    ALIGN_MIDDLE,
-    ALIGN_BOTTOM
-  };
+  enum VerticalAlignment { ALIGN_TOP = 0, ALIGN_MIDDLE, ALIGN_BOTTOM };
 
   explicit ImageButton(ButtonListener* listener);
   ~ImageButton() override;
@@ -70,9 +62,7 @@ class VIEWS_EXPORT ImageButton : public Button {
   void SetMinimumImageSize(const gfx::Size& size);
 
   // Whether we should draw our images resources horizontally flipped.
-  void SetDrawImageMirrored(bool mirrored) {
-    draw_image_mirrored_ = mirrored;
-  }
+  void SetDrawImageMirrored(bool mirrored) { draw_image_mirrored_ = mirrored; }
 
   // Overridden from View:
   gfx::Size CalculatePreferredSize() const override;

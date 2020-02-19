@@ -15,17 +15,14 @@ namespace views {
 class ScopedTestWidget {
  public:
   explicit ScopedTestWidget(internal::NativeWidgetPrivate* native_widget)
-      : native_widget_(native_widget) {
-  }
+      : native_widget_(native_widget) {}
   ~ScopedTestWidget() {
     // |CloseNow| deletes both |native_widget_| and its associated
     // |Widget|.
     native_widget_->GetWidget()->CloseNow();
   }
 
-  internal::NativeWidgetPrivate* operator->() const  {
-    return native_widget_;
-  }
+  internal::NativeWidgetPrivate* operator->() const { return native_widget_; }
   internal::NativeWidgetPrivate* get() const { return native_widget_; }
 
  private:

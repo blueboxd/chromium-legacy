@@ -107,9 +107,9 @@ class CORE_EXPORT DevToolsSession : public GarbageCollected<DevToolsSession>,
   std::unique_ptr<protocol::UberDispatcher> inspector_backend_dispatcher_;
   InspectorSessionState session_state_;
   HeapVector<Member<InspectorAgent>> agents_;
-  // Notifications are lazily serialized to shift the overhead we spend away
-  // from Javascript code that generates many events (e.g., a loop logging to
-  // console on every iteration).
+  // Notifications are lazily serialized to shift the serialization overhead
+  // from performance measurements. We may want to revisit this.
+  // See https://bugs.chromium.org/p/chromium/issues/detail?id=1044989#c8
   Vector<base::OnceCallback<std::vector<uint8_t>()>> notification_queue_;
   const bool client_expects_binary_responses_;
   InspectorAgentState v8_session_state_;

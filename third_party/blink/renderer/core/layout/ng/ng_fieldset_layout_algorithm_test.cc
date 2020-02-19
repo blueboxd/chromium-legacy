@@ -510,5 +510,69 @@ TEST_F(NGFieldsetLayoutAlgorithmTest, MinMax) {
   EXPECT_EQ(size.max_size, LayoutUnit(126));
 }
 
+// Tests that a fieldset won't fragment if it doesn't reach the fragmentation
+// line.
+TEST_F(NGFieldsetLayoutAlgorithmTest, NoFragmentation) {
+  SetBodyInnerHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        fieldset {
+          border:3px solid; margin:0; padding:10px; width: 150px; height: 100px;
+        }
+      </style>
+      <fieldset id="fieldset"></fieldset>
+  )HTML");
+
+  LayoutUnit kFragmentainerSpaceAvailable(200);
+
+  NGBlockNode node(ToLayoutBox(GetLayoutObjectByElementId("fieldset")));
+  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      LogicalSize(LayoutUnit(1000), kIndefiniteSize), false,
+      node.CreatesNewFormattingContext(), kFragmentainerSpaceAvailable);
+
+  // We should only have one 176x126 fragment with no fragmentation.
+  scoped_refptr<const NGPhysicalBoxFragment> fragment =
+      NGBaseLayoutAlgorithmTest::RunFieldsetLayoutAlgorithm(node, space);
+  EXPECT_EQ(PhysicalSize(176, 126), fragment->Size());
+  ASSERT_FALSE(fragment->BreakToken());
+}
+
+// Tests that a fieldset will fragment if it reaches the fragmentation line.
+TEST_F(NGFieldsetLayoutAlgorithmTest, SimpleFragmentation) {
+  SetBodyInnerHTML(R"HTML(
+      <!DOCTYPE html>
+      <style>
+        #fieldset {
+          border:3px solid; margin:0; padding:10px; width: 150px; height: 500px;
+        }
+      </style>
+      <fieldset id="fieldset"></fieldset>
+  )HTML");
+
+  LayoutUnit kFragmentainerSpaceAvailable(200);
+
+  NGBlockNode node(ToLayoutBox(GetLayoutObjectByElementId("fieldset")));
+  NGConstraintSpace space = ConstructBlockLayoutTestConstraintSpace(
+      WritingMode::kHorizontalTb, TextDirection::kLtr,
+      LogicalSize(LayoutUnit(1000), kIndefiniteSize), false,
+      node.CreatesNewFormattingContext(), kFragmentainerSpaceAvailable);
+
+  scoped_refptr<const NGPhysicalBoxFragment> fragment =
+      NGBaseLayoutAlgorithmTest::RunFieldsetLayoutAlgorithm(node, space);
+  EXPECT_EQ(PhysicalSize(176, 200), fragment->Size());
+  ASSERT_FALSE(fragment->BreakToken()->IsFinished());
+
+  fragment = NGBaseLayoutAlgorithmTest::RunFieldsetLayoutAlgorithm(
+      node, space, fragment->BreakToken());
+  EXPECT_EQ(PhysicalSize(176, 200), fragment->Size());
+  ASSERT_FALSE(fragment->BreakToken()->IsFinished());
+
+  fragment = NGBaseLayoutAlgorithmTest::RunFieldsetLayoutAlgorithm(
+      node, space, fragment->BreakToken());
+  EXPECT_EQ(PhysicalSize(176, 126), fragment->Size());
+  ASSERT_FALSE(fragment->BreakToken());
+}
+
 }  // anonymous namespace
 }  // namespace blink

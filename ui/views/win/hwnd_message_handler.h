@@ -43,7 +43,7 @@ class ImageSkia;
 class Insets;
 }  // namespace gfx
 
-namespace ui  {
+namespace ui {
 class AXFragmentRootWin;
 class AXSystemCaretWin;
 class TextInputClient;
@@ -281,10 +281,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
 
   // Called after the WM_ACTIVATE message has been processed by the default
   // windows procedure.
-  void PostProcessActivateMessage(
-      int activation_state,
-      bool minimized,
-      HWND window_gaining_or_losing_activation);
+  void PostProcessActivateMessage(int activation_state,
+                                  bool minimized,
+                                  HWND window_gaining_or_losing_activation);
 
   // Enables disabled owner windows that may have been disabled due to this
   // window's modality.

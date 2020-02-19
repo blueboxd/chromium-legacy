@@ -8,82 +8,12 @@ import mock
 import test_runner
 import test_runner_test
 
-SIMULATORS_LIST = {
-    'devices': {
-        'com.apple.CoreSimulator.SimRuntime.iOS-11-4': [{
-            'isAvailable': True,
-            'name': 'iPhone 5s',
-            'state': 'Shutdown',
-            'udid': 'E4E66320-177A-450A-9BA1-488D85B7278E'
-        }],
-        'com.apple.CoreSimulator.SimRuntime.iOS-13-2': [
-            {
-                'isAvailable': True,
-                'name': 'iPhone X',
-                'state': 'Shutdown',
-                'udid': 'E4E66321-177A-450A-9BA1-488D85B7278E'
-            },
-            {
-                'isAvailable': True,
-                'name': 'iPhone 11',
-                'state': 'Shutdown',
-                'udid': 'A4E66321-177A-450A-9BA1-488D85B7278E'
-            }
-        ]
-    },
-    'devicetypes': [
-        {
-            'name': 'iPhone 5s',
-            'bundlePath': '/path/iPhone 4s/Content',
-            'identifier': 'com.apple.CoreSimulator.SimDeviceType.iPhone-5s'
-        },
-        {
-            'name': 'iPhone X',
-            'bundlePath': '/path/iPhone X/Content',
-            'identifier': 'com.apple.CoreSimulator.SimDeviceType.iPhone-X'
-        },
-        {
-            'name': 'iPhone 11',
-            'bundlePath': '/path/iPhone 11/Content',
-            'identifier': 'com.apple.CoreSimulator.SimDeviceType.iPhone-11'
-        },
-    ],
-    'pairs': [],
-    'runtimes': [
-        {
-            "buildversion": "15F79",
-            "bundlePath": "/path/Runtimes/iOS 11.4.simruntime",
-            "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-11-4",
-            "isAvailable": True,
-            "name": "iOS 11.4",
-            "version": "11.4"
-        },
-        {
-            "buildversion": "17A844",
-            "bundlePath": "/path/Runtimes/iOS 13.1.simruntime",
-            "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-13-1",
-            "isAvailable": True,
-            "name": "iOS 13.1",
-            "version": "13.1"
-        },
-        {
-            "buildversion": "17B102",
-            "bundlePath": "/path/Runtimes/iOS.simruntime",
-            "identifier": "com.apple.CoreSimulator.SimRuntime.iOS-13-2",
-            "isAvailable": True,
-            "name": "iOS 13.2",
-            "version": "13.2.2"
-        },
-    ]
-}
-
 
 class GetiOSSimUtil(test_runner_test.TestCase):
   """Tests for iossim_util.py."""
 
   def setUp(self):
     super(GetiOSSimUtil, self).setUp()
-    self.mock(iossim_util, 'get_simulator_list', lambda: SIMULATORS_LIST)
 
   def test_get_simulator_runtime_by_version(self):
     """Ensures correctness of filter."""

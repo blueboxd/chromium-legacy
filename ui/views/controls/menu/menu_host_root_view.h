@@ -32,8 +32,8 @@ class MenuHostRootView : public internal::RootView {
   void OnMouseMoved(const ui::MouseEvent& event) override;
   bool OnMouseWheel(const ui::MouseWheelEvent& event) override;
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
-  void ViewHierarchyChanged(const ViewHierarchyChangedDetails& details)
-      override;
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
 
   bool ProcessMousePressed(const ui::MouseEvent& event);
   bool ProcessMouseDragged(const ui::MouseEvent& event);

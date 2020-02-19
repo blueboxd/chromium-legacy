@@ -115,9 +115,7 @@ class TooltipAura::TooltipView : public views::View {
     return view_size;
   }
 
-  const char* GetClassName() const override {
-    return "TooltipView";
-  }
+  const char* GetClassName() const override { return "TooltipView"; }
 
   void SetText(const base::string16& text) {
     render_text_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
@@ -131,9 +129,7 @@ class TooltipAura::TooltipView : public views::View {
     SchedulePaint();
   }
 
-  void SetForegroundColor(SkColor color) {
-    render_text_->SetColor(color);
-  }
+  void SetForegroundColor(SkColor color) { render_text_->SetColor(color); }
 
   void SetBackgroundColor(SkColor background_color, SkColor border_color) {
     if (CanUseTranslucentTooltipWidget()) {

@@ -15,9 +15,9 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/test/views_test_base.h"
 
-using Microsoft::WRL::ComPtr;
 using base::win::ScopedBstr;
 using base::win::ScopedVariant;
+using Microsoft::WRL::ComPtr;
 
 namespace views {
 namespace test {

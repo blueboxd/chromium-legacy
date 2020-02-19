@@ -88,14 +88,15 @@ gfx::Vector3dF WebXrVrBrowserTestBase::GetControllerOffset() const {
   return gfx::Vector3dF();
 }
 
-PermissionRequestManager*
+permissions::PermissionRequestManager*
 WebXrVrBrowserTestBase::GetPermissionRequestManager() {
   return GetPermissionRequestManager(GetCurrentWebContents());
 }
 
-PermissionRequestManager* WebXrVrBrowserTestBase::GetPermissionRequestManager(
+permissions::PermissionRequestManager*
+WebXrVrBrowserTestBase::GetPermissionRequestManager(
     content::WebContents* web_contents) {
-  return PermissionRequestManager::FromWebContents(web_contents);
+  return permissions::PermissionRequestManager::FromWebContents(web_contents);
 }
 
 // Consent dialogs don't appear on platforms with enable_vr = false.
@@ -113,15 +114,15 @@ void WebXrVrBrowserTestBase::SetupFakeConsentManager(
   switch (user_response) {
     case FakeXRSessionRequestConsentManager::UserResponse::kClickAllowButton:
       permission_auto_response_ =
-          PermissionRequestManager::AutoResponseType::ACCEPT_ALL;
+          permissions::PermissionRequestManager::AutoResponseType::ACCEPT_ALL;
       break;
     case FakeXRSessionRequestConsentManager::UserResponse::kClickCancelButton:
       permission_auto_response_ =
-          PermissionRequestManager::AutoResponseType::DENY_ALL;
+          permissions::PermissionRequestManager::AutoResponseType::DENY_ALL;
       break;
     case FakeXRSessionRequestConsentManager::UserResponse::kCloseDialog:
       permission_auto_response_ =
-          PermissionRequestManager::AutoResponseType::DISMISS;
+          permissions::PermissionRequestManager::AutoResponseType::DISMISS;
       break;
   }
 }

@@ -450,9 +450,6 @@
 <translation id="4521489764227272523">Dữ liệu được chọn đã bị xóa khỏi Chrome và các thiết bị đã đồng bộ hóa của bạn.
 
 Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác, chẳng hạn như tìm kiếm và hoạt động từ các dịch vụ khác của Google tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
-<translation id="4527374721149092498">Tìm hiểu về các chủ đề trên trang web mà không cần rời khỏi trang. Tính năng Chạm để tìm kiếm sẽ gửi một từ và ngữ cảnh xung quanh từ đó tới Google Tìm kiếm, sau đó hiển thị định nghĩa, hình ảnh, kết quả tìm kiếm và các chi tiết khác.
-
-Hãy nhấn vào từ bất kỳ để tìm kiếm từ đó. Để thay đổi từ tìm kiếm, hãy nhấn và giữ để chọn. Để điều chỉnh lượt tìm kiếm, hãy trượt trên thanh xuất hiện, sau đó nhấn vào biểu tượng mở rộng để tạo thẻ mới rồi nhấn vào hộp tìm kiếm.</translation>
 <translation id="4532845899244822526">Chọn thư mục</translation>
 <translation id="4538018662093857852">Bật Chế độ thu gọn</translation>
 <translation id="4550003330909367850">Để xem hoặc sao chép mật khẩu của bạn tại đây, hãy đặt khóa màn hình trên thiết bị này.</translation>
@@ -668,7 +665,6 @@ Hãy nhấn vào từ bất kỳ để tìm kiếm từ đó. Để thay đổi 
 <translation id="604996488070107836">Không tải xuống được <ph name="FILE_NAME" /> do lỗi không xác định.</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6064125863973209585">Đã hoàn tất quá trình tải xuống</translation>
-<translation id="6075798973483050474">Chỉnh sửa trang chủ</translation>
 <translation id="6092062101542170135">Để tiếp tục, hãy bật NFC trong phần cài đặt Android</translation>
 <translation id="60923314841986378">Còn <ph name="HOURS" /> giờ</translation>
 <translation id="6108923351542677676">Đang thiết lập…</translation>
@@ -691,9 +687,6 @@ Hãy nhấn vào từ bất kỳ để tìm kiếm từ đó. Để thay đổi 
 <translation id="6232535412751077445">Bật tính năng “Không theo dõi” nghĩa là một yêu cầu sẽ được đi kèm với lưu lượng duyệt web của bạn. Mọi ảnh hưởng đều phụ thuộc vào việc trang web có phản hồi yêu cầu không và cách thức diễn giải yêu cầu.
 
 Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cách hiển thị cho bạn các quảng cáo không dựa trên các trang web khác mà bạn đã truy cập. Nhiều trang web sẽ vẫn thu thập và sử dụng dữ liệu duyệt web của bạn — ví dụ: để tăng cường bảo mật, cung cấp nội dung, quảng cáo và đề xuất, đồng thời tạo số liệu thống kê báo cáo.</translation>
-<translation id="6238003486329291387">Tìm hiểu về các chủ đề trên trang web mà không cần rời khỏi trang. Tính năng Chạm để tìm kiếm sẽ gửi một từ và ngữ cảnh xung quanh từ đó tới Google Tìm kiếm, sau đó hiển thị định nghĩa, hình ảnh, kết quả tìm kiếm và các chi tiết khác.
-
-Hãy nhấn và giữ từ bất kỳ để bắt đầu tìm kiếm từ đó. Để điều chỉnh lượt tìm kiếm, hãy thay đổi từ đã chọn. Bạn cũng có thể trượt trên thanh xuất hiện, sau đó nhấn vào biểu tượng mở rộng để tạo thẻ mới rồi nhấn vào hộp tìm kiếm.</translation>
 <translation id="624789221780392884">Bản cập nhật đã sẵn sàng</translation>
 <translation id="6255999984061454636">Đề xuất nội dung</translation>
 <translation id="6270391203985052864">Các trang web có thể xin phép gửi thông báo</translation>

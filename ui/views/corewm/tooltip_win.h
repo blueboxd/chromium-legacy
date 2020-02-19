@@ -5,7 +5,8 @@
 #ifndef UI_VIEWS_COREWM_TOOLTIP_WIN_H_
 #define UI_VIEWS_COREWM_TOOLTIP_WIN_H_
 
-#include <windows.h>
+#include <windows.h>  // Must come before other Windows system headers.
+
 #include <commctrl.h>
 
 #include "base/compiler_specific.h"

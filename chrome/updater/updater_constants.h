@@ -18,8 +18,32 @@ extern const char kChromeAppId[];
 // Command line switches.
 //
 
-// Launch the server.
+// This switch starts the COM server. This switch is invoked by the COM runtime
+// when CoCreate is called on one of several CLSIDs that the server supports.
+// We expect to use the COM server for the following scenarios:
+// * The Server for the UI when installing User applications, and as a fallback
+//   if the Service fails when installing Machine applications.
+// * The On-Demand COM Server when running for User, and as a fallback if the
+//   Service fails.
+// * COM Server for launching processes at Medium Integrity, i.e., de-elevating.
+// * The On-Demand COM Server when the client requests read-only interfaces
+//   (say, Policy queries) at Medium Integrity.
+// * A COM broker when running modes such as On-Demand for Machine. A COM broker
+//   is something that acts as an intermediary, allowing creating one of several
+//   possible COM objects that can service a particular COM request, ranging
+//   from Privileged Services that can offer full functionality for a particular
+//   set of interfaces, to Medium Integrity processes that can offer limited
+//   (say, read-only) functionality for that same set of interfaces.
 extern const char kServerSwitch[];
+
+// This switch starts the COM service. This switch is invoked by the Service
+// Manager when CoCreate is called on one of several CLSIDs that the server
+// supports.
+// We expect to use the COM service for the following scenarios:
+// * The Server for the UI when installing Machine applications.
+// * The On-Demand COM Server for Machine applications.
+// * COM Server for launching processes at System Integrity, i.e., an Elevator.
+extern const char kComServiceSwitch[];
 
 // Crash the program for testing purposes.
 extern const char kCrashMeSwitch[];

@@ -7,6 +7,7 @@ import("//build/config/android/rules.gni")
 android_library("java") {
   sources = [
     "java/src/org/chromium/chrome/browser/profile_card/ContentPreviewPostData.java",
+    "java/src/org/chromium/chrome/browser/profile_card/EntryPointCoordinator.java",
     "java/src/org/chromium/chrome/browser/profile_card/NavigationDelegate.java",
     "java/src/org/chromium/chrome/browser/profile_card/ProfileCardCoordinator.java",
     "java/src/org/chromium/chrome/browser/profile_card/ProfileCardData.java",

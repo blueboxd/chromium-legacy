@@ -20,7 +20,7 @@ namespace views {
 namespace test {
 class ViewTargeterTest;
 class WidgetTest;
-}
+}  // namespace test
 
 class RootViewTargeter;
 class Widget;

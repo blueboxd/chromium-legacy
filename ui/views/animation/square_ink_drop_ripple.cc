@@ -309,15 +309,17 @@ void SquareInkDropRipple::AnimateStateChange(
       AnimateToOpacity(visible_opacity_, visible_duration,
                        ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
                        gfx::Tween::EASE_IN_OUT, animation_observer);
-      AnimateToOpacity(kHiddenOpacity, GetAnimationDuration(
-                                           ALTERNATE_ACTION_TRIGGERED_FADE_OUT),
-                       ui::LayerAnimator::ENQUEUE_NEW_ANIMATION,
-                       gfx::Tween::EASE_IN_OUT, animation_observer);
+      AnimateToOpacity(
+          kHiddenOpacity,
+          GetAnimationDuration(ALTERNATE_ACTION_TRIGGERED_FADE_OUT),
+          ui::LayerAnimator::ENQUEUE_NEW_ANIMATION, gfx::Tween::EASE_IN_OUT,
+          animation_observer);
       CalculateRectTransforms(large_size_, large_corner_radius_, &transforms);
-      AnimateToTransforms(transforms, GetAnimationDuration(
-                                          ALTERNATE_ACTION_TRIGGERED_TRANSFORM),
-                          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
-                          gfx::Tween::EASE_IN_OUT, animation_observer);
+      AnimateToTransforms(
+          transforms,
+          GetAnimationDuration(ALTERNATE_ACTION_TRIGGERED_TRANSFORM),
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET,
+          gfx::Tween::EASE_IN_OUT, animation_observer);
       break;
     }
     case InkDropState::ACTIVATED: {

@@ -23,7 +23,8 @@ interface DisplayPrivate {
 
   // Attempts to immediately swap a frame with the current size if possible,
   // then will no longer swap until Resize() is called with a non-empty size.
-  [Sync] DisableSwapUntilResize() => ();
+  [EnableIf=is_win, Sync]
+  DisableSwapUntilResize() => ();
 
   // Resizes the display.
   Resize(gfx.mojom.Size size);

@@ -28,10 +28,12 @@ import './settings_page/settings_animated_pages.m.js';
 
 // <if expr="not chromeos">
 import './default_browser_page/default_browser_page.m.js';
+import './system_page/system_page.m.js';
 // </if>
 
 // <if expr="not chromeos">
 export {DefaultBrowserBrowserProxyImpl} from './default_browser_page/default_browser_browser_proxy.m.js';
+export {SystemPageBrowserProxyImpl} from './system_page/system_page_browser_proxy.m.js';
 // </if>
 
 export {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from './appearance_page/appearance_browser_proxy.m.js';
@@ -39,6 +41,7 @@ export {CrSettingsPrefs} from './prefs/prefs_types.m.js';
 export {DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.m.js';
 export {ExtensionControlBrowserProxyImpl} from './extension_control_browser_proxy.m.js';
 export {FontsBrowserProxy, FontsBrowserProxyImpl} from './appearance_page/fonts_browser_proxy.m.js';
+export {LifetimeBrowserProxyImpl} from './lifetime_browser_proxy.m.js';
 export {OnStartupBrowserProxy, OnStartupBrowserProxyImpl} from './on_startup_page/on_startup_browser_proxy.m.js';
 export {EDIT_STARTUP_URL_EVENT} from './on_startup_page/startup_url_entry.m.js';
 export {StartupUrlsPageBrowserProxy, StartupUrlsPageBrowserProxyImpl} from './on_startup_page/startup_urls_page_browser_proxy.m.js';

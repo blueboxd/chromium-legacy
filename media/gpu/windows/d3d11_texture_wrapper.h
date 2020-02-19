@@ -12,6 +12,7 @@
 
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/texture_manager.h"
+#include "media/base/media_error.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/command_buffer_helper.h"
 #include "media/gpu/media_gpu_export.h"
@@ -29,44 +30,38 @@ using MailboxHolderArray = gpu::MailboxHolder[VideoFrame::kMaxPlanes];
 using GetCommandBufferHelperCB =
     base::RepeatingCallback<CommandBufferHelperPtr()>;
 
-class D3D11PictureBuffer;
-
 // Support different strategies for processing pictures - some may need copying,
-// for example.
+// for example.  Each wrapper owns the resources for a single texture, so it's
+// up to you not to re-use a wrapper for a second image before a previously
+// processed image is no longer needed.
 class MEDIA_GPU_EXPORT Texture2DWrapper {
  public:
-  Texture2DWrapper(ComD3D11Texture2D texture);
+  Texture2DWrapper();
   virtual ~Texture2DWrapper();
 
-  virtual const ComD3D11Texture2D Texture() const;
+  // Initialize the wrapper.
+  virtual bool Init(GetCommandBufferHelperCB get_helper_cb) = 0;
 
-  // This pointer can be raw, since each Texture2DWrapper is directly owned
-  // by the D3D11PictureBuffer through a unique_ptr.
-  virtual bool ProcessTexture(const D3D11PictureBuffer* owner_pb,
-                              MailboxHolderArray* mailbox_dest) = 0;
-
-  // |array_slice| Tells us which array index of the array-type Texture2D
-  // we should be using - if it is not an array-type, |array_slice| is 0.
-  virtual bool Init(GetCommandBufferHelperCB get_helper_cb,
-                    size_t array_slice,
-                    gfx::Size size) = 0;
-
- private:
-  ComD3D11Texture2D texture_;
+  // Import |texture|, |array_slice| and return the mailbox(es) that can be
+  // used to refer to it.
+  virtual bool ProcessTexture(ComD3D11Texture2D texture,
+                              size_t array_slice,
+                              MailboxHolderArray* mailbox_dest_out) = 0;
 };
 
 // The default texture wrapper that uses GPUResources to talk to hardware
-// on behalf of a Texture2D.
+// on behalf of a Texture2D.  Each DefaultTexture2DWrapper owns GL textures
+// that it uses to bind the provided input texture.  Thus, one needs one wrapper
+// instance for each concurrently outstanding texture.
 class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
  public:
-  DefaultTexture2DWrapper(ComD3D11Texture2D texture);
+  DefaultTexture2DWrapper(const gfx::Size& size);
   ~DefaultTexture2DWrapper() override;
 
-  bool Init(GetCommandBufferHelperCB get_helper_cb,
-            size_t array_slice,
-            gfx::Size size) override;
+  bool Init(GetCommandBufferHelperCB get_helper_cb) override;
 
-  bool ProcessTexture(const D3D11PictureBuffer* owner_pb,
+  bool ProcessTexture(ComD3D11Texture2D texture,
+                      size_t array_slice,
                       MailboxHolderArray* mailbox_dest) override;
 
  private:
@@ -80,21 +75,25 @@ class MEDIA_GPU_EXPORT DefaultTexture2DWrapper : public Texture2DWrapper {
     ~GpuResources();
 
     bool Init(GetCommandBufferHelperCB get_helper_cb,
-              int array_slice,
               const std::vector<gpu::Mailbox> mailboxes,
               GLenum target,
               gfx::Size size,
-              ComD3D11Texture2D angle_texture,
               int textures_per_picture);
+
+    // Push a new |texture|, |array_slice| to |gl_image_|.
+    MediaError PushNewTexture(ComD3D11Texture2D texture, size_t array_slice);
 
     std::vector<uint32_t> service_ids_;
 
    private:
     scoped_refptr<CommandBufferHelper> helper_;
+    scoped_refptr<gl::GLImageDXGI> gl_image_;
+    EGLStreamKHR stream_;
 
     DISALLOW_COPY_AND_ASSIGN(GpuResources);
   };
 
+  gfx::Size size_;
   std::unique_ptr<GpuResources> gpu_resources_;
   MailboxHolderArray mailbox_holders_;
 };

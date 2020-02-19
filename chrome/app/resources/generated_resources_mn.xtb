@@ -3354,6 +3354,7 @@
 <translation id="5689516760719285838">Байршил</translation>
 <translation id="56907980372820799">Мэдээллийг холбо</translation>
 <translation id="5691511426247308406">Гэр бүл</translation>
+<translation id="5691772641933328258">Хурууны хээг таньсангүй</translation>
 <translation id="5692183275898619210">Хэвлэж дууслаа</translation>
 <translation id="5696143504434933566">"<ph name="EXTENSION_NAME" />"-н зохисгүй үйлдлийг мэдээлэх</translation>
 <translation id="5696679855467848181">Ашиглалтад байгаа одоогийн PPD файл: <ph name="PPD_NAME" /></translation>
@@ -5652,7 +5653,6 @@
 <translation id="8864458770072227512"><ph name="EMAIL" />-г энэ төхөөрөмжөөс устгалаа</translation>
 <translation id="8867228703146808825">Боловсруулагдсан програмын дэлгэрэнгүй мэдээллийг түр санах ойд хуулах</translation>
 <translation id="8868626022555786497">Ашиглалтад байгаа</translation>
-<translation id="8870318296973696995">Нүүр хуудас</translation>
 <translation id="8870413625673593573">Саяхан хаагдсан</translation>
 <translation id="8871551568777368300">Админ тэмдэглэсэн</translation>
 <translation id="8871696467337989339">Та дэмжигддэггүй командын шугамын тэмдэглэгээг ашиглаж байна: <ph name="BAD_FLAG" /> . Үүнээс болж аюулгүй болон тогтвортой байдал алдагдах болно.</translation>

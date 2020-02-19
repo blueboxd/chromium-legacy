@@ -20,6 +20,7 @@ js_type_check("closure_compile") {
     ":gaia_input",
     ":gaia_input_form",
     ":gaia_password_changed",
+    ":gesture_navigation",
     ":hd-iron-icon",
     ":html-echo",
     ":marketing_opt_in",
@@ -204,6 +205,14 @@ js_library("gaia_input") {
 
 js_library("gaia_password_changed") {
   deps = [ ":oobe_i18n_behavior" ]
+}
+
+js_library("gesture_navigation") {
+  deps = [
+    ":login_screen_behavior",
+    ":oobe_dialog_host_behavior",
+    ":oobe_i18n_behavior",
+  ]
 }
 
 js_library("hd-iron-icon") {

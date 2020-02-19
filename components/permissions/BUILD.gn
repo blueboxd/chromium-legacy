@@ -6,12 +6,18 @@ source_set("permissions") {
   sources = [
     "features.cc",
     "features.h",
+    "notification_permission_ui_selector.h",
     "permission_decision_auto_blocker.cc",
     "permission_decision_auto_blocker.h",
+    "permission_prompt.h",
     "permission_request.cc",
     "permission_request.h",
     "permission_request_id.cc",
     "permission_request_id.h",
+    "permission_request_impl.cc",
+    "permission_request_impl.h",
+    "permission_request_manager.cc",
+    "permission_request_manager.h",
     "permission_result.cc",
     "permission_result.h",
     "permission_uma_util.cc",
@@ -20,17 +26,26 @@ source_set("permissions") {
     "permission_util.h",
     "permissions_client.cc",
     "permissions_client.h",
+    "switches.cc",
+    "switches.h",
   ]
   deps = [
     "//base",
     "//components/content_settings/core/browser",
     "//components/keyed_service/content",
+    "//components/strings:components_strings_grit",
     "//components/ukm/content",
+    "//components/url_formatter",
     "//components/variations",
+    "//components/vector_icons",
     "//content/public/browser",
     "//services/metrics/public/cpp:ukm_builders",
   ]
   if (is_android) {
+    sources += [
+      "android/resource_id.h",
+      "android/theme_resources.h",
+    ]
     deps += [ "//components/permissions/android:jni" ]
   }
 }
@@ -38,12 +53,24 @@ source_set("permissions") {
 source_set("test_support") {
   testonly = true
   sources = [
+    "test/mock_permission_prompt.cc",
+    "test/mock_permission_prompt.h",
+    "test/mock_permission_prompt_factory.cc",
+    "test/mock_permission_prompt_factory.h",
+    "test/mock_permission_request.cc",
+    "test/mock_permission_request.h",
     "test/test_permissions_client.cc",
     "test/test_permissions_client.h",
   ]
   deps = [
     ":permissions",
+    "//base",
     "//components/sync_preferences:test_support",
+    "//components/vector_icons",
+    "//content/public/browser",
+    "//testing/gtest",
+    "//ui/gfx",
+    "//url",
   ]
 }
 
@@ -51,7 +78,9 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "permission_decision_auto_blocker_unittest.cc",
+    "permission_request_manager_unittest.cc",
     "permission_uma_util_unittest.cc",
+    "test/test_permission_prompt_impl.cc",
   ]
   deps = [
     ":permissions",

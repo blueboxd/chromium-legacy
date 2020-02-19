@@ -183,8 +183,8 @@ TEST_F(GAIAInfoUpdateServiceTest, SyncOnSyncOffKeepAllAccounts) {
   // Turn off sync but stay logged in.
   identity_test_env()->ClearPrimaryAccount(
       signin::ClearPrimaryAccountPolicy::KEEP_ALL_ACCOUNTS);
-  ASSERT_TRUE(
-      identity_test_env()->identity_manager()->HasUnconsentedPrimaryAccount());
+  ASSERT_TRUE(identity_test_env()->identity_manager()->HasPrimaryAccount(
+      signin::ConsentLevel::kNotRequired));
   // Verify that the GAIA name and picture, and picture URL are not cleared
   // as unconsented primary account still exists.
   EXPECT_EQ(entry->GetGAIAGivenName(), base::UTF8ToUTF16("Pat"));
@@ -200,8 +200,8 @@ TEST_F(GAIAInfoUpdateServiceTest, LogInLogOut) {
   AccountInfo info = identity_test_env()->MakeAccountAvailableWithCookies(
       email, signin::GetTestGaiaIdForEmail(email));
   base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(
-      identity_test_env()->identity_manager()->HasUnconsentedPrimaryAccount());
+  EXPECT_TRUE(identity_test_env()->identity_manager()->HasPrimaryAccount(
+      signin::ConsentLevel::kNotRequired));
   EXPECT_FALSE(identity_test_env()->identity_manager()->HasPrimaryAccount());
   info = GetValidAccountInfo(info.email, info.account_id, "Pat", "Pat Foo");
   signin::UpdateAccountInfoForAccount(identity_test_env()->identity_manager(),
@@ -238,8 +238,8 @@ TEST_F(GAIAInfoUpdateServiceTest, LogInLogOut) {
 TEST_F(GAIAInfoUpdateServiceTest, ClearGaiaInfoOnStartup) {
   // Simulate a state where the profile entry has GAIA related information
   // when there is not primary account set.
-  ASSERT_FALSE(
-      identity_test_env()->identity_manager()->HasUnconsentedPrimaryAccount());
+  ASSERT_FALSE(identity_test_env()->identity_manager()->HasPrimaryAccount(
+      signin::ConsentLevel::kNotRequired));
   ASSERT_EQ(1u, storage()->GetNumberOfProfiles());
   ProfileAttributesEntry* entry = storage()->GetAllProfilesAttributes().front();
   entry->SetGAIAName(base::UTF8ToUTF16("foo"));

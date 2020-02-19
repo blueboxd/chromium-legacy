@@ -11,7 +11,7 @@
 namespace ui {
 class ContextFactory;
 class ContextFactoryPrivate;
-}
+}  // namespace ui
 
 namespace views {
 

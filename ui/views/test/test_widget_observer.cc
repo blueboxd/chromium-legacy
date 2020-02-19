@@ -10,8 +10,7 @@
 namespace views {
 namespace test {
 
-TestWidgetObserver::TestWidgetObserver(Widget* widget)
-    : widget_(widget) {
+TestWidgetObserver::TestWidgetObserver(Widget* widget) : widget_(widget) {
   widget_->AddObserver(this);
 }
 

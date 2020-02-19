@@ -40,12 +40,6 @@ Still reading?
   <issue id="ButtonStyle" severity="Error">
     <ignore regexp="remoting/android/host/res/layout/main.xml"/>
   </issue>
-  <!-- Can be removed when BOM marks are removed: https://crbug.com/1033305-->
-  <issue id="ByteOrderMark" severity="Error">
-    <ignore regexp="values-pt-rBR/android_chrome_strings.xml"/>
-    <ignore regexp="values-si/android_chrome_strings.xml"/>
-    <ignore regexp="values-zh-rHK/android_chrome_strings.xml"/>
-  </issue>
   <issue id="ClickableViewAccessibility" severity="ignore"/>
   <issue id="CommitPrefEdits">
     <ignore regexp="third_party/cacheinvalidation/src/java/com/google/ipc/invalidation/ticl/android2/channel/AndroidChannelPreferences.java"/>
@@ -260,8 +254,6 @@ Still reading?
     <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
     <ignore regexp="chrome/android/java/res/drawable/ic_checkmark_24dp.xml"/>
     <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
-    <ignore regexp="chrome/android/java/res/drawable/ic_infobar_nfc.xml"/>
-    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
     <ignore regexp="chrome/android/java/res/drawable/ic_logo_googleg_20dp.xml"/>
     <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
     <ignore regexp="chrome/android/java/res/drawable/ic_pause_circle_outline_white_24dp.xml"/>
@@ -281,6 +273,8 @@ Still reading?
     <ignore regexp="chrome/android/java/res/drawable/zoom_in.xml"/>
     <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
     <ignore regexp="chrome/android/java/res/drawable/zoom_out.xml"/>
+    <!--TODO(crbug.com/1044658): This suppression was added blindly, and needs investigated.-->
+    <ignore regexp="components/permissions/android/res/drawable/ic_infobar_nfc.xml"/>
   </issue>
   <!-- This warning just adds a lot of false positives. -->
   <issue id="ObsoleteSdkInt" severity="ignore"/>

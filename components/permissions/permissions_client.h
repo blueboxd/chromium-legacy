@@ -10,6 +10,7 @@
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_util.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
+#include "url/origin.h"
 
 class GURL;
 class HostContentSettingsMap;
@@ -20,6 +21,7 @@ class WebContents;
 }  // namespace content
 
 namespace permissions {
+class NotificationPermissionUiSelector;
 class PermissionDecisionAutoBlocker;
 
 // Interface to be implemented by permissions embedder to access embedder
@@ -57,6 +59,29 @@ class PermissionsClient {
                               const content::WebContents* web_contents,
                               const GURL& requesting_origin,
                               GetUkmSourceIdCallback callback);
+
+  // Returns the icon ID that should be used for permissions UI for |type|. If
+  // the embedder returns an empty IconId, the default icon for |type| will be
+  // used.
+  virtual PermissionRequest::IconId GetOverrideIconId(ContentSettingsType type);
+
+  // Allows the embedder to provide a selector for chossing the UI to use for
+  // notification permission requests. If the embedder returns null here, the
+  // normal UI will be used.
+  virtual std::unique_ptr<NotificationPermissionUiSelector>
+  CreateNotificationPermissionUiSelector(
+      content::BrowserContext* browser_context);
+
+  // Called for each request type when a permission prompt is resolved.
+  virtual void OnPromptResolved(content::BrowserContext* browser_context,
+                                PermissionRequestType request_type,
+                                PermissionAction action);
+
+  // If the embedder returns an origin here, any requests matching that origin
+  // will be approved. Requests that do not match the returned origin will
+  // immediately be finished without granting/denying the permission.
+  virtual base::Optional<url::Origin> GetAutoApprovalOrigin(
+      const PermissionRequest* request);
 
  private:
   PermissionsClient(const PermissionsClient&) = delete;

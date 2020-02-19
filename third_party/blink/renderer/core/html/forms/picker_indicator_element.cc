@@ -176,7 +176,8 @@ void PickerIndicatorElement::DidNotifySubtreeInsertionsToDocument() {
     return;
   // Don't make this focusable if we are in web tests in order to avoid
   // breaking existing tests.
-  // FIXME: We should have a way to disable accessibility in web tests.
+  // TODO(crbug.com/1054048): We should have a way to disable accessibility in
+  // web tests.  Once we do have it, this early return should be removed.
   if (WebTestSupport::IsRunningWebTest())
     return;
   setAttribute(html_names::kTabindexAttr, "0");

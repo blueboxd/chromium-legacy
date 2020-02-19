@@ -47,4 +47,4 @@ void GetDefaultWindowMask(const gfx::Size& size,
   window_mask->transform(m);
 }
 
-} // namespace views
+}  // namespace views

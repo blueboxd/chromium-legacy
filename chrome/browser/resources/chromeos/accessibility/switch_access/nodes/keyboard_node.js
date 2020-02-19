@@ -102,6 +102,7 @@ class KeyboardRootNode extends RootNodeWrapper {
   /** @override */
   onExit() {
     chrome.accessibilityPrivate.setVirtualKeyboardVisible(false);
+    AutoScanManager.setInKeyboard(false);
   }
 
   // ================= Static methods =================
@@ -113,6 +114,7 @@ class KeyboardRootNode extends RootNodeWrapper {
    */
   static buildTree(desktop) {
     KeyboardRootNode.loadKeyboard_();
+    AutoScanManager.setInKeyboard(true);
 
     const keyboardContainer =
         desktop.find({role: chrome.automation.RoleType.KEYBOARD});

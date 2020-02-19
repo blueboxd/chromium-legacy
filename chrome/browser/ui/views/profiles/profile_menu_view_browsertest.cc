@@ -47,6 +47,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
@@ -78,7 +79,8 @@ class UnconsentedPrimaryAccountChecker
   // StatusChangeChecker overrides:
   bool IsExitConditionSatisfied(std::ostream* os) override {
     *os << "Waiting for unconsented primary account";
-    return identity_manager_->HasUnconsentedPrimaryAccount();
+    return identity_manager_->HasPrimaryAccount(
+        signin::ConsentLevel::kNotRequired);
   }
 
   // signin::IdentityManager::Observer overrides:
@@ -573,7 +575,8 @@ PROFILE_MENU_CLICK_TEST(kActionableItems_WithUnconsentedPrimaryAccount,
   UnconsentedPrimaryAccountChecker(identity_manager()).Wait();
   // Check that the setup was successful.
   ASSERT_FALSE(identity_manager()->HasPrimaryAccount());
-  ASSERT_TRUE(identity_manager()->HasUnconsentedPrimaryAccount());
+  ASSERT_TRUE(identity_manager()->HasPrimaryAccount(
+      signin::ConsentLevel::kNotRequired));
 
   RunTest();
 

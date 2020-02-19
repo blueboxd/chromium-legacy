@@ -20,6 +20,7 @@
 #include "components/account_id/account_id.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/signin/public/identity_manager/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
@@ -107,8 +108,8 @@ class ScopedLogIn {
   void LogIn() {
     fake_user_manager_->AddUser(account_id_);
     fake_user_manager_->LoginUser(account_id_);
-    if (!identity_test_env_->identity_manager()
-             ->HasUnconsentedPrimaryAccount()) {
+    if (!identity_test_env_->identity_manager()->HasPrimaryAccount(
+            signin::ConsentLevel::kNotRequired)) {
       identity_test_env_->MakeUnconsentedPrimaryAccountAvailable(
           account_id_.GetUserEmail());
     }

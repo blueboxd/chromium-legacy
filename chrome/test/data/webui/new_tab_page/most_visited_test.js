@@ -473,9 +473,12 @@ suite('NewTabPageMostVisitedTest', () => {
     assertTrue(mostVisited.$.toast.open);
   });
 
-  test('ctrl+z undo', async () => {
+  test('ctrl+z undo and toast hidden', async () => {
+    const {toast} = mostVisited.$;
+    toast.show();
     const undoCalled =
         testProxy.handler.whenCalled('undoMostVisitedTileAction');
+    assertTrue(toast.open);
     mostVisited.dispatchEvent(new KeyboardEvent('keydown', {
       bubbles: true,
       ctrlKey: !isMac,
@@ -483,6 +486,7 @@ suite('NewTabPageMostVisitedTest', () => {
       metaKey: isMac,
     }));
     await undoCalled;
+    assertFalse(toast.open);
   });
 
   test('toast restore defaults button', async () => {

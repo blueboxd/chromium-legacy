@@ -109,7 +109,6 @@ void InitializeCrashpadImpl(bool initial_client,
   initialized = true;
 
   const bool browser_process = process_type.empty();
-  CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
 
   if (initial_client) {
 #if defined(OS_MACOSX)
@@ -201,7 +200,10 @@ void InitializeCrashpadImpl(bool initial_client,
     g_database =
         crashpad::CrashReportDatabase::Initialize(database_path).release();
 
+#if !defined(OS_CHROMEOS)
+    CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
     SetUploadConsent(crash_reporter_client->GetCollectStatsConsent());
+#endif
   }
 }
 
@@ -238,6 +240,7 @@ crashpad::CrashpadClient& GetCrashpadClient() {
   return *client;
 }
 
+#if !defined(OS_CHROMEOS)
 void SetUploadConsent(bool consent) {
   if (!g_database)
     return;
@@ -269,6 +272,7 @@ bool GetUploadsEnabled() {
 
   return false;
 }
+#endif  // !defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
 void DumpWithoutCrashing() {

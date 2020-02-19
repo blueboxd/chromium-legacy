@@ -480,8 +480,8 @@ bool TextfieldModel::CanRedo() {
     return false;
   // There is no redo iff the current edit is the last element in the history.
   auto iter = current_edit_;
-  return iter == edit_history_.end() || // at the top.
-      ++iter != edit_history_.end();
+  return iter == edit_history_.end() ||  // at the top.
+         ++iter != edit_history_.end();
 }
 
 bool TextfieldModel::Undo() {
@@ -679,8 +679,8 @@ void TextfieldModel::SetCompositionFromExistingText(const gfx::Range& range) {
 
 void TextfieldModel::ConfirmCompositionText() {
   DCHECK(HasCompositionText());
-  base::string16 composition = text().substr(
-      composition_range_.start(), composition_range_.length());
+  base::string16 composition =
+      text().substr(composition_range_.start(), composition_range_.length());
   // TODO(oshima): current behavior on ChromeOS is a bit weird and not
   // sure exactly how this should work. Find out and fix if necessary.
   AddOrMergeEditHistory(std::make_unique<internal::InsertEdit>(

@@ -12,7 +12,7 @@
 namespace views {
 
 class VIEWS_EXPORT DesktopScreenWin : public display::win::ScreenWin {
-public:
+ public:
   DesktopScreenWin();
   ~DesktopScreenWin() override;
 

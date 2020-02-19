@@ -242,7 +242,8 @@ bool MenuItemView::IsBubble(MenuAnchorPosition anchor) {
 
 // static
 base::string16 MenuItemView::GetAccessibleNameForMenuItem(
-      const base::string16& item_text, const base::string16& minor_text) {
+    const base::string16& item_text,
+    const base::string16& minor_text) {
   base::string16 accessible_name = item_text;
 
   // Filter out the "&" for accessibility clients.
@@ -569,7 +570,7 @@ base::char16 MenuItemView::GetMnemonic() {
     index = title_.find('&', index);
     if (index != base::string16::npos) {
       if (index + 1 != title_.size() && title_[index + 1] != '&') {
-        base::char16 char_array[] = { title_[index + 1], 0 };
+        base::char16 char_array[] = {title_[index + 1], 0};
         // TODO(jshin): What about Turkish locale? See http://crbug.com/81719.
         // If the mnemonic is capital I and the UI language is Turkish,
         // lowercasing it results in 'small dotless i', which is different
@@ -985,9 +986,9 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   int label_start = GetLabelStartForThisItem();
 
   int width = this->width() - label_start - accel_width -
-      (!delegate ||
-       delegate->ShouldReserveSpaceForSubmenuIndicator() ?
-           item_right_margin_ : config.arrow_to_edge_padding);
+              (!delegate || delegate->ShouldReserveSpaceForSubmenuIndicator()
+                   ? item_right_margin_
+                   : config.arrow_to_edge_padding);
   gfx::Rect text_bounds(label_start, top_margin, width, available_height);
   text_bounds.set_x(GetMirroredXForRect(text_bounds));
   int flags = GetDrawStringFlags();
@@ -1233,10 +1234,8 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
   // Get Icon margin overrides for this particular item.
   const MenuDelegate* delegate = GetDelegate();
   if (delegate) {
-    delegate->GetHorizontalIconMargins(command_,
-                                       icon_area_width_,
-                                       &left_icon_margin_,
-                                       &right_icon_margin_);
+    delegate->GetHorizontalIconMargins(command_, icon_area_width_,
+                                       &left_icon_margin_, &right_icon_margin_);
   } else {
     left_icon_margin_ = 0;
     right_icon_margin_ = 0;
@@ -1245,8 +1244,7 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
 
   // Determine the length of the label text.
   int string_width = gfx::GetStringWidth(title_, style.font_list);
-  dimensions.standard_width = string_width + label_start +
-      item_right_margin_;
+  dimensions.standard_width = string_width + label_start + item_right_margin_;
   // Determine the length of the right-side text.
   dimensions.minor_text_width =
       minor_text.empty() ? 0 : gfx::GetStringWidth(minor_text, style.font_list);

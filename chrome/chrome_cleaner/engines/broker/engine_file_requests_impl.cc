@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "chrome/chrome_cleaner/engines/broker/scanner_sandbox_interface.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace chrome_cleaner {
 
@@ -166,10 +165,9 @@ void EngineFileRequestsImpl::OpenReadOnlyFile(
   base::win::ScopedHandle handle =
       chrome_cleaner_sandbox::SandboxOpenReadOnlyFile(file_name,
                                                       dwFlagsAndAttribute);
-
   mojo_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(std::move(result_callback),
-                                mojo::WrapPlatformFile(handle.Take())));
+                                mojo::PlatformHandle(std::move(handle))));
 }
 
 }  // namespace chrome_cleaner

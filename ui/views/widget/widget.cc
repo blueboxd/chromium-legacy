@@ -91,8 +91,7 @@ bool Widget::g_disable_activation_change_handling_ = false;
 // WidgetDelegate is supplied.
 class DefaultWidgetDelegate : public WidgetDelegate {
  public:
-  explicit DefaultWidgetDelegate(Widget* widget) : widget_(widget) {
-  }
+  explicit DefaultWidgetDelegate(Widget* widget) : widget_(widget) {}
   ~DefaultWidgetDelegate() override = default;
 
   // WidgetDelegate:
@@ -255,8 +254,7 @@ void Widget::GetAllChildWidgets(gfx::NativeView native_view,
 }
 
 // static
-void Widget::GetAllOwnedWidgets(gfx::NativeView native_view,
-                                Widgets* owned) {
+void Widget::GetAllOwnedWidgets(gfx::NativeView native_view, Widgets* owned) {
   internal::NativeWidgetPrivate::GetAllOwnedWidgets(native_view, owned);
 }
 
@@ -289,8 +287,7 @@ gfx::Size Widget::GetLocalizedContentsSize(int col_resource_id,
 
 // static
 bool Widget::RequiresNonClientView(InitParams::Type type) {
-  return type == InitParams::TYPE_WINDOW ||
-         type == InitParams::TYPE_BUBBLE;
+  return type == InitParams::TYPE_WINDOW || type == InitParams::TYPE_BUBBLE;
 }
 
 void Widget::Init(InitParams params) {
@@ -647,8 +644,7 @@ void Widget::Show() {
     // widget gets shown. In that case we stay in full screen mode, regardless
     // of the |saved_show_state_| member.
     if (saved_show_state_ == ui::SHOW_STATE_MAXIMIZED &&
-        !initial_restored_bounds_.IsEmpty() &&
-        !IsFullscreen()) {
+        !initial_restored_bounds_.IsEmpty() && !IsFullscreen()) {
       native_widget_->Show(ui::SHOW_STATE_MAXIMIZED, initial_restored_bounds_);
     } else {
       native_widget_->Show(
@@ -1025,9 +1021,8 @@ void Widget::SynthesizeMouseMoveEvent() {
   // Convert: screen coordinate -> widget coordinate.
   View::ConvertPointFromScreen(root_view_.get(), &mouse_location);
   last_mouse_event_was_move_ = false;
-  ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, mouse_location,
-                             mouse_location, ui::EventTimeForNow(),
-                             ui::EF_IS_SYNTHESIZED, 0);
+  ui::MouseEvent mouse_event(ui::ET_MOUSE_MOVED, mouse_location, mouse_location,
+                             ui::EventTimeForNow(), ui::EF_IS_SYNTHESIZED, 0);
   root_view_->OnMouseMoved(mouse_event);
 }
 
@@ -1221,9 +1216,8 @@ void Widget::OnNativeWidgetPaint(const ui::PaintContext& context) {
 }
 
 int Widget::GetNonClientComponent(const gfx::Point& point) {
-  int component = non_client_view_ ?
-      non_client_view_->NonClientHitTest(point) :
-      HTNOWHERE;
+  int component =
+      non_client_view_ ? non_client_view_->NonClientHitTest(point) : HTNOWHERE;
 
   if (movement_disabled_ && (component == HTCAPTION || component == HTSYSMENU))
     return HTNOWHERE;
@@ -1321,7 +1315,7 @@ void Widget::OnMouseEvent(ui::MouseEvent* event) {
 
     case ui::ET_MOUSEWHEEL:
       if (root_view && root_view->OnMouseWheel(
-          static_cast<const ui::MouseWheelEvent&>(*event)))
+                           static_cast<const ui::MouseWheelEvent&>(*event)))
         event->SetHandled();
       return;
 

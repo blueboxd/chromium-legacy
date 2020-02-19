@@ -61,21 +61,6 @@ enum ContentDispositionCountTypes {
   CONTENT_DISPOSITION_LAST_ENTRY
 };
 
-void RecordContentDispositionCount(ContentDispositionCountTypes type,
-                                   bool record) {
-  if (!record)
-    return;
-  UMA_HISTOGRAM_ENUMERATION("Download.ContentDisposition", type,
-                            CONTENT_DISPOSITION_LAST_ENTRY);
-}
-
-void RecordContentDispositionCountFlag(
-    ContentDispositionCountTypes type,
-    int flags_to_test,
-    net::HttpContentDisposition::ParseResultFlags flag) {
-  RecordContentDispositionCount(type, (flags_to_test & flag) == flag);
-}
-
 // The maximum size in KB for the file size metric, file size larger than this
 // will be kept in overflow bucket.
 const int64_t kMaxFileSizeKb = 4 * 1024 * 1024; /* 4GB. */
@@ -211,7 +196,6 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
   int64_t delta_bytes = total - received;
   bool unknown_size = total <= 0;
   int64_t received_kb = received / 1024;
-  int64_t total_kb = total / 1024;
   if (is_parallel_download_enabled) {
     UMA_HISTOGRAM_CUSTOM_COUNTS(
         "Download.InterruptedReceivedSizeK.ParallelDownload", received_kb, 1,
@@ -219,13 +203,6 @@ void RecordDownloadInterrupted(DownloadInterruptReason reason,
   }
 
   if (!unknown_size) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Download.InterruptedTotalSizeK", total_kb, 1,
-                                kMaxKb, kBuckets);
-    if (is_parallel_download_enabled) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Download.InterruptedTotalSizeK.ParallelDownload", total_kb, 1,
-          kMaxKb, kBuckets);
-    }
     if (delta_bytes == 0) {
       RecordDownloadCountWithSource(INTERRUPTED_AT_END_COUNT, download_source);
       if (is_parallelizable) {
@@ -535,50 +512,6 @@ void RecordDownloadMimeTypeForNormalProfile(
       "Download.Start.ContentType.NormalProfile",
       DownloadContentFromMimeType(mime_type_string, false),
       DownloadContent::MAX);
-}
-
-void RecordDownloadContentDisposition(
-    const std::string& content_disposition_string) {
-  if (content_disposition_string.empty())
-    return;
-  net::HttpContentDisposition content_disposition(content_disposition_string,
-                                                  std::string());
-  int result = content_disposition.parse_result_flags();
-
-  bool is_valid = !content_disposition.filename().empty();
-  RecordContentDispositionCount(CONTENT_DISPOSITION_HEADER_PRESENT, true);
-  RecordContentDispositionCount(CONTENT_DISPOSITION_IS_VALID, is_valid);
-  if (!is_valid)
-    return;
-
-  RecordContentDispositionCountFlag(
-      CONTENT_DISPOSITION_HAS_DISPOSITION_TYPE, result,
-      net::HttpContentDisposition::HAS_DISPOSITION_TYPE);
-  RecordContentDispositionCountFlag(
-      CONTENT_DISPOSITION_HAS_UNKNOWN_TYPE, result,
-      net::HttpContentDisposition::HAS_UNKNOWN_DISPOSITION_TYPE);
-  RecordContentDispositionCountFlag(CONTENT_DISPOSITION_HAS_FILENAME, result,
-                                    net::HttpContentDisposition::HAS_FILENAME);
-  RecordContentDispositionCountFlag(
-      CONTENT_DISPOSITION_HAS_EXT_FILENAME, result,
-      net::HttpContentDisposition::HAS_EXT_FILENAME);
-  RecordContentDispositionCountFlag(
-      CONTENT_DISPOSITION_HAS_NON_ASCII_STRINGS, result,
-      net::HttpContentDisposition::HAS_NON_ASCII_STRINGS);
-  RecordContentDispositionCountFlag(
-      CONTENT_DISPOSITION_HAS_PERCENT_ENCODED_STRINGS, result,
-      net::HttpContentDisposition::HAS_PERCENT_ENCODED_STRINGS);
-  RecordContentDispositionCountFlag(
-      CONTENT_DISPOSITION_HAS_RFC2047_ENCODED_STRINGS, result,
-      net::HttpContentDisposition::HAS_RFC2047_ENCODED_STRINGS);
-  RecordContentDispositionCountFlag(
-      CONTENT_DISPOSITION_HAS_SINGLE_QUOTED_FILENAME, result,
-      net::HttpContentDisposition::HAS_SINGLE_QUOTED_FILENAME);
-}
-
-void RecordOpen(const base::Time& end) {
-  if (!end.is_null())
-    UMA_HISTOGRAM_LONG_TIMES("Download.OpenTime", (base::Time::Now() - end));
 }
 
 void RecordOpensOutstanding(int size) {

@@ -35,7 +35,8 @@ Polymer({
    * @private
    */
   observeProxyPrefChanged_() {
-    const pref = this.get('prefs.proxy');
+    /** @type {!chrome.settingsPrivate.PrefObject} */
+    const pref = this.prefs.proxy;
     // TODO(dbeam): do types of policy other than USER apply on ChromeOS?
     this.isProxyEnforcedByPolicy_ =
         pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED &&

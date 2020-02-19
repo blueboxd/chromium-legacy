@@ -47,7 +47,7 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
     private final ModalDialogManager mManager;
     private final ComposedBrowserControlsVisibilityDelegate mAppVisibilityDelegate;
     private final Supplier<TabObscuringHandler> mTabObscuringHandlerSupplier;
-    private TabModalPresenter mPresenter;
+    private ChromeTabModalPresenter mPresenter;
     private TabModelSelectorTabModelObserver mTabModelObserver;
     private Tab mActiveTab;
     private int mTabModalSuspendedToken;
@@ -91,7 +91,7 @@ public class TabModalLifetimeHandler implements NativeInitObserver, Destroyable 
 
     @Override
     public void onFinishNativeInitialization() {
-        mPresenter = new TabModalPresenter(mActivity, mTabObscuringHandlerSupplier);
+        mPresenter = new ChromeTabModalPresenter(mActivity, mTabObscuringHandlerSupplier);
         mAppVisibilityDelegate.addDelegate(mPresenter.getBrowserControlsVisibilityDelegate());
         mManager.registerPresenter(mPresenter, ModalDialogType.TAB);
 

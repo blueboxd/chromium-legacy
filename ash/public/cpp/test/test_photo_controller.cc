@@ -19,7 +19,7 @@ void TestPhotoController::GetNextImage(
     PhotoController::PhotoDownloadCallback callback) {
   gfx::ImageSkia image =
       gfx::test::CreateImageSkia(/*width=*/10, /*height=*/10);
-  std::move(callback).Run(image);
+  std::move(callback).Run(/*success=*/true, image);
 }
 
 }  // namespace ash

@@ -1,0 +1,14 @@
+# Copyright 2020 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("qr_code_generator") {
+  sources = [
+    "qr_code_generator.cc",
+    "qr_code_generator.h",
+  ]
+
+  deps = [ "//base" ]
+
+  public_deps = [ "//base" ]
+}

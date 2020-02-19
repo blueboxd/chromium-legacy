@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fieldset_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -58,6 +59,22 @@ NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithmForElement(Element* element) {
       NGBlockLayoutAlgorithm({node, fragment_geometry, space}).Layout();
   return std::make_pair(To<NGPhysicalBoxFragment>(&result->PhysicalFragment()),
                         std::move(space));
+}
+
+scoped_refptr<const NGPhysicalBoxFragment>
+NGBaseLayoutAlgorithmTest::RunFieldsetLayoutAlgorithm(
+    NGBlockNode node,
+    const NGConstraintSpace& space,
+    const NGBreakToken* break_token) {
+  NGFragmentGeometry fragment_geometry =
+      CalculateInitialFragmentGeometry(space, node);
+
+  scoped_refptr<const NGLayoutResult> result =
+      NGFieldsetLayoutAlgorithm(
+          {node, fragment_geometry, space, To<NGBlockBreakToken>(break_token)})
+          .Layout();
+
+  return To<NGPhysicalBoxFragment>(&result->PhysicalFragment());
 }
 
 scoped_refptr<const NGPhysicalBoxFragment>

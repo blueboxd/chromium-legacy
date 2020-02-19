@@ -12,8 +12,8 @@ import subprocess
 import sys
 
 import gtest_utils
+import test_apps
 import test_runner
-import xcodebuild_runner
 import xctest_utils
 
 LOGGER = logging.getLogger(__name__)
@@ -158,7 +158,7 @@ class WprProxySimulatorTestRunner(test_runner.SimulatorTestRunner):
         '--enable-features=AutofillShowTypePredictions',
         '-autofillautomation=%s' % recipe_path,
     ]
-    wpr_egtests_app = xcodebuild_runner.EgtestsApp(
+    wpr_egtests_app = test_apps.EgtestsApp(
         self.app_path,
         included_tests=["AutofillAutomationTestCase"],
         env_vars=self.env_vars,
@@ -174,11 +174,7 @@ class WprProxySimulatorTestRunner(test_runner.SimulatorTestRunner):
         self.version, self.platform, test_name,
         self.test_attempt_count[test_name])
     out_dir = os.path.join(self.out_dir, destination_folder)
-
-    launch_command = xcodebuild_runner.LaunchCommand(
-        wpr_egtests_app, destination, self.shards, self.retries)
-    return launch_command.command(wpr_egtests_app, out_dir, destination,
-                                  self.shards)
+    return wpr_egtests_app.command(out_dir, destination, self.shards)
 
   def get_launch_env(self):
     """Returns a dict of environment variables to use to launch the test app.
@@ -381,30 +377,37 @@ class WprProxySimulatorTestRunner(test_runner.SimulatorTestRunner):
 
     self.deleteSimulator(udid)
 
-    # iossim can return 5 if it exits noncleanly even if all tests passed.
+    # xcodebuild can return 5 if it exits noncleanly even if all tests passed.
     # Therefore we cannot rely on process exit code to determine success.
 
     # NOTE: total_returncode is 0 OR the last non-zero return code from a test.
     result.finalize(total_returncode, completed_without_failure)
     return result
 
-  def get_launch_command(self, test_filter=[], invert=False):
+  def get_launch_command(self, test_app=None, out_dir=None,
+                         destination=None, shards=1):
     """Returns a config dict for the test, instead of the real launch command.
     Normally this is passed into _run as the command it should use, but since
     the WPR runner builds its own cmd, we use this to configure the function.
 
     Args:
-      test_filter: List of test cases to filter.
-      invert: Whether to invert the filter or not. Inverted, the filter will
-      match everything except the given test cases.
+      test_app: A test app needed to run.
+      out_dir: (str) A path for results.
+      destination: (str) A destination of device/simulator.
+      shards: (int) How many shards the tests should be divided into.
 
     Returns:
       A dict forming the configuration for the test.
     """
 
     test_config = {}
-    test_config['invert'] = invert
-    test_config['test_filter'] = test_filter
+    if test_app:
+      if test_app.included_tests:
+        test_config['invert'] = False
+        test_config['test_filter'] = test_app.included_tests
+      elif test_app.excluded_tests:
+        test_config['invert'] = True
+        test_config['test_filter'] = test_app.excluded_tests
     return test_config
 
   def proxy_start(self):

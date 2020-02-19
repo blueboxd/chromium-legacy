@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/elements/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
+#import "ios/chrome/common/material_timing.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -30,6 +31,9 @@ const CGFloat kUnreadIndicatorViewSpacing = 10.0;
 
 // Height of |unreadIndicatorView|.
 const CGFloat kUnreadIndicatorViewHeight = 6.0;
+
+// Damping ratio of animating a change to the displayed badge.
+const CGFloat kUpdateDisplayedBadgeAnimationDamping = 0.85;
 
 }  // namespace
 
@@ -137,8 +141,7 @@ const CGFloat kUnreadIndicatorViewHeight = 6.0;
     self.unreadIndicatorView = [[UIView alloc] init];
     self.unreadIndicatorView.layer.cornerRadius =
         kUnreadIndicatorViewHeight / 2;
-    self.unreadIndicatorView.backgroundColor =
-        [UIColor colorNamed:kToolbarButtonColor];
+    self.unreadIndicatorView.backgroundColor = [UIColor colorNamed:kBlueColor];
     self.unreadIndicatorView.translatesAutoresizingMaskIntoConstraints = NO;
     self.unreadIndicatorView.accessibilityIdentifier =
         kBadgeUnreadIndicatorAccessibilityIdentifier;
@@ -189,6 +192,10 @@ const CGFloat kUnreadIndicatorViewHeight = 6.0;
 #pragma mark - Getter/Setter
 
 - (void)setDisplayedBadge:(BadgeButton*)badgeButton {
+  if (badgeButton.badgeType == self.displayedBadge.badgeType) {
+    return;
+  }
+
   [self.stackView removeArrangedSubview:_displayedBadge];
   [_displayedBadge removeFromSuperview];
   if (!badgeButton) {
@@ -197,7 +204,21 @@ const CGFloat kUnreadIndicatorViewHeight = 6.0;
     return;
   }
   _displayedBadge = badgeButton;
+
+  // Configure the initial state of the animation.
+  self.view.alpha = 0;
+  self.view.transform = CGAffineTransformMakeScale(0.1, 0.1);
   [self.stackView addArrangedSubview:_displayedBadge];
+  [UIView animateWithDuration:ios::material::kDuration2
+                        delay:0
+       usingSpringWithDamping:kUpdateDisplayedBadgeAnimationDamping
+        initialSpringVelocity:0
+                      options:UIViewAnimationOptionBeginFromCurrentState
+                   animations:^{
+                     self.view.alpha = 1;
+                     self.view.transform = CGAffineTransformIdentity;
+                   }
+                   completion:nil];
   NamedGuide* guide = [NamedGuide guideWithName:kBadgeOverflowMenuGuide
                                            view:_displayedBadge];
   guide.constrainedView = _displayedBadge;

@@ -95,7 +95,7 @@ void NativeViewHostAura::AttachNativeView() {
   clipping_window_delegate_->set_native_view(host_->native_view());
   host_->native_view()->AddObserver(this);
   host_->native_view()->SetProperty(views::kHostViewKey,
-      static_cast<View*>(host_));
+                                    static_cast<View*>(host_));
 
   original_transform_ = host_->native_view()->transform();
   original_transform_changed_ = false;

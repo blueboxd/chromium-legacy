@@ -48,6 +48,7 @@ ios_appex_bundle("credential_provider_extension") {
     "//base",
     "//ios/chrome/common/colors",
     "//ios/chrome/credential_provider_extension/resources",
+    "//ios/chrome/credential_provider_extension/ui",
   ]
   bundle_deps_filter = [ "//third_party/icu:icudata" ]
 

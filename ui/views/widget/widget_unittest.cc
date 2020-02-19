@@ -129,7 +129,7 @@ class ScrollableEventCountView : public EventCountView {
 // A view that implements GetMinimumSize.
 class MinimumSizeFrameView : public NativeFrameView {
  public:
-  explicit MinimumSizeFrameView(Widget* frame): NativeFrameView(frame) {}
+  explicit MinimumSizeFrameView(Widget* frame) : NativeFrameView(frame) {}
   ~MinimumSizeFrameView() override = default;
 
  private:
@@ -146,13 +146,9 @@ class EventCountHandler : public ui::EventHandler {
   EventCountHandler() = default;
   ~EventCountHandler() override = default;
 
-  int GetEventCount(ui::EventType type) {
-    return event_count_[type];
-  }
+  int GetEventCount(ui::EventType type) { return event_count_[type]; }
 
-  void ResetCounts() {
-    event_count_.clear();
-  }
+  void ResetCounts() { event_count_.clear(); }
 
  protected:
   // Overridden from ui::EventHandler:
@@ -162,9 +158,7 @@ class EventCountHandler : public ui::EventHandler {
   }
 
  private:
-  void RecordEvent(const ui::Event& event) {
-    ++event_count_[event.type()];
-  }
+  void RecordEvent(const ui::Event& event) { ++event_count_[event.type()]; }
 
   std::map<ui::EventType, int> event_count_;
 
@@ -509,8 +503,7 @@ TEST_F(WidgetOwnershipTest,
 
 // NativeWidget owns its Widget, part 5: NativeWidget is a NativeWidget,
 // we close it directly.
-TEST_F(WidgetOwnershipTest,
-       Ownership_ViewsNativeWidgetOwnsWidget_Close) {
+TEST_F(WidgetOwnershipTest, Ownership_ViewsNativeWidgetOwnsWidget_Close) {
   OwnershipTestState state;
 
   Widget* toplevel = CreateTopLevelPlatformWidget();
@@ -632,9 +625,7 @@ class WidgetObserverTest : public WidgetTest, public WidgetObserver {
   ~WidgetObserverTest() override = default;
 
   // Set a widget to Close() the next time the Widget being observed is hidden.
-  void CloseOnNextHide(Widget* widget) {
-    widget_to_close_on_hide_ = widget;
-  }
+  void CloseOnNextHide(Widget* widget) { widget_to_close_on_hide_ = widget; }
 
   // Overridden from WidgetObserver:
   void OnWidgetDestroying(Widget* widget) override {
@@ -1026,11 +1017,11 @@ TEST_F(WidgetObserverTest, ClosingOnHiddenParent) {
 
 // Test behavior of NativeWidget*::GetWindowPlacement on the native desktop.
 #if defined(USE_X11)
-  // On desktop-Linux cheat and use non-desktop widgets. On X11, minimize is
-  // asynchronous. Also (harder) showing a window doesn't activate it without
-  // user interaction (or extra steps only done for interactive ui tests).
-  // Without that, show_state remains in ui::SHOW_STATE_INACTIVE throughout.
-  // TODO(tapted): Find a nice way to run this with desktop widgets on Linux.
+// On desktop-Linux cheat and use non-desktop widgets. On X11, minimize is
+// asynchronous. Also (harder) showing a window doesn't activate it without
+// user interaction (or extra steps only done for interactive ui tests).
+// Without that, show_state remains in ui::SHOW_STATE_INACTIVE throughout.
+// TODO(tapted): Find a nice way to run this with desktop widgets on Linux.
 TEST_F(WidgetTest, GetWindowPlacement) {
 #else
 TEST_F(DesktopWidgetTest, GetWindowPlacement) {
@@ -1126,8 +1117,9 @@ TEST_F(DesktopWidgetTest, MinimumSizeConstraints) {
     // The test environment may have dwm disabled on Windows. In this case,
     // CustomFrameView is used instead of the NativeFrameView, which will
     // provide a minimum size that includes frame decorations.
-    minimum_size = widget->non_client_view()->GetWindowBoundsForClientBounds(
-        gfx::Rect(minimum_size)).size();
+    minimum_size = widget->non_client_view()
+                       ->GetWindowBoundsForClientBounds(gfx::Rect(minimum_size))
+                       .size();
   }
 
   EXPECT_EQ(minimum_size, widget->GetMinimumSize());
@@ -1238,8 +1230,7 @@ TEST_F(DesktopWidgetTest, MAYBE_GetRestoredBounds) {
   toplevel->SetFullscreen(true);
   RunPendingMessages();
 
-  EXPECT_NE(toplevel->GetWindowBoundsInScreen(),
-            toplevel->GetRestoredBounds());
+  EXPECT_NE(toplevel->GetWindowBoundsInScreen(), toplevel->GetRestoredBounds());
   EXPECT_EQ(bounds, toplevel->GetRestoredBounds());
 
   toplevel->SetFullscreen(false);
@@ -1477,13 +1468,8 @@ TEST_F(WidgetTest, WheelEventsFromScrollEventTarget) {
   widget->GetRootView()->AddChildView(cursor_view);
 
   // Generate a scroll event on the cursor view.
-  ui::ScrollEvent scroll(ui::ET_SCROLL,
-                         gfx::Point(65, 5),
-                         ui::EventTimeForNow(),
-                         0,
-                         0, 20,
-                         0, 20,
-                         2);
+  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(65, 5),
+                         ui::EventTimeForNow(), 0, 0, 20, 0, 20, 2);
   widget->OnScrollEvent(&scroll);
 
   EXPECT_EQ(1, cursor_view->GetEventCount(ui::ET_SCROLL));
@@ -1491,13 +1477,8 @@ TEST_F(WidgetTest, WheelEventsFromScrollEventTarget) {
 
   cursor_view->ResetCounts();
 
-  ui::ScrollEvent scroll2(ui::ET_SCROLL,
-                          gfx::Point(5, 5),
-                          ui::EventTimeForNow(),
-                          0,
-                          0, 20,
-                          0, 20,
-                          2);
+  ui::ScrollEvent scroll2(ui::ET_SCROLL, gfx::Point(5, 5),
+                          ui::EventTimeForNow(), 0, 0, 20, 0, 20, 2);
   widget->OnScrollEvent(&scroll2);
 
   EXPECT_EQ(0, cursor_view->GetEventCount(ui::ET_SCROLL));
@@ -1576,13 +1557,8 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
 
   // Dispatch a ui::ET_SCROLL event. The event remains unhandled and should
   // bubble up the views hierarchy to be re-dispatched on the root view.
-  ui::ScrollEvent scroll(ui::ET_SCROLL,
-                         gfx::Point(5, 5),
-                         ui::EventTimeForNow(),
-                         0,
-                         0, 20,
-                         0, 20,
-                         2);
+  ui::ScrollEvent scroll(ui::ET_SCROLL, gfx::Point(5, 5), ui::EventTimeForNow(),
+                         0, 0, 20, 0, 20, 2);
   widget->OnScrollEvent(&scroll);
   EXPECT_EQ(2, h1.GetEventCount(ui::ET_SCROLL));
   EXPECT_EQ(1, view->GetEventCount(ui::ET_SCROLL));
@@ -1599,13 +1575,8 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
 
   // Dispatch a ui::ET_SCROLL_FLING_START event. The event remains unhandled and
   // should bubble up the views hierarchy to be re-dispatched on the root view.
-  ui::ScrollEvent fling(ui::ET_SCROLL_FLING_START,
-                        gfx::Point(5, 5),
-                        ui::EventTimeForNow(),
-                        0,
-                        0, 20,
-                        0, 20,
-                        2);
+  ui::ScrollEvent fling(ui::ET_SCROLL_FLING_START, gfx::Point(5, 5),
+                        ui::EventTimeForNow(), 0, 0, 20, 0, 20, 2);
   widget->OnScrollEvent(&fling);
   EXPECT_EQ(2, h1.GetEventCount(ui::ET_SCROLL_FLING_START));
   EXPECT_EQ(1, view->GetEventCount(ui::ET_SCROLL_FLING_START));
@@ -1628,10 +1599,7 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
   // Dispatch a ui::ET_GESTURE_TAP_DOWN and a ui::ET_GESTURE_TAP_CANCEL event.
   // The events are handled at the target phase and should not reach the
   // post-target handler.
-  ui::GestureEvent tap_down(5,
-                            5,
-                            0,
-                            ui::EventTimeForNow(),
+  ui::GestureEvent tap_down(5, 5, 0, ui::EventTimeForNow(),
                             ui::GestureEventDetails(ui::ET_GESTURE_TAP_DOWN));
   widget->OnGestureEvent(&tap_down);
   EXPECT_EQ(1, h1.GetEventCount(ui::ET_GESTURE_TAP_DOWN));
@@ -1639,10 +1607,7 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
   EXPECT_EQ(0, h2.GetEventCount(ui::ET_GESTURE_TAP_DOWN));
 
   ui::GestureEvent tap_cancel(
-      5,
-      5,
-      0,
-      ui::EventTimeForNow(),
+      5, 5, 0, ui::EventTimeForNow(),
       ui::GestureEventDetails(ui::ET_GESTURE_TAP_CANCEL));
   widget->OnGestureEvent(&tap_cancel);
   EXPECT_EQ(1, h1.GetEventCount(ui::ET_GESTURE_TAP_CANCEL));
@@ -1655,13 +1620,8 @@ TEST_F(WidgetTest, EventHandlersOnRootView) {
 
   // Dispatch a ui::ET_SCROLL event. The event is handled at the target phase
   // and should not reach the post-target handler.
-  ui::ScrollEvent consumed_scroll(ui::ET_SCROLL,
-                                  gfx::Point(5, 5),
-                                  ui::EventTimeForNow(),
-                                  0,
-                                  0, 20,
-                                  0, 20,
-                                  2);
+  ui::ScrollEvent consumed_scroll(ui::ET_SCROLL, gfx::Point(5, 5),
+                                  ui::EventTimeForNow(), 0, 0, 20, 0, 20, 2);
   widget->OnScrollEvent(&consumed_scroll);
   EXPECT_EQ(1, h1.GetEventCount(ui::ET_SCROLL));
   EXPECT_EQ(1, view->GetEventCount(ui::ET_SCROLL));
@@ -2419,11 +2379,11 @@ class RootViewTestView : public View {
 // Checks if RootView::*_handler_ fields are unset when widget is hidden.
 // Fails on chromium.webkit Windows bot, see crbug.com/264872.
 #if defined(OS_WIN)
-#define MAYBE_DisableTestRootViewHandlersWhenHidden\
-    DISABLED_TestRootViewHandlersWhenHidden
+#define MAYBE_DisableTestRootViewHandlersWhenHidden \
+  DISABLED_TestRootViewHandlersWhenHidden
 #else
-#define MAYBE_DisableTestRootViewHandlersWhenHidden\
-    TestRootViewHandlersWhenHidden
+#define MAYBE_DisableTestRootViewHandlersWhenHidden \
+  TestRootViewHandlersWhenHidden
 #endif
 TEST_F(WidgetTest, MAYBE_DisableTestRootViewHandlersWhenHidden) {
   Widget* widget = CreateTopLevelNativeWidget();
@@ -2999,8 +2959,8 @@ TEST_F(WidgetTest, GestureEventLocationWhileBubbling) {
   // Define a GESTURE_TAP event located at (125, 105) in root view coordinates.
   // This event is contained within all of |v1|, |v2|, and |v3|.
   gfx::Point location_in_root(125, 105);
-  GestureEventForTest tap(
-      ui::ET_GESTURE_TAP, location_in_root.x(), location_in_root.y());
+  GestureEventForTest tap(ui::ET_GESTURE_TAP, location_in_root.x(),
+                          location_in_root.y());
 
   // Calculate the location of the event in the local coordinate spaces
   // of each of the views.
@@ -3202,9 +3162,7 @@ class DestroyedTrackingView : public View {
  public:
   DestroyedTrackingView(const std::string& name,
                         std::vector<std::string>* add_to)
-      : name_(name),
-        add_to_(add_to) {
-  }
+      : name_(name), add_to_(add_to) {}
 
   ~DestroyedTrackingView() override { add_to_->push_back(name_); }
 
@@ -3507,8 +3465,7 @@ TEST_F(WidgetTest, NonClientWindowValidAfterInit) {
 class SubclassWindowHelper {
  public:
   explicit SubclassWindowHelper(HWND window)
-      : window_(window),
-        message_to_destroy_on_(0) {
+      : window_(window), message_to_destroy_on_(0) {
     EXPECT_EQ(instance_, nullptr);
     instance_ = this;
     EXPECT_TRUE(Subclass());
@@ -3524,9 +3481,7 @@ class SubclassWindowHelper {
     return (messages_.find(message) != messages_.end());
   }
 
-  void Clear() {
-    messages_.clear();
-  }
+  void Clear() { messages_.clear(); }
 
   void set_message_to_destroy_on(unsigned int message) {
     message_to_destroy_on_ = message;
@@ -3534,16 +3489,13 @@ class SubclassWindowHelper {
 
  private:
   bool Subclass() {
-    old_proc_ = reinterpret_cast<WNDPROC>(
-        ::SetWindowLongPtr(window_,
-                           GWLP_WNDPROC,
-                           reinterpret_cast<LONG_PTR>(WndProc)));
+    old_proc_ = reinterpret_cast<WNDPROC>(::SetWindowLongPtr(
+        window_, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WndProc)));
     return old_proc_ != nullptr;
   }
 
   void Unsubclass() {
-    ::SetWindowLongPtr(window_,
-                       GWLP_WNDPROC,
+    ::SetWindowLongPtr(window_, GWLP_WNDPROC,
                        reinterpret_cast<LONG_PTR>(old_proc_));
   }
 
@@ -3658,8 +3610,7 @@ TEST_F(DesktopWidgetTest,
 // Disabled because of flaky timeouts: http://crbug.com/592742
 TEST_F(DesktopWidgetTest, DISABLED_DestroyInSysCommandNCLButtonDownOnCaption) {
   Widget widget;
-  Widget::InitParams params =
-      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget.Init(std::move(params));
   widget.SetBounds(gfx::Rect(0, 0, 200, 200));
@@ -4069,14 +4020,14 @@ namespace {
 
 // Provides functionality to create a window modal dialog.
 class ModalDialogDelegate : public DialogDelegateView {
-public:
+ public:
   explicit ModalDialogDelegate(ui::ModalType type) : type_(type) {}
   ~ModalDialogDelegate() override = default;
 
   // WidgetDelegate overrides.
   ui::ModalType GetModalType() const override { return type_; }
 
-private:
+ private:
   const ui::ModalType type_;
 
   DISALLOW_COPY_AND_ASSIGN(ModalDialogDelegate);

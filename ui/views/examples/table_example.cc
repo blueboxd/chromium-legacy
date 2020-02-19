@@ -71,14 +71,14 @@ void TableExample::CreateExampleView(View* container) {
   layout->AddView(TableView::CreateScrollViewWithTable(std::move(table)));
 
   column_set = layout->AddColumnSet(1);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
-                        0.5f, GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
-                        0.5f, GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
-                        0.5f, GridLayout::USE_PREF, 0, 0);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
-                        0.5f, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0.5f,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0.5f,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0.5f,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0.5f,
+                        GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0 /* no expand */, 1);
 
@@ -108,11 +108,11 @@ base::string16 TableExample::GetText(int row, int column_id) {
     return base::string16();
 
   const char* const cells[5][4] = {
-    { "Orange", "Orange", "South america", "$5" },
-    { "Apple", "Green", "Canada", "$3" },
-    { "Blue berries", "Blue", "Mexico", "$10.3" },
-    { "Strawberries", "Red", "California", "$7" },
-    { "Cantaloupe", "Orange", "South america", "$5" },
+      {"Orange", "Orange", "South america", "$5"},
+      {"Apple", "Green", "Canada", "$3"},
+      {"Blue berries", "Blue", "Mexico", "$10.3"},
+      {"Strawberries", "Red", "California", "$7"},
+      {"Cantaloupe", "Orange", "South america", "$5"},
   };
   return ASCIIToUTF16(cells[row % 5][column_id]);
 }
@@ -153,14 +153,14 @@ void TableExample::GetGroupRange(int model_index, GroupRange* range) {
 
 void TableExample::OnSelectionChanged() {
   PrintStatus("Selected: %s",
-              base::UTF16ToASCII(GetText(table_->selection_model().active(),
-                                         0)).c_str());
+              base::UTF16ToASCII(GetText(table_->selection_model().active(), 0))
+                  .c_str());
 }
 
 void TableExample::OnDoubleClick() {
   PrintStatus("Double Click: %s",
-              base::UTF16ToASCII(GetText(table_->selection_model().active(),
-                                         0)).c_str());
+              base::UTF16ToASCII(GetText(table_->selection_model().active(), 0))
+                  .c_str());
 }
 
 void TableExample::OnMiddleClick() {}

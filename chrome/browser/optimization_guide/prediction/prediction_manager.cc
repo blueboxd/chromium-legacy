@@ -271,15 +271,19 @@ base::Optional<float> PredictionManager::GetValueForClientFeature(
   if (!proto::ClientModelFeature_Parse(model_feature, &client_model_feature))
     return base::nullopt;
 
+  base::Optional<float> value;
+
   switch (client_model_feature) {
     case proto::CLIENT_MODEL_FEATURE_UNKNOWN: {
       return base::nullopt;
     }
     case proto::CLIENT_MODEL_FEATURE_EFFECTIVE_CONNECTION_TYPE: {
-      return static_cast<float>(current_effective_connection_type_);
+      value = static_cast<float>(current_effective_connection_type_);
+      break;
     }
     case proto::CLIENT_MODEL_FEATURE_PAGE_TRANSITION: {
-      return static_cast<float>(navigation_handle->GetPageTransition());
+      value = static_cast<float>(navigation_handle->GetPageTransition());
+      break;
     }
     case proto::CLIENT_MODEL_FEATURE_SITE_ENGAGEMENT_SCORE: {
       Profile* profile = Profile::FromBrowserContext(
@@ -287,8 +291,9 @@ base::Optional<float> PredictionManager::GetValueForClientFeature(
       SiteEngagementService* engagement_service =
           SiteEngagementService::Get(profile);
       // Precision loss is acceptable/expected for prediction models.
-      return static_cast<float>(
+      value = static_cast<float>(
           engagement_service->GetScore(navigation_handle->GetURL()));
+      break;
     }
     case proto::CLIENT_MODEL_FEATURE_SAME_ORIGIN_NAVIGATION: {
       OptimizationGuideNavigationData* nav_data =
@@ -300,32 +305,43 @@ base::Optional<float> PredictionManager::GetValueForClientFeature(
       LOCAL_HISTOGRAM_BOOLEAN(
           "OptimizationGuide.PredictionManager.IsSameOrigin", is_same_origin);
 
-      return static_cast<float>(is_same_origin);
+      value = static_cast<float>(is_same_origin);
+      break;
     }
     case proto::CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_MEAN: {
-      if (session_fcp_.GetNumberOfSamples() == 0) {
-        return static_cast<float>(
-            pref_service_->GetDouble(prefs::kSessionStatisticFCPMean));
-      }
-      return session_fcp_.GetMean();
+      value = session_fcp_.GetNumberOfSamples() == 0
+                  ? static_cast<float>(pref_service_->GetDouble(
+                        prefs::kSessionStatisticFCPMean))
+                  : session_fcp_.GetMean();
+      break;
     }
     case proto::
         CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_SESSION_STANDARD_DEVIATION: {
-      if (session_fcp_.GetNumberOfSamples() == 0) {
-        return static_cast<float>(
-            pref_service_->GetDouble(prefs::kSessionStatisticFCPStdDev));
-      }
-      return session_fcp_.GetStdDev();
+      value = session_fcp_.GetNumberOfSamples() == 0
+                  ? static_cast<float>(pref_service_->GetDouble(
+                        prefs::kSessionStatisticFCPStdDev))
+                  : session_fcp_.GetStdDev();
+      break;
     }
     case proto::
         CLIENT_MODEL_FEATURE_FIRST_CONTENTFUL_PAINT_PREVIOUS_PAGE_LOAD: {
-      return previous_load_fcp_ms_.value_or(static_cast<float>(
+      value = previous_load_fcp_ms_.value_or(static_cast<float>(
           pref_service_->GetDouble(prefs::kSessionStatisticFCPMean)));
+      break;
     }
     default: {
       return base::nullopt;
     }
   }
+
+  OptimizationGuideNavigationData* navigation_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle);
+  if (value && navigation_data) {
+    navigation_data->SetValueForModelFeature(client_model_feature, *value);
+    return value;
+  }
+  return base::nullopt;
 }
 
 base::flat_map<std::string, float> PredictionManager::BuildFeatureMap(

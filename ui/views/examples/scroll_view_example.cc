@@ -64,8 +64,7 @@ class ScrollViewExample::ScrollableView : public View {
   DISALLOW_COPY_AND_ASSIGN(ScrollableView);
 };
 
-ScrollViewExample::ScrollViewExample() : ExampleBase("Scroll View") {
-}
+ScrollViewExample::ScrollViewExample() : ExampleBase("Scroll View") {}
 
 ScrollViewExample::~ScrollViewExample() = default;
 

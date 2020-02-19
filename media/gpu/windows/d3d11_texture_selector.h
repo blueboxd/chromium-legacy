@@ -37,7 +37,6 @@ class MEDIA_GPU_EXPORT TextureSelector {
       ComD3D11Device device,
       ComD3D11VideoDevice video_device,
       ComD3D11DeviceContext,
-      ComD3D11Texture2D input_texture,
       gfx::Size size);
 
   VideoPixelFormat PixelFormat() { return pixel_format_; }
@@ -64,7 +63,6 @@ class MEDIA_GPU_EXPORT CopyTextureSelector : public TextureSelector {
       ComD3D11Device device,
       ComD3D11VideoDevice video_device,
       ComD3D11DeviceContext,
-      ComD3D11Texture2D input_texture,
       gfx::Size size) override;
 
  private:

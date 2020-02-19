@@ -28,7 +28,7 @@ const int kGestureScrollDistance = 100;
 const int kGestureScrollSteps = 4;
 const int kDistancePerGestureScrollUpdate =
     kGestureScrollDistance / kGestureScrollSteps;
-}
+}  // namespace
 
 namespace views {
 

@@ -13,6 +13,7 @@ settings_namespace_rewrites = [
   "settings.ExtensionControlBrowserProxy|ExtensionControlBrowserProxy",
   "settings.FontsBrowserProxy|FontsBrowserProxy",
   "settings.GlobalScrollTargetBehavior|GlobalScrollTargetBehavior",
+  "settings.LifetimeBrowserProxy|LifetimeBrowserProxy",
   "settings.MinimumRoutes|MinimumRoutes",
   "settings.OnStartupBrowserProxy|OnStartupBrowserProxy",
   "settings.pageVisibility|pageVisibility",
@@ -22,6 +23,7 @@ settings_namespace_rewrites = [
   "settings.routes|routes",
   "settings.SearchEnginesBrowserProxy|SearchEnginesBrowserProxy",
   "settings.StartupUrlsPageBrowserProxy|StartupUrlsPageBrowserProxy",
+  "settings.SystemPageBrowserProxy|SystemPageBrowserProxy",
   "settings.RouteObserverBehavior|RouteObserverBehavior",
 
   "action_link.m.js|action_link.js",

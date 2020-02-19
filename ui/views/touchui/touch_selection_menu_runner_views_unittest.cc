@@ -20,7 +20,7 @@ const int kMenuButtonWidth = 63;
 // touch_selection_menu_runner_views.cc.
 const int kMenuCommandCount = 3;
 
-}
+}  // namespace
 
 class TouchSelectionMenuRunnerViewsTest : public ViewsTestBase,
                                           public ui::TouchSelectionMenuClient {

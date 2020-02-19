@@ -13,16 +13,16 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/permission_request_manager.h"
 #include "components/permissions/permission_result.h"
+#include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/test/browser_task_environment.h"
@@ -571,10 +571,11 @@ TEST_F(PermissionManagerTest, SubscribeMIDIPermission) {
 
 TEST_F(PermissionManagerTest, PermissionIgnoredCleanup) {
   content::WebContents* contents = web_contents();
-  PermissionRequestManager::CreateForWebContents(contents);
-  PermissionRequestManager* manager =
-      PermissionRequestManager::FromWebContents(contents);
-  auto prompt_factory = std::make_unique<MockPermissionPromptFactory>(manager);
+  permissions::PermissionRequestManager::CreateForWebContents(contents);
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(contents);
+  auto prompt_factory =
+      std::make_unique<permissions::MockPermissionPromptFactory>(manager);
 
   NavigateAndCommit(url());
 
@@ -793,11 +794,13 @@ TEST_F(PermissionManagerTest, GetPermissionStatusDelegation) {
 
   // When the child requests location a prompt should be displayed for the
   // parent.
-  PermissionRequestManager::CreateForWebContents(web_contents());
-  PermissionRequestManager* manager =
-      PermissionRequestManager::FromWebContents(web_contents());
-  auto prompt_factory = std::make_unique<MockPermissionPromptFactory>(manager);
-  prompt_factory->set_response_type(PermissionRequestManager::ACCEPT_ALL);
+  permissions::PermissionRequestManager::CreateForWebContents(web_contents());
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents());
+  auto prompt_factory =
+      std::make_unique<permissions::MockPermissionPromptFactory>(manager);
+  prompt_factory->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
   prompt_factory->DocumentOnLoadCompletedInMainFrame();
 
   RequestPermission(PermissionType::GEOLOCATION, child, GURL(kOrigin2));

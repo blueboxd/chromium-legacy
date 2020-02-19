@@ -38,7 +38,6 @@
 #include "components/viz/common/switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/host/renderer_settings_creation.h"
-#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
 #include "services/viz/privileged/mojom/compositing/external_begin_frame_controller.mojom.h"
 #include "services/viz/privileged/mojom/compositing/vsync_parameter_observer.mojom.h"
@@ -56,6 +55,10 @@
 #include "ui/gfx/icc_profile.h"
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_switches.h"
+
+#if defined(OS_WIN)
+#include "mojo/public/cpp/bindings/sync_call_restrictions.h"
+#endif
 
 namespace ui {
 
@@ -385,6 +388,7 @@ void Compositor::ScheduleRedrawRect(const gfx::Rect& damage_rect) {
   host_->SetNeedsCommit();
 }
 
+#if defined(OS_WIN)
 void Compositor::DisableSwapUntilResize() {
   if (display_private_) {
     // Browser needs to block for Viz to receive and process this message.
@@ -403,6 +407,7 @@ void Compositor::ReenableSwap() {
   if (display_private_)
     display_private_->Resize(size_);
 }
+#endif
 
 void Compositor::SetScaleAndSize(
     float scale,

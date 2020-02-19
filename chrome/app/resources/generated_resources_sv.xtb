@@ -3359,6 +3359,7 @@ Du kan hantera inställningarna för det här kontot genom att installera Family
 <translation id="5689516760719285838">Plats</translation>
 <translation id="56907980372820799">Koppla data</translation>
 <translation id="5691511426247308406">Familj</translation>
+<translation id="5691772641933328258">Fingeravtrycket känns inte igen</translation>
 <translation id="5692183275898619210">Utskriften har slutförts</translation>
 <translation id="5696143504434933566">Rapportera otillåten användning från <ph name="EXTENSION_NAME" /></translation>
 <translation id="5696679855467848181">PPD-fil som används för närvarande: <ph name="PPD_NAME" /></translation>
@@ -5664,7 +5665,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8864458770072227512"><ph name="EMAIL" /> har tagits bort från den här enheten</translation>
 <translation id="8867228703146808825">Kopiera versionsinformation till urklipp</translation>
 <translation id="8868626022555786497">Används</translation>
-<translation id="8870318296973696995">Startsida</translation>
 <translation id="8870413625673593573">Nyligen stängda</translation>
 <translation id="8871551568777368300">Har fästs av administratören</translation>
 <translation id="8871696467337989339">Du använder en kommandoradsflagga som inte stöds: <ph name="BAD_FLAG" />. Detta påverkar stabilitet och säkerhet negativt.</translation>

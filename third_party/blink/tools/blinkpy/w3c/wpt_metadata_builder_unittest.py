@@ -11,7 +11,7 @@ from blinkpy.common.host_mock import MockHost
 from blinkpy.web_tests.models.test_expectations import TestExpectations
 from blinkpy.web_tests.port.factory_mock import MockPortFactory
 from blinkpy.w3c.wpt_manifest import BASE_MANIFEST_NAME
-from blinkpy.w3c.wpt_metadata_builder import WPTMetadataBuilder, HARNESS_ERROR, SUBTEST_FAIL
+from blinkpy.w3c.wpt_metadata_builder import WPTMetadataBuilder, HARNESS_ERROR, SUBTEST_FAIL, SKIP_TEST
 
 
 def _make_expectation(port, test_path, test_statuses, test_names=[]):
@@ -79,8 +79,7 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         test_name = "some/other/test.html"
         expectations = _make_expectation(self.port, test_name, "SKIP")
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
-        filename, contents = metadata_builder.get_metadata_filename_and_contents(
-            test_name, 'SKIP')
+        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, SKIP_TEST)
         self.assertIsNone(filename)
         self.assertIsNone(contents)
 
@@ -89,8 +88,7 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         test_name = "external/wpt/test-not-in-manifest.html"
         expectations = _make_expectation(self.port, test_name, "SKIP")
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
-        filename, contents = metadata_builder.get_metadata_filename_and_contents(
-            test_name, 'SKIP')
+        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, SKIP_TEST)
         self.assertIsNone(filename)
         self.assertIsNone(contents)
 
@@ -99,7 +97,7 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         test_name = "external/wpt/test.html"
         expectations = _make_expectation(self.port, test_name, "TIMEOUT")
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
-        test_names = metadata_builder.get_test_names_to_skip()
+        test_names = metadata_builder.get_tests_needing_metadata()
         self.assertFalse(test_names)
 
     def test_parse_baseline_all_pass(self):
@@ -113,8 +111,8 @@ class WPTMetadataBuilderTest(unittest.TestCase):
             "This is a test\nPASS some subtest\nPASS another subtest\n")
         expectations = TestExpectations(self.port)
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
-        test_and_status_list = metadata_builder.get_tests_with_baselines()
-        self.assertFalse(test_and_status_list)
+        test_and_status_dict = metadata_builder.get_tests_needing_metadata()
+        self.assertFalse(test_and_status_dict)
 
     def test_parse_baseline_subtest_fail(self):
         """Test parsing a baseline with a failing subtest."""
@@ -127,11 +125,10 @@ class WPTMetadataBuilderTest(unittest.TestCase):
             "This is a test\nPASS some subtest\nFAIL another subtest\n")
         expectations = TestExpectations(self.port)
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
-        test_and_status_list = metadata_builder.get_tests_with_baselines()
-        self.assertEqual(1, len(test_and_status_list))
-        test_entry = test_and_status_list[0]
-        self.assertEqual(test_name, test_entry[0])
-        self.assertEqual(SUBTEST_FAIL, test_entry[1])
+        test_and_status_dict = metadata_builder.get_tests_needing_metadata()
+        self.assertEqual(1, len(test_and_status_dict))
+        self.assertTrue(test_name in test_and_status_dict)
+        self.assertEqual(SUBTEST_FAIL, test_and_status_dict[test_name])
 
     def test_parse_baseline_subtest_notrun(self):
         """Test parsing a baseline with a notrun subtest."""
@@ -144,11 +141,10 @@ class WPTMetadataBuilderTest(unittest.TestCase):
             "This is a test\nPASS some subtest\nNOTRUN another subtest\n")
         expectations = TestExpectations(self.port)
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
-        test_and_status_list = metadata_builder.get_tests_with_baselines()
-        self.assertEqual(1, len(test_and_status_list))
-        test_entry = test_and_status_list[0]
-        self.assertEqual(test_name, test_entry[0])
-        self.assertEqual(SUBTEST_FAIL, test_entry[1])
+        test_and_status_dict = metadata_builder.get_tests_needing_metadata()
+        self.assertEqual(1, len(test_and_status_dict))
+        self.assertTrue(test_name in test_and_status_dict)
+        self.assertEqual(SUBTEST_FAIL, test_and_status_dict[test_name])
 
     def test_parse_baseline_subtest_timeout(self):
         """Test parsing a baseline with a timeout subtest."""
@@ -161,11 +157,10 @@ class WPTMetadataBuilderTest(unittest.TestCase):
             "This is a test\nTIMEOUT some subtest\nPASS another subtest\n")
         expectations = TestExpectations(self.port)
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
-        test_and_status_list = metadata_builder.get_tests_with_baselines()
-        self.assertEqual(1, len(test_and_status_list))
-        test_entry = test_and_status_list[0]
-        self.assertEqual(test_name, test_entry[0])
-        self.assertEqual(SUBTEST_FAIL, test_entry[1])
+        test_and_status_dict = metadata_builder.get_tests_needing_metadata()
+        self.assertEqual(1, len(test_and_status_dict))
+        self.assertTrue(test_name in test_and_status_dict)
+        self.assertEqual(SUBTEST_FAIL, test_and_status_dict[test_name])
 
     def test_parse_baseline_harness_error(self):
         """Test parsing a baseline with a harness error."""
@@ -178,11 +173,10 @@ class WPTMetadataBuilderTest(unittest.TestCase):
             "This is a test\nHarness Error. some stuff\n")
         expectations = TestExpectations(self.port)
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
-        test_and_status_list = metadata_builder.get_tests_with_baselines()
-        self.assertEqual(1, len(test_and_status_list))
-        test_entry = test_and_status_list[0]
-        self.assertEqual(test_name, test_entry[0])
-        self.assertEqual(HARNESS_ERROR, test_entry[1])
+        test_and_status_dict = metadata_builder.get_tests_needing_metadata()
+        self.assertEqual(1, len(test_and_status_dict))
+        self.assertTrue(test_name in test_and_status_dict)
+        self.assertEqual(HARNESS_ERROR, test_and_status_dict[test_name])
 
     def test_parse_baseline_subtest_fail_and_harness_error(self):
         """Test parsing a baseline with a harness error AND a subtest fail."""
@@ -195,18 +189,17 @@ class WPTMetadataBuilderTest(unittest.TestCase):
             "This is a test\nHarness Error. some stuff\nPASS some subtest\nFAIL another subtest\n")
         expectations = TestExpectations(self.port)
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
-        test_and_status_list = metadata_builder.get_tests_with_baselines()
-        self.assertEqual(1, len(test_and_status_list))
-        test_entry = test_and_status_list[0]
-        self.assertEqual(test_name, test_entry[0])
-        self.assertEqual(SUBTEST_FAIL | HARNESS_ERROR, test_entry[1])
+        test_and_status_dict = metadata_builder.get_tests_needing_metadata()
+        self.assertEqual(1, len(test_and_status_dict))
+        self.assertTrue(test_name in test_and_status_dict)
+        self.assertEqual(SUBTEST_FAIL | HARNESS_ERROR, test_and_status_dict[test_name])
 
     def test_metadata_for_skipped_test(self):
         """A skipped WPT test should get a test-specific metadata file."""
         test_name = "external/wpt/test.html"
         expectations = _make_expectation(self.port, test_name, "SKIP")
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
-        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, 'SKIP')
+        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, SKIP_TEST)
         self.assertEqual("test.html.ini", filename)
         self.assertEqual("[test.html]\n  disabled: wpt_metadata_builder.py\n", contents)
 
@@ -215,7 +208,7 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         test_name = "external/wpt/variant.html?foo=bar"
         expectations = _make_expectation(self.port, test_name, "SKIP")
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
-        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, 'SKIP')
+        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, SKIP_TEST)
         # The metadata file name should not include variants
         self.assertEqual("variant.html.ini", filename)
         # ..but the contents of the file should include variants in the test name
@@ -227,7 +220,7 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         test_name = "external/wpt/test_dir/test.html"
         expectations = _make_expectation(self.port, test_dir, "SKIP", test_names=[test_name])
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
-        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_dir, 'SKIP')
+        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_dir, SKIP_TEST)
         self.assertEqual(os.path.join("test_dir", "__dir__.ini"), filename)
         self.assertEqual("disabled: wpt_metadata_builder.py\n", contents)
 
@@ -236,8 +229,7 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         test_name = "external/wpt/dir/zzzz.html"
         expectations = TestExpectations(self.port)
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
-        filename, contents = metadata_builder.get_metadata_filename_and_contents(
-            test_name, 'FAIL', SUBTEST_FAIL)
+        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, SUBTEST_FAIL)
         self.assertEqual(os.path.join("dir", "zzzz.html.ini"), filename)
         self.assertEqual(
             "[zzzz.html]\n  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n",
@@ -248,8 +240,7 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         test_name = "external/wpt/dir/zzzz.html"
         expectations = TestExpectations(self.port)
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
-        filename, contents = metadata_builder.get_metadata_filename_and_contents(
-            test_name, 'FAIL', HARNESS_ERROR)
+        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, HARNESS_ERROR)
         self.assertEqual(os.path.join("dir", "zzzz.html.ini"), filename)
         self.assertEqual("[zzzz.html]\n  expected: ERROR\n", contents)
 
@@ -258,8 +249,7 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         test_name = "external/wpt/dir/zzzz.html"
         expectations = TestExpectations(self.port)
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
-        filename, contents = metadata_builder.get_metadata_filename_and_contents(
-            test_name, 'FAIL', SUBTEST_FAIL | HARNESS_ERROR)
+        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, SUBTEST_FAIL | HARNESS_ERROR)
         self.assertEqual(os.path.join("dir", "zzzz.html.ini"), filename)
         self.assertEqual(
             "[zzzz.html]\n  expected: ERROR\n  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n",
@@ -270,8 +260,7 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         test_name = "external/wpt/dir/multiglob.https.any.window.html"
         expectations = TestExpectations(self.port)
         metadata_builder = WPTMetadataBuilder(expectations, self.port)
-        filename, contents = metadata_builder.get_metadata_filename_and_contents(
-            test_name, 'FAIL', SUBTEST_FAIL)
+        filename, contents = metadata_builder.get_metadata_filename_and_contents(test_name, SUBTEST_FAIL)
         # The metadata filename matches the test *filename*, not the test name,
         # which in this case is the js file from the manifest.
         self.assertEqual(os.path.join("dir", "multiglob.https.any.js.ini"), filename)

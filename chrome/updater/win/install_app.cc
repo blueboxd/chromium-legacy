@@ -743,7 +743,7 @@ int SetupUpdater() {
       FROM_HERE,
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce([]() { return Setup(); }),
+      base::BindOnce([]() { return Setup(false); }),
       base::BindOnce(
           [](ui::SplashScreen* splash_screen, base::OnceClosure quit_closure,
              int* result_out, int result) {

@@ -109,11 +109,11 @@ static const char kSfxLosslessHash[] = "3.03,2.86,2.99,3.31,3.57,4.06,";
 // implementation. x86 uses floating-point Opus, so x86 hashes won't match
 #if defined(ARCH_CPU_ARM64)
 static const char kOpusEndTrimmingHash_1[] =
-    "-4.57,-5.66,-6.52,-6.29,-4.37,-3.60,";
+    "-4.58,-5.68,-6.53,-6.28,-4.35,-3.59,";
 static const char kOpusEndTrimmingHash_2[] =
-    "-11.90,-11.10,-8.26,-7.12,-7.85,-9.99,";
+    "-11.92,-11.11,-8.25,-7.10,-7.84,-10.00,";
 static const char kOpusEndTrimmingHash_3[] =
-    "-13.30,-14.37,-13.70,-11.69,-10.20,-10.48,";
+    "-13.33,-14.38,-13.68,-11.66,-10.18,-10.49,";
 static const char kOpusSmallCodecDelayHash_1[] =
     "-0.48,-0.09,1.27,1.06,1.54,-0.22,";
 static const char kOpusSmallCodecDelayHash_2[] =

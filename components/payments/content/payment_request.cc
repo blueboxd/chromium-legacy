@@ -424,6 +424,9 @@ void PaymentRequest::Abort() {
 
   if (observer_for_testing_)
     observer_for_testing_->OnAbortCalled();
+
+  if (accepting_abort)
+    state_->OnAbort();
 }
 
 void PaymentRequest::Complete(mojom::PaymentComplete result) {

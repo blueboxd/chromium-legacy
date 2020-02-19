@@ -878,6 +878,10 @@ message BatterySample {
   optional int32 discharge_rate = 5;
   // Battery charge percentage
   optional int32 charge_rate = 6;
+  // Battery current (mA)
+  optional int64 current = 7;
+  // Battery status read from sysfs
+  optional string status = 8;
 }
 
 // Status of the single battery
@@ -896,6 +900,8 @@ message BatteryInfo {
   optional int32 design_min_voltage = 9;
   // The date the battery was manufactured in yyyy-mm-dd format.
   optional string manufacture_date = 10;
+  // Technology of the battery.
+  optional string technology = 11;
 }
 
 // Status of the power subsystem

@@ -22,8 +22,7 @@ using ui::OSExchangeDataProviderWin;
 
 namespace {
 
-int ConvertKeyStateToAuraEventFlags(DWORD key_state)
-{
+int ConvertKeyStateToAuraEventFlags(DWORD key_state) {
   int flags = 0;
 
   if (key_state & MK_CONTROL)

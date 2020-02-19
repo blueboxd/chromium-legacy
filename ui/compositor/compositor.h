@@ -197,10 +197,12 @@ class COMPOSITOR_EXPORT Compositor : public cc::LayerTreeHostClient,
   // from changes to layer properties.
   void ScheduleRedrawRect(const gfx::Rect& damage_rect);
 
+#if defined(OS_WIN)
   // Attempts to immediately swap a frame with the current size if possible,
   // then disables swapping on this surface until it is resized.
   void DisableSwapUntilResize();
   void ReenableSwap();
+#endif
 
   // Sets the compositor's device scale factor and size.
   void SetScaleAndSize(

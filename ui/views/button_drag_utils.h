@@ -13,7 +13,7 @@ class GURL;
 namespace gfx {
 class ImageSkia;
 class Point;
-}
+}  // namespace gfx
 
 namespace ui {
 class OSExchangeData;

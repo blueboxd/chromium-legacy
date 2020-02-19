@@ -17,6 +17,14 @@ void TestMediaClient::HandleMediaPlayPause() {
   ++handle_media_play_pause_count_;
 }
 
+void TestMediaClient::HandleMediaPlay() {
+  ++handle_media_play_count_;
+}
+
+void TestMediaClient::HandleMediaPause() {
+  ++handle_media_pause_count_;
+}
+
 void TestMediaClient::HandleMediaPrevTrack() {
   ++handle_media_prev_track_count_;
 }

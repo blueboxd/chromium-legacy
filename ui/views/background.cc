@@ -26,9 +26,7 @@ namespace views {
 // background in a solid color.
 class SolidBackground : public Background {
  public:
-  explicit SolidBackground(SkColor color) {
-    SetNativeControlColor(color);
-  }
+  explicit SolidBackground(SkColor color) { SetNativeControlColor(color); }
 
   void Paint(gfx::Canvas* canvas, View* view) const override {
     // Fill the background. Note that we don't constrain to the bounds as

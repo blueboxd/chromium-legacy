@@ -29,8 +29,8 @@ namespace aura {
 namespace client {
 class DragDropClientObserver;
 class DragDropDelegate;
-}
-}
+}  // namespace client
+}  // namespace aura
 
 namespace gfx {
 class Point;
@@ -40,7 +40,7 @@ namespace ui {
 class DropTargetEvent;
 class OSExchangeData;
 class XTopmostWindowFinder;
-}
+}  // namespace ui
 
 namespace views {
 class DesktopNativeCursorManager;

@@ -8,32 +8,38 @@
 
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "media/gpu/windows/return_on_failure.h"
+#include "ui/gl/gl_image.h"
 
 namespace media {
 
-Texture2DWrapper::Texture2DWrapper(ComD3D11Texture2D texture)
-    : texture_(texture) {}
+Texture2DWrapper::Texture2DWrapper() = default;
 
-Texture2DWrapper::~Texture2DWrapper() {}
+Texture2DWrapper::~Texture2DWrapper() = default;
 
-const ComD3D11Texture2D Texture2DWrapper::Texture() const {
-  return texture_;
-}
+DefaultTexture2DWrapper::DefaultTexture2DWrapper(const gfx::Size& size)
+    : size_(size) {}
 
-DefaultTexture2DWrapper::DefaultTexture2DWrapper(ComD3D11Texture2D texture)
-    : Texture2DWrapper(texture) {}
-DefaultTexture2DWrapper::~DefaultTexture2DWrapper() {}
+DefaultTexture2DWrapper::~DefaultTexture2DWrapper() = default;
 
-bool DefaultTexture2DWrapper::ProcessTexture(const D3D11PictureBuffer* owner_pb,
+bool DefaultTexture2DWrapper::ProcessTexture(ComD3D11Texture2D texture,
+                                             size_t array_slice,
                                              MailboxHolderArray* mailbox_dest) {
+  // TODO(liberato): When |gpu_resources_| is a SB<>, it's okay to post and
+  // forget this call.  It will still be ordered properly with respect to any
+  // access on the gpu main thread.
+  // TODO(liberato): Would be nice if SB<> knew how to post and reply, so that
+  // we could get the error code back.
+  auto result = gpu_resources_->PushNewTexture(std::move(texture), array_slice);
+  if (!result.IsOk())
+    return false;
+
   for (size_t i = 0; i < VideoFrame::kMaxPlanes; i++)
     (*mailbox_dest)[i] = mailbox_holders_[i];
+
   return true;
 }
 
-bool DefaultTexture2DWrapper::Init(GetCommandBufferHelperCB get_helper_cb,
-                                   size_t array_slice,
-                                   gfx::Size size) {
+bool DefaultTexture2DWrapper::Init(GetCommandBufferHelperCB get_helper_cb) {
   gpu_resources_ = std::make_unique<GpuResources>();
   if (!gpu_resources_)
     return false;
@@ -55,11 +61,11 @@ bool DefaultTexture2DWrapper::Init(GetCommandBufferHelperCB get_helper_cb,
   // would create the texture with KEYED_MUTEX and NTHANDLE, then send along
   // a handle that we get from |texture| as an IDXGIResource1.
   // TODO(liberato): this should happen on the gpu thread.
-  return gpu_resources_->Init(std::move(get_helper_cb), array_slice,
-                              std::move(mailboxes), GL_TEXTURE_EXTERNAL_OES,
-                              size, Texture(), textures_per_picture);
-
-  return true;
+  // TODO(liberato): the out param would be handled similarly to
+  // CodecImageHolder when we add a pool.
+  return gpu_resources_->Init(std::move(get_helper_cb), std::move(mailboxes),
+                              GL_TEXTURE_EXTERNAL_OES, size_,
+                              textures_per_picture);
 }
 
 DefaultTexture2DWrapper::GpuResources::GpuResources() {}
@@ -73,11 +79,9 @@ DefaultTexture2DWrapper::GpuResources::~GpuResources() {
 
 bool DefaultTexture2DWrapper::GpuResources::Init(
     GetCommandBufferHelperCB get_helper_cb,
-    int array_slice,
     const std::vector<gpu::Mailbox> mailboxes,
     GLenum target,
     gfx::Size size,
-    ComD3D11Texture2D angle_texture,
     int textures_per_picture) {
   helper_ = get_helper_cb.Run();
 
@@ -109,8 +113,7 @@ bool DefaultTexture2DWrapper::GpuResources::Init(
   // TODO(liberato): for tests, it will be destroyed pretty much at the end of
   // this function unless |helper_| retains it.  Also, this won't work if we
   // have a FakeCommandBufferHelper since the service IDs aren't meaningful.
-  scoped_refptr<gl::GLImage> gl_image =
-      base::MakeRefCounted<gl::GLImageDXGI>(size, stream);
+  gl_image_ = base::MakeRefCounted<gl::GLImageDXGI>(size, stream);
   gl::ScopedActiveTexture texture0(GL_TEXTURE0);
   gl::ScopedTextureBinder texture0_binder(GL_TEXTURE_EXTERNAL_OES,
                                           service_ids_[0]);
@@ -141,33 +144,47 @@ bool DefaultTexture2DWrapper::GpuResources::Init(
                                                   producer_attributes);
   RETURN_ON_FAILURE(result, "Could not create stream", false);
 
+  // Note that this is valid as long as |gl_image_| is valid; it is
+  // what deletes the stream.
+  stream_ = stream;
+
+  // Bind the image to each texture.
+  for (size_t texture_idx = 0; texture_idx < service_ids_.size();
+       texture_idx++) {
+    helper_->BindImage(service_ids_[texture_idx], gl_image_.get(),
+                       false /* client_managed */);
+  }
+
+  return true;
+}
+
+MediaError DefaultTexture2DWrapper::GpuResources::PushNewTexture(
+    ComD3D11Texture2D texture,
+    size_t array_slice) {
+  if (!helper_ || !helper_->MakeContextCurrent())
+    return MediaError(ErrorCode::kCannotMakeContextCurrent);
+
+  // Notify |gl_image_| that it has a new texture.
+  gl_image_->SetTexture(texture, array_slice);
+
+  // Notify angle that it has a new texture.
   EGLAttrib frame_attributes[] = {
       EGL_D3D_TEXTURE_SUBRESOURCE_ID_ANGLE,
       array_slice,
       EGL_NONE,
   };
 
-  result = eglStreamPostD3DTextureANGLE(egl_display, stream,
-                                        static_cast<void*>(angle_texture.Get()),
-                                        frame_attributes);
-  RETURN_ON_FAILURE(result, "Could not post texture", false);
-
-  result = eglStreamConsumerAcquireKHR(egl_display, stream);
-
-  RETURN_ON_FAILURE(result, "Could not post acquire stream", false);
-  gl::GLImageDXGI* gl_image_dxgi =
-      static_cast<gl::GLImageDXGI*>(gl_image.get());
-
-  gl_image_dxgi->SetTexture(angle_texture, array_slice);
-
-  // Bind the image to each texture.
-  for (size_t texture_idx = 0; texture_idx < service_ids_.size();
-       texture_idx++) {
-    helper_->BindImage(service_ids_[texture_idx], gl_image.get(),
-                       false /* client_managed */);
+  EGLDisplay egl_display = gl::GLSurfaceEGL::GetHardwareDisplay();
+  if (!eglStreamPostD3DTextureANGLE(egl_display, stream_,
+                                    static_cast<void*>(texture.Get()),
+                                    frame_attributes)) {
+    return MediaError(ErrorCode::kCouldNotPostTexture);
   }
 
-  return true;
+  if (!eglStreamConsumerAcquireKHR(egl_display, stream_))
+    return MediaError(ErrorCode::kCouldNotPostAcquireStream);
+
+  return MediaError::Ok();
 }
 
 }  // namespace media

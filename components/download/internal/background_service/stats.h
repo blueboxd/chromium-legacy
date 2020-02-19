@@ -210,9 +210,6 @@ void LogFilePathRenamed(bool renamed);
 // Logs an action the Controller takes on an active download.
 void LogEntryEvent(DownloadEvent event);
 
-// At the time of a resumption, logs which resumption attempt count this is.
-void LogEntryResumptionCount(uint32_t resume_count);
-
 // At the time of a retry, logs which retry attempt count this is.
 void LogEntryRetryCount(uint32_t retry_count);
 

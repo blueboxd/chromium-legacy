@@ -33,7 +33,7 @@ class MEDIA_GPU_EXPORT PromotionHintAggregator {
   };
 
   // Pass the hint by value to permit thread-hopping callbacks.
-  using NotifyPromotionHintCB = base::Callback<void(Hint hint)>;
+  using NotifyPromotionHintCB = base::RepeatingCallback<void(Hint hint)>;
 
   virtual ~PromotionHintAggregator() = default;
 

@@ -7,15 +7,15 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/infobars/mock_infobar_service.h"
-#include "chrome/browser/permissions/mock_permission_request.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_state.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/permissions/permission_request_manager.h"
+#include "components/permissions/test/mock_permission_request.h"
 
 class PermissionPromptAndroidTest : public ChromeRenderViewHostTestHarness {
  public:
-  PermissionRequestManager* permission_request_manager() {
+  permissions::PermissionRequestManager* permission_request_manager() {
     return permission_request_manager_;
   }
 
@@ -31,19 +31,20 @@ class PermissionPromptAndroidTest : public ChromeRenderViewHostTestHarness {
 
     MockInfoBarService::CreateForWebContents(web_contents());
 
-    PermissionRequestManager::CreateForWebContents(web_contents());
+    permissions::PermissionRequestManager::CreateForWebContents(web_contents());
     permission_request_manager_ =
-        PermissionRequestManager::FromWebContents(web_contents());
+        permissions::PermissionRequestManager::FromWebContents(web_contents());
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  PermissionRequestManager* permission_request_manager_;
+  permissions::PermissionRequestManager* permission_request_manager_;
 };
 
 // Tests the situation in crbug.com/1016233
 TEST_F(PermissionPromptAndroidTest, TabCloseMiniInfoBarClosesCleanly) {
   // Create a notification request. This causes an infobar to appear.
-  MockPermissionRequest request("test", ContentSettingsType::NOTIFICATIONS);
+  permissions::MockPermissionRequest request(
+      "test", ContentSettingsType::NOTIFICATIONS);
   permission_request_manager()->AddRequest(&request);
 
   base::RunLoop().RunUntilIdle();
@@ -63,7 +64,8 @@ TEST_F(PermissionPromptAndroidTest, TabCloseMiniInfoBarClosesCleanly) {
 // Tests the situation in crbug.com/1016233
 TEST_F(PermissionPromptAndroidTest, RemoveAllInfoBarsWithOtherObservers) {
   // Create a notification request. This causes an infobar to appear.
-  MockPermissionRequest request("test", ContentSettingsType::NOTIFICATIONS);
+  permissions::MockPermissionRequest request(
+      "test", ContentSettingsType::NOTIFICATIONS);
   permission_request_manager()->AddRequest(&request);
 
   base::RunLoop().RunUntilIdle();

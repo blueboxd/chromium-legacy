@@ -29,14 +29,11 @@ void WidgetDelegate::SetCanActivate(bool can_activate) {
   can_activate_ = can_activate;
 }
 
-void WidgetDelegate::OnWidgetMove() {
-}
+void WidgetDelegate::OnWidgetMove() {}
 
-void WidgetDelegate::OnDisplayChanged() {
-}
+void WidgetDelegate::OnDisplayChanged() {}
 
-void WidgetDelegate::OnWorkAreaChanged() {
-}
+void WidgetDelegate::OnWorkAreaChanged() {}
 
 bool WidgetDelegate::OnCloseRequested(Widget::ClosedReason close_reason) {
   return true;
@@ -190,7 +187,6 @@ bool WidgetDelegate::ShouldDescendIntoChildForEventHandling(
 
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetDelegateView:
-
 
 WidgetDelegateView::WidgetDelegateView() {
   // A WidgetDelegate should be deleted on DeleteDelegate.

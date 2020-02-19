@@ -858,6 +858,66 @@ public class CookieManagerTest {
                 webSocketCookieHelper(false /* shouldUseThirdPartyUrl */, cookieKey, cookieValue));
     }
 
+    // Tests websockets inside third party frame --- the socket is first party to the frame,
+    // but the frame itself is third-party to the main document.
+    private String webSocketThirdPartyFrameCookieHelper(String cookieKey, String cookieValue)
+            throws Throwable {
+        TestWebServer webServer = TestWebServer.startSsl();
+        try {
+            // |cookieUrl| sets a cookie on response.
+            String cookieUrl = toThirdPartyUrl(
+                    makeCookieWebSocketUrl(webServer, "/cookie_1", cookieKey, cookieValue));
+
+            // This html file includes a script establishing a WebSocket connection to |cookieUrl|,
+            // with wrappers to talk to parent frame.
+            String childFrameUrl = toThirdPartyUrl(makeFrameableWebSocketScriptUrl(
+                    webServer, "/frame_with_websocket.html", cookieUrl));
+
+            // Wrap that in an iframe on the default domain to make it be third-party, and load it.
+            String url = makeIframeUrl(webServer, "/parent.html", childFrameUrl);
+            mActivityTestRule.loadUrlSync(
+                    mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
+
+            // Make sure websocket has completed.
+            JavaScriptUtils.runJavascriptWithAsyncResult(
+                    mAwContents.getWebContents(), "callIframe()");
+
+            return mCookieManager.getCookie(cookieUrl);
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testThirdPartyIframeCookieForWebSocketHandshake_thirdParty_disabled()
+            throws Throwable {
+        allowFirstPartyCookies();
+        blockThirdPartyCookies(mAwContents);
+
+        String cookieKey = "test3PFrame";
+        String cookieValue = "value3PFrame";
+
+        Assert.assertNull("Should not set cookie in 3P frame when 3P cookies are disabled",
+                webSocketThirdPartyFrameCookieHelper(cookieKey, cookieValue));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "Privacy"})
+    public void testThirdPartyIframeCookieForWebSocketHandshake_thirdParty_enabled()
+            throws Throwable {
+        allowFirstPartyCookies();
+        allowThirdPartyCookies(mAwContents);
+
+        String cookieKey = "test3PFrame";
+        String cookieValue = "value3PFrame";
+
+        Assert.assertEquals(cookieKey + "=" + cookieValue,
+                webSocketThirdPartyFrameCookieHelper(cookieKey, cookieValue));
+    }
+
     /**
      * Creates a response on the TestWebServer which attempts to set a cookie when fetched.
      * @param  webServer  the webServer on which to create the response
@@ -917,6 +977,26 @@ public class CookieManagerTest {
                 + "let ws = new WebSocket('" + url.replaceAll("^http", "ws") + "');\n"
                 + "let hasOpened = false;\n"
                 + "ws.onopen = () => hasOpened = true;\n"
+                + "</script></body></html>";
+        return webServer.setResponse(path, responseStr, null);
+    }
+
+    /**
+     * Creates a response on the TestWebServer which contains a script establishing a WebSocket
+     * connection in response to a postMessage, and replies when established.
+     * @param  webServer  the webServer on which to create the response
+     * @param  path the path component of the url (e.g "/my_thing_with_script.html")
+     * @param  url the url to pass to websocket.
+     * @return  the url which gets the response
+     */
+    private String makeFrameableWebSocketScriptUrl(
+            TestWebServer webServer, String path, String url) {
+        String responseStr = "<html><head><title>Content!</title></head>"
+                + "<body><script>\n"
+                + "window.onmessage = function(ev) {"
+                + "  let ws = new WebSocket('" + url.replaceAll("^http", "ws") + "');\n"
+                + "  ws.onopen = () => ev.source.postMessage(true, '*');\n"
+                + "}\n"
                 + "</script></body></html>";
         return webServer.setResponse(path, responseStr, null);
     }

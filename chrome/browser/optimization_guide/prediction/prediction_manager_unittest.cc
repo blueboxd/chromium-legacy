@@ -468,6 +468,10 @@ class PredictionManagerTest
     return GetParam() == proto::CLIENT_MODEL_FEATURE_SAME_ORIGIN_NAVIGATION;
   }
 
+  bool IsUnknownFeature() {
+    return GetParam() == proto::CLIENT_MODEL_FEATURE_UNKNOWN;
+  }
+
   void TearDown() override {
     optimization_guide::ProtoDatabaseProviderTestBase::TearDown();
   }
@@ -1499,6 +1503,16 @@ TEST_P(PredictionManagerTest, ClientFeature) {
 
   EXPECT_TRUE(test_prediction_model);
   EXPECT_TRUE(test_prediction_model->WasModelEvaluated());
+  OptimizationGuideNavigationData* navigation_data =
+      OptimizationGuideNavigationData::GetFromNavigationHandle(
+          navigation_handle.get());
+  EXPECT_TRUE(navigation_data);
+  if (IsUnknownFeature()) {
+    EXPECT_FALSE(
+        navigation_data->GetValueForModelFeatureForTesting(GetParam()));
+  } else {
+    EXPECT_TRUE(navigation_data->GetValueForModelFeatureForTesting(GetParam()));
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(ClientFeature,

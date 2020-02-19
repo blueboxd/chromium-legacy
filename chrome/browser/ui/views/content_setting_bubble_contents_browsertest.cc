@@ -6,13 +6,13 @@
 
 #include "base/run_loop.h"
 #include "build/build_config.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/permissions/permission_request_manager.h"
 #include "content/public/test/browser_test_utils.h"
 
 class ContentSettingBubbleContentsBrowserTest : public InProcessBrowserTest {
@@ -47,8 +47,9 @@ IN_PROC_BROWSER_TEST_F(ContentSettingBubbleContentsBrowserTest,
   // Navigate to the test page, and have it request and be denied geolocation
   // permissions.
   ui_test_utils::NavigateToURL(browser(), GetTestPageUrl("geolocation.html"));
-  PermissionRequestManager::FromWebContents(GetWebContents())
-      ->set_auto_response_for_test(PermissionRequestManager::DISMISS);
+  permissions::PermissionRequestManager::FromWebContents(GetWebContents())
+      ->set_auto_response_for_test(
+          permissions::PermissionRequestManager::DISMISS);
   ExecuteScript("geolocate();");
 
   // Press the geolocation icon and make sure its content setting bubble shows.

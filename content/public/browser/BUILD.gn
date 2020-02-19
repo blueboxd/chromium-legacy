@@ -181,7 +181,6 @@ jumbo_source_set("browser_sources") {
     "hid_chooser.h",
     "hid_delegate.h",
     "histogram_fetcher.h",
-    "indexed_db_context.h",
     "installability_error.cc",
     "installability_error.h",
     "interstitial_page.h",

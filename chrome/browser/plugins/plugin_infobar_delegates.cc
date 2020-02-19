@@ -11,7 +11,6 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
@@ -26,6 +25,7 @@
 #include "components/google/core/common/google_util.h"
 #include "components/infobars/core/infobar.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -103,7 +103,7 @@ OutdatedPluginInfoBarDelegate::GetIdentifier() const {
 }
 
 const gfx::VectorIcon& OutdatedPluginInfoBarDelegate::GetVectorIcon() const {
-  return kExtensionIcon;
+  return vector_icons::kExtensionIcon;
 }
 
 base::string16 OutdatedPluginInfoBarDelegate::GetLinkText() const {

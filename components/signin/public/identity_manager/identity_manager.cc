@@ -125,13 +125,9 @@ CoreAccountId IdentityManager::GetPrimaryAccountId(ConsentLevel consent) const {
 
 bool IdentityManager::HasPrimaryAccount(ConsentLevel consent) const {
   if (consent == ConsentLevel::kNotRequired) {
-    return HasUnconsentedPrimaryAccount();
+    return primary_account_manager_->HasUnconsentedPrimaryAccount();
   }
   return primary_account_manager_->IsAuthenticated();
-}
-
-bool IdentityManager::HasUnconsentedPrimaryAccount() const {
-  return primary_account_manager_->HasUnconsentedPrimaryAccount();
 }
 
 std::unique_ptr<AccessTokenFetcher>
@@ -593,7 +589,8 @@ void IdentityManager::OnRefreshTokenAvailable(const CoreAccountId& account_id) {
 }
 
 void IdentityManager::OnRefreshTokenRevoked(const CoreAccountId& account_id) {
-  if (!AreRefreshTokensLoaded() && HasUnconsentedPrimaryAccount() &&
+  if (!AreRefreshTokensLoaded() &&
+      HasPrimaryAccount(ConsentLevel::kNotRequired) &&
       account_id == GetPrimaryAccountId(ConsentLevel::kNotRequired)) {
     unconsented_primary_account_revoked_during_load_ = true;
   }

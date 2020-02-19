@@ -228,7 +228,10 @@ group("closure_compile_module") {
     "settings_page:closure_compile_module",
   ]
   if (!is_chromeos) {
-    deps += [ "default_browser_page:closure_compile_module" ]
+    deps += [
+      "default_browser_page:closure_compile_module",
+      "system_page:closure_compile_module",
+    ]
   }
 }
 
@@ -242,7 +245,8 @@ js_type_check("closure_compile_local_module") {
     ":global_scroll_target_behavior.m",
 
     #":icons.m",
-    #":lifetime_browser_proxy.m",
+    ":lifetime_browser_proxy.m",
+
     #":metrics_browser_proxy.m",
     #":open_window_proxy.m",
     ":page_visibility.m",
@@ -285,9 +289,7 @@ js_library("icons.m") {
 
 js_library("lifetime_browser_proxy.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/lifetime_browser_proxy.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
   extra_deps = [ ":modulize" ]
 }
 

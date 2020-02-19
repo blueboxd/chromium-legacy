@@ -138,15 +138,9 @@ class VIEWS_EXPORT FocusManager : public ViewObserver {
   };
 
   // TODO: use Direction in place of bool reverse throughout.
-  enum Direction {
-    kForward,
-    kBackward
-  };
+  enum Direction { kForward, kBackward };
 
-  enum FocusCycleWrappingBehavior {
-    kWrap,
-    kNoWrap
-  };
+  enum FocusCycleWrappingBehavior { kWrap, kNoWrap };
 
   FocusManager(Widget* widget, std::unique_ptr<FocusManagerDelegate> delegate);
   ~FocusManager() override;

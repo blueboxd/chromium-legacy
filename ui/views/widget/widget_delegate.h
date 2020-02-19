@@ -17,7 +17,7 @@
 namespace gfx {
 class ImageSkia;
 class Rect;
-}
+}  // namespace gfx
 
 namespace views {
 class BubbleDialogDelegateView;

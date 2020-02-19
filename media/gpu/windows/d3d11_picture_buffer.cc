@@ -22,15 +22,16 @@
 namespace media {
 
 D3D11PictureBuffer::D3D11PictureBuffer(
+    ComD3D11Texture2D texture,
     std::unique_ptr<Texture2DWrapper> texture_wrapper,
     gfx::Size size,
     size_t level)
-    : texture_wrapper_(std::move(texture_wrapper)),
+    : texture_(std::move(texture)),
+      texture_wrapper_(std::move(texture_wrapper)),
       size_(size),
       level_(level) {}
 
 D3D11PictureBuffer::~D3D11PictureBuffer() {
-  // TODO(liberato): post destruction of |gpu_resources_| to the gpu thread.
 }
 
 bool D3D11PictureBuffer::Init(GetCommandBufferHelperCB get_helper_cb,
@@ -42,7 +43,7 @@ bool D3D11PictureBuffer::Init(GetCommandBufferHelperCB get_helper_cb,
   view_desc.ViewDimension = D3D11_VDOV_DIMENSION_TEXTURE2D;
   view_desc.Texture2D.ArraySlice = (UINT)level_;
 
-  if (!texture_wrapper_->Init(std::move(get_helper_cb), level_, size_)) {
+  if (!texture_wrapper_->Init(std::move(get_helper_cb))) {
     MEDIA_LOG(ERROR, media_log) << "Failed to Initialize the wrapper";
     return false;
   }
@@ -59,11 +60,11 @@ bool D3D11PictureBuffer::Init(GetCommandBufferHelperCB get_helper_cb,
 }
 
 bool D3D11PictureBuffer::ProcessTexture(MailboxHolderArray* mailbox_dest) {
-  return texture_wrapper_->ProcessTexture(this, mailbox_dest);
+  return texture_wrapper_->ProcessTexture(Texture(), level_, mailbox_dest);
 }
 
 ComD3D11Texture2D D3D11PictureBuffer::Texture() const {
-  return texture_wrapper_->Texture();
+  return texture_;
 }
 
 }  // namespace media

@@ -36,8 +36,7 @@ void ExternalFocusTracker::OnWillChangeFocus(View* focused_before,
 }
 
 void ExternalFocusTracker::OnDidChangeFocus(View* focused_before,
-                                            View* focused_now) {
-}
+                                            View* focused_now) {}
 
 void ExternalFocusTracker::FocusLastFocusedExternalView() {
   View* last_focused_view = last_focused_view_tracker_->view();

@@ -14,10 +14,10 @@
 #include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/download/download_permission_request.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
+#include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -233,8 +233,8 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
   if (is_showing_prompt())
     return;
 
-  PermissionRequestManager* permission_request_manager =
-      PermissionRequestManager::FromWebContents(web_contents_);
+  permissions::PermissionRequestManager* permission_request_manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents_);
   if (permission_request_manager) {
     permission_request_manager->AddRequest(
         new DownloadPermissionRequest(factory_.GetWeakPtr(), request_origin));
@@ -308,10 +308,10 @@ bool DownloadRequestLimiter::TabDownloadState::is_showing_prompt() const {
 void DownloadRequestLimiter::TabDownloadState::OnUserInteraction() {
   // See PromptUserForDownload(): if there's no PermissionRequestManager, then
   // DOWNLOADS_NOT_ALLOWED is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.
-  bool need_prompt =
-      (PermissionRequestManager::FromWebContents(web_contents()) == nullptr &&
-       status_ == DOWNLOADS_NOT_ALLOWED) ||
-      status_ == PROMPT_BEFORE_DOWNLOAD;
+  bool need_prompt = (permissions::PermissionRequestManager::FromWebContents(
+                          web_contents()) == nullptr &&
+                      status_ == DOWNLOADS_NOT_ALLOWED) ||
+                     status_ == PROMPT_BEFORE_DOWNLOAD;
 
   // If content setting blocks automatic downloads, don't reset the
   // PROMPT_BEFORE_DOWNLOAD status for the current page because doing

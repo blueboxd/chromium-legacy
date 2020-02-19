@@ -833,6 +833,7 @@ jumbo_static_library("extensions") {
     "//components/payments/core",
     "//components/pdf/browser",
     "//components/performance_manager",
+    "//components/permissions",
     "//components/policy:generated",
     "//components/policy/core/browser",
     "//components/pref_registry",

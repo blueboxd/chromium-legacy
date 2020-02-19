@@ -58,7 +58,7 @@ void PermissionPromptAndroid::UpdateAnchorPosition() {
   NOTREACHED() << "UpdateAnchorPosition is not implemented";
 }
 
-PermissionPrompt::TabSwitchingBehavior
+permissions::PermissionPrompt::TabSwitchingBehavior
 PermissionPromptAndroid::GetTabSwitchingBehavior() {
   return TabSwitchingBehavior::kKeepPromptAlive;
 }
@@ -144,8 +144,8 @@ void PermissionPromptAndroid::OnManagerShuttingDown(
 }
 
 // static
-std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(
-    content::WebContents* web_contents,
-    Delegate* delegate) {
+std::unique_ptr<permissions::PermissionPrompt>
+permissions::PermissionPrompt::Create(content::WebContents* web_contents,
+                                      Delegate* delegate) {
   return std::make_unique<PermissionPromptAndroid>(web_contents, delegate);
 }

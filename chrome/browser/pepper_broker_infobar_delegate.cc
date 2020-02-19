@@ -6,7 +6,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,6 +14,7 @@
 #include "components/infobars/core/infobar.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/elide_url.h"
+#include "components/vector_icons/vector_icons.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/referrer.h"
@@ -57,7 +57,7 @@ PepperBrokerInfoBarDelegate::GetIdentifier() const {
 }
 
 const gfx::VectorIcon& PepperBrokerInfoBarDelegate::GetVectorIcon() const {
-  return kExtensionIcon;
+  return vector_icons::kExtensionIcon;
 }
 
 base::string16 PepperBrokerInfoBarDelegate::GetLinkText() const {

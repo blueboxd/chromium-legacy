@@ -157,6 +157,7 @@ android_resources("chrome_app_java_resources") {
     "//components/find_in_page/android:java_resources",
     "//components/javascript_dialogs/android:java_resources",
     "//components/omnibox/browser:java_resources",
+    "//components/permissions/android:java_resources",
     "//components/policy:app_restrictions_resources",
     "//components/strings:components_locale_settings_grd",
     "//components/strings:components_strings_grd",
@@ -627,7 +628,10 @@ proto_java_library("usage_stats_proto_java") {
 java_cpp_template("resource_id_javagen") {
   sources = [ "java/ResourceId.template" ]
   package_path = "org/chromium/chrome/browser"
-  inputs = [ "../browser/android/resource_id.h" ]
+  inputs = [
+    "../browser/android/resource_id.h",
+    "//components/permissions/android/resource_id.h",
+  ]
 }
 
 junit_binary("chrome_junit_tests") {

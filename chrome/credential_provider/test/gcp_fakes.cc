@@ -160,8 +160,10 @@ HRESULT FakeOSUserManager::AddUser(const wchar_t* username,
   if (error)
     *error = 0;
 
-  if (should_fail_user_creation_)
-    return fail_user_creation_hr_;
+  if (failure_reasons_.find(FAILEDOPERATIONS::ADD_USER) !=
+      failure_reasons_.end()) {
+    return failure_reasons_[FAILEDOPERATIONS::ADD_USER];
+  }
 
   // Username or password cannot be empty.
   if (username == nullptr || !username[0] || password == nullptr ||
@@ -205,8 +207,9 @@ HRESULT FakeOSUserManager::ChangeUserPassword(const wchar_t* domain,
   DCHECK(old_password);
   DCHECK(new_password);
 
-  if (fail_change_password_) {
-    return failed_change_password_hr_;
+  if (failure_reasons_.find(FAILEDOPERATIONS::CHANGE_PASSWORD) !=
+      failure_reasons_.end()) {
+    return failure_reasons_[FAILEDOPERATIONS::CHANGE_PASSWORD];
   }
 
   if (username_to_info_.count(username) > 0) {
@@ -241,6 +244,11 @@ HRESULT FakeOSUserManager::SetUserFullname(const wchar_t* domain,
   DCHECK(domain);
   DCHECK(username);
   DCHECK(full_name);
+
+  if (failure_reasons_.find(FAILEDOPERATIONS::SET_USER_FULLNAME) !=
+      failure_reasons_.end()) {
+    return failure_reasons_[FAILEDOPERATIONS::SET_USER_FULLNAME];
+  }
 
   if (username_to_info_.count(username) > 0) {
     username_to_info_[username].fullname = full_name;
@@ -352,6 +360,12 @@ HRESULT FakeOSUserManager::GetUserFullname(const wchar_t* domain,
   DCHECK(domain);
   DCHECK(username);
   DCHECK(fullname);
+
+  if (failure_reasons_.find(FAILEDOPERATIONS::GET_USER_FULLNAME) !=
+      failure_reasons_.end()) {
+    return failure_reasons_[FAILEDOPERATIONS::GET_USER_FULLNAME];
+  }
+
   if (username_to_info_.count(username) > 0) {
     const UserInfo& info = username_to_info_[username];
     if (info.domain == domain) {

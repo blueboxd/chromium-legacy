@@ -11,7 +11,12 @@ namespace media {
 // UMA yet!
 enum class ErrorCode : uint32_t {
   kOk = 0,
-  kCodeOnlyForTesting = 1,
+
+  kCannotMakeContextCurrent = 1000,
+  kCouldNotPostTexture = 1001,
+  kCouldNotPostAcquireStream = 1002,
+
+  kCodeOnlyForTesting = 10000,
   kMaxValue = kCodeOnlyForTesting,
 };
 

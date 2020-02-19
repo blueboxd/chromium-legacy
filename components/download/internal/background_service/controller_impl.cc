@@ -965,7 +965,6 @@ void ControllerImpl::UpdateDriverState(Entry* entry) {
         entry->resumption_count++;
         model_->Update(*entry);
 
-        stats::LogEntryResumptionCount(entry->resumption_count);
         stats::LogEntryEvent(stats::DownloadEvent::RESUME);
 
         if (entry->resumption_count > config_->max_resumption_count) {

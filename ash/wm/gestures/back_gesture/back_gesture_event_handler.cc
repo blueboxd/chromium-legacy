@@ -10,8 +10,10 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/contextual_tooltip.h"
 #include "ash/shell.h"
 #include "ash/wm/gestures/back_gesture/back_gesture_affordance.h"
+#include "ash/wm/gestures/back_gesture/back_gesture_contextual_nudge_controller_impl.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -136,6 +138,11 @@ void ActivateUnderneathWindowInSplitViewMode(
 
 BackGestureEventHandler::BackGestureEventHandler()
     : gesture_provider_(this, this) {
+  if (features::AreContextualNudgesEnabled()) {
+    nudge_controller_ =
+        std::make_unique<BackGestureContextualNudgeControllerImpl>();
+  }
+
   display::Screen::GetScreen()->AddObserver(this);
 }
 
@@ -283,6 +290,11 @@ bool BackGestureEventHandler::MaybeHandleBackGesture(ui::GestureEvent* event,
               back_gesture_start_scenario_type_, BackGestureEndType::kBack));
         }
         back_gesture_affordance_->Complete();
+        if (features::AreContextualNudgesEnabled()) {
+          contextual_tooltip::HandleGesturePerformed(
+              Shell::Get()->session_controller()->GetActivePrefService(),
+              contextual_tooltip::TooltipType::kBackGesture);
+        }
       } else {
         back_gesture_affordance_->Abort();
         RecordEndScenarioType(GetEndScenarioType(

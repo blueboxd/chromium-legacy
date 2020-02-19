@@ -42,7 +42,7 @@ class ScenicGpuHost : public mojom::ScenicGpuHost,
   // mojom::ScenicGpuHost:
   void AttachSurfaceToWindow(
       int32_t window_id,
-      mojo::ScopedHandle surface_view_holder_token_mojo) override;
+      mojo::PlatformHandle surface_view_holder_token_mojo) override;
 
   // GpuPlatformSupportHost:
   void OnGpuProcessLaunched(

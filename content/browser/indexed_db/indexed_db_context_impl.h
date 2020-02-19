@@ -17,13 +17,13 @@
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/strings/string16.h"
 #include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/mojom/indexed_db_control_test.mojom.h"
 #include "components/services/storage/public/mojom/native_file_system_context.mojom.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
-#include "content/public/browser/indexed_db_context.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -49,7 +49,7 @@ class IndexedDBConnection;
 class IndexedDBFactoryImpl;
 
 class CONTENT_EXPORT IndexedDBContextImpl
-    : public IndexedDBContext,
+    : public base::RefCountedDeleteOnSequence<IndexedDBContextImpl>,
       public storage::mojom::IndexedDBControl,
       public storage::mojom::IndexedDBControlTest {
  public:
@@ -110,10 +110,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
 
   int64_t GetOriginDiskUsage(const url::Origin& origin);
 
-  // IndexedDBContext implementation:
-  base::SequencedTaskRunner* IDBTaskRunner() override;
-  void CopyOriginData(const url::Origin& origin,
-                      IndexedDBContext* dest_context) override;
+  base::SequencedTaskRunner* IDBTaskRunner();
 
   // Methods called by IndexedDBFactoryImpl or IndexedDBDispatcherHost for
   // quota support.
@@ -173,6 +170,9 @@ class CONTENT_EXPORT IndexedDBContextImpl
   ~IndexedDBContextImpl() override;
 
  private:
+  friend class base::RefCountedDeleteOnSequence<IndexedDBContextImpl>;
+  friend class base::DeleteHelper<IndexedDBContextImpl>;
+
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, ClearLocalState);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, ClearSessionOnlyDatabases);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTest, SetForceKeepSessionState);
@@ -211,7 +211,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
   bool force_keep_session_state_;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
   scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
-  scoped_refptr<base::SequencedTaskRunner> idb_task_runner_;
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
   std::unique_ptr<std::set<url::Origin>> origin_set_;
   std::map<url::Origin, int64_t> origin_size_map_;

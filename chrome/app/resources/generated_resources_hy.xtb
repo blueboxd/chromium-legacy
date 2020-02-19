@@ -3363,6 +3363,7 @@
 <translation id="5689516760719285838">Տեղորոշում</translation>
 <translation id="56907980372820799">Հղման տվյալներ</translation>
 <translation id="5691511426247308406">Ընտանիք</translation>
+<translation id="5691772641933328258">Չհաջողվեց ճանաչել մատնահետքը</translation>
 <translation id="5692183275898619210">Տպումն ավարտվեց</translation>
 <translation id="5696143504434933566">Հաղորդել չարաշահման մասին («<ph name="EXTENSION_NAME" />»)</translation>
 <translation id="5696679855467848181">Ընթացիկ օգտագործվող PPD ֆայլը՝ <ph name="PPD_NAME" /></translation>
@@ -5666,7 +5667,6 @@
 <translation id="8864458770072227512"><ph name="EMAIL" /> հասցեն հեռացվեց այս սարքից</translation>
 <translation id="8867228703146808825">Պատճենել կառուցման տվյալները սեղմատախտակին</translation>
 <translation id="8868626022555786497">Օգտագործվող</translation>
-<translation id="8870318296973696995">Գլխավոր էջ</translation>
 <translation id="8870413625673593573">Վերջին փակվածները</translation>
 <translation id="8871551568777368300">Ամրացված է ադմինիստրատորի կողմից</translation>
 <translation id="8871696467337989339">Դուք օգտագործում եք հրամանատողի չաջակցվող դրոշ՝ <ph name="BAD_FLAG" />: Կայունությունն ու անվտանգությունը կխախտվեն:</translation>

@@ -6566,6 +6566,49 @@ be describing additional metrics about the same event.
       evaluated for the page load.
     </summary>
   </metric>
+  <metric name="PredictionModelFeatureEffectiveConnectionType">
+    <summary>
+      The |net::EffectiveConnectionType| at the time a prediction was requested.
+      Recorded once per page load.
+    </summary>
+  </metric>
+  <metric name="PredictionModelFeatureIsSameOriginNavigation">
+    <summary>
+      Whether the current navigatation is the same origin as the previous one at
+      the time a prediction was requested. Recorded once per page load.
+    </summary>
+  </metric>
+  <metric name="PredictionModelFeatureNavigationToFCPSessionMean">
+    <summary>
+      The average navigation to first contentful paint for the current session
+      at the time a prediction was requested. Recorded once per page load.
+    </summary>
+  </metric>
+  <metric name="PredictionModelFeatureNavigationToFCPSessionStdDev">
+    <summary>
+      The standard deviation of navigation to first contentful paint for page
+      loads in the current session at the time a prediction was requested.
+      Recorded once per page load.
+    </summary>
+  </metric>
+  <metric name="PredictionModelFeaturePageTransition">
+    <summary>
+      The |ui::PageTransition| of the current navigation at the time a
+      prediction was requested. Recorded once per page load.
+    </summary>
+  </metric>
+  <metric name="PredictionModelFeaturePreviousPageLoadNavigationToFCP">
+    <summary>
+      The navigation to to first contentful paint for the previous page load at
+      the time a prediction was requested. Recorded once per page load.
+    </summary>
+  </metric>
+  <metric name="PredictionModelFeatureSiteEngagementScore">
+    <summary>
+      The site engagement score of the host of the current navigation at the
+      time a prediction was requested. Recorded once per page load.
+    </summary>
+  </metric>
 </event>
 
 <event name="PageDomainInfo">

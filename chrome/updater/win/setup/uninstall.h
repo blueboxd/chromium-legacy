@@ -7,7 +7,7 @@
 
 namespace updater {
 
-int Uninstall();
+int Uninstall(bool is_machine);
 
 }  // namespace updater
 

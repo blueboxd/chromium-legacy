@@ -11,9 +11,7 @@
 namespace views {
 
 RoundRectPainter::RoundRectPainter(SkColor border_color, int corner_radius)
-    : border_color_(border_color),
-      corner_radius_(corner_radius) {
-}
+    : border_color_(border_color), corner_radius_(corner_radius) {}
 
 RoundRectPainter::~RoundRectPainter() = default;
 

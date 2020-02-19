@@ -17,13 +17,13 @@
 namespace gfx {
 class ImageSkia;
 class Rect;
-}
+}  // namespace gfx
 
 namespace ui {
 class InputMethod;
 class GestureRecognizer;
 class OSExchangeData;
-}
+}  // namespace ui
 
 namespace views {
 class TooltipManager;
@@ -149,9 +149,8 @@ class VIEWS_EXPORT NativeWidgetPrivate : public NativeWidget {
 
   // Retrieves the window's current restored bounds and "show" state, for
   // persisting.
-  virtual void GetWindowPlacement(
-      gfx::Rect* bounds,
-      ui::WindowShowState* show_state) const = 0;
+  virtual void GetWindowPlacement(gfx::Rect* bounds,
+                                  ui::WindowShowState* show_state) const = 0;
 
   // Sets the NativeWindow title. Returns true if the title changed.
   virtual bool SetWindowTitle(const base::string16& title) = 0;

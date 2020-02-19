@@ -42,8 +42,7 @@ class MenuScrollButton : public View {
       : host_(host),
         is_up_(is_up),
         // Make our height the same as that of other MenuItemViews.
-        pref_height_(MenuItemView::pref_menu_height()) {
-  }
+        pref_height_(MenuItemView::pref_menu_height()) {}
 
   gfx::Size CalculatePreferredSize() const override {
     return gfx::Size(MenuConfig::instance().scroll_arrow_height * 2 - 1,
@@ -138,9 +137,7 @@ class MenuScrollButton : public View {
 
 class MenuScrollViewContainer::MenuScrollView : public View {
  public:
-  explicit MenuScrollView(View* child) {
-    AddChildView(child);
-  }
+  explicit MenuScrollView(View* child) { AddChildView(child); }
 
   void ScrollRectToVisible(const gfx::Rect& rect) override {
     // NOTE: this assumes we only want to scroll in the y direction.
@@ -159,9 +156,9 @@ class MenuScrollViewContainer::MenuScrollView : public View {
     // Convert rect.y() to view's coordinates and make sure we don't show past
     // the bottom of the view.
     View* child = GetContents();
-    child->SetY(-std::max(0, std::min(
-        child->GetPreferredSize().height() - this->height(),
-        dy - child->y())));
+    child->SetY(-std::max(
+        0, std::min(child->GetPreferredSize().height() - this->height(),
+                    dy - child->y())));
   }
 
   // Returns the contents, which is the SubmenuView.
@@ -240,7 +237,8 @@ void MenuScrollViewContainer::OnPaintBackground(gfx::Canvas* canvas) {
   extra.menu_background.corner_radius = menu_config.CornerRadiusForMenu(
       content_view_->GetMenuItem()->GetMenuController());
   GetNativeTheme()->Paint(canvas->sk_canvas(),
-      NativeTheme::kMenuPopupBackground, NativeTheme::kNormal, bounds, extra);
+                          NativeTheme::kMenuPopupBackground,
+                          NativeTheme::kNormal, bounds, extra);
 }
 
 void MenuScrollViewContainer::OnBoundsChanged(

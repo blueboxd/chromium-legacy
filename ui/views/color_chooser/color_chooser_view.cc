@@ -45,10 +45,9 @@ constexpr int kBorderWidth = 1;
 constexpr int kTextfieldLengthInChars = 14;
 
 base::string16 GetColorText(SkColor color) {
-  return base::ASCIIToUTF16(base::StringPrintf("#%02x%02x%02x",
-                                               SkColorGetR(color),
-                                               SkColorGetG(color),
-                                               SkColorGetB(color)));
+  return base::ASCIIToUTF16(
+      base::StringPrintf("#%02x%02x%02x", SkColorGetR(color),
+                         SkColorGetG(color), SkColorGetB(color)));
 }
 
 bool GetColorFromText(const base::string16& text, SkColor* result) {
@@ -100,10 +99,12 @@ class LocatedEventHandlerView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(LocatedEventHandlerView);
 };
 
-void DrawGradientRect(const gfx::Rect& rect, SkColor start_color,
-                      SkColor end_color, bool is_horizontal,
+void DrawGradientRect(const gfx::Rect& rect,
+                      SkColor start_color,
+                      SkColor end_color,
+                      bool is_horizontal,
                       gfx::Canvas* canvas) {
-  SkColor colors[2] = { start_color, end_color };
+  SkColor colors[2] = {start_color, end_color};
   SkPoint points[2];
   points[0].iset(0, 0);
   if (is_horizontal)
@@ -146,9 +147,7 @@ class ColorChooserView::HueView : public LocatedEventHandlerView {
 };
 
 ColorChooserView::HueView::HueView(ColorChooserView* chooser_view)
-    : chooser_view_(chooser_view),
-      level_(0) {
-}
+    : chooser_view_(chooser_view), level_(0) {}
 
 void ColorChooserView::HueView::OnHueChanged(SkScalar hue) {
   SkScalar height = SkIntToScalar(kSaturationValueSize - 1);
@@ -163,8 +162,8 @@ void ColorChooserView::HueView::OnHueChanged(SkScalar hue) {
 
 void ColorChooserView::HueView::ProcessEventAtLocation(
     const gfx::Point& point) {
-  level_ = std::max(kBorderWidth,
-                    std::min(height() - 1 - kBorderWidth, point.y()));
+  level_ =
+      std::max(kBorderWidth, std::min(height() - 1 - kBorderWidth, point.y()));
   int base_height = kSaturationValueSize - 1;
   chooser_view_->OnHueChosen(360.f * (base_height - (level_ - kBorderWidth)) /
                              base_height);
@@ -183,8 +182,8 @@ void ColorChooserView::HueView::OnPaint(gfx::Canvas* canvas) {
   hsv[1] = SK_Scalar1;
   hsv[2] = SK_Scalar1;
 
-  canvas->FillRect(gfx::Rect(kHueIndicatorSize, 0,
-                             kHueBarWidth + kBorderWidth, height() - 1),
+  canvas->FillRect(gfx::Rect(kHueIndicatorSize, 0, kHueBarWidth + kBorderWidth,
+                             height() - 1),
                    SK_ColorGRAY);
   int base_left = kHueIndicatorSize + kBorderWidth;
   for (int y = 0; y < kSaturationValueSize; ++y) {
@@ -197,26 +196,22 @@ void ColorChooserView::HueView::OnPaint(gfx::Canvas* canvas) {
   // Put the triangular indicators besides.
   SkPath left_indicator_path;
   SkPath right_indicator_path;
-  left_indicator_path.moveTo(
-      SK_ScalarHalf, SkIntToScalar(level_ - kHueIndicatorSize));
-  left_indicator_path.lineTo(
-      kHueIndicatorSize, SkIntToScalar(level_));
-  left_indicator_path.lineTo(
-      SK_ScalarHalf, SkIntToScalar(level_ + kHueIndicatorSize));
-  left_indicator_path.lineTo(
-      SK_ScalarHalf, SkIntToScalar(level_ - kHueIndicatorSize));
-  right_indicator_path.moveTo(
-      SkIntToScalar(width()) - SK_ScalarHalf,
-      SkIntToScalar(level_ - kHueIndicatorSize));
+  left_indicator_path.moveTo(SK_ScalarHalf,
+                             SkIntToScalar(level_ - kHueIndicatorSize));
+  left_indicator_path.lineTo(kHueIndicatorSize, SkIntToScalar(level_));
+  left_indicator_path.lineTo(SK_ScalarHalf,
+                             SkIntToScalar(level_ + kHueIndicatorSize));
+  left_indicator_path.lineTo(SK_ScalarHalf,
+                             SkIntToScalar(level_ - kHueIndicatorSize));
+  right_indicator_path.moveTo(SkIntToScalar(width()) - SK_ScalarHalf,
+                              SkIntToScalar(level_ - kHueIndicatorSize));
   right_indicator_path.lineTo(
       SkIntToScalar(width() - kHueIndicatorSize) - SK_ScalarHalf,
       SkIntToScalar(level_));
-  right_indicator_path.lineTo(
-      SkIntToScalar(width()) - SK_ScalarHalf,
-      SkIntToScalar(level_ + kHueIndicatorSize));
-  right_indicator_path.lineTo(
-      SkIntToScalar(width()) - SK_ScalarHalf,
-      SkIntToScalar(level_ - kHueIndicatorSize));
+  right_indicator_path.lineTo(SkIntToScalar(width()) - SK_ScalarHalf,
+                              SkIntToScalar(level_ + kHueIndicatorSize));
+  right_indicator_path.lineTo(SkIntToScalar(width()) - SK_ScalarHalf,
+                              SkIntToScalar(level_ - kHueIndicatorSize));
 
   cc::PaintFlags indicator_flags;
   indicator_flags.setColor(SK_ColorBLACK);
@@ -255,8 +250,7 @@ class ColorChooserView::SaturationValueView : public LocatedEventHandlerView {
 
 ColorChooserView::SaturationValueView::SaturationValueView(
     ColorChooserView* chooser_view)
-    : chooser_view_(chooser_view),
-      hue_(0) {
+    : chooser_view_(chooser_view), hue_(0) {
   SetBorder(CreateSolidBorder(kBorderWidth, SK_ColorGRAY));
 }
 
@@ -303,13 +297,13 @@ void ColorChooserView::SaturationValueView::OnPaint(gfx::Canvas* canvas) {
   color_bounds.Inset(GetInsets());
 
   // Paints horizontal gradient first for saturation.
-  SkScalar hsv[3] = { hue_, SK_Scalar1, SK_Scalar1 };
-  SkScalar left_hsv[3] = { hue_, 0, SK_Scalar1 };
+  SkScalar hsv[3] = {hue_, SK_Scalar1, SK_Scalar1};
+  SkScalar left_hsv[3] = {hue_, 0, SK_Scalar1};
   DrawGradientRect(color_bounds, SkHSVToColor(255, left_hsv),
                    SkHSVToColor(255, hsv), true /* is_horizontal */, canvas);
 
   // Overlays vertical gradient for value.
-  SkScalar hsv_bottom[3] = { 0, SK_Scalar1, 0 };
+  SkScalar hsv_bottom[3] = {0, SK_Scalar1, 0};
   DrawGradientRect(color_bounds, SK_ColorTRANSPARENT,
                    SkHSVToColor(255, hsv_bottom), false /* is_horizontal */,
                    canvas);
@@ -321,13 +315,12 @@ void ColorChooserView::SaturationValueView::OnPaint(gfx::Canvas* canvas) {
       (marker_position_.y() > width() * 3 / 4) ? SK_ColorWHITE : SK_ColorBLACK;
   canvas->FillRect(
       gfx::Rect(marker_position_.x(),
-                marker_position_.y() - kSaturationValueIndicatorSize,
-                1, kSaturationValueIndicatorSize * 2 + 1),
+                marker_position_.y() - kSaturationValueIndicatorSize, 1,
+                kSaturationValueIndicatorSize * 2 + 1),
       indicator_color);
   canvas->FillRect(
       gfx::Rect(marker_position_.x() - kSaturationValueIndicatorSize,
-                marker_position_.y(),
-                kSaturationValueIndicatorSize * 2 + 1, 1),
+                marker_position_.y(), kSaturationValueIndicatorSize * 2 + 1, 1),
       indicator_color);
 
   OnPaintBorder(canvas);
@@ -386,11 +379,11 @@ ColorChooserView::ColorChooserView(ColorChooserListener* listener,
   GridLayout* layout =
       container2->SetLayoutManager(std::make_unique<views::GridLayout>());
   ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(
-      GridLayout::LEADING, GridLayout::FILL, 0, GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
+                     GridLayout::USE_PREF, 0, 0);
   columns->AddPaddingColumn(0, kMarginWidth);
-  columns->AddColumn(
-      GridLayout::FILL, GridLayout::FILL, 1, GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                     GridLayout::USE_PREF, 0, 0);
   layout->StartRow(0, 0);
   auto textfield = std::make_unique<Textfield>();
   textfield->set_controller(this);

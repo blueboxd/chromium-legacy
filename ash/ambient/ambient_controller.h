@@ -13,6 +13,8 @@
 #include "base/timer/timer.h"
 #include "ui/views/widget/widget_observer.h"
 
+class PrefRegistrySimple;
+
 namespace gfx {
 class ImageSkia;
 }  // namespace gfx
@@ -27,6 +29,8 @@ class PhotoModelObserver;
 class ASH_EXPORT AmbientController : public views::WidgetObserver,
                                      public AmbientModeStateObserver {
  public:
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
   explicit AmbientController(AssistantController* assistant_controller);
   ~AmbientController() override;
 
@@ -63,7 +67,7 @@ class ASH_EXPORT AmbientController : public views::WidgetObserver,
   void RefreshImage();
   void ScheduleRefreshImage();
   void GetNextImage();
-  void OnPhotoDownloaded(const gfx::ImageSkia& image);
+  void OnPhotoDownloaded(bool success, const gfx::ImageSkia& image);
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
   AmbientContainerView* container_view_ = nullptr;   // Owned by view hierarchy.

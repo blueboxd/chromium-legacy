@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+
+// clang-format off
+// #import {SystemPageBrowserProxyImpl,LifetimeBrowserProxyImpl} from 'chrome://settings/settings.js';
+// #import {TestBrowserProxy} from 'chrome://test/test_browser_proxy.m.js';
+// #import {TestLifetimeBrowserProxy} from 'chrome://test/settings/test_lifetime_browser_proxy.m.js';
+// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// clang-format on
+
 /** @const {boolean} */
 const HARDWARE_ACCELERATION_AT_STARTUP = true;
 

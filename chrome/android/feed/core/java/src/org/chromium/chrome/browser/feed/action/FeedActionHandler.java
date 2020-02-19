@@ -8,6 +8,7 @@ import android.app.Activity;
 
 import androidx.annotation.NonNull;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.feed.FeedLoggingBridge;
 import org.chromium.chrome.browser.feed.FeedOfflineIndicator;
 import org.chromium.chrome.browser.feed.library.api.client.knowncontent.ContentMetadata;
@@ -42,6 +43,13 @@ public class FeedActionHandler implements ActionApi {
     private final Activity mActivity;
     private final Profile mProfile;
     private static final String TAG = "FeedActionHandler";
+
+    // This must match the FeedSendFeedbackType enum in enums.xml.
+    public @interface FeedFeedbackType {
+        int FEEDBACK_TAPPED_ON_CARD = 0;
+        int FEEDBACK_TAPPED_ON_PAGE = 1;
+        int NUM_ENTRIES = 2;
+    }
 
     // Map key names - These will be printed with the values in the feedback report.
     public static final String CARD_URL = "CardUrl";
@@ -129,6 +137,8 @@ public class FeedActionHandler implements ActionApi {
 
     @Override
     public void sendFeedback(ContentMetadata contentMetadata) {
+        RecordHistogram.recordEnumeratedHistogram("ContentSuggestions.Feed.SendFeedback",
+                FeedFeedbackType.FEEDBACK_TAPPED_ON_CARD, FeedFeedbackType.NUM_ENTRIES);
         String feedbackContext = "mobile_browser";
         HashMap<String, String> feedContext = new HashMap<String, String>();
 

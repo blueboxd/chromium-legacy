@@ -25,12 +25,16 @@ bool IsDesktopMediaTabList(views::View* view) {
 DesktopMediaPickerViewsTestApi::DesktopMediaPickerViewsTestApi() = default;
 DesktopMediaPickerViewsTestApi::~DesktopMediaPickerViewsTestApi() = default;
 
-void DesktopMediaPickerViewsTestApi::FocusSourceAtIndex(size_t index) {
+void DesktopMediaPickerViewsTestApi::FocusSourceAtIndex(size_t index,
+                                                        bool select) {
   views::View* source_view = GetSourceAtIndex(index);
-  if (source_view)
+  if (source_view) {
     source_view->RequestFocus();
-  else
-    GetTableView()->Select(index);
+  } else {
+    GetTableView()->RequestFocus();
+    if (select)
+      GetTableView()->Select(index);
+  }
 }
 
 void DesktopMediaPickerViewsTestApi::FocusAudioCheckbox() {
@@ -55,6 +59,19 @@ void DesktopMediaPickerViewsTestApi::PressMouseOnSourceAtIndex(
     GetTableView()->Select(index);
     if (double_click)
       picker_->dialog_->GetSelectedController()->AcceptSource();
+  }
+}
+
+void DesktopMediaPickerViewsTestApi::PressKeyOnSourceAtIndex(
+    size_t index,
+    const ui::KeyEvent& event) {
+  views::View* source_view = GetSourceAtIndex(index);
+  if (source_view) {
+    source_view->OnKeyPressed(event);
+  } else {
+    // TableView rows don't receive key events directly; just send the key event
+    // to the TableView itself.
+    GetTableView()->OnKeyPressed(event);
   }
 }
 

@@ -14,7 +14,7 @@ class SkPath;
 namespace gfx {
 class Point;
 class Size;
-}
+}  // namespace gfx
 
 namespace ui {
 class GestureEvent;
@@ -23,7 +23,7 @@ class Layer;
 class MouseEvent;
 class PaintContext;
 class ScrollEvent;
-}
+}  // namespace ui
 
 namespace views {
 class Widget;

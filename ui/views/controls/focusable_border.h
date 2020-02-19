@@ -15,7 +15,7 @@
 namespace gfx {
 class Canvas;
 class Insets;
-}
+}  // namespace gfx
 
 namespace views {
 

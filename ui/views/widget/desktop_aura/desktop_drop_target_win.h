@@ -15,12 +15,12 @@ namespace aura {
 namespace client {
 class DragDropDelegate;
 }
-}
+}  // namespace aura
 
 namespace ui {
 class DropTargetEvent;
 class OSExchangeData;
-}
+}  // namespace ui
 
 namespace views {
 

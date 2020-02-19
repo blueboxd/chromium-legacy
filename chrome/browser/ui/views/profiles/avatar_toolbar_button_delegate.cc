@@ -164,7 +164,8 @@ AvatarToolbarButton::State AvatarToolbarButtonDelegate::GetState() const {
       IdentityManagerFactory::GetForProfile(profile_);
   ProfileAttributesEntry* entry = GetProfileAttributesEntry(profile_);
   if (!entry ||  // This can happen if the user deletes the current profile.
-      (!identity_manager->HasUnconsentedPrimaryAccount() &&
+      (!identity_manager->HasPrimaryAccount(
+           signin::ConsentLevel::kNotRequired) &&
        IsGenericProfile(*entry))) {
     return AvatarToolbarButton::State::kGenericProfile;
   }

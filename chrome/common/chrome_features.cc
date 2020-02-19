@@ -85,13 +85,6 @@ const base::Feature kBackgroundModeAllowRestart{
     "BackgroundModeAllowRestart", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN) || defined(OS_LINUX)
 
-// Once the user declines a notification permission prompt in a WebContents,
-// automatically dismiss subsequent prompts in the same WebContents, from any
-// origin, until the next user-initiated navigation.
-const base::Feature kBlockRepeatedNotificationPermissionPrompts{
-    "BlockRepeatedNotificationPermissionPrompts",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables or disables redirecting users who get an interstitial when
 // accessing https://support.google.com/chrome/answer/6098869 to local
 // connection help content.

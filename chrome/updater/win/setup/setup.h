@@ -7,7 +7,7 @@
 
 namespace updater {
 
-int Setup();
+int Setup(bool is_machine);
 
 }  // namespace updater
 

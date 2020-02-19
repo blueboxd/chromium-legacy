@@ -138,8 +138,8 @@ TEST_F(WindowReordererTest, Association) {
   View* contents_view = new View();
   parent->SetContentsView(contents_view);
 
-  aura::Window* w1 = aura::test::CreateTestWindowWithId(0,
-      parent->GetNativeWindow());
+  aura::Window* w1 =
+      aura::test::CreateTestWindowWithId(0, parent->GetNativeWindow());
   SetWindowAndLayerName(w1, "w1");
 
   aura::Window* w2 = aura::test::CreateTestWindowWithId(0, nullptr);
@@ -152,8 +152,7 @@ TEST_F(WindowReordererTest, Association) {
   contents_view->AddChildView(host_view2);
   w2->SetProperty(views::kHostViewKey, host_view2);
   EXPECT_EQ("w1", ChildWindowNamesAsString(*parent_window));
-  EXPECT_EQ("w1",
-            ui::test::ChildLayerNamesAsString(*parent_window->layer()));
+  EXPECT_EQ("w1", ui::test::ChildLayerNamesAsString(*parent_window->layer()));
 
   parent_window->AddChild(w2);
   EXPECT_EQ("w2 w1", ChildWindowNamesAsString(*parent_window));

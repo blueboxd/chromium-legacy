@@ -48,9 +48,7 @@ class ClientMessageEventCollector {
   virtual ~ClientMessageEventCollector();
 
   // Returns true if |events_| is non-empty.
-  bool HasEvents() const {
-    return !events_.empty();
-  }
+  bool HasEvents() const { return !events_.empty(); }
 
   // Pops all of |events_| and returns the popped events in the order that they
   // were on the stack
@@ -140,16 +138,13 @@ class TestDragDropClient : public SimpleTestDragDropClient {
   ~TestDragDropClient() override;
 
   // Returns the XID of the window which initiated the drag.
-  ::Window source_xwindow() {
-    return source_xid_;
-  }
+  ::Window source_xwindow() { return source_xid_; }
 
   // Returns the Atom with |name|.
   Atom GetAtom(const char* name);
 
   // Returns true if the event's message has |type|.
-  bool MessageHasType(const XClientMessageEvent& event,
-                      const char* type);
+  bool MessageHasType(const XClientMessageEvent& event, const char* type);
 
   // Sets |collector| to collect XClientMessageEvents which would otherwise
   // have been sent to the drop target window.
@@ -181,7 +176,7 @@ class TestDragDropClient : public SimpleTestDragDropClient {
 
   // Map of ::Windows to the collector which intercepts XClientMessageEvents
   // for that window.
-  std::map< ::Window, ClientMessageEventCollector*> collectors_;
+  std::map<::Window, ClientMessageEventCollector*> collectors_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDragDropClient);
 };
@@ -192,8 +187,7 @@ class TestDragDropClient : public SimpleTestDragDropClient {
 ClientMessageEventCollector::ClientMessageEventCollector(
     ::Window xid,
     TestDragDropClient* client)
-    : xid_(xid),
-      client_(client) {
+    : xid_(xid), client_(client) {
   client->SetEventCollectorFor(xid, this);
 }
 
@@ -224,9 +218,7 @@ bool TestMoveLoop::IsRunning() const {
   return is_running_;
 }
 
-bool TestMoveLoop::RunMoveLoop(
-    aura::Window* window,
-    gfx::NativeCursor cursor) {
+bool TestMoveLoop::RunMoveLoop(aura::Window* window, gfx::NativeCursor cursor) {
   is_running_ = true;
   base::RunLoop run_loop;
   quit_closure_ = run_loop.QuitClosure();
@@ -234,8 +226,7 @@ bool TestMoveLoop::RunMoveLoop(
   return true;
 }
 
-void TestMoveLoop::UpdateCursor(gfx::NativeCursor cursor) {
-}
+void TestMoveLoop::UpdateCursor(gfx::NativeCursor cursor) {}
 
 void TestMoveLoop::EndMoveLoop() {
   if (is_running_) {
@@ -397,9 +388,7 @@ class DesktopDragDropClientAuraX11Test : public ViewsTestBase {
     ViewsTestBase::TearDown();
   }
 
-  TestDragDropClient* client() {
-    return client_.get();
-  }
+  TestDragDropClient* client() { return client_.get(); }
 
  private:
   std::unique_ptr<TestDragDropClient> client_;
@@ -425,16 +414,14 @@ void BasicStep2(TestDragDropClient* client, XID toplevel) {
   ASSERT_EQ(2u, events.size());
 
   EXPECT_TRUE(client->MessageHasType(events[0], "XdndEnter"));
-  EXPECT_EQ(client->source_xwindow(),
-            static_cast<XID>(events[0].data.l[0]));
+  EXPECT_EQ(client->source_xwindow(), static_cast<XID>(events[0].data.l[0]));
   EXPECT_EQ(1, events[0].data.l[1] & 1);
   std::vector<Atom> targets;
   ui::GetAtomArrayProperty(client->source_xwindow(), "XdndTypeList", &targets);
   EXPECT_FALSE(targets.empty());
 
   EXPECT_TRUE(client->MessageHasType(events[1], "XdndPosition"));
-  EXPECT_EQ(client->source_xwindow(),
-            static_cast<XID>(events[0].data.l[0]));
+  EXPECT_EQ(client->source_xwindow(), static_cast<XID>(events[0].data.l[0]));
   const long kCoords =
       TestDragDropClient::kMouseMoveX << 16 | TestDragDropClient::kMouseMoveY;
   EXPECT_EQ(kCoords, events[1].data.l[2]);
@@ -450,8 +437,7 @@ void BasicStep2(TestDragDropClient* client, XID toplevel) {
   events = collector.PopAllEvents();
   ASSERT_EQ(1u, events.size());
   EXPECT_TRUE(client->MessageHasType(events[0], "XdndDrop"));
-  EXPECT_EQ(client->source_xwindow(),
-            static_cast<XID>(events[0].data.l[0]));
+  EXPECT_EQ(client->source_xwindow(), static_cast<XID>(events[0].data.l[0]));
 
   // Send XdndFinished to indicate that the drag drop client can cleanup any
   // data related to this drag. The move loop should end only after the
@@ -793,9 +779,7 @@ class TestDragDropDelegate : public aura::client::DragDropDelegate {
     return ui::DragDropTypes::DRAG_COPY;
   }
 
-  void OnDragExited() override {
-    ++num_exits_;
-  }
+  void OnDragExited() override { ++num_exits_; }
 
   int OnPerformDrop(const ui::DropTargetEvent& event,
                     std::unique_ptr<OSExchangeData> data) override {
@@ -864,9 +848,7 @@ class DesktopDragDropClientAuraX11ChromeSourceTargetTest
     ViewsTestBase::TearDown();
   }
 
-  SimpleTestDragDropClient* client() {
-    return client_.get();
-  }
+  SimpleTestDragDropClient* client() { return client_.get(); }
 
  private:
   std::unique_ptr<SimpleTestDragDropClient> client_;

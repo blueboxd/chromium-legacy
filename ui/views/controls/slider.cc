@@ -88,7 +88,7 @@ void Slider::SetRenderingStyle(RenderingStyle style) {
   SchedulePaint();
 }
 
-float Slider::GetAnimatingValue() const{
+float Slider::GetAnimatingValue() const {
   return move_animation_ && move_animation_->is_animating()
              ? move_animation_->CurrentValueBetween(initial_animating_value_,
                                                     value_)

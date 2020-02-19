@@ -89,8 +89,8 @@ void TreeViewExample::CreateExampleView(View* container) {
 
   const int tree_view_column = 0;
   ColumnSet* column_set = layout->AddColumnSet(tree_view_column);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
-                        1.0f, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0f,
+                        GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1 /* expand */, tree_view_column);
   tree_view_ = tree_view.get();
   layout->AddView(TreeView::CreateScrollViewWithTree(std::move(tree_view)));
@@ -99,8 +99,8 @@ void TreeViewExample::CreateExampleView(View* container) {
   const int button_column = 1;
   column_set = layout->AddColumnSet(button_column);
   for (size_t i = 0; i < 3; i++) {
-    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL,
-                          1.0f, GridLayout::USE_PREF, 0, 0);
+    column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1.0f,
+                          GridLayout::USE_PREF, 0, 0);
   }
 
   layout->StartRow(0 /* no expand */, button_column);
@@ -121,7 +121,7 @@ void TreeViewExample::AddNewNode() {
 
 bool TreeViewExample::IsCommandIdEnabled(int command_id) {
   return command_id != ID_REMOVE ||
-      tree_view_->GetSelectedNode() != model_.GetRoot();
+         tree_view_->GetSelectedNode() != model_.GetRoot();
 }
 
 void TreeViewExample::ButtonPressed(Button* sender, const ui::Event& event) {
@@ -151,8 +151,7 @@ void TreeViewExample::OnTreeViewSelectionChanged(TreeView* tree_view) {
   }
 }
 
-bool TreeViewExample::CanEdit(TreeView* tree_view,
-                              ui::TreeModelNode* node) {
+bool TreeViewExample::CanEdit(TreeView* tree_view, ui::TreeModelNode* node) {
   return true;
 }
 

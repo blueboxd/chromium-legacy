@@ -3358,6 +3358,7 @@
 <translation id="5689516760719285838">స్థానం</translation>
 <translation id="56907980372820799">డేటాను జోడించు</translation>
 <translation id="5691511426247308406">కుటుంబం</translation>
+<translation id="5691772641933328258">వేలిముద్ర గుర్తించబడలేదు</translation>
 <translation id="5692183275898619210">ముద్రణ పూర్తయింది</translation>
 <translation id="5696143504434933566">"<ph name="EXTENSION_NAME" />" నుండి దుర్వినియోగాన్ని నివేదించు</translation>
 <translation id="5696679855467848181">వినియోగంలో ఉన్న ప్రస్తుత PPD ఫైల్: <ph name="PPD_NAME" /></translation>
@@ -5659,7 +5660,6 @@
 <translation id="8864458770072227512">ఈ పరికరం నుండి <ph name="EMAIL" /> తీసివేయబడింది</translation>
 <translation id="8867228703146808825">బిల్డ్ వివరాలను క్లిప్‌బోర్డ్‌కు కాపీ చేయి</translation>
 <translation id="8868626022555786497">ఉపయోగంలో ఉంది</translation>
-<translation id="8870318296973696995">హోమ్ పేజీ</translation>
 <translation id="8870413625673593573">ఇటీవల మూసివేసినవి</translation>
 <translation id="8871551568777368300">నిర్వాహకులు పిన్ చేశారు</translation>
 <translation id="8871696467337989339">మీరు మద్దతులేని ఆదేశ పంక్తి ఫ్లాగ్‌ను ఉపయోగిస్తున్నారు: <ph name="BAD_FLAG" />. స్థిరత్వం మరియు భద్రతలను మీరు నష్టపోవచ్చు.</translation>

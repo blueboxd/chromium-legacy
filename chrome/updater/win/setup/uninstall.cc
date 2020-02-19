@@ -4,6 +4,7 @@
 
 #include "chrome/updater/win/setup/uninstall.h"
 
+#include <shlobj.h>
 #include <windows.h>
 #include <memory>
 
@@ -18,6 +19,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_com_initializer.h"
+#include "chrome/installer/util/install_service_work_item.h"
+#include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/work_item_list.h"
 #include "chrome/updater/updater_constants.h"
 #include "chrome/updater/util.h"
@@ -27,14 +30,42 @@
 
 namespace updater {
 
+void DeleteComServer(HKEY root) {
+  InstallUtil::DeleteRegistryKey(root, GetComServerClsidRegistryPath(),
+                                 WorkItem::kWow64Default);
+}
+
+void DeleteComService() {
+  DCHECK(::IsUserAnAdmin());
+
+  InstallUtil::DeleteRegistryKey(HKEY_LOCAL_MACHINE,
+                                 GetComServiceClsidRegistryPath(),
+                                 WorkItem::kWow64Default);
+  InstallUtil::DeleteRegistryKey(HKEY_LOCAL_MACHINE,
+                                 GetComServiceAppidRegistryPath(),
+                                 WorkItem::kWow64Default);
+  if (!installer::InstallServiceWorkItem::DeleteService(kWindowsServiceName))
+    LOG(WARNING) << "DeleteService failed.";
+}
+
+void DeleteComInterfaces(HKEY root) {
+  const base::string16 iid_reg_path = GetComIidRegistryPath();
+  const base::string16 typelib_reg_path = GetComTypeLibRegistryPath();
+  for (const auto& reg_path : {iid_reg_path, typelib_reg_path}) {
+    InstallUtil::DeleteRegistryKey(root, reg_path, WorkItem::kWow64Default);
+  }
+}
+
 // Reverses the changes made by setup. This is a best effort uninstall:
 // 1. Deletes the scheduled task.
 // 2. Deletes the Clients and ClientState keys.
 // 3. Runs the uninstall script in the install directory of the updater.
 // The execution of this function and the script race each other but the script
 // loops and waits in between iterations trying to delete the install directory.
-int Uninstall() {
-  VLOG(1) << __func__;
+int Uninstall(bool is_machine) {
+  VLOG(1) << __func__ << ", is_machine: " << is_machine;
+  DCHECK(!is_machine || ::IsUserAnAdmin());
+  HKEY key = is_machine ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
 
   auto scoped_com_initializer =
       std::make_unique<base::win::ScopedCOMInitializer>(
@@ -43,14 +74,18 @@ int Uninstall() {
   updater::UnregisterUpdateAppsTask();
 
   std::unique_ptr<WorkItemList> uninstall_list(WorkItem::CreateWorkItemList());
-  uninstall_list->AddDeleteRegKeyWorkItem(HKEY_CURRENT_USER,
-                                          base::ASCIIToUTF16(UPDATER_KEY),
+  uninstall_list->AddDeleteRegKeyWorkItem(key, base::ASCIIToUTF16(UPDATER_KEY),
                                           WorkItem::kWow64Default);
   if (!uninstall_list->Do()) {
     LOG(ERROR) << "Failed to delete the registry keys.";
     uninstall_list->Rollback();
     return -1;
   }
+
+  DeleteComInterfaces(key);
+  if (is_machine)
+    DeleteComService();
+  DeleteComServer(key);
 
   base::FilePath product_dir;
   if (!GetProductDirectory(&product_dir)) {

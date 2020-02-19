@@ -145,7 +145,7 @@ GpuChannelManager::GpuChannelManager(
     SharedImageManager* shared_image_manager,
     GpuMemoryBufferFactory* gpu_memory_buffer_factory,
     const GpuFeatureInfo& gpu_feature_info,
-    GpuProcessActivityFlags activity_flags,
+    GpuProcessActivityFlags* const activity_flags,
     scoped_refptr<gl::GLSurface> default_offscreen_surface,
     ImageDecodeAcceleratorWorker* image_decode_accelerator_worker,
     viz::VulkanContextProvider* vulkan_context_provider,
@@ -170,7 +170,7 @@ GpuChannelManager::GpuChannelManager(
       discardable_manager_(gpu_preferences_),
       passthrough_discardable_manager_(gpu_preferences_),
       image_decode_accelerator_worker_(image_decode_accelerator_worker),
-      activity_flags_(std::move(activity_flags)),
+      activity_flags_(activity_flags),
       memory_pressure_listener_(
           base::BindRepeating(&GpuChannelManager::HandleMemoryPressure,
                               base::Unretained(this))),
@@ -199,7 +199,10 @@ GpuChannelManager::~GpuChannelManager() {
   gpu_channels.clear();
 
   if (default_offscreen_surface_.get()) {
-    default_offscreen_surface_->Destroy();
+    // GpuChannelManager may be temporarily destructed when chrome is
+    // backgrounded on low end device, so don't call destroy.
+    if (default_offscreen_surface_->HasOneRef())
+      default_offscreen_surface_->Destroy();
     default_offscreen_surface_ = nullptr;
   }
 
@@ -231,7 +234,7 @@ gles2::ProgramCache* GpuChannelManager::program_cache() {
       program_cache_.reset(new gles2::MemoryProgramCache(
           gpu_preferences_.gpu_program_cache_size, disable_disk_cache,
           workarounds.disable_program_caching_for_transform_feedback,
-          &activity_flags_));
+          activity_flags_));
     }
   }
   return program_cache_.get();
@@ -564,7 +567,7 @@ scoped_refptr<SharedContextState> GpuChannelManager::GetSharedContextState(
     }
     shared_context_state_->InitializeGrContext(
         gpu_preferences_, gpu_driver_bug_workarounds_, gr_shader_cache(),
-        &activity_flags_, watchdog_);
+        activity_flags_, watchdog_);
   }
 
   gr_cache_controller_.emplace(shared_context_state_.get(), task_runner_);

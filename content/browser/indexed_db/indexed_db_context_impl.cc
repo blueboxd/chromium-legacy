@@ -103,7 +103,7 @@ IndexedDBContextImpl::IndexedDBContextImpl(
         native_file_system_context,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     scoped_refptr<base::SequencedTaskRunner> custom_task_runner)
-    : IndexedDBContext(
+    : base::RefCountedDeleteOnSequence<IndexedDBContextImpl>(
           custom_task_runner
               ? custom_task_runner
               : (base::CreateSequencedTaskRunner(
@@ -115,7 +115,6 @@ IndexedDBContextImpl::IndexedDBContextImpl(
       force_keep_session_state_(false),
       special_storage_policy_(special_storage_policy),
       quota_manager_proxy_(quota_manager_proxy),
-      idb_task_runner_(owning_task_runner()),
       io_task_runner_(io_task_runner),
       clock_(clock) {
   IDB_TRACE("init");
@@ -527,37 +526,6 @@ base::Time IndexedDBContextImpl::GetOriginLastModified(const Origin& origin) {
   return file_info.last_modified;
 }
 
-void IndexedDBContextImpl::CopyOriginData(const Origin& origin,
-                                          IndexedDBContext* dest_context) {
-  DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
-  if (is_incognito() || !HasOrigin(origin))
-    return;
-
-  IndexedDBContextImpl* dest_context_impl =
-      static_cast<IndexedDBContextImpl*>(dest_context);
-
-  ForceCloseSync(origin,
-                 storage::mojom::ForceCloseReason::FORCE_CLOSE_COPY_ORIGIN);
-
-  // Make sure we're not about to delete our own database.
-  CHECK_NE(dest_context_impl->data_path().value(), data_path().value());
-
-  // Delete any existing storage paths in the destination context.
-  // A previously failed migration may have left behind partially copied
-  // directories.
-  for (const auto& dest_path : dest_context_impl->GetStoragePaths(origin))
-    base::DeleteFileRecursively(dest_path);
-
-  base::FilePath dest_data_path = dest_context_impl->data_path();
-  base::CreateDirectory(dest_data_path);
-
-  for (const base::FilePath& src_data_path : GetStoragePaths(origin)) {
-    if (base::PathExists(src_data_path)) {
-      base::CopyDirectory(src_data_path, dest_data_path, true);
-    }
-  }
-}
-
 V2SchemaCorruptionStatus IndexedDBContextImpl::HasV2SchemaCorruption(
     const Origin& origin) {
   DCHECK(IDBTaskRunner()->RunsTasksInCurrentSequence());
@@ -757,8 +725,8 @@ std::set<Origin>* IndexedDBContextImpl::GetOriginSet() {
 }
 
 base::SequencedTaskRunner* IndexedDBContextImpl::IDBTaskRunner() {
-  DCHECK(idb_task_runner_.get());
-  return idb_task_runner_.get();
+  DCHECK(owning_task_runner());
+  return owning_task_runner();
 }
 
 }  // namespace content

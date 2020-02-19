@@ -54,6 +54,8 @@ include_rules = [
   "+components/password_manager/ios",
   "+components/payments/core",
   "+components/payments/mojom",
+  "+components/policy/core/browser",
+  "+components/policy/core/common",
   "+components/pref_registry",
   "+components/prefs",
   "+components/profile_metrics",

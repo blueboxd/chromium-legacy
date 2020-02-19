@@ -137,7 +137,11 @@ TEST(AudioLatency, HighLatencyBufferSizes) {
   }
 #else
   for (int i = 6400; i <= 204800; i *= 2)
+#if defined(USE_CRAS)
+    EXPECT_EQ(8 * (i / 100), AudioLatency::GetHighLatencyBufferSize(i, 32));
+#else
     EXPECT_EQ(2 * (i / 100), AudioLatency::GetHighLatencyBufferSize(i, 32));
+#endif  // defined(USE_CRAS)
 #endif  // defined(OS_WIN)
 }
 

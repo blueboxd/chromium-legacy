@@ -276,13 +276,6 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadMimeType(
 COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadMimeTypeForNormalProfile(
     const std::string& mime_type);
 
-// Records usage of Content-Disposition header.
-COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadContentDisposition(
-    const std::string& content_disposition);
-
-// Record the time of all opens since the download completed.
-COMPONENTS_DOWNLOAD_EXPORT void RecordOpen(const base::Time& end);
-
 // Record the number of completed unopened downloads when a download is opened.
 COMPONENTS_DOWNLOAD_EXPORT void RecordOpensOutstanding(int size);
 

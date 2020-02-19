@@ -59,9 +59,8 @@ enum TableTypes {
   ICON_AND_TEXT,
 };
 
-class VIEWS_EXPORT TableView
-    : public views::View,
-      public ui::TableModelObserver {
+class VIEWS_EXPORT TableView : public views::View,
+                               public ui::TableModelObserver {
  public:
   METADATA_HEADER(TableView);
 
@@ -92,8 +91,7 @@ class VIEWS_EXPORT TableView
   struct VIEWS_EXPORT SortDescriptor {
     SortDescriptor() = default;
     SortDescriptor(int column_id, bool ascending)
-        : column_id(column_id),
-          ascending(ascending) {}
+        : column_id(column_id), ascending(ascending) {}
 
     // ID of the sorted column.
     int column_id = -1;

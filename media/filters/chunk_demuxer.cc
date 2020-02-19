@@ -447,14 +447,14 @@ void ChunkDemuxerStream::CompletePendingReadIfPossible_Locked() {
 ChunkDemuxer::ChunkDemuxer(
     const base::Closure& open_cb,
     const base::Closure& progress_cb,
-    const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
+    EncryptedMediaInitDataCB encrypted_media_init_data_cb,
     MediaLog* media_log)
     : state_(WAITING_FOR_INIT),
       cancel_next_seek_(false),
       host_(nullptr),
       open_cb_(open_cb),
       progress_cb_(progress_cb),
-      encrypted_media_init_data_cb_(encrypted_media_init_data_cb),
+      encrypted_media_init_data_cb_(std::move(encrypted_media_init_data_cb)),
       media_log_(media_log),
       duration_(kNoTimestamp),
       user_specified_duration_(-1),

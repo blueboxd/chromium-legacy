@@ -19,8 +19,8 @@ class ZipArchiverImpl : public mojom::ZipArchiver {
                   base::OnceClosure connection_error_handler);
   ~ZipArchiverImpl() override;
 
-  void Archive(mojo::ScopedHandle src_file_handle,
-               mojo::ScopedHandle zip_file_handle,
+  void Archive(mojo::PlatformHandle src_file_handle,
+               mojo::PlatformHandle zip_file_handle,
                const std::string& filename_in_zip,
                const std::string& password,
                ArchiveCallback callback) override;

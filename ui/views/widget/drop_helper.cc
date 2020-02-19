@@ -48,8 +48,8 @@ int DropHelper::OnDragOver(const OSExchangeData& data,
                            const gfx::Point& root_view_location,
                            int drag_operation) {
   const View* old_deepest_view = deepest_view_;
-  View* view = CalculateTargetViewImpl(root_view_location, data, true,
-                                       &deepest_view_);
+  View* view =
+      CalculateTargetViewImpl(root_view_location, data, true, &deepest_view_);
 
   if (view != target_view_) {
     // Target changed. Notify old drag exited, then new drag entered.
@@ -96,19 +96,17 @@ int DropHelper::OnDrop(const OSExchangeData& data,
   return drop_view->OnPerformDrop(drop_event);
 }
 
-View* DropHelper::CalculateTargetView(
-    const gfx::Point& root_view_location,
-    const OSExchangeData& data,
-    bool check_can_drop) {
+View* DropHelper::CalculateTargetView(const gfx::Point& root_view_location,
+                                      const OSExchangeData& data,
+                                      bool check_can_drop) {
   return CalculateTargetViewImpl(root_view_location, data, check_can_drop,
                                  nullptr);
 }
 
-View* DropHelper::CalculateTargetViewImpl(
-    const gfx::Point& root_view_location,
-    const OSExchangeData& data,
-    bool check_can_drop,
-    View** deepest_view) {
+View* DropHelper::CalculateTargetViewImpl(const gfx::Point& root_view_location,
+                                          const OSExchangeData& data,
+                                          bool check_can_drop,
+                                          View** deepest_view) {
   View* view = root_view_->GetEventHandlerForPoint(root_view_location);
   if (view == deepest_view_) {
     // The view the mouse is over hasn't changed; reuse the target.
@@ -116,9 +114,9 @@ View* DropHelper::CalculateTargetViewImpl(
   }
   if (deepest_view)
     *deepest_view = view;
-  // TODO(sky): for the time being these are separate. Once I port chrome menu
-  // I can switch to the #else implementation and nuke the OS_WIN
-  // implementation.
+    // TODO(sky): for the time being these are separate. Once I port chrome menu
+    // I can switch to the #else implementation and nuke the OS_WIN
+    // implementation.
 #if defined(OS_WIN)
   // View under mouse changed, which means a new view may want the drop.
   // Walk the tree, stopping at target_view_ as we know it'll accept the

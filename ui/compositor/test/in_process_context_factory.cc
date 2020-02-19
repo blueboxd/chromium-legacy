@@ -158,6 +158,7 @@ class InProcessContextFactory::PerCompositorData
     display_->SetVisible(visible);
   }
   void Resize(const gfx::Size& size) override { display_->Resize(size); }
+#if defined(OS_WIN)
   bool DisableSwapUntilResize() override {
     display_->DisableSwapUntilResize(base::OnceClosure());
     return true;
@@ -166,6 +167,7 @@ class InProcessContextFactory::PerCompositorData
       DisableSwapUntilResizeCallback callback) override {
     display_->DisableSwapUntilResize(std::move(callback));
   }
+#endif
   void SetDisplayColorMatrix(const gfx::Transform& matrix) override {
     output_color_matrix_ = matrix.matrix();
   }

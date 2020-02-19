@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ui/views/controls/button/image_button.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/layout.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/test/views_test_base.h"
 
 namespace {
@@ -25,9 +25,7 @@ class Parent : public views::View {
     pref_size_changed_calls_++;
   }
 
-  int pref_size_changed_calls() const {
-    return pref_size_changed_calls_;
-  }
+  int pref_size_changed_calls() const { return pref_size_changed_calls_; }
 
  private:
   int pref_size_changed_calls_ = 0;

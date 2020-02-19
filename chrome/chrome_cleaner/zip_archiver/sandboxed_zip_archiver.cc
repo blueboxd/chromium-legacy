@@ -18,7 +18,6 @@
 #include "chrome/chrome_cleaner/os/disk_util.h"
 #include "chrome/chrome_cleaner/os/file_path_sanitization.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace chrome_cleaner {
 
@@ -63,8 +62,8 @@ bool GetSanitizedFileName(const base::FilePath& path,
 }
 
 void RunArchiver(mojo::Remote<mojom::ZipArchiver>* zip_archiver,
-                 mojo::ScopedHandle mojo_src_handle,
-                 mojo::ScopedHandle mojo_zip_handle,
+                 mojo::PlatformHandle mojo_src_handle,
+                 mojo::PlatformHandle mojo_zip_handle,
                  const std::string& filename,
                  const std::string& password,
                  mojom::ZipArchiver::ArchiveCallback callback) {
@@ -250,8 +249,10 @@ void SandboxedZipArchiver::Archive(const base::FilePath& src_file_path,
   mojo_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(RunArchiver, base::Unretained(zip_archiver_.get()),
-                     mojo::WrapPlatformFile(src_file.TakePlatformFile()),
-                     mojo::WrapPlatformFile(zip_file.TakePlatformFile()),
+                     mojo::PlatformHandle(
+                         base::ScopedPlatformFile(src_file.TakePlatformFile())),
+                     mojo::PlatformHandle(
+                         base::ScopedPlatformFile(zip_file.TakePlatformFile())),
                      filename_in_zip, zip_password_, std::move(done_callback)));
 }
 

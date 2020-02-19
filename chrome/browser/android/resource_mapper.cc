@@ -43,6 +43,7 @@ void ResourceMapper::ConstructMap() {
 #define LINK_RESOURCE_ID(c_id, java_id) g_id_map.Get()[c_id] = next_id++;
 #define DECLARE_RESOURCE_ID(c_id, java_id) g_id_map.Get()[c_id] = next_id++;
 #include "chrome/browser/android/resource_id.h"
+#include "components/permissions/android/resource_id.h"
 #undef LINK_RESOURCE_ID
 #undef DECLARE_RESOURCE_ID
 }

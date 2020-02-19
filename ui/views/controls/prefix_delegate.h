@@ -27,6 +27,6 @@ class VIEWS_EXPORT PrefixDelegate {
   virtual base::string16 GetTextForRow(int row) = 0;
 };
 
-} // namespace views
+}  // namespace views
 
-#endif // UI_VIEWS_CONTROLS_PREFIX_DELEGATE_H_
+#endif  // UI_VIEWS_CONTROLS_PREFIX_DELEGATE_H_

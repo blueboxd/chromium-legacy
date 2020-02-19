@@ -206,11 +206,11 @@ void ProgressBar::OnPaintIndeterminate(gfx::Canvas* canvas) {
   }
 
   int bar1_start_x = std::round(content_bounds.width() * bar1_left);
-  int bar1_end_x = std::round(
-      content_bounds.width() * std::min(1.0, bar1_left + bar1_width));
+  int bar1_end_x = std::round(content_bounds.width() *
+                              std::min(1.0, bar1_left + bar1_width));
   int bar2_start_x = std::round(content_bounds.width() * bar2_left);
-  int bar2_end_x = std::round(
-      content_bounds.width() * std::min(1.0, bar2_left + bar2_width));
+  int bar2_end_x = std::round(content_bounds.width() *
+                              std::min(1.0, bar2_left + bar2_width));
 
   gfx::Rect slice_bounds = content_bounds;
   slice_bounds.set_x(content_bounds.x() + bar1_start_x);

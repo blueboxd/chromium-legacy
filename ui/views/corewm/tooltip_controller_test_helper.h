@@ -64,7 +64,6 @@ class TooltipTestView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(TooltipTestView);
 };
 
-
 }  // namespace test
 }  // namespace corewm
 }  // namespace views

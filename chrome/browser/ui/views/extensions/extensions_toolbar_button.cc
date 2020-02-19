@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_button.h"
 
-#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/views/extensions/extensions_menu_view.h"
 #include "chrome/browser/ui/views/extensions/extensions_toolbar_container.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/vector_icons/vector_icons.h"
 #include "extensions/browser/extension_registry.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -41,7 +41,7 @@ void ExtensionsToolbarButton::UpdateIcon() {
                             ? kDefaultTouchableIconSize
                             : kDefaultIconSize;
   SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(kExtensionIcon, icon_size,
+           gfx::CreateVectorIcon(vector_icons::kExtensionIcon, icon_size,
                                  extensions_container_->GetIconColor()));
 }
 

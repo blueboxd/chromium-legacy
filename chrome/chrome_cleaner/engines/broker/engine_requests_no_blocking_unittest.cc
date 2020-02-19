@@ -322,7 +322,7 @@ class TestEngineRequestInvoker {
   }
 
   static void OpenReadOnlyFileCallback(base::OnceClosure closure,
-                                       mojo::ScopedHandle /*handle*/) {
+                                       mojo::PlatformHandle /*handle*/) {
     InvokeOnOtherSequence(std::move(closure));
   }
 

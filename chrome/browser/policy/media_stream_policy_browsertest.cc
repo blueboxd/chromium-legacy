@@ -4,11 +4,11 @@
 #include "base/task/post_task.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/policy/policy_test_utils.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/permissions/permission_request_manager.h"
+#include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -44,11 +44,13 @@ class MediaStreamDevicesControllerBrowserTest
     // since we are already using WithParamInterface. We only test whichever one
     // is enabled in chrome_features.cc since we won't keep the old path around
     // for long once we flip the flag.
-    PermissionRequestManager* manager =
-        PermissionRequestManager::FromWebContents(
+    permissions::PermissionRequestManager* manager =
+        permissions::PermissionRequestManager::FromWebContents(
             browser()->tab_strip_model()->GetActiveWebContents());
-    prompt_factory_.reset(new MockPermissionPromptFactory(manager));
-    prompt_factory_->set_response_type(PermissionRequestManager::ACCEPT_ALL);
+    prompt_factory_.reset(
+        new permissions::MockPermissionPromptFactory(manager));
+    prompt_factory_->set_response_type(
+        permissions::PermissionRequestManager::ACCEPT_ALL);
   }
 
   void TearDownOnMainThread() override { prompt_factory_.reset(); }
@@ -135,7 +137,7 @@ class MediaStreamDevicesControllerBrowserTest
     quit_closure_.Run();
   }
 
-  std::unique_ptr<MockPermissionPromptFactory> prompt_factory_;
+  std::unique_ptr<permissions::MockPermissionPromptFactory> prompt_factory_;
   bool policy_value_;
   bool request_url_allowed_via_whitelist_;
   GURL request_url_;

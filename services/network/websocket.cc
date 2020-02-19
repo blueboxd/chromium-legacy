@@ -382,6 +382,7 @@ WebSocket::WebSocket(
       child_id_(child_id),
       frame_id_(frame_id),
       origin_(std::move(origin)),
+      site_for_cookies_(site_for_cookies),
       has_raw_headers_access_(has_raw_headers_access),
       writable_watcher_(FROM_HERE,
                         mojo::SimpleWatcher::ArmingPolicy::MANUAL,
@@ -466,10 +467,6 @@ void WebSocket::StartClosingHandshake(uint16_t code,
 }
 
 bool WebSocket::AllowCookies(const GURL& url) const {
-  // TODO(https://crbug.com/1052454): This should be using passed-in
-  // site_for_cookies instead.
-  const net::SiteForCookies site_for_cookies =
-      net::SiteForCookies::FromOrigin(origin_);
   net::StaticCookiePolicy::Type policy =
       net::StaticCookiePolicy::ALLOW_ALL_COOKIES;
   if (options_ & mojom::kWebSocketOptionBlockAllCookies) {
@@ -480,7 +477,7 @@ bool WebSocket::AllowCookies(const GURL& url) const {
     return true;
   }
   return net::StaticCookiePolicy(policy).CanAccessCookies(
-             url, site_for_cookies) == net::OK;
+             url, site_for_cookies_) == net::OK;
 }
 
 int WebSocket::OnBeforeStartTransaction(net::CompletionOnceCallback callback,

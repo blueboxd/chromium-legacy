@@ -3358,6 +3358,7 @@ Ak chcete spravovať nastavenia tohto účtu, nainštalujte si do zariadenia apl
 <translation id="5689516760719285838">Poloha</translation>
 <translation id="56907980372820799">Prepojiť údaje</translation>
 <translation id="5691511426247308406">Rodina</translation>
+<translation id="5691772641933328258">Odtlačok prsta nebol rozpoznaný</translation>
 <translation id="5692183275898619210">Tlač je dokončená</translation>
 <translation id="5696143504434933566">Nahlásiť obťažovanie rozšírením <ph name="EXTENSION_NAME" /></translation>
 <translation id="5696679855467848181">Aktuálny používaný súbor PPD: <ph name="PPD_NAME" /></translation>
@@ -5662,7 +5663,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8864458770072227512">Adresa <ph name="EMAIL" /> bola odstránená z tohto zariadenia</translation>
 <translation id="8867228703146808825">Skopírovať podrobnosti o zostave do schránky</translation>
 <translation id="8868626022555786497">Využité miesto</translation>
-<translation id="8870318296973696995">Domovská stránka</translation>
 <translation id="8870413625673593573">Nedávno zatvorené</translation>
 <translation id="8871551568777368300">Pripnuté správcom</translation>
 <translation id="8871696467337989339">Používate nepodporovaný príznak príkazového riadku: <ph name="BAD_FLAG" />. Prejaví sa to na nižšej stabilite a horšom zabezpečení.</translation>

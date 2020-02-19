@@ -111,6 +111,8 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node)
       EffectPaintPropertyNode::Root(),
       LinkHighlightEffectNodeState(kStartOpacity, element_id_));
 
+  DCHECK(GetLayoutObject());
+  GetLayoutObject()->SetNeedsPaintPropertyUpdate();
   SetPaintArtifactCompositorNeedsUpdate();
 
 #if DCHECK_IS_ON()
@@ -131,7 +133,7 @@ void LinkHighlightImpl::ReleaseResources() {
   if (!node_)
     return;
 
-  if (auto* layout_object = node_->GetLayoutObject())
+  if (auto* layout_object = GetLayoutObject())
     layout_object->SetNeedsPaintPropertyUpdate();
 
   SetPaintArtifactCompositorNeedsUpdate();
@@ -231,17 +233,15 @@ void LinkHighlightImpl::NotifyAnimationFinished(double, int) {
 }
 
 void LinkHighlightImpl::UpdateBeforePrePaint() {
-  if (!node_ || !node_->GetLayoutObject() ||
-      node_->GetLayoutObject()->GetFrameView()->ShouldThrottleRendering())
+  auto* object = GetLayoutObject();
+  if (!object || object->GetFrameView()->ShouldThrottleRendering())
     ReleaseResources();
 }
 
 void LinkHighlightImpl::UpdateAfterPrePaint() {
-  if (!node_)
+  auto* object = GetLayoutObject();
+  if (!object)
     return;
-
-  const auto* object = node_->GetLayoutObject();
-  DCHECK(object);
   DCHECK(!object->GetFrameView()->ShouldThrottleRendering());
 
   size_t fragment_count = 0;
@@ -260,15 +260,12 @@ CompositorAnimation* LinkHighlightImpl::GetCompositorAnimation() const {
 }
 
 void LinkHighlightImpl::Paint(GraphicsContext& context) {
-  if (!node_)
+  auto* object = GetLayoutObject();
+  if (!object)
     return;
 
-  const auto* object = node_->GetLayoutObject();
-  // TODO(crbug.com/1016587): Change the CHECKs to DCHECKs after we address
-  // the cause of the bug.
-  CHECK(object);
-  CHECK(object->GetFrameView());
-  CHECK(!object->GetFrameView()->ShouldThrottleRendering());
+  DCHECK(object->GetFrameView());
+  DCHECK(!object->GetFrameView()->ShouldThrottleRendering());
 
   static const FloatSize rect_rounding_radii(3, 3);
   auto color = object->StyleRef().TapHighlightColor();
@@ -277,7 +274,6 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
   // otherwise we may sometimes get a chain of adjacent boxes (e.g. for text
   // nodes) which end up looking like sausage links: these should ideally be
   // merged into a single rect before creating the path.
-  CHECK(node_->GetDocument().GetSettings());
   bool use_rounded_rects = !node_->GetDocument()
                                 .GetSettings()
                                 ->GetMockGestureTapHighlightsEnabled() &&
@@ -300,7 +296,7 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
         new_path.AddRect(snapped_rect);
     }
 
-    CHECK_LT(index, fragments_.size());
+    DCHECK_LT(index, fragments_.size());
     auto& link_highlight_fragment = fragments_[index];
     link_highlight_fragment.SetColor(color);
 
@@ -308,7 +304,7 @@ void LinkHighlightImpl::Paint(GraphicsContext& context) {
     new_path.Translate(-ToFloatSize(bounding_rect.Location()));
 
     auto* layer = link_highlight_fragment.Layer();
-    CHECK(layer);
+    DCHECK(layer);
     if (link_highlight_fragment.GetPath() != new_path) {
       link_highlight_fragment.SetPath(new_path);
       layer->SetBounds(gfx::Size(EnclosingIntRect(bounding_rect).Size()));

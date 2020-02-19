@@ -76,6 +76,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.UserDataHost;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
@@ -110,7 +111,6 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.SimpleRecyclerViewAdapter;
@@ -124,7 +124,7 @@ import java.util.List;
 /**
  * Tests for {@link TabListMediator}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
+@RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 // clang-format off
 @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
@@ -209,14 +209,6 @@ public class TabListMediatorUnitTest {
     Tracker mTracker;
     @Mock
     TabListMediator.TitleProvider mTitleProvider;
-    @Mock
-    SharedPreferences mSharedPreferences;
-    @Mock
-    SharedPreferences.Editor mEditor;
-    @Mock
-    SharedPreferences.Editor mPutStringEditor;
-    @Mock
-    SharedPreferences.Editor mRemoveEditor;
     @Mock
     UrlUtilities.Natives mUrlUtilitiesJniMock;
     @Mock
@@ -316,12 +308,6 @@ public class TabListMediatorUnitTest {
                 .openTabGridDialog(any(Tab.class));
         doNothing().when(mContext).registerComponentCallbacks(mComponentCallbacksCaptor.capture());
         doReturn(mGridLayoutManager).when(mRecyclerView).getLayoutManager();
-        doReturn(mSharedPreferences)
-                .when(mContext)
-                .getSharedPreferences(TAB_GROUP_TITLES_FILE_NAME, Context.MODE_PRIVATE);
-        doReturn(mEditor).when(mSharedPreferences).edit();
-        doReturn(mRemoveEditor).when(mEditor).remove(any(String.class));
-        doReturn(mPutStringEditor).when(mEditor).putString(any(String.class), any(String.class));
         doReturn(TAB1_DOMAIN)
                 .when(mUrlUtilitiesJniMock)
                 .getDomainAndRegistry(eq(TAB1_URL), anyBoolean());
@@ -342,7 +328,6 @@ public class TabListMediatorUnitTest {
                 mItemAnimationStopper, getClass().getSimpleName(), UiType.CLOSABLE);
         mMediator.registerOrientationListener(mGridLayoutManager);
         TrackerFactory.setTrackerForTests(mTracker);
-        ContextUtils.initApplicationContextForTests(mContext);
     }
 
     @After
@@ -353,6 +338,12 @@ public class TabListMediatorUnitTest {
         CachedFeatureFlags.setStartSurfaceEnabledForTesting(null);
         TabUiFeatureUtilities.setSearchTermChipEnabledForTesting(null);
         TabAttributeCache.clearAllForTesting();
+        getGroupTitleSharedPreferences().edit().clear();
+    }
+
+    private static SharedPreferences getGroupTitleSharedPreferences() {
+        return ContextUtils.getApplicationContext().getSharedPreferences(
+                TAB_GROUP_TITLES_FILE_NAME, Context.MODE_PRIVATE);
     }
 
     @Test
@@ -386,8 +377,10 @@ public class TabListMediatorUnitTest {
         createTabGroup(tabs, TAB1_ID);
 
         // Mock that we have a stored title stored with reference to root ID of tab1.
-        when(mSharedPreferences.getString(String.valueOf(mTab1.getRootId()), null))
-                .thenReturn(CUSTOMIZED_DIALOG_TITLE1);
+        getGroupTitleSharedPreferences()
+                .edit()
+                .putString(String.valueOf(mTab1.getRootId()), CUSTOMIZED_DIALOG_TITLE1)
+                .apply();
         assertThat(mModel.get(0).model.get(TabProperties.TITLE), equalTo(TAB1_TITLE));
 
         mTabObserverCaptor.getValue().onTitleUpdated(mTab1);
@@ -1366,8 +1359,10 @@ public class TabListMediatorUnitTest {
         // clang-format on
         setUpForTabGroupOperation(TabListMediatorType.TAB_GRID_DIALOG);
         // Mock that we have a stored title stored with reference to root ID of tab1.
-        when(mSharedPreferences.getString(String.valueOf(mTab1.getRootId()), null))
-                .thenReturn(CUSTOMIZED_DIALOG_TITLE1);
+        getGroupTitleSharedPreferences()
+                .edit()
+                .putString(String.valueOf(mTab1.getRootId()), CUSTOMIZED_DIALOG_TITLE1)
+                .apply();
         assertThat(mMediator.getTabGroupTitleEditor().getTabGroupTitle(mTab1.getRootId()),
                 equalTo(CUSTOMIZED_DIALOG_TITLE1));
 
@@ -1387,8 +1382,10 @@ public class TabListMediatorUnitTest {
         // clang-format on
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
         // Mock that we have a stored title stored with reference to root ID of tab1.
-        when(mSharedPreferences.getString(String.valueOf(mTab1.getRootId()), null))
-                .thenReturn(CUSTOMIZED_DIALOG_TITLE1);
+        getGroupTitleSharedPreferences()
+                .edit()
+                .putString(String.valueOf(mTab1.getRootId()), CUSTOMIZED_DIALOG_TITLE1)
+                .apply();
         assertThat(mMediator.getTabGroupTitleEditor().getTabGroupTitle(mTab1.getRootId()),
                 equalTo(CUSTOMIZED_DIALOG_TITLE1));
 
@@ -1408,8 +1405,10 @@ public class TabListMediatorUnitTest {
         // clang-format on
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
         // Mock that we have a stored title stored with reference to root ID of tab1.
-        when(mSharedPreferences.getString(String.valueOf(mTab1.getRootId()), null))
-                .thenReturn(CUSTOMIZED_DIALOG_TITLE1);
+        getGroupTitleSharedPreferences()
+                .edit()
+                .putString(String.valueOf(mTab1.getRootId()), CUSTOMIZED_DIALOG_TITLE1)
+                .apply();
         assertThat(mMediator.getTabGroupTitleEditor().getTabGroupTitle(mTab1.getRootId()),
                 equalTo(CUSTOMIZED_DIALOG_TITLE1));
 
@@ -1451,11 +1450,13 @@ public class TabListMediatorUnitTest {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
         TabGroupTitleEditor tabGroupTitleEditor = mMediator.getTabGroupTitleEditor();
 
-        tabGroupTitleEditor.storeTabGroupTitle(mTab1.getRootId(), CUSTOMIZED_DIALOG_TITLE1);
+        assertNull(getGroupTitleSharedPreferences().getString(
+                String.valueOf(mTab1.getRootId()), null));
 
-        verify(mEditor).putString(
-                eq(String.valueOf(mTab1.getRootId())), eq(CUSTOMIZED_DIALOG_TITLE1));
-        verify(mPutStringEditor).apply();
+        tabGroupTitleEditor.storeTabGroupTitle(mTab1.getRootId(), CUSTOMIZED_DIALOG_TITLE1);
+        assertEquals(CUSTOMIZED_DIALOG_TITLE1,
+                getGroupTitleSharedPreferences().getString(
+                        String.valueOf(mTab1.getRootId()), null));
     }
 
     @Test
@@ -1467,10 +1468,17 @@ public class TabListMediatorUnitTest {
         setUpForTabGroupOperation(TabListMediatorType.TAB_SWITCHER);
         TabGroupTitleEditor tabGroupTitleEditor = mMediator.getTabGroupTitleEditor();
 
-        tabGroupTitleEditor.deleteTabGroupTitle(mTab1.getRootId());
+        getGroupTitleSharedPreferences()
+                .edit()
+                .putString(String.valueOf(mTab1.getRootId()), CUSTOMIZED_DIALOG_TITLE1)
+                .apply();
+        assertEquals(CUSTOMIZED_DIALOG_TITLE1,
+                getGroupTitleSharedPreferences().getString(
+                        String.valueOf(mTab1.getRootId()), null));
 
-        verify(mEditor).remove(eq(String.valueOf(mTab1.getRootId())));
-        verify(mRemoveEditor).apply();
+        tabGroupTitleEditor.deleteTabGroupTitle(mTab1.getRootId());
+        assertNull(getGroupTitleSharedPreferences().getString(
+                String.valueOf(mTab1.getRootId()), null));
     }
 
     @Test

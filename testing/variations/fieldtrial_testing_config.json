@@ -1363,6 +1363,21 @@
             ]
         }
     ],
+    "ChromeDuet": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Disabled",
+                    "disable_features": [
+                        "ChromeDuet"
+                    ]
+                }
+            ]
+        }
+    ],
     "ChromeOSAssistantDspHotword": [
         {
             "platforms": [
@@ -2539,6 +2554,24 @@
                     "enable_features": [
                         "GlobalMediaControls",
                         "IPH_GlobalMediaControls"
+                    ]
+                }
+            ]
+        }
+    ],
+    "GlobalMediaControlsPictureInPicture": [
+        {
+            "platforms": [
+                "linux",
+                "mac",
+                "windows",
+                "chromeos"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "GlobalMediaControlsPictureInPicture"
                     ]
                 }
             ]

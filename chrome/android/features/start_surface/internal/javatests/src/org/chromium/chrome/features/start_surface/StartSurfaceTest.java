@@ -280,6 +280,54 @@ public class StartSurfaceTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
+    @CommandLineFlags.Add({BASE_PARAMS + "/single"})
+    public void testTapMVTilesInSingleSurface() {
+        // TODO(crbug.com/1025296): Set cached flag before starting the activity and mimic clicking
+        // the 'home' button to show the single start surface home page.
+        TestThreadUtils.runOnUiThreadBlocking(
+                ()
+                        -> mActivityTestRule.getActivity()
+                                   .getStartSurface()
+                                   .getController()
+                                   .setOverviewState(OverviewModeState.SHOWING_HOMEPAGE));
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
+        assertThat(
+                mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount(),
+                equalTo(1));
+
+        ViewGroup mvTilesContainer = (ViewGroup) mActivityTestRule.getActivity().findViewById(
+                org.chromium.chrome.tab_ui.R.id.mv_tiles_layout);
+        assertTrue(mvTilesContainer.getChildCount() > 0);
+
+        OverviewModeBehaviorWatcher hideWatcher =
+                TabUiTestHelper.createOverviewHideWatcher(mActivityTestRule.getActivity());
+        try {
+            // TODO (crbug.com/1025296): Find a way to perform click on a child at index 0 in
+            // LinearLayout with Espresso. Note that we do not have 'withParentIndex' so far.
+            TestThreadUtils.runOnUiThreadBlocking(
+                    () -> mvTilesContainer.getChildAt(0).performClick());
+        } catch (ExecutionException e) {
+            assertTrue(false);
+        }
+        hideWatcher.waitForBehavior();
+        assertThat(
+                mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount(),
+                equalTo(2));
+
+        // Press back button should close the tab opened from the Start surface.
+        OverviewModeBehaviorWatcher showWatcher =
+                TabUiTestHelper.createOverviewShowWatcher(mActivityTestRule.getActivity());
+        pressBack();
+        showWatcher.waitForBehavior();
+        assertThat(
+                mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel().getCount(),
+                equalTo(1));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
     @CommandLineFlags.Add({BASE_PARAMS + "/twopanes"})
     public void testShowAndHideTwoPanesSurface() {
         TestThreadUtils.runOnUiThreadBlocking(

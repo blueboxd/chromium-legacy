@@ -761,7 +761,7 @@ TEST_F(WidgetTestInteractive, ChildStackedRelativeToParent) {
   // Showing the parent again should raise it and its child above the popover.
   ShowSync(parent.get());
   EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-    EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
+  EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
 
   // Test grandchildren.
   Widget* grandchild = CreateChildPlatformWidget(child->GetNativeView());
@@ -769,15 +769,15 @@ TEST_F(WidgetTestInteractive, ChildStackedRelativeToParent) {
   grandchild->ShowInactive();
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
   EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-    EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
+  EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
 
   ShowSync(popover.get());
-    EXPECT_TRUE(IsWindowStackedAbove(popover.get(), grandchild));
+  EXPECT_TRUE(IsWindowStackedAbove(popover.get(), grandchild));
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
 
   ShowSync(parent.get());
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
-    EXPECT_TRUE(IsWindowStackedAbove(child, popover.get()));
+  EXPECT_TRUE(IsWindowStackedAbove(child, popover.get()));
 
   // Test hiding and reshowing.
   parent->Hide();
@@ -786,7 +786,7 @@ TEST_F(WidgetTestInteractive, ChildStackedRelativeToParent) {
 
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
   EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-    EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
+  EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
 
   grandchild->Hide();
   EXPECT_FALSE(grandchild->IsVisible());
@@ -794,7 +794,7 @@ TEST_F(WidgetTestInteractive, ChildStackedRelativeToParent) {
 
   EXPECT_TRUE(IsWindowStackedAbove(grandchild, child));
   EXPECT_TRUE(IsWindowStackedAbove(child, parent.get()));
-    EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
+  EXPECT_TRUE(IsWindowStackedAbove(parent.get(), popover.get()));
 }
 
 #if defined(OS_WIN)
@@ -904,8 +904,7 @@ TEST_F(WidgetTestInteractive, WidgetNotActivatedOnFakeActivationMessages) {
 // activation. This test verifies the same.
 TEST_F(WidgetTestInteractive, FullscreenBoundsReducedOnActivationLoss) {
   Widget widget1;
-  Widget::InitParams params =
-      CreateParams(Widget::InitParams::TYPE_WINDOW);
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
   params.native_widget = new DesktopNativeWidgetAura(&widget1);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   widget1.Init(std::move(params));
@@ -944,7 +943,8 @@ TEST_F(WidgetTestInteractive, FullscreenBoundsReducedOnActivationLoss) {
   // After deactivation loss the bounds of the fullscreen widget should be
   // reduced by 1px.
   EXPECT_EQ(fullscreen_bounds.height() -
-            fullscreen_bounds_after_activation_loss.height(), 1);
+                fullscreen_bounds_after_activation_loss.height(),
+            1);
 
   widget1.Activate();
   RunPendingMessages();
@@ -1099,7 +1099,7 @@ TEST_F(DesktopWidgetTestInteractive, WindowModalWindowDestroyedActivationTest) {
 // Investigate enabling for Chrome OS. It probably requires help from the window
 // service.
 #define MAYBE_SystemModalWindowReleasesCapture \
-    DISABLED_SystemModalWindowReleasesCapture
+  DISABLED_SystemModalWindowReleasesCapture
 #else
 #define MAYBE_SystemModalWindowReleasesCapture SystemModalWindowReleasesCapture
 #endif
@@ -1250,7 +1250,7 @@ TEST_F(WidgetTestInteractive, DisableViewDoesNotActivateWidget) {
   EXPECT_NE(view1, focus_manager1->GetFocusedView());
   EXPECT_FALSE(widget1.IsActive());
   EXPECT_TRUE(widget2.IsActive());
-}
+}  // namespace test
 
 TEST_F(WidgetTestInteractive, ShowCreatesActiveWindow) {
   Widget* widget = CreateTopLevelPlatformWidget();
@@ -1836,7 +1836,6 @@ TEST_F(WidgetCaptureTest, SetCaptureToNonToplevel) {
   child->RemoveObserver(&observer);
 }
 
-
 #if defined(OS_WIN)
 namespace {
 
@@ -2087,12 +2086,10 @@ TEST_F(WidgetInputMethodInteractiveTest, AcceleratorInTextfield) {
   textfield->SetTextInputType(ui::TEXT_INPUT_TYPE_TEXT);
   textfield->RequestFocus();
 
-  ui::KeyEvent key_event(ui::ET_KEY_PRESSED,
-                         ui::VKEY_F, ui::EF_ALT_DOWN);
+  ui::KeyEvent key_event(ui::ET_KEY_PRESSED, ui::VKEY_F, ui::EF_ALT_DOWN);
   ui::Accelerator accelerator(key_event);
   widget->GetFocusManager()->RegisterAccelerator(
-      accelerator, ui::AcceleratorManager::kNormalPriority,
-      textfield);
+      accelerator, ui::AcceleratorManager::kNormalPriority, textfield);
 
   widget->OnKeyEvent(&key_event);
   EXPECT_TRUE(key_event.stopped_propagation());

@@ -61,9 +61,7 @@ class TestCombobox : public Combobox {
   bool key_handled() const { return key_handled_; }
   bool key_received() const { return key_received_; }
 
-  void clear() {
-    key_received_ = key_handled_ = false;
-  }
+  void clear() { key_received_ = key_handled_ = false; }
 
  private:
   bool key_handled_;
@@ -200,17 +198,11 @@ class TestComboboxListener : public views::ComboboxListener {
     actions_performed_++;
   }
 
-  int perform_action_index() const {
-    return perform_action_index_;
-  }
+  int perform_action_index() const { return perform_action_index_; }
 
-  bool on_perform_action_called() const {
-    return actions_performed_ > 0;
-  }
+  bool on_perform_action_called() const { return actions_performed_ > 0; }
 
-  int actions_performed() const {
-    return actions_performed_;
-  }
+  int actions_performed() const { return actions_performed_; }
 
  private:
   int perform_action_index_ = -1;
@@ -541,7 +533,8 @@ TEST_F(ComboboxTest, GetTextForRowTest) {
       EXPECT_TRUE(combobox_->GetTextForRow(i).empty()) << i;
     } else {
       EXPECT_EQ(ASCIIToUTF16(i % 2 == 0 ? "PEANUT BUTTER" : "JELLY"),
-                combobox_->GetTextForRow(i)) << i;
+                combobox_->GetTextForRow(i))
+          << i;
     }
   }
 }
@@ -578,8 +571,8 @@ TEST_F(ComboboxTest, Click) {
 
   // Click the left side. The menu is shown.
   EXPECT_EQ(0, menu_show_count_);
-  PerformClick(gfx::Point(combobox_->x() + 1,
-                          combobox_->y() + combobox_->height() / 2));
+  PerformClick(
+      gfx::Point(combobox_->x() + 1, combobox_->y() + combobox_->height() / 2));
   EXPECT_FALSE(listener.on_perform_action_called());
   EXPECT_EQ(1, menu_show_count_);
 }
@@ -594,8 +587,8 @@ TEST_F(ComboboxTest, ClickButDisabled) {
   combobox_->SetEnabled(false);
 
   // Click the left side, but nothing happens since the combobox is disabled.
-  PerformClick(gfx::Point(combobox_->x() + 1,
-                          combobox_->y() + combobox_->height() / 2));
+  PerformClick(
+      gfx::Point(combobox_->x() + 1, combobox_->y() + combobox_->height() / 2));
   EXPECT_FALSE(listener.on_perform_action_called());
   EXPECT_EQ(0, menu_show_count_);
 }
@@ -669,7 +662,7 @@ TEST_F(ComboboxTest, NotifyOnClickWithMouse) {
 
   // Click the right side (arrow button). The menu is shown.
   const gfx::Point right_point(combobox_->x() + combobox_->width() - 1,
-                         combobox_->y() + combobox_->height() / 2);
+                               combobox_->y() + combobox_->height() / 2);
 
   EXPECT_EQ(0, menu_show_count_);
 

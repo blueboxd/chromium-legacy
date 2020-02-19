@@ -45,9 +45,7 @@ class TableViewTestHelper {
            base::NumberToString(region.max_column);
   }
 
-  size_t visible_col_count() {
-    return table_->visible_columns().size();
-  }
+  size_t visible_col_count() { return table_->visible_columns().size(); }
 
   int GetActiveVisibleColumnIndex() {
     return table_->GetActiveVisibleColumnIndex();
@@ -122,7 +120,7 @@ class TestTableModel2 : public ui::TableModel {
   ui::TableModelObserver* observer_ = nullptr;
 
   // The data.
-  std::vector<std::vector<int> > rows_;
+  std::vector<std::vector<int>> rows_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTableModel2);
 };
@@ -773,9 +771,7 @@ class TableGrouperImpl : public TableGrouper {
  public:
   TableGrouperImpl() = default;
 
-  void SetRanges(const std::vector<int>& ranges) {
-    ranges_ = ranges;
-  }
+  void SetRanges(const std::vector<int>& ranges) { ranges_ = ranges; }
 
   // TableGrouper overrides:
   void GetGroupRange(int model_index, GroupRange* range) override {

@@ -88,9 +88,8 @@ void TooltipWin::PositionTooltip() {
       display::Screen::GetScreen()->GetDisplayNearestPoint(location_));
 
   gfx::Rect tooltip_bounds(screen_point, size);
-  tooltip_bounds.AdjustToFit(
-      display::win::ScreenWin::DIPToScreenRect(parent_hwnd_,
-                                               display.work_area()));
+  tooltip_bounds.AdjustToFit(display::win::ScreenWin::DIPToScreenRect(
+      parent_hwnd_, display.work_area()));
   SetWindowPos(tooltip_hwnd_, nullptr, tooltip_bounds.x(), tooltip_bounds.y(),
                0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
 
@@ -154,8 +153,8 @@ void TooltipWin::Show() {
   if (!EnsureTooltipWindow())
     return;
 
-  SendMessage(tooltip_hwnd_, TTM_TRACKACTIVATE,
-              TRUE, reinterpret_cast<LPARAM>(&toolinfo_));
+  SendMessage(tooltip_hwnd_, TTM_TRACKACTIVATE, TRUE,
+              reinterpret_cast<LPARAM>(&toolinfo_));
 
   // Bring the window to the front.
   SetWindowPos(tooltip_hwnd_, HWND_TOPMOST, 0, 0, 0, 0,

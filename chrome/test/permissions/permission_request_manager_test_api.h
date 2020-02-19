@@ -6,8 +6,8 @@
 #define CHROME_TEST_PERMISSIONS_PERMISSION_REQUEST_MANAGER_TEST_API_H_
 
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_request_manager.h"
 
 class Browser;
 
@@ -19,12 +19,13 @@ namespace test {
 
 class PermissionRequestManagerTestApi {
  public:
-  explicit PermissionRequestManagerTestApi(PermissionRequestManager* manager);
+  explicit PermissionRequestManagerTestApi(
+      permissions::PermissionRequestManager* manager);
 
   // Wraps the PermissionRequestManager for the active tab in |browser|.
   explicit PermissionRequestManagerTestApi(Browser* browser);
 
-  PermissionRequestManager* manager() { return manager_; }
+  permissions::PermissionRequestManager* manager() { return manager_; }
 
   // Add a "simple" permission request. One that uses PermissionRequestImpl,
   // such as for ContentSettingsType including MIDI_SYSEX, PUSH_MESSAGING,
@@ -38,7 +39,7 @@ class PermissionRequestManagerTestApi {
   void SimulateWebContentsDestroyed();
 
  private:
-  PermissionRequestManager* manager_;
+  permissions::PermissionRequestManager* manager_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionRequestManagerTestApi);
 };

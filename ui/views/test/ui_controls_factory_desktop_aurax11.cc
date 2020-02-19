@@ -94,8 +94,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
     if (alt)
       SetKeycodeAndSendThenMask(host, &xevent, XK_Alt_L, Mod1Mask);
     xevent.xkey.keycode =
-        XKeysymToKeycode(x_display_,
-                         ui::XKeysymForWindowsKeyCode(key, shift));
+        XKeysymToKeycode(x_display_, ui::XKeysymForWindowsKeyCode(key, shift));
     aura::test::PostEventToWindowTreeHost(xevent, host);
 
     // Send key release events.
@@ -124,7 +123,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
     aura::Window* root_window = RootWindowForPoint(screen_location);
 
     aura::client::ScreenPositionClient* screen_position_client =
-          aura::client::GetScreenPositionClient(root_window);
+        aura::client::GetScreenPositionClient(root_window);
     if (screen_position_client) {
       screen_position_client->ConvertPointFromScreen(root_window,
                                                      &root_location);
@@ -174,7 +173,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
     gfx::Point mouse_loc = aura::Env::GetInstance()->last_mouse_location();
     aura::Window* root_window = RootWindowForPoint(mouse_loc);
     aura::client::ScreenPositionClient* screen_position_client =
-          aura::client::GetScreenPositionClient(root_window);
+        aura::client::GetScreenPositionClient(root_window);
     if (screen_position_client)
       screen_position_client->ConvertPointFromScreen(root_window, &mouse_loc);
     xbutton->x = mouse_loc.x();
@@ -226,6 +225,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
       return;
     ui::XEventWaiter::Create(x_window_, std::move(closure));
   }
+
  private:
   aura::Window* RootWindowForPoint(const gfx::Point& point) {
     // Most interactive_ui_tests run inside of the aura_test_helper

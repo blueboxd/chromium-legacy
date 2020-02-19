@@ -9,14 +9,19 @@ import android.view.View;
 /** Interface for the Profile Card related UI. */
 public interface ProfileCardCoordinator {
     /**
-     * Updates the {@link ProfileCard}
+     * Initiates the profile card coordinator.
      * @param view {@link View} triggers the profile card.
      * @param profileCardData {@link ProfileCardData} stores all data needed by profile card.
      */
-    void update(View view, ProfileCardData profileCardData);
+    void init(View view, ProfileCardData profileCardData);
 
     /**
-     * Shows the profile card drop-down bubble.
+     * Shows the profile card.
      */
     void show();
+
+    /**
+     * Hides the profile card.
+     */
+    void hide();
 }

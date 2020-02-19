@@ -121,9 +121,9 @@ SafeBrowsingUrlCheckerImpl::~SafeBrowsingUrlCheckerImpl() {
 
   if (state_ == STATE_CHECKING_URL) {
     database_manager_->CancelCheck(this);
-
-    TRACE_EVENT_ASYNC_END1("safe_browsing", "CheckUrl", this, "result",
-                           "request_canceled");
+    const GURL& url = urls_[next_index_].url;
+    TRACE_EVENT_ASYNC_END1("safe_browsing", "CheckUrl", this, "url",
+                           url.spec());
   }
 }
 
@@ -156,9 +156,7 @@ void SafeBrowsingUrlCheckerImpl::OnUrlResult(const GURL& url,
   timer_.Stop();
   RecordCheckUrlTimeout(/*timed_out=*/false);
 
-  TRACE_EVENT_ASYNC_END1(
-      "safe_browsing", "CheckUrl", this, "result",
-      threat_type == SB_THREAT_TYPE_SAFE ? "safe" : "unsafe");
+  TRACE_EVENT_ASYNC_END1("safe_browsing", "CheckUrl", this, "url", url.spec());
 
   if (threat_type == SB_THREAT_TYPE_SAFE ||
       threat_type == SB_THREAT_TYPE_SUSPICIOUS_SITE) {
@@ -347,6 +345,9 @@ void SafeBrowsingUrlCheckerImpl::ProcessUrls() {
     if (safe_synchronously) {
       timer_.Stop();
       RecordCheckUrlTimeout(/*timed_out=*/false);
+
+      TRACE_EVENT_ASYNC_END1("safe_browsing", "CheckUrl", this, "url",
+                             url.spec());
 
       if (!RunNextCallback(true, false))
         return;

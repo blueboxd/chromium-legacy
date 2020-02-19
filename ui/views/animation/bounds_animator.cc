@@ -17,8 +17,7 @@ namespace views {
 BoundsAnimator::BoundsAnimator(View* parent)
     : AnimationDelegateViews(parent),
       parent_(parent),
-      container_(new gfx::AnimationContainer()) {
-}
+      container_(new gfx::AnimationContainer()) {}
 
 BoundsAnimator::~BoundsAnimator() {
   // Delete all the animations, but don't remove any child views. We assume the

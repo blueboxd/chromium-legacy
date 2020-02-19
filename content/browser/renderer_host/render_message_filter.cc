@@ -104,24 +104,12 @@ RenderMessageFilter::~RenderMessageFilter() {
 }
 
 bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(RenderMessageFilter, message)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_MediaLogRecords, OnMediaLogRecords)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
+  return false;
 }
 
 void RenderMessageFilter::OnDestruct() const {
   const_cast<RenderMessageFilter*>(this)->resource_context_ = nullptr;
   BrowserThread::DeleteOnIOThread::Destruct(this);
-}
-
-void RenderMessageFilter::OverrideThreadForMessage(const IPC::Message& message,
-                                                   BrowserThread::ID* thread) {
-  if (message.type() == ViewHostMsg_MediaLogRecords::ID)
-    *thread = BrowserThread::UI;
 }
 
 void RenderMessageFilter::GenerateRoutingID(

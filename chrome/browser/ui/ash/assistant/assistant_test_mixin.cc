@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/assistant/assistant_test_mixin.h"
 
+#include <utility>
+
 #include "ash/assistant/model/ui/assistant_card_element.h"
 #include "ash/assistant/ui/assistant_ui_constants.h"
 #include "ash/assistant/ui/main_stage/assistant_ui_element_view.h"
@@ -214,6 +216,23 @@ class CardResponseWaiter : public ResponseWaiter {
   }
 };
 
+template <typename T>
+void CheckResult(base::OnceClosure quit,
+                 T expected_value,
+                 base::RepeatingCallback<T()> value_callback) {
+  if (expected_value == value_callback.Run()) {
+    std::move(quit).Run();
+    return;
+  }
+
+  // Check again in the future
+  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(CheckResult<T>, std::move(quit), expected_value,
+                     value_callback),
+      base::TimeDelta::FromMilliseconds(10));
+}
+
 }  // namespace
 
 // Test mixin for the browser tests that logs in the given user and issues
@@ -350,6 +369,27 @@ void AssistantTestMixin::SetPreferVoice(bool prefer_voice) {
 void AssistantTestMixin::SendTextQuery(const std::string& query) {
   test_api_->SendTextQuery(query);
 }
+
+template <typename T>
+void AssistantTestMixin::ExpectResult(
+    T expected_value,
+    base::RepeatingCallback<T()> value_callback) {
+  const base::test::ScopedRunLoopTimeout run_timeout(FROM_HERE,
+                                                     kDefaultWaitTimeout);
+
+  // Wait until we're ready or we hit the timeout.
+  base::RunLoop run_loop;
+  CheckResult(run_loop.QuitClosure(), expected_value, value_callback);
+
+  EXPECT_NO_FATAL_FAILURE(run_loop.Run())
+      << "Failed waiting for expected result.\n"
+      << "Expected \"" << expected_value << "\"\n"
+      << "Got \"" << value_callback.Run() << "\"";
+}
+
+template void AssistantTestMixin::ExpectResult<bool>(
+    bool expected_value,
+    base::RepeatingCallback<bool()> value_callback);
 
 void AssistantTestMixin::ExpectCardResponse(
     const std::string& expected_response,

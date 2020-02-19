@@ -284,6 +284,48 @@ void TestAllOSSettingPages(const GURL& base_url) {
                      base_url.Resolve(chrome::kStorageSubPage));
   TestOpenChromePage(ChromePage::SYNCSETUP,
                      base_url.Resolve(chrome::kSyncSetupSubPage));
+  TestOpenChromePage(ChromePage::ACCESSIBILITY,
+                     base_url.Resolve(chrome::kAccessibilitySubPage));
+  TestOpenChromePage(ChromePage::ACCOUNTMANAGER,
+                     base_url.Resolve(chrome::kAccountManagerSubPage));
+  TestOpenChromePage(ChromePage::ANDROIDAPPSDETAILS,
+                     base_url.Resolve(chrome::kAndroidAppsDetailsSubPage));
+  TestOpenChromePage(
+      ChromePage::ANDROIDAPPSDETAILSINBROWSERSETTINGS,
+      base_url.Resolve(chrome::kAndroidAppsDetailsSubPageInBrowserSettings));
+  TestOpenChromePage(ChromePage::APPMANAGEMENTDETAILS,
+                     base_url.Resolve(chrome::kAppManagementDetailSubPage));
+  TestOpenChromePage(ChromePage::APPMANAGEMENT,
+                     base_url.Resolve(chrome::kAppManagementSubPage));
+  TestOpenChromePage(ChromePage::ASSISTANT,
+                     base_url.Resolve(chrome::kAssistantSubPage));
+  TestOpenChromePage(ChromePage::CONNECTEDDEVICES,
+                     base_url.Resolve(chrome::kConnectedDevicesSubPage));
+  TestOpenChromePage(ChromePage::CROSTINISHAREDPATHS,
+                     base_url.Resolve(chrome::kCrostiniSharedPathsSubPage));
+  TestOpenChromePage(
+      ChromePage::CROSTINISHAREDUSBDEVICES,
+      base_url.Resolve(chrome::kCrostiniSharedUsbDevicesSubPage));
+  TestOpenChromePage(ChromePage::CROSTINIEXPORTIMPORT,
+                     base_url.Resolve(chrome::kCrostiniExportImportSubPage));
+  TestOpenChromePage(ChromePage::EXTERNALSTORAGE,
+                     base_url.Resolve(chrome::kExternalStorageSubPage));
+  TestOpenChromePage(ChromePage::INTERNET,
+                     base_url.Resolve(chrome::kInternetSubPage));
+  TestOpenChromePage(ChromePage::KERBEROSACCOUNTS,
+                     base_url.Resolve(chrome::kKerberosAccountsSubPage));
+  TestOpenChromePage(ChromePage::KNOWNNETWORKS,
+                     base_url.Resolve(chrome::kKnownNetworksSubPage));
+  TestOpenChromePage(ChromePage::MANAGEACCESSIBILITYTTS,
+                     base_url.Resolve(chrome::kManageAccessibilityTtsSubPage));
+  TestOpenChromePage(ChromePage::SMARTLOCKSETTINGS,
+                     base_url.Resolve(chrome::kSmartLockSettingsSubPage));
+  TestOpenChromePage(ChromePage::STYLUS,
+                     base_url.Resolve(chrome::kStylusSubPage));
+  TestOpenChromePage(ChromePage::SWITCHACCESS,
+                     base_url.Resolve(chrome::kSwitchAccessSubPage));
+  TestOpenChromePage(ChromePage::TETHERSETTINGS,
+                     base_url.Resolve(chrome::kTetherSettingsSubPage));
 }
 
 void TestAllBrowserSettingPages(const GURL& base_url) {

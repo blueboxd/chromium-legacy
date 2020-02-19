@@ -14,7 +14,6 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/mac/scoped_nsobject.h"
-#include "base/mac/sdk_forward_declarations.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
@@ -416,6 +415,11 @@ void WiFiServiceMac::SetEventObservers(
     // Given the choice between a symbol that is marked as "deprecated" in the
     // docs and actually removed from the SDK, and an undocumented string that
     // is secretly broadcast, the string is the safer choice.
+    //
+    // This is not a supported way to do this. The correct way to do this is the
+    // -[CWWiFiClient startMonitoringEventWithType:error:] API:
+    // https://developer.apple.com/documentation/corewlan/cwwificlient/1512439-startmonitoringeventwithtype?language=objc
+    // TODO(avi): Use this API. https://crbug.com/1054063
     wlan_observer_ = [[NSNotificationCenter defaultCenter]
         addObserverForName:@"com.apple.coreWLAN.notification.ssid.legacy"
                     object:nil

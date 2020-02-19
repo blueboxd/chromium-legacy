@@ -30,14 +30,11 @@ void LinkHighlight::Trace(Visitor* visitor) {
 }
 
 void LinkHighlight::RemoveHighlight() {
-  if (impl_) {
-    if (timeline_)
-      timeline_->AnimationDestroyed(*impl_);
-    if (auto* node = impl_->GetNode()) {
-      if (auto* layout_object = node->GetLayoutObject())
-        layout_object->SetNeedsPaintPropertyUpdate();
-    }
-  }
+  if (!impl_)
+    return;
+
+  if (timeline_)
+    timeline_->AnimationDestroyed(*impl_);
   impl_.reset();
 }
 
@@ -50,8 +47,11 @@ void LinkHighlight::SetTapHighlight(Node* node) {
   // don't get a new target to highlight.
   RemoveHighlight();
 
-  if (!node || !node->GetLayoutObject())
+  if (!node)
     return;
+
+  DCHECK(node->GetLayoutObject());
+  DCHECK(!node->IsTextNode());
 
   Color highlight_color =
       node->GetLayoutObject()->StyleRef().TapHighlightColor();
@@ -64,7 +64,6 @@ void LinkHighlight::SetTapHighlight(Node* node) {
   impl_ = std::make_unique<LinkHighlightImpl>(node);
   if (timeline_)
     timeline_->AnimationAttached(*impl_);
-  node->GetLayoutObject()->SetNeedsPaintPropertyUpdate();
 }
 
 LocalFrame* LinkHighlight::MainFrame() const {
@@ -102,9 +101,7 @@ void LinkHighlight::WillCloseAnimationHost() {
 bool LinkHighlight::NeedsHighlightEffectInternal(
     const LayoutObject& object) const {
   DCHECK(impl_);
-  if (auto* node = impl_->GetNode())
-    return node->GetLayoutObject() == &object;
-  return false;
+  return &object == impl_->GetLayoutObject();
 }
 
 void LinkHighlight::UpdateBeforePrePaint() {

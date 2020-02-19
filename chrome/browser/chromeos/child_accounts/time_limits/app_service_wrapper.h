@@ -85,8 +85,11 @@ class AppServiceWrapper : public apps::AppRegistryCache::Observer,
   // Pauses the app identified by |app_id|.
   // Uses |daily_limit| to communicate applied time restriction to the user by
   // showing the dialog. After this is called user will not be able to launch
-  // the app and the visual effect will be applied to the icon.
-  void PauseApp(const AppId& app_id, base::TimeDelta daily_limit);
+  // the app and the visual effect will be applied to the icon. |show_dialog|
+  // indicates whether the user should be notified with a dialog.
+  void PauseApp(const AppId& app_id,
+                base::TimeDelta daily_limit,
+                bool show_dialog);
 
   // Resets time restriction from the app identified with |app_id|. After this
   // is called user will be able to use the app again and the visual effect

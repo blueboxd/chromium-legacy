@@ -173,9 +173,12 @@ void AppActivity::SetAppInactive(base::Time timestamp) {
   base::TimeTicks now = base::TimeTicks::Now();
   base::TimeDelta active_time = now - last_updated_time_ticks_;
   base::Time start_time = timestamp - active_time;
-
   is_active_ = false;
-  active_times_.push_back(ActiveTime(start_time, timestamp));
+  // Timestamps can be equal if SetAppInactive() is called directly after
+  // SetAppState(). Happens in tests.
+  DCHECK_GE(timestamp, start_time);
+  if (timestamp > start_time)
+    active_times_.push_back(ActiveTime(start_time, timestamp));
 
   running_active_time_ += active_time;
   last_updated_time_ticks_ = now;

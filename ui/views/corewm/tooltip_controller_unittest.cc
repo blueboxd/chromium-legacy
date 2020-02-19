@@ -129,13 +129,9 @@ class TooltipControllerTest : public ViewsTestBase {
   }
 
  protected:
-  aura::Window* GetWindow() {
-    return widget_->GetNativeWindow();
-  }
+  aura::Window* GetWindow() { return widget_->GetNativeWindow(); }
 
-  aura::Window* GetRootWindow() {
-    return GetWindow()->GetRootWindow();
-  }
+  aura::Window* GetRootWindow() { return GetWindow()->GetRootWindow(); }
 
   aura::Window* CreateNormalWindow(int id,
                                    aura::Window* parent,
@@ -479,8 +475,9 @@ namespace {
 int IndexInParent(const aura::Window* window) {
   auto i = std::find(window->parent()->children().begin(),
                      window->parent()->children().end(), window);
-  return i == window->parent()->children().end() ? -1 :
-      static_cast<int>(i - window->parent()->children().begin());
+  return i == window->parent()->children().end()
+             ? -1
+             : static_cast<int>(i - window->parent()->children().begin());
 }
 
 }  // namespace
@@ -588,9 +585,7 @@ class TestTooltip : public Tooltip {
   const base::string16& tooltip_text() const { return tooltip_text_; }
 
   // Tooltip:
-  int GetMaxWidth(const gfx::Point& location) const override {
-    return 100;
-  }
+  int GetMaxWidth(const gfx::Point& location) const override { return 100; }
   void SetText(aura::Window* window,
                const base::string16& tooltip_text,
                const gfx::Point& location) override {

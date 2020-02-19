@@ -3359,6 +3359,7 @@ Annars skaltu skrá þig út núna svo breytingarnar á þessum reikningi taki g
 <translation id="5689516760719285838">Staðsetning</translation>
 <translation id="56907980372820799">Tenglagögn</translation>
 <translation id="5691511426247308406">Fjölskylda</translation>
+<translation id="5691772641933328258">Fingrafar þekkist ekki</translation>
 <translation id="5692183275898619210">Prentun lokið</translation>
 <translation id="5696143504434933566">Tilkynna misnotkun frá „<ph name="EXTENSION_NAME" />“</translation>
 <translation id="5696679855467848181">PPD-skrá í notkun: <ph name="PPD_NAME" /></translation>
@@ -5663,7 +5664,6 @@ Geymdu lykilskrána á öruggum stað. Þú þarft hana til að búa til nýjar 
 <translation id="8864458770072227512"><ph name="EMAIL" /> var fjarlægt úr þessu tæki</translation>
 <translation id="8867228703146808825">Afrita upplýsingar um smíði á klippiborð</translation>
 <translation id="8868626022555786497">Í notkun</translation>
-<translation id="8870318296973696995">Heimasíða</translation>
 <translation id="8870413625673593573">Nýlega lokað</translation>
 <translation id="8871551568777368300">Fest af stjórnanda</translation>
 <translation id="8871696467337989339">Þú ert að nota óstutt flagg fyrir skipanalínu: <ph name="BAD_FLAG" />. Þetta kemur niður á stöðugleika og öryggi.</translation>

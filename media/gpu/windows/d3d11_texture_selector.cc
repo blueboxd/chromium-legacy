@@ -91,17 +91,15 @@ std::unique_ptr<Texture2DWrapper> TextureSelector::CreateTextureWrapper(
     ComD3D11Device device,
     ComD3D11VideoDevice video_device,
     ComD3D11DeviceContext device_context,
-    ComD3D11Texture2D input_texture,
     gfx::Size size) {
   // TODO(liberato): If the output format is rgb, then create a pbuffer wrapper.
-  return std::make_unique<DefaultTexture2DWrapper>(input_texture);
+  return std::make_unique<DefaultTexture2DWrapper>(size);
 }
 
 std::unique_ptr<Texture2DWrapper> CopyTextureSelector::CreateTextureWrapper(
     ComD3D11Device device,
     ComD3D11VideoDevice video_device,
     ComD3D11DeviceContext device_context,
-    ComD3D11Texture2D input_texture,
     gfx::Size size) {
   D3D11_TEXTURE2D_DESC texture_desc = {};
   texture_desc.MipLevels = 1;
@@ -127,9 +125,9 @@ std::unique_ptr<Texture2DWrapper> CopyTextureSelector::CreateTextureWrapper(
     return nullptr;
 
   return std::make_unique<CopyingTexture2DWrapper>(
-      std::make_unique<DefaultTexture2DWrapper>(out_texture),
+      size, std::make_unique<DefaultTexture2DWrapper>(size),
       std::make_unique<VideoProcessorProxy>(video_device, device_context),
-      input_texture);
+      out_texture);
 }
 
 }  // namespace media

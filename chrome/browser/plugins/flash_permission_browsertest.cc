@@ -10,11 +10,11 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permissions_browsertest.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
@@ -84,7 +84,7 @@ class FlashPermissionBrowserTest : public PermissionsBrowserTest {
 
   void TriggerPrompt() override {
     if (prompt_factory()->response_type() ==
-        PermissionRequestManager::ACCEPT_ALL) {
+        permissions::PermissionRequestManager::ACCEPT_ALL) {
       // If the prompt will be allowed, we need to wait for the page to refresh.
       PageReloadWaiter reload_waiter(GetWebContents());
       EXPECT_TRUE(RunScriptReturnBool("triggerPrompt();"));
@@ -145,13 +145,14 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, SucceedsInPopupWindow) {
   // Assert that the popup's WebContents is now the active one.
   ASSERT_NE(original_contents, GetWebContents());
 
-  PermissionRequestManager* manager = PermissionRequestManager::FromWebContents(
-      GetWebContents());
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(GetWebContents());
   auto popup_prompt_factory =
-      std::make_unique<MockPermissionPromptFactory>(manager);
+      std::make_unique<permissions::MockPermissionPromptFactory>(manager);
 
   EXPECT_EQ(0, popup_prompt_factory->TotalRequestCount());
-  popup_prompt_factory->set_response_type(PermissionRequestManager::ACCEPT_ALL);
+  popup_prompt_factory->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
   // FlashPermissionContext::UpdateTabContext will reload the page, we'll have
   // to wait until it is ready.
   PageReloadWaiter reload_waiter(GetWebContents());
@@ -169,7 +170,8 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, SucceedsInPopupWindow) {
 
 IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest, TriggerPromptViaNewWindow) {
   EXPECT_EQ(0, prompt_factory()->TotalRequestCount());
-  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
   // FlashPermissionContext::UpdateTabContext will reload the page, we'll have
   // to wait until it is ready.
   PageReloadWaiter reload_waiter(GetWebContents());
@@ -184,7 +186,8 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest,
                        TriggerPromptViaPluginPlaceholder) {
   EXPECT_EQ(0, prompt_factory()->TotalRequestCount());
   EXPECT_FALSE(FeatureUsageSucceeds());
-  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
   // We need to simulate a mouse click to trigger the placeholder to prompt.
   // When the prompt is auto-accepted, the page will be reloaded.
   PageReloadWaiter reload_waiter(GetWebContents());
@@ -201,7 +204,8 @@ IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest,
                        TriggerPromptViaMainFrameNavigationWithoutUserGesture) {
   EXPECT_EQ(0, prompt_factory()->TotalRequestCount());
   EXPECT_FALSE(FeatureUsageSucceeds());
-  prompt_factory()->set_response_type(PermissionRequestManager::ACCEPT_ALL);
+  prompt_factory()->set_response_type(
+      permissions::PermissionRequestManager::ACCEPT_ALL);
 
   PageReloadWaiter reload_waiter(GetWebContents());
 

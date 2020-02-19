@@ -8,10 +8,10 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/permissions/permission_request_id.h"
+#include "components/permissions/permission_request_manager.h"
+#include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_utils.h"
 
@@ -59,7 +59,7 @@ class NfcPermissionContextTests : public ChromeRenderViewHostTestHarness {
 
   // owned by the browser context
   NfcPermissionContext* nfc_permission_context_;
-  std::vector<std::unique_ptr<MockPermissionPromptFactory>>
+  std::vector<std::unique_ptr<permissions::MockPermissionPromptFactory>>
       mock_permission_prompt_factories_;
 
   // A map between renderer child id and a pair represending the bridge id and
@@ -136,13 +136,13 @@ void NfcPermissionContextTests::TearDown() {
 void NfcPermissionContextTests::SetupRequestManager(
     content::WebContents* web_contents) {
   // Create PermissionRequestManager.
-  PermissionRequestManager::CreateForWebContents(web_contents);
-  PermissionRequestManager* permission_request_manager =
-      PermissionRequestManager::FromWebContents(web_contents);
+  permissions::PermissionRequestManager::CreateForWebContents(web_contents);
+  permissions::PermissionRequestManager* permission_request_manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents);
 
   // Create a MockPermissionPromptFactory for the PermissionRequestManager.
   mock_permission_prompt_factories_.push_back(
-      std::make_unique<MockPermissionPromptFactory>(
+      std::make_unique<permissions::MockPermissionPromptFactory>(
           permission_request_manager));
 }
 
@@ -153,7 +153,7 @@ void NfcPermissionContextTests::RequestManagerDocumentLoadCompleted() {
 
 void NfcPermissionContextTests::RequestManagerDocumentLoadCompleted(
     content::WebContents* web_contents) {
-  PermissionRequestManager::FromWebContents(web_contents)
+  permissions::PermissionRequestManager::FromWebContents(web_contents)
       ->DocumentOnLoadCompletedInMainFrame();
 }
 
@@ -180,8 +180,8 @@ bool NfcPermissionContextTests::HasActivePrompt() {
 
 bool NfcPermissionContextTests::HasActivePrompt(
     content::WebContents* web_contents) {
-  PermissionRequestManager* manager =
-      PermissionRequestManager::FromWebContents(web_contents);
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents);
   return manager->IsRequestInProgress();
 }
 
@@ -192,22 +192,22 @@ void NfcPermissionContextTests::AcceptPrompt() {
 
 void NfcPermissionContextTests::AcceptPrompt(
     content::WebContents* web_contents) {
-  PermissionRequestManager* manager =
-      PermissionRequestManager::FromWebContents(web_contents);
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents);
   manager->Accept();
   base::RunLoop().RunUntilIdle();
 }
 
 void NfcPermissionContextTests::DenyPrompt() {
-  PermissionRequestManager* manager =
-      PermissionRequestManager::FromWebContents(web_contents());
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents());
   manager->Deny();
   base::RunLoop().RunUntilIdle();
 }
 
 void NfcPermissionContextTests::ClosePrompt() {
-  PermissionRequestManager* manager =
-      PermissionRequestManager::FromWebContents(web_contents());
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents());
   manager->Closing();
   base::RunLoop().RunUntilIdle();
 }

@@ -3,12 +3,6 @@
 const scrollOffset = 20;
 const boundaryOffset = 2;
 
-function delayPromise(delay) {
-  return new Promise(function(resolve, reject) {
-    window.setTimeout(resolve, delay);
-  });
-}
-
 function scrollPageIfNeeded(targetSelector, targetDocument) {
   var target = targetDocument.querySelector(targetSelector);
   var targetRect = target.getBoundingClientRect();
@@ -64,43 +58,6 @@ function mouseMoveIntoTarget(targetSelector, targetFrame) {
             source: 'mouse',
             actions:
                 [{name: 'pointerMove', x: xPosition, y: yPosition}]
-          }],
-          resolve);
-    } else {
-      reject();
-    }
-  });
-}
-
-function mouseChordedButtonPress(targetSelector) {
-  return new Promise(function(resolve, reject) {
-    if (window.chrome && chrome.gpuBenchmarking) {
-      scrollPageIfNeeded(targetSelector, document);
-      var target = document.querySelector(targetSelector);
-      var targetRect = target.getBoundingClientRect();
-      var xPosition = targetRect.left + boundaryOffset;
-      var yPosition = targetRect.top + boundaryOffset;
-      const leftButton = 0;
-      const middleButton = 1;
-      chrome.gpuBenchmarking.pointerActionSequence(
-          [{
-            source: 'mouse',
-            actions: [
-              {
-                name: 'pointerDown',
-                x: xPosition,
-                y: yPosition,
-                button: leftButton
-              },
-              {
-                name: 'pointerDown',
-                x: xPosition,
-                y: yPosition,
-                button: middleButton
-              },
-              {name: 'pointerUp', button: middleButton},
-              {name: 'pointerUp', button: leftButton}
-            ]
           }],
           resolve);
     } else {
@@ -202,47 +159,6 @@ function mouseWheelScroll(targetSelector, direction) {
       else
         reject();
       resolve();
-    } else {
-      reject();
-    }
-  });
-}
-
-// Request a pointer lock and capture.
-function mouseRequestPointerLockAndCaptureInTarget(targetSelector, targetFrame) {
-  var targetDocument = document;
-  var frameLeft = 0;
-  var frameTop = 0;
-  // Initialize the button value to left button.
-  var button = 0;
-  if (targetFrame !== undefined) {
-    targetDocument = targetFrame.contentDocument;
-    var frameRect = targetFrame.getBoundingClientRect();
-    frameLeft = frameRect.left;
-    frameTop = frameRect.top;
-  }
-  return new Promise(function(resolve, reject) {
-    if (window.chrome && chrome.gpuBenchmarking) {
-      scrollPageIfNeeded(targetSelector, targetDocument);
-      var target = targetDocument.querySelector(targetSelector);
-      var targetRect = target.getBoundingClientRect();
-      var xPosition = frameLeft + targetRect.left + boundaryOffset;
-      var yPosition = frameTop + targetRect.top + boundaryOffset;
-
-      chrome.gpuBenchmarking.pointerActionSequence( [
-        {source: 'mouse',
-         actions: [
-            {name: 'pointerMove', x: xPosition, y: yPosition},
-            {name: 'pointerDown', x: xPosition, y: yPosition, button: button},
-            {name: 'pointerMove', x: xPosition + 30, y: yPosition + 30},
-            {name: 'pointerMove', x: xPosition + 30, y: yPosition},
-            {name: 'pointerMove', x: xPosition + 60, y: yPosition + 30},
-            {name: 'pointerMove', x: xPosition + 30, y: yPosition + 20},
-            {name: 'pointerMove', x: xPosition + 10, y: yPosition + 50},
-            {name: 'pointerMove', x: xPosition + 40, y: yPosition + 10},
-            {name: 'pointerMove', x: xPosition + 10, y: yPosition + 50},
-            {name: 'pointerMove', x: xPosition + 40, y: yPosition + 10},
-        ]}], resolve);
     } else {
       reject();
     }
@@ -396,33 +312,6 @@ function penMoveToDocument() {
   });
 }
 
-function penMoveIntoTarget(targetSelector, targetFrame) {
-  var targetDocument = document;
-  var frameLeft = 0;
-  var frameTop = 0;
-  if (targetFrame !== undefined) {
-    targetDocument = targetFrame.contentDocument;
-    var frameRect = targetFrame.getBoundingClientRect();
-    frameLeft = frameRect.left;
-    frameTop = frameRect.top;
-  }
-  return new Promise(function(resolve, reject) {
-    if (window.chrome && chrome.gpuBenchmarking) {
-      var target = targetDocument.querySelector(targetSelector);
-      var targetRect = target.getBoundingClientRect();
-      var xPosition = frameLeft + targetRect.left + boundaryOffset;
-      var yPosition = frameTop + targetRect.top + boundaryOffset;
-      chrome.gpuBenchmarking.pointerActionSequence( [
-        {source: 'pen',
-         actions: [
-            { name: 'pointerMove', x: xPosition, y: yPosition}
-        ]}], resolve);
-    } else {
-      reject();
-    }
-  });
-}
-
 function penEnterAndLeaveTarget(targetSelector, targetFrame) {
   var targetDocument = document;
   var frameLeft = 0;
@@ -452,36 +341,6 @@ function penEnterAndLeaveTarget(targetSelector, targetFrame) {
   });
 }
 
-function penClickInTarget(targetSelector, targetFrame) {
-  var targetDocument = document;
-  var frameLeft = 0;
-  var frameTop = 0;
-  if (targetFrame !== undefined) {
-    targetDocument = targetFrame.contentDocument;
-    var frameRect = targetFrame.getBoundingClientRect();
-    frameLeft = frameRect.left;
-    frameTop = frameRect.top;
-  }
-  return new Promise(function(resolve, reject) {
-    if (window.chrome && chrome.gpuBenchmarking) {
-      scrollPageIfNeeded(targetSelector, targetDocument);
-      var target = targetDocument.querySelector(targetSelector);
-      var targetRect = target.getBoundingClientRect();
-      var xPosition = frameLeft + targetRect.left + boundaryOffset;
-      var yPosition = frameTop + targetRect.top + boundaryOffset;
-      chrome.gpuBenchmarking.pointerActionSequence( [
-        {source: 'pen',
-         actions: [
-            { name: 'pointerMove', x: xPosition, y: yPosition },
-            { name: 'pointerDown', x: xPosition, y: yPosition },
-            { name: 'pointerUp' }
-        ]}], resolve);
-    } else {
-      reject();
-    }
-  });
-}
-
 // Drag and drop actions
 function mouseDragAndDropInTargets(targetSelectorList) {
   return new Promise(function(resolve, reject) {
@@ -504,30 +363,6 @@ function mouseDragAndDropInTargets(targetSelectorList) {
       }
       eventSender.mouseUp();
       resolve();
-    } else {
-      reject();
-    }
-  });
-}
-
-function smoothDrag(targetSelector1, targetSelector2, pointerType) {
-  return new Promise(function(resolve, reject) {
-    if (window.chrome && chrome.gpuBenchmarking) {
-      scrollPageIfNeeded(targetSelector1, document);
-      var target1 = document.querySelector(targetSelector1);
-      var targetRect1 = target1.getBoundingClientRect();
-      var xPosition1 = targetRect1.left + boundaryOffset;
-      var yPosition1 = targetRect1.top + boundaryOffset;
-      var target2 = document.querySelector(targetSelector2);
-      var targetRect2 = target2.getBoundingClientRect();
-      var xPosition2 = targetRect2.left + boundaryOffset;
-      var yPosition2 = targetRect2.top + boundaryOffset;
-      var action = '[{"source": "' + pointerType + '", "actions": [{ "name": "pointerDown", "x":' + xPosition1 +', "y":' + yPosition1 +' },';
-      var maxStep = Math.max(1, Math.floor(Math.max(Math.abs(xPosition2 - xPosition1), Math.abs(yPosition2 - yPosition1))/15));
-      for (var step=1; step<=maxStep; step++)
-        action += '{ "name": "pointerMove", "x":' + (xPosition1 + Math.floor((step/maxStep)*(xPosition2 - xPosition1))) +', "y":' + (yPosition1 + Math.floor((step/maxStep)*(yPosition2 - yPosition1))) +' },';
-      action += '{ "name": "pointerUp" }]}]';
-      chrome.gpuBenchmarking.pointerActionSequence(JSON.parse(action), resolve);
     } else {
       reject();
     }

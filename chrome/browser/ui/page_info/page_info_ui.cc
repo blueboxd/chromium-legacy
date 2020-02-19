@@ -562,7 +562,7 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
   const gfx::VectorIcon* icon = &gfx::kNoneIcon;
   switch (info.type) {
     case ContentSettingsType::COOKIES:
-      icon = &kCookieIcon;
+      icon = &vector_icons::kCookieIcon;
       break;
     case ContentSettingsType::IMAGES:
       icon = &kPhotoIcon;
@@ -575,7 +575,7 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
       break;
 #if BUILDFLAG(ENABLE_PLUGINS)
     case ContentSettingsType::PLUGINS:
-      icon = &kExtensionIcon;
+      icon = &vector_icons::kExtensionIcon;
       break;
 #endif
     case ContentSettingsType::GEOLOCATION:
@@ -633,7 +633,7 @@ const gfx::ImageSkia PageInfoUI::GetPermissionIcon(const PermissionInfo& info,
       break;
     case ContentSettingsType::VR:
     case ContentSettingsType::AR:
-      icon = &kVrHeadsetIcon;
+      icon = &vector_icons::kVrHeadsetIcon;
       break;
     default:
       // All other |ContentSettingsType|s do not have icons on desktop or are
@@ -713,7 +713,7 @@ const gfx::ImageSkia PageInfoUI::GetSiteSettingsIcon(
 // static
 const gfx::ImageSkia PageInfoUI::GetVrSettingsIcon(SkColor related_text_color) {
   return gfx::CreateVectorIcon(
-      kVrHeadsetIcon, kVectorIconSize,
+      vector_icons::kVrHeadsetIcon, kVectorIconSize,
       color_utils::DeriveDefaultIconColor(related_text_color));
 }
 #endif

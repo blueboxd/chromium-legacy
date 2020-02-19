@@ -199,7 +199,7 @@ bool GetMonitorAndRects(const RECT& rect,
   *monitor = MonitorFromRect(&rect, MONITOR_DEFAULTTONULL);
   if (!*monitor)
     return false;
-  MONITORINFO monitor_info = { 0 };
+  MONITORINFO monitor_info = {0};
   monitor_info.cbSize = sizeof(monitor_info);
   GetMonitorInfo(*monitor, &monitor_info);
   *monitor_rect = gfx::Rect(monitor_info.rcMonitor);
@@ -530,7 +530,7 @@ gfx::Rect HWNDMessageHandler::GetWindowBoundsInScreen() const {
 gfx::Rect HWNDMessageHandler::GetClientAreaBoundsInScreen() const {
   RECT r;
   GetClientRect(hwnd(), &r);
-  POINT point = { r.left, r.top };
+  POINT point = {r.left, r.top};
   ClientToScreen(hwnd(), &point);
   return gfx::Rect(point.x, point.y, r.right - r.left, r.bottom - r.top);
 }
@@ -752,8 +752,8 @@ void HWNDMessageHandler::Deactivate() {
 }
 
 void HWNDMessageHandler::SetAlwaysOnTop(bool on_top) {
-  ::SetWindowPos(hwnd(), on_top ? HWND_TOPMOST : HWND_NOTOPMOST,
-                 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+  ::SetWindowPos(hwnd(), on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 }
 
 bool HWNDMessageHandler::IsVisible() const {
@@ -850,8 +850,7 @@ bool HWNDMessageHandler::SetTitle(const base::string16& title) {
   if (len_with_null == 1 && title.length() == 0)
     return false;
   if (len_with_null - 1 == title.length() &&
-      GetWindowText(hwnd(),
-                    base::WriteInto(&current_title, len_with_null),
+      GetWindowText(hwnd(), base::WriteInto(&current_title, len_with_null),
                     len_with_null) &&
       current_title == title)
     return false;
@@ -1479,8 +1478,8 @@ void HWNDMessageHandler::UpdateDwmNcRenderingPolicy() {
           ? DWMNCRP_DISABLED
           : DWMNCRP_ENABLED;
 
-  DwmSetWindowAttribute(hwnd(), DWMWA_NCRENDERING_POLICY,
-                        &policy, sizeof(DWMNCRENDERINGPOLICY));
+  DwmSetWindowAttribute(hwnd(), DWMWA_NCRENDERING_POLICY, &policy,
+                        sizeof(DWMNCRENDERINGPOLICY));
 }
 
 LRESULT HWNDMessageHandler::DefWindowProcWithRedrawLock(UINT message,
@@ -1597,9 +1596,7 @@ LRESULT HWNDMessageHandler::OnCreate(CREATESTRUCT* create_struct) {
 
   // This message initializes the window so that focus border are shown for
   // windows.
-  SendMessage(hwnd(),
-              WM_CHANGEUISTATE,
-              MAKELPARAM(UIS_CLEAR, UISF_HIDEFOCUS),
+  SendMessage(hwnd(), WM_CHANGEUISTATE, MAKELPARAM(UIS_CLEAR, UISF_HIDEFOCUS),
               0);
 
   if (!delegate_->HasFrame()) {
@@ -1759,7 +1756,6 @@ void HWNDMessageHandler::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
   min_window_size = delegate_->DIPToScreenSize(min_window_size);
   max_window_size = delegate_->DIPToScreenSize(max_window_size);
 
-
   // Add the native frame border size to the minimum and maximum size if the
   // view reports its size as the client size.
   if (delegate_->WidgetSizeIsClientSize()) {
@@ -1848,14 +1844,16 @@ void HWNDMessageHandler::OnInitMenu(HMENU menu) {
   bool is_restored = !is_fullscreen && !is_minimized && !is_maximized;
 
   ScopedRedrawLock lock(this);
-  EnableMenuItemByCommand(menu, SC_RESTORE, delegate_->CanResize() &&
-                          (is_minimized || is_maximized));
+  EnableMenuItemByCommand(
+      menu, SC_RESTORE,
+      delegate_->CanResize() && (is_minimized || is_maximized));
   EnableMenuItemByCommand(menu, SC_MOVE, is_restored);
   EnableMenuItemByCommand(menu, SC_SIZE, delegate_->CanResize() && is_restored);
-  EnableMenuItemByCommand(menu, SC_MAXIMIZE, delegate_->CanMaximize() &&
-                          !is_fullscreen && !is_maximized);
-  EnableMenuItemByCommand(menu, SC_MINIMIZE, delegate_->CanMinimize() &&
-                          !is_minimized);
+  EnableMenuItemByCommand(
+      menu, SC_MAXIMIZE,
+      delegate_->CanMaximize() && !is_fullscreen && !is_maximized);
+  EnableMenuItemByCommand(menu, SC_MINIMIZE,
+                          delegate_->CanMinimize() && !is_minimized);
 
   if (is_maximized && delegate_->CanResize())
     ::SetMenuDefaultItem(menu, SC_RESTORE, FALSE);
@@ -1871,8 +1869,8 @@ void HWNDMessageHandler::OnInputLangChange(DWORD character_set,
 LRESULT HWNDMessageHandler::OnKeyEvent(UINT message,
                                        WPARAM w_param,
                                        LPARAM l_param) {
-  MSG msg = {
-      hwnd(), message, w_param, l_param, static_cast<DWORD>(GetMessageTime())};
+  MSG msg = {hwnd(), message, w_param, l_param,
+             static_cast<DWORD>(GetMessageTime())};
   ui::KeyEvent key(msg);
   base::WeakPtr<HWNDMessageHandler> ref(msg_handler_weak_factory_.GetWeakPtr());
   delegate_->HandleKeyEvent(&key);
@@ -2225,7 +2223,7 @@ LRESULT HWNDMessageHandler::OnNCHitTest(const gfx::Point& point) {
 
   // Allow the NonClientView to handle the hittest to see if we have a view
   // overlapping the non client area of the window.
-  POINT temp = { point.x(), point.y() };
+  POINT temp = {point.x(), point.y()};
   MapWindowPoints(HWND_DESKTOP, hwnd(), &temp, 1);
   int component = delegate_->GetNonClientComponent(gfx::Point(temp));
   if (component == HTCLIENT)
@@ -2248,8 +2246,8 @@ LRESULT HWNDMessageHandler::OnNCHitTest(const gfx::Point& point) {
 
   // Otherwise, we let Windows do all the native frame non-client handling for
   // us.
-  LRESULT hit_test_code = DefWindowProc(hwnd(), WM_NCHITTEST, 0,
-                                        MAKELPARAM(point.x(), point.y()));
+  LRESULT hit_test_code =
+      DefWindowProc(hwnd(), WM_NCHITTEST, 0, MAKELPARAM(point.x(), point.y()));
   return hit_test_code;
 }
 
@@ -2365,8 +2363,8 @@ void HWNDMessageHandler::OnPaint(HDC dc) {
     DWORD last_error = GetLastError();
     size_t current_gdi_objects =
         GetGuiResources(GetCurrentProcess(), GR_GDIOBJECTS);
-    size_t peak_gdi_objects = GetGuiResources(
-        GetCurrentProcess(), GR_GDIOBJECTS_PEAK);
+    size_t peak_gdi_objects =
+        GetGuiResources(GetCurrentProcess(), GR_GDIOBJECTS_PEAK);
     base::debug::Alias(&last_error);
     base::debug::Alias(&current_gdi_objects);
     base::debug::Alias(&peak_gdi_objects);
@@ -2402,8 +2400,8 @@ LRESULT HWNDMessageHandler::OnReflectedMessage(UINT message,
 LRESULT HWNDMessageHandler::OnScrollMessage(UINT message,
                                             WPARAM w_param,
                                             LPARAM l_param) {
-  MSG msg = {
-      hwnd(), message, w_param, l_param, static_cast<DWORD>(GetMessageTime())};
+  MSG msg = {hwnd(), message, w_param, l_param,
+             static_cast<DWORD>(GetMessageTime())};
   ui::ScrollEvent event(msg);
   delegate_->HandleScrollEvent(&event);
   return 0;
@@ -2690,7 +2688,7 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
     // If somebody's trying to toggle our visibility, change the nonclient area,
     // change our Z-order, or activate us, we should probably let it go through.
     if (!(window_pos->flags & ((IsVisible() ? SWP_HIDEWINDOW : SWP_SHOWWINDOW) |
-        SWP_FRAMECHANGED)) &&
+                               SWP_FRAMECHANGED)) &&
         (window_pos->flags & (SWP_NOZORDER | SWP_NOACTIVATE))) {
       // Just sizing/moving the window; ignore.
       window_pos->flags |= SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW;
@@ -2743,15 +2741,14 @@ void HWNDMessageHandler::OnWindowPosChanging(WINDOWPOS* window_pos) {
       // should reset the |background_fullscreen_hack_| flag.
       if (background_fullscreen_hack_ &&
           (!(window_pos->flags & SWP_NOSIZE) &&
-            (monitor_rect.height() - window_pos->cy != 1))) {
-          background_fullscreen_hack_ = false;
+           (monitor_rect.height() - window_pos->cy != 1))) {
+        background_fullscreen_hack_ = false;
       }
       const bool fullscreen_without_hack =
           IsFullscreen() && !background_fullscreen_hack_;
 
-      if (same_monitor &&
-          (incorrect_maximized_bounds || fullscreen_without_hack ||
-           work_area_changed)) {
+      if (same_monitor && (incorrect_maximized_bounds ||
+                           fullscreen_without_hack || work_area_changed)) {
         // A rect for the monitor we're on changed.  Normally Windows notifies
         // us about this (and thus we're reaching here due to the SetWindowPos()
         // call in OnSettingChange() above), but with some software (e.g.
@@ -2957,7 +2954,7 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
       }
     }
   } else if (message == WM_NCRBUTTONDOWN &&
-      (w_param == HTCAPTION || w_param == HTSYSMENU)) {
+             (w_param == HTCAPTION || w_param == HTSYSMENU)) {
     is_right_mouse_pressed_on_caption_ = true;
     // We SetCapture() to ensure we only show the menu when the button
     // down and up are both on the caption. Note: this causes the button up to
@@ -2966,9 +2963,12 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
   }
 
   long message_time = GetMessageTime();
-  MSG msg = { hwnd(), message, w_param, l_param,
-              static_cast<DWORD>(message_time),
-              { CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param) } };
+  MSG msg = {hwnd(),
+             message,
+             w_param,
+             l_param,
+             static_cast<DWORD>(message_time),
+             {CR_GET_X_LPARAM(l_param), CR_GET_Y_LPARAM(l_param)}};
   ui::MouseEvent event(msg);
   if (IsSynthesizedMouseMessage(message, message_time, l_param))
     event.set_flags(event.flags() | ui::EF_FROM_TOUCH);
@@ -2977,8 +2977,8 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
     // Windows only fires WM_MOUSELEAVE events if the application begins
     // "tracking" mouse events for a given HWND during WM_MOUSEMOVE events.
     // We need to call |TrackMouseEvents| to listen for WM_MOUSELEAVE.
-    TrackMouseEvents((message == WM_NCMOUSEMOVE) ?
-        TME_NONCLIENT | TME_LEAVE : TME_LEAVE);
+    TrackMouseEvents((message == WM_NCMOUSEMOVE) ? TME_NONCLIENT | TME_LEAVE
+                                                 : TME_LEAVE);
   } else if (event.type() == ui::ET_MOUSE_EXITED) {
     // Reset our tracking flags so future mouse movement over this
     // NativeWidget results in a new tracking session. Fall through for

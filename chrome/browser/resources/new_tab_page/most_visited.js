@@ -519,6 +519,7 @@ class MostVisitedElement extends PolymerElement {
     if (modifier && e.key === 'z') {
       e.preventDefault();
       this.pageHandler_.undoMostVisitedTileAction();
+      this.$.toast.hide();
     }
   }
 

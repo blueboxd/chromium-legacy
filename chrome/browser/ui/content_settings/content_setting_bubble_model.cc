@@ -29,7 +29,6 @@
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/permission_bubble_media_access_handler.h"
 #include "chrome/browser/media/webrtc/system_media_capture_permissions_mac.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/quiet_notification_permission_ui_config.h"
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"
 #include "chrome/browser/plugins/plugin_utils.h"
@@ -49,6 +48,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
+#include "components/permissions/permission_request_manager.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
 #include "components/prefs/pref_service.h"
@@ -1627,13 +1627,14 @@ ContentSettingNotificationsBubbleModel::ContentSettingNotificationsBubbleModel(
   // TODO(crbug.com/1030633): This block is more defensive than it needs to be
   // because ContentSettingImageModelBrowserTest exercises it without setting up
   // the correct PermissionRequestManager state. Fix that.
-  PermissionRequestManager* manager =
-      PermissionRequestManager::FromWebContents(web_contents);
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents);
   int message_resource_id =
       IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_DESCRIPTION;
   if (manager->ShouldCurrentRequestUseQuietUI() &&
       manager->ReasonForUsingQuietUi() ==
-          PermissionRequestManager::QuietUiReason::kTriggeredByCrowdDeny) {
+          permissions::PermissionRequestManager::QuietUiReason::
+              kTriggeredByCrowdDeny) {
     message_resource_id =
         IDS_NOTIFICATIONS_QUIET_PERMISSION_BUBBLE_CROWD_DENY_DESCRIPTION;
     base::RecordAction(
@@ -1662,8 +1663,8 @@ void ContentSettingNotificationsBubbleModel::OnManageButtonClicked() {
 }
 
 void ContentSettingNotificationsBubbleModel::OnDoneButtonClicked() {
-  PermissionRequestManager* manager =
-      PermissionRequestManager::FromWebContents(web_contents());
+  permissions::PermissionRequestManager* manager =
+      permissions::PermissionRequestManager::FromWebContents(web_contents());
   manager->Accept();
 
   base::RecordAction(

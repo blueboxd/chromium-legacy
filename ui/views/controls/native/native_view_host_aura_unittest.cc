@@ -76,7 +76,7 @@ class NativeViewHostWindowObserver : public aura::WindowObserver {
   }
 
   void OnWindowDestroyed(aura::Window* window) override {
-    EventDetails event = { EVENT_DESTROYED, window, gfx::Rect() };
+    EventDetails event = {EVENT_DESTROYED, window, gfx::Rect()};
     events_.push_back(event);
   }
 
@@ -95,9 +95,7 @@ class NativeViewHostAuraTest : public test::NativeViewHostTestBase {
     return static_cast<NativeViewHostAura*>(GetNativeWrapper());
   }
 
-  Widget* child() {
-    return child_.get();
-  }
+  Widget* child() { return child_.get(); }
 
   aura::Window* clipping_window() {
     return native_host()->clipping_window_.get();
@@ -107,8 +105,7 @@ class NativeViewHostAuraTest : public test::NativeViewHostTestBase {
     CreateTopLevel();
     CreateTestingHost();
     child_.reset(CreateChildForHost(toplevel()->GetNativeView(),
-                                    toplevel()->GetRootView(),
-                                    new View,
+                                    toplevel()->GetRootView(), new View,
                                     host()));
   }
 

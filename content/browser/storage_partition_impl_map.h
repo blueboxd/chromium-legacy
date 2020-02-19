@@ -62,6 +62,8 @@ class CONTENT_EXPORT StoragePartitionImplMap
 
   void ForEach(BrowserContext::StoragePartitionCallback callback);
 
+  size_t size() const { return partitions_.size(); }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionConfigTest, OperatorLess);
   FRIEND_TEST_ALL_PREFIXES(StoragePartitionImplMapTest, GarbageCollect);

@@ -42,11 +42,7 @@ class VIEWS_EXAMPLES_EXPORT TreeViewExample
 
  private:
   // IDs used by the context menu.
-  enum MenuIDs {
-    ID_EDIT,
-    ID_REMOVE,
-    ID_ADD
-  };
+  enum MenuIDs { ID_EDIT, ID_REMOVE, ID_ADD };
 
   // Adds a new node.
   void AddNewNode();

@@ -12,6 +12,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.url.URI;
@@ -66,8 +67,9 @@ public class PaymentHandlerToolbarCoordinator {
                                               ConnectionSecurityLevel.NONE)
                                       .with(PaymentHandlerToolbarProperties.URL, url)
                                       .build();
+        boolean isSmallDevice = !DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
         PaymentHandlerToolbarMediator mediator =
-                new PaymentHandlerToolbarMediator(model, webContents, observer);
+                new PaymentHandlerToolbarMediator(model, webContents, observer, isSmallDevice);
         webContents.addObserver(mediator);
         PropertyModelChangeProcessor changeProcessor = PropertyModelChangeProcessor.create(
                 model, mToolbarView, PaymentHandlerToolbarViewBinder::bind);

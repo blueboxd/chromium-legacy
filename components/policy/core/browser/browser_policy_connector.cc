@@ -124,6 +124,17 @@ void BrowserPolicyConnector::ScheduleServiceInitialization(
     device_management_service_->ScheduleInitialization(delay_milliseconds);
 }
 
+bool BrowserPolicyConnector::ProviderHasPolicies(
+    const ConfigurationPolicyProvider* provider) const {
+  if (!provider)
+    return false;
+  for (const auto& pair : provider->policies()) {
+    if (!pair.second->empty())
+      return true;
+  }
+  return false;
+}
+
 // static
 bool BrowserPolicyConnector::IsNonEnterpriseUser(const std::string& username) {
   TRACE_EVENT0("browser", "BrowserPolicyConnector::IsNonEnterpriseUser");

@@ -17,10 +17,13 @@ namespace contextual_tooltip {
 // Enumeration of all contextual tooltips.
 enum class TooltipType {
   kDragHandle,
+  kBackGesture,
 };
 
-// Maximum number of times a user can be shown a contextual nudge.
+// Maximum number of times a user can be shown a contextual nudge if the user
+// hasn't performed the gesture |kSuccessLimit| times successfully.
 constexpr int kNotificationLimit = 3;
+constexpr int kSuccessLimit = 7;
 
 // Minimum time between showing contextual nudges to the user.
 constexpr base::TimeDelta kMinInterval = base::TimeDelta::FromDays(1);
@@ -40,9 +43,17 @@ ASH_EXPORT bool ShouldShowNudge(PrefService* prefs, TooltipType type);
 ASH_EXPORT base::TimeDelta GetNudgeTimeout(PrefService* prefs,
                                            TooltipType type);
 
+// Returns the number of counts that |type| nudge has been shown for the user
+// with the given |prefs|.
+ASH_EXPORT int GetShownCount(PrefService* prefs, TooltipType type);
+
 // Increments the counter tracking the number of times the tooltip has been
 // shown. Updates the last shown time for the tooltip.
 ASH_EXPORT void HandleNudgeShown(PrefService* prefs, TooltipType type);
+
+// Increments the counter tracking the number of times the tooltip's
+// correpsonding gesture has been performed successfully.
+ASH_EXPORT void HandleGesturePerformed(PrefService* prefs, TooltipType type);
 
 ASH_EXPORT void OverrideClockForTesting(base::Clock* test_clock);
 

@@ -62,8 +62,11 @@ class AppActivityRegistry : public AppServiceWrapper::EventListener {
     ~AppStateObserver() override = default;
 
     // Called when state of the app with |app_id| changed to |kLimitReached|.
+    // |was_active| indicates whether the app was active before reaching the
+    // limit.
     virtual void OnAppLimitReached(const AppId& app_id,
-                                   base::TimeDelta time_limit) = 0;
+                                   base::TimeDelta time_limit,
+                                   bool was_active) = 0;
 
     // Called when state of the app with |app_id| is no longer |kLimitReached|.
     virtual void OnAppLimitRemoved(const AppId& app_id) = 0;

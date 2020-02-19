@@ -13,10 +13,10 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/views_export.h"
 
-namespace gfx{
+namespace gfx {
 class Canvas;
 class Size;
-}
+}  // namespace gfx
 
 namespace views {
 

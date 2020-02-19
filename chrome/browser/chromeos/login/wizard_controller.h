@@ -192,6 +192,7 @@ class WizardController {
   void ShowUpdateRequiredScreen();
   void ShowAssistantOptInFlowScreen();
   void ShowMultiDeviceSetupScreen();
+  void ShowGestureNavigationScreen();
   void ShowDiscoverScreen();
   void ShowMarketingOptInScreen();
   void ShowPackagedLicenseScreen();
@@ -240,6 +241,7 @@ class WizardController {
   void OnAppDownloadingScreenExit();
   void OnAssistantOptInFlowScreenExit();
   void OnMultiDeviceSetupScreenExit();
+  void OnGestureNavigationScreenExit();
   void OnResetScreenExit();
   void OnDeviceModificationCanceled();
   void OnSupervisionTransitionScreenExit();

@@ -23,7 +23,7 @@ class MenuScrollViewContainer;
 
 namespace test {
 class MenuControllerTest;
-}  // test
+}  // namespace test
 
 // SubmenuView is the parent of all menu items.
 //
@@ -135,8 +135,7 @@ class VIEWS_EXPORT SubmenuView : public View,
   MenuItemView* GetMenuItem();
 
   // Set the drop item and position.
-  void SetDropMenuItem(MenuItemView* item,
-                       MenuDelegate::DropPosition position);
+  void SetDropMenuItem(MenuItemView* item, MenuDelegate::DropPosition position);
 
   // Returns whether the selection should be shown for the specified item.
   // The selection is NOT shown during drag and drop when the drop is over
@@ -171,7 +170,6 @@ class VIEWS_EXPORT SubmenuView : public View,
   }
 
  protected:
-
   // View method. Overridden to schedule a paint. We do this so that when
   // scrolling occurs, everything is repainted correctly.
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;

@@ -7,13 +7,13 @@
 import collections
 import distutils.version
 import logging
-import multiprocessing
+from multiprocessing import pool
 import os
-import plistlib
 import subprocess
 import time
 
 import iossim_util
+import test_apps
 import test_runner
 import xcode_log_parser
 
@@ -102,135 +102,6 @@ def terminate_process(proc):
     LOGGER.info('Error while killing a process: %s' % ex)
 
 
-class EgtestsApp(object):
-  """Egtests to run.
-
-  Stores data about egtests:
-    egtests_app: full path to egtests app.
-    project_path: root project folder.
-    module_name: egtests module name.
-    included_tests: List of tests to run.
-    excluded_tests: List of tests not to run.
-  """
-
-  def __init__(self, egtests_app, included_tests=None, excluded_tests=None,
-               test_args=None, env_vars=None, host_app_path=None):
-    """Initialize Egtests.
-
-    Args:
-      egtests_app: (str) full path to egtests app.
-      included_tests: (list) Specific tests to run
-         E.g.
-          [ 'TestCaseClass1/testMethod1', 'TestCaseClass2/testMethod2']
-      excluded_tests: (list) Specific tests not to run
-         E.g.
-          [ 'TestCaseClass1', 'TestCaseClass2/testMethod2']
-      test_args: List of strings to pass as arguments to the test when
-        launching.
-      env_vars: List of environment variables to pass to the test itself.
-      host_app_path: (str) full path to host app.
-
-    Raises:
-      AppNotFoundError: If the given app does not exist
-    """
-    if not os.path.exists(egtests_app):
-      raise test_runner.AppNotFoundError(egtests_app)
-    self.egtests_path = egtests_app
-    self.project_path = os.path.dirname(self.egtests_path)
-    self.module_name = os.path.splitext(os.path.basename(egtests_app))[0]
-    self.included_tests = included_tests or []
-    self.excluded_tests = excluded_tests or []
-    self.test_args = test_args
-    self.env_vars = env_vars
-    self.host_app_path = host_app_path
-
-  def _xctest_path(self):
-    """Gets xctest-file from egtests/PlugIns folder.
-
-    Returns:
-      A path for xctest in the format of /PlugIns/file.xctest
-
-    Raises:
-      PlugInsNotFoundError: If no PlugIns folder found in egtests.app.
-      XCTestPlugInNotFoundError: If no xctest-file found in PlugIns.
-    """
-    plugins_dir = os.path.join(self.egtests_path, 'PlugIns')
-    if not os.path.exists(plugins_dir):
-      raise test_runner.PlugInsNotFoundError(plugins_dir)
-    plugin_xctest = None
-    if os.path.exists(plugins_dir):
-      for plugin in os.listdir(plugins_dir):
-        if plugin.endswith('.xctest'):
-          plugin_xctest = os.path.join(plugins_dir, plugin)
-    if not plugin_xctest:
-      raise test_runner.XCTestPlugInNotFoundError(plugin_xctest)
-    return plugin_xctest.replace(self.egtests_path, '')
-
-  def xctestrun_node(self):
-    """Fills only required nodes for egtests in xctestrun file.
-
-    Returns:
-      A node with filled required fields about egtests.
-    """
-    module = self.module_name + '_module'
-
-    # If --run-with-custom-webkit is passed as a test arg, set up
-    # DYLD_FRAMEWORK_PATH to load the custom webkit modules.
-    dyld_framework_path = self.project_path + ':'
-    if '--run-with-custom-webkit' in self.test_args:
-      if self.host_app_path:
-        webkit_path = os.path.join(self.host_app_path, 'WebKitFrameworks')
-      else:
-        webkit_path = os.path.join(self.egtests_path, 'WebKitFrameworks')
-      dyld_framework_path = dyld_framework_path + webkit_path + ':'
-
-    module_data = {
-        'TestBundlePath': '__TESTHOST__%s' % self._xctest_path(),
-        'TestHostPath': '%s' % self.egtests_path,
-        'TestingEnvironmentVariables': {
-            'DYLD_INSERT_LIBRARIES': (
-                '__PLATFORMS__/iPhoneSimulator.platform/Developer/'
-                'usr/lib/libXCTestBundleInject.dylib'),
-            'DYLD_LIBRARY_PATH': self.project_path,
-            'DYLD_FRAMEWORK_PATH': dyld_framework_path,
-            'XCInjectBundleInto': '__TESTHOST__/%s' % self.module_name
-            }
-        }
-    # Add module data specific to EG2 or EG1 tests
-    # EG2 tests
-    if self.host_app_path:
-      module_data['IsUITestBundle'] = True
-      module_data['IsXCTRunnerHostedTestBundle'] = True
-      module_data['UITargetAppPath'] = '%s' % self.host_app_path
-      # Special handling for Xcode10.2
-      dependent_products = [
-          module_data['UITargetAppPath'],
-          module_data['TestBundlePath'],
-          module_data['TestHostPath']
-      ]
-      module_data['DependentProductPaths'] = dependent_products
-    # EG1 tests
-    else:
-      module_data['IsAppHostedTestBundle'] = True
-
-    xctestrun_data = {
-        module: module_data
-    }
-    if self.excluded_tests:
-      xctestrun_data[module].update(
-          {'SkipTestIdentifiers': self.excluded_tests})
-    if self.included_tests:
-      xctestrun_data[module].update(
-          {'OnlyTestIdentifiers': self.included_tests})
-    if self.env_vars:
-      xctestrun_data[module].update(
-          {'EnvironmentVariables': self.env_vars})
-    if self.test_args:
-      xctestrun_data[module].update(
-          {'CommandLineArguments': self.test_args})
-    return xctestrun_data
-
-
 class LaunchCommand(object):
   """Stores xcodebuild test launching command."""
 
@@ -255,7 +126,7 @@ class LaunchCommand(object):
     Raises:
       LaunchCommandCreationError: if one of parameters was not set properly.
     """
-    if not isinstance(egtests_app, EgtestsApp):
+    if not isinstance(egtests_app, test_apps.EgtestsApp):
       raise test_runner.AppNotFoundError(
           'Parameter `egtests_app` is not EgtestsApp: %s' % egtests_app)
     self.egtests_app = egtests_app
@@ -313,12 +184,12 @@ class LaunchCommand(object):
 
   def launch(self):
     """Launches tests using xcodebuild."""
-    cmd_list = []
     self.test_results['attempts'] = []
     cancelled_statuses = {'TESTS_DID_NOT_START', 'BUILD_INTERRUPTED'}
     shards = self.shards
-    running_tests = set(get_all_tests(self.egtests_app.egtests_path,
-                                      self.egtests_app.included_tests))
+    running_tests = set(
+        get_all_tests(self.egtests_app.test_app_path,
+                      self.egtests_app.included_tests))
     # total number of attempts is self.retries+1
     for attempt in range(self.retries + 1):
       # Erase all simulators per each attempt
@@ -330,8 +201,8 @@ class LaunchCommand(object):
         erase_all_simulators()
         erase_all_simulators(XTDEVICE_FOLDER)
       outdir_attempt = os.path.join(self.out_dir, 'attempt_%d' % attempt)
-      cmd_list = self.command(self.egtests_app, outdir_attempt,
-                              'id=%s' % self.udid, shards)
+      cmd_list = self.egtests_app.command(outdir_attempt,
+                                          'id=%s' % self.udid, shards)
       # TODO(crbug.com/914878): add heartbeat logging to xcodebuild_runner.
       LOGGER.info('Start test attempt #%d for command [%s]' % (
           attempt, ' '.join(cmd_list)))
@@ -371,59 +242,6 @@ class LaunchCommand(object):
         'test_results': self.test_results,
         'logs': self.logs
     }
-
-  def fill_xctest_run(self, egtests_app):
-    """Fills xctestrun file by egtests.
-
-    Args:
-      egtests_app: (EgtestsApp) An Egetsts_app to run.
-
-    Returns:
-      A path to xctestrun file.
-
-    Raises:
-      AppNotFoundError if egtests is empty.
-    """
-    if not egtests_app:
-      raise test_runner.AppNotFoundError('Egtests is not found!')
-    xctestrun = os.path.join(
-        os.path.abspath(os.path.join(self.out_dir, os.pardir)),
-        'run_%d.xctestrun' % int(time.time()))
-    if not os.path.exists(xctestrun):
-      with open(xctestrun, 'w'):
-        pass
-    # Creates a dict with data about egtests to run - fill all required fields:
-    # egtests_module, egtest_app_path, egtests_xctest_path and
-    # filtered tests if filter is specified.
-    # Write data in temp xctest run file.
-    plistlib.writePlist(egtests_app.xctestrun_node(), xctestrun)
-    return xctestrun
-
-  def command(self, egtests_app, out_dir, destination, shards):
-    """Returns the command that launches tests using xcodebuild.
-
-    Format of command:
-    xcodebuild test-without-building -xctestrun file.xctestrun \
-      -parallel-testing-enabled YES -parallel-testing-worker-count %d% \
-      [-destination "destination"]  -resultBundlePath %output_path%
-
-    Args:
-      egtests_app: (EgtestsApp) An egetsts_app to run.
-      out_dir: (str) An output directory.
-      destination: (str) A destination of running simulator.
-      shards: (int) A number of shards.
-
-    Returns:
-      A list of strings forming the command to launch the test.
-    """
-    cmd = ['xcodebuild', 'test-without-building',
-           '-xctestrun', self.fill_xctest_run(egtests_app),
-           '-destination', destination,
-           '-resultBundlePath', out_dir]
-    if shards > 1:
-      cmd += ['-parallel-testing-enabled', 'YES',
-              '-parallel-testing-worker-count', str(shards)]
-    return cmd
 
 
 class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
@@ -531,23 +349,25 @@ class SimulatorParallelTestRunner(test_runner.SimulatorTestRunner):
     """Launches tests using xcodebuild."""
     launch_commands = []
     for params in self.sharding_data:
+      test_app = test_apps.EgtestsApp(
+          params['app'],
+          included_tests=params['test_cases'],
+          env_vars=self.env_vars,
+          test_args=self.test_args,
+          host_app_path=params['host'])
       launch_commands.append(
           LaunchCommand(
-              EgtestsApp(
-                  params['app'],
-                  included_tests=params['test_cases'],
-                  env_vars=self.env_vars,
-                  test_args=self.test_args,
-                  host_app_path=params['host']),
+              test_app,
               udid=params['udid'],
               shards=params['shards'],
               retries=self.retries,
               out_dir=os.path.join(self.out_dir, params['udid']),
               env=self.get_launch_env()))
 
-    pool = multiprocessing.pool.ThreadPool(len(launch_commands))
+    thread_pool = pool.ThreadPool(len(launch_commands))
     attempts_results = []
-    for result in pool.imap_unordered(LaunchCommand.launch, launch_commands):
+    for result in thread_pool.imap_unordered(LaunchCommand.launch,
+                                             launch_commands):
       attempts_results.append(result['test_results']['attempts'])
 
     # Gets passed tests

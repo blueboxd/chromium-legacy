@@ -313,8 +313,8 @@ View* NonClientView::TargetForRect(View* root, const gfx::Rect& rect) {
     // removed from the NonClientView.
     gfx::RectF rect_in_child_coords_f(rect);
     View::ConvertRectToTarget(this, frame_view_.get(), &rect_in_child_coords_f);
-    gfx::Rect rect_in_child_coords = gfx::ToEnclosingRect(
-        rect_in_child_coords_f);
+    gfx::Rect rect_in_child_coords =
+        gfx::ToEnclosingRect(rect_in_child_coords_f);
     if (frame_view_->HitTestRect(rect_in_child_coords))
       return frame_view_->GetEventHandlerForRect(rect_in_child_coords);
   }

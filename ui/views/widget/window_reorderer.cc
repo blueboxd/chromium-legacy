@@ -87,8 +87,7 @@ class WindowReorderer::AssociationObserver : public aura::WindowObserver {
 
 WindowReorderer::AssociationObserver::AssociationObserver(
     WindowReorderer* reorderer)
-    : reorderer_(reorderer) {
-}
+    : reorderer_(reorderer) {}
 
 WindowReorderer::AssociationObserver::~AssociationObserver() {
   while (!windows_.empty())
@@ -101,8 +100,7 @@ void WindowReorderer::AssociationObserver::StartObserving(
   window->AddObserver(this);
 }
 
-void WindowReorderer::AssociationObserver::StopObserving(
-    aura::Window* window) {
+void WindowReorderer::AssociationObserver::StopObserving(aura::Window* window) {
   windows_.erase(window);
   window->RemoveObserver(this);
 }
@@ -121,8 +119,7 @@ void WindowReorderer::AssociationObserver::OnWindowDestroying(
   window->RemoveObserver(this);
 }
 
-WindowReorderer::WindowReorderer(aura::Window* parent_window,
-                                 View* root_view)
+WindowReorderer::WindowReorderer(aura::Window* parent_window, View* root_view)
     : parent_window_(parent_window),
       root_view_(root_view),
       association_observer_(new AssociationObserver(this)) {
@@ -158,7 +155,7 @@ void WindowReorderer::ReorderChildWindows() {
   // with layers and views with associated windows in the view tree.
   std::vector<View*> view_with_layer_order;
   GetOrderOfViewsWithLayers(root_view_, parent_window_->layer(), hosted_windows,
-      &view_with_layer_order);
+                            &view_with_layer_order);
 
   std::vector<ui::Layer*> children_layer_order;
 

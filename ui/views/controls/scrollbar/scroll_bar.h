@@ -95,7 +95,7 @@ class VIEWS_EXPORT ScrollBar : public View,
   bool IsHorizontal() const;
 
   void set_controller(ScrollBarController* controller) {
-     controller_ = controller;
+    controller_ = controller;
   }
   ScrollBarController* controller() const { return controller_; }
 

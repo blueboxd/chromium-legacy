@@ -60,6 +60,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -1319,7 +1320,10 @@ void AppListControllerImpl::GetNavigableContentsFactory(
 
 int AppListControllerImpl::GetTargetYForAppListHide(aura::Window* root_window) {
   DCHECK(Shell::HasInstance());
-  return Shelf::ForWindow(root_window)->GetShelfBoundsInScreen().y();
+  gfx::Point top_center =
+      Shelf::ForWindow(root_window)->GetShelfBoundsInScreen().top_center();
+  wm::ConvertPointFromScreen(root_window, &top_center);
+  return top_center.y();
 }
 
 AssistantViewDelegate* AppListControllerImpl::GetAssistantViewDelegate() {

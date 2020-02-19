@@ -41,6 +41,7 @@ class ChromeSyncClient : public browser_sync::BrowserSyncClient {
 
   // BrowserSyncClient implementation.
   PrefService* GetPrefService() override;
+  signin::IdentityManager* GetIdentityManager() override;
   base::FilePath GetLocalSyncBackendFolder() override;
   syncer::ModelTypeStoreService* GetModelTypeStoreService() override;
   syncer::DeviceInfoSyncService* GetDeviceInfoSyncService() override;

@@ -263,6 +263,13 @@ void PaymentRequestState::AreRequestedMethodsSupported(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void PaymentRequestState::OnAbort() {
+  // Reset supported method callback when the merchant calls abort before
+  // OnDoneCreatingPaymentApps().
+  if (are_requested_methods_supported_callback_)
+    are_requested_methods_supported_callback_.Reset();
+}
+
 void PaymentRequestState::CheckRequestedMethodsSupported(
     MethodsSupportedCallback callback) {
   DCHECK(get_all_apps_finished_);

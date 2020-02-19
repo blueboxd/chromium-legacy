@@ -33,6 +33,9 @@ class TestShellDelegate : public ShellDelegate {
   bool CanShowWindowForUser(const aura::Window* window) const override;
   std::unique_ptr<ScreenshotDelegate> CreateScreenshotDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
+  std::unique_ptr<BackGestureContextualNudgeDelegate>
+  CreateBackGestureContextualNudgeDelegate(
+      BackGestureContextualNudgeController* controller) override;
   bool CanGoBack(gfx::NativeWindow window) const override;
   void BindNavigableContentsFactory(
       mojo::PendingReceiver<content::mojom::NavigableContentsFactory> receiver)

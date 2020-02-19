@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/ui/permission_bubble/permission_prompt.h"
+#include "components/permissions/permission_prompt.h"
 
 namespace base {
 class CommandLine;
@@ -24,13 +24,13 @@ namespace permissions {
 class PermissionRequest;
 }
 
-class TestPermissionBubbleViewDelegate : public PermissionPrompt::Delegate {
+class TestPermissionBubbleViewDelegate
+    : public permissions::PermissionPrompt::Delegate {
  public:
   TestPermissionBubbleViewDelegate();
   ~TestPermissionBubbleViewDelegate() override;
 
   const std::vector<permissions::PermissionRequest*>& Requests() override;
-  PermissionPrompt::DisplayNameOrOrigin GetDisplayNameOrOrigin() override;
 
   void Accept() override {}
   void Deny() override {}
@@ -59,7 +59,9 @@ class PermissionBubbleBrowserTest : public extensions::ExtensionBrowserTest {
   // Opens an app window and returns its WebContents.
   content::WebContents* OpenExtensionAppWindow();
 
-  PermissionPrompt::Delegate* test_delegate() { return &test_delegate_; }
+  permissions::PermissionPrompt::Delegate* test_delegate() {
+    return &test_delegate_;
+  }
 
  private:
   TestPermissionBubbleViewDelegate test_delegate_;

@@ -43,7 +43,7 @@ class WebXrVrConsentBrowserTest : public WebXrVrConsentBrowserTestBase {
 
 class WebXrVrPermissionsBrowserTest
     : public WebXrVrConsentBrowserTestBase,
-      public PermissionRequestManager::Observer {
+      public permissions::PermissionRequestManager::Observer {
  public:
   WebXrVrPermissionsBrowserTest() {
     enable_features_.push_back(features::kWebXrPermissionsApi);

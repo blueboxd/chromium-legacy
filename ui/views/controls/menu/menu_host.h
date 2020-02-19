@@ -25,11 +25,11 @@ namespace internal {
 // This class is internal to views.
 class PreMenuEventDispatchHandler;
 
-}  // internal
+}  // namespace internal
 
 namespace test {
 class MenuControllerTest;
-}  // test
+}  // namespace test
 
 // SubmenuView uses a MenuHost to house the SubmenuView.
 //

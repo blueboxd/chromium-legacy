@@ -112,7 +112,7 @@ CoreAccountInfo SetPrimaryAccount(IdentityManager* identity_manager,
 
 CoreAccountInfo SetUnconsentedPrimaryAccount(IdentityManager* identity_manager,
                                              const std::string& email) {
-  DCHECK(!identity_manager->HasUnconsentedPrimaryAccount());
+  DCHECK(!identity_manager->HasPrimaryAccount(ConsentLevel::kNotRequired));
 
   AccountInfo account_info =
       EnsureAccountExists(identity_manager->GetAccountTrackerService(), email);
@@ -122,7 +122,7 @@ CoreAccountInfo SetUnconsentedPrimaryAccount(IdentityManager* identity_manager,
       identity_manager->GetPrimaryAccountManager();
   primary_account_manager->SetUnconsentedPrimaryAccountInfo(account_info);
 
-  DCHECK(identity_manager->HasUnconsentedPrimaryAccount());
+  DCHECK(identity_manager->HasPrimaryAccount(ConsentLevel::kNotRequired));
   DCHECK_EQ(account_info.gaia,
             identity_manager
                 ->GetPrimaryAccountInfo(signin::ConsentLevel::kNotRequired)

@@ -64,8 +64,6 @@ class CONTENT_EXPORT RenderMessageFilter
   // BrowserMessageFilter methods:
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() const override;
-  void OverrideThreadForMessage(const IPC::Message& message,
-                                BrowserThread::ID* thread) override;
 
   int render_process_id() const { return render_process_id_; }
 

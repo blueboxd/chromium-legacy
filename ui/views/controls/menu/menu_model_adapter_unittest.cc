@@ -27,9 +27,7 @@ constexpr int kActionableSubmenuIdBase = 300;
 class MenuModelBase : public ui::MenuModel {
  public:
   explicit MenuModelBase(int command_id_base)
-      : command_id_base_(command_id_base),
-        last_activation_(-1) {
-  }
+      : command_id_base_(command_id_base), last_activation_(-1) {}
 
   ~MenuModelBase() override = default;
 

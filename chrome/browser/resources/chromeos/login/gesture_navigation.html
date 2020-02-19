@@ -1,0 +1,68 @@
+<!-- Copyright 2020 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<dom-module id="gesture-navigation">
+  <template>
+    <link rel="stylesheet" href="oobe_flex_layout.css">
+
+    <oobe-dialog id="gestureIntro" has-buttons
+        hidden="[[!isEqual_(currentPage_, 'gestureIntro')]]"
+        title-key="gestureNavigationIntroTitle"
+        aria-label$="[[i18nDynamic(locale, 'gestureNavigationIntroTitle')]]">
+      <div slot="footer">
+        <!-- content goes here -->
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal end-justified">
+        <oobe-text-button inverse on-tap="onNext_"
+            id="gesture-intro-next-button"
+            text-key="gestureNavigationIntroNextButton">
+        </oobe-text-button>
+      </div>
+    </oobe-dialog>
+
+    <oobe-dialog id="gestureHome" has-buttons
+        hidden="[[!isEqual_(currentPage_, 'gestureHome')]]"
+        title-key="gestureNavigationHomeTitle"
+        subtitle-key="gestureNavigationHomeDescription"
+        aria-label$="[[i18nDynamic(locale, 'gestureNavigationHomeTitle')]]">
+      <div slot="footer">
+        <!-- content goes here -->
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal end-justified">
+        <oobe-next-button on-tap="onNext_"
+            id="gesture-home-next-button"></oobe-next-button>
+      </div>
+    </oobe-dialog>
+
+    <oobe-dialog id="gestureBack" has-buttons
+        hidden="[[!isEqual_(currentPage_, 'gestureBack')]]"
+        title-key="gestureNavigationBackTitle"
+        subtitle-key="gestureNavigationBackDescription"
+        aria-label$="[[i18nDynamic(locale, 'gestureNavigationBackTitle')]]">
+      <div slot="footer">
+        <!-- content goes here -->
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal end-justified">
+        <oobe-next-button on-tap="onNext_"
+            id="gesture-back-next-button"></oobe-next-button>
+      </div>
+    </oobe-dialog>
+
+    <oobe-dialog id="gestureOverview" has-buttons
+        hidden="[[!isEqual_(currentPage_, 'gestureOverview')]]"
+        title-key="gestureNavigationOverviewTitle"
+        subtitle-key="gestureNavigationOverviewDescription"
+        aria-label$="[[i18nDynamic(locale, 'gestureNavigationOverviewTitle')]]">
+      <div slot="footer">
+        <!-- content goes here -->
+      </div>
+      <div slot="bottom-buttons" class="flex layout horizontal end-justified">
+        <oobe-next-button on-tap="onNext_"
+            id="gesture-overview-next-button"></oobe-next-button>
+      </div>
+    </oobe-dialog>
+  </template>
+</dom-module>

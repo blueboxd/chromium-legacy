@@ -912,6 +912,8 @@ void GtkUi::UpdateColors() {
 
   SkColor tab_text_color = GetFgColor("GtkLabel");
   colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON] = tab_text_color;
+  colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_HOVERED] = tab_text_color;
+  colors_[ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON_PRESSED] = tab_text_color;
   colors_[ThemeProperties::COLOR_TAB_TEXT] = tab_text_color;
   colors_[ThemeProperties::COLOR_BOOKMARK_TEXT] = tab_text_color;
 

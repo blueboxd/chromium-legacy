@@ -322,8 +322,7 @@ TestNode* TreeViewTest::GetNodeByTitleImpl(TestNode* node,
   return nullptr;
 }
 
-std::string TreeViewTest::InternalNodeAsString(
-    TreeView::InternalNode* node) {
+std::string TreeViewTest::InternalNodeAsString(TreeView::InternalNode* node) {
   std::string result = base::UTF16ToASCII(node->model_node()->GetTitle());
   if (node->is_expanded() && !node->children().empty()) {
     result += std::accumulate(
@@ -435,7 +434,7 @@ TEST_F(TreeViewTest, Expand) {
   tree_->Expand(GetNodeByTitle("b1"));
   EXPECT_EQ("root [a b [b1] c]", TreeViewContentsAsString());
   EXPECT_EQ("root [a b [b1] c]", TreeViewAccessibilityContentsAsString());
-  EXPECT_EQ("root",GetSelectedNodeTitle());
+  EXPECT_EQ("root", GetSelectedNodeTitle());
   EXPECT_EQ("root", GetSelectedAccessibilityViewName());
   EXPECT_EQ(5, GetRowCount());
 
@@ -534,7 +533,7 @@ TEST_F(TreeViewTest, TreeNodesAdded) {
   tree_->Expand(GetNodeByTitle("b"));
   EXPECT_EQ("root [a b [b1 b2] B c]", TreeViewContentsAsString());
   EXPECT_EQ("root [a b [b1 b2] B c]", TreeViewAccessibilityContentsAsString());
-  EXPECT_EQ("root",GetSelectedNodeTitle());
+  EXPECT_EQ("root", GetSelectedNodeTitle());
   EXPECT_EQ("root", GetSelectedAccessibilityViewName());
   EXPECT_EQ(7, GetRowCount());
   // Since the added node was not visible when it was added, no extra events

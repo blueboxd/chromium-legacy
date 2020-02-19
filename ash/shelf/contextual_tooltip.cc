@@ -21,6 +21,10 @@ namespace {
 constexpr char kShownCount[] = "shown_count";
 constexpr char kLastTimeShown[] = "last_time_shown";
 
+// Keys for tooltip sub-preferences of how many times a gesture has been
+// successfully performed by the user.
+constexpr char kSuccessCount[] = "success_count";
+
 base::Clock* g_clock_override = nullptr;
 
 base::Time GetTime() {
@@ -33,6 +37,8 @@ std::string TooltipTypeToString(TooltipType type) {
   switch (type) {
     case TooltipType::kDragHandle:
       return "drag_handle";
+    case TooltipType::kBackGesture:
+      return "back_gesture";
   }
   return "invalid";
 }
@@ -41,13 +47,6 @@ std::string TooltipTypeToString(TooltipType type) {
 // the sub-preference.
 std::string GetPath(TooltipType type, const std::string& sub_pref) {
   return base::JoinString({TooltipTypeToString(type), sub_pref}, ".");
-}
-
-int GetShownCount(PrefService* prefs, TooltipType type) {
-  base::Optional<int> shown_count =
-      prefs->GetDictionary(prefs::kContextualTooltips)
-          ->FindIntPath(GetPath(type, kShownCount));
-  return shown_count.value_or(0);
 }
 
 base::Time GetLastShownTime(PrefService* prefs, TooltipType type) {
@@ -59,6 +58,13 @@ base::Time GetLastShownTime(PrefService* prefs, TooltipType type) {
   return *util::ValueToTime(last_shown_time);
 }
 
+int GetSuccessCount(PrefService* prefs, TooltipType type) {
+  base::Optional<int> success_count =
+      prefs->GetDictionary(prefs::kContextualTooltips)
+          ->FindIntPath(GetPath(type, kSuccessCount));
+  return success_count.value_or(0);
+}
+
 }  // namespace
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
@@ -68,6 +74,9 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
 
 bool ShouldShowNudge(PrefService* prefs, TooltipType type) {
   if (!features::AreContextualNudgesEnabled())
+    return false;
+
+  if (GetSuccessCount(prefs, type) >= kSuccessLimit)
     return false;
 
   const int shown_count = GetShownCount(prefs, type);
@@ -87,11 +96,24 @@ base::TimeDelta GetNudgeTimeout(PrefService* prefs, TooltipType type) {
   return kNudgeShowDuration;
 }
 
+int GetShownCount(PrefService* prefs, TooltipType type) {
+  base::Optional<int> shown_count =
+      prefs->GetDictionary(prefs::kContextualTooltips)
+          ->FindIntPath(GetPath(type, kShownCount));
+  return shown_count.value_or(0);
+}
+
 void HandleNudgeShown(PrefService* prefs, TooltipType type) {
   const int shown_count = GetShownCount(prefs, type);
   DictionaryPrefUpdate update(prefs, prefs::kContextualTooltips);
   update->SetIntPath(GetPath(type, kShownCount), shown_count + 1);
   update->SetPath(GetPath(type, kLastTimeShown), util::TimeToValue(GetTime()));
+}
+
+void HandleGesturePerformed(PrefService* prefs, TooltipType type) {
+  const int success_count = GetSuccessCount(prefs, type);
+  DictionaryPrefUpdate update(prefs, prefs::kContextualTooltips);
+  update->SetIntPath(GetPath(type, kSuccessCount), success_count + 1);
 }
 
 void OverrideClockForTesting(base::Clock* test_clock) {

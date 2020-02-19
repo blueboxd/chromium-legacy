@@ -400,6 +400,7 @@ const char kAndroidAppsDetailsSubPage[] = "androidAppsDetails";
 const char kAndroidAppsDetailsSubPageInBrowserSettings[] =
     "androidApps/details";
 const char kAppManagementDetailSubPage[] = "app-management/detail";
+const char kAppManagementSubPage[] = "app-management";
 const char kAssistantSubPage[] = "googleAssistant";
 const char kBluetoothSubPage[] = "bluetoothDevices";
 const char kChangePictureSubPage[] = "changePicture";
@@ -416,6 +417,7 @@ const char kHelpSubPage[] = "help";
 const char kInternetSubPage[] = "internet";
 const char kKerberosAccountsSubPage[] = "kerberosAccounts";
 const char kKeyboardOverlaySubPage[] = "keyboard-overlay";
+const char kKnownNetworksSubPage[] = "knownNetworks";
 const char kLanguageSubPage[] = "languages/details";
 const char kLockScreenSubPage[] = "lockScreen";
 const char kManageAccessibilitySubPage[] = "manageAccessibility";
@@ -448,6 +450,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kAndroidAppsDetailsSubPage,
       kAndroidAppsDetailsSubPageInBrowserSettings,
       kAppManagementDetailSubPage,
+      kAppManagementSubPage,
       kAssistantSubPage,
       kBluetoothSubPage,
       kChangePictureSubPage,
@@ -455,6 +458,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kCrostiniSharedPathsSubPage,
       kCrostiniSharedUsbDevicesSubPage,
       kCrostiniDiskResizeSubPage,
+      kCrostiniExportImportSubPage,
       kDateTimeSubPage,
       kDisplaySubPage,
       kExternalStorageSubPage,
@@ -462,6 +466,7 @@ bool IsOSSettingsSubPage(const std::string& sub_page) {
       kInternetSubPage,
       kKerberosAccountsSubPage,
       kKeyboardOverlaySubPage,
+      kKnownNetworksSubPage,
       // language is both an OS and browser sub page, but prefer the OS version
       kLanguageSubPage,
       kLockScreenSubPage,

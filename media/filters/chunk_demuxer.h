@@ -207,7 +207,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // |media_log| Used to report content and engine debug messages.
   ChunkDemuxer(const base::Closure& open_cb,
                const base::Closure& progress_cb,
-               const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
+               EncryptedMediaInitDataCB encrypted_media_init_data_cb,
                MediaLog* media_log);
   ~ChunkDemuxer() override;
 

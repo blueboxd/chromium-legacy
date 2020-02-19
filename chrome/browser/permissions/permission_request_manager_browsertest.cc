@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/permissions/permission_request_manager.h"
+#include "components/permissions/permission_request_manager.h"
 
 #include <memory>
 
@@ -16,12 +16,9 @@
 #include "chrome/browser/custom_handlers/register_protocol_handler_permission_request.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
-#include "chrome/browser/permissions/mock_permission_request.h"
 #include "chrome/browser/permissions/permission_context_base.h"
-#include "chrome/browser/permissions/permission_request_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -30,7 +27,11 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/permissions/permission_request_manager_test_api.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/features.h"
+#include "components/permissions/permission_request_impl.h"
 #include "components/permissions/permission_util.h"
+#include "components/permissions/test/mock_permission_prompt_factory.h"
+#include "components/permissions/test/mock_permission_request.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -54,15 +55,16 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
  public:
   PermissionRequestManagerBrowserTest() {
     scoped_feature_list_.InitAndEnableFeature(
-        features::kBlockRepeatedNotificationPermissionPrompts);
+        permissions::features::kBlockRepeatedNotificationPermissionPrompts);
   }
 
   ~PermissionRequestManagerBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
-    PermissionRequestManager* manager = GetPermissionRequestManager();
+    permissions::PermissionRequestManager* manager =
+        GetPermissionRequestManager();
     mock_permission_prompt_factory_.reset(
-        new MockPermissionPromptFactory(manager));
+        new permissions::MockPermissionPromptFactory(manager));
 
     host_resolver()->AddRule("*", "127.0.0.1");
   }
@@ -71,12 +73,12 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
     mock_permission_prompt_factory_.reset();
   }
 
-  PermissionRequestManager* GetPermissionRequestManager() {
-    return PermissionRequestManager::FromWebContents(
+  permissions::PermissionRequestManager* GetPermissionRequestManager() {
+    return permissions::PermissionRequestManager::FromWebContents(
         browser()->tab_strip_model()->GetActiveWebContents());
   }
 
-  MockPermissionPromptFactory* bubble_factory() {
+  permissions::MockPermissionPromptFactory* bubble_factory() {
     return mock_permission_prompt_factory_.get();
   }
 
@@ -106,7 +108,7 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), kInitialURL);
     bubble_factory()->ResetCounts();
     bubble_factory()->set_response_type(
-        PermissionRequestManager::AutoResponseType::DENY_ALL);
+        permissions::PermissionRequestManager::AutoResponseType::DENY_ALL);
 
     // Simulate a notification permission request that is denied by the user.
     std::string result;
@@ -127,7 +129,7 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
 
     bubble_factory()->ResetCounts();
     bubble_factory()->set_response_type(
-        PermissionRequestManager::AutoResponseType::ACCEPT_ALL);
+        permissions::PermissionRequestManager::AutoResponseType::ACCEPT_ALL);
 
     // Request the notification permission again from a different origin.
     // Cross-origin permission prompt cool-down should be in effect.
@@ -158,7 +160,8 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  std::unique_ptr<MockPermissionPromptFactory> mock_permission_prompt_factory_;
+  std::unique_ptr<permissions::MockPermissionPromptFactory>
+      mock_permission_prompt_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionRequestManagerBrowserTest);
 };
@@ -213,9 +216,10 @@ permissions::PermissionRequest* PermissionDialogTest::MakePermissionRequest(
   bool user_gesture = true;
   auto decided = [](ContentSetting) {};
   auto cleanup = [] {};  // Leave cleanup to test harness destructor.
-  owned_requests_.push_back(std::make_unique<PermissionRequestImpl>(
-      GetUrl(), permission, user_gesture, base::Bind(decided),
-      base::Bind(cleanup)));
+  owned_requests_.push_back(
+      std::make_unique<permissions::PermissionRequestImpl>(
+          GetUrl(), permission, user_gesture, base::Bind(decided),
+          base::Bind(cleanup)));
   return owned_requests_.back().get();
 }
 
@@ -243,7 +247,8 @@ void PermissionDialogTest::ShowUi(const std::string& name) {
     ADD_FAILURE() << "Unknown: " << name;
     return;
   }
-  PermissionRequestManager* manager = GetPermissionRequestManager();
+  permissions::PermissionRequestManager* manager =
+      GetPermissionRequestManager();
   switch (it->type) {
     case ContentSettingsType::PROTOCOL_HANDLERS:
       manager->AddRequest(MakeRegisterProtocolHandlerRequest());
@@ -420,9 +425,9 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
 
   // SetUp() only creates a mock prompt factory for the first tab.
-  MockPermissionPromptFactory* bubble_factory_0 = bubble_factory();
-  std::unique_ptr<MockPermissionPromptFactory> bubble_factory_1(
-      std::make_unique<MockPermissionPromptFactory>(
+  permissions::MockPermissionPromptFactory* bubble_factory_0 = bubble_factory();
+  std::unique_ptr<permissions::MockPermissionPromptFactory> bubble_factory_1(
+      std::make_unique<permissions::MockPermissionPromptFactory>(
           GetPermissionRequestManager()));
 
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
@@ -542,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
 
   ui_test_utils::NavigateToURL(browser(), kInitialURL);
   bubble_factory()->set_response_type(
-      PermissionRequestManager::AutoResponseType::DENY_ALL);
+      permissions::PermissionRequestManager::AutoResponseType::DENY_ALL);
 
   // Simulate a notification permission request that is denied by the user.
   std::string result;
@@ -565,7 +570,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   // Cross-origin permission prompt cool-down should be in effect.
   bubble_factory()->ResetCounts();
   bubble_factory()->set_response_type(
-      PermissionRequestManager::AutoResponseType::ACCEPT_ALL);
+      permissions::PermissionRequestManager::AutoResponseType::ACCEPT_ALL);
   ASSERT_TRUE(content::ExecuteScriptWithoutUserGestureAndExtractString(
       web_contents, "requestNotification();", &result));
   EXPECT_EQ(0, bubble_factory()->show_count());
@@ -705,7 +710,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest_AnimatedIcon,
                        DISABLED_QuietPendingRequestsKilledOnNewRequest) {
   // First add a quiet permission request. Ensure that this request is decided
   // by the end of this test.
-  MockPermissionRequest request_quiet(
+  permissions::MockPermissionRequest request_quiet(
       "quiet", permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS,
       permissions::PermissionRequestGestureType::UNKNOWN);
   GetPermissionRequestManager()->AddRequest(&request_quiet);
@@ -713,7 +718,7 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest_AnimatedIcon,
 
   // Add a second permission request. This ones should cause the initial
   // request to be cancelled.
-  MockPermissionRequest request_loud(
+  permissions::MockPermissionRequest request_loud(
       "loud", permissions::PermissionRequestType::PERMISSION_GEOLOCATION,
       permissions::PermissionRequestGestureType::UNKNOWN);
   GetPermissionRequestManager()->AddRequest(&request_loud);
@@ -732,14 +737,14 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest_AnimatedIcon,
 // Two loud requests are simply queued one after another.
 IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
                        LoudPendingRequestsQueued) {
-  MockPermissionRequest request1(
+  permissions::MockPermissionRequest request1(
       "request1",
       permissions::PermissionRequestType::PERMISSION_CLIPBOARD_READ_WRITE,
       permissions::PermissionRequestGestureType::UNKNOWN);
   GetPermissionRequestManager()->AddRequest(&request1);
   base::RunLoop().RunUntilIdle();
 
-  MockPermissionRequest request2(
+  permissions::MockPermissionRequest request2(
       "request2", permissions::PermissionRequestType::PERMISSION_GEOLOCATION,
       permissions::PermissionRequestGestureType::UNKNOWN);
   GetPermissionRequestManager()->AddRequest(&request2);

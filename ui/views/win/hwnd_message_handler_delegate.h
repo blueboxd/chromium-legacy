@@ -17,7 +17,7 @@ class Insets;
 class Point;
 class Rect;
 class Size;
-}
+}  // namespace gfx
 
 namespace ui {
 class Accelerator;
@@ -26,7 +26,7 @@ class KeyEvent;
 class MouseEvent;
 class ScrollEvent;
 class TouchEvent;
-}
+}  // namespace ui
 
 namespace views {
 
@@ -242,9 +242,7 @@ class VIEWS_EXPORT HWNDMessageHandlerDelegate {
 
   // Like PreHandleMSG, but called after HWNDMessageHandler's built-in handling
   // has run and after DefWindowProc.
-  virtual void PostHandleMSG(UINT message,
-                             WPARAM w_param,
-                             LPARAM l_param) = 0;
+  virtual void PostHandleMSG(UINT message, WPARAM w_param, LPARAM l_param) = 0;
 
   // Called when a scroll event is received. Returns true if the event was
   // handled by the delegate.

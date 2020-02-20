@@ -154,16 +154,6 @@ void WebFrameTestProxy::DidAddMessageToConsole(
                                           stack_trace);
 }
 
-void WebFrameTestProxy::DownloadURL(
-    const blink::WebURLRequest& request,
-    network::mojom::RedirectMode cross_origin_redirect_behavior,
-    mojo::ScopedMessagePipeHandle blob_url_token) {
-  test_client_->DownloadURL(request, cross_origin_redirect_behavior,
-                            mojo::ScopedMessagePipeHandle());
-  RenderFrameImpl::DownloadURL(request, cross_origin_redirect_behavior,
-                               std::move(blob_url_token));
-}
-
 void WebFrameTestProxy::DidStartLoading() {
   test_client_->DidStartLoading();
   RenderFrameImpl::DidStartLoading();

@@ -40,7 +40,6 @@ static_library("impl") {
     "invalidator_registrar_with_memory.h",
     "mock_ack_handler.cc",
     "mock_ack_handler.h",
-    "network_channel.h",
     "per_user_topic_subscription_manager.cc",
     "per_user_topic_subscription_manager.h",
     "per_user_topic_subscription_request.cc",

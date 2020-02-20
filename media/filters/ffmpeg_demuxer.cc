@@ -914,7 +914,7 @@ FFmpegDemuxer::FFmpegDemuxer(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     DataSource* data_source,
     const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
-    const MediaTracksUpdatedCB& media_tracks_updated_cb,
+    MediaTracksUpdatedCB media_tracks_updated_cb,
     MediaLog* media_log,
     bool is_local_file)
     : task_runner_(task_runner),
@@ -927,7 +927,7 @@ FFmpegDemuxer::FFmpegDemuxer(
       data_source_(data_source),
       media_log_(media_log),
       encrypted_media_init_data_cb_(encrypted_media_init_data_cb),
-      media_tracks_updated_cb_(media_tracks_updated_cb),
+      media_tracks_updated_cb_(std::move(media_tracks_updated_cb)),
       is_local_file_(is_local_file) {
   DCHECK(task_runner_.get());
   DCHECK(data_source_);

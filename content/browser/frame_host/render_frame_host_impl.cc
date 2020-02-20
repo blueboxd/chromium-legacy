@@ -1705,7 +1705,6 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_SelectionChanged, OnSelectionChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_FrameDidCallFocus, OnFrameDidCallFocus)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DownloadUrl, OnDownloadUrl)
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
@@ -3258,6 +3257,29 @@ void RenderFrameHostImpl::UpdateFaviconURL(
   delegate_->UpdateFaviconURL(this, std::move(favicon_urls));
 }
 
+void RenderFrameHostImpl::DownloadURL(
+    blink::mojom::DownloadURLParamsPtr params) {
+  mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token;
+  if (!VerifyDownloadUrlParams(GetSiteInstance(), params.get(),
+                               &blob_url_token))
+    return;
+
+  mojo::PendingRemote<blink::mojom::Blob> blob_data_remote(
+      std::move(params->data_url_blob), blink::mojom::Blob::Version_);
+
+  // TODO(https://crbug.com/1041083): Merge DownloadURLInternal() to this
+  // method here. It will also allow us to eliminate one more use of
+  // content::Referrer in favor of blink::mojom::Referrer.
+  Referrer referrer = params->referrer ? Referrer(params->referrer->url,
+                                                  params->referrer->policy)
+                                       : Referrer();
+  DownloadURLInternal(params->url, referrer,
+                      params->initiator_origin.value_or(url::Origin()),
+                      params->suggested_name.value_or(base::string16()), false,
+                      params->cross_origin_redirects, std::move(blob_url_token),
+                      std::move(blob_data_remote));
+}
+
 void RenderFrameHostImpl::RequestTextSurroundingSelection(
     blink::mojom::LocalFrame::GetTextSurroundingSelectionCallback callback,
     int max_length) {
@@ -4328,22 +4350,7 @@ void RenderFrameHostImpl::RenderFallbackContentInParentProcess() {
   }
 }
 
-void RenderFrameHostImpl::OnDownloadUrl(
-    const FrameHostMsg_DownloadUrl_Params& params) {
-  mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token;
-  if (!VerifyDownloadUrlParams(GetSiteInstance(), params, &blob_url_token))
-    return;
-
-  mojo::ScopedMessagePipeHandle data_url_blob(std::move(params.data_url_blob));
-  mojo::PendingRemote<blink::mojom::Blob> blob_data_remote(
-      std::move(data_url_blob), blink::mojom::Blob::Version_);
-
-  DownloadUrl(params.url, params.referrer, params.initiator_origin,
-              params.suggested_name, false, params.cross_origin_redirects,
-              std::move(blob_url_token), std::move(blob_data_remote));
-}
-
-void RenderFrameHostImpl::DownloadUrl(
+void RenderFrameHostImpl::DownloadURLInternal(
     const GURL& url,
     const Referrer& referrer,
     const url::Origin& initiator,

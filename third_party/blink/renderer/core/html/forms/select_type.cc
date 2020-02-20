@@ -75,6 +75,11 @@ class MenuListSelectType final : public SelectType {
   }
 
  private:
+  bool ShouldOpenPopupForKeyDownEvent(const KeyboardEvent& event);
+  bool ShouldOpenPopupForKeyPressEvent(const KeyboardEvent& event);
+  // Returns true if this function handled the event.
+  bool HandlePopupOpenKeyboardEvent();
+
   String UpdateTextStyleInternal();
   void DidUpdateActiveOption(HTMLOptionElement* option);
 
@@ -94,8 +99,8 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
     if (!select_->GetLayoutObject() || !key_event)
       return false;
 
-    if (select_->ShouldOpenPopupForKeyDownEvent(*key_event))
-      return select_->HandlePopupOpenKeyboardEvent(event);
+    if (ShouldOpenPopupForKeyDownEvent(*key_event))
+      return HandlePopupOpenKeyboardEvent();
 
     // When using spatial navigation, we want to be able to navigate away
     // from the select element when the user hits any of the arrow keys,
@@ -167,8 +172,8 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
       return true;
     }
 
-    if (select_->ShouldOpenPopupForKeyPressEvent(*key_event))
-      return select_->HandlePopupOpenKeyboardEvent(event);
+    if (ShouldOpenPopupForKeyPressEvent(*key_event))
+      return HandlePopupOpenKeyboardEvent();
 
     if (!LayoutTheme::GetTheme().PopsMenuByReturnKey() && key_code == '\r') {
       if (HTMLFormElement* form = select_->Form())
@@ -210,6 +215,49 @@ bool MenuListSelectType::DefaultEventHandler(const Event& event) {
     return true;
   }
   return false;
+}
+
+bool MenuListSelectType::ShouldOpenPopupForKeyDownEvent(
+    const KeyboardEvent& event) {
+  const String& key = event.key();
+  LayoutTheme& layout_theme = LayoutTheme::GetTheme();
+
+  if (IsSpatialNavigationEnabled(select_->GetDocument().GetFrame()))
+    return false;
+
+  return ((layout_theme.PopsMenuByArrowKeys() &&
+           (key == "ArrowDown" || key == "ArrowUp")) ||
+          (layout_theme.PopsMenuByAltDownUpOrF4Key() &&
+           (key == "ArrowDown" || key == "ArrowUp") && event.altKey()) ||
+          (layout_theme.PopsMenuByAltDownUpOrF4Key() &&
+           (!event.altKey() && !event.ctrlKey() && key == "F4")));
+}
+
+bool MenuListSelectType::ShouldOpenPopupForKeyPressEvent(
+    const KeyboardEvent& event) {
+  LayoutTheme& layout_theme = LayoutTheme::GetTheme();
+  int key_code = event.keyCode();
+
+  return ((layout_theme.PopsMenuBySpaceKey() && key_code == ' ' &&
+           !select_->type_ahead_.HasActiveSession(event)) ||
+          (layout_theme.PopsMenuByReturnKey() && key_code == '\r'));
+}
+
+bool MenuListSelectType::HandlePopupOpenKeyboardEvent() {
+  select_->focus();
+  // Calling focus() may cause us to lose our LayoutObject. Return true so
+  // that our caller doesn't process the event further, but don't set
+  // the event as handled.
+  if (!select_->GetLayoutObject() || will_be_destroyed_ ||
+      select_->IsDisabledFormControl())
+    return false;
+  // Save the selection so it can be compared to the new selection when
+  // dispatching change events during SelectOption, which gets called from
+  // SelectOptionByPopup, which gets called after the user makes a selection
+  // from the menu.
+  select_->SaveLastSelection();
+  select_->ShowPopup();
+  return true;
 }
 
 void MenuListSelectType::DidSelectOption(

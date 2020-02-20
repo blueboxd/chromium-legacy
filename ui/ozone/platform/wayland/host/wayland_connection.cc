@@ -174,6 +174,9 @@ void WaylandConnection::RequestDragData(
 }
 
 bool WaylandConnection::IsDragInProgress() {
+  // |data_device_| can be null when running on headless weston.
+  if (!data_device_)
+    return false;
   return data_device_->IsDragEntered() || drag_data_source();
 }
 

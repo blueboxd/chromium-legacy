@@ -28,6 +28,7 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(WindowBackdrop, kWindowBackdropKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kBlockedForAssistantSnapshotKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanAttachToAnotherWindowKey, true)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanConsumeSystemKeysKey, false)
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kExcludeInMruKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideInOverviewKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kHideShelfWhenFullscreenKey, true)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kImmersiveImpliedByFullscreen, true)
@@ -47,6 +48,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kForceVisibleInMiniViewKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(WindowStateType,
                              kPrePipWindowStateTypeKey,
                              WindowStateType::kDefault)
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowManagerManagesOpacityKey, false)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kPipOriginalWindowKey, false)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(float, kPipSnapFractionKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kRenderTitleAreaProperty, false)
@@ -79,5 +81,4 @@ DEFINE_UI_CLASS_PROPERTY_KEY(WindowStateType,
 
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowPipTypeKey, false)
 
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kExcludeInMruKey, false)
 }  // namespace ash

@@ -27,6 +27,11 @@ class NET_EXPORT NSSCertDatabaseChromeOS : public NSSCertDatabase {
 
   // NSSCertDatabase implementation.
   void ListCerts(NSSCertDatabase::ListCertsCallback callback) override;
+
+  // Uses NSSCertDatabase implementation and adds additional Chrome OS specific
+  // certificate information.
+  void ListCertsInfo(ListCertsInfoCallback callback) override;
+
   void ListModules(std::vector<crypto::ScopedPK11Slot>* modules,
                    bool need_rw) const override;
   crypto::ScopedPK11Slot GetSystemSlot() const override;
@@ -42,6 +47,16 @@ class NET_EXPORT NSSCertDatabaseChromeOS : public NSSCertDatabase {
   // Static so it may safely be used on the worker thread.
   static ScopedCERTCertificateList ListCertsImpl(
       const NSSProfileFilterChromeOS& profile_filter);
+
+  // Certificate information listing implementation used by |ListCertsInfo|.
+  // The certificate list normally returned by
+  // NSSCertDatabase::ListCertsInfoImpl is additionally filtered by
+  // |profile_filter|. Also additional Chrome OS specific information is added.
+  // Static so it may safely be used on the worker thread.
+  static CertInfoList ListCertsInfoImpl(
+      const NSSProfileFilterChromeOS& profile_filter,
+      crypto::ScopedPK11Slot system_slot,
+      bool add_certs_info);
 
   NSSProfileFilterChromeOS profile_filter_;
   crypto::ScopedPK11Slot system_slot_;

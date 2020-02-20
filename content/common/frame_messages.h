@@ -408,16 +408,6 @@ IPC_STRUCT_BEGIN(FrameHostMsg_OpenURL_Params)
   IPC_STRUCT_MEMBER(content::NavigationDownloadPolicy, download_policy)
 IPC_STRUCT_END()
 
-IPC_STRUCT_BEGIN(FrameHostMsg_DownloadUrl_Params)
-  IPC_STRUCT_MEMBER(GURL, url)
-  IPC_STRUCT_MEMBER(content::Referrer, referrer)
-  IPC_STRUCT_MEMBER(url::Origin, initiator_origin)
-  IPC_STRUCT_MEMBER(base::string16, suggested_name)
-  IPC_STRUCT_MEMBER(network::mojom::RedirectMode, cross_origin_redirects)
-  IPC_STRUCT_MEMBER(mojo::MessagePipeHandle, blob_url_token)
-  IPC_STRUCT_MEMBER(mojo::MessagePipeHandle, data_url_blob)
-IPC_STRUCT_END()
-
 IPC_STRUCT_BEGIN(FrameMsg_TextTrackSettings_Params)
   // Text tracks on/off state
   IPC_STRUCT_MEMBER(bool, text_tracks_enabled)
@@ -667,9 +657,6 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_OpenURL, FrameHostMsg_OpenURL_Params)
 // Notifies the browser that a frame finished loading.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_DidFinishLoad,
                     GURL /* validated_url */)
-
-// Initiates a download based on user actions like 'ALT+click'.
-IPC_MESSAGE_ROUTED1(FrameHostMsg_DownloadUrl, FrameHostMsg_DownloadUrl_Params)
 
 // Sent when the RenderFrame or RenderFrameProxy either updates its opener to
 // another frame identified by |opener_routing_id|, or, if |opener_routing_id|

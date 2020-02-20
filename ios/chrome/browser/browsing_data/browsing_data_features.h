@@ -7,8 +7,4 @@
 
 #include "base/feature_list.h"
 
-// Feature to use the clear browsing data from web instead of the one from
-// chrome.
-extern const base::Feature kWebClearBrowsingData;
-
 #endif  // IOS_CHROME_BROWSER_BROWSING_DATA_BROWSING_DATA_FEATURES_H_

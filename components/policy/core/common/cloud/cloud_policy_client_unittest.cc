@@ -43,6 +43,14 @@ using testing::Return;
 using testing::SaveArg;
 using testing::StrictMock;
 
+// The type for variables containing an error from DM Server response.
+using CertProvisioningResponseErrorType =
+    enterprise_management::ClientCertificateProvisioningResponse::Error;
+// The namespace that contains convenient aliases for error values, e.g.
+// UNDEFINED, TIMED_OUT, IDENTITY_VERIFICATION_ERROR, CA_ERROR.
+using CertProvisioningResponseError =
+    enterprise_management::ClientCertificateProvisioningResponse;
+
 namespace em = enterprise_management;
 
 namespace policy {
@@ -1892,6 +1900,382 @@ TEST_F(CloudPolicyClientTest, PolicyReregistrationFailsWithNonMatchingDMToken) {
   EXPECT_TRUE(client_->requires_reregistration());
   EXPECT_FALSE(client_->GetPolicyFor(policy_type_, std::string()));
   EXPECT_EQ(DM_STATUS_SERVICE_MANAGEMENT_TOKEN_INVALID, client_->status());
+}
+
+class MockClientCertProvisioningStartCsrCallbackObserver {
+ public:
+  MockClientCertProvisioningStartCsrCallbackObserver() = default;
+
+  MOCK_METHOD(void,
+              Callback,
+              (DeviceManagementStatus,
+               CertProvisioningResponseErrorType,
+               base::Optional<int64_t> try_later,
+               const std::string& invalidation_topic,
+               const std::string& va_challenge,
+               em::HashingAlgorithm hash_algorithm,
+               const std::string& data_to_sign),
+              (const));
+};
+
+class CloudPolicyClientCertProvisioningStartCsrTest
+    : public CloudPolicyClientTest {
+ public:
+  void RunTest(const em::DeviceManagementResponse& fake_response,
+               const MockClientCertProvisioningStartCsrCallbackObserver&
+                   callback_observer);
+};
+
+void CloudPolicyClientCertProvisioningStartCsrTest::RunTest(
+    const em::DeviceManagementResponse& fake_response,
+    const MockClientCertProvisioningStartCsrCallbackObserver&
+        callback_observer) {
+  const std::string cert_scope = "fake_cert_scope_1";
+  const std::string cert_profile_id = "fake_cert_profile_id_1";
+  const std::string public_key = "fake_public_key_1";
+
+  em::DeviceManagementRequest expected_request;
+  {
+    em::ClientCertificateProvisioningRequest* inner_request =
+        expected_request.mutable_client_certificate_provisioning_request();
+    inner_request->set_certificate_scope(cert_scope);
+    inner_request->set_cert_profile_id(cert_profile_id);
+    inner_request->set_public_key(public_key);
+    // Sets the request type, no actual data is required.
+    inner_request->mutable_start_csr_request();
+  }
+
+  RegisterClient();
+
+  EXPECT_CALL(service_, StartJob(_))
+      .WillOnce(DoAll(service_.CaptureJobType(&job_type_),
+                      service_.CaptureRequest(&job_request_),
+                      service_.StartJobOKAsync(fake_response)));
+
+  client_->ClientCertProvisioningStartCsr(
+      cert_scope, cert_profile_id, public_key,
+      base::BindOnce(
+          &MockClientCertProvisioningStartCsrCallbackObserver::Callback,
+          base::Unretained(&callback_observer)));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(
+      DeviceManagementService::JobConfiguration::TYPE_CERT_PROVISIONING_REQUEST,
+      job_type_);
+  EXPECT_EQ(job_request_.SerializePartialAsString(),
+            expected_request.SerializePartialAsString());
+}
+
+// 1. Checks that |ClientCertProvisioningStartCsr| generates a correct request.
+// 2. Checks that |OnClientCertProvisioningStartCsrResponse| correctly extracts
+// data from a response that contains data.
+TEST_F(CloudPolicyClientCertProvisioningStartCsrTest,
+       RequestClientCertProvisioningStartCsrSuccess) {
+  const std::string invalidation_topic = "fake_invalidation_topic_1";
+  const std::string va_challenge = "fake_va_challenge_1";
+  const std::string data_to_sign = "fake_data_to_sign_1";
+  em::HashingAlgorithm hash_algorithm = em::HashingAlgorithm::SHA256;
+  em::SigningAlgorithm sign_algorithm = em::SigningAlgorithm::RSA_PKCS1_V1_5;
+
+  em::DeviceManagementResponse fake_response;
+  {
+    em::ClientCertificateProvisioningResponse* inner_response =
+        fake_response.mutable_client_certificate_provisioning_response();
+    em::StartCsrResponse* start_csr_response =
+        inner_response->mutable_start_csr_response();
+    start_csr_response->set_invalidation_topic(invalidation_topic);
+    start_csr_response->set_va_challenge(va_challenge);
+    start_csr_response->set_hashing_algorithm(hash_algorithm);
+    start_csr_response->set_signing_algorithm(sign_algorithm);
+    start_csr_response->set_data_to_sign(data_to_sign);
+  }
+
+  MockClientCertProvisioningStartCsrCallbackObserver callback_observer;
+  EXPECT_CALL(callback_observer,
+              Callback(DeviceManagementStatus::DM_STATUS_SUCCESS,
+                       CertProvisioningResponseError::UNDEFINED,
+                       testing::Eq(base::nullopt), invalidation_topic,
+                       va_challenge, hash_algorithm, data_to_sign))
+      .Times(1);
+
+  RunTest(fake_response, callback_observer);
+}
+
+// 1. Checks that |ClientCertProvisioningStartCsr| generates a correct request.
+// 2. Checks that |OnClientCertProvisioningStartCsrResponse| correctly extracts
+// data from a response that contains the try_later field.
+TEST_F(CloudPolicyClientCertProvisioningStartCsrTest,
+       RequestClientCertProvisioningStartCsrTryLater) {
+  const int64_t try_later = 60000;
+  em::DeviceManagementResponse fake_response;
+  {
+    em::ClientCertificateProvisioningResponse* inner_response =
+        fake_response.mutable_client_certificate_provisioning_response();
+    inner_response->set_try_again_later(try_later);
+  }
+
+  MockClientCertProvisioningStartCsrCallbackObserver callback_observer;
+  EXPECT_CALL(callback_observer,
+              Callback(DeviceManagementStatus::DM_STATUS_SUCCESS,
+                       CertProvisioningResponseError::UNDEFINED,
+                       testing::Eq(try_later), std::string(), std::string(),
+                       em::HashingAlgorithm::HASHING_ALGORITHM_UNSPECIFIED,
+                       std::string()))
+      .Times(1);
+
+  RunTest(fake_response, callback_observer);
+}
+
+// 1. Checks that |ClientCertProvisioningStartCsr| generates a correct request.
+// 2. Checks that |OnClientCertProvisioningStartCsrResponse| correctly extracts
+// data from a response that contains the error field.
+TEST_F(CloudPolicyClientCertProvisioningStartCsrTest,
+       RequestClientCertProvisioningStartCsrError) {
+  const CertProvisioningResponseErrorType error =
+      CertProvisioningResponseError::CA_ERROR;
+  em::DeviceManagementResponse fake_response;
+  {
+    em::ClientCertificateProvisioningResponse* inner_response =
+        fake_response.mutable_client_certificate_provisioning_response();
+    inner_response->set_error(error);
+  }
+
+  MockClientCertProvisioningStartCsrCallbackObserver callback_observer;
+  EXPECT_CALL(callback_observer,
+              Callback(DeviceManagementStatus::DM_STATUS_SUCCESS, error,
+                       testing::Eq(base::nullopt), std::string(), std::string(),
+                       em::HashingAlgorithm::HASHING_ALGORITHM_UNSPECIFIED,
+                       std::string()))
+      .Times(1);
+
+  RunTest(fake_response, callback_observer);
+}
+
+class MockClientCertProvisioningFinishCsrCallbackObserver {
+ public:
+  MockClientCertProvisioningFinishCsrCallbackObserver() = default;
+
+  MOCK_METHOD(void,
+              Callback,
+              (DeviceManagementStatus,
+               CertProvisioningResponseErrorType,
+               base::Optional<int64_t> try_later),
+              (const));
+};
+
+class CloudPolicyClientCertProvisioningFinishCsrTest
+    : public CloudPolicyClientTest {
+ public:
+  void RunTest(const em::DeviceManagementResponse& fake_response,
+               const MockClientCertProvisioningFinishCsrCallbackObserver&
+                   callback_observer);
+};
+
+void CloudPolicyClientCertProvisioningFinishCsrTest::RunTest(
+    const em::DeviceManagementResponse& fake_response,
+    const MockClientCertProvisioningFinishCsrCallbackObserver&
+        callback_observer) {
+  const std::string cert_scope = "fake_cert_scope_1";
+  const std::string cert_profile_id = "fake_cert_profile_id_1";
+  const std::string public_key = "fake_public_key_1";
+  const std::string va_challenge_response = "fake_va_challenge_response_1";
+  const std::string signature = "fake_signature_1";
+
+  em::DeviceManagementRequest expected_request;
+  {
+    em::ClientCertificateProvisioningRequest* inner_request =
+        expected_request.mutable_client_certificate_provisioning_request();
+    inner_request->set_certificate_scope(cert_scope);
+    inner_request->set_cert_profile_id(cert_profile_id);
+    inner_request->set_public_key(public_key);
+
+    em::FinishCsrRequest* finish_csr_request =
+        inner_request->mutable_finish_csr_request();
+    finish_csr_request->set_va_challenge_response(va_challenge_response);
+    finish_csr_request->set_signature(signature);
+  }
+
+  RegisterClient();
+
+  EXPECT_CALL(service_, StartJob(_))
+      .WillOnce(DoAll(service_.CaptureJobType(&job_type_),
+                      service_.CaptureRequest(&job_request_),
+                      service_.StartJobOKAsync(fake_response)));
+
+  client_->ClientCertProvisioningFinishCsr(
+      cert_scope, cert_profile_id, public_key, va_challenge_response, signature,
+      base::BindOnce(
+          &MockClientCertProvisioningFinishCsrCallbackObserver::Callback,
+          base::Unretained(&callback_observer)));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(
+      DeviceManagementService::JobConfiguration::TYPE_CERT_PROVISIONING_REQUEST,
+      job_type_);
+  EXPECT_EQ(job_request_.SerializePartialAsString(),
+            expected_request.SerializePartialAsString());
+}
+
+// 1. Checks that |ClientCertProvisioningFinishCsr| generates a correct request.
+// 2. Checks that |OnClientCertProvisioningFinishCsrResponse| correctly extracts
+// data from a response that contains success status code.
+TEST_F(CloudPolicyClientCertProvisioningFinishCsrTest,
+       RequestClientCertProvisioningFinishCsrSuccess) {
+  em::DeviceManagementResponse fake_response;
+  {
+    em::ClientCertificateProvisioningResponse* inner_response =
+        fake_response.mutable_client_certificate_provisioning_response();
+    // Sets the response id, no actual data is required.
+    inner_response->mutable_finish_csr_response();
+  }
+
+  MockClientCertProvisioningFinishCsrCallbackObserver callback_observer;
+  EXPECT_CALL(callback_observer,
+              Callback(DeviceManagementStatus::DM_STATUS_SUCCESS,
+                       CertProvisioningResponseError::UNDEFINED,
+                       testing::Eq(base::nullopt)))
+      .Times(1);
+
+  RunTest(fake_response, callback_observer);
+}
+
+// 1. Checks that |ClientCertProvisioningFinishCsr| generates a correct request.
+// 2. Checks that |OnClientCertProvisioningFinishCsrResponse| correctly extracts
+// data from a response that contains the error field.
+TEST_F(CloudPolicyClientCertProvisioningFinishCsrTest,
+       RequestClientCertProvisioningFinishCsrError) {
+  const CertProvisioningResponseErrorType error =
+      CertProvisioningResponseError::CA_ERROR;
+  em::DeviceManagementResponse fake_response;
+  {
+    em::ClientCertificateProvisioningResponse* inner_response =
+        fake_response.mutable_client_certificate_provisioning_response();
+    inner_response->set_error(error);
+  }
+
+  MockClientCertProvisioningFinishCsrCallbackObserver callback_observer;
+  EXPECT_CALL(callback_observer,
+              Callback(DeviceManagementStatus::DM_STATUS_SUCCESS, error,
+                       testing::Eq(base::nullopt)))
+      .Times(1);
+
+  RunTest(fake_response, callback_observer);
+}
+
+class MockClientCertProvisioningDownloadCertCallbackObserver {
+ public:
+  MockClientCertProvisioningDownloadCertCallbackObserver() = default;
+
+  MOCK_METHOD(void,
+              Callback,
+              (DeviceManagementStatus,
+               CertProvisioningResponseErrorType,
+               base::Optional<int64_t> try_later,
+               const std::string& pem_encoded_certificate),
+              (const));
+};
+
+class CloudPolicyClientCertProvisioningDownloadCertTest
+    : public CloudPolicyClientTest {
+ public:
+  void RunTest(const em::DeviceManagementResponse& fake_response,
+               const MockClientCertProvisioningDownloadCertCallbackObserver&
+                   callback_observer);
+};
+
+void CloudPolicyClientCertProvisioningDownloadCertTest::RunTest(
+    const em::DeviceManagementResponse& fake_response,
+    const MockClientCertProvisioningDownloadCertCallbackObserver&
+        callback_observer) {
+  const std::string cert_scope = "fake_cert_scope_1";
+  const std::string cert_profile_id = "fake_cert_profile_id_1";
+  const std::string public_key = "fake_public_key_1";
+
+  em::DeviceManagementRequest expected_request;
+  {
+    em::ClientCertificateProvisioningRequest* inner_request =
+        expected_request.mutable_client_certificate_provisioning_request();
+    inner_request->set_certificate_scope(cert_scope);
+    inner_request->set_cert_profile_id(cert_profile_id);
+    inner_request->set_public_key(public_key);
+    // Sets the request type, no actual data is required.
+    inner_request->mutable_download_cert_request();
+  }
+
+  RegisterClient();
+
+  EXPECT_CALL(service_, StartJob(_))
+      .WillOnce(DoAll(service_.CaptureJobType(&job_type_),
+                      service_.CaptureRequest(&job_request_),
+                      service_.StartJobOKAsync(fake_response)));
+
+  client_->ClientCertProvisioningDownloadCert(
+      cert_scope, cert_profile_id, public_key,
+      base::BindOnce(
+          &MockClientCertProvisioningDownloadCertCallbackObserver::Callback,
+          base::Unretained(&callback_observer)));
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(
+      DeviceManagementService::JobConfiguration::TYPE_CERT_PROVISIONING_REQUEST,
+      job_type_);
+  EXPECT_EQ(job_request_.SerializePartialAsString(),
+            expected_request.SerializePartialAsString());
+}
+
+// 1. Checks that |ClientCertProvisioningDownloadCert| generates a correct
+// request.
+// 2. Checks that |OnClientCertProvisioningDownloadCertResponse| correctly
+// extracts data from a response that contains success status code.
+TEST_F(CloudPolicyClientCertProvisioningDownloadCertTest,
+       RequestClientCertProvisioningDownloadCertSuccess) {
+  const std::string pem_encoded_cert = "fake_pem_encoded_cert_1";
+  em::DeviceManagementResponse fake_response;
+  {
+    em::ClientCertificateProvisioningResponse* inner_response =
+        fake_response.mutable_client_certificate_provisioning_response();
+
+    em::DownloadCertResponse* download_cert_response =
+        inner_response->mutable_download_cert_response();
+    download_cert_response->set_pem_encoded_certificate(pem_encoded_cert);
+  }
+
+  MockClientCertProvisioningDownloadCertCallbackObserver callback_observer;
+  EXPECT_CALL(callback_observer,
+              Callback(DeviceManagementStatus::DM_STATUS_SUCCESS,
+                       CertProvisioningResponseError::UNDEFINED,
+                       testing::Eq(base::nullopt), pem_encoded_cert))
+      .Times(1);
+
+  RunTest(fake_response, callback_observer);
+}
+
+// 1. Checks that |ClientCertProvisioningDownloadCert| generates a correct
+// request.
+// 2. Checks that |OnClientCertProvisioningDownloadCertResponse| correctly
+// extracts data from a response that contains the error field.
+TEST_F(CloudPolicyClientCertProvisioningDownloadCertTest,
+       RequestClientCertProvisioningDownloadCertError) {
+  const CertProvisioningResponseErrorType error =
+      CertProvisioningResponseError::CA_ERROR;
+  em::DeviceManagementResponse fake_response;
+  {
+    em::ClientCertificateProvisioningResponse* inner_response =
+        fake_response.mutable_client_certificate_provisioning_response();
+    inner_response->set_error(error);
+  }
+
+  MockClientCertProvisioningDownloadCertCallbackObserver callback_observer;
+  EXPECT_CALL(callback_observer,
+              Callback(DeviceManagementStatus::DM_STATUS_SUCCESS,
+                       CertProvisioningResponseError::CA_ERROR,
+                       testing::Eq(base::nullopt), std::string()))
+      .Times(1);
+
+  RunTest(fake_response, callback_observer);
 }
 
 }  // namespace policy

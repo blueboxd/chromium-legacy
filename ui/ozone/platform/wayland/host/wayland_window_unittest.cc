@@ -877,10 +877,12 @@ TEST_P(WaylandWindowTest, CanCreateMenuWindow) {
   window_->SetPointerFocus(false);
   window_->set_touch_focus(false);
 
+  // Given that there is no parent passed and we don't have any focused windows,
+  // Wayland must still create a window.
   menu_window = CreateWaylandWindowWithParams(
       PlatformWindowType::kMenu, gfx::kNullAcceleratedWidget,
       gfx::Rect(0, 0, 10, 10), &menu_window_delegate);
-  EXPECT_FALSE(menu_window);
+  EXPECT_TRUE(menu_window);
 
   Sync();
 

@@ -77,11 +77,6 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
                                           gfx::Rect* bounds) const;
 #endif
 
-  // Function to retrieve default opacity value mainly based on platform
-  // and desktop context.
-  views::Widget::InitParams::WindowOpacity GetOpacityForInitParams(
-      const views::Widget::InitParams& params);
-
   views::NativeWidget* CreateNativeWidget(
       views::Widget::InitParams* params,
       views::internal::NativeWidgetDelegate* delegate);

@@ -293,15 +293,13 @@ std::set<GURL> PermissionDecisionAutoBlocker::GetEmbargoedOrigins(
   std::set<GURL> origins;
   for (const auto& e : embargo_settings) {
     for (auto content_type : content_types) {
-      if (!permissions::PermissionUtil::IsPermission(content_type))
+      if (!PermissionUtil::IsPermission(content_type))
         continue;
       const GURL url(e.primary_pattern.ToString());
-      permissions::PermissionResult result =
+      PermissionResult result =
           GetEmbargoResult(settings_map_, url, content_type, clock_->Now());
-      if (result.source ==
-              permissions::PermissionStatusSource::MULTIPLE_DISMISSALS ||
-          result.source ==
-              permissions::PermissionStatusSource::MULTIPLE_IGNORES) {
+      if (result.source == PermissionStatusSource::MULTIPLE_DISMISSALS ||
+          result.source == PermissionStatusSource::MULTIPLE_IGNORES) {
         origins.insert(url);
         break;
       }

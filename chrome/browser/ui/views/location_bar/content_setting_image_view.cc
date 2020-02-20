@@ -234,7 +234,8 @@ void ContentSettingImageView::AnimationEnded(const gfx::Animation* animation) {
 
   // The promo currently is only used for Notifications, and it is only shown
   // directly after the animation is shown.
-  if (content_setting_image_model_->ShouldShowPromo(web_contents)) {
+  if (web_contents &&
+      content_setting_image_model_->ShouldShowPromo(web_contents)) {
     // Owned by its native widget. Will be destroyed as its widget is destroyed.
     indicator_promo_ = FeaturePromoBubbleView::CreateOwned(
         this, views::BubbleBorder::TOP_RIGHT,

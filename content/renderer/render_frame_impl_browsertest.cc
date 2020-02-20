@@ -28,6 +28,7 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/document_state.h"
 #include "content/public/test/frame_load_waiter.h"
+#include "content/public/test/local_frame_host_interceptor.h"
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_utils.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
@@ -57,7 +58,6 @@
 #include "ui/gfx/geometry/point.h"
 #include "ui/native_theme/native_theme_features.h"
 
-using blink::WebString;
 using blink::WebURLRequest;
 
 namespace content {
@@ -79,7 +79,13 @@ const char kAutoplayTestOrigin[] = "https://www.google.com";
 // of process frame even though it is in the same process as its parent.
 class RenderFrameImplTest : public RenderViewTest {
  public:
-  ~RenderFrameImplTest() override {}
+  explicit RenderFrameImplTest(
+      RenderFrameImpl::CreateRenderFrameImplFunction hook_function = nullptr)
+      : RenderViewTest(/*hook_render_frame_creation=*/!hook_function) {
+    if (hook_function)
+      RenderFrameImpl::InstallCreateHook(hook_function);
+  }
+  ~RenderFrameImplTest() override = default;
 
   void SetUp() override {
     blink::WebRuntimeFeatures::EnableOverlayScrollbars(
@@ -298,73 +304,87 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
   EXPECT_TRUE(observer.visible());
 }
 
-TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
-  const IPC::Message* msg1 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_DownloadUrl::ID);
-  EXPECT_FALSE(msg1);
-  render_thread_->sink().ClearMessages();
+namespace {
+class DownloadURLMockLocalFrameHost : public LocalFrameHostInterceptor {
+ public:
+  explicit DownloadURLMockLocalFrameHost(
+      blink::AssociatedInterfaceProvider* provider)
+      : LocalFrameHostInterceptor(provider) {}
 
-  const std::string image_data_url =
-      "data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs=";
+  MOCK_METHOD2(RunModalAlertDialog,
+               void(const base::string16& alert_message,
+                    RunModalAlertDialogCallback callback));
+  MOCK_METHOD1(DownloadURL, void(blink::mojom::DownloadURLParamsPtr params));
+};
 
-  frame()->SaveImageFromDataURL(WebString::FromUTF8(image_data_url));
-  base::RunLoop().RunUntilIdle();
-  const IPC::Message* msg2 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_DownloadUrl::ID);
-  EXPECT_TRUE(msg2);
+class DownloadURLTestRenderFrame : public TestRenderFrame {
+ public:
+  static RenderFrameImpl* CreateTestRenderFrame(
+      RenderFrameImpl::CreateParams params) {
+    return new DownloadURLTestRenderFrame(std::move(params));
+  }
 
-  FrameHostMsg_DownloadUrl::Param param1;
-  FrameHostMsg_DownloadUrl::Read(msg2, &param1);
-  EXPECT_EQ(std::get<0>(param1).url, GURL());
+  ~DownloadURLTestRenderFrame() override = default;
 
-  base::RunLoop().RunUntilIdle();
-  render_thread_->sink().ClearMessages();
+  blink::AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() override {
+    blink::AssociatedInterfaceProvider* associated_interface_provider =
+        RenderFrameImpl::GetRemoteAssociatedInterfaces();
 
-  const std::string large_data_url(1024 * 1024 * 20, 'd');
+    // Attach our fake local frame host at the very first call to
+    // GetRemoteAssociatedInterfaces.
+    if (!local_frame_host_) {
+      local_frame_host_ = std::make_unique<DownloadURLMockLocalFrameHost>(
+          associated_interface_provider);
+    }
+    return associated_interface_provider;
+  }
 
-  frame()->SaveImageFromDataURL(WebString::FromUTF8(large_data_url));
-  base::RunLoop().RunUntilIdle();
-  const IPC::Message* msg3 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_DownloadUrl::ID);
-  EXPECT_TRUE(msg3);
+  DownloadURLMockLocalFrameHost* download_url_mock_local_frame_host() {
+    return local_frame_host_.get();
+  }
 
-  FrameHostMsg_DownloadUrl::Param param2;
-  FrameHostMsg_DownloadUrl::Read(msg3, &param2);
-  EXPECT_EQ(std::get<0>(param2).url, GURL());
+ private:
+  explicit DownloadURLTestRenderFrame(RenderFrameImpl::CreateParams params)
+      : TestRenderFrame(std::move(params)) {}
 
-  base::RunLoop().RunUntilIdle();
-  render_thread_->sink().ClearMessages();
-}
+  std::unique_ptr<DownloadURLMockLocalFrameHost> local_frame_host_;
+};
+}  // namespace
+
+class RenderViewImplDownloadURLTest : public RenderFrameImplTest {
+ public:
+  RenderViewImplDownloadURLTest()
+      : RenderFrameImplTest(
+            &DownloadURLTestRenderFrame::CreateTestRenderFrame) {}
+
+  DownloadURLMockLocalFrameHost* download_url_mock_local_frame_host() {
+    return static_cast<DownloadURLTestRenderFrame*>(frame())
+        ->download_url_mock_local_frame_host();
+  }
+};
 
 // Tests that url download are throttled when reaching the limit.
-TEST_F(RenderFrameImplTest, DownloadUrlLimit) {
-  const IPC::Message* msg1 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_DownloadUrl::ID);
-  EXPECT_FALSE(msg1);
-  render_thread_->sink().ClearMessages();
-
+TEST_F(RenderViewImplDownloadURLTest, DownloadUrlLimit) {
   WebURLRequest request;
   request.SetUrl(GURL("http://test/test.pdf"));
   request.SetRequestorOrigin(
       blink::WebSecurityOrigin::Create(GURL("http://test")));
 
+  EXPECT_CALL(*download_url_mock_local_frame_host(), DownloadURL(testing::_))
+      .Times(10);
   for (int i = 0; i < 10; ++i) {
-    frame()->DownloadURL(request, network::mojom::RedirectMode::kManual,
-                         mojo::ScopedMessagePipeHandle());
+    frame()->GetWebFrame()->DownloadURL(request,
+                                        network::mojom::RedirectMode::kManual,
+                                        mojo::ScopedMessagePipeHandle());
     base::RunLoop().RunUntilIdle();
-    const IPC::Message* msg2 = render_thread_->sink().GetFirstMessageMatching(
-        FrameHostMsg_DownloadUrl::ID);
-    EXPECT_TRUE(msg2);
-    base::RunLoop().RunUntilIdle();
-    render_thread_->sink().ClearMessages();
   }
 
-  frame()->DownloadURL(request, network::mojom::RedirectMode::kManual,
-                       mojo::ScopedMessagePipeHandle());
+  EXPECT_CALL(*download_url_mock_local_frame_host(), DownloadURL(testing::_))
+      .Times(0);
+  frame()->GetWebFrame()->DownloadURL(request,
+                                      network::mojom::RedirectMode::kManual,
+                                      mojo::ScopedMessagePipeHandle());
   base::RunLoop().RunUntilIdle();
-  const IPC::Message* msg3 = render_thread_->sink().GetFirstMessageMatching(
-      FrameHostMsg_DownloadUrl::ID);
-  EXPECT_FALSE(msg3);
 }
 
 // Regression test for crbug.com/692557. It shouldn't crash if we inititate a

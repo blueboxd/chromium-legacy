@@ -65,8 +65,7 @@ void PermissionsClient::OnPromptResolved(
     PermissionRequestType request_type,
     PermissionAction action) {}
 
-base::Optional<url::Origin> PermissionsClient::GetAutoApprovalOrigin(
-    const PermissionRequest* request) {
+base::Optional<url::Origin> PermissionsClient::GetAutoApprovalOrigin() {
   return base::nullopt;
 }
 

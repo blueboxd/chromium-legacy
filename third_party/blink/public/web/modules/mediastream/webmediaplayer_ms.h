@@ -272,10 +272,6 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   void SetGpuMemoryBufferVideoForTesting(
       media::GpuMemoryBufferVideoFramePool* gpu_memory_buffer_pool);
 
-  // Returns |compositor_|'s current frame, or |current_frame_override_| if we
-  // are in the middle of a rAF callback.
-  scoped_refptr<media::VideoFrame> GetCurrentFrame() const;
-
   // Callback used to fulfill video.requestAnimationFrame() requests.
   void OnNewFramePresentedCallback(
       scoped_refptr<media::VideoFrame> presented_frame,
@@ -321,11 +317,6 @@ class BLINK_MODULES_EXPORT WebMediaPlayerMS
   // Indicated whether an outstanding rAF request needs to be forwarded to
   // |compositor_|. Set when RequestAnimationFrame() is called before Load().
   bool pending_raf_request_ = false;
-
-  // Takes precedence over the compositor's current frame when painting or
-  // copying frames. Only set when we are in the middle of executing a
-  // video.requestAnimationFrame() callback.
-  scoped_refptr<media::VideoFrame> current_frame_override_;
 
   bool paused_;
   media::VideoTransformation video_transformation_;

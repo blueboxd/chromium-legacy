@@ -92,7 +92,7 @@ function initInternalTempDir() {
 /**
  * Reads file entries from the directory.
  * @param {?DirectoryEntry} dir Directory entry to be read.
- * @return {!Promise<!Array<!FileEntry>>} Promise for the read file entries.
+ * @return {!Promise<!Array<!Entry>>} Promise for the read file entries.
  */
 function readDir(dir) {
   return !dir ? Promise.resolve([]) : new Promise((resolve, reject) => {
@@ -116,32 +116,28 @@ function readDir(dir) {
  * Initializes the directory in the external file system.
  * @return {!Promise<?DirectoryEntry>} Promise for the directory result.
  */
-function initExternalDir() {
-  return new Promise((resolve) => {
-           browserProxy.getVolumeList((volumes) => {
-             if (volumes) {
-               for (let i = 0; i < volumes.length; i++) {
-                 const volumeId = volumes[i].volumeId;
-                 if (volumeId.indexOf('downloads:Downloads') !== -1 ||
-                     volumeId.indexOf('downloads:MyFiles') !== -1) {
-                   browserProxy.requestFileSystem(
-                       volumes[i], (fs) => resolve([fs && fs.root, volumeId]));
-                   return;
-                 }
-               }
-             }
-             resolve([null, null]);
-           });
-         })
-      .then(([dir, volumeId]) => {
-        if (volumeId && volumeId.indexOf('downloads:MyFiles') !== -1) {
-          return readDir(dir).then((entries) => {
-            return entries.find(
-                (entry) => entry.name === 'Downloads' && entry.isDirectory);
-          });
-        }
-        return dir;
-      });
+async function initExternalDir() {
+  const volumes = await browserProxy.getVolumeList();
+  if (volumes === null) {
+    return null;
+  }
+
+  const getFileSystemRoot = async (volume) => {
+    const fs = await browserProxy.requestFileSystem(volume);
+    return fs === null ? null : fs.root;
+  };
+
+  for (const volume of volumes) {
+    if (!volume.volumeId.includes('downloads:MyFiles')) {
+      continue;
+    }
+    const root = await getFileSystemRoot(volume);
+    const entries = await readDir(root);
+    const downloadsDir = entries.find(
+        (entry) => entry.name === 'Downloads' && entry.isDirectory);
+    return downloadsDir ? /** @type {!DirectoryEntry} */ (downloadsDir) : null;
+  }
+  return null;
 }
 
 /**
@@ -258,9 +254,8 @@ export function initialize(promptMigrate) {
   const checkAcked = new Promise((resolve) => {
     // ack 0: User has not yet acknowledged to migrate pictures.
     // ack 1: User acknowledges to migrate pictures to Downloads.
-    browserProxy.localStorageGet(
-        {ackMigratePictures: 0},
-        (values) => resolve(values.ackMigratePictures >= 1));
+    browserProxy.localStorageGet({ackMigratePictures: 0})
+        .then((values) => resolve(values.ackMigratePictures >= 1));
   });
   const ackMigrate = () =>
       browserProxy.localStorageSet({ackMigratePictures: 1});
@@ -289,7 +284,13 @@ export function initialize(promptMigrate) {
         // Pictures taken by old Camera App may not have IMG_ or VID_ prefix.
         return readDir(internalDir)
             .then((entries) => {
-              return entries.some((entry) => !hasThumbnailPrefix(entry));
+              return entries.some((entry) => {
+                if (entry.isDirectory) {
+                  return false;
+                }
+                const fileEntry = /** @type {!FileEntry} */ (entry);
+                return !hasThumbnailPrefix(fileEntry);
+              });
             })
             .then((migrateNeeded) => {
               if (migrateNeeded) {
@@ -482,7 +483,11 @@ export function getFile(dir, name, create) {
 export function getEntries() {
   return readDir(externalDir).then((entries) => {
     return entries.filter((entry) => {
-      if (!hasVideoPrefix(entry) && !hasImagePrefix(entry)) {
+      if (entry.isDirectory) {
+        return false;
+      }
+      const fileEntry = /** @type {!FileEntry} */ (entry);
+      if (!hasVideoPrefix(fileEntry) && !hasImagePrefix(fileEntry)) {
         return false;
       }
       return entry.name.match(/_(\d{8})_(\d{6})(?: \((\d+)\))?/);

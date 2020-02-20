@@ -150,6 +150,9 @@ void FakeLocalFrameHost::Are3DAPIsBlocked(Are3DAPIsBlockedCallback callback) {
 void FakeLocalFrameHost::UpdateFaviconURL(
     WTF::Vector<blink::mojom::blink::FaviconURLPtr> favicon_urls) {}
 
+void FakeLocalFrameHost::DownloadURL(
+    mojom::blink::DownloadURLParamsPtr params) {}
+
 void FakeLocalFrameHost::BindFrameHostReceiver(
     mojo::ScopedInterfaceEndpointHandle handle) {
   receiver_.Bind(mojo::PendingAssociatedReceiver<mojom::blink::LocalFrameHost>(

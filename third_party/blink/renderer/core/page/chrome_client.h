@@ -487,9 +487,6 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
 
   virtual void DocumentDetached(Document&) {}
 
-  virtual void SaveImageFromDataURL(LocalFrame& frame, const String& data_url) {
-  }
-
  protected:
   ChromeClient() = default;
 

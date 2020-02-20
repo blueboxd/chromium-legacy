@@ -3,6 +3,3 @@
 // found in the LICENSE file.
 
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
-
-const base::Feature kWebClearBrowsingData{"WebClearBrowsingData",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};

@@ -82,6 +82,9 @@ const char* JobTypeToRequestType(
       break;
     case DeviceManagementService::JobConfiguration::TYPE_CHROME_OS_USER_REPORT:
       return dm_protocol::kValueRequestChromeOsUserReport;
+    case DeviceManagementService::JobConfiguration::
+        TYPE_CERT_PROVISIONING_REQUEST:
+      return dm_protocol::kValueRequestCertProvisioningRequest;
   }
   NOTREACHED() << "Invalid job type " << type;
   return "";

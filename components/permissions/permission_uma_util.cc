@@ -63,46 +63,43 @@ namespace {
 
 const int kPriorCountCap = 10;
 
-std::string GetPermissionRequestString(
-    permissions::PermissionRequestType type) {
+std::string GetPermissionRequestString(PermissionRequestType type) {
   switch (type) {
-    case permissions::PermissionRequestType::MULTIPLE:
+    case PermissionRequestType::MULTIPLE:
       return "AudioAndVideoCapture";
-    case permissions::PermissionRequestType::QUOTA:
+    case PermissionRequestType::QUOTA:
       return "Quota";
-    case permissions::PermissionRequestType::DOWNLOAD:
+    case PermissionRequestType::DOWNLOAD:
       return "MultipleDownload";
-    case permissions::PermissionRequestType::REGISTER_PROTOCOL_HANDLER:
+    case PermissionRequestType::REGISTER_PROTOCOL_HANDLER:
       return "RegisterProtocolHandler";
-    case permissions::PermissionRequestType::PERMISSION_GEOLOCATION:
+    case PermissionRequestType::PERMISSION_GEOLOCATION:
       return "Geolocation";
-    case permissions::PermissionRequestType::PERMISSION_MIDI_SYSEX:
+    case PermissionRequestType::PERMISSION_MIDI_SYSEX:
       return "MidiSysEx";
-    case permissions::PermissionRequestType::PERMISSION_NOTIFICATIONS:
+    case PermissionRequestType::PERMISSION_NOTIFICATIONS:
       return "Notifications";
-    case permissions::PermissionRequestType::
-        PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
+    case PermissionRequestType::PERMISSION_PROTECTED_MEDIA_IDENTIFIER:
       return "ProtectedMedia";
-    case permissions::PermissionRequestType::PERMISSION_FLASH:
+    case PermissionRequestType::PERMISSION_FLASH:
       return "Flash";
-    case permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_MIC:
+    case PermissionRequestType::PERMISSION_MEDIASTREAM_MIC:
       return "AudioCapture";
-    case permissions::PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA:
+    case PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA:
       return "VideoCapture";
-    case permissions::PermissionRequestType::
-        PERMISSION_SECURITY_KEY_ATTESTATION:
+    case PermissionRequestType::PERMISSION_SECURITY_KEY_ATTESTATION:
       return "SecurityKeyAttestation";
-    case permissions::PermissionRequestType::PERMISSION_PAYMENT_HANDLER:
+    case PermissionRequestType::PERMISSION_PAYMENT_HANDLER:
       return "PaymentHandler";
-    case permissions::PermissionRequestType::PERMISSION_NFC:
+    case PermissionRequestType::PERMISSION_NFC:
       return "Nfc";
-    case permissions::PermissionRequestType::PERMISSION_CLIPBOARD_READ_WRITE:
+    case PermissionRequestType::PERMISSION_CLIPBOARD_READ_WRITE:
       return "ClipboardReadWrite";
-    case permissions::PermissionRequestType::PERMISSION_VR:
+    case PermissionRequestType::PERMISSION_VR:
       return "VR";
-    case permissions::PermissionRequestType::PERMISSION_AR:
+    case PermissionRequestType::PERMISSION_AR:
       return "AR";
-    case permissions::PermissionRequestType::PERMISSION_STORAGE_ACCESS:
+    case PermissionRequestType::PERMISSION_STORAGE_ACCESS:
       return "StorageAccess";
     default:
       NOTREACHED();
@@ -110,14 +107,12 @@ std::string GetPermissionRequestString(
   }
 }
 
-void RecordEngagementMetric(
-    const std::vector<permissions::PermissionRequest*>& requests,
-    content::WebContents* web_contents,
-    const std::string& action) {
-  permissions::PermissionRequestType type =
-      requests[0]->GetPermissionRequestType();
+void RecordEngagementMetric(const std::vector<PermissionRequest*>& requests,
+                            content::WebContents* web_contents,
+                            const std::string& action) {
+  PermissionRequestType type = requests[0]->GetPermissionRequestType();
   if (requests.size() > 1)
-    type = permissions::PermissionRequestType::MULTIPLE;
+    type = PermissionRequestType::MULTIPLE;
 
   DCHECK(action == "Accepted" || action == "Denied" || action == "Dismissed" ||
          action == "Ignored");
@@ -403,21 +398,19 @@ void PermissionUmaUtil::RecordMissingPermissionInfobarShouldShow(
   for (const auto& content_settings_type : content_settings_types) {
     base::UmaHistogramBoolean(
         "Permissions.MissingOSLevelPermission.ShouldShow." +
-            permissions::PermissionUtil::GetPermissionString(
-                content_settings_type),
+            PermissionUtil::GetPermissionString(content_settings_type),
         should_show);
   }
 }
 
 void PermissionUmaUtil::RecordMissingPermissionInfobarAction(
-    permissions::PermissionAction action,
+    PermissionAction action,
     const std::vector<ContentSettingsType>& content_settings_types) {
   for (const auto& content_settings_type : content_settings_types) {
     base::UmaHistogramEnumeration(
         "Permissions.MissingOSLevelPermission.Action." +
-            permissions::PermissionUtil::GetPermissionString(
-                content_settings_type),
-        action, permissions::PermissionAction::NUM);
+            PermissionUtil::GetPermissionString(content_settings_type),
+        action, PermissionAction::NUM);
   }
 }
 
@@ -483,7 +476,7 @@ void PermissionUmaUtil::RecordPermissionAction(
     const GURL& requesting_origin,
     const content::WebContents* web_contents,
     content::BrowserContext* browser_context) {
-  permissions::PermissionDecisionAutoBlocker* autoblocker =
+  PermissionDecisionAutoBlocker* autoblocker =
       PermissionsClient::Get()->GetPermissionDecisionAutoBlocker(
           browser_context);
   int dismiss_count =
@@ -557,7 +550,7 @@ void PermissionUmaUtil::RecordPermissionAction(
       break;
     case ContentSettingsType::STORAGE_ACCESS:
       base::UmaHistogramEnumeration("Permissions.Action.StorageAccess", action,
-                                    permissions::PermissionAction::NUM);
+                                    PermissionAction::NUM);
       break;
     // The user is not prompted for these permissions, thus there is no
     // permission action recorded for them.

@@ -237,6 +237,12 @@ class TreeItem extends cr.ui.TreeItem {
   get labelElement() {
     return this.rowElement.querySelector('.label');
   }
+
+  /**
+   * Updates the expand icon. Defaults to doing nothing for FakeItem and
+   * ShortcutItem that don't have children, thus don't need expand icon.
+   */
+  updateExpandIcon() {}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -401,6 +407,7 @@ class DirectoryItem extends TreeItem {
     let index = 0;
     const tree = this.parentTree_;
     let item;
+
     while (this.entries_[index]) {
       const currentEntry = this.entries_[index];
       const currentElement = this.items[index];
@@ -408,6 +415,7 @@ class DirectoryItem extends TreeItem {
                         tree.volumeManager_.getLocationInfo(currentEntry),
                         currentEntry) ||
           '';
+
 
       if (index >= this.items.length) {
         // If currentEntry carries its navigationModel we generate an item
@@ -431,7 +439,7 @@ class DirectoryItem extends TreeItem {
             // Show the expander even without knowing if there are children.
             currentElement.mayHaveChildren_ = true;
           } else {
-            currentElement.updateSubDirectories(true /* recursive */);
+            currentElement.updateExpandIcon();
           }
         }
         index++;
@@ -649,6 +657,42 @@ class DirectoryItem extends TreeItem {
   }
 
   /**
+   * Updates expand icon.
+   * @override
+   */
+  updateExpandIcon() {
+    if (!this.entry || this.entry.createReader === undefined) {
+      this.hasChildren = false;
+      return;
+    }
+
+    const reader = this.entry.createReader();
+
+    const readEntry = () => {
+      reader.readEntries((results) => {
+        if (!results.length) {
+          // Reached the end without any directory;
+          this.hasChildren = false;
+          return;
+        }
+
+        for (let i = 0; i < results.length; i++) {
+          if (results[i].isDirectory) {
+            // Once the first directory is found we can stop reading.
+            this.hasChildren = true;
+            return;
+          }
+        }
+
+        // Read next batch of entries.
+        readEntry();
+      });
+    };
+
+    readEntry();
+  }
+
+  /**
    * Searches for the changed directory in the current subtree, and if it is
    * found then updates it.
    *
@@ -842,7 +886,7 @@ class SubDirectoryItem extends DirectoryItem {
 
     // Update children now if needed.
     if (parentDirItem.expanded) {
-      this.updateSubDirectories(false /* recursive */);
+      this.updateExpandIcon();
     }
   }
 
@@ -1275,7 +1319,7 @@ class DriveVolumeItem extends VolumeItem {
           const item = new SubDirectoryItem(
               label, sharedDriveGrandRoot, this, this.parentTree_);
           this.addAt(item, 1);
-          item.updateSubDirectories(false);
+          item.updateExpandIcon();
           resolve(item);
           return;
         } else {
@@ -1345,7 +1389,7 @@ class DriveVolumeItem extends VolumeItem {
           // index to place "Computers" at.
           const position = this.computersIndexPosition_();
           this.addAt(item, position);
-          item.updateSubDirectories(false);
+          item.updateExpandIcon();
           resolve(item);
           return;
         } else {

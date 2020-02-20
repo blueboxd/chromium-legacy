@@ -35,6 +35,7 @@
 #include "components/password_manager/core/browser/statistics_table.h"
 #include "components/password_manager/core/browser/sync/password_sync_bridge.h"
 #include "components/password_manager/core/browser/sync/password_syncable_service.h"
+#include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model_impl/client_tag_based_model_type_processor.h"
 #include "components/sync/model_impl/proxy_model_type_controller_delegate.h"
@@ -142,6 +143,7 @@ PasswordStore::PasswordStore()
 
 bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare,
                          PrefService* prefs,
+                         version_info::Channel channel,
                          base::RepeatingClosure sync_enabled_or_disabled_cb) {
   main_task_runner_ = base::SequencedTaskRunnerHandle::Get();
   DCHECK(main_task_runner_);
@@ -157,7 +159,8 @@ bool PasswordStore::Init(const syncer::SyncableService::StartSyncFlare& flare,
         "passwords", "PasswordStore::InitOnBackgroundSequence", this);
     base::PostTaskAndReplyWithResult(
         background_task_runner_.get(), FROM_HERE,
-        base::BindOnce(&PasswordStore::InitOnBackgroundSequence, this, flare),
+        base::BindOnce(&PasswordStore::InitOnBackgroundSequence, this, flare,
+                       channel),
         base::BindOnce(&PasswordStore::OnInitCompleted, this));
   }
 
@@ -636,12 +639,14 @@ PasswordStore::CreateBackgroundTaskRunner() const {
 }
 
 bool PasswordStore::InitOnBackgroundSequence(
-    const syncer::SyncableService::StartSyncFlare& flare) {
+    const syncer::SyncableService::StartSyncFlare& flare,
+    version_info::Channel channel) {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
     sync_bridge_.reset(new PasswordSyncBridge(
         std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
-            syncer::PASSWORDS, base::DoNothing()),
+            syncer::PASSWORDS,
+            base::BindRepeating(&syncer::ReportUnrecoverableError, channel)),
         /*password_store_sync=*/this, sync_enabled_or_disabled_cb_));
   } else {
     DCHECK(!syncable_service_);

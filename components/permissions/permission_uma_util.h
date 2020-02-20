@@ -149,7 +149,7 @@ class PermissionUmaUtil {
       bool should_show,
       const std::vector<ContentSettingsType>& content_settings_types);
   static void RecordMissingPermissionInfobarAction(
-      permissions::PermissionAction action,
+      PermissionAction action,
       const std::vector<ContentSettingsType>& content_settings_types);
 
   // A scoped class that will check the current resolved content setting on

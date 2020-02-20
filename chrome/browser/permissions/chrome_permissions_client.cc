@@ -101,8 +101,7 @@ void ChromePermissionsClient::OnPromptResolved(
   }
 }
 
-base::Optional<url::Origin> ChromePermissionsClient::GetAutoApprovalOrigin(
-    const permissions::PermissionRequest* request) {
+base::Optional<url::Origin> ChromePermissionsClient::GetAutoApprovalOrigin() {
 #if defined(OS_CHROMEOS)
   // In web kiosk mode, all permission requests are auto-approved for the origin
   // of the main app.

@@ -477,6 +477,17 @@ class CORE_EXPORT LocalFrame final : public Frame,
       const blink::mojom::blink::MediaPlayerActionType type,
       bool enable);
 
+  // Handle the request as a download. If the request is for a blob: URL,
+  // a BlobURLToken should be provided as |blob_url_token| to ensure the
+  // correct blob gets downloaded.
+  void DownloadURL(
+      const ResourceRequest& request,
+      network::mojom::blink::RedirectMode cross_origin_redirect_behavior);
+  void DownloadURL(
+      const ResourceRequest& request,
+      network::mojom::blink::RedirectMode cross_origin_redirect_behavior,
+      mojo::ScopedMessagePipeHandle blob_url_token);
+
   // blink::mojom::LocalFrame overrides:
   void GetTextSurroundingSelection(
       uint32_t max_length,
@@ -573,6 +584,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   HitTestResult HitTestResultForVisualViewportPos(
       const IntPoint& pos_in_viewport);
 
+  bool ShouldThrottleDownload();
+
   static void BindToReceiver(
       blink::LocalFrame* frame,
       mojo::PendingAssociatedReceiver<mojom::blink::LocalFrame> receiver);
@@ -664,6 +677,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   mojo::AssociatedReceiver<mojom::blink::LocalFrame> receiver_{this};
   mojo::AssociatedReceiver<mojom::blink::LocalMainFrame> main_frame_receiver_{
       this};
+
+  // Variable to control burst of download requests.
+  int num_burst_download_requests_ = 0;
+  base::TimeTicks burst_download_start_time_;
 
   // Access to the global sanitized system clipboard.
   Member<SystemClipboard> system_clipboard_;

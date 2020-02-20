@@ -478,7 +478,9 @@ class PLATFORM_EXPORT ThreadState final {
 
   // Visit local thread stack and trace all pointers conservatively. Never call
   // directly but always call through |PushRegistersAndVisitStack|.
+  void VisitStackImpl(MarkingVisitor*, Address*, Address*);
   void VisitStack(MarkingVisitor*, Address*);
+  void VisitUnsafeStack(MarkingVisitor*);
 
   // Visit the asan fake stack frame corresponding to a slot on the real machine
   // stack if there is one. Never call directly but always call through

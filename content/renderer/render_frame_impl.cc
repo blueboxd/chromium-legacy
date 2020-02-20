@@ -301,9 +301,6 @@ namespace {
 
 const int kExtraCharsBeforeAndAfterSelection = 100;
 
-// Maximum number of burst download requests allowed.
-const int kBurstDownloadLimit = 10;
-
 const PreviewsState kDisabledPreviewsBits =
     PREVIEWS_OFF | PREVIEWS_NO_TRANSFORM;
 
@@ -4195,34 +4192,6 @@ void RenderFrameImpl::DidAddMessageToConsole(
                                          source_name.Utf16());
 }
 
-void RenderFrameImpl::DownloadURL(
-    const blink::WebURLRequest& request,
-    network::mojom::RedirectMode cross_origin_redirect_behavior,
-    mojo::ScopedMessagePipeHandle blob_url_token) {
-  if (ShouldThrottleDownload())
-    return;
-  FrameHostMsg_DownloadUrl_Params params;
-  const WebURL& url = request.Url();
-  // Pass data URL through blob.
-  if (url.ProtocolIs("data")) {
-    params.url = GURL();
-    params.data_url_blob =
-        blink::DataURLToMessagePipeHandle(url.GetString()).release();
-  } else {
-    params.url = url;
-  }
-
-  params.referrer.url = blink::WebStringToGURL(request.ReferrerString());
-  params.referrer.policy = request.GetReferrerPolicy();
-  params.initiator_origin = request.RequestorOrigin();
-  if (request.GetSuggestedFilename().has_value())
-    params.suggested_name = request.GetSuggestedFilename()->Utf16();
-  params.cross_origin_redirects = cross_origin_redirect_behavior;
-  params.blob_url_token = blob_url_token.release();
-
-  Send(new FrameHostMsg_DownloadUrl(routing_id_, params));
-}
-
 void RenderFrameImpl::WillSendSubmitEvent(const blink::WebFormElement& form) {
   for (auto& observer : observers_)
     observer.WillSendSubmitEvent(form);
@@ -4715,12 +4684,6 @@ void RenderFrameImpl::ShowContextMenu(const blink::WebContextMenuData& data) {
 
 void RenderFrameImpl::ShowDeferredContextMenu(const ContextMenuParams& params) {
   Send(new FrameHostMsg_ContextMenu(routing_id_, params));
-}
-
-void RenderFrameImpl::SaveImageFromDataURL(const blink::WebString& data_url) {
-  FrameHostMsg_DownloadUrl_Params params;
-  params.data_url_blob = blink::DataURLToMessagePipeHandle(data_url).release();
-  Send(new FrameHostMsg_DownloadUrl(routing_id_, params));
 }
 
 void RenderFrameImpl::FrameRectsChanged(const blink::WebRect& frame_rect) {
@@ -5767,8 +5730,10 @@ void RenderFrameImpl::BeginNavigation(
   if (info->navigation_policy == blink::kWebNavigationPolicyDownload) {
     mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token =
         CloneBlobURLToken(info->blob_url_token.get());
-    DownloadURL(info->url_request, network::mojom::RedirectMode::kFollow,
-                blob_url_token.PassPipe());
+
+    frame_->DownloadURL(info->url_request,
+                        network::mojom::RedirectMode::kFollow,
+                        blob_url_token.PassPipe());
   } else {
     OpenURL(std::move(info));
   }
@@ -6755,25 +6720,6 @@ RenderFrameImpl::CreateWebSocketHandshakeThrottle() {
   return websocket_handshake_throttle_provider_->CreateThrottle(
       render_frame_id,
       render_frame->GetTaskRunner(blink::TaskType::kInternalDefault));
-}
-
-bool RenderFrameImpl::ShouldThrottleDownload() {
-  const auto now = base::TimeTicks::Now();
-  if (num_burst_download_requests_ == 0) {
-    burst_download_start_time_ = now;
-  } else if (num_burst_download_requests_ >= kBurstDownloadLimit) {
-    static constexpr auto kBurstDownloadLimitResetInterval =
-        TimeDelta::FromSeconds(1);
-    if (now - burst_download_start_time_ > kBurstDownloadLimitResetInterval) {
-      num_burst_download_requests_ = 1;
-      burst_download_start_time_ = now;
-      return false;
-    }
-    return true;
-  }
-
-  num_burst_download_requests_++;
-  return false;
 }
 
 void RenderFrameImpl::AbortCommitNavigation(

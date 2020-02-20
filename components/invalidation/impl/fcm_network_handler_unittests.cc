@@ -22,7 +22,6 @@
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/invalidation/impl/invalidation_switches.h"
-#include "components/invalidation/impl/network_channel.h"
 #include "components/invalidation/impl/status.h"
 #include "google_apis/gcm/engine/account_mapping.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -167,7 +166,7 @@ class MockInstanceIDDriver : public InstanceIDDriver {
 
 class MockOnTokenCallback {
  public:
-  TokenCallback Get() {
+  FCMSyncNetworkChannel::TokenCallback Get() {
     return base::BindRepeating(&MockOnTokenCallback::Run,
                                base::Unretained(this));
   }
@@ -177,7 +176,7 @@ class MockOnTokenCallback {
 
 class MockOnMessageCallback {
  public:
-  MessageCallback Get() {
+  FCMSyncNetworkChannel::MessageCallback Get() {
     return base::BindRepeating(&MockOnMessageCallback::Run,
                                base::Unretained(this));
   }
@@ -214,7 +213,7 @@ class FCMNetworkHandlerTest : public testing::Test {
   }
 
   std::unique_ptr<FCMNetworkHandler> MakeHandlerReadyForMessage(
-      MessageCallback mock_on_message_callback) {
+      FCMSyncNetworkChannel::MessageCallback mock_on_message_callback) {
     std::unique_ptr<FCMNetworkHandler> handler = MakeHandler();
     handler->SetMessageReceiver(mock_on_message_callback);
     EXPECT_CALL(*mock_instance_id(), GetToken(_, _, _, _, _, _))

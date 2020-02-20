@@ -64,7 +64,7 @@ class MEDIA_EXPORT Demuxer : public MediaResource {
   // (e.g. the initial stream metadata has been parsed successfully, or a new
   // init segment has been parsed successfully in MSE case).
   using MediaTracksUpdatedCB =
-      base::Callback<void(std::unique_ptr<MediaTracks>)>;
+      base::RepeatingCallback<void(std::unique_ptr<MediaTracks>)>;
 
   // Called once the demuxer has finished enabling or disabling tracks. The type
   // argument is required because the vector may be empty.

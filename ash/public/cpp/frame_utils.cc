@@ -5,6 +5,7 @@
 #include "ash/public/cpp/frame_utils.h"
 
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -15,6 +16,8 @@
 #include "ui/views/window/non_client_view.h"
 
 namespace ash {
+
+using WindowOpacity = views::Widget::InitParams::WindowOpacity;
 
 int FrameBorderNonClientHitTest(views::NonClientFrameView* view,
                                 const gfx::Point& point_in_widget) {
@@ -59,6 +62,13 @@ int FrameBorderNonClientHitTest(views::NonClientFrameView* view,
 
   // Caption is a safe default.
   return HTCAPTION;
+}
+
+void ResolveInferredOpacity(views::Widget::InitParams* params) {
+  DCHECK_EQ(params->opacity, WindowOpacity::kInferred);
+  params->init_properties_container.SetProperty(
+      ash::kWindowManagerManagesOpacityKey, true);
+  params->opacity = WindowOpacity::kTranslucent;
 }
 
 }  // namespace ash

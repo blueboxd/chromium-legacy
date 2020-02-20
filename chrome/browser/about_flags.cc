@@ -3141,10 +3141,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableNetworkServiceInProcessDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kNetworkServiceInProcess)},
 
-    {"out-of-blink-cors", flag_descriptions::kEnableOutOfBlinkCorsName,
-     flag_descriptions::kEnableOutOfBlinkCorsDescription, kOsAll,
-     FEATURE_VALUE_TYPE(network::features::kOutOfBlinkCors)},
-
     {"cross-origin-isolation", flag_descriptions::kCrossOriginIsolationName,
      flag_descriptions::kCrossOriginIsolationDescription, kOsAll,
      FEATURE_VALUE_TYPE(network::features::kCrossOriginIsolation)},

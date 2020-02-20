@@ -308,9 +308,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void DidStartLoading() override {}
   void DidStopLoading() override {}
 
-  void DownloadURL(const ResourceRequest&,
-                   network::mojom::RedirectMode) override {}
-
   DocumentLoader* CreateDocumentLoader(
       LocalFrame*,
       WebNavigationType,

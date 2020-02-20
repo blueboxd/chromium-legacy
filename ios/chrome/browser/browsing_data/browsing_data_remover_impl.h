@@ -112,12 +112,6 @@ class BrowsingDataRemoverImpl : public BrowsingDataRemover {
   // SessionService to use (allow injection of a specific instance for testing).
   SessionServiceIOS* session_service_ = nil;
 
-  // Dummy WKWebView. A WKWebView object is created before deleting cookies. and
-  // is deleted after deleting cookies is completed. this is a workaround that
-  // makes sure that there is a WKWebView object alive while accessing
-  // WKHTTPCookieStore.
-  WKWebView* dummy_web_view_ = nil;
-
   // Used to delete data from HTTP cache.
   scoped_refptr<net::URLRequestContextGetter> context_getter_;
 

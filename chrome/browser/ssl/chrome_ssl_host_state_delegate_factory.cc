@@ -11,37 +11,13 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "components/security_interstitials/content/chrome_ssl_host_state_delegate.h"
-
-namespace {
-
-class Service : public KeyedService {
- public:
-  explicit Service(Profile* profile)
-      : decisions_(new ChromeSSLHostStateDelegate(
-            profile,
-            profile->GetPrefs(),
-            HostContentSettingsMapFactory::GetForProfile(profile))) {}
-
-  ChromeSSLHostStateDelegate* decisions() { return decisions_.get(); }
-
-  void Shutdown() override {}
-
- private:
-  std::unique_ptr<ChromeSSLHostStateDelegate> decisions_;
-
-  DISALLOW_COPY_AND_ASSIGN(Service);
-};
-
-}  // namespace
 
 // static
 ChromeSSLHostStateDelegate* ChromeSSLHostStateDelegateFactory::GetForProfile(
     Profile* profile) {
-  return static_cast<Service*>(GetInstance()->GetServiceForBrowserContext(
-                                   profile, true))->decisions();
+  return static_cast<ChromeSSLHostStateDelegate*>(
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -61,12 +37,11 @@ ChromeSSLHostStateDelegateFactory::~ChromeSSLHostStateDelegateFactory() =
     default;
 
 KeyedService* ChromeSSLHostStateDelegateFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
-  return new Service(static_cast<Profile*>(profile));
-}
-
-void ChromeSSLHostStateDelegateFactory::RegisterProfilePrefs(
-    user_prefs::PrefRegistrySyncable* registry) {
+    content::BrowserContext* context) const {
+  Profile* profile = Profile::FromBrowserContext(context);
+  return new ChromeSSLHostStateDelegate(
+      profile, profile->GetPrefs(),
+      HostContentSettingsMapFactory::GetForProfile(profile));
 }
 
 content::BrowserContext*

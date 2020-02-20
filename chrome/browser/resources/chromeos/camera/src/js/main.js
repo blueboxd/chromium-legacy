@@ -128,8 +128,8 @@ export class App {
    * @private
    */
   setupToggles_() {
-    browserProxy.localStorageGet(
-        {expert: false}, ({expert}) => state.set(state.State.EXPERT, expert));
+    browserProxy.localStorageGet({expert: false})
+        .then(({expert}) => state.set(state.State.EXPERT, expert));
     document.querySelectorAll('input').forEach((element) => {
       element.addEventListener(
           'keypress',
@@ -160,11 +160,11 @@ export class App {
       });
       if (element.dataset.key !== undefined) {
         // Restore the previously saved state on startup.
-        browserProxy.localStorageGet(
-            payload(element),
-            (values) => util.toggleChecked(
-                assertInstanceof(element, HTMLInputElement),
-                values[element.dataset.key]));
+        browserProxy.localStorageGet(payload(element))
+            .then(
+                (values) => util.toggleChecked(
+                    assertInstanceof(element, HTMLInputElement),
+                    values[element.dataset.key]));
       }
     });
   }

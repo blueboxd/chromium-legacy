@@ -409,9 +409,6 @@ extern const char kEnableNetworkLoggingToFileDescription[];
 extern const char kEnableNetworkServiceInProcessName[];
 extern const char kEnableNetworkServiceInProcessDescription[];
 
-extern const char kEnableOutOfBlinkCorsName[];
-extern const char kEnableOutOfBlinkCorsDescription[];
-
 extern const char kCrossOriginIsolationName[];
 extern const char kCrossOriginIsolationDescription[];
 

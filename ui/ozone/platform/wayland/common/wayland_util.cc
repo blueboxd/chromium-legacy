@@ -109,7 +109,7 @@ uint32_t IdentifyDirection(const ui::WaylandConnection& connection,
 bool DrawBitmap(const SkBitmap& bitmap, ui::WaylandShmBuffer* out_buffer) {
   DCHECK(out_buffer);
   DCHECK(out_buffer->GetMemory());
-  DCHECK(out_buffer->size() == gfx::Size(bitmap.width(), bitmap.height()));
+  DCHECK_EQ(out_buffer->size(), gfx::Size(bitmap.width(), bitmap.height()));
 
   auto* mapped_memory = out_buffer->GetMemory();
   auto size = out_buffer->size();

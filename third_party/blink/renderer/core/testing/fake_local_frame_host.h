@@ -92,6 +92,7 @@ class FakeLocalFrameHost : public mojom::blink::LocalFrameHost {
   void Are3DAPIsBlocked(Are3DAPIsBlockedCallback callback) override;
   void UpdateFaviconURL(
       WTF::Vector<blink::mojom::blink::FaviconURLPtr> favicon_urls) override;
+  void DownloadURL(mojom::blink::DownloadURLParamsPtr params) override;
 
  private:
   void BindFrameHostReceiver(mojo::ScopedInterfaceEndpointHandle handle);

@@ -273,8 +273,6 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void DocumentDetached(Document&) override;
 
-  void SaveImageFromDataURL(LocalFrame& frame, const String& data_url) override;
-
  private:
   bool IsChromeClientImpl() const override { return true; }
 

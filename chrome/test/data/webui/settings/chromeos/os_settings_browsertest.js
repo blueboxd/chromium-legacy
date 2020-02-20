@@ -74,7 +74,7 @@ var OSSettingsAboutPageTest = class extends OSSettingsBrowserTest {
       BROWSER_SETTINGS_PATH + '../test_util.js',
       BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
       BROWSER_SETTINGS_PATH + 'test_lifetime_browser_proxy.js',
-      'test_about_page_browser_proxy_chromeos.js',
+      BROWSER_SETTINGS_PATH + 'test_about_page_browser_proxy.js',
       'os_about_page_tests.js',
     ]);
   }

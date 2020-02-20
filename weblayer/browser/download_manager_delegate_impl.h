@@ -50,6 +50,7 @@ class DownloadManagerDelegateImpl : public content::DownloadManagerDelegate,
       const std::string& request_method,
       base::Optional<url::Origin> request_initiator,
       bool from_download_cross_origin_redirect,
+      bool content_initiated,
       content::CheckDownloadAllowedCallback check_download_allowed_cb) override;
 
   // content::DownloadManager::Observer implementation:

@@ -33,6 +33,10 @@ bool AuthenticateUser(password_manager::ReauthPurpose purpose) {
     case password_manager::ReauthPurpose::VIEW_PASSWORD:
       prompt = l10n_util::GetNSString(IDS_PASSWORDS_PAGE_AUTHENTICATION_PROMPT);
       break;
+    case password_manager::ReauthPurpose::COPY_PASSWORD:
+      prompt =
+          l10n_util::GetNSString(IDS_PASSWORDS_PAGE_COPY_AUTHENTICATION_PROMPT);
+      break;
     case password_manager::ReauthPurpose::EXPORT:
       prompt = l10n_util::GetNSString(
           IDS_PASSWORDS_PAGE_EXPORT_AUTHENTICATION_PROMPT);

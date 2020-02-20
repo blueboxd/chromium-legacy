@@ -80,8 +80,7 @@ class PermissionsClient {
   // If the embedder returns an origin here, any requests matching that origin
   // will be approved. Requests that do not match the returned origin will
   // immediately be finished without granting/denying the permission.
-  virtual base::Optional<url::Origin> GetAutoApprovalOrigin(
-      const PermissionRequest* request);
+  virtual base::Optional<url::Origin> GetAutoApprovalOrigin();
 
  private:
   PermissionsClient(const PermissionsClient&) = delete;

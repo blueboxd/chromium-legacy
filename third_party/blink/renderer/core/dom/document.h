@@ -1335,6 +1335,8 @@ class CORE_EXPORT Document : public ContainerNode,
                           const IdleRequestOptions*);
   void CancelIdleCallback(int id);
 
+  ScriptedAnimationController& GetScriptedAnimationController();
+
   EventTarget* ErrorEventTarget() final;
   void ExceptionThrown(ErrorEvent*) final;
 

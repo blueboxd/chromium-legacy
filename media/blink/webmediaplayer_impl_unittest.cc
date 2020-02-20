@@ -659,10 +659,6 @@ class WebMediaPlayerImplTest : public testing::Test {
     return wmpi_->GetCurrentFrameFromCompositor();
   }
 
-  void SetCurrentFrameOverrideForTesting(scoped_refptr<VideoFrame> frame) {
-    wmpi_->SetCurrentFrameOverrideForTesting(frame);
-  }
-
   enum class LoadType { kFullyBuffered, kStreaming };
   void Load(std::string data_file,
             LoadType load_type = LoadType::kFullyBuffered) {
@@ -1166,26 +1162,6 @@ TEST_F(WebMediaPlayerImplTest, OnNewFramePresentedCallback) {
   EXPECT_CALL(client_, OnRequestAnimationFrame(_, _, _, _));
 
   OnNewFramePresentedCallback();
-}
-
-TEST_F(WebMediaPlayerImplTest, GetCurrentFrameFromCompositorOverride) {
-  scoped_refptr<VideoFrame> compositor_frame = CreateFrame();
-  scoped_refptr<VideoFrame> override_frame = CreateFrame();
-
-  InitializeWebMediaPlayerImpl();
-
-  EXPECT_CALL(*compositor_, GetCurrentFrameOnAnyThread())
-      .WillRepeatedly(Return(compositor_frame));
-
-  EXPECT_EQ(compositor_frame, GetCurrentFrameFromCompositor());
-
-  SetCurrentFrameOverrideForTesting(override_frame);
-  EXPECT_EQ(override_frame, GetCurrentFrameFromCompositor());
-
-  // After returning from OnNewFramePresentedCallback(), the overriding frame
-  // should be cleared.
-  OnNewFramePresentedCallback();
-  EXPECT_EQ(compositor_frame, GetCurrentFrameFromCompositor());
 }
 
 TEST_F(WebMediaPlayerImplTest, ComputePlayState_Constructed) {

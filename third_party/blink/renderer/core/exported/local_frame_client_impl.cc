@@ -690,22 +690,6 @@ void LocalFrameClientImpl::DidStopLoading() {
     web_frame_->Client()->DidStopLoading();
 }
 
-void LocalFrameClientImpl::DownloadURL(
-    const ResourceRequest& request,
-    network::mojom::RedirectMode cross_origin_redirect_behavior) {
-  if (!web_frame_->Client())
-    return;
-  DCHECK(web_frame_->GetFrame()->GetDocument());
-  mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token;
-  if (request.Url().ProtocolIs("blob")) {
-    web_frame_->GetFrame()->GetDocument()->GetPublicURLManager().Resolve(
-        request.Url(), blob_url_token.InitWithNewPipeAndPassReceiver());
-  }
-  web_frame_->Client()->DownloadURL(WrappedResourceRequest(request),
-                                    cross_origin_redirect_behavior,
-                                    blob_url_token.PassPipe());
-}
-
 bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
   WebViewImpl* webview = web_frame_->ViewImpl();
   DCHECK(webview->Client());

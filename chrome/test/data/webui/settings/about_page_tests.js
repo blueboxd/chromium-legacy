@@ -2,15 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// clang-format off
-// #import {AboutPageBrowserProxyImpl, LifetimeBrowserProxyImpl, Route, Router, UpdateStatus} from 'chrome://settings/settings.js';
-// #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {isChromeOS, isMac} from 'chrome://resources/js/cr.m.js';
-// #import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-// #import {TestAboutPageBrowserProxy} from 'chrome://test/settings/test_about_page_browser_proxy.m.js';
-// #import {TestLifetimeBrowserProxy} from 'chrome://test/settings/test_lifetime_browser_proxy.m.js';
-// clang-format on
-
 cr.define('settings_about_page', function() {
   function setupRouter() {
     const routes = {
@@ -18,7 +9,7 @@ cr.define('settings_about_page', function() {
       ABOUT: new settings.Route('/help'),
     };
     settings.Router.resetInstanceForTesting(new settings.Router(routes));
-    return routes;
+    settings.routes = routes;
   }
 
   /**
@@ -48,15 +39,13 @@ cr.define('settings_about_page', function() {
 
     const SPINNER_ICON = 'chrome://resources/images/throbber_small.svg';
 
-    let testRoutes = null;
-
     setup(function() {
       loadTimeData.overrideValues({
         aboutObsoleteNowOrSoon: false,
         aboutObsoleteEndOfTheLine: false,
       });
 
-      testRoutes = setupRouter();
+      setupRouter();
       lifetimeBrowserProxy = new settings.TestLifetimeBrowserProxy();
       settings.LifetimeBrowserProxyImpl.instance_ = lifetimeBrowserProxy;
 
@@ -76,7 +65,7 @@ cr.define('settings_about_page', function() {
       lifetimeBrowserProxy.reset();
       PolymerTest.clearBody();
       page = document.createElement('settings-about-page');
-      settings.Router.getInstance().navigateTo(testRoutes.ABOUT);
+      settings.Router.getInstance().navigateTo(settings.routes.ABOUT);
       document.body.appendChild(page);
       return cr.isChromeOS ?
           Promise.resolve() :
@@ -280,10 +269,9 @@ cr.define('settings_about_page', function() {
   suite('AboutPageTest_OfficialBuilds', function() {
     let page = null;
     let browserProxy = null;
-    let testRoutes = null;
 
     setup(function() {
-      testRoutes = setupRouter();
+      setupRouter();
       browserProxy = new TestAboutPageBrowserProxy();
       settings.AboutPageBrowserProxyImpl.instance_ = browserProxy;
       PolymerTest.clearBody();
@@ -401,5 +389,4 @@ cr.define('settings_about_page', function() {
       });
     }
   });
-  // #cr_define_end
 });

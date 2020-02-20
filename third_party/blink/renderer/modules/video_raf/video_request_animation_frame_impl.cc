@@ -9,9 +9,11 @@
 
 #include "third_party/blink/renderer/bindings/modules/v8/v8_video_frame_metadata.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/scripted_animation_controller.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/modules/video_raf/video_frame_request_callback_collection.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
@@ -71,34 +73,34 @@ void VideoRequestAnimationFrameImpl::OnRequestAnimationFrame(
 
   auto& time_converter =
       GetSupplementable()->GetDocument().Loader()->GetTiming();
-  auto* metadata = VideoFrameMetadata::Create();
+  metadata_ = VideoFrameMetadata::Create();
 
-  metadata->setPresentationTime(
+  metadata_->setPresentationTime(
       time_converter.MonotonicTimeToZeroBasedDocumentTime(presentation_time)
           .InMillisecondsF());
 
-  metadata->setExpectedPresentationTime(
+  metadata_->setExpectedPresentationTime(
       time_converter
           .MonotonicTimeToZeroBasedDocumentTime(expected_presentation_time)
           .InMillisecondsF());
 
-  metadata->setWidth(presented_frame.visible_rect().width());
-  metadata->setHeight(presented_frame.visible_rect().height());
+  metadata_->setWidth(presented_frame.visible_rect().width());
+  metadata_->setHeight(presented_frame.visible_rect().height());
 
-  metadata->setPresentationTimestamp(presented_frame.timestamp().InSecondsF());
+  metadata_->setPresentationTimestamp(presented_frame.timestamp().InSecondsF());
 
   base::TimeDelta elapsed;
   if (presented_frame.metadata()->GetTimeDelta(
           media::VideoFrameMetadata::PROCESSING_TIME, &elapsed)) {
-    metadata->setElapsedProcessingTime(elapsed.InSecondsF());
+    metadata_->setElapsedProcessingTime(elapsed.InSecondsF());
   }
 
-  metadata->setPresentedFrames(presented_frames_counter);
+  metadata_->setPresentedFrames(presented_frames_counter);
 
   base::TimeTicks time;
   if (presented_frame.metadata()->GetTimeTicks(
           media::VideoFrameMetadata::CAPTURE_BEGIN_TIME, &time)) {
-    metadata->setCaptureTime(
+    metadata_->setCaptureTime(
         time_converter.MonotonicTimeToZeroBasedDocumentTime(time)
             .InMillisecondsF());
   }
@@ -108,14 +110,36 @@ void VideoRequestAnimationFrameImpl::OnRequestAnimationFrame(
           media::VideoFrameMetadata::RTP_TIMESTAMP, &rtp_timestamp)) {
     base::CheckedNumeric<uint32_t> uint_rtp_timestamp = rtp_timestamp;
     if (uint_rtp_timestamp.IsValid())
-      metadata->setRtpTimestamp(rtp_timestamp);
+      metadata_->setRtpTimestamp(rtp_timestamp);
   }
 
-  callback_collection_->ExecuteFrameCallbacks(
-      time_converter
-          .MonotonicTimeToZeroBasedDocumentTime(base::TimeTicks::Now())
-          .InMillisecondsF(),
-      metadata);
+  // If new video.rAF callbacks are queued before the pending ones complete,
+  // we could end up here while there is still an outstanding call to
+  // ExecuteFrameCallbacks(). Overriding |metadata_| is fine, as we will provide
+  // the newest frame info to all callbacks (although it will look like we
+  // missed a frame). However, we should not schedule a second call to
+  // ExecuteFrameCallbacks(), as it could lead to some problematic results.
+  //
+  // TODO(https://crbug.com/1049761): Pull the video frame metadata in
+  // ExecuteFrameCallbacks() instead.
+  if (!pending_execution_) {
+    pending_execution_ = true;
+    GetSupplementable()
+        ->GetDocument()
+        .GetScriptedAnimationController()
+        .ScheduleVideoRafExecution(
+            WTF::Bind(&VideoRequestAnimationFrameImpl::ExecuteFrameCallbacks,
+                      WrapWeakPersistent(this)));
+  }
+}
+
+void VideoRequestAnimationFrameImpl::ExecuteFrameCallbacks(
+    double high_res_now_ms) {
+  DCHECK(metadata_);
+  DCHECK(pending_execution_);
+  callback_collection_->ExecuteFrameCallbacks(high_res_now_ms, metadata_);
+  pending_execution_ = false;
+  metadata_.Clear();
 }
 
 int VideoRequestAnimationFrameImpl::requestAnimationFrame(
@@ -134,6 +158,7 @@ void VideoRequestAnimationFrameImpl::cancelAnimationFrame(int id) {
 }
 
 void VideoRequestAnimationFrameImpl::Trace(Visitor* visitor) {
+  visitor->Trace(metadata_);
   visitor->Trace(callback_collection_);
   Supplement<HTMLVideoElement>::Trace(visitor);
 }

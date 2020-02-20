@@ -846,7 +846,8 @@ void DownloadManagerImpl::InterceptNavigation(
 
   delegate_->CheckDownloadAllowed(
       std::move(web_contents_getter), url, method, std::move(request_initiator),
-      from_download_cross_origin_redirect, std::move(on_download_checks_done));
+      from_download_cross_origin_redirect, false /*content_initiated*/,
+      std::move(on_download_checks_done));
 }
 
 int DownloadManagerImpl::RemoveDownloadsByURLAndTime(
@@ -1373,7 +1374,7 @@ void DownloadManagerImpl::BeginDownloadInternal(
     if (delegate_) {
       delegate_->CheckDownloadAllowed(
           std::move(web_contents_getter), url, method, std::move(initiator),
-          false /* from_download_cross_origin_redirect */,
+          false /* from_download_cross_origin_redirect */, content_initiated,
           std::move(on_can_download_checks_done));
       return;
     }

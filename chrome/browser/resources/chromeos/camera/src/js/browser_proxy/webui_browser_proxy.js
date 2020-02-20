@@ -18,17 +18,19 @@ function NOTIMPLEMENTED() {
  */
 class WebUIBrowserProxy {
   /** @override */
-  getVolumeList(callback) {
+  async getVolumeList() {
     NOTIMPLEMENTED();
+    return null;
   }
 
   /** @override */
-  requestFileSystem(options, callback) {
+  async requestFileSystem(options) {
     NOTIMPLEMENTED();
+    return null;
   }
 
   /** @override */
-  localStorageGet(keys, callback) {
+  async localStorageGet(keys) {
     let sanitizedKeys = [];
     if (typeof keys === 'string') {
       sanitizedKeys = [keys];
@@ -49,29 +51,23 @@ class WebUIBrowserProxy {
       result[key] = value === null ? {} : value;
     }
 
-    callback(result);
+    return result;
   }
 
   /** @override */
-  localStorageSet(items, callback) {
+  async localStorageSet(items) {
     for (const [key, val] of Object.entries(items)) {
       window.localStorage.setItem(key, JSON.stringify(val));
     }
-    if (callback) {
-      callback();
-    }
   }
 
   /** @override */
-  localStorageRemove(items, callback) {
+  async localStorageRemove(items) {
     if (typeof items === 'string') {
       items = [items];
     }
     for (const key of items) {
       window.localStorage.removeItem(key);
-    }
-    if (callback) {
-      callback();
     }
   }
 

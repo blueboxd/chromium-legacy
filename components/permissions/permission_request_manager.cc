@@ -108,7 +108,7 @@ void PermissionRequestManager::AddRequest(PermissionRequest* request) {
           .IsSameOriginWith(url::Origin::Create(request->GetOrigin()));
 
   base::Optional<url::Origin> auto_approval_origin =
-      PermissionsClient::Get()->GetAutoApprovalOrigin(request);
+      PermissionsClient::Get()->GetAutoApprovalOrigin();
   if (auto_approval_origin) {
     if (url::Origin::Create(request->GetOrigin()) ==
         auto_approval_origin.value()) {

@@ -43,6 +43,8 @@ class PLATFORM_EXPORT CanvasResourceHost {
   virtual bool IsPrinting() const { return false; }
 
  private:
+  void InitializeForRecording(cc::PaintCanvas* canvas);
+
   std::unique_ptr<CanvasResourceProvider> resource_provider_;
 };
 

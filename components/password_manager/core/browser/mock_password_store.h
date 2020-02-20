@@ -126,7 +126,8 @@ class MockPasswordStore : public PasswordStore {
   scoped_refptr<base::SequencedTaskRunner> CreateBackgroundTaskRunner()
       const override;
   bool InitOnBackgroundSequence(
-      const syncer::SyncableService::StartSyncFlare& flare) override;
+      const syncer::SyncableService::StartSyncFlare& flare,
+      version_info::Channel channel) override;
 };
 
 }  // namespace password_manager

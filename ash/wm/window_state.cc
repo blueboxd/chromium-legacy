@@ -654,6 +654,19 @@ void WindowState::UpdateWindowPropertiesFromStateType() {
     base::AutoReset<bool> resetter(&ignore_property_change_, true);
     window_->SetProperty(kWindowPinTypeKey, pin_type);
   }
+
+  if (window_->GetProperty(ash::kWindowManagerManagesOpacityKey)) {
+    const gfx::Size& size = window_->bounds().size();
+    // WindowManager manages the window opacity. Make it opaque unless
+    // the window is in normal state whose frame has rounded corners.
+    if (IsNormalStateType()) {
+      window_->SetTransparent(true);
+      window_->SetOpaqueRegionsForOcclusion({gfx::Rect(size)});
+    } else {
+      window_->SetOpaqueRegionsForOcclusion({});
+      window_->SetTransparent(false);
+    }
+  }
 }
 
 void WindowState::NotifyPreStateTypeChange(
@@ -945,6 +958,17 @@ void WindowState::OnWindowDestroying(aura::Window* window) {
 
   current_state_->OnWindowDestroying(this);
   delegate_.reset();
+}
+
+void WindowState::OnWindowBoundsChanged(aura::Window* window,
+                                        const gfx::Rect& old_bounds,
+                                        const gfx::Rect& new_bounds,
+                                        ui::PropertyChangeReason reason) {
+  DCHECK_EQ(this->window(), window);
+  if (window_->transparent() &&
+      window_->type() == aura::client::WINDOW_TYPE_NORMAL) {
+    window_->SetOpaqueRegionsForOcclusion({gfx::Rect(new_bounds.size())});
+  }
 }
 
 }  // namespace ash

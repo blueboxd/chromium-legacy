@@ -174,9 +174,10 @@ class POLICY_EXPORT DeviceManagementService {
       TYPE_UPLOAD_REAL_TIME_REPORT = 22,
       TYPE_REQUEST_SAML_URL = 23,
       TYPE_CHROME_OS_USER_REPORT = 24,
+      TYPE_CERT_PROVISIONING_REQUEST = 25,
     };
 
-    // The set of HTTP query parmaters of the request.
+    // The set of HTTP query parameters of the request.
     using ParameterMap = std::map<std::string, std::string>;
 
     // Convert the job type into a string.

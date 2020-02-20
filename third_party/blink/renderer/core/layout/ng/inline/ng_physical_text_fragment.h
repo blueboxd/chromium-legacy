@@ -122,7 +122,9 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   unsigned TextOffsetForPoint(const PhysicalOffset&) const;
 
   UBiDiLevel BidiLevel() const;
-  TextDirection ResolvedDirection() const;
+  TextDirection ResolvedDirection() const {
+    return static_cast<TextDirection>(base_or_resolved_direction_);
+  }
 
   // Compute line-relative coordinates for given offsets, this is not
   // flow-relative:

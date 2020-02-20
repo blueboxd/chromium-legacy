@@ -11,56 +11,32 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/common/url_constants.h"
 
 namespace chromeos {
 
-content::WebUIDataSource* CreateUntrustedSampleSystemWebAppDataSource() {
-  content::WebUIDataSource* untrusted_source =
-      content::WebUIDataSource::Create(kChromeUIUntrustedSampleSystemWebAppURL);
-  untrusted_source->AddResourcePath("app.html",
-                                    IDR_SAMPLE_SYSTEM_WEB_APP_APP_HTML);
-  untrusted_source->AddResourcePath("receiver.js",
-                                    IDR_SAMPLE_SYSTEM_WEB_APP_RECEIVER_JS);
-  untrusted_source->AddFrameAncestor(GURL(kChromeUISampleSystemWebAppURL));
-  return untrusted_source;
-}
-
 SampleSystemWebAppUI::SampleSystemWebAppUI(content::WebUI* web_ui)
     : ui::MojoWebUIController(web_ui) {
-  auto trusted_source = base::WrapUnique(
+  auto html_source = base::WrapUnique(
       content::WebUIDataSource::Create(kChromeUISampleSystemWebAppHost));
 
-  trusted_source->AddResourcePath("", IDR_SAMPLE_SYSTEM_WEB_APP_INDEX_HTML);
-  trusted_source->AddResourcePath("pwa.html",
-                                  IDR_SAMPLE_SYSTEM_WEB_APP_PWA_HTML);
-  trusted_source->AddResourcePath("sandbox.html",
-                                  IDR_SAMPLE_SYSTEM_WEB_APP_SANDBOX_HTML);
-  trusted_source->AddResourcePath("app.js", IDR_SAMPLE_SYSTEM_WEB_APP_JS);
-  trusted_source->AddResourcePath("manifest.json",
-                                  IDR_SAMPLE_SYSTEM_WEB_APP_MANIFEST);
-  trusted_source->AddResourcePath("app_icon_192.png",
-                                  IDR_SAMPLE_SYSTEM_WEB_APP_ICON_192);
+  html_source->AddResourcePath("", IDR_SAMPLE_SYSTEM_WEB_APP_INDEX_HTML);
+  html_source->AddResourcePath("pwa.html", IDR_SAMPLE_SYSTEM_WEB_APP_PWA_HTML);
+  html_source->AddResourcePath("app.js", IDR_SAMPLE_SYSTEM_WEB_APP_JS);
+  html_source->AddResourcePath("manifest.json",
+                               IDR_SAMPLE_SYSTEM_WEB_APP_MANIFEST);
+  html_source->AddResourcePath("app_icon_192.png",
+                               IDR_SAMPLE_SYSTEM_WEB_APP_ICON_192);
 
 #if !DCHECK_IS_ON()
   // If a user goes to an invalid url and non-DCHECK mode (DHECK = debug mode)
   // is set, serve a default page so the user sees your default page instead
   // of an unexpected error. But if DCHECK is set, the user will be a
   // developer and be able to identify an error occurred.
-  trusted_source->SetDefaultResource(IDR_SAMPLE_SYSTEM_WEB_APP_INDEX_HTML);
+  html_source->SetDefaultResource(IDR_SAMPLE_SYSTEM_WEB_APP_INDEX_HTML);
 #endif  // !DCHECK_IS_ON()
 
-  // We need a CSP override to use the chrome-untrusted:// scheme in the host.
-  std::string csp =
-      std::string("frame-src ") + kChromeUIUntrustedSampleSystemWebAppURL + ";";
-  trusted_source->OverrideContentSecurityPolicyChildSrc(csp);
-  auto* browser_context = web_ui->GetWebContents()->GetBrowserContext();
-  content::WebUIDataSource::Add(browser_context, trusted_source.release());
-  content::WebUIDataSource::Add(browser_context,
-                                CreateUntrustedSampleSystemWebAppDataSource());
-
-  // Add ability to request chrome-untrusted: URLs
-  web_ui->AddRequestableScheme(content::kChromeUIUntrustedScheme);
+  content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
+                                html_source.release());
 }
 
 SampleSystemWebAppUI::~SampleSystemWebAppUI() = default;

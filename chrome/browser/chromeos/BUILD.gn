@@ -2074,6 +2074,8 @@ source_set("chromeos") {
     "printing/cups_printers_manager.h",
     "printing/cups_printers_manager_factory.cc",
     "printing/cups_printers_manager_factory.h",
+    "printing/cups_printers_manager_proxy.cc",
+    "printing/cups_printers_manager_proxy.h",
     "printing/enterprise_printers_provider.cc",
     "printing/enterprise_printers_provider.h",
     "printing/history/print_job_database.h",

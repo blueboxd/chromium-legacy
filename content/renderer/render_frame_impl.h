@@ -691,9 +691,6 @@ class CONTENT_EXPORT RenderFrameImpl
                               const blink::WebString& source_name,
                               unsigned source_line,
                               const blink::WebString& stack_trace) override;
-  void DownloadURL(const blink::WebURLRequest& request,
-                   network::mojom::RedirectMode cross_origin_redirect_behavior,
-                   mojo::ScopedMessagePipeHandle blob_url_token) override;
   void BeginNavigation(std::unique_ptr<blink::WebNavigationInfo> info) override;
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void DidCreateDocumentLoader(
@@ -726,7 +723,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidChangeSelection(bool is_empty_selection) override;
   bool HandleCurrentKeyboardEvent() override;
   void ShowContextMenu(const blink::WebContextMenuData& data) override;
-  void SaveImageFromDataURL(const blink::WebString& data_url) override;
   void FrameRectsChanged(const blink::WebRect& frame_rect) override;
   void OnMainFrameDocumentIntersectionChanged(
       const blink::WebRect& intersect_rect) override;
@@ -1283,9 +1279,6 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebHistoryItem* item_for_history_navigation,
       blink::WebFrameLoadType* load_type);
 
-  // Whether url download should be throttled.
-  bool ShouldThrottleDownload();
-
   // These functions avoid duplication between Commit*Navigation and
   // Commit*PerNavigationMojoInterfaceNavigation functions.
   void CommitNavigationInternal(
@@ -1587,10 +1580,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   std::unique_ptr<WebSocketHandshakeThrottleProvider>
       websocket_handshake_throttle_provider_;
-
-  // Variable to control burst of download requests.
-  int num_burst_download_requests_ = 0;
-  base::TimeTicks burst_download_start_time_;
 
   RenderFrameMediaPlaybackOptions renderer_media_playback_options_;
 

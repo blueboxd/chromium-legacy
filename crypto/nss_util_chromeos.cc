@@ -26,6 +26,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/path_service.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -606,6 +607,15 @@ void CloseChromeOSUserForTesting(const std::string& username_hash) {
 void SetPrivateSoftwareSlotForChromeOSUserForTesting(ScopedPK11Slot slot) {
   g_token_manager.Get().SetPrivateSoftwareSlotForChromeOSUserForTesting(
       std::move(slot));
+}
+
+bool IsSlotProvidedByChaps(PK11SlotInfo* slot) {
+  if (!slot)
+    return false;
+
+  SECMODModule* pk11_module = PK11_GetModule(slot);
+  return pk11_module && base::StringPiece(pk11_module->commonName) ==
+                            base::StringPiece(kChapsModuleName);
 }
 
 }  // namespace crypto

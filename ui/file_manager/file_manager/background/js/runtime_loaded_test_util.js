@@ -220,6 +220,29 @@ test.util.sync.deepQueryAllElements =
     };
 
 /**
+ * Count elements matching the selector query.
+ *
+ * This avoid serializing and transmitting the elements to the test extension,
+ * which can be time consuming for large elements.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {!Array<string>} query Query to specify the element.
+ *   |query[0]| specifies the first element(s). |query[1]| specifies elements
+ *   inside the shadow DOM of the first element, and so on.
+ * @param {function(boolean)} callback Callback function with results if the
+ *    number of elements match |count|.
+ */
+test.util.async.countElements = (contentWindow, query, count, callback) => {
+  // Uses requestIdleCallback so it doesn't interfere with normal operation of
+  // Files app UI.
+  contentWindow.requestIdleCallback(() => {
+    const elements =
+        test.util.sync.deepQuerySelectorAll_(contentWindow.document, query);
+    callback(elements.length === count);
+  });
+};
+
+/**
  * Selects elements below |root|, possibly following shadow DOM subtree.
  *
  * @param {(!HTMLElement|!Document)} root Element to search from.

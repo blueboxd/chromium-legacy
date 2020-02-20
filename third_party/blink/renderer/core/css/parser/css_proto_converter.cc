@@ -956,6 +956,8 @@ const std::string Converter::kValueLookupTable[] = {
     "smooth",
     "jump-start",
     "no-drag",
+    "jis-b5",
+    "jis-b4",
     "INVALID_VALUE",
 };
 

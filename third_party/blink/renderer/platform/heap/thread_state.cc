@@ -379,7 +379,9 @@ void ThreadState::VisitAsanFakeStackForPointer(MarkingVisitor* visitor,
 NO_SANITIZE_ADDRESS
 NO_SANITIZE_HWADDRESS
 NO_SANITIZE_THREAD
-void ThreadState::VisitStack(MarkingVisitor* visitor, Address* end_of_stack) {
+void ThreadState::VisitStackImpl(MarkingVisitor* visitor,
+                                 Address* start_of_stack,
+                                 Address* end_of_stack) {
   DCHECK_EQ(current_gc_data_.stack_state, BlinkGC::kHeapPointersOnStack);
 
   // Ensure that current is aligned by address size otherwise the loop below
@@ -387,7 +389,7 @@ void ThreadState::VisitStack(MarkingVisitor* visitor, Address* end_of_stack) {
   Address* current = reinterpret_cast<Address*>(
       reinterpret_cast<intptr_t>(end_of_stack) & ~(sizeof(Address) - 1));
 
-  for (; current < start_of_stack_; ++current) {
+  for (; current < start_of_stack; ++current) {
     Address ptr = *current;
 #if defined(MEMORY_SANITIZER)
     // |ptr| may be uninitialized by design. Mark it as initialized to keep
@@ -398,8 +400,20 @@ void ThreadState::VisitStack(MarkingVisitor* visitor, Address* end_of_stack) {
     __msan_unpoison(&ptr, sizeof(ptr));
 #endif
     heap_->CheckAndMarkPointer(visitor, ptr);
-    VisitAsanFakeStackForPointer(visitor, ptr, start_of_stack_, end_of_stack);
+    VisitAsanFakeStackForPointer(visitor, ptr, start_of_stack, end_of_stack);
   }
+}
+
+void ThreadState::VisitStack(MarkingVisitor* visitor, Address* end_of_stack) {
+  VisitStackImpl(visitor, start_of_stack_, end_of_stack);
+}
+
+void ThreadState::VisitUnsafeStack(MarkingVisitor* visitor) {
+#if HAS_FEATURE(safe_stack)
+  VisitStackImpl(visitor,
+                 static_cast<Address*>(__builtin___get_unsafe_stack_top()),
+                 static_cast<Address*>(__builtin___get_unsafe_stack_ptr()));
+#endif  // HAS_FEATURE(safe_stack)
 }
 
 void ThreadState::VisitDOMWrappers(Visitor* visitor) {
@@ -1042,7 +1056,10 @@ void ThreadState::PushRegistersAndVisitStack() {
   DCHECK(CheckThread());
   DCHECK(IsGCForbidden());
   DCHECK_EQ(current_gc_data_.stack_state, BlinkGC::kHeapPointersOnStack);
+  // Visit registers, native stack, and asan fake stack.
   PushAllRegisters(this, ThreadState::VisitStackAfterPushingRegisters);
+  // For builds that use safe stack, also visit the unsafe stack.
+  VisitUnsafeStack(static_cast<MarkingVisitor*>(CurrentVisitor()));
 }
 
 void ThreadState::AddObserver(BlinkGCObserver* observer) {

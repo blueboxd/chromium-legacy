@@ -254,7 +254,7 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResult) {
   MockReauthCallback callback;
   delegate.set_os_reauth_call(callback.Get());
 
-  EXPECT_CALL(callback, Run(ReauthPurpose::VIEW_PASSWORD))
+  EXPECT_CALL(callback, Run(ReauthPurpose::COPY_PASSWORD))
       .WillOnce(Return(true));
 
   MockPlaintextPasswordCallback password_callback;
@@ -277,7 +277,7 @@ TEST_F(PasswordsPrivateDelegateImplTest, TestCopyPasswordCallbackResultFail) {
   MockReauthCallback callback;
   delegate.set_os_reauth_call(callback.Get());
 
-  EXPECT_CALL(callback, Run(ReauthPurpose::VIEW_PASSWORD))
+  EXPECT_CALL(callback, Run(ReauthPurpose::COPY_PASSWORD))
       .WillOnce(Return(false));
 
   base::Time before_call = test_clipboard_->GetLastModifiedTime();

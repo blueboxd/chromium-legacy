@@ -2378,7 +2378,9 @@ message PropertyAndValue {
     SMOOTH = 757;
     JUMP_START = 758;
     NO_DRAG = 759;
-    INVALID_VALUE = 760;
+    JIS_B5 = 760;
+    JIS_B4 = 761;
+    INVALID_VALUE = 762;
   };
 
   optional ValueId value_id = 4;

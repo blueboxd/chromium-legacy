@@ -31,8 +31,7 @@ class ChromePermissionsClient : public permissions::PermissionsClient {
   void OnPromptResolved(content::BrowserContext* browser_context,
                         permissions::PermissionRequestType request_type,
                         permissions::PermissionAction action) override;
-  base::Optional<url::Origin> GetAutoApprovalOrigin(
-      const permissions::PermissionRequest* request) override;
+  base::Optional<url::Origin> GetAutoApprovalOrigin() override;
 
  private:
   friend base::NoDestructor<ChromePermissionsClient>;

@@ -413,8 +413,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
         static_cast<String>(FastGetAttribute(html_names::kDownloadAttr)));
     request.SetRequestContext(mojom::RequestContextType::DOWNLOAD);
     request.SetRequestorOrigin(GetDocument().GetSecurityOrigin());
-    frame->Client()->DownloadURL(request,
-                                 network::mojom::RedirectMode::kManual);
+    frame->DownloadURL(request, network::mojom::blink::RedirectMode::kManual);
     return;
   }
 

@@ -1293,10 +1293,4 @@ void ChromeClientImpl::DocumentDetached(Document& document) {
   }
 }
 
-void ChromeClientImpl::SaveImageFromDataURL(LocalFrame& frame,
-                                            const String& data_url) {
-  WebLocalFrameImpl::FromFrame(frame)->Client()->SaveImageFromDataURL(
-      WebString(data_url));
-}
-
 }  // namespace blink

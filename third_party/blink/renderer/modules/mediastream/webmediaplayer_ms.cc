@@ -733,7 +733,7 @@ gfx::Size WebMediaPlayerMS::NaturalSize() const {
 
 gfx::Size WebMediaPlayerMS::VisibleSize() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  scoped_refptr<media::VideoFrame> video_frame = GetCurrentFrame();
+  scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
   if (!video_frame)
     return gfx::Size();
 
@@ -758,11 +758,6 @@ bool WebMediaPlayerMS::Seeking() const {
 double WebMediaPlayerMS::Duration() const {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return std::numeric_limits<double>::infinity();
-}
-
-scoped_refptr<media::VideoFrame> WebMediaPlayerMS::GetCurrentFrame() const {
-  return current_frame_override_ ? current_frame_override_
-                                 : compositor_->GetCurrentFrame();
 }
 
 double WebMediaPlayerMS::CurrentTime() const {
@@ -824,7 +819,7 @@ void WebMediaPlayerMS::Paint(cc::PaintCanvas* canvas,
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  const scoped_refptr<media::VideoFrame> frame = GetCurrentFrame();
+  const scoped_refptr<media::VideoFrame> frame = compositor_->GetCurrentFrame();
 
   viz::ContextProvider* provider = nullptr;
   if (frame && frame->HasTextures()) {
@@ -1000,7 +995,7 @@ bool WebMediaPlayerMS::CopyVideoTextureToPlatformTexture(
   TRACE_EVENT0("media", "copyVideoTextureToPlatformTexture");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  scoped_refptr<media::VideoFrame> video_frame = GetCurrentFrame();
+  scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
 
   if (!video_frame.get() || !video_frame->HasTextures())
     return false;
@@ -1030,7 +1025,7 @@ bool WebMediaPlayerMS::CopyVideoYUVDataToPlatformTexture(
   TRACE_EVENT0("media", "copyVideoYUVDataToPlatformTexture");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  scoped_refptr<media::VideoFrame> video_frame = GetCurrentFrame();
+  scoped_refptr<media::VideoFrame> video_frame = compositor_->GetCurrentFrame();
 
   if (!video_frame)
     return false;
@@ -1063,7 +1058,8 @@ bool WebMediaPlayerMS::TexImageImpl(TexImageFunctionID functionID,
   TRACE_EVENT0("media", "texImageImpl");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  const scoped_refptr<media::VideoFrame> video_frame = GetCurrentFrame();
+  const scoped_refptr<media::VideoFrame> video_frame =
+      compositor_->GetCurrentFrame();
   if (!video_frame || !video_frame->IsMappable() ||
       video_frame->HasTextures() ||
       video_frame->format() != media::PIXEL_FORMAT_Y16) {
@@ -1248,11 +1244,9 @@ void WebMediaPlayerMS::OnNewFramePresentedCallback(
   }
 
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  current_frame_override_ = std::move(presented_frame);
-  client_->OnRequestAnimationFrame(
-      presentation_time, expected_presentation_time, presentation_counter,
-      *current_frame_override_);
-  current_frame_override_.reset();
+  client_->OnRequestAnimationFrame(presentation_time,
+                                   expected_presentation_time,
+                                   presentation_counter, *presented_frame);
 }
 
 void WebMediaPlayerMS::RequestAnimationFrame() {

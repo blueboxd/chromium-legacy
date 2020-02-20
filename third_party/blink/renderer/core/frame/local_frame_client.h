@@ -168,9 +168,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void DidStartLoading() = 0;
   virtual void DidStopLoading() = 0;
 
-  virtual void DownloadURL(const ResourceRequest&,
-                           network::mojom::RedirectMode) = 0;
-
   virtual bool NavigateBackForward(int offset) const = 0;
 
   // The indicated security origin has run active content (such as a script)

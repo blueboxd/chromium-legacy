@@ -6,6 +6,7 @@
 
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
+#include "chrome/browser/chromeos/printing/cups_printers_manager_proxy.h"
 #include "chrome/browser/chromeos/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
@@ -29,22 +30,41 @@ CupsPrintersManager* CupsPrintersManagerFactory::GetForBrowserContext(
 CupsPrintersManagerFactory::CupsPrintersManagerFactory()
     : BrowserContextKeyedServiceFactory(
           "CupsPrintersManagerFactory",
-          BrowserContextDependencyManager::GetInstance()) {
+          BrowserContextDependencyManager::GetInstance()),
+      proxy_(CupsPrintersManagerProxy::Create()) {
   DependsOn(chromeos::SyncedPrintersManagerFactory::GetInstance());
 }
 
 CupsPrintersManagerFactory::~CupsPrintersManagerFactory() = default;
 
+CupsPrintersManagerProxy* CupsPrintersManagerFactory::GetProxy() {
+  return proxy_.get();
+}
+
 KeyedService* CupsPrintersManagerFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   // We do not need an instance of CupsPrintersManager on the lockscreen.
-  if (ProfileHelper::IsLockScreenAppProfile(
-          Profile::FromBrowserContext(context)) ||
-      ProfileHelper::IsSigninProfile(Profile::FromBrowserContext(context))) {
+  auto* profile = Profile::FromBrowserContext(context);
+  if (ProfileHelper::IsLockScreenAppProfile(profile) ||
+      ProfileHelper::IsSigninProfile(profile)) {
     return nullptr;
   }
-  return CupsPrintersManager::Create(Profile::FromBrowserContext(context))
-      .release();
+  auto manager = CupsPrintersManager::Create(profile);
+  if (ProfileHelper::IsPrimaryProfile(profile)) {
+    proxy_->SetManager(manager.get());
+  }
+  return manager.release();
+}
+
+void CupsPrintersManagerFactory::BrowserContextShutdown(
+    content::BrowserContext* context) {
+  CupsPrintersManager* manager = static_cast<CupsPrintersManager*>(
+      GetServiceForBrowserContext(context, false));
+  if (manager) {
+    // Remove the manager from the proxy before the manager is deleted.
+    proxy_->RemoveManager(manager);
+  }
+  BrowserContextKeyedServiceFactory::BrowserContextShutdown(context);
 }
 
 content::BrowserContext* CupsPrintersManagerFactory::GetBrowserContextToUse(

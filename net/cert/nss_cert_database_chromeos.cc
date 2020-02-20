@@ -49,6 +49,17 @@ void NSSCertDatabaseChromeOS::ListCerts(
       std::move(callback));
 }
 
+void NSSCertDatabaseChromeOS::ListCertsInfo(ListCertsInfoCallback callback) {
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&NSSCertDatabaseChromeOS::ListCertsInfoImpl,
+                     profile_filter_, /*slot=*/GetSystemSlot(),
+                     /*add_certs_info=*/true),
+      std::move(callback));
+}
+
 crypto::ScopedPK11Slot NSSCertDatabaseChromeOS::GetSystemSlot() const {
   if (system_slot_)
     return crypto::ScopedPK11Slot(PK11_ReferenceSlot(system_slot_.get()));
@@ -69,8 +80,20 @@ void NSSCertDatabaseChromeOS::ListModules(
            << " modules";
 }
 
+// static
 ScopedCERTCertificateList NSSCertDatabaseChromeOS::ListCertsImpl(
     const NSSProfileFilterChromeOS& profile_filter) {
+  CertInfoList certs_info = ListCertsInfoImpl(
+      profile_filter, crypto::ScopedPK11Slot(), /*add_certs_info=*/false);
+
+  return ExtractCertificates(std::move(certs_info));
+}
+
+// static
+NSSCertDatabase::CertInfoList NSSCertDatabaseChromeOS::ListCertsInfoImpl(
+    const NSSProfileFilterChromeOS& profile_filter,
+    crypto::ScopedPK11Slot system_slot,
+    bool add_certs_info) {
   // This method may acquire the NSS lock or reenter this code via extension
   // hooks (such as smart card UI). To ensure threads are not starved or
   // deadlocked, the base::ScopedBlockingCall below increments the thread pool
@@ -78,16 +101,27 @@ ScopedCERTCertificateList NSSCertDatabaseChromeOS::ListCertsImpl(
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
-  ScopedCERTCertificateList certs(
-      NSSCertDatabase::ListCertsImpl(crypto::ScopedPK11Slot()));
+  CertInfoList certs_info(NSSCertDatabase::ListCertsInfoImpl(
+      crypto::ScopedPK11Slot(), add_certs_info));
 
-  size_t pre_size = certs.size();
-  base::EraseIf(certs, [&profile_filter](ScopedCERTCertificate& cert) {
-    return !profile_filter.IsCertAllowed(cert.get());
+  // Filter certificate information according to user profile.
+  size_t pre_size = certs_info.size();
+  base::EraseIf(certs_info, [&profile_filter](CertInfo& cert_info) {
+    return !profile_filter.IsCertAllowed(cert_info.cert.get());
   });
-  DVLOG(1) << "filtered " << pre_size - certs.size() << " of " << pre_size
+  DVLOG(1) << "filtered " << pre_size - certs_info.size() << " of " << pre_size
            << " certs";
-  return certs;
+
+  if (add_certs_info) {
+    // Add Chrome OS specific information.
+    for (auto& cert_info : certs_info) {
+      cert_info.device_wide =
+          IsCertificateOnSlot(cert_info.cert.get(), system_slot.get());
+      cert_info.hardware_backed = IsHardwareBacked(cert_info.cert.get());
+    }
+  }
+
+  return certs_info;
 }
 
 }  // namespace net

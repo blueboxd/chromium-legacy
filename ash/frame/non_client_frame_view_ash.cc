@@ -231,14 +231,9 @@ NonClientFrameViewAsh::NonClientFrameViewAsh(views::Widget* frame)
   }
 
   frame_window->SetProperty(kNonClientFrameViewAshKey, this);
-  frame_window->AddObserver(this);
 }
 
-NonClientFrameViewAsh::~NonClientFrameViewAsh() {
-  aura::Window* frame_window = frame_->GetNativeWindow();
-  if (frame_window && frame_window->HasObserver(this))
-    frame_window->RemoveObserver(this);
-}
+NonClientFrameViewAsh::~NonClientFrameViewAsh() = default;
 
 // static
 NonClientFrameViewAsh* NonClientFrameViewAsh::Get(aura::Window* window) {
@@ -365,20 +360,6 @@ void NonClientFrameViewAsh::SetVisible(bool visible) {
   views::View::SetVisible(visible);
   // We need to re-layout so that client view will occupy entire window.
   InvalidateLayout();
-}
-
-void NonClientFrameViewAsh::OnWindowBoundsChanged(
-    aura::Window* window,
-    const gfx::Rect& old_bounds,
-    const gfx::Rect& new_bounds,
-    ui::PropertyChangeReason reason) {
-  if (window->transparent())
-    window->SetOpaqueRegionsForOcclusion({gfx::Rect(new_bounds.size())});
-}
-
-void NonClientFrameViewAsh::OnWindowDestroying(aura::Window* window) {
-  DCHECK_EQ(window, frame_->GetNativeWindow());
-  window->RemoveObserver(this);
 }
 
 void NonClientFrameViewAsh::SetShouldPaintHeader(bool paint) {

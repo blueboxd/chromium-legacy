@@ -214,7 +214,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   FFmpegDemuxer(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
                 DataSource* data_source,
                 const EncryptedMediaInitDataCB& encrypted_media_init_data_cb,
-                const MediaTracksUpdatedCB& media_tracks_updated_cb,
+                MediaTracksUpdatedCB media_tracks_updated_cb,
                 MediaLog* media_log,
                 bool is_local_file);
   ~FFmpegDemuxer() override;

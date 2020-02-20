@@ -7,32 +7,39 @@
  * @interface
  */
 export class BrowserProxy {
-  /** @param {function(!Array<!chrome.fileSystem.Volume>=)} callback */
-  getVolumeList(callback) {}
+  /**
+   * @return {!Promise<?Array<!chrome.fileSystem.Volume>>}
+   * @abstract
+   */
+  async getVolumeList() {}
 
   /**
    * @param {!chrome.fileSystem.RequestFileSystemOptions} options
-   * @param {function(!FileSystem=)} callback
+   * @return {!Promise<?FileSystem>}
+   * @abstract
    */
-  requestFileSystem(options, callback) {}
+  async requestFileSystem(options) {}
 
   /**
    * @param {(string|!Array<string>|!Object)} keys
-   * @param {function(!Object)} callback
+   * @return {!Promise<!Object>}
+   * @abstract
    */
-  localStorageGet(keys, callback) {}
+  async localStorageGet(keys) {}
 
   /**
    * @param {!Object<string>} items
-   * @param {function()=} callback
+   * @return {!Promise}
+   * @abstract
    */
-  localStorageSet(items, callback) {}
+  async localStorageSet(items) {}
 
   /**
    * @param {(string|!Array<string>)} items
-   * @param {function()=} callback
+   * @return {!Promise}
+   * @abstract
    */
-  localStorageRemove(items, callback) {}
+  async localStorageRemove(items) {}
 
   /**
    * @return {!Promise<boolean>}

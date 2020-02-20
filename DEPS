@@ -171,7 +171,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'a5097354217b6fe80c1186534d0a487bdf3c80f5',
+  'skia_revision': '2c2db2762809826df87e83755199db72b320685d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
@@ -942,7 +942,7 @@ deps = {
     Var('chromium_git') + '/codecs/libgav1.git' + '@' + '25dc90ee07763b13db1be14e1f2afadc6894c9f3',
 
   'src/third_party/glslang/src':
-    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'c008fcb8cc0f6a413162fb5236d0c548cc1e0ef6',
+    Var('chromium_git') + '/external/github.com/KhronosGroup/glslang.git' + '@' + 'c12493ff69e21800fb08b6d6e92eb0b9c5cb5efb',
 
   'src/third_party/google_toolbox_for_mac/src': {
       'url': Var('chromium_git') + '/external/github.com/google/google-toolbox-for-mac.git' + '@' + Var('google_toolbox_for_mac_revision'),
@@ -1435,7 +1435,7 @@ deps = {
     Var('chromium_git') + '/external/khronosgroup/webgl.git' + '@' + '4f3976e9b368ccfe7b9dd02014351936296dc72c',
 
   'src/third_party/webgpu-cts/src':
-    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'ec18cc3262922e7dcdbe70243c6f40606f979144',
+    Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + '02b62c256590b040d514ec15c0f12041be8d1575',
 
   'src/third_party/webrtc':
     Var('webrtc_git') + '/src.git' + '@' + '1282babe6621d3a2084bbd24e77652e0b3a4eb93',
@@ -1513,7 +1513,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@048075425abc2c47d811b54e475c162bc9ad439a',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@adeb0b9fdd32b4d3d284d8a97dacf3ce02f8989d',
     'condition': 'checkout_src_internal',
   },
 

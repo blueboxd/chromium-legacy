@@ -136,8 +136,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
-  void DownloadURL(const ResourceRequest&,
-                   network::mojom::RedirectMode) override;
   bool NavigateBackForward(int offset) const override;
   void DidRunInsecureContent(const SecurityOrigin*,
                              const KURL& insecure_url) override;

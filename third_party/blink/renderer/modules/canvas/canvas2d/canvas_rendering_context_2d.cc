@@ -441,14 +441,14 @@ cc::PaintCanvas* CanvasRenderingContext2D::GetOrCreatePaintCanvas() {
   if (isContextLost())
     return nullptr;
   if (canvas()->GetOrCreateCanvas2DLayerBridge())
-    return GetPaintCanvas();
+    return canvas()->GetCanvas2DLayerBridge()->GetPaintCanvas();
   return nullptr;
 }
 
 cc::PaintCanvas* CanvasRenderingContext2D::GetPaintCanvas() const {
-  if (isContextLost())
+  if (isContextLost() || !canvas()->GetCanvas2DLayerBridge())
     return nullptr;
-  if (canvas() && canvas()->GetCanvas2DLayerBridge())
+  if (canvas() && canvas()->GetCanvas2DLayerBridge()->ResourceProvider())
     return canvas()->GetCanvas2DLayerBridge()->GetPaintCanvas();
   return nullptr;
 }

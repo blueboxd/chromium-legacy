@@ -45,4 +45,34 @@ bool WebTestDownloadManagerDelegate::ShouldOpenDownload(
   return true;
 }
 
+void WebTestDownloadManagerDelegate::CheckDownloadAllowed(
+    const content::WebContents::Getter& web_contents_getter,
+    const GURL& url,
+    const std::string& request_method,
+    base::Optional<url::Origin> request_initiator,
+    bool from_download_cross_origin_redirect,
+    bool content_initiated,
+    content::CheckDownloadAllowedCallback check_download_allowed_cb) {
+  auto* test_controller = BlinkTestController::Get();
+  base::Optional<bool> should_wait_until_external_url_load =
+      test_controller->accumulated_web_test_runtime_flags_changes()
+          .FindBoolPath("wait_until_external_url_load");
+
+  // The if clause below catches all calls to this method not
+  // initiated by content, or even if it does, whose web_test
+  // does not call TestRunner::WaitUntilExternalUrlLoad().
+  if (!content_initiated || !should_wait_until_external_url_load.has_value() ||
+      !should_wait_until_external_url_load.value()) {
+    ShellDownloadManagerDelegate::CheckDownloadAllowed(
+        web_contents_getter, url, request_method, request_initiator,
+        from_download_cross_origin_redirect, content_initiated,
+        std::move(check_download_allowed_cb));
+    return;
+  }
+
+  test_controller->printer()->AddMessageRaw("Download started\n");
+  test_controller->OnTestFinishedInSecondaryRenderer();
+  std::move(check_download_allowed_cb).Run(false);
+}
+
 }  // namespace content

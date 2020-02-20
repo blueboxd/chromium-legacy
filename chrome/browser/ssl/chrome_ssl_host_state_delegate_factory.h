@@ -31,9 +31,7 @@ class ChromeSSLHostStateDelegateFactory
 
   // BrowserContextKeyedServiceFactory methods:
   KeyedService* BuildServiceInstanceFor(
-      content::BrowserContext* profile) const override;
-  void RegisterProfilePrefs(
-      user_prefs::PrefRegistrySyncable* registry) override;
+      content::BrowserContext* context) const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;
 

@@ -10,6 +10,7 @@ import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/text_direction.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/content_security_policy.mojom";
+import "services/network/public/mojom/fetch_api.mojom";
 import "skia/public/mojom/skcolor.mojom";
 import "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
@@ -26,9 +27,10 @@ import "third_party/blink/public/mojom/frame/sudden_termination_disabler_type.mo
 import "third_party/blink/public/mojom/frame/user_activation_update_types.mojom";
 import "third_party/blink/public/mojom/input/focus_type.mojom";
 import "third_party/blink/public/mojom/input/scroll_direction.mojom";
+import "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom";
+import "third_party/blink/public/mojom/referrer.mojom";
 import "third_party/blink/public/mojom/timing/resource_timing.mojom";
 import "third_party/blink/public/mojom/web_feature/web_feature.mojom";
-import "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom";
 import "ui/events/mojom/scroll_granularity.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/origin.mojom";
@@ -52,6 +54,22 @@ struct FindInPageResultAXParams {
 
   // The character offset into the text of the end object.
   int32 end_offset;
+};
+
+// This struct holds parameters sent by the renderer to the browser, that are
+// needed to download an URL.
+struct DownloadURLParams {
+  url.mojom.Url url;
+  blink.mojom.Referrer? referrer;
+  url.mojom.Origin? initiator_origin;
+  mojo_base.mojom.String16? suggested_name;
+  network.mojom.RedirectMode cross_origin_redirects;
+
+  // Non-null when |url| is for "blob:".
+  handle<message_pipe>? blob_url_token;
+
+  // Non-null when |url| is for "data:", eg. when saving an image.
+  handle<message_pipe>? data_url_blob;
 };
 
 // The maximum number of characters of the document's title that we're willing
@@ -276,6 +294,9 @@ interface LocalFrameHost {
 
   // Notifies that the urls for the favicon of a site has been determined.
   UpdateFaviconURL(array<FaviconURL> favicon_urls);
+
+  // Initiates a download based on user actions like 'ALT+click'.
+  DownloadURL(DownloadURLParams params);
 };
 
 // Implemented in Blink, this interface defines frame-specific methods that will

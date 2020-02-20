@@ -205,10 +205,13 @@ void PasswordsPrivateDelegateImpl::RequestPlaintextPassword(
   // exiting this method.
   // TODO(crbug.com/495290): Pass the native window directly to the
   // reauth-handling code.
-  // TODO(crbug.com/1047726): Make use of the different values for reason.
+  // TODO(crbug.com/1047726): Handle Edit case.
   web_contents_ = web_contents;
+  auto reauth_purpose = reason == api::passwords_private::PLAINTEXT_REASON_COPY
+                            ? password_manager::ReauthPurpose::COPY_PASSWORD
+                            : password_manager::ReauthPurpose::VIEW_PASSWORD;
   if (!password_access_authenticator_.EnsureUserIsAuthenticated(
-          password_manager::ReauthPurpose::VIEW_PASSWORD)) {
+          reauth_purpose)) {
     std::move(callback).Run(base::nullopt);
     return;
   }

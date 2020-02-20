@@ -102,9 +102,8 @@ export class Options {
     this.toggleMirror_.addEventListener('click', () => this.saveMirroring_());
 
     // Restore saved mirroring states per video device.
-    browserProxy.localStorageGet(
-        {mirroringToggles: {}},
-        (values) => this.mirroringToggles_ = values.mirroringToggles);
+    browserProxy.localStorageGet({mirroringToggles: {}})
+        .then((values) => this.mirroringToggles_ = values.mirroringToggles);
     // Remove the deprecated values.
     browserProxy.localStorageRemove(
         ['effectIndex', 'toggleMulti', 'toggleMirror']);

@@ -46,7 +46,6 @@
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_context_rate_limiter.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/graphics/memory_managed_paint_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/unaccelerated_static_bitmap_image.h"
@@ -124,22 +123,6 @@ Canvas2DLayerBridge::Canvas2DLayerBridge(const IntSize& size,
   // Used by browser tests to detect the use of a Canvas2DLayerBridge.
   TRACE_EVENT_INSTANT0("test_gpu", "Canvas2DLayerBridgeCreation",
                        TRACE_EVENT_SCOPE_GLOBAL);
-
-  // A raw pointer is safe here because the callback is only used by the
-  // |recorder_|.
-  set_needs_flush_callback_ = WTF::BindRepeating(
-      &Canvas2DLayerBridge::SetNeedsFlush, WTF::Unretained(this));
-  StartRecording();
-
-  // Clear the background transparent or opaque. Similar code at
-  // CanvasResourceProvider::Clear().
-  if (IsValid()) {
-    DCHECK(recorder_);
-    recorder_->getRecordingCanvas()->clear(
-        color_params_.GetOpacityMode() == kOpaque ? SK_ColorBLACK
-                                                  : SK_ColorTRANSPARENT);
-    DidDraw(FloatRect(0.f, 0.f, size_.Width(), size_.Height()));
-  }
 }
 
 Canvas2DLayerBridge::~Canvas2DLayerBridge() {
@@ -162,18 +145,12 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge() {
   layer_ = nullptr;
 }
 
-void Canvas2DLayerBridge::StartRecording() {
-  recorder_ =
-      std::make_unique<MemoryManagedPaintRecorder>(set_needs_flush_callback_);
-  cc::PaintCanvas* canvas =
-      recorder_->beginRecording(size_.Width(), size_.Height());
+void Canvas2DLayerBridge::SetCanvasResourceHost(CanvasResourceHost* host) {
+  resource_host_ = host;
 
-  // Always save an initial frame, to support resetting the top level matrix
-  // and clip.
-  canvas->save();
-
-  if (resource_host_)
-    resource_host_->RestoreCanvasMatrixClipStack(canvas);
+  if (resource_host_ && GetOrCreateResourceProvider()) {
+    EnsureCleared();
+  }
 }
 
 void Canvas2DLayerBridge::ResetResourceProvider() {
@@ -352,8 +329,10 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
   // circular callstack from HTMLCanvasElement.
   resource_provider =
       resource_host_->GetOrCreateCanvasResourceProviderImpl(adjusted_hint);
-  if (!resource_provider)
+  if (!resource_provider || !resource_provider->IsValid())
     return nullptr;
+
+  EnsureCleared();
 
   if (IsAccelerated() && !layer_) {
     layer_ = cc::TextureLayer::CreateForMailbox(this);
@@ -392,9 +371,11 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
   return resource_provider;
 }
 
-cc::PaintCanvas* Canvas2DLayerBridge::GetPaintCanvas() const {
+cc::PaintCanvas* Canvas2DLayerBridge::GetPaintCanvas() {
   DCHECK(resource_host_);
-  return recorder_->getRecordingCanvas();
+  if (GetOrCreateResourceProvider())
+    return ResourceProvider()->Canvas();
+  return nullptr;
 }
 
 void Canvas2DLayerBridge::UpdateFilterQuality() {
@@ -491,14 +472,6 @@ bool Canvas2DLayerBridge::WritePixels(const SkImageInfo& orig_info,
 
   last_record_tainted_by_write_pixels_ = true;
   have_recorded_draw_commands_ = false;
-  // Apply clipstack to canvas_ and then restore it to original state once
-  // we leave this scope. This is needed because each recording initializes and
-  // resets this state after every flush.
-  cc::PaintCanvas* canvas = ResourceProvider()->Canvas();
-  PaintCanvasAutoRestore auto_restore(canvas, true);
-  if (GetOrCreateResourceProvider()) {
-    resource_host_->RestoreCanvasMatrixClipStack(canvas);
-  }
 
   ResourceProvider()->WritePixels(orig_info, pixels, row_bytes, x, y);
   return true;
@@ -506,8 +479,7 @@ bool Canvas2DLayerBridge::WritePixels(const SkImageInfo& orig_info,
 
 void Canvas2DLayerBridge::SkipQueuedDrawCommands() {
   if (have_recorded_draw_commands_) {
-    recorder_->finishRecordingAsPicture();
-    StartRecording();
+    ResourceProvider()->SkipQueuedDrawCommands();
     have_recorded_draw_commands_ = false;
   }
 
@@ -515,8 +487,19 @@ void Canvas2DLayerBridge::SkipQueuedDrawCommands() {
     rate_limiter_->Reset();
 }
 
-void Canvas2DLayerBridge::CalculateDirtyRegion(int canvas_width,
-                                               int canvas_height) {
+void Canvas2DLayerBridge::EnsureCleared() {
+  if (cleared_)
+    return;
+  cleared_ = true;
+  ResourceProvider()->Clear();
+  DidDraw(FloatRect(0.f, 0.f, size_.Width(), size_.Height()));
+}
+
+void Canvas2DLayerBridge::CalculateDirtyRegion() {
+  // 1 pixel is added around the rect for anti-alias effect
+  // TODO(khushalsagar) : Remove the need for this 1 pixel addition.
+  int canvas_width = size_.Width() + 1;
+  int canvas_height = size_.Height() + 1;
   base::CheckedNumeric<int> area(canvas_width);
   area *= canvas_height;
   if (!area.IsValid() || area.ValueOrDie() < kMinAreaForComputingDirtyRegion)
@@ -656,24 +639,15 @@ void Canvas2DLayerBridge::FlushRecording() {
     }
     timer.emplace();
   }
-  {  // Make a new scope so that PaintRecord gets deleted and that gets timed
-    cc::PaintCanvas* canvas = ResourceProvider()->Canvas();
-    last_recording_ = recorder_->finishRecordingAsPicture();
-    SkScalar canvas_width = canvas->getLocalClipBounds().width();
-    SkScalar canvas_height = canvas->getLocalClipBounds().height();
-    DCHECK_GE(canvas_width, size_.Width());
-    DCHECK_GE(canvas_height, size_.Height());
-    if (will_measure) {
-      CalculateDirtyRegion(canvas_width, canvas_height);
-    }
 
-    canvas->drawPicture(last_recording_);
-    last_record_tainted_by_write_pixels_ = false;
-    if (!clear_frame_ || !resource_host_ || !resource_host_->IsPrinting()) {
-      last_recording_ = nullptr;
-      clear_frame_ = false;
-    }
-    ResourceProvider()->FlushSkia();
+  ResourceProvider()->FlushCanvas();
+  last_recording_ = ResourceProvider()->last_recording();
+  if (last_recording_ && will_measure)
+    CalculateDirtyRegion();
+  last_record_tainted_by_write_pixels_ = false;
+  if (!clear_frame_ || !resource_host_ || !resource_host_->IsPrinting()) {
+    last_recording_ = nullptr;
+    clear_frame_ = false;
   }
 
   // Finish up the timing operation
@@ -697,7 +671,6 @@ void Canvas2DLayerBridge::FlushRecording() {
   if (GetOrCreateResourceProvider())
     ResourceProvider()->ReleaseLockedImages();
 
-  StartRecording();
   have_recorded_draw_commands_ = false;
 }
 
@@ -819,7 +792,7 @@ cc::Layer* Canvas2DLayerBridge::Layer() {
 }
 
 void Canvas2DLayerBridge::DidDraw(const FloatRect& /* rect */) {
-  if (needs_flush_)
+  if (ResourceProvider() && ResourceProvider()->needs_flush())
     FinalizeFrame();
   have_recorded_draw_commands_ = true;
 }
@@ -848,8 +821,6 @@ void Canvas2DLayerBridge::FinalizeFrame() {
 
   if (rate_limiter_)
     rate_limiter_->Tick();
-
-  needs_flush_ = false;
 }
 
 void Canvas2DLayerBridge::DoPaintInvalidation(const FloatRect& dirty_rect) {
@@ -878,10 +849,6 @@ scoped_refptr<StaticBitmapImage> Canvas2DLayerBridge::NewImageSnapshot(
 
 void Canvas2DLayerBridge::WillOverwriteCanvas() {
   SkipQueuedDrawCommands();
-}
-
-void Canvas2DLayerBridge::SetNeedsFlush() {
-  needs_flush_ = true;
 }
 
 void Canvas2DLayerBridge::Logger::ReportHibernationEvent(

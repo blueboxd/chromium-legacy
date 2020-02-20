@@ -5610,8 +5610,8 @@ const CSSValue* ShapeRendering::CSSValueFromComputedStyleInternal(
 static CSSValue* ConsumePageSize(CSSParserTokenRange& range) {
   return css_property_parser_helpers::ConsumeIdent<
       CSSValueID::kA3, CSSValueID::kA4, CSSValueID::kA5, CSSValueID::kB4,
-      CSSValueID::kB5, CSSValueID::kLedger, CSSValueID::kLegal,
-      CSSValueID::kLetter>(range);
+      CSSValueID::kB5, CSSValueID::kJisB5, CSSValueID::kJisB4,
+      CSSValueID::kLedger, CSSValueID::kLegal, CSSValueID::kLetter>(range);
 }
 
 static float MmToPx(float mm) {
@@ -5632,6 +5632,10 @@ static FloatSize GetPageSizeFromName(const CSSIdentifierValue& page_size_name) {
       return FloatSize(MmToPx(176), MmToPx(250));
     case CSSValueID::kB4:
       return FloatSize(MmToPx(250), MmToPx(353));
+    case CSSValueID::kJisB5:
+      return FloatSize(MmToPx(182), MmToPx(257));
+    case CSSValueID::kJisB4:
+      return FloatSize(MmToPx(257), MmToPx(364));
     case CSSValueID::kLetter:
       return FloatSize(InchToPx(8.5), InchToPx(11));
     case CSSValueID::kLegal:

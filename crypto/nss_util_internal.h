@@ -121,6 +121,9 @@ CRYPTO_EXPORT void CloseChromeOSUserForTesting(
 CRYPTO_EXPORT void SetPrivateSoftwareSlotForChromeOSUserForTesting(
     ScopedPK11Slot slot);
 
+// Returns true if chaps is the module to which |slot| is attached.
+CRYPTO_EXPORT bool IsSlotProvidedByChaps(PK11SlotInfo* slot);
+
 #endif  // defined(OS_CHROMEOS)
 
 // Loads the given module for this NSS session.

@@ -15,6 +15,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "chrome/common/channel_info.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
@@ -120,6 +121,7 @@ AccountPasswordStoreFactory::BuildServiceInstanceFor(
   scoped_refptr<PasswordStore> ps =
       new password_manager::PasswordStoreDefault(std::move(login_db));
   if (!ps->Init(/*flare=*/base::DoNothing(), profile->GetPrefs(),
+                chrome::GetChannel(),
                 base::BindRepeating(&SyncEnabledOrDisabled, profile))) {
     // TODO(crbug.com/479725): Remove the LOG once this error is visible in the
     // UI.

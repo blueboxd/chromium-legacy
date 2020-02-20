@@ -102,7 +102,7 @@ void GLOutputSurfaceOffscreen::Reshape(const gfx::Size& size,
 }
 
 void GLOutputSurfaceOffscreen::SwapBuffers(OutputSurfaceFrame frame) {
-  DCHECK(frame.size == size_);
+  DCHECK_EQ(frame.size, size_);
 
   gpu::gles2::GLES2Interface* gl = context_provider_->ContextGL();
 

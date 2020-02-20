@@ -7328,6 +7328,10 @@ void Document::PluginLoadingTimerFired(TimerBase*) {
   UpdateStyleAndLayout(DocumentUpdateReason::kPlugin);
 }
 
+ScriptedAnimationController& Document::GetScriptedAnimationController() {
+  return *scripted_animation_controller_;
+}
+
 int Document::RequestAnimationFrame(
     FrameRequestCallbackCollection::FrameCallback* callback) {
   return scripted_animation_controller_->RegisterFrameCallback(callback);

@@ -255,10 +255,6 @@ class CORE_EXPORT HTMLSelectElement final
   void ParseMultipleAttribute(const AtomicString&);
   HTMLOptionElement* LastSelectedOption() const;
   void UpdateSelectedState(HTMLOptionElement*, bool multi, bool shift);
-  // Returns true if this function handled the event.
-  bool HandlePopupOpenKeyboardEvent(const Event&);
-  bool ShouldOpenPopupForKeyDownEvent(const KeyboardEvent&);
-  bool ShouldOpenPopupForKeyPressEvent(const KeyboardEvent&);
   void SetPopupIsVisible(bool);
   void SetOptionsChangedOnLayoutObject();
   wtf_size_t SearchOptionsForValue(const String&,

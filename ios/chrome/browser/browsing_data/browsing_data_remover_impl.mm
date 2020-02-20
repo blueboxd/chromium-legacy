@@ -551,112 +551,31 @@ void BrowsingDataRemoverImpl::RemoveImpl(base::Time delete_begin,
 void BrowsingDataRemoverImpl::RemoveDataFromWKWebsiteDataStore(
     base::Time delete_begin,
     BrowsingDataRemoveMask mask) {
-  if (base::FeatureList::IsEnabled(kWebClearBrowsingData)) {
-    web::ClearBrowsingDataMask types =
-        web::ClearBrowsingDataMask::kRemoveNothing;
-    if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_APPCACHE)) {
-      types |= web::ClearBrowsingDataMask::kRemoveAppCache;
-    }
-    if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
-      types |= web::ClearBrowsingDataMask::kRemoveCookies;
-    }
-    if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_INDEXEDDB)) {
-      types |= web::ClearBrowsingDataMask::kRemoveIndexedDB;
-    }
-    if (IsRemoveDataMaskSet(mask,
-                            BrowsingDataRemoveMask::REMOVE_LOCAL_STORAGE)) {
-      types |= web::ClearBrowsingDataMask::kRemoveLocalStorage;
-    }
-    if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_WEBSQL)) {
-      types |= web::ClearBrowsingDataMask::kRemoveWebSQL;
-    }
-    if (IsRemoveDataMaskSet(mask,
-                            BrowsingDataRemoveMask::REMOVE_CACHE_STORAGE)) {
-      types |= web::ClearBrowsingDataMask::kRemoveCacheStorage;
-    }
-    if (IsRemoveDataMaskSet(mask,
-                            BrowsingDataRemoveMask::REMOVE_VISITED_LINKS)) {
-      types |= web::ClearBrowsingDataMask::kRemoveVisitedLinks;
-    }
-
-    web::ClearBrowsingData(browser_state_, types, delete_begin,
-                           CreatePendingTaskCompletionClosure());
-    return;
-  }
-
-  // Converts browsing data types from BrowsingDataRemoveMask to
-  // WKWebsiteDataStore strings.
-  NSMutableSet* data_types_to_remove = [[NSMutableSet alloc] init];
-
-  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CACHE_STORAGE)) {
-    [data_types_to_remove addObject:WKWebsiteDataTypeDiskCache];
-    [data_types_to_remove addObject:WKWebsiteDataTypeMemoryCache];
-  }
+  web::ClearBrowsingDataMask types = web::ClearBrowsingDataMask::kRemoveNothing;
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_APPCACHE)) {
-    [data_types_to_remove
-        addObject:WKWebsiteDataTypeOfflineWebApplicationCache];
+    types |= web::ClearBrowsingDataMask::kRemoveAppCache;
   }
-  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_LOCAL_STORAGE)) {
-    [data_types_to_remove addObject:WKWebsiteDataTypeSessionStorage];
-    [data_types_to_remove addObject:WKWebsiteDataTypeLocalStorage];
-  }
-  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_WEBSQL)) {
-    [data_types_to_remove addObject:WKWebsiteDataTypeWebSQLDatabases];
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
+    types |= web::ClearBrowsingDataMask::kRemoveCookies;
   }
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_INDEXEDDB)) {
-    [data_types_to_remove addObject:WKWebsiteDataTypeIndexedDBDatabases];
+    types |= web::ClearBrowsingDataMask::kRemoveIndexedDB;
   }
-  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
-    [data_types_to_remove addObject:WKWebsiteDataTypeCookies];
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_LOCAL_STORAGE)) {
+    types |= web::ClearBrowsingDataMask::kRemoveLocalStorage;
   }
-
-  if (![data_types_to_remove count]) {
-    return;
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_WEBSQL)) {
+    types |= web::ClearBrowsingDataMask::kRemoveWebSQL;
   }
-
-  base::WeakPtr<BrowsingDataRemoverImpl> weak_ptr = GetWeakPtr();
-  __block base::OnceClosure closure = CreatePendingTaskCompletionClosure();
-  ProceduralBlock completion_block = ^{
-    if (BrowsingDataRemoverImpl* strong_ptr = weak_ptr.get())
-      strong_ptr->dummy_web_view_ = nil;
-    std::move(closure).Run();
-  };
-
+  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_CACHE_STORAGE)) {
+    types |= web::ClearBrowsingDataMask::kRemoveCacheStorage;
+  }
   if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_VISITED_LINKS)) {
-    ProceduralBlock previous_completion_block = completion_block;
-
-    // TODO(crbug.com/557963): Purging the WKProcessPool is a workaround for
-    // the fact that there is no public API to clear visited links in
-    // WKWebView. Remove this workaround if/when that API is made public.
-    // Note: Purging the WKProcessPool for clearing visisted links does have
-    // the side-effect of also losing the in-memory cookies of WKWebView but
-    // it is not a problem in practice since there is no UI to only have
-    // visited links be removed but not cookies.
-    completion_block = ^{
-      if (BrowsingDataRemoverImpl* strong_ptr = weak_ptr.get()) {
-        web::WKWebViewConfigurationProvider::FromBrowserState(
-            strong_ptr->browser_state_)
-            .Purge();
-      }
-      previous_completion_block();
-    };
+    types |= web::ClearBrowsingDataMask::kRemoveVisitedLinks;
   }
 
-  // TODO(crbug.com/661630): |dummy_web_view_| is created to allow
-  // the -[WKWebsiteDataStore removeDataOfTypes:] API to access the cookiestore
-  // and clear cookies. This is a workaround for
-  // https://bugs.webkit.org/show_bug.cgi?id=149078. Remove this
-  // workaround when it's not needed anymore.
-  if (IsRemoveDataMaskSet(mask, BrowsingDataRemoveMask::REMOVE_COOKIES)) {
-    if (!dummy_web_view_)
-      dummy_web_view_ = [[WKWebView alloc] initWithFrame:CGRectZero];
-  }
-
-  NSDate* delete_begin_date =
-      [NSDate dateWithTimeIntervalSince1970:delete_begin.ToDoubleT()];
-  [[WKWebsiteDataStore defaultDataStore] removeDataOfTypes:data_types_to_remove
-                                             modifiedSince:delete_begin_date
-                                         completionHandler:completion_block];
+  web::ClearBrowsingData(browser_state_, types, delete_begin,
+                         CreatePendingTaskCompletionClosure());
 }
 
 void BrowsingDataRemoverImpl::OnKeywordsLoaded(base::Time delete_begin,

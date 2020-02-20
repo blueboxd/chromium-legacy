@@ -101,6 +101,10 @@ bool IsMinimizedWindowStateType(WindowStateType type) {
   return type == WindowStateType::kMinimized;
 }
 
+bool IsNormalWindowStateType(WindowStateType type) {
+  return type == WindowStateType::kNormal || type == WindowStateType::kDefault;
+}
+
 bool IsValidWindowStateType(int64_t value) {
   return value == int64_t(WindowStateType::kDefault) ||
          value == int64_t(WindowStateType::kNormal) ||

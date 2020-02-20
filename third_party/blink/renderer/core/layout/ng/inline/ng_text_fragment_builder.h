@@ -26,6 +26,8 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
 
   NGTextFragmentBuilder(const NGPhysicalTextFragment& fragment);
 
+  TextDirection ResolvedDirection() const { return resolved_direction_; }
+
   // NOTE: Takes ownership of the shape result within the item result.
   void SetItem(NGPhysicalTextFragment::NGTextType,
                const NGInlineItemsData&,
@@ -54,6 +56,9 @@ class CORE_EXPORT NGTextFragmentBuilder final : public NGFragmentBuilder {
 
   NGPhysicalTextFragment::NGTextType text_type_ =
       NGPhysicalTextFragment::kNormalText;
+
+  // Set from |NGInlineItem| by |SetItem()|.
+  TextDirection resolved_direction_ = TextDirection::kLtr;
 
   friend class NGPhysicalTextFragment;
 };

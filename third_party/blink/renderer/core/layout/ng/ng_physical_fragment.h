@@ -359,7 +359,8 @@ class CORE_EXPORT NGPhysicalFragment
   // The following bitfields are only to be used by NGPhysicalLineBoxFragment
   // (it's defined here to save memory, since that class has no bitfields).
   unsigned has_propagated_descendants_ : 1;
-  unsigned base_direction_ : 1;  // TextDirection
+  // base (line box) or resolve (text) direction
+  unsigned base_or_resolved_direction_ : 1;  // TextDirection
   unsigned has_hanging_ : 1;
 
   // The following bitfields are only to be used by NGPhysicalBoxFragment
@@ -383,6 +384,9 @@ class CORE_EXPORT NGPhysicalFragment
   // (it's defined here to save memory, since that class has no bitfields).
   unsigned is_generated_text_ : 1;
   mutable unsigned ink_overflow_computed_ : 1;
+
+  // Note: We've used 32-bit bit field. If you need more bits, please think to
+  // share bit fields.
 
  private:
   friend struct NGPhysicalFragmentTraits;

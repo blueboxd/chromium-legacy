@@ -59,6 +59,7 @@ void DownloadManagerDelegate::CheckDownloadAllowed(
     const std::string& request_method,
     base::Optional<url::Origin> request_initiator,
     bool from_download_cross_origin_redirect,
+    bool content_initiated,
     CheckDownloadAllowedCallback check_download_allowed_cb) {
   // TODO: once hook up delegate callback, make sure sync run of it doesn't
   // crash and test it

@@ -63,6 +63,10 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kCanConsumeSystemKeysKey;
 
+// A property key to exclude the window in MruTracker.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kExcludeInMruKey;
+
 // A property key to indicate whether we should hide this window in overview
 // mode and Alt + Tab.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
@@ -117,6 +121,10 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 // source.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kForceVisibleInMiniViewKey;
+
+// A property key to tell if the window's opacity should be managed by WM.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kWindowManagerManagesOpacityKey;
 
 // A property key to store the window state the window had before entering PIP.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowStateType>* const
@@ -218,10 +226,6 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<WindowStateType>* const
 // A property key to indicate pip window state.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kWindowPipTypeKey;
-
-// A property key to exclude the window in MruTracker.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
-    kExcludeInMruKey;
 
 // Alphabetical sort.
 

@@ -122,6 +122,7 @@ void DownloadManagerDelegateImpl::CheckDownloadAllowed(
     const std::string& request_method,
     base::Optional<url::Origin> request_initiator,
     bool from_download_cross_origin_redirect,
+    bool content_initiated,
     content::CheckDownloadAllowedCallback check_download_allowed_cb) {
   // If there's no DownloadDelegate, the download is simply dropped.
   auto* delegate = GetDelegate(web_contents_getter.Run());

@@ -56,10 +56,9 @@ class GenericFileSystemTests(object):
         fs.chdir(self.orig_cwd)
 
     def teardown_generic_test_dir(self):
-        success = self.fs.remove_contents(self.generic_test_dir)
+        self.fs.rmtree(self.generic_test_dir)
         self.fs.chdir(self.orig_cwd)
         self.generic_test_dir = None
-        assert success
 
     def test_glob__trailing_asterisk(self):
         self.fs.chdir(self.generic_test_dir)
@@ -113,10 +112,10 @@ class GenericFileSystemTests(object):
 
     def test_rmtree(self):
         self.fs.chdir(self.generic_test_dir)
-        self.fs.rmtree('doesntexist')
+        self.fs.rmtree('foo')
         self.assertTrue(self.fs.exists('foodir'))
         self.assertTrue(self.fs.exists(self.fs.join('foodir', 'baz')))
-        self.fs.rmtree('foodir', ignore_errors=False)
+        self.fs.rmtree('foodir')
         self.assertFalse(self.fs.exists('foodir'))
         self.assertFalse(self.fs.exists(self.fs.join('foodir', 'baz')))
 
@@ -362,10 +361,3 @@ class RealFileSystemTest(unittest.TestCase, GenericFileSystemTests):
         content = self.fs.read_text_file(file2)
         self.fs.remove(file2)  # No exception should be raised.
         self.assertEqual(content, 'hello')
-
-        long_path1 = self.fs.join(self.generic_test_dir, 'a' * 100, 'b' * 100 + " 'b", 'c' * 100)
-        long_path2 = self.fs.join(long_path1, 'd' * 100)
-        self.fs.maybe_make_directory(long_path2)
-        file1 = self.fs.join(long_path2, 'foo')
-        self.fs.write_text_file(file1, 'hello')
-        self.fs.rmtree(long_path2, ignore_errors=False)

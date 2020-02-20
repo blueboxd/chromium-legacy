@@ -158,8 +158,8 @@ gfx::Rect BubbleFrameView::GetWindowBoundsForClientBounds(
 bool BubbleFrameView::GetClientMask(const gfx::Size& size, SkPath* path) const {
   // NonClientView calls this after setting the client view size from the return
   // of GetBoundsForClientView(); feeding it back in |size|.
-  DCHECK(GetBoundsForClientView().size() == size);
-  DCHECK(GetWidget()->client_view()->size() == size);
+  DCHECK_EQ(GetBoundsForClientView().size(), size);
+  DCHECK_EQ(GetWidget()->client_view()->size(), size);
 
   const int radius = bubble_border_->corner_radius();
   const gfx::Insets insets =

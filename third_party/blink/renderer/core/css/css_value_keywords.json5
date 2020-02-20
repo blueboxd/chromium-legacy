@@ -477,6 +477,8 @@
     "-webkit-isolate",
     "-webkit-isolate-override",
     "-webkit-plaintext",
+    "jis-b5",
+    "jis-b4",
     "landscape",
     "ledger",
     "legal",

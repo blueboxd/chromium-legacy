@@ -241,6 +241,7 @@ void DisplayItemList::Reset() {
   offsets_.shrink_to_fit();
   begin_paired_indices_.clear();
   begin_paired_indices_.shrink_to_fit();
+  has_draw_ops_ = false;
 }
 
 sk_sp<PaintRecord> DisplayItemList::ReleaseAsRecord() {

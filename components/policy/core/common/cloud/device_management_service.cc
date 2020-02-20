@@ -187,6 +187,9 @@ std::string DeviceManagementService::JobConfiguration::GetJobTypeAsString(
       return "PublicSamlUserRequest";
     case DeviceManagementService::JobConfiguration::TYPE_CHROME_OS_USER_REPORT:
       return "ChromeOsUserReport";
+    case DeviceManagementService::JobConfiguration::
+        TYPE_CERT_PROVISIONING_REQUEST:
+      return "CertProvisioningRequest";
   }
   NOTREACHED() << "Invalid job type " << type;
   return "";

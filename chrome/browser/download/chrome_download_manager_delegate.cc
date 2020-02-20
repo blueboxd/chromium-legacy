@@ -1360,6 +1360,7 @@ void ChromeDownloadManagerDelegate::CheckDownloadAllowed(
     const std::string& request_method,
     base::Optional<url::Origin> request_initiator,
     bool from_download_cross_origin_redirect,
+    bool content_initiated,
     content::CheckDownloadAllowedCallback check_download_allowed_cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CanDownloadCallback cb = base::BindOnce(

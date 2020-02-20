@@ -12,28 +12,43 @@ import {BrowserProxy} from './browser_proxy_interface.js';
  */
 class ChromeAppBrowserProxy {
   /** @override */
-  getVolumeList(callback) {
-    chrome.fileSystem.getVolumeList(callback);
+  async getVolumeList() {
+    try {
+      // Await here to handle the case if it is rejected.
+      return await util.promisify(chrome.fileSystem.getVolumeList)();
+    } catch (e) {
+      console.error('Failed to get volume list', e);
+      return null;
+    }
   }
 
   /** @override */
-  requestFileSystem(options, callback) {
-    chrome.fileSystem.requestFileSystem(options, callback);
+  async requestFileSystem(options) {
+    try {
+      // Await here to handle the case if it is rejected.
+      return await util.promisify(chrome.fileSystem.requestFileSystem)(options);
+    } catch (e) {
+      console.error('Failed to request file system', e);
+      return null;
+    }
   }
 
   /** @override */
-  localStorageGet(keys, callback) {
-    chrome.storage.local.get(keys, callback);
+  localStorageGet(keys) {
+    return util.promisify(chrome.storage.local.get.bind(chrome.storage.local))(
+        keys);
   }
 
   /** @override */
-  localStorageSet(items, callback) {
-    chrome.storage.local.set(items, callback);
+  localStorageSet(items) {
+    return util.promisify(chrome.storage.local.set.bind(chrome.storage.local))(
+        items);
   }
 
   /** @override */
-  localStorageRemove(items, callback) {
-    chrome.storage.local.remove(items, callback);
+  localStorageRemove(items) {
+    return util.promisify(
+        chrome.storage.local.remove.bind(chrome.storage.local))(items);
   }
 
   /** @override */

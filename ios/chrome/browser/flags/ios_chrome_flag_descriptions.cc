@@ -411,10 +411,6 @@ const char kWalletServiceUseSandboxName[] = "Use Google Payments sandbox";
 const char kWalletServiceUseSandboxDescription[] =
     "Uses the sandbox service for Google Payments API calls.";
 
-const char kWebClearBrowsingDataName[] = "Web-API for browsing data";
-const char kWebClearBrowsingDataDescription[] =
-    "When enabled the Clear Browsing Data feature is using the web API.";
-
 const char kWebPageTextAccessibilityName[] =
     "Enable text accessibility in web pages";
 const char kWebPageTextAccessibilityDescription[] =

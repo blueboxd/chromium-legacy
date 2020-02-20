@@ -43,6 +43,9 @@
 #include "cc/trees/scroll_node.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "mojo/public/cpp/system/data_pipe_drainer.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "skia/public/mojom/skcolor.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,6 +54,8 @@
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom-blink.h"
+#include "third_party/blink/public/mojom/blob/data_element.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/find_in_page.mojom-blink.h"
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
@@ -158,6 +163,7 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
+#include "third_party/blink/renderer/platform/blob/testing/fake_blob.h"
 #include "third_party/blink/renderer/platform/cursor.h"
 #include "third_party/blink/renderer/platform/exported/wrapped_resource_request.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -10946,23 +10952,117 @@ TEST(WebFrameGlobalReuseTest, ReuseForMainFrameIfEnabled) {
                              .ToLocalChecked()));
 }
 
-class SaveImageFromDataURLWebFrameClient
-    : public frame_test_helpers::TestWebFrameClient {
+// This class intercepts the registration of Blob instances.
+//
+// Given that the content of the Blob is known (data URL)
+// it gets the data from the DataElement's BytesProvider, and creates
+// FakeBlob's accordingly.
+class BlobRegistryForSaveImageFromDataURL : public mojom::blink::BlobRegistry {
  public:
-  SaveImageFromDataURLWebFrameClient() = default;
-  ~SaveImageFromDataURLWebFrameClient() override = default;
+  void Register(mojo::PendingReceiver<mojom::blink::Blob> blob,
+                const String& uuid,
+                const String& content_type,
+                const String& content_disposition,
+                Vector<mojom::blink::DataElementPtr> elements,
+                RegisterCallback callback) override {
+    DCHECK_EQ(elements.size(), 1u);
+    DCHECK(elements[0]->is_bytes());
 
-  // WebLocalFrameClient:
-  void SaveImageFromDataURL(const WebString& data_url) override {
-    data_url_ = data_url;
+    auto& element0 = elements[0];
+    const auto& bytes = element0->get_bytes();
+    auto length = bytes->length;
+    String body(reinterpret_cast<const char*>(bytes->embedded_data->data()),
+                static_cast<uint32_t>(length));
+    mojo::MakeSelfOwnedReceiver(std::make_unique<FakeBlob>(uuid, body),
+                                std::move(blob));
+    std::move(callback).Run();
   }
 
-  // Local methods
-  const WebString& Result() const { return data_url_; }
-  void Reset() { data_url_ = WebString(); }
+  void RegisterFromStream(
+      const String& content_type,
+      const String& content_disposition,
+      uint64_t expected_length,
+      mojo::ScopedDataPipeConsumerHandle,
+      mojo::PendingAssociatedRemote<mojom::blink::ProgressClient>,
+      RegisterFromStreamCallback) override {
+    NOTREACHED();
+  }
+
+  void GetBlobFromUUID(mojo::PendingReceiver<mojom::blink::Blob>,
+                       const String& uuid,
+                       GetBlobFromUUIDCallback) override {
+    NOTREACHED();
+  }
+
+  void URLStoreForOrigin(
+      const scoped_refptr<const SecurityOrigin>&,
+      mojo::PendingAssociatedReceiver<mojom::blink::BlobURLStore>) override {
+    NOTREACHED();
+  }
+};
+
+// blink::mojom::LocalFrameHost instance that intecepts DownloadURL() mojo
+// calls and reads the blob data URL sent by the renderer accordingly.
+class TestLocalFrameHostForSaveImageFromDataURL : public FakeLocalFrameHost {
+ public:
+  TestLocalFrameHostForSaveImageFromDataURL()
+      : blob_registry_receiver_(
+            &blob_registry_,
+            blob_registry_remote_.BindNewPipeAndPassReceiver()) {
+    BlobDataHandle::SetBlobRegistryForTesting(blob_registry_remote_.get());
+  }
+  ~TestLocalFrameHostForSaveImageFromDataURL() override {
+    BlobDataHandle::SetBlobRegistryForTesting(nullptr);
+  }
+
+  // FakeLocalFrameHost:
+  void DownloadURL(mojom::blink::DownloadURLParamsPtr params) override {
+    mojo::PendingRemote<mojom::blink::Blob> blob_data_remote(
+        std::move(params->data_url_blob), mojom::blink::Blob::Version_);
+
+    mojo::Remote<mojom::blink::Blob> blob(std::move(blob_data_remote));
+    mojo::ScopedDataPipeProducerHandle producer_handle;
+    mojo::ScopedDataPipeConsumerHandle consumer_handle;
+    auto result =
+        mojo::CreateDataPipe(nullptr, &producer_handle, &consumer_handle);
+    DCHECK(result == MOJO_RESULT_OK);
+
+    blob->ReadAll(std::move(producer_handle), mojo::NullRemote());
+
+    DataPipeDrainerClient client(&data_url_);
+    auto data_pipe_drainer = std::make_unique<mojo::DataPipeDrainer>(
+        &client, std::move(consumer_handle));
+    client.Run();
+  }
+
+  const String& Result() const { return data_url_; }
+  void Reset() { data_url_ = String(); }
 
  private:
-  WebString data_url_;
+  // Helper class to copy a blob to a string.
+  class DataPipeDrainerClient : public mojo::DataPipeDrainer::Client {
+   public:
+    explicit DataPipeDrainerClient(String* output)
+        : run_loop_(base::RunLoop::Type::kNestableTasksAllowed),
+          output_(output) {}
+    void Run() { run_loop_.Run(); }
+
+    void OnDataAvailable(const void* data, size_t num_bytes) override {
+      *output_ = String(reinterpret_cast<const char*>(data), num_bytes);
+    }
+    void OnDataComplete() override { run_loop_.Quit(); }
+
+   private:
+    base::RunLoop run_loop_;
+    String* output_;
+  };
+
+  BlobRegistryForSaveImageFromDataURL blob_registry_;
+  mojo::Remote<mojom::blink::BlobRegistry> blob_registry_remote_;
+  mojo::Receiver<mojom::blink::BlobRegistry> blob_registry_receiver_;
+
+  // Data URL retrieved from the blob.
+  String data_url_;
 };
 
 TEST_F(WebFrameTest, SaveImageAt) {
@@ -10973,37 +11073,50 @@ TEST_F(WebFrameTest, SaveImageAt) {
   url_test_helpers::RegisterMockedURLLoad(
       ToKURL("http://test"), test::CoreTestDataPath("white-1x1.png"));
 
-  frame_test_helpers::WebViewHelper helper;
-  SaveImageFromDataURLWebFrameClient client;
-  WebViewImpl* web_view = helper.InitializeAndLoad(url, &client);
+  TestLocalFrameHostForSaveImageFromDataURL frame_host;
+  frame_test_helpers::TestWebFrameClient web_frame_client;
+  frame_host.Init(web_frame_client.GetRemoteNavigationAssociatedInterfaces());
+  frame_test_helpers::WebViewHelper web_view_helper;
+  RunPendingTasks();
+
+  WebViewImpl* web_view =
+      web_view_helper.InitializeAndLoad(url, &web_frame_client);
   web_view->MainFrameWidget()->Resize(WebSize(400, 400));
   UpdateAllLifecyclePhases(web_view);
 
   LocalFrame* local_frame = To<LocalFrame>(web_view->GetPage()->MainFrame());
 
-  client.Reset();
+  frame_host.Reset();
   local_frame->SaveImageAt(gfx::Point(1, 1));
-  EXPECT_EQ(
-      WebString::FromUTF8("data:image/gif;base64"
-                          ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
-      client.Result());
+  // Note that in this test does not use RunPendingTasks() since
+  // TestLocalFrameHostForSaveImageFromDataURL trigger its own loops, so nesting
+  // must be allowed.
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
 
-  client.Reset();
+  EXPECT_EQ(
+      String::FromUTF8("data:image/gif;base64"
+                       ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
+      frame_host.Result());
+
+  frame_host.Reset();
+
   local_frame->SaveImageAt(gfx::Point(1, 2));
-  EXPECT_EQ(WebString(), client.Result());
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
+  EXPECT_EQ(String(), frame_host.Result());
 
   web_view->SetPageScaleFactor(4);
   web_view->SetVisualViewportOffset(gfx::PointF(1, 1));
 
-  client.Reset();
+  frame_host.Reset();
   local_frame->SaveImageAt(gfx::Point(3, 3));
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
   EXPECT_EQ(
-      WebString::FromUTF8("data:image/gif;base64"
-                          ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
-      client.Result());
+      String::FromUTF8("data:image/gif;base64"
+                       ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
+      frame_host.Result());
 
   // Explicitly reset to break dependency on locally scoped client.
-  helper.Reset();
+  web_view_helper.Reset();
 }
 
 TEST_F(WebFrameTest, SaveImageWithImageMap) {
@@ -11012,65 +11125,76 @@ TEST_F(WebFrameTest, SaveImageWithImageMap) {
   // via the WebViewHelper instance in each test case.
   RegisterMockedURLLoadFromBase(base_url_, "image-map.html");
 
+  TestLocalFrameHostForSaveImageFromDataURL frame_host;
   frame_test_helpers::WebViewHelper helper;
-  SaveImageFromDataURLWebFrameClient client;
+  frame_test_helpers::TestWebFrameClient client;
+  frame_host.Init(client.GetRemoteNavigationAssociatedInterfaces());
   WebViewImpl* web_view = helper.InitializeAndLoad(url, &client);
   web_view->MainFrameWidget()->Resize(WebSize(400, 400));
+  RunPendingTasks();
 
   LocalFrame* local_frame = To<LocalFrame>(web_view->GetPage()->MainFrame());
 
-  client.Reset();
+  frame_host.Reset();
   local_frame->SaveImageAt(gfx::Point(25, 25));
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
   EXPECT_EQ(
-      WebString::FromUTF8("data:image/gif;base64"
-                          ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
-      client.Result());
+      String::FromUTF8("data:image/gif;base64"
+                       ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
+      frame_host.Result());
 
-  client.Reset();
+  frame_host.Reset();
   local_frame->SaveImageAt(gfx::Point(75, 25));
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
   EXPECT_EQ(
-      WebString::FromUTF8("data:image/gif;base64"
-                          ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
-      client.Result());
+      String::FromUTF8("data:image/gif;base64"
+                       ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
+      frame_host.Result());
 
-  client.Reset();
+  frame_host.Reset();
   local_frame->SaveImageAt(gfx::Point(125, 25));
-  EXPECT_EQ(WebString(), client.Result());
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
+  EXPECT_EQ(String(), frame_host.Result());
 
   // Explicitly reset to break dependency on locally scoped client.
   helper.Reset();
 }
 
 TEST_F(WebFrameTest, CopyImageWithImageMap) {
-  SaveImageFromDataURLWebFrameClient client;
-
   std::string url = base_url_ + "image-map.html";
   // TODO(crbug.com/751425): We should use the mock functionality
   // via the WebViewHelper instance in each test case.
   RegisterMockedURLLoadFromBase(base_url_, "image-map.html");
 
+  TestLocalFrameHostForSaveImageFromDataURL frame_host;
   frame_test_helpers::WebViewHelper helper;
+  frame_test_helpers::TestWebFrameClient client;
+  frame_host.Init(client.GetRemoteNavigationAssociatedInterfaces());
   WebViewImpl* web_view = helper.InitializeAndLoad(url, &client);
   web_view->MainFrameWidget()->Resize(WebSize(400, 400));
+  RunPendingTasks();
 
-  client.Reset();
+  frame_host.Reset();
   LocalFrame* local_frame = To<LocalFrame>(web_view->GetPage()->MainFrame());
   local_frame->SaveImageAt(gfx::Point(25, 25));
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
   EXPECT_EQ(
-      WebString::FromUTF8("data:image/gif;base64"
-                          ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
-      client.Result());
+      String::FromUTF8("data:image/gif;base64"
+                       ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
+      frame_host.Result());
 
-  client.Reset();
+  frame_host.Reset();
   local_frame->SaveImageAt(gfx::Point(75, 25));
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
   EXPECT_EQ(
-      WebString::FromUTF8("data:image/gif;base64"
-                          ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
-      client.Result());
+      String::FromUTF8("data:image/gif;base64"
+                       ",R0lGODlhAQABAIAAAAUEBAAAACwAAAAAAQABAAACAkQBADs="),
+      frame_host.Result());
 
-  client.Reset();
+  frame_host.Reset();
   local_frame->SaveImageAt(gfx::Point(125, 25));
-  EXPECT_EQ(WebString(), client.Result());
+  base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).RunUntilIdle();
+  EXPECT_EQ(String(), frame_host.Result());
   // Explicitly reset to break dependency on locally scoped client.
   helper.Reset();
 }

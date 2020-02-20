@@ -2185,6 +2185,15 @@ bool WebLocalFrameImpl::IsClientNavigationInitialHistoryLoad() {
   return GetFrame()->Loader().IsClientNavigationInitialHistoryLoad();
 }
 
+void WebLocalFrameImpl::DownloadURL(
+    const WebURLRequest& request,
+    network::mojom::blink::RedirectMode cross_origin_redirect_behavior,
+    mojo::ScopedMessagePipeHandle blob_url_token) {
+  GetFrame()->DownloadURL(request.ToResourceRequest(),
+                          cross_origin_redirect_behavior,
+                          std::move(blob_url_token));
+}
+
 bool WebLocalFrameImpl::WillStartNavigation(
     const WebNavigationInfo& info,
     bool is_history_navigation_in_new_child_frame) {

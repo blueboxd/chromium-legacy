@@ -83,6 +83,13 @@ void ScriptedAnimationController::DispatchEventsAndCallbacksForPrinting() {
   CallMediaQueryListListeners();
 }
 
+void ScriptedAnimationController::ScheduleVideoRafExecution(
+    VideoRafExecutionCallback video_raf_callback) {
+  DCHECK(RuntimeEnabledFeatures::VideoRequestAnimationFrameEnabled());
+  video_raf_queue_.push_back(std::move(video_raf_callback));
+  ScheduleAnimationIfNeeded();
+}
+
 ScriptedAnimationController::CallbackId
 ScriptedAnimationController::RegisterFrameCallback(
     FrameRequestCallbackCollection::FrameCallback* callback) {
@@ -96,7 +103,7 @@ void ScriptedAnimationController::CancelFrameCallback(CallbackId id) {
 }
 
 bool ScriptedAnimationController::HasFrameCallback() const {
-  return callback_collection_.HasFrameCallback();
+  return callback_collection_.HasFrameCallback() || !video_raf_queue_.IsEmpty();
 }
 
 ScriptedAnimationController::CallbackId
@@ -152,6 +159,17 @@ void ScriptedAnimationController::DispatchEvents(
   }
 }
 
+void ScriptedAnimationController::ExecuteVideoRafCallbacks() {
+  // dispatchEvents() runs script which can cause the document to be destroyed.
+  if (!GetDocument())
+    return;
+
+  Vector<VideoRafExecutionCallback> video_raf_callbacks;
+  video_raf_queue_.swap(video_raf_callbacks);
+  for (auto& callback : video_raf_callbacks)
+    std::move(callback).Run(current_frame_time_ms_);
+}
+
 void ScriptedAnimationController::ExecuteFrameCallbacks() {
   // dispatchEvents() runs script which can cause the document to be destroyed.
   if (!GetDocument())
@@ -173,7 +191,7 @@ void ScriptedAnimationController::CallMediaQueryListListeners() {
 bool ScriptedAnimationController::HasScheduledFrameTasks() const {
   return callback_collection_.HasFrameCallback() || !task_queue_.IsEmpty() ||
          !event_queue_.IsEmpty() || !media_query_list_listeners_.IsEmpty() ||
-         GetDocument()->HasAutofocusCandidates();
+         GetDocument()->HasAutofocusCandidates() || !video_raf_queue_.IsEmpty();
 }
 
 void ScriptedAnimationController::ServiceScriptedAnimations(
@@ -225,6 +243,12 @@ void ScriptedAnimationController::ServiceScriptedAnimations(
   // 10.10. For each fully active Document in docs, run the fullscreen
   // steps for that Document, passing in now as the timestamp.
   RunTasks();
+
+  if (RuntimeEnabledFeatures::VideoRequestAnimationFrameEnabled()) {
+    // Run the HTMLVideoELement.requestAnimationFrame() callbacks.
+    // See https://wicg.github.io/video-raf/.
+    ExecuteVideoRafCallbacks();
+  }
 
   // 10.11. For each fully active Document in docs, run the animation
   // frame callbacks for that Document, passing in now as the timestamp.

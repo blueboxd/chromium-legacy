@@ -219,6 +219,14 @@ class WebLocalFrame : public WebFrame {
   // the referrer for a HTTP request).
   virtual void SetReferrerForRequest(WebURLRequest&, const WebURL&) = 0;
 
+  // The frame should handle the request as a download.
+  // If the request is for a blob: URL, a BlobURLToken should be provided
+  // as |blob_url_token| to ensure the correct blob gets downloaded.
+  virtual void DownloadURL(
+      const WebURLRequest& request,
+      network::mojom::RedirectMode cross_origin_redirect_behavior,
+      mojo::ScopedMessagePipeHandle blob_url_token) = 0;
+
   // Navigation State -------------------------------------------------------
 
   // Returns true if there is a pending redirect or location change

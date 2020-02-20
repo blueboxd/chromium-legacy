@@ -291,16 +291,6 @@ class BLINK_EXPORT WebLocalFrameClient {
                                       unsigned source_line,
                                       const WebString& stack_trace) {}
 
-  // Load commands -------------------------------------------------------
-
-  // The client should handle the request as a download.
-  // If the request is for a blob: URL, a BlobURLToken should be provided
-  // as |blob_url_token| to ensure the correct blob gets downloaded.
-  virtual void DownloadURL(
-      const WebURLRequest&,
-      network::mojom::RedirectMode cross_origin_redirect_behavior,
-      mojo::ScopedMessagePipeHandle blob_url_token) {}
-
   // Navigational queries ------------------------------------------------
 
   // Requests the client to begin a navigation for this frame.
@@ -471,10 +461,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Shows a context menu with commands relevant to a specific element on
   // the given frame. Additional context data is supplied.
   virtual void ShowContextMenu(const WebContextMenuData&) {}
-
-  // This method is called in response to WebView's saveImageAt(x, y).
-  // A data url from <canvas> or <img> is passed to the method's argument.
-  virtual void SaveImageFromDataURL(const WebString&) {}
 
   // Called when the frame rects changed.
   virtual void FrameRectsChanged(const WebRect&) {}

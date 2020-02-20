@@ -716,10 +716,6 @@ const char kEnablePortalsCrossOriginDescription[] =
     "Allows portals to load cross-origin URLs in addition to same-origin ones."
     " Has no effect if Portals are not enabled.";
 
-const char kEnableOutOfBlinkCorsName[] = "Out of blink CORS";
-const char kEnableOutOfBlinkCorsDescription[] =
-    "CORS handling logic is moved out of blink.";
-
 const char kCrossOriginIsolationName[] = "Cross Origin Isolation";
 const char kCrossOriginIsolationDescription[] =
     "Enable Cross Origin Opener Policy and Cross Origin Embedder Policy.";

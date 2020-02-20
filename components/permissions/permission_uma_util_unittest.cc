@@ -44,9 +44,8 @@ TEST_F(PermissionUmaUtilTest, ScopedevocationReporter) {
     map->SetContentSettingDefaultScope(host, host, type, std::string(),
                                        CONTENT_SETTING_BLOCK);
   }
-  histograms.ExpectBucketCount(
-      "Permissions.Action.Geolocation",
-      static_cast<int>(permissions::PermissionAction::REVOKED), 1);
+  histograms.ExpectBucketCount("Permissions.Action.Geolocation",
+                               static_cast<int>(PermissionAction::REVOKED), 1);
 
   // Block->Allow does not trigger a revocation.
   {
@@ -55,9 +54,8 @@ TEST_F(PermissionUmaUtilTest, ScopedevocationReporter) {
     map->SetContentSettingDefaultScope(host, host, type, std::string(),
                                        CONTENT_SETTING_ALLOW);
   }
-  histograms.ExpectBucketCount(
-      "Permissions.Action.Geolocation",
-      static_cast<int>(permissions::PermissionAction::REVOKED), 1);
+  histograms.ExpectBucketCount("Permissions.Action.Geolocation",
+                               static_cast<int>(PermissionAction::REVOKED), 1);
 
   // Allow->Default triggers a revocation when default is 'ask'.
   map->SetDefaultContentSetting(type, CONTENT_SETTING_ASK);
@@ -67,9 +65,8 @@ TEST_F(PermissionUmaUtilTest, ScopedevocationReporter) {
     map->SetContentSettingDefaultScope(host, host, type, std::string(),
                                        CONTENT_SETTING_DEFAULT);
   }
-  histograms.ExpectBucketCount(
-      "Permissions.Action.Geolocation",
-      static_cast<int>(permissions::PermissionAction::REVOKED), 2);
+  histograms.ExpectBucketCount("Permissions.Action.Geolocation",
+                               static_cast<int>(PermissionAction::REVOKED), 2);
 
   // Allow->Default does not trigger a revocation when default is 'allow'.
   map->SetDefaultContentSetting(type, CONTENT_SETTING_ALLOW);
@@ -79,9 +76,8 @@ TEST_F(PermissionUmaUtilTest, ScopedevocationReporter) {
     map->SetContentSettingDefaultScope(host, host, type, std::string(),
                                        CONTENT_SETTING_DEFAULT);
   }
-  histograms.ExpectBucketCount(
-      "Permissions.Action.Geolocation",
-      static_cast<int>(permissions::PermissionAction::REVOKED), 2);
+  histograms.ExpectBucketCount("Permissions.Action.Geolocation",
+                               static_cast<int>(PermissionAction::REVOKED), 2);
 
   // Allow->Block with url pattern string triggers a revocation.
   map->SetContentSettingDefaultScope(host, host, type, std::string(),
@@ -92,9 +88,8 @@ TEST_F(PermissionUmaUtilTest, ScopedevocationReporter) {
     map->SetContentSettingCustomScope(host_pattern, host_pattern, type,
                                       std::string(), CONTENT_SETTING_BLOCK);
   }
-  histograms.ExpectBucketCount(
-      "Permissions.Action.Geolocation",
-      static_cast<int>(permissions::PermissionAction::REVOKED), 3);
+  histograms.ExpectBucketCount("Permissions.Action.Geolocation",
+                               static_cast<int>(PermissionAction::REVOKED), 3);
 
   // Allow->Block with non url pattern string does not trigger a revocation.
   map->SetContentSettingDefaultScope(host, host, type, std::string(),
@@ -107,9 +102,8 @@ TEST_F(PermissionUmaUtilTest, ScopedevocationReporter) {
                                       host_pattern, type, std::string(),
                                       CONTENT_SETTING_BLOCK);
   }
-  histograms.ExpectBucketCount(
-      "Permissions.Action.Geolocation",
-      static_cast<int>(permissions::PermissionAction::REVOKED), 3);
+  histograms.ExpectBucketCount("Permissions.Action.Geolocation",
+                               static_cast<int>(PermissionAction::REVOKED), 3);
 }
 
 }  // namespace permissions

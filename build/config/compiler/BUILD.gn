@@ -1522,9 +1522,6 @@ config("default_warnings") {
           # TODO(https://crbug.com/1028110): Evaluate and possible enable.
           "-Wno-deprecated-copy",
 
-          # TODO(https://crbug.com/1031169): Clean up and enable.
-          "-Wno-misleading-indentation",
-
           # TODO(https://crbug.com/1039697): Evaluate and possibly enable.
           "-Wno-range-loop-analysis",
         ]
@@ -1533,6 +1530,13 @@ config("default_warnings") {
           cflags += [
             # TODO(https://crbug.com/1016947) Clean up, enable.
             "-Wno-bitwise-conditional-parentheses",
+          ]
+        }
+
+        if (is_ios || is_chromeos || is_chromecast) {
+          cflags += [
+            # TODO(https://crbug.com/1031169): Clean up and enable.
+            "-Wno-misleading-indentation",
           ]
         }
 
@@ -1675,6 +1679,12 @@ config("no_chromium_code") {
       # suppressing them individually, we just blanket suppress them here.
       "-Wno-unused-variable",
     ]
+    if (!is_nacl && (current_toolchain == host_toolchain || !use_xcode_clang)) {
+      cflags += [
+        # TODO(https://crbug.com/1031169): Clean up and enable.
+        "-Wno-misleading-indentation",
+      ]
+    }
   }
 
   configs = [ ":default_warnings" ]

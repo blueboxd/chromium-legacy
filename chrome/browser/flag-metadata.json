@@ -2265,7 +2265,7 @@
   {
     "name": "files-ng",
     "owners": [ "adanilo", "noel" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "files-unified-media-view",
@@ -2275,7 +2275,7 @@
   {
     "name": "fill-on-account-select",
     "owners": [ "jdoerrie" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 87
   },
   {
     "name": "focus-mode",
@@ -2397,7 +2397,7 @@
   {
     "name": "google-password-manager",
     "owners": [ "ioanap", "jdoerrie" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 87
   },
   {
     "name": "handwriting-gesture",
@@ -2989,11 +2989,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "out-of-blink-cors",
-    "owners": [ "toyoshim" ],
-    "expiry_milestone": 82
-  },
-  {
     "name": "overlay-new-layout",
     "owners": [ "donnd", "jinsukkim", "contextual-search-eng" ],
     "expiry_milestone": 81
@@ -3478,7 +3473,7 @@
   {
     "name": "sync-error-infobar",
     "owners": [ "triploblastic", "bsazonov" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "sync-setup-friendly-settings",
@@ -3569,7 +3564,7 @@
   {
     "name": "touch-to-fill",
     "owners": [ "jdoerrie" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 87
   },
   {
     "name": "touchpad-overscroll-history-navigation",

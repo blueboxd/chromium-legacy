@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
+#include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_impl.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -58,6 +59,12 @@ class CORE_EXPORT ScriptedAnimationController
     return "ScriptedAnimationController";
   }
 
+  // Runs all the video.requestAnimationFrame() callbacks associated with one
+  // HTMLVideoElement. |double| is the current frame time in milliseconds
+  // (e.g. |current_frame_time_ms_|), to be passed as the "now" parameter
+  // when running the callbacks.
+  using VideoRafExecutionCallback = base::OnceCallback<void(double)>;
+
   // Animation frame callbacks are used for requestAnimationFrame().
   typedef int CallbackId;
   CallbackId RegisterFrameCallback(
@@ -69,6 +76,10 @@ class CORE_EXPORT ScriptedAnimationController
   CallbackId RegisterPostFrameCallback(
       FrameRequestCallbackCollection::FrameCallback*);
   void CancelPostFrameCallback(CallbackId);
+
+  // Queues up the execution of video.requestAnimationFrame() callbacks for a
+  // specific HTMLVideoELement, as part of the next rendering steps.
+  void ScheduleVideoRafExecution(VideoRafExecutionCallback);
 
   // Animation frame events are used for resize events, scroll events, etc.
   void EnqueueEvent(Event*);
@@ -101,6 +112,7 @@ class CORE_EXPORT ScriptedAnimationController
   void DispatchEvents(
       const AtomicString& event_interface_filter = AtomicString());
   void ExecuteFrameCallbacks();
+  void ExecuteVideoRafCallbacks();
   void CallMediaQueryListListeners();
 
   bool HasScheduledFrameTasks() const;
@@ -112,6 +124,7 @@ class CORE_EXPORT ScriptedAnimationController
 
   FrameRequestCallbackCollection callback_collection_;
   Vector<base::OnceClosure> task_queue_;
+  Vector<VideoRafExecutionCallback> video_raf_queue_;
   HeapVector<Member<Event>> event_queue_;
   using PerFrameEventsMap =
       HeapHashMap<Member<const EventTarget>, HashSet<const StringImpl*>>;

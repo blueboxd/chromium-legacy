@@ -1266,48 +1266,6 @@ void HTMLSelectElement::ResetImpl() {
   SetNeedsValidityCheck();
 }
 
-bool HTMLSelectElement::HandlePopupOpenKeyboardEvent(const Event& event) {
-  focus();
-  // Calling focus() may cause us to lose our layoutObject. Return true so
-  // that our caller doesn't process the event further, but don't set
-  // the event as handled.
-  if (!GetLayoutObject() || !UsesMenuList() || IsDisabledFormControl())
-    return false;
-  // Save the selection so it can be compared to the new selection when
-  // dispatching change events during selectOption, which gets called from
-  // selectOptionByPopup, which gets called after the user makes a selection
-  // from the menu.
-  SaveLastSelection();
-  ShowPopup();
-  return true;
-}
-
-bool HTMLSelectElement::ShouldOpenPopupForKeyDownEvent(
-    const KeyboardEvent& key_event) {
-  const String& key = key_event.key();
-  LayoutTheme& layout_theme = LayoutTheme::GetTheme();
-
-  if (IsSpatialNavigationEnabled(GetDocument().GetFrame()))
-    return false;
-
-  return ((layout_theme.PopsMenuByArrowKeys() &&
-           (key == "ArrowDown" || key == "ArrowUp")) ||
-          (layout_theme.PopsMenuByAltDownUpOrF4Key() &&
-           (key == "ArrowDown" || key == "ArrowUp") && key_event.altKey()) ||
-          (layout_theme.PopsMenuByAltDownUpOrF4Key() &&
-           (!key_event.altKey() && !key_event.ctrlKey() && key == "F4")));
-}
-
-bool HTMLSelectElement::ShouldOpenPopupForKeyPressEvent(
-    const KeyboardEvent& event) {
-  LayoutTheme& layout_theme = LayoutTheme::GetTheme();
-  int key_code = event.keyCode();
-
-  return ((layout_theme.PopsMenuBySpaceKey() && key_code == ' ' &&
-           !type_ahead_.HasActiveSession(event)) ||
-          (layout_theme.PopsMenuByReturnKey() && key_code == '\r'));
-}
-
 void HTMLSelectElement::SetPopupIsVisible(bool popup_is_visible) {
   popup_is_visible_ = popup_is_visible;
   if (::features::IsFormControlsRefreshEnabled() && GetLayoutObject()) {

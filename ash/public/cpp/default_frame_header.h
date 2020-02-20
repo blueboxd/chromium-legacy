@@ -48,6 +48,9 @@ class ASH_PUBLIC_EXPORT DefaultFrameHeader : public FrameHeader {
  private:
   FRIEND_TEST_ALL_PREFIXES(DefaultFrameHeaderTest, FrameColors);
 
+  // Returns the window of the target widget.
+  aura::Window* GetTargetWindow();
+
   gfx::SlideAnimation* GetAnimationForActiveFrameColorForTest();
   SkColor GetActiveFrameColorForPaintForTest();
 

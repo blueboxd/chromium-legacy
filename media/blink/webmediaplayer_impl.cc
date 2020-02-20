@@ -2726,7 +2726,7 @@ void WebMediaPlayerImpl::StartPipeline() {
 
 #if BUILDFLAG(ENABLE_FFMPEG)
     Demuxer::MediaTracksUpdatedCB media_tracks_updated_cb =
-        BindToCurrentLoop(base::Bind(
+        BindToCurrentLoop(base::BindRepeating(
             &WebMediaPlayerImpl::OnFFmpegMediaTracksUpdated, weak_this_));
 
     demuxer_ = std::make_unique<FFmpegDemuxer>(
@@ -2814,9 +2814,6 @@ scoped_refptr<VideoFrame> WebMediaPlayerImpl::GetCurrentFrameFromCompositor()
     const {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   TRACE_EVENT0("media", "WebMediaPlayerImpl::GetCurrentFrameFromCompositor");
-
-  if (current_frame_override_)
-    return current_frame_override_;
 
   // Can be null.
   scoped_refptr<VideoFrame> video_frame =
@@ -3334,11 +3331,9 @@ void WebMediaPlayerImpl::OnNewFramePresentedCallback(
     base::TimeTicks presentation_time,
     base::TimeTicks expected_presentation_time,
     uint32_t presentation_counter) {
-  current_frame_override_ = std::move(presented_frame);
-  client_->OnRequestAnimationFrame(
-      presentation_time, expected_presentation_time, presentation_counter,
-      *current_frame_override_);
-  current_frame_override_.reset();
+  client_->OnRequestAnimationFrame(presentation_time,
+                                   expected_presentation_time,
+                                   presentation_counter, *presented_frame);
 }
 
 base::WeakPtr<blink::WebMediaPlayer> WebMediaPlayerImpl::AsWeakPtr() {
@@ -3694,11 +3689,6 @@ void WebMediaPlayerImpl::OnSimpleWatchTimerTick() {
 
 GURL WebMediaPlayerImpl::GetSrcAfterRedirects() {
   return mb_data_source_ ? mb_data_source_->GetUrlAfterRedirects() : GURL();
-}
-
-void WebMediaPlayerImpl::SetCurrentFrameOverrideForTesting(
-    scoped_refptr<VideoFrame> current_frame_override) {
-  current_frame_override_ = current_frame_override;
 }
 
 void WebMediaPlayerImpl::UpdateSmoothnessHelper() {

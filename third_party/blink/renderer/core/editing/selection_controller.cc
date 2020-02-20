@@ -313,8 +313,9 @@ bool SelectionController::HandleSingleClick(
 
   DCHECK(!frame_->GetDocument()->NeedsLayoutTreeUpdate());
   Node* inner_node = event.InnerNode();
-  if (!(inner_node && inner_node->GetLayoutObject() &&
-        mouse_down_may_start_select_))
+  Node* inner_pseudo = event.GetHitTestResult().InnerPossiblyPseudoNode();
+  if (!(inner_node && inner_node->GetLayoutObject() && inner_pseudo &&
+        inner_pseudo->GetLayoutObject() && mouse_down_may_start_select_))
     return false;
 
   // Extend the selection if the Shift key is down, unless the click is in a

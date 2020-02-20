@@ -79,6 +79,7 @@ static_assert(base::size(kBlacklistedCameraNames) == BLACKLISTED_CAMERA_MAX + 1,
               "kBlacklistedCameraNames should be same size as "
               "BlacklistedCameraNames enum");
 
+// Use this list only for USB webcams.
 const char* const kModelIdsBlacklistedForMediaFoundation[] = {
     // Devices using Empia 2860 or 2820 chips, see https://crbug.com/849636.
     "eb1a:2860", "eb1a:2820", "1ce6:2820",
@@ -100,7 +101,10 @@ const char* const kModelIdsBlacklistedForMediaFoundation[] = {
     // RBG/IR camera for Windows Hello Face Auth. See https://crbug.com/984864.
     "13d3:5257",
     // Acer Aspire f5-573g. See https://crbug.com/1034644.
-    "0bda:57f2",
+    "0bda:57f2"};
+
+// Use this list only for non-USB webcams.
+const char* const kDisplayNamesBlacklistedForMediaFoundation[] = {
     // VMware Virtual Webcams cause hangs when there is no physical Webcam.
     // See https://crbug.com/1044974.
     "VMware Virtual Webcam"};
@@ -125,6 +129,12 @@ bool IsDeviceBlacklistedForQueryingDetailedFrameRates(
 bool IsDeviceBlacklistedForMediaFoundationByModelId(
     const std::string& model_id) {
   return base::Contains(kModelIdsBlacklistedForMediaFoundation, model_id);
+}
+
+bool IsDeviceBlacklistedForMediaFoundationByDisplayName(
+    const std::string& display_name) {
+  return base::Contains(kDisplayNamesBlacklistedForMediaFoundation,
+                        display_name);
 }
 
 bool LoadMediaFoundationDlls() {
@@ -650,13 +660,17 @@ void VideoCaptureDeviceFactoryWin::GetDeviceDescriptorsMediaFoundation(
           const std::string device_id =
               base::SysWideToUTF8(std::wstring(id, id_size));
           const std::string model_id = GetDeviceModelId(device_id);
-          if (IsDeviceBlacklistedForMediaFoundationByModelId(model_id))
+          const std::string display_name =
+              base::SysWideToUTF8(std::wstring(name, name_size));
+          if (IsDeviceBlacklistedForMediaFoundationByModelId(model_id) ||
+              IsDeviceBlacklistedForMediaFoundationByDisplayName(
+                  display_name)) {
             continue;
+          }
           if (list_was_empty ||
               !DescriptorsContainDeviceId(*device_descriptors, device_id)) {
-            device_descriptors->emplace_back(
-                base::SysWideToUTF8(std::wstring(name, name_size)), device_id,
-                model_id, api_attributes.first);
+            device_descriptors->emplace_back(display_name, device_id, model_id,
+                                             api_attributes.first);
           }
         }
       }

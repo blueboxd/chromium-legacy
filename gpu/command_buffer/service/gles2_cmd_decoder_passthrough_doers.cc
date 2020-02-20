@@ -3760,7 +3760,7 @@ error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers(uint64_t swap_id,
       }
     }
 
-    DCHECK(emulated_front_buffer_->size == emulated_back_buffer_->size);
+    DCHECK_EQ(emulated_front_buffer_->size, emulated_back_buffer_->size);
 
     if (emulated_default_framebuffer_format_.samples > 0) {
       // Resolve the multisampled renderbuffer into the emulated_front_buffer_

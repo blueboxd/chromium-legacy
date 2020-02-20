@@ -24,6 +24,7 @@
 #include "components/password_manager/core/browser/password_store_change.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
 #include "components/sync/model/syncable_service.h"
+#include "components/version_info/version_info.h"
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 #include "components/password_manager/core/browser/hash_password_manager.h"
@@ -37,13 +38,13 @@ class PrefService;
 namespace autofill {
 struct FormData;
 struct PasswordForm;
-}
+}  // namespace autofill
 
 namespace syncer {
 class ModelTypeControllerDelegate;
 class ProxyModelTypeControllerDelegate;
 class SyncableService;
-}
+}  // namespace syncer
 
 using StateSubscription =
     base::CallbackList<void(const std::string& username)>::Subscription;
@@ -134,6 +135,7 @@ class PasswordStore : protected PasswordStoreSync,
   bool Init(
       const syncer::SyncableService::StartSyncFlare& flare,
       PrefService* prefs,
+      version_info::Channel channel = version_info::Channel::UNKNOWN,
       base::RepeatingClosure sync_enabled_or_disabled_cb = base::DoNothing());
 
   // RefcountedKeyedService:
@@ -448,7 +450,8 @@ class PasswordStore : protected PasswordStoreSync,
   // background sequence. Subclasses can add more logic. Returns true on
   // success.
   virtual bool InitOnBackgroundSequence(
-      const syncer::SyncableService::StartSyncFlare& flare);
+      const syncer::SyncableService::StartSyncFlare& flare,
+      version_info::Channel channel);
 
   // Methods below will be run in PasswordStore's own sequence.
   // Synchronous implementation that reports usage metrics.

@@ -142,7 +142,6 @@
 class GURL;
 struct AccessibilityHostMsg_EventBundleParams;
 struct AccessibilityHostMsg_LocationChangeParams;
-struct FrameHostMsg_DownloadUrl_Params;
 struct FrameHostMsg_OpenURL_Params;
 struct FrameMsg_TextTrackSettings_Params;
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
@@ -1398,6 +1397,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void Are3DAPIsBlocked(Are3DAPIsBlockedCallback callback) override;
   void UpdateFaviconURL(
       std::vector<blink::mojom::FaviconURLPtr> favicon_urls) override;
+  void DownloadURL(blink::mojom::DownloadURLParamsPtr params) override;
 
   // blink::LocalMainFrameHost overrides:
   void ScaleFactorChanged(float scale) override;
@@ -1584,7 +1584,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
                             const gfx::Rect& bounds_in_frame_widget);
   void OnSetNeedsOcclusionTracking(bool needs_tracking);
   void OnFrameDidCallFocus();
-  void OnDownloadUrl(const FrameHostMsg_DownloadUrl_Params& params);
   void OnSaveImageFromDataURL(const std::string& url_str);
 
   // To be called by ComputeSiteForCookiesForNavigation() and
@@ -2051,7 +2050,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void MaybeEvictFromBackForwardCache();
 
   // Helper for handling download-related IPCs.
-  void DownloadUrl(
+  void DownloadURLInternal(
       const GURL& url,
       const Referrer& referrer,
       const url::Origin& initiator,

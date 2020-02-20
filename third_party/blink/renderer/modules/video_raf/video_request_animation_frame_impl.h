@@ -45,8 +45,15 @@ class MODULES_EXPORT VideoRequestAnimationFrameImpl final
                                uint32_t presented_frames_counter,
                                const media::VideoFrame&) override;
 
+  void ExecuteFrameCallbacks(double high_res_now_ms);
+
  private:
+  // Used to keep track of whether or not we have already scheduled a call to
+  // ExecuteFrameCallbacks() in the next rendering steps.
+  bool pending_execution_ = false;
+
   Member<VideoFrameRequestCallbackCollection> callback_collection_;
+  Member<VideoFrameMetadata> metadata_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoRequestAnimationFrameImpl);
 };

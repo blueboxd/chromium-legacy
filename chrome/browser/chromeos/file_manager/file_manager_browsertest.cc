@@ -515,6 +515,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
                       TestCase("directoryTreeExpandHorizontalScrollRTL"),
                       TestCase("directoryTreeVerticalScroll"),
                       TestCase("directoryTreeClippedWindowResize"),
+                      TestCase("directoryTreeExpandFolder"),
                       TestCase("directoryTreeClippedSplitterResize")));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(

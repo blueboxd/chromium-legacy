@@ -47,4 +47,8 @@ std::unique_ptr<RecordPaintCanvas> PaintRecorder::CreateCanvas(
   return std::make_unique<RecordPaintCanvas>(list, bounds);
 }
 
+bool PaintRecorder::ListHasDrawOps() const {
+  return display_item_list_->has_draw_ops();
+}
+
 }  // namespace cc

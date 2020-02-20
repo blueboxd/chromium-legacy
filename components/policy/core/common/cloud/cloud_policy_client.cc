@@ -29,6 +29,14 @@
 
 namespace em = enterprise_management;
 
+// The type for variables containing an error from DM Server response.
+using CertProvisioningResponseErrorType =
+    enterprise_management::ClientCertificateProvisioningResponse::Error;
+// The namespace that contains convenient aliases for error values, e.g.
+// UNDEFINED, TIMED_OUT, IDENTITY_VERIFICATION_ERROR, CA_ERROR.
+using CertProvisioningResponseError =
+    enterprise_management::ClientCertificateProvisioningResponse;
+
 namespace policy {
 
 namespace {
@@ -663,6 +671,98 @@ void CloudPolicyClient::UpdateGcmId(
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
 }
 
+void CloudPolicyClient::ClientCertProvisioningStartCsr(
+    const std::string& cert_scope,
+    const std::string& cert_profile_id,
+    const std::string& public_key,
+    ClientCertProvisioningStartCsrCallback callback) {
+  CHECK(is_registered());
+
+  std::unique_ptr<DMServerJobConfiguration> config = std::make_unique<
+      DMServerJobConfiguration>(
+      DeviceManagementService::JobConfiguration::TYPE_CERT_PROVISIONING_REQUEST,
+      this,
+      /*critical=*/false, DMAuth::FromDMToken(dm_token_),
+      /*oauth_token=*/base::nullopt,
+      base::BindOnce(
+          &CloudPolicyClient::OnClientCertProvisioningStartCsrResponse,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+
+  em::ClientCertificateProvisioningRequest* request =
+      config->request()->mutable_client_certificate_provisioning_request();
+
+  request->set_certificate_scope(cert_scope);
+  request->set_cert_profile_id(cert_profile_id);
+  request->set_public_key(public_key);
+  // Sets the request type, no actual data is required.
+  request->mutable_start_csr_request();
+
+  request_jobs_.push_back(service_->CreateJob(std::move(config)));
+}
+
+void CloudPolicyClient::ClientCertProvisioningFinishCsr(
+    const std::string& cert_scope,
+    const std::string& cert_profile_id,
+    const std::string& public_key,
+    const std::string& va_challenge_response,
+    const std::string& signature,
+    ClientCertProvisioningFinishCsrCallback callback) {
+  CHECK(is_registered());
+
+  std::unique_ptr<DMServerJobConfiguration> config = std::make_unique<
+      DMServerJobConfiguration>(
+      DeviceManagementService::JobConfiguration::TYPE_CERT_PROVISIONING_REQUEST,
+      this,
+      /*critical=*/false, DMAuth::FromDMToken(dm_token_),
+      /*oauth_token=*/base::nullopt,
+      base::BindOnce(
+          &CloudPolicyClient::OnClientCertProvisioningFinishCsrResponse,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+
+  em::ClientCertificateProvisioningRequest* const request =
+      config->request()->mutable_client_certificate_provisioning_request();
+
+  request->set_certificate_scope(cert_scope);
+  request->set_cert_profile_id(cert_profile_id);
+  request->set_public_key(public_key);
+
+  em::FinishCsrRequest* finish_csr_request =
+      request->mutable_finish_csr_request();
+  finish_csr_request->set_va_challenge_response(va_challenge_response);
+  finish_csr_request->set_signature(signature);
+
+  request_jobs_.push_back(service_->CreateJob(std::move(config)));
+}
+
+void CloudPolicyClient::ClientCertProvisioningDownloadCert(
+    const std::string& cert_scope,
+    const std::string& cert_profile_id,
+    const std::string& public_key,
+    ClientCertProvisioningDownloadCertCallback callback) {
+  CHECK(is_registered());
+
+  std::unique_ptr<DMServerJobConfiguration> config = std::make_unique<
+      DMServerJobConfiguration>(
+      DeviceManagementService::JobConfiguration::TYPE_CERT_PROVISIONING_REQUEST,
+      this,
+      /*critical=*/false, DMAuth::FromDMToken(dm_token_),
+      /*oauth_token=*/base::nullopt,
+      base::BindOnce(
+          &CloudPolicyClient::OnClientCertProvisioningDownloadCertResponse,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+
+  em::ClientCertificateProvisioningRequest* const request =
+      config->request()->mutable_client_certificate_provisioning_request();
+
+  request->set_certificate_scope(cert_scope);
+  request->set_cert_profile_id(cert_profile_id);
+  request->set_public_key(public_key);
+  // Sets the request type, no actual data is required.
+  request->mutable_download_cert_request();
+
+  request_jobs_.push_back(service_->CreateJob(std::move(config)));
+}
+
 void CloudPolicyClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -1051,6 +1151,200 @@ void CloudPolicyClient::OnGcmIdUpdated(
 
   std::move(callback).Run(status == DM_STATUS_SUCCESS);
   RemoveJob(job);
+}
+
+namespace {
+// Checks all error-like fields of a client cert provisioning response. Uses
+// |status| as an input and output parameter. Extracts error and try_again_later
+// fields from the |response| into |response_error| and |try_later|. Returns
+// true if all error-like fields are empty or "ok" and the parsing of the
+// |response| can be continued.
+bool CheckCommonClientCertProvisioningResponse(
+    const em::DeviceManagementResponse& response,
+    policy::DeviceManagementStatus* status,
+    CertProvisioningResponseErrorType* response_error,
+    base::Optional<int64_t>* try_later) {
+  if (*status != DM_STATUS_SUCCESS) {
+    return false;
+  }
+
+  if (!response.has_client_certificate_provisioning_response()) {
+    *status = DM_STATUS_RESPONSE_DECODING_ERROR;
+    return false;
+  }
+
+  const em::ClientCertificateProvisioningResponse& cert_provisioning_response =
+      response.client_certificate_provisioning_response();
+
+  if (cert_provisioning_response.has_error()) {
+    *response_error = cert_provisioning_response.error();
+    return false;
+  }
+
+  if (cert_provisioning_response.has_try_again_later()) {
+    *try_later = cert_provisioning_response.try_again_later();
+    return false;
+  }
+
+  return true;
+}
+
+}  // namespace
+
+void CloudPolicyClient::OnClientCertProvisioningStartCsrResponse(
+    ClientCertProvisioningStartCsrCallback callback,
+    policy::DeviceManagementService::Job* job,
+    policy::DeviceManagementStatus status,
+    int net_error,
+    const em::DeviceManagementResponse& response) {
+  base::ScopedClosureRunner job_cleaner(base::BindOnce(
+      &CloudPolicyClient::RemoveJob, base::Unretained(this), job));
+
+  status_ = status;
+  CertProvisioningResponseErrorType response_error =
+      CertProvisioningResponseError::UNDEFINED;
+  base::Optional<int64_t> try_later;
+
+  // Single step loop for convenience.
+  do {
+    if (!CheckCommonClientCertProvisioningResponse(
+            response, &status, &response_error, &try_later)) {
+      break;
+    }
+
+    const em::ClientCertificateProvisioningResponse&
+        cert_provisioning_response =
+            response.client_certificate_provisioning_response();
+
+    if (!cert_provisioning_response.has_start_csr_response()) {
+      status = DM_STATUS_RESPONSE_DECODING_ERROR;
+      break;
+    }
+
+    const em::StartCsrResponse& start_csr_response =
+        cert_provisioning_response.start_csr_response();
+
+    if (!start_csr_response.has_hashing_algorithm() ||
+        !start_csr_response.has_signing_algorithm() ||
+        !start_csr_response.has_data_to_sign()) {
+      status = DM_STATUS_RESPONSE_DECODING_ERROR;
+      break;
+    }
+
+    if (start_csr_response.signing_algorithm() !=
+        em::SigningAlgorithm::RSA_PKCS1_V1_5) {
+      status = DM_STATUS_RESPONSE_DECODING_ERROR;
+      break;
+    }
+
+    const std::string empty_str;
+
+    const std::string& invalidation_topic =
+        start_csr_response.has_invalidation_topic()
+            ? start_csr_response.invalidation_topic()
+            : empty_str;
+
+    const std::string& va_challenge = start_csr_response.has_va_challenge()
+                                          ? start_csr_response.va_challenge()
+                                          : empty_str;
+
+    // Everything is ok, run |callback| with data.
+    std::move(callback).Run(status, response_error, try_later,
+                            invalidation_topic, va_challenge,
+                            start_csr_response.hashing_algorithm(),
+                            start_csr_response.data_to_sign());
+    return;
+  } while (false);
+
+  // Something went wrong. Return error via |status|, |response_error|,
+  // |try_later|.
+  const std::string empty_str;
+  em::HashingAlgorithm hash_algo = {};
+  std::move(callback).Run(status, response_error, try_later, empty_str,
+                          empty_str, hash_algo, empty_str);
+}
+
+void CloudPolicyClient::OnClientCertProvisioningFinishCsrResponse(
+    ClientCertProvisioningFinishCsrCallback callback,
+    policy::DeviceManagementService::Job* job,
+    policy::DeviceManagementStatus status,
+    int net_error,
+    const em::DeviceManagementResponse& response) {
+  base::ScopedClosureRunner job_cleaner(base::BindOnce(
+      &CloudPolicyClient::RemoveJob, base::Unretained(this), job));
+
+  status_ = status;
+  CertProvisioningResponseErrorType response_error =
+      CertProvisioningResponseError::UNDEFINED;
+  base::Optional<int64_t> try_later;
+
+  // Single step loop for convenience.
+  do {
+    if (!CheckCommonClientCertProvisioningResponse(
+            response, &status, &response_error, &try_later)) {
+      break;
+    }
+
+    const em::ClientCertificateProvisioningResponse&
+        cert_provisioning_response =
+            response.client_certificate_provisioning_response();
+
+    if (!cert_provisioning_response.has_finish_csr_response()) {
+      status = DM_STATUS_RESPONSE_DECODING_ERROR;
+      break;
+    }
+  } while (false);
+
+  std::move(callback).Run(status, response_error, try_later);
+}
+
+void CloudPolicyClient::OnClientCertProvisioningDownloadCertResponse(
+    ClientCertProvisioningDownloadCertCallback callback,
+    policy::DeviceManagementService::Job* job,
+    policy::DeviceManagementStatus status,
+    int net_error,
+    const em::DeviceManagementResponse& response) {
+  base::ScopedClosureRunner job_cleaner(base::BindOnce(
+      &CloudPolicyClient::RemoveJob, base::Unretained(this), job));
+
+  status_ = status;
+  CertProvisioningResponseErrorType response_error =
+      CertProvisioningResponseError::UNDEFINED;
+  base::Optional<int64_t> try_later;
+
+  // Single step loop for convenience.
+  do {
+    if (!CheckCommonClientCertProvisioningResponse(
+            response, &status, &response_error, &try_later)) {
+      break;
+    }
+
+    const em::ClientCertificateProvisioningResponse&
+        cert_provisioning_response =
+            response.client_certificate_provisioning_response();
+
+    if (!cert_provisioning_response.has_download_cert_response()) {
+      status = DM_STATUS_RESPONSE_DECODING_ERROR;
+      break;
+    }
+
+    const em::DownloadCertResponse& download_cert_response =
+        cert_provisioning_response.download_cert_response();
+
+    if (!download_cert_response.has_pem_encoded_certificate()) {
+      status = DM_STATUS_RESPONSE_DECODING_ERROR;
+      break;
+    }
+
+    // Everything is ok, run |callback| with data.
+    std::move(callback).Run(status, response_error, try_later,
+                            download_cert_response.pem_encoded_certificate());
+    return;
+  } while (false);
+
+  // Something went wrong. Return error via |status|, |response_error|,
+  // |try_later|.
+  std::move(callback).Run(status, response_error, try_later, std::string());
 }
 
 void CloudPolicyClient::NotifyPolicyFetched() {

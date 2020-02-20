@@ -4,6 +4,7 @@
 
 #include "ash/test/ash_test_views_delegate.h"
 
+#include "ash/public/cpp/frame_utils.h"
 #include "ash/shell.h"
 
 namespace ash {
@@ -17,6 +18,9 @@ void AshTestViewsDelegate::OnBeforeWidgetInit(
     views::internal::NativeWidgetDelegate* delegate) {
   if (!params->parent && !params->context)
     params->context = Shell::GetRootWindowForNewWindows();
+
+  if (params->opacity == views::Widget::InitParams::WindowOpacity::kInferred)
+    ResolveInferredOpacity(params);
 
   TestViewsDelegate::OnBeforeWidgetInit(params, delegate);
 }

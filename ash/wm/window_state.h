@@ -453,6 +453,10 @@ class ASH_EXPORT WindowState : public aura::WindowObserver {
                                intptr_t old) override;
   void OnWindowAddedToRootWindow(aura::Window* window) override;
   void OnWindowDestroying(aura::Window* window) override;
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override;
 
   // The owner of this window settings.
   aura::Window* window_;

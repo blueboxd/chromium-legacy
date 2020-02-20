@@ -608,8 +608,9 @@ GLES2DecoderPassthroughImpl::EmulatedDefaultFramebuffer::
 std::unique_ptr<GLES2DecoderPassthroughImpl::EmulatedColorBuffer>
 GLES2DecoderPassthroughImpl::EmulatedDefaultFramebuffer::SetColorBuffer(
     std::unique_ptr<EmulatedColorBuffer> new_color_buffer) {
-  DCHECK(color_texture != nullptr && new_color_buffer != nullptr);
-  DCHECK(color_texture->size == new_color_buffer->size);
+  DCHECK(color_texture != nullptr);
+  DCHECK(new_color_buffer != nullptr);
+  DCHECK_EQ(color_texture->size, new_color_buffer->size);
   std::unique_ptr<EmulatedColorBuffer> old_buffer(std::move(color_texture));
   color_texture = std::move(new_color_buffer);
 
@@ -627,7 +628,7 @@ GLES2DecoderPassthroughImpl::EmulatedDefaultFramebuffer::SetColorBuffer(
 void GLES2DecoderPassthroughImpl::EmulatedDefaultFramebuffer::Blit(
     EmulatedColorBuffer* target) {
   DCHECK(target != nullptr);
-  DCHECK(target->size == size);
+  DCHECK_EQ(target->size, size);
 
   ScopedFramebufferBindingReset scoped_fbo_reset(
       api, supports_separate_fbo_bindings);
@@ -1448,7 +1449,7 @@ bool GLES2DecoderPassthroughImpl::ResizeOffscreenFramebuffer(
   // Destroy all the available color textures, they should not be the same size
   // as the back buffer
   for (auto& available_color_texture : available_color_textures_) {
-    DCHECK(available_color_texture->size != size);
+    DCHECK_NE(available_color_texture->size, size);
     available_color_texture->Destroy(true);
   }
   available_color_textures_.clear();
@@ -2506,7 +2507,7 @@ void GLES2DecoderPassthroughImpl::ReadBackBuffersIntoShadowCopies(
     if (!resources_->buffer_id_map.GetServiceID(client_id, &service_id)) {
       // Buffer no longer exists, this shadow update should have been removed by
       // DoDeleteBuffers
-      DCHECK(false);
+      NOTREACHED();
       continue;
     }
 

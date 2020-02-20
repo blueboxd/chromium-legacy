@@ -318,16 +318,6 @@ void WebFrameTestClient::ShowContextMenu(
       ->SetContextMenuData(context_menu_data);
 }
 
-void WebFrameTestClient::DownloadURL(
-    const blink::WebURLRequest& request,
-    network::mojom::RedirectMode cross_origin_redirect_behavior,
-    mojo::ScopedMessagePipeHandle blob_url_token) {
-  if (test_runner()->ShouldWaitUntilExternalURLLoad()) {
-    delegate_->PrintMessage(std::string("Download started\n"));
-    delegate_->TestFinished();
-  }
-}
-
 void WebFrameTestClient::DidStartLoading() {
   test_runner()->AddLoadingFrame(web_frame_test_proxy_->GetWebFrame());
 }

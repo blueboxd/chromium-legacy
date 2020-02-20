@@ -134,7 +134,7 @@ bool ResolutionNotificationController::PrepareNotificationAndSetDisplayMode(
   // instead of the specified |old_resolution|.
   display::ManagedDisplayMode original_resolution;
   if (change_info_ && change_info_->display_id == display_id) {
-    DCHECK(change_info_->new_resolution.size() == old_resolution.size());
+    DCHECK_EQ(change_info_->new_resolution.size(), old_resolution.size());
     original_resolution = change_info_->old_resolution;
   }
 

@@ -363,11 +363,6 @@ extern const char kUseWKWebViewLoadingDescription[];
 extern const char kWalletServiceUseSandboxName[];
 extern const char kWalletServiceUseSandboxDescription[];
 
-// Title and description for the flag to use the Clear browsing data API from
-// web.
-extern const char kWebClearBrowsingDataName[];
-extern const char kWebClearBrowsingDataDescription[];
-
 // Title and description for the flag to enable text accessibility in webpages.
 extern const char kWebPageTextAccessibilityName[];
 extern const char kWebPageTextAccessibilityDescription[];

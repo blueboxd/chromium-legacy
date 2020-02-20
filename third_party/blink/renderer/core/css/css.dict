@@ -926,6 +926,8 @@
 "invisible"
 "skip-activation"
 "skip-viewport-activation"
+"jis-b5"
+"jis-b4"
 
 # at-rules
 "@charset"

@@ -634,9 +634,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // kReadyStateHaveEnoughData for the first time.
   void MaybeUpdateBufferSizesForPlayback();
 
-  void SetCurrentFrameOverrideForTesting(
-      scoped_refptr<VideoFrame> current_frame_override);
-
   // Create / recreate |smoothness_helper_|, with current features.  Will take
   // no action if we already have a smoothness helper with the same features
   // that we want now.  Will destroy the helper if we shouldn't be measuring
@@ -1022,10 +1019,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // Whether background video optimization is supported on current platform.
   bool is_background_video_track_optimization_supported_ = true;
-
-  // Valid while an active OnNewFramePresentedCallback() is in progress.
-  // Overrides the VideoFrame returned by GetCurrentFrameFromCompositor().
-  scoped_refptr<VideoFrame> current_frame_override_;
 
   base::CancelableOnceClosure have_enough_after_lazy_load_cb_;
 

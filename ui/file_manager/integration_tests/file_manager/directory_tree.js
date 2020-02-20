@@ -377,4 +377,105 @@
     // Check: the directory tree should report that it is not clipped.
     await remoteCall.waitForElementLost(appId, '#directory-tree[clipped]');
   };
+
+  /**
+   * Adds folders with the name prefix /path/to/sub-folders, it appends "-$X"
+   * suffix for each folder.
+   *
+   * NOTE: It assumes the parent folders exist.
+   *
+   * @param {number} number Number of sub-folders to be created.
+   * @param {string} namePrefix Prefix name to be used in the folder.
+   */
+  function addSubFolders(number, namePrefix) {
+    const result = new Array(number);
+    const baseName = namePrefix.split('/').pop();
+
+    for (let i = 0; i < number; i++) {
+      const subFolderName = `${baseName}-${i}`;
+      const targetPath = `${namePrefix}-${i}`;
+      result[i] = new TestEntryInfo({
+        targetPath: targetPath,
+        nameText: subFolderName,
+        type: EntryType.DIRECTORY,
+        lastModifiedTime: 'Jan 1, 1980, 11:59 PM',
+        sizeText: '--',
+        typeText: 'Folder',
+      });
+    }
+
+    return result;
+  }
+
+  /**
+   * Wait for |query| to return |count| number of elements.
+   *
+   * @param {string} appId
+   * @param {!Array<string>} query
+   * @param {number} count
+   */
+  async function waitForElementsCount(appId, query, count) {
+    const caller = getCaller();
+
+    await repeatUntil(async () => {
+      const result = await remoteCall.callRemoteTestUtil(
+          'countElements', appId, [query, count]);
+
+      if (result) {
+        return true;
+      }
+
+      return pending(
+          caller,
+          `Waiting for "${query.join('\n')}" to return ${count} elements`);
+    });
+  }
+
+  /**
+   * Tests that expanding a folder updates the its sub-folders expand icons.
+   */
+  testcase.directoryTreeExpandFolder = async () => {
+    // Create a large-folder inside Downloads.
+    let entries = addSubFolders(1, 'large-folder');
+
+    // Create 20 sub-folders with 15 sub-sub-folders.
+    const numberOfSubFolders = 20;
+    const numberOfSubSubFolders = 15;
+    entries = entries.concat(
+        addSubFolders(numberOfSubFolders, `large-folder-0/sub-folder`));
+    for (let i = 0; i < numberOfSubFolders; i++) {
+      entries = entries.concat(addSubFolders(
+          numberOfSubSubFolders,
+          `large-folder-0/sub-folder-${i}/sub-sub-folder`));
+    }
+
+    // Open FilesApp on Downloads.
+    const appId = await setupAndWaitUntilReady(RootPath.DOWNLOADS, entries, []);
+
+    const start = Date.now();
+
+    // Expand the large-folder-0.
+    await recursiveExpand(appId, '/My files/Downloads/large-folder-0');
+
+    // Wait for all sub-folders to have the expand icon.
+    const querySubFolderExpandIcons =
+        ['#directory-tree [entry-label="large-folder-0"] > ' +
+         '.tree-children > .tree-item > .tree-row[has-children="true"]'];
+    await waitForElementsCount(
+        appId, querySubFolderExpandIcons, numberOfSubFolders);
+
+    // Expand a sub-folder.
+    await recursiveExpand(
+        appId, '/My files/Downloads/large-folder-0/sub-folder-0');
+
+    // Wait sub-folder to have its 1k sub-sub-folders.
+    const querySubSubFolderItems =
+        ['#directory-tree [entry-label="sub-folder-0"] > ' +
+         '.tree-children > .tree-item'];
+    await waitForElementsCount(
+        appId, querySubSubFolderItems, numberOfSubSubFolders);
+
+    const testTime = Date.now() - start;
+    console.log(`[measurement] Test time: ${testTime}ms`);
+  };
 })();

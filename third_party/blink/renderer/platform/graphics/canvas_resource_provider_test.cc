@@ -246,6 +246,7 @@ TEST_F(CanvasResourceProviderTest,
 
   // Resource updated after draw.
   provider->Canvas()->clear(SK_ColorWHITE);
+  provider->FlushCanvas();
   new_image = provider->Snapshot();
   EXPECT_NE(new_image->GetMailboxHolder().mailbox,
             image->GetMailboxHolder().mailbox);
@@ -254,6 +255,7 @@ TEST_F(CanvasResourceProviderTest,
   auto original_mailbox = image->GetMailboxHolder().mailbox;
   image.reset();
   provider->Canvas()->clear(SK_ColorBLACK);
+  provider->FlushCanvas();
   EXPECT_EQ(original_mailbox, provider->Snapshot()->GetMailboxHolder().mailbox);
 }
 

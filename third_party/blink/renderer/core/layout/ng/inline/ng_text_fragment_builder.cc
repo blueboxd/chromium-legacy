@@ -36,6 +36,7 @@ void NGTextFragmentBuilder::SetItem(
   text_ = items_data.text_content;
   start_offset_ = item_result->start_offset;
   end_offset_ = item_result->end_offset;
+  resolved_direction_ = item_result->item->Direction();
   SetStyle(item_result->item->Style(), item_result->item->StyleVariant());
   size_ = {item_result->inline_size, line_height};
   shape_result_ = std::move(item_result->shape_result);
@@ -56,6 +57,7 @@ void NGTextFragmentBuilder::SetText(
   text_ = text;
   start_offset_ = shape_result->StartIndex();
   end_offset_ = shape_result->EndIndex();
+  resolved_direction_ = shape_result->Direction();
   SetStyle(style, is_ellipsis_style ? NGStyleVariant::kEllipsis
                                     : NGStyleVariant::kStandard);
   size_ = {shape_result->SnappedWidth(),

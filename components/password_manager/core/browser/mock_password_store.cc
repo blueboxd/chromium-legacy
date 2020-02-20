@@ -19,7 +19,8 @@ MockPasswordStore::CreateBackgroundTaskRunner() const {
 }
 
 bool MockPasswordStore::InitOnBackgroundSequence(
-    const syncer::SyncableService::StartSyncFlare& flare) {
+    const syncer::SyncableService::StartSyncFlare& flare,
+    version_info::Channel channel) {
   return true;
 }
 

@@ -80,7 +80,7 @@ export class ConstraintsPreferrer {
   restoreResolutionPreference_(key) {
     // TODO(inker): Return promise and await it to assure preferences are loaded
     // before any access.
-    browserProxy.localStorageGet({[key]: {}}, (values) => {
+    browserProxy.localStorageGet({[key]: {}}).then((values) => {
       this.prefResolution_ = {};
       for (const [deviceId, {width, height}] of Object.entries(values[key])) {
         this.prefResolution_[deviceId] = new Resolution(width, height);
@@ -234,9 +234,8 @@ export class VideoConstraintsPreferrer extends ConstraintsPreferrer {
    * @private
    */
   restoreFpsPreference_() {
-    browserProxy.localStorageGet(
-        {deviceVideoFps: {}},
-        (values) => this.prefFpses_ = values.deviceVideoFps);
+    browserProxy.localStorageGet({deviceVideoFps: {}})
+        .then((values) => this.prefFpses_ = values.deviceVideoFps);
   }
 
   /**

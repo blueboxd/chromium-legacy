@@ -140,11 +140,11 @@ void HTMLCanvasElement::Dispose() {
 
   if (context_) {
     UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.HasRendered", bool(ResourceProvider()));
-    if (ResourceProvider()) {
+    if (context_->Host()) {
       UMA_HISTOGRAM_BOOLEAN("Blink.Canvas.IsComposited",
                             context_->IsComposited());
+      context_->DetachHost();
     }
-    context_->DetachHost();
     context_ = nullptr;
   }
 
@@ -1506,20 +1506,30 @@ void HTMLCanvasElement::ReplaceExisting2dLayerBridge(
   if (canvas2d_bridge_) {
     image = canvas2d_bridge_->NewImageSnapshot(kPreferNoAcceleration);
     // image can be null if allocation failed in which case we should just
-    // abort the surface switch to reatain the old surface which is still
+    // abort the surface switch to retain the old surface which is still
     // functional.
     if (!image)
       return;
   }
-  new_layer_bridge->SetCanvasResourceHost(this);
   ReplaceResourceProvider(nullptr);
   canvas2d_bridge_ = std::move(new_layer_bridge);
+  canvas2d_bridge_->SetCanvasResourceHost(this);
+
+  cc::PaintCanvas* canvas = canvas2d_bridge_->GetPaintCanvas();
+  // Paint canvas automatically has the clip re-applied. Since image already
+  // contains clip, it needs to be drawn before the clip stack is re-applied.
+  // Remove clip from canvas and restore it after the image is drawn.
+  canvas->restoreToCount(1);
+  canvas->save();
+
+  // TODO(jochin): Consider using ResourceProvider()->RestoreBackBuffer() here
+  // to avoid all of this clip stack manipulation.
   if (image)
     canvas2d_bridge_->DrawFullImage(image->PaintImageForCurrentFrame());
 
-  RestoreCanvasMatrixClipStack(canvas2d_bridge_->GetPaintCanvas());
-  canvas2d_bridge_->DidRestoreCanvasMatrixClipStack(
-      canvas2d_bridge_->GetPaintCanvas());
+  RestoreCanvasMatrixClipStack(canvas);
+  canvas2d_bridge_->DidRestoreCanvasMatrixClipStack(canvas);
+
   UpdateMemoryUsage();
 }
 

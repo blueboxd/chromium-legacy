@@ -6,6 +6,7 @@
 
 #include <cert.h>
 #include <certdb.h>
+#include <dlfcn.h>
 #include <keyhi.h>
 #include <pk11pub.h>
 #include <secmod.h>
@@ -20,6 +21,7 @@
 #include "base/observer_list_threadsafe.h"
 #include "base/task/post_task.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "crypto/nss_util_internal.h"
 #include "crypto/scoped_nss_types.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_database.h"
@@ -34,6 +36,11 @@ namespace psm = mozilla_security_manager;
 namespace net {
 
 namespace {
+
+using PK11HasAttributeSetFunction = CK_BBOOL (*)(PK11SlotInfo* slot,
+                                                 CK_OBJECT_HANDLE id,
+                                                 CK_ATTRIBUTE_TYPE type,
+                                                 PRBool haslock);
 
 // TODO(pneubeck): Move this class out of NSSCertDatabase and to the caller of
 // the c'tor of NSSCertDatabase, see https://crbug.com/395983 .
@@ -55,6 +62,12 @@ class CertNotificationForwarder : public NSSCertDatabase::Observer {
 };
 
 }  // namespace
+
+NSSCertDatabase::CertInfo::CertInfo() = default;
+NSSCertDatabase::CertInfo::CertInfo(CertInfo&& other) = default;
+NSSCertDatabase::CertInfo::~CertInfo() = default;
+NSSCertDatabase::CertInfo& NSSCertDatabase::CertInfo::operator=(
+    NSSCertDatabase::CertInfo&& other) = default;
 
 NSSCertDatabase::ImportCertFailure::ImportCertFailure(
     ScopedCERTCertificate cert,
@@ -103,18 +116,29 @@ void NSSCertDatabase::ListCertsInSlot(ListCertsCallback callback,
       std::move(callback));
 }
 
+void NSSCertDatabase::ListCertsInfo(ListCertsInfoCallback callback) {
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&NSSCertDatabase::ListCertsInfoImpl,
+                     /*slot=*/nullptr,
+                     /*add_certs_info=*/true),
+      std::move(callback));
+}
+
 #if defined(OS_CHROMEOS)
 crypto::ScopedPK11Slot NSSCertDatabase::GetSystemSlot() const {
   return crypto::ScopedPK11Slot();
 }
 
-bool NSSCertDatabase::IsCertificateOnSystemSlot(CERTCertificate* cert) const {
-  crypto::ScopedPK11Slot system_slot = GetSystemSlot();
-  if (!system_slot)
+// static
+bool NSSCertDatabase::IsCertificateOnSlot(CERTCertificate* cert,
+                                          PK11SlotInfo* slot) {
+  if (!slot)
     return false;
 
-  return PK11_FindCertInSlot(system_slot.get(), cert, nullptr) !=
-         CK_INVALID_HANDLE;
+  return PK11_FindCertInSlot(slot, cert, nullptr) != CK_INVALID_HANDLE;
 }
 #endif
 
@@ -299,7 +323,37 @@ NSSCertDatabase::TrustBits NSSCertDatabase::GetCertTrust(
   }
 }
 
-bool NSSCertDatabase::IsUntrusted(const CERTCertificate* cert) const {
+bool NSSCertDatabase::SetCertTrust(CERTCertificate* cert,
+                                   CertType type,
+                                   TrustBits trust_bits) {
+  bool success = psm::SetCertTrust(cert, type, trust_bits);
+  if (success)
+    NotifyObserversCertDBChanged();
+
+  return success;
+}
+
+bool NSSCertDatabase::DeleteCertAndKey(CERTCertificate* cert) {
+  if (!DeleteCertAndKeyImpl(cert))
+    return false;
+  NotifyObserversCertDBChanged();
+  return true;
+}
+
+void NSSCertDatabase::DeleteCertAndKeyAsync(ScopedCERTCertificate cert,
+                                            DeleteCertCallback callback) {
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&NSSCertDatabase::DeleteCertAndKeyImplScoped,
+                     std::move(cert)),
+      base::BindOnce(&NSSCertDatabase::NotifyCertRemovalAndCallBack,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+// static
+bool NSSCertDatabase::IsUntrusted(const CERTCertificate* cert) {
   CERTCertTrust nsstrust;
   SECStatus rv = CERT_GetCertTrust(cert, &nsstrust);
   if (rv != SECSuccess) {
@@ -351,7 +405,8 @@ bool NSSCertDatabase::IsUntrusted(const CERTCertificate* cert) const {
   return false;
 }
 
-bool NSSCertDatabase::IsWebTrustAnchor(const CERTCertificate* cert) const {
+// static
+bool NSSCertDatabase::IsWebTrustAnchor(const CERTCertificate* cert) {
   CERTCertTrust nsstrust;
   SECStatus rv = CERT_GetCertTrust(cert, &nsstrust);
   if (rv != SECSuccess) {
@@ -371,43 +426,43 @@ bool NSSCertDatabase::IsWebTrustAnchor(const CERTCertificate* cert) const {
   return false;
 }
 
-bool NSSCertDatabase::SetCertTrust(CERTCertificate* cert,
-                                   CertType type,
-                                   TrustBits trust_bits) {
-  bool success = psm::SetCertTrust(cert, type, trust_bits);
-  if (success)
-    NotifyObserversCertDBChanged();
-
-  return success;
-}
-
-bool NSSCertDatabase::DeleteCertAndKey(CERTCertificate* cert) {
-  if (!DeleteCertAndKeyImpl(cert))
-    return false;
-  NotifyObserversCertDBChanged();
-  return true;
-}
-
-void NSSCertDatabase::DeleteCertAndKeyAsync(ScopedCERTCertificate cert,
-                                            DeleteCertCallback callback) {
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE,
-      {base::ThreadPool(), base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&NSSCertDatabase::DeleteCertAndKeyImplScoped,
-                     std::move(cert)),
-      base::BindOnce(&NSSCertDatabase::NotifyCertRemovalAndCallBack,
-                     weak_factory_.GetWeakPtr(), std::move(callback)));
-}
-
-bool NSSCertDatabase::IsReadOnly(const CERTCertificate* cert) const {
+// static
+bool NSSCertDatabase::IsReadOnly(const CERTCertificate* cert) {
   PK11SlotInfo* slot = cert->slot;
   return slot && PK11_IsReadOnly(slot);
 }
 
-bool NSSCertDatabase::IsHardwareBacked(const CERTCertificate* cert) const {
+// static
+bool NSSCertDatabase::IsHardwareBacked(const CERTCertificate* cert) {
   PK11SlotInfo* slot = cert->slot;
-  return slot && PK11_IsHW(slot);
+  if (!slot || !PK11_IsHW(slot))
+    return false;
+
+#if defined(OS_CHROMEOS)
+  // Chaps announces PK11_IsHW(slot) for all slots. However, it is possible for
+  // a key in chaps to be not truly hardware-backed, either because it has been
+  // requested to be software-backed, or because the TPM does not support the
+  // key algorithm. Chaps sets kKeyInSoftware attribute to true for private keys
+  // not wrapped by the TPM.
+  if (crypto::IsSlotProvidedByChaps(slot)) {
+    static PK11HasAttributeSetFunction pk11_has_attribute_set =
+        reinterpret_cast<PK11HasAttributeSetFunction>(
+            dlsym(RTLD_DEFAULT, "PK11_HasAttributeSet"));
+    if (pk11_has_attribute_set) {
+      constexpr CK_ATTRIBUTE_TYPE kKeyInSoftware = CKA_VENDOR_DEFINED + 5;
+      SECKEYPrivateKey* private_key = PK11_FindPrivateKeyFromCert(
+          slot, const_cast<CERTCertificate*>(cert), nullptr);
+      // PK11_HasAttributeSet returns true if the object in the given slot has
+      // the attribute set to true. Otherwise it returns false.
+      if (private_key &&
+          pk11_has_attribute_set(slot, private_key->pkcs11ID, kKeyInSoftware,
+                                 /*haslock=*/PR_FALSE)) {
+        return false;
+      }
+    }
+  }
+#endif
+  return true;
 }
 
 void NSSCertDatabase::AddObserver(Observer* observer) {
@@ -419,8 +474,30 @@ void NSSCertDatabase::RemoveObserver(Observer* observer) {
 }
 
 // static
+ScopedCERTCertificateList NSSCertDatabase::ExtractCertificates(
+    CertInfoList certs_info) {
+  ScopedCERTCertificateList certs;
+  certs.reserve(certs_info.size());
+
+  for (auto& cert_info : certs_info)
+    certs.push_back(std::move(cert_info.cert));
+
+  return certs;
+}
+
+// static
 ScopedCERTCertificateList NSSCertDatabase::ListCertsImpl(
     crypto::ScopedPK11Slot slot) {
+  CertInfoList certs_info =
+      ListCertsInfoImpl(std::move(slot), /*add_certs_info=*/false);
+
+  return ExtractCertificates(std::move(certs_info));
+}
+
+// static
+NSSCertDatabase::CertInfoList NSSCertDatabase::ListCertsInfoImpl(
+    crypto::ScopedPK11Slot slot,
+    bool add_certs_info) {
   // This method may acquire the NSS lock or reenter this code via extension
   // hooks (such as smart card UI). To ensure threads are not starved or
   // deadlocked, the base::ScopedBlockingCall below increments the thread pool
@@ -428,7 +505,7 @@ ScopedCERTCertificateList NSSCertDatabase::ListCertsImpl(
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
-  ScopedCERTCertificateList certs;
+  CertInfoList certs_info;
   CERTCertList* cert_list = nullptr;
   if (slot)
     cert_list = PK11_ListCertsInSlot(slot.get());
@@ -438,10 +515,20 @@ ScopedCERTCertificateList NSSCertDatabase::ListCertsImpl(
   CERTCertListNode* node;
   for (node = CERT_LIST_HEAD(cert_list); !CERT_LIST_END(node, cert_list);
        node = CERT_LIST_NEXT(node)) {
-    certs.push_back(x509_util::DupCERTCertificate(node->cert));
+    CertInfo cert_info;
+    cert_info.cert = x509_util::DupCERTCertificate(node->cert);
+
+    if (add_certs_info) {
+      cert_info.on_read_only_slot = IsReadOnly(cert_info.cert.get());
+      cert_info.untrusted = IsUntrusted(cert_info.cert.get());
+      cert_info.web_trust_anchor = IsWebTrustAnchor(cert_info.cert.get());
+      cert_info.hardware_backed = IsHardwareBacked(cert_info.cert.get());
+    }
+
+    certs_info.push_back(std::move(cert_info));
   }
   CERT_DestroyCertList(cert_list);
-  return certs;
+  return certs_info;
 }
 
 void NSSCertDatabase::NotifyCertRemovalAndCallBack(DeleteCertCallback callback,

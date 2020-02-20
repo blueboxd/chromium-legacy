@@ -66,6 +66,9 @@ ASH_PUBLIC_EXPORT bool IsMaximizedOrFullscreenOrPinnedWindowStateType(
 // Returns true if |type| is MINIMIZED.
 ASH_PUBLIC_EXPORT bool IsMinimizedWindowStateType(WindowStateType type);
 
+// Returns true if |type| is either NORMAL or DEFAULT.
+ASH_PUBLIC_EXPORT bool IsNormalWindowStateType(WindowStateType type);
+
 ASH_PUBLIC_EXPORT bool IsValidWindowStateType(int64_t value);
 
 }  // namespace ash

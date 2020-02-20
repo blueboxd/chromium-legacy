@@ -1276,7 +1276,7 @@ const char* Window::OcclusionStateToString(OcclusionState state) {
 void Window::SetOpaqueRegionsForOcclusion(
     const std::vector<gfx::Rect>& opaque_regions_for_occlusion) {
   // Only transparent windows should try to set opaque regions for occlusion.
-  DCHECK(transparent());
+  DCHECK(transparent() || opaque_regions_for_occlusion.empty());
   if (opaque_regions_for_occlusion == opaque_regions_for_occlusion_)
     return;
   opaque_regions_for_occlusion_ = opaque_regions_for_occlusion;

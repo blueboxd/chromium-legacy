@@ -73,6 +73,26 @@ class POLICY_EXPORT CloudPolicyClient {
   using DeviceDMTokenCallback = base::RepeatingCallback<std::string(
       const std::vector<std::string>& user_affiliation_ids)>;
 
+  using ClientCertProvisioningStartCsrCallback = base::OnceCallback<void(
+      DeviceManagementStatus,
+      enterprise_management::ClientCertificateProvisioningResponse::Error,
+      base::Optional<int64_t> try_later,
+      const std::string& invalidation_topic,
+      const std::string& va_challenge,
+      enterprise_management::HashingAlgorithm hash_algorithm,
+      const std::string& data_to_sign)>;
+
+  using ClientCertProvisioningFinishCsrCallback = base::OnceCallback<void(
+      DeviceManagementStatus,
+      enterprise_management::ClientCertificateProvisioningResponse::Error,
+      base::Optional<int64_t> try_later)>;
+
+  using ClientCertProvisioningDownloadCertCallback = base::OnceCallback<void(
+      DeviceManagementStatus,
+      enterprise_management::ClientCertificateProvisioningResponse::Error,
+      base::Optional<int64_t> try_later,
+      const std::string& pem_encoded_certificate)>;
+
   // Observer interface for state and policy changes.
   class POLICY_EXPORT Observer {
    public:
@@ -300,6 +320,47 @@ class POLICY_EXPORT CloudPolicyClient {
   // |callback| will be called when the operation completes.
   virtual void UpdateGcmId(const std::string& gcm_id, StatusCallback callback);
 
+  // Sends certificate provisioning start csr request. It is Step 1 in the
+  // certificate provisioning flow. |cert_scope| defines if it is a user- or
+  // device-level request, |cert_profile_id| defines for which profile from
+  // policies the request applies, |public_key| is used to build the CSR.
+  // |callback| will be called when the operation completes. It is expected to
+  // receive the CSR and VA challenge.
+  virtual void ClientCertProvisioningStartCsr(
+      const std::string& cert_scope,
+      const std::string& cert_profile_id,
+      const std::string& public_key,
+      ClientCertProvisioningStartCsrCallback callback);
+
+  // Sends certificate provisioning finish csr request. It is Step 2 in the
+  // certificate provisioning flow. |cert_scope| defines if it is a user- or
+  // device-level request, |cert_profile_id| and |public_key| define the
+  // provisioning flow that should be continued. |va_challenge_response| is a
+  // challenge response to the challenge from the previous step. |signature| is
+  // cryptographic signature of the CSR from the previous step, the algorithm
+  // for it is defined in a corresponding certificate profile. |callback| will
+  // be called when the operation completes. It is expected to receive a
+  // confirmation that the request is accepted.
+  virtual void ClientCertProvisioningFinishCsr(
+      const std::string& cert_scope,
+      const std::string& cert_profile_id,
+      const std::string& public_key,
+      const std::string& va_challenge_response,
+      const std::string& signature,
+      ClientCertProvisioningFinishCsrCallback callback);
+
+  // Sends certificate provisioning download certificate request. It is Step 3
+  // (final) in the certificate provisioning flow. |cert_scope|,
+  // |cert_profile_id|, |public_key| are the same as for finish csr request.
+  // |callback| will be called when the operation completes. It is expected to
+  // receive a certificate that was issued according to the CSR that was
+  // generated during previous steps.
+  virtual void ClientCertProvisioningDownloadCert(
+      const std::string& cert_scope,
+      const std::string& cert_profile_id,
+      const std::string& public_key,
+      ClientCertProvisioningDownloadCertCallback callback);
+
   // Adds an observer to be called back upon policy and state changes.
   void AddObserver(Observer* observer);
 
@@ -499,6 +560,30 @@ class POLICY_EXPORT CloudPolicyClient {
       StatusCallback callback,
       DeviceManagementService::Job* job,
       DeviceManagementStatus status,
+      int net_error,
+      const enterprise_management::DeviceManagementResponse& response);
+
+  // Callback for certificate provisioning start csr requests.
+  void OnClientCertProvisioningStartCsrResponse(
+      ClientCertProvisioningStartCsrCallback callback,
+      policy::DeviceManagementService::Job* job,
+      policy::DeviceManagementStatus status,
+      int net_error,
+      const enterprise_management::DeviceManagementResponse& response);
+
+  // Callback for certificate provisioning finish csr requests.
+  void OnClientCertProvisioningFinishCsrResponse(
+      ClientCertProvisioningFinishCsrCallback callback,
+      policy::DeviceManagementService::Job* job,
+      policy::DeviceManagementStatus status,
+      int net_error,
+      const enterprise_management::DeviceManagementResponse& response);
+
+  // Callback for certificate provisioning download cert requests.
+  void OnClientCertProvisioningDownloadCertResponse(
+      ClientCertProvisioningDownloadCertCallback callback,
+      policy::DeviceManagementService::Job* job,
+      policy::DeviceManagementStatus status,
       int net_error,
       const enterprise_management::DeviceManagementResponse& response);
 

@@ -50,6 +50,7 @@
 #include "third_party/blink/public/mojom/scroll/scrollbar_mode.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/scheduler/web_resource_loading_task_runner_handle.h"
+#include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -78,6 +79,7 @@
 #include "third_party/blink/renderer/core/editing/surrounding_text.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
+#include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
@@ -151,6 +153,9 @@
 namespace blink {
 
 namespace {
+
+// Maximum number of burst download requests allowed.
+const int kBurstDownloadLimit = 10;
 
 inline float ParentPageZoomFactor(LocalFrame* frame) {
   auto* parent_local_frame = DynamicTo<LocalFrame>(frame->Tree().Parent());
@@ -2116,7 +2121,9 @@ void LocalFrame::SaveImageAt(const gfx::Point& window_point) {
   if (!KURL(NullURL(), url).ProtocolIsData())
     return;
 
-  GetPage()->GetChromeClient().SaveImageFromDataURL(*this, url);
+  auto params = mojom::blink::DownloadURLParams::New();
+  params->data_url_blob = DataURLToMessagePipeHandle(url);
+  GetLocalFrameHostRemote().DownloadURL(std::move(params));
 }
 
 void LocalFrame::ReportBlinkFeatureUsage(
@@ -2195,6 +2202,49 @@ void LocalFrame::MediaPlayerActionAtViewportPoint(
   }
 }
 
+void LocalFrame::DownloadURL(
+    const ResourceRequest& request,
+    network::mojom::blink::RedirectMode cross_origin_redirect_behavior) {
+  DCHECK(GetDocument());
+  mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token;
+  if (request.Url().ProtocolIs("blob")) {
+    GetDocument()->GetPublicURLManager().Resolve(
+        request.Url(), blob_url_token.InitWithNewPipeAndPassReceiver());
+  }
+
+  DownloadURL(request, cross_origin_redirect_behavior,
+              blob_url_token.PassPipe());
+}
+
+void LocalFrame::DownloadURL(
+    const ResourceRequest& request,
+    network::mojom::blink::RedirectMode cross_origin_redirect_behavior,
+    mojo::ScopedMessagePipeHandle blob_url_token) {
+  if (ShouldThrottleDownload())
+    return;
+
+  auto params = mojom::blink::DownloadURLParams::New();
+  const WebURL& url = request.Url();
+  // Pass data URL through blob.
+  if (url.ProtocolIs("data")) {
+    params->url = KURL();
+    params->data_url_blob = DataURLToMessagePipeHandle(url.GetString());
+  } else {
+    params->url = url;
+  }
+
+  params->referrer = mojom::blink::Referrer::New();
+  params->referrer->url = KURL(request.ReferrerString());
+  params->referrer->policy = request.GetReferrerPolicy();
+  params->initiator_origin = request.RequestorOrigin();
+  if (request.GetSuggestedFilename().has_value())
+    params->suggested_name = *request.GetSuggestedFilename();
+  params->cross_origin_redirects = cross_origin_redirect_behavior;
+  params->blob_url_token = std::move(blob_url_token);
+
+  GetLocalFrameHostRemote().DownloadURL(std::move(params));
+}
+
 void LocalFrame::MediaPlayerActionAt(
     const gfx::Point& window_point,
     blink::mojom::blink::MediaPlayerActionPtr action) {
@@ -2260,6 +2310,25 @@ void LocalFrame::DidUpdateFramePolicy(const FramePolicy& frame_policy) {
   // policy for frames with a remote owner.
   SECURITY_CHECK(IsA<RemoteFrameOwner>(Owner()));
   To<RemoteFrameOwner>(Owner())->SetFramePolicy(frame_policy);
+}
+
+bool LocalFrame::ShouldThrottleDownload() {
+  const auto now = base::TimeTicks::Now();
+  if (num_burst_download_requests_ == 0) {
+    burst_download_start_time_ = now;
+  } else if (num_burst_download_requests_ >= kBurstDownloadLimit) {
+    static constexpr auto kBurstDownloadLimitResetInterval =
+        base::TimeDelta::FromSeconds(1);
+    if (now - burst_download_start_time_ > kBurstDownloadLimitResetInterval) {
+      num_burst_download_requests_ = 1;
+      burst_download_start_time_ = now;
+      return false;
+    }
+    return true;
+  }
+
+  num_burst_download_requests_++;
+  return false;
 }
 
 void LocalFrame::BindToReceiver(

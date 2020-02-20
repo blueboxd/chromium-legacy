@@ -322,6 +322,10 @@ class CORE_EXPORT WebLocalFrameImpl final
   void DidDropNavigation() override;
   void MarkAsLoading() override;
   bool IsClientNavigationInitialHistoryLoad() override;
+  void DownloadURL(
+      const WebURLRequest& request,
+      network::mojom::blink::RedirectMode cross_origin_redirect_behavior,
+      mojo::ScopedMessagePipeHandle blob_url_token) override;
 
   void InitializeCoreFrame(
       Page&,

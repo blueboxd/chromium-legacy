@@ -8,7 +8,6 @@ import("../namespace_rewrites.gni")
 
 js_modulizer("modulize") {
   input_files = [
-    "about_page_tests.js",
     "appearance_fonts_page_test.js",
     "appearance_page_test.js",
     "checkbox_tests.js",
@@ -33,7 +32,6 @@ js_modulizer("modulize") {
     "settings_toggle_button_tests.js",
     "site_favicon_test.js",
     "startup_urls_page_test.js",
-    "test_about_page_browser_proxy.js",
     "system_page_tests.js",
     "test_extension_control_browser_proxy.js",
     "test_lifetime_browser_proxy.js",
@@ -42,7 +40,6 @@ js_modulizer("modulize") {
   ]
   namespace_rewrites = settings_namespace_rewrites + test_namespace_rewrites + [
                          "settings.FakeSettingsPrivate|FakeSettingsPrivate",
-                         "settings.TestLifetimeBrowserProxy|TestLifetimeBrowserProxy",
                          "settings_search.createSampleSearchEngine|createSampleSearchEngine",
                          "settings_search.TestSearchEnginesBrowserProxy|TestSearchEnginesBrowserProxy",
                          "settings.TestLifetimeBrowserProxy|TestLifetimeBrowserProxy",

@@ -322,6 +322,10 @@ class ASH_EXPORT OverviewGrid : public SplitViewObserver,
   // widget as it may need to switch between default and compact layouts.
   void OnDesksChanged();
 
+  // Returns true if any desk name is being modified in its mini view on this
+  // grid.
+  bool IsDeskNameBeingModified() const;
+
   // Returns true if the grid has no more windows.
   bool empty() const { return window_list_.empty(); }
 

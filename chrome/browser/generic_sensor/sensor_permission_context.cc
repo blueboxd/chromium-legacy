@@ -13,8 +13,9 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 #include "url/gurl.h"
 
-SensorPermissionContext::SensorPermissionContext(Profile* profile)
-    : PermissionContextBase(profile,
+SensorPermissionContext::SensorPermissionContext(
+    content::BrowserContext* browser_context)
+    : PermissionContextBase(browser_context,
                             ContentSettingsType::SENSORS,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 

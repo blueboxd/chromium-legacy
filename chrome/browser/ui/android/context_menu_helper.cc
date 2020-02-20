@@ -14,7 +14,6 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "chrome/android/chrome_jni_headers/ContextMenuHelper_jni.h"
-#include "chrome/android/chrome_jni_headers/ContextMenuParams_jni.h"
 #include "chrome/browser/download/android/download_controller_base.h"
 #include "chrome/browser/image_decoder/image_decoder.h"
 #include "chrome/browser/performance_hints/performance_hints_observer.h"
@@ -22,6 +21,7 @@
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
+#include "components/embedder_support/android/contextmenu/context_menu_builder.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/context_menu_params.h"
@@ -33,9 +33,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
-using base::android::ConvertJavaStringToUTF8;
-using base::android::ConvertUTF16ToJavaString;
-using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 using optimization_guide::proto::PerformanceClass;
@@ -123,15 +120,12 @@ void ContextMenuHelper::ShowContextMenu(
   render_frame_id_ = render_frame_host->GetRoutingID();
   render_process_id_ = render_frame_host->GetProcess()->GetID();
   gfx::NativeView view = web_contents_->GetNativeView();
-  PerformanceClass performance_class = PerformanceClass::PERFORMANCE_UNKNOWN;
-  // Only fetch performance information for link context menus.
   if (!params.link_url.is_empty()) {
-    performance_class = PerformanceHintsObserver::PerformanceClassForURL(
-        web_contents_, params.link_url);
+    PerformanceHintsObserver::RecordPerformanceUMAForURL(web_contents_,
+                                                         params.link_url);
   }
   Java_ContextMenuHelper_showContextMenu(
-      env, java_obj_,
-      ContextMenuHelper::CreateJavaContextMenuParams(params, performance_class),
+      env, java_obj_, context_menu::BuildJavaContextMenuParams(params),
       view->GetContainerView(), view->content_offset() * view->GetDipScale());
 }
 
@@ -144,36 +138,6 @@ void ContextMenuHelper::OnContextMenuClosed(
 void ContextMenuHelper::SetPopulator(const JavaRef<jobject>& jpopulator) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_ContextMenuHelper_setPopulator(env, java_obj_, jpopulator);
-}
-
-// TODO(crbug.com/1030813): Move performance_class into ContextMenuParams and
-// clean this up.
-base::android::ScopedJavaLocalRef<jobject>
-ContextMenuHelper::CreateJavaContextMenuParams(
-    const content::ContextMenuParams& params,
-    PerformanceClass performance_class) {
-  GURL sanitizedReferrer = (params.frame_url.is_empty() ?
-      params.page_url : params.frame_url).GetAsReferrer();
-
-  bool can_save = params.media_flags & blink::WebContextMenuData::kMediaCanSave;
-  JNIEnv* env = base::android::AttachCurrentThread();
-  base::string16 title_text =
-      (params.title_text.empty() ? params.alt_text : params.title_text);
-
-  base::android::ScopedJavaLocalRef<jobject> jmenu_info =
-      ContextMenuParamsAndroid::Java_ContextMenuParams_create(
-          env, static_cast<int>(params.media_type),
-          ConvertUTF8ToJavaString(env, params.page_url.spec()),
-          ConvertUTF8ToJavaString(env, params.link_url.spec()),
-          ConvertUTF16ToJavaString(env, params.link_text),
-          ConvertUTF8ToJavaString(env, params.unfiltered_link_url.spec()),
-          ConvertUTF8ToJavaString(env, params.src_url.spec()),
-          ConvertUTF16ToJavaString(env, title_text),
-          ConvertUTF8ToJavaString(env, sanitizedReferrer.spec()),
-          static_cast<int>(params.referrer_policy), can_save, params.x,
-          params.y, params.source_type, performance_class);
-
-  return jmenu_info;
 }
 
 base::android::ScopedJavaLocalRef<jobject>

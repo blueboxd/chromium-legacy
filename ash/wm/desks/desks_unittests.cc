@@ -23,6 +23,7 @@
 #include "ash/wm/desks/close_desk_button.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_mini_view.h"
+#include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
@@ -46,6 +47,7 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 #include "ash/wm/workspace_controller.h"
 #include "base/stl_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/session_manager/session_manager_types.h"
@@ -58,6 +60,7 @@
 #include "ui/compositor_extra/shadow.h"
 #include "ui/display/display.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/events/event_constants.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/background.h"
@@ -221,7 +224,8 @@ void DesksBarViewLayoutTestHelper(const DesksBarView* desks_bar_view,
   for (const auto& mini_view : desks_bar_view->mini_views()) {
     EXPECT_EQ(mini_view->GetDeskPreviewForTesting()->height(),
               DeskPreviewView::GetHeight(use_compact_layout));
-    EXPECT_EQ(mini_view->IsLabelVisibleForTesting(), !use_compact_layout);
+    EXPECT_EQ(mini_view->IsDeskNameViewVisibleForTesting(),
+              !use_compact_layout);
   }
 }
 
@@ -1457,6 +1461,146 @@ TEST_F(DesksTest, NewDeskButtonStateAndColor) {
   EXPECT_FALSE(new_desk_button->GetEnabled());
   EXPECT_EQ(disabled_background_color,
             new_desk_button->GetBackgroundColorForTesting());
+}
+
+class DesksEditableNamesTest : public AshTestBase {
+ public:
+  DesksEditableNamesTest() = default;
+  DesksEditableNamesTest(const DesksEditableNamesTest&) = delete;
+  DesksEditableNamesTest& operator=(const DesksEditableNamesTest&) = delete;
+  ~DesksEditableNamesTest() override = default;
+
+  DesksController* controller() { return controller_; }
+  OverviewGrid* overview_grid() { return overview_grid_; }
+  const DesksBarView* desks_bar_view() { return desks_bar_view_; }
+
+  // AshTestBase:
+  void SetUp() override {
+    AshTestBase::SetUp();
+
+    // Begin all tests with two desks and start overview.
+    NewDesk();
+    controller_ = DesksController::Get();
+
+    auto* overview_controller = Shell::Get()->overview_controller();
+    overview_controller->StartOverview();
+    overview_grid_ = GetOverviewGridForRoot(Shell::GetPrimaryRootWindow());
+    desks_bar_view_ = overview_grid_->desks_bar_view();
+    ASSERT_TRUE(desks_bar_view_);
+  }
+
+  void ClickOnDeskNameViewAtIndex(int index) {
+    auto* desk_name_view =
+        desks_bar_view_->mini_views()[index]->desk_name_view();
+    auto* generator = GetEventGenerator();
+    generator->MoveMouseTo(desk_name_view->GetBoundsInScreen().CenterPoint());
+    generator->ClickLeftButton();
+  }
+
+  void SendKey(ui::KeyboardCode key_code, int flags = 0) {
+    auto* generator = GetEventGenerator();
+    generator->PressKey(key_code, flags);
+    generator->ReleaseKey(key_code, flags);
+  }
+
+ private:
+  DesksController* controller_ = nullptr;
+  OverviewGrid* overview_grid_ = nullptr;
+  const DesksBarView* desks_bar_view_ = nullptr;
+};
+
+TEST_F(DesksEditableNamesTest, DefaultNameChangeAborted) {
+  ASSERT_EQ(2u, controller()->desks().size());
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+
+  // Click on the desk name view of the second mini view.
+  auto* desk_name_view_2 = desks_bar_view()->mini_views()[1]->desk_name_view();
+  EXPECT_FALSE(overview_grid()->IsDeskNameBeingModified());
+  ClickOnDeskNameViewAtIndex(1);
+  EXPECT_TRUE(overview_grid()->IsDeskNameBeingModified());
+  EXPECT_TRUE(desk_name_view_2->HasFocus());
+
+  // Pressing enter now without making any changes should not change the
+  // `is_name_set_by_user_` bit.
+  SendKey(ui::VKEY_RETURN);
+  EXPECT_FALSE(overview_grid()->IsDeskNameBeingModified());
+  EXPECT_FALSE(desk_name_view_2->HasFocus());
+  auto* desk_2 = controller()->desks()[1].get();
+  EXPECT_FALSE(desk_2->is_name_set_by_user());
+}
+
+TEST_F(DesksEditableNamesTest, NamesSetByUsersAreNotOverwritten) {
+  ASSERT_EQ(2u, controller()->desks().size());
+  auto* overview_controller = Shell::Get()->overview_controller();
+  ASSERT_TRUE(overview_controller->InOverviewSession());
+
+  // Change the name of the first desk. Adding/removing desks or
+  // exiting/reentering overview should not cause changes to the desk's name.
+  // All other names should be the default.
+  ClickOnDeskNameViewAtIndex(0);
+  // Select all and delete.
+  SendKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  SendKey(ui::VKEY_BACK);
+  // Type " code  " (with one space at the beginning and two spaces at the end)
+  // and hit enter.
+  SendKey(ui::VKEY_SPACE);
+  SendKey(ui::VKEY_C);
+  SendKey(ui::VKEY_O);
+  SendKey(ui::VKEY_D);
+  SendKey(ui::VKEY_E);
+  SendKey(ui::VKEY_SPACE);
+  SendKey(ui::VKEY_SPACE);
+  SendKey(ui::VKEY_RETURN);
+
+  // Extra whitespace should be trimmed.
+  auto* desk_1 = controller()->desks()[0].get();
+  auto* desk_2 = controller()->desks()[1].get();
+  EXPECT_EQ(base::UTF8ToUTF16("code"), desk_1->name());
+  EXPECT_EQ(base::UTF8ToUTF16("Desk 2"), desk_2->name());
+  EXPECT_TRUE(desk_1->is_name_set_by_user());
+  EXPECT_FALSE(desk_2->is_name_set_by_user());
+
+  // Add a third desk and remove the second. Both operations should not affect
+  // the user-modified desk names.
+  NewDesk();
+  auto* desk_3 = controller()->desks()[2].get();
+  EXPECT_EQ(base::UTF8ToUTF16("Desk 3"), desk_3->name());
+  EXPECT_TRUE(desk_1->is_name_set_by_user());
+  EXPECT_FALSE(desk_2->is_name_set_by_user());
+  EXPECT_FALSE(desk_3->is_name_set_by_user());
+  RemoveDesk(desk_2);
+  EXPECT_TRUE(desk_1->is_name_set_by_user());
+  EXPECT_FALSE(desk_3->is_name_set_by_user());
+  // Desk 3 will now be renamed to "Desk 2".
+  EXPECT_EQ(base::UTF8ToUTF16("Desk 2"), desk_3->name());
+
+  overview_controller->EndOverview();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(desk_1->is_name_set_by_user());
+  EXPECT_FALSE(desk_3->is_name_set_by_user());
+  EXPECT_EQ(base::UTF8ToUTF16("code"), desk_1->name());
+  EXPECT_EQ(base::UTF8ToUTF16("Desk 2"), desk_3->name());
+}
+
+TEST_F(DesksEditableNamesTest, DontAllowEmptyNames) {
+  ASSERT_EQ(2u, controller()->desks().size());
+  ASSERT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
+
+  // Change the name of a desk to an empty string.
+  ClickOnDeskNameViewAtIndex(0);
+  // Select all and delete.
+  SendKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  SendKey(ui::VKEY_BACK);
+  // At this point the desk's name is empty, but editing hasn't committed yet,
+  // so it's ok.
+  auto* desk_1 = controller()->desks()[0].get();
+  EXPECT_TRUE(desk_1->name().empty());
+  // Committing also works with the ESC key.
+  SendKey(ui::VKEY_ESCAPE);
+  // The name should now revert back to the default value.
+  EXPECT_FALSE(desk_1->name().empty());
+  EXPECT_FALSE(desk_1->is_name_set_by_user());
+  EXPECT_EQ(base::UTF8ToUTF16("Desk 1"), desk_1->name());
 }
 
 class TabletModeDesksTest : public DesksTest {

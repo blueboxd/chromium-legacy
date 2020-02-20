@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_PLUGINS_FLASH_PERMISSION_CONTEXT_H_
 
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_context_base.h"
+#include "components/permissions/permission_context_base.h"
 
 class GURL;
 
@@ -14,9 +14,9 @@ namespace permissions {
 class PermissionRequestID;
 }
 
-class FlashPermissionContext : public PermissionContextBase {
+class FlashPermissionContext : public permissions::PermissionContextBase {
  public:
-  explicit FlashPermissionContext(Profile* profile);
+  explicit FlashPermissionContext(content::BrowserContext* browser_context);
   ~FlashPermissionContext() override;
 
  private:

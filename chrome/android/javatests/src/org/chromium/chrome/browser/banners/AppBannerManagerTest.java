@@ -35,6 +35,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -631,6 +632,7 @@ public class AppBannerManagerTest {
     @MediumTest
     @Feature({"AppBanners"})
     @CommandLineFlags.Add("enable-features=" + ChromeFeatureList.INSTALLABLE_AMBIENT_BADGE_INFOBAR)
+    @DisabledTest(message = "Test is flaky, see crbug.com/1054196")
     public void testAmbientBadgeDoesNotAppearWhenEventCanceled() throws Exception {
         String webBannerUrl = WebappTestPage.getServiceWorkerUrlWithAction(
                 mTestServer, "stash_event_and_prevent_default");

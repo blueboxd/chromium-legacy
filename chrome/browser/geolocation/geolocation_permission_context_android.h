@@ -68,11 +68,12 @@ class GeolocationPermissionContextAndroid
   static void SetDSEOriginForTesting(const char* dse_origin);
 
   // GeolocationPermissionContext:
-  void RequestPermission(content::WebContents* web_contents,
-                         const permissions::PermissionRequestID& id,
-                         const GURL& requesting_frame_origin,
-                         bool user_gesture,
-                         BrowserPermissionCallback callback) override;
+  void RequestPermission(
+      content::WebContents* web_contents,
+      const permissions::PermissionRequestID& id,
+      const GURL& requesting_frame_origin,
+      bool user_gesture,
+      permissions::BrowserPermissionCallback callback) override;
   void UserMadePermissionDecision(const permissions::PermissionRequestID& id,
                                   const GURL& requesting_origin,
                                   const GURL& embedding_origin,
@@ -80,7 +81,7 @@ class GeolocationPermissionContextAndroid
   void NotifyPermissionSet(const permissions::PermissionRequestID& id,
                            const GURL& requesting_origin,
                            const GURL& embedding_origin,
-                           BrowserPermissionCallback callback,
+                           permissions::BrowserPermissionCallback callback,
                            bool persist,
                            ContentSetting content_setting) override;
   permissions::PermissionResult UpdatePermissionStatusWithDeviceStatus(
@@ -110,7 +111,7 @@ class GeolocationPermissionContextAndroid
       const permissions::PermissionRequestID& id,
       const GURL& requesting_frame_origin,
       const GURL& embedding_origin,
-      BrowserPermissionCallback callback,
+      permissions::BrowserPermissionCallback callback,
       bool permissions_updated);
 
   // Will return true if the location settings dialog will be shown for the
@@ -128,12 +129,13 @@ class GeolocationPermissionContextAndroid
       ContentSetting content_setting,
       LocationSettingsDialogOutcome prompt_outcome);
 
-  void FinishNotifyPermissionSet(const permissions::PermissionRequestID& id,
-                                 const GURL& requesting_origin,
-                                 const GURL& embedding_origin,
-                                 BrowserPermissionCallback callback,
-                                 bool persist,
-                                 ContentSetting content_setting);
+  void FinishNotifyPermissionSet(
+      const permissions::PermissionRequestID& id,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      permissions::BrowserPermissionCallback callback,
+      bool persist,
+      ContentSetting content_setting);
 
   // Overrides the LocationSettings object used to determine whether
   // system and Chrome-wide location permissions are enabled.
@@ -143,7 +145,7 @@ class GeolocationPermissionContextAndroid
   std::unique_ptr<LocationSettings> location_settings_;
 
   permissions::PermissionRequestID location_settings_dialog_request_id_;
-  BrowserPermissionCallback location_settings_dialog_callback_;
+  permissions::BrowserPermissionCallback location_settings_dialog_callback_;
 
   // Must be the last member, to ensure that it will be destroyed first, which
   // will invalidate weak pointers.

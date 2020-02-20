@@ -36,8 +36,8 @@ AndroidCdmFactory::AndroidCdmFactory(const CreateFetcherCB& create_fetcher_cb,
 AndroidCdmFactory::~AndroidCdmFactory() {
   weak_factory_.InvalidateWeakPtrs();
   for (auto& pending_creation : pending_creations_) {
-    auto& cdm_created_cb = pending_creation.second.second;
-    cdm_created_cb.Run(nullptr, "CDM creation aborted");
+    CdmCreatedCB cdm_created_cb = std::move(pending_creation.second.second);
+    std::move(cdm_created_cb).Run(nullptr, "CDM creation aborted");
   }
 }
 
@@ -49,14 +49,15 @@ void AndroidCdmFactory::Create(
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb,
-    const CdmCreatedCB& cdm_created_cb) {
+    CdmCreatedCB cdm_created_cb) {
   DVLOG(1) << __func__;
 
   // Bound |cdm_created_cb| so we always fire it asynchronously.
-  CdmCreatedCB bound_cdm_created_cb = BindToCurrentLoop(cdm_created_cb);
+  CdmCreatedCB bound_cdm_created_cb =
+      BindToCurrentLoop(std::move(cdm_created_cb));
 
   if (security_origin.opaque()) {
-    bound_cdm_created_cb.Run(nullptr, "Invalid origin.");
+    std::move(bound_cdm_created_cb).Run(nullptr, "Invalid origin.");
     return;
   }
 
@@ -67,7 +68,7 @@ void AndroidCdmFactory::Create(
     scoped_refptr<ContentDecryptionModule> cdm(
         new AesDecryptor(session_message_cb, session_closed_cb,
                          session_keys_change_cb, session_expiration_update_cb));
-    bound_cdm_created_cb.Run(cdm, "");
+    std::move(bound_cdm_created_cb).Run(cdm, "");
     return;
   }
 
@@ -75,8 +76,8 @@ void AndroidCdmFactory::Create(
 
   if (!MediaDrmBridge::IsKeySystemSupported(key_system)) {
     ReportMediaDrmBridgeKeySystemSupport(false);
-    bound_cdm_created_cb.Run(
-        nullptr, "Key system not supported unexpectedly: " + key_system);
+    std::move(bound_cdm_created_cb)
+        .Run(nullptr, "Key system not supported unexpectedly: " + key_system);
     return;
   }
 
@@ -88,7 +89,8 @@ void AndroidCdmFactory::Create(
 
   creation_id_++;
   pending_creations_.emplace(
-      creation_id_, PendingCreation(std::move(factory), bound_cdm_created_cb));
+      creation_id_,
+      PendingCreation(std::move(factory), std::move(bound_cdm_created_cb)));
 
   raw_factory->Create(
       key_system, security_origin, cdm_config, session_message_cb,
@@ -104,11 +106,12 @@ void AndroidCdmFactory::OnCdmCreated(
   DVLOG(1) << __func__ << ": creation_id = " << creation_id;
 
   DCHECK(pending_creations_.count(creation_id));
-  auto cdm_created_cb = pending_creations_[creation_id].second;
+  CdmCreatedCB cdm_created_cb =
+      std::move(pending_creations_[creation_id].second);
   pending_creations_.erase(creation_id);
 
   LOG_IF(ERROR, !cdm) << error_message;
-  cdm_created_cb.Run(cdm, error_message);
+  std::move(cdm_created_cb).Run(cdm, error_message);
 }
 
 }  // namespace media

@@ -197,7 +197,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   AXObject* RawFirstChild() const override;
   AXObject* RawNextSibling() const override;
   void AddChildren() override;
-  virtual void AddListMarker() {}
   virtual void AddInlineTextBoxChildren(bool force) {}
   virtual void AddImageMapChildren() {}
   virtual void AddHiddenChildren() {}

@@ -111,7 +111,6 @@ class SVGResources {
   void BuildSetOfResources(HashSet<LayoutSVGResourceContainer*>&);
 
   // Methods operating on all cached resources
-  InvalidationModeMask RemoveClientFromCache(SVGElementResourceClient&) const;
   InvalidationModeMask RemoveClientFromCacheAffectingObjectBounds(
       SVGElementResourceClient&) const;
   void ResourceDestroyed(LayoutSVGResourceContainer*);

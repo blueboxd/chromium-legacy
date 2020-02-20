@@ -34,9 +34,7 @@ DeepScanningFailureModalDialog::DeepScanningFailureModalDialog(
     base::OnceClosure accept_callback,
     base::OnceClosure cancel_callback,
     base::OnceClosure open_now_callback)
-    : accept_callback_(std::move(accept_callback)),
-      cancel_callback_(std::move(cancel_callback)),
-      open_now_callback_(std::move(open_now_callback)) {
+    : open_now_callback_(std::move(open_now_callback)) {
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(
@@ -45,6 +43,8 @@ DeepScanningFailureModalDialog::DeepScanningFailureModalDialog(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(
           IDS_DEEP_SCANNING_TIMED_OUT_DIALOG_CANCEL_BUTTON));
+  DialogDelegate::set_accept_callback(std::move(accept_callback));
+  DialogDelegate::set_cancel_callback(std::move(cancel_callback));
   auto open_now_button = views::MdTextButton::CreateSecondaryUiButton(
       this,
       l10n_util::GetStringUTF16(IDS_DEEP_SCANNING_INFO_DIALOG_OPEN_NOW_BUTTON));
@@ -79,16 +79,6 @@ DeepScanningFailureModalDialog::~DeepScanningFailureModalDialog() = default;
 bool DeepScanningFailureModalDialog::IsDialogButtonEnabled(
     ui::DialogButton button) const {
   return (button == ui::DIALOG_BUTTON_OK || button == ui::DIALOG_BUTTON_CANCEL);
-}
-
-bool DeepScanningFailureModalDialog::Accept() {
-  std::move(accept_callback_).Run();
-  return true;
-}
-
-bool DeepScanningFailureModalDialog::Cancel() {
-  std::move(cancel_callback_).Run();
-  return true;
 }
 
 bool DeepScanningFailureModalDialog::ShouldShowCloseButton() const {

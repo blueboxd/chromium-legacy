@@ -10,6 +10,9 @@
 
 namespace mojo {
 
+// DEPRECATED: Do not introduce new uses of this type. Instead use the
+// UniqueReceiverSet type defined in unique_receiver_set.h.
+//
 // This class manages a set of bindings. When the pipe a binding is bound to is
 // disconnected, the binding is automatically destroyed and removed from the
 // set, and the interface implementation is deleted. When the StrongBindingSet

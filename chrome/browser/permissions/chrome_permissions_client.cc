@@ -12,7 +12,9 @@
 #include "chrome/browser/permissions/contextual_notification_permission_ui_selector.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/url_constants.h"
 #include "components/ukm/content/source_url_recorder.h"
+#include "extensions/common/constants.h"
 #include "url/origin.h"
 
 #if !defined(OS_ANDROID)
@@ -117,4 +119,15 @@ base::Optional<url::Origin> ChromePermissionsClient::GetAutoApprovalOrigin() {
   }
 #endif
   return base::nullopt;
+}
+
+bool ChromePermissionsClient::CanBypassEmbeddingOriginCheck(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {
+  // The New Tab Page is excluded from origin checks as its effective requesting
+  // origin may be the Default Search Engine origin. Extensions are also
+  // excluded as currently they can request permission from iframes when
+  // embedded in non-secure contexts (https://crbug.com/530507).
+  return embedding_origin == GURL(chrome::kChromeUINewTabURL).GetOrigin() ||
+         requesting_origin.SchemeIs(extensions::kExtensionScheme);
 }

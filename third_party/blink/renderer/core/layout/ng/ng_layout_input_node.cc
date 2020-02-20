@@ -77,8 +77,13 @@ void NGLayoutInputNode::IntrinsicSize(
   DCHECK(IsReplaced());
 
   LayoutUnit override_inline_size = OverrideIntrinsicContentInlineSize();
-  if (override_inline_size != kIndefiniteSize)
+  if (override_inline_size != kIndefiniteSize) {
     *computed_inline_size = override_inline_size;
+  } else {
+    LayoutUnit default_inline_size = DefaultIntrinsicContentInlineSize();
+    if (default_inline_size != kIndefiniteSize)
+      *computed_inline_size = default_inline_size;
+  }
 
   LayoutUnit override_block_size = OverrideIntrinsicContentBlockSize();
   if (override_block_size != kIndefiniteSize) {

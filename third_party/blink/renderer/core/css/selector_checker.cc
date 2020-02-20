@@ -1250,11 +1250,12 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
     case CSSSelector::kPseudoVideoPersistentAncestor:
       DCHECK(is_ua_rule_);
       return element.ContainsPersistentVideo();
-    case CSSSelector::kPseudoXrImmersiveDomOverlay:
-      DCHECK(is_ua_rule_);
-      // In immersive AR overlay mode, apply a pseudostyle to the root element.
-      return element.GetDocument().IsImmersiveArOverlay() &&
-             element == element.GetDocument().documentElement();
+    case CSSSelector::kPseudoXrOverlay:
+      // In immersive AR overlay mode, apply a pseudostyle to the DOM Overlay
+      // element. This is the same as the fullscreen element in the current
+      // implementation, but could be different for AR headsets.
+      return element.GetDocument().IsXrOverlay() &&
+             Fullscreen::IsFullscreenElement(element);
     case CSSSelector::kPseudoInRange:
       return element.IsInRange();
     case CSSSelector::kPseudoOutOfRange:

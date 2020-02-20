@@ -27,6 +27,7 @@
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, liitboks</translation>
 <translation id="1161762950103988776">Hüpe</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, menüü-üksus, alammenüüga</translation>
+<translation id="1175914831232945926">Numbrid</translation>
 <translation id="1177863135347784049">Kohandatud</translation>
 <translation id="1188858454923323853">täiendav</translation>
 <translation id="1195238899008218998">Järelsõna</translation>
@@ -145,6 +146,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="1969092762068865084">Juuli</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1982529757455190616">Eelmist siirdepunkti ei ole</translation>
+<translation id="1988733631391393183">Kuva Braille' käsud ChromeVoxi menüüdes</translation>
 <translation id="1990932729021763163">Rea päis:</translation>
 <translation id="2002895034995108595">Lähtesta praegune klahvitabel</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{vasak nurksulg}other{# vasakut nurksulgu}}</translation>
@@ -308,6 +310,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="3109724472072898302">Ahendatud</translation>
 <translation id="3112457281078985179">ChromeVoxi sisse- või väljalülitamiseks vajutage klahvikombinatsiooni Control + Alt + Z.</translation>
 <translation id="3128896337293924532">Järgmist plokktsitaati ei ole</translation>
+<translation id="3131002934070407451">Loe numbreid järgmiselt:</translation>
 <translation id="3134461040845705080">kirjutuskaitstud</translation>
 <translation id="3137663468179739624">Oliivroheline</translation>
 <translation id="3138767756593758860">Kuva maamärkide loend</translation>
@@ -1001,6 +1004,7 @@ Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</tran
 <translation id="7968340748835037139">Tumeroheline</translation>
 <translation id="7972507042926081808">Šokolaadpruun</translation>
 <translation id="7974390230414479278">Menüü-üksus</translation>
+<translation id="8004507136466386272">Sõnad</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{jutumärk}other{# jutumärki}}</translation>
 <translation id="8017588669690167134">Kõne väljalülitamine</translation>

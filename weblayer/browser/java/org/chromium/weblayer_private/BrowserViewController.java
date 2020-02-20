@@ -15,6 +15,9 @@ import android.widget.RelativeLayout;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
 
 /**
  * BrowserViewController controls the set of Views needed to show the WebContents.
@@ -30,6 +33,8 @@ public final class BrowserViewController
     // Other child of mContentView, which holds views that sit on top of the web contents, such as
     // tab modal dialogs.
     private final FrameLayout mWebContentsOverlayView;
+
+    private final ModalDialogManager mModalDialogManager;
 
     private TabImpl mTab;
 
@@ -66,6 +71,10 @@ public final class BrowserViewController
         overlayParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
         mContentView.addView(mWebContentsOverlayView, overlayParams);
         windowAndroid.setAnimationPlaceholderView(mWebContentsOverlayView);
+
+        mModalDialogManager = windowAndroid.getModalDialogManager();
+        mModalDialogManager.registerPresenter(
+                new WebLayerTabModalPresenter(this, context), ModalDialogType.TAB);
     }
 
     public void destroy() {
@@ -121,6 +130,9 @@ public final class BrowserViewController
             mTab.onDidGainActive(mTopControlsContainerView.getNativeHandle());
             mContentView.requestFocus();
         }
+
+        mModalDialogManager.dismissDialogsOfType(
+                ModalDialogType.TAB, DialogDismissalCause.TAB_SWITCHED);
     }
 
     public TabImpl getTab() {

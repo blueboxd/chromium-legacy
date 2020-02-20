@@ -117,7 +117,7 @@ void RealTimeUrlLookupService::StartLookup(
   std::move(request_callback).Run(std::move(request));
 }
 
-RealTimeUrlLookupService::~RealTimeUrlLookupService() {
+void RealTimeUrlLookupService::Shutdown() {
   for (auto& pending : pending_requests_) {
     // An empty response is treated as safe.
     auto response = std::make_unique<RTLookupResponse>();
@@ -126,6 +126,8 @@ RealTimeUrlLookupService::~RealTimeUrlLookupService() {
   }
   pending_requests_.clear();
 }
+
+RealTimeUrlLookupService::~RealTimeUrlLookupService() {}
 
 void RealTimeUrlLookupService::OnURLLoaderComplete(
     network::SimpleURLLoader* url_loader,

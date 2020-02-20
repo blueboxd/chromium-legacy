@@ -316,7 +316,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/contextmenu/ContextMenuHelper.java",
   "java/src/org/chromium/chrome/browser/contextmenu/ContextMenuItem.java",
   "java/src/org/chromium/chrome/browser/contextmenu/ContextMenuItemDelegate.java",
-  "java/src/org/chromium/chrome/browser/contextmenu/ContextMenuParams.java",
   "java/src/org/chromium/chrome/browser/contextmenu/ContextMenuPopulator.java",
   "java/src/org/chromium/chrome/browser/contextmenu/ContextMenuTitleView.java",
   "java/src/org/chromium/chrome/browser/contextmenu/ContextMenuUi.java",

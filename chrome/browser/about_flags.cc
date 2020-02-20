@@ -3834,10 +3834,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"overlay-new-layout", flag_descriptions::kOverlayNewLayoutName,
      flag_descriptions::kOverlayNewLayoutDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kOverlayNewLayout)},
-    {"safe-browsing-use-local-blacklists-v2",
-     flag_descriptions::kSafeBrowsingUseLocalBlacklistsV2Name,
-     flag_descriptions::kSafeBrowsingUseLocalBlacklistsV2Description,
-     kOsAndroid, FEATURE_VALUE_TYPE(safe_browsing::kUseLocalBlacklistsV2)},
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
@@ -4263,6 +4259,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"corner-shortcuts", flag_descriptions::kCornerShortcutsName,
      flag_descriptions::kCornerShortcutsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kCornerShortcuts)},
+
+     {"printer-status", flag_descriptions::kPrinterStatusName,
+     flag_descriptions::kPrinterStatusDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kPrinterStatus)},
 #endif  // OS_CHROMEOS
 
     {"autofill-off-no-server-data",

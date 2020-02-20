@@ -1456,6 +1456,7 @@ component("net") {
     }
 
     if (is_fuchsia) {
+      public_deps += [ "//third_party/fuchsia-sdk/sdk:fuchsia-netstack" ]
       sources += [
         "base/network_change_notifier_fuchsia.cc",
         "base/network_change_notifier_fuchsia.h",

@@ -172,7 +172,28 @@ ScriptPromise XRFrame::createAnchor(ScriptState* script_state,
     return {};
   }
 
-  return session_->CreateAnchor(script_state, initial_pose, space, nullptr,
+  if (!initial_pose) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      XRSession::kNoRigidTransformSpecified);
+    return {};
+  }
+
+  if (!space) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      XRSession::kNoSpaceSpecified);
+    return {};
+  }
+
+  auto maybe_mojo_from_offset_space = space->MojoFromOffsetMatrix();
+
+  if (!maybe_mojo_from_offset_space) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      XRSession::kUnableToRetrieveMatrix);
+    return ScriptPromise();
+  }
+
+  return session_->CreateAnchor(script_state, initial_pose->TransformMatrix(),
+                                *maybe_mojo_from_offset_space, base::nullopt,
                                 exception_state);
 }
 

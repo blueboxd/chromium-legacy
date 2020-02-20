@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/safe_browsing/core/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/core/proto/realtimeapi.pb.h"
 #include "url/gurl.h"
@@ -36,11 +37,11 @@ using RTLookupResponseCallback =
 
 // This class implements the logic to decide whether the real time lookup
 // feature is enabled for a given user/profile.
-class RealTimeUrlLookupService {
+class RealTimeUrlLookupService : public KeyedService {
  public:
   explicit RealTimeUrlLookupService(
       scoped_refptr<network::SharedURLLoaderFactory>);
-  ~RealTimeUrlLookupService();
+  ~RealTimeUrlLookupService() override;
 
   // Returns true if |url|'s scheme can be checked.
   bool CanCheckUrl(const GURL& url) const;
@@ -63,6 +64,10 @@ class RealTimeUrlLookupService {
   // Called by |database_manager| when any profile is destroyed. The current
   // object will finish all pending requests and delete itself.
   void WaitForPendingRequestsOrDelete();
+
+  // KeyedService:
+  // Called before the actual deletion of the object.
+  void Shutdown() override;
 
   // Returns the SBThreatType for a given
   // RTLookupResponse::ThreatInfo::ThreatType

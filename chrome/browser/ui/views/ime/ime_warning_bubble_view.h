@@ -37,10 +37,6 @@ class ImeWarningBubbleView : public views::BubbleDialogDelegateView,
                          BrowserView* browser_view,
                          const ImeWarningBubbleResponseCallback& callback);
 
-  // views::DialogDelegate:
-  bool Accept() override;
-  bool Cancel() override;
-
   // ToolbarActionsBarObserver:
   void OnToolbarActionsBarAnimationEnded() override;
 

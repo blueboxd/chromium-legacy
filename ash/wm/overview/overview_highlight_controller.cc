@@ -8,6 +8,7 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/desks/desk_mini_view.h"
+#include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_util.h"
 #include "ash/wm/desks/new_desk_button.h"
@@ -181,8 +182,10 @@ OverviewHighlightController::GetTraversableViews() const {
     if (bar_view) {
       // The desk items are always traversable from left to right, even in RTL
       // languages.
-      for (const auto& mini_view : bar_view->mini_views())
+      for (const auto& mini_view : bar_view->mini_views()) {
         traversable_views.push_back(mini_view.get());
+        traversable_views.push_back(mini_view->desk_name_view());
+      }
 
       if (bar_view->new_desk_button()->GetEnabled())
         traversable_views.push_back(bar_view->new_desk_button());

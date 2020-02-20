@@ -28,13 +28,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_manager.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/features.h"
+#include "components/permissions/permission_context_base.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_request_id.h"
 #include "components/permissions/permission_request_manager.h"
@@ -831,7 +831,8 @@ TEST_F(GeolocationPermissionContextTests, QueuedPermission) {
   // requests on the same page. This test can be deleted once the feature is
   // enabled by default.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kPermissionDelegation);
+  scoped_feature_list.InitAndDisableFeature(
+      permissions::features::kPermissionDelegation);
   GURL requesting_frame_0("https://www.example.com/geolocation");
   GURL requesting_frame_1("https://www.example-2.com/geolocation");
   EXPECT_EQ(CONTENT_SETTING_ASK, GetGeolocationContentSetting(
@@ -1006,7 +1007,8 @@ TEST_F(GeolocationPermissionContextTests, QueuedOriginMultipleTabs) {
   // requests on the same page. This test can be deleted once the feature is
   // enabled by default.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(features::kPermissionDelegation);
+  scoped_feature_list.InitAndDisableFeature(
+      permissions::features::kPermissionDelegation);
   GURL url_a("https://www.example.com/geolocation");
   GURL url_b("https://www.example-2.com/geolocation");
   NavigateAndCommit(url_a);  // Tab A0.

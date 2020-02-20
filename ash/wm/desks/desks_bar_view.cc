@@ -192,6 +192,17 @@ void DesksBarView::Init() {
       this, GetWidget()->GetNativeWindow());
 }
 
+bool DesksBarView::IsDeskNameBeingModified() const {
+  if (!GetWidget()->IsActive())
+    return false;
+
+  for (const auto& mini_view : mini_views_) {
+    if (mini_view->IsDeskNameBeingModified())
+      return true;
+  }
+  return false;
+}
+
 void DesksBarView::OnHoverStateMayHaveChanged() {
   for (auto& mini_view : mini_views_)
     mini_view->OnHoverStateMayHaveChanged();
@@ -266,19 +277,8 @@ bool DesksBarView::UsesCompactLayout() const {
 
 void DesksBarView::ButtonPressed(views::Button* sender,
                                  const ui::Event& event) {
-  auto* controller = DesksController::Get();
-  if (sender == new_desk_button_) {
+  if (sender == new_desk_button_)
     new_desk_button_->OnButtonPressed();
-    return;
-  }
-
-  for (auto& mini_view : mini_views_) {
-    if (mini_view.get() == sender) {
-      controller->ActivateDesk(mini_view->desk(),
-                               DesksSwitchSource::kMiniViewButton);
-      return;
-    }
-  }
 }
 
 void DesksBarView::OnDeskAdded(const Desk* desk) {

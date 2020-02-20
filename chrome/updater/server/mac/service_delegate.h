@@ -10,9 +10,7 @@
 #include <memory>
 
 namespace updater {
-
 class UpdateService;
-
 }
 
 @interface UpdateCheckXPCServiceDelegate : NSObject <NSXPCListenerDelegate> {

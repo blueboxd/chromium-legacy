@@ -305,6 +305,11 @@ Ikiwa '<ph name="SERVICE_SCRIPT_NAME" />' tayari imechaguliwa, batilisha uteuzi 
 <translation id="8196755618196986400">Ili kuturuhusu kuwasiliana nawe kwa maelezo zaidi, anwani yako ya barua pepe itajumuishwa katika maoni yoyote unayowasilisha.</translation>
 <translation id="8244400547700556338">Pata maelezo zaidi.</translation>
 <translation id="8261506727792406068">Futa</translation>
+<translation id="8295077433896346116">Ili utumie <ph name="PRODUCT_NAME" />, unahitaji kutoa ruhusa ya 'Ufikivu' ili maudhui kutoka kwenye skrini ya mbali yaweze kuwekwa kwenye Mac hii.
+
+Ili utoe ruhusa hii, bofya '<ph name="BUTTON_NAME" />' hapa chini. Kwenye kijisehemu cha mapendeleo ya 'Ufikivu' kinachofunguka, chagua kisanduku kilicho karibu na '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+Ikiwa '<ph name="SERVICE_SCRIPT_NAME" />' tayari imechaguliwa, batilisha uteuzi kisha uichague tena.</translation>
 <translation id="8355326866731426344">Msimbo huu wa ufikiji utaisha muda baada ya <ph name="TIMEOUT" /></translation>
 <translation id="8355485110405946777">Jumuisha kumbukumbu za programu ili kutusaidia kutatua tatizo lako (kumbukumbu zinaweza kujumuisha maelezo ya binafsi).</translation>
 <translation id="837021510621780684">Kutoka kwenye kompyuta hii</translation>

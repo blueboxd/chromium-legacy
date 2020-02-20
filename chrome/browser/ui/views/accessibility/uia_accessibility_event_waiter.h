@@ -92,23 +92,23 @@ class UiaAccessibilityEventWaiter {
       END_COM_MAP()
 
       // IUIAutomationFocusChangedEventHandler interface.
-      STDMETHOD(HandleFocusChangedEvent)(IUIAutomationElement* sender) override;
+      IFACEMETHODIMP HandleFocusChangedEvent(
+          IUIAutomationElement* sender) override;
 
       // IUIAutomationPropertyChangedEventHandler interface.
-      STDMETHOD(HandlePropertyChangedEvent)
-      (IUIAutomationElement* sender,
-       PROPERTYID property_id,
-       VARIANT new_value) override;
+      IFACEMETHODIMP HandlePropertyChangedEvent(IUIAutomationElement* sender,
+                                                PROPERTYID property_id,
+                                                VARIANT new_value) override;
 
       // IUIAutomationStructureChangedEventHandler interface.
-      STDMETHOD(HandleStructureChangedEvent)
-      (IUIAutomationElement* sender,
-       StructureChangeType change_type,
-       SAFEARRAY* runtime_id) override;
+      IFACEMETHODIMP HandleStructureChangedEvent(
+          IUIAutomationElement* sender,
+          StructureChangeType change_type,
+          SAFEARRAY* runtime_id) override;
 
       // IUIAutomationEventHandler interface.
-      STDMETHOD(HandleAutomationEvent)
-      (IUIAutomationElement* sender, EVENTID event_id) override;
+      IFACEMETHODIMP HandleAutomationEvent(IUIAutomationElement* sender,
+                                           EVENTID event_id) override;
 
       // Points to the waiter to receive notifications.
       UiaAccessibilityEventWaiter::Thread* owner_ = nullptr;

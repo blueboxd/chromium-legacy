@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/webui/omnibox/omnibox_ui.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals.mojom.h"
 #include "chrome/browser/ui/webui/usb_internals/usb_internals_ui.h"
+#include "components/contextual_search/buildflags.h"
 #include "components/dom_distiller/content/browser/distillability_driver.h"
 #include "components/dom_distiller/content/browser/distiller_javascript_service_impl.h"
 #include "components/dom_distiller/content/common/mojom/distillability_service.mojom.h"
@@ -166,7 +167,7 @@ void BindUnhandledTapWebContentsObserver(
 }
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
 void BindContextualSearchObserver(
     content::RenderFrameHost* const host,
     mojo::PendingReceiver<
@@ -184,7 +185,7 @@ void BindContextualSearchObserver(
         contextual_search_observer->api_handler(), std::move(receiver));
   }
 }
-#endif
+#endif  // BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
 
 // Forward image Annotator requests to the profile's AccessibilityLabelsService.
 void BindImageAnnotator(
@@ -365,6 +366,7 @@ void PopulateChromeFrameBinders(
   map->Add<blink::mojom::ShareService>(base::BindRepeating(
       &ForwardToJavaWebContents<blink::mojom::ShareService>));
 
+#if BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
   map->Add<contextual_search::mojom::ContextualSearchJsApiService>(
       base::BindRepeating(&BindContextualSearchObserver));
 
@@ -372,6 +374,7 @@ void PopulateChromeFrameBinders(
   map->Add<blink::mojom::UnhandledTapNotifier>(
       base::BindRepeating(&BindUnhandledTapWebContentsObserver));
 #endif  // BUILDFLAG(ENABLE_UNHANDLED_TAP)
+#endif  // BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
 
 #if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
   map->Add<blink::mojom::SpatialNavigationHost>(base::BindRepeating(

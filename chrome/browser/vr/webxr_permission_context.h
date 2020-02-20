@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_VR_WEBXR_PERMISSION_CONTEXT_H_
 
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_context_base.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_context_base.h"
 
-class WebXrPermissionContext : public PermissionContextBase {
+class WebXrPermissionContext : public permissions::PermissionContextBase {
  public:
-  WebXrPermissionContext(Profile* profile,
+  WebXrPermissionContext(content::BrowserContext* browser_context,
                          ContentSettingsType content_settings_type);
 
   ~WebXrPermissionContext() override;

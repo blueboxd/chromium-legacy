@@ -286,7 +286,8 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
 
 #if defined(OS_ANDROID)
   // Gets an NFC implementation within the context of this delegate.
-  virtual void GetNFC(mojo::PendingReceiver<device::mojom::NFC> receiver);
+  virtual void GetNFC(RenderFrameHost* render_frame_host,
+                      mojo::PendingReceiver<device::mojom::NFC> receiver);
 #endif
 
   // Notification that the frame wants to go into fullscreen mode.

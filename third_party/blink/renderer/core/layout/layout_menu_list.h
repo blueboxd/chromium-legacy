@@ -49,11 +49,6 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
 
   PhysicalRect ControlClipRect(const PhysicalOffset&) const override;
   bool HasControlClip() const override { return true; }
-
-  void ComputeIntrinsicLogicalWidths(
-      LayoutUnit& min_logical_width,
-      LayoutUnit& max_logical_width) const override;
-  int MeasureOptionsWidth() const;
 };
 
 }  // namespace blink

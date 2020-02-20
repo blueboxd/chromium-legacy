@@ -8,6 +8,8 @@ import android.content.Context;
 import android.util.Pair;
 import android.view.ContextMenu;
 
+import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
+
 import java.util.List;
 
 /**

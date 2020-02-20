@@ -305,6 +305,11 @@ Ja kastīte “<ph name="SERVICE_SCRIPT_NAME" />” jau ir atzīmēta, noņemiet
 <translation id="8196755618196986400">Lai mēs varētu ar jums sazināties un iegūt papildu informāciju, iesniegtajās atsauksmēs tiks ietverta jūsu e-pasta adrese.</translation>
 <translation id="8244400547700556338">Uzziniet vairāk</translation>
 <translation id="8261506727792406068">Dzēst</translation>
+<translation id="8295077433896346116">Ja vēlaties izmantot <ph name="PRODUCT_NAME" />, jums ir jāpiešķir pieejamības atļauja, lai šajā Mac datorā varētu izmantot ievadi no attālā datora.
+
+Lai piešķirtu šo atļauju, tālāk noklikšķiniet uz pogas <ph name="BUTTON_NAME" /> un atvērtajā preferenču rūtī “Pieejamība” atzīmējiet izvēles rūtiņu blakus vienumam “<ph name="SERVICE_SCRIPT_NAME" />”.
+
+Ja izvēles rūtiņa “<ph name="SERVICE_SCRIPT_NAME" />” jau ir atzīmēta, noņemiet atzīmi un atzīmējiet to vēlreiz.</translation>
 <translation id="8355326866731426344">Šī piekļuves koda derīguma termiņš beigsies pēc <ph name="TIMEOUT" />.</translation>
 <translation id="8355485110405946777">Ietvert lietojumprogrammu žurnālus, lai palīdzētu novērst problēmu (žurnālos var būt ietverta privāta informācija).</translation>
 <translation id="837021510621780684">No šī datora</translation>

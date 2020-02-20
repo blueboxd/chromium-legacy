@@ -30,29 +30,29 @@ KbExplorer = class {
    * Initialize keyboard explorer.
    */
   static init() {
-    const backgroundWindow = chrome.extension.getBackgroundPage();
-    backgroundWindow.addEventListener('keydown', KbExplorer.onKeyDown, true);
-    backgroundWindow.addEventListener('keyup', KbExplorer.onKeyUp, true);
-    backgroundWindow.addEventListener('keypress', KbExplorer.onKeyPress, true);
+    // Export global objects from the background page context into this one.
+    window.backgroundWindow = chrome.extension.getBackgroundPage();
+    window.ChromeVox = window.backgroundWindow['ChromeVox'];
+
+    window.backgroundWindow.addEventListener(
+        'keydown', KbExplorer.onKeyDown, true);
+    window.backgroundWindow.addEventListener('keyup', KbExplorer.onKeyUp, true);
+    window.backgroundWindow.addEventListener(
+        'keypress', KbExplorer.onKeyPress, true);
     chrome.brailleDisplayPrivate.onKeyEvent.addListener(
         KbExplorer.onBrailleKeyEvent);
     chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
         KbExplorer.onAccessibilityGesture);
     chrome.accessibilityPrivate.setKeyboardListener(true, true);
-    backgroundWindow['BrailleCommandHandler']['setEnabled'](false);
-    backgroundWindow['GestureCommandHandler']['setEnabled'](false);
+    window.backgroundWindow['BrailleCommandHandler']['setEnabled'](false);
+    window.backgroundWindow['GestureCommandHandler']['setEnabled'](false);
 
-    if (localStorage['useClassic'] != 'true') {
-      ChromeVoxKbHandler.handlerKeyMap = KeyMap.fromNext();
-      ChromeVox.modKeyStr = 'Search';
-    } else {
-      ChromeVoxKbHandler.handlerKeyMap = KeyMap.fromDefaults();
-      ChromeVox.modKeyStr = 'Search+Shift';
-    }
+    ChromeVoxKbHandler.handlerKeyMap = KeyMap.fromNext();
 
     /** @type {LibLouis.Translator} */
     KbExplorer.currentBrailleTranslator_ =
-        backgroundWindow['BrailleBackground']['getInstance']()['getTranslatorManager']()['getDefaultTranslator']();
+        window
+            .backgroundWindow['BrailleBackground']['getInstance']()['getTranslatorManager']()['getDefaultTranslator']();
 
     ChromeVoxKbHandler.commandHandler = KbExplorer.onCommand;
     $('instruction').focus();
@@ -67,8 +67,13 @@ KbExplorer = class {
    * @return {boolean} True if the default action should be performed.
    */
   static onKeyDown(evt) {
-    chrome.extension.getBackgroundPage()['speak'](
-        KeyUtil.getReadableNameForKeyCode(evt.keyCode), false,
+    if (KbExplorer.keydownWithoutKeyupEvents_.size == 0) {
+      ChromeVox.tts.stop();
+    }
+    KbExplorer.keydownWithoutKeyupEvents_.add(evt.keyCode);
+    ChromeVox.tts.speak(
+        KeyUtil.getReadableNameForKeyCode(evt.keyCode),
+        window.backgroundWindow.QueueMode.QUEUE,
         AbstractTts.PERSONALITY_ANNOTATION);
 
     // Allow Ctrl+W or escape to be handled.
@@ -89,6 +94,7 @@ KbExplorer = class {
    * @param {Event} evt key event.
    */
   static onKeyUp(evt) {
+    KbExplorer.keydownWithoutKeyupEvents_.delete(evt.keyCode);
     KbExplorer.maybeClose_();
     KbExplorer.clearRange();
     evt.preventDefault();
@@ -231,9 +237,8 @@ KbExplorer = class {
    * @param {string=} opt_braille If different from text.
    */
   static output(text, opt_braille) {
-    chrome.extension.getBackgroundPage()['speak'](text);
-    chrome.extension.getBackgroundPage().ChromeVox.braille.write(
-        {text: new Spannable(opt_braille || text)});
+    ChromeVox.tts.speak(text, window.backgroundWindow.QueueMode.QUEUE);
+    ChromeVox.braille.write({text: new Spannable(opt_braille || text)});
   }
 
   /** Clears ChromeVox range. */
@@ -245,18 +250,19 @@ KbExplorer = class {
 
   /** @private */
   static resetListeners_() {
-    const backgroundWindow = chrome.extension.getBackgroundPage();
-    backgroundWindow.removeEventListener('keydown', KbExplorer.onKeyDown, true);
-    backgroundWindow.removeEventListener('keyup', KbExplorer.onKeyUp, true);
-    backgroundWindow.removeEventListener(
+    window.backgroundWindow.removeEventListener(
+        'keydown', KbExplorer.onKeyDown, true);
+    window.backgroundWindow.removeEventListener(
+        'keyup', KbExplorer.onKeyUp, true);
+    window.backgroundWindow.removeEventListener(
         'keypress', KbExplorer.onKeyPress, true);
     chrome.brailleDisplayPrivate.onKeyEvent.removeListener(
         KbExplorer.onBrailleKeyEvent);
     chrome.accessibilityPrivate.onAccessibilityGesture.removeListener(
         KbExplorer.onAccessibilityGesture);
     chrome.accessibilityPrivate.setKeyboardListener(true, false);
-    backgroundWindow['BrailleCommandHandler']['setEnabled'](true);
-    backgroundWindow['GestureCommandHandler']['setEnabled'](true);
+    window.backgroundWindow['BrailleCommandHandler']['setEnabled'](true);
+    window.backgroundWindow['GestureCommandHandler']['setEnabled'](true);
   }
 
   /** @private */
@@ -282,3 +288,10 @@ KbExplorer = class {
     window.close();
   }
 };
+
+/**
+ * Tracks all keydown events (keyed by key code) for which keyup events have
+ * yet to be received.
+ * @type {!Set<number>}
+ */
+KbExplorer.keydownWithoutKeyupEvents_ = new Set();

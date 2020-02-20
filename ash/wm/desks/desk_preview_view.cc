@@ -201,7 +201,8 @@ class DeskPreviewView::ShadowRenderer : public ui::LayerDelegate {
 // DeskPreviewView
 
 DeskPreviewView::DeskPreviewView(DeskMiniView* mini_view)
-    : mini_view_(mini_view),
+    : views::Button(mini_view),
+      mini_view_(mini_view),
       wallpaper_preview_(new DeskWallpaperPreview),
       desk_mirrored_contents_view_(new views::View),
       force_occlusion_tracker_visible_(
@@ -209,6 +210,9 @@ DeskPreviewView::DeskPreviewView(DeskMiniView* mini_view)
               mini_view->GetDeskContainer())),
       shadow_delegate_(std::make_unique<ShadowRenderer>()) {
   DCHECK(mini_view_);
+
+  SetFocusPainter(nullptr);
+  SetInkDropMode(InkDropMode::OFF);
 
   SetPaintToLayer(ui::LAYER_TEXTURED);
   layer()->SetFillsBoundsOpaquely(false);
@@ -250,6 +254,13 @@ int DeskPreviewView::GetHeight(bool compact) {
 void DeskPreviewView::SetBorderColor(SkColor color) {
   border_ptr_->set_color(color);
   SchedulePaint();
+}
+
+void DeskPreviewView::OnRemovingDesk() {
+  // Since the mini view has a remove animation, we don't want this desk preview
+  // to be pressed while it's animating. The desk will have already be removed
+  // after this.
+  listener_ = nullptr;
 }
 
 void DeskPreviewView::RecreateDeskContentsMirrorLayers() {
@@ -304,6 +315,8 @@ void DeskPreviewView::Layout() {
       desk_mirrored_contents_layer_tree_owner_->root();
   DCHECK(desk_mirrored_contents_layer);
   desk_mirrored_contents_layer->SetTransform(transform);
+
+  Button::Layout();
 }
 
 }  // namespace ash

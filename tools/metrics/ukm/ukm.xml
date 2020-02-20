@@ -1652,6 +1652,13 @@ be describing additional metrics about the same event.
       navigation and First Contentful Paint, in microseconds.
     </summary>
   </metric>
+  <metric name="HitTestDocumentUpdate">
+    <summary>
+      The time spent updating the document in preparation for a hit test for the
+      main frame, between navigation and First Contentful Paint, in
+      microseconds.
+    </summary>
+  </metric>
   <metric name="IntersectionObservation">
     <summary>
       The time spent computing intersection observer state, between navigation
@@ -2055,6 +2062,28 @@ be describing additional metrics about the same event.
     <summary>
       The percentage of the main frame time used in processing rAF-aligned
       input. An int in the range [0,100].
+    </summary>
+  </metric>
+  <metric name="HitTestDocumentUpdate">
+    <summary>
+      The time taken to perform hit test document updates for the main frame in
+      microseconds during the sampled frame. It does not compute the actual hit
+      test time, rather the style, layout, compositing, etc time to prepare for
+      the test.
+    </summary>
+    <aggregation>
+      <history>
+        <index fields="profile.country"/>
+        <statistics>
+          <quantiles type="std-percentiles"/>
+        </statistics>
+      </history>
+    </aggregation>
+  </metric>
+  <metric name="HitTestDocumentUpdatePercentage">
+    <summary>
+      The percentage of the main frame time used in performing hit test document
+      updates. An int in the range [0,100].
     </summary>
   </metric>
   <metric name="IntersectionObservation">

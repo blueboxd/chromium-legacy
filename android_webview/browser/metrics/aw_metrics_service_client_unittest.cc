@@ -29,11 +29,7 @@ const char kTestClientId[] = "01234567-89ab-40cd-80ef-0123456789ab";
 
 class TestClient : public AwMetricsServiceClient {
  public:
-  TestClient()
-      : sampled_in_rate_(1.00),
-        in_sample_(true),
-        record_package_name_for_app_type_(true),
-        in_package_name_sample_(true) {}
+  TestClient() {}
   ~TestClient() override {}
 
   bool IsRecordingActive() {
@@ -42,31 +38,15 @@ class TestClient : public AwMetricsServiceClient {
       return service->recording_active();
     return false;
   }
-  void SetSampleRate(double value) { sampled_in_rate_ = value; }
-  void SetInSample(bool value) { in_sample_ = value; }
-  void SetRecordPackageNameForAppType(bool value) {
-    record_package_name_for_app_type_ = value;
-  }
-  void SetInPackageNameSample(bool value) { in_package_name_sample_ = value; }
 
   // Expose the super class implementation for testing.
   using AwMetricsServiceClient::GetAppPackageNameInternal;
-  using AwMetricsServiceClient::IsInPackageNameSample;
-  using AwMetricsServiceClient::IsInSample;
 
  protected:
-  double GetSampleRate() override { return sampled_in_rate_; }
-  bool IsInSample() override { return in_sample_; }
-  bool CanRecordPackageNameForAppType() override {
-    return record_package_name_for_app_type_;
-  }
-  bool IsInPackageNameSample() override { return in_package_name_sample_; }
+  int GetSampleRatePerMille() override { return 1000; }
+  int GetPackageNameLimitRatePerMille() override { return 1000; }
 
  private:
-  double sampled_in_rate_;
-  bool in_sample_;
-  bool record_package_name_for_app_type_;
-  bool in_package_name_sample_;
   DISALLOW_COPY_AND_ASSIGN(TestClient);
 };
 

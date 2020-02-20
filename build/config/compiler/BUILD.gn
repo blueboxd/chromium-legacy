@@ -2013,29 +2013,6 @@ config("optimize") {
   ldflags = common_optimize_on_ldflags
 }
 
-# Same config as 'optimize' but without the WPO flag.
-config("optimize_no_wpo") {
-  if (is_win) {
-    # Favor size over speed, /O1 must be before the common flags.
-    # /O1 implies /Os and /GF.
-    cflags = [ "/O1" ] + common_optimize_on_cflags + [ "/Oi" ]
-  } else if (optimize_for_size && !is_nacl) {
-    # Favor size over speed.
-    # TODO(crbug.com/718650): Fix -Os in PNaCl compiler and remove the is_nacl
-    # guard above.
-    if (is_clang) {
-      cflags = [ "-Oz" ] + common_optimize_on_cflags
-    } else {
-      cflags = [ "-Os" ] + common_optimize_on_cflags
-    }
-  } else if (optimize_for_fuzzing) {
-    cflags = [ "-O1" ] + common_optimize_on_cflags
-  } else {
-    cflags = [ "-O2" ] + common_optimize_on_cflags
-  }
-  ldflags = common_optimize_on_ldflags
-}
-
 # Turn off optimizations.
 config("no_optimize") {
   if (is_win) {

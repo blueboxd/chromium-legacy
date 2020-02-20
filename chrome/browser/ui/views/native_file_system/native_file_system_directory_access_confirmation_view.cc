@@ -53,16 +53,6 @@ bool NativeFileSystemDirectoryAccessConfirmationView::ShouldShowCloseButton()
   return false;
 }
 
-bool NativeFileSystemDirectoryAccessConfirmationView::Accept() {
-  std::move(callback_).Run(permissions::PermissionAction::GRANTED);
-  return true;
-}
-
-bool NativeFileSystemDirectoryAccessConfirmationView::Cancel() {
-  std::move(callback_).Run(permissions::PermissionAction::DISMISSED);
-  return true;
-}
-
 gfx::Size
 NativeFileSystemDirectoryAccessConfirmationView::CalculatePreferredSize()
     const {
@@ -97,6 +87,21 @@ NativeFileSystemDirectoryAccessConfirmationView::
       views::BoxLayout::Orientation::kVertical,
       provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT),
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+
+  auto run_callback =
+      [](NativeFileSystemDirectoryAccessConfirmationView* dialog,
+         permissions::PermissionAction result) {
+        std::move(dialog->callback_).Run(result);
+      };
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(run_callback, base::Unretained(this),
+                     permissions::PermissionAction::GRANTED));
+  DialogDelegate::set_cancel_callback(
+      base::BindOnce(run_callback, base::Unretained(this),
+                     permissions::PermissionAction::DISMISSED));
+  DialogDelegate::set_close_callback(
+      base::BindOnce(run_callback, base::Unretained(this),
+                     permissions::PermissionAction::DISMISSED));
 
   AddChildView(native_file_system_ui_helper::CreateOriginPathLabel(
       IDS_NATIVE_FILE_SYSTEM_DIRECTORY_ACCESS_CONFIRMATION_TEXT, origin, path,

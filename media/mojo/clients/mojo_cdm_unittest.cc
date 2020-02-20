@@ -108,8 +108,8 @@ class MojoCdmTest : public ::testing::Test {
                                base::Unretained(&cdm_client_)),
                     base::Bind(&MockCdmClient::OnSessionExpirationUpdate,
                                base::Unretained(&cdm_client_)),
-                    base::Bind(&MojoCdmTest::OnCdmCreated,
-                               base::Unretained(this), expected_result));
+                    base::BindOnce(&MojoCdmTest::OnCdmCreated,
+                                   base::Unretained(this), expected_result));
     base::RunLoop().RunUntilIdle();
   }
 

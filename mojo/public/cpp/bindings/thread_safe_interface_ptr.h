@@ -21,8 +21,11 @@
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "mojo/public/cpp/bindings/thread_safe_forwarder_base.h"
 
+// DEPRECATED: Do not introduce new uses of ThreadSafeInterfacePtr. Instead use
+// the SharedRemote type defined in shared_remote.h.
+//
 // ThreadSafeInterfacePtr wraps a non-thread-safe InterfacePtr and proxies
-// messages to it. Async calls are posted to the sequence that the InteracePtr
+// messages to it. Async calls are posted to the sequence that the InterfacePtr
 // is bound to, and the responses are posted back. Sync calls are dispatched
 // directly if the call is made on the sequence that the wrapped InterfacePtr is
 // bound to, or posted otherwise. It's important to be aware that sync calls

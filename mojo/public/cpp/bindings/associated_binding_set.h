@@ -20,6 +20,8 @@ struct BindingSetTraits<AssociatedBinding<Interface, ImplRefTraits>> {
   using ImplPointerType = typename BindingType::ImplPointerType;
 };
 
+// DEPRECATED: Do not introduce new uses of this type. Instead use the
+// AssociatedReceiverSet type defined in associated_receiver_set.h.
 template <typename Interface, typename ContextType = void>
 using AssociatedBindingSet =
     BindingSetBase<Interface, AssociatedBinding<Interface>, ContextType>;

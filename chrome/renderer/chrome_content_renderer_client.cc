@@ -71,6 +71,7 @@
 #include "components/content_capture/common/content_capture_features.h"
 #include "components/content_capture/renderer/content_capture_sender.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/contextual_search/buildflags.h"
 #include "components/contextual_search/content/renderer/overlay_js_render_frame_observer.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/dom_distiller/content/renderer/distillability_agent.h"
@@ -544,8 +545,10 @@ void ChromeContentRendererClient::RenderFrameCreated(
     new dom_distiller::DistillabilityAgent(render_frame, DCHECK_IS_ON());
   }
 
+#if BUILDFLAG(BUILD_CONTEXTUAL_SEARCH)
   // Set up a mojo service to test if this page is a contextual search page.
   new contextual_search::OverlayJsRenderFrameObserver(render_frame, registry);
+#endif
 
   blink::AssociatedInterfaceRegistry* associated_interfaces =
       render_frame_observer->associated_interfaces();

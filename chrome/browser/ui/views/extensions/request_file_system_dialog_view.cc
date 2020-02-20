@@ -52,16 +52,6 @@ ui::ModalType RequestFileSystemDialogView::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
 }
 
-bool RequestFileSystemDialogView::Cancel() {
-  callback_.Run(ui::DIALOG_BUTTON_CANCEL);
-  return true;
-}
-
-bool RequestFileSystemDialogView::Accept() {
-  callback_.Run(ui::DIALOG_BUTTON_OK);
-  return true;
-}
-
 gfx::Size RequestFileSystemDialogView::CalculatePreferredSize() const {
   return gfx::Size(kDialogMaxWidth,
                    children().front()->GetHeightForWidth(kDialogMaxWidth));
@@ -82,6 +72,15 @@ RequestFileSystemDialogView::RequestFileSystemDialogView(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(
           IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_DIALOG_DENY_BUTTON));
+
+  auto run_callback = [](RequestFileSystemDialogView* dialog,
+                         ui::DialogButton button) {
+    dialog->callback_.Run(button);
+  };
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      run_callback, base::Unretained(this), ui::DIALOG_BUTTON_OK));
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      run_callback, base::Unretained(this), ui::DIALOG_BUTTON_CANCEL));
 
   DCHECK(!callback_.is_null());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(

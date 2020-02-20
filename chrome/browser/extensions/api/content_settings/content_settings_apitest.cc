@@ -20,13 +20,13 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
+#include "components/permissions/features.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
@@ -395,7 +395,8 @@ class ExtensionContentSettingsApiTestWithPermissionDelegationDisabled
     : public ExtensionContentSettingsApiTest {
  public:
   ExtensionContentSettingsApiTestWithPermissionDelegationDisabled() {
-    feature_list_.InitAndDisableFeature(features::kPermissionDelegation);
+    feature_list_.InitAndDisableFeature(
+        permissions::features::kPermissionDelegation);
   }
 
  private:
@@ -406,7 +407,8 @@ class ExtensionContentSettingsApiTestWithPermissionDelegationEnabled
     : public ExtensionContentSettingsApiTest {
  public:
   ExtensionContentSettingsApiTestWithPermissionDelegationEnabled() {
-    feature_list_.InitAndEnableFeature(features::kPermissionDelegation);
+    feature_list_.InitAndEnableFeature(
+        permissions::features::kPermissionDelegation);
   }
 
  private:

@@ -582,7 +582,6 @@
 <translation id="5447765697759493033">系统不会翻译此网站</translation>
 <translation id="545042621069398927">正在加快您的下载速度。</translation>
 <translation id="5456381639095306749">下载网页</translation>
-<translation id="5475862044948910901">启动增强现实会话？</translation>
 <translation id="548278423535722844">在地图应用中打开</translation>
 <translation id="5487521232677179737">清除数据</translation>
 <translation id="5494752089476963479">禁止会展示侵扰性或误导性广告的网站显示广告</translation>
@@ -831,11 +830,6 @@
 <translation id="7352939065658542140">视频</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 个所选项}other{分享 # 个所选项}}</translation>
 <translation id="7359002509206457351">查询付款方式</translation>
-<translation id="7365126855094612066">在此会话期间，该网站将能够：
-• 为您的环境创建一个 3D 地图
-• 跟踪相机运动
-
-该网站不会获得相机的使用权限。只有您可以看到该相机拍摄的图像。</translation>
 <translation id="7375125077091615385">类型：</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />。</translation>
 <translation id="7400418766976504921">网址</translation>

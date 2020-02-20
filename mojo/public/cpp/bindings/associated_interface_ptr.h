@@ -26,6 +26,9 @@
 
 namespace mojo {
 
+// DEPRECATED: Do not introduce new uses of this type. Instead use the
+// AssociatedRemote type defined in associated_remote.h.
+//
 // Represents the client side of an associated interface. It is similar to
 // InterfacePtr, except that it doesn't own a message pipe handle.
 template <typename Interface>

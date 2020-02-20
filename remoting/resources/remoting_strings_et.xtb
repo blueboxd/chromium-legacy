@@ -305,6 +305,11 @@ Kui ruut teenuse „<ph name="SERVICE_SCRIPT_NAME" />” juures on juba märgitu
 <translation id="8196755618196986400">Selleks et saaksime teiega lisateabe saamiseks ühendust võtta, tuleb teie e-posti aadress alati lisada saadetud tagasisidele.</translation>
 <translation id="8244400547700556338">Lisateave.</translation>
 <translation id="8261506727792406068">Kustuta</translation>
+<translation id="8295077433896346116">Teenuse <ph name="PRODUCT_NAME" /> kasutamiseks peate andma juurdepääsufunktsioonide loa, et kaugseadmest saaks sellesse Maci käsklusi sisestada.
+
+Selle loa andmiseks klõpsake alloleval nupul „<ph name="BUTTON_NAME" />”. Märkige avaneval eelistuste paanil „Juurdepääsufunktsioonid” ruut teenuse „<ph name="SERVICE_SCRIPT_NAME" />” juures.
+
+Kui ruut teenuse „<ph name="SERVICE_SCRIPT_NAME" />” juures on juba märgitud, eemaldage märge ja märkige see siis uuesti.</translation>
 <translation id="8355326866731426344">Pääsukood aegub <ph name="TIMEOUT" /> pärast</translation>
 <translation id="8355485110405946777">Kaasa rakenduste logid, et aidata probleem lahendada (logid võivad sisaldada privaatset teavet).</translation>
 <translation id="837021510621780684">Sellest arvutist</translation>

@@ -48,7 +48,7 @@ class TestDurablePermissionContext : public DurableStoragePermissionContext {
 
   ContentSetting GetContentSettingFromMap(const GURL& url_a,
                                           const GURL& url_b) {
-    return HostContentSettingsMapFactory::GetForProfile(profile())
+    return HostContentSettingsMapFactory::GetForProfile(browser_context())
         ->GetContentSetting(url_a.GetOrigin(), url_b.GetOrigin(),
                             ContentSettingsType::DURABLE_STORAGE,
                             std::string());
@@ -59,7 +59,7 @@ class TestDurablePermissionContext : public DurableStoragePermissionContext {
   void NotifyPermissionSet(const permissions::PermissionRequestID& id,
                            const GURL& requesting_origin,
                            const GURL& embedder_origin,
-                           BrowserPermissionCallback callback,
+                           permissions::BrowserPermissionCallback callback,
                            bool persist,
                            ContentSetting content_setting) override {
     permission_set_count_++;

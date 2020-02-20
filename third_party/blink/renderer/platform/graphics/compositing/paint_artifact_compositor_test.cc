@@ -1908,6 +1908,15 @@ TEST_P(PaintArtifactCompositorTest, MightOverlap) {
     PendingLayer pending_layer2(paint_chunk2, 1, false);
     EXPECT_FALSE(MightOverlap(pending_layer, pending_layer2));
   }
+
+  auto transform3 =
+      CreateAnimatingTransform(t0(), TransformationMatrix().Translate(100, 0),
+                               FloatPoint3D(100, 100, 0));
+  {
+    SetTransform(paint_chunk2, *transform3);
+    PendingLayer pending_layer2(paint_chunk2, 1, false);
+    EXPECT_TRUE(MightOverlap(pending_layer, pending_layer2));
+  }
 }
 
 TEST_P(PaintArtifactCompositorTest, UniteRectsKnownToBeOpaque) {

@@ -47,8 +47,6 @@ class PrintJobConfirmationDialogView : public views::BubbleDialogDelegateView {
 
  private:
   // views::DialogDelegateView:
-  bool Accept() override;
-  bool Cancel() override;
   gfx::Size CalculatePreferredSize() const override;
 
   // views::WidgetDelegate:
@@ -57,9 +55,6 @@ class PrintJobConfirmationDialogView : public views::BubbleDialogDelegateView {
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
   bool ShouldShowCloseButton() const override;
-
-  // Called when the dialog is closing.
-  void OnDialogClosed(bool accepted);
 
   // The name of the extension we are showing the dialog for.
   const base::string16 extension_name_;

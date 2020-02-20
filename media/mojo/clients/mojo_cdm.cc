@@ -48,14 +48,14 @@ void MojoCdm::Create(
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb,
-    const CdmCreatedCB& cdm_created_cb) {
+    CdmCreatedCB cdm_created_cb) {
   scoped_refptr<MojoCdm> mojo_cdm(new MojoCdm(
       std::move(remote_cdm), interface_factory, session_message_cb,
       session_closed_cb, session_keys_change_cb, session_expiration_update_cb));
 
   // |mojo_cdm| ownership is passed to the promise.
-  std::unique_ptr<CdmInitializedPromise> promise(
-      new CdmInitializedPromise(cdm_created_cb, mojo_cdm));
+  auto promise = std::make_unique<CdmInitializedPromise>(
+      std::move(cdm_created_cb), mojo_cdm);
 
   mojo_cdm->InitializeCdm(key_system, security_origin, cdm_config,
                           std::move(promise));
@@ -321,7 +321,7 @@ Decryptor* MojoCdm::GetDecryptor() {
   }
 
   if (decryptor_remote)
-    decryptor_.reset(new MojoDecryptor(std::move(decryptor_remote)));
+    decryptor_ = std::make_unique<MojoDecryptor>(std::move(decryptor_remote));
 
   return decryptor_.get();
 }

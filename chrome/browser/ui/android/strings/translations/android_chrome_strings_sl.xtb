@@ -137,6 +137,7 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# datoteka}one{# datoteka}two{# datoteki}few{# datoteke}other{# datotek}}</translation>
 <translation id="2017836877785168846">Izbriše zgodovino in samodokončanja v naslovni vrstici.</translation>
 <translation id="2021896219286479412">Kontrol. za mesto v celo. načinu</translation>
+<translation id="2025115093177348061">Razširjena resničnost</translation>
 <translation id="2038563949887743358">Vklop možnosti »Zahteva za namizno spletno mesto«</translation>
 <translation id="2041019821020695769">Če želite, da vam Chrome pošilja obvestila, obvestila vklopite tudi v <ph name="BEGIN_LINK" />nastavitvah za Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">Aplikacija <ph name="APP_NAME" /> ima prav tako podatke v Chromu</translation>
@@ -150,6 +151,9 @@
 <translation id="2100273922101894616">Samodejna prijava</translation>
 <translation id="2100314319871056947">Poskusite deliti besedilo v manjših kosih</translation>
 <translation id="2107397443965016585">Prikaži poziv, preden se spletnim mestom dovoli predvajanje zaščitene vsebine (priporočeno)</translation>
+<translation id="2109711654079915747">Preberite več o temah na spletnih mestih, ne da bi vam bilo treba zapustiti stran. Funkcija »Iskanje z dotikom« pošlje besedo in njeno sobesedilo Iskanju Google in vrne definicije, slike, rezultate iskanja in druge podrobnosti.
+
+Dotaknite se poljubne besede, če želite iskati. Če želite izboljšati iskanje, se dotaknite in pridržite, da izberete več ali manj besed. Če želite urediti iskanje, odprite podokno, dotaknite se ikone, da odprete na novem zavihku, in v iskalnem polju naredite spremembe.</translation>
 <translation id="2111511281910874386">Pojdi na stran</translation>
 <translation id="2122601567107267586">Aplikacije ni bilo mogoče odpreti</translation>
 <translation id="2126426811489709554">Uporablja tehnologijo Chrome</translation>
@@ -176,6 +180,7 @@
 <translation id="2321958826496381788">Drsnik povlecite tako daleč, da boste lahko to besedilo brez težave prebrali. Besedilo bo po dvakratnem dotiku odstavka vsaj tako veliko.</translation>
 <translation id="2323763861024343754">Shranjeni podatki splet. mesta</translation>
 <translation id="2328985652426384049">Ne morem se prijaviti</translation>
+<translation id="234265804618409743">Kamere ni mogoče odpreti. Prišlo je do napake.</translation>
 <translation id="2349710944427398404">Skupna količina podatkov, ki jih uporablja Chrome, vključno z računi, zaznamki in shranjenimi nastavitvami.</translation>
 <translation id="2353636109065292463">Preverjanje internetne povezave</translation>
 <translation id="2359808026110333948">Naprej</translation>
@@ -192,6 +197,9 @@
 <translation id="2434158240863470628">Prenos je končan <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Dostop do lokacije</translation>
 <translation id="2450083983707403292">Ali želite znova začeti prenos datoteke <ph name="FILE_NAME" />?</translation>
+<translation id="2450907520913474542">Preberite več o temah na spletnih mestih, ne da bi vam bilo treba zapustiti stran. Funkcija »Iskanje z dotikom« pošlje besedo in njeno sobesedilo Iskanju Google in vrne definicije, slike, rezultate iskanja in druge podrobnosti.
+
+Dotaknite se poljubne besede in jo pridržite, če želite iskati. Če želite izboljšati iskanje, izberite več ali manj besed. Če želite urediti iskanje, odprite podokno, dotaknite se ikone, da odprete na novem zavihku, in v iskalnem polju naredite spremembe.</translation>
 <translation id="246532703174860178">Deljenje z drugimi</translation>
 <translation id="2482878487686419369">Obvestila</translation>
 <translation id="2490684707762498678">Upravlja aplikacija <ph name="APP_NAME" /></translation>
@@ -423,6 +431,7 @@
 <translation id="4298388696830689168">Povezana spletna mesta</translation>
 <translation id="4307992518367153382">Osnove</translation>
 <translation id="4314815835985389558">Upravljanje sinhronizacije</translation>
+<translation id="4321739720395210191">Kamere ni mogoče odpreti. Znova zaženite napravo in poskusite znova.</translation>
 <translation id="4351244548802238354">Zapri pogovorno okno</translation>
 <translation id="4353114845960720315">Med uporabo navidezne resničnosti lahko to spletno mesto o vas izve to:</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -469,6 +478,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4660838440047236328">tloris sobe.</translation>
 <translation id="4663756553811254707">Št. izbrisanih zaznamkov: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Spletno mesto <ph name="NAME" /> je bilo dodano na začetni zaslon</translation>
+<translation id="4670064810192446073">Navidezna resničnost</translation>
 <translation id="4684427112815847243">Sinhroniziraj vse</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}two{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" /> \u2026 in še <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Pošiljanje besedila v vaše naprave</translation>
@@ -504,6 +514,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="4882831918239250449">Nadziranje, kako se zgodovina brskanja uporabi za prilagajanje Iskanja Google, oglasov in drugega</translation>
 <translation id="4883854917563148705">Upravljanih nastavitev ni mogoče ponastaviti</translation>
 <translation id="4885273946141277891">To število primerkov Chroma ni podprto.</translation>
+<translation id="4887024562049524730">Vprašaj, preden se spletnim mestom dovoli uporaba naprav in podatkov za navidezno resničnost (priporočeno)</translation>
 <translation id="4910889077668685004">Aplikacije za plačevanje</translation>
 <translation id="4913161338056004800">Ponastavitev statističnih podatkov</translation>
 <translation id="4913169188695071480">Ustavitev osveževanja</translation>
@@ -582,7 +593,6 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5447765697759493033">To spletno mesto ne bo prevedeno</translation>
 <translation id="545042621069398927">Pospeševanje prenosa.</translation>
 <translation id="5456381639095306749">Prenos strani</translation>
-<translation id="5475862044948910901">Želite začeti sejo razširjene resničnosti?</translation>
 <translation id="548278423535722844">Odpiranje v aplikaciji z zemljevidi</translation>
 <translation id="5487521232677179737">Izbriši podatke</translation>
 <translation id="5494752089476963479">Blokiranje oglasov na spletnih mestih, ki prikazujejo vsiljive ali zavajajoče oglase</translation>
@@ -623,6 +633,7 @@ V Google Računu so morda druge vrste zgodovine brskanja, kot so iskanja in deja
 <translation id="5710871682236653961">Poziv, preden se spletnim mestom dovoli pošiljanje in prejemanje podatkov, ko se dotaknete naprav s tehnologijo NFC (priporočeno)</translation>
 <translation id="572328651809341494">Nedavni zavihki</translation>
 <translation id="5726692708398506830">Povečanje vsebine strani</translation>
+<translation id="5735071096924648956">Spletnim mestom prepreči spremljanje položaja kamere ali preslikanje sobe</translation>
 <translation id="5748802427693696783">Preklopljeno na standardne zavihke</translation>
 <translation id="5749068826913805084">Chrome za prenos datotek potrebuje dostop do shrambe.</translation>
 <translation id="5763382633136178763">Zavihki brez beleženja zgodovine</translation>
@@ -693,6 +704,7 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6277522088822131679">Pri tiskanju strani je prišlo do težave. Poskusite znova.</translation>
 <translation id="6295158916970320988">Vsa spletna mesta</translation>
 <translation id="629730747756840877">Račun</translation>
+<translation id="6297765934698848803">Organizacija, ki upravlja vašo napravo, je izklopila kamero.</translation>
 <translation id="6303969859164067831">Odjava in izklop sinhronizacije</translation>
 <translation id="6316139424528454185">Različica Androida ni podprta</translation>
 <translation id="6320088164292336938">Vibriranje</translation>
@@ -715,11 +727,13 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="6427112570124116297">Prevajanje spleta</translation>
 <translation id="6433501201775827830">Izbira iskalnika</translation>
 <translation id="6437478888915024427">Podatki o strani</translation>
+<translation id="6439114592976064011">Spletnim mestom prepreči spremljanje naprave in podatkov za navidezno resničnost</translation>
 <translation id="6441734959916820584">Ime je predolgo</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# slika}one{# slika}two{# sliki}few{# slike}other{# slik}}</translation>
 <translation id="6447558397796644647">Tega zaznamka ni mogoče najti. Preverite črkovanje ali dodajte nov zaznamek.</translation>
 <translation id="6447842834002726250">Piškotki</translation>
 <translation id="6461962085415701688">Datoteke ni mogoče odpreti</translation>
+<translation id="6462660325961255024">Vprašaj, preden se spletnim mestom dovoli spremljanje položaja kamere ali preslikati sobo (priporočeno)</translation>
 <translation id="6464977750820128603">Ogledate si lahko spletna mesta, ki jih obiščete v Chromu, in zanje nastavite merilnike časa.\n\nGoogle dobi podatke o spletnih mestih, za katere nastavite merilnike časa, in o tem, kako dolgo traja vaš obisk teh mest. Te podatke uporabljamo za izboljšanje Digitalne dobrobiti.</translation>
 <translation id="6475951671322991020">Prenos videoposnetka</translation>
 <translation id="6482749332252372425">Prenos datoteke <ph name="FILE_NAME" /> ni uspel zaradi pomanjkanja prostora za shranjevanje.</translation>
@@ -831,11 +845,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7352939065658542140">VIDEOPOSNETEK</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Delitev 1 izbranega elementa z drugimi}one{Delitev # izbranega elementa z drugimi}two{Delitev # izbranih elementov z drugimi}few{Delitev # izbranih elementov z drugimi}other{Delitev # izbranih elementov z drugimi}}</translation>
 <translation id="7359002509206457351">Dostop do plačilnih sredstev</translation>
-<translation id="7365126855094612066">Med trajanjem seje lahko spletno mesto:
-• ustvari 3D-zemljevid okolja
-• spremlja premikanje kamere
-
-Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</translation>
 <translation id="7375125077091615385">Vrsta:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -912,6 +921,7 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="7942131818088350342">Izdelek <ph name="PRODUCT_NAME" /> je zastarel.</translation>
 <translation id="7947953824732555851">Sprejem in prijava</translation>
 <translation id="7963646190083259054">Ponudnik:</translation>
+<translation id="7967911570373677897">Če želite optično prebrati kodo QR, spremenite nastavitve, da bo Chrome lahko uporabljal kamero</translation>
 <translation id="7971136598759319605">Aktivna pred 1 dnevom</translation>
 <translation id="7975379999046275268">Predogled strani <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Vnaprejšnje nalaganje strani zaradi hitrejšega brskanja in iskanja</translation>
@@ -957,6 +967,7 @@ Spletno mesto NIMA dostopa do kamere. Posnetki kamere so vidni samo vam.</transl
 <translation id="8218622182176210845">Upravljanje računa</translation>
 <translation id="8224471946457685718">Prenos člankov v omrežju Wi-Fi</translation>
 <translation id="8232956427053453090">Ohrani podatke</translation>
+<translation id="8233540874193135768">Če želite optično prebrati kodo QR, uporabite napravo s kamero.</translation>
 <translation id="8250920743982581267">Dokumenti</translation>
 <translation id="825412236959742607">Ta stran uporablja preveč pomnilnika, zato je Chrome odstranil nekaj vsebine.</translation>
 <translation id="8260126382462817229">Poskusite se znova prijaviti.</translation>

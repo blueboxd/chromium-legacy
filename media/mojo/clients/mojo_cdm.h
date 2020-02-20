@@ -60,7 +60,7 @@ class MojoCdm : public ContentDecryptionModule,
       const SessionClosedCB& session_closed_cb,
       const SessionKeysChangeCB& session_keys_change_cb,
       const SessionExpirationUpdateCB& session_expiration_update_cb,
-      const CdmCreatedCB& cdm_created_cb);
+      CdmCreatedCB cdm_created_cb);
 
   // ContentDecryptionModule implementation.
   void SetServerCertificate(const std::vector<uint8_t>& certificate,

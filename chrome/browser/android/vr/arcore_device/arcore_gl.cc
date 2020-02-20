@@ -713,7 +713,7 @@ void ArCoreGl::CreateAnchor(mojom::PosePtr anchor_pose,
 void ArCoreGl::CreatePlaneAnchor(mojom::PosePtr anchor_pose,
                                  uint64_t plane_id,
                                  CreatePlaneAnchorCallback callback) {
-  DVLOG(2) << __func__;
+  DVLOG(2) << __func__ << ": plane_id=" << plane_id;
 
   DCHECK(anchor_pose);
 
@@ -721,9 +721,11 @@ void ArCoreGl::CreatePlaneAnchor(mojom::PosePtr anchor_pose,
       arcore_->CreateAnchor(*anchor_pose, plane_id);
 
   if (maybe_anchor_id) {
+    DVLOG(3) << __func__ << ": succeeded!";
     std::move(callback).Run(device::mojom::CreateAnchorResult::SUCCESS,
                             *maybe_anchor_id);
   } else {
+    DVLOG(2) << __func__ << ": failed!";
     std::move(callback).Run(device::mojom::CreateAnchorResult::FAILURE, 0);
   }
 }

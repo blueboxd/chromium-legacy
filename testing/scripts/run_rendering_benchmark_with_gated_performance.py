@@ -35,7 +35,7 @@ AVG_ERROR_MARGIN = 1.1
 # recorded range between upper and lower CIs. CI_ERROR_MARGIN is the maximum
 # acceptable ratio of calculated ci_095 to the recorded ones.
 # TODO(behdadb) crbug.com/1052054
-CI_ERROR_MARGIN = 30.0
+CI_ERROR_MARGIN = 1.5
 
 class ResultRecorder(object):
   def __init__(self):
@@ -174,13 +174,12 @@ def compare_values(values_per_story, upper_limit_data, benchmark,
     measured_avg = np.mean(np.array(values_per_story[story_name]['averages']))
     measured_ci = np.mean(np.array(values_per_story[story_name]['ci_095']))
 
-    if (measured_ci > upper_limit_ci * CI_ERROR_MARGIN):
+    if (measured_ci > upper_limit_ci * CI_ERROR_MARGIN and
+      is_control_story(upper_limit_data[story_name])):
       print(('[  FAILED  ] {}/{} frame_times has higher noise ({:.3f}) ' +
         'compared to upper limit ({:.3f})').format(
           benchmark, story_name, measured_ci,upper_limit_ci))
-      result_recorder.add_failure(story_name, benchmark,
-        is_control_story(upper_limit_data[story_name]))
-
+      result_recorder.add_failure(story_name, benchmark, True)
     elif (measured_avg > upper_limit_avg * AVG_ERROR_MARGIN):
       print(('[  FAILED  ] {}/{} higher average frame_times({:.3f}) compared' +
         ' to upper limit ({:.3f})').format(

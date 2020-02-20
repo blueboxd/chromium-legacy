@@ -23,12 +23,12 @@ namespace {
 // Metrics team has the appropriate backend bandwidth and storage.
 
 // Sample at 10%, which is the same as chrome.
-const double kStableSampledInRate = 0.1;
+const int kStableSampledInRatePerMille = 100;
 
 // Sample non-stable channels at 99%, to boost volume for pre-stable
 // experiments. We choose 99% instead of 100% for consistency with Chrome and to
 // exercise the out-of-sample code path.
-const double kBetaDevCanarySampledInRate = 0.99;
+const int kBetaDevCanarySampledInRatePerMille = 990;
 
 // As a mitigation to preserve user privacy, the privacy team has asked that we
 // upload package name with no more than 10% of UMA records. This is to mitigate
@@ -36,7 +36,7 @@ const double kBetaDevCanarySampledInRate = 0.99;
 // a small handful of users, there's a very good chance many of them won't be
 // uploading UMA records due to sampling). Do not change this constant without
 // consulting with the privacy team.
-const double kPackageNameLimitRate = 0.10;
+const int kPackageNameLimitRatePerMille = 100;
 
 }  // namespace
 
@@ -63,21 +63,21 @@ std::string WebLayerMetricsServiceClient::GetAppPackageNameInternal() {
   return std::string();
 }
 
-double WebLayerMetricsServiceClient::GetSampleRate() {
+int WebLayerMetricsServiceClient::GetSampleRatePerMille() {
   version_info::Channel channel = version_info::android::GetChannel();
   if (channel == version_info::Channel::STABLE ||
       channel == version_info::Channel::UNKNOWN) {
-    return kStableSampledInRate;
+    return kStableSampledInRatePerMille;
   }
-  return kBetaDevCanarySampledInRate;
+  return kBetaDevCanarySampledInRatePerMille;
 }
 
 void WebLayerMetricsServiceClient::InitInternal() {}
 
 void WebLayerMetricsServiceClient::OnMetricsStart() {}
 
-double WebLayerMetricsServiceClient::GetPackageNameLimitRate() {
-  return kPackageNameLimitRate;
+int WebLayerMetricsServiceClient::GetPackageNameLimitRatePerMille() {
+  return kPackageNameLimitRatePerMille;
 }
 
 bool WebLayerMetricsServiceClient::ShouldWakeMetricsService() {

@@ -8,7 +8,7 @@
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/main/browser.h"
-#include "ios/chrome/browser/ui/history/history_local_commands.h"
+#include "ios/chrome/browser/ui/history/history_ui_delegate.h"
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_local_commands.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_table_view_controller.h"
@@ -42,7 +42,7 @@
     _clearBrowsingDataTableViewController;
 @synthesize historyClearBrowsingDataNavigationController =
     _historyClearBrowsingDataNavigationController;
-@synthesize localDispatcher = _localDispatcher;
+@synthesize delegate = _delegate;
 @synthesize presentationDelegate = _presentationDelegate;
 
 - (void)start {
@@ -122,7 +122,7 @@
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
   params.load_strategy = self.loadStrategy;
   [self stopWithCompletion:^() {
-    [self.localDispatcher dismissHistoryWithCompletion:^{
+    [self.delegate dismissHistoryWithCompletion:^{
       UrlLoadingServiceFactory::GetForBrowserState(
           self.browser->GetBrowserState())
           ->Load(params);

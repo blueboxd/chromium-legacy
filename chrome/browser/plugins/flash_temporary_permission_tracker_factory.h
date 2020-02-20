@@ -16,13 +16,12 @@ class BrowserContext;
 }
 
 class FlashTemporaryPermissionTracker;
-class Profile;
 
 class FlashTemporaryPermissionTrackerFactory
     : public RefcountedBrowserContextKeyedServiceFactory {
  public:
-  static scoped_refptr<FlashTemporaryPermissionTracker> GetForProfile(
-      Profile* profile);
+  static scoped_refptr<FlashTemporaryPermissionTracker> GetForBrowserContext(
+      content::BrowserContext* browser_context);
   static FlashTemporaryPermissionTrackerFactory* GetInstance();
 
  private:

@@ -70,9 +70,11 @@ _EXAMPLE_INTERPRETER_OUTPUT_WITH_FILE_NAME_LINE = [
 
 _MOCK_ORIGINAL_REPORT = [
     '"442": {"l": 28, "f": "libwebviewchromium.so[+3db7d84]"},',
-    '"443": {"l": 28, "f": "libwebviewchromium.so[+3db7a5c]"},']
+    '"443": {"l": 28, "f": "libwebviewchromium.so[+3db7a5c]"},',
+    '"444": {"l": 28, "f": "libwebviewchromium.so[+aaaaaaa]"},'
+]
 
-_MOCK_ADDRESSES = ['3db7d84', '3db7a5c']
+_MOCK_ADDRESSES = ['3db7d84', '3db7a5c', 'aaaaaaa']
 
 _MOCK_ADDRESS_FUNCTION_NAME_PAIRS = [
     ('3db7d84', 'MyClass::FirstMethod(const char*)'),
@@ -82,7 +84,9 @@ _MOCK_FINAL_REPORT = [
     ('"442": {"l": 28, "f": "libwebviewchromium.so[MyClass::'
      'FirstMethod(const char*)]"},'),
     ('"443": {"l": 28, "f": "libwebviewchromium.so[MyClass::'
-     'SecondMethod(int)]"},')]
+     'SecondMethod(int)]"},'),
+    ('"444": {"l": 28, "f": "libwebviewchromium.so[+aaaaaaa]"},')
+]
 
 
 class _RunSimpleperfTest(unittest.TestCase):

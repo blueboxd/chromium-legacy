@@ -582,7 +582,6 @@
 <translation id="5447765697759493033">系統不會翻譯此網站</translation>
 <translation id="545042621069398927">正在加快下載速度。</translation>
 <translation id="5456381639095306749">下載網頁</translation>
-<translation id="5475862044948910901">要啟動擴張實境工作階段嗎？</translation>
 <translation id="548278423535722844">在地圖應用程式中開啟</translation>
 <translation id="5487521232677179737">清除資料</translation>
 <translation id="5494752089476963479">在顯示滋擾或誤導廣告的網站上封鎖廣告</translation>
@@ -831,10 +830,6 @@
 <translation id="7352939065658542140">影片</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{分享 1 個已選取的項目}other{分享 # 個已選取的項目}}</translation>
 <translation id="7359002509206457351">存取付款方法</translation>
-<translation id="7365126855094612066">在此工作階段期間，網站可執行以下操作：• 為您的環境建立 3D 地圖
-• 追蹤相機的動作
-
-此網站無法存取相機。只有您可看見相機的顯示畫面。</translation>
 <translation id="7375125077091615385">類型：</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />。</translation>
 <translation id="7400418766976504921">網址</translation>

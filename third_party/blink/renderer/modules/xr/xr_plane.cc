@@ -85,8 +85,28 @@ ScriptPromise XRPlane::createAnchor(ScriptState* script_state,
                                     XRRigidTransform* initial_pose,
                                     XRSpace* space,
                                     ExceptionState& exception_state) {
-  return session_->CreateAnchor(script_state, initial_pose, space, this,
-                                exception_state);
+  if (!initial_pose) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      XRSession::kNoRigidTransformSpecified);
+    return {};
+  }
+
+  if (!space) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      XRSession::kNoSpaceSpecified);
+    return {};
+  }
+
+  auto maybe_mojo_from_offset = space->MojoFromOffsetMatrix();
+
+  if (!maybe_mojo_from_offset) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      XRSession::kUnableToRetrieveMatrix);
+    return {};
+  }
+
+  return session_->CreateAnchor(script_state, initial_pose->TransformMatrix(),
+                                *maybe_mojo_from_offset, id_, exception_state);
 }
 
 void XRPlane::Update(const device::mojom::blink::XRPlaneDataPtr& plane_data,

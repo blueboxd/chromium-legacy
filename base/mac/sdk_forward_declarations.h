@@ -3,10 +3,7 @@
 // found in the LICENSE file.
 
 // This file contains forward declarations for items in later SDKs than the
-// default one with which Chromium is built (currently 10.10).
-// If you call any function from this header, be sure to check at runtime for
-// respondsToSelector: before calling these functions (else your code will crash
-// on older OS X versions that chrome still supports).
+// default one with which Chromium is built.
 
 #ifndef BASE_MAC_SDK_FORWARD_DECLARATIONS_H_
 #define BASE_MAC_SDK_FORWARD_DECLARATIONS_H_
@@ -29,7 +26,8 @@
 //   b. Include all API_AVAILABLE/NS_CLASS_AVAILABLE_MAC annotations
 //   c. Optionally import frameworks
 // 2. In your source file:
-//   a. Correctly use @available to annotate availability
+//   a. Correctly annotate availability with @available/__builtin_available/
+//      API_AVAILABLE
 //
 // This way, when the SDK is rolled, the section full of definitions
 // corresponding to it can be easily deleted.

@@ -1099,6 +1099,24 @@
             ]
         }
     ],
+    "BackgroundSync": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "RelyOnAndroidNetworkDetection",
+                    "params": {
+                        "rely_on_android_network_detection": "true"
+                    },
+                    "enable_features": [
+                        "RelyOnAndroidNetworkDetection"
+                    ]
+                }
+            ]
+        }
+    ],
     "BlinkLayoutNG": [
         {
             "platforms": [
@@ -6280,28 +6298,6 @@
                     ],
                     "disable_features": [
                         "UkmReportNoisedUserBirthYearAndGender"
-                    ]
-                }
-            ]
-        }
-    ],
-    "UnidoDeviceExpiration": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "linux",
-                "mac",
-                "windows"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled_24",
-                    "params": {
-                        "SharingDeviceExpirationHours": "24"
-                    },
-                    "enable_features": [
-                        "SharingDeviceExpiration"
                     ]
                 }
             ]

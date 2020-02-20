@@ -35,7 +35,8 @@ HeapVector<Member<XRHitTestResult>> XRHitTestSource::Results() {
   HeapVector<Member<XRHitTestResult>> results;
 
   for (const auto& result : last_frame_results_) {
-    results.emplace_back(MakeGarbageCollected<XRHitTestResult>(*result));
+    results.emplace_back(
+        MakeGarbageCollected<XRHitTestResult>(xr_session_, result));
   }
 
   return results;
@@ -47,9 +48,9 @@ void XRHitTestSource::Update(
 
   for (auto& result : hit_test_results) {
     DVLOG(3) << __func__ << ": processing hit test result, hit matrix: "
-             << result->hit_matrix.ToString();
-    last_frame_results_.push_back(
-        std::make_unique<TransformationMatrix>(result->hit_matrix.matrix()));
+             << result->hit_matrix.ToString()
+             << ", plane_id=" << result->plane_id;
+    last_frame_results_.push_back(*result);
   }
 }
 void XRHitTestSource::Trace(Visitor* visitor) {

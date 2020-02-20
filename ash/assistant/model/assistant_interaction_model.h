@@ -106,16 +106,19 @@ class COMPONENT_EXPORT(ASSISTANT_MODEL) AssistantInteractionModel {
   // Returns the pending response for the interaction.
   AssistantResponse* pending_response() { return pending_response_.get(); }
 
-  // Finalizes the pending response for the interaction.
-  void FinalizePendingResponse();
+  // Commits the pending response for the interaction. Note that this will cause
+  // the previously committed response, if one exists, to be animated off stage
+  // after which the newly committed response will begin rendering.
+  void CommitPendingResponse();
 
   // Clears the pending response for the interaction.
   void ClearPendingResponse();
 
-  // Returns the finalized response for the interaction.
+  // Returns the committed response for the interaction.
+  AssistantResponse* response() { return response_.get(); }
   const AssistantResponse* response() const { return response_.get(); }
 
-  // Clears the finalized response for the interaction.
+  // Clears the committed response for the interaction.
   void ClearResponse();
 
   // Updates the speech level in dB.

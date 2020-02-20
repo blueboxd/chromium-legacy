@@ -36,10 +36,10 @@ void CastCdmFactory::Create(
     const ::media::SessionClosedCB& session_closed_cb,
     const ::media::SessionKeysChangeCB& session_keys_change_cb,
     const ::media::SessionExpirationUpdateCB& session_expiration_update_cb,
-    const ::media::CdmCreatedCB& cdm_created_cb) {
+    ::media::CdmCreatedCB cdm_created_cb) {
   // Bound |cdm_created_cb| so we always fire it asynchronously.
   ::media::CdmCreatedCB bound_cdm_created_cb =
-      ::media::BindToCurrentLoop(cdm_created_cb);
+      ::media::BindToCurrentLoop(std::move(cdm_created_cb));
 
   CastKeySystem cast_key_system(GetKeySystemByName(key_system));
 
@@ -51,7 +51,8 @@ void CastCdmFactory::Create(
 
   if (!cast_cdm) {
     LOG(INFO) << "No matching key system found: " << cast_key_system;
-    bound_cdm_created_cb.Run(nullptr, "No matching key system found.");
+    std::move(bound_cdm_created_cb)
+        .Run(nullptr, "No matching key system found.");
     return;
   }
 
@@ -68,7 +69,7 @@ void CastCdmFactory::Create(
                      ::media::BindToCurrentLoop(session_closed_cb),
                      ::media::BindToCurrentLoop(session_keys_change_cb),
                      ::media::BindToCurrentLoop(session_expiration_update_cb)));
-  bound_cdm_created_cb.Run(cast_cdm, "");
+  std::move(bound_cdm_created_cb).Run(cast_cdm, "");
 }
 
 scoped_refptr<CastCdm> CastCdmFactory::CreatePlatformBrowserCdm(

@@ -122,6 +122,7 @@
 #if defined(OS_ANDROID)
 #include <android/keycodes.h>
 #include "base/time/time.h"
+#include "components/viz/common/viz_utils.h"
 #endif
 
 #if defined(OS_POSIX)
@@ -2798,6 +2799,9 @@ cc::LayerTreeSettings RenderWidget::GenerateLayerTreeSettings(
       !cmd.HasSwitch(cc::switches::kDisableCheckerImaging) && is_threaded;
 
 #if defined(OS_ANDROID)
+  if (!viz::AlwaysUseWideColorGamut())
+    settings.prefer_raster_in_srgb = true;
+
   // We can use a more aggressive limit on Android since decodes tend to take
   // longer on these devices.
   settings.min_image_bytes_to_checker = 512 * 1024;  // 512kB

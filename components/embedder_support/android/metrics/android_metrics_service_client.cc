@@ -43,19 +43,18 @@ std::unique_ptr<ClientInfo> LoadClientInfo() {
   return client_info;
 }
 
-bool UintFallsInBottomPercentOfValues(uint32_t value, double fraction) {
-  DCHECK_GT(fraction, 0);
-  DCHECK_LT(fraction, 1.00);
-
-  // Since hashing is ~uniform, the chance that the value falls in the bottom
-  // X% of possible values is X%. UINT32_MAX fits within the range of integers
-  // that can be expressed precisely by a 64-bit double. Casting back to a
-  // uint32_t means we can determine if the value falls within the bottom X%,
-  // within a 1/UINT32_MAX error margin.
-  uint32_t value_threshold =
-      static_cast<uint32_t>(static_cast<double>(UINT32_MAX) * fraction);
-
-  return value < value_threshold;
+// Divides the spectrum of uint32_t values into 1000 ~equal-sized buckets (range
+// [0, 999] inclusive), and returns which bucket |value| falls into. Ex. given
+// 2^30, this would return 250, because 25% of uint32_t values fall below the
+// given value.
+int UintToPerMille(uint32_t value) {
+  // We need to divide by UINT32_MAX+1 (2^32), otherwise the fraction could
+  // evaluate to 1000.
+  uint64_t divisor = 1llu << 32;
+  uint64_t value_per_mille = static_cast<uint64_t>(value) * 1000llu / divisor;
+  DCHECK_GE(value_per_mille, 0llu);
+  DCHECK_LE(value_per_mille, 999llu);
+  return static_cast<int>(value_per_mille);
 }
 
 }  // namespace
@@ -278,15 +277,15 @@ void AndroidMetricsServiceClient::Observe(
   }
 }
 
+int AndroidMetricsServiceClient::GetSampleBucketValue() {
+  return UintToPerMille(base::PersistentHash(metrics_service_->GetClientId()));
+}
+
 bool AndroidMetricsServiceClient::IsInSample() {
   // Called in MaybeStartMetrics(), after |metrics_service_| is created.
   // NOTE IsInSample and IsInPackageNameSample deliberately use the same hash to
   // guarantee we never exceed 10% of total, opted-in clients for PackageNames.
-  return IsInSample(base::PersistentHash(metrics_service_->GetClientId()));
-}
-
-bool AndroidMetricsServiceClient::IsInSample(uint32_t value) {
-  return UintFallsInBottomPercentOfValues(value, GetSampleRate());
+  return GetSampleBucketValue() < GetSampleRatePerMille();
 }
 
 bool AndroidMetricsServiceClient::IsInPackageNameSample() {
@@ -296,12 +295,7 @@ bool AndroidMetricsServiceClient::IsInPackageNameSample() {
   // percent of clients. We'll actually log package name for less than this,
   // because we also filter out packages for certain types of apps (see
   // CanRecordPackageNameForAppType()).
-  return IsInPackageNameSample(
-      base::PersistentHash(metrics_service_->GetClientId()));
-}
-
-bool AndroidMetricsServiceClient::IsInPackageNameSample(uint32_t value) {
-  return UintFallsInBottomPercentOfValues(value, GetPackageNameLimitRate());
+  return GetSampleBucketValue() < GetPackageNameLimitRatePerMille();
 }
 
 void AndroidMetricsServiceClient::RegisterAdditionalMetricsProviders(

@@ -48,11 +48,11 @@
 #include "base/trace_event/trace_event.h"
 #include "components/autofill/android/autofill_provider_android.h"
 #include "components/embedder_support/android/delegate/color_chooser_android.h"
-#include "components/javascript_dialogs/android/app_modal_dialog_view_android.h"  // nogncheck
-#include "components/javascript_dialogs/app_modal_dialog_manager.h"  // nogncheck
+#include "components/javascript_dialogs/tab_modal_dialog_manager.h"  // nogncheck
 #include "ui/android/view_android.h"
 #include "weblayer/browser/controls_visibility_reason.h"
 #include "weblayer/browser/java/jni/TabImpl_jni.h"
+#include "weblayer/browser/javascript_tab_modal_dialog_manager_delegate_android.h"
 #include "weblayer/browser/top_controls_container_view.h"
 #endif
 
@@ -195,6 +195,13 @@ TabImpl::TabImpl(ProfileImpl* profile,
       web_contents_.get(),
       base::BindRepeating(&TabImpl::GetSessionServiceTabHelperDelegate,
                           base::Unretained(this)));
+
+#if defined(OS_ANDROID)
+  javascript_dialogs::TabModalDialogManager::CreateForWebContents(
+      web_contents_.get(),
+      std::make_unique<JavaScriptTabModalDialogManagerDelegateAndroid>(
+          web_contents_.get()));
+#endif
 
 #if BUILDFLAG(ENABLE_CAPTIVE_PORTAL_DETECTION)
   captive_portal::CaptivePortalTabHelper::CreateForWebContents(
@@ -429,19 +436,8 @@ content::JavaScriptDialogManager* TabImpl::GetJavaScriptDialogManager(
   if (!IsActive())
     return nullptr;
 
-  auto* dialog_manager =
-      javascript_dialogs::AppModalDialogManager::GetInstance();
-  if (dialog_manager->view_factory()->is_null()) {
-    dialog_manager->SetNativeDialogFactory(base::BindRepeating(
-        [](javascript_dialogs::AppModalDialogController* controller)
-            -> javascript_dialogs::AppModalDialogView* {
-          return new javascript_dialogs::AppModalDialogViewAndroid(
-              base::android::AttachCurrentThread(), controller,
-              controller->web_contents()->GetTopLevelNativeWindow());
-        }));
-  }
-
-  return dialog_manager;
+  return javascript_dialogs::TabModalDialogManager::FromWebContents(
+      web_contents);
 #else
   return nullptr;
 #endif

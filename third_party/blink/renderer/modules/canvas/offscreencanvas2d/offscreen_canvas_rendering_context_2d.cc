@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/fonts/text_run_paint_info.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/memory_managed_paint_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
@@ -85,9 +86,20 @@ OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
       bernoulli_distribution_(kUMASampleProbability) {
   is_valid_size_ = IsValidImageSize(Host()->Size());
 
-  // Clear the background transparent or opaque.
+  // A raw pointer is safe here because the callback is only used by the
+  // recorder_
+  set_needs_flush_callback_ =
+      WTF::BindRepeating(&OffscreenCanvasRenderingContext2D::SetNeedsFlush,
+                         WrapWeakPersistent(this));
+  StartRecording();
+
+  // Clear the background transparent or opaque. Similar code at
+  // CanvasResourceProvider::Clear().
   if (IsCanvas2DBufferValid()) {
-    GetOrCreateCanvasResourceProvider()->Clear();
+    DCHECK(recorder_);
+    recorder_->getRecordingCanvas()->clear(
+        ColorParams().GetOpacityMode() == kOpaque ? SK_ColorBLACK
+                                                  : SK_ColorTRANSPARENT);
     DidDraw();
   }
 
@@ -119,13 +131,29 @@ void OffscreenCanvasRenderingContext2D::commit() {
   GetOffscreenFontCache().PruneLocalFontCache(kMaxCachedFonts);
 }
 
+void OffscreenCanvasRenderingContext2D::StartRecording() {
+  recorder_ =
+      std::make_unique<MemoryManagedPaintRecorder>(set_needs_flush_callback_);
+  cc::PaintCanvas* canvas = recorder_->beginRecording(Width(), Height());
+  // Always save an initial frame, to support resetting the top level matrix
+  // and clip.
+  canvas->save();
+  RestoreMatrixClipStack(canvas);
+}
+
 void OffscreenCanvasRenderingContext2D::FlushRecording() {
   if (!have_recorded_draw_commands_)
     return;
 
-  GetCanvasResourceProvider()->FlushCanvas();
+  {  // Make a new scope so that PaintRecord gets deleted and that gets timed
+    CanvasResourceProvider* resource_provider = GetCanvasResourceProvider();
+    cc::PaintCanvas* canvas = resource_provider->Canvas();
+    canvas->drawPicture(recorder_->finishRecordingAsPicture());
+    resource_provider->FlushSkia();
+  }
   GetCanvasResourceProvider()->ReleaseLockedImages();
 
+  StartRecording();
   have_recorded_draw_commands_ = false;
 }
 
@@ -137,6 +165,7 @@ void OffscreenCanvasRenderingContext2D::FinalizeFrame() {
   if (!GetOrCreateCanvasResourceProvider())
     return;
   FlushRecording();
+  needs_flush_ = false;
 }
 
 // BaseRenderingContext2D implementation
@@ -181,6 +210,7 @@ OffscreenCanvasRenderingContext2D::GetCanvasResourceProvider() const {
 void OffscreenCanvasRenderingContext2D::Reset() {
   Host()->DiscardResourceProvider();
   BaseRenderingContext2D::Reset();
+  StartRecording();
   // Because the host may have changed to a zero size
   is_valid_size_ = IsValidImageSize(Host()->Size());
 }
@@ -232,7 +262,11 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
       return nullptr;
     }
   }
+
+  // "Transfer" means no retained buffer. Matrix transformations need to be
+  // preserved though.
   Host()->DiscardResourceProvider();
+  RestoreMatrixClipStack(recorder_->getRecordingCanvas());
 
   return MakeGarbageCollected<ImageBitmap>(std::move(image));
 }
@@ -259,23 +293,17 @@ bool OffscreenCanvasRenderingContext2D::ParseColorOrCurrentColor(
   return ::blink::ParseColorOrCurrentColor(color, color_string, nullptr);
 }
 
-cc::PaintCanvas* OffscreenCanvasRenderingContext2D::GetOrCreatePaintCanvas() {
-  if (!is_valid_size_ || !GetOrCreateCanvasResourceProvider())
-    return nullptr;
-  return GetPaintCanvas();
-}
-
 cc::PaintCanvas* OffscreenCanvasRenderingContext2D::GetPaintCanvas() const {
-  if (!is_valid_size_ || !GetCanvasResourceProvider())
+  if (!is_valid_size_)
     return nullptr;
-  return GetCanvasResourceProvider()->Canvas();
+  return recorder_->getRecordingCanvas();
 }
 
 void OffscreenCanvasRenderingContext2D::DidDraw() {
   have_recorded_draw_commands_ = true;
   dirty_rect_for_commit_.setWH(Width(), Height());
   Host()->DidDraw();
-  if (GetCanvasResourceProvider() && GetCanvasResourceProvider()->needs_flush())
+  if (needs_flush_)
     FinalizeFrame();
 }
 
@@ -283,7 +311,7 @@ void OffscreenCanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {
   have_recorded_draw_commands_ = true;
   dirty_rect_for_commit_.join(dirty_rect);
   Host()->DidDraw(SkRect::Make(dirty_rect_for_commit_));
-  if (GetCanvasResourceProvider() && GetCanvasResourceProvider()->needs_flush())
+  if (needs_flush_)
     FinalizeFrame();
 }
 
@@ -341,6 +369,13 @@ bool OffscreenCanvasRenderingContext2D::WritePixels(
   DCHECK(IsPaintable());
   FinalizeFrame();
   have_recorded_draw_commands_ = false;
+  // Add a save to initialize the transform/clip stack and then restore it after
+  // the draw. This is needed because each recording initializes and the resets
+  // this state after every flush.
+  cc::PaintCanvas* canvas = GetCanvasResourceProvider()->Canvas();
+  PaintCanvasAutoRestore auto_restore(canvas, true);
+  if (GetOrCreateCanvasResourceProvider())
+    RestoreMatrixClipStack(canvas);
 
   return offscreenCanvasForBinding()->ResourceProvider()->WritePixels(
       orig_info, pixels, row_bytes, x, y);
@@ -503,7 +538,7 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
     double y,
     CanvasRenderingContext2DState::PaintType paint_type,
     double* max_width) {
-  cc::PaintCanvas* paint_canvas = GetOrCreatePaintCanvas();
+  cc::PaintCanvas* paint_canvas = GetPaintCanvas();
   if (!paint_canvas)
     return;
 
@@ -613,4 +648,7 @@ bool OffscreenCanvasRenderingContext2D::IsCanvas2DBufferValid() const {
   return false;
 }
 
+void OffscreenCanvasRenderingContext2D::SetNeedsFlush() {
+  needs_flush_ = true;
+}
 }  // namespace blink

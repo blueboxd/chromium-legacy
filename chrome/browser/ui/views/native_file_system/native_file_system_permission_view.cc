@@ -30,6 +30,20 @@ NativeFileSystemPermissionView::NativeFileSystemPermissionView(
       l10n_util::GetStringUTF16(
           IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_ALLOW_TEXT));
 
+  auto run_callback = [](NativeFileSystemPermissionView* dialog,
+                         permissions::PermissionAction result) {
+    std::move(dialog->callback_).Run(result);
+  };
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(run_callback, base::Unretained(this),
+                     permissions::PermissionAction::GRANTED));
+  DialogDelegate::set_cancel_callback(
+      base::BindOnce(run_callback, base::Unretained(this),
+                     permissions::PermissionAction::DISMISSED));
+  DialogDelegate::set_close_callback(
+      base::BindOnce(run_callback, base::Unretained(this),
+                     permissions::PermissionAction::DISMISSED));
+
   const views::LayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
@@ -68,16 +82,6 @@ base::string16 NativeFileSystemPermissionView::GetWindowTitle() const {
 
 bool NativeFileSystemPermissionView::ShouldShowCloseButton() const {
   return false;
-}
-
-bool NativeFileSystemPermissionView::Accept() {
-  std::move(callback_).Run(permissions::PermissionAction::GRANTED);
-  return true;
-}
-
-bool NativeFileSystemPermissionView::Cancel() {
-  std::move(callback_).Run(permissions::PermissionAction::DISMISSED);
-  return true;
 }
 
 gfx::Size NativeFileSystemPermissionView::CalculatePreferredSize() const {

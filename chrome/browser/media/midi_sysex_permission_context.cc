@@ -9,8 +9,9 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "url/gurl.h"
 
-MidiSysexPermissionContext::MidiSysexPermissionContext(Profile* profile)
-    : PermissionContextBase(profile,
+MidiSysexPermissionContext::MidiSysexPermissionContext(
+    content::BrowserContext* browser_context)
+    : PermissionContextBase(browser_context,
                             ContentSettingsType::MIDI_SYSEX,
                             blink::mojom::FeaturePolicyFeature::kMidiFeature) {}
 

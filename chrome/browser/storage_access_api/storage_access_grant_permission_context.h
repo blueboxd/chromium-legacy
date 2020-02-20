@@ -6,12 +6,13 @@
 #define CHROME_BROWSER_STORAGE_ACCESS_API_STORAGE_ACCESS_GRANT_PERMISSION_CONTEXT_H_
 
 #include "base/gtest_prod_util.h"
-#include "chrome/browser/permissions/permission_context_base.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_context_base.h"
 
-class StorageAccessGrantPermissionContext : public PermissionContextBase {
+class StorageAccessGrantPermissionContext
+    : public permissions::PermissionContextBase {
  public:
-  StorageAccessGrantPermissionContext(Profile* profile);
+  StorageAccessGrantPermissionContext(content::BrowserContext* browser_context);
 
   ~StorageAccessGrantPermissionContext() override;
 
@@ -31,12 +32,13 @@ class StorageAccessGrantPermissionContext : public PermissionContextBase {
 
   // PermissionContextBase:
   bool IsRestrictedToSecureOrigins() const override;
-  void DecidePermission(content::WebContents* web_contents,
-                        const permissions::PermissionRequestID& id,
-                        const GURL& requesting_origin,
-                        const GURL& embedding_origin,
-                        bool user_gesture,
-                        BrowserPermissionCallback callback) override;
+  void DecidePermission(
+      content::WebContents* web_contents,
+      const permissions::PermissionRequestID& id,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      bool user_gesture,
+      permissions::BrowserPermissionCallback callback) override;
   ContentSetting GetPermissionStatusInternal(
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
@@ -44,7 +46,7 @@ class StorageAccessGrantPermissionContext : public PermissionContextBase {
   void NotifyPermissionSet(const permissions::PermissionRequestID& id,
                            const GURL& requesting_origin,
                            const GURL& embedding_origin,
-                           BrowserPermissionCallback callback,
+                           permissions::BrowserPermissionCallback callback,
                            bool persist,
                            ContentSetting content_setting) override;
   void UpdateContentSetting(const GURL& requesting_origin,

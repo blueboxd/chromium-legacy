@@ -27,6 +27,7 @@
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, σύνθετο πλαίσιο</translation>
 <translation id="1161762950103988776">Μετάβαση</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, στοιχείο μενού, με υπομενού</translation>
+<translation id="1175914831232945926">Ψηφία</translation>
 <translation id="1177863135347784049">Προσαρμοσμένη</translation>
 <translation id="1188858454923323853">συμπληρωματικό</translation>
 <translation id="1195238899008218998">Επίλογος</translation>
@@ -145,6 +146,7 @@
 <translation id="1969092762068865084">Ιούλιος</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1982529757455190616">Δεν υπάρχει προηγούμενο σημείο μετάβασης.</translation>
+<translation id="1988733631391393183">Εμφάνιση εντολών μπράιγ στα μενού του ChromeVox</translation>
 <translation id="1990932729021763163">Κεφαλίδα γραμμής:</translation>
 <translation id="2002895034995108595">Επαναφορά των τρεχουσών αντιστοιχίσεων πλήκτρων</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{αριστερή αγκύλη}other{# αριστερές αγκύλες}}</translation>
@@ -308,6 +310,7 @@
 <translation id="3109724472072898302">Συμπτυγμένο</translation>
 <translation id="3112457281078985179">Για ενεργοποίηση ή απενεργοποίηση του ChromeVox, χρησιμοποιήστε τον συνδυασμό Control+Alt+Z.</translation>
 <translation id="3128896337293924532">Δεν υπάρχει επόμενο blockquote.</translation>
+<translation id="3131002934070407451">Ανάγνωση αριθμών ως:</translation>
 <translation id="3134461040845705080">μόνο για ανάγνωση</translation>
 <translation id="3137663468179739624">Λαδί</translation>
 <translation id="3138767756593758860">Εμφάνιση λίστας με ορόσημα</translation>
@@ -1002,6 +1005,7 @@
 <translation id="7968340748835037139">Σκούρο πράσινο</translation>
 <translation id="7972507042926081808">Σοκολατί</translation>
 <translation id="7974390230414479278">Στοιχείο μενού</translation>
+<translation id="8004507136466386272">Λέξεις</translation>
 <translation id="8007540374018858731">επικεφαλίδα 3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{εισαγωγικό}other{# εισαγωγικά}}</translation>
 <translation id="8017588669690167134">Απενεργοποίηση ομιλίας</translation>

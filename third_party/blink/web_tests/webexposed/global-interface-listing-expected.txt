@@ -11209,6 +11209,7 @@ interface XRFrame
 interface XRHitTestResult
     attribute @@toStringTag
     method constructor
+    method createAnchor
     method getPose
 interface XRHitTestSource
     attribute @@toStringTag

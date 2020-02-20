@@ -35,7 +35,7 @@ void MediaDrmBridgeFactory::Create(
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb,
-    const CdmCreatedCB& cdm_created_cb) {
+    CdmCreatedCB cdm_created_cb) {
   DCHECK(MediaDrmBridge::IsKeySystemSupported(key_system));
   DCHECK(MediaDrmBridge::IsAvailable());
   DCHECK(!security_origin.opaque());
@@ -56,7 +56,7 @@ void MediaDrmBridgeFactory::Create(
         key_system +
         " may require use_video_overlay_for_embedded_encrypted_video";
     NOTREACHED() << error_message;
-    cdm_created_cb.Run(nullptr, error_message);
+    std::move(cdm_created_cb).Run(nullptr, error_message);
     return;
   }
 
@@ -64,7 +64,7 @@ void MediaDrmBridgeFactory::Create(
   session_closed_cb_ = session_closed_cb;
   session_keys_change_cb_ = session_keys_change_cb;
   session_expiration_update_cb_ = session_expiration_update_cb;
-  cdm_created_cb_ = cdm_created_cb;
+  cdm_created_cb_ = std::move(cdm_created_cb);
 
   // MediaDrmStorage may be lazy created in MediaDrmStorageBridge.
   storage_ = std::make_unique<MediaDrmStorageBridge>();

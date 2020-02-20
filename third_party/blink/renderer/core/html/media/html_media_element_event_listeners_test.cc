@@ -180,8 +180,6 @@ TEST_F(HTMLMediaElementEventListenersTest,
 
 TEST_F(HTMLMediaElementEventListenersTest,
        FullscreenDetectorTimerCancelledOnContextDestroy) {
-  ScopedVideoFullscreenDetectionForTest video_fullscreen_detection(true);
-
   EXPECT_EQ(Video(), nullptr);
   GetDocument().body()->SetInnerHTMLFromString("<body><video></video></body>");
   Video()->SetSrc("http://example.com");

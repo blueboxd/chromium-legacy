@@ -54,9 +54,6 @@ class FolderUploadConfirmationView : public views::DialogDelegateView {
 
   bool ShouldShowCloseButton() const override;
 
-  bool Accept() override;
-  bool Cancel() override;
-
   gfx::Size CalculatePreferredSize() const override;
 
   ui::ModalType GetModalType() const override;

@@ -22,6 +22,7 @@
 #include <memory>
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_paint_server.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cycle_solver.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
@@ -88,14 +89,22 @@ void SVGResourcesCache::ClientLayoutChanged(LayoutObject& object) {
   SVGResources* resources = CachedResourcesForLayoutObject(object);
   if (!resources)
     return;
-
   // Invalidate the resources if either the LayoutObject itself changed,
   // or we have filter resources, which could depend on the layout of children.
   if (!object.SelfNeedsLayout() && !resources->Filter())
     return;
   SVGElementResourceClient* client = SVGResources::GetClient(object);
-  if (InvalidationModeMask invalidation_flags =
-          resources->RemoveClientFromCache(*client)) {
+  InvalidationModeMask invalidation_flags =
+      resources->RemoveClientFromCacheAffectingObjectBounds(*client);
+  if (LayoutSVGResourcePaintServer* fill = resources->Fill()) {
+    fill->RemoveClientFromCache(*client);
+    invalidation_flags |= SVGResourceClient::kPaintInvalidation;
+  }
+  if (LayoutSVGResourcePaintServer* stroke = resources->Stroke()) {
+    stroke->RemoveClientFromCache(*client);
+    invalidation_flags |= SVGResourceClient::kPaintInvalidation;
+  }
+  if (invalidation_flags) {
     LayoutSVGResourceContainer::MarkClientForInvalidation(object,
                                                           invalidation_flags);
   }

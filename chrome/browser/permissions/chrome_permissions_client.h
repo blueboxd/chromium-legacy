@@ -32,6 +32,8 @@ class ChromePermissionsClient : public permissions::PermissionsClient {
                         permissions::PermissionRequestType request_type,
                         permissions::PermissionAction action) override;
   base::Optional<url::Origin> GetAutoApprovalOrigin() override;
+  bool CanBypassEmbeddingOriginCheck(const GURL& requesting_origin,
+                                     const GURL& embedding_origin) override;
 
  private:
   friend base::NoDestructor<ChromePermissionsClient>;

@@ -582,7 +582,6 @@ Wenn Sie diese Einstellung ändern möchten, <ph name="BEGIN_LINK" />setzen Sie 
 <translation id="5447765697759493033">Diese Website wird nicht übersetzt</translation>
 <translation id="545042621069398927">Download wird beschleunigt.</translation>
 <translation id="5456381639095306749">Seite herunterladen</translation>
-<translation id="5475862044948910901">Augmented-Reality-Sitzung starten?</translation>
 <translation id="548278423535722844">In einer Karten-App öffnen</translation>
 <translation id="5487521232677179737">Daten löschen</translation>
 <translation id="5494752089476963479">Werbung auf Websites blockieren, auf denen aufdringliche oder irreführende Werbung angezeigt wird</translation>
@@ -831,11 +830,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 ausgewähltes Element teilen}other{# ausgewählte Elemente teilen}}</translation>
 <translation id="7359002509206457351">Auf Zahlungsmethoden zugreifen</translation>
-<translation id="7365126855094612066">Die Website kann für die Dauer dieser Sitzung Folgendes tun:
-• Eine 3D-Karte Ihrer Umgebung erstellen
-• Die Bewegung der Kamera verfolgen
-
-Die Website erhält KEINEN Zugriff auf die Kamera. Die Kamerabilder sind nur für Sie sichtbar.</translation>
 <translation id="7375125077091615385">Typ:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>

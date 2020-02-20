@@ -55,6 +55,14 @@ class BackButtonTest : public AshTestBase,
     }
 
     AshTestBase::SetUp();
+    // Set a11y setting to show back button in tablet mode, if the feature to
+    // hide it is enabled.
+    if (features::IsHideShelfControlsInTabletModeEnabled()) {
+      Shell::Get()
+          ->accessibility_controller()
+          ->SetTabletModeShelfNavigationButtonsEnabled(true);
+    }
+
     test_api_ = std::make_unique<ShelfViewTestAPI>(
         GetPrimaryShelf()->GetShelfViewForTesting());
 

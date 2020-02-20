@@ -137,6 +137,7 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fil}other{# filer}}</translation>
 <translation id="2017836877785168846">Rensar historik och autoslutföranden i adressfältet.</translation>
 <translation id="2021896219286479412">Helskärmskontroller på webbsidan</translation>
+<translation id="2025115093177348061">Förstärkt verklighet</translation>
 <translation id="2038563949887743358">Aktivera begäran av skrivbordsversion</translation>
 <translation id="2041019821020695769">Om du vill få aviseringar från Chrome måste du även aktivera aviseringar i <ph name="BEGIN_LINK" />inställningarna för Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">Data för <ph name="APP_NAME" /> finns även i Chrome</translation>
@@ -150,6 +151,9 @@
 <translation id="2100273922101894616">Automatisk inloggning</translation>
 <translation id="2100314319871056947">Testa att dela upp texten i mindre bitar</translation>
 <translation id="2107397443965016585">Fråga innan webbplatser tillåts att spela upp skyddat innehåll (rekommenderas)</translation>
+<translation id="2109711654079915747">Läs om olika ämnen på webbplatser utan att lämna sidan. Med funktionen Tryck för att söka skickas ett ord och dess kontext till Google Sök. Sedan visas definitioner, bilder, sökresultat och annan information.
+
+Sök genom att trycka på ett ord. Du kan finjustera sökningen genom att trycka länge för att välja fler eller färre ord. Om du vill redigera sökningen öppnar du panelen, trycker på ikonen för att skapa en ny flik och ändrar i sökrutan.</translation>
 <translation id="2111511281910874386">Öppna sida</translation>
 <translation id="2122601567107267586">Det gick inte att öppna appen</translation>
 <translation id="2126426811489709554">Drivs av Chrome</translation>
@@ -176,6 +180,7 @@
 <translation id="2321958826496381788">Flytta reglaget tills du kan läsa texten ordentligt. Texten bör bli åtminstone så här stor när du trycker två gånger på ett stycke.</translation>
 <translation id="2323763861024343754">Webbplatslagring</translation>
 <translation id="2328985652426384049">Det gick inte att logga in</translation>
+<translation id="234265804618409743">Det gick inte att öppna kameran. Något gick fel.</translation>
 <translation id="2349710944427398404">Total data som används av Chrome, inklusive konton, bokmärken och sparade inställningar</translation>
 <translation id="2353636109065292463">Kontrollera internetanslutningen</translation>
 <translation id="2359808026110333948">Fortsätt</translation>
@@ -192,6 +197,9 @@
 <translation id="2434158240863470628">Nedladdningen är klar<ph name="SEPARATOR" /><ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Platsåtkomst</translation>
 <translation id="2450083983707403292">Vill du börja ladda ned <ph name="FILE_NAME" /> igen?</translation>
+<translation id="2450907520913474542">Läs om olika ämnen på webbplatser utan att lämna sidan. Med funktionen Tryck för att söka skickas ett ord och dess kontext till Google Sök. Sedan visas definitioner, bilder, sökresultat och annan information.
+
+Sök genom att trycka länge på ett ord. Du kan förfina sökningen genom att välja fler eller färre ord. Om du vill redigera sökningen öppnar du panelen, trycker på ikonen för att skapa en ny flik och ändrar i sökrutan.</translation>
 <translation id="246532703174860178">Dela</translation>
 <translation id="2482878487686419369">Aviseringar</translation>
 <translation id="2490684707762498678">Hanteras av <ph name="APP_NAME" /></translation>
@@ -423,6 +431,7 @@
 <translation id="4298388696830689168">Länkade webbplatser</translation>
 <translation id="4307992518367153382">Grunderna</translation>
 <translation id="4314815835985389558">Hantera synkronisering</translation>
+<translation id="4321739720395210191">Det gick inte att öppna kameran. Starta om enheten och försök igen.</translation>
 <translation id="4351244548802238354">Stäng dialogrutan</translation>
 <translation id="4353114845960720315">Medan du använder VR-läget kan den här webbplatsen ta reda på följande om dig:</translation>
 <translation id="4378154925671717803">Mobil</translation>
@@ -469,6 +478,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4660838440047236328">hur ditt rum ser ut</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bokmärken har raderats</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> har lagts till på startskärmen.</translation>
+<translation id="4670064810192446073">Virtuell verklighet</translation>
 <translation id="4684427112815847243">Synkronisera allt</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> till}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 och <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> till}}</translation>
 <translation id="4696983787092045100">Skicka texten till dina enheter</translation>
@@ -504,6 +514,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="4882831918239250449">Styr hur Sök, annonser och annat ska anpassas utifrån webbhistoriken</translation>
 <translation id="4883854917563148705">Hanterade inställningar kan inte återställas</translation>
 <translation id="4885273946141277891">Fler Chrome-förekomster än det finns stöd för.</translation>
+<translation id="4887024562049524730">Fråga innan webbplatser tillåts att använda VR-enheter och VR-data (rekommenderas)</translation>
 <translation id="4910889077668685004">Betalningsappar</translation>
 <translation id="4913161338056004800">Återställ statistik</translation>
 <translation id="4913169188695071480">Sluta uppdatera</translation>
@@ -582,7 +593,6 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5447765697759493033">Den här webbplatsen översätts inte</translation>
 <translation id="545042621069398927">Nedladdningen görs snabbare.</translation>
 <translation id="5456381639095306749">Ladda ned sida</translation>
-<translation id="5475862044948910901">Vill du starta en session med förstärkt verklighet?</translation>
 <translation id="548278423535722844">Öppna i kartapp</translation>
 <translation id="5487521232677179737">Rensa data</translation>
 <translation id="5494752089476963479">Blockera annonser på webbplatser där påträngande eller vilseledande annonser visas</translation>
@@ -623,6 +633,7 @@ Det kan finnas andra former av webbhistorik i Google-kontot på <ph name="BEGIN_
 <translation id="5710871682236653961">Fråga innan webbplatser tillåts att skicka och ta emot uppgifter när du snuddar vid NFC-enheter (rekommenderas)</translation>
 <translation id="572328651809341494">Senaste flikarna</translation>
 <translation id="5726692708398506830">Gör allt på sidan större</translation>
+<translation id="5735071096924648956">Blockera webbplatser från att registrera kamerans position eller kartlägga rummet</translation>
 <translation id="5748802427693696783">Bytte till standardflikar</translation>
 <translation id="5749068826913805084">Chrome måste ha åtkomst till lagringsutrymmet om det ska gå att ladda ned filer.</translation>
 <translation id="5763382633136178763">Inkognitoflikar</translation>
@@ -693,6 +704,7 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6277522088822131679">Det gick inte att skriva ut sidan. Försök igen.</translation>
 <translation id="6295158916970320988">Alla webbplatser</translation>
 <translation id="629730747756840877">Konto</translation>
+<translation id="6297765934698848803">Organisationen som hanterar din enhet har inaktiverat kameran.</translation>
 <translation id="6303969859164067831">Logga ut och inaktivera synkronisering</translation>
 <translation id="6316139424528454185">Android-versionen stöds inte</translation>
 <translation id="6320088164292336938">Vibration</translation>
@@ -715,11 +727,13 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="6427112570124116297">Översätt webbsidor</translation>
 <translation id="6433501201775827830">Välj sökmotor</translation>
 <translation id="6437478888915024427">Sidinformation</translation>
+<translation id="6439114592976064011">Blockera webbplatser från att använda VR-enheter och VR-data</translation>
 <translation id="6441734959916820584">Namnet är för långt</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# bild}other{# bilder}}</translation>
 <translation id="6447558397796644647">Det går inte att hitta det bokmärket. Kontrollera stavningen eller lägg till ett nytt bokmärke.</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6461962085415701688">Det går inte att öppna filen</translation>
+<translation id="6462660325961255024">Fråga innan webbplatser tillåts att registrera kamerans position eller kartlägga rummet (rekommenderas)</translation>
 <translation id="6464977750820128603">Du kan se vilka webbplatser du besökt i Chrome och ställa in en timer för dem.\n\nGoogle får information om vilka webbplatser du har ställt in en timer för och hur länge du har stannat på dem. Informationen används för att förbättra Digitalt välmående.</translation>
 <translation id="6475951671322991020">Ladda ned video</translation>
 <translation id="6482749332252372425">Det gick inte att ladda ned <ph name="FILE_NAME" /> eftersom det inte finns tillräckligt med lagringsutrymme.</translation>
@@ -831,11 +845,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Dela 1 markerat objekt}other{Dela # markerade objekt}}</translation>
 <translation id="7359002509206457351">Åtkomst till betalningsmetoder</translation>
-<translation id="7365126855094612066">Webbplatsen kan göra följande under återstoden av sessionen:
-• skapa en karta över omgivningen i 3D
-• spåra kamerans rörelser
-
-Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</translation>
 <translation id="7375125077091615385">Typ:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">Webbadress</translation>
@@ -912,6 +921,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> är inaktuell.</translation>
 <translation id="7947953824732555851">Godkänn och logga in</translation>
 <translation id="7963646190083259054">Leverantör:</translation>
+<translation id="7967911570373677897">Om du vill skanna en QR-kod ändrar du inställningarna så att Chrome kan använda kameran</translation>
 <translation id="7971136598759319605">Aktiv för 1 dag sedan</translation>
 <translation id="7975379999046275268">Förhandsgranska sida <ph name="BEGIN_NEW" />Nyhet<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Läs in sidor i förväg så att det går snabbare att surfa och söka</translation>
@@ -957,6 +967,7 @@ Webbplatsen får INTE tillgång till kameran. Bara du kan se kamerabilderna.</tr
 <translation id="8218622182176210845">Hantera kontot</translation>
 <translation id="8224471946457685718">Ladda ned artiklar för dig via Wi-Fi</translation>
 <translation id="8232956427053453090">Behåll data</translation>
+<translation id="8233540874193135768">Du behöver en enhet med kamera för att skanna en QR-kod.</translation>
 <translation id="8250920743982581267">Dokument</translation>
 <translation id="825412236959742607">Den här sidan använder för mycket minne, så en del innehåll har tagits bort.</translation>
 <translation id="8260126382462817229">Försök att logga in igen</translation>

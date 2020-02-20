@@ -205,8 +205,7 @@ void NewDeskButton::OnViewUnhighlighted() {
 void NewDeskButton::UpdateBorderState() {
   border_ptr_->set_color(
       (IsViewHighlighted() && DesksController::Get()->CanCreateDesks())
-          ? GetNativeTheme()->GetSystemColor(
-                ui::NativeTheme::kColorId_FocusedBorderColor)
+          ? gfx::kGoogleBlue300
           : SK_ColorTRANSPARENT);
   SchedulePaint();
 }

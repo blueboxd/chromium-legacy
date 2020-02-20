@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './about_page/about_page.m.js';
 import './appearance_page/appearance_page.m.js';
 import './appearance_page/appearance_fonts_page.m.js';
 import './controls/controlled_button.m.js';
@@ -36,6 +37,7 @@ export {DefaultBrowserBrowserProxyImpl} from './default_browser_page/default_bro
 export {SystemPageBrowserProxyImpl} from './system_page/system_page_browser_proxy.m.js';
 // </if>
 
+export {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, UpdateStatus} from './about_page/about_page_browser_proxy.m.js';
 export {AppearanceBrowserProxy, AppearanceBrowserProxyImpl} from './appearance_page/appearance_browser_proxy.m.js';
 export {CrSettingsPrefs} from './prefs/prefs_types.m.js';
 export {DownloadsBrowserProxyImpl} from './downloads_page/downloads_browser_proxy.m.js';

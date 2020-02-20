@@ -582,7 +582,6 @@ Para cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincroni
 <translation id="5447765697759493033">Este sitio no se traducirá</translation>
 <translation id="545042621069398927">Acelerando la descarga</translation>
 <translation id="5456381639095306749">Descargar página</translation>
-<translation id="5475862044948910901">¿Quieres iniciar la sesión de realidad aumentada?</translation>
 <translation id="548278423535722844">Abrir en una app de mapas</translation>
 <translation id="5487521232677179737">Borrar datos</translation>
 <translation id="5494752089476963479">Bloquear anuncios de sitios que muestran anuncios intrusivos o engañosos</translation>
@@ -831,11 +830,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Comparte 1 elemento seleccionado}other{Comparte # elementos seleccionados}}</translation>
 <translation id="7359002509206457351">Acceder a formas de pago</translation>
-<translation id="7365126855094612066">Durante esta sesión, el sitio podrá hacer lo siguiente:
-• Crear un mapa 3D de tu entorno
-• Hacer un seguimiento del movimiento de la cámara
-
-El sitio NO podrá acceder a la cámara. Solo tú podrás ver las imágenes de la cámara.</translation>
 <translation id="7375125077091615385">Tipo:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" /></translation>
 <translation id="7400418766976504921">URL</translation>

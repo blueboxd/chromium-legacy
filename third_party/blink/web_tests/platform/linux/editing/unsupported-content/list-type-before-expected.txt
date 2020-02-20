@@ -41,30 +41,30 @@ layer at (0,0) size 800x600
       LayoutBlockFlow {DIV} at (0,230) size 784x136 [border: (2px solid #008000)]
         LayoutBlockFlow {UL} at (2,26) size 780x84
           LayoutListItem {LI} at (40,0) size 740x28
-            LayoutListMarker (anonymous) at (-22,0) size 9x27: bullet
+            LayoutListMarker {::marker} at (-22,0) size 9x27: bullet
             LayoutText {#text} at (0,0) size 114x27
               text run at (0,0) width 114: "xxxline one"
           LayoutListItem {LI} at (40,28) size 740x28
-            LayoutListMarker (anonymous) at (-22,0) size 9x27: bullet
+            LayoutListMarker {::marker} at (-22,0) size 9x27: bullet
             LayoutText {#text} at (0,0) size 79x27
               text run at (0,0) width 79: "line two"
           LayoutListItem {LI} at (40,56) size 740x28
-            LayoutListMarker (anonymous) at (-22,0) size 9x27: bullet
+            LayoutListMarker {::marker} at (-22,0) size 9x27: bullet
             LayoutText {#text} at (0,0) size 92x27
               text run at (0,0) width 92: "line three"
       LayoutBlockFlow {DIV} at (0,376) size 784x136
         LayoutBlockFlow {DIV} at (0,0) size 784x136 [border: (2px solid #FF0000)]
           LayoutBlockFlow {UL} at (2,26) size 780x84
             LayoutListItem {LI} at (40,0) size 740x28
-              LayoutListMarker (anonymous) at (-22,0) size 9x27: bullet
+              LayoutListMarker {::marker} at (-22,0) size 9x27: bullet
               LayoutText {#text} at (0,0) size 114x27
                 text run at (0,0) width 114: "xxxline one"
             LayoutListItem {LI} at (40,28) size 740x28
-              LayoutListMarker (anonymous) at (-22,0) size 9x27: bullet
+              LayoutListMarker {::marker} at (-22,0) size 9x27: bullet
               LayoutText {#text} at (0,0) size 79x27
                 text run at (0,0) width 79: "line two"
             LayoutListItem {LI} at (40,56) size 740x28
-              LayoutListMarker (anonymous) at (-22,0) size 9x27: bullet
+              LayoutListMarker {::marker} at (-22,0) size 9x27: bullet
               LayoutText {#text} at (0,0) size 92x27
                 text run at (0,0) width 92: "line three"
 caret: position 3 of child 0 {#text} of child 1 {LI} of child 1 {UL} of child 1 {DIV} of child 5 {DIV} of body

@@ -72,7 +72,7 @@ class PermissionContextBaseFeaturePolicyTest
     *rfh = current;
   }
 
-  ContentSetting GetPermissionForFrame(PermissionContextBase* pcb,
+  ContentSetting GetPermissionForFrame(permissions::PermissionContextBase* pcb,
                                        content::RenderFrameHost* rfh) {
     return pcb
         ->GetPermissionStatus(
@@ -81,8 +81,9 @@ class PermissionContextBaseFeaturePolicyTest
         .content_setting;
   }
 
-  ContentSetting RequestPermissionForFrame(PermissionContextBase* pcb,
-                                           content::RenderFrameHost* rfh) {
+  ContentSetting RequestPermissionForFrame(
+      permissions::PermissionContextBase* pcb,
+      content::RenderFrameHost* rfh) {
     permissions::PermissionRequestID id(rfh, request_id_++);
     pcb->RequestPermission(content::WebContents::FromRenderFrameHost(rfh), id,
                            rfh->GetLastCommittedURL(), /*user_gesture=*/true,

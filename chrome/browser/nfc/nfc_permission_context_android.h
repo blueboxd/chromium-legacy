@@ -14,7 +14,8 @@ class PermissionRequestID;
 
 class NfcPermissionContextAndroid : public NfcPermissionContext {
  public:
-  explicit NfcPermissionContextAndroid(Profile* profile);
+  explicit NfcPermissionContextAndroid(
+      content::BrowserContext* browser_context);
   ~NfcPermissionContextAndroid() override;
 
  private:
@@ -25,7 +26,7 @@ class NfcPermissionContextAndroid : public NfcPermissionContext {
   void NotifyPermissionSet(const permissions::PermissionRequestID& id,
                            const GURL& requesting_origin,
                            const GURL& embedding_origin,
-                           BrowserPermissionCallback callback,
+                           permissions::BrowserPermissionCallback callback,
                            bool persist,
                            ContentSetting content_setting) override;
 
@@ -33,7 +34,7 @@ class NfcPermissionContextAndroid : public NfcPermissionContext {
       const permissions::PermissionRequestID& id,
       const GURL& requesting_origin,
       const GURL& embedding_origin,
-      BrowserPermissionCallback callback,
+      permissions::BrowserPermissionCallback callback,
       bool persist,
       ContentSetting content_setting);
 

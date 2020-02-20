@@ -582,7 +582,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5447765697759493033">Dette website kan ikke oversættes</translation>
 <translation id="545042621069398927">Øger hastigheden på din download.</translation>
 <translation id="5456381639095306749">Download siden</translation>
-<translation id="5475862044948910901">Vil du starte en session med augmented reality?</translation>
 <translation id="548278423535722844">Åbn i kortapp</translation>
 <translation id="5487521232677179737">Ryd data</translation>
 <translation id="5494752089476963479">Bloker annoncer på websites, der viser påtrængende eller vildledende annoncer</translation>
@@ -831,11 +830,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Del 1 valgt element}one{Del # valgt element}other{Del # valgte elementer}}</translation>
 <translation id="7359002509206457351">Adgang til betalingsmetoder</translation>
-<translation id="7365126855094612066">Under denne session kan websitet:
-• Oprette et 3D-kort over dine omgivelser
-• Spore kamerabevægelser
-
-Websitet får IKKE adgang til kameraet. Kameraets billeder kan kun ses af dig.</translation>
 <translation id="7375125077091615385">Type:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">Webadresse</translation>

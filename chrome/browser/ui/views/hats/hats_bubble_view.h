@@ -52,10 +52,6 @@ class HatsBubbleView : public views::BubbleDialogDelegateView {
   gfx::ImageSkia GetWindowIcon() override;
   bool ShouldShowWindowIcon() const override;
 
-  // views::DialogDelegate:
-  bool Cancel() override;
-  bool Accept() override;
-
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
   void OnWidgetDestroying(views::Widget* widget) override;

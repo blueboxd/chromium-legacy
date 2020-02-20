@@ -179,7 +179,7 @@ void CdmAdapter::Create(
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb,
-    const CdmCreatedCB& cdm_created_cb) {
+    CdmCreatedCB cdm_created_cb) {
   DCHECK(!key_system.empty());
   DCHECK(session_message_cb);
   DCHECK(session_closed_cb);
@@ -192,7 +192,8 @@ void CdmAdapter::Create(
                      session_keys_change_cb, session_expiration_update_cb);
 
   // |cdm| ownership passed to the promise.
-  cdm->Initialize(std::make_unique<CdmInitializedPromise>(cdm_created_cb, cdm));
+  cdm->Initialize(
+      std::make_unique<CdmInitializedPromise>(std::move(cdm_created_cb), cdm));
 }
 
 CdmAdapter::CdmAdapter(

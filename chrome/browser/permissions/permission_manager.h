@@ -19,10 +19,10 @@
 #include "url/origin.h"
 
 namespace permissions {
+class PermissionContextBase;
 struct PermissionResult;
 }
 
-class PermissionContextBase;
 class Profile;
 
 class PermissionManager : public KeyedService,
@@ -146,7 +146,8 @@ class PermissionManager : public KeyedService,
   struct Subscription;
   using SubscriptionsMap = base::IDMap<std::unique_ptr<Subscription>>;
 
-  PermissionContextBase* GetPermissionContext(ContentSettingsType type);
+  permissions::PermissionContextBase* GetPermissionContext(
+      ContentSettingsType type);
 
   // Called when a permission was decided for a given PendingRequest. The
   // PendingRequest is identified by its |request_id| and the permission is
@@ -179,7 +180,7 @@ class PermissionManager : public KeyedService,
   SubscriptionsMap subscriptions_;
 
   std::unordered_map<ContentSettingsType,
-                     std::unique_ptr<PermissionContextBase>,
+                     std::unique_ptr<permissions::PermissionContextBase>,
                      ContentSettingsTypeHash>
       permission_contexts_;
   using ContentSettingsTypeOverrides =

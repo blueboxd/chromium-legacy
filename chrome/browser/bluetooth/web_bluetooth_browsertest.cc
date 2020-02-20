@@ -10,12 +10,12 @@
 #include "base/metrics/field_trial.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/permissions/permission_context_base.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -416,12 +416,13 @@ IN_PROC_BROWSER_TEST_F(WebBluetoothTest, KillSwitchShouldBlock) {
   // Turn on the global kill switch.
   std::map<std::string, std::string> params;
   params["Bluetooth"] =
-      PermissionContextBase::kPermissionsKillSwitchBlockedValue;
+      permissions::PermissionContextBase::kPermissionsKillSwitchBlockedValue;
   variations::AssociateVariationParams(
-      PermissionContextBase::kPermissionsKillSwitchFieldStudy, "TestGroup",
-      params);
+      permissions::PermissionContextBase::kPermissionsKillSwitchFieldStudy,
+      "TestGroup", params);
   base::FieldTrialList::CreateFieldTrial(
-      PermissionContextBase::kPermissionsKillSwitchFieldStudy, "TestGroup");
+      permissions::PermissionContextBase::kPermissionsKillSwitchFieldStudy,
+      "TestGroup");
 
   std::string rejection;
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(

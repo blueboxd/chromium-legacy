@@ -69,10 +69,10 @@ void SchemaMap::FilterBundle(PolicyBundle* bundle) const {
       if (!policy_value ||
           !policy_schema.Normalize(policy_value, SCHEMA_ALLOW_UNKNOWN,
                                    &error_path, &error, nullptr)) {
-        LOG(ERROR) << "Dropping policy " << policy_name << " of component "
-                   << ns.component_id << " due to error at "
-                   << (error_path.empty() ? "root" : error_path) << ": "
-                   << error;
+        LOG(WARNING) << "Dropping policy " << policy_name << " of component "
+                     << ns.component_id << " due to error at "
+                     << (error_path.empty() ? "root" : error_path) << ": "
+                     << error;
         policy_map->Erase(policy_name);
       }
     }

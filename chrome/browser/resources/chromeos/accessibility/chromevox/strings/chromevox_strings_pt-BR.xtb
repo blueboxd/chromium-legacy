@@ -27,6 +27,7 @@
 <translation id="1157843803349774103">Caixa de texto <ph name="NAME" /> <ph name="VALUE" /></translation>
 <translation id="1161762950103988776">Pular</translation>
 <translation id="1167230103353892028">Item de menu <ph name="NAME" />, com submenu</translation>
+<translation id="1175914831232945926">Dígitos</translation>
 <translation id="1177863135347784049">Personalizado</translation>
 <translation id="1188858454923323853">complementar</translation>
 <translation id="1195238899008218998">Posfácio</translation>
@@ -145,6 +146,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="1969092762068865084">Julho</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1982529757455190616">Nenhum ponto de salto anterior</translation>
+<translation id="1988733631391393183">Mostrar comandos de braille nos menus do ChromeVox</translation>
 <translation id="1990932729021763163">Cabeçalho de linha:</translation>
 <translation id="2002895034995108595">Redefinir keymap atual</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{colchete esquerdo}one{# colchetes esquerdos}other{# colchetes esquerdos}}</translation>
@@ -308,6 +310,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="3109724472072898302">Recolhido</translation>
 <translation id="3112457281078985179">Para ativar ou desativar o ChromeVox, use Control+Alt+Z.</translation>
 <translation id="3128896337293924532">Nenhum bloco de texto a seguir</translation>
+<translation id="3131002934070407451">Ler números como:</translation>
 <translation id="3134461040845705080">rdonly</translation>
 <translation id="3137663468179739624">Verde-oliva</translation>
 <translation id="3138767756593758860">Mostrar lista de pontos de referência</translation>
@@ -1000,6 +1003,7 @@ Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="7968340748835037139">Verde-escuro</translation>
 <translation id="7972507042926081808">Chocolate</translation>
 <translation id="7974390230414479278">Item de menu</translation>
+<translation id="8004507136466386272">Palavras</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{aspas}one{# indicadores de aspas}other{# indicadores de aspas}}</translation>
 <translation id="8017588669690167134">Fala desativada</translation>

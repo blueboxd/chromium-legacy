@@ -50,6 +50,10 @@ def _MergeAPIArgumentParser(*args, **kwargs):
   parser.add_argument(
       '--merged-jacoco-filename',
       help='filename used to uniquely name the merged exec file.')
+  parser.add_argument(
+      '--per-cl-coverage',
+      action='store_true',
+      help='set to indicate that this is a per-CL coverage build')
   return parser
 
 
@@ -95,10 +99,12 @@ def main():
               'w') as f:
       json.dump(invalid_profiles, f)
 
-    # We don't want to invalidate shards in a CQ build, which we determine by
-    # the existence of the 'patch_storage' property.
-    build_properties = json.loads(params.build_properties)
-    if not build_properties.get('patch_storage'):
+    # We don't want to invalidate shards in a CQ build, because we should not
+    # interfere with the actual test results of a CQ builder.
+    # TODO(crbug.com/1050858) Remove patch_storage completely once recipe-side
+    # change passes --per-cl-coverage.
+    patch_storage = json.loads(params.build_properties).get('patch_storage')
+    if not params.per_cl_coverage and not patch_storage:
       mark_invalid_shards(
           coverage_merger.get_shards_to_retry(invalid_profiles),
           params.jsons_to_merge)

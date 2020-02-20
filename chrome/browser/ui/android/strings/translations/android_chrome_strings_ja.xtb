@@ -582,7 +582,6 @@
 <translation id="5447765697759493033">このサイトは翻訳されません</translation>
 <translation id="545042621069398927">ダウンロード速度が向上しました。</translation>
 <translation id="5456381639095306749">ページをダウンロード</translation>
-<translation id="5475862044948910901">拡張現実セッションを開始しますか？</translation>
 <translation id="548278423535722844">マップアプリで開く</translation>
 <translation id="5487521232677179737">データを削除</translation>
 <translation id="5494752089476963479">煩わしい広告や誤解を招く広告が表示されるサイトで広告をブロックする</translation>
@@ -831,11 +830,6 @@
 <translation id="7352939065658542140">動画</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 件の選択されたアイテムを共有します}other{# 件の選択されたアイテムを共有します}}</translation>
 <translation id="7359002509206457351">お支払い方法へのアクセス</translation>
-<translation id="7365126855094612066">このセッションの間、サイトでは次の操作が可能になります。
-• 環境の 3D マップを作成する
-• カメラの動きを追跡する
-
-カメラへのアクセスがサイトに許可されることはなく、他の誰かにカメラの映像が見られることはありません。</translation>
 <translation id="7375125077091615385">タイプ:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />。</translation>
 <translation id="7400418766976504921">URL</translation>

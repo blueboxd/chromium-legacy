@@ -8,9 +8,9 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 WebXrPermissionContext::WebXrPermissionContext(
-    Profile* profile,
+    content::BrowserContext* browser_context,
     ContentSettingsType content_settings_type)
-    : PermissionContextBase(profile,
+    : PermissionContextBase(browser_context,
                             content_settings_type,
                             blink::mojom::FeaturePolicyFeature::kWebXr),
       content_settings_type_(content_settings_type) {

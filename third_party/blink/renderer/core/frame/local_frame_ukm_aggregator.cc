@@ -157,6 +157,8 @@ LocalFrameUkmAggregator::GetBeginMainFrameMetrics() {
 
   // Use the main_frame_percentage_records_ because they are the ones that
   // only count time between the Begin and End of a main frame update.
+  // Do not report hit testing because it is a sub-portion of the other
+  // metrics and would result in double counting.
   std::unique_ptr<cc::BeginMainFrameMetrics> metrics_data =
       std::make_unique<cc::BeginMainFrameMetrics>();
   metrics_data->handle_input_events =
@@ -251,6 +253,7 @@ void LocalFrameUkmAggregator::DidReachFirstContentfulPaint(
       CASE_FOR_ID(Style);
       CASE_FOR_ID(Layout);
       CASE_FOR_ID(ForcedStyleAndLayout);
+      CASE_FOR_ID(HitTestDocumentUpdate);
       CASE_FOR_ID(ScrollingCoordinator);
       CASE_FOR_ID(HandleInputEvents);
       CASE_FOR_ID(Animate);
@@ -396,6 +399,7 @@ void LocalFrameUkmAggregator::RecordEvent(
       CASE_FOR_ID(Style);
       CASE_FOR_ID(Layout);
       CASE_FOR_ID(ForcedStyleAndLayout);
+      CASE_FOR_ID(HitTestDocumentUpdate);
       CASE_FOR_ID(ScrollingCoordinator);
       CASE_FOR_ID(HandleInputEvents);
       CASE_FOR_ID(Animate);

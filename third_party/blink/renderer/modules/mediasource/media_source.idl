@@ -36,6 +36,7 @@ enum EndOfStreamError {
 };
 
 [
+    ImplementedAs=MediaSourceImpl,
     ActiveScriptWrappable,
     Exposed(Window MediaSourceStable, DedicatedWorker MediaSourceInWorkers, SharedWorker MediaSourceInWorkers)
 ] interface MediaSource : EventTarget {

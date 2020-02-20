@@ -13,10 +13,11 @@ import android.webkit.URLUtil;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
-import org.chromium.chrome.browser.contextmenu.ContextMenuParams.PerformanceClass;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
+import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.PerformanceClass;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -26,10 +27,12 @@ class RevampedContextMenuHeaderCoordinator {
 
     private Context mContext;
 
-    RevampedContextMenuHeaderCoordinator(Activity activity, ContextMenuParams params) {
+    RevampedContextMenuHeaderCoordinator(
+            Activity activity, @PerformanceClass int performanceClass, ContextMenuParams params) {
         mContext = activity;
         mModel = buildModel(getTitle(params), getUrl(activity, params));
-        mMediator = new RevampedContextMenuHeaderMediator(activity, mModel, params);
+        mMediator =
+                new RevampedContextMenuHeaderMediator(activity, mModel, performanceClass, params);
     }
 
     private PropertyModel buildModel(String title, CharSequence url) {

@@ -582,7 +582,6 @@ Jei norite pakeisti šį nustatymą, <ph name="BEGIN_LINK" />iš naujo nustatyki
 <translation id="5447765697759493033">Ši svetainė nebus verčiama</translation>
 <translation id="545042621069398927">Paspartinamas atsisiuntimas.</translation>
 <translation id="5456381639095306749">Atsisiųsti puslapį</translation>
-<translation id="5475862044948910901">Pradėti išplėstosios realybės seansą?</translation>
 <translation id="548278423535722844">Atidaryti Žemėlapių programoje</translation>
 <translation id="5487521232677179737">Išvalyti duomenis</translation>
 <translation id="5494752089476963479">Blokuoti skelbimus svetainėse, kuriose rodomi nepageidaujami arba klaidinantys skelbimai</translation>
@@ -831,11 +830,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7352939065658542140">VAIZDO ĮRAŠAS</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Bendrinti 1 pasirinktą elementą}one{Bendrinti # pasirinktą elementą}few{Bendrinti # pasirinktus elementus}many{Bendrinti # pasirinkto elemento}other{Bendrinti # pasirinktų elementų}}</translation>
 <translation id="7359002509206457351">Prieiga prie mokėjimo metodų</translation>
-<translation id="7365126855094612066">Vykstant šiam seansui svetainė galės:
-• kurti jūsų aplinkos 3D žemėlapį;
-• stebėti fotoaparato judesį.
-
-Svetainė NETURI prieigos prie fotoaparato. Fotoaparato vaizdai matomi tik jums.</translation>
 <translation id="7375125077091615385">Tipas:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL adresas</translation>

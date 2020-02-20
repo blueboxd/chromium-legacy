@@ -811,6 +811,7 @@ jumbo_static_library("ui") {
       "//chrome/browser/android/thin_webview:thin_webview",
       "//chrome/browser/image_decoder",
       "//chrome/browser/resources/webapks:webapks_ui_resources",
+      "//components/embedder_support/android:context_menu",
       "//components/embedder_support/android:web_contents_delegate",
       "//components/javascript_dialogs/android:jni_headers",
       "//components/navigation_interception",

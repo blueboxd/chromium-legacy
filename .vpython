@@ -91,7 +91,6 @@ wheel: <
 
 # Used by:
 #   third_party/catapult
-#   chrome/test/vr/perf/latency/run_latency_test.py
 #
 # This version must be compatible with the version range specified by
 # //third_party/catapult/telemetry/telemetry/internal/util/external_modules.py
@@ -188,37 +187,6 @@ wheel: <
 wheel: <
   name: "infra/python/wheels/python-dateutil-py2_py3"
   version: "version:2.7.3"
->
-
-# Used by:
-#   chrome/test/vr/perf/latency/run_latency_test.py
-wheel: <
-  name: "infra/python/wheels/peakutils-py2_py3"
-  version: "version:1.0.3"
-  match_tag: <
-    abi: "cp27mu"
-    platform: "manylinux1_i686"
-  >
-  match_tag: <
-    abi: "cp27mu"
-    platform: "manylinux1_x86_64"
-  >
->
-wheel: <
-  name: "infra/python/wheels/pyserial-py2_py3"
-  version: "version:3.4"
->
-wheel: <
-  name: "infra/python/wheels/scipy/${vpython_platform}"
-  version: "version:0.19.0"
-  match_tag: <
-    abi: "cp27mu"
-    platform: "manylinux1_i686"
-  >
-  match_tag: <
-    abi: "cp27mu"
-    platform: "manylinux1_x86_64"
-  >
 >
 
 # Used by:

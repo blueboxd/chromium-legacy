@@ -230,7 +230,7 @@
 <translation id="3977512764614765090">பேட்டரி <ph name="PERCENTAGE" />% நிரம்பியுள்ளது, தொடர்ந்து சார்ஜ் ஆகிறது.</translation>
 <translation id="3995138139523574647">USB-C சாதனம் (வலது பக்கம் பின்னே இருக்கும் போர்ட்)</translation>
 <translation id="4017989525502048489">லேசர் பாயிண்டர்</translation>
-<translation id="4021716437419160885">கீழே உருட்டு</translation>
+<translation id="4021716437419160885">கீழே நகர்த்து</translation>
 <translation id="4042660782729322247">திரையைப் பகிர்ந்துள்ளீர்கள்</translation>
 <translation id="4065525899979931964">{NUM_APPS,plural, =1{ஒரு ஆப்ஸுக்கு முடக்கு}other{# ஆப்ஸுக்கு முடக்கு}}</translation>
 <translation id="4072264167173457037">நடுத்தரமான சிக்னல்</translation>
@@ -297,7 +297,7 @@
 <translation id="4917385247580444890">வலிமையானது</translation>
 <translation id="4918086044614829423">ஏற்கிறேன்</translation>
 <translation id="4924411785043111640">மீண்டும் தொடங்கி, மீட்டமை</translation>
-<translation id="495046168593986294">மேலே உருட்டு</translation>
+<translation id="495046168593986294">மேலே நகர்த்து</translation>
 <translation id="4961318399572185831">திரையை அலைபரப்பு</translation>
 <translation id="5030687792513154421">நேரம் முடிந்தது</translation>
 <translation id="5035236842988137213"><ph name="DEVICE_NAME" /> ஒரு புதிய ஃபோனுடன் இணைக்கப்பட்டுள்ளது</translation>

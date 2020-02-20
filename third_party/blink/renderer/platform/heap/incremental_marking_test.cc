@@ -102,7 +102,7 @@ class IncrementalMarkingScopeBase {
         thread_state_->IsSweepingInProgress()) {
       TestSupportingGC::PreciselyCollectGarbage();
     }
-    heap_.SetupWorklists();
+    heap_.SetupWorklists(false);
   }
 
   ~IncrementalMarkingScopeBase() {

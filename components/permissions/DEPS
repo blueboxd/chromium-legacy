@@ -5,6 +5,7 @@ include_rules = [
   "+components/strings",
   "+components/sync_preferences",
   "+components/ukm/content",
+  "+components/ukm/test_ukm_recorder.h",
   "+components/url_formatter",
   "+components/vector_icons",
   "+content/public/browser",
@@ -12,6 +13,7 @@ include_rules = [
   "+content/public/test",
   "+media/base/android",
   "+services/metrics/public/cpp",
+  "+third_party/blink/public/mojom/feature_policy",
   "+ui/base",
   "+ui/gfx",
 ]

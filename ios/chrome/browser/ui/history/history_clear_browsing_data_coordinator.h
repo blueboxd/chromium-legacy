@@ -10,7 +10,7 @@
 
 enum class UrlLoadStrategy;
 
-@protocol HistoryLocalCommands;
+@protocol HistoryUIDelegate;
 @protocol HistoryPresentationDelegate;
 @protocol HistoryClearBrowsingDataLocalCommands;
 
@@ -28,7 +28,7 @@ enum class UrlLoadStrategy;
     NS_UNAVAILABLE;
 
 // Delegate for this coordinator.
-@property(nonatomic, weak) id<HistoryLocalCommands> localDispatcher;
+@property(nonatomic, weak) id<HistoryUIDelegate> delegate;
 
 // Opaque instructions on how to open urls.
 @property(nonatomic) UrlLoadStrategy loadStrategy;

@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
@@ -42,7 +41,6 @@ public class PaintPreviewPlayerTest extends DummyUiActivityTestCase {
      */
     @Test
     @MediumTest
-    @DisabledTest(message = "crbug.com/1050548")
     public void smokeTest() {
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
             TestImplementerService service = new TestImplementerService(TEST_DATA_DIR);

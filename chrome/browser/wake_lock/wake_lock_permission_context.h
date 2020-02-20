@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_WAKE_LOCK_WAKE_LOCK_PERMISSION_CONTEXT_H_
 
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_context_base.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/permissions/permission_context_base.h"
 
-class WakeLockPermissionContext : public PermissionContextBase {
+class WakeLockPermissionContext : public permissions::PermissionContextBase {
  public:
-  WakeLockPermissionContext(Profile* profile,
+  WakeLockPermissionContext(content::BrowserContext* browser_context,
                             ContentSettingsType content_settings_type);
 
   ~WakeLockPermissionContext() override;

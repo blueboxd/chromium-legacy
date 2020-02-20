@@ -53,23 +53,6 @@ void ImeWarningBubbleView::ShowBubble(
       new ImeWarningBubbleView(extension, browser_view, callback);
 }
 
-bool ImeWarningBubbleView::Accept() {
-  if (never_show_checkbox_->GetChecked()) {
-    std::move(response_callback_)
-        .Run(ImeWarningBubblePermissionStatus::GRANTED_AND_NEVER_SHOW);
-  } else {
-    std::move(response_callback_)
-        .Run(ImeWarningBubblePermissionStatus::GRANTED);
-  }
-  return true;
-}
-
-bool ImeWarningBubbleView::Cancel() {
-  if (!response_callback_.is_null())
-    std::move(response_callback_).Run(ImeWarningBubblePermissionStatus::DENIED);
-  return true;
-}
-
 void ImeWarningBubbleView::OnToolbarActionsBarAnimationEnded() {
   if (!bubble_has_shown_) {
     views::BubbleDialogDelegateView::CreateBubble(this)->Show();
@@ -96,6 +79,22 @@ ImeWarningBubbleView::ImeWarningBubbleView(
       browser_(browser_view->browser()),
       response_callback_(callback) {
   BrowserList::AddObserver(this);
+
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      [](ImeWarningBubbleView* bubble) {
+        const bool never_show = bubble->never_show_checkbox_->GetChecked();
+        std::move(bubble->response_callback_)
+            .Run(never_show
+                     ? ImeWarningBubblePermissionStatus::GRANTED_AND_NEVER_SHOW
+                     : ImeWarningBubblePermissionStatus::GRANTED);
+      },
+      base::Unretained(this)));
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      [](ImeWarningBubbleView* bubble) {
+        std::move(bubble->response_callback_)
+            .Run(ImeWarningBubblePermissionStatus::DENIED);
+      },
+      base::Unretained(this)));
 
   // The lifetime of this bubble is tied to the lifetime of the browser.
   set_parent_window(

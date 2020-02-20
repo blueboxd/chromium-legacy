@@ -37,7 +37,7 @@ source_set("test_support") {
   deps = [
     ":browser",
     "//base",
-    "//ios/public/provider/chrome/browser/distribution:test_support",
+    "//ios/public/provider/chrome/browser/distribution",
     "//ios/public/provider/chrome/browser/images:test_support",
     "//ios/public/provider/chrome/browser/mailto:test_support",
     "//ios/public/provider/chrome/browser/omaha:test_support",

@@ -582,7 +582,6 @@ Pentru a modifica această setare, <ph name="BEGIN_LINK" />resetează sincroniza
 <translation id="5447765697759493033">Acest site nu va fi tradus</translation>
 <translation id="545042621069398927">Se accelerează descărcarea.</translation>
 <translation id="5456381639095306749">Descarcă pagina</translation>
-<translation id="5475862044948910901">Pornești sesiunea de realitate augmentată?</translation>
 <translation id="548278423535722844">Deschide în aplicația Maps</translation>
 <translation id="5487521232677179737">Șterge datele</translation>
 <translation id="5494752089476963479">Blochează anunțurile pe site-urile care afișează anunțuri deranjante sau înșelătoare</translation>
@@ -831,11 +830,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7352939065658542140">VIDEOCLIP</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Trimite un element selectat}few{Trimite # elemente selectate}other{Trimite # de elemente selectate}}</translation>
 <translation id="7359002509206457351">Acces la metodele de plată</translation>
-<translation id="7365126855094612066">Pe durata acestei sesiuni, site-ul va putea să:
-• creeze o hartă 3D a mediului tău;
-• urmărească mișcarea camerei.
-
-Acest site NU primește acces la cameră. Imaginile camerei sunt vizibile doar pentru tine.</translation>
 <translation id="7375125077091615385">Tip:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">Adresă URL</translation>

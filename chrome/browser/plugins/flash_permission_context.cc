@@ -7,7 +7,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/plugins/flash_temporary_permission_tracker.h"
 #include "chrome/browser/plugins/plugin_utils.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/site_settings_helper.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -30,8 +29,9 @@ bool PluginsEnterpriseSettingEnabled(
 
 }  // namespace
 
-FlashPermissionContext::FlashPermissionContext(Profile* profile)
-    : PermissionContextBase(profile,
+FlashPermissionContext::FlashPermissionContext(
+    content::BrowserContext* browser_context)
+    : PermissionContextBase(browser_context,
                             ContentSettingsType::PLUGINS,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
@@ -42,7 +42,7 @@ ContentSetting FlashPermissionContext::GetPermissionStatusInternal(
     const GURL& requesting_origin,
     const GURL& embedding_origin) const {
   HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile());
+      HostContentSettingsMapFactory::GetForProfile(browser_context());
   ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
       host_content_settings_map, url::Origin::Create(embedding_origin),
       requesting_origin, nullptr);
@@ -66,10 +66,10 @@ void FlashPermissionContext::UpdateTabContext(
     return;
 
   if (PluginsEnterpriseSettingEnabled(
-          HostContentSettingsMapFactory::GetForProfile(profile()))) {
+          HostContentSettingsMapFactory::GetForProfile(browser_context()))) {
     // Enable the grant temporarily.
-    FlashTemporaryPermissionTracker::Get(profile())->FlashEnabledForWebContents(
-        web_contents);
+    FlashTemporaryPermissionTracker::Get(browser_context())
+        ->FlashEnabledForWebContents(web_contents);
   }
 
   // Automatically refresh the page.
@@ -86,7 +86,7 @@ void FlashPermissionContext::UpdateContentSetting(
          content_setting == CONTENT_SETTING_BLOCK);
 
   HostContentSettingsMap* host_content_settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile());
+      HostContentSettingsMapFactory::GetForProfile(browser_context());
   // If there is an enterprise ASK setting in effect, don't store the setting as
   // it won't have any effect anyway.
   if (PluginsEnterpriseSettingEnabled(host_content_settings_map))

@@ -582,7 +582,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="5447765697759493033">Bu site çevrilmeyecek</translation>
 <translation id="545042621069398927">İndirme işleminiz hızlandırılıyor.</translation>
 <translation id="5456381639095306749">Sayfayı indir</translation>
-<translation id="5475862044948910901">Artırılmış Gerçeklik oturumu başlatılsın mı?</translation>
 <translation id="548278423535722844">Haritalar uygulamasında aç</translation>
 <translation id="5487521232677179737">Verileri temizle</translation>
 <translation id="5494752089476963479">Araya giren veya yanıltıcı reklamlar gösteren sitelerde reklamları engelle</translation>
@@ -831,11 +830,6 @@ Bu ayarı değiştirmek için <ph name="BEGIN_LINK" />senkronizasyonu sıfırlay
 <translation id="7352939065658542140">VİDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 seçili öğeyi paylaş}other{# seçili öğeyi paylaş}}</translation>
 <translation id="7359002509206457351">Ödeme yöntemlerine erişim</translation>
-<translation id="7365126855094612066">Bu oturumun süresince site şunları yapabilir:
-• çevrenizin 3D haritasını oluşturabilir
-• kamera hareketini takip edebilir
-
-Site kameraya ERİŞMEZ. Kamera görüntülerini yalnızca siz görebilirsiniz.</translation>
 <translation id="7375125077091615385">Tür:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>

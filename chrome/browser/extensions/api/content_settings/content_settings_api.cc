@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/api/preference/preference_api_constants.h"
 #include "chrome/browser/extensions/api/preference/preference_helpers.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/content_settings.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
@@ -34,6 +33,7 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/permissions/features.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/webplugininfo.h"
@@ -269,7 +269,8 @@ ContentSettingsContentSettingSetFunction::Run() {
   if (primary_pattern != secondary_pattern &&
       secondary_pattern != ContentSettingsPattern::Wildcard() &&
       !info->website_settings_info()->SupportsEmbeddedExceptions() &&
-      base::FeatureList::IsEnabled(::features::kPermissionDelegation)) {
+      base::FeatureList::IsEnabled(
+          permissions::features::kPermissionDelegation)) {
     static const char kUnsupportedEmbeddedException[] =
         "Embedded patterns are not supported for this setting.";
     return RespondNow(Error(kUnsupportedEmbeddedException));

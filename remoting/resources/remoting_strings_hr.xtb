@@ -305,6 +305,11 @@ Ako je okvir "<ph name="SERVICE_SCRIPT_NAME" />" već potvrđen, uklonite kvači
 <translation id="8196755618196986400">Da bi smo vam mogli poslati daljnje informacije, u povratnim informacijama koje pošaljete bit će vaša e-adresa.</translation>
 <translation id="8244400547700556338">Saznajte kako.</translation>
 <translation id="8261506727792406068">Izbriši</translation>
+<translation id="8295077433896346116">Za upotrebu usluge <ph name="PRODUCT_NAME" /> trebate dodijeliti dopuštenje za "Pristupačnost" kako bi se unos s daljinskog uređaja mogao dodati na ovaj Mac.
+
+Za dodjelu tog dopuštenja kliknite "<ph name="BUTTON_NAME" />" u nastavku. U oknu s postavkama "Pristupačnosti" koje će se otvoriti potvrdite okvir pored stavke "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Ako je okvir stavke "<ph name="SERVICE_SCRIPT_NAME" />" već potvrđen, poništite ga i potvrdite ponovo.</translation>
 <translation id="8355326866731426344">Ovaj pristupni kôd isteći će za <ph name="TIMEOUT" /></translation>
 <translation id="8355485110405946777">Uključite zapisnike aplikacije da bismo lakše riješili vaš problem (zapisnici mogu uključivati osobne podatke).</translation>
 <translation id="837021510621780684">S ovog računala</translation>

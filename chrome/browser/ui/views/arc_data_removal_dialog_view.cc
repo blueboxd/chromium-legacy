@@ -49,10 +49,6 @@ class DataRemovalConfirmationDialog : public views::DialogDelegateView,
   base::string16 GetWindowTitle() const override;
   ui::ModalType GetModalType() const override;
 
-  // views::DialogDelegate:
-  bool Accept() override;
-  bool Cancel() override;
-
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
 
@@ -85,6 +81,14 @@ DataRemovalConfirmationDialog::DataRemovalConfirmationDialog(
   DialogDelegate::set_button_label(
       ui::DIALOG_BUTTON_OK,
       l10n_util::GetStringUTF16(IDS_ARC_DATA_REMOVAL_CONFIRMATION_OK_BUTTON));
+
+  auto run_callback = [](DataRemovalConfirmationDialog* dialog, bool accept) {
+    std::move(dialog->confirm_callback_).Run(accept);
+  };
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(run_callback, base::Unretained(this), true));
+  DialogDelegate::set_cancel_callback(
+      base::BindOnce(run_callback, base::Unretained(this), false));
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
@@ -134,18 +138,6 @@ ui::ModalType DataRemovalConfirmationDialog::GetModalType() const {
   return ui::MODAL_TYPE_WINDOW;
 }
 
-bool DataRemovalConfirmationDialog::Accept() {
-  if (confirm_callback_)
-    std::move(confirm_callback_).Run(true);
-  return true;
-}
-
-bool DataRemovalConfirmationDialog::Cancel() {
-  if (confirm_callback_)
-    std::move(confirm_callback_).Run(false);
-  return true;
-}
-
 gfx::Size DataRemovalConfirmationDialog::CalculatePreferredSize() const {
   const int default_width = views::LayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH);
@@ -167,8 +159,7 @@ void DataRemovalConfirmationDialog::OnArcPlayStoreEnabledChanged(bool enabled) {
   // and current dialog is no longer needed.
   if (enabled)
     return;
-  Cancel();
-  GetWidget()->Close();
+  CancelDialog();
 }
 
 }  // namespace
@@ -187,11 +178,11 @@ bool IsDataRemovalConfirmationDialogOpenForTesting() {
 
 void CloseDataRemovalConfirmationDialogForTesting(bool confirm) {
   DCHECK(g_current_data_removal_confirmation);
-  if (confirm)
-    g_current_data_removal_confirmation->Accept();
-  else
-    g_current_data_removal_confirmation->Cancel();
-  g_current_data_removal_confirmation->GetWidget()->Close();
+  if (confirm) {
+    g_current_data_removal_confirmation->AcceptDialog();
+  } else {
+    g_current_data_removal_confirmation->CancelDialog();
+  }
 }
 
 }  // namespace arc

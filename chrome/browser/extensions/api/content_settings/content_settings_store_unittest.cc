@@ -11,12 +11,12 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_api_constants.h"
-#include "chrome/common/chrome_features.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_rule.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
+#include "components/permissions/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -335,7 +335,7 @@ TEST_F(ContentSettingsStoreTest, RemoveEmbedded) {
   {
     base::test::ScopedFeatureList scoped_feature_list;
     scoped_feature_list.InitAndDisableFeature(
-        ::features::kPermissionDelegation);
+        permissions::features::kPermissionDelegation);
     store()->SetExtensionContentSettingFromList(ext_id, &pref_list,
                                                 kExtensionPrefsScopeRegular);
 
@@ -354,7 +354,8 @@ TEST_F(ContentSettingsStoreTest, RemoveEmbedded) {
 
   {
     base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(::features::kPermissionDelegation);
+    scoped_feature_list.InitAndEnableFeature(
+        permissions::features::kPermissionDelegation);
     store()->SetExtensionContentSettingFromList(ext_id, &pref_list,
                                                 kExtensionPrefsScopeRegular);
 

@@ -137,6 +137,7 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# File}other{# Files}}</translation>
 <translation id="2017836877785168846">Clears history and autocompletions in the address bar.</translation>
 <translation id="2021896219286479412">Full screen site controls</translation>
+<translation id="2025115093177348061">Augmented reality</translation>
 <translation id="2038563949887743358">Turn on Request desktop site</translation>
 <translation id="2041019821020695769">To let Chrome send you notifications, also turn on notifications in <ph name="BEGIN_LINK" />Android Settings<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> also has data in Chrome</translation>
@@ -150,6 +151,9 @@
 <translation id="2100273922101894616">Auto Sign-in</translation>
 <translation id="2100314319871056947">Try sharing the text in smaller chunks</translation>
 <translation id="2107397443965016585">Ask before allowing sites to play protected content (recommended)</translation>
+<translation id="2109711654079915747">Learn about topics on websites without leaving the page. Touch to search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results and other details.
+
+Tap any word to search. To refine your search, touch and hold to select more or fewer words. To edit your search, open the panel, tap the icon to open in a new tab, and make your changes in the search box.</translation>
 <translation id="2111511281910874386">Go to page</translation>
 <translation id="2122601567107267586">Could not open app</translation>
 <translation id="2126426811489709554">Powered by Chrome</translation>
@@ -176,6 +180,7 @@
 <translation id="2321958826496381788">Drag the slider until you can read this comfortably. Text should look at least this big after double-tapping on a paragraph.</translation>
 <translation id="2323763861024343754">Site storage</translation>
 <translation id="2328985652426384049">Can’t sign in</translation>
+<translation id="234265804618409743">Can't open your camera. Something went wrong.</translation>
 <translation id="2349710944427398404">Total data used by Chrome, including accounts, bookmarks and saved settings</translation>
 <translation id="2353636109065292463">Checking your Internet connection</translation>
 <translation id="2359808026110333948">Continue</translation>
@@ -192,6 +197,9 @@
 <translation id="2434158240863470628">Download complete <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Location access</translation>
 <translation id="2450083983707403292">Do you want to start downloading <ph name="FILE_NAME" /> again?</translation>
+<translation id="2450907520913474542">Learn about topics on websites without leaving the page. Touch to search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results and other details.
+
+Touch and hold any word to search. To refine your search, select more or fewer words. To edit your search, open the panel, tap the icon to open in a new tab, and make your changes in the search box.</translation>
 <translation id="246532703174860178">Share</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="2490684707762498678">Managed by <ph name="APP_NAME" /></translation>
@@ -423,6 +431,7 @@
 <translation id="4298388696830689168">Linked sites</translation>
 <translation id="4307992518367153382">Basics</translation>
 <translation id="4314815835985389558">Manage sync</translation>
+<translation id="4321739720395210191">Can't open your camera. Restart your device and try again.</translation>
 <translation id="4351244548802238354">Close dialogue</translation>
 <translation id="4353114845960720315">While you're in VR, this site may be able to learn about:</translation>
 <translation id="4378154925671717803">Phone</translation>
@@ -469,6 +478,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4660838440047236328">the layout of your room</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bookmarks deleted</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> was added to your Home screen</translation>
+<translation id="4670064810192446073">Virtual reality</translation>
 <translation id="4684427112815847243">Sync everything</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 and <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> more}}</translation>
 <translation id="4696983787092045100">Send text to Your Devices</translation>
@@ -504,6 +514,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="4882831918239250449">Control how your browsing history is used to personalise Search, ads and more</translation>
 <translation id="4883854917563148705">Managed settings cannot be reset</translation>
 <translation id="4885273946141277891">Unsupported number of Chrome instances.</translation>
+<translation id="4887024562049524730">Ask before allowing sites to use your virtual reality device and data (recommended)</translation>
 <translation id="4910889077668685004">Payment apps</translation>
 <translation id="4913161338056004800">Reset statistics</translation>
 <translation id="4913169188695071480">Stop refreshing</translation>
@@ -582,7 +593,6 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5447765697759493033">This site will not be translated</translation>
 <translation id="545042621069398927">Speeding up your download.</translation>
 <translation id="5456381639095306749">Download page</translation>
-<translation id="5475862044948910901">Start Augmented Reality session?</translation>
 <translation id="548278423535722844">Open in maps app</translation>
 <translation id="5487521232677179737">Clear data</translation>
 <translation id="5494752089476963479">Block ads on sites that show intrusive or misleading ads</translation>
@@ -623,6 +633,7 @@ To change this setting, <ph name="BEGIN_LINK" />reset sync<ph name="END_LINK" />
 <translation id="5710871682236653961">Ask before allowing sites to send and receive info when you tap NFC devices (recommended)</translation>
 <translation id="572328651809341494">Recent tabs</translation>
 <translation id="5726692708398506830">Make everything on the page bigger</translation>
+<translation id="5735071096924648956">Block sites from tracking your camera position or mapping your room</translation>
 <translation id="5748802427693696783">Switched to standard tabs</translation>
 <translation id="5749068826913805084">Chrome needs storage access to download files.</translation>
 <translation id="5763382633136178763">Incognito tabs</translation>
@@ -693,6 +704,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6277522088822131679">There was a problem printing the page. Please try again.</translation>
 <translation id="6295158916970320988">All sites</translation>
 <translation id="629730747756840877">Account</translation>
+<translation id="6297765934698848803">The organisation that manages your device has turned off your camera.</translation>
 <translation id="6303969859164067831">Sign out and turn off sync</translation>
 <translation id="6316139424528454185">Android version is unsupported</translation>
 <translation id="6320088164292336938">Vibrate</translation>
@@ -715,11 +727,13 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="6427112570124116297">Translate the Web</translation>
 <translation id="6433501201775827830">Choose your search engine</translation>
 <translation id="6437478888915024427">Page info</translation>
+<translation id="6439114592976064011">Block sites from using your virtual reality device and data</translation>
 <translation id="6441734959916820584">Name is too long</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# Image}other{# Images}}</translation>
 <translation id="6447558397796644647">Can’t find that bookmark. Check your spelling or add a new bookmark.</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6461962085415701688">Can’t open file</translation>
+<translation id="6462660325961255024">Ask before allowing sites to track your camera position or map your room (recommended)</translation>
 <translation id="6464977750820128603">You can see sites that you visit in Chrome and set timers for them.\n\nGoogle gets info about the sites for which you set timers and how long you visit them. This info is used to make Digital Wellbeing better.</translation>
 <translation id="6475951671322991020">Download video</translation>
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> download failed due to lack of storage space.</translation>
@@ -831,11 +845,6 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Share 1 selected item}other{Share # selected items}}</translation>
 <translation id="7359002509206457351">Access payment methods</translation>
-<translation id="7365126855094612066">For the duration of this session, the site will be able to:
-• create a 3D map of your environment
-• track camera motion
-
-The site does NOT gain access to the camera. The camera images are only visible to you.</translation>
 <translation id="7375125077091615385">Type:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -912,6 +921,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> is out of date.</translation>
 <translation id="7947953824732555851">Accept and sign in</translation>
 <translation id="7963646190083259054">Vendor:</translation>
+<translation id="7967911570373677897">To scan a QR code, change your settings so that Chrome can use your camera</translation>
 <translation id="7971136598759319605">Active 1 day ago</translation>
 <translation id="7975379999046275268">Preview page <ph name="BEGIN_NEW" />New<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Preload pages for faster browsing and searching</translation>
@@ -957,6 +967,7 @@ The site does NOT gain access to the camera. The camera images are only visible 
 <translation id="8218622182176210845">Manage your account</translation>
 <translation id="8224471946457685718">Download articles for you on Wi-Fi</translation>
 <translation id="8232956427053453090">Keep data</translation>
+<translation id="8233540874193135768">To scan a QR code, use a device with a camera.</translation>
 <translation id="8250920743982581267">Documents</translation>
 <translation id="825412236959742607">This page uses too much memory, so Chrome removed some content.</translation>
 <translation id="8260126382462817229">Try signing in again</translation>

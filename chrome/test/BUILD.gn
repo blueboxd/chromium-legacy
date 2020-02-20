@@ -3321,7 +3321,6 @@ test("unit_tests") {
     "../browser/permissions/crowd_deny_preload_data_unittest.cc",
     "../browser/permissions/crowd_deny_safe_browsing_request_unittest.cc",
     "../browser/permissions/permission_context_base_feature_policy_unittest.cc",
-    "../browser/permissions/permission_context_base_unittest.cc",
     "../browser/permissions/permission_manager_unittest.cc",
     "../browser/plugins/pdf_iframe_navigation_throttle_unittest.cc",
     "../browser/policy/browser_dm_token_storage_linux_unittest.cc",

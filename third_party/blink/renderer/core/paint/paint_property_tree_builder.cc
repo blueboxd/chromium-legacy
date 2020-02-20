@@ -1230,7 +1230,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateFilter() {
       // On the other hand, "B" should not be clipped because the overflow clip
       // is not in its containing block chain, but as the filter output will be
       // clipped, so a blurred "B" may still be invisible.
-      if (!state.filter.IsEmpty())
+      if (!state.filter.IsEmpty() ||
+          (full_context_.direct_compositing_reasons &
+           CompositingReason::kActiveFilterAnimation))
         state.output_clip = context_.current.clip;
 
       // TODO(trchen): A filter may contain spatial operations such that an

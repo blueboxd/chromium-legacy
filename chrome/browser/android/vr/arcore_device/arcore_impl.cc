@@ -551,12 +551,15 @@ void ArCoreImpl::ForEachArCoreAnchor(FunctionType fn) {
 }
 
 mojom::XRPlaneDetectionDataPtr ArCoreImpl::GetDetectedPlanesData() {
-  TRACE_EVENT0("gpu", __FUNCTION__);
+  DVLOG(2) << __func__;
+
+  TRACE_EVENT0("gpu", __func__);
+
   return plane_manager_->GetDetectedPlanesData();
 }
 
 mojom::XRAnchorsDataPtr ArCoreImpl::GetAnchorsData() {
-  TRACE_EVENT0("gpu", __FUNCTION__);
+  TRACE_EVENT0("gpu", __func__);
 
   auto updated_anchors = GetUpdatedAnchorsData();
   auto all_anchor_ids = GetAllAnchorIds();
@@ -565,7 +568,7 @@ mojom::XRAnchorsDataPtr ArCoreImpl::GetAnchorsData() {
 }
 
 mojom::XRLightEstimationDataPtr ArCoreImpl::GetLightEstimationData() {
-  TRACE_EVENT0("gpu", __FUNCTION__);
+  TRACE_EVENT0("gpu", __func__);
 
   ArFrame_getLightEstimate(arcore_session_.get(), arcore_frame_.get(),
                            arcore_light_estimate_.get());
@@ -1043,6 +1046,7 @@ bool ArCoreImpl::RequestHitTest(
     // After the first (furthest) hit, for planes, only return hits that are
     // within the actual detected polygon and not just within than the larger
     // plane.
+    uint64_t plane_id = 0;
     if (!hit_results->empty() && ar_trackable_type == AR_TRACKABLE_PLANE) {
       int32_t in_polygon = 0;
       ArPlane* ar_plane = ArAsPlane(ar_trackable.get());
@@ -1053,6 +1057,12 @@ bool ArCoreImpl::RequestHitTest(
                  << ": hit a trackable that is not within detected polygon, "
                     "ignoring it";
         continue;
+      }
+
+      base::Optional<PlaneId> maybe_plane_id =
+          plane_manager_->GetPlaneId(ar_plane);
+      if (maybe_plane_id) {
+        plane_id = maybe_plane_id->GetUnsafeValue();
       }
     }
 
@@ -1071,6 +1081,8 @@ bool ArCoreImpl::RequestHitTest(
       matrix[3], matrix[7], matrix[11], matrix[15]
     );
     // clang-format on
+
+    mojo_hit->plane_id = plane_id;
 
     // Insert new results at head to preserver order from ArCore
     hit_results->insert(hit_results->begin(), std::move(mojo_hit));
@@ -1109,6 +1121,8 @@ base::Optional<uint64_t> ArCoreImpl::CreateAnchor(
 base::Optional<uint64_t> ArCoreImpl::CreateAnchor(
     const device::mojom::Pose& pose,
     uint64_t plane_id) {
+  DVLOG(2) << __func__ << ": plane_id=" << plane_id;
+
   auto ar_anchor = plane_manager_->CreateAnchor(PlaneId(plane_id), pose);
   if (!ar_anchor.is_valid()) {
     return base::nullopt;

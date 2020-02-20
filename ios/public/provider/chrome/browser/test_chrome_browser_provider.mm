@@ -7,7 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
-#include "ios/public/provider/chrome/browser/distribution/test_app_distribution_provider.h"
+#include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #include "ios/public/provider/chrome/browser/images/test_branded_image_provider.h"
 #include "ios/public/provider/chrome/browser/mailto/test_mailto_handler_provider.h"
 #include "ios/public/provider/chrome/browser/omaha/test_omaha_service_provider.h"
@@ -27,8 +27,7 @@
 namespace ios {
 
 TestChromeBrowserProvider::TestChromeBrowserProvider()
-    : app_distribution_provider_(
-          std::make_unique<TestAppDistributionProvider>()),
+    : app_distribution_provider_(std::make_unique<AppDistributionProvider>()),
       branded_image_provider_(std::make_unique<TestBrandedImageProvider>()),
       omaha_service_provider_(std::make_unique<TestOmahaServiceProvider>()),
       signin_error_provider_(std::make_unique<SigninErrorProvider>()),

@@ -48,6 +48,7 @@
 <translation id="1178581264944972037">Interrompre</translation>
 <translation id="1181037720776840403">Supprimer</translation>
 <translation id="1186201132766001848">Vérifier les mots de passe</translation>
+<translation id="1195558154361252544">Les notifications sont automatiquement bloquées pour tous les sites, sauf ceux que vous autorisez</translation>
 <translation id="1197088940767939838">Orange</translation>
 <translation id="1201402288615127009">Suivant</translation>
 <translation id="1201895884277373915">Plus de résultats pour ce site</translation>
@@ -81,6 +82,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Essayez d'effacer vos témoins<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">Vérifiez les paramètres de DNS sécurisés</translation>
 <translation id="1307966114820526988">Fonctionnalités discontinuées</translation>
+<translation id="131405271941274527"><ph name="URL" /> souhaite vous envoyer et recevoir de l'information lorsque vous touchez votre téléphone sur un appareil NFC</translation>
 <translation id="1314509827145471431">Reliure à droite</translation>
 <translation id="1320233736580025032">Enveloppe Prc1</translation>
 <translation id="132301787627749051">Rechercher une image du presse-papiers</translation>
@@ -221,6 +223,7 @@
 <translation id="1875512691959384712">Google Formulaires</translation>
 <translation id="187918866476621466">Ouvrir les pages de démarrage</translation>
 <translation id="1883255238294161206">Réduire la liste</translation>
+<translation id="1884930769492918228">Faire le suivi de la position de l'appareil photo et cartographier votre pièce</translation>
 <translation id="1898423065542865115">Filtrage</translation>
 <translation id="1901443836186977402">{1,plural, =1{Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" /> : son certificat de sécurité a expiré au cours des dernières 24 heures. Cela peut être dû à une mauvaise configuration ou à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement <ph name="CURRENT_DATE" />. Cela est-il correct? Si cela ne l'est pas, réglez l'horloge de votre système, puis actualisez cette page.}one{Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" /> : son certificat de sécurité a expiré il y a # jour. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement <ph name="CURRENT_DATE" />. Cela est-il correct? Si cela ne l'est pas, réglez l'horloge de votre système, puis actualisez cette page.}other{Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" /> : son certificat de sécurité a expiré il y a # jours. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique. L'horloge de votre ordinateur indique actuellement <ph name="CURRENT_DATE" />. Cela est-il correct? Si cela ne l'est pas, réglez l'horloge de votre système, puis actualisez cette page.}}</translation>
 <translation id="1914326953223720820">Service de décompression</translation>
@@ -462,6 +465,7 @@
 <translation id="3008447029300691911">Entrez le code de vérification de carte (CVC) pour <ph name="CREDIT_CARD" />. Après confirmation, les détails de votre carte seront partagés avec ce site.</translation>
 <translation id="3010559122411665027">Élément de liste « <ph name="ENTRY_INDEX" /> » : <ph name="ERROR" /></translation>
 <translation id="301521992641321250">Bloquée automatiquement</translation>
+<translation id="3016780570757425217">Connaître votre emplacement</translation>
 <translation id="3023071826883856138">Enveloppe You4</translation>
 <translation id="3024663005179499861">Type de politique incorrect</translation>
 <translation id="3037605927509011580">Aïe aïe aïe!</translation>
@@ -553,6 +557,7 @@
 <translation id="3452404311384756672">Intervalle de récupération :</translation>
 <translation id="3453962258458347894">Nombre de nouveaux essais</translation>
 <translation id="3456231139987291353">Enveloppe n° 11</translation>
+<translation id="3461266716147554923"><ph name="URL" /> veut voir le texte et les images copiés dans le presse-papiers</translation>
 <translation id="3461824795358126837">Surligneur</translation>
 <translation id="3462200631372590220">Masquer les paramètres avancés</translation>
 <translation id="3467763166455606212">Nom du titulaire de la carte obligatoire</translation>
@@ -568,6 +573,7 @@
 <translation id="3528485271872257980">Brun foncé</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Au moins 1 élément sur des appareils synchronisés}=1{1 élément (et plus sur des appareils synchronisés)}one{# élément (et plus sur des appareils synchronisés)}other{# éléments (et plus sur des appareils synchronisés)}}</translation>
 <translation id="3531780078352352885">Feuilles de travail</translation>
+<translation id="3532844647053365774">L'hôte <ph name="HOST" /> veut utiliser votre microphone</translation>
 <translation id="3533328374079021623">Boîte aux lettres 5</translation>
 <translation id="3539171420378717834">Conserver une copie de cette carte sur cet appareil</translation>
 <translation id="3558573058928565255">Pendant la journée</translation>
@@ -656,6 +662,7 @@
 <translation id="3901925938762663762">La carte a expiré.</translation>
 <translation id="3906600011954732550">B5 Extra</translation>
 <translation id="3906954721959377182">Tablette</translation>
+<translation id="3909477809443608991"><ph name="URL" /> veut lire du contenu protégé. L'identité de votre appareil sera vérifiée par Google et sera accessible par ce site.</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Utiliser WebAuthn au lieu du code CVC?</translation>
 <translation id="3946209740501886391">Toujours demander sur ce site</translation>
@@ -768,6 +775,7 @@
 <translation id="4346833872170306413">ROC 16K</translation>
 <translation id="4349531505348777662">Vous venez d'entrer votre mot de passe sur un site trompeur. Chrome vous recommande de visiter <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> ainsi que tout autre site sur lequel vous avez utilisé ce mot de passe, puis de le changer maintenant.</translation>
 <translation id="4356973930735388585">Les cyberpirates sur le site pourraient tenter d'installer des programmes dangereux sur votre ordinateur afin de voler ou de supprimer vos données (par exemple des photos, des mots de passe, des messages et des données de carte de crédit).</translation>
+<translation id="4357784477082216550"><ph name="URL" /> souhaite faire le suivi de la position de l'appareil photo et cartographier votre pièce</translation>
 <translation id="4358059973562876591">Les modèles que vous avez indiqués pourraient ne pas être appliqués en raison d'une erreur avec la politique DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Gérer les modes de paiement</translation>
 <translation id="4359160567981085931">Vous venez d'entrer votre mot de passe sur un site trompeur. Chrome peut vous aider. Pour modifier votre mot de passe et avertir Google que votre compte pourrait être en danger, cliquez sur Protéger le compte.</translation>
@@ -826,6 +834,7 @@
 <translation id="4658638640878098064">Agrafe en haut à gauche</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité contient des erreurs. Cela peut être dû à une mauvaise configuration ou bien à l'interception de votre connexion par un pirate informatique.</translation>
+<translation id="4677585247300749148">L'URL <ph name="URL" /> veut répondre aux événements d'accessibilité</translation>
 <translation id="467809019005607715">Google Présentations</translation>
 <translation id="4690462567478992370">Arrêter d'utiliser un certificat non valide</translation>
 <translation id="4691835149146451662">Enveloppe Architecture A</translation>
@@ -837,6 +846,7 @@
 <translation id="4726672564094551039">Actualiser les règles</translation>
 <translation id="4728558894243024398">Plateforme</translation>
 <translation id="4731967714531604179">Enveloppe Prc2</translation>
+<translation id="4733082559415072992">L'URL <ph name="URL" /> veut utiliser la position de votre appareil</translation>
 <translation id="4736825316280949806">Redémarrer Chromium</translation>
 <translation id="473775607612524610">Mise à jour</translation>
 <translation id="4738601419177586157">Suggestion de recherche <ph name="TEXT" /></translation>
@@ -845,6 +855,7 @@
 <translation id="4750917950439032686">Vos données (par exemple, vos mots de passe ou vos numéros de carte de crédit) sont privées lorsqu'elles sont envoyées à ce site.</translation>
 <translation id="4756388243121344051">&amp;Historique</translation>
 <translation id="4758311279753947758">Ajouter des coordonnées</translation>
+<translation id="4761104368405085019">Utiliser votre microphone</translation>
 <translation id="4764776831041365478">Il se peut que la page Web à l'adresse <ph name="URL" /> soit temporairement inaccessible ou qu'elle ait été déplacée de façon permanente à une autre adresse Web.</translation>
 <translation id="4766713847338118463">Double agrafe en bas</translation>
 <translation id="4771973620359291008">Une erreur inconnue s'est produite.</translation>
@@ -884,6 +895,7 @@
 <translation id="4943872375798546930">Aucun résultat</translation>
 <translation id="4950898438188848926">Bouton de commutation d'onglet, appuyez sur Entrée pour basculer vers l'onglet ouvert, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Actions</translation>
+<translation id="4953689047182316270">Répondre aux événements d'accessibilité</translation>
 <translation id="4955242332710481440">A5 Extra</translation>
 <translation id="4958444002117714549">Développer la liste</translation>
 <translation id="4973922308112707173">Double perforation en haut</translation>
@@ -932,6 +944,7 @@
 <translation id="5138227688689900538">Afficher moins</translation>
 <translation id="5141240743006678641">Chiffrer les mots de passe synchronisés avec vos certificats Google</translation>
 <translation id="5145883236150621069">Code d'erreur présent dans la réponse de la politique</translation>
+<translation id="5146995429444047494">Les notifications pour <ph name="ORIGIN" /> sont bloquées</translation>
 <translation id="5148809049217731050">Face vers le haut</translation>
 <translation id="515292512908731282">Enveloppe C4</translation>
 <translation id="5158275234811857234">Couverture</translation>
@@ -999,6 +1012,7 @@
 <translation id="540969355065856584">Impossible de vérifier sur le serveur qu'il s'agit bien du domaine <ph name="DOMAIN" />, car son certificat de sécurité n'est pas valide présentement. Cela peut être dû à une mauvaise configuration ou à l'interception de votre connexion par une personne malveillante.</translation>
 <translation id="541416427766103491">Empileur 4</translation>
 <translation id="5421136146218899937">Effacer les données de navigation...</translation>
+<translation id="5426179911063097041"><ph name="SITE" /> veut vous envoyer des notifications.</translation>
 <translation id="5430298929874300616">Supprimer le favori</translation>
 <translation id="5431657950005405462">Votre fichier est introuvable</translation>
 <translation id="5439770059721715174">Erreur de validation du schéma à « <ph name="ERROR_PATH" /> » : <ph name="ERROR" /></translation>
@@ -1045,6 +1059,7 @@
 <translation id="5608165884683734521">Ce site pourrait être faux ou frauduleux. Chrome vous recommande de le quitter maintenant.</translation>
 <translation id="5610142619324316209">De vérifier la connexion</translation>
 <translation id="5610807607761827392">Vous pouvez gérer les cartes et les adresses dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
+<translation id="5612720917913232150">L'URL <ph name="URL" /> veut utiliser la position de votre ordinateur</translation>
 <translation id="5617949217645503996"><ph name="HOST_NAME" /> vous a redirigé(e) à de trop nombreuses reprises.</translation>
 <translation id="5629630648637658800">Échec du chargement des paramètres de la règle</translation>
 <translation id="5631439013527180824">Jeton de gestion de l'appareil non valide.</translation>
@@ -1086,6 +1101,7 @@
 <translation id="5798683403665926540">Changer la page d'accueil dans les paramètres de Chrome</translation>
 <translation id="5803412860119678065">Voulez-vous fournir les renseignements concernant votre carte <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Autorisations</translation>
+<translation id="5804427196348435412">Utiliser des appareils NFC</translation>
 <translation id="5810442152076338065">Votre connexion au domaine <ph name="DOMAIN" /> est protégée par une suite de chiffrement obsolète.</translation>
 <translation id="5813119285467412249">&amp;Rétablir l'ajout</translation>
 <translation id="5824687817967109979">{NUM_CARDS,plural, =1{Cette carte sera débitée lorsque vous payerez, mais son véritable numéro ne sera pas partagé avec ce site. Pour accroître la sécurité, un code CVC sera généré.}one{La carte que vous avez sélectionnée sera débitée lorsque vous payerez, mais son véritable numéro ne sera pas partagé avec ce site. Pour accroître la sécurité, un code CVC sera généré.}other{Les cartes que vous avez sélectionnées seront débitées lorsque vous payerez, mais leur véritable numéro ne sera pas partagé avec ce site. Pour accroître la sécurité, un code CVC sera généré.}}</translation>
@@ -1158,6 +1174,7 @@
 <translation id="6104072995492677441">JIS B6</translation>
 <translation id="6106989379647458772">Il se peut que la page Web à l'adresse <ph name="PAGE" /> soit temporairement inaccessible ou qu'elle ait été déplacée de façon permanente à une autre adresse Web.</translation>
 <translation id="610911394827799129">D'autres formes d'historique de navigation peuvent exister sur votre compte Google à l'adresse <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
+<translation id="6116338172782435947">Voir le texte et les images copiés dans le presse-papiers</translation>
 <translation id="6120179357481664955">Se souvenir de votre identifiant UPI?</translation>
 <translation id="6146055958333702838">Vérifiez les câbles et redémarrez votre routeur, votre modem
     ou tout autre périphérique réseau utilisé.</translation>
@@ -1316,6 +1333,7 @@
 <translation id="6891596781022320156">Le niveau de politique n'est pas pris en charge.</translation>
 <translation id="6895330447102777224">Votre carte est confirmée</translation>
 <translation id="6897140037006041989">Agent utilisateur</translation>
+<translation id="6910240653697687763">L'URL <ph name="URL" /> veut obtenir le plein contrôle de vos appareils MIDI</translation>
 <translation id="6915804003454593391">Utilisateur :</translation>
 <translation id="6934672428414710184">Ce nom provient de votre compte Google</translation>
 <translation id="6944692733090228304">Vous avez entré votre mot de passe sur un site non géré par <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Pour protéger votre compte, ne réutilisez pas votre mot de passe dans d'autres applications ni sur d'autres sites.</translation>
@@ -1355,6 +1373,7 @@
 <translation id="7087282848513945231">Comté</translation>
 <translation id="7090678807593890770">Recherchez <ph name="LINK" /> sur Google</translation>
 <translation id="7108338896283013870">Masquer</translation>
+<translation id="7108634116785509031">L'hôte <ph name="HOST" /> veut utiliser votre appareil photo</translation>
 <translation id="7108819624672055576">Autorisé par une extension</translation>
 <translation id="7111012039238467737">(Valide)</translation>
 <translation id="7118618213916969306">Rechercher l'URL du presse-papiers : <ph name="SHORT_URL" /></translation>
@@ -1384,6 +1403,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />En apprendre davantage<ph name="END_LINK" /> au sujet de ce problème.</translation>
 <translation id="7219179957768738017">La connexion utilise <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Traitement en cours</translation>
+<translation id="7221855153210829124">Afficher les notifications</translation>
 <translation id="7233592378249864828">Imprimer la feuille de confirmation</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Le site Web vers lequel vous naviguez contient un logiciel malveillant</translation>
@@ -1432,6 +1452,7 @@ Détails supplémentaires :
       &lt;li&gt;Cliquez sur &lt;strong&gt;Appliquer&lt;/strong&gt;, puis sur &lt;strong&gt;OK&lt;/strong&gt;
       &lt;li&gt;Consultez le &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Centre d'aide de Chrome&lt;/a&gt; pour apprendre à supprimer définitivement le logiciel de votre ordinateur
       &lt;/ol&gt;</translation>
+<translation id="7409836189476010449">Exécuter Flash</translation>
 <translation id="741007362987735528">Format large</translation>
 <translation id="7416351320495623771">Gérer les mots de passe…</translation>
 <translation id="7419106976560586862">Chemin d'accès du profil</translation>
@@ -1550,6 +1571,7 @@ Détails supplémentaires :
 <translation id="7932579305932748336">Revêtement</translation>
 <translation id="79338296614623784">Entrez un numéro de téléphone valide</translation>
 <translation id="7934052535022478634">Paiement effectué</translation>
+<translation id="7934414805353235750"><ph name="URL" /> veut lire du contenu protégé. L'identité de votre appareil sera vérifiée par Google.</translation>
 <translation id="7935031712718413217">Possibilité d'URL de mystification</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Expire le <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -1635,6 +1657,7 @@ Détails supplémentaires :
 <translation id="8269981117540303696">Vous pouvez maintenant naviguer de façon privée, et les autres personnes qui utilisent cet appareil ne verront pas votre activité. Cependant, les téléchargements et les favoris seront enregistrés.</translation>
 <translation id="8277900682056760511">La feuille du module de traitement du paiement est ouverte</translation>
 <translation id="8281084378435768645">Grande photo</translation>
+<translation id="8282947398454257691">Connaître votre identifiant d'appareil unique</translation>
 <translation id="8286036467436129157">Se connecter</translation>
 <translation id="8288807391153049143">Afficher le certificat</translation>
 <translation id="8289355894181816810">Communiquez avec votre administrateur réseau si vous n'êtes pas certain de ce que cela signifie.</translation>
@@ -1694,6 +1717,7 @@ Détails supplémentaires :
 <translation id="858637041960032120">Ajouter un numéro de téléphone</translation>
 <translation id="8589998999637048520">Meilleure qualité</translation>
 <translation id="860043288473659153">Nom du titulaire de la carte</translation>
+<translation id="8606726445206553943">Utiliser vos appareils MIDI</translation>
 <translation id="8616822740383114808">Ce paramètre est appliqué de manière obligatoire par « <ph name="ENFORCING_SETTING" /> » sous « <ph name="SETTINGS_PAGE" /> »</translation>
 <translation id="861775596732816396">Taille 4</translation>
 <translation id="8622948367223941507">Légal extra</translation>
@@ -1800,6 +1824,7 @@ Détails supplémentaires :
 <translation id="9141013498910525015">Gérer les adresses</translation>
 <translation id="9148088599418889305">Choisir un mode d'expédition</translation>
 <translation id="9148507642005240123">&amp;Annuler la modification</translation>
+<translation id="9150045010208374699">Utiliser votre caméra</translation>
 <translation id="9154194610265714752">Mis à jour</translation>
 <translation id="9157595877708044936">Configuration en cours...</translation>
 <translation id="9158625974267017556">Enveloppe C6</translation>

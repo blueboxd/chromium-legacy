@@ -8462,9 +8462,9 @@ TEST_F(WebFrameTest, WebXrImmersiveOverlay) {
   // user activation.
   LocalFrame::NotifyUserActivation(frame);
   Fullscreen::RequestFullscreen(*overlay);
-  EXPECT_FALSE(document->IsImmersiveArOverlay());
-  document->SetIsImmersiveArOverlay(true);
-  EXPECT_TRUE(document->IsImmersiveArOverlay());
+  EXPECT_FALSE(document->IsXrOverlay());
+  document->SetIsXrOverlay(true, overlay);
+  EXPECT_TRUE(document->IsXrOverlay());
 
   web_view_impl->MainFrameWidget()->DidEnterFullscreen();
   UpdateAllLifecyclePhases(web_view_impl);
@@ -8540,7 +8540,7 @@ TEST_F(WebFrameTest, WebXrImmersiveOverlay) {
   UpdateAllLifecyclePhases(web_view_impl);
   EXPECT_FALSE(Fullscreen::IsFullscreenElement(*overlay));
   EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
-  document->SetIsImmersiveArOverlay(false);
+  document->SetIsXrOverlay(false, overlay);
 }
 
 TEST_F(WebFrameTest, LayoutBlockPercentHeightDescendants) {

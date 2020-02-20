@@ -137,6 +137,7 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fails}zero{# faili}one{# fails}other{# faili}}</translation>
 <translation id="2017836877785168846">Notīra vēsturi un automātiskās pabeigšanas ierakstus adreses joslā.</translation>
 <translation id="2021896219286479412">Pilnekrāna vietnes vadīklas</translation>
+<translation id="2025115093177348061">Papildinātā realitāte</translation>
 <translation id="2038563949887743358">Ieslēgt iestatījumu “Pieprasīt datora vietni”</translation>
 <translation id="2041019821020695769">Lai atļautu pārlūkprogrammai Chrome sūtīt jums paziņojumus, ieslēdziet paziņojumus arī <ph name="BEGIN_LINK" />Android iestatījumos<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">Pārlūkā Chrome ir arī “<ph name="APP_NAME" />” dati</translation>
@@ -150,6 +151,9 @@
 <translation id="2100273922101894616">Automātiski pierakstīties</translation>
 <translation id="2100314319871056947">Kopīgojiet mazākus teksta fragmentus</translation>
 <translation id="2107397443965016585">Vaicāt, pirms atļaut vietnēm atskaņot aizsargātu saturu (ieteicams)</translation>
+<translation id="2109711654079915747">Uzziniet vairāk par vietnēs aprakstītajām tēmām, neaizverot lapu. Izmantojot funkciju “Meklēšana pieskaroties”, vārds un tā apkārtējais konteksts tiek nosūtīts uz pakalpojumu Google meklēšana, iegūstot definīcijas, attēlus, meklēšanas rezultātus un citu informāciju.
+
+Pieskarieties jebkuram vārdam, lai to meklētu. Ja vēlaties precizēt meklēšanu, pieskarieties vaicājumam un turiet to, lai atlasītu mazāk vārdu. Ja vēlaties rediģēt meklēšanas vaicājumu, atveriet paneli, pieskarieties ikonai, lai atvērtu meklēšanas vaicājumu jaunā cilnē, un veiciet izmaiņas meklēšanas lodziņā.</translation>
 <translation id="2111511281910874386">Doties uz lapu</translation>
 <translation id="2122601567107267586">Nevarēja atvērt lietotni</translation>
 <translation id="2126426811489709554">Nodrošina Chrome</translation>
@@ -176,6 +180,7 @@
 <translation id="2321958826496381788">Velciet slīdni, kamēr varat ērti lasīt. Pēc dubultskāriena rindkopai tekstam ir jābūt vismaz šādā lielumā.</translation>
 <translation id="2323763861024343754">Vietnes krātuve</translation>
 <translation id="2328985652426384049">Nevar pierakstīties</translation>
+<translation id="234265804618409743">Nevar atvērt kameru. Radās kļūda.</translation>
 <translation id="2349710944427398404">Kopējais pārlūkā Chrome izmantoto datu apjoms, ieskaitot kontus, grāmatzīmes un saglabātos iestatījumus</translation>
 <translation id="2353636109065292463">Notiek interneta savienojuma pārbaude</translation>
 <translation id="2359808026110333948">Turpināt</translation>
@@ -192,6 +197,9 @@
 <translation id="2434158240863470628">Lejupielāde pabeigta: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Piekļuve atrašanās vietai</translation>
 <translation id="2450083983707403292">Vai vēlaties vēlreiz sākt faila <ph name="FILE_NAME" /> lejupielādi?</translation>
+<translation id="2450907520913474542">Uzziniet vairāk par vietnēs aprakstītajām tēmām, neaizverot lapu. Izmantojot funkciju “Meklēšana pieskaroties”, vārds un tā apkārtējais konteksts tiek nosūtīts uz pakalpojumu Google meklēšana, iegūstot definīcijas, attēlus, meklēšanas rezultātus un citu informāciju.
+
+Nospiediet un turiet jebkuru vārdu, lai to meklētu. Lai precizētu meklēšanu, atlasiet mazāk vai vairāk vārdu. Ja vēlaties rediģēt meklēšanas vaicājumu, atveriet paneli, pieskarieties ikonai, lai atvērtu meklēšanas vaicājumu jaunā cilnē, un veiciet izmaiņas meklēšanas lodziņā.</translation>
 <translation id="246532703174860178">Kopīgot</translation>
 <translation id="2482878487686419369">Paziņojumi</translation>
 <translation id="2490684707762498678">Pārvalda <ph name="APP_NAME" /></translation>
@@ -423,6 +431,7 @@
 <translation id="4298388696830689168">Saistītās vietnes</translation>
 <translation id="4307992518367153382">Pamata</translation>
 <translation id="4314815835985389558">Sinhronizācijas pārvaldība</translation>
+<translation id="4321739720395210191">Nevar atvērt kameru. Restartējiet ierīci un mēģiniet vēlreiz.</translation>
 <translation id="4351244548802238354">Aizvērt dialoglodziņu</translation>
 <translation id="4353114845960720315">Kamēr izmantosiet VR režīmu, šī vietne varēs iegūt šādu informāciju:</translation>
 <translation id="4378154925671717803">Tālrunis</translation>
@@ -469,6 +478,7 @@ Jūsu Google kontam vietnē <ph name="BEGIN_LINK" />myactivity.google.com<ph nam
 <translation id="4660838440047236328">jūsu telpas izkārtojums.</translation>
 <translation id="4663756553811254707">Dzēstas <ph name="NUMBER_OF_BOOKMARKS" /> grāmatzīmes</translation>
 <translation id="4665282149850138822">Vietne <ph name="NAME" /> tika pievienota sākuma ekrānam.</translation>
+<translation id="4670064810192446073">Virtuālā realitāte</translation>
 <translation id="4684427112815847243">Sinhronizēt visu</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}zero{<ph name="SHIPPING_OPTION_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}one{<ph name="SHIPPING_OPTION_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />… un vēl <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Sūtīt īsziņu uz manām ierīcēm</translation>
@@ -504,6 +514,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="4882831918239250449">Kontrolējiet, kā jūsu pārlūkošanas vēsture tiek izmantota Meklēšanas, reklāmu un cita satura personalizēšanai</translation>
 <translation id="4883854917563148705">Pārvaldītos iestatījumus nevar atiestatīt</translation>
 <translation id="4885273946141277891">Neatbalstīts Chrome instanču skaits</translation>
+<translation id="4887024562049524730">Vaicāt, pirms atļaut vietnēm piekļūt jūsu virtuālās realitātes ierīcei un datiem (ieteicams)</translation>
 <translation id="4910889077668685004">Maksājumu lietotnes</translation>
 <translation id="4913161338056004800">Atiestatīt statistikas datus</translation>
 <translation id="4913169188695071480">Pārtraukt atsvaidzināšanu</translation>
@@ -582,7 +593,6 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5447765697759493033">Šī vietne netiks tulkota</translation>
 <translation id="545042621069398927">Lejupielāde tiek paātrināta.</translation>
 <translation id="5456381639095306749">Lejupielādēt lapu</translation>
-<translation id="5475862044948910901">Vai sākt papildinātās realitātes sesiju?</translation>
 <translation id="548278423535722844">Atvērt karšu lietotnē</translation>
 <translation id="5487521232677179737">Notīrīt datus</translation>
 <translation id="5494752089476963479">Bloķēt reklāmas vietnēs, kurās tiek rādītas traucējošas vai maldinošas reklāmas</translation>
@@ -623,6 +633,7 @@ Lai mainītu šo iestatījumu, <ph name="BEGIN_LINK" />atiestatiet sinhronizāci
 <translation id="5710871682236653961">Vaicāt, pirms atļaut vietnēm sūtīt un saņemt informāciju, kad ar ierīci pieskaraties citai NFC ierīcei (ieteicams)</translation>
 <translation id="572328651809341494">Nesen atvērtas cilnes</translation>
 <translation id="5726692708398506830">Palielināt visu lapas saturu</translation>
+<translation id="5735071096924648956">Neļaut vietnēm izsekot kameras pozīciju vai kartēt jūsu telpu</translation>
 <translation id="5748802427693696783">Notika pārslēgšanās uz standarta cilnēm</translation>
 <translation id="5749068826913805084">Chrome ir nepieciešama piekļuve krātuvei, lai varētu lejupielādēt failus.</translation>
 <translation id="5763382633136178763">Inkognito režīma cilnes</translation>
@@ -693,6 +704,7 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6277522088822131679">Drukājot lapu, radās problēma. Lūdzu, mēģiniet vēlreiz.</translation>
 <translation id="6295158916970320988">Visas vietnes</translation>
 <translation id="629730747756840877">Konts</translation>
+<translation id="6297765934698848803">Organizācija, kas pārvalda jūsu ierīci, ir izslēgusi kameru.</translation>
 <translation id="6303969859164067831">Izrakstīties un izslēgt sinhronizēšanu</translation>
 <translation id="6316139424528454185">Neatbalstīta Android versija</translation>
 <translation id="6320088164292336938">Vibrācija</translation>
@@ -715,11 +727,13 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="6427112570124116297">Iztulkojiet tīmekli</translation>
 <translation id="6433501201775827830">Meklētājprogrammas izvēle</translation>
 <translation id="6437478888915024427">Lapas informācija</translation>
+<translation id="6439114592976064011">Neļaut vietnēm izmantot jūsu virtuālās realitātes ierīci un datus</translation>
 <translation id="6441734959916820584">Vārds ir pārāk garš</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# attēls}zero{# attēli}one{# attēls}other{# attēli}}</translation>
 <translation id="6447558397796644647">Nevar atrast grāmatzīmi. Pārbaudiet pareizrakstību vai pievienojiet grāmatzīmi.</translation>
 <translation id="6447842834002726250">Sīkfaili</translation>
 <translation id="6461962085415701688">Nevar atvērt failu.</translation>
+<translation id="6462660325961255024">Vaicāt, pirms ļaut vietnēm izsekot kameras pozīciju vai kartēt jūsu telpu (ieteicams)</translation>
 <translation id="6464977750820128603">Varat skatīt pārlūkā Chrome apmeklētās vietnes un iestatīt tām taimerus.\n\nGoogle saņem informāciju par vietnēm, kurām iestatāt taimerus, kā arī šo vietņu apmeklēšanas ilgumu. Šī informācija tiek izmantota, lai uzlabotu Digitālo labjutību.</translation>
 <translation id="6475951671322991020">Lejupielādēt videoklipu</translation>
 <translation id="6482749332252372425">Neizdevās lejupielādēt failu <ph name="FILE_NAME" />, jo krātuvē nav pietiekami daudz vietas.</translation>
@@ -831,11 +845,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7352939065658542140">VIDEOKLIPS</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Kopīgot 1 atlasīto vienumu}zero{Kopīgot # atlasītos vienumus}one{Kopīgot # atlasīto vienumu}other{Kopīgot # atlasītos vienumus}}</translation>
 <translation id="7359002509206457351">Piekļuve maksājumu veidiem</translation>
-<translation id="7365126855094612066">Šīs sesijas laikā vietne varēs:
-• izveidot jūsu vides 3D karti;
-• izsekot kameras kustību.
-
-Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translation>
 <translation id="7375125077091615385">Veids:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -912,6 +921,7 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="7942131818088350342">Spraudnis <ph name="PRODUCT_NAME" /> ir novecojis.</translation>
 <translation id="7947953824732555851">Pieņemt un pierakst.</translation>
 <translation id="7963646190083259054">Nodrošina:</translation>
+<translation id="7967911570373677897">Lai varētu skenēt QR kodu, iestatījumos atļaujiet Chrome izmantot jūsu kameru</translation>
 <translation id="7971136598759319605">Aktīva pirms 1 dienas</translation>
 <translation id="7975379999046275268">Priekšskatīt lapu <ph name="BEGIN_NEW" />Jauna<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Veikt lapu pirmsielādi, lai paātrinātu pārlūkošanu un meklēšanu</translation>
@@ -957,6 +967,7 @@ Vietnei NAV piekļuves kamerai. Kameras attēli ir redzami tikai jums.</translat
 <translation id="8218622182176210845">Konta pārvaldība</translation>
 <translation id="8224471946457685718">Rakstu lejupielāde tikai pa Wi-Fi</translation>
 <translation id="8232956427053453090">Paturēt datus</translation>
+<translation id="8233540874193135768">Lai varētu skenēt QR kodu, izmantojiet ierīci ar kameru.</translation>
 <translation id="8250920743982581267">Dokumenti</translation>
 <translation id="825412236959742607">Šī lapa izmanto pārāk daudz atmiņas, tādēļ pārlūks Chrome noņēma daļu satura.</translation>
 <translation id="8260126382462817229">Mēģiniet pierakstīties vēlreiz</translation>

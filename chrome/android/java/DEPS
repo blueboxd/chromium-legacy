@@ -12,6 +12,7 @@ include_rules = [
   "+chrome/browser/ui/messages/android/java",
   "+chrome/browser/download/android/java",
   "+chrome/browser/image_fetcher/android/java",
+  "+chrome/browser/performance_hints/android/java",
   "+chrome/browser/preferences/android/java",
   "+chrome/browser/settings/android/java",
   "+chrome/browser/util/android/java",

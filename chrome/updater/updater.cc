@@ -15,7 +15,7 @@
 #include "chrome/updater/crash_client.h"
 #include "chrome/updater/crash_reporter.h"
 #include "chrome/updater/update_apps.h"
-#include "chrome/updater/update_service.h"
+#include "chrome/updater/update_service_in_process.h"
 #include "chrome/updater/updater_constants.h"
 #include "chrome/updater/updater_version.h"
 #include "chrome/updater/util.h"
@@ -121,8 +121,8 @@ int HandleUpdaterCommands(const base::CommandLine* command_line) {
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   if (command_line->HasSwitch(kServerSwitch)) {
-    return RunServer(
-        std::make_unique<UpdateService>(base::MakeRefCounted<Configurator>()));
+    return RunServer(std::make_unique<UpdateServiceInProcess>(
+        base::MakeRefCounted<Configurator>()));
   }
 #endif
 

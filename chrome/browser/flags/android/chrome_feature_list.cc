@@ -34,6 +34,7 @@
 #include "components/paint_preview/features/features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
+#include "components/permissions/features.h"
 #include "components/previews/core/previews_features.h"
 #include "components/safe_browsing/core/features.h"
 #include "components/security_state/core/features.h"
@@ -79,7 +80,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kGenericSensorExtraClasses,
     &features::kInstallableAmbientBadgeInfoBar,
     &features::kOverscrollHistoryNavigation,
-    &features::kPermissionDelegation,
     &features::kPredictivePrefetchingAllowedOnAllConnectionTypes,
     &features::kPrioritizeBootstrapTasks,
     &features::kQuietNotificationPrompts,
@@ -222,6 +222,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &payments::features::kWebPaymentsModifiers,
     &payments::features::kWebPaymentsRedactShippingAddress,
     &payments::features::kWebPaymentsSingleAppUiSkip,
+    &permissions::features::kPermissionDelegation,
     &language::kExplicitLanguageAsk,
     &ntp_snippets::kArticleSuggestionsFeature,
     &offline_pages::kOfflineIndicatorFeature,

@@ -643,13 +643,13 @@ GraphicsLayer* PaintLayerCompositor::RootGraphicsLayer() const {
   return nullptr;
 }
 
-GraphicsLayer* PaintLayerCompositor::GetXrImmersiveDomOverlayLayer() const {
+GraphicsLayer* PaintLayerCompositor::GetXrOverlayLayer() const {
   // immersive-ar DOM overlay mode is very similar to fullscreen video, using
   // the AR camera image instead of a video element as a background that's
   // separately composited in the browser. The fullscreened DOM content is shown
   // on top of that, same as HTML video controls.
   DCHECK(IsMainFrame());
-  if (!layout_view_.GetDocument().IsImmersiveArOverlay())
+  if (!layout_view_.GetDocument().IsXrOverlay())
     return nullptr;
 
   Element* fullscreen_element =
@@ -680,7 +680,7 @@ GraphicsLayer* PaintLayerCompositor::PaintRootGraphicsLayer() const {
 
   // Start from the full screen overlay layer if exists. Other layers will be
   // skipped during painting.
-  if (auto* layer = GetXrImmersiveDomOverlayLayer())
+  if (auto* layer = GetXrOverlayLayer())
     return layer;
   if (auto* layer = OverlayFullscreenVideoGraphicsLayer())
     return layer;

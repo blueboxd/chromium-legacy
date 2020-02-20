@@ -16,7 +16,6 @@
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_base.h"
-#include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -24,6 +23,7 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/permission_context_base.h"
 #include "components/permissions/permission_request.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/permission_util.h"
@@ -843,15 +843,15 @@ IN_PROC_BROWSER_TEST_F(MediaStreamDevicesControllerTest,
   std::map<std::string, std::string> params;
   params[permissions::PermissionUtil::GetPermissionString(
       ContentSettingsType::MEDIASTREAM_MIC)] =
-      PermissionContextBase::kPermissionsKillSwitchBlockedValue;
+      permissions::PermissionContextBase::kPermissionsKillSwitchBlockedValue;
   params[permissions::PermissionUtil::GetPermissionString(
       ContentSettingsType::MEDIASTREAM_CAMERA)] =
-      PermissionContextBase::kPermissionsKillSwitchBlockedValue;
+      permissions::PermissionContextBase::kPermissionsKillSwitchBlockedValue;
   variations::AssociateVariationParams(
-      PermissionContextBase::kPermissionsKillSwitchFieldStudy,
+      permissions::PermissionContextBase::kPermissionsKillSwitchFieldStudy,
       "TestGroup", params);
   base::FieldTrialList::CreateFieldTrial(
-      PermissionContextBase::kPermissionsKillSwitchFieldStudy,
+      permissions::PermissionContextBase::kPermissionsKillSwitchFieldStudy,
       "TestGroup");
   InitWithUrl(embedded_test_server()->GetURL("/simple.html"));
   SetDevicePolicy(DEVICE_TYPE_AUDIO, ACCESS_ALLOWED);

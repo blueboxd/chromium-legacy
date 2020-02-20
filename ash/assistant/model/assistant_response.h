@@ -21,6 +21,7 @@ namespace ash {
 class AssistantResponseObserver;
 class AssistantUiElement;
 
+// TODO(dmblack): Remove ProcessingState after launch of response processing v2.
 // Models a renderable Assistant response.
 // It is refcounted so that views that display the response can safely
 // reference the data inside this response.

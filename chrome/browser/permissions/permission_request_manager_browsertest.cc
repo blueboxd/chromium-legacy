@@ -16,7 +16,6 @@
 #include "chrome/browser/custom_handlers/register_protocol_handler_permission_request.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
-#include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -28,6 +27,7 @@
 #include "chrome/test/permissions/permission_request_manager_test_api.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/features.h"
+#include "components/permissions/permission_context_base.h"
 #include "components/permissions/permission_request_impl.h"
 #include "components/permissions/permission_util.h"
 #include "components/permissions/test/mock_permission_prompt_factory.h"
@@ -46,9 +46,9 @@
 namespace {
 
 const char* kPermissionsKillSwitchFieldStudy =
-    PermissionContextBase::kPermissionsKillSwitchFieldStudy;
+    permissions::PermissionContextBase::kPermissionsKillSwitchFieldStudy;
 const char* kPermissionsKillSwitchBlockedValue =
-    PermissionContextBase::kPermissionsKillSwitchBlockedValue;
+    permissions::PermissionContextBase::kPermissionsKillSwitchBlockedValue;
 const char kPermissionsKillSwitchTestGroup[] = "TestGroup";
 
 class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {

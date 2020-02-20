@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_MEDIA_MIDI_SYSEX_PERMISSION_CONTEXT_H_
 
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_context_base.h"
+#include "components/permissions/permission_context_base.h"
 
 class GURL;
 
@@ -14,9 +14,9 @@ namespace permissions {
 class PermissionRequestID;
 }
 
-class MidiSysexPermissionContext : public PermissionContextBase {
+class MidiSysexPermissionContext : public permissions::PermissionContextBase {
  public:
-  explicit MidiSysexPermissionContext(Profile* profile);
+  explicit MidiSysexPermissionContext(content::BrowserContext* browser_context);
   ~MidiSysexPermissionContext() override;
 
  private:

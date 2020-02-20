@@ -1320,6 +1320,15 @@ void StyleEngine::SetHttpDefaultStyle(const String& content) {
     SetPreferredStylesheetSetNameIfNotSet(content);
 }
 
+void StyleEngine::EnsureUAStyleForXrOverlay() {
+  DCHECK(IsMaster());
+  DCHECK(global_rule_set_);
+  if (CSSDefaultStyleSheets::Instance().EnsureDefaultStyleSheetForXrOverlay()) {
+    global_rule_set_->MarkDirty();
+    UpdateActiveStyle();
+  }
+}
+
 void StyleEngine::EnsureUAStyleForFullscreen() {
   DCHECK(IsMaster());
   DCHECK(global_rule_set_);

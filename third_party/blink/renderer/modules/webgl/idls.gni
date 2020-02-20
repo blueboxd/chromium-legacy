@@ -4,6 +4,16 @@
 
 import("//third_party/blink/renderer/config.gni")
 
+# Note: WebGL extensions are the most frequently added IDL files and
+# don't go through Blink's Intent to Ship process. Instead, these are
+# discussed among all browser vendors within the WebGL working group
+# as defined by the process here:
+#
+#   https://www.khronos.org/registry/webgl/extensions/
+#
+# and only enabled in any browser by default once all browsers are in
+# agreement that the extension is ready to ship.
+
 modules_idl_files = [
   "angle_instanced_arrays.idl",
   "ext_blend_min_max.idl",

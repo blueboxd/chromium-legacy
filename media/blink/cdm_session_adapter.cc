@@ -59,8 +59,8 @@ void CdmSessionAdapter::CreateCdm(CdmFactory* cdm_factory,
       base::Bind(&CdmSessionAdapter::OnSessionClosed, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionKeysChange, weak_this),
       base::Bind(&CdmSessionAdapter::OnSessionExpirationUpdate, weak_this),
-      base::Bind(&CdmSessionAdapter::OnCdmCreated, this, key_system, cdm_config,
-                 start_time));
+      base::BindOnce(&CdmSessionAdapter::OnCdmCreated, this, key_system,
+                     cdm_config, start_time));
 }
 
 void CdmSessionAdapter::SetServerCertificate(

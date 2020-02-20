@@ -27,6 +27,13 @@ Should be composited
       "bounds": [220, 150],
       "backgroundColor": "#FFA500",
       "transform": 2
+    },
+    {
+      "name": "LayoutNGBlockFlow (relative positioned) DIV class='box'",
+      "position": [18, 230],
+      "bounds": [100, 100],
+      "contentsOpaque": true,
+      "backgroundColor": "#0000FF"
     }
   ],
   "transforms": [

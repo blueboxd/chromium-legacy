@@ -50,11 +50,6 @@ void BaseRenderingContext2D::RealizeSaves() {
   ValidateStateStack();
   if (GetState().HasUnrealizedSaves()) {
     DCHECK_GE(state_stack_.size(), 1u);
-    // GetOrCreatePaintCanvas() can call RestoreMatrixClipStack which syncs
-    // canvas to state_stack_. Get the canvas before adjusting state_stack_ to
-    // ensure canvas is synced prior to adjusting state_stack_.
-    cc::PaintCanvas* canvas = GetOrCreatePaintCanvas();
-
     // Reduce the current state's unrealized count by one now,
     // to reflect the fact we are saving one state.
     state_stack_.back()->Restore();
@@ -67,6 +62,7 @@ void BaseRenderingContext2D::RealizeSaves() {
     // state (in turn necessary to support correct resizing and unwinding of the
     // stack).
     state_stack_.back()->ResetUnrealizedSaveCount();
+    cc::PaintCanvas* canvas = GetOrCreatePaintCanvas();
     if (canvas)
       canvas->save();
     ValidateStateStack();

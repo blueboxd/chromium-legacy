@@ -164,20 +164,22 @@ void ThreadHeap::VisitRememberedSets(MarkingVisitor* visitor) {
       ->IterateAndClearRememberedPages(visit_header);
 }
 
-void ThreadHeap::SetupWorklists() {
+void ThreadHeap::SetupWorklists(bool should_initialize_compaction_worklists) {
   marking_worklist_.reset(new MarkingWorklist());
   write_barrier_worklist_.reset(new WriteBarrierWorklist());
   not_fully_constructed_worklist_.reset(new NotFullyConstructedWorklist());
   previously_not_fully_constructed_worklist_.reset(
       new NotFullyConstructedWorklist());
   weak_callback_worklist_.reset(new WeakCallbackWorklist());
-  movable_reference_worklist_.reset(new MovableReferenceWorklist());
   weak_table_worklist_.reset(new WeakTableWorklist);
-  backing_store_callback_worklist_.reset(new BackingStoreCallbackWorklist());
   v8_references_worklist_.reset(new V8ReferencesWorklist());
   not_safe_to_concurrently_trace_worklist_.reset(
       new NotSafeToConcurrentlyTraceWorklist());
   DCHECK(ephemeron_callbacks_.IsEmpty());
+  if (should_initialize_compaction_worklists) {
+    movable_reference_worklist_.reset(new MovableReferenceWorklist());
+    backing_store_callback_worklist_.reset(new BackingStoreCallbackWorklist());
+  }
 }
 
 void ThreadHeap::DestroyMarkingWorklists(BlinkGC::StackState stack_state) {

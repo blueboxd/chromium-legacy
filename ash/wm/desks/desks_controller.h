@@ -131,6 +131,11 @@ class ASH_EXPORT DesksController : public DesksHelper,
                                   Desk* target_desk,
                                   DesksMoveWindowFromActiveDeskSource source);
 
+  // Reverts the name of the given |desk| to the default value (i.e. "Desk 1",
+  // "Desk 2", ... etc.) according to its position in the |desks_| list, as if
+  // it was never modified by users.
+  void RevertDeskNameToDefault(Desk* desk);
+
   // Called explicitly by the RootWindowController when a root window has been
   // added or about to be removed in order to update all the available desks.
   void OnRootWindowAdded(aura::Window* root_window);

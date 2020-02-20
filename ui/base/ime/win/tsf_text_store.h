@@ -109,130 +109,121 @@ class COMPONENT_EXPORT(UI_BASE_IME_WIN) TSFTextStore
   virtual ~TSFTextStore();
 
   // ITextStoreACP:
-  STDMETHOD_(ULONG, AddRef)() override;
-  STDMETHOD_(ULONG, Release)() override;
-  STDMETHOD(QueryInterface)(REFIID iid, void** ppv) override;
-  STDMETHOD(AdviseSink)(REFIID iid, IUnknown* unknown, DWORD mask) override;
-  STDMETHOD(FindNextAttrTransition)
-  (LONG acp_start,
-   LONG acp_halt,
-   ULONG num_filter_attributes,
-   const TS_ATTRID* filter_attributes,
-   DWORD flags,
-   LONG* acp_next,
-   BOOL* found,
-   LONG* found_offset) override;
-  STDMETHOD(GetACPFromPoint)
-  (TsViewCookie view_cookie,
-   const POINT* point,
-   DWORD flags,
-   LONG* acp) override;
-  STDMETHOD(GetActiveView)(TsViewCookie* view_cookie) override;
-  STDMETHOD(GetEmbedded)
-  (LONG acp_pos, REFGUID service, REFIID iid, IUnknown** unknown) override;
-  STDMETHOD(GetEndACP)(LONG* acp) override;
-  STDMETHOD(GetFormattedText)
-  (LONG acp_start, LONG acp_end, IDataObject** data_object) override;
-  STDMETHOD(GetScreenExt)(TsViewCookie view_cookie, RECT* rect) override;
-  STDMETHOD(GetSelection)
-  (ULONG selection_index,
-   ULONG selection_buffer_size,
-   TS_SELECTION_ACP* selection_buffer,
-   ULONG* fetched_count) override;
-  STDMETHOD(GetStatus)(TS_STATUS* pdcs) override;
-  STDMETHOD(GetText)
-  (LONG acp_start,
-   LONG acp_end,
-   wchar_t* text_buffer,
-   ULONG text_buffer_size,
-   ULONG* text_buffer_copied,
-   TS_RUNINFO* run_info_buffer,
-   ULONG run_info_buffer_size,
-   ULONG* run_info_buffer_copied,
-   LONG* next_acp) override;
-  STDMETHOD(GetTextExt)
-  (TsViewCookie view_cookie,
-   LONG acp_start,
-   LONG acp_end,
-   RECT* rect,
-   BOOL* clipped) override;
-  STDMETHOD(GetWnd)(TsViewCookie view_cookie, HWND* window_handle) override;
-  STDMETHOD(InsertEmbedded)
-  (DWORD flags,
-   LONG acp_start,
-   LONG acp_end,
-   IDataObject* data_object,
-   TS_TEXTCHANGE* change) override;
-  STDMETHOD(InsertEmbeddedAtSelection)
-  (DWORD flags,
-   IDataObject* data_object,
-   LONG* acp_start,
-   LONG* acp_end,
-   TS_TEXTCHANGE* change) override;
-  STDMETHOD(InsertTextAtSelection)
-  (DWORD flags,
-   const wchar_t* text_buffer,
-   ULONG text_buffer_size,
-   LONG* acp_start,
-   LONG* acp_end,
-   TS_TEXTCHANGE* text_change) override;
-  STDMETHOD(QueryInsert)
-  (LONG acp_test_start,
-   LONG acp_test_end,
-   ULONG text_size,
-   LONG* acp_result_start,
-   LONG* acp_result_end) override;
-  STDMETHOD(QueryInsertEmbedded)
-  (const GUID* service, const FORMATETC* format, BOOL* insertable) override;
-  STDMETHOD(RequestAttrsAtPosition)
-  (LONG acp_pos,
-   ULONG attribute_buffer_size,
-   const TS_ATTRID* attribute_buffer,
-   DWORD flags) override;
-  STDMETHOD(RequestAttrsTransitioningAtPosition)
-  (LONG acp_pos,
-   ULONG attribute_buffer_size,
-   const TS_ATTRID* attribute_buffer,
-   DWORD flags) override;
-  STDMETHOD(RequestLock)(DWORD lock_flags, HRESULT* result) override;
-  STDMETHOD(RequestSupportedAttrs)
-  (DWORD flags,
-   ULONG attribute_buffer_size,
-   const TS_ATTRID* attribute_buffer) override;
-  STDMETHOD(RetrieveRequestedAttrs)
-  (ULONG attribute_buffer_size,
-   TS_ATTRVAL* attribute_buffer,
-   ULONG* attribute_buffer_copied) override;
-  STDMETHOD(SetSelection)
-  (ULONG selection_buffer_size,
-   const TS_SELECTION_ACP* selection_buffer) override;
-  STDMETHOD(SetText)
-  (DWORD flags,
-   LONG acp_start,
-   LONG acp_end,
-   const wchar_t* text_buffer,
-   ULONG text_buffer_size,
-   TS_TEXTCHANGE* text_change) override;
-  STDMETHOD(UnadviseSink)(IUnknown* unknown) override;
+  IFACEMETHODIMP_(ULONG) AddRef() override;
+  IFACEMETHODIMP_(ULONG) Release() override;
+  IFACEMETHODIMP QueryInterface(REFIID iid, void** ppv) override;
+  IFACEMETHODIMP AdviseSink(REFIID iid, IUnknown* unknown, DWORD mask) override;
+  IFACEMETHODIMP FindNextAttrTransition(LONG acp_start,
+                                        LONG acp_halt,
+                                        ULONG num_filter_attributes,
+                                        const TS_ATTRID* filter_attributes,
+                                        DWORD flags,
+                                        LONG* acp_next,
+                                        BOOL* found,
+                                        LONG* found_offset) override;
+  IFACEMETHODIMP GetACPFromPoint(TsViewCookie view_cookie,
+                                 const POINT* point,
+                                 DWORD flags,
+                                 LONG* acp) override;
+  IFACEMETHODIMP GetActiveView(TsViewCookie* view_cookie) override;
+  IFACEMETHODIMP GetEmbedded(LONG acp_pos,
+                             REFGUID service,
+                             REFIID iid,
+                             IUnknown** unknown) override;
+  IFACEMETHODIMP GetEndACP(LONG* acp) override;
+  IFACEMETHODIMP GetFormattedText(LONG acp_start,
+                                  LONG acp_end,
+                                  IDataObject** data_object) override;
+  IFACEMETHODIMP GetScreenExt(TsViewCookie view_cookie, RECT* rect) override;
+  IFACEMETHODIMP GetSelection(ULONG selection_index,
+                              ULONG selection_buffer_size,
+                              TS_SELECTION_ACP* selection_buffer,
+                              ULONG* fetched_count) override;
+  IFACEMETHODIMP GetStatus(TS_STATUS* pdcs) override;
+  IFACEMETHODIMP GetText(LONG acp_start,
+                         LONG acp_end,
+                         wchar_t* text_buffer,
+                         ULONG text_buffer_size,
+                         ULONG* text_buffer_copied,
+                         TS_RUNINFO* run_info_buffer,
+                         ULONG run_info_buffer_size,
+                         ULONG* run_info_buffer_copied,
+                         LONG* next_acp) override;
+  IFACEMETHODIMP GetTextExt(TsViewCookie view_cookie,
+                            LONG acp_start,
+                            LONG acp_end,
+                            RECT* rect,
+                            BOOL* clipped) override;
+  IFACEMETHODIMP GetWnd(TsViewCookie view_cookie, HWND* window_handle) override;
+  IFACEMETHODIMP InsertEmbedded(DWORD flags,
+                                LONG acp_start,
+                                LONG acp_end,
+                                IDataObject* data_object,
+                                TS_TEXTCHANGE* change) override;
+  IFACEMETHODIMP InsertEmbeddedAtSelection(DWORD flags,
+                                           IDataObject* data_object,
+                                           LONG* acp_start,
+                                           LONG* acp_end,
+                                           TS_TEXTCHANGE* change) override;
+  IFACEMETHODIMP InsertTextAtSelection(DWORD flags,
+                                       const wchar_t* text_buffer,
+                                       ULONG text_buffer_size,
+                                       LONG* acp_start,
+                                       LONG* acp_end,
+                                       TS_TEXTCHANGE* text_change) override;
+  IFACEMETHODIMP QueryInsert(LONG acp_test_start,
+                             LONG acp_test_end,
+                             ULONG text_size,
+                             LONG* acp_result_start,
+                             LONG* acp_result_end) override;
+  IFACEMETHODIMP QueryInsertEmbedded(const GUID* service,
+                                     const FORMATETC* format,
+                                     BOOL* insertable) override;
+  IFACEMETHODIMP RequestAttrsAtPosition(LONG acp_pos,
+                                        ULONG attribute_buffer_size,
+                                        const TS_ATTRID* attribute_buffer,
+                                        DWORD flags) override;
+  IFACEMETHODIMP RequestAttrsTransitioningAtPosition(
+      LONG acp_pos,
+      ULONG attribute_buffer_size,
+      const TS_ATTRID* attribute_buffer,
+      DWORD flags) override;
+  IFACEMETHODIMP RequestLock(DWORD lock_flags, HRESULT* result) override;
+  IFACEMETHODIMP RequestSupportedAttrs(
+      DWORD flags,
+      ULONG attribute_buffer_size,
+      const TS_ATTRID* attribute_buffer) override;
+  IFACEMETHODIMP RetrieveRequestedAttrs(
+      ULONG attribute_buffer_size,
+      TS_ATTRVAL* attribute_buffer,
+      ULONG* attribute_buffer_copied) override;
+  IFACEMETHODIMP SetSelection(
+      ULONG selection_buffer_size,
+      const TS_SELECTION_ACP* selection_buffer) override;
+  IFACEMETHODIMP SetText(DWORD flags,
+                         LONG acp_start,
+                         LONG acp_end,
+                         const wchar_t* text_buffer,
+                         ULONG text_buffer_size,
+                         TS_TEXTCHANGE* text_change) override;
+  IFACEMETHODIMP UnadviseSink(IUnknown* unknown) override;
 
   // ITfContextOwnerCompositionSink:
-  STDMETHOD(OnStartComposition)
-  (ITfCompositionView* composition_view, BOOL* ok) override;
-  STDMETHOD(OnUpdateComposition)
-  (ITfCompositionView* composition_view, ITfRange* range) override;
-  STDMETHOD(OnEndComposition)(ITfCompositionView* composition_view) override;
+  IFACEMETHODIMP OnStartComposition(ITfCompositionView* composition_view,
+                                    BOOL* ok) override;
+  IFACEMETHODIMP OnUpdateComposition(ITfCompositionView* composition_view,
+                                     ITfRange* range) override;
+  IFACEMETHODIMP OnEndComposition(
+      ITfCompositionView* composition_view) override;
 
   // ITfTextEditSink:
-  STDMETHOD(OnEndEdit)
-  (ITfContext* context,
-   TfEditCookie read_only_edit_cookie,
-   ITfEditRecord* edit_record) override;
+  IFACEMETHODIMP OnEndEdit(ITfContext* context,
+                           TfEditCookie read_only_edit_cookie,
+                           ITfEditRecord* edit_record) override;
 
   // ITfKeyTraceEventSink
-  STDMETHOD(OnKeyTraceDown)
-  (WPARAM wParam, LPARAM lParam) override;
-  STDMETHOD(OnKeyTraceUp)
-  (WPARAM wParam, LPARAM lParam) override;
+  IFACEMETHODIMP OnKeyTraceDown(WPARAM wParam, LPARAM lParam) override;
+  IFACEMETHODIMP OnKeyTraceUp(WPARAM wParam, LPARAM lParam) override;
 
   // Called after |TSFBridgeImpl::CreateDocumentManager| to tell that the
   // text-store is successfully associated with a Context.

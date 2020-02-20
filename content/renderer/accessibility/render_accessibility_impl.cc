@@ -239,7 +239,7 @@ void RenderAccessibilityImpl::DidCommitProvisionalLoad(
   // the one-shot image annotation (i.e. AXMode for image annotation is not
   // set).
   if (!ax_image_annotator_ ||
-      tree_source_.accessibility_mode().has_mode(ui::AXMode::kLabelImages)) {
+      GetAccessibilityMode().has_mode(ui::AXMode::kLabelImages)) {
     return;
   }
   tree_source_.RemoveImageAnnotator();
@@ -248,7 +248,7 @@ void RenderAccessibilityImpl::DidCommitProvisionalLoad(
 }
 
 void RenderAccessibilityImpl::AccessibilityModeChanged(const ui::AXMode& mode) {
-  ui::AXMode old_mode = tree_source_.accessibility_mode();
+  ui::AXMode old_mode = GetAccessibilityMode();
   if (old_mode == mode)
     return;
   tree_source_.SetAccessibilityMode(mode);
@@ -1129,7 +1129,7 @@ void RenderAccessibilityImpl::Scroll(const ui::AXActionTarget* target,
 }
 
 void RenderAccessibilityImpl::RecordImageMetrics(AXContentTreeUpdate* update) {
-  if (!render_frame_->accessibility_mode().has_mode(ui::AXMode::kScreenReader))
+  if (!GetAccessibilityMode().has_mode(ui::AXMode::kScreenReader))
     return;
   float scale_factor = render_frame_->GetDeviceScaleFactor();
   for (size_t i = 0; i < update->nodes.size(); ++i) {

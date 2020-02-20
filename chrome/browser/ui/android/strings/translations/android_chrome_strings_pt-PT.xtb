@@ -137,6 +137,7 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ficheiro}other{# ficheiros}}</translation>
 <translation id="2017836877785168846">Limpa o histórico e os preenchimentos automáticos da barra de endereço.</translation>
 <translation id="2021896219286479412">Controlos de site em ecrã int.</translation>
+<translation id="2025115093177348061">Realidade aumentada</translation>
 <translation id="2038563949887743358">Ativar Pedir site para computador</translation>
 <translation id="2041019821020695769">Para permitir que o Chrome lhe envie notificações, ative também as notificações nas <ph name="BEGIN_LINK" />Definições do Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">A aplicação <ph name="APP_NAME" /> também tem dados no Chrome</translation>
@@ -150,6 +151,9 @@
 <translation id="2100273922101894616">Início de sessão automático</translation>
 <translation id="2100314319871056947">Experimente partilhar o texto em partes mais pequenas.</translation>
 <translation id="2107397443965016585">Perguntar antes de permitir que os sites reproduzam conteúdos protegidos (recomendado)</translation>
+<translation id="2109711654079915747">Saiba mais acerca de tópicos em Websites sem sair da página. A funcionalidade Tocar para pesquisar envia uma palavra e o contexto circundante para a Pesquisa Google, que devolve definições, imagens, resultados da pesquisa e outros detalhes.
+
+Toque em qualquer palavra para pesquisar. Para refinar a sua pesquisa, tocar sem soltar para selecionar mais ou menos palavras. Para editar a sua pesquisa, abra o painel, toque no ícone para abrir num novo separador e efetue as suas alterações na caixa de pesquisa.</translation>
 <translation id="2111511281910874386">Ir para a página</translation>
 <translation id="2122601567107267586">Não foi possível abrir a aplicação.</translation>
 <translation id="2126426811489709554">Com tecnologia do Chrome</translation>
@@ -176,6 +180,7 @@
 <translation id="2321958826496381788">Arraste o controlo de deslize até conseguir ler confortavelmente. O texto deve ter, pelo menos, este tamanho depois de tocar duas vezes num parágrafo.</translation>
 <translation id="2323763861024343754">Armazenamento do site</translation>
 <translation id="2328985652426384049">Não é possível iniciar sessão</translation>
+<translation id="234265804618409743">Não é possível abrir a câmara. Ocorreu um erro.</translation>
 <translation id="2349710944427398404">Total de dados utilizados pelo Chrome, incluindo contas, marcadores e definições guardadas</translation>
 <translation id="2353636109065292463">A verificar a sua ligação à Internet...</translation>
 <translation id="2359808026110333948">Continuar</translation>
@@ -192,6 +197,9 @@
 <translation id="2434158240863470628">Transferência concluída: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Acesso à localização</translation>
 <translation id="2450083983707403292">Pretende começar a transferir <ph name="FILE_NAME" /> novamente?</translation>
+<translation id="2450907520913474542">Saiba mais acerca de tópicos em Websites sem sair da página. A funcionalidade Tocar para pesquisar envia uma palavra e o contexto circundante para a Pesquisa Google, que devolve definições, imagens, resultados da pesquisa e outros detalhes.
+
+Toque sem soltar em qualquer palavra para pesquisar. Para refinar a sua pesquisa, selecione mais ou menos palavras. Para editar a sua pesquisa, abra o painel, toque no ícone para abrir num novo separador e efetue as suas alterações na caixa de pesquisa.</translation>
 <translation id="246532703174860178">Partilhar</translation>
 <translation id="2482878487686419369">Notificações</translation>
 <translation id="2490684707762498678">Gerido por <ph name="APP_NAME" /></translation>
@@ -423,6 +431,7 @@
 <translation id="4298388696830689168">Sites associados</translation>
 <translation id="4307992518367153382">Noções básicas</translation>
 <translation id="4314815835985389558">Gerir sincronização</translation>
+<translation id="4321739720395210191">Não é possível abrir a câmara. Reinicie o dispositivo e tente novamente.</translation>
 <translation id="4351244548802238354">Fechar caixa de diálogo</translation>
 <translation id="4353114845960720315">Enquanto estiver na RV, este site pode saber mais sobre:</translation>
 <translation id="4378154925671717803">Telemóvel</translation>
@@ -469,6 +478,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="4660838440047236328">a disposição da divisão</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> marcadores eliminados</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> foi adicionado ao seu Ecrã principal</translation>
+<translation id="4670064810192446073">Realidade virtual</translation>
 <translation id="4684427112815847243">Sincronizar tudo</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 e mais <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Envie uma mensagem de texto para os seus dispositivos</translation>
@@ -504,6 +514,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="4882831918239250449">Controlar a forma como o histórico de navegação é utilizado para personalizar a Pesquisa, os anúncios e muito mais</translation>
 <translation id="4883854917563148705">As definições geridas não podem ser repostas</translation>
 <translation id="4885273946141277891">Número não suportado de instâncias do Chrome.</translation>
+<translation id="4887024562049524730">Perguntar antes de permitir que os sites utilizem os seus dados e dispositivo de realidade virtual (recomendado)</translation>
 <translation id="4910889077668685004">Aplicações de pagamento</translation>
 <translation id="4913161338056004800">Repor estatísticas</translation>
 <translation id="4913169188695071480">Parar a atualização</translation>
@@ -582,7 +593,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5447765697759493033">Este site não será traduzido.</translation>
 <translation id="545042621069398927">A acelerar a transferência…</translation>
 <translation id="5456381639095306749">Transferir página</translation>
-<translation id="5475862044948910901">Pretende iniciar a sessão de realidade aumentada?</translation>
 <translation id="548278423535722844">Abrir na aplicação de mapas</translation>
 <translation id="5487521232677179737">Limpar dados</translation>
 <translation id="5494752089476963479">Bloquear anúncios em sites que apresentam anúncios intrusivos ou enganadores</translation>
@@ -623,6 +633,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5710871682236653961">Perguntar antes de permitir que os sites enviem e recebam informações quando toca em dispositivos NFC (recomendado)</translation>
 <translation id="572328651809341494">Separadores recentes</translation>
 <translation id="5726692708398506830">Aumentar o tamanho de todos os itens na página</translation>
+<translation id="5735071096924648956">Impedir que os sites monitorizem a posição da sua câmara ou mapeiem a sua divisão</translation>
 <translation id="5748802427693696783">Mudado para separadores padrão</translation>
 <translation id="5749068826913805084">O Chrome necessita de acesso ao armazenamento para transferir ficheiros.</translation>
 <translation id="5763382633136178763">Separadores de navegação anónima</translation>
@@ -693,6 +704,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6277522088822131679">Ocorreu um problema ao imprimir a página. Tente novamente.</translation>
 <translation id="6295158916970320988">Todos os sites</translation>
 <translation id="629730747756840877">Conta</translation>
+<translation id="6297765934698848803">A entidade que gere o seu dispositivo desativou a sua câmara.</translation>
 <translation id="6303969859164067831">Terminar sessão e desativar a sincronização</translation>
 <translation id="6316139424528454185">Versão Android não suportada.</translation>
 <translation id="6320088164292336938">Vibrar</translation>
@@ -715,11 +727,13 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="6427112570124116297">Traduzir a Web</translation>
 <translation id="6433501201775827830">Escolher o motor de pesquisa</translation>
 <translation id="6437478888915024427">Informações da página</translation>
+<translation id="6439114592976064011">Impedir que os sites utilizem aos seus dados e dispositivo de realidade virtual</translation>
 <translation id="6441734959916820584">O nome é demasiado longo</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# imagem}other{# imagens}}</translation>
 <translation id="6447558397796644647">Não é possível encontrar esse marcador. Verifique a ortografia ou adicione um novo marcador.</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6461962085415701688">Não é possível abrir o ficheiro</translation>
+<translation id="6462660325961255024">Perguntar antes de permitir que os sites monitorizem a posição da sua câmara ou mapeiem a sua divisão (recomendado)</translation>
 <translation id="6464977750820128603">Pode ver os sites que visita no Chrome e definir temporizadores para os mesmos.\n\nA Google obtém informações sobre os sites para os quais define temporizadores e durante quanto tempo os visita. Estas informações são utilizadas para melhorar o Bem-estar digital.</translation>
 <translation id="6475951671322991020">Transferir vídeo</translation>
 <translation id="6482749332252372425">A transferência de <ph name="FILE_NAME" /> falhou devido à falta de espaço de armazenamento.</translation>
@@ -831,11 +845,6 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Partilhar 1 item selecionado}other{Partilhar # itens selecionados}}</translation>
 <translation id="7359002509206457351">Aceder aos métodos de pagamento</translation>
-<translation id="7365126855094612066">Durante esta sessão, o site será capaz de:
-• criar um mapa 3D do seu ambiente
-• monitorizar movimentos da câmara
-
-O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis apenas para si.</translation>
 <translation id="7375125077091615385">Tipo:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -912,6 +921,7 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="7942131818088350342">O <ph name="PRODUCT_NAME" /> está desatualizado.</translation>
 <translation id="7947953824732555851">Aceitar e in. sessão</translation>
 <translation id="7963646190083259054">Fornecedor:</translation>
+<translation id="7967911570373677897">Para ler um código QR, altere as suas definições para que o Chrome consiga utilizar a sua câmara.</translation>
 <translation id="7971136598759319605">Ativo há 1 dia</translation>
 <translation id="7975379999046275268">Pré-visualizar página <ph name="BEGIN_NEW" />Novo<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Pré-carregar as páginas para uma navegação e uma pesquisa mais rápidas</translation>
@@ -957,6 +967,7 @@ O site NÃO fica com acesso à câmara. As imagens da câmara estão visíveis a
 <translation id="8218622182176210845">Efetue a gestão da sua conta</translation>
 <translation id="8224471946457685718">Transferir artigos para si com Wi-Fi</translation>
 <translation id="8232956427053453090">Manter os dados</translation>
+<translation id="8233540874193135768">Para ler um código QR, utilize um dispositivo com câmara.</translation>
 <translation id="8250920743982581267">Docs</translation>
 <translation id="825412236959742607">Esta página utiliza demasiada memória, pelo que o Chrome removeu algum conteúdo.</translation>
 <translation id="8260126382462817229">Experimente iniciar sessão novamente</translation>

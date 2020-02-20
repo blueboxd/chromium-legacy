@@ -202,11 +202,11 @@ CompositingReasons CompositingReasonFinder::NonStyleDeterminedDirectReasons(
     direct_reasons |= CompositingReason::kVideoOverlay;
 
   // Special case for immersive-ar DOM overlay mode, see also
-  // PaintLayerCompositor::ApplyXrImmersiveDomOverlayIfNeeded()
+  // PaintLayerCompositor::GetXrOverlayLayer()
   if (const Node* node = layer.GetLayoutObject().GetNode()) {
-    if (node->IsElementNode() && node->GetDocument().IsImmersiveArOverlay() &&
+    if (node->IsElementNode() && node->GetDocument().IsXrOverlay() &&
         node == Fullscreen::FullscreenElementFrom(node->GetDocument())) {
-      direct_reasons |= CompositingReason::kImmersiveArOverlay;
+      direct_reasons |= CompositingReason::kXrOverlay;
     }
   }
 

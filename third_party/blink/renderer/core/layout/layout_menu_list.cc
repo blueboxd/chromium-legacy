@@ -26,12 +26,7 @@
 
 #include "third_party/blink/renderer/core/layout/layout_menu_list.h"
 
-#include <math.h>
-#include "third_party/blink/renderer/core/dom/node_computed_style.h"
-#include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
-#include "third_party/blink/renderer/core/layout/layout_theme.h"
-#include "third_party/blink/renderer/core/layout/text_run_constructor.h"
 
 namespace blink {
 
@@ -53,49 +48,11 @@ HTMLSelectElement* LayoutMenuList::SelectElement() const {
   return To<HTMLSelectElement>(GetNode());
 }
 
-int LayoutMenuList::MeasureOptionsWidth() const {
-  if (ShouldApplySizeContainment())
-    return 0;
-
-  float max_option_width = 0;
-
-  for (auto* const option : SelectElement()->GetOptionList()) {
-    String text = option->TextIndentedToRespectGroupLabel();
-    const ComputedStyle* item_style =
-        option->GetComputedStyle() ? option->GetComputedStyle() : Style();
-    item_style->ApplyTextTransform(&text);
-    // We apply SELECT's style, not OPTION's style because max_option_width is
-    // used to determine intrinsic width of the menulist box.
-    TextRun text_run = ConstructTextRun(StyleRef().GetFont(), text, *Style());
-    max_option_width =
-        std::max(max_option_width, StyleRef().GetFont().Width(text_run));
-  }
-  return static_cast<int>(ceilf(max_option_width));
-}
-
 PhysicalRect LayoutMenuList::ControlClipRect(
     const PhysicalOffset& additional_offset) const {
   PhysicalRect outer_box = PhysicalContentBoxRect();
   outer_box.offset += additional_offset;
   return outer_box;
-}
-
-void LayoutMenuList::ComputeIntrinsicLogicalWidths(
-    LayoutUnit& min_logical_width,
-    LayoutUnit& max_logical_width) const {
-  int options_width = MeasureOptionsWidth();
-
-  LayoutTheme& theme = LayoutTheme::GetTheme();
-  int paddings = theme.PopupInternalPaddingStart(StyleRef()) +
-                 theme.PopupInternalPaddingEnd(GetFrame(), StyleRef());
-  max_logical_width =
-      std::max(options_width,
-               LayoutTheme::GetTheme().MinimumMenuListSize(StyleRef())) +
-      LayoutUnit(paddings);
-  if (!StyleRef().Width().IsPercentOrCalc())
-    min_logical_width = max_logical_width;
-  else
-    min_logical_width = LayoutUnit();
 }
 
 }  // namespace blink

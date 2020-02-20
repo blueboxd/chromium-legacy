@@ -137,6 +137,7 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# skrá}one{# skrá}other{# skrár}}</translation>
 <translation id="2017836877785168846">Hreinsar ferilinn og sjálfvirka útfyllingu í veffangastiku.</translation>
 <translation id="2021896219286479412">Stýringar vefsvæðis á öllum skjá</translation>
+<translation id="2025115093177348061">Aukinn veruleiki</translation>
 <translation id="2038563949887743358">Kveikja á beiðni um vefsvæði fyrir tölvur</translation>
 <translation id="2041019821020695769">Til að leyfa Chrome að senda þér tilkynningar þarftu einnig að kveikja á þeim í <ph name="BEGIN_LINK" />stillingum Android<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> er einnig með gögn í Chrome</translation>
@@ -150,6 +151,9 @@
 <translation id="2100273922101894616">Sjálfvirk innskráning</translation>
 <translation id="2100314319871056947">Prófaðu að deila textanum í smærri hluta</translation>
 <translation id="2107397443965016585">Spyrja áður en vefsvæði fá leyfi til að spila varið efni (ráðlagt)</translation>
+<translation id="2109711654079915747">Fáðu frekari upplýsingar um efnisatriði á vefsvæðum án þess að yfirgefa síðuna. Snertileit sendir orð og samhengi þess til Google leitar og birtir skilgreiningar, myndir, leitarniðurstöður og aðrar upplýsingar.
+
+Ýttu á hvaða orð sem er til að leita. Fínstilltu leitina með því að halda fingrinum niðri og velja fleiri eða færri orð. Þú getur breytt leitinni með því að opna svæðið, ýta á táknið til að opna í nýjum flipa og gera breytingar í leitarreitnum.</translation>
 <translation id="2111511281910874386">Fara á síðu</translation>
 <translation id="2122601567107267586">Ekki var hægt að opna forritið</translation>
 <translation id="2126426811489709554">Keyrt af Chrome</translation>
@@ -176,6 +180,7 @@
 <translation id="2321958826496381788">Dragðu sleðann þangað til þú getur lesið þetta áreynslulaust. Texti ætti að vera að minnsta kosti svona stór eftir að ýtt hefur verið tvisvar á efnisgrein.</translation>
 <translation id="2323763861024343754">Geymsla vefsvæða</translation>
 <translation id="2328985652426384049">Innskráning mistókst</translation>
+<translation id="234265804618409743">Ekki tókst að opna myndavélina. Eitthvað fór úrskeiðis.</translation>
 <translation id="2349710944427398404">Gögn sem Chrome notar alls, þ.m.t. reikningar, bókamerki og vistaðar stillingar</translation>
 <translation id="2353636109065292463">Verið er að athuga nettenginguna</translation>
 <translation id="2359808026110333948">Halda áfram</translation>
@@ -192,6 +197,9 @@
 <translation id="2434158240863470628">Niðurhali lokið <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Aðgangur að staðsetningu</translation>
 <translation id="2450083983707403292">Viltu byrja aftur að sækja <ph name="FILE_NAME" />?</translation>
+<translation id="2450907520913474542">Fáðu frekari upplýsingar um efnisatriði á vefsvæðum án þess að yfirgefa síðuna. Snertileit sendir orð og samhengi þess til Google leitar og birtir skilgreiningar, myndir, leitarniðurstöður og aðrar upplýsingar.
+
+Haltu fingri á hvaða orði sem er til að leita að því. Veldu fleiri eða færri orð til að fínstilla leitina. Þú getur breytt leitinni með því að opna svæðið, ýta á táknið til að opna í nýjum flipa og gera breytingar í leitarreitnum.</translation>
 <translation id="246532703174860178">Deila</translation>
 <translation id="2482878487686419369">Tilkynningar</translation>
 <translation id="2490684707762498678">Stýrt af <ph name="APP_NAME" /></translation>
@@ -423,6 +431,7 @@
 <translation id="4298388696830689168">Tengd vefsvæði</translation>
 <translation id="4307992518367153382">Grunnatriði</translation>
 <translation id="4314815835985389558">Stjórna samstillingu</translation>
+<translation id="4321739720395210191">Ekki tókst að opna myndavélina. Endurræstu tækið og reyndu aftur.</translation>
 <translation id="4351244548802238354">Loka glugga</translation>
 <translation id="4353114845960720315">Þegar þú ert í sýndarveruleika kann þetta vefsvæði að fá upplýsingar um:</translation>
 <translation id="4378154925671717803">Sími</translation>
@@ -469,6 +478,7 @@ Google reikningurinn þinn kann að vera með annars konar vefskoðunarferil, sv
 <translation id="4660838440047236328">útlit herbergisins sem þú ert í</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bókamerkjum eytt</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> var bætt við heimaskjáinn þinn</translation>
+<translation id="4670064810192446073">Sýndarveruleiki</translation>
 <translation id="4684427112815847243">Samstilla allt</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> í viðbót}one{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> í viðbót}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 og <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> í viðbót}}</translation>
 <translation id="4696983787092045100">Senda texta í tækin þín</translation>
@@ -504,6 +514,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="4882831918239250449">Stjórnaðu því hvernig vefskoðunarferillinn þinn er notaður til að sérsníða leit, auglýsingar og fleira</translation>
 <translation id="4883854917563148705">Ekki er hægt að endurstilla stýrðar stillingar</translation>
 <translation id="4885273946141277891">Óstuddur fjöldi Chrome tilvika.</translation>
+<translation id="4887024562049524730">Spyrja áður en vefsvæði nota sýndarveruleikatæki og -gögn (ráðlagt)</translation>
 <translation id="4910889077668685004">Greiðsluforrit</translation>
 <translation id="4913161338056004800">Endurstilla tölfræði</translation>
 <translation id="4913169188695071480">Hætta að endurnýja</translation>
@@ -582,7 +593,6 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5447765697759493033">Þetta vefsvæði verður ekki þýtt</translation>
 <translation id="545042621069398927">Flýtir fyrir niðurhali.</translation>
 <translation id="5456381639095306749">Sækja síðu</translation>
-<translation id="5475862044948910901">Hefja lotu í auknum veruleika?</translation>
 <translation id="548278423535722844">Opna í kortaforriti</translation>
 <translation id="5487521232677179737">Hreinsa gögn</translation>
 <translation id="5494752089476963479">Útiloka auglýsingar á vefsvæðum sem birta ágengar eða villandi auglýsingar</translation>
@@ -623,6 +633,7 @@ Til að breyta þessari stillingu skaltu <ph name="BEGIN_LINK" />endurstilla sam
 <translation id="5710871682236653961">Spyrja áður en vefsvæði fá leyfi til að senda og taka við upplýsingum þegar þú ýtir á NFC-tæki (ráðlagt)</translation>
 <translation id="572328651809341494">Nýlegir flipar</translation>
 <translation id="5726692708398506830">Stækka allt á síðunni</translation>
+<translation id="5735071096924648956">Loka á að vefsvæði geti rakið stöðu myndavélarinnar þinnar eða kortlagt herbergið þitt</translation>
 <translation id="5748802427693696783">Skipt yfir í staðlaða flipa</translation>
 <translation id="5749068826913805084">Chrome þarf aðgang að geymslu til að geta sótt skrár.</translation>
 <translation id="5763382633136178763">Huliðsflipar</translation>
@@ -693,6 +704,7 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6277522088822131679">Vandamál kom upp við að prenta síðuna. Reyndu aftur.</translation>
 <translation id="6295158916970320988">Öll vefsvæði</translation>
 <translation id="629730747756840877">Reikningur</translation>
+<translation id="6297765934698848803">Fyrirtækið sem hefur umsjón með tækinu þínu hefur slökkt á myndavélinni.</translation>
 <translation id="6303969859164067831">Skrá út og slökkva á samstillingu</translation>
 <translation id="6316139424528454185">Android útgáfa ekki studd</translation>
 <translation id="6320088164292336938">Titringur</translation>
@@ -715,11 +727,13 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="6427112570124116297">Þýða vefinn</translation>
 <translation id="6433501201775827830">Veldu leitarvélina þína</translation>
 <translation id="6437478888915024427">Upplýsingar um síðu</translation>
+<translation id="6439114592976064011">Loka á að vefsvæði fái að nota sýndarveruleikatækið og -gögnin þín</translation>
 <translation id="6441734959916820584">Heitið er of langt</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# mynd}one{# mynd}other{# myndir}}</translation>
 <translation id="6447558397796644647">Bókamerki finnst ekki. Athugaðu stafsetninguna eða bættu við nýju bókamerki.</translation>
 <translation id="6447842834002726250">Fótspor</translation>
 <translation id="6461962085415701688">Ekki hægt að opna skrá</translation>
+<translation id="6462660325961255024">Spyrja áður en vefsvæðum er leyft að rekja stöðu myndavélarinnar þinnar eða kortleggja herbergið þitt (ráðlagt)</translation>
 <translation id="6464977750820128603">Þú sérð vefsvæðin sem þú opnar í Chrome og velur teljara fyrir þau.\n\nGoogle fær upplýsingar um þau vefsvæði sem þú velur teljara fyrir og hversu lengi þú ert á þeim. Þessar upplýsingar eru notaðar til að bæta virkni stafrænnar vellíðunar.</translation>
 <translation id="6475951671322991020">Sækja myndskeið</translation>
 <translation id="6482749332252372425"><ph name="FILE_NAME" /> niðurhal mistókst vegna skorts á geymslurými.</translation>
@@ -831,11 +845,6 @@ Sum vefsvæði kunna til dæmis að bregðast við beiðninni með því að bir
 <translation id="7352939065658542140">MYNDSKEIÐ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Deila 1 völdu atriði}one{Deila # völdu atriði}other{Deila # völdum atriðum}}</translation>
 <translation id="7359002509206457351">Fá aðgang að greiðslumátum</translation>
-<translation id="7365126855094612066">Á meðan á þessari lotu stendur mun vefsvæðið geta:
-• Búið til þrívíddarkort af umhverfi þínu
-• Fylgst með hreyfingu myndavélar
-
-Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru aðeins sýnilegar þér.</translation>
 <translation id="7375125077091615385">Gerð:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">Vefslóð</translation>
@@ -912,6 +921,7 @@ Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru 
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> er úrelt.</translation>
 <translation id="7947953824732555851">Samþykkja og skrá inn</translation>
 <translation id="7963646190083259054">Framleiðandi:</translation>
+<translation id="7967911570373677897">Til að skanna QR-kóða skaltu breyta stillingunum svo að Chrome geti notað myndavélina þína</translation>
 <translation id="7971136598759319605">Virkt fyrir 1 degi</translation>
 <translation id="7975379999046275268">Forskoða síðu <ph name="BEGIN_NEW" />Nýtt<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Forhlaða síðum til að geta leitað hraðar á netinu</translation>
@@ -957,6 +967,7 @@ Vefsvæðið fær EKKI aðgang að myndavélinni. Myndir frá myndavélinni eru 
 <translation id="8218622182176210845">Stjórna reikningnum þínum</translation>
 <translation id="8224471946457685718">Sækja greinar fyrir þig með Wi-Fi</translation>
 <translation id="8232956427053453090">Halda gögnum</translation>
+<translation id="8233540874193135768">Notaðu tæki með myndavél til að skanna QR-kóða.</translation>
 <translation id="8250920743982581267">Skjöl</translation>
 <translation id="825412236959742607">Chrome fjarlægði eitthvað efni því þessi síða notar of mikið minni.</translation>
 <translation id="8260126382462817229">Reyndu að skrá þig inn aftur</translation>

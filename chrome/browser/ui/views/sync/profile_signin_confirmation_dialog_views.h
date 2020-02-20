@@ -46,8 +46,6 @@ class ProfileSigninConfirmationDialogViews : public views::DialogDelegateView,
 
   // views::DialogDelegateView:
   base::string16 GetWindowTitle() const override;
-  bool Accept() override;
-  bool Cancel() override;
   ui::ModalType GetModalType() const override;
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override;

@@ -38994,6 +38994,7 @@ from previous Chrome versions.
   <int value="365467768" label="prefetch-search-results"/>
   <int value="367063319" label="PasswordImport:disabled"/>
   <int value="368854020" label="ash-screen-rotation-animation"/>
+  <int value="369301993" label="PrinterStatus:enabled"/>
   <int value="369352033" label="GenericSensorExtraClasses:enabled"/>
   <int value="369635818" label="PasswordExport:enabled"/>
   <int value="370486304" label="enable-origin-chip-on-srp"/>
@@ -40036,6 +40037,7 @@ from previous Chrome versions.
   <int value="1639190590" label="UseMessagesGoogleComDomain:enabled"/>
   <int value="1639314588" label="LookalikeUrlNavigationSuggestions:disabled"/>
   <int value="1640386037" label="ContextualSuggestionsSlimPeekUI:disabled"/>
+  <int value="1643626730" label="PrinterStatus:disabled"/>
   <int value="1645447927" label="MixedContentSiteSetting:disabled"/>
   <int value="1645479440" label="HistoryManipulationIntervention:disabled"/>
   <int value="1646498561" label="OfflineBookmarks:disabled"/>

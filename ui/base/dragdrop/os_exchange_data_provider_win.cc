@@ -150,8 +150,9 @@ FormatEtcEnumerator::FormatEtcEnumerator(
 FormatEtcEnumerator::~FormatEtcEnumerator() {
 }
 
-STDMETHODIMP FormatEtcEnumerator::Next(
-    ULONG count, FORMATETC* elements_array, ULONG* elements_fetched) {
+HRESULT FormatEtcEnumerator::Next(ULONG count,
+                                  FORMATETC* elements_array,
+                                  ULONG* elements_fetched) {
   // MSDN says |elements_fetched| is allowed to be NULL if count is 1.
   if (!elements_fetched)
     DCHECK_EQ(count, 1ul);
@@ -171,19 +172,19 @@ STDMETHODIMP FormatEtcEnumerator::Next(
   return index == count ? S_OK : S_FALSE;
 }
 
-STDMETHODIMP FormatEtcEnumerator::Skip(ULONG skip_count) {
+HRESULT FormatEtcEnumerator::Skip(ULONG skip_count) {
   cursor_ += skip_count;
   // MSDN implies it's OK to leave the enumerator trashed.
   // "Whatever you say, boss"
   return cursor_ <= contents_.size() ? S_OK : S_FALSE;
 }
 
-STDMETHODIMP FormatEtcEnumerator::Reset() {
+HRESULT FormatEtcEnumerator::Reset() {
   cursor_ = 0;
   return S_OK;
 }
 
-STDMETHODIMP FormatEtcEnumerator::Clone(IEnumFORMATETC** clone) {
+HRESULT FormatEtcEnumerator::Clone(IEnumFORMATETC** clone) {
   // Clone the current enumerator in its exact state, including cursor.
   FormatEtcEnumerator* e = CloneFromOther(this);
   e->AddRef();
@@ -191,8 +192,7 @@ STDMETHODIMP FormatEtcEnumerator::Clone(IEnumFORMATETC** clone) {
   return S_OK;
 }
 
-STDMETHODIMP FormatEtcEnumerator::QueryInterface(const IID& iid,
-                                                 void** object) {
+HRESULT FormatEtcEnumerator::QueryInterface(const IID& iid, void** object) {
   *object = NULL;
   if (IsEqualIID(iid, IID_IUnknown) || IsEqualIID(iid, IID_IEnumFORMATETC)) {
     *object = this;

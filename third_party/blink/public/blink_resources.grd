@@ -27,6 +27,7 @@
       <include name="IDR_UASTYLE_MATHML_CSS" file="../renderer/core/css/mathml.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_MATHML_FALLBACK_CSS" file="../renderer/core/css/mathml-fallback.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_FULLSCREEN_CSS" file="../renderer/core/css/fullscreen.css" type="BINDATA" compress="gzip"/>
+      <include name="IDR_UASTYLE_WEBXR_OVERLAY_CSS" file="../renderer/core/css/webxr_overlay.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_XHTMLMP_CSS" file="../renderer/core/css/xhtmlmp.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_VIEWPORT_ANDROID_CSS" file="../renderer/core/css/viewportAndroid.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_UASTYLE_VIEWPORT_TELEVISION_CSS" file="../renderer/core/css/viewportTelevision.css" type="BINDATA" compress="gzip"/>

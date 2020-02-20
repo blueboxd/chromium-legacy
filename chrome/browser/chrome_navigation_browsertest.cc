@@ -53,6 +53,7 @@
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
+#include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/test_extension_dir.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "net/dns/mock_host_resolver.h"
@@ -613,16 +614,8 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
 
 // Test for https://crbug.com/866549#c2. It verifies that about:blank does not
 // commit in the error page process when it is redirected to.
-// Flaky on Linux. See https://crbug.com/981295.
-#if defined(OS_LINUX)
-#define MAYBE_RedirectErrorPageReloadToAboutBlank \
-  DISABLED_RedirectErrorPageReloadToAboutBlank
-#else
-#define MAYBE_RedirectErrorPageReloadToAboutBlank \
-  RedirectErrorPageReloadToAboutBlank
-#endif
 IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
-                       MAYBE_RedirectErrorPageReloadToAboutBlank) {
+                       RedirectErrorPageReloadToAboutBlank) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));
@@ -658,9 +651,15 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest,
           console.log("onBeforeRequest: ", d);
           return {redirectUrl:"about:blank"};
         }, {urls: ["*://a.com/*"]}, ["blocking"]);
+        chrome.test.sendMessage('ready');
       )");
+
+  ExtensionTestMessageListener ready_listener("ready", false /* will_reply */);
   extensions::ChromeTestExtensionLoader extension_loader(browser()->profile());
   extension_loader.LoadExtension(test_extension_dir.UnpackedPath());
+
+  // Wait for the background page to load.
+  ASSERT_TRUE(ready_listener.WaitUntilSatisfied());
 
   // Remove the interceptor to allow a reload to succeed, which the extension
   // will intercept and redirect. The navigation should complete successfully

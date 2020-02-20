@@ -1627,6 +1627,10 @@ const char kPrefetchMainResourceNetworkIsolationKeyDescription[] =
     "Prefetch requests for cross-origin main resources can be reused by next "
     "top-level navigations when HTTP cache is double-keyed.";
 
+const char kPrinterStatusName[] = "Show printer Status";
+const char kPrinterStatusDescription[] =
+    "Enables printer status icons and labels for saved and nearby printers";
+
 const char kSafetyTipName[] =
     "Show Safety Tip UI when visiting low-reputation websites";
 const char kSafetyTipDescription[] =

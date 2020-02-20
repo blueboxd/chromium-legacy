@@ -383,12 +383,21 @@ public class BottomSheetController implements Destroyable {
     }
 
     /**
-     * Handle a back press event. If the sheet is open it will be closed.
-     * @return True if the sheet handled the back press.
+     * Handle a back press event. By default this will return the bottom sheet to it's minimum /
+     * peeking state if it is open. However, the sheet's content has the opportunity to intercept
+     * this event and block the default behavior {@see BottomSheetContent#handleBackPress()}.
+     * @return {@code true} if the sheet or content handled the back press.
      */
     public boolean handleBackPress() {
-        if (mBottomSheet == null || !mBottomSheet.isSheetOpen()) return false;
+        if (mBottomSheet == null) return false;
 
+        // Give the sheet the opportunity to handle the back press itself before falling to the
+        // default "close" behavior.
+        if (getCurrentSheetContent() != null && getCurrentSheetContent().handleBackPress()) {
+            return true;
+        }
+
+        if (!mBottomSheet.isSheetOpen()) return false;
         int sheetState = mBottomSheet.getMinSwipableSheetState();
         mBottomSheet.setSheetState(sheetState, true, StateChangeReason.BACK_PRESS);
         return true;

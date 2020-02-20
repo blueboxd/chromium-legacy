@@ -47,7 +47,7 @@ constexpr char kHatsSurveyEnSiteID[] = "en_site_id";
 
 constexpr double kHatsSurveyProbabilityDefault = 0;
 
-constexpr char kHatsSurveyEnSiteIDDefault[] = "ty52vxwjrabfvhusawtrmkmx6m";
+constexpr char kHatsSurveyEnSiteIDDefault[] = "bhej2dndhpc33okm6xexsbyv4y";
 
 constexpr base::TimeDelta kMinimumTimeBetweenSurveyStarts =
     base::TimeDelta::FromDays(60);

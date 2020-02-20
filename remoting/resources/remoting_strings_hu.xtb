@@ -305,6 +305,11 @@ Ha már be van jelölve az „<ph name="SERVICE_SCRIPT_NAME" />” melletti nég
 <translation id="8196755618196986400">Ha szeretné, hogy további információkért felvegyük Önnel a kapcsolatot, e-mail-címét tartalmazni fogják az Ön által küldött visszajelzések.</translation>
 <translation id="8244400547700556338">Tudja meg, hogyan.</translation>
 <translation id="8261506727792406068">Törlés</translation>
+<translation id="8295077433896346116">A <ph name="PRODUCT_NAME" /> használatához meg kell adnia a Kisegítő lehetőségek engedélyt, hogy a távoli gépről érkező bevitel megjelenhessen ezen a Mac típusú eszközön.
+
+Az engedély megadásához kattintson az alábbi „<ph name="BUTTON_NAME" />” gombra. Az ekkor megnyíló „Kisegítő lehetőségek” beállításait tartalmazó panelen jelölje be a(z) „<ph name="SERVICE_SCRIPT_NAME" />” melletti négyzetet.
+
+Ha már be van jelölve a(z) „<ph name="SERVICE_SCRIPT_NAME" />” melletti négyzet, távolítsa el a jelölését, majd jelölje be újra.</translation>
 <translation id="8355326866731426344">Ez az elérési kód lejár a következő időtartamon belül: <ph name="TIMEOUT" /></translation>
 <translation id="8355485110405946777">Az alkalmazásnaplók elküldése a probléma megoldásának elősegítése érdekében (a naplók tartalmazhatnak privát információkat).</translation>
 <translation id="837021510621780684">Erről a számítógépről</translation>

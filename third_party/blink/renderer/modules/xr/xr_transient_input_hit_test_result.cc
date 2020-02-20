@@ -15,8 +15,8 @@ XRTransientInputHitTestResult::XRTransientInputHitTestResult(
     const Vector<device::mojom::blink::XRHitResultPtr>& results)
     : input_source_(input_source) {
   for (const auto& result : results) {
-    results_.push_back(
-        MakeGarbageCollected<XRHitTestResult>(result->hit_matrix.matrix()));
+    results_.push_back(MakeGarbageCollected<XRHitTestResult>(
+        input_source->session(), *result));
   }
 }
 

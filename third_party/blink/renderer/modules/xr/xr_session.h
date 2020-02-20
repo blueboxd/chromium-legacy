@@ -43,11 +43,9 @@ class XRCanvasInputProvider;
 class XRDOMOverlayState;
 class XRHitTestOptionsInit;
 class XRHitTestSource;
-class XRPlane;
 class XRReferenceSpace;
 class XRRenderState;
 class XRRenderStateInit;
-class XRRigidTransform;
 class XRSpace;
 class XRTransientInputHitTestOptionsInit;
 class XRTransientInputHitTestSource;
@@ -68,6 +66,14 @@ class XRSession final
   USING_GARBAGE_COLLECTED_MIXIN(XRSession);
 
  public:
+  // Error strings used outside of XRSession:
+  static constexpr char kNoRigidTransformSpecified[] =
+      "No XRRigidTransform specified.";
+  static constexpr char kUnableToRetrieveMatrix[] =
+      "The operation was unable to retrieve a matrix from passed in space and "
+      "could not be completed.";
+  static constexpr char kNoSpaceSpecified[] = "No XRSpace specified.";
+
   enum EnvironmentBlendMode {
     kBlendModeOpaque = 0,
     kBlendModeAdditive,
@@ -127,12 +133,20 @@ class XRSession final
                                       const String& type,
                                       ExceptionState&);
 
-  // helper, not IDL-exposed
-  ScriptPromise CreateAnchor(ScriptState* script_state,
-                             XRRigidTransform* pose,
-                             XRSpace* space,
-                             XRPlane* plane,
-                             ExceptionState& exception_state);
+  // Helper, not IDL-exposed
+  // |offset_space_from_anchor| is a matrix describing transform from offset
+  // space to the initial anchor's position.
+  // |mojo_from_offset_space| can be obtained from XRSpace and describes
+  // transform from mojo space to the offset space in which the anchor pose is
+  // expressed.
+  // |plane_id| - optional, id of the plane to which the anchor should be
+  // attached.
+  ScriptPromise CreateAnchor(
+      ScriptState* script_state,
+      const blink::TransformationMatrix& offset_space_from_anchor,
+      const blink::TransformationMatrix& mojo_from_offset_space,
+      base::Optional<uint64_t> plane_id,
+      ExceptionState& exception_state);
 
   int requestAnimationFrame(V8XRFrameRequestCallback* callback);
   void cancelAnimationFrame(int id);

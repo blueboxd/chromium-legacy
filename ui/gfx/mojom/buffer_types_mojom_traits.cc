@@ -25,13 +25,13 @@ bool StructTraits<gfx::mojom::BufferUsageAndFormatDataView,
 }
 
 #if defined(OS_LINUX) || defined(USE_OZONE)
-mojo::ScopedHandle StructTraits<
+mojo::PlatformHandle StructTraits<
     gfx::mojom::NativePixmapPlaneDataView,
     gfx::NativePixmapPlane>::buffer_handle(gfx::NativePixmapPlane& plane) {
 #if defined(OS_LINUX)
-  return mojo::WrapPlatformFile(plane.fd.release());
+  return mojo::PlatformHandle(std::move(plane.fd));
 #elif defined(OS_FUCHSIA)
-  return mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(plane.vmo)));
+  return mojo::PlatformHandle(std::move(plane.vmo));
 #endif  // defined(OS_LINUX)
 }
 
@@ -43,8 +43,7 @@ bool StructTraits<
   out->offset = data.offset();
   out->size = data.size();
 
-  mojo::PlatformHandle handle =
-      mojo::UnwrapPlatformHandle(data.TakeBufferHandle());
+  mojo::PlatformHandle handle = data.TakeBufferHandle();
 #if defined(OS_LINUX)
   if (!handle.is_fd())
     return false;
@@ -119,9 +118,8 @@ gfx::mojom::GpuMemoryBufferPlatformHandlePtr StructTraits<
       // closed. We will eventually detect this and release the AHB reference.
       mojo::MessagePipe tracking_pipe;
       auto wrapped_handle = gfx::mojom::AHardwareBufferHandle::New(
-          mojo::WrapPlatformFile(
-              handle.android_hardware_buffer.SerializeAsFileDescriptor()
-                  .release()),
+          mojo::PlatformHandle(
+              handle.android_hardware_buffer.SerializeAsFileDescriptor()),
           std::move(tracking_pipe.handle0));
 
       // Pass ownership of the input handle to our tracking pipe to keep the AHB
@@ -201,13 +199,9 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
       if (!buffer_handle)
         return false;
 
-      base::PlatformFile fd;
-      MojoResult unwrap_result = mojo::UnwrapPlatformFile(
-          std::move(buffer_handle->buffer_handle), &fd);
-      base::ScopedFD scoped_fd(fd);
-      if (unwrap_result != MOJO_RESULT_OK || !scoped_fd.is_valid())
+      base::ScopedFD scoped_fd = buffer_handle->buffer_handle.TakeFD();
+      if (!scoped_fd.is_valid())
         return false;
-
       out->android_hardware_buffer = base::android::ScopedHardwareBufferHandle::
           DeserializeFromFileDescriptor(std::move(scoped_fd));
       return out->android_hardware_buffer.is_valid();

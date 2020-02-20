@@ -109,6 +109,14 @@ HatsBubbleView::HatsBubbleView(Browser* browser,
   set_close_on_deactivate(false);
   set_parent_window(parent_view);
 
+  auto run_callback = [](HatsBubbleView* bubble, bool accept) {
+    std::move(bubble->consent_callback_).Run(accept);
+  };
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(run_callback, base::Unretained(this), true));
+  DialogDelegate::set_cancel_callback(
+      base::BindOnce(run_callback, base::Unretained(this), false));
+
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   set_margins(
       provider->GetDialogInsetsForContentType(views::TEXT, views::TEXT));
@@ -140,18 +148,6 @@ gfx::ImageSkia HatsBubbleView::GetWindowIcon() {
 }
 
 bool HatsBubbleView::ShouldShowWindowIcon() const {
-  return true;
-}
-
-bool HatsBubbleView::Cancel() {
-  if (consent_callback_)
-    std::move(consent_callback_).Run(false);
-  return true;
-}
-
-bool HatsBubbleView::Accept() {
-  if (consent_callback_)
-    std::move(consent_callback_).Run(true);
   return true;
 }
 

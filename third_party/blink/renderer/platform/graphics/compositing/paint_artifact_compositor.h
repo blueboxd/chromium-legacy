@@ -252,6 +252,8 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
                                                const FloatRect&);
     FloatRect MapRectKnownToBeOpaque(const PropertyTreeState&) const;
 
+    FloatRect VisualRectForOverlapTesting() const;
+
     // The rects are in the space of property_tree_state.
     FloatRect bounds;
     FloatRect rect_known_to_be_opaque;

@@ -582,7 +582,6 @@
 <translation id="5447765697759493033">האתר הזה לא יתורגם</translation>
 <translation id="545042621069398927">הדפדפן מאיץ את ההורדה.</translation>
 <translation id="5456381639095306749">הורד דף זה</translation>
-<translation id="5475862044948910901">להתחיל פעילות של מציאות רבודה?</translation>
 <translation id="548278423535722844">פתח יישום מפות</translation>
 <translation id="5487521232677179737">ניקוי נתונים</translation>
 <translation id="5494752089476963479">חסימת מודעות באתרים שמוצגות בהם מודעות מפריעות או מטעות</translation>
@@ -831,11 +830,6 @@
 <translation id="7352939065658542140">סרטון</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{שתף פריט אחד שנבחר}two{שתף # פריטים שנבחרו}many{שתף # פריטים שנבחרו}other{שתף # פריטים שנבחרו}}</translation>
 <translation id="7359002509206457351">גישה לאמצעי תשלום</translation>
-<translation id="7365126855094612066">במהלך כל הסשן, האתר יוכל:
-• ליצור מפה תלת-מימדית של הסביבה שלך
-• לעקוב אחר תנועת המצלמה
-
-האתר לא מקבל גישה למצלמה. צילומי המצלמה גלויים רק לך.</translation>
 <translation id="7375125077091615385">סוג:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">כתובת אתר</translation>

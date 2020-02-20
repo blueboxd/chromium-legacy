@@ -29,6 +29,9 @@
 #if defined(OS_ANDROID)
 #include "components/crash/content/browser/child_exit_observer_android.h"
 #include "components/crash/content/browser/child_process_crash_observer_android.h"
+#include "components/javascript_dialogs/android/app_modal_dialog_view_android.h"  // nogncheck
+#include "components/javascript_dialogs/app_modal_dialog_manager.h"  // nogncheck
+#include "content/public/browser/web_contents.h"
 #include "net/android/network_change_notifier_factory_android.h"
 #include "net/base/network_change_notifier.h"
 #include "weblayer/browser/android/metrics/uma_utils.h"
@@ -142,6 +145,16 @@ void BrowserMainPartsImpl::PreMainMessageLoopRun() {
   startup_metric_utils::RecordBrowserMainMessageLoopStart(
       base::TimeTicks::Now(), /* is_first_run */ false);
   memory_metrics_logger_ = std::make_unique<metrics::MemoryMetricsLogger>();
+
+  // Set the global singleton app modal dialog factory.
+  javascript_dialogs::AppModalDialogManager::GetInstance()
+      ->SetNativeDialogFactory(base::BindRepeating(
+          [](javascript_dialogs::AppModalDialogController* controller)
+              -> javascript_dialogs::AppModalDialogView* {
+            return new javascript_dialogs::AppModalDialogViewAndroid(
+                base::android::AttachCurrentThread(), controller,
+                controller->web_contents()->GetTopLevelNativeWindow());
+          }));
 #endif
 }
 

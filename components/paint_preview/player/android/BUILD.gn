@@ -70,15 +70,15 @@ android_library("java") {
   ]
 }
 
-android_library("javatests") {
+android_library("player_java_test_support") {
   testonly = true
   annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
   sources = [
-    "javatests/src/org/chromium/components/paintpreview/player/PaintPreviewPlayerTest.java",
     "javatests/src/org/chromium/components/paintpreview/player/PaintPreviewTestRule.java",
     "javatests/src/org/chromium/components/paintpreview/player/TestImplementerService.java",
   ]
+
   deps = [
     ":java",
     "//base:base_java",
@@ -87,6 +87,23 @@ android_library("javatests") {
     "//components/paint_preview/browser/android:java",
     "//components/signin/core/browser/android:java",
     "//components/signin/core/browser/android:signin_java_test_support",
+    "//content/public/android:content_java",
+    "//content/public/test/android:content_java_test_support",
+    "//third_party/android_support_test_runner:rules_java",
+    "//third_party/android_support_test_runner:runner_java",
+    "//third_party/junit",
+  ]
+}
+
+android_library("javatests") {
+  testonly = true
+
+  sources = [ "javatests/src/org/chromium/components/paintpreview/player/PaintPreviewPlayerTest.java" ]
+  deps = [
+    ":java",
+    ":player_java_test_support",
+    "//base:base_java",
+    "//base:base_java_test_support",
     "//content/public/android:content_java",
     "//content/public/test/android:content_java_test_support",
     "//third_party/android_support_test_runner:rules_java",

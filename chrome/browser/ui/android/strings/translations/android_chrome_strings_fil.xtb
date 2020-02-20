@@ -582,7 +582,6 @@ Para baguhin ang setting na ito, <ph name="BEGIN_LINK" />i-reset ang pag-sync<ph
 <translation id="5447765697759493033">Hindi isasalin ang site na ito</translation>
 <translation id="545042621069398927">Pinapabilis ang iyong pag-download.</translation>
 <translation id="5456381639095306749">I-download ang page</translation>
-<translation id="5475862044948910901">Magsimula ng session ng Augmented Reality?</translation>
 <translation id="548278423535722844">Buksan sa app na mga mapa</translation>
 <translation id="5487521232677179737">I-clear ang data</translation>
 <translation id="5494752089476963479">I-block ang mga ad sa mga site na nagpapakita ng mga nakakasagabal o nakakapanlinlang na ad</translation>
@@ -831,11 +830,6 @@ Halimbawa, puwedeng tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Ibahagi ang 1 piniling item}one{Ibahagi ang # piniling item}other{Ibahagi ang # na piniling item}}</translation>
 <translation id="7359002509206457351">I-access ang mga paraan ng pagbabayad</translation>
-<translation id="7365126855094612066">Para sa tagal ng session na ito, magagawa ng site na:
-• gumawa ng 3D na mapa ng iyong kapaligiran
-• subaybayan ang paggalaw ng camera
-
-HINDI magkakaroon ng access sa camera ang site. Ikaw lang ang makakakita ng mga larawan ng camera.</translation>
 <translation id="7375125077091615385">Uri:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>

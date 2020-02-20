@@ -582,7 +582,6 @@
 <translation id="5447765697759493033">اس سائٹ کا ترجمہ نہیں ہوگا</translation>
 <translation id="545042621069398927">آپ کے ڈاؤن لوڈ کی رفتار بڑھائی جا رہی ہے۔</translation>
 <translation id="5456381639095306749">صفحہ ڈاؤن لوڈ کریں</translation>
-<translation id="5475862044948910901">افزودہ حقیقت کا سیشن شروع کریں؟</translation>
 <translation id="548278423535722844">نقشہ کی ایپ میں کھولیں</translation>
 <translation id="5487521232677179737">ڈیٹا صاف کریں</translation>
 <translation id="5494752089476963479">دخل انداز یا گمراہ کن اشتہارات دکھانے والی سائٹس پر اشتہارات کو مسدود کریں</translation>
@@ -831,11 +830,6 @@
 <translation id="7352939065658542140">ویڈیو</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 منتخب کردہ آئٹم کا اشتراک کریں}other{# منتخب کردہ آئٹمز کا اشتراک کریں}}</translation>
 <translation id="7359002509206457351">ادائیگی کے طریقوں تک رسائی حاصل کریں</translation>
-<translation id="7365126855094612066">‏اس سیشن کے دورانیہ کے لیے، سائٹ:
-• آپ کے ماحول کا ایک 3D نقشہ کی تخلیق کر سکے گی
-• کیمرے کی حرکت کو ٹریک کر سکے گی
-
-یہ سائٹ کیمرے تک رسائی حاصل نہیں کرتی۔ کیمرا کی تصویروں کو صرف آپ دیکھ سکتے ہیں۔</translation>
 <translation id="7375125077091615385">قسم:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />۔</translation>
 <translation id="7400418766976504921">URL</translation>

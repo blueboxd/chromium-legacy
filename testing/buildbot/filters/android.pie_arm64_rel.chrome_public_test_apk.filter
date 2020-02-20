@@ -34,7 +34,7 @@
 -org.chromium.chrome.browser.push_messaging.PushMessagingTest.testPushAndShowNotification
 
 # crbug/836460
--org.chromium.chrome.browser.settings.autofill.AutofillProfilesFragmentTest.testKeyboardShownOnDpadCenter
+-org.chromium.chrome.browser.autofill.settings.AutofillProfilesFragmentTest.testKeyboardShownOnDpadCenter
 
 # crbug/1036545
 -org.chromium.chrome.browser.suggestions.tile.TileGroupTest.testDismissTileUndo
@@ -73,6 +73,8 @@
 # crbug/1023833
 -org.chromium.chrome.features.start_surface.StartSurfaceLayoutTest.testRenderGrid_10WebTabs
 -org.chromium.chrome.features.start_surface.StartSurfaceLayoutTest.testRenderGrid_Incognito
+-org.chromium.chrome.features.start_surface.StartSurfaceLayoutTest.testRecycling_aspectRatioPoint75
+-org.chromium.chrome.features.start_surface.StartSurfaceLayoutTest.testRecycling_defaultAspectRatio
 
 # crbug/1036571
 -org.chromium.shape_detection.BarcodeDetectionImplTest.testDetectBarcodeWithHint
@@ -90,3 +92,6 @@
 
 # crbug/1039522
 -org.chromium.chrome.browser.settings.privacy.BrowsingDataBridgeTest.testClearingSiteSettingsAndCacheWithImportantSites
+
+# crbug/1054502
+-org.chromium.chrome.browser.photo_picker.DecoderServiceHostTest.testDecodingOrder

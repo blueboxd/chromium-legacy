@@ -305,6 +305,11 @@ Se a opção "<ph name="SERVICE_SCRIPT_NAME" />" já estiver marcada, desmarque-
 <translation id="8196755618196986400">Para que possamos entrar em contato com mais informações, seu endereço de e-mail será incluído em todo o feedback enviado por você.</translation>
 <translation id="8244400547700556338">Saiba como.</translation>
 <translation id="8261506727792406068">Excluir</translation>
+<translation id="8295077433896346116">Para usar a <ph name="PRODUCT_NAME" />, você precisa conceder a permissão "Acessibilidade", permitindo que a entrada da máquina remota seja injetada neste Mac.
+
+Para conceder essa permissão, clique em "<ph name="BUTTON_NAME" />" abaixo. No painel de preferências "Acessibilidade", marque a caixa ao lado de "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Se "<ph name="SERVICE_SCRIPT_NAME" />" já estiver marcada, desmarque-a e marque novamente.</translation>
 <translation id="8355326866731426344">Este código de acesso expira em <ph name="TIMEOUT" /></translation>
 <translation id="8355485110405946777">Inclua os registros do aplicativo para nos ajudar a resolver seu problema. Os registros podem incluir informações particulares.</translation>
 <translation id="837021510621780684">Deste computador</translation>

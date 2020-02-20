@@ -249,9 +249,9 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       needs_update_geometries_(false),
       root_layer_did_scroll_(false),
       frame_timing_requests_dirty_(true),
-      // The compositor throttles the main frame using deferred commits, we
-      // can't throttle it here or it seems the root compositor doesn't get
-      // setup properly.
+      // The compositor throttles the main frame using deferred begin main frame
+      // updates. We can't throttle it here or it seems the root compositor
+      // doesn't get setup properly.
       lifecycle_updates_throttled_(!GetFrame().IsMainFrame()),
       current_update_lifecycle_phases_target_state_(
           DocumentLifecycle::kUninitialized),
@@ -942,8 +942,8 @@ void LocalFrameView::UpdateLayout() {
 }
 
 void LocalFrameView::WillStartForcedLayout() {
-  // UpdateLayoutIgnoringPendingStyleSheets is re-entrant for auto-sizing
-  // and plugins. So keep track of stack depth.
+  // UpdateLayout is re-entrant for auto-sizing and plugins. So keep
+  // track of stack depth to include all the time in the top-level call.
   forced_layout_stack_depth_++;
   if (forced_layout_stack_depth_ > 1)
     return;
@@ -956,8 +956,13 @@ void LocalFrameView::DidFinishForcedLayout(DocumentUpdateReason reason) {
   if (!forced_layout_stack_depth_ && base::TimeTicks::IsHighResolution()) {
     LocalFrameUkmAggregator& aggregator = EnsureUkmAggregator();
     aggregator.RecordSample(
-        (size_t)LocalFrameUkmAggregator::kForcedStyleAndLayout,
+        static_cast<size_t>(LocalFrameUkmAggregator::kForcedStyleAndLayout),
         forced_layout_start_time_, base::TimeTicks::Now());
+    if (reason == DocumentUpdateReason::kHitTest) {
+      aggregator.RecordSample(
+          static_cast<size_t>(LocalFrameUkmAggregator::kHitTestDocumentUpdate),
+          forced_layout_start_time_, base::TimeTicks::Now());
+    }
   }
 }
 
@@ -1956,7 +1961,7 @@ Color LocalFrameView::DocumentBackgroundColor() const {
   // backdrop.
   if (Document* doc = frame_->GetDocument()) {
     if (Element* element = Fullscreen::FullscreenElementFrom(*doc)) {
-      if (doc->IsImmersiveArOverlay()) {
+      if (doc->IsXrOverlay()) {
         // Use the fullscreened element's background directly. Don't bother
         // blending with the backdrop since that's transparent.
         if (LayoutObject* layout_object = element->GetLayoutObject()) {
@@ -2265,6 +2270,15 @@ bool LocalFrameView::UpdateLifecyclePhases(
       for (auto& observer : lifecycle_observers)
         observer->DidFinishLifecycleUpdate(frame_view);
     });
+  }
+
+  // Hit testing metrics include the entire time processing a document update
+  // in preparation for a hit test.
+  if (reason == DocumentUpdateReason::kHitTest) {
+    LocalFrameUkmAggregator& aggregator = EnsureUkmAggregator();
+    aggregator.RecordSample(
+        static_cast<size_t>(LocalFrameUkmAggregator::kHitTestDocumentUpdate),
+        lifecycle_data_.start_time, base::TimeTicks::Now());
   }
 
   return Lifecycle().GetState() == target_state;

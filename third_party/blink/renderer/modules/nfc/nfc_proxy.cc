@@ -188,21 +188,13 @@ void NFCProxy::EnsureMojoConnection() {
       client_receiver_.BindNewPipeAndPassRemote(task_runner));
 }
 
-// Once the NFC Mojo connection is established, this OnMojoConnectionError()
-// could happen in only one case: DeviceService shutdown. As currently
-// DeviceService is running in the browser process and only goes to shutdown
-// when the browser process exits, so this case should just be impossible and
-// meaningless.
+// This method will be called if either the NFC service is unavailable (such
+// as if the feature flag is disabled) or when the user revokes the NFC
+// permission after the Mojo connection has already been opened. It is
+// currently impossible to distinguish between these two cases.
 //
-// But, it's possible that in the future we may configure DeviceService to run
-// in some separate process and may start/stop/start it under some conditions
-// (e.g. handle some unexpected crashes), then each time DeviceService goes down
-// we will get this OnMojoConnectionError().
-//
-// However, for now, this OnMojoConnectionError() happens only when we failed to
-// establish the NFC Mojo connection in the first place, i.e. the connection
-// request is rejected by the browser side (DeviceService) due to missing NFC
-// support etc.
+// In the future this code may also handle the case where an out-of-process
+// Device Service encounters a fatal error and must be restarted.
 void NFCProxy::OnMojoConnectionError() {
   nfc_remote_.reset();
   client_receiver_.reset();

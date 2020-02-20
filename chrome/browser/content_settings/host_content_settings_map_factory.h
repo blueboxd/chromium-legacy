@@ -11,12 +11,12 @@
 #include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
 
 class HostContentSettingsMap;
-class Profile;
 
 class HostContentSettingsMapFactory
     : public RefcountedBrowserContextKeyedServiceFactory {
  public:
-  static HostContentSettingsMap* GetForProfile(Profile* profile);
+  static HostContentSettingsMap* GetForProfile(
+      content::BrowserContext* browser_context);
   static HostContentSettingsMapFactory* GetInstance();
 
  private:

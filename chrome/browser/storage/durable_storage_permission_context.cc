@@ -27,8 +27,8 @@
 using bookmarks::BookmarkModel;
 
 DurableStoragePermissionContext::DurableStoragePermissionContext(
-    Profile* profile)
-    : PermissionContextBase(profile,
+    content::BrowserContext* browser_context)
+    : PermissionContextBase(browser_context,
                             ContentSettingsType::DURABLE_STORAGE,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
@@ -38,7 +38,7 @@ void DurableStoragePermissionContext::DecidePermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     bool user_gesture,
-    BrowserPermissionCallback callback) {
+    permissions::BrowserPermissionCallback callback) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK_NE(CONTENT_SETTING_ALLOW,
             GetPermissionStatus(nullptr /* render_frame_host */,
@@ -59,7 +59,8 @@ void DurableStoragePermissionContext::DecidePermission(
   }
 
   scoped_refptr<content_settings::CookieSettings> cookie_settings =
-      CookieSettingsFactory::GetForProfile(profile());
+      CookieSettingsFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context()));
 
   // Don't grant durable for session-only storage, since it won't be persisted
   // anyway. Don't grant durable if we can't write cookies.
@@ -74,8 +75,8 @@ void DurableStoragePermissionContext::DecidePermission(
 
   const size_t kMaxImportantResults = 10;
   std::vector<ImportantSitesUtil::ImportantDomainInfo> important_sites =
-      ImportantSitesUtil::GetImportantRegisterableDomains(profile(),
-                                                          kMaxImportantResults);
+      ImportantSitesUtil::GetImportantRegisterableDomains(
+          Profile::FromBrowserContext(browser_context()), kMaxImportantResults);
 
   std::string registerable_domain =
       net::registry_controlled_domains::GetDomainAndRegistry(
@@ -107,7 +108,7 @@ void DurableStoragePermissionContext::UpdateContentSetting(
   DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
          content_setting == CONTENT_SETTING_BLOCK);
 
-  HostContentSettingsMapFactory::GetForProfile(profile())
+  HostContentSettingsMapFactory::GetForProfile(browser_context())
       ->SetContentSettingDefaultScope(requesting_origin, GURL(),
                                       ContentSettingsType::DURABLE_STORAGE,
                                       std::string(), content_setting);

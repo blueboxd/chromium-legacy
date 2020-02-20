@@ -6,12 +6,12 @@
 
 #include "base/logging.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/permissions/permission_request_id.h"
 #include "url/gurl.h"
 
-IdleDetectionPermissionContext::IdleDetectionPermissionContext(Profile* profile)
-    : PermissionContextBase(profile,
+IdleDetectionPermissionContext::IdleDetectionPermissionContext(
+    content::BrowserContext* browser_context)
+    : PermissionContextBase(browser_context,
                             ContentSettingsType::IDLE_DETECTION,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 

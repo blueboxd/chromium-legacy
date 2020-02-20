@@ -361,9 +361,6 @@ extern const base::Feature kPerAppTimeLimits;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES)
-extern const base::Feature kPermissionDelegation;
-
-COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes;
 
 COMPONENT_EXPORT(CHROME_FEATURES)

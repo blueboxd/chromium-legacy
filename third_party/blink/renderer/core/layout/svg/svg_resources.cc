@@ -302,28 +302,6 @@ InvalidationModeMask SVGResources::RemoveClientFromCacheAffectingObjectBounds(
   return invalidation_flags;
 }
 
-InvalidationModeMask SVGResources::RemoveClientFromCache(
-    SVGElementResourceClient& client) const {
-  if (!HasResourceData())
-    return 0;
-
-  // We never call this method for the elements where this would be non-null.
-  DCHECK(!linked_resource_);
-
-  InvalidationModeMask invalidation_flags =
-      RemoveClientFromCacheAffectingObjectBounds(client);
-
-  if (fill_stroke_data_) {
-    if (LayoutSVGResourcePaintServer* fill = fill_stroke_data_->fill)
-      fill->RemoveClientFromCache(client);
-    if (LayoutSVGResourcePaintServer* stroke = fill_stroke_data_->stroke)
-      stroke->RemoveClientFromCache(client);
-    invalidation_flags |= SVGResourceClient::kPaintInvalidation;
-  }
-
-  return invalidation_flags;
-}
-
 void SVGResources::ResourceDestroyed(LayoutSVGResourceContainer* resource) {
   DCHECK(resource);
   if (!HasResourceData())

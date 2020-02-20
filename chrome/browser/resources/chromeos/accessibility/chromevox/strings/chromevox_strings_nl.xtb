@@ -27,6 +27,7 @@
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, keuzelijst met invoervak</translation>
 <translation id="1161762950103988776">Jump</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, menu-item, met submenu</translation>
+<translation id="1175914831232945926">Cijfers</translation>
 <translation id="1177863135347784049">Aangepast</translation>
 <translation id="1188858454923323853">aanvullend</translation>
 <translation id="1195238899008218998">Nawoord</translation>
@@ -145,6 +146,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="1969092762068865084">juli</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1982529757455190616">Geen vorig punt om naar te springen</translation>
+<translation id="1988733631391393183">Braille-opdrachten weergeven in de ChromeVox-menu's</translation>
 <translation id="1990932729021763163">Koptekst rij:</translation>
 <translation id="2002895034995108595">Huidige toetsenindeling opnieuw instellen</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{vierkante haak links}other{# vierkante haken links}}</translation>
@@ -308,6 +310,7 @@ Als je klaar bent met de training, gebruik je ChromeVox om naar de knop Sluiten 
 <translation id="3109724472072898302">Samengevouwen</translation>
 <translation id="3112457281078985179">Gebruik Ctrl + Alt + Z om ChromVox in of uit te schakelen.</translation>
 <translation id="3128896337293924532">Geen volgend blok met geciteerde tekst</translation>
+<translation id="3131002934070407451">Nummers lezen als:</translation>
 <translation id="3134461040845705080">alleen-lezen</translation>
 <translation id="3137663468179739624">Olijf</translation>
 <translation id="3138767756593758860">Lijst met oriëntatiepunten weergeven</translation>
@@ -999,6 +1002,7 @@ Als je het menu van de Chrome-browser wilt openen, druk je op Alt + F.</translat
 <translation id="7968340748835037139">Donkergroen</translation>
 <translation id="7972507042926081808">Chocolade</translation>
 <translation id="7974390230414479278">Menu-item</translation>
+<translation id="8004507136466386272">Woorden</translation>
 <translation id="8007540374018858731">k3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{aanhalingsteken}other{# aanhalingstekens}}</translation>
 <translation id="8017588669690167134">Spraak uit</translation>

@@ -582,7 +582,6 @@ Pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchroni
 <translation id="5447765697759493033">Ce site ne sera pas traduit</translation>
 <translation id="545042621069398927">Accélération de votre téléchargement en cours…</translation>
 <translation id="5456381639095306749">Télécharger la page</translation>
-<translation id="5475862044948910901">Démarrer une séance de réalité augmentée?</translation>
 <translation id="548278423535722844">Ouvrir dans l'application Maps</translation>
 <translation id="5487521232677179737">Effacer les données</translation>
 <translation id="5494752089476963479">Bloquer les annonces sur les sites qui diffusent des annonces intrusives ou trompeuses</translation>
@@ -831,11 +830,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7352939065658542140">VIDÉO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Partager 1 élément sélectionné}one{Partager # élément sélectionné}other{Partager # éléments sélectionnés}}</translation>
 <translation id="7359002509206457351">Accéder aux modes de paiement</translation>
-<translation id="7365126855094612066">Pour la durée de cette session, le site sera en mesure de :
-• Créer une carte 3D de votre environnement
-• Faire le suivi du mouvement de l'appareil photo
-
-Le site n'obtient PAS l'accès à l'appareil photo. Vous seul pouvez visionner les images de l'appareil photo.</translation>
 <translation id="7375125077091615385">Type :</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>

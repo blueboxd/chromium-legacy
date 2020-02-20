@@ -31,14 +31,14 @@ class WebLayerMetricsServiceClient
   WebLayerMetricsServiceClient();
   ~WebLayerMetricsServiceClient() override;
 
-  // metrics::WebLayerMetricsServiceClient
+  // metrics::MetricsServiceClient
   int32_t GetProduct() override;
-  double GetSampleRate() override;
 
-  // metrics::MobileWebLayerMetricsServiceClient:
+  // metrics::AndroidMetricsServiceClient:
+  int GetSampleRatePerMille() override;
   void InitInternal() override;
   void OnMetricsStart() override;
-  double GetPackageNameLimitRate() override;
+  int GetPackageNameLimitRatePerMille() override;
   bool ShouldWakeMetricsService() override;
   bool CanRecordPackageNameForAppType() override;
   std::string GetAppPackageNameInternal() override;

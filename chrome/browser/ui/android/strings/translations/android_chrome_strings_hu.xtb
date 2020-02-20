@@ -137,6 +137,7 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# fájl}other{# fájl}}</translation>
 <translation id="2017836877785168846">Törli a címsávban található előzményeket és automatikus kiegészítéseket.</translation>
 <translation id="2021896219286479412">Teljes képernyős oldal vezérlői</translation>
+<translation id="2025115093177348061">Kiterjesztett valóság</translation>
 <translation id="2038563949887743358">Kapcsolja be az Asztali webhely kérése funkciót</translation>
 <translation id="2041019821020695769">Ahhoz, hogy a Chrome értesítéseket küldhessen, az értesítéseket az <ph name="BEGIN_LINK" />Android-beállítások<ph name="END_LINK" /> között is be kell kapcsolni.</translation>
 <translation id="204321170514947529">A(z) <ph name="APP_NAME" /> a Chrome-ban is rendelkezik adatokkal</translation>
@@ -150,6 +151,9 @@
 <translation id="2100273922101894616">Automatikus bejelentkezés</translation>
 <translation id="2100314319871056947">Próbálja meg kisebb részletekben megosztani a szöveget</translation>
 <translation id="2107397443965016585">Kérdezzen rá, mielőtt engedélyezné a webhelyek számára védett tartalmak lejátszását (ajánlott)</translation>
+<translation id="2109711654079915747">Többet is megtudhat a webhelyeken lévő egyes témákról anélkül, hogy elhagyná az adott oldalt. Az Érintéssel keresés funkció elküldi az adott szót és annak kontextusát a Google Keresés számára, majd meghatározásokat, képeket, keresési találatokat és egyéb részleteket jelenít meg.
+
+A kereséshez koppintson a kívánt szóra. A keresés finomításához ujja nyomva tartásával több vagy kevesebb szót is kiválaszthat. A keresés módosításához nyissa meg a panelt, koppintson az új lapon való megnyitás ikonjára, majd végezze el a módosításokat a keresőmezőben.</translation>
 <translation id="2111511281910874386">Ugrás az oldalhoz</translation>
 <translation id="2122601567107267586">Nem sikerült megnyitni az alkalmazást</translation>
 <translation id="2126426811489709554">A Chrome erejével</translation>
@@ -176,6 +180,7 @@
 <translation id="2321958826496381788">Húzza a csúszkát, amíg kényelmesen nem tudja olvasni a szöveget. A szövegnek legalább ekkorának kell lennie, miután duplán koppint egy bekezdésre.</translation>
 <translation id="2323763861024343754">Webhely tárhelye</translation>
 <translation id="2328985652426384049">Nem sikerült a bejelentkezés</translation>
+<translation id="234265804618409743">Nem lehet megnyitni a kamerát. Hiba történt.</translation>
 <translation id="2349710944427398404">A Chrome által használt teljes adatmennyiség, beleértve a fiókokat, könyvjelzőket és mentett beállításokat is</translation>
 <translation id="2353636109065292463">Az internetkapcsolat ellenőrzése</translation>
 <translation id="2359808026110333948">Tovább</translation>
@@ -192,6 +197,9 @@
 <translation id="2434158240863470628">Letöltés befejezve <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Helyhozzáférés</translation>
 <translation id="2450083983707403292">Szeretné újra elkezdeni a(z) <ph name="FILE_NAME" /> letöltését?</translation>
+<translation id="2450907520913474542">Többet is megtudhat a webhelyeken lévő egyes témákról anélkül, hogy elhagyná az adott oldalt. Az Érintéssel keresés funkció elküldi az adott szót és annak kontextusát a Google Keresés számára, majd meghatározásokat, képeket, keresési találatokat és egyéb részleteket jelenít meg.
+
+A kereséshez tartsa nyomva a kívánt szót. A keresés finomításához válasszon ki több vagy kevesebb szót. A keresés módosításához nyissa meg a panelt, koppintson az új lapon való megnyitás ikonjára, majd végezze el a módosításokat a keresőmezőben.</translation>
 <translation id="246532703174860178">Megosztás</translation>
 <translation id="2482878487686419369">Értesítések</translation>
 <translation id="2490684707762498678">Kezelő: <ph name="APP_NAME" /></translation>
@@ -423,6 +431,7 @@
 <translation id="4298388696830689168">Összekapcsolt webhelyek</translation>
 <translation id="4307992518367153382">Alapok</translation>
 <translation id="4314815835985389558">Szinkronizálás kezelése</translation>
+<translation id="4321739720395210191">Nem lehet megnyitni a kamerát. Indítsa újra az eszközt, és próbálkozzon újra.</translation>
 <translation id="4351244548802238354">Párbeszédablak bezárása</translation>
 <translation id="4353114845960720315">Amíg VR-módban van, a webhely információkhoz juthat bizonyos dolgokról:</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -469,6 +478,7 @@ Előfordulhat, hogy Google-fiókjában (a <ph name="BEGIN_LINK" />myactivity.goo
 <translation id="4660838440047236328">a szoba elrendezéséről.</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> könyvjelző törölve</translation>
 <translation id="4665282149850138822">A(z) <ph name="NAME" /> felkerült a kezdőképernyőre</translation>
+<translation id="4670064810192446073">Virtuális valóság</translation>
 <translation id="4684427112815847243">Az összes szinkronizálása</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 és további <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">SMS küldése az eszközeire</translation>
@@ -504,6 +514,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="4882831918239250449">Beállíthatja, hogy a rendszer hogyan szabja személyre a Keresést, a hirdetéseket és egyebeket a böngészési előzmények alapján</translation>
 <translation id="4883854917563148705">A kezelt beállításokat nem lehet visszaállítani</translation>
 <translation id="4885273946141277891">Ilyen sok Chrome-példány nem futhat egyszerre.</translation>
+<translation id="4887024562049524730">Kérdezzen rá, mielőtt engedélyezi a webhelyek számára a virtuálisvalóság-eszközök és -adatok használatát (ajánlott)</translation>
 <translation id="4910889077668685004">Fizetési alkalmazások</translation>
 <translation id="4913161338056004800">Statisztikák alaphelyzetbe állítása</translation>
 <translation id="4913169188695071480">Frissítés leállítása</translation>
@@ -582,7 +593,6 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5447765697759493033">Nem fordítjuk le ezt a webhelyet</translation>
 <translation id="545042621069398927">Letöltés felgyorsítása…</translation>
 <translation id="5456381639095306749">Oldal letöltése</translation>
-<translation id="5475862044948910901">Elindítja a kiterjesztett valóságot (AR) használó munkamenetet?</translation>
 <translation id="548278423535722844">Megnyitás térképalkalmazásban</translation>
 <translation id="5487521232677179737">Adatok törlése</translation>
 <translation id="5494752089476963479">Hirdetések letiltása a tolakodó és félrevezető hirdetéseket megjelenítő webhelyeken</translation>
@@ -623,6 +633,7 @@ A beállítás módosításához <ph name="BEGIN_LINK" />állítsa vissza a szin
 <translation id="5710871682236653961">Kérdezzen rá, mielőtt engedélyezi a webhelyek számára az adatok küldését és fogadását, amikor NFC-eszközökre koppint (javasolt)</translation>
 <translation id="572328651809341494">Nemrég megnyitott lapok</translation>
 <translation id="5726692708398506830">Minden nagyítása az oldalon</translation>
+<translation id="5735071096924648956">A kamerapozíció követésének, illetve a helyiség feltérképezésének letiltása a webhelyek számára</translation>
 <translation id="5748802427693696783">Szabványos lapokra váltva</translation>
 <translation id="5749068826913805084">A Chrome-nak tárhelyhozzáférésre van szüksége a fájlok letöltéséhez.</translation>
 <translation id="5763382633136178763">Inkognitólapok</translation>
@@ -693,6 +704,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6277522088822131679">Hiba történt az oldal nyomtatásakor. Próbálja újra.</translation>
 <translation id="6295158916970320988">Az összes webhely</translation>
 <translation id="629730747756840877">Fiók</translation>
+<translation id="6297765934698848803">Az eszközét kezelő szervezet kikapcsolta a kamerát.</translation>
 <translation id="6303969859164067831">Kijelentkezés, és a szinkronizálás kikapcsolása</translation>
 <translation id="6316139424528454185">Nem támogatott Android-verzió</translation>
 <translation id="6320088164292336938">Rezgés</translation>
@@ -715,11 +727,13 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="6427112570124116297">Lefordíthatja az internetet</translation>
 <translation id="6433501201775827830">Keresőmotor kiválasztása</translation>
 <translation id="6437478888915024427">Oldaladatok</translation>
+<translation id="6439114592976064011">A virtuálisvalóság-eszközök és -adatok használatának letiltása a webhelyek számára</translation>
 <translation id="6441734959916820584">Túl hosszú a név</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# kép}other{# kép}}</translation>
 <translation id="6447558397796644647">A könyvjelző nem található. Ellenőrizze, hogy helyes-e az írásmódja, vagy adjon hozzá új könyvjelzőt.</translation>
 <translation id="6447842834002726250">Cookie-k</translation>
 <translation id="6461962085415701688">A fájlt nem lehet megnyitni</translation>
+<translation id="6462660325961255024">Kérdezzen rá, mielőtt engedélyezi a webhelyek számára a kamera pozíciójának követését vagy a helyiség feltérképezését (ajánlott)</translation>
 <translation id="6464977750820128603">Megnézheti a Chrome böngészővel felkeresett webhelyeket, és beállíthat hozzájuk időzítéseket.\n\nAz időzítéssel ellátott webhelyek adatait és a látogatás hosszát megkapja a Google. Ezek az adatok a digitális jóllét funkció továbbfejlesztésére szolgálnak.</translation>
 <translation id="6475951671322991020">Videó letöltése</translation>
 <translation id="6482749332252372425">A következő fájl letöltése tárhelyhiány miatt nem sikerült: <ph name="FILE_NAME" />.</translation>
@@ -831,11 +845,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7352939065658542140">VIDEÓ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 kijelölt elem megosztása}other{# kijelölt elem megosztása}}</translation>
 <translation id="7359002509206457351">Hozzáférés a fizetési módokhoz</translation>
-<translation id="7365126855094612066">A jelen munkamenet során a webhely a következőkre lesz képes:
-• 3D-s térképet készíthet az Ön környezetéről;
-• követheti a kamera mozgását.
-
-A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthatja.</translation>
 <translation id="7375125077091615385">Típus:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -912,6 +921,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="7942131818088350342">A(z) <ph name="PRODUCT_NAME" /> elavult.</translation>
 <translation id="7947953824732555851">Elfogadás és bejelentkezés</translation>
 <translation id="7963646190083259054">Szolgáltató:</translation>
+<translation id="7967911570373677897">QR-kód beolvasásához engedélyezze a beállításokban a Chrome számára a kamera használatát</translation>
 <translation id="7971136598759319605">1 napja volt aktív</translation>
 <translation id="7975379999046275268">Oldal előnézete <ph name="BEGIN_NEW" />Új<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Oldalak előtöltése a gyorsabb böngészés és keresés érdekében</translation>
@@ -957,6 +967,7 @@ A webhely NEM kap hozzáférést a kamerához. A kamera képét csak Ön láthat
 <translation id="8218622182176210845">Fiók kezelése</translation>
 <translation id="8224471946457685718">Cikkek letöltése Wi-Fi-kapcsolaton keresztül</translation>
 <translation id="8232956427053453090">Adatok megőrzése</translation>
+<translation id="8233540874193135768">QR-kód beolvasásához kamerával rendelkező telefont használjon.</translation>
 <translation id="8250920743982581267">Dokumentumok</translation>
 <translation id="825412236959742607">Ez az oldal túl sok memóriát használ, ezért a Chrome eltávolított egyes tartalmakat.</translation>
 <translation id="8260126382462817229">Próbáljon meg újra bejelentkezni</translation>

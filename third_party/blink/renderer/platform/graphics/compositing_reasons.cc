@@ -36,7 +36,7 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
     {CompositingReason::kActiveBackdropFilterAnimation,
      "activeBackdropFilterAnimation",
      "Has an active accelerated backdrop filter animation or transition"},
-    {CompositingReason::kImmersiveArOverlay, "immersiveArOverlay",
+    {CompositingReason::kXrOverlay, "xrOverlay",
      "Is DOM overlay for WebXR immersive-ar mode"},
     {CompositingReason::kScrollDependentPosition, "scrollDependentPosition",
      "Is fixed or sticky position"},

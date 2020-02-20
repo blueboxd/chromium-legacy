@@ -171,7 +171,7 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoSlotted:
     case CSSSelector::kPseudoVideoPersistent:
     case CSSSelector::kPseudoVideoPersistentAncestor:
-    case CSSSelector::kPseudoXrImmersiveDomOverlay:
+    case CSSSelector::kPseudoXrOverlay:
       return true;
     case CSSSelector::kPseudoIs:
     case CSSSelector::kPseudoWhere:
@@ -553,7 +553,7 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoDefined:
       case CSSSelector::kPseudoVideoPersistent:
       case CSSSelector::kPseudoVideoPersistentAncestor:
-      case CSSSelector::kPseudoXrImmersiveDomOverlay:
+      case CSSSelector::kPseudoXrOverlay:
       case CSSSelector::kPseudoSpatialNavigationInterest:
       case CSSSelector::kPseudoMultiSelectFocus:
         return &EnsurePseudoInvalidationSet(selector.GetPseudoType(), type,

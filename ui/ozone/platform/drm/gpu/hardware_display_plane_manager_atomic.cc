@@ -127,16 +127,20 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
 
   for (HardwareDisplayPlane* plane : plane_list->old_plane_list) {
     if (!base::Contains(plane_list->plane_list, plane)) {
-      if (plane->in_use()) {
-        // This plane is being released, so we need to zero it.
-        plane->set_in_use(false);
-        HardwareDisplayPlaneAtomic* atomic_plane =
-            static_cast<HardwareDisplayPlaneAtomic*>(plane);
-        atomic_plane->SetPlaneData(plane_list->atomic_property_set.get(), 0, 0,
-                                   gfx::Rect(), gfx::Rect(),
-                                   gfx::OVERLAY_TRANSFORM_NONE,
-                                   base::kInvalidPlatformFile);
-      }
+      // |plane| is shared state between |old_plane_list| and |plane_list|.
+      // When we call BeginFrame(), we reset in_use since we need to be able to
+      // allocate the planes as needed. The current frame might not need to use
+      // |plane|, thus |plane->in_use()| would be false even though the previous
+      // frame used it. It's existence in |old_plane_list| is sufficient to
+      // signal that |plane| was in use previously.
+      // TODO(markyacoub): Add a unittest that planes should be reset whether
+      // they're originally in_use or not.
+      plane->set_in_use(false);
+      HardwareDisplayPlaneAtomic* atomic_plane =
+          static_cast<HardwareDisplayPlaneAtomic*>(plane);
+      atomic_plane->SetPlaneData(
+          plane_list->atomic_property_set.get(), 0, 0, gfx::Rect(), gfx::Rect(),
+          gfx::OVERLAY_TRANSFORM_NONE, base::kInvalidPlatformFile);
     }
   }
 

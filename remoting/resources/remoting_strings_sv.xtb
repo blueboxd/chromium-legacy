@@ -305,6 +305,11 @@ Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och
 <translation id="8196755618196986400">Din e-postadress skickas tillsammans med din feedback så att vi kan kontakta dig om vi behöver mer information.</translation>
 <translation id="8244400547700556338">Läs mer.</translation>
 <translation id="8261506727792406068">Radera</translation>
+<translation id="8295077433896346116">Om du vill använda <ph name="PRODUCT_NAME" /> måste du ge behörigheten Tillgänglighet så att indata från fjärrdatorn kan injiceras på denna Mac.
+
+Du beviljar behörigheten genom att klicka på <ph name="BUTTON_NAME" /> nedan så att inställningsrutan för Tillgänglighet öppnas. Sedan markerar du kryssrutan vid <ph name="SERVICE_SCRIPT_NAME" />.
+
+Om <ph name="SERVICE_SCRIPT_NAME" /> redan har markerats avmarkerar du rutan och markerar den på nytt.</translation>
 <translation id="8355326866731426344">Åtkomstkoden upphör att gälla om <ph name="TIMEOUT" /></translation>
 <translation id="8355485110405946777">Bifoga programloggar som en hjälp för oss att åtgärda problemet (loggar kan innehålla privata uppgifter).</translation>
 <translation id="837021510621780684">Från den här datorn</translation>

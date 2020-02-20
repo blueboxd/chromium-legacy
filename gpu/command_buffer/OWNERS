@@ -7,4 +7,9 @@ zmo@chromium.org
 per-file *gpu_memory_buffer*=reveman@chromium.org
 per-file *gpu_memory_buffer*=dcastagna@chromium.org
 
+# For Dawn / WebGPU changes
+cwallez@chromium.org
+enga@chromium.org
+kainino@chromium.org
+
 # COMPONENT: Internals>GPU>Internals

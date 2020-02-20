@@ -33,6 +33,8 @@ import org.chromium.device.mojom.NdefWriteOptions;
 import org.chromium.device.mojom.Nfc;
 import org.chromium.device.mojom.NfcClient;
 import org.chromium.mojo.bindings.Callbacks;
+import org.chromium.mojo.bindings.InterfaceRequest;
+import org.chromium.mojo.bindings.Router;
 import org.chromium.mojo.system.MojoException;
 
 import java.io.IOException;
@@ -49,6 +51,8 @@ public class NfcImpl implements Nfc {
     private final int mHostId;
 
     private final NfcDelegate mDelegate;
+
+    private Router mRouter;
 
     /**
      * Used to get instance of NFC adapter, @see android.nfc.NfcManager
@@ -113,9 +117,15 @@ public class NfcImpl implements Nfc {
      */
     private Vibrator mVibrator;
 
-    public NfcImpl(int hostId, NfcDelegate delegate) {
+    public NfcImpl(int hostId, NfcDelegate delegate, InterfaceRequest<Nfc> request) {
         mHostId = hostId;
         mDelegate = delegate;
+
+        // |request| may be null in tests.
+        if (request != null) {
+            mRouter = Nfc.MANAGER.bind(this, request);
+        }
+
         int permission = ContextUtils.getApplicationContext().checkPermission(
                 Manifest.permission.NFC, Process.myPid(), Process.myUid());
         mHasPermission = permission == PackageManager.PERMISSION_GRANTED;
@@ -155,6 +165,17 @@ public class NfcImpl implements Nfc {
         disableReaderMode();
         mActivity = activity;
         enableReaderModeIfNeeded();
+    }
+
+    /**
+     * Forces the Mojo connection to this object to be closed. This will trigger a call to close()
+     * so that pending NFC operations are canceled.
+     */
+    public void closeMojoConnection() {
+        if (mRouter != null) {
+            mRouter.close();
+            mRouter = null;
+        }
     }
 
     /**

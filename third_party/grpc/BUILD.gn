@@ -39,6 +39,8 @@ static_library("grpcpp") {
   # chrome-security-reviews@ first before you decide to use gRPC.
   visibility = [
     "//chromecast/*",
+    "//chromeos/assistant/internal/*",
+    "//chromeos/services/assistant/*",
     "//remoting/*",
   ]
   sources = [

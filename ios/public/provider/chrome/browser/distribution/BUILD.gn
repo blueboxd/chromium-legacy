@@ -10,16 +10,3 @@ source_set("distribution") {
   ]
   deps = [ "//base" ]
 }
-
-source_set("test_support") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  testonly = true
-  sources = [
-    "test_app_distribution_provider.h",
-    "test_app_distribution_provider.mm",
-  ]
-  deps = [
-    ":distribution",
-    "//base",
-  ]
-}

@@ -13,22 +13,27 @@
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/textfield/textfield_controller.h"
+#include "ui/views/view_observer.h"
 
 namespace ash {
 
 class CloseDeskButton;
-class DesksBarView;
+class DeskNameView;
 class DeskPreviewView;
+class DesksBarView;
 
 // A view that acts as a mini representation (a.k.a. desk thumbnail) of a
 // virtual desk in the desk bar view when overview mode is active. This view
 // shows a preview of the contents of the associated desk, its title, and
 // supports desk activation and removal.
 class ASH_EXPORT DeskMiniView
-    : public views::Button,
+    : public views::View,
       public views::ButtonListener,
       public Desk::Observer,
-      public OverviewHighlightController::OverviewHighlightableView {
+      public OverviewHighlightController::OverviewHighlightableView,
+      public views::TextfieldController,
+      public views::ViewObserver {
  public:
   DeskMiniView(DesksBarView* owner_bar, aura::Window* root_window, Desk* desk);
   ~DeskMiniView() override;
@@ -37,6 +42,8 @@ class ASH_EXPORT DeskMiniView
 
   Desk* desk() { return desk_; }
 
+  DeskNameView* desk_name_view() { return desk_name_view_; }
+
   const CloseDeskButton* close_desk_button() const {
     return close_desk_button_;
   }
@@ -44,6 +51,10 @@ class ASH_EXPORT DeskMiniView
   // Returns the associated desk's container window on the display this
   // mini_view resides on.
   aura::Window* GetDeskContainer() const;
+
+  // Returns true if the desk's name is being modified (i.e. the DeskNameView
+  // has the focus).
+  bool IsDeskNameBeingModified() const;
 
   // Updates the visibility state of the close button depending on whether this
   // view is mouse hovered.
@@ -79,6 +90,16 @@ class ASH_EXPORT DeskMiniView
   void OnViewHighlighted() override;
   void OnViewUnhighlighted() override;
 
+  // views::TextfieldController:
+  void ContentsChanged(views::Textfield* sender,
+                       const base::string16& new_contents) override;
+  bool HandleKeyEvent(views::Textfield* sender,
+                      const ui::KeyEvent& key_event) override;
+
+  // views::ViewObserver:
+  void OnViewFocused(views::View* observed_view) override;
+  void OnViewBlurred(views::View* observed_view) override;
+
   bool IsPointOnMiniView(const gfx::Point& screen_location) const;
 
   // Gets the minimum width of this view to properly lay out all its contents in
@@ -87,13 +108,15 @@ class ASH_EXPORT DeskMiniView
   // function to decide its own proper size or layout.
   int GetMinWidthForDefaultLayout() const;
 
-  bool IsLabelVisibleForTesting() const { return label_->GetVisible(); }
+  bool IsDeskNameViewVisibleForTesting() const;
   const DeskPreviewView* GetDeskPreviewForTesting() const {
     return desk_preview_.get();
   }
 
  private:
   void OnCloseButtonPressed();
+
+  void OnDeskPreviewPressed();
 
   DesksBarView* const owner_bar_;
 
@@ -108,15 +131,17 @@ class ASH_EXPORT DeskMiniView
   // The view that shows a preview of the desk contents.
   std::unique_ptr<DeskPreviewView> desk_preview_;
 
-  // The desk title.
-  views::Label* label_;
+  // The editable desk name.
+  DeskNameView* const desk_name_view_;
 
   // The close button that shows on hover.
-  CloseDeskButton* close_desk_button_;
+  CloseDeskButton* const close_desk_button_;
 
   // We force showing the close button when the mini_view is long pressed or
   // tapped using touch gestures.
   bool force_show_close_button_ = false;
+
+  bool is_desk_name_being_modified_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DeskMiniView);
 };

@@ -10,9 +10,10 @@
 
 // static
 scoped_refptr<FlashTemporaryPermissionTracker>
-FlashTemporaryPermissionTrackerFactory::GetForProfile(Profile* profile) {
+FlashTemporaryPermissionTrackerFactory::GetForBrowserContext(
+    content::BrowserContext* browser_context) {
   return static_cast<FlashTemporaryPermissionTracker*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true).get());
+      GetInstance()->GetServiceForBrowserContext(browser_context, true).get());
 }
 
 // static

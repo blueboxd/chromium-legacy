@@ -207,7 +207,7 @@ struct StructTraits<gfx::mojom::NativePixmapPlaneDataView,
   static uint64_t size(const gfx::NativePixmapPlane& plane) {
     return plane.size;
   }
-  static mojo::ScopedHandle buffer_handle(gfx::NativePixmapPlane& plane);
+  static mojo::PlatformHandle buffer_handle(gfx::NativePixmapPlane& plane);
   static bool Read(gfx::mojom::NativePixmapPlaneDataView data,
                    gfx::NativePixmapPlane* out);
 };

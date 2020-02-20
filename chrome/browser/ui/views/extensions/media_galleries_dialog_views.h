@@ -47,8 +47,6 @@ class MediaGalleriesDialogViews : public MediaGalleriesDialog,
   views::View* GetContentsView() override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   ui::ModalType GetModalType() const override;
-  bool Cancel() override;
-  bool Accept() override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;

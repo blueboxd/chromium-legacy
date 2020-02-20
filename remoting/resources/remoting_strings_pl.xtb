@@ -305,6 +305,11 @@ Jeśli opcja „<ph name="SERVICE_SCRIPT_NAME" />” jest już zaznaczona, odzna
 <translation id="8196755618196986400">Aby umożliwić nam skontaktowanie się z Tobą w sprawie dodatkowych informacji, Twój adres e-mail zostanie dołączony do każdego zgłoszenia, które prześlesz.</translation>
 <translation id="8244400547700556338">Instrukcje</translation>
 <translation id="8261506727792406068">Usuń</translation>
+<translation id="8295077433896346116">Aby korzystać z usługi <ph name="PRODUCT_NAME" />, musisz przyznać uprawnienie „Ułatwienia dostępu”. Umożliwi to przesyłanie danych wejściowych z komputera zdalnego na tego Maca.
+
+Kliknij przycisk „<ph name="BUTTON_NAME" />” poniżej, by otworzyć okienko ustawień „Ułatwienia dostępu”, a potem zaznacz pole obok opcji „<ph name="SERVICE_SCRIPT_NAME" />”.
+
+Jeśli opcja „<ph name="SERVICE_SCRIPT_NAME" />” jest już zaznaczona, odznacz ją i zaznacz jeszcze raz.</translation>
 <translation id="8355326866731426344">Ten kod dostępu wygasa za <ph name="TIMEOUT" /></translation>
 <translation id="8355485110405946777">Dołącz dzienniki aplikacji, by pomóc nam rozwiązać ten problem (dzienniki mogą zawierać informacje prywatne).</translation>
 <translation id="837021510621780684">Z tego komputera</translation>

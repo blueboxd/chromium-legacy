@@ -297,7 +297,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoSlotted:
     case kPseudoVideoPersistent:
     case kPseudoVideoPersistentAncestor:
-    case kPseudoXrImmersiveDomOverlay:
+    case kPseudoXrOverlay:
       return kPseudoIdNone;
   }
 
@@ -331,8 +331,6 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"-internal-video-persistent", CSSSelector::kPseudoVideoPersistent},
     {"-internal-video-persistent-ancestor",
      CSSSelector::kPseudoVideoPersistentAncestor},
-    {"-internal-xr-immersive-dom-overlay",
-     CSSSelector::kPseudoXrImmersiveDomOverlay},
     {"-webkit-any-link", CSSSelector::kPseudoWebkitAnyLink},
     {"-webkit-autofill", CSSSelector::kPseudoAutofill},
     {"-webkit-drag", CSSSelector::kPseudoDrag},
@@ -410,6 +408,7 @@ const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"vertical", CSSSelector::kPseudoVertical},
     {"visited", CSSSelector::kPseudoVisited},
     {"window-inactive", CSSSelector::kPseudoWindowInactive},
+    {"xr-overlay", CSSSelector::kPseudoXrOverlay},
 };
 
 const static NameToPseudoStruct kPseudoTypeWithArgumentsMap[] = {
@@ -597,7 +596,6 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoSpatialNavigationInterest:
     case kPseudoVideoPersistent:
     case kPseudoVideoPersistentAncestor:
-    case kPseudoXrImmersiveDomOverlay:
       if (mode != kUASheetMode) {
         pseudo_type_ = kPseudoUnknown;
         break;
@@ -673,6 +671,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoVisited:
     case kPseudoWebkitAnyLink:
     case kPseudoWindowInactive:
+    case kPseudoXrOverlay:
       if (match_ != kPseudoClass)
         pseudo_type_ = kPseudoUnknown;
       break;

@@ -14,6 +14,7 @@
 class Profile;
 
 namespace content {
+class BrowserContext;
 class WebContents;
 }  // namespace content
 
@@ -23,7 +24,8 @@ class WebContents;
 // origin are destroyed. |IsFlashEnabled| can be called from any thread.
 class FlashTemporaryPermissionTracker : public RefcountedKeyedService {
  public:
-  static scoped_refptr<FlashTemporaryPermissionTracker> Get(Profile* profile);
+  static scoped_refptr<FlashTemporaryPermissionTracker> Get(
+      content::BrowserContext* browser_context);
 
   // Returns true if Flash is enabled for a given |url|. Can be called from any
   // thread.

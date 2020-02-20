@@ -7,10 +7,10 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
+#include "components/permissions/features.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/test/mock_permission_prompt_factory.h"
 #include "content/public/test/browser_test_utils.h"
@@ -22,7 +22,8 @@ class PermissionDelegationBrowserTest : public InProcessBrowserTest {
   PermissionDelegationBrowserTest()
       : geolocation_overrider_(
             std::make_unique<device::ScopedGeolocationOverrider>(0, 0)) {
-    scoped_feature_list_.InitAndEnableFeature(features::kPermissionDelegation);
+    scoped_feature_list_.InitAndEnableFeature(
+        permissions::features::kPermissionDelegation);
   }
 
   ~PermissionDelegationBrowserTest() override = default;

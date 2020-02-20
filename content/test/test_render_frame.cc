@@ -291,10 +291,6 @@ void TestRenderFrame::CollapseSelection() {
   GetFrameInputHandler()->CollapseSelection();
 }
 
-void TestRenderFrame::SetAccessibilityMode(ui::AXMode new_mode) {
-  OnSetAccessibilityMode(new_mode);
-}
-
 void TestRenderFrame::SetCompositionFromExistingText(
     int start,
     int end,

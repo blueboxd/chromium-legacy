@@ -6,11 +6,13 @@
 #define CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_PERMISSION_CONTEXT_H_
 
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_context_base.h"
+#include "components/permissions/permission_context_base.h"
 
-class AccessibilityPermissionContext : public PermissionContextBase {
+class AccessibilityPermissionContext
+    : public permissions::PermissionContextBase {
  public:
-  explicit AccessibilityPermissionContext(Profile* profile);
+  explicit AccessibilityPermissionContext(
+      content::BrowserContext* browser_context);
   ~AccessibilityPermissionContext() override;
 
  private:

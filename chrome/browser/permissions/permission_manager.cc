@@ -25,7 +25,6 @@
 #include "chrome/browser/media/webrtc/media_stream_device_permission_context.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
 #include "chrome/browser/payments/payment_handler_permission_context.h"
-#include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -35,10 +34,11 @@
 #include "chrome/browser/vr/webxr_permission_context.h"
 #include "chrome/browser/wake_lock/wake_lock_permission_context.h"
 #include "chrome/common/buildflags.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/features.h"
+#include "components/permissions/permission_context_base.h"
 #include "components/permissions/permission_request_id.h"
 #include "components/permissions/permission_result.h"
 #include "components/permissions/permission_uma_util.h"
@@ -424,7 +424,8 @@ GURL PermissionManager::GetCanonicalOrigin(ContentSettingsType permission,
   if (permission == ContentSettingsType::STORAGE_ACCESS)
     return requesting_origin;
 
-  if (base::FeatureList::IsEnabled(features::kPermissionDelegation)) {
+  if (base::FeatureList::IsEnabled(
+          permissions::features::kPermissionDelegation)) {
     // Once permission delegation is enabled by default, it may be possible to
     // remove "embedding_origin" as a parameter from all function calls in
     // PermissionContextBase and subclasses. The embedding origin will always
@@ -491,7 +492,8 @@ int PermissionManager::RequestPermissions(
       continue;
     }
 
-    PermissionContextBase* context = GetPermissionContext(permission);
+    permissions::PermissionContextBase* context =
+        GetPermissionContext(permission);
     DCHECK(context);
 
     context->RequestPermission(
@@ -516,7 +518,8 @@ permissions::PermissionResult PermissionManager::GetPermissionStatus(
   // called for the top level origin (or a service worker origin).
   // GetPermissionStatusForFrame should be called when to determine the status
   // for an embedded frame.
-  DCHECK(!base::FeatureList::IsEnabled(features::kPermissionDelegation) ||
+  DCHECK(!base::FeatureList::IsEnabled(
+             permissions::features::kPermissionDelegation) ||
          requesting_origin == embedding_origin);
 
   return GetPermissionStatusHelper(permission, nullptr /* render_frame_host */,
@@ -565,7 +568,7 @@ int PermissionManager::RequestPermissions(
                      std::move(callback)));
 }
 
-PermissionContextBase* PermissionManager::GetPermissionContext(
+permissions::PermissionContextBase* PermissionManager::GetPermissionContext(
     ContentSettingsType type) {
   const auto& it = permission_contexts_.find(type);
   return it == permission_contexts_.end() ? nullptr : it->second.get();
@@ -593,7 +596,7 @@ void PermissionManager::ResetPermission(PermissionType permission,
                                         const GURL& embedding_origin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ContentSettingsType type = PermissionTypeToContentSetting(permission);
-  PermissionContextBase* context = GetPermissionContext(type);
+  permissions::PermissionContextBase* context = GetPermissionContext(type);
   if (!context)
     return;
   context->ResetPermission(
@@ -612,7 +615,7 @@ PermissionStatus PermissionManager::GetPermissionStatus(
   ContentSettingsType type = PermissionTypeToContentSetting(permission);
   // TODO(benwells): split this into two functions, GetPermissionStatus and
   // GetPermissionStatusForPermissionsAPI.
-  PermissionContextBase* context = GetPermissionContext(type);
+  permissions::PermissionContextBase* context = GetPermissionContext(type);
   if (context) {
     result = context->UpdatePermissionStatusWithDeviceStatus(
         result, GetCanonicalOrigin(type, requesting_origin, embedding_origin),
@@ -633,7 +636,7 @@ PermissionStatus PermissionManager::GetPermissionStatusForFrame(
 
   // TODO(benwells): split this into two functions, GetPermissionStatus and
   // GetPermissionStatusForPermissionsAPI.
-  PermissionContextBase* context =
+  permissions::PermissionContextBase* context =
       GetPermissionContext(PermissionTypeToContentSetting(permission));
   if (context) {
     content::WebContents* web_contents =
@@ -651,7 +654,7 @@ bool PermissionManager::IsPermissionOverridableByDevTools(
     content::PermissionType permission,
     const url::Origin& origin) {
   ContentSettingsType type = PermissionTypeToContentSettingSafe(permission);
-  PermissionContextBase* context = GetPermissionContext(type);
+  permissions::PermissionContextBase* context = GetPermissionContext(type);
 
   return context && !context->IsPermissionKillSwitchOn() &&
          context->IsPermissionAvailableToOrigins(origin.GetURL(),
@@ -794,7 +797,8 @@ permissions::PermissionResult PermissionManager::GetPermissionStatusHelper(
   if (status != CONTENT_SETTING_DEFAULT)
     return permissions::PermissionResult(
         status, permissions::PermissionStatusSource::UNSPECIFIED);
-  PermissionContextBase* context = GetPermissionContext(permission);
+  permissions::PermissionContextBase* context =
+      GetPermissionContext(permission);
   permissions::PermissionResult result = context->GetPermissionStatus(
       render_frame_host, canonical_requesting_origin.GetOrigin(),
       embedding_origin.GetOrigin());

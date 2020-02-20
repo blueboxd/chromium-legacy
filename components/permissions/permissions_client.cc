@@ -69,4 +69,10 @@ base::Optional<url::Origin> PermissionsClient::GetAutoApprovalOrigin() {
   return base::nullopt;
 }
 
+bool PermissionsClient::CanBypassEmbeddingOriginCheck(
+    const GURL& requesting_origin,
+    const GURL& embedding_origin) {
+  return false;
+}
+
 }  // namespace permissions

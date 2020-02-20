@@ -13,8 +13,8 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.chrome.browser.contextmenu.ContextMenuHelper;
 import org.chromium.chrome.browser.contextmenu.ContextMenuItem;
-import org.chromium.chrome.browser.contextmenu.ContextMenuParams;
 import org.chromium.chrome.browser.contextmenu.ContextMenuPopulator;
+import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 
 import java.util.List;
 

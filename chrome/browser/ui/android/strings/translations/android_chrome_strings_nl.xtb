@@ -137,6 +137,7 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# bestand}other{# bestanden}}</translation>
 <translation id="2017836877785168846">Wist de geschiedenis en automatische aanvullingen in de adresbalk.</translation>
 <translation id="2021896219286479412">Siteopties op volledig scherm</translation>
+<translation id="2025115093177348061">Augmented reality</translation>
 <translation id="2038563949887743358">'Desktopsite aanvragen' inschakelen</translation>
 <translation id="2041019821020695769">Als je wilt dat Chrome je meldingen stuurt, moet je meldingen ook inschakelen via de <ph name="BEGIN_LINK" />Android-instellingen<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529"><ph name="APP_NAME" /> heeft ook gegevens in Chrome</translation>
@@ -150,6 +151,9 @@
 <translation id="2100273922101894616">Automatisch inloggen</translation>
 <translation id="2100314319871056947">Verdeel de tekst in kleinere stukken en deel in meerdere keren.</translation>
 <translation id="2107397443965016585">Vragen voordat sites beschermde content mogen afspelen (aanbevolen)</translation>
+<translation id="2109711654079915747">Bekijk informatie over onderwerpen op websites zonder de pagina te verlaten. 'Tikken om te zoeken' stuurt een woord en contextuele informatie voor het woord naar Google Zoeken, waarna er definities, afbeeldingen, zoekresultaten en andere gegevens worden weergegeven.
+
+Tik op een woord om te zoeken. Je kunt je zoekopdracht verfijnen door te tikken en vast te houden om meer of minder woorden te selecteren. Als je je zoekopdracht wilt bewerken, open je het deelvenster. Tik op het icoon voor openen in een nieuw tabblad en breng je wijzigingen aan in het zoekvak.</translation>
 <translation id="2111511281910874386">Ga naar pagina</translation>
 <translation id="2122601567107267586">Kan app niet openen</translation>
 <translation id="2126426811489709554">Mogelijk gemaakt door Chrome</translation>
@@ -176,6 +180,7 @@
 <translation id="2321958826496381788">Sleep de schuifknop tot je deze tekst prettig kunt lezen. De tekst moet minimaal deze grootte hebben nadat je op een alinea hebt gedubbeltikt.</translation>
 <translation id="2323763861024343754">Site-opslag</translation>
 <translation id="2328985652426384049">Kan niet inloggen</translation>
+<translation id="234265804618409743">Kan de camera niet openen. Er is iets misgegaan.</translation>
 <translation id="2349710944427398404">Totale gegevens gebruikt door Chrome, inclusief accounts, bladwijzers en opgeslagen instellingen</translation>
 <translation id="2353636109065292463">Je internetverbinding controleren…</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
@@ -192,6 +197,9 @@
 <translation id="2434158240863470628">Download voltooid <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Locatietoegang</translation>
 <translation id="2450083983707403292">Wil je het downloaden van <ph name="FILE_NAME" /> opnieuw starten?</translation>
+<translation id="2450907520913474542">Bekijk informatie over onderwerpen op websites zonder de pagina te verlaten. 'Tikken om te zoeken' stuurt een woord en contextuele informatie voor het woord naar Google Zoeken, waarna er definities, afbeeldingen, zoekresultaten en andere gegevens worden weergegeven.
+
+Tik op een woord en houd dit vast om te zoeken. Selecteer meer of minder woorden om je zoekopdracht te verfijnen. Als je je zoekopdracht wilt bewerken, open je het deelvenster. Tik op het icoon voor openen in een nieuw tabblad en breng je wijzigingen aan in het zoekvak.</translation>
 <translation id="246532703174860178">Delen</translation>
 <translation id="2482878487686419369">Meldingen</translation>
 <translation id="2490684707762498678">Beheerd door <ph name="APP_NAME" /></translation>
@@ -423,6 +431,7 @@
 <translation id="4298388696830689168">Gekoppelde sites</translation>
 <translation id="4307992518367153382">Basisinstellingen</translation>
 <translation id="4314815835985389558">Synchronisatie beheren</translation>
+<translation id="4321739720395210191">Kan de camera niet openen. Start het apparaat opnieuw op en probeer het nogmaals.</translation>
 <translation id="4351244548802238354">Dialoogvenster sluiten</translation>
 <translation id="4353114845960720315">Als VR actief is, kan deze site mogelijk informatie verzamelen over het volgende:</translation>
 <translation id="4378154925671717803">Telefoon</translation>
@@ -469,6 +478,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4660838440047236328">de indeling van je kamer</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> bladwijzers verwijderd</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> is toegevoegd aan je startscherm</translation>
+<translation id="4670064810192446073">Virtual reality</translation>
 <translation id="4684427112815847243">Alles synchroniseren</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> andere}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 en nog <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> andere}}</translation>
 <translation id="4696983787092045100">Tekst naar je apparaten verzenden</translation>
@@ -504,6 +514,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="4882831918239250449">Beheren hoe je browsegeschiedenis wordt gebruikt om Google Zoeken, advertenties en meer te personaliseren</translation>
 <translation id="4883854917563148705">Beheerde instellingen kunnen niet worden gereset</translation>
 <translation id="4885273946141277891">Niet-ondersteund aantal Chrome-instanties.</translation>
+<translation id="4887024562049524730">Vragen voordat sites je virtual reality-apparaat en -gegevens mogen gebruiken (aanbevolen)</translation>
 <translation id="4910889077668685004">Betaal-apps</translation>
 <translation id="4913161338056004800">Statistieken resetten</translation>
 <translation id="4913169188695071480">Vernieuwen stopzetten</translation>
@@ -582,7 +593,6 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5447765697759493033">Deze site wordt niet vertaald</translation>
 <translation id="545042621069398927">Je download wordt versneld.</translation>
 <translation id="5456381639095306749">Pagina downloaden</translation>
-<translation id="5475862044948910901">Augmented reality-sessie starten?</translation>
 <translation id="548278423535722844">Openen in app voor passen</translation>
 <translation id="5487521232677179737">Gegevens wissen</translation>
 <translation id="5494752089476963479">Advertenties blokkeren op sites die opdringerige of misleidende advertenties weergeven</translation>
@@ -623,6 +633,7 @@ Voor je Google-account kunnen andere vormen van browsegeschiedenis (zoals zoekop
 <translation id="5710871682236653961">Vragen voordat sites informatie mogen sturen en ontvangen als je NFC-apparaten tegen elkaar houdt (aanbevolen)</translation>
 <translation id="572328651809341494">Recente tabbladen</translation>
 <translation id="5726692708398506830">Alles op de pagina vergroten</translation>
+<translation id="5735071096924648956">Voorkomen dat sites je camerapositie volgen of je ruimte in kaart brengen</translation>
 <translation id="5748802427693696783">Overgeschakeld naar standaardtabbladen</translation>
 <translation id="5749068826913805084">Chrome heeft toegang tot de opslag nodig om deze bestanden te kunnen downloaden.</translation>
 <translation id="5763382633136178763">Incognitotabbladen</translation>
@@ -693,6 +704,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6277522088822131679">Er is een fout opgetreden bij het afdrukken van de pagina. Probeer het opnieuw.</translation>
 <translation id="6295158916970320988">Alle sites</translation>
 <translation id="629730747756840877">Account</translation>
+<translation id="6297765934698848803">De organisatie die je apparaat beheert, heeft de camera uitgeschakeld.</translation>
 <translation id="6303969859164067831">Uitloggen en synchronisatie uitschakelen</translation>
 <translation id="6316139424528454185">Android-versie wordt niet ondersteund</translation>
 <translation id="6320088164292336938">Trillen</translation>
@@ -715,11 +727,13 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="6427112570124116297">Laat webpagina's vertalen</translation>
 <translation id="6433501201775827830">Je zoekmachine kiezen</translation>
 <translation id="6437478888915024427">Pagina-informatie</translation>
+<translation id="6439114592976064011">Voorkomen dat sites je virtual reality-apparaat en -gegevens gebruiken</translation>
 <translation id="6441734959916820584">Naam is te lang</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# afbeelding}other{# afbeeldingen}}</translation>
 <translation id="6447558397796644647">Kan die bookmark niet vinden. Controleer de spelling of voeg een nieuwe bookmark toe.</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6461962085415701688">Kan bestand niet openen</translation>
+<translation id="6462660325961255024">Vragen voordat sites je camerapositie mogen volgen of je ruimte in kaart mogen brengen (aanbevolen)</translation>
 <translation id="6464977750820128603">Je kunt sites bekijken die je in Chrome bezoekt en timers hiervoor instellen.\n\nGoogle ontvangt informatie over de sites waarvoor je timers instelt en hoelang je ze bezoekt. Deze informatie wordt gebruikt om Digitaal welzijn te verbeteren.</translation>
 <translation id="6475951671322991020">Video downloaden</translation>
 <translation id="6482749332252372425">Downloaden van <ph name="FILE_NAME" /> is mislukt door te weinig opslagruimte.</translation>
@@ -831,11 +845,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 geselecteerd item delen}other{# geselecteerde items delen}}</translation>
 <translation id="7359002509206457351">Toegang tot betaalmethoden</translation>
-<translation id="7365126855094612066">Gedurende deze sessie kan de site het volgende doen:
-• Een 3D-kaart van je omgeving maken.
-• De beweging van de camera volgen.
-
-De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaar voor jou.</translation>
 <translation id="7375125077091615385">Type:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -912,6 +921,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> is verouderd.</translation>
 <translation id="7947953824732555851">Accepteren en inloggen</translation>
 <translation id="7963646190083259054">Leverancier:</translation>
+<translation id="7967911570373677897">Als je een QR-code wilt scannen, wijzig je de instellingen zodat Chrome de camera kan gebruiken</translation>
 <translation id="7971136598759319605">1 dag geleden actief</translation>
 <translation id="7975379999046275268">Pagina bekijken <ph name="BEGIN_NEW" />Nieuw<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Pagina's vooraf laden voor sneller browsen en zoeken</translation>
@@ -957,6 +967,7 @@ De site krijgt GEEN toegang tot de camera. De camerabeelden zijn alleen zichtbaa
 <translation id="8218622182176210845">Je account beheren</translation>
 <translation id="8224471946457685718">Artikelen voor je downloaden bij verbinding via wifi</translation>
 <translation id="8232956427053453090">Gegevens behouden</translation>
+<translation id="8233540874193135768">Als je een QR-code wilt scannen, gebruik je een apparaat met een camera.</translation>
 <translation id="8250920743982581267">Documenten</translation>
 <translation id="825412236959742607">Omdat deze pagina te veel geheugen gebruikt, heeft Chrome wat content verwijderd.</translation>
 <translation id="8260126382462817229">Probeer opnieuw in te loggen</translation>

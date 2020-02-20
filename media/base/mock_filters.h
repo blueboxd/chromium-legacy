@@ -644,7 +644,7 @@ class MockCdmFactory : public CdmFactory {
               const SessionClosedCB& session_closed_cb,
               const SessionKeysChangeCB& session_keys_change_cb,
               const SessionExpirationUpdateCB& session_expiration_update_cb,
-              const CdmCreatedCB& cdm_created_cb) override;
+              CdmCreatedCB cdm_created_cb) override;
 
   // Return a pointer to the created CDM.
   MockCdm* GetCreatedCdm();

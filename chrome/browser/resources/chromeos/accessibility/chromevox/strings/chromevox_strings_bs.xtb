@@ -27,6 +27,7 @@
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, kombinirani okvir</translation>
 <translation id="1161762950103988776">Preskoči</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, stavka menija, s podmenijem</translation>
+<translation id="1175914831232945926">Brojevi</translation>
 <translation id="1177863135347784049">Prilagođeno</translation>
 <translation id="1188858454923323853">komplementarno</translation>
 <translation id="1195238899008218998">Pogovor</translation>
@@ -145,6 +146,7 @@ Ako ste pregledali tutorijal, pomoću ChromeVoxa idite do dugmeta Zatvori i klik
 <translation id="1969092762068865084">Juli</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1982529757455190616">Nema prethodne tačke za skok</translation>
+<translation id="1988733631391393183">Prikaži komande na Braillevom pismu u menijima ChromeVoxa</translation>
 <translation id="1990932729021763163">Naslov zaglavlja:</translation>
 <translation id="2002895034995108595">Vrati trenutnu mapu tipki na početne postavke</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{lijeva zagrada}one{# lijeva zagrada}few{# lijeve zagrade}other{# lijevih zagrada}}</translation>
@@ -308,6 +310,7 @@ Ako ste pregledali tutorijal, pomoću ChromeVoxa idite do dugmeta Zatvori i klik
 <translation id="3109724472072898302">Skupljeno</translation>
 <translation id="3112457281078985179">Uključite ili isključite ChromeVox koristeći Control + Alt + Z.</translation>
 <translation id="3128896337293924532">Nema sljedećih izdvojenih citata</translation>
+<translation id="3131002934070407451">Čitaj brojeve kao:</translation>
 <translation id="3134461040845705080">szčit</translation>
 <translation id="3137663468179739624">Maslinasta</translation>
 <translation id="3138767756593758860">Prikaz liste uočljivih mjesta</translation>
@@ -1001,6 +1004,7 @@ Da otvorite meni preglednika Chrome, pritisnite Alt+F.</translation>
 <translation id="7968340748835037139">Tamnozelena</translation>
 <translation id="7972507042926081808">Čokolada</translation>
 <translation id="7974390230414479278">Stavka menija</translation>
+<translation id="8004507136466386272">Riječi</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{navodnik}one{# navodnik}few{# navodnika}other{# navodnika}}</translation>
 <translation id="8017588669690167134">Isključivanje govora</translation>

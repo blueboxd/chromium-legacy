@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/page_info/permission_menu_model.h"
 
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/common/origin_util.h"

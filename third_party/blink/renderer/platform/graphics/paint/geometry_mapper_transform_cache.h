@@ -71,6 +71,13 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
     else
       ApplyFromPlaneRoot(m);
   }
+  bool has_animation_to_screen() const {
+#if DCHECK_IS_ON()
+    CheckScreenTransformUpdated();
+#endif
+    return UNLIKELY(screen_transform_) ? screen_transform_->has_animation
+                                       : has_animation_to_plane_root();
+  }
 
   const TransformationMatrix& to_plane_root() const {
     DCHECK(plane_root_transform_);
@@ -99,6 +106,10 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
   const TransformPaintPropertyNode* plane_root() const {
     return UNLIKELY(plane_root_transform_) ? plane_root_transform_->plane_root
                                            : root_of_2d_translation();
+  }
+  bool has_animation_to_plane_root() const {
+    return UNLIKELY(plane_root_transform_) &&
+           plane_root_transform_->has_animation;
   }
 
  private:
@@ -180,6 +191,7 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
     TransformationMatrix to_plane_root;
     TransformationMatrix from_plane_root;
     const TransformPaintPropertyNode* plane_root;
+    bool has_animation;
   };
   std::unique_ptr<PlaneRootTransform> plane_root_transform_;
 
@@ -187,6 +199,7 @@ class PLATFORM_EXPORT GeometryMapperTransformCache {
     TransformationMatrix to_screen;
     TransformationMatrix projection_from_screen;
     bool projection_from_screen_is_valid;
+    bool has_animation;
   };
   std::unique_ptr<ScreenTransform> screen_transform_;
 

@@ -36,15 +36,14 @@ class ATL_NO_VTABLE TSFEventRouter::Delegate
   ~Delegate();
 
   // ITfTextEditSink:
-  STDMETHOD(OnEndEdit)
-  (ITfContext* context,
-   TfEditCookie read_only_cookie,
-   ITfEditRecord* edit_record) override;
+  IFACEMETHODIMP OnEndEdit(ITfContext* context,
+                           TfEditCookie read_only_cookie,
+                           ITfEditRecord* edit_record) override;
 
   // ITfUiElementSink:
-  STDMETHOD(BeginUIElement)(DWORD element_id, BOOL* is_show) override;
-  STDMETHOD(UpdateUIElement)(DWORD element_id) override;
-  STDMETHOD(EndUIElement)(DWORD element_id) override;
+  IFACEMETHODIMP BeginUIElement(DWORD element_id, BOOL* is_show) override;
+  IFACEMETHODIMP UpdateUIElement(DWORD element_id) override;
+  IFACEMETHODIMP EndUIElement(DWORD element_id) override;
 
   // Sets |thread_manager| to be monitored. |thread_manager| can be nullptr.
   void SetManager(ITfThreadMgr* thread_manager);
@@ -99,9 +98,9 @@ void TSFEventRouter::Delegate::SetRouter(TSFEventRouter* router) {
   router_ = router;
 }
 
-STDMETHODIMP TSFEventRouter::Delegate::OnEndEdit(ITfContext* context,
-                                                 TfEditCookie read_only_cookie,
-                                                 ITfEditRecord* edit_record) {
+HRESULT TSFEventRouter::Delegate::OnEndEdit(ITfContext* context,
+                                            TfEditCookie read_only_cookie,
+                                            ITfEditRecord* edit_record) {
   if (!edit_record || !context)
     return E_INVALIDARG;
   if (!router_)
@@ -138,8 +137,8 @@ STDMETHODIMP TSFEventRouter::Delegate::OnEndEdit(ITfContext* context,
   return S_OK;
 }
 
-STDMETHODIMP TSFEventRouter::Delegate::BeginUIElement(DWORD element_id,
-                                                      BOOL* is_show) {
+HRESULT TSFEventRouter::Delegate::BeginUIElement(DWORD element_id,
+                                                 BOOL* is_show) {
   if (is_show)
     *is_show = TRUE;  // Without this the UI element will not be shown.
 
@@ -155,11 +154,11 @@ STDMETHODIMP TSFEventRouter::Delegate::BeginUIElement(DWORD element_id,
   return S_OK;
 }
 
-STDMETHODIMP TSFEventRouter::Delegate::UpdateUIElement(DWORD element_id) {
+HRESULT TSFEventRouter::Delegate::UpdateUIElement(DWORD element_id) {
   return S_OK;
 }
 
-STDMETHODIMP TSFEventRouter::Delegate::EndUIElement(DWORD element_id) {
+HRESULT TSFEventRouter::Delegate::EndUIElement(DWORD element_id) {
   if ((open_candidate_window_ids_.erase(element_id) != 0) && router_)
     router_->OnCandidateWindowCountChanged(open_candidate_window_ids_.size());
   return S_OK;

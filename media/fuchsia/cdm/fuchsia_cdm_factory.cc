@@ -31,8 +31,9 @@ void FuchsiaCdmFactory::Create(
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb,
-    const CdmCreatedCB& cdm_created_cb) {
-  CdmCreatedCB bound_cdm_created_cb = BindToCurrentLoop(cdm_created_cb);
+    CdmCreatedCB cdm_created_cb) {
+  CdmCreatedCB bound_cdm_created_cb =
+      BindToCurrentLoop(std::move(cdm_created_cb));
 
   if (security_origin.opaque()) {
     std::move(bound_cdm_created_cb).Run(nullptr, "Invalid origin.");

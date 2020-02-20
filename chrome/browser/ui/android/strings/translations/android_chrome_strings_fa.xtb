@@ -582,7 +582,6 @@
 <translation id="5447765697759493033">این سایت ترجمه نخواهد شد</translation>
 <translation id="545042621069398927">درحال سرعت بخشیدن به بارگیری.</translation>
 <translation id="5456381639095306749">بارگیری صفحه</translation>
-<translation id="5475862044948910901">جلسه «واقعیت افزوده» شروع شود؟</translation>
 <translation id="548278423535722844">‏باز کردن در برنامه Maps</translation>
 <translation id="5487521232677179737">پاک کردن داده‌ها</translation>
 <translation id="5494752089476963479">آگهی سایت‌هایی که آگهی‌های مزاحم یا گمراه‌کننده نشان می‌دهند، مسدود می‌شود</translation>
@@ -831,11 +830,6 @@
 <translation id="7352939065658542140">ویدیو</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{اشتراک‌گذاری ۱ مورد انتخاب‌شده}one{اشتراک‌گذاری # مورد انتخاب‌شده}other{اشتراک‌گذاری # مورد انتخاب‌شده}}</translation>
 <translation id="7359002509206457351">دسترسی به روش‌های پرداخت</translation>
-<translation id="7365126855094612066">طی این جلسه، سایت می‌تواند:
-• نقشه سه‌بعدی محیط را ایجاد کند
-• حرکت دوربین را ردیابی کند
-
-سایت نمی‌تواند به دوربین دسترسی یابد. تصاویر دوربین فقط برای شما قابل‌مشاهده است.</translation>
 <translation id="7375125077091615385">نوع:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">نشانی وب</translation>

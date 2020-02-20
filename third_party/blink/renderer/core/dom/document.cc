@@ -2993,19 +2993,25 @@ void Document::SetIsViewSource(bool is_view_source) {
     return;
 }
 
-void Document::SetIsImmersiveArOverlay(bool val) {
+void Document::SetIsXrOverlay(bool val, Element* overlay_element) {
   if (!documentElement())
     return;
 
-  if (val != is_immersive_ar_overlay_) {
+  if (val != is_xr_overlay_) {
     DCHECK(RuntimeEnabledFeatures::WebXRIncubationsEnabled(this));
-    is_immersive_ar_overlay_ = val;
+    is_xr_overlay_ = val;
 
-    // If the property has changed, apply the pseudo-style change to the root
-    // element. This will cascade further UA stylesheet changes such as setting
-    // the fullscreened element and its backdrop transparent.
-    documentElement()->PseudoStateChanged(
-        CSSSelector::kPseudoXrImmersiveDomOverlay);
+    if (val) {
+      // The UA style sheet for the :xr-overlay pseudoclass uses lazy loading.
+      // If we get here, we need to ensure that it's present.
+      GetStyleEngine().EnsureUAStyleForXrOverlay();
+    }
+
+    if (overlay_element) {
+      // Now that the custom style sheet is loaded, update the pseudostyle for
+      // the overlay element.
+      overlay_element->PseudoStateChanged(CSSSelector::kPseudoXrOverlay);
+    }
 
     // Ensure that the graphics layer tree gets fully rebuilt on changes,
     // similar to HTMLVideoElement::DidEnterFullscreen(). This may not be

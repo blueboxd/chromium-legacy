@@ -67,6 +67,20 @@ ProfileSigninConfirmationDialogViews::ProfileSigninConfirmationDialogViews(
         this, l10n_util::GetStringUTF16(IDS_ENTERPRISE_SIGNIN_CONTINUE)));
   }
 
+  using Delegate = ui::ProfileSigninConfirmationDelegate;
+  using DelegateNotifyFn = void (Delegate::*)();
+  auto notify_delegate = [](ProfileSigninConfirmationDialogViews* dialog,
+                            DelegateNotifyFn fn) {
+    (dialog->delegate_.get()->*fn)();
+    dialog->delegate_.reset();
+  };
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(notify_delegate, base::Unretained(this),
+                     prompt_for_new_profile_ ? &Delegate::OnSigninWithNewProfile
+                                             : &Delegate::OnContinueSignin));
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      notify_delegate, base::Unretained(this), &Delegate::OnCancelSignin));
+
   chrome::RecordDialogCreation(
       chrome::DialogIdentifier::PROFILE_SIGNIN_CONFIRMATION);
 }
@@ -112,25 +126,6 @@ void ProfileSigninConfirmationDialogViews::ShowDialog(
 base::string16 ProfileSigninConfirmationDialogViews::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(
       IDS_ENTERPRISE_SIGNIN_TITLE);
-}
-
-bool ProfileSigninConfirmationDialogViews::Accept() {
-  if (delegate_) {
-    if (prompt_for_new_profile_)
-      delegate_->OnSigninWithNewProfile();
-    else
-      delegate_->OnContinueSignin();
-    delegate_ = nullptr;
-  }
-  return true;
-}
-
-bool ProfileSigninConfirmationDialogViews::Cancel() {
-  if (delegate_) {
-    delegate_->OnCancelSignin();
-    delegate_ = nullptr;
-  }
-  return true;
 }
 
 ui::ModalType ProfileSigninConfirmationDialogViews::GetModalType() const {

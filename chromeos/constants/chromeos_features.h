@@ -99,6 +99,8 @@ extern const base::Feature kParentalControlsSettings;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kQuickAnswers;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kRar2Fs;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kPrinterStatus;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kQuickAnswersRichUi;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kReleaseNotes;

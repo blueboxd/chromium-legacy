@@ -57,6 +57,7 @@
 #include "chrome/browser/chromeos/dbus/machine_learning_decision_service_provider.h"
 #include "chrome/browser/chromeos/dbus/metrics_event_service_provider.h"
 #include "chrome/browser/chromeos/dbus/plugin_vm_service_provider.h"
+#include "chrome/browser/chromeos/dbus/printers_service_provider.h"
 #include "chrome/browser/chromeos/dbus/proxy_resolution_service_provider.h"
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/chromeos/dbus/smb_fs_service_provider.h"
@@ -304,6 +305,12 @@ class DBusServices {
         CrosDBusService::CreateServiceProviderList(
             std::make_unique<ChromeFeaturesServiceProvider>()));
 
+    printers_service_ = CrosDBusService::Create(
+        system_bus, kPrintersServiceName,
+        dbus::ObjectPath(kPrintersServicePath),
+        CrosDBusService::CreateServiceProviderList(
+            std::make_unique<PrintersServiceProvider>()));
+
     vm_applications_service_ = CrosDBusService::Create(
         system_bus, vm_tools::apps::kVmApplicationsServiceName,
         dbus::ObjectPath(vm_tools::apps::kVmApplicationsServicePath),
@@ -384,6 +391,7 @@ class DBusServices {
     kiosk_info_service_.reset();
     metrics_event_service_.reset();
     plugin_vm_service_.reset();
+    printers_service_.reset();
     virtual_file_request_service_.reset();
     component_updater_service_.reset();
     chrome_features_service_.reset();
@@ -407,6 +415,7 @@ class DBusServices {
   std::unique_ptr<CrosDBusService> kiosk_info_service_;
   std::unique_ptr<CrosDBusService> metrics_event_service_;
   std::unique_ptr<CrosDBusService> plugin_vm_service_;
+  std::unique_ptr<CrosDBusService> printers_service_;
   std::unique_ptr<CrosDBusService> screen_lock_service_;
   std::unique_ptr<CrosDBusService> virtual_file_request_service_;
   std::unique_ptr<CrosDBusService> component_updater_service_;

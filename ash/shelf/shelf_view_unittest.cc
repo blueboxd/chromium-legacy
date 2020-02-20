@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/display/screen_orientation_controller.h"
@@ -1264,7 +1265,13 @@ TEST_F(ShelfViewTest, HomeButtonMetricsInClamshell) {
 
 // Verifies that the time of button press is recorded correctly in tablet.
 TEST_F(ShelfViewTest, HomeButtonMetricsInTablet) {
+  // Enable accessibility feature that forces home button to be shown even with
+  // kHideShelfControlsInTabletMode enabled.
+  Shell::Get()
+      ->accessibility_controller()
+      ->SetTabletModeShelfNavigationButtonsEnabled(true);
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
+
   const HomeButton* home_button =
       GetPrimaryShelf()->navigation_widget()->GetHomeButton();
 

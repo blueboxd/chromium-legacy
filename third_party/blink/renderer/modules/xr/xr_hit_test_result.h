@@ -5,24 +5,43 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_HIT_TEST_RESULT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_XR_XR_HIT_TEST_RESULT_H_
 
+#include "base/optional.h"
+#include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
 
+class ExceptionState;
+class ScriptState;
 class TransformationMatrix;
 class XRPose;
+class XRRigidTransform;
+class XRSession;
 class XRSpace;
 
 class XRHitTestResult : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit XRHitTestResult(const TransformationMatrix& pose);
+  explicit XRHitTestResult(XRSession* session,
+                           const device::mojom::blink::XRHitResult& hit_result);
 
   XRPose* getPose(XRSpace* relative_to);
 
+  ScriptPromise createAnchor(ScriptState* script_state,
+                             XRRigidTransform* initial_pose,
+                             ExceptionState& exception_state);
+
+  void Trace(blink::Visitor* visitor) override;
+
  private:
-  std::unique_ptr<TransformationMatrix> pose_;
+  Member<XRSession> session_;
+
+  // Hit test results do not have origin-offset so mojo_from_this_ contains
+  // mojo_from_this with origin-offset (identity) already applied.
+  std::unique_ptr<TransformationMatrix> mojo_from_this_;
+  base::Optional<uint64_t> plane_id_;
 };
 
 }  // namespace blink

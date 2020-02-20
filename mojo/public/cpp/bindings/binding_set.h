@@ -322,6 +322,8 @@ class BindingSetBase {
   DISALLOW_COPY_AND_ASSIGN(BindingSetBase);
 };
 
+// DEPRECATED: Do not introduce new uses of this type. Instead use the
+// ReceiverSet type defined in receiver_set.h.
 template <typename Interface, typename ContextType = void>
 using BindingSet = BindingSetBase<Interface, Binding<Interface>, ContextType>;
 

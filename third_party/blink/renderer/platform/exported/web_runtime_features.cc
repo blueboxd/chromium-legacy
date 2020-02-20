@@ -538,10 +538,6 @@ void WebRuntimeFeatures::EnableVideoRotateToFullscreen(bool enable) {
   RuntimeEnabledFeatures::SetVideoRotateToFullscreenEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableVideoFullscreenDetection(bool enable) {
-  RuntimeEnabledFeatures::SetVideoFullscreenDetectionEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableVideoPlaybackQuality(bool enable) {
   RuntimeEnabledFeatures::SetVideoPlaybackQualityEnabled(enable);
 }

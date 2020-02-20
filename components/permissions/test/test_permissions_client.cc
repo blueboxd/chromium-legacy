@@ -4,6 +4,8 @@
 
 #include "components/permissions/test/test_permissions_client.h"
 
+#include "components/ukm/content/source_url_recorder.h"
+
 namespace permissions {
 namespace {
 
@@ -33,6 +35,20 @@ PermissionDecisionAutoBlocker*
 TestPermissionsClient::GetPermissionDecisionAutoBlocker(
     content::BrowserContext* browser_context) {
   return &autoblocker_;
+}
+
+void TestPermissionsClient::GetUkmSourceId(
+    content::BrowserContext* browser_context,
+    const content::WebContents* web_contents,
+    const GURL& requesting_origin,
+    GetUkmSourceIdCallback callback) {
+  if (web_contents) {
+    ukm::SourceId source_id =
+        ukm::GetSourceIdForWebContentsDocument(web_contents);
+    std::move(callback).Run(source_id);
+  } else {
+    std::move(callback).Run(base::nullopt);
+  }
 }
 
 }  // namespace permissions

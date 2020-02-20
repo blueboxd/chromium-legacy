@@ -132,6 +132,16 @@ inline bool operator!=(const FloatClipRect& a, const FloatClipRect& b) {
   return !(a == b);
 }
 
+// The difference between FloatClipRect() (infinite by default) and
+// InfiniteLooseFloatClipRect() is that the former means no clip at all, and the
+// latter means a clip with unknown bounds. The intersection of the former with
+// a tight clip rect is tight, and that of the latter is loose.
+inline FloatClipRect InfiniteLooseFloatClipRect() {
+  FloatClipRect rect;
+  rect.ClearIsTight();
+  return rect;
+}
+
 }  // namespace blink
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_FLOAT_CLIP_RECT_H_

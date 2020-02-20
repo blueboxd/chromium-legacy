@@ -28,6 +28,8 @@ MarkingVisitorCommon::MarkingVisitorCommon(ThreadState* state,
       task_id_(task_id) {}
 
 void MarkingVisitorCommon::FlushCompactionWorklists() {
+  if (marking_mode_ != kGlobalMarkingWithCompaction)
+    return;
   movable_reference_worklist_.FlushToGlobal();
   backing_store_callback_worklist_.FlushToGlobal();
 }
@@ -308,8 +310,10 @@ void ConcurrentMarkingVisitor::FlushWorklists() {
   weak_table_worklist_.FlushToGlobal();
   not_safe_to_concurrently_trace_worklist_.FlushToGlobal();
   // Flush compaction worklists.
-  movable_reference_worklist_.FlushToGlobal();
-  backing_store_callback_worklist_.FlushToGlobal();
+  if (marking_mode_ == kGlobalMarkingWithCompaction) {
+    movable_reference_worklist_.FlushToGlobal();
+    backing_store_callback_worklist_.FlushToGlobal();
+  }
 }
 
 }  // namespace blink

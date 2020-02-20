@@ -147,7 +147,7 @@ class AssistantInteractionController
   void StopActiveInteraction(bool cancel_conversation);
 
   InputModality GetDefaultInputModality() const;
-
+  AssistantResponse* GetResponseForActiveInteraction();
   AssistantVisibility GetVisibility() const;
   bool IsVisible() const;
 

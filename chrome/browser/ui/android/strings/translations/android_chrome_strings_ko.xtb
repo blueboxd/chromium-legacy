@@ -582,7 +582,6 @@
 <translation id="5447765697759493033">이 사이트는 번역되지 않습니다.</translation>
 <translation id="545042621069398927">다운로드 속도 향상</translation>
 <translation id="5456381639095306749">다운로드 페이지</translation>
-<translation id="5475862044948910901">증강 현실 세션을 시작할까요?</translation>
 <translation id="548278423535722844">지도 앱에서 열기</translation>
 <translation id="5487521232677179737">인터넷 사용 기록 삭제</translation>
 <translation id="5494752089476963479">방해가 되거나 사용자를 현혹하는 광고를 표시하는 사이트의 광고 차단</translation>
@@ -831,11 +830,6 @@
 <translation id="7352939065658542140">동영상</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{선택한 1개 항목 공유}other{선택한 #개 항목 공유}}</translation>
 <translation id="7359002509206457351">결제 수단 액세스</translation>
-<translation id="7365126855094612066">세션이 실행되는 동안 사이트에서 다음을 실행할 수 있습니다.
-• 사용자 환경을 3D 지도로 작성
-• 카메라 모션 추적
-
-사이트에서 카메라 액세스 권한을 요구하지 않습니다. 카메라 이미지는 나에게만 표시됩니다.</translation>
 <translation id="7375125077091615385">유형:</translation>
 <translation id="7396940094317457632">파일(<ph name="FILE_NAME" />)이 다운로드되었습니다.</translation>
 <translation id="7400418766976504921">URL</translation>

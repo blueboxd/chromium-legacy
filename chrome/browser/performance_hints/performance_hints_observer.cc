@@ -5,13 +5,20 @@
 #include "chrome/browser/performance_hints/performance_hints_observer.h"
 
 #include "base/metrics/histogram_functions.h"
+#include "build/build_config.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/optimization_guide/optimization_guide_decider.h"
 #include "components/optimization_guide/url_pattern_with_wildcards.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
+
+#if defined(OS_ANDROID)
+#include "base/android/jni_string.h"
+#include "chrome/browser/performance_hints/android/jni_headers/PerformanceHintsObserver_jni.h"
+#endif  // OS_ANDROID
 
 using optimization_guide::OptimizationGuideDecision;
 using optimization_guide::URLPatternWithWildcards;
@@ -60,6 +67,19 @@ UmaPerformanceClass ToUmaPerformanceClass(PerformanceClass performance_class) {
 
 }  // namespace
 
+#if defined(OS_ANDROID)
+static jint JNI_PerformanceHintsObserver_GetPerformanceClassForURL(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& java_web_contents,
+    const base::android::JavaParamRef<jstring>& url) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(java_web_contents);
+  return PerformanceHintsObserver::PerformanceClassForURLInternal(
+      web_contents, GURL(base::android::ConvertJavaStringToUTF8(url)),
+      /*record_metrics=*/false);
+}
+#endif  // OS_ANDROID
+
 const base::Feature kPerformanceHintsObserver{
     "PerformanceHintsObserver", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kPerformanceHintsTreatUnknownAsFast{
@@ -81,9 +101,19 @@ PerformanceHintsObserver::~PerformanceHintsObserver() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
+// static
 PerformanceClass PerformanceHintsObserver::PerformanceClassForURL(
     content::WebContents* web_contents,
     const GURL& url) {
+  return PerformanceClassForURLInternal(web_contents, url,
+                                        /*record_metrics=*/true);
+}
+
+// static
+PerformanceClass PerformanceHintsObserver::PerformanceClassForURLInternal(
+    content::WebContents* web_contents,
+    const GURL& url,
+    bool record_metrics) {
   PerformanceClass performance_class = [&]() {
     if (!url.is_valid() || web_contents == nullptr) {
       return PerformanceClass::PERFORMANCE_UNKNOWN;
@@ -96,16 +126,18 @@ PerformanceClass PerformanceHintsObserver::PerformanceClassForURL(
     }
 
     base::Optional<optimization_guide::proto::PerformanceHint> hint =
-        performance_hints_observer->HintForURL(url);
+        performance_hints_observer->HintForURL(record_metrics, url);
     return hint ? hint->performance_class()
                 : PerformanceClass::PERFORMANCE_UNKNOWN;
   }();
 
-  // Log to UMA before the override logic so we can determine how often the
-  // override is happening.
-  base::UmaHistogramEnumeration(
-      "PerformanceHints.Observer.PerformanceClassForURL",
-      ToUmaPerformanceClass(performance_class));
+  if (record_metrics) {
+    // Log to UMA before the override logic so we can determine how often the
+    // override is happening.
+    base::UmaHistogramEnumeration(
+        "PerformanceHints.Observer.PerformanceClassForURL",
+        ToUmaPerformanceClass(performance_class));
+  }
 
   if (base::FeatureList::IsEnabled(kPerformanceHintsTreatUnknownAsFast) &&
       performance_class == PerformanceClass::PERFORMANCE_UNKNOWN) {
@@ -115,7 +147,16 @@ PerformanceClass PerformanceHintsObserver::PerformanceClassForURL(
   return performance_class;
 }
 
+// static
+void PerformanceHintsObserver::RecordPerformanceUMAForURL(
+    content::WebContents* web_contents,
+    const GURL& url) {
+  PerformanceClassForURLInternal(web_contents, url,
+                                 /*record_metrics=*/true);
+}
+
 base::Optional<PerformanceHint> PerformanceHintsObserver::HintForURL(
+    bool record_metrics,
     const GURL& url) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -136,8 +177,10 @@ base::Optional<PerformanceHint> PerformanceHintsObserver::HintForURL(
     }
   }
 
-  base::UmaHistogramEnumeration("PerformanceHints.Observer.HintForURLResult",
-                                hint_result);
+  if (record_metrics) {
+    base::UmaHistogramEnumeration("PerformanceHints.Observer.HintForURLResult",
+                                  hint_result);
+  }
 
   return hint;
 }

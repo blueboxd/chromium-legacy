@@ -18,6 +18,17 @@ namespace blink {
 // Clips can use FloatRect::Intersect or FloatRect::InclusiveIntersect.
 enum InclusiveIntersectOrNot { kNonInclusiveIntersect, kInclusiveIntersect };
 
+// Whether to expand the visual or clip rect to infinity when we meet any
+// animating transform or filter when walking from a descendant state to an
+// ancestor state, when mapping a visual rect or getting the accumulated clip
+// rect. After we expanded the rect, we will still apply ancestor clips when
+// continuing walking up the tree. TODO(crbug.com/1026653): Consider animation
+// bounds instead of using infinite rect.
+enum ExpandVisualRectForAnimationOrNot {
+  kDontExpandVisualRectForAnimation,
+  kExpandVisualRectForAnimation,
+};
+
 // GeometryMapper is a helper class for fast computations of transformed and
 // visual rects in different PropertyTreeStates. The design document has a
 // number of details on use cases, algorithmic definitions, and running times.
@@ -158,9 +169,10 @@ class PLATFORM_EXPORT GeometryMapper {
       return;
     }
 
+    bool has_animation = false;
     bool success = false;
-    const auto& source_to_destination =
-        SourceToDestinationProjectionInternal(source, destination, success);
+    const auto& source_to_destination = SourceToDestinationProjectionInternal(
+        source, destination, has_animation, success);
     if (!success)
       mapping_rect = Rect();
     else
@@ -224,7 +236,8 @@ class PLATFORM_EXPORT GeometryMapper {
       const PropertyTreeState& ancestor_state,
       FloatClipRect& mapping_rect,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize,
-      InclusiveIntersectOrNot = kNonInclusiveIntersect);
+      InclusiveIntersectOrNot = kNonInclusiveIntersect,
+      ExpandVisualRectForAnimationOrNot = kDontExpandVisualRectForAnimation);
 
   static void ClearCache();
 
@@ -237,6 +250,7 @@ class PLATFORM_EXPORT GeometryMapper {
   static Translation2DOrMatrix SourceToDestinationProjectionInternal(
       const TransformPaintPropertyNode& source,
       const TransformPaintPropertyNode& destination,
+      bool& has_animation,
       bool& success);
 
   static FloatClipRect LocalToAncestorClipRectInternal(
@@ -245,6 +259,7 @@ class PLATFORM_EXPORT GeometryMapper {
       const TransformPaintPropertyNode& ancestor_transform,
       OverlayScrollbarClipBehavior,
       InclusiveIntersectOrNot,
+      ExpandVisualRectForAnimationOrNot,
       bool& success);
 
   // The return value has the same meaning as that for
@@ -255,6 +270,7 @@ class PLATFORM_EXPORT GeometryMapper {
       FloatClipRect& mapping_rect,
       OverlayScrollbarClipBehavior,
       InclusiveIntersectOrNot,
+      ExpandVisualRectForAnimationOrNot,
       bool& success);
 
   // The return value has the same meaning as that for
@@ -265,6 +281,7 @@ class PLATFORM_EXPORT GeometryMapper {
       FloatClipRect& mapping_rect,
       OverlayScrollbarClipBehavior,
       InclusiveIntersectOrNot,
+      ExpandVisualRectForAnimationOrNot,
       bool& success);
 
   static void MoveRect(FloatRect& rect, const FloatSize& delta) {

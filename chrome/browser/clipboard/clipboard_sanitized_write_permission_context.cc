@@ -10,8 +10,9 @@
 #include "url/gurl.h"
 
 ClipboardSanitizedWritePermissionContext::
-    ClipboardSanitizedWritePermissionContext(Profile* profile)
-    : PermissionContextBase(profile,
+    ClipboardSanitizedWritePermissionContext(
+        content::BrowserContext* browser_context)
+    : PermissionContextBase(browser_context,
                             ContentSettingsType::CLIPBOARD_SANITIZED_WRITE,
                             blink::mojom::FeaturePolicyFeature::kClipboard) {}
 

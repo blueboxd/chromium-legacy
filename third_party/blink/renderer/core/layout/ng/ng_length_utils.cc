@@ -1283,6 +1283,12 @@ base::Optional<MinMaxSize> CalculateMinMaxSizesIgnoringChildren(
   if (intrinsic_size_override != kIndefiniteSize) {
     sizes += intrinsic_size_override;
     return sizes;
+  } else {
+    LayoutUnit default_inline_size = node.DefaultIntrinsicContentInlineSize();
+    if (default_inline_size != kIndefiniteSize) {
+      sizes += default_inline_size;
+      return sizes;
+    }
   }
 
   // Size contained elements don't consider children for intrinsic sizing.

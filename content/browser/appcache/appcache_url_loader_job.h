@@ -124,7 +124,7 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
   mojo::Remote<network::mojom::URLLoaderClient> client_;
 
   // The data pipe used to transfer AppCache data to the client.
-  mojo::DataPipe data_pipe_;
+  mojo::ScopedDataPipeConsumerHandle consumer_handle_;
   mojo::ScopedDataPipeProducerHandle response_body_stream_;
   scoped_refptr<network::NetToMojoPendingBuffer> pending_write_;
   mojo::SimpleWatcher writable_handle_watcher_;

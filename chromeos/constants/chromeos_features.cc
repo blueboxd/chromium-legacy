@@ -202,6 +202,10 @@ const base::Feature kNativeRuleBasedTyping{"NativeRuleBasedTyping",
 const base::Feature kParentalControlsSettings{
     "ChromeOSParentalControlsSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Controls whether to show printer statuses.
+const base::Feature kPrinterStatus{"PrinterStatus",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to enable quick answers.
 const base::Feature kQuickAnswers{"QuickAnswers",
                                   base::FEATURE_DISABLED_BY_DEFAULT};

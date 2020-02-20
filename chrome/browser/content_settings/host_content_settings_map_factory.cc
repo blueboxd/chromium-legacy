@@ -7,13 +7,15 @@
 #include <utility>
 
 #include "base/feature_list.h"
+#include "build/buildflag.h"
 #include "chrome/browser/profiles/off_the_record_profile_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/common/chrome_features.h"
+#include "chrome/common/buildflags.h"
 #include "components/content_settings/core/browser/content_settings_pref_provider.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/permissions/features.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/buildflags/buildflags.h"
 
@@ -55,11 +57,11 @@ HostContentSettingsMapFactory::~HostContentSettingsMapFactory() {
 
 // static
 HostContentSettingsMap* HostContentSettingsMapFactory::GetForProfile(
-    Profile* profile) {
+    content::BrowserContext* browser_context) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   return static_cast<HostContentSettingsMap*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true).get());
+      GetInstance()->GetServiceForBrowserContext(browser_context, true).get());
 }
 
 // static
@@ -83,7 +85,8 @@ scoped_refptr<RefcountedKeyedService>
       profile->GetPrefs(),
       profile->IsIncognitoProfile() || profile->IsGuestSession(),
       /*store_last_modified=*/true,
-      base::FeatureList::IsEnabled(features::kPermissionDelegation)));
+      base::FeatureList::IsEnabled(
+          permissions::features::kPermissionDelegation)));
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // These must be registered before before the HostSettings are passed over to

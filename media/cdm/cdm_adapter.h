@@ -63,7 +63,7 @@ class MEDIA_EXPORT CdmAdapter : public ContentDecryptionModule,
       const SessionClosedCB& session_closed_cb,
       const SessionKeysChangeCB& session_keys_change_cb,
       const SessionExpirationUpdateCB& session_expiration_update_cb,
-      const CdmCreatedCB& cdm_created_cb);
+      CdmCreatedCB cdm_created_cb);
 
   // Returns the version of the CDM interface that the created CDM uses. Must
   // only be called after the CDM is successfully initialized.

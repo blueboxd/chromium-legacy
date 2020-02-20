@@ -33,16 +33,18 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/url/dom_url.h"
-#include "third_party/blink/renderer/modules/mediasource/media_source.h"
+#include "third_party/blink/renderer/modules/mediasource/media_source_impl.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 
 namespace blink {
 
+// static
 String URLMediaSource::createObjectURL(ScriptState* script_state,
-                                       MediaSource* source) {
-  // Since WebWorkers cannot obtain MediaSource objects, we should be on the
-  // main thread.
+                                       MediaSourceImpl* source) {
+  // Since WebWorkers cannot obtain MediaSource objects (yet), we should be on
+  // the main thread. TODO(wolenetz): Let DedicatedWorkers create MediaSource
+  // object URLs. See https://crbug.com/878133.
   DCHECK(IsMainThread());
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   DCHECK(execution_context);

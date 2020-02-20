@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">valmyndaratriði</translation>
 <translation id="10623998915015855">rofi</translation>
 <translation id="1088086359088493902">Sekúndur</translation>
+<translation id="1142001580032786438">Sýna vikuval</translation>
 <translation id="1171774979989969504">Sláðu inn netfang.</translation>
 <translation id="1178581264944972037">Gera hlé</translation>
 <translation id="1188858454923323853">til viðbótar</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">leita</translation>
 <translation id="4812940957355064477">Sláðu inn tölu.</translation>
 <translation id="4912536737030637138">færsla í heimildaskrá</translation>
+<translation id="4915360478455618802">Sýna tímaval</translation>
 <translation id="492244087561876220">athugasemd</translation>
+<translation id="4950364064308314478">Sýna val á dagsetningu og tíma viðkomandi staðar</translation>
 <translation id="4971739861736909480"><ph name="ACCNAME" /> valið</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> valin</translation>
 <translation id="4992066212339426712">Hætta að þagga</translation>
@@ -249,6 +252,7 @@
 <translation id="860475260694818407">efnisyfirlit</translation>
 <translation id="8613126697340063924">stjórna fjarspilun</translation>
 <translation id="862370744433916922">undirtitill</translation>
+<translation id="8634971699417195529">Sýna mánaðarval</translation>
 <translation id="8711688047404765493">úttak</translation>
 <translation id="8750798805984357768">Veldu einn af þessum valkostum.</translation>
 <translation id="8808573423886751634">kafli</translation>

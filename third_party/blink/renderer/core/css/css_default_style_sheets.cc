@@ -128,6 +128,7 @@ void CSSDefaultStyleSheets::PrepareForLeakDetection() {
   media_controls_style_sheet_.Clear();
   text_track_style_sheet_.Clear();
   fullscreen_style_sheet_.Clear();
+  webxr_overlay_style_sheet_.Clear();
   // Recreate the default style sheet to clean up possible SVG resources.
   String default_rules = UncompressResourceAsASCIIString(IDR_UASTYLE_HTML_CSS) +
                          LayoutTheme::GetTheme().ExtraDefaultStyleSheet();
@@ -282,6 +283,20 @@ void CSSDefaultStyleSheets::SetMediaControlsStyleSheetLoader(
   media_controls_style_sheet_loader_.swap(loader);
 }
 
+bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetForXrOverlay() {
+  if (webxr_overlay_style_sheet_)
+    return false;
+
+  webxr_overlay_style_sheet_ = ParseUASheet(
+      UncompressResourceAsASCIIString(IDR_UASTYLE_WEBXR_OVERLAY_CSS));
+  default_style_->AddRulesFromSheet(webxr_overlay_style_sheet_, ScreenEval());
+  default_print_style_->AddRulesFromSheet(webxr_overlay_style_sheet_,
+                                          PrintEval());
+  default_forced_color_style_->AddRulesFromSheet(webxr_overlay_style_sheet_,
+                                                 ForcedColorsEval());
+  return true;
+}
+
 void CSSDefaultStyleSheets::EnsureDefaultStyleSheetForFullscreen() {
   if (fullscreen_style_sheet_)
     return;
@@ -311,6 +326,7 @@ void CSSDefaultStyleSheets::Trace(Visitor* visitor) {
   visitor->Trace(media_controls_style_sheet_);
   visitor->Trace(text_track_style_sheet_);
   visitor->Trace(fullscreen_style_sheet_);
+  visitor->Trace(webxr_overlay_style_sheet_);
 }
 
 }  // namespace blink

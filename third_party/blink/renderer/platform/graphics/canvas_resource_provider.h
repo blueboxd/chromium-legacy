@@ -9,7 +9,6 @@
 #include "cc/raster/playback_image_provider.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 class GrContext;
@@ -94,9 +93,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
     kMaxValue = kSwapChain,
   };
 
-  using RestoreMatrixClipStackCb =
-      base::RepeatingCallback<void(cc::PaintCanvas*)>;
-
   void static RecordTypeToUMA(ResourceProviderType type);
 
   // TODO(juanmihd): Clean up creation methods/usage. See crbug.com/1035589.
@@ -142,8 +138,9 @@ class PLATFORM_EXPORT CanvasResourceProvider
   void OnContextDestroyed() override;
 
   cc::PaintCanvas* Canvas();
+  void InitializePaintCanvas();
   void ReleaseLockedImages();
-  void FlushCanvas();
+  void FlushSkia() const;
   const CanvasColorParams& ColorParams() const { return color_params_; }
   void SetFilterQuality(SkFilterQuality quality) { filter_quality_ = quality; }
   const IntSize& Size() const { return size_; }
@@ -213,12 +210,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
     return canvas_resources_.size();
   }
 
-  void SkipQueuedDrawCommands();
-  const sk_sp<cc::PaintRecord>& last_recording() const {
-    return last_recording_;
-  }
-  void SetRestoreClipStackCallback(RestoreMatrixClipStackCb);
-  bool needs_flush() const { return needs_flush_; }
   void RestoreBackBuffer(const cc::PaintImage&);
 
  protected:
@@ -270,8 +261,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
 
   cc::ImageDecodeCache* ImageDecodeCacheRGBA8();
   cc::ImageDecodeCache* ImageDecodeCacheF16();
-  void EnsureSkiaCanvas();
-  void SetNeedsFlush() { needs_flush_ = true; }
 
   base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
   base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher_;
@@ -281,11 +270,7 @@ class PLATFORM_EXPORT CanvasResourceProvider
   const CanvasColorParams color_params_;
   const bool is_origin_top_left_;
   std::unique_ptr<CanvasImageProvider> canvas_image_provider_;
-  std::unique_ptr<cc::SkiaPaintCanvas> skia_canvas_;
-  std::unique_ptr<PaintRecorder> recorder_;
-  sk_sp<cc::PaintRecord> last_recording_;
-
-  bool needs_flush_ = false;
+  std::unique_ptr<cc::SkiaPaintCanvas> canvas_;
 
   const cc::PaintImage::Id snapshot_paint_image_id_;
   cc::PaintImage::ContentId snapshot_paint_image_content_id_ =
@@ -303,8 +288,6 @@ class PLATFORM_EXPORT CanvasResourceProvider
   // The maximum number of draw ops executed on the canvas, after which the
   // underlying GrContext is flushed.
   static constexpr int kMaxDrawsBeforeContextFlush = 50;
-
-  RestoreMatrixClipStackCb restore_clip_stack_callback_;
 
   base::WeakPtrFactory<CanvasResourceProvider> weak_ptr_factory_{this};
 

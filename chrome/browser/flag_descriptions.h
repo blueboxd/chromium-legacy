@@ -950,6 +950,9 @@ extern const char kPrefetchPrivacyChangesDescription[];
 extern const char kPrefetchMainResourceNetworkIsolationKeyName[];
 extern const char kPrefetchMainResourceNetworkIsolationKeyDescription[];
 
+extern const char kPrinterStatusName[];
+extern const char kPrinterStatusDescription[];
+
 extern const char kSafetyTipName[];
 extern const char kSafetyTipDescription[];
 

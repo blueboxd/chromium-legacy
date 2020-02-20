@@ -137,6 +137,7 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# plik}few{# pliki}many{# plików}other{# pliku}}</translation>
 <translation id="2017836877785168846">Usuwa historię i wpisy autouzupełniania w pasku adresu.</translation>
 <translation id="2021896219286479412">Elementy sterowania stroną na pełnym ekranie</translation>
+<translation id="2025115093177348061">Rzeczywistość rozszerzona</translation>
 <translation id="2038563949887743358">Włącz opcję „Wersja na komputer”</translation>
 <translation id="2041019821020695769">Aby zezwolić Chrome na wysyłanie Ci powiadomień, musisz je też włączyć w <ph name="BEGIN_LINK" />Ustawieniach Androida<ph name="END_LINK" />.</translation>
 <translation id="204321170514947529">Dane aplikacji <ph name="APP_NAME" /> znajdują się też w Chrome</translation>
@@ -150,6 +151,9 @@
 <translation id="2100273922101894616">Automatyczne logowanie</translation>
 <translation id="2100314319871056947">Spróbuj udostępnić mniejsze fragmenty tekstu</translation>
 <translation id="2107397443965016585">Pytaj, zanim pozwolisz stronom na odtwarzanie treści chronionej (zalecane)</translation>
+<translation id="2109711654079915747">Poznaj tematy omawiane w witrynach, nie opuszczając strony. Funkcja „Dotknij, by wyszukać” wysyła słowo i najbliższy kontekst do wyszukiwarki Google, a następnie zwraca definicje, zdjęcia, wyniki wyszukiwania i inne informacje.
+
+Aby coś wyszukać, dotknij dowolnego słowa. Aby doprecyzować wyszukiwanie, naciśnij i przytrzymaj, by wybrać więcej lub mniej słów. Aby edytować wyszukiwanie, otwórz panel i kliknij ikonę, by przejść do nowej karty, i wprowadź zmiany w polu wyszukiwania.</translation>
 <translation id="2111511281910874386">Przejdź do strony</translation>
 <translation id="2122601567107267586">Nie udało się otworzyć aplikacji</translation>
 <translation id="2126426811489709554">Technologia Chrome</translation>
@@ -176,6 +180,7 @@
 <translation id="2321958826496381788">Przeciągaj suwak, by umożliwić wygodne czytanie. Gdy dwukrotnie klikniesz akapit, tekst powiększy się co najmniej do tej wielkości.</translation>
 <translation id="2323763861024343754">Dane witryn:</translation>
 <translation id="2328985652426384049">Nie można się zalogować</translation>
+<translation id="234265804618409743">Nie udało się otworzyć aparatu. Coś poszło nie tak.</translation>
 <translation id="2349710944427398404">Łączna ilość danych używanych przez Chrome, w tym konta, zakładki i zapisane ustawienia</translation>
 <translation id="2353636109065292463">Sprawdzanie połączenia z internetem</translation>
 <translation id="2359808026110333948">Dalej</translation>
@@ -192,6 +197,9 @@
 <translation id="2434158240863470628">Ukończono pobieranie <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Dostęp do lokalizacji</translation>
 <translation id="2450083983707403292">Czy chcesz jeszcze raz rozpocząć pobieranie pliku <ph name="FILE_NAME" />?</translation>
+<translation id="2450907520913474542">Poznaj tematy omawiane w witrynach, nie opuszczając strony. Funkcja „Dotknij, by wyszukać” wysyła słowo i najbliższy kontekst do wyszukiwarki Google, a następnie zwraca definicje, zdjęcia, wyniki wyszukiwania i inne informacje.
+
+Aby coś wyszukać, naciśnij i przytrzymaj dowolne słowo. Aby doprecyzować wyszukiwanie, wybierz więcej lub mniej słów. Aby edytować wyszukiwanie, otwórz panel i kliknij ikonę, by przejść do nowej karty, i wprowadź zmiany w polu wyszukiwania.</translation>
 <translation id="246532703174860178">Udostępnij</translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
 <translation id="2490684707762498678">Zarządzane przez <ph name="APP_NAME" /></translation>
@@ -423,6 +431,7 @@
 <translation id="4298388696830689168">Połączone strony</translation>
 <translation id="4307992518367153382">Podstawowe</translation>
 <translation id="4314815835985389558">Zarządzanie synchronizacją</translation>
+<translation id="4321739720395210191">Nie udało się otworzyć aparatu. Ponownie uruchom urządzenie i spróbuj jeszcze raz.</translation>
 <translation id="4351244548802238354">Zamknij okno</translation>
 <translation id="4353114845960720315">Gdy używasz VR, strona może poznać te informacje:</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -469,6 +478,7 @@ Na stronie <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> n
 <translation id="4660838440047236328">układ Twojego pokoju.</translation>
 <translation id="4663756553811254707">Usunięte zakładki: <ph name="NUMBER_OF_BOOKMARKS" /></translation>
 <translation id="4665282149850138822">Strona <ph name="NAME" /> została dodana do ekranu głównego</translation>
+<translation id="4670064810192446073">Rzeczywistość wirtualna</translation>
 <translation id="4684427112815847243">Synchronizuj wszystko</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}few{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}many{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 i jeszcze <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" />}}</translation>
 <translation id="4696983787092045100">Wyślij tekst na swoje urządzenia</translation>
@@ -504,6 +514,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="4882831918239250449">Zarządzaj personalizacją wyszukiwarki, reklam i innych funkcji na podstawie historii przeglądania</translation>
 <translation id="4883854917563148705">Ustawień zarządzanych nie można zresetować</translation>
 <translation id="4885273946141277891">Nieobsługiwana liczba wystąpień Chrome.</translation>
+<translation id="4887024562049524730">Pytaj, zanim zezwolisz stronom na korzystanie z urządzenia i danych rzeczywistości wirtualnej (zalecane)</translation>
 <translation id="4910889077668685004">Aplikacje do płatności</translation>
 <translation id="4913161338056004800">Resetuj statystyki</translation>
 <translation id="4913169188695071480">Zatrzymaj odświeżanie</translation>
@@ -582,7 +593,6 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5447765697759493033">Ta strona nie zostanie przetłumaczona</translation>
 <translation id="545042621069398927">Przyspieszam pobieranie.</translation>
 <translation id="5456381639095306749">Pobierz stronę</translation>
-<translation id="5475862044948910901">Rozpocząć sesję rzeczywistości rozszerzonej?</translation>
 <translation id="548278423535722844">Otwórz w aplikacji z mapami</translation>
 <translation id="5487521232677179737">Wyczyść dane</translation>
 <translation id="5494752089476963479">Blokuj reklamy na stronach, które wyświetlają reklamy uciążliwe lub wprowadzające w błąd</translation>
@@ -623,6 +633,7 @@ Aby zmienić to ustawienie, <ph name="BEGIN_LINK" />zresetuj synchronizację<ph 
 <translation id="5710871682236653961">Pytaj, zanim zezwolisz stronom na wysyłanie i odbieranie informacji po dotknięciu urządzeń z funkcją NFC (zalecane)</translation>
 <translation id="572328651809341494">Ostatnie karty</translation>
 <translation id="5726692708398506830">Powiększ całą zawartość strony</translation>
+<translation id="5735071096924648956">Nie zezwalaj stronom na śledzenie pozycji aparatu ani mapowanie pomieszczenia</translation>
 <translation id="5748802427693696783">Przełączono na karty standardowe</translation>
 <translation id="5749068826913805084">Chrome musi mieć dostęp do pamięci, by pobierać pliki.</translation>
 <translation id="5763382633136178763">Karty incognito</translation>
@@ -693,6 +704,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6277522088822131679">Podczas drukowania strony wystąpił problem. Spróbuj ponownie.</translation>
 <translation id="6295158916970320988">Wszystkie witryny</translation>
 <translation id="629730747756840877">Konto</translation>
+<translation id="6297765934698848803">Organizacja, która zarządza Twoim urządzeniem, wyłączyła aparat.</translation>
 <translation id="6303969859164067831">Wyloguj się i wyłącz synchronizację</translation>
 <translation id="6316139424528454185">Ta wersja Androida jest nieobsługiwana</translation>
 <translation id="6320088164292336938">Wibracje</translation>
@@ -715,11 +727,13 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="6427112570124116297">Tłumacz internet</translation>
 <translation id="6433501201775827830">Wybierz wyszukiwarkę</translation>
 <translation id="6437478888915024427">Informacje o stronie</translation>
+<translation id="6439114592976064011">Nie zezwalaj stronom na korzystanie z urządzenia ani danych rzeczywistości wirtualnej</translation>
 <translation id="6441734959916820584">Nazwa jest zbyt długa</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# obraz}few{# obrazy}many{# obrazów}other{# obrazu}}</translation>
 <translation id="6447558397796644647">Nie udało się znaleźć tej zakładki. Sprawdź pisownię lub dodaj nową zakładkę.</translation>
 <translation id="6447842834002726250">Pliki cookie</translation>
 <translation id="6461962085415701688">Nie można otworzyć pliku</translation>
+<translation id="6462660325961255024">Pytaj, zanim zezwolisz stronom na śledzenie pozycji aparatu lub mapowanie pomieszczenia (zalecane)</translation>
 <translation id="6464977750820128603">Możesz wyświetlić strony otwierane w Chrome i ustawić dla nich liczniki czasu.\n\nGoogle otrzymuje informacje o stronach, dla których masz ustawione liczniki czasu, i o tym, jak długo je przeglądasz. Używamy tych informacji do udoskonalania Cyfrowej równowagi.</translation>
 <translation id="6475951671322991020">Pobierz film</translation>
 <translation id="6482749332252372425">Nie udało się pobrać pliku <ph name="FILE_NAME" /> z powodu braku miejsca.</translation>
@@ -831,11 +845,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7352939065658542140">FILM</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Udostępnij 1 wybrany element}few{Udostępnij # wybrane elementy}many{Udostępnij # wybranych elementów}other{Udostępnij # wybranego elementu}}</translation>
 <translation id="7359002509206457351">Dostęp do form płatności</translation>
-<translation id="7365126855094612066">W czasie trwania sesji strona będzie mogła:
-• tworzyć mapę 3D Twojego otoczenia,
-• śledzić ruch kamery.
-
-Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</translation>
 <translation id="7375125077091615385">Typ:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">Adres URL</translation>
@@ -912,6 +921,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="7942131818088350342">Przeglądarka <ph name="PRODUCT_NAME" /> jest nieaktualna.</translation>
 <translation id="7947953824732555851">Zaakceptuj i zaloguj się</translation>
 <translation id="7963646190083259054">Dostawca:</translation>
+<translation id="7967911570373677897">Aby zeskanować kod QR, otwórz ustawienia i zezwól Chrome na używanie aparatu</translation>
 <translation id="7971136598759319605">Aktywność 1 dzień temu</translation>
 <translation id="7975379999046275268">Wyświetl podgląd strony <ph name="BEGIN_NEW" />Nowość<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Ładuj wstępnie strony, by przyspieszyć przeglądanie i wyszukiwanie</translation>
@@ -957,6 +967,7 @@ Witryna NIE uzyskuje dostępu do kamery. Tylko Ty widzisz rejestrowany obraz.</t
 <translation id="8218622182176210845">Zarządzaj kontem</translation>
 <translation id="8224471946457685718">Pobieranie artykułów dla Ciebie przez Wi-Fi</translation>
 <translation id="8232956427053453090">Zachowaj dane</translation>
+<translation id="8233540874193135768">Aby zeskanować kod QR, użyj urządzenia z aparatem.</translation>
 <translation id="8250920743982581267">Dokumenty</translation>
 <translation id="825412236959742607">Ta strona używa zbyt dużo pamięci, dlatego Chrome usunął część jej zawartości.</translation>
 <translation id="8260126382462817229">Spróbuj zalogować się jeszcze raz</translation>

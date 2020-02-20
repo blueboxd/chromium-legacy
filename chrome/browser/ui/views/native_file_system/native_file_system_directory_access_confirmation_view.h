@@ -45,8 +45,6 @@ class NativeFileSystemDirectoryAccessConfirmationView
   // views::DialogDelegateView:
   base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
-  bool Accept() override;
-  bool Cancel() override;
   gfx::Size CalculatePreferredSize() const override;
   ui::ModalType GetModalType() const override;
   // It's really important that this dialog *does not* accept by default /

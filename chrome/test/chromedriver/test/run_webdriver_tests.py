@@ -348,8 +348,7 @@ if __name__ == '__main__':
     success_count = 0
 
     for test_result in test_results:
-      exp = webdriver_expectations.expectations[0].expectations_for(
-          test_result.test_name)
+      exp = webdriver_expectations.get_expectations(test_result.test_name)
       expected_result = ' '.join(exp.results)
       is_unexpected = test_result.test_status not in exp.results
 

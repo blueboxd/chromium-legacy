@@ -477,6 +477,16 @@ FloatRect PaintArtifactCompositor::PendingLayer::MapRectKnownToBeOpaque(
   return float_clip_rect.IsTight() ? float_clip_rect.Rect() : FloatRect();
 }
 
+FloatRect PaintArtifactCompositor::PendingLayer::VisualRectForOverlapTesting()
+    const {
+  FloatClipRect visual_rect(bounds);
+  GeometryMapper::LocalToAncestorVisualRect(
+      property_tree_state, PropertyTreeState::Root(), visual_rect,
+      kIgnorePlatformOverlayScrollbarSize, kNonInclusiveIntersect,
+      kExpandVisualRectForAnimation);
+  return visual_rect.Rect();
+}
+
 bool PaintArtifactCompositor::PendingLayer::Merge(const PendingLayer& guest) {
   PropertyTreeState new_state = PropertyTreeState::Uninitialized();
   if (!CanMerge(guest, guest.property_tree_state, &new_state, &bounds))
@@ -651,14 +661,8 @@ static const EffectPaintPropertyNode* StrictUnaliasedChildOfAlongPath(
 
 bool PaintArtifactCompositor::MightOverlap(const PendingLayer& layer_a,
                                            const PendingLayer& layer_b) {
-  FloatClipRect bounds_a(layer_a.bounds);
-  GeometryMapper::LocalToAncestorVisualRect(
-      layer_a.property_tree_state, PropertyTreeState::Root(), bounds_a);
-  FloatClipRect bounds_b(layer_b.bounds);
-  GeometryMapper::LocalToAncestorVisualRect(
-      layer_b.property_tree_state, PropertyTreeState::Root(), bounds_b);
-
-  return bounds_a.Rect().Intersects(bounds_b.Rect());
+  return layer_a.VisualRectForOverlapTesting().Intersects(
+      layer_b.VisualRectForOverlapTesting());
 }
 
 bool PaintArtifactCompositor::DecompositeEffect(

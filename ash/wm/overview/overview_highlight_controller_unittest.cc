@@ -8,6 +8,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_mini_view.h"
+#include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/new_desk_button.h"
@@ -393,8 +394,14 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingBasic) {
   EXPECT_EQ(desk_bar_view->mini_views()[0].get(), GetHighlightedView());
   CheckDeskBarViewSize(desk_bar_view, "first mini view");
 
+  // Test that one more tab highlights the desks name view.
+  SendKey(ui::VKEY_TAB);
+  EXPECT_EQ(desk_bar_view->mini_views()[0]->desk_name_view(),
+            GetHighlightedView());
+
   // Tests that after tabbing through the mini views, we highlight the new desk
   // button.
+  SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(desk_bar_view->new_desk_button(), GetHighlightedView());
@@ -437,10 +444,16 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingReverse) {
   SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
   EXPECT_EQ(desk_bar_view->new_desk_button(), GetHighlightedView());
 
-  // Tests that after the new desk button comes the the mini views in reverse
-  // order.
+  // Tests that after the new desk button comes the mini views and their desk
+  // name views in reverse order.
+  SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_EQ(desk_bar_view->mini_views()[1]->desk_name_view(),
+            GetHighlightedView());
   SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
   EXPECT_EQ(desk_bar_view->mini_views()[1].get(), GetHighlightedView());
+  SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_EQ(desk_bar_view->mini_views()[0]->desk_name_view(),
+            GetHighlightedView());
   SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
   EXPECT_EQ(desk_bar_view->mini_views()[0].get(), GetHighlightedView());
 
@@ -473,12 +486,18 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingMultiDisplay) {
   const auto* desk_bar_view1 = GetDesksBarViewForRoot(roots[0]);
   EXPECT_EQ(2u, desk_bar_view1->mini_views().size());
 
-  // Tests that tabbing initially will go through the desk mini views, then
-  // the new desk button on the first display.
+  // Tests that tabbing initially will go through the desk mini views and their
+  // desk name views, then the new desk button on the first display.
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(desk_bar_view1->mini_views()[0].get(), GetHighlightedView());
   SendKey(ui::VKEY_TAB);
+  EXPECT_EQ(desk_bar_view1->mini_views()[0]->desk_name_view(),
+            GetHighlightedView());
+  SendKey(ui::VKEY_TAB);
   EXPECT_EQ(desk_bar_view1->mini_views()[1].get(), GetHighlightedView());
+  SendKey(ui::VKEY_TAB);
+  EXPECT_EQ(desk_bar_view1->mini_views()[1]->desk_name_view(),
+            GetHighlightedView());
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(desk_bar_view1->new_desk_button(), GetHighlightedView());
 
@@ -500,6 +519,8 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingMultiDisplay) {
   // Tab through all items on the second display.
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
   EXPECT_EQ(desk_bar_view2->new_desk_button(), GetHighlightedView());
   SendKey(ui::VKEY_TAB);
   auto* item3 = GetOverviewItemForWindow(window3.get());
@@ -512,6 +533,8 @@ TEST_F(DesksOverviewHighlightControllerTest, TabbingMultiDisplay) {
   EXPECT_EQ(desk_bar_view3->mini_views()[0].get(), GetHighlightedView());
 
   // Tab through all items on the third display.
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
   EXPECT_EQ(desk_bar_view3->new_desk_button(), GetHighlightedView());
@@ -534,6 +557,8 @@ TEST_F(DesksOverviewHighlightControllerTest,
   const auto* desks_controller = DesksController::Get();
 
   // Use the keyboard to navigate to the new desk button.
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
@@ -573,6 +598,7 @@ TEST_F(DesksOverviewHighlightControllerTest, ActivateHighlightOnMiniView) {
   // Use keyboard to navigate to the miniview associated with desk 2.
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
   ASSERT_EQ(desk_bar_view->mini_views()[1].get(), GetHighlightedView());
 
   // Tests that after hitting the return key on the highlighted mini view
@@ -599,6 +625,7 @@ TEST_F(DesksOverviewHighlightControllerTest, CloseHighlightOnMiniView) {
   // Use keyboard to navigate to the miniview associated with desk 2.
   SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
   ASSERT_EQ(mini_view2, GetHighlightedView());
 
   // Tests that after hitting ctrl-w on the highlighted miniview associated
@@ -613,6 +640,58 @@ TEST_F(DesksOverviewHighlightControllerTest, CloseHighlightOnMiniView) {
     SendKey(ui::VKEY_TAB);
   SendKey(ui::VKEY_W, ui::EF_CONTROL_DOWN);
   EXPECT_EQ(1u, desks_controller->desks().size());
+}
+
+TEST_F(DesksOverviewHighlightControllerTest, ActivateDeskNameView) {
+  ToggleOverview();
+  const auto* desk_bar_view =
+      GetDesksBarViewForRoot(Shell::GetPrimaryRootWindow());
+  auto* desk_name_view_2 = desk_bar_view->mini_views()[1]->desk_name_view();
+
+  // Tab until the desk name view of the second desk is highlighted.
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+  EXPECT_EQ(desk_name_view_2, GetHighlightedView());
+
+  // Press enter and expect that the desk name is being edited.
+  SendKey(ui::VKEY_RETURN);
+  EXPECT_TRUE(desk_name_view_2->HasFocus());
+  EXPECT_TRUE(desk_bar_view->IsDeskNameBeingModified());
+
+  // Tabbing and the arrow keys should not change neither the focus nor the
+  // highlight.
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB);
+  SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
+  EXPECT_EQ(desk_name_view_2, GetHighlightedView());
+  EXPECT_TRUE(desk_name_view_2->HasFocus());
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_RIGHT);
+  SendKey(ui::VKEY_LEFT);
+  EXPECT_EQ(desk_name_view_2, GetHighlightedView());
+  EXPECT_TRUE(desk_name_view_2->HasFocus());
+
+  // Select all and delete.
+  SendKey(ui::VKEY_A, ui::EF_CONTROL_DOWN);
+  SendKey(ui::VKEY_BACK);
+  // Type "code" and hit enter.
+  SendKey(ui::VKEY_C);
+  SendKey(ui::VKEY_O);
+  SendKey(ui::VKEY_D);
+  SendKey(ui::VKEY_E);
+  SendKey(ui::VKEY_RETURN);
+
+  const auto* desks_controller = DesksController::Get();
+  auto* desk_2 = desks_controller->desks()[1].get();
+  EXPECT_EQ(base::UTF8ToUTF16("code"), desk_2->name());
+  EXPECT_TRUE(desk_2->is_name_set_by_user());
+
+  // Now tabbing can change the highlight again.
+  SendKey(ui::VKEY_TAB);
+  EXPECT_EQ(desk_bar_view->new_desk_button(), GetHighlightedView());
 }
 
 }  // namespace ash

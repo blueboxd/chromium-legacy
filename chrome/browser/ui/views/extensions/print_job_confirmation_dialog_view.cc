@@ -109,6 +109,14 @@ PrintJobConfirmationDialogView::PrintJobConfirmationDialogView(
       l10n_util::GetStringUTF16(
           IDS_EXTENSIONS_PRINTING_API_PRINT_REQUEST_DENY));
 
+  auto run_callback = [](PrintJobConfirmationDialogView* dialog, bool accept) {
+    std::move(dialog->callback_).Run(accept);
+  };
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(run_callback, base::Unretained(this), true));
+  DialogDelegate::set_cancel_callback(
+      base::BindOnce(run_callback, base::Unretained(this), false));
+
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -136,16 +144,6 @@ PrintJobConfirmationDialogView::PrintJobConfirmationDialogView(
 }
 
 PrintJobConfirmationDialogView::~PrintJobConfirmationDialogView() = default;
-
-bool PrintJobConfirmationDialogView::Accept() {
-  OnDialogClosed(true);
-  return true;
-}
-
-bool PrintJobConfirmationDialogView::Cancel() {
-  OnDialogClosed(false);
-  return true;
-}
 
 gfx::Size PrintJobConfirmationDialogView::CalculatePreferredSize() const {
   const int width =
@@ -175,11 +173,6 @@ bool PrintJobConfirmationDialogView::ShouldShowWindowIcon() const {
 
 bool PrintJobConfirmationDialogView::ShouldShowCloseButton() const {
   return false;
-}
-
-void PrintJobConfirmationDialogView::OnDialogClosed(bool accepted) {
-  DCHECK(callback_);
-  std::move(callback_).Run(accepted);
 }
 
 namespace chrome {

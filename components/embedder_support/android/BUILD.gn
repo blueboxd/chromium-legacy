@@ -121,3 +121,31 @@ generate_jni("web_contents_delegate_jni_headers") {
     "java/src/org/chromium/components/embedder_support/delegate/WebContentsDelegateAndroid.java",
   ]
 }
+
+static_library("context_menu") {
+  sources = [
+    "contextmenu/context_menu_builder.cc",
+    "contextmenu/context_menu_builder.h",
+  ]
+  deps = [
+    ":context_menu_jni_headers",
+    "//base",
+    "//content/public/common",
+  ]
+}
+
+generate_jni("context_menu_jni_headers") {
+  sources = [ "java/src/org/chromium/components/embedder_support/contextmenu/ContextMenuParams.java" ]
+}
+
+android_library("context_menu_java") {
+  deps = [
+    "//base:jni_java",
+    "//content/public/android:content_java",
+    "//third_party/android_deps:androidx_annotation_annotation_java",
+    "//third_party/blink/public:blink_headers_java",
+    "//ui/android:ui_java",
+  ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  sources = [ "java/src/org/chromium/components/embedder_support/contextmenu/ContextMenuParams.java" ]
+}

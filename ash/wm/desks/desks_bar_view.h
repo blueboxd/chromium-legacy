@@ -26,7 +26,7 @@ class ASH_EXPORT DesksBarView : public views::View,
                                 public views::ButtonListener,
                                 public DesksController::Observer {
  public:
-  DesksBarView(OverviewGrid* overview_grid);
+  explicit DesksBarView(OverviewGrid* overview_grid);
   ~DesksBarView() override;
 
   // Returns the height of the desk bar view which is based on the given |width|
@@ -62,6 +62,10 @@ class ASH_EXPORT DesksBarView : public views::View,
   // to a widget, as it needs to call `GetWidget()` when it's performing a
   // layout.
   void Init();
+
+  // Returns true if a desk name is being modified using its mini view's
+  // DeskNameView on this bar.
+  bool IsDeskNameBeingModified() const;
 
   // Updates the visibility state of the close buttons on all the mini_views as
   // a result of mouse and gesture events.

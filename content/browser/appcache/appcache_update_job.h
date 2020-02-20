@@ -141,7 +141,8 @@ class CONTENT_EXPORT AppCacheUpdateJob
   // new master entry.
   void FetchManifest();
   void HandleManifestFetchCompleted(URLFetcher* url_fetcher, int net_error);
-  void ContinueHandleManifestFetchCompleted(bool changed);
+  void HandleFetchedManifestChanged();
+  void HandleFetchedManifestIsUnchanged();
 
   void HandleResourceFetchCompleted(URLFetcher* url_fetcher, int net_error);
   void ContinueHandleResourceFetchCompleted(const GURL& url,

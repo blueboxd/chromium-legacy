@@ -35,16 +35,14 @@ class CloudServicesDialogView : public views::BubbleDialogDelegateView,
   // views::WidgetDelegate:
   base::string16 GetWindowTitle() const override;
 
-  // views::DialogDelegate:
-  bool Accept() override;
-  bool Cancel() override;
-
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
 
  private:
   CloudServicesDialogView(views::View* anchor_view, Browser* browser);
   ~CloudServicesDialogView() override;
+
+  void OnDialogAccepted();
 
   // views::BubbleDialogDelegateView:
   void Init() override;

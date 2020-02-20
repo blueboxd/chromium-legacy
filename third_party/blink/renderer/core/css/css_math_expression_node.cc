@@ -983,6 +983,9 @@ bool CSSMathExpressionVariadicOperation::operator==(
 
 CSSPrimitiveValue::UnitType
 CSSMathExpressionVariadicOperation::ResolvedUnitType() const {
+  if (Category() == kCalcNumber)
+    return CSSPrimitiveValue::UnitType::kNumber;
+
   CSSPrimitiveValue::UnitType result = operands_.front()->ResolvedUnitType();
   if (result == CSSPrimitiveValue::UnitType::kUnknown)
     return CSSPrimitiveValue::UnitType::kUnknown;

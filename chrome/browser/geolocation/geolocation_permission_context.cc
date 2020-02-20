@@ -14,14 +14,14 @@
 #include "content/public/browser/web_contents.h"
 #include "url/origin.h"
 
-GeolocationPermissionContext::GeolocationPermissionContext(Profile* profile)
-    : PermissionContextBase(profile,
+GeolocationPermissionContext::GeolocationPermissionContext(
+    content::BrowserContext* browser_context)
+    : PermissionContextBase(browser_context,
                             ContentSettingsType::GEOLOCATION,
                             blink::mojom::FeaturePolicyFeature::kGeolocation),
-      extensions_context_(profile) {}
+      extensions_context_(Profile::FromBrowserContext(browser_context)) {}
 
-GeolocationPermissionContext::~GeolocationPermissionContext() {
-}
+GeolocationPermissionContext::~GeolocationPermissionContext() = default;
 
 void GeolocationPermissionContext::DecidePermission(
     content::WebContents* web_contents,
@@ -29,7 +29,7 @@ void GeolocationPermissionContext::DecidePermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     bool user_gesture,
-    BrowserPermissionCallback callback) {
+    permissions::BrowserPermissionCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   bool permission_set;
@@ -50,9 +50,9 @@ void GeolocationPermissionContext::DecidePermission(
   }
   DCHECK(callback);
 
-  PermissionContextBase::DecidePermission(web_contents, id, requesting_origin,
-                                          embedding_origin, user_gesture,
-                                          std::move(callback));
+  permissions::PermissionContextBase::DecidePermission(
+      web_contents, id, requesting_origin, embedding_origin, user_gesture,
+      std::move(callback));
 }
 
 void GeolocationPermissionContext::UpdateTabContext(

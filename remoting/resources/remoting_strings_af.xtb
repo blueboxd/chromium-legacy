@@ -305,6 +305,11 @@ As "<ph name="SERVICE_SCRIPT_NAME" />" reeds gemerk is, moet jy dit ontmerk en d
 <translation id="8196755618196986400">Om ons toe te laat om jou vir verdere inligting te kontak, sal jou e-posadres ingesluit word by enige terugvoer wat jy indien.</translation>
 <translation id="8244400547700556338">Kom meer te wete.</translation>
 <translation id="8261506727792406068">Vee uit</translation>
+<translation id="8295077433896346116">Om <ph name="PRODUCT_NAME" /> te gebruik, moet jy die "Toeganklikheid"-toestemming verleen sodat invoer van die afstandmasjien af op hierdie Mac ingevoeg kan word.
+
+Klik "<ph name="BUTTON_NAME" />" hieronder om hierdie toestemming te verleen. Merk die blokkie langs "<ph name="SERVICE_SCRIPT_NAME" />" in die "Toeganklikheid"-voorkeurepaneel wat sal oopmaak.
+
+As "<ph name="SERVICE_SCRIPT_NAME" />" reeds gemerk is, moet jy dit ontmerk en dit dan weer merk.</translation>
 <translation id="8355326866731426344">Hierdie toegangskode gaan oor <ph name="TIMEOUT" /> verstryk</translation>
 <translation id="8355485110405946777">Sluit programloglêers in om ons te help om jou probleem op te los (loglêers kan private inligting insluit).</translation>
 <translation id="837021510621780684">Van hierdie rekenaar af</translation>

@@ -790,80 +790,88 @@ class MockAXPlatformNodeTextRangeProviderWin
   //
   // ITextRangeProvider methods.
   //
-  STDMETHODIMP Clone(ITextRangeProvider** clone) override { return E_NOTIMPL; }
-
-  STDMETHODIMP Compare(ITextRangeProvider* other, BOOL* result) override {
+  IFACEMETHODIMP Clone(ITextRangeProvider** clone) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP CompareEndpoints(TextPatternRangeEndpoint this_endpoint,
-                                ITextRangeProvider* other,
-                                TextPatternRangeEndpoint other_endpoint,
-                                int* result) override {
+  IFACEMETHODIMP Compare(ITextRangeProvider* other, BOOL* result) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP ExpandToEnclosingUnit(TextUnit unit) override {
+  IFACEMETHODIMP CompareEndpoints(TextPatternRangeEndpoint this_endpoint,
+                                  ITextRangeProvider* other,
+                                  TextPatternRangeEndpoint other_endpoint,
+                                  int* result) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP FindAttribute(TEXTATTRIBUTEID attribute_id,
-                             VARIANT val,
-                             BOOL backward,
-                             ITextRangeProvider** result) override {
+  IFACEMETHODIMP ExpandToEnclosingUnit(TextUnit unit) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP FindText(BSTR string,
-                        BOOL backwards,
-                        BOOL ignore_case,
-                        ITextRangeProvider** result) override {
+  IFACEMETHODIMP FindAttribute(TEXTATTRIBUTEID attribute_id,
+                               VARIANT val,
+                               BOOL backward,
+                               ITextRangeProvider** result) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetAttributeValue(TEXTATTRIBUTEID attribute_id,
-                                 VARIANT* value) override {
+  IFACEMETHODIMP FindText(BSTR string,
+                          BOOL backwards,
+                          BOOL ignore_case,
+                          ITextRangeProvider** result) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetBoundingRectangles(SAFEARRAY** rectangles) override {
+  IFACEMETHODIMP GetAttributeValue(TEXTATTRIBUTEID attribute_id,
+                                   VARIANT* value) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetEnclosingElement(
+  IFACEMETHODIMP GetBoundingRectangles(SAFEARRAY** rectangles) override {
+    return E_NOTIMPL;
+  }
+
+  IFACEMETHODIMP GetEnclosingElement(
       IRawElementProviderSimple** element) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP GetText(int max_count, BSTR* text) override { return E_NOTIMPL; }
-
-  STDMETHODIMP Move(TextUnit unit, int count, int* units_moved) override {
+  IFACEMETHODIMP GetText(int max_count, BSTR* text) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP MoveEndpointByUnit(TextPatternRangeEndpoint endpoint,
-                                  TextUnit unit,
-                                  int count,
-                                  int* units_moved) override {
+  IFACEMETHODIMP Move(TextUnit unit, int count, int* units_moved) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP MoveEndpointByRange(
+  IFACEMETHODIMP MoveEndpointByUnit(TextPatternRangeEndpoint endpoint,
+                                    TextUnit unit,
+                                    int count,
+                                    int* units_moved) override {
+    return E_NOTIMPL;
+  }
+
+  IFACEMETHODIMP MoveEndpointByRange(
       TextPatternRangeEndpoint this_endpoint,
       ITextRangeProvider* other,
       TextPatternRangeEndpoint other_endpoint) override {
     return E_NOTIMPL;
   }
 
-  STDMETHODIMP Select() override { return E_NOTIMPL; }
+  IFACEMETHODIMP Select() override { return E_NOTIMPL; }
 
-  STDMETHODIMP AddToSelection() override { return E_NOTIMPL; }
+  IFACEMETHODIMP AddToSelection() override { return E_NOTIMPL; }
 
-  STDMETHODIMP RemoveFromSelection() override { return E_NOTIMPL; }
+  IFACEMETHODIMP RemoveFromSelection() override { return E_NOTIMPL; }
 
-  STDMETHODIMP ScrollIntoView(BOOL align_to_top) override { return E_NOTIMPL; }
+  IFACEMETHODIMP ScrollIntoView(BOOL align_to_top) override {
+    return E_NOTIMPL;
+  }
 
-  STDMETHODIMP GetChildren(SAFEARRAY** children) override { return E_NOTIMPL; }
+  IFACEMETHODIMP GetChildren(SAFEARRAY** children) override {
+    return E_NOTIMPL;
+  }
 };
 
 TEST_F(AXPlatformNodeTextRangeProviderTest, TestITextRangeProviderClone) {

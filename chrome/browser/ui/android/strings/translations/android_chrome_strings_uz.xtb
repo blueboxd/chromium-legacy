@@ -137,6 +137,7 @@
 <translation id="2013642289801508067">{FILE_COUNT,plural, =1{# ta fayl}other{# ta fayl}}</translation>
 <translation id="2017836877785168846">Manzil qatoridan tarix va avtoto‘ldirishlarni tozalaydi.</translation>
 <translation id="2021896219286479412">To‘liq ekranli rejim sozlamalari</translation>
+<translation id="2025115093177348061">Boyitilgan reallik</translation>
 <translation id="2038563949887743358">Saytning to‘liq versiyasini ko‘rish</translation>
 <translation id="2041019821020695769">Chrome sizga bildirishnomalar yuborishi uchun <ph name="BEGIN_LINK" />Android sozlamalari<ph name="END_LINK" /> orqali bildirishnomalarni yoqing.</translation>
 <translation id="204321170514947529">Chrome brauzeridagi <ph name="APP_NAME" /> maʼlumotlari ham tozalanadi</translation>
@@ -150,6 +151,9 @@
 <translation id="2100273922101894616">Avtomatik kirish</translation>
 <translation id="2100314319871056947">Yuboriladigan matnni biroz qisqartiring</translation>
 <translation id="2107397443965016585">Himoyalangan kontentni ijro etishdan avval ruxsat soʻralsin (tavsiya etiladi)</translation>
+<translation id="2109711654079915747">Tasvirlar, mavzular va boshqa maʼlumotlarni belgilangan sahifani tark etmasdan qidiring. Buning uchun soʻz tanlang va u Google qidiruv serverlariga kontekst bilan birga yuboriladi.
+
+Soʻrovni aniqlashtirish yoki bir nechta soʻzni tanlash uchun istalgan soʻz ustiga bosib turing. Soʻrovni tahrirlash uchun panelni yuqoriga tortib oching, yangi varaq ochish uchun yoyish belgisini, keyin qidiruv oynasini bosing.</translation>
 <translation id="2111511281910874386">Sahifaga o‘tish</translation>
 <translation id="2122601567107267586">Dastur ochilmadi</translation>
 <translation id="2126426811489709554">Chrome asosida ishlaydi</translation>
@@ -176,6 +180,7 @@
 <translation id="2321958826496381788">Sudragichni matn o‘qish uchun qulay bo‘lguncha suring. Satr boshiga ikki marta bosilganda matn hajmi shunday bo‘lishi kerak.</translation>
 <translation id="2323763861024343754">Sayt xotirasi</translation>
 <translation id="2328985652426384049">Kirish amalga oshmadi</translation>
+<translation id="234265804618409743">Kamerangiz ochilmadi. Xatolik yuz berdi.</translation>
 <translation id="2349710944427398404">Chrome foydalanadigan barcha ma’lumotlar: hisoblar, xatcho‘plar va saqlangan sozlamalar</translation>
 <translation id="2353636109065292463">Internet aloqasini tekshirish</translation>
 <translation id="2359808026110333948">Davom etish</translation>
@@ -192,6 +197,9 @@
 <translation id="2434158240863470628">Yuklab olindi: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
 <translation id="2440823041667407902">Joylashuv ma’lumotidan foyd-sh</translation>
 <translation id="2450083983707403292"><ph name="FILE_NAME" /> qaytadan yuklab olinsinmi?</translation>
+<translation id="2450907520913474542">Tasvirlar, mavzular va boshqa maʼlumotlarni belgilangan sahifani tark etmasdan qidiring. Buning uchun soʻz tanlang va u Google qidiruv serverlariga kontekst bilan birga yuboriladi.
+
+Soʻrovni aniqlashtirish yoki bir nechta soʻzni tanlash uchun istalgan soʻz ustiga bosib turing. Soʻrovni tahrirlash uchun panelni yuqoriga tortib oching, yangi varaq ochish uchun yoyish belgisini, keyin qidiruv oynasini bosing.</translation>
 <translation id="246532703174860178">Ulashish</translation>
 <translation id="2482878487686419369">Bildirishnomalar</translation>
 <translation id="2490684707762498678"><ph name="APP_NAME" /> tomonidan boshqariladi</translation>
@@ -423,6 +431,7 @@
 <translation id="4298388696830689168">Aloqador saytlar</translation>
 <translation id="4307992518367153382">Asosiy</translation>
 <translation id="4314815835985389558">Sinxronizatsiyani boshqarish</translation>
+<translation id="4321739720395210191">Kamerangiz ochilmadi. Qurilmani qayta ishga tushirib, qaytadan urining.</translation>
 <translation id="4351244548802238354">Oynani yopish</translation>
 <translation id="4353114845960720315">VR seansida bu sayt ayrim axborotlar ishlatilishini taniy oladi, jumladan:</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -469,6 +478,7 @@ Google hisobingiz orqali amalga oshirgan qidiruvlaringiz, brauzer tarixi va bosh
 <translation id="4660838440047236328">xonangiz dizayni</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> ta xatcho‘p o‘chirib tashlandi</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> sayti bosh ekranga qo‘shildi</translation>
+<translation id="4670064810192446073">Virtual reallik</translation>
 <translation id="4684427112815847243">Hamma narsa sinxronlansin</translation>
 <translation id="4695891336199304370">{SHIPPING_OPTIONS,plural, =1{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 va yana <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ta}other{<ph name="SHIPPING_OPTION_PREVIEW" />\u2026 va yana <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> ta}}</translation>
 <translation id="4696983787092045100">Matnni qurilmalaringizga yuborish</translation>
@@ -504,6 +514,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="4882831918239250449">Moslashtirilgan qidiruv, reklama va boshqa tashriflar tarixi parametrlarini tanlang</translation>
 <translation id="4883854917563148705">Boshqariladigan sozlamalarni oʻzgartirish imkonsiz</translation>
 <translation id="4885273946141277891">Bir nechta Chrome versiyalari birdaniga ishlamaydi.</translation>
+<translation id="4887024562049524730">Saytlar virtual reallik qurilmalari yoki maʼlumotlaridan foydalanishi oldidan ruxsat olsin (tavsiya etiladi)</translation>
 <translation id="4910889077668685004">To‘lov ilovalari</translation>
 <translation id="4913161338056004800">Statistikani nolga qaytarish</translation>
 <translation id="4913169188695071480">Yangilanishni to‘xtatish</translation>
@@ -582,7 +593,6 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="5447765697759493033">Bu sayt tarjima qilinmaydi</translation>
 <translation id="545042621069398927">Yuklab olish tezlashtirilmoqda.</translation>
 <translation id="5456381639095306749">Sahifani yuklab olish</translation>
-<translation id="5475862044948910901">Virtual reallik seansi boshlansinmi?</translation>
 <translation id="548278423535722844">Xaritalar ilovasida ochish</translation>
 <translation id="5487521232677179737">Tarixni tozalash</translation>
 <translation id="5494752089476963479">Saytlarda chiquvchi yoqimsiz yoki befoyda reklamalar bloklansin</translation>
@@ -623,6 +633,7 @@ Bu sozlamani almashtirish uchun <ph name="BEGIN_LINK" />sinxronizatsiyani tiklan
 <translation id="5710871682236653961">NFC qurilmalar ustiga bosilganda saytlarda axborot almashinuviga ruxsat soʻralsin (tavsiya etiladi)</translation>
 <translation id="572328651809341494">Yaqinda ochilgan ichki oynalar</translation>
 <translation id="5726692708398506830">Sahifadagi hamma narsani kattalashtirish</translation>
+<translation id="5735071096924648956">Saytlarga kamerangiz joylashuvini aniqlash yoki xonangizni proyeksiyalashni taqiqlash</translation>
 <translation id="5748802427693696783">Standart rejimdagi varaqlarga o‘tildi</translation>
 <translation id="5749068826913805084">Yuklab olish uchun Chrome brauzerida omborga saqlash ruxsati bo‘lishi zarur.</translation>
 <translation id="5763382633136178763">Inkognito rejimidagi ichki oynalar</translation>
@@ -693,6 +704,7 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="6277522088822131679">Sahifani chop etishda muammo yuzaga keldi. Qayta urinib ko‘ring.</translation>
 <translation id="6295158916970320988">Barcha saytlar</translation>
 <translation id="629730747756840877">Hisob</translation>
+<translation id="6297765934698848803">Kamerangiz qurilmangizni boshqaruvchi tashkilot tomonidan oʻchirib qoʻyildi.</translation>
 <translation id="6303969859164067831">Hisobdan chiqish va sinxronizatsiyani to‘xtatish</translation>
 <translation id="6316139424528454185">Android versiyasi bilan mos emas</translation>
 <translation id="6320088164292336938">Tebranish</translation>
@@ -715,11 +727,13 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="6427112570124116297">Internetni oʻz tilingizda kezing</translation>
 <translation id="6433501201775827830">Qidiruv tizimini tanlang</translation>
 <translation id="6437478888915024427">Sahifa haqida</translation>
+<translation id="6439114592976064011">Saytlarga virtual reallik qurilmalari yoki maʼlumotlaridan foydalanishni taqiqlash</translation>
 <translation id="6441734959916820584">Bu nom juda uzun</translation>
 <translation id="6444421004082850253">{FILE_COUNT,plural, =1{# ta rasm}other{# ta rasm}}</translation>
 <translation id="6447558397796644647">Bu bukmark topilmadi. Xatosiz kiritilganini tekshiring yoki yangi bukmark kiriting</translation>
 <translation id="6447842834002726250">Cookie fayllari</translation>
 <translation id="6461962085415701688">Fayl ochilmadi</translation>
+<translation id="6462660325961255024">Saytlar kamerangiz joylashuvini aniqlashi yoki xonangizni proyeksiyalashidan oldin ruxsat olsin (tavsiya etiladi)</translation>
 <translation id="6464977750820128603">Chromeda ochilgan saytlarni koʻrish va ular uchun taymerlar sozlash mumkin.\n\nGooglega faqat taymer sozlangan saytlar va ular qancha vaqt ochilganligi haqidagi axborot yuboriladi. Bu axborot Raqamli qulaylikni yaxshilashga yordam beradi.</translation>
 <translation id="6475951671322991020">Videoni yuklab olish</translation>
 <translation id="6482749332252372425">Xotirada yetarli bo‘sh joy yo‘qligi tufayli “<ph name="FILE_NAME" />” fayli yuklab olinmadi.</translation>
@@ -831,11 +845,6 @@ Masalan, qaysi sahifalarga kirganligingizdan qat’i nazar, ba’zi saytlarda re
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Belgilangan 1 ta elementni ulashish}other{Belgilangan # ta elementni ulashish}}</translation>
 <translation id="7359002509206457351">To‘lov usullariga kirish uchun ruxsat</translation>
-<translation id="7365126855094612066">Ushbu seansda sayt quyidagilarni bajaradi:
-• atrofingizdagi muhitning 3D xaritasini yaratish
-• kamera harakatlarini kuzatish
-
-Sayt bu seansda kamerani ISHLATMAYDI. Kamera rasmlari faqat siz uchun chiqadi.</translation>
 <translation id="7375125077091615385">Turi:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>
@@ -912,6 +921,7 @@ Sayt bu seansda kamerani ISHLATMAYDI. Kamera rasmlari faqat siz uchun chiqadi.</
 <translation id="7942131818088350342"><ph name="PRODUCT_NAME" /> eskirgan.</translation>
 <translation id="7947953824732555851">Qabul qilish va kirish</translation>
 <translation id="7963646190083259054">Ta’minotchi:</translation>
+<translation id="7967911570373677897">Chrome QR-kodni skanerlashi uchun sozlamalar orqali kamerani yoqing.</translation>
 <translation id="7971136598759319605">1 kun oldin onlayn edi</translation>
 <translation id="7975379999046275268">Sahifaga razm solish <ph name="BEGIN_NEW" />Yangi<ph name="END_NEW" /></translation>
 <translation id="7981313251711023384">Saytlarni kezish va qidiruv tezroq bajarilishi uchun sahifalar oldindan yuklansin</translation>
@@ -957,6 +967,7 @@ Sayt bu seansda kamerani ISHLATMAYDI. Kamera rasmlari faqat siz uchun chiqadi.</
 <translation id="8218622182176210845">Hisobingizni boshqaring</translation>
 <translation id="8224471946457685718">Siz uchun maqolalar Wi-Fi orqali yuklab olinsin</translation>
 <translation id="8232956427053453090">Maʼlumotlar joyida qolsin</translation>
+<translation id="8233540874193135768">QR kod yoki bank kartasini skanerlash uchun kamerali qurilmadan foydalaning.</translation>
 <translation id="8250920743982581267">Hujjatlar</translation>
 <translation id="825412236959742607">Bu sahifa juda ko‘p xotira ishlatishi sababli Chrome bu kontentni olib tashladi.</translation>
 <translation id="8260126382462817229">Qaytadan kirib ko‘ring</translation>

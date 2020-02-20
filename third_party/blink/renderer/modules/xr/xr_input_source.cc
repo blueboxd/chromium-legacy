@@ -314,6 +314,10 @@ void XRInputSource::UpdateSelectState(
 
   if (!state_.is_visible) {
     DVLOG(3) << __func__ << ": input NOT VISIBLE";
+    if (new_state->primary_input_clicked) {
+      DVLOG(3) << __func__ << ": got click while invisible, SUPPRESS end";
+      state_.xr_select_events_suppressed = false;
+    }
     return;
   }
   if (state_.xr_select_events_suppressed) {
@@ -354,6 +358,7 @@ void XRInputSource::ProcessOverlayHitTest(
   // causes targetRaySpace and gripSpace to return null poses.
   FloatPoint point(new_state->overlay_pointer_position->x(),
                    new_state->overlay_pointer_position->y());
+  DVLOG(3) << __func__ << ": hit test point=" << point;
 
   HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kTouchEvent |
                                                 HitTestRequest::kReadOnly |

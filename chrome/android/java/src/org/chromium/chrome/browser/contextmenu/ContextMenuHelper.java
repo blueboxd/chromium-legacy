@@ -24,9 +24,10 @@ import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.contextmenu.ContextMenuParams.PerformanceClass;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver;
 import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.MenuSourceType;
@@ -164,8 +165,8 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
             final RevampedContextMenuCoordinator menuCoordinator =
                     new RevampedContextMenuCoordinator(
                             topContentOffsetPx, this::shareImageWithLastShareComponent);
-            menuCoordinator.displayMenu(mWindow, mCurrentContextMenuParams, items, mCallback,
-                    mOnMenuShown, mOnMenuClosed);
+            menuCoordinator.displayMenu(mWindow, mWebContents, mCurrentContextMenuParams, items,
+                    mCallback, mOnMenuShown, mOnMenuClosed);
             if (sRevampedContextMenuShownCallback != null) {
                 sRevampedContextMenuShownCallback.onResult(menuCoordinator);
             }
@@ -311,8 +312,8 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
             return;
         }
         ContextMenuUi menuUi = new PlatformContextMenuUi(menu);
-        menuUi.displayMenu(
-                mWindow, mCurrentContextMenuParams, items, mCallback, mOnMenuShown, mOnMenuClosed);
+        menuUi.displayMenu(mWindow, mWebContents, mCurrentContextMenuParams, items, mCallback,
+                mOnMenuShown, mOnMenuClosed);
     }
 
     private void recordTimeToTakeActionHistogram(boolean selectedItem) {
@@ -323,8 +324,9 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
                 - mMenuShownTimeMs;
         RecordHistogram.recordTimesHistogram(histogramName, timeToTakeActionMs);
         if (mCurrentContextMenuParams.isAnchor()
-                && mCurrentContextMenuParams.getPerformanceClass()
-                        == PerformanceClass.PERFORMANCE_FAST) {
+                && PerformanceHintsObserver.getPerformanceClassForURL(
+                           mWebContents, mCurrentContextMenuParams.getLinkUrl())
+                        == PerformanceHintsObserver.PerformanceClass.PERFORMANCE_FAST) {
             RecordHistogram.recordTimesHistogram(
                     histogramName + ".PerformanceClassFast", timeToTakeActionMs);
         }

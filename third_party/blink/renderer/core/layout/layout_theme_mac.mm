@@ -319,8 +319,10 @@ Color LayoutThemeMacRefresh::PlatformGrammarMarkerUnderlineColor() const {
 
 Color LayoutThemeMacRefresh::FocusRingColor() const {
   static const RGBA32 kDefaultFocusRingColor = 0xFF101010;
-  if (UsesTestModeFocusRingColor())
-    return kDefaultFocusRingColor;
+  if (UsesTestModeFocusRingColor()) {
+    return HasCustomFocusRingColor() ? GetCustomFocusRingColor()
+                                     : kDefaultFocusRingColor;
+  }
 
   Color keyboard_focus_indicator =
       GetSystemColor(MacSystemColorID::kKeyboardFocusIndicator);

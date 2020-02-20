@@ -10,13 +10,12 @@ import android.util.SparseArray;
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.base.WindowAndroid;
 
 /** Tracks the Activiy for a given WebContents on behalf of a NFC instance that cannot talk
  * directly to WebContents.
  */
-class NfcHost extends WebContentsObserver implements WindowEventObserver {
+class NfcHost implements WindowEventObserver {
     private static final SparseArray<NfcHost> sContextHostsMap = new SparseArray<NfcHost>();
 
     // The WebContents with which this host is associated.
@@ -43,8 +42,6 @@ class NfcHost extends WebContentsObserver implements WindowEventObserver {
     }
 
     NfcHost(WebContents webContents, int contextId) {
-        super(webContents);
-
         mWebContents = webContents;
 
         // NFC will not work if there is no WindowEventObserverManager associated with the

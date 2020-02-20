@@ -65,6 +65,11 @@ config("opus_private_config") {
     ]
   }
 
+  if (is_official_build) {
+    # Disable assertion messages from ENABLE_HARDENING, saving 16.4 kb.
+    defines += [ "CHROMIUM_NO_LOGGING" ]
+  }
+
   if (is_debug) {
     # Turn off a warning in opus_decoder.c when compiling without optimization.
     defines += [ "OPUS_WILL_BE_SLOW" ]

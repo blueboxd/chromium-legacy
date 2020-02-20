@@ -255,8 +255,7 @@ AppCacheUpdateJob::UrlToFetch::UrlToFetch(const GURL& url,
 
 AppCacheUpdateJob::UrlToFetch::UrlToFetch(const UrlToFetch& other) = default;
 
-AppCacheUpdateJob::UrlToFetch::~UrlToFetch() {
-}
+AppCacheUpdateJob::UrlToFetch::~UrlToFetch() = default;
 
 AppCacheUpdateJob::AppCacheUpdateJob(AppCacheServiceImpl* service,
                                      AppCacheGroup* group)
@@ -500,33 +499,40 @@ void AppCacheUpdateJob::HandleManifestFetchCompleted(URLFetcher* url_fetcher,
     manifest_data_ = manifest_fetcher->manifest_data();
     manifest_response_info_ =
         std::make_unique<net::HttpResponseInfo>(request->GetResponseInfo());
-    if (update_type_ == UPGRADE_ATTEMPT)
+    if (update_type_ == UPGRADE_ATTEMPT) {
       CheckIfManifestChanged();  // continues asynchronously
-    else
-      ContinueHandleManifestFetchCompleted(true);
-  } else if (response_code == 304 && update_type_ == UPGRADE_ATTEMPT) {
+    } else {
+      HandleFetchedManifestChanged();
+    }
+    return;
+  }
+
+  if (response_code == 304 && update_type_ == UPGRADE_ATTEMPT) {
     if (fetched_manifest_scope_ == cached_manifest_scope_) {
-      ContinueHandleManifestFetchCompleted(false);
+      HandleFetchedManifestIsUnchanged();
     } else {
       // We don't check if |cached_manifest_parser_version_| is 0 here since in
       // that case we didn't add conditional headers and don't expect a 304
       // response.
       ReadManifestFromCacheAndContinue();
     }
-  } else if ((response_code == 404 || response_code == 410) &&
-             update_type_ == UPGRADE_ATTEMPT) {
-    storage_->MakeGroupObsolete(group_, this, response_code);  // async
-  } else {
-    const char kFormatString[] = "Manifest fetch failed (%d) %s";
-    std::string message =
-        FormatUrlErrorMessage(kFormatString, manifest_url_,
-                              manifest_fetcher->result(), response_code);
-    HandleCacheFailure(
-        blink::mojom::AppCacheErrorDetails(
-            message, blink::mojom::AppCacheErrorReason::APPCACHE_MANIFEST_ERROR,
-            manifest_url_, response_code, false /*is_cross_origin*/),
-        manifest_fetcher->result(), GURL());
+    return;
   }
+
+  if ((response_code == 404 || response_code == 410) &&
+      update_type_ == UPGRADE_ATTEMPT) {
+    storage_->MakeGroupObsolete(group_, this, response_code);  // async
+    return;
+  }
+
+  const char kFormatString[] = "Manifest fetch failed (%d) %s";
+  std::string message = FormatUrlErrorMessage(
+      kFormatString, manifest_url_, manifest_fetcher->result(), response_code);
+  HandleCacheFailure(
+      blink::mojom::AppCacheErrorDetails(
+          message, blink::mojom::AppCacheErrorReason::APPCACHE_MANIFEST_ERROR,
+          manifest_url_, response_code, false /*is_cross_origin*/),
+      manifest_fetcher->result(), GURL());
 }
 
 void AppCacheUpdateJob::OnGroupMadeObsolete(AppCacheGroup* group,
@@ -555,32 +561,33 @@ void AppCacheUpdateJob::OnGroupMadeObsolete(AppCacheGroup* group,
   }
 }
 
-void AppCacheUpdateJob::ContinueHandleManifestFetchCompleted(bool changed) {
+void AppCacheUpdateJob::HandleFetchedManifestIsUnchanged() {
   DCHECK_EQ(internal_state_, AppCacheUpdateJobState::FETCH_MANIFEST);
 
-  if (!changed) {
-    DCHECK_EQ(update_type_, UPGRADE_ATTEMPT);
-    internal_state_ = AppCacheUpdateJobState::NO_UPDATE;
+  DCHECK_EQ(update_type_, UPGRADE_ATTEMPT);
+  internal_state_ = AppCacheUpdateJobState::NO_UPDATE;
 
-    // We should only ever allow AppCaches to remain unchanged if their parser
-    // version is 1 or higher.
-    DCHECK_GE(cached_manifest_parser_version_, 1);
+  // We should only ever allow AppCaches to remain unchanged if their parser
+  // version is 1 or higher.
+  DCHECK_GE(cached_manifest_parser_version_, 1);
 
-    // No manifest update is planned.  Set the fetched manifest parser version
-    // and scope to match their initial values.
-    fetched_manifest_parser_version_ = cached_manifest_parser_version_;
-    fetched_manifest_scope_ = cached_manifest_scope_;
+  // No manifest update is planned.  Set the fetched manifest parser version
+  // and scope to match their initial values.
+  fetched_manifest_parser_version_ = cached_manifest_parser_version_;
+  fetched_manifest_scope_ = cached_manifest_scope_;
 
-    // Set |refetched_manifest_scope_| to match |fetched_manifest_scope_| so
-    // StoreGroupAndCache() can verify the overall state of the
-    // AppCacheUpdateJob is correct.
-    refetched_manifest_scope_ = fetched_manifest_scope_;
+  // Set |refetched_manifest_scope_| to match |fetched_manifest_scope_| so
+  // StoreGroupAndCache() can verify the overall state of the
+  // AppCacheUpdateJob is correct.
+  refetched_manifest_scope_ = fetched_manifest_scope_;
 
-    // Wait for pending master entries to download.
-    FetchMasterEntries();
-    MaybeCompleteUpdate();  // if not done, run async 7.9.4 step 7 substeps
-    return;
-  }
+  // Wait for pending master entries to download.
+  FetchMasterEntries();
+  MaybeCompleteUpdate();  // if not done, run async 7.9.4 step 7 substeps
+}
+
+void AppCacheUpdateJob::HandleFetchedManifestChanged() {
+  DCHECK_EQ(internal_state_, AppCacheUpdateJobState::FETCH_MANIFEST);
 
   AppCacheManifest manifest;
   if (!ParseManifest(manifest_url_, fetched_manifest_scope_,
@@ -1215,12 +1222,12 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
   }
 
   if (fetched_manifest_scope_ != cached_manifest_scope_) {
-    ContinueHandleManifestFetchCompleted(true);
+    HandleFetchedManifestChanged();
     return;
   }
 
   if (cached_manifest_parser_version_ < 1) {
-    ContinueHandleManifestFetchCompleted(true);
+    HandleFetchedManifestChanged();
     return;
   }
 
@@ -1247,8 +1254,11 @@ void AppCacheUpdateJob::OnManifestDataReadComplete(int result) {
   } else {
     read_manifest_buffer_ = nullptr;
     manifest_response_reader_.reset();
-    ContinueHandleManifestFetchCompleted(
-        result < 0 || manifest_data_ != loaded_manifest_data_);
+    if (result < 0 || manifest_data_ != loaded_manifest_data_) {
+      HandleFetchedManifestChanged();
+    } else {
+      HandleFetchedManifestIsUnchanged();
+    }
   }
 }
 
@@ -1307,7 +1317,7 @@ void AppCacheUpdateJob::OnManifestFromCacheDataReadComplete(int result) {
     manifest_data_ = loaded_manifest_data_;
     read_manifest_buffer_ = nullptr;
     manifest_response_reader_.reset();
-    ContinueHandleManifestFetchCompleted(true);
+    HandleFetchedManifestChanged();
   }
 }
 

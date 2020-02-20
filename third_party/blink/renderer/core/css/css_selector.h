@@ -231,9 +231,10 @@ class CORE_EXPORT CSSSelector {
     kPseudoPictureInPicture,
     kPseudoInRange,
     kPseudoOutOfRange,
+    kPseudoXrOverlay,
     // Pseudo elements in UA ShadowRoots. Available in any stylesheets.
     kPseudoWebKitCustomElement,
-    // Pseudo elements in UA ShadowRoots. Availble only in UA stylesheets.
+    // Pseudo elements in UA ShadowRoots. Available only in UA stylesheets.
     kPseudoBlinkInternalElement,
     kPseudoCue,
     kPseudoFutureCue,
@@ -253,7 +254,6 @@ class CORE_EXPORT CSSSelector {
     kPseudoSlotted,
     kPseudoVideoPersistent,
     kPseudoVideoPersistentAncestor,
-    kPseudoXrImmersiveDomOverlay,
   };
 
   enum AttributeMatchType {

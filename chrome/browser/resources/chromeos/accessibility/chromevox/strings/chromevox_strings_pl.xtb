@@ -27,6 +27,7 @@
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, pole złożone</translation>
 <translation id="1161762950103988776">Przejdź</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, element menu mający podmenu</translation>
+<translation id="1175914831232945926">Cyfry</translation>
 <translation id="1177863135347784049">Niestandardowe</translation>
 <translation id="1188858454923323853">pomocniczy</translation>
 <translation id="1195238899008218998">Posłowie</translation>
@@ -145,6 +146,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="1969092762068865084">lipiec</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1982529757455190616">Nie ma poprzedniego punktu przejścia</translation>
+<translation id="1988733631391393183">Pokazuj polecenia klawiatury brajlowskiej w menu ChromeVoxa</translation>
 <translation id="1990932729021763163">Nagłówek wiersza:</translation>
 <translation id="2002895034995108595">Zresetuj bieżącą mapę klawiszy</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{lewy nawias kwadratowy}few{# lewe nawiasy kwadratowe}many{# lewych nawiasów kwadratowych}other{# left brackets}}</translation>
@@ -308,6 +310,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="3109724472072898302">Zwinięty</translation>
 <translation id="3112457281078985179">Aby włączyć lub wyłączyć czytnik ChromeVox, naciśnij Ctrl + Alt + Z.</translation>
 <translation id="3128896337293924532">Nie ma następnego cytatu blokowego</translation>
+<translation id="3131002934070407451">Odczytuj numery jako:</translation>
 <translation id="3134461040845705080">rdonly</translation>
 <translation id="3137663468179739624">Oliwkowy</translation>
 <translation id="3138767756593758860">Pokaż listę punktów orientacyjnych</translation>
@@ -1000,6 +1003,7 @@ Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="7968340748835037139">Ciemnozielony</translation>
 <translation id="7972507042926081808">Czekoladowy</translation>
 <translation id="7974390230414479278">Element menu</translation>
+<translation id="8004507136466386272">Słowa</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{cudzysłów}few{# cudzysłowy}many{# cudzysłówów}other{# quotes}}</translation>
 <translation id="8017588669690167134">Wyłącz mowę</translation>

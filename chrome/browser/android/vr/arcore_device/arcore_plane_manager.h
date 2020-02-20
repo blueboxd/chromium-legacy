@@ -47,6 +47,9 @@ class ArCorePlaneManager {
 
   bool PlaneExists(PlaneId id) const;
 
+  // Returns base::nullopt if plane with the given address does not exist.
+  base::Optional<PlaneId> GetPlaneId(void* plane_address) const;
+
   // Returns base::nullopt if plane with the given id does not exist.
   base::Optional<gfx::Transform> GetMojoFromPlane(PlaneId id) const;
 

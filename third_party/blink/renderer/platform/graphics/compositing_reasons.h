@@ -27,7 +27,6 @@ using CompositingReasons = uint64_t;
   V(ActiveOpacityAnimation)                                                   \
   V(ActiveFilterAnimation)                                                    \
   V(ActiveBackdropFilterAnimation)                                            \
-  V(ImmersiveArOverlay)                                                       \
   V(ScrollDependentPosition)                                                  \
   V(OverflowScrolling)                                                        \
   V(OverflowScrollingParent)                                                  \
@@ -40,6 +39,7 @@ using CompositingReasons = uint64_t;
   V(WillChangeOther)                                                          \
   V(BackdropFilter)                                                           \
   V(RootScroller)                                                             \
+  V(XrOverlay)                                                                \
                                                                               \
   /* Overlap reasons that require knowing what's behind you in paint-order    \
      before knowing the answer. */                                            \
@@ -123,7 +123,7 @@ class PLATFORM_EXPORT CompositingReason {
 
     kComboAllDirectNonStyleDeterminedReasons =
         kVideo | kCanvas | kPlugin | kIFrame | kOverflowScrollingParent |
-        kOutOfFlowClipping | kVideoOverlay | kImmersiveArOverlay | kRoot |
+        kOutOfFlowClipping | kVideoOverlay | kXrOverlay | kRoot |
         kRootScroller | kScrollDependentPosition,
 
     kComboAllDirectReasons = kComboAllDirectStyleDeterminedReasons |

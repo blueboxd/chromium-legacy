@@ -41,16 +41,16 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
   // IRawElementProviderSimple methods.
   //
 
-  STDMETHOD(get_HostRawElementProvider)
-  (IRawElementProviderSimple** host_element_provider) override {
+  IFACEMETHODIMP get_HostRawElementProvider(
+      IRawElementProviderSimple** host_element_provider) override {
     UIA_VALIDATE_CALL_1_ARG(host_element_provider);
 
     HWND hwnd = GetDelegate()->GetTargetForNativeAccessibilityEvent();
     return UiaHostProviderFromHwnd(hwnd, host_element_provider);
   }
 
-  STDMETHOD(GetPropertyValue)
-  (PROPERTYID property_id, VARIANT* result) override {
+  IFACEMETHODIMP GetPropertyValue(PROPERTYID property_id,
+                                  VARIANT* result) override {
     UIA_VALIDATE_CALL_1_ARG(result);
 
     switch (property_id) {
@@ -82,8 +82,8 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
   // IRawElementProviderFragment methods.
   //
 
-  STDMETHOD(get_FragmentRoot)
-  (IRawElementProviderFragmentRoot** fragment_root) override {
+  IFACEMETHODIMP get_FragmentRoot(
+      IRawElementProviderFragmentRoot** fragment_root) override {
     UIA_VALIDATE_CALL_1_ARG(fragment_root);
 
     QueryInterface(IID_PPV_ARGS(fragment_root));
@@ -95,10 +95,10 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
   //
 
   // x and y are in pixels, in screen coordinates.
-  STDMETHOD(ElementProviderFromPoint)
-  (double x,
-   double y,
-   IRawElementProviderFragment** element_provider) override {
+  IFACEMETHODIMP ElementProviderFromPoint(
+      double x,
+      double y,
+      IRawElementProviderFragment** element_provider) override {
     UIA_VALIDATE_CALL_1_ARG(element_provider);
 
     *element_provider = nullptr;
@@ -124,7 +124,7 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
     return S_OK;
   }
 
-  STDMETHOD(GetFocus)(IRawElementProviderFragment** focus) override {
+  IFACEMETHODIMP GetFocus(IRawElementProviderFragment** focus) override {
     UIA_VALIDATE_CALL_1_ARG(focus);
 
     *focus = nullptr;
@@ -140,8 +140,8 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
   //
   // IRawElementProviderAdviseEvents methods.
   //
-  STDMETHODIMP AdviseEventAdded(EVENTID event_id,
-                                SAFEARRAY* property_ids) override {
+  IFACEMETHODIMP AdviseEventAdded(EVENTID event_id,
+                                  SAFEARRAY* property_ids) override {
     if (event_id == UIA_LiveRegionChangedEventId) {
       live_region_change_listeners_++;
 
@@ -162,8 +162,8 @@ class AXFragmentRootPlatformNodeWin : public AXPlatformNodeWin,
     return S_OK;
   }
 
-  STDMETHODIMP AdviseEventRemoved(EVENTID event_id,
-                                  SAFEARRAY* property_ids) override {
+  IFACEMETHODIMP AdviseEventRemoved(EVENTID event_id,
+                                    SAFEARRAY* property_ids) override {
     if (event_id == UIA_LiveRegionChangedEventId) {
       DCHECK(live_region_change_listeners_ > 0);
       live_region_change_listeners_--;

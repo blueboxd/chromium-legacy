@@ -7,8 +7,9 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "components/permissions/permission_request_id.h"
 
-NfcPermissionContext::NfcPermissionContext(Profile* profile)
-    : PermissionContextBase(profile,
+NfcPermissionContext::NfcPermissionContext(
+    content::BrowserContext* browser_context)
+    : PermissionContextBase(browser_context,
                             ContentSettingsType::NFC,
                             blink::mojom::FeaturePolicyFeature::kNotFound) {}
 
@@ -29,14 +30,14 @@ void NfcPermissionContext::DecidePermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     bool user_gesture,
-    BrowserPermissionCallback callback) {
+    permissions::BrowserPermissionCallback callback) {
   if (!user_gesture) {
     std::move(callback).Run(CONTENT_SETTING_BLOCK);
     return;
   }
-  PermissionContextBase::DecidePermission(web_contents, id, requesting_origin,
-                                          embedding_origin, user_gesture,
-                                          std::move(callback));
+  permissions::PermissionContextBase::DecidePermission(
+      web_contents, id, requesting_origin, embedding_origin, user_gesture,
+      std::move(callback));
 }
 
 void NfcPermissionContext::UpdateTabContext(

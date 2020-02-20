@@ -35,12 +35,13 @@ void MojoCdmFactory::Create(
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb,
-    const CdmCreatedCB& cdm_created_cb) {
+    CdmCreatedCB cdm_created_cb) {
   DVLOG(2) << __func__ << ": " << key_system;
 
   if (security_origin.opaque()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(cdm_created_cb, nullptr, "Invalid origin."));
+        FROM_HERE,
+        base::BindOnce(std::move(cdm_created_cb), nullptr, "Invalid origin."));
     return;
   }
 
@@ -54,7 +55,7 @@ void MojoCdmFactory::Create(
         new AesDecryptor(session_message_cb, session_closed_cb,
                          session_keys_change_cb, session_expiration_update_cb));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(cdm_created_cb, cdm, ""));
+        FROM_HERE, base::BindOnce(std::move(cdm_created_cb), cdm, ""));
     return;
   }
 
@@ -65,7 +66,7 @@ void MojoCdmFactory::Create(
   MojoCdm::Create(key_system, security_origin, cdm_config,
                   std::move(cdm_pending_remote), interface_factory_,
                   session_message_cb, session_closed_cb, session_keys_change_cb,
-                  session_expiration_update_cb, cdm_created_cb);
+                  session_expiration_update_cb, std::move(cdm_created_cb));
 }
 
 }  // namespace media

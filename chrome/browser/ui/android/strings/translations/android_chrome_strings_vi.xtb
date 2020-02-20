@@ -582,7 +582,6 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="5447765697759493033">Trang web này sẽ không được dịch</translation>
 <translation id="545042621069398927">Đang tăng tốc độ tải xuống.</translation>
 <translation id="5456381639095306749">Tải trang xuống</translation>
-<translation id="5475862044948910901">Bắt đầu phiên đăng nhập thực tế tăng cường?</translation>
 <translation id="548278423535722844">Mở trong ứng dụng bản đồ</translation>
 <translation id="5487521232677179737">Xóa dữ liệu</translation>
 <translation id="5494752089476963479">Chặn quảng cáo trên các trang web hiển thị quảng cáo xâm nhập hoặc quảng cáo gây hiểu nhầm</translation>
@@ -831,11 +830,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Chia sẻ 1 mục đã chọn}other{Chia sẻ # mục đã chọn}}</translation>
 <translation id="7359002509206457351">Truy cập vào phương thức thanh toán</translation>
-<translation id="7365126855094612066">Trong suốt thời gian diễn ra phiên đăng nhập này, trang web có thể:
-• tạo bản đồ 3D về môi trường xung quanh bạn
-• theo dõi chuyển động của máy ảnh
-
-Trang web này KHÔNG có quyền truy cập vào máy ảnh. Chỉ bạn mới xem được hình ảnh trong máy ảnh.</translation>
 <translation id="7375125077091615385">Loại:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>

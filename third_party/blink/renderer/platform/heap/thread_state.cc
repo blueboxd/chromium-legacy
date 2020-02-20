@@ -1642,10 +1642,12 @@ void ThreadState::MarkPhasePrologue(BlinkGC::CollectionType collection_type,
                                     BlinkGC::MarkingType marking_type,
                                     BlinkGC::GCReason reason) {
   SetGCPhase(GCPhase::kMarking);
-  Heap().SetupWorklists();
 
   const bool compaction_enabled =
       Heap().Compaction()->ShouldCompact(stack_state, marking_type, reason);
+
+  Heap().SetupWorklists(compaction_enabled);
+
   if (compaction_enabled) {
     Heap().Compaction()->Initialize(this);
   }

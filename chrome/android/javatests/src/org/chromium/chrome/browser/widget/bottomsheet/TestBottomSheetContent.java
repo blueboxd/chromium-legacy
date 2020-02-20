@@ -47,6 +47,9 @@ public class TestBottomSheetContent implements BottomSheetContent {
     /** If set to true, the half state will be skipped when scrolling down the FULL sheet. */
     private boolean mSkipHalfStateScrollingDown;
 
+    /** Whether this content intercepts back button presses. */
+    private boolean mHandleBackPress;
+
     /**
      * @param context A context to inflate views with.
      * @param priority The content's priority.
@@ -156,6 +159,15 @@ public class TestBottomSheetContent implements BottomSheetContent {
     @Override
     public boolean setContentSizeListener(@Nullable ContentSizeListener listener) {
         return false;
+    }
+
+    @Override
+    public boolean handleBackPress() {
+        return mHandleBackPress;
+    }
+
+    public void setHandleBackPress(boolean handleBackPress) {
+        mHandleBackPress = handleBackPress;
     }
 
     @Override

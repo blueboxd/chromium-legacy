@@ -40,46 +40,46 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
   // ITextRangeProvider methods.
   //
 
-  STDMETHODIMP Clone(ITextRangeProvider** clone) override;
-  STDMETHODIMP Compare(ITextRangeProvider* other, BOOL* result) override;
-  STDMETHODIMP
+  IFACEMETHODIMP Clone(ITextRangeProvider** clone) override;
+  IFACEMETHODIMP Compare(ITextRangeProvider* other, BOOL* result) override;
+  IFACEMETHODIMP
   CompareEndpoints(TextPatternRangeEndpoint this_endpoint,
                    ITextRangeProvider* other,
                    TextPatternRangeEndpoint other_endpoint,
                    int* result) override;
-  STDMETHODIMP ExpandToEnclosingUnit(TextUnit unit) override;
-  STDMETHODIMP
+  IFACEMETHODIMP ExpandToEnclosingUnit(TextUnit unit) override;
+  IFACEMETHODIMP
   FindAttribute(TEXTATTRIBUTEID attribute_id,
                 VARIANT attribute_val,
                 BOOL is_backward,
                 ITextRangeProvider** result) override;
-  STDMETHODIMP
+  IFACEMETHODIMP
   FindText(BSTR string,
            BOOL backwards,
            BOOL ignore_case,
            ITextRangeProvider** result) override;
-  STDMETHODIMP GetAttributeValue(TEXTATTRIBUTEID attribute_id,
-                                 VARIANT* value) override;
-  STDMETHODIMP
+  IFACEMETHODIMP GetAttributeValue(TEXTATTRIBUTEID attribute_id,
+                                   VARIANT* value) override;
+  IFACEMETHODIMP
   GetBoundingRectangles(SAFEARRAY** rectangles) override;
-  STDMETHODIMP
+  IFACEMETHODIMP
   GetEnclosingElement(IRawElementProviderSimple** element) override;
-  STDMETHODIMP GetText(int max_count, BSTR* text) override;
-  STDMETHODIMP Move(TextUnit unit, int count, int* units_moved) override;
-  STDMETHODIMP
+  IFACEMETHODIMP GetText(int max_count, BSTR* text) override;
+  IFACEMETHODIMP Move(TextUnit unit, int count, int* units_moved) override;
+  IFACEMETHODIMP
   MoveEndpointByUnit(TextPatternRangeEndpoint endpoint,
                      TextUnit unit,
                      int count,
                      int* units_moved) override;
-  STDMETHODIMP
+  IFACEMETHODIMP
   MoveEndpointByRange(TextPatternRangeEndpoint this_endpoint,
                       ITextRangeProvider* other,
                       TextPatternRangeEndpoint other_endpoint) override;
-  STDMETHODIMP Select() override;
-  STDMETHODIMP AddToSelection() override;
-  STDMETHODIMP RemoveFromSelection() override;
-  STDMETHODIMP ScrollIntoView(BOOL align_to_top) override;
-  STDMETHODIMP GetChildren(SAFEARRAY** children) override;
+  IFACEMETHODIMP Select() override;
+  IFACEMETHODIMP AddToSelection() override;
+  IFACEMETHODIMP RemoveFromSelection() override;
+  IFACEMETHODIMP ScrollIntoView(BOOL align_to_top) override;
+  IFACEMETHODIMP GetChildren(SAFEARRAY** children) override;
 
  private:
   using AXPositionInstance = AXNodePosition::AXPositionInstance;

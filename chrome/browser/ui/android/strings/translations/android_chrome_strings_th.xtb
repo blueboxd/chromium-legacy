@@ -582,7 +582,6 @@
 <translation id="5447765697759493033">ระบบจะไม่แปลไซต์นี้</translation>
 <translation id="545042621069398927">กำลังเพิ่มความเร็วในการดาวน์โหลด</translation>
 <translation id="5456381639095306749">ดาวน์โหลดหน้า</translation>
-<translation id="5475862044948910901">เริ่มเซสชัน Augmented Reality ไหม</translation>
 <translation id="548278423535722844">เปิดในแอปแผนที่</translation>
 <translation id="5487521232677179737">ล้างข้อมูล</translation>
 <translation id="5494752089476963479">บล็อกโฆษณาในเว็บไซต์ที่แสดงโฆษณาที่แทรกหรือทำให้เข้าใจผิด</translation>
@@ -831,11 +830,6 @@
 <translation id="7352939065658542140">วิดีโอ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{แชร์ 1 รายการที่เลือก}other{แชร์ # รายการที่เลือก}}</translation>
 <translation id="7359002509206457351">เข้าถึงวิธีการชำระเงิน</translation>
-<translation id="7365126855094612066">ระหว่างเซสชันนี้ เว็บไซต์จะทำสิ่งต่อไปนี้ได้
-• สร้างแผนที่ 3 มิติของสภาพแวดล้อม
-• ติดตามการเคลื่อนไหวของกล้อง
-
-เว็บไซต์นี้ "ไม่ได้" รับสิทธิ์เข้าถึงกล้องถ่ายรูป มีเพียงคุณเท่านั้นที่จะเห็นรูปจากกล้อง</translation>
 <translation id="7375125077091615385">ประเภท:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" /></translation>
 <translation id="7400418766976504921">URL</translation>

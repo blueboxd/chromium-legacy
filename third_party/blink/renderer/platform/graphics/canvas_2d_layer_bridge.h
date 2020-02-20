@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_host.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
@@ -113,8 +114,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   virtual void DidRestoreCanvasMatrixClipStack(cc::PaintCanvas*) {}
   virtual bool IsAccelerated() const;
 
-  // This may recreate CanvasResourceProvider
-  cc::PaintCanvas* GetPaintCanvas();
+  cc::PaintCanvas* GetPaintCanvas() const;
   bool IsValid();
   bool WritePixels(const SkImageInfo&,
                    const void* pixels,
@@ -124,7 +124,9 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   void DontUseIdleSchedulingForTesting() {
     dont_use_idle_scheduling_for_testing_ = true;
   }
-  void SetCanvasResourceHost(CanvasResourceHost* host);
+  void SetCanvasResourceHost(CanvasResourceHost* host) {
+    resource_host_ = host;
+  }
 
   void Hibernate();
   bool IsHibernating() const { return hibernation_image_ != nullptr; }
@@ -135,6 +137,14 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   scoped_refptr<StaticBitmapImage> NewImageSnapshot(AccelerationHint);
 
   cc::TextureLayer* layer_for_testing() { return layer_.get(); }
+
+  // TODO(jochin): Remove this function completely once recorder_ has been
+  // moved into CanvasResourceProvider.
+  sk_sp<cc::PaintRecord> record_for_testing() {
+    sk_sp<cc::PaintRecord> record = recorder_->finishRecordingAsPicture();
+    StartRecording();
+    return record;
+  }
 
   // The values of the enum entries must not change because they are used for
   // usage metrics histograms. New values can be added to the end.
@@ -189,12 +199,13 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   bool CheckResourceProviderValid();
   void ResetResourceProvider();
 
+  void StartRecording();
   void SkipQueuedDrawCommands();
-  void EnsureCleared();
 
   bool ShouldAccelerate(AccelerationHint) const;
-  void CalculateDirtyRegion();
+  void CalculateDirtyRegion(int canvas_width, int canvas_height);
 
+  std::unique_ptr<PaintRecorder> recorder_;
   sk_sp<SkImage> hibernation_image_;
   scoped_refptr<cc::TextureLayer> layer_;
   std::unique_ptr<SharedContextRateLimiter> rate_limiter_;
@@ -245,11 +256,11 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   Deque<RasterTimer> pending_raster_timers_;
 
   sk_sp<cc::PaintRecord> last_recording_;
-
-  // This tracks whether the canvas has been cleared once after
-  // this bridge was created.
-  bool cleared_ = false;
   cc::InvalidationRegion dirty_invalidate_region_;
+
+  void SetNeedsFlush();
+  base::RepeatingClosure set_needs_flush_callback_;
+  bool needs_flush_ = false;
 
   base::WeakPtrFactory<Canvas2DLayerBridge> weak_ptr_factory_{this};
 

@@ -82,6 +82,13 @@ class PermissionsClient {
   // immediately be finished without granting/denying the permission.
   virtual base::Optional<url::Origin> GetAutoApprovalOrigin();
 
+  // Allows the embedder to bypass checking the embedding origin when performing
+  // permission availability checks. This is used for example when a permission
+  // should only be available on secure origins. Return true to bypass embedding
+  // origin checks for the passed in origins.
+  virtual bool CanBypassEmbeddingOriginCheck(const GURL& requesting_origin,
+                                             const GURL& embedding_origin);
+
  private:
   PermissionsClient(const PermissionsClient&) = delete;
   PermissionsClient& operator=(const PermissionsClient&) = delete;

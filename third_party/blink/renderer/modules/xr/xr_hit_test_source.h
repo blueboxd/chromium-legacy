@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 #include "device/vr/public/mojom/vr_service.mojom-blink-forward.h"
-#include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
 
@@ -41,7 +40,7 @@ class XRHitTestSource : public ScriptWrappable {
   const uint64_t id_;
   Member<XRSession> xr_session_;
 
-  Vector<std::unique_ptr<TransformationMatrix>> last_frame_results_;
+  Vector<device::mojom::blink::XRHitResult> last_frame_results_;
 };
 
 }  // namespace blink

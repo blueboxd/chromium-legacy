@@ -209,8 +209,17 @@ base::AutoReset<bool> Desk::GetScopedNotifyContentChangedDisabler() {
   return base::AutoReset<bool>(&should_notify_content_changed_, false);
 }
 
-void Desk::SetName(base::string16 new_name) {
+void Desk::SetName(base::string16 new_name, bool set_by_user) {
+  // Even if the user focuses the DeskNameView for the first time and hits enter
+  // without changing the desk's name (i.e. |new_name| is the same,
+  // |is_name_set_by_user_| is false, and |set_by_user| is true), we don't
+  // change |is_name_set_by_user_| and keep considering the name as a default
+  // name.
+  if (name_ == new_name)
+    return;
+
   name_ = std::move(new_name);
+  is_name_set_by_user_ = set_by_user;
 
   for (auto& observer : observers_)
     observer.OnDeskNameChanged(name_);

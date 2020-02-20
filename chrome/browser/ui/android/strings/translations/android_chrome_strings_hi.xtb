@@ -581,7 +581,6 @@
 <translation id="5447765697759493033">इस साइट का अनुवाद नहीं किया जाएगा</translation>
 <translation id="545042621069398927">आपके डाउनलोड की गति बढ़ाई जा रही है.</translation>
 <translation id="5456381639095306749">पेज डाउनलोड करें</translation>
-<translation id="5475862044948910901">ऑगमेंटेड रिएलिटी (AR) सत्र शुरू करें?</translation>
 <translation id="548278423535722844">मैप ऐप्लिकेशन में खोलें</translation>
 <translation id="5487521232677179737">डेटा साफ़ करें</translation>
 <translation id="5494752089476963479">तंग करने वाले या गुमराह करने वाले विज्ञापन दिखाने वाली साइटों पर विज्ञापन ब्लॉक करें</translation>
@@ -828,11 +827,6 @@
 <translation id="7352939065658542140">वीडियो</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 चयनित आइटम शेयर करें}one{# चयनित आइटम शेयर करें}other{# चयनित आइटम शेयर करें}}</translation>
 <translation id="7359002509206457351">भुगतान के तरीकों को ऐक्सेस करें</translation>
-<translation id="7365126855094612066">इस सत्र के दौरान, साइट ये काम करेगी:
-• आपके आस-पास की जगह का 3 डी मैप बनाना
-• कैमरे की गति पर नज़र रखना
-
-साइट आपके कैमरे को ऐक्सेस नहीं करती है. कैमरे से ली गई इमेज सिर्फ़ आपको दिखाई देंगी.</translation>
 <translation id="7375125077091615385">प्रकार:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>

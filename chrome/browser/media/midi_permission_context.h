@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_MEDIA_MIDI_PERMISSION_CONTEXT_H_
 
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_context_base.h"
+#include "components/permissions/permission_context_base.h"
 
-class MidiPermissionContext : public PermissionContextBase {
+class MidiPermissionContext : public permissions::PermissionContextBase {
  public:
-  explicit MidiPermissionContext(Profile* profile);
+  explicit MidiPermissionContext(content::BrowserContext* browser_context);
   ~MidiPermissionContext() override;
 
  private:

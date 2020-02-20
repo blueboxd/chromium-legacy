@@ -27,6 +27,7 @@
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, комбиновани оквир</translation>
 <translation id="1161762950103988776">Прелазак</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, ставка менија, са подменијем</translation>
+<translation id="1175914831232945926">Цифре</translation>
 <translation id="1177863135347784049">Прилагођено</translation>
 <translation id="1188858454923323853">комплементарно</translation>
 <translation id="1195238899008218998">Поговор</translation>
@@ -145,6 +146,7 @@
 <translation id="1969092762068865084">јул</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1982529757455190616">Нема претходне тачке преласка</translation>
+<translation id="1988733631391393183">Приказуј команде на Брајевој азбуци у ChromeVox менијима</translation>
 <translation id="1990932729021763163">Заглавље реда:</translation>
 <translation id="2002895034995108595">Ресетуј актуелну мапу тастера</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{лева угласта заграда}one{# лева угласта заграда}few{# леве угласте заграде}other{# левих угластих заграда}}</translation>
@@ -308,6 +310,7 @@
 <translation id="3109724472072898302">Скупљено</translation>
 <translation id="3112457281078985179">Да бисте укључили или искључили ChromeVox, користите Control + Alt + Z.</translation>
 <translation id="3128896337293924532">Нема следећег издвојеног цитата</translation>
+<translation id="3131002934070407451">Читај бројеве као:</translation>
 <translation id="3134461040845705080">само за читање</translation>
 <translation id="3137663468179739624">Маслинаста</translation>
 <translation id="3138767756593758860">Приказивање листе обележја</translation>
@@ -1001,6 +1004,7 @@
 <translation id="7968340748835037139">Тамнозелена</translation>
 <translation id="7972507042926081808">Чоколадна</translation>
 <translation id="7974390230414479278">Ставка менија</translation>
+<translation id="8004507136466386272">Речи</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{знак навода}one{# знак навода}few{# знака навода}other{# знакова навода}}</translation>
 <translation id="8017588669690167134">Говор је искључен</translation>

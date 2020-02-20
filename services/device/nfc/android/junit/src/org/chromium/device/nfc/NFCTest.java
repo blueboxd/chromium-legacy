@@ -107,7 +107,7 @@ public class NFCTest {
      */
     private static class TestNfcImpl extends NfcImpl {
         public TestNfcImpl(Context context, NfcDelegate delegate) {
-            super(0, delegate);
+            super(0, delegate, null);
         }
 
         public void processPendingOperationsForTesting(NfcTagHandler handler) {

@@ -188,7 +188,7 @@ class CORE_EXPORT PaintLayerCompositor {
 
   bool IsMainFrame() const;
 
-  GraphicsLayer* GetXrImmersiveDomOverlayLayer() const;
+  GraphicsLayer* GetXrOverlayLayer() const;
 
   LayoutView& layout_view_;
 

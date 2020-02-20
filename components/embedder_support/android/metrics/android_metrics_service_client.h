@@ -142,36 +142,40 @@ class AndroidMetricsServiceClient : public MetricsServiceClient,
   virtual void OnMetricsStart() = 0;
 
   // Returns the metrics sampling rate, to be used by IsInSample(). This is a
-  // double in the non-inclusive range (0.00, 1.00). Virtual for testing.
-  virtual double GetSampleRate() = 0;
+  // per mille value, so this integer must always be in the inclusive range [0,
+  // 1000]. A value of 0 will always be out-of-sample, and a value of 1000 is
+  // always in-sample.
+  virtual int GetSampleRatePerMille() = 0;
+
+  // Returns a value in the inclusive range [0, 999], to be compared against a
+  // per mille sample rate. This value will be based on a persisted value, so it
+  // should be consistent across restarts. This value should also be mostly
+  // consistent across upgrades, to avoid significantly impacting IsInSample()
+  // and IsInPackageNameSample(). Virtual for testing.
+  virtual int GetSampleBucketValue();
 
   // Determines if the client is within the random sample of clients for which
   // we log metrics. If this returns false, MetricsServiceClient should
   // indicate reporting is disabled. Sampling is due to storage/bandwidth
-  // considerations. Virtual for testing.
-  virtual bool IsInSample();
-
-  // Prefer calling the IsInSample() which takes no arguments. Virtual for
-  // testing.
-  virtual bool IsInSample(uint32_t value);
+  // considerations.
+  bool IsInSample();
 
   // Determines if the embedder app is the type of app for which we may log the
   // package name. If this returns false, GetAppPackageName() must return empty
-  // string. Virtual for testing.
+  // string.
   virtual bool CanRecordPackageNameForAppType() = 0;
 
   // Determines if this client falls within the group for which it's acceptable
   // to include the embedding app's package name. If this returns false,
   // GetAppPackageName() must return the empty string (for
-  // privacy/fingerprintability reasons). Virtual for testing.
-  virtual bool IsInPackageNameSample();
+  // privacy/fingerprintability reasons).
+  bool IsInPackageNameSample();
 
-  // Prefer calling the IsInPackageNameSample() which takes no arguments.
-  // Virtual for testing.
-  virtual bool IsInPackageNameSample(uint32_t value);
-
-  // Caps the rate at which we upload package names. This is privacy sensitive.
-  virtual double GetPackageNameLimitRate() = 0;
+  // Caps the rate at which we include package names in UMA logs, expressed as a
+  // per mille value. See GetSampleRatePerMille() for a description of how per
+  // mille values are handled. Including package names in logs may be privacy
+  // sensitive, see https://crbug.com/969803.
+  virtual int GetPackageNameLimitRatePerMille() = 0;
 
   // Whether or not MetricsService::OnApplicationNotIdle should be called for
   // notifications.

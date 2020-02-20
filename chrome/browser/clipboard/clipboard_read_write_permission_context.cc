@@ -11,8 +11,8 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 ClipboardReadWritePermissionContext::ClipboardReadWritePermissionContext(
-    Profile* profile)
-    : PermissionContextBase(profile,
+    content::BrowserContext* browser_context)
+    : PermissionContextBase(browser_context,
                             ContentSettingsType::CLIPBOARD_READ_WRITE,
                             blink::mojom::FeaturePolicyFeature::kClipboard) {}
 

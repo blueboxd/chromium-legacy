@@ -3794,7 +3794,7 @@ PositionWithAffinity LayoutObject::CreatePositionWithAffinity(
   if (position.IsNotNull())
     return PositionWithAffinity(position);
 
-  DCHECK(!GetNode());
+  DCHECK(!NonPseudoNode());
   return CreatePositionWithAffinity(0);
 }
 

@@ -305,6 +305,11 @@ If '<ph name="SERVICE_SCRIPT_NAME" />' is already ticked, untick it and then tic
 <translation id="8196755618196986400">To allow us to contact you for further information, your email address will be included in any feedback that you submit.</translation>
 <translation id="8244400547700556338">Learn how.</translation>
 <translation id="8261506727792406068">Delete</translation>
+<translation id="8295077433896346116">To use <ph name="PRODUCT_NAME" />, you need to grant the 'Accessibility' permission so that input from the remote machine can be injected on this Mac.
+
+To grant this permission, click '<ph name="BUTTON_NAME" />' below. In the 'Accessibility' preferences pane that opens, tick the box next to '<ph name="SERVICE_SCRIPT_NAME" />'.
+
+If '<ph name="SERVICE_SCRIPT_NAME" />' is already ticked, untick it and then tick it again.</translation>
 <translation id="8355326866731426344">This access code will expire in <ph name="TIMEOUT" /></translation>
 <translation id="8355485110405946777">Include application logs to help us resolve your problem (logs may include private information).</translation>
 <translation id="837021510621780684">From this computer</translation>

@@ -55,11 +55,6 @@ virtual/android/url-bar/bottom-fixed-adjusted-when-showing-url-bar.html [ Crash 
 # Wrong clip of nested reflection.
 compositing/reflections/deeply-nested-reflections.html [ Failure ]
 
-# Needs to implement logic for CompositingReasons::kAssumedOverlap.
-compositing/layer-creation/overlap-animation-clipping.html [ Failure ]
-compositing/layer-creation/overlap-animation-container.html [ Failure ]
-compositing/layer-creation/overlap-animation.html [ Failure ]
-
 compositing/geometry/composited-in-columns.html [ Crash ]
 compositing/masks/mask-with-removed-filters.html [ Failure ]
 crbug.com/667946 compositing/overflow/scrolls-with-respect-to-nested.html [ Failure ]
@@ -85,8 +80,6 @@ transforms/3d/general/background-visibility-layers.html [ Failure ]
 virtual/forced-high-contrast-colors/fast/css/forced-colors-mode/forced-colors-mode-22.html [ Crash ]
 virtual/scalefactor200/external/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
 virtual/scalefactor200withoutzoom/external/wpt/largest-contentful-paint/invisible-images.html [ Failure ]
-virtual/threaded/external/wpt/web-animations/timing-model/animations/update-playback-rate-slow.html [ Failure ]
-virtual/threaded/external/wpt/web-animations/timing-model/animations/update-playback-rate-zero.html [ Failure ]
 virtual/threaded-prefer-compositing/fast/scrolling/keyboard-scroll-page-scale.html [ Failure Pass ]
 virtual/threaded-prefer-compositing/fast/scrolling/no-hover-during-scroll.html [ Failure Pass ]
 virtual/threaded-prefer-compositing/fast/scrolling/no-hover-during-smooth-js-scroll.html [ Crash Pass ]
@@ -170,10 +163,6 @@ crbug.com/979380 fast/hidpi/scrollbar-appearance-increase-device-scale-factor.ht
 # Crash on non-contiguous effect on multiple columns
 fast/multicol/composited-layer-will-change.html [ Crash ]
 paint/clipath/change-mask-clip-path-multicol-crash.html [ Crash ]
-
-# Animation failure related to direct property update
-crbug.com/1041013 external/wpt/web-animations/timing-model/animations/update-playback-rate-slow.html [ Failure ]
-crbug.com/1041013 external/wpt/web-animations/timing-model/animations/update-playback-rate-zero.html [ Failure ]
 
 # Ad frame highlight size is incorrect
 crbug.com/1047359 http/tests/subresource_filter/ad-highlight-frame-resized.html [ Failure ]

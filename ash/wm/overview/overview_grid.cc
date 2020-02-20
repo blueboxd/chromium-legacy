@@ -1596,6 +1596,10 @@ void OverviewGrid::OnDesksChanged() {
     desks_bar_view_->Layout();
 }
 
+bool OverviewGrid::IsDeskNameBeingModified() const {
+  return desks_bar_view_ && desks_bar_view_->IsDeskNameBeingModified();
+}
+
 void OverviewGrid::MaybeInitDesksWidget() {
   if (!desks_util::ShouldDesksBarBeCreated() || desks_widget_)
     return;

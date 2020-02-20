@@ -582,7 +582,6 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5447765697759493033">Webgune hau ez da itzuliko</translation>
 <translation id="545042621069398927">Deskarga bizkortzen.</translation>
 <translation id="5456381639095306749">Deskargatu orria</translation>
-<translation id="5475862044948910901">Errealitate areagotuko saioa hasi nahi duzu?</translation>
 <translation id="548278423535722844">Ireki mapa-aplikazio batean</translation>
 <translation id="5487521232677179737">Garbitu datuak</translation>
 <translation id="5494752089476963479">Blokeatu iragarki oztopatzaileak edo iruzurrezkoak erakusten dituzten webguneetako iragarkiak</translation>
@@ -831,11 +830,6 @@ Esaterako, bisitatu dituzun webguneetan oinarritzen ez diren iragarkiak bidalita
 <translation id="7352939065658542140">BIDEOA</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Partekatu hautatutako elementua}other{Partekatu hautatutako # elementuak}}</translation>
 <translation id="7359002509206457351">Atzitu ordainketa-metodoak</translation>
-<translation id="7365126855094612066">Saioak dirauen bitartean, webguneak honako hauek egin ahalko ditu:
-• Inguruaren 3D mapa sortu.
-• Kameraren mugimenduen jarraipena egin.
-
-Webguneak EZ du izango kamera atzitzeko baimenik. Zeuk soilik ikus ditzakezu kameraren irudiak.</translation>
 <translation id="7375125077091615385">Mota:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URLa</translation>

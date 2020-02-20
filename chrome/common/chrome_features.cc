@@ -571,11 +571,6 @@ const base::Feature kPerAppTimeLimits{"PerAppTimeLimits",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
-// Delegate permissions to cross-origin iframes when the feature has been
-// allowed by feature policy.
-const base::Feature kPermissionDelegation{"PermissionDelegation",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Allows prediction operations (e.g., prefetching) on all connection types.
 const base::Feature kPredictivePrefetchingAllowedOnAllConnectionTypes{
     "PredictivePrefetchingAllowedOnAllConnectionTypes",

@@ -52,6 +52,7 @@
 #include "content/common/input/input_handler.mojom.h"
 #include "content/common/input/input_injector.mojom-forward.h"
 #include "content/common/navigation_params.mojom.h"
+#include "content/common/render_accessibility.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/global_routing_id.h"
@@ -2509,6 +2510,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   viz::mojom::InputTargetClient* input_target_client_ = nullptr;
   mojo::Remote<mojom::FrameInputHandler> frame_input_handler_;
+
+  // Binding to remote implementation of mojom::RenderAccessibility. Note that
+  // this binding is done on-demand (in UpdateAccessibilityMode()) and will only
+  // be connected (i.e. bound) to the other endpoint in the renderer while there
+  // is an accessibility mode that includes |kWebContents|.
+  mojo::AssociatedRemote<mojom::RenderAccessibility> render_accessibility_;
 
   std::unique_ptr<KeepAliveHandleFactory> keep_alive_handle_factory_;
   base::TimeDelta keep_alive_timeout_;

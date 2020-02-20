@@ -6,12 +6,14 @@
 #define CHROME_BROWSER_CLIPBOARD_CLIPBOARD_SANITIZED_WRITE_PERMISSION_CONTEXT_H_
 
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_context_base.h"
+#include "components/permissions/permission_context_base.h"
 
 // Manages Clipboard API user permissions, for sanitized write only.
-class ClipboardSanitizedWritePermissionContext : public PermissionContextBase {
+class ClipboardSanitizedWritePermissionContext
+    : public permissions::PermissionContextBase {
  public:
-  explicit ClipboardSanitizedWritePermissionContext(Profile* profile);
+  explicit ClipboardSanitizedWritePermissionContext(
+      content::BrowserContext* browser_context);
   ~ClipboardSanitizedWritePermissionContext() override;
 
   ClipboardSanitizedWritePermissionContext(

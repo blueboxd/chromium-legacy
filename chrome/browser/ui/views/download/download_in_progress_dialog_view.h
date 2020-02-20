@@ -34,8 +34,6 @@ class DownloadInProgressDialogView : public views::DialogDelegateView {
 
   // views::DialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
-  bool Cancel() override;
-  bool Accept() override;
   ui::ModalType GetModalType() const override;
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;

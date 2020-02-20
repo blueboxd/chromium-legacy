@@ -15,5 +15,7 @@ public final class ContentUrlConstants {
     public static final String ABOUT_BLANK_DISPLAY_URL = "about:blank";
     public static final String ABOUT_BLANK_URL = "about://blank";
 
+    public static final String FILE_URL_PREFIX = "file://";
+
     private ContentUrlConstants() {}
 }

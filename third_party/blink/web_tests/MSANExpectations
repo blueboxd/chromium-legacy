@@ -387,4 +387,7 @@ crbug.com/1047818 [ Linux ] external/wpt/web-locks/idlharness.tentative.https.an
 crbug.com/1047818 [ Linux ] external/wpt/web-share/idlharness.https.window.html [ Pass Timeout ]
 
 # Sheriff 2020-02-19
-crbug.com/856601 [ Linux ] external/wpt/badging/idlharness.https.any.html [ Pass Failure Timeout ]
+crbug.com/856601 [ Linux ] external/wpt/badging/idlharness.https.any.html [ Pass Timeout ]
+
+# Sheriff 2020-02-20
+crbug.com/856601 [ Linux ] external/wpt/badging/idlharness.https.any.worker.html [ Pass Timeout ]

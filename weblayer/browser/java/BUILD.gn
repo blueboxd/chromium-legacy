@@ -57,6 +57,7 @@ android_library("java") {
     "org/chromium/weblayer_private/WebLayerFactoryImpl.java",
     "org/chromium/weblayer_private/WebLayerImpl.java",
     "org/chromium/weblayer_private/WebLayerNetworkChangeNotifierRegistrationPolicy.java",
+    "org/chromium/weblayer_private/WebLayerTabModalPresenter.java",
     "org/chromium/weblayer_private/metrics/MetricsServiceClient.java",
     "org/chromium/weblayer_private/metrics/UmaUtils.java",
   ]

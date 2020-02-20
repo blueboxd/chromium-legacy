@@ -23,13 +23,7 @@ struct VideoTestParam {
 
 }  // anonymous namespace
 
-class MediaCustomControlsFullscreenDetectorTest
-    : public testing::Test,
-      private ScopedVideoFullscreenDetectionForTest {
- public:
-  MediaCustomControlsFullscreenDetectorTest()
-      : ScopedVideoFullscreenDetectionForTest(true) {}
-
+class MediaCustomControlsFullscreenDetectorTest : public testing::Test {
  protected:
   void SetUp() override {
     page_holder_ = std::make_unique<DummyPageHolder>();

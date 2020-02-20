@@ -17,6 +17,9 @@ import "ui/gfx/mojom/transform.mojom";
 // WebXR interfaces
 //
 
+// Note on terminology: unless otherwise noted, all poses passed across mojo are
+// expressed in device space, aka mojo space.
+
 // TODO(https://crbug.com/966099): Use EnableIf to only define values on
 // platforms that have implementations.
 // XRDeviceId is used in metrics, so don't reorder.
@@ -234,6 +237,10 @@ struct XRRay {
 
 struct XRHitResult {
   gfx.mojom.Transform hit_matrix;
+  uint64 plane_id;  // If the hit test result was computed based off of a plane,
+                    // the plane ID will be stored here. 0 signifies no plane.
+                    // TODO(https://crbug.com/657632) - make it optional once
+                    // mojo supports optional numeric types.
 };
 
 // Information about the optical properties for an eye in a VRDisplay.

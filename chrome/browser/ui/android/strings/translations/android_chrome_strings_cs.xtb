@@ -582,7 +582,6 @@ Chcete-toto nastavení změnit, <ph name="BEGIN_LINK" />resetujte synchronizaci<
 <translation id="5447765697759493033">Tento web nebude přeložen</translation>
 <translation id="545042621069398927">Zrychlování stahování.</translation>
 <translation id="5456381639095306749">Stáhnout stránku</translation>
-<translation id="5475862044948910901">Spustit relaci rozšířené reality?</translation>
 <translation id="548278423535722844">Otevřít v mapové aplikaci</translation>
 <translation id="5487521232677179737">Vymazat data</translation>
 <translation id="5494752089476963479">Blokovat reklamy na webech, které zobrazují obtěžující nebo zavádějící reklamy</translation>
@@ -831,11 +830,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7352939065658542140">VIDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Sdílet 1 vybranou položku}few{Sdílet # vybrané položky}many{Sdílet # vybrané položky}other{Sdílet # vybraných položek}}</translation>
 <translation id="7359002509206457351">Poskytnout přístup k platební metodám</translation>
-<translation id="7365126855094612066">Po dobu trvání této relace bude web moci:
-• vytvářet 3D mapu vašeho prostředí,
-• sledovat pohyb fotoaparátu.
-
-Web NEZÍSKÁ přístup k fotoaparátu. Fotky z fotoaparátu uvidíte pouze vy.</translation>
 <translation id="7375125077091615385">Typ:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">Adresa URL</translation>

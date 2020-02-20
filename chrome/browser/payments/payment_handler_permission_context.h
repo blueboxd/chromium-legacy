@@ -6,10 +6,9 @@
 #define CHROME_BROWSER_PAYMENTS_PAYMENT_HANDLER_PERMISSION_CONTEXT_H_
 
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_context_base.h"
+#include "components/permissions/permission_context_base.h"
 
 class GURL;
-class Profile;
 
 namespace permissions {
 class PermissionRequestID;
@@ -21,19 +20,22 @@ class WebContents;
 
 namespace payments {
 
-class PaymentHandlerPermissionContext : public PermissionContextBase {
+class PaymentHandlerPermissionContext
+    : public permissions::PermissionContextBase {
  public:
-  explicit PaymentHandlerPermissionContext(Profile* profile);
+  explicit PaymentHandlerPermissionContext(
+      content::BrowserContext* browser_context);
   ~PaymentHandlerPermissionContext() override;
 
  private:
   // PermissionContextBase
-  void DecidePermission(content::WebContents* web_contents,
-                        const permissions::PermissionRequestID& id,
-                        const GURL& requesting_origin,
-                        const GURL& embedding_origin,
-                        bool user_gesture,
-                        BrowserPermissionCallback callback) override;
+  void DecidePermission(
+      content::WebContents* web_contents,
+      const permissions::PermissionRequestID& id,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      bool user_gesture,
+      permissions::BrowserPermissionCallback callback) override;
   bool IsRestrictedToSecureOrigins() const override;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentHandlerPermissionContext);

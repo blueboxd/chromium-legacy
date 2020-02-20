@@ -81,7 +81,7 @@
 <translation id="3087734570205094154">கீழே</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3157931365184549694">மீட்டமை</translation>
-<translation id="3183922693828471536">இங்கே உருட்டு</translation>
+<translation id="3183922693828471536">இங்கே நகர்த்து</translation>
 <translation id="3234408098842461169">கீழ்நோக்கிய அம்பு</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 நாள்}other{# நாட்கள்}}</translation>
 <translation id="3295886253693811851">இந்த ஆப்ஸ் மூலம் அழை:</translation>
@@ -113,7 +113,7 @@
 <translation id="4289300219472526559">பேச்சைத் தொடங்கு</translation>
 <translation id="430191667033048642"><ph name="FOLDER_NAME" /> கோப்புறைக்கு <ph name="MOVED_APP_NAME" /> ஆப்ஸ் நகர்த்தப்பட்டது.</translation>
 <translation id="4316910396681052118">எல்லாப் பயன்பாடுகளும்</translation>
-<translation id="4588090240171750605">வலப்புறம் உருட்டு</translation>
+<translation id="4588090240171750605">வலப்புறம் நகர்த்து</translation>
 <translation id="4631891353005174729"><ph name="APP_NAME_TYPE" />, நட்சத்திர மதிப்பீடு: <ph name="RATING_SCORE" /></translation>
 <translation id="4648249871170053485"><ph name="APP_NAME" />, ஆப்ஸ் பரிந்துரை</translation>
 <translation id="4690510401873698237">ஷெல்ஃப் கீழே உள்ளது</translation>
@@ -159,7 +159,7 @@
 <translation id="6165508094623778733">மேலும் அறிக</translation>
 <translation id="6264365405983206840">அ&amp;னைத்தையும் தேர்ந்தெடு</translation>
 <translation id="6351032674660237738">பயன்பாட்டுப் பரிந்துரைகள்</translation>
-<translation id="6364916375976753737">இடப்புறம் உருட்டு</translation>
+<translation id="6364916375976753737">இடப்புறம் நகர்த்து</translation>
 <translation id="6394627529324717982">கமா</translation>
 <translation id="6397363302884558537">பேச்சை நிறுத்து</translation>
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 நிமிடம் முன்பு}other{# நிமிடங்கள் முன்பு}}</translation>
@@ -215,14 +215,14 @@
 <translation id="8134065097954893699">இந்தப் பக்கம் ரெஃப்ரெஷ் செய்யப்படுகிறது</translation>
 <translation id="8144660977431427332">உங்கள் தேடல்கள் Google அசிஸ்டண்ட்டைப் பயன்படுத்தி தேடப்படுகின்றன. <ph name="LEARN_MORE" /></translation>
 <translation id="8152264887680882389"><ph name="TEXT" />, தானே நிரப்பியது</translation>
-<translation id="815598010540052116">கீழே உருட்டு</translation>
+<translation id="815598010540052116">கீழே நகர்த்து</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8210608804940886430">பக்கத்தின் கீழே</translation>
 <translation id="8245914219290430011">தாவல்</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, ஆப்ஸ்</translation>
 <translation id="8259556432390118667">ஹெக்ஸ் வண்ண மதிப்பு</translation>
 <translation id="8328145009876646418">இடதுபுற முனை</translation>
-<translation id="8331626408530291785">மேலே உருட்டு</translation>
+<translation id="8331626408530291785">மேலே நகர்த்து</translation>
 <translation id="8352146631962686268">{YEARS,plural, =1{1 ஆண்டு}other{# ஆண்டுகள்}}</translation>
 <translation id="838869780401515933">சரிபார்</translation>
 <translation id="8393700583063109961">செய்தி அனுப்பு</translation>

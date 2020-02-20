@@ -22,6 +22,9 @@ enum class ControlsVisibilityReason {
   // Find in page forces browser controls to be visible.
   kFindInPage,
 
+  // Tab modal dialogs obscure the content while leaving controls interactive.
+  kTabModalDialog,
+
   kReasonCount,
 };
 

@@ -133,6 +133,16 @@ void AppCacheURLLoaderJob::Start(
   client_.Bind(std::move(client));
   receiver_.set_disconnect_handler(
       base::BindOnce(&AppCacheURLLoaderJob::DeleteSoon, GetDerivedWeakPtr()));
+
+  MojoResult result =
+      mojo::CreateDataPipe(nullptr, &response_body_stream_, &consumer_handle_);
+  if (result != MOJO_RESULT_OK) {
+    NotifyCompleted(net::ERR_INSUFFICIENT_RESOURCES);
+    return;
+  }
+  DCHECK(response_body_stream_.is_valid());
+  DCHECK(consumer_handle_.is_valid());
+
   if (continuation)
     std::move(continuation).Run();
 }
@@ -209,8 +219,6 @@ void AppCacheURLLoaderJob::ContinueOnResponseInfoLoaded(
   if (is_range_request())
     SetupRangeResponse();
 
-  response_body_stream_ = std::move(data_pipe_.producer_handle);
-
   // TODO(ananta)
   // Move the asynchronous reading and mojo pipe handling code to a helper
   // class. That would also need a change to BlobURLLoader.
@@ -261,7 +269,7 @@ void AppCacheURLLoaderJob::DeleteSoon() {
 
 void AppCacheURLLoaderJob::SendResponseInfo() {
   // If this is null it means the response information was sent to the client.
-  if (!data_pipe_.consumer_handle.is_valid())
+  if (!consumer_handle_.is_valid())
     return;
 
   const net::HttpResponseInfo& http_info =
@@ -291,7 +299,7 @@ void AppCacheURLLoaderJob::SendResponseInfo() {
   response_head->load_timing = load_timing_info_;
 
   client_->OnReceiveResponse(std::move(response_head));
-  client_->OnStartLoadingResponseBody(std::move(data_pipe_.consumer_handle));
+  client_->OnStartLoadingResponseBody(std::move(consumer_handle_));
 }
 
 void AppCacheURLLoaderJob::ReadMore() {

@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/supports_user_data.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_request_handler.h"
@@ -44,8 +43,7 @@ class AppCacheHost;
 // should use AppCacheHost::CreateRequestHandler to manufacture instances
 // that can retrieve resources for a particular host.
 class CONTENT_EXPORT AppCacheRequestHandler
-    : public base::SupportsUserData::Data,
-      public AppCacheHost::Observer,
+    : public AppCacheHost::Observer,
       public AppCacheServiceImpl::Observer,
       public AppCacheStorage::Delegate,
       public NavigationLoaderInterceptor {

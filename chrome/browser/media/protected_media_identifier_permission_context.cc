@@ -40,8 +40,9 @@ using chromeos::attestation::PlatformVerificationDialog;
 #endif
 
 ProtectedMediaIdentifierPermissionContext::
-    ProtectedMediaIdentifierPermissionContext(Profile* profile)
-    : PermissionContextBase(profile,
+    ProtectedMediaIdentifierPermissionContext(
+        content::BrowserContext* browser_context)
+    : PermissionContextBase(browser_context,
                             ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
                             blink::mojom::FeaturePolicyFeature::kEncryptedMedia)
 #if defined(OS_CHROMEOS)
@@ -61,7 +62,7 @@ void ProtectedMediaIdentifierPermissionContext::DecidePermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     bool user_gesture,
-    BrowserPermissionCallback callback) {
+    permissions::BrowserPermissionCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   // Since the dialog is modal, we only support one prompt per |web_contents|.
@@ -113,7 +114,7 @@ ProtectedMediaIdentifierPermissionContext::GetPermissionStatusInternal(
   }
 
   ContentSetting content_setting =
-      PermissionContextBase::GetPermissionStatusInternal(
+      permissions::PermissionContextBase::GetPermissionStatusInternal(
           render_frame_host, requesting_origin, embedding_origin);
   DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
          content_setting == CONTENT_SETTING_BLOCK ||
@@ -177,8 +178,9 @@ bool ProtectedMediaIdentifierPermissionContext::IsRestrictedToSecureOrigins()
 bool ProtectedMediaIdentifierPermissionContext::
     IsProtectedMediaIdentifierEnabled() const {
 #if defined(OS_CHROMEOS)
+  Profile* profile = Profile::FromBrowserContext(browser_context());
   // Platform verification is not allowed in incognito or guest mode.
-  if (profile()->IsOffTheRecord() || profile()->IsGuestSession()) {
+  if (profile->IsOffTheRecord() || profile->IsGuestSession()) {
     DVLOG(1) << "Protected media identifier disabled in incognito or guest "
                 "mode.";
     return false;
@@ -197,7 +199,7 @@ bool ProtectedMediaIdentifierPermissionContext::
           chromeos::kAttestationForContentProtectionEnabled,
           &enabled_for_device) ||
       !enabled_for_device ||
-      !profile()->GetPrefs()->GetBoolean(prefs::kEnableDRM)) {
+      !profile->GetPrefs()->GetBoolean(prefs::kEnableDRM)) {
     DVLOG(1) << "Protected media identifier disabled by the user or by device "
                 "policy.";
     return false;
@@ -220,7 +222,7 @@ void ProtectedMediaIdentifierPermissionContext::
         const permissions::PermissionRequestID& id,
         const GURL& requesting_origin,
         const GURL& embedding_origin,
-        BrowserPermissionCallback callback,
+        permissions::BrowserPermissionCallback callback,
         PlatformVerificationDialog::ConsentResponse response) {
   // The request may have been canceled. Drop the callback in that case.
   // This can happen if the tab is closed.

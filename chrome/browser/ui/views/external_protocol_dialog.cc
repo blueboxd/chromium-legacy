@@ -82,6 +82,15 @@ ExternalProtocolDialog::ExternalProtocolDialog(
       ui::DIALOG_BUTTON_CANCEL,
       l10n_util::GetStringUTF16(IDS_EXTERNAL_PROTOCOL_CANCEL_BUTTON_TEXT));
 
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      &ExternalProtocolDialog::OnDialogAccepted, base::Unretained(this)));
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      &ExternalProtocolHandler::RecordHandleStateMetrics,
+      false /* checkbox_selected */, ExternalProtocolHandler::BLOCK));
+  DialogDelegate::set_close_callback(base::BindOnce(
+      &ExternalProtocolHandler::RecordHandleStateMetrics,
+      false /* checkbox_selected */, ExternalProtocolHandler::BLOCK));
+
   views::MessageBoxView::InitParams params(
       GetMessageTextForOrigin(initiating_origin_));
   message_box_view_ = new views::MessageBoxView(params);
@@ -120,20 +129,14 @@ base::string16 ExternalProtocolDialog::GetWindowTitle() const {
   return l10n_util::GetStringFUTF16(IDS_EXTERNAL_PROTOCOL_TITLE, elided);
 }
 
-bool ExternalProtocolDialog::Cancel() {
-  ExternalProtocolHandler::RecordHandleStateMetrics(
-      false /* checkbox_selected */, ExternalProtocolHandler::BLOCK);
-  return true;
-}
-
-bool ExternalProtocolDialog::Accept() {
+void ExternalProtocolDialog::OnDialogAccepted() {
   const bool remember = message_box_view_->IsCheckBoxSelected();
   ExternalProtocolHandler::RecordHandleStateMetrics(
       remember, ExternalProtocolHandler::DONT_BLOCK);
 
   if (!web_contents()) {
     // Dialog outlasted the WebContents.
-    return true;
+    return;
   }
 
   if (remember) {
@@ -145,7 +148,6 @@ bool ExternalProtocolDialog::Accept() {
   }
 
   ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(url_, web_contents());
-  return true;
 }
 
 views::View* ExternalProtocolDialog::GetContentsView() {

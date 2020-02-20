@@ -46,6 +46,16 @@ DownloadInProgressDialogView::DownloadInProgressDialogView(
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(
       views::TEXT, views::TEXT));
 
+  auto run_callback = [](DownloadInProgressDialogView* dialog, bool accept) {
+    // Note that accepting this dialog means "cancel the download", while cancel
+    // means "continue the download".
+    dialog->callback_.Run(accept);
+  };
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(run_callback, base::Unretained(this), true));
+  DialogDelegate::set_cancel_callback(
+      base::BindOnce(run_callback, base::Unretained(this), false));
+
   int message_id = 0;
   switch (dialog_type) {
     case Browser::DownloadCloseType::kLastWindowInIncognitoProfile:
@@ -80,16 +90,6 @@ gfx::Size DownloadInProgressDialogView::CalculatePreferredSize() const {
                         DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH) -
                     margins().width();
   return gfx::Size(width, GetHeightForWidth(width));
-}
-
-bool DownloadInProgressDialogView::Cancel() {
-  callback_.Run(false /* cancel_downloads */);
-  return true;
-}
-
-bool DownloadInProgressDialogView::Accept() {
-  callback_.Run(true /* cancel_downloads */);
-  return true;
 }
 
 ui::ModalType DownloadInProgressDialogView::GetModalType() const {

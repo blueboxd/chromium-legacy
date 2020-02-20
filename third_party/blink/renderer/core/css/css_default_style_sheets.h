@@ -44,6 +44,7 @@ class CSSDefaultStyleSheets final
   CSSDefaultStyleSheets();
 
   bool EnsureDefaultStyleSheetsForElement(const Element&);
+  bool EnsureDefaultStyleSheetForXrOverlay();
   void EnsureDefaultStyleSheetForFullscreen();
 
   RuleSet* DefaultStyle() { return default_style_.Get(); }
@@ -108,6 +109,7 @@ class CSSDefaultStyleSheets final
   Member<StyleSheetContents> media_controls_style_sheet_;
   Member<StyleSheetContents> text_track_style_sheet_;
   Member<StyleSheetContents> fullscreen_style_sheet_;
+  Member<StyleSheetContents> webxr_overlay_style_sheet_;
 
   std::unique_ptr<UAStyleSheetLoader> media_controls_style_sheet_loader_;
   DISALLOW_COPY_AND_ASSIGN(CSSDefaultStyleSheets);

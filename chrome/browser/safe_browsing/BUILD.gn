@@ -99,6 +99,7 @@ jumbo_static_library("safe_browsing") {
       "ui_manager.h",
     ]
     deps += [
+      ":url_lookup_service_factory",
       "//chrome/browser/engagement:mojo_bindings",
       "//chrome/common/safe_browsing:proto",
       "//components/safe_browsing/content",
@@ -269,6 +270,19 @@ jumbo_static_library("safe_browsing") {
       ]
     }
   }
+}
+
+source_set("url_lookup_service_factory") {
+  sources = [
+    "url_lookup_service_factory.cc",
+    "url_lookup_service_factory.h",
+  ]
+
+  deps = [
+    "//components/keyed_service/content",
+    "//components/safe_browsing/core/realtime:url_lookup_service",
+    "//content/public/browser",
+  ]
 }
 
 static_library("advanced_protection") {

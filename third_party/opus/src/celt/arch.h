@@ -72,7 +72,9 @@ __attribute__((noreturn))
 #endif
 void celt_fatal(const char *str, const char *file, int line)
 {
+#if !defined(CHROMIUM_NO_LOGGING)
    fprintf (stderr, "Fatal (internal) error in %s, line %d: %s\n", file, line, str);
+#endif
    abort();
 }
 #endif

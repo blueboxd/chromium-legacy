@@ -461,6 +461,7 @@ mojom("mojo_bindings") {
     "navigation_params.mojom",
     "page_state.mojom",
     "prefetched_signed_exchange_info.mojom",
+    "render_accessibility.mojom",
     "render_frame_metadata.mojom",
     "render_message_filter.mojom",
     "renderer.mojom",

@@ -305,6 +305,11 @@ Als <ph name="SERVICE_SCRIPT_NAME" /> al is aangevinkt, vink je dit eerst uit en
 <translation id="8196755618196986400">Je e-mailadres wordt opgenomen in alle feedback die je verzendt zodat we contact met je kunnen opnemen voor meer informatie.</translation>
 <translation id="8244400547700556338">Meer informatie.</translation>
 <translation id="8261506727792406068">Verwijderen</translation>
+<translation id="8295077433896346116">Als je <ph name="PRODUCT_NAME" /> wilt gebruiken, moet je toegangsrechten verlenen, zodat de invoer van dat externe systeem op deze Mac kan worden ingevoegd.
+
+Als je dit recht wilt verlenen, klik je hieronder op '<ph name="BUTTON_NAME" />' om het voorkeurenvenster voor toegankelijkheid te openen. Vink daarna '<ph name="SERVICE_SCRIPT_NAME" />' aan.
+
+Als '<ph name="SERVICE_SCRIPT_NAME" />' al is aangevinkt, moet je dit uitvinken en vervolgens weer aanvinken.</translation>
 <translation id="8355326866731426344">Deze toegangscode verloopt over <ph name="TIMEOUT" /></translation>
 <translation id="8355485110405946777">App-logboeken toevoegen om ons te helpen je probleem op te lossen (logboeken bevatten mogelijk privégegevens).</translation>
 <translation id="837021510621780684">Vanaf deze computer</translation>

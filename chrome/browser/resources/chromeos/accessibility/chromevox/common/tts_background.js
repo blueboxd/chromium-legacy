@@ -311,7 +311,7 @@ TtsBackground = class extends ChromeTtsBase {
       delete this.utteranceQueue_[0].properties['delay'];
       this.timeoutId_ = setTimeout(
           () => this.startSpeakingNextItemInQueue_(),
-          TtsBackground.HINT_DELAY_MS_);
+          TtsBackground.hint_delay_ms_);
 
       return;
     }
@@ -719,6 +719,7 @@ TtsBackground = class extends ChromeTtsBase {
         case 'settings.tts.speech_rate':
           propertyName = AbstractTts.RATE;
           msg = 'announce_rate';
+          this.setHintDelayMS(/** @type {number} */ (pref.value));
           break;
         case 'settings.tts.speech_pitch':
           propertyName = AbstractTts.PITCH;
@@ -772,16 +773,26 @@ TtsBackground = class extends ChromeTtsBase {
         Msgs.getMsg('announce_tts_default_settings'), QueueMode.FLUSH,
         speechProperties);
   }
+
+  /**
+   * Sets |hint_delay_ms_| given the speech rate.
+   * We want an inverse relationship between the speech rate and the hint delay;
+   * the faster the speech rate, the shorter the delay should be.
+   * Default speech rate (value of 1) should map to a delay of 1000 MS.
+   * @param {number} rate
+   */
+  setHintDelayMS(rate) {
+    TtsBackground.hint_delay_ms_ = 1000 / rate;
+  }
 };
 
 
 /**
- * The amount of time to wait before speaking a hint.
+ * The amount of time, in milliseconds, to wait before speaking a hint.
  * @type {number}
  * @private
- * @const
  */
-TtsBackground.HINT_DELAY_MS_ = 1000;
+TtsBackground.hint_delay_ms_ = 1000;
 
 /**
  * The list of properties allowed to be passed to the chrome.tts.speak API.

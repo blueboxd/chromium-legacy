@@ -175,8 +175,7 @@
       },
       {
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+          "script": "//tools/perf/process_perf_results.py"
         },
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -702,8 +701,7 @@
       },
       {
         "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+          "script": "//tools/perf/process_perf_results.py"
         },
         "swarming": {
           "can_use_on_swarming_builders": true,

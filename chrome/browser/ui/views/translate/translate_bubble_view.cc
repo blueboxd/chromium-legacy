@@ -354,6 +354,7 @@ void TranslateBubbleView::ButtonPressed(views::Button* sender,
       break;
     }
     case BUTTON_ID_CLOSE: {
+      translate::ReportUiAction(translate::CLOSE_BUTTON_CLICKED);
       GetWidget()->Close();
       break;
     }

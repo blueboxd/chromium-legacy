@@ -360,13 +360,6 @@ TEST_F(Canvas2DLayerBridgeTest, FallbackToSoftwareIfContextLost) {
   EXPECT_FALSE(bridge->IsAccelerated());
 }
 
-void DrawSomething(Canvas2DLayerBridge* bridge) {
-  bridge->DidDraw(FloatRect(0, 0, 1, 1));
-  bridge->FinalizeFrame();
-  // Grabbing an image forces a flush
-  bridge->NewImageSnapshot(kPreferAcceleration);
-}
-
 TEST_F(Canvas2DLayerBridgeTest, FallbackToSoftwareOnFailedTextureAlloc) {
   {
     // No fallback case.
@@ -387,19 +380,14 @@ TEST_F(Canvas2DLayerBridgeTest, FallbackToSoftwareOnFailedTextureAlloc) {
                         ->ContextProvider()
                         ->GetGrContext();
     std::unique_ptr<Canvas2DLayerBridge> bridge =
-        std::make_unique<Canvas2DLayerBridge>(
-            IntSize(300, 150), Canvas2DLayerBridge::kEnableAcceleration,
-            CanvasColorParams());
-    bridge->DontUseIdleSchedulingForTesting();
+        MakeBridge(IntSize(300, 150), Canvas2DLayerBridge::kEnableAcceleration,
+                   CanvasColorParams());
     EXPECT_TRUE(bridge->IsValid());
     EXPECT_TRUE(bridge->IsAccelerated());  // We don't yet know that
                                            // allocation will fail.
     // This will cause SkSurface_Gpu creation to fail without
     // Canvas2DLayerBridge otherwise detecting that anything was disabled.
     gr->abandonContext();
-    host_ = std::make_unique<FakeCanvasResourceHost>(IntSize(300, 150));
-    bridge->SetCanvasResourceHost(host_.get());
-    DrawSomething(bridge.get());
     scoped_refptr<StaticBitmapImage> snapshot =
         bridge->NewImageSnapshot(kPreferAcceleration);
     EXPECT_FALSE(bridge->IsAccelerated());
@@ -414,6 +402,13 @@ class MockLogger : public Canvas2DLayerBridge::Logger {
   MOCK_METHOD0(DidStartHibernating, void());
   ~MockLogger() override = default;
 };
+
+void DrawSomething(Canvas2DLayerBridge* bridge) {
+  bridge->DidDraw(FloatRect(0, 0, 1, 1));
+  bridge->FinalizeFrame();
+  // Grabbing an image forces a flush
+  bridge->NewImageSnapshot(kPreferAcceleration);
+}
 
 #if CANVAS2D_HIBERNATION_ENABLED
 TEST_F(Canvas2DLayerBridgeTest, HibernationLifeCycle)
@@ -850,17 +845,13 @@ TEST_F(Canvas2DLayerBridgeTest, ResourceRecycling) {
 
   viz::TransferableResource resources[3];
   std::unique_ptr<viz::SingleReleaseCallback> callbacks[3];
-  PaintFlags flags;
 
   std::unique_ptr<Canvas2DLayerBridge> bridge = MakeBridge(
       IntSize(300, 150), Canvas2DLayerBridge::kForceAccelerationForTesting,
       CanvasColorParams());
-  bridge->GetPaintCanvas()->drawLine(0, 0, 2, 2, flags);
   DrawSomething(bridge.get());
   ASSERT_TRUE(bridge->PrepareTransferableResource(nullptr, &resources[0],
                                                   &callbacks[0]));
-
-  bridge->GetPaintCanvas()->drawLine(0, 0, 2, 2, flags);
   DrawSomething(bridge.get());
   ASSERT_TRUE(bridge->PrepareTransferableResource(nullptr, &resources[1],
                                                   &callbacks[1]));
@@ -870,7 +861,6 @@ TEST_F(Canvas2DLayerBridgeTest, ResourceRecycling) {
   // Now release the first resource and draw again. It should be reused due to
   // recycling.
   callbacks[0]->Run(gpu::SyncToken(), false);
-  bridge->GetPaintCanvas()->drawLine(0, 0, 2, 2, flags);
   DrawSomething(bridge.get());
   ASSERT_TRUE(bridge->PrepareTransferableResource(nullptr, &resources[2],
                                                   &callbacks[2]));
@@ -890,16 +880,13 @@ TEST_F(Canvas2DLayerBridgeTest, NoResourceRecyclingWhenPageHidden) {
 
   viz::TransferableResource resources[2];
   std::unique_ptr<viz::SingleReleaseCallback> callbacks[2];
-  PaintFlags flags;
 
   std::unique_ptr<Canvas2DLayerBridge> bridge = MakeBridge(
       IntSize(300, 150), Canvas2DLayerBridge::kForceAccelerationForTesting,
       CanvasColorParams());
-  bridge->GetPaintCanvas()->drawLine(0, 0, 2, 2, flags);
   DrawSomething(bridge.get());
   ASSERT_TRUE(bridge->PrepareTransferableResource(nullptr, &resources[0],
                                                   &callbacks[0]));
-  bridge->GetPaintCanvas()->drawLine(0, 0, 2, 2, flags);
   DrawSomething(bridge.get());
   ASSERT_TRUE(bridge->PrepareTransferableResource(nullptr, &resources[1],
                                                   &callbacks[1]));
@@ -1015,14 +1002,17 @@ TEST_F(Canvas2DLayerBridgeTest, ImagesLockedUntilCacheLimit) {
   // First 2 images are budgeted, they should remain locked after the op.
   bridge->GetPaintCanvas()->drawImage(images[0].paint_image(), 0u, 0u, nullptr);
   bridge->GetPaintCanvas()->drawImage(images[1].paint_image(), 0u, 0u, nullptr);
-  bridge->GetOrCreateResourceProvider()->FlushCanvas();
+  // TODO(jochin): Can just call provider::FlushSkia() once we move recorder_
+  // to the resource provider. The following is a temp workaround.
+  cc::PaintCanvas* canvas = bridge->GetOrCreateResourceProvider()->Canvas();
+  canvas->drawPicture(bridge->record_for_testing());
   EXPECT_EQ(image_decode_cache_.num_locked_images(), 2);
 
   // Next image is not budgeted, we should unlock all images other than the last
   // image.
   image_decode_cache_.set_budget_exceeded(true);
   bridge->GetPaintCanvas()->drawImage(images[2].paint_image(), 0u, 0u, nullptr);
-  bridge->GetOrCreateResourceProvider()->FlushCanvas();
+  canvas->drawPicture(bridge->record_for_testing());
   EXPECT_EQ(image_decode_cache_.num_locked_images(), 1);
 
   // Ask the provider to release everything, no locked images should remain.
@@ -1043,7 +1033,10 @@ TEST_F(Canvas2DLayerBridgeTest, QueuesCleanupTaskForLockedImages) {
                     SkMatrix::I(), 0u, color_params.GetStorageGfxColorSpace());
   bridge->GetPaintCanvas()->drawImage(image.paint_image(), 0u, 0u, nullptr);
 
-  bridge->GetOrCreateResourceProvider()->FlushCanvas();
+  // TODO(jochin): Can just call provider::FlushSkia() once we move recorder_
+  // to the resource provider. The following is a temp workaround.
+  cc::PaintCanvas* canvas = bridge->GetOrCreateResourceProvider()->Canvas();
+  canvas->drawPicture(bridge->record_for_testing());
   EXPECT_EQ(image_decode_cache_.num_locked_images(), 1);
 
   base::RunLoop().RunUntilIdle();
@@ -1116,26 +1109,23 @@ TEST_F(Canvas2DLayerBridgeTest, WritePixelsRestoresClipStack) {
                  std::move(host));
   PaintFlags flags;
 
-  // MakeBridge() results in a call to restore the matrix. So we already have 1.
   EXPECT_EQ(bridge->GetPaintCanvas()->getTotalMatrix().get(SkMatrix::kMTransX),
-            5);
-  // Drawline so WritePixels has something to flush
-  bridge->GetPaintCanvas()->drawLine(0, 0, 2, 2, flags);
-  bridge->DidDraw(FloatRect(0, 0, 1, 1));
+            0);
 
-  // WritePixels flushes recording. Post flush, a new drawing canvas is created
-  // that should have the matrix restored onto it.
+  cc::PaintCanvas* canvas = bridge->GetOrCreateResourceProvider()->Canvas();
   bridge->WritePixels(SkImageInfo::MakeN32Premul(10, 10), nullptr, 10, 0, 0);
+  // Recording canvas maintain clip stack, while underlying SkCanvas should not.
+  EXPECT_EQ(canvas->getTotalMatrix().get(SkMatrix::kMTransX), 0);
   EXPECT_EQ(bridge->GetPaintCanvas()->getTotalMatrix().get(SkMatrix::kMTransX),
             5);
 
   bridge->GetPaintCanvas()->drawLine(0, 0, 2, 2, flags);
-  // Standard flush recording. Post flush, a new drawing canvas is created that
-  // should have the matrix restored onto it.
+  // Flush recording. Recording canvas should maintain matrix, while SkCanvas
+  // should not.
   DrawSomething(bridge.get());
-
   EXPECT_EQ(bridge->GetPaintCanvas()->getTotalMatrix().get(SkMatrix::kMTransX),
             5);
+  EXPECT_EQ(canvas->getTotalMatrix().get(SkMatrix::kMTransX), 0);
 }
 
 TEST_F(Canvas2DLayerBridgeTest, DisplayedCanvasIsRateLimited) {

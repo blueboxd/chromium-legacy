@@ -73,8 +73,8 @@ void MojoCdmService::Initialize(const std::string& key_system,
       base::Bind(&MojoCdmService::OnSessionClosed, weak_this),
       base::Bind(&MojoCdmService::OnSessionKeysChange, weak_this),
       base::Bind(&MojoCdmService::OnSessionExpirationUpdate, weak_this),
-      base::Bind(&MojoCdmService::OnCdmCreated, weak_this,
-                 base::Passed(&callback)));
+      base::BindOnce(&MojoCdmService::OnCdmCreated, weak_this,
+                     base::Passed(&callback)));
 }
 
 void MojoCdmService::SetServerCertificate(

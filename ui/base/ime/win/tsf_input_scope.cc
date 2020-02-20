@@ -37,11 +37,11 @@ class TSFInputScope final : public ITfInputScope {
         ref_count_(0) {}
 
   // ITfInputScope:
-  STDMETHOD_(ULONG, AddRef)() override {
+  IFACEMETHODIMP_(ULONG) AddRef() override {
     return InterlockedIncrement(&ref_count_);
   }
 
-  STDMETHOD_(ULONG, Release)() override {
+  IFACEMETHODIMP_(ULONG) Release() override {
     const LONG count = InterlockedDecrement(&ref_count_);
     if (!count) {
       delete this;
@@ -50,7 +50,7 @@ class TSFInputScope final : public ITfInputScope {
     return static_cast<ULONG>(count);
   }
 
-  STDMETHOD(QueryInterface)(REFIID iid, void** result) override {
+  IFACEMETHODIMP QueryInterface(REFIID iid, void** result) override {
     if (!result)
       return E_INVALIDARG;
     if (iid == IID_IUnknown || iid == IID_ITfInputScope) {
@@ -63,7 +63,8 @@ class TSFInputScope final : public ITfInputScope {
     return S_OK;
   }
 
-  STDMETHOD(GetInputScopes)(InputScope** input_scopes, UINT* count) override {
+  IFACEMETHODIMP GetInputScopes(InputScope** input_scopes,
+                                UINT* count) override {
     if (!count || !input_scopes)
       return E_INVALIDARG;
     *input_scopes = static_cast<InputScope*>(CoTaskMemAlloc(
@@ -79,21 +80,17 @@ class TSFInputScope final : public ITfInputScope {
     return S_OK;
   }
 
-  STDMETHOD(GetPhrase)(BSTR** phrases, UINT* count) override {
+  IFACEMETHODIMP GetPhrase(BSTR** phrases, UINT* count) override {
     return E_NOTIMPL;
   }
 
-  STDMETHOD(GetRegularExpression)(BSTR* regexp) override {
+  IFACEMETHODIMP GetRegularExpression(BSTR* regexp) override {
     return E_NOTIMPL;
   }
 
-  STDMETHOD(GetSRGS)(BSTR* srgs) override {
-    return E_NOTIMPL;
-  }
+  IFACEMETHODIMP GetSRGS(BSTR* srgs) override { return E_NOTIMPL; }
 
-  STDMETHOD(GetXML)(BSTR* xml) override {
-    return E_NOTIMPL;
-  }
+  IFACEMETHODIMP GetXML(BSTR* xml) override { return E_NOTIMPL; }
 
  private:
   // The corresponding text input types.

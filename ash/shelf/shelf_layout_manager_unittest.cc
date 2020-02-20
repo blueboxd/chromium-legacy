@@ -1920,6 +1920,11 @@ TEST_P(ShelfLayoutManagerTest, ShelfLayoutInUnifiedDesktop) {
 
 // Tests that tapping the home button is successful on the autohidden shelf.
 TEST_P(ShelfLayoutManagerTest, PressHomeButtonOnAutoHideShelf) {
+  // Enable accessibility feature that forces home button to be shown even with
+  // kHideShelfControlsInTabletMode enabled.
+  Shell::Get()
+      ->accessibility_controller()
+      ->SetTabletModeShelfNavigationButtonsEnabled(true);
   TabletModeControllerTestApi().EnterTabletMode();
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(ShelfAutoHideBehavior::kAlways);
@@ -2507,6 +2512,8 @@ class ShelfLayoutManagerWindowDraggingTest : public ShelfLayoutManagerTestBase {
 TEST_F(ShelfLayoutManagerWindowDraggingTest, DraggedMRUWindow) {
   const int shelf_widget_height =
       GetShelfWidget()->GetWindowBoundsInScreen().height();
+  const int shelf_widget_bottom =
+      GetShelfWidget()->GetWindowBoundsInScreen().bottom();
   const int shelf_size = ShelfConfig::Get()->shelf_size();
   const int hotseat_size = ShelfConfig::Get()->hotseat_size();
   const int hotseat_padding_size = ShelfConfig::Get()->hotseat_bottom_padding();
@@ -2537,7 +2544,10 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, DraggedMRUWindow) {
 
     // Starts the drag from the center of the shelf's bottom.
     const gfx::Rect widget_bounds = test_case.widget->GetWindowBoundsInScreen();
-    gfx::Point start = widget_bounds.bottom_center();
+    // NOTE: Navigation widget might have zero size (depending on whether
+    // home and back buttons are shown) - use the sheld widget bottom value to
+    // ensure the drag starts from the bottom of the shelf.
+    gfx::Point start(widget_bounds.CenterPoint().x(), shelf_widget_bottom);
     StartScroll(start);
     UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
     // We need at least one window to work with.
@@ -2578,7 +2588,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, DraggedMRUWindow) {
     split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
     split_view_controller->SnapWindow(window2.get(),
                                       SplitViewController::RIGHT);
-    StartScroll(widget_bounds.bottom_left());
+    StartScroll(gfx::Point(widget_bounds.x(), shelf_widget_bottom));
     UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
     window_drag_controller =
         GetShelfLayoutManager()->window_drag_controller_for_testing();
@@ -2596,7 +2606,7 @@ TEST_F(ShelfLayoutManagerWindowDraggingTest, DraggedMRUWindow) {
     EXPECT_FALSE(IsWindowDragInProgress());
     EXPECT_TRUE(drag_window->transform().IsIdentity());
 
-    StartScroll(widget_bounds.bottom_right());
+    StartScroll(gfx::Point(widget_bounds.right(), shelf_widget_bottom));
     UpdateScroll(-shelf_size - hotseat_size - hotseat_padding_size);
     window_drag_controller =
         GetShelfLayoutManager()->window_drag_controller_for_testing();

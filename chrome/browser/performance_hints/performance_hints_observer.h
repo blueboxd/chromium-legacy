@@ -56,6 +56,17 @@ class PerformanceHintsObserver
       content::WebContents* web_contents,
       const GURL& url);
 
+  // Used only on Android since the java API can be called repeatedly and is
+  // not appropriate to record metrics.
+  static void RecordPerformanceUMAForURL(content::WebContents* web_contents,
+                                         const GURL& url);
+
+  // Public so is accessible by Android JNI.
+  static optimization_guide::proto::PerformanceClass
+  PerformanceClassForURLInternal(content::WebContents* web_contents,
+                                 const GURL& url,
+                                 bool record_metrics);
+
  private:
   explicit PerformanceHintsObserver(content::WebContents* web_contents);
   friend class content::WebContentsUserData<PerformanceHintsObserver>;
@@ -74,6 +85,7 @@ class PerformanceHintsObserver
 
   // Returns a PerformanceHint for a link to |url|, if one exists.
   base::Optional<optimization_guide::proto::PerformanceHint> HintForURL(
+      bool record_metrics,
       const GURL& url) const;
 
   // Initialized in constructor. It may be null if !IsOptimizationHintsEnabled.

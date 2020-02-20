@@ -98,6 +98,9 @@ class StackAddressInterpreter(object):
       for i in range(max(10, len(stack_output))):
         logging.debug(stack_output[i])
 
+    logging.info('We got the results from the stack script. Translating the '
+                 'addresses...')
+
     address_function_pairs = []
     pattern = re.compile(r'  0*(?P<address>[1-9a-f][0-9a-f]+)  (?P<function>.*)'
                          r'  (?P<file_name_line>.*)')
@@ -109,6 +112,8 @@ class StackAddressInterpreter(object):
           function_info += " | " + m.group('file_name_line')
 
         address_function_pairs.append((m.group('address'), function_info))
+
+    logging.info('The translation is done.')
     return address_function_pairs
 
 
@@ -164,6 +169,7 @@ class SimplePerfRunner(object):
     logging.info("Extracted %d addresses", len(addresses))
     address_function_pairs = self.address_interpreter.Interpret(
         addresses, lib_path)
+
     lines = SimplePerfRunner.ReplaceAddressesWithFunctionInfos(
         lines, address_function_pairs, lib_name)
 
@@ -254,14 +260,31 @@ class SimplePerfRunner(object):
       A list of strings with addresses replaced by function names.
     """
 
-    address_count = 0
-    for address, function in address_function_pairs:
-      pattern = re.compile(lib_name + r'\[\+' + address + r'\]')
-      for i, line in enumerate(lines):
-        address_count += len(pattern.findall(line))
-        lines[i] = pattern.sub(
-            lib_name + '[' + cgi.escape(function) + ']', line)
-    logging.info('There were %d matching addresses', address_count)
+    logging.info('Replacing the HTML content with new function names...')
+
+    # Note: Using a lenient pattern matching and a hashmap (dict) is much faster
+    # than using a double loop (by the order of 1,000).
+    # '+address' will be replaced by function name.
+    address_function_dict = {
+        '+' + k: cgi.escape(v)
+        for k, v in address_function_pairs
+    }
+    # Look behind the lib_name and '[' which will not be substituted. Note that
+    # '+' is used in the pattern but will be removed.
+    pattern = re.compile(r'(?<=' + lib_name + r'\[)\+([a-f0-9]+)(?=\])')
+
+    def replace_fn(match):
+      address = match.group(0)
+      if address in address_function_dict:
+        return address_function_dict[address]
+      else:
+        return address
+
+    # Line-by-line assignment to avoid creating a temp list.
+    for i, line in enumerate(lines):
+      lines[i] = pattern.sub(replace_fn, line)
+
+    logging.info('Replacing is done.')
     return lines
 
 

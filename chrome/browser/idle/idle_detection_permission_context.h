@@ -6,11 +6,13 @@
 #define CHROME_BROWSER_IDLE_IDLE_DETECTION_PERMISSION_CONTEXT_H_
 
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_context_base.h"
+#include "components/permissions/permission_context_base.h"
 
-class IdleDetectionPermissionContext : public PermissionContextBase {
+class IdleDetectionPermissionContext
+    : public permissions::PermissionContextBase {
  public:
-  explicit IdleDetectionPermissionContext(Profile* profile);
+  explicit IdleDetectionPermissionContext(
+      content::BrowserContext* browser_context);
   ~IdleDetectionPermissionContext() override;
 
  private:

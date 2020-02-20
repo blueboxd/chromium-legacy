@@ -105,6 +105,7 @@ gfx::NativeWindow CreateWebDialogWithBounds(gfx::NativeView parent,
   params.delegate = view;
   params.bounds = bounds;
   params.parent = parent;
+  params.child = true;
   if (use_dialog_frame) {
     params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
     params.remove_standard_frame = true;

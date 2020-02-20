@@ -41,7 +41,7 @@
 namespace blink {
 
 class KURL;
-class MediaSource;
+class MediaSourceImpl;
 
 class MediaSourceRegistry final : public URLRegistry {
  public:
@@ -55,7 +55,7 @@ class MediaSourceRegistry final : public URLRegistry {
 
  private:
   MediaSourceRegistry();
-  Persistent<HeapHashMap<String, Member<MediaSource>>> media_sources_;
+  Persistent<HeapHashMap<String, Member<MediaSourceImpl>>> media_sources_;
 };
 
 }  // namespace blink

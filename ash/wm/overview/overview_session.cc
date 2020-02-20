@@ -927,6 +927,13 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
     return;
   }
 
+  // If any desk name is being modified, let the DeskNameView handle the key
+  // events.
+  for (const auto& grid : grid_list_) {
+    if (grid->IsDeskNameBeingModified())
+      return;
+  }
+
   // Check if we can scroll with the event first as it can use release events as
   // well.
   if (ProcessForScrolling(*event)) {

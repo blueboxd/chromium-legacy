@@ -39,7 +39,7 @@ class CastCdmFactory : public ::media::CdmFactory {
       const ::media::SessionClosedCB& session_closed_cb,
       const ::media::SessionKeysChangeCB& session_keys_change_cb,
       const ::media::SessionExpirationUpdateCB& session_expiration_update_cb,
-      const ::media::CdmCreatedCB& cdm_created_cb) override;
+      ::media::CdmCreatedCB cdm_created_cb) override;
 
   // Provides a platform-specific BrowserCdm instance.
   virtual scoped_refptr<CastCdm> CreatePlatformBrowserCdm(

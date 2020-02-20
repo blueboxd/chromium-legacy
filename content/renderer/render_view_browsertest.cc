@@ -48,6 +48,7 @@
 #include "content/public/test/render_view_test.h"
 #include "content/public/test/test_utils.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
+#include "content/renderer/accessibility/render_accessibility_manager.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/history_entry.h"
 #include "content/renderer/history_serialization.h"
@@ -267,6 +268,14 @@ class RenderViewImplTest : public RenderViewTest {
 
   TestRenderFrame* frame() {
     return static_cast<TestRenderFrame*>(view()->GetMainRenderFrame());
+  }
+
+  RenderAccessibilityManager* GetRenderAccessibilityManager() {
+    return frame()->GetRenderAccessibilityManager();
+  }
+
+  ui::AXMode GetAccessibilityMode() {
+    return GetRenderAccessibilityManager()->GetAccessibilityMode();
   }
 
   void ReceiveDisableDeviceEmulation(RenderViewImpl* view) {
@@ -2323,21 +2332,22 @@ TEST_F(RenderViewImplTest, FocusElementCallsFocusedNodeChanged) {
   render_thread_->sink().ClearMessages();
 }
 
-TEST_F(RenderViewImplTest, OnSetAccessibilityMode) {
-  ASSERT_TRUE(frame()->accessibility_mode().is_mode_off());
-  ASSERT_FALSE(frame()->render_accessibility());
+TEST_F(RenderViewImplTest, SetAccessibilityMode) {
+  ASSERT_TRUE(GetAccessibilityMode().is_mode_off());
+  ASSERT_TRUE(GetRenderAccessibilityManager());
+  ASSERT_FALSE(GetRenderAccessibilityManager()->GetRenderAccessibilityImpl());
 
-  frame()->SetAccessibilityMode(ui::kAXModeWebContentsOnly);
-  ASSERT_TRUE(frame()->accessibility_mode() == ui::kAXModeWebContentsOnly);
-  ASSERT_TRUE(frame()->render_accessibility());
+  GetRenderAccessibilityManager()->SetMode(ui::kAXModeWebContentsOnly.mode());
+  ASSERT_TRUE(GetAccessibilityMode() == ui::kAXModeWebContentsOnly);
+  ASSERT_TRUE(GetRenderAccessibilityManager()->GetRenderAccessibilityImpl());
 
-  frame()->SetAccessibilityMode(ui::AXMode());
-  ASSERT_TRUE(frame()->accessibility_mode().is_mode_off());
-  ASSERT_FALSE(frame()->render_accessibility());
+  GetRenderAccessibilityManager()->SetMode(0);
+  ASSERT_TRUE(GetAccessibilityMode().is_mode_off());
+  ASSERT_FALSE(GetRenderAccessibilityManager()->GetRenderAccessibilityImpl());
 
-  frame()->SetAccessibilityMode(ui::kAXModeComplete);
-  ASSERT_TRUE(frame()->accessibility_mode() == ui::kAXModeComplete);
-  ASSERT_TRUE(frame()->render_accessibility());
+  GetRenderAccessibilityManager()->SetMode(ui::kAXModeComplete.mode());
+  ASSERT_TRUE(GetAccessibilityMode() == ui::kAXModeComplete);
+  ASSERT_TRUE(GetRenderAccessibilityManager()->GetRenderAccessibilityImpl());
 }
 
 // Checks that when a navigation starts in the renderer, |navigation_start| is

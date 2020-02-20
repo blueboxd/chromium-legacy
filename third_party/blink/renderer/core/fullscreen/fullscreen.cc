@@ -223,6 +223,27 @@ bool AllowedToUseFullscreen(const Document& document,
 }
 
 bool AllowedToRequestFullscreen(Document& document) {
+  //  WebXR DOM Overlay integration, cf.
+  //  https://immersive-web.github.io/dom-overlays/
+  //
+  // The current implementation of WebXR's "dom-overlay" mode internally uses
+  // the Fullscreen API to show a single DOM element based on configuration at
+  // XR session start. The WebXR API doesn't support changing elements during
+  // the session, so to avoid inconsistencies between implementations we need
+  // to block changes via Fullscreen API while the XR session is active, while
+  // still allowing the XR code to set up fullscreen mode on session start.
+  if (ScopedAllowFullscreen::FullscreenAllowedReason() ==
+      ScopedAllowFullscreen::kXrOverlay) {
+    DVLOG(1) << __func__
+             << ": allowing fullscreen element setup for XR DOM overlay";
+    return true;
+  }
+  if (document.IsXrOverlay()) {
+    DVLOG(1) << __func__
+             << ": rejecting change of fullscreen element for XR DOM overlay";
+    return false;
+  }
+
   // An algorithm is allowed to request fullscreen if one of the following is
   // true:
 
@@ -235,19 +256,6 @@ bool AllowedToRequestFullscreen(Document& document) {
       ScopedAllowFullscreen::kOrientationChange) {
     UseCounter::Count(document,
                       WebFeature::kFullscreenAllowedByOrientationChange);
-    return true;
-  }
-
-  if (document.IsImmersiveArOverlay()) {
-    // This is a workaround for lack of a user activation when an immersive-ar
-    // session is starting. If the app sets an element fullscreen in the "Enter
-    // AR" button click, that gets unfullscreened when the browser shows its AR
-    // session consent prompt. By the time the session starts, the 5-second
-    // timer for the initial user activation is likely to have expired. This
-    // also allows switching the active fullscreen element during the session.
-    // Note that exiting the immersive-ar session does FullyExitFullscreen to
-    // ensure a consistent post-session state.
-    DVLOG(1) << __func__ << ": allowing fullscreen immersive-ar DOM overlay";
     return true;
   }
 

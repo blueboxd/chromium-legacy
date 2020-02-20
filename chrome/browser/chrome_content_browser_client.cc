@@ -88,7 +88,6 @@
 #include "chrome/browser/performance_manager/chrome_browser_main_extra_parts_performance_manager.h"
 #include "chrome/browser/performance_manager/chrome_content_browser_client_performance_manager_part.h"
 #include "chrome/browser/permissions/attestation_permission_request.h"
-#include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/plugins/pdf_iframe_navigation_throttle.h"
 #include "chrome/browser/plugins/plugin_utils.h"
@@ -218,6 +217,7 @@
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "components/payments/content/payment_request_display_manager.h"
+#include "components/permissions/permission_context_base.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
 #include "components/policy/content/policy_blacklist_service.h"
 #include "components/policy/core/common/policy_service.h"
@@ -2562,9 +2562,9 @@ ChromeContentBrowserClient::AllowWebBluetooth(
   // base::CommandLine::ForCurrentProcess()->
   // HasSwitch(switches::kEnableWebBluetooth) is true.
   if (variations::GetVariationParamValue(
-          PermissionContextBase::kPermissionsKillSwitchFieldStudy,
+          permissions::PermissionContextBase::kPermissionsKillSwitchFieldStudy,
           "Bluetooth") ==
-      PermissionContextBase::kPermissionsKillSwitchBlockedValue) {
+      permissions::PermissionContextBase::kPermissionsKillSwitchBlockedValue) {
     // The kill switch is enabled for this permission. Block requests.
     return AllowWebBluetoothResult::BLOCK_GLOBALLY_DISABLED;
   }
@@ -4231,6 +4231,9 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
             profile)
             ? IdentityManagerFactory::GetForProfile(profile)
             : nullptr;
+
+    // TODO(crbug.com/1050859): Get url_lookup_service from
+    // url_lookup_service_factory and pass it into the throttle.
 
     result.push_back(safe_browsing::BrowserURLLoaderThrottle::Create(
         base::BindOnce(

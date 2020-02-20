@@ -31,6 +31,12 @@ VirtualCardSelectionDialogViewImpl::VirtualCardSelectionDialogViewImpl(
                                    controller_->GetOkButtonLabel());
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_CANCEL,
                                    controller_->GetCancelButtonLabel());
+  DialogDelegate::set_accept_callback(
+      base::Bind(&VirtualCardSelectionDialogController::OnOkButtonClicked,
+                 base::Unretained(controller_)));
+  DialogDelegate::set_cancel_callback(
+      base::Bind(&VirtualCardSelectionDialogController::OnCancelButtonClicked,
+                 base::Unretained(controller_)));
 }
 
 VirtualCardSelectionDialogViewImpl::~VirtualCardSelectionDialogViewImpl() {
@@ -69,16 +75,6 @@ gfx::Size VirtualCardSelectionDialogViewImpl::CalculatePreferredSize() const {
 
 void VirtualCardSelectionDialogViewImpl::AddedToWidget() {
   // TODO(crbug.com/1020740): The header image is not ready. Implement it later.
-}
-
-bool VirtualCardSelectionDialogViewImpl::Accept() {
-  controller_->OnOkButtonClicked();
-  return true;
-}
-
-bool VirtualCardSelectionDialogViewImpl::Cancel() {
-  controller_->OnCancelButtonClicked();
-  return true;
 }
 
 bool VirtualCardSelectionDialogViewImpl::IsDialogButtonEnabled(

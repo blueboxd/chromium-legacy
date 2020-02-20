@@ -12,10 +12,10 @@
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/history/history_clear_browsing_data_coordinator.h"
-#include "ios/chrome/browser/ui/history/history_local_commands.h"
 #import "ios/chrome/browser/ui/history/history_mediator.h"
 #include "ios/chrome/browser/ui/history/history_table_view_controller.h"
 #import "ios/chrome/browser/ui/history/history_transitioning_delegate.h"
+#include "ios/chrome/browser/ui/history/history_ui_delegate.h"
 #include "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
 #import "ios/chrome/browser/ui/table_view/feature_flags.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
@@ -25,7 +25,7 @@
 #error "This file requires ARC support."
 #endif
 
-@interface HistoryCoordinator ()<HistoryLocalCommands> {
+@interface HistoryCoordinator () <HistoryUIDelegate> {
   // Provides dependencies and funnels callbacks from BrowsingHistoryService.
   std::unique_ptr<IOSBrowsingHistoryDriver> _browsingHistoryDriver;
   // Abstraction to communicate with HistoryService and WebHistoryService.
@@ -86,7 +86,7 @@
   self.historyNavigationController = [[TableViewNavigationController alloc]
       initWithTable:self.historyTableViewController];
   self.historyNavigationController.toolbarHidden = NO;
-  self.historyTableViewController.localDispatcher = self;
+  self.historyTableViewController.delegate = self;
   self.historyTableViewController.presentationDelegate =
       self.presentationDelegate;
 
@@ -149,7 +149,7 @@
   }
 }
 
-#pragma mark - HistoryLocalCommands
+#pragma mark - HistoryUIDelegate
 
 - (void)dismissHistoryWithCompletion:(ProceduralBlock)completionHandler {
   [self stopWithCompletion:completionHandler];
@@ -160,7 +160,7 @@
       [[HistoryClearBrowsingDataCoordinator alloc]
           initWithBaseViewController:self.historyNavigationController
                              browser:self.browser];
-  self.historyClearBrowsingDataCoordinator.localDispatcher = self;
+  self.historyClearBrowsingDataCoordinator.delegate = self;
   self.historyClearBrowsingDataCoordinator.presentationDelegate =
       self.presentationDelegate;
   self.historyClearBrowsingDataCoordinator.loadStrategy = self.loadStrategy;

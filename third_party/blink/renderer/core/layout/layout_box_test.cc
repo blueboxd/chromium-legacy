@@ -392,12 +392,7 @@ TEST_P(LayoutBoxTest, ControlClip) {
   EXPECT_TRUE(target->HasControlClip());
   EXPECT_TRUE(target->HasClipRelatedProperty());
   EXPECT_TRUE(target->ShouldClipOverflow());
-#if defined(OS_MACOSX)
-  EXPECT_EQ(PhysicalRect(0, 0, 100, 18),
-            target->ClippingRect(PhysicalOffset()));
-#else
   EXPECT_EQ(PhysicalRect(2, 2, 96, 46), target->ClippingRect(PhysicalOffset()));
-#endif
 }
 
 TEST_P(LayoutBoxTest, LocalVisualRectWithMask) {

@@ -582,7 +582,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="5447765697759493033">Bu sayt tərcümə edilməyəcək</translation>
 <translation id="545042621069398927">Endirmənizi sürətləndirin.</translation>
 <translation id="5456381639095306749">Endirmə səhifəsi</translation>
-<translation id="5475862044948910901">Artırılmış Reallıq sessiyası başladılsın?</translation>
 <translation id="548278423535722844">Xəritə tətbiqində açın</translation>
 <translation id="5487521232677179737">Datanı silin</translation>
 <translation id="5494752089476963479">İntruziv və aldadıcı reklamlar göstərən saytlardakı reklamları bloklayın</translation>
@@ -829,11 +828,6 @@ Ayarı dəyişmək üçün <ph name="BEGIN_LINK" />sinxronizasiyanı sıfırlay�
 <translation id="7352939065658542140">VİDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Seçilmiş 1 elementi paylaşın}other{Seçilmiş # elementi paylaşın}}</translation>
 <translation id="7359002509206457351">Ödəniş üsullarına daxil olun</translation>
-<translation id="7365126855094612066">Bu sessiyanın aktiv olduğu müddət ərzində sayt:
-• olduğunuz mühitin 3D xəritəsini yaradacaq
-• kamera hərəkətini izləyəcək
-
-Bu sayt kameraya daxil olmur. Kamera şəkillərini yalnız Siz görürsünüz.</translation>
 <translation id="7375125077091615385">Növ:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>

@@ -25,11 +25,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/content_settings_usages_state.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/features.h"
 #include "components/permissions/permission_request_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_details.h"
@@ -554,7 +554,8 @@ class GeolocationBrowserTestWithNoPermissionDelegation
     : public GeolocationBrowserTest {
  public:
   GeolocationBrowserTestWithNoPermissionDelegation() {
-    feature_list_.InitAndDisableFeature(features::kPermissionDelegation);
+    feature_list_.InitAndDisableFeature(
+        permissions::features::kPermissionDelegation);
   }
 
  private:

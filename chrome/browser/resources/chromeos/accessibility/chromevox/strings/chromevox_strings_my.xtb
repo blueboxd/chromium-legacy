@@ -27,6 +27,7 @@
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, ရောစပ် အကွက်</translation>
 <translation id="1161762950103988776">ခုန်ရန်</translation>
 <translation id="1167230103353892028"><ph name="NAME" />၊ မီးနူ အရာ၊ ဆပ်မီနူးနှင့်အတူ</translation>
+<translation id="1175914831232945926">ဂဏန်းများ</translation>
 <translation id="1177863135347784049">စိတ်ကြိုက်</translation>
 <translation id="1188858454923323853">ထည့်ပါလာသော</translation>
 <translation id="1195238899008218998">စာအုပ်ဖတ်ပြီးနောက် သုံးသပ်ချက်</translation>
@@ -145,6 +146,7 @@
 <translation id="1969092762068865084">ဇူလိုင်လ</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1982529757455190616">ယခင် ကျော်ရန်အမှတ် မရှိပါ</translation>
+<translation id="1988733631391393183">ChromeVox မီနူးများတွင် မျက်မမြင်စာရေးစနစ် ကွန်မန်းများ ပြရန်</translation>
 <translation id="1990932729021763163">အတန်း ခေါင်းစီး။</translation>
 <translation id="2002895034995108595">လက်ရှိ ကီးမြေပုံအား ပြန်လည်သတ်မှတ်မည်</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{ကွင်းပိတ်}other{# ကွင်းပိတ်များ}}</translation>
@@ -308,6 +310,7 @@
 <translation id="3109724472072898302">ခေါက်ထား</translation>
 <translation id="3112457281078985179">ChromeVox ကို အဖွင့်အပိတ်ပြုလုပ်ရန် Control+Alt+Z ကို အသုံးပြုပါ။</translation>
 <translation id="3128896337293924532">နောက်ထပ် ကိုးကားချက် မရှိပါ</translation>
+<translation id="3131002934070407451">အောက်ပါအဖြစ် နံပါတ်များကို ဖတ်ရန်-</translation>
 <translation id="3134461040845705080">ဖတ်ရန်သာ</translation>
 <translation id="3137663468179739624">သံလွင်သီး</translation>
 <translation id="3138767756593758860">အထင်ကရနေရာ စာရင်းပြ</translation>
@@ -1001,6 +1004,7 @@ Chrome ဘရောင်ဇာမီနူးကို ဖွင့်ရန်
 <translation id="7968340748835037139">အစိမ်းရင့်</translation>
 <translation id="7972507042926081808">ချောကလက်</translation>
 <translation id="7974390230414479278">မီနျူးအကြောင်းအရာ</translation>
+<translation id="8004507136466386272">စကားလုံးများ</translation>
 <translation id="8007540374018858731">h၃</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{ကိုးကား}other{# ကိုးကားချက်များ}}</translation>
 <translation id="8017588669690167134">စကားပြောခလုတ်ကို ပိတ်ရန်</translation>

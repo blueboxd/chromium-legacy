@@ -172,6 +172,16 @@ public interface BottomSheetContent {
     }
 
     /**
+     * A means for the content to intercept and handle the back press event. This will be called
+     * even if the sheet is in the peeking state. If left {@code false}, the sheet will collapse to
+     * its minimum state on back press or do nothing if in the minimum / peeking state.
+     * @return Whether the bottom sheet handled the back press.
+     */
+    default boolean handleBackPress() {
+        return false;
+    }
+
+    /**
      * @return The resource id of the content description for the bottom sheet. This is
      *         generally the name of the feature/content that is showing. 'Swipe down to close.'
      *         will be automatically appended after the content description.

@@ -68,17 +68,9 @@ const char kIncompatibleLayer[] =
 const char kInlineVerticalFOVNotSupported[] =
     "This session does not support inlineVerticalFieldOfView";
 
-const char kNoSpaceSpecified[] = "No XRSpace specified.";
-
-const char kNoRigidTransformSpecified[] = "No XRRigidTransform specified.";
-
 const char kAnchorsNotSupported[] = "Device does not support anchors!";
 
 const char kDeviceDisconnected[] = "The XR device has been disconnected.";
-
-const char kUnableToRetrieveMatrix[] =
-    "The operation was unable to retrieve a matrix from passed in space and "
-    "could not be completed.";
 
 const char kUnableToDecomposeMatrix[] =
     "The operation was unable to decompose a matrix and could not be "
@@ -243,6 +235,10 @@ bool ValidateHitTestSourceExistsHelper(
 }
 
 }  // namespace
+
+constexpr char XRSession::kNoRigidTransformSpecified[];
+constexpr char XRSession::kUnableToRetrieveMatrix[];
+constexpr char XRSession::kNoSpaceSpecified[];
 
 class XRSession::XRSessionResizeObserverDelegate final
     : public ResizeObserver::Delegate {
@@ -559,25 +555,15 @@ ScriptPromise XRSession::requestReferenceSpace(
 
 ScriptPromise XRSession::CreateAnchor(
     ScriptState* script_state,
-    XRRigidTransform* offset_space_from_anchor_transform,
-    XRSpace* space,
-    XRPlane* plane,
+    const blink::TransformationMatrix& offset_space_from_anchor,
+    const blink::TransformationMatrix& mojo_from_offset_space,
+    base::Optional<uint64_t> plane_id,
     ExceptionState& exception_state) {
+  DVLOG(2) << __func__ << ": plane_id.has_value()=" << plane_id.has_value();
+
   if (ended_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kSessionEnded);
-    return ScriptPromise();
-  }
-
-  if (!offset_space_from_anchor_transform) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      kNoRigidTransformSpecified);
-    return ScriptPromise();
-  }
-
-  if (!space) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      kNoSpaceSpecified);
     return ScriptPromise();
   }
 
@@ -588,28 +574,7 @@ ScriptPromise XRSession::CreateAnchor(
     return ScriptPromise();
   }
 
-  // Transformation from passed in |space| to mojo space.
-  std::unique_ptr<TransformationMatrix> mojo_from_native =
-      space->MojoFromNative();
-
-  if (!mojo_from_native) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      kUnableToRetrieveMatrix);
-    return ScriptPromise();
-  }
-
-  DVLOG(3) << __func__
-           << ": mojo_from_native = " << mojo_from_native->ToString(true);
-
-  // Transformation from passed in pose to |space|.
-  auto offset_space_from_anchor =
-      offset_space_from_anchor_transform->TransformMatrix();
-  auto native_space_from_offset_space = space->NativeFromOffsetMatrix();
-  auto native_space_from_anchor =
-      native_space_from_offset_space * offset_space_from_anchor;
-
-  auto mojo_from_native_space = *mojo_from_native;
-  auto mojo_from_anchor = mojo_from_native_space * native_space_from_anchor;
+  auto mojo_from_anchor = mojo_from_offset_space * offset_space_from_anchor;
 
   DVLOG(3) << __func__
            << ": mojo_from_anchor = " << mojo_from_anchor.ToString(true);
@@ -636,9 +601,9 @@ ScriptPromise XRSession::CreateAnchor(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (plane) {
+  if (plane_id) {
     xr_->xrEnvironmentProviderRemote()->CreatePlaneAnchor(
-        std::move(pose_ptr), plane->id(),
+        std::move(pose_ptr), *plane_id,
         WTF::Bind(&XRSession::OnCreateAnchorResult, WrapPersistent(this),
                   WrapPersistent(resolver)));
   } else {
@@ -876,11 +841,13 @@ void XRSession::OnCreateAnchorResult(ScriptPromiseResolver* resolver,
   DCHECK(create_anchor_promises_.Contains(resolver));
   create_anchor_promises_.erase(resolver);
 
-  XRAnchor* anchor = MakeGarbageCollected<XRAnchor>(id, this);
-
-  anchor_ids_to_anchors_.insert(id, anchor);
-
-  resolver->Resolve(anchor);
+  if (result == device::mojom::CreateAnchorResult::SUCCESS) {
+    XRAnchor* anchor = MakeGarbageCollected<XRAnchor>(id, this);
+    anchor_ids_to_anchors_.insert(id, anchor);
+    resolver->Resolve(anchor);
+  } else {
+    resolver->Reject();
+  }
 }
 
 void XRSession::OnEnvironmentProviderCreated() {

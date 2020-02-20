@@ -483,7 +483,7 @@ public final class TabImpl extends ITab.Stub {
     }
 
     @CalledByNative
-    private void setBrowserControlsVisibilityConstraint(
+    public void setBrowserControlsVisibilityConstraint(
             @ImplControlsVisibilityReason int reason, @BrowserControlsState int constraint) {
         mBrowserControlsDelegates.get(reason).set(constraint);
     }

@@ -19,6 +19,7 @@ SwitchAccessAutoScanManagerTest.prototype = {
 
   /** @override */
   setUp() {
+    AutoScanManager.instance.primaryScanTime_ = 1000;
     // Use intervalCount and intervalDelay to check how many intervals are
     // currently running (should be no more than 1) and the current delay.
     window.intervalCount = 0;
@@ -33,8 +34,8 @@ SwitchAccessAutoScanManagerTest.prototype = {
       window.intervalCount++;
       window.intervalDelay = delay;
 
-      // Override the delay to 1 ms to speed up the test.
-      return window.defaultSetInterval(func, 1);
+      // Override the delay for testing.
+      return window.defaultSetInterval(func, 0);
     };
 
     window.clearInterval = function(intervalId) {
@@ -55,7 +56,6 @@ SwitchAccessAutoScanManagerTest.prototype = {
 
 TEST_F('SwitchAccessAutoScanManagerTest', 'SetEnabled', function() {
   this.runWithLoadedTree('', (desktop) => {
-    console.error('RUNNING TEST');
     assertFalse(
         AutoScanManager.instance.isRunning_(),
         'Auto scan manager is running prematurely');

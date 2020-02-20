@@ -5,11 +5,11 @@
 #ifndef CHROME_BROWSER_NFC_NFC_PERMISSION_CONTEXT_H_
 #define CHROME_BROWSER_NFC_NFC_PERMISSION_CONTEXT_H_
 
-#include "chrome/browser/permissions/permission_context_base.h"
+#include "components/permissions/permission_context_base.h"
 
-class NfcPermissionContext : public PermissionContextBase {
+class NfcPermissionContext : public permissions::PermissionContextBase {
  public:
-  explicit NfcPermissionContext(Profile* profile);
+  explicit NfcPermissionContext(content::BrowserContext* browser_context);
 
   NfcPermissionContext(const NfcPermissionContext&) = delete;
   NfcPermissionContext& operator=(const NfcPermissionContext&) = delete;
@@ -24,12 +24,13 @@ class NfcPermissionContext : public PermissionContextBase {
       const GURL& requesting_origin,
       const GURL& embedding_origin) const override;
 #endif
-  void DecidePermission(content::WebContents* web_contents,
-                        const permissions::PermissionRequestID& id,
-                        const GURL& requesting_origin,
-                        const GURL& embedding_origin,
-                        bool user_gesture,
-                        BrowserPermissionCallback callback) override;
+  void DecidePermission(
+      content::WebContents* web_contents,
+      const permissions::PermissionRequestID& id,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      bool user_gesture,
+      permissions::BrowserPermissionCallback callback) override;
   void UpdateTabContext(const permissions::PermissionRequestID& id,
                         const GURL& requesting_frame,
                         bool allowed) override;

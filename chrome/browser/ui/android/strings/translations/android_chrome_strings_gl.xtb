@@ -582,7 +582,6 @@ Para cambiar esta opción de configuración, deberás <ph name="BEGIN_LINK" />re
 <translation id="5447765697759493033">Non se traducirá este sitio</translation>
 <translation id="545042621069398927">Estase acelerando a descarga.</translation>
 <translation id="5456381639095306749">Descargar páxina</translation>
-<translation id="5475862044948910901">Queres iniciar unha sesión de realidade aumentada?</translation>
 <translation id="548278423535722844">Abrir na aplicación de mapas</translation>
 <translation id="5487521232677179737">Borrar datos</translation>
 <translation id="5494752089476963479">Bloquear anuncios en sitios que mostran anuncios enganosos ou intrusivos</translation>
@@ -831,11 +830,6 @@ Por exemplo, algúns sitios web poden responder a esta solicitude mostrándoche 
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Compartir 1 elemento seleccionado}other{Compartir # elementos seleccionados}}</translation>
 <translation id="7359002509206457351">Acceso a métodos de pago</translation>
-<translation id="7365126855094612066">Durante esta sesión, o sitio poderá facer o seguinte:
-• Crear un mapa 3D do espazo que te rodea.
-• Realizar un seguimento dos movementos da cámara.
-
-O sitio NON terá acceso á cámara. As imaxes da cámara só poderás velas ti.</translation>
 <translation id="7375125077091615385">Tipo:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>

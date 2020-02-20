@@ -3382,9 +3382,11 @@ device::mojom::WakeLockContext* WebContentsImpl::GetWakeLockContext() {
 
 #if defined(OS_ANDROID)
 void WebContentsImpl::GetNFC(
+    RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<device::mojom::NFC> receiver) {
-  NFCHost nfc_host(this);
-  nfc_host.GetNFC(std::move(receiver));
+  if (!nfc_host_)
+    nfc_host_ = std::make_unique<NFCHost>(this);
+  nfc_host_->GetNFC(render_frame_host, std::move(receiver));
 }
 #endif
 

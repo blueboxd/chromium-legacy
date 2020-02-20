@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
+#include "third_party/blink/renderer/core/fullscreen/scoped_allow_fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
@@ -530,12 +531,12 @@ void XR::OverlayFullscreenEventManager::Invoke(
 
   if (event->type() == event_type_names::kFullscreenchange) {
     // Succeeded, proceed with session creation.
+    element->GetDocument().SetIsXrOverlay(true, element);
     xr_->OnRequestSessionReturned(query_, std::move(result_));
   }
 
   if (event->type() == event_type_names::kFullscreenerror) {
     // Failed, reject the session
-    element->GetDocument().SetIsImmersiveArOverlay(false);
     xr_->OnRequestSessionReturned(
         query_, device::mojom::blink::RequestSessionResult::NewFailureReason(
                     device::mojom::RequestSessionError::INVALID_CLIENT));
@@ -546,13 +547,6 @@ void XR::OverlayFullscreenEventManager::RequestFullscreen() {
   Element* element = query_->DOMOverlayElement();
   DCHECK(element);
 
-  // Set the "is immersive AR overlay" property now since that allows fullscreen
-  // element changes without user activation. Requesting the immersive session
-  // had required a user activation state, but that may have expired by now due
-  // to the user taking time to respond to the consent prompt. This is cleared
-  // in the error handler if activating fullscreen mode fails.
-  element->GetDocument().SetIsImmersiveArOverlay(true);
-
   if (element == Fullscreen::FullscreenElementFrom(element->GetDocument())) {
     // It's possible that the requested element is already fullscreen, in which
     // case we must not wait for a fullscreenchange event since it won't arrive.
@@ -562,6 +556,7 @@ void XR::OverlayFullscreenEventManager::RequestFullscreen() {
     // proceed without needing a consent prompt. (Showing a dialog exits
     // fullscreen mode.)
     DVLOG(2) << __func__ << ": requested element already fullscreen";
+    element->GetDocument().SetIsXrOverlay(true, element);
     xr_->OnRequestSessionReturned(query_, std::move(result_));
     return;
   }
@@ -576,6 +571,13 @@ void XR::OverlayFullscreenEventManager::RequestFullscreen() {
   // that the fullscreen event listener is informed once this completes.
   FullscreenOptions* options = FullscreenOptions::Create();
   options->setNavigationUI("hide");
+
+  // Grant fullscreen API permission for the following call. Requesting the
+  // immersive session had required a user activation state, but that may have
+  // expired by now due to the user taking time to respond to the consent
+  // prompt.
+  ScopedAllowFullscreen scope(ScopedAllowFullscreen::kXrOverlay);
+
   Fullscreen::RequestFullscreen(*element, options,
                                 Fullscreen::RequestType::kUnprefixed);
 }
@@ -672,7 +674,7 @@ void XR::ExitPresent(base::OnceClosure on_exited) {
   // - browser side ends session and exits fullscreen (i.e. back button)
   // - renderer processes WebViewImpl::ExitFullscreen via ChromeClient
   // - JS application sets a new element to fullscreen, this is allowed
-  //   because doc->IsImmersiveArOverlay() is still true at this point
+  //   because doc->IsXrOverlay() is still true at this point
   // - renderer processes XR session shutdown (this method)
   // - browser re-enters fullscreen unexpectedly
   LocalFrame* frame = GetFrame();
@@ -681,9 +683,9 @@ void XR::ExitPresent(base::OnceClosure on_exited) {
 
   Document* doc = frame->GetDocument();
   DCHECK(doc);
-  if (doc->IsImmersiveArOverlay()) {
-    doc->SetIsImmersiveArOverlay(false);
+  if (doc->IsXrOverlay()) {
     Element* fullscreen_element = Fullscreen::FullscreenElementFrom(*doc);
+    doc->SetIsXrOverlay(false, fullscreen_element);
     if (fullscreen_element) {
       // "ua_originated" means that the browser process already exited
       // fullscreen. Set it to false because we need the browser process

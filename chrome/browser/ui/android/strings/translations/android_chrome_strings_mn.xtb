@@ -581,7 +581,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="5447765697759493033">Энэ сайтыг орчуулахгүй</translation>
 <translation id="545042621069398927">Таны таталтыг хурдасгаж байна.</translation>
 <translation id="5456381639095306749">Хуудсыг татах</translation>
-<translation id="5475862044948910901">Өргөтгөсөн бодит орчны харилцан үйлдлийг эхлүүлэх үү?</translation>
 <translation id="548278423535722844">Газрын зургийн апп-д нээх</translation>
 <translation id="5487521232677179737">Өгөгдлийг устгах</translation>
 <translation id="5494752089476963479">Төвөгтэй эсвэл хуурамч зар харуулдаг сайтуудын зарыг блоклох</translation>
@@ -830,11 +829,6 @@ Tаны Google бүртгэл <ph name="BEGIN_LINK" />history.google.com<ph name
 <translation id="7352939065658542140">ВИДЕО</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Сонгосон 1 зүйлийг хуваалцах}other{Сонгосон # зүйлийг хуваалцах }}</translation>
 <translation id="7359002509206457351">Төлбөрийн хэрэгсэлд хандах</translation>
-<translation id="7365126855094612066">Энэ харилцан үйлдлийн үргэлжлэх хугацаанд сайт дараахыг хийх боломжтой:
-• хүрээлэн буй орчныхоо 3D газрын зургийг үүсгэх
-• камерын хөдөлгөөнийг хянах
-
-Сайт камерт хандах эрх АВАХГҮЙ. Камерын зураг зөвхөн танд харагдана.</translation>
 <translation id="7375125077091615385">Бичих:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>

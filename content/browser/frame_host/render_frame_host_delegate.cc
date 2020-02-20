@@ -100,6 +100,7 @@ RenderFrameHostDelegate::GetGeolocationContext() {
 
 #if defined(OS_ANDROID)
 void RenderFrameHostDelegate::GetNFC(
+    RenderFrameHost* render_frame_host,
     mojo::PendingReceiver<device::mojom::NFC> receiver) {}
 #endif
 

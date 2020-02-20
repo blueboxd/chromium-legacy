@@ -45,28 +45,29 @@ class PLATFORM_EXPORT GeometryMapperClipCache {
     }
   };
 
+  struct ClipCacheEntry {
+    const ClipAndTransform clip_and_transform;
+    // The clip visual rect of the associated clip node in the space of
+    // |clip_and_transform|.
+    const FloatClipRect clip_rect;
+    // Whether there is any transform animation between the transform space
+    // of the associated clip node and |clip_and_transform|.
+    const bool has_transform_animation;
+  };
+
   // Returns the clip visual rect  of the owning
   // clip of |this| in the space of |ancestors|, if there is one cached.
   // Otherwise returns null.
-  const FloatClipRect* GetCachedClip(const ClipAndTransform& ancestors);
+  const ClipCacheEntry* GetCachedClip(const ClipAndTransform& ancestors);
 
-  // Stores the "clip visual rect" of |this in the space of |ancestors|,
+  // Stores cached the "clip visual rect" of |this| in the space of |ancestors|,
   // into a local cache.
-  void SetCachedClip(const ClipAndTransform&, const FloatClipRect&);
+  void SetCachedClip(const ClipCacheEntry&);
 
   static void ClearCache();
   bool IsValid() const;
 
  private:
-  struct ClipCacheEntry {
-    const ClipAndTransform clip_and_transform;
-    const FloatClipRect clip_rect;
-    ClipCacheEntry(const ClipAndTransform& clip_and_transform_arg,
-                   const FloatClipRect& clip_rect_arg)
-        : clip_and_transform(clip_and_transform_arg),
-          clip_rect(clip_rect_arg) {}
-  };
-
   void InvalidateCacheIfNeeded();
 
   Vector<ClipCacheEntry> clip_cache_;

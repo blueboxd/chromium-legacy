@@ -50,7 +50,7 @@
 #include "third_party/blink/renderer/core/html/track/video_track_list.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer_view.h"
-#include "third_party/blink/renderer/modules/mediasource/media_source.h"
+#include "third_party/blink/renderer/modules/mediasource/media_source_impl.h"
 #include "third_party/blink/renderer/modules/mediasource/source_buffer_track_base_supplement.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -72,13 +72,13 @@ static bool ThrowExceptionIfRemovedOrUpdating(bool is_removed,
                                               bool is_updating,
                                               ExceptionState& exception_state) {
   if (is_removed) {
-    MediaSource::LogAndThrowDOMException(
+    MediaSourceImpl::LogAndThrowDOMException(
         exception_state, DOMExceptionCode::kInvalidStateError,
         "This SourceBuffer has been removed from the parent media source.");
     return true;
   }
   if (is_updating) {
-    MediaSource::LogAndThrowDOMException(
+    MediaSourceImpl::LogAndThrowDOMException(
         exception_state, DOMExceptionCode::kInvalidStateError,
         "This SourceBuffer is still processing an 'appendBuffer' or "
         "'remove' operation.");
@@ -105,7 +105,7 @@ WTF::String WebTimeRangesToString(const WebTimeRanges& ranges) {
 }  // namespace
 
 SourceBuffer::SourceBuffer(std::unique_ptr<WebSourceBuffer> web_source_buffer,
-                           MediaSource* source,
+                           MediaSourceImpl* source,
                            EventQueue* async_event_queue)
     : ExecutionContextLifecycleObserver(source->GetExecutionContext()),
       web_source_buffer_(std::move(web_source_buffer)),
@@ -173,7 +173,7 @@ void SourceBuffer::setMode(const AtomicString& new_mode,
   //    then throw a TypeError exception and abort these steps.
   if (web_source_buffer_->GetGenerateTimestampsFlag() &&
       new_mode == SegmentsKeyword()) {
-    MediaSource::LogAndThrowTypeError(
+    MediaSourceImpl::LogAndThrowTypeError(
         exception_state, "The mode value provided (" + SegmentsKeyword() +
                              ") is invalid for a byte stream format that uses "
                              "generated timestamps.");
@@ -196,11 +196,10 @@ void SourceBuffer::setMode(const AtomicString& new_mode,
   if (new_mode == SequenceKeyword())
     append_mode = WebSourceBuffer::kAppendModeSequence;
   if (!web_source_buffer_->SetMode(append_mode)) {
-    MediaSource::LogAndThrowDOMException(exception_state,
-                                         DOMExceptionCode::kInvalidStateError,
-                                         "The mode may not be set while the "
-                                         "SourceBuffer's append state is "
-                                         "'PARSING_MEDIA_SEGMENT'.");
+    MediaSourceImpl::LogAndThrowDOMException(
+        exception_state, DOMExceptionCode::kInvalidStateError,
+        "The mode may not be set while the SourceBuffer's append state is "
+        "'PARSING_MEDIA_SEGMENT'.");
     return;
   }
 
@@ -214,7 +213,7 @@ TimeRanges* SourceBuffer::buffered(ExceptionState& exception_state) const {
   //    parent media source then throw an InvalidStateError exception and abort
   //    these steps.
   if (IsRemoved()) {
-    MediaSource::LogAndThrowDOMException(
+    MediaSourceImpl::LogAndThrowDOMException(
         exception_state, DOMExceptionCode::kInvalidStateError,
         "This SourceBuffer has been removed from the parent media source.");
     return nullptr;
@@ -261,11 +260,10 @@ void SourceBuffer::setTimestampOffset(double offset,
   // 6. If the mode attribute equals "sequence", then set the group start
   //    timestamp to new timestamp offset.
   if (!web_source_buffer_->SetTimestampOffset(offset)) {
-    MediaSource::LogAndThrowDOMException(exception_state,
-                                         DOMExceptionCode::kInvalidStateError,
-                                         "The timestamp offset may not be set "
-                                         "while the SourceBuffer's append "
-                                         "state is 'PARSING_MEDIA_SEGMENT'.");
+    MediaSourceImpl::LogAndThrowDOMException(
+        exception_state, DOMExceptionCode::kInvalidStateError,
+        "The timestamp offset may not be set while the SourceBuffer's append "
+        "state is 'PARSING_MEDIA_SEGMENT'.");
     return;
   }
 
@@ -304,7 +302,7 @@ void SourceBuffer::setAppendWindowStart(double start,
   // 3. If the new value is less than 0 or greater than or equal to
   //    appendWindowEnd then throw a TypeError exception and abort these steps.
   if (start < 0 || start >= append_window_end_) {
-    MediaSource::LogAndThrowTypeError(
+    MediaSourceImpl::LogAndThrowTypeError(
         exception_state,
         ExceptionMessages::IndexOutsideRange(
             "value", start, 0.0, ExceptionMessages::kExclusiveBound,
@@ -339,14 +337,14 @@ void SourceBuffer::setAppendWindowEnd(double end,
   // 3. If the new value equals NaN, then throw a TypeError and abort these
   //    steps.
   if (std::isnan(end)) {
-    MediaSource::LogAndThrowTypeError(exception_state,
-                                      ExceptionMessages::NotAFiniteNumber(end));
+    MediaSourceImpl::LogAndThrowTypeError(
+        exception_state, ExceptionMessages::NotAFiniteNumber(end));
     return;
   }
   // 4. If the new value is less than or equal to appendWindowStart then throw a
   //    TypeError exception and abort these steps.
   if (end <= append_window_start_) {
-    MediaSource::LogAndThrowTypeError(
+    MediaSourceImpl::LogAndThrowTypeError(
         exception_state, ExceptionMessages::IndexExceedsMinimumBound(
                              "value", end, append_window_start_));
     return;
@@ -392,13 +390,13 @@ void SourceBuffer::abort(ExceptionState& exception_state) {
   //    "open" state then throw an InvalidStateError exception and abort these
   //    steps.
   if (IsRemoved()) {
-    MediaSource::LogAndThrowDOMException(
+    MediaSourceImpl::LogAndThrowDOMException(
         exception_state, DOMExceptionCode::kInvalidStateError,
         "This SourceBuffer has been removed from the parent media source.");
     return;
   }
   if (!source_->IsOpen()) {
-    MediaSource::LogAndThrowDOMException(
+    MediaSourceImpl::LogAndThrowDOMException(
         exception_state, DOMExceptionCode::kInvalidStateError,
         "The parent media source's readyState is not 'open'.");
     return;
@@ -412,7 +410,7 @@ void SourceBuffer::abort(ExceptionState& exception_state) {
     // is implemented behind the MediaSourceNewAbortAndDuration
     // RuntimeEnabledFeature.
     if (RuntimeEnabledFeatures::MediaSourceNewAbortAndDurationEnabled()) {
-      MediaSource::LogAndThrowDOMException(
+      MediaSourceImpl::LogAndThrowDOMException(
           exception_state, DOMExceptionCode::kInvalidStateError,
           "Aborting asynchronous remove() operation is disallowed.");
       return;
@@ -460,7 +458,7 @@ void SourceBuffer::remove(double start,
   //    exception and abort these steps.
   if (start < 0 || std::isnan(source_->duration()) ||
       start > source_->duration()) {
-    MediaSource::LogAndThrowTypeError(
+    MediaSourceImpl::LogAndThrowTypeError(
         exception_state,
         ExceptionMessages::IndexOutsideRange(
             "start", start, 0.0, ExceptionMessages::kExclusiveBound,
@@ -472,7 +470,7 @@ void SourceBuffer::remove(double start,
   // 5. If end is less than or equal to start or end equals NaN, then throw a
   //    TypeError exception and abort these steps.
   if (end <= start || std::isnan(end)) {
-    MediaSource::LogAndThrowTypeError(
+    MediaSourceImpl::LogAndThrowTypeError(
         exception_state,
         "The end value provided (" + String::Number(end) +
             ") must be greater than the start value provided (" +
@@ -518,8 +516,8 @@ void SourceBuffer::changeType(const String& type,
   // 1. If type is an empty string then throw a TypeError exception and abort
   //    these steps.
   if (type.IsEmpty()) {
-    MediaSource::LogAndThrowTypeError(exception_state,
-                                      "The type provided is empty");
+    MediaSourceImpl::LogAndThrowTypeError(exception_state,
+                                          "The type provided is empty");
     return;
   }
 
@@ -543,9 +541,9 @@ void SourceBuffer::changeType(const String& type,
   // here. As part of that, CanChangeType in Chromium should inherit relaxation
   // of impl's StreamParserFactory (since it returns true iff a stream parser
   // can be constructed with |type|). See https://crbug.com/535738.
-  if (!MediaSource::isTypeSupported(type) ||
+  if (!MediaSourceImpl::isTypeSupported(type) ||
       !web_source_buffer_->CanChangeType(content_type.GetType(), codecs)) {
-    MediaSource::LogAndThrowDOMException(
+    MediaSourceImpl::LogAndThrowDOMException(
         exception_state, DOMExceptionCode::kNotSupportedError,
         "Changing to the type provided ('" + type + "') is not supported.");
     return;
@@ -1214,7 +1212,7 @@ bool SourceBuffer::PrepareAppend(double media_time,
   DCHECK(source_);
   DCHECK(source_->MediaElement());
   if (source_->MediaElement()->error()) {
-    MediaSource::LogAndThrowDOMException(
+    MediaSourceImpl::LogAndThrowDOMException(
         exception_state, DOMExceptionCode::kInvalidStateError,
         "The HTMLMediaElement.error attribute is not null.");
     TRACE_EVENT_NESTABLE_ASYNC_END0("media", "SourceBuffer::prepareAppend",
@@ -1237,11 +1235,10 @@ bool SourceBuffer::PrepareAppend(double media_time,
     //    If the incoming data exceeds wtf_size_t::max, then our implementation
     //    cannot deal with it, so we also throw a QuotaExceededError.
     DVLOG(3) << __func__ << " this=" << this << " -> throw QuotaExceededError";
-    MediaSource::LogAndThrowDOMException(exception_state,
-                                         DOMExceptionCode::kQuotaExceededError,
-                                         "The SourceBuffer is full, and cannot "
-                                         "free space to append additional "
-                                         "buffers.");
+    MediaSourceImpl::LogAndThrowDOMException(
+        exception_state, DOMExceptionCode::kQuotaExceededError,
+        "The SourceBuffer is full, and cannot free space to append additional "
+        "buffers.");
     TRACE_EVENT_NESTABLE_ASYNC_END0("media", "SourceBuffer::prepareAppend",
                                     TRACE_ID_LOCAL(this));
     return false;

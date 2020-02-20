@@ -27,6 +27,7 @@
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, legördülő lista</translation>
 <translation id="1161762950103988776">Ugrás</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, menüelem almenüvel</translation>
+<translation id="1175914831232945926">Számjegyekként</translation>
 <translation id="1177863135347784049">Egyéni</translation>
 <translation id="1188858454923323853">kiegészítő</translation>
 <translation id="1195238899008218998">Utószó</translation>
@@ -145,6 +146,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="1969092762068865084">július</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1982529757455190616">Nincs előző ugrópont</translation>
+<translation id="1988733631391393183">Braille-parancsok megjelenítése a ChromeVox-menükben</translation>
 <translation id="1990932729021763163">Sorfejléc:</translation>
 <translation id="2002895034995108595">Jelenlegi billentyűzetkiosztás visszaállítása</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{szögletes nyitó zárójel}other{# szögletes nyitó zárójel}}</translation>
@@ -308,6 +310,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="3109724472072898302">Összecsukott</translation>
 <translation id="3112457281078985179">A ChromeVox be- vagy kikapcsolásához használja a Control + Alt + Z billentyűparancsot.</translation>
 <translation id="3128896337293924532">Nincs következő blokkszintű idézet</translation>
+<translation id="3131002934070407451">Számok olvasása:</translation>
 <translation id="3134461040845705080">csak olv</translation>
 <translation id="3137663468179739624">Olajzöld</translation>
 <translation id="3138767756593758860">Határjelek listájának megjelenítése</translation>
@@ -1001,6 +1004,7 @@ A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyű
 <translation id="7968340748835037139">Sötétzöld</translation>
 <translation id="7972507042926081808">Csokoládébarna</translation>
 <translation id="7974390230414479278">Menüelem</translation>
+<translation id="8004507136466386272">Szavakként</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{idézőjel}other{# idézőjel}}</translation>
 <translation id="8017588669690167134">Szövegfelolvasás kikapcsolása</translation>

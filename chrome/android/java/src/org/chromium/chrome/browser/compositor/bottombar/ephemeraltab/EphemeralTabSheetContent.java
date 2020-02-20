@@ -253,6 +253,12 @@ public class EphemeralTabSheetContent implements BottomSheetContent {
     }
 
     @Override
+    public boolean handleBackPress() {
+        mCloseButtonCallback.run();
+        return true;
+    }
+
+    @Override
     public int getSheetContentDescriptionStringId() {
         return R.string.ephemeral_tab_sheet_description;
     }

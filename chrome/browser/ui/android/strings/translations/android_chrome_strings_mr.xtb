@@ -582,7 +582,6 @@
 <translation id="5447765697759493033">या साइटचे भाषांतर होणार नाही</translation>
 <translation id="545042621069398927">तुमच्या डाउनलोडचा वेग वाढवत आहे.</translation>
 <translation id="5456381639095306749">पेज डाउनलोड करा</translation>
-<translation id="5475862044948910901">ऑगमेंटेड रीअ‍ॅलिटी सेशन सुरू करायचे का?</translation>
 <translation id="548278423535722844">नकाशे ॲपमध्ये उघडा</translation>
 <translation id="5487521232677179737">डेटा साफ करा</translation>
 <translation id="5494752089476963479">अनाहूत किंवा दिशाभूल करणाऱ्या जाहिराती दाखवणाऱ्या साइटवरील जाहिराती ब्लॉक करा</translation>
@@ -831,11 +830,6 @@
 <translation id="7352939065658542140">व्हिडिओ</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{1 निवडलेला आयटम शेअर करा}other{# निवडलेले आयटम शेअर करा}}</translation>
 <translation id="7359002509206457351">पेमेंट पद्धती अ‍ॅक्सेस करा</translation>
-<translation id="7365126855094612066">या सेशनच्या कालावधी दरम्यान, साइट हे करू शकेल:
-• तुमच्या सभोवतालचा 3D नकाशा तयार करणे
-• कॅमेरा मोशन ट्रॅक करणे
-
-या साइटला कॅमेराचा अ‍ॅक्सेस मिळणार नाही. कॅमेऱ्याने घेतलेले फोटो फक्त तुम्हाला दृश्यमान आहेत.</translation>
 <translation id="7375125077091615385">प्रकार:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" />.</translation>
 <translation id="7400418766976504921">URL</translation>

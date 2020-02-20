@@ -400,7 +400,7 @@ class PLATFORM_EXPORT ThreadHeap {
 
   static int ArenaIndexForObjectSize(size_t);
 
-  void SetupWorklists();
+  void SetupWorklists(bool);
   void DestroyMarkingWorklists(BlinkGC::StackState);
   void DestroyCompactionWorklists();
 

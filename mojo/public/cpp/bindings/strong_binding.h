@@ -130,6 +130,8 @@ class StrongBinding {
   DISALLOW_COPY_AND_ASSIGN(StrongBinding);
 };
 
+// DEPRECATED: Do not introduce new uses of this API. Instead use the
+// MakeSelfOwnedReceiver API defined in self_owned_receiver.h.
 template <typename Interface, typename Impl>
 StrongBindingPtr<Interface> MakeStrongBinding(
     std::unique_ptr<Impl> impl,

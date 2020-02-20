@@ -8,22 +8,25 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_context_base.h"
 #include "components/bookmarks/browser/bookmark_model.h"
+#include "components/permissions/permission_context_base.h"
 
-class DurableStoragePermissionContext : public PermissionContextBase {
+class DurableStoragePermissionContext
+    : public permissions::PermissionContextBase {
  public:
-  explicit DurableStoragePermissionContext(Profile* profile);
+  explicit DurableStoragePermissionContext(
+      content::BrowserContext* browser_context);
   ~DurableStoragePermissionContext() override = default;
 
   // PermissionContextBase implementation.
   // Grant if requesting_origin is bookmarked.
-  void DecidePermission(content::WebContents* web_contents,
-                        const permissions::PermissionRequestID& id,
-                        const GURL& requesting_origin,
-                        const GURL& embedding_origin,
-                        bool user_gesture,
-                        BrowserPermissionCallback callback) override;
+  void DecidePermission(
+      content::WebContents* web_contents,
+      const permissions::PermissionRequestID& id,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      bool user_gesture,
+      permissions::BrowserPermissionCallback callback) override;
   void UpdateContentSetting(const GURL& requesting_origin,
                             const GURL& embedding_origin,
                             ContentSetting content_setting) override;

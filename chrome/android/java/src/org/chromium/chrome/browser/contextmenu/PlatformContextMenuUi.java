@@ -11,6 +11,8 @@ import android.view.ContextMenu;
 import android.view.MenuItem;
 
 import org.chromium.base.Callback;
+import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
 import java.util.List;
@@ -27,7 +29,7 @@ public class PlatformContextMenuUi implements ContextMenuUi {
     }
 
     @Override
-    public void displayMenu(WindowAndroid window, ContextMenuParams params,
+    public void displayMenu(WindowAndroid window, WebContents webContents, ContextMenuParams params,
             List<Pair<Integer, List<ContextMenuItem>>> itemGroups, final Callback<Integer> listener,
             Runnable onMenuShown, Callback<Boolean> onMenuClosed) {
         Context context = window.getContext().get();

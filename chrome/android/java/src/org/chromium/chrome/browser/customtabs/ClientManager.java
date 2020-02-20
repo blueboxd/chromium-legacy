@@ -188,6 +188,7 @@ class ClientManager {
         private boolean mAllowResourcePrefetch;
         private boolean mShouldGetPageLoadMetrics;
         private boolean mShouldHideTopBar;
+        private String mCustomTabsClientDataHeaderValue;
 
         public SessionParams(Context context, int uid, CustomTabsCallback customTabsCallback,
                 DisconnectCallback callback, PostMessageHandler postMessageHandler,
@@ -583,6 +584,25 @@ class ClientManager {
     }
 
     /**
+     * Sets the value of the X-CCT-Client-Data header that will be sent on some Custom Tabs
+     * requests.
+     */
+    public synchronized void setClientDataHeaderValue(
+            CustomTabsSessionToken session, String headerValue) {
+        SessionParams params = mSessionParams.get(session);
+        if (params != null) params.mCustomTabsClientDataHeaderValue = headerValue;
+    }
+
+    /**
+     * Gets the value previously set by {@link #setClientDataHeaderValue}.
+     */
+    public synchronized String getClientDataHeaderValue(CustomTabsSessionToken session) {
+        SessionParams params = mSessionParams.get(session);
+        if (params == null) return null;
+        return params.mCustomTabsClientDataHeaderValue;
+    }
+
+    /**
      * @return Whether navigation info should be recorded and shared for the session.
      */
     public synchronized boolean shouldSendNavigationInfoForSession(CustomTabsSessionToken session) {
@@ -716,14 +736,6 @@ class ClientManager {
     public synchronized boolean shouldGetPageLoadMetrics(CustomTabsSessionToken session) {
         SessionParams params = mSessionParams.get(session);
         return params != null ? params.mShouldGetPageLoadMetrics : false;
-    }
-
-    /**
-     * Returns the uid associated with the session, {@code -1} if there is no matching session.
-     */
-    public synchronized int getUidForSession(CustomTabsSessionToken session) {
-        SessionParams params = mSessionParams.get(session);
-        return params != null ? params.uid : -1;
     }
 
     /**

@@ -27,7 +27,7 @@ class MojoCdmFactory : public CdmFactory {
               const SessionClosedCB& session_closed_cb,
               const SessionKeysChangeCB& session_keys_change_cb,
               const SessionExpirationUpdateCB& session_expiration_update_cb,
-              const CdmCreatedCB& cdm_created_cb) final;
+              CdmCreatedCB cdm_created_cb) final;
 
  private:
   media::mojom::InterfaceFactory* interface_factory_;

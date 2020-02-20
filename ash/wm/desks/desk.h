@@ -62,6 +62,8 @@ class ASH_EXPORT Desk {
     return should_notify_content_changed_;
   }
 
+  bool is_name_set_by_user() const { return is_name_set_by_user_; }
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -74,7 +76,9 @@ class ASH_EXPORT Desk {
   base::AutoReset<bool> GetScopedNotifyContentChangedDisabler();
 
   // Sets the desk's name to |new_name| and updates the observers.
-  void SetName(base::string16 new_name);
+  // |set_by_user| should be true if this name was given to the desk by the user
+  // from its mini view in overview mode.
+  void SetName(base::string16 new_name, bool set_by_user);
 
   // Prepares for the animation to activate this desk (i.e. this desk is not
   // active yet), by showing its containers on all root windows while setting
@@ -155,6 +159,13 @@ class ASH_EXPORT Desk {
   // True if the `PrepareForActivationAnimation()` was called, and this desk's
   // containers are shown while their layer opacities are temporarily set to 0.
   bool started_activation_animation_ = false;
+
+  // True if this desk's |name_| was set by the user, false if it's one of the
+  // default automatically assigned names (e.g. "Desk 1", "Desk 2", ... etc.)
+  // based on the desk's position in the list. Those default names change as
+  // desks are added/removed if this desk changes position, whereas names that
+  // are set by the user don't change.
+  bool is_name_set_by_user_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Desk);
 };

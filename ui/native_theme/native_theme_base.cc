@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/numerics/ranges.h"
+#include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_shader.h"
 #include "third_party/skia/include/core/SkPath.h"
@@ -1570,8 +1571,10 @@ SkColor NativeThemeBase::ControlsBackgroundColorForState(
 
 SkColor NativeThemeBase::GetControlColor(ControlColorId color_id,
                                          ColorScheme color_scheme) const {
+#if defined(OS_WIN)
   if (UsesHighContrastColors())
     return GetHighContrastControlColor(color_id, color_scheme);
+#endif
 
   switch (color_id) {
     case kBorder:

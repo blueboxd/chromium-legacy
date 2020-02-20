@@ -45,6 +45,8 @@ target(link_target_type, "renderer") {
     "accessibility/blink_ax_tree_source.h",
     "accessibility/render_accessibility_impl.cc",
     "accessibility/render_accessibility_impl.h",
+    "accessibility/render_accessibility_manager.cc",
+    "accessibility/render_accessibility_manager.h",
     "android/synchronous_layer_tree_frame_sink.cc",
     "android/synchronous_layer_tree_frame_sink.h",
     "browser_exposed_renderer_interfaces.cc",

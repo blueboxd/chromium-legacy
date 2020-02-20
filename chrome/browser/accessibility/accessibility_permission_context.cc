@@ -4,9 +4,10 @@
 
 #include "chrome/browser/accessibility/accessibility_permission_context.h"
 
-AccessibilityPermissionContext::AccessibilityPermissionContext(Profile* profile)
+AccessibilityPermissionContext::AccessibilityPermissionContext(
+    content::BrowserContext* browser_context)
     : PermissionContextBase(
-          profile,
+          browser_context,
           ContentSettingsType::ACCESSIBILITY_EVENTS,
           blink::mojom::FeaturePolicyFeature::kAccessibilityEvents) {}
 

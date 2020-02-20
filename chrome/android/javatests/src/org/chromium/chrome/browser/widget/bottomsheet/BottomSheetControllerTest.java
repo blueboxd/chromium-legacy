@@ -5,6 +5,8 @@
 package org.chromium.chrome.browser.widget.bottomsheet;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
@@ -58,6 +60,7 @@ public class BottomSheetControllerTest {
     private TestBottomSheetContent mHighPriorityContent;
     private TestBottomSheetContent mPeekableContent;
     private TestBottomSheetContent mNonPeekableContent;
+    private TestBottomSheetContent mBackInterceptingContent;
     private ScrimView mScrimView;
 
     @Before
@@ -77,6 +80,10 @@ public class BottomSheetControllerTest {
                     mActivityTestRule.getActivity(), BottomSheetContent.ContentPriority.LOW, false);
             mHighPriorityContent = new TestBottomSheetContent(mActivityTestRule.getActivity(),
                     BottomSheetContent.ContentPriority.HIGH, false);
+
+            mBackInterceptingContent = new TestBottomSheetContent(
+                    mActivityTestRule.getActivity(), BottomSheetContent.ContentPriority.LOW, false);
+            mBackInterceptingContent.setHandleBackPress(true);
 
             mPeekableContent = new TestBottomSheetContent(mActivityTestRule.getActivity());
             mNonPeekableContent = new TestBottomSheetContent(mActivityTestRule.getActivity());
@@ -441,6 +448,77 @@ public class BottomSheetControllerTest {
 
         assertEquals("The bottom sheet should be at the half state when peek is disabled.",
                 BottomSheetController.SheetState.HALF, mSheetController.getSheetState());
+    }
+
+    @Test
+    @MediumTest
+    public void testHandleBackpress() throws TimeoutException {
+        requestContentInSheet(mBackInterceptingContent, true);
+
+        // Fake a back button press on the controller.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            assertEquals("The sheet should be in the peeking state.",
+                    BottomSheetController.SheetState.PEEK, mSheetController.getSheetState());
+            assertTrue("The back event should have been handled by the content.",
+                    mSheetController.handleBackPress());
+            getBottomSheet().endAnimations();
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testHandleBackpress_sheetOpen() throws TimeoutException {
+        requestContentInSheet(mBackInterceptingContent, true);
+        expandSheet();
+
+        // Fake a back button press on the controller.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            assertEquals("The sheet should be in the half state.",
+                    BottomSheetController.SheetState.HALF, mSheetController.getSheetState());
+            assertTrue("The back event should not have been handled by the content.",
+                    mSheetController.handleBackPress());
+            getBottomSheet().endAnimations();
+        });
+
+        assertEquals("The sheet should be at the half state if the content handled the back event.",
+                BottomSheetController.SheetState.HALF, mSheetController.getSheetState());
+    }
+
+    @Test
+    @MediumTest
+    public void testHandleBackpress_noIntercept() throws TimeoutException {
+        mBackInterceptingContent.setHandleBackPress(false);
+        requestContentInSheet(mBackInterceptingContent, true);
+
+        // Fake a back button press on the controller.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            assertEquals("The sheet should be in the peeking state.",
+                    BottomSheetController.SheetState.PEEK, mSheetController.getSheetState());
+            assertFalse("The back event should not have been handled by the content.",
+                    mSheetController.handleBackPress());
+        });
+    }
+
+    @Test
+    @MediumTest
+    public void testHandleBackpress_noIntercept_sheetOpen() throws TimeoutException {
+        mBackInterceptingContent.setHandleBackPress(false);
+        requestContentInSheet(mBackInterceptingContent, true);
+        expandSheet();
+
+        // Fake a back button press on the controller.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            assertEquals("The sheet should be in the half state.",
+                    BottomSheetController.SheetState.HALF, mSheetController.getSheetState());
+            assertFalse("The back event should not be handled by the content.",
+                    mBackInterceptingContent.handleBackPress());
+            assertTrue("The back event should still be handled by the controller.",
+                    mSheetController.handleBackPress());
+            getBottomSheet().endAnimations();
+        });
+
+        assertEquals("The sheet should be peeking if the content didn't handle the back event.",
+                BottomSheetController.SheetState.PEEK, mSheetController.getSheetState());
     }
 
     /**

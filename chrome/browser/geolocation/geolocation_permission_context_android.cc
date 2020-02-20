@@ -109,7 +109,7 @@ void GeolocationPermissionContextAndroid::RequestPermission(
     const permissions::PermissionRequestID& id,
     const GURL& requesting_frame_origin,
     bool user_gesture,
-    BrowserPermissionCallback callback) {
+    permissions::BrowserPermissionCallback callback) {
   if (!IsLocationAccessPossible(web_contents, requesting_frame_origin,
                                 user_gesture)) {
     NotifyPermissionSet(id, requesting_frame_origin,
@@ -161,7 +161,7 @@ void GeolocationPermissionContextAndroid::NotifyPermissionSet(
     const permissions::PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    BrowserPermissionCallback callback,
+    permissions::BrowserPermissionCallback callback,
     bool persist,
     ContentSetting content_setting) {
   bool is_default_search = IsRequestingOriginDSE(requesting_origin);
@@ -282,16 +282,18 @@ GeolocationPermissionContextAndroid::GetLocationSettingsNextShowPref(
 
 bool GeolocationPermissionContextAndroid::IsInLocationSettingsBackOff(
     bool is_default_search) const {
-  base::Time next_show =
-      base::Time::FromInternalValue(profile()->GetPrefs()->GetInt64(
-          GetLocationSettingsNextShowPref(is_default_search)));
+  base::Time next_show = base::Time::FromInternalValue(
+      Profile::FromBrowserContext(browser_context())
+          ->GetPrefs()
+          ->GetInt64(GetLocationSettingsNextShowPref(is_default_search)));
 
   return GetTimeNow() < next_show;
 }
 
 void GeolocationPermissionContextAndroid::ResetLocationSettingsBackOff(
     bool is_default_search) {
-  PrefService* prefs = profile()->GetPrefs();
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
   prefs->ClearPref(GetLocationSettingsNextShowPref(is_default_search));
   prefs->ClearPref(GetLocationSettingsBackOffLevelPref(is_default_search));
 }
@@ -321,7 +323,8 @@ void GeolocationPermissionContextAndroid::UpdateLocationSettingsBackOff(
       NOTREACHED();
   }
 
-  PrefService* prefs = profile()->GetPrefs();
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
   prefs->SetInteger(GetLocationSettingsBackOffLevelPref(is_default_search),
                     static_cast<int>(backoff_level));
   prefs->SetInt64(GetLocationSettingsNextShowPref(is_default_search),
@@ -331,7 +334,8 @@ void GeolocationPermissionContextAndroid::UpdateLocationSettingsBackOff(
 GeolocationPermissionContextAndroid::LocationSettingsDialogBackOff
 GeolocationPermissionContextAndroid::LocationSettingsBackOffLevel(
     bool is_default_search) const {
-  PrefService* prefs = profile()->GetPrefs();
+  PrefService* prefs =
+      Profile::FromBrowserContext(browser_context())->GetPrefs();
   int int_backoff =
       prefs->GetInteger(GetLocationSettingsBackOffLevelPref(is_default_search));
   return static_cast<LocationSettingsDialogBackOff>(int_backoff);
@@ -357,7 +361,8 @@ bool GeolocationPermissionContextAndroid::IsRequestingOriginDSE(
     dse_url = GURL(g_dse_origin_for_testing);
   } else {
     TemplateURLService* template_url_service =
-        TemplateURLServiceFactory::GetForProfile(profile());
+        TemplateURLServiceFactory::GetForProfile(
+            Profile::FromBrowserContext(browser_context()));
     if (template_url_service) {
       const TemplateURL* template_url =
           template_url_service->GetDefaultSearchProvider();
@@ -375,7 +380,7 @@ void GeolocationPermissionContextAndroid::HandleUpdateAndroidPermissions(
     const permissions::PermissionRequestID& id,
     const GURL& requesting_frame_origin,
     const GURL& embedding_origin,
-    BrowserPermissionCallback callback,
+    permissions::BrowserPermissionCallback callback,
     bool permissions_updated) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ContentSetting new_setting = permissions_updated
@@ -443,7 +448,7 @@ void GeolocationPermissionContextAndroid::FinishNotifyPermissionSet(
     const permissions::PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    BrowserPermissionCallback callback,
+    permissions::BrowserPermissionCallback callback,
     bool persist,
     ContentSetting content_setting) {
   GeolocationPermissionContext::NotifyPermissionSet(

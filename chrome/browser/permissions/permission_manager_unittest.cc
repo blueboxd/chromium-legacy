@@ -11,15 +11,15 @@
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
-#include "chrome/browser/permissions/permission_context_base.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/permissions/features.h"
+#include "components/permissions/permission_context_base.h"
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/permission_result.h"
 #include "components/permissions/test/mock_permission_prompt_factory.h"
@@ -656,12 +656,13 @@ TEST_F(PermissionManagerTest, KillSwitchOnIsNotOverridable) {
   std::map<std::string, std::string> params;
   params[permissions::PermissionUtil::GetPermissionString(
       ContentSettingsType::GEOLOCATION)] =
-      PermissionContextBase::kPermissionsKillSwitchBlockedValue;
+      permissions::PermissionContextBase::kPermissionsKillSwitchBlockedValue;
   variations::AssociateVariationParams(
-      PermissionContextBase::kPermissionsKillSwitchFieldStudy, "TestGroup",
-      params);
+      permissions::PermissionContextBase::kPermissionsKillSwitchFieldStudy,
+      "TestGroup", params);
   base::FieldTrialList::CreateFieldTrial(
-      PermissionContextBase::kPermissionsKillSwitchFieldStudy, "TestGroup");
+      permissions::PermissionContextBase::kPermissionsKillSwitchFieldStudy,
+      "TestGroup");
 
   EXPECT_FALSE(
       GetPermissionControllerDelegate()->IsPermissionOverridableByDevTools(
@@ -722,7 +723,8 @@ TEST_F(PermissionManagerTest, GetCanonicalOriginPermissionDelegation) {
 
   {
     base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndDisableFeature(features::kPermissionDelegation);
+    scoped_feature_list.InitAndDisableFeature(
+        permissions::features::kPermissionDelegation);
     // Without permission delegation enabled the requesting origin should always
     // be returned.
     EXPECT_EQ(requesting_origin,
@@ -737,7 +739,8 @@ TEST_F(PermissionManagerTest, GetCanonicalOriginPermissionDelegation) {
 
   {
     base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(features::kPermissionDelegation);
+    scoped_feature_list.InitAndEnableFeature(
+        permissions::features::kPermissionDelegation);
     // With permission delegation, the embedding origin should be returned
     // except in the case of extensions; and except for notifications, for which
     // permission delegation is always off.
@@ -761,7 +764,8 @@ TEST_F(PermissionManagerTest, GetPermissionStatusDelegation) {
   const char* kOrigin2 = "https://google.com";
 
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPermissionDelegation);
+  scoped_feature_list.InitAndEnableFeature(
+      permissions::features::kPermissionDelegation);
 
   NavigateAndCommit(GURL(kOrigin1));
   content::RenderFrameHost* parent = main_rfh();
@@ -858,7 +862,8 @@ TEST_F(PermissionManagerTest, SubscribeWithPermissionDelegation) {
   const char* kOrigin2 = "https://google.com";
 
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPermissionDelegation);
+  scoped_feature_list.InitAndEnableFeature(
+      permissions::features::kPermissionDelegation);
 
   NavigateAndCommit(GURL(kOrigin1));
   content::RenderFrameHost* parent = main_rfh();

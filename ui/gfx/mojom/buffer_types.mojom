@@ -56,7 +56,7 @@ struct NativePixmapPlane {
   uint64 size;
 
   // A platform-specific handle the underlying memory object.
-  handle buffer_handle;
+  handle<platform> buffer_handle;
 };
 
 // gfx::NativePixmapHandle
@@ -81,7 +81,7 @@ struct NativePixmapHandle {
 struct AHardwareBufferHandle {
   // The actual file descriptor used to wrap the AHardwareBuffer object for
   // serialization.
-  handle buffer_handle;
+  handle<platform> buffer_handle;
 
   // A message pipe handle which tracks the lifetime of this
   // AHardwareBufferHandle. The sender may use this to observe the lifetime

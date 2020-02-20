@@ -151,8 +151,8 @@ class CdmAdapterTestBase : public testing::Test,
                                   base::Unretained(&cdm_client_)),
                        base::Bind(&MockCdmClient::OnSessionExpirationUpdate,
                                   base::Unretained(&cdm_client_)),
-                       base::Bind(&CdmAdapterTestBase::OnCdmCreated,
-                                  base::Unretained(this), expected_result));
+                       base::BindOnce(&CdmAdapterTestBase::OnCdmCreated,
+                                      base::Unretained(this), expected_result));
     RunUntilIdle();
     ASSERT_EQ(expected_result == SUCCESS, !!cdm_);
   }

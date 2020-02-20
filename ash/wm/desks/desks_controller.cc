@@ -478,7 +478,8 @@ void DesksController::NewDesk(DesksCreationRemovalSource source) {
   desks_.push_back(std::make_unique<Desk>(available_container_ids_.front()));
   available_container_ids_.pop();
   Desk* new_desk = desks_.back().get();
-  new_desk->SetName(GetDeskDefaultName(desks_.size() - 1));
+  new_desk->SetName(GetDeskDefaultName(desks_.size() - 1),
+                    /*set_by_user=*/false);
 
   UMA_HISTOGRAM_ENUMERATION(kNewDeskHistogramName, source);
   ReportDesksCountHistogram();
@@ -631,6 +632,11 @@ bool DesksController::MoveWindowFromActiveDeskTo(
   // A window moving out of the active desk cannot be active.
   wm::DeactivateWindow(window);
   return true;
+}
+
+void DesksController::RevertDeskNameToDefault(Desk* desk) {
+  DCHECK(HasDesk(desk));
+  desk->SetName(GetDeskDefaultName(GetDeskIndex(desk)), /*set_by_user=*/false);
 }
 
 void DesksController::OnRootWindowAdded(aura::Window* root_window) {
@@ -930,10 +936,13 @@ void DesksController::ReportDesksCountHistogram() const {
 }
 
 void DesksController::UpdateDesksDefaultNames() {
-  // TODO(afakhry): Don't do this for user-modified desk labels.
   size_t i = 0;
-  for (auto& desk : desks_)
-    desk->SetName(GetDeskDefaultName(i++));
+  for (auto& desk : desks_) {
+    // Do not overwrite user-modified desks' names.
+    if (!desk->is_name_set_by_user())
+      desk->SetName(GetDeskDefaultName(i), /*set_by_user=*/false);
+    i++;
+  }
 }
 
 }  // namespace ash

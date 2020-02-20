@@ -29,7 +29,9 @@ import org.chromium.chrome.browser.favicon.IconType;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.favicon.RoundedIconGenerator;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.PerformanceClass;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.ui.modelutil.PropertyModel;
 
 class RevampedContextMenuHeaderMediator implements View.OnClickListener {
@@ -38,8 +40,8 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
     private Context mContext;
     private String mPlainUrl;
 
-    RevampedContextMenuHeaderMediator(
-            Context context, PropertyModel model, ContextMenuParams params) {
+    RevampedContextMenuHeaderMediator(Context context, PropertyModel model,
+            @PerformanceClass int performanceClass, ContextMenuParams params) {
         mContext = context;
         mPlainUrl = params.getUrl();
         mModel = model;
@@ -55,8 +57,7 @@ class RevampedContextMenuHeaderMediator implements View.OnClickListener {
         }
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXT_MENU_PERFORMANCE_INFO)
                 && params.isAnchor()) {
-            mModel.set(RevampedContextMenuHeaderProperties.URL_PERFORMANCE_CLASS,
-                    params.getPerformanceClass());
+            mModel.set(RevampedContextMenuHeaderProperties.URL_PERFORMANCE_CLASS, performanceClass);
         }
     }
 

@@ -6,9 +6,7 @@
 #define CHROME_BROWSER_BACKGROUND_SYNC_BACKGROUND_SYNC_PERMISSION_CONTEXT_H_
 
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_context_base.h"
-
-class Profile;
+#include "components/permissions/permission_context_base.h"
 
 // Manages user permissions for background sync. The context is scoped to the
 // requesting origin, which should always be equal to the top-level origin as
@@ -17,19 +15,22 @@ class Profile;
 // per-site basis from the content settings page. The user is not prompted for
 // permission.
 // TODO(nsatragno): actually implement the UI to allow changing the setting.
-class BackgroundSyncPermissionContext : public PermissionContextBase {
+class BackgroundSyncPermissionContext
+    : public permissions::PermissionContextBase {
  public:
-  explicit BackgroundSyncPermissionContext(Profile* profile);
+  explicit BackgroundSyncPermissionContext(
+      content::BrowserContext* browser_context);
   ~BackgroundSyncPermissionContext() override = default;
 
  private:
   // PermissionContextBase:
-  void DecidePermission(content::WebContents* web_contents,
-                        const permissions::PermissionRequestID& id,
-                        const GURL& requesting_origin,
-                        const GURL& embedding_origin,
-                        bool user_gesture,
-                        BrowserPermissionCallback callback) override;
+  void DecidePermission(
+      content::WebContents* web_contents,
+      const permissions::PermissionRequestID& id,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      bool user_gesture,
+      permissions::BrowserPermissionCallback callback) override;
   bool IsRestrictedToSecureOrigins() const override;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundSyncPermissionContext);

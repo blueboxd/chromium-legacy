@@ -48,6 +48,7 @@
 <translation id="1178581264944972037">रोकें</translation>
 <translation id="1181037720776840403">हटाएं</translation>
 <translation id="1186201132766001848">पासवर्ड जांचें</translation>
+<translation id="1195558154361252544">जिन साइट को आप फ़ॉलो करते हैं उन्हें छोड़कर सभी साइट के लिए सूचनाएं अपने आप बंद हो गई हैं</translation>
 <translation id="1197088940767939838">नारंगी</translation>
 <translation id="1201402288615127009">अगला</translation>
 <translation id="1201895884277373915">इस साइट की ओर से ज़्यादा</translation>
@@ -81,6 +82,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />अपनी कुकी साफ़ करके देखें<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">अपने सुरक्षित डीएनएस की सेटिंग की जांच करें</translation>
 <translation id="1307966114820526988">बंद की गई सुविधाएं</translation>
+<translation id="131405271941274527">किसी NFC डिवाइस में आपके फ़ोन पर टैप किए जाने पर, <ph name="URL" /> जानकारी भेजना और पाना चाहता है</translation>
 <translation id="1314509827145471431">दाईं ओर बाइंड</translation>
 <translation id="1320233736580025032">पीआरसी1 (एन्वेलप)</translation>
 <translation id="132301787627749051">क्लिपबोर्ड इमेज खोजें</translation>
@@ -221,6 +223,7 @@
 <translation id="1875512691959384712">Google फ़ॉर्म</translation>
 <translation id="187918866476621466">शुरुआती पन्ना खोलें</translation>
 <translation id="1883255238294161206">सूची छोटी करें</translation>
+<translation id="1884930769492918228">कैमरे की स्थिति ट्रैक करना और आपके कमरे का मैप बनाना चाहती है</translation>
 <translation id="1898423065542865115">फ़िल्टर किया जा रहा है</translation>
 <translation id="1901443836186977402">{1,plural, =1{यह सर्वर पुष्टि नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा सर्टिफ़िकेट कल खत्म हो गया था. इसकी वजह गलत कॉन्फ़िगरेशन या किसी हमलावर का आपके कनेक्शन में छेड़छाड़ करना हो सकती है. अभी आपके कंप्यूटर की घड़ी <ph name="CURRENT_DATE" /> पर सेट है. क्या यह सही तारीख है? अगर नहीं, तो आपको सिस्टम की घड़ी सही करके, इस पेज को रीफ़्रेश करना चाहिए.}one{यह सर्वर पुष्टि नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा सर्टिफ़िकेट # दिन पहले खत्म हो गया था. इसकी वजह गलत कॉन्फ़िगरेशन या किसी हमलावर का आपके कनेक्शन में छेड़छाड़ करना हो सकती है. अभी आपके कंप्यूटर की घड़ी <ph name="CURRENT_DATE" /> पर सेट है. क्या यह सही तारीख है? अगर नहीं, तो आपको सिस्टम की घड़ी सही करके, इस पेज को रीफ़्रेश करना चाहिए.}other{यह सर्वर पुष्टि नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा सर्टिफ़िकेट # दिन पहले खत्म हो गया था. इसकी वजह गलत कॉन्फ़िगरेशन या किसी हमलावर का आपके कनेक्शन में छेड़छाड़ करना हो सकती है. अभी आपके कंप्यूटर की घड़ी <ph name="CURRENT_DATE" /> पर सेट है. क्या यह सही तारीख है? अगर नहीं, तो आपको सिस्टम की घड़ी सही करके, इस पेज को रीफ़्रेश करना चाहिए.}}</translation>
 <translation id="1914326953223720820">अनज़िप सेवा</translation>
@@ -470,6 +473,7 @@
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" /> का CVC डालें. आपकी तरफ से पुष्टि हो जाने पर, आपके कार्ड के विवरण इस साइट के साथ शेयर किए जाएंगे.</translation>
 <translation id="3010559122411665027">सूची प्रविष्ट‍ि "<ph name="ENTRY_INDEX" />": <ph name="ERROR" /></translation>
 <translation id="301521992641321250">ऑटोमैटिक रूप से ब्लॉक है</translation>
+<translation id="3016780570757425217">आपका स्‍थान पता करना</translation>
 <translation id="3023071826883856138">यू4 (एन्वेलप)</translation>
 <translation id="3024663005179499861">गलत नीति प्रकार</translation>
 <translation id="3037605927509011580">हे भगवान!</translation>
@@ -560,6 +564,7 @@
 <translation id="3452404311384756672">दो रीफ़्रेश के बीच का अंतराल:</translation>
 <translation id="3453962258458347894">इतनी बार कोशिश की गई</translation>
 <translation id="3456231139987291353">संख्या-11 (एन्वेलप)</translation>
+<translation id="3461266716147554923"><ph name="URL" /> वे लेख और इमेज देखना चाहता है जिन्हें क्लिपबोर्ड पर कॉपी किया गया है</translation>
 <translation id="3461824795358126837">हाइलाइटर</translation>
 <translation id="3462200631372590220">बेहतर को छिपाएं</translation>
 <translation id="3467763166455606212">कार्ड मालिक का नाम ज़रूरी है</translation>
@@ -575,6 +580,7 @@
 <translation id="3528485271872257980">गहरा भूरा</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{सिंक किए हुए डिवाइस पर कम से कम 1 आइटम}=1{1 आइटम (सिंक किए हुए डिवाइस पर और भी बहुत कुछ)}one{# आइटम (सिंक किए हुए डिवाइस पर और भी बहुत कुछ)}other{# आइटम (सिंक किए हुए डिवाइस पर और भी बहुत कुछ)}}</translation>
 <translation id="3531780078352352885">जॉब की शीट</translation>
+<translation id="3532844647053365774"><ph name="HOST" /> वेबसाइट आपके माइक्रोफ़ोन का इस्तेमाल करना चाहती है</translation>
 <translation id="3533328374079021623">मेलबॉक्स 5</translation>
 <translation id="3539171420378717834">इस डिवाइस पर इस कार्ड की कॉपी रखें</translation>
 <translation id="3558573058928565255">दिन के समय</translation>
@@ -667,6 +673,7 @@
 <translation id="3901925938762663762">इस कार्ड की समय सीमा खत्म हो गई है</translation>
 <translation id="3906600011954732550">बी5-एक्स्ट्रा</translation>
 <translation id="3906954721959377182">टैबलेट</translation>
+<translation id="3909477809443608991"><ph name="URL" /> सुरक्षित सामग्री चलाना चाहता है . Google आपके डिवाइस की पहचान की पुष्टि कर सकता है और यह साइट उसे ऐक्सेस कर सकती है.</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">क्या आप कार्ड वेरीफ़िकेशन कोड (सीवीसी) के बजाय WebAuthn का इस्तेमाल करना चाहते हैं?</translation>
 <translation id="3946209740501886391">इस साइट पर हमेशा पूछें</translation>
@@ -779,6 +786,7 @@
 <translation id="4346833872170306413">आरओसी-16के</translation>
 <translation id="4349531505348777662">आपने अभी-अभी जिस साइट पर अपना पासवर्ड डाला है वह सुरक्षित नहीं है. Chrome, <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" />, और उन साइटों पर जाकर पासवर्ड बदलने का सुझाव देता है जिन पर आपने इसे इस्तेमाल किया था.</translation>
 <translation id="4356973930735388585">इस साइट पर मौजूद हमलावर आपके कंप्यूटर पर ऐसे खतरनाक प्रोग्राम इंस्टॉल करने की कोशिश कर सकते हैं जो आपकी जानकारी (उदाहरण के लिए, फ़ोटो, पासवर्ड, संदेश और क्रेडिट कार्ड) चुरा लेते हैं या उसे मिटा देते हैं.</translation>
+<translation id="4357784477082216550"><ph name="URL" /> आपके कैमरे की स्थिति ट्रैक करना और कमरे का मैप बनाना चाहती है</translation>
 <translation id="4358059973562876591">आपकी ओर से तय किए गए टेम्प्लेट, DnsOverHttpsMode नीति की गड़बड़ी की वजह से लागू नहीं हो सकते.</translation>
 <translation id="4358461427845829800">भुगतान विधियां प्रबंधित करें...</translation>
 <translation id="4359160567981085931">आपने अभी-अभी जिस साइट पर अपना पासवर्ड डाला है वह सुरक्षित नहीं है. Chrome इसमें आपकी मदद कर सकता है. अपना पासवर्ड बदलने और Google को यह बताने के लिए कि आपका खाता सुरक्षित नहीं है, 'खाता सुरक्षित करें' पर क्लिक करें.</translation>
@@ -838,6 +846,7 @@
 <translation id="4658638640878098064">सबसे ऊपर बाईं ओर स्टेपल</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">यह सर्वर यह प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसके सुरक्षा प्रमाणपत्र में त्रुटियां हैं. ऐसा गलत कॉन्फ़िगरेशन के कारण या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
+<translation id="4677585247300749148"><ph name="URL" /> सुलभता इवेंट का जवाब देना चाहता है</translation>
 <translation id="467809019005607715">Google स्लाइड</translation>
 <translation id="4690462567478992370">अमान्य प्रमाणपत्र का उपयोग करना बंद करें</translation>
 <translation id="4691835149146451662">आर्किटेक्चर-ए (एन्वेलप)</translation>
@@ -849,6 +858,7 @@
 <translation id="4726672564094551039">नीतियां फिर से लोड करें</translation>
 <translation id="4728558894243024398">प्लेटफ़ॉर्म</translation>
 <translation id="4731967714531604179">पीआरसी2 (एन्वेलप)</translation>
+<translation id="4733082559415072992"><ph name="URL" /> वेबसाइट आपके डिवाइस के स्थान की जानकारी का इस्तेमाल करना चाहती है</translation>
 <translation id="4736825316280949806">क्रोमियम को फिर से शुरू करें</translation>
 <translation id="473775607612524610">अपडेट करें</translation>
 <translation id="4738601419177586157"><ph name="TEXT" /> खोज सुझाव</translation>
@@ -857,6 +867,7 @@
 <translation id="4750917950439032686">आपकी जानकारी (जैसे- पासवर्ड या क्रेडिट कार्ड नंबर वगैरह) जब इस साइट पर भेजी जाती है, तब वह निजी होती है.</translation>
 <translation id="4756388243121344051">&amp;इतिहास</translation>
 <translation id="4758311279753947758">संपर्क जानकारी जोड़ें</translation>
+<translation id="4761104368405085019">अपना माइक्रोफ़ोन उपयोग करें</translation>
 <translation id="4764776831041365478"><ph name="URL" /> पर मौजूद वेबपेज संभवतः अस्थायी रूप से बंद है या उसे स्थायी रूप से किसी नए वेब पते पर ले जाया गया है.</translation>
 <translation id="4766713847338118463">नीचे की ओर ड्युएल स्टेपल</translation>
 <translation id="4771973620359291008">अज्ञात गड़बड़ी आई.</translation>
@@ -896,6 +907,7 @@
 <translation id="4943872375798546930">कोई परिणाम नहीं</translation>
 <translation id="4950898438188848926">'टैब' बदलने का बटन, नए टैब पर जाने के लिए Enter दबाएं, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">क्रियाएं</translation>
+<translation id="4953689047182316270">सुलभता इवेंट का जवाब दें</translation>
 <translation id="4955242332710481440">ए5-एक्स्ट्रा</translation>
 <translation id="4958444002117714549">पूरी सूची दिखाएं</translation>
 <translation id="4973922308112707173">सबसे ऊपर ड्युएल पंच</translation>
@@ -944,6 +956,7 @@
 <translation id="5138227688689900538">कम दिखाएं</translation>
 <translation id="5141240743006678641">अपने Google क्रेडेंशियल के साथ सिंक किए गए पासवर्ड सुरक्षित करें</translation>
 <translation id="5145883236150621069">नीति प्रतिसाद में गड़बड़ी कोड मौजूद है</translation>
+<translation id="5146995429444047494"><ph name="ORIGIN" /> के लिए सूचनाओं को ब्लॉक किया गया है</translation>
 <translation id="5148809049217731050">सीधा करके रखें</translation>
 <translation id="515292512908731282">सी4 (एन्वेलप)</translation>
 <translation id="5158275234811857234">कवर</translation>
@@ -1011,6 +1024,7 @@
 <translation id="540969355065856584">यह सर्वर यह प्रमाणित नहीं कर सका कि यह <ph name="DOMAIN" /> है; इसका सुरक्षा प्रमाण पत्र इस समय मान्य नहीं है. ऐसा गलत कॉन्फ़िगरेशन या किसी आक्रमणकर्ता द्वारा आपके कनेक्शन में अवरोध डालने के कारण हो सकता है.</translation>
 <translation id="541416427766103491">स्टैकर 4</translation>
 <translation id="5421136146218899937">ब्राउज़िंग डेटा साफ़ करें...</translation>
+<translation id="5426179911063097041"><ph name="SITE" /> वेबसाइट आपको सूचनाएं भेजना चाहती है</translation>
 <translation id="5430298929874300616">बुकमार्क निकालें</translation>
 <translation id="5431657950005405462">आपकी फ़ाइल नहीं मिली</translation>
 <translation id="5439770059721715174">"<ph name="ERROR_PATH" />" पर स्कीमा सत्यापन गड़बड़ी: <ph name="ERROR" /></translation>
@@ -1057,6 +1071,7 @@
 <translation id="5608165884683734521">यह साइट नकली या धोखाधड़ी करने वाली हो सकती है. Chrome साइट छोड़ने का सुझाव देता है.</translation>
 <translation id="5610142619324316209">कनेक्शन की जाँच करें</translation>
 <translation id="5610807607761827392">आप <ph name="BEGIN_LINK" />सेटिंग<ph name="END_LINK" /> में कार्ड और पते प्रबंधित कर सकते हैं.</translation>
+<translation id="5612720917913232150"><ph name="URL" /> आपके कंप्यूटर के स्थान का उपयोग करना चाहता है</translation>
 <translation id="5617949217645503996"><ph name="HOST_NAME" /> ने आपको कई बार रीडायरेक्ट किया है.</translation>
 <translation id="5629630648637658800">नीति सेटिंग लोड करने में विफल</translation>
 <translation id="5631439013527180824">अमान्य डिवाइस प्रबंधन टोकन</translation>
@@ -1098,6 +1113,7 @@
 <translation id="5798683403665926540">Chrome सेटिंग में जाकर होम पेज बदलें</translation>
 <translation id="5803412860119678065">क्या आप अपनी <ph name="CARD_DETAIL" /> भरना चाहते हैं?</translation>
 <translation id="5804241973901381774">अनुमतियां</translation>
+<translation id="5804427196348435412">NFC डिवाइस इस्तेमाल करें</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" /> से आपके कनेक्शन को किसी पुराने सिफ़र सुइट का उपयोग करके सुरक्षित किया गया है.</translation>
 <translation id="5813119285467412249">&amp;जोड़ना फिर से करें</translation>
 <translation id="5824687817967109979">{NUM_CARDS,plural, =1{जब आप पैसे चुकाएंगे, तब इस कार्ड से पैसे लिए जाएंगे. हालांकि, इसके सही नंबर को इस साइट के साथ शेयर नहीं किया जाएगा. ज़्यादा सुरक्षा के लिए, कुछ समय तक मान्य रहने वाला कार्ड वेरीफ़िकेशन कोड (सीवीसी) जनरेट किया जाएगा.}one{जब आप पैसे चुकाएंगे, तब आपके चुने हुए कार्ड से पैसे लिए जाएंगे. हालांकि, इसके सही नंबर को इस साइट के साथ शेयर नहीं किया जाएगा. ज़्यादा सुरक्षा के लिए, कुछ समय तक मान्य रहने वाला कार्ड वेरीफ़िकेशन कोड (सीवीसी) जनरेट किया जाएगा.}other{जब आप पैसे चुकाएंगे, तब आपके चुने हुए कार्ड से पैसे लिए जाएंगे. हालांकि, इसके सही नंबर को इस साइट के साथ शेयर नहीं किया जाएगा. ज़्यादा सुरक्षा के लिए, कुछ समय तक मान्य रहने वाला कार्ड वेरीफ़िकेशन कोड (सीवीसी) जनरेट किया जाएगा.}}</translation>
@@ -1170,6 +1186,7 @@
 <translation id="6104072995492677441">JIS B6</translation>
 <translation id="6106989379647458772">हो सकता है कि <ph name="PAGE" /> पर मौजूद वेबपेज अस्थायी रूप से काम नहीं कर रहा हो या उसे स्थायी रूप से किसी नए वेब पते पर ले जाया गया हो.</translation>
 <translation id="610911394827799129">आपके Google खाते में <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> पर दूसरी तरह के ब्राउज़िंग इतिहास हो सकते हैं</translation>
+<translation id="6116338172782435947">क्लिपबोर्ड पर कॉपी किए गए लेख और इमेज देखें</translation>
 <translation id="6120179357481664955">क्या आप चाहते हैं कि हम आपका UPI आईडी रखें?</translation>
 <translation id="6146055958333702838">सभी केबल जांचें और आपके उपयोग किए जा रहे सभी राउटर, मॉडेम या अन्य नेटवर्क
     डिवाइस को 'फिर चालू करें'.</translation>
@@ -1328,6 +1345,7 @@
 <translation id="6891596781022320156">नीति स्तर समर्थित नहीं है.</translation>
 <translation id="6895330447102777224">आपके कार्ड की पुष्टि हो गई है</translation>
 <translation id="6897140037006041989">उपयोगकर्ता एजेंट</translation>
+<translation id="6910240653697687763"><ph name="URL" /> वेबसाइट आपके MIDI डिवाइस का पूरा नियंत्रण पाना चाहती है</translation>
 <translation id="6915804003454593391">उपयोगकर्ता:</translation>
 <translation id="6934672428414710184">यह नाम आपके Google खाते से है</translation>
 <translation id="6944692733090228304">आपने एक ऐसी साइट पर अपना पासवर्ड डाला है जिसे <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> प्रबंधित नहीं करता है. अपने खाते को सुरक्षित रखने के लिए, दूसरे ऐप्लिकेशन और साइटों पर अपने पासवर्ड का दोबारा इस्तेमाल न करें.</translation>
@@ -1367,6 +1385,7 @@
 <translation id="7087282848513945231">काउंटी</translation>
 <translation id="7090678807593890770"><ph name="LINK" /> के लिए Google में खोज करें</translation>
 <translation id="7108338896283013870">छुपाएं</translation>
+<translation id="7108634116785509031"><ph name="HOST" /> आपके कैमरे का उपयोग करना चाहता है</translation>
 <translation id="7108819624672055576">किसी एक्सटेंशन ने अनुमति दी है</translation>
 <translation id="7111012039238467737">(मान्य)</translation>
 <translation id="7118618213916969306">क्लिपबोर्ड यूआरएल, <ph name="SHORT_URL" /> खोजें</translation>
@@ -1396,6 +1415,7 @@
 <translation id="721197778055552897">इस समस्या के बारे में <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" />.</translation>
 <translation id="7219179957768738017">कनेक्‍शन <ph name="SSL_VERSION" /> का उपयोग करता है.</translation>
 <translation id="7220786058474068424">संसाधित हो रहा है</translation>
+<translation id="7221855153210829124">नोटिफ़िकेशन दिखाएं</translation>
 <translation id="7233592378249864828">जिस शीट की पुष्टि की गई है उसे प्रिंट करें</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">साइट में आगे मैलवेयर हैं</translation>
@@ -1444,6 +1464,7 @@
       &lt;li&gt;&lt;strong&gt;लागू करें&lt;/strong&gt; पर क्लिक करें, फिर &lt;strong&gt;ठीक है&lt;/strong&gt; पर क्लिक करें
       &lt;li&gt;&lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome सहायता केंद्र&lt;/a&gt; पर जाकर अपने कंप्यूटर से सॉफ़्टवेयर को हमेशा के लिए हटाने का तरीका जानें
       &lt;/ol&gt;</translation>
+<translation id="7409836189476010449">Flash चलाएं</translation>
 <translation id="741007362987735528">चौड़े पेज वाला फ़ॉर्मैट</translation>
 <translation id="7416351320495623771">पासवर्ड प्रबंधित करें…</translation>
 <translation id="7419106976560586862">प्रोफ़ाइल पाथ</translation>
@@ -1562,6 +1583,7 @@
 <translation id="7932579305932748336">कोट</translation>
 <translation id="79338296614623784">मान्य फ़ोन नंबर डालें</translation>
 <translation id="7934052535022478634">भुगतान पूरा हुआ</translation>
+<translation id="7934414805353235750"><ph name="URL" /> सुरक्षित सामग्री चलाना चाहता है. Google आपके डिवाइस की पहचान की पुष्टि करेगा.</translation>
 <translation id="7935031712718413217">झूठे नाम से भेजा गया यूआरएल हो सकता है</translation>
 <translation id="7935318582918952113">DOM डिस्टिलर</translation>
 <translation id="7937554595067888181"><ph name="EXPIRATION_DATE_ABBR" /> को खत्म होने वाला है</translation>
@@ -1647,6 +1669,7 @@
 <translation id="8269981117540303696">अब आप निजी रूप से ब्राउज़ कर सकते हैं. साथ ही, इस डिवाइस का इस्तेमाल करने वाले दूसरे लोगों को आपकी गतिविधि दिखाई नहीं देगी. हालांकि, डाउनलोड और बुकमार्क सेव होंगे.</translation>
 <translation id="8277900682056760511">पैसे चुकाने की हैंडलर शीट खुली है</translation>
 <translation id="8281084378435768645">बड़े आकार वाली फ़ोटो</translation>
+<translation id="8282947398454257691">आपका अद्वितीय डिवाइस पहचानकर्ता पता करना</translation>
 <translation id="8286036467436129157">साइन इन करें</translation>
 <translation id="8288807391153049143">प्रमाणपत्र दिखाएं</translation>
 <translation id="8289355894181816810">अगर आप पक्का नहीं हैं कि इसका क्या मतलब है, तो अपने नेटवर्क व्यवस्थापक से संपर्क करें.</translation>
@@ -1706,6 +1729,7 @@
 </translation>
 <translation id="8589998999637048520">सबसे अच्छी क्वालिटी</translation>
 <translation id="860043288473659153">कार्डधारक का नाम</translation>
+<translation id="8606726445206553943">अपने MIDI डिवाइस का उपयोग करें</translation>
 <translation id="8616822740383114808">यह सेटिंग "<ph name="ENFORCING_SETTING" />" की मदद से "<ph name="SETTINGS_PAGE" />" में लागू की गई है.</translation>
 <translation id="861775596732816396">आकार 4</translation>
 <translation id="8622948367223941507">लीगल-एक्स्ट्रा</translation>
@@ -1812,6 +1836,7 @@
 <translation id="9141013498910525015">पते प्रबंधित करें</translation>
 <translation id="9148088599418889305">शिपिंग का तरीका चुनें</translation>
 <translation id="9148507642005240123">&amp;बदलाव को पहले जैसा करें</translation>
+<translation id="9150045010208374699">अपना कैमरा उपयोग करें</translation>
 <translation id="9154194610265714752">अपडेट किया गया</translation>
 <translation id="9157595877708044936">सेट अप कर रहा है...</translation>
 <translation id="9158625974267017556">सी6 (एन्वेलप)</translation>

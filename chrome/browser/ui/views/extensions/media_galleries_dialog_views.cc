@@ -81,6 +81,10 @@ MediaGalleriesDialogViews::MediaGalleriesDialogViews(
       accepted_(false) {
   DialogDelegate::set_button_label(ui::DIALOG_BUTTON_OK,
                                    controller_->GetAcceptButtonText());
+  DialogDelegate::set_accept_callback(base::BindOnce(
+      [](MediaGalleriesDialogViews* dialog) { dialog->accepted_ = true; },
+      base::Unretained(this)));
+
   auxiliary_button_ = DialogDelegate::SetExtraView(
       CreateAuxiliaryButton(this, controller_->GetAuxiliaryButtonText()));
 
@@ -256,15 +260,6 @@ bool MediaGalleriesDialogViews::IsDialogButtonEnabled(
 
 ui::ModalType MediaGalleriesDialogViews::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
-}
-
-bool MediaGalleriesDialogViews::Cancel() {
-  return true;
-}
-
-bool MediaGalleriesDialogViews::Accept() {
-  accepted_ = true;
-  return true;
 }
 
 void MediaGalleriesDialogViews::ButtonPressed(views::Button* sender,

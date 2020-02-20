@@ -48,6 +48,7 @@
 <translation id="1178581264944972037">Întrerupe</translation>
 <translation id="1181037720776840403">Elimină</translation>
 <translation id="1186201132766001848">Verifică parolele</translation>
+<translation id="1195558154361252544">Notificările sunt blocate automat pentru toate site-urile, cu excepția celor pe care le accepți</translation>
 <translation id="1197088940767939838">Portocaliu</translation>
 <translation id="1201402288615127009">Înainte</translation>
 <translation id="1201895884277373915">Mai multe de la acest site</translation>
@@ -81,6 +82,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Șterge cookie-urile<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">Verifică setările pentru DNS securizat</translation>
 <translation id="1307966114820526988">Funcții învechite</translation>
+<translation id="131405271941274527"><ph name="URL" /> dorește să trimită și să primească informații când atingi telefonul de pe un dispozitiv NFC</translation>
 <translation id="1314509827145471431">Legare în dreapta</translation>
 <translation id="1320233736580025032">Prc1 (Plic)</translation>
 <translation id="132301787627749051">Caută imaginea din clipboard</translation>
@@ -221,6 +223,7 @@
 <translation id="1875512691959384712">Formulare Google</translation>
 <translation id="187918866476621466">Deschide paginile de pornire</translation>
 <translation id="1883255238294161206">Restrângeți lista</translation>
+<translation id="1884930769492918228">să urmărească poziția camerei video și să-ți mapeze camera</translation>
 <translation id="1898423065542865115">Filtrarea</translation>
 <translation id="1901443836186977402">{1,plural, =1{Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate a expirat în ultima zi. Cauza poate fi o eroare de configurare sau interceptarea conexiunii de către un atacator. În prezent, ora computerului este setată la <ph name="CURRENT_DATE" />. Este corect? Dacă nu este, corectează ora sistemului și actualizează pagina.}few{Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate a expirat acum # zile. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator. În prezent, ora computerului este setată la <ph name="CURRENT_DATE" />. Este corect? Dacă nu este, corectează ora sistemului și actualizează pagina.}other{Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate a expirat acum # de zile. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator. În prezent, ora computerului este setată la <ph name="CURRENT_DATE" />. Este corect? Dacă nu este, corectează ora sistemului și actualizează pagina.}}</translation>
 <translation id="1914326953223720820">Serviciu de dezarhivare</translation>
@@ -470,6 +473,7 @@
 <translation id="3008447029300691911">Introdu codul CVC pentru <ph name="CREDIT_CARD" />. După ce confirmi, acest site va avea acces la detaliile cardului tău.</translation>
 <translation id="3010559122411665027">Intrarea din listă „<ph name="ENTRY_INDEX" />”: <ph name="ERROR" /></translation>
 <translation id="301521992641321250">Blocată automat</translation>
+<translation id="3016780570757425217">Afle locația</translation>
 <translation id="3023071826883856138">You4 (Plic)</translation>
 <translation id="3024663005179499861">Tip de politică greșit</translation>
 <translation id="3037605927509011580">Of, nu mai merge!</translation>
@@ -561,6 +565,7 @@
 <translation id="3452404311384756672">Interval de preluare:</translation>
 <translation id="3453962258458347894">Numărul de reîncercări</translation>
 <translation id="3456231139987291353">Number-11 (Plic)</translation>
+<translation id="3461266716147554923"><ph name="URL" /> dorește să vadă textul și imaginile copiate în clipboard</translation>
 <translation id="3461824795358126837">Evidențiator</translation>
 <translation id="3462200631372590220">Ascundeți detaliile avansate</translation>
 <translation id="3467763166455606212">Este necesar numele titularului cardului</translation>
@@ -576,6 +581,7 @@
 <translation id="3528485271872257980">Maro închis</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{Cel puțin 1 element pe dispozitivele sincronizate}=1{1 element (și mai multe pe dispozitivele sincronizate)}few{# elemente (și mai multe pe dispozitivele sincronizate)}other{# de elemente (și mai multe pe dispozitivele sincronizate)}}</translation>
 <translation id="3531780078352352885">Foile sarcinii</translation>
+<translation id="3532844647053365774"><ph name="HOST" /> dorește să utilizeze microfonul</translation>
 <translation id="3533328374079021623">Căsuța de e-mail 5</translation>
 <translation id="3539171420378717834">Păstrează o copie a cardului pe dispozitiv</translation>
 <translation id="3558573058928565255">În timpul zilei</translation>
@@ -669,6 +675,7 @@
 <translation id="3901925938762663762">Cardul este expirat</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
 <translation id="3906954721959377182">Tabletă</translation>
+<translation id="3909477809443608991"><ph name="URL" /> vrea să redea conținut protejat. Identitatea dispozitivului tău va fi verificată de Google și poate fi accesată de acest site.</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">Folosești WebAuthn în loc de CVC?</translation>
 <translation id="3946209740501886391">Întreabă întotdeauna pe acest site</translation>
@@ -781,6 +788,7 @@
 <translation id="4346833872170306413">Roc-16K</translation>
 <translation id="4349531505348777662">Ai introdus parola pe un site înșelător. Chrome recomandă să accesezi <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> și alte site-uri pe care folosești această parolă și să o schimbi acum.</translation>
 <translation id="4356973930735388585">Atacatorii de pe acest site pot încerca să instaleze programe periculoase pe computerul tău, care să îți fure sau să îți șteargă informațiile (de exemplu, fotografiile, parolele, mesajele sau informațiile despre cardurile de credit).</translation>
+<translation id="4357784477082216550"><ph name="URL" /> dorește să urmărească poziția camerei video și să-ți mapeze camera</translation>
 <translation id="4358059973562876591">Șabloanele specificate nu pot fi aplicate din cauza unei erori legate de politica DnsOverHttpsMode.</translation>
 <translation id="4358461427845829800">Gestionează metodele de plată...</translation>
 <translation id="4359160567981085931">Ai introdus parola pe un site înșelător. Chrome te poate ajuta. Ca să schimbi parola și să anunți Google că respectivul cont poate fi în pericol, dă clic pe Protejează contul.</translation>
@@ -840,6 +848,7 @@
 <translation id="4658638640878098064">Capsare în stânga sus</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; certificatul său de securitate conține erori. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
+<translation id="4677585247300749148"><ph name="URL" /> dorește să răspundă evenimentelor de accesibilitate</translation>
 <translation id="467809019005607715">Prezentări Google</translation>
 <translation id="4690462567478992370">Nu mai folosi un certificat nevalid</translation>
 <translation id="4691835149146451662">Architecture-A (Plic)</translation>
@@ -851,6 +860,7 @@
 <translation id="4726672564094551039">Reîncărcați politicile</translation>
 <translation id="4728558894243024398">Platformă</translation>
 <translation id="4731967714531604179">Prc2 (Plic)</translation>
+<translation id="4733082559415072992"><ph name="URL" /> dorește să utilizeze locația dispozitivului</translation>
 <translation id="4736825316280949806">repornește Chromium;</translation>
 <translation id="473775607612524610">Actualizează</translation>
 <translation id="4738601419177586157">Sugestie de căutare <ph name="TEXT" /></translation>
@@ -859,6 +869,7 @@
 <translation id="4750917950439032686">Informațiile tale (de exemplu, parolele și numerele cardurilor de credit) sunt private când sunt trimise la acest site.</translation>
 <translation id="4756388243121344051">&amp;Istoric</translation>
 <translation id="4758311279753947758">Adaugă informații de contact</translation>
+<translation id="4761104368405085019">Utilizează microfonul</translation>
 <translation id="4764776831041365478">Pagina web de la <ph name="URL" /> poate fi temporar nefuncțională sau a fost mutată definitiv la o nouă adresă web.</translation>
 <translation id="4766713847338118463">Capsare dublă în partea de jos</translation>
 <translation id="4771973620359291008">A apărut o eroare necunoscută.</translation>
@@ -898,6 +909,7 @@
 <translation id="4943872375798546930">Nu există rezultate</translation>
 <translation id="4950898438188848926">Butonul Comută între file, apasă pe Enter pentru a comuta la fila deschisă, <ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" /></translation>
 <translation id="495170559598752135">Acțiuni</translation>
+<translation id="4953689047182316270">să răspundă evenimentelor de accesibilitate</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
 <translation id="4958444002117714549">Extindeți lista</translation>
 <translation id="4973922308112707173">Perforare dublă în partea de sus</translation>
@@ -946,6 +958,7 @@
 <translation id="5138227688689900538">Afișează mai puțin</translation>
 <translation id="5141240743006678641">Criptează parolele sincronizate cu datele de conectare Google</translation>
 <translation id="5145883236150621069">Răspunsul pentru politică include un cod de eroare</translation>
+<translation id="5146995429444047494">Notificările pentru <ph name="ORIGIN" /> sunt blocate</translation>
 <translation id="5148809049217731050">Cu fața în sus</translation>
 <translation id="515292512908731282">C4 (Plic)</translation>
 <translation id="5158275234811857234">Copertă</translation>
@@ -1013,6 +1026,7 @@
 <translation id="540969355065856584">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; momentan, certificatul de securitate nu este valid. Cauza poate fi o configurare greșită sau interceptarea conexiunii de un atacator.</translation>
 <translation id="541416427766103491">Receptorul de hârtie 4</translation>
 <translation id="5421136146218899937">Șterge datele de navigare...</translation>
+<translation id="5426179911063097041"><ph name="SITE" /> dorește să îți trimită notificări</translation>
 <translation id="5430298929874300616">Elimină marcajul</translation>
 <translation id="5431657950005405462">Fișierul nu a fost găsit</translation>
 <translation id="5439770059721715174">Eroare de validare a schemei la „<ph name="ERROR_PATH" />”: <ph name="ERROR" /></translation>
@@ -1059,6 +1073,7 @@
 <translation id="5608165884683734521">Acest site poate fi fals sau fraudulos. Chrome îți recomandă să ieși acum.</translation>
 <translation id="5610142619324316209">să verifici conexiunea;</translation>
 <translation id="5610807607761827392">Poți să gestionezi cardurile și adresele în <ph name="BEGIN_LINK" />Setări<ph name="END_LINK" />.</translation>
+<translation id="5612720917913232150"><ph name="URL" /> dorește să utilizeze locația computerului</translation>
 <translation id="5617949217645503996"><ph name="HOST_NAME" /> te-a redirecționat de prea multe ori.</translation>
 <translation id="5629630648637658800">Setările pentru politică nu au putut fi încărcate</translation>
 <translation id="5631439013527180824">Indicativ nevalid pentru gestionarea gadgetului</translation>
@@ -1100,6 +1115,7 @@
 <translation id="5798683403665926540">Schimbă Pagina principală în setările Chrome</translation>
 <translation id="5803412860119678065">Dorești să completezi datele <ph name="CARD_DETAIL" />?</translation>
 <translation id="5804241973901381774">Permisiuni</translation>
+<translation id="5804427196348435412">Folosește dispozitive NFC</translation>
 <translation id="5810442152076338065">Conexiunea la <ph name="DOMAIN" /> este criptată folosind o suită de codificare învechită.</translation>
 <translation id="5813119285467412249">&amp;Repetați adăugarea</translation>
 <translation id="5824687817967109979">{NUM_CARDS,plural, =1{Cardul va fi debitat când plătești, dar numărul său real nu va fi trimis acestui site. Pentru un plus de securitate, va fi generat un cod CVC temporar.}few{Cardul pe care îl selectezi va fi debitat când plătești, dar numărul său real nu va fi trimis acestui site. Pentru un plus de securitate, va fi generat un cod CVC temporar.}other{Cardul pe care îl selectezi va fi debitat când plătești, dar numărul său real nu va fi trimis acestui site. Pentru un plus de securitate, va fi generat un cod CVC temporar.}}</translation>
@@ -1172,6 +1188,7 @@
 <translation id="6104072995492677441">JIS B6</translation>
 <translation id="6106989379647458772">Este posibil ca pagina web de la <ph name="PAGE" /> să fie blocată temporar sau să fi fost mutată definitiv la o nouă adresă web.</translation>
 <translation id="610911394827799129">Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
+<translation id="6116338172782435947">să afișeze textul și imaginile copiate în clipboard</translation>
 <translation id="6120179357481664955">Îți amintești ID-ul UPI?</translation>
 <translation id="6146055958333702838">Verifică toate cablurile și repornește routerele, modemurile sau alte
     dispozitive de rețea pe care le folosești.</translation>
@@ -1330,6 +1347,7 @@
 <translation id="6891596781022320156">Nivelul politicii nu este acceptat.</translation>
 <translation id="6895330447102777224">Cardul tău este confirmat</translation>
 <translation id="6897140037006041989">User Agent</translation>
+<translation id="6910240653697687763">Adresa <ph name="URL" /> dorește să preia controlul complet asupra dispozitivelor MIDI</translation>
 <translation id="6915804003454593391">Utilizator:</translation>
 <translation id="6934672428414710184">Acest nume provine din Contul tău Google</translation>
 <translation id="6944692733090228304">Ai introdus parola pe un site care nu este gestionat de <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />. Pentru a proteja contul, nu folosi aceeași parolă pentru alte aplicații și site-uri.</translation>
@@ -1369,6 +1387,7 @@
 <translation id="7087282848513945231">Comitat</translation>
 <translation id="7090678807593890770">Caută <ph name="LINK" /> pe Google</translation>
 <translation id="7108338896283013870">Ascunde</translation>
+<translation id="7108634116785509031"><ph name="HOST" /> dorește să utilizeze camera foto</translation>
 <translation id="7108819624672055576">Permisă de o extensie</translation>
 <translation id="7111012039238467737">(Valid)</translation>
 <translation id="7118618213916969306">Caută URL-ul din clipboard, <ph name="SHORT_URL" /></translation>
@@ -1398,6 +1417,7 @@
 <translation id="721197778055552897"><ph name="BEGIN_LINK" />Află mai multe<ph name="END_LINK" /> despre această problemă.</translation>
 <translation id="7219179957768738017">Conexiunea utilizează <ph name="SSL_VERSION" />.</translation>
 <translation id="7220786058474068424">Se procesează</translation>
+<translation id="7221855153210829124">Afișeze notificări</translation>
 <translation id="7233592378249864828">Printează foaia de confirmare</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />; <ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">Site-ul pe care urmează să îl accesezi conține programe malware</translation>
@@ -1446,6 +1466,7 @@ Detalii suplimentare:
       &lt;&lt;li&gt;Dă clic pe &lt;strong&gt;Apply&lt;/strong&gt; (Aplică), apoi dă clic pe &lt;strong&gt;OK&lt;/strong&gt;
       &lt;li&gt;Accesează &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Centrul de ajutor Chrome&lt;/a&gt; pentru a afla cum poți să elimini definitiv software-ul de pe computer
       &lt;/ol&gt;</translation>
+<translation id="7409836189476010449">să ruleze Flash</translation>
 <translation id="741007362987735528">Format-Larg</translation>
 <translation id="7416351320495623771">Gestionează parolele…</translation>
 <translation id="7419106976560586862">Calea profilului</translation>
@@ -1564,6 +1585,7 @@ Detalii suplimentare:
 <translation id="7932579305932748336">Acoperire</translation>
 <translation id="79338296614623784">Introdu un număr de telefon valid</translation>
 <translation id="7934052535022478634">Plată efectuată</translation>
+<translation id="7934414805353235750"><ph name="URL" /> vrea să redea conținut protejat. Google va verifica identitatea dispozitivului tău.</translation>
 <translation id="7935031712718413217">Posibilă adresă URL care falsifică adresa expeditorului</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">Expiră pe <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -1649,6 +1671,7 @@ Detalii suplimentare:
 <translation id="8269981117540303696">Acum poți naviga în mod privat, iar celelalte persoane care folosesc acest dispozitiv nu îți vor vedea activitatea. Totuși, descărcările și marcajele vor fi salvate.</translation>
 <translation id="8277900682056760511">Foaia handlerului pentru plăți este deschisă</translation>
 <translation id="8281084378435768645">Fotografie-Mare</translation>
+<translation id="8282947398454257691">Află identificatorul unic de dispozitiv</translation>
 <translation id="8286036467436129157">Conectați-vă</translation>
 <translation id="8288807391153049143">Afișează certificatul</translation>
 <translation id="8289355894181816810">Dacă nu știți sigur ce înseamnă aceasta, contactați administratorul de rețea.</translation>
@@ -1709,6 +1732,7 @@ Detalii suplimentare:
 </translation>
 <translation id="8589998999637048520">Calitate optimă</translation>
 <translation id="860043288473659153">Nume titular de card</translation>
+<translation id="8606726445206553943">Folosească dispozitive MIDI</translation>
 <translation id="8616822740383114808">Setarea este aplicată de „<ph name="ENFORCING_SETTING" />” în „<ph name="SETTINGS_PAGE" />”</translation>
 <translation id="861775596732816396">Mărimea 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
@@ -1815,6 +1839,7 @@ Detalii suplimentare:
 <translation id="9141013498910525015">Gestionează adresele</translation>
 <translation id="9148088599418889305">Alege metoda de expediere</translation>
 <translation id="9148507642005240123">&amp;Anulați editarea</translation>
+<translation id="9150045010208374699">Utilizează camera foto</translation>
 <translation id="9154194610265714752">Actualizat</translation>
 <translation id="9157595877708044936">Se configurează...</translation>
 <translation id="9158625974267017556">C6 (Plic)</translation>

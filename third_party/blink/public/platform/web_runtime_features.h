@@ -207,7 +207,6 @@ class WebRuntimeFeatures {
       bool);
   BLINK_PLATFORM_EXPORT static void EnableVideoFullscreenOrientationLock(bool);
   BLINK_PLATFORM_EXPORT static void EnableVideoRotateToFullscreen(bool);
-  BLINK_PLATFORM_EXPORT static void EnableVideoFullscreenDetection(bool);
   BLINK_PLATFORM_EXPORT static void EnableVideoPlaybackQuality(bool);
   BLINK_PLATFORM_EXPORT static void EnableMediaControlsOverlayPlayButton(bool);
   BLINK_PLATFORM_EXPORT static void EnableRemotePlaybackBackend(bool);

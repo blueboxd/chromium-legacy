@@ -7,6 +7,7 @@ include_rules = [
   "+components/content_capture/common",
   "+components/content_capture/renderer",
   "+components/content_settings/core/common",
+  "+components/contextual_search/buildflags.h",
   "+components/contextual_search/content/renderer",
   "+components/crash/core/common/crash_key.h",
   "+components/crx_file",

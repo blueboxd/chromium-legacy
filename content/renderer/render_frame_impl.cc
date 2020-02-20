@@ -62,6 +62,7 @@
 #include "content/common/navigation_params_mojom_traits.h"
 #include "content/common/navigation_params_utils.h"
 #include "content/common/page_messages.h"
+#include "content/common/render_accessibility.mojom.h"
 #include "content/common/renderer_host.mojom.h"
 #include "content/common/savable_subframe.h"
 #include "content/common/unfreezable_frame_messages.h"
@@ -89,6 +90,7 @@
 #include "content/public/renderer/renderer_ppapi_host.h"
 #include "content/renderer/accessibility/aom_content_ax_tree.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
+#include "content/renderer/accessibility/render_accessibility_manager.h"
 #include "content/renderer/compositor/layer_tree_view.h"
 #include "content/renderer/content_security_policy_util.h"
 #include "content/renderer/context_menu_params_builder.h"
@@ -1763,7 +1765,8 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       selection_text_offset_(0),
       selection_range_(gfx::Range::InvalidRange()),
       handling_select_range_(false),
-      render_accessibility_(nullptr),
+      render_accessibility_manager_(
+          std::make_unique<RenderAccessibilityManager>(this)),
       is_pasting_(false),
       blame_context_(nullptr),
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -2157,8 +2160,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_VisualStateRequest,
                         OnVisualStateRequest)
     IPC_MESSAGE_HANDLER(FrameMsg_Reload, OnReload)
-    IPC_MESSAGE_HANDLER(FrameMsg_SetAccessibilityMode,
-                        OnSetAccessibilityMode)
     IPC_MESSAGE_HANDLER(AccessibilityMsg_SnapshotTree,
                         OnSnapshotAccessibilityTree)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
@@ -2587,25 +2588,6 @@ void RenderFrameImpl::OnVisualStateRequest(uint64_t id) {
       std::make_unique<FrameHostMsg_VisualStateResponse>(routing_id_, id));
 }
 
-void RenderFrameImpl::OnSetAccessibilityMode(ui::AXMode new_mode) {
-  if (accessibility_mode_ == new_mode)
-    return;
-  ui::AXMode old_mode = accessibility_mode_;
-  accessibility_mode_ = new_mode;
-
-  if (new_mode.has_mode(ui::AXMode::kWebContents) &&
-      !old_mode.has_mode(ui::AXMode::kWebContents)) {
-    render_accessibility_ = new RenderAccessibilityImpl(this, new_mode);
-  } else if (!new_mode.has_mode(ui::AXMode::kWebContents) &&
-             old_mode.has_mode(ui::AXMode::kWebContents)) {
-    delete render_accessibility_;
-    render_accessibility_ = nullptr;
-  }
-
-  for (auto& observer : observers_)
-    observer.AccessibilityModeChanged(new_mode);
-}
-
 void RenderFrameImpl::OnSnapshotAccessibilityTree(int callback_id,
                                                   ui::AXMode ax_mode) {
   AXContentTreeUpdate response;
@@ -2802,7 +2784,7 @@ RenderView* RenderFrameImpl::GetRenderView() {
 }
 
 RenderAccessibility* RenderFrameImpl::GetRenderAccessibility() {
-  return render_accessibility_;
+  return render_accessibility_manager_->GetRenderAccessibilityImpl();
 }
 
 std::unique_ptr<AXTreeSnapshotter> RenderFrameImpl::CreateAXTreeSnapshotter() {
@@ -4094,6 +4076,11 @@ void RenderFrameImpl::FrameDetached(DetachType type) {
   CHECK_EQ(it->second, this);
   g_frame_map.Get().erase(it);
 
+  // RenderAccessibilityManager keeps a reference to the RenderFrame that owns
+  // it, so we need to clear the pointer to prevent invalid access after the
+  // frame gets closed and deleted.
+  render_accessibility_manager_.reset();
+
   // |frame_| may not be referenced after this, so clear the pointer since
   // the actual WebLocalFrame may not be deleted immediately and other methods
   // may try to access it.
@@ -5005,14 +4992,20 @@ bool RenderFrameImpl::AllowContentInitiatedDataUrlNavigations(
 void RenderFrameImpl::PostAccessibilityEvent(const blink::WebAXObject& obj,
                                              ax::mojom::Event event,
                                              ax::mojom::EventFrom event_from) {
-  if (render_accessibility_)
-    render_accessibility_->HandleWebAccessibilityEvent(obj, event, event_from);
+  if (!IsAccessibilityEnabled())
+    return;
+
+  render_accessibility_manager_->GetRenderAccessibilityImpl()
+      ->HandleWebAccessibilityEvent(obj, event, event_from);
 }
 
 void RenderFrameImpl::MarkWebAXObjectDirty(const blink::WebAXObject& obj,
                                            bool subtree) {
-  if (render_accessibility_)
-    render_accessibility_->MarkWebAXObjectDirty(obj, subtree);
+  if (!IsAccessibilityEnabled())
+    return;
+
+  render_accessibility_manager_->GetRenderAccessibilityImpl()
+      ->MarkWebAXObjectDirty(obj, subtree);
 }
 
 void RenderFrameImpl::DidSerializeDataForFrame(
@@ -5544,6 +5537,11 @@ void RenderFrameImpl::DidStopLoading() {
   history_subframe_unique_names_.clear();
 
   Send(new FrameHostMsg_DidStopLoading(routing_id_));
+}
+
+void RenderFrameImpl::NotifyAccessibilityModeChange(ui::AXMode new_mode) {
+  for (auto& observer : observers_)
+    observer.AccessibilityModeChanged(new_mode);
 }
 
 void RenderFrameImpl::FocusedElementChanged(const WebElement& element) {
@@ -6465,6 +6463,10 @@ void RenderFrameImpl::RegisterMojoInterfaces() {
 
   GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
       &RenderFrameImpl::BindMhtmlFileWriter, base::Unretained(this)));
+
+  GetAssociatedInterfaceRegistry()->AddInterface(base::BindRepeating(
+      &RenderAccessibilityManager::BindReceiver,
+      base::Unretained(render_accessibility_manager_.get())));
 }
 
 void RenderFrameImpl::BindMhtmlFileWriter(
@@ -6553,7 +6555,7 @@ void RenderFrameImpl::FrameDidCallFocus() {
 }
 
 void RenderFrameImpl::SetAccessibilityModeForTest(ui::AXMode new_mode) {
-  OnSetAccessibilityMode(new_mode);
+  render_accessibility_manager_->SetMode(new_mode.mode());
 }
 
 scoped_refptr<network::SharedURLLoaderFactory>
@@ -6579,6 +6581,11 @@ void RenderFrameImpl::UpdateAllLifecyclePhasesAndCompositeForTesting() {
 
 void RenderFrameImpl::SetAllowsCrossBrowsingInstanceFrameLookup() {
   GetWebFrame()->SetAllowsCrossBrowsingInstanceFrameLookup();
+}
+
+bool RenderFrameImpl::IsAccessibilityEnabled() const {
+  return render_accessibility_manager_->GetAccessibilityMode().has_mode(
+      ui::AXMode::kWebContents);
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

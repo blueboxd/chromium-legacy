@@ -78,10 +78,6 @@ class ContextMenuHelper
   explicit ContextMenuHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<ContextMenuHelper>;
 
-  static base::android::ScopedJavaLocalRef<jobject> CreateJavaContextMenuParams(
-      const content::ContextMenuParams& params,
-      optimization_guide::proto::PerformanceClass performance_class);
-
   base::android::ScopedJavaGlobalRef<jobject> java_obj_;
   content::WebContents* web_contents_;
 

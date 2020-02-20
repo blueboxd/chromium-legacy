@@ -142,7 +142,7 @@ void NDEFWriter::OnMojoConnectionError() {
   for (ScriptPromiseResolver* resolver : requests_) {
     resolver->Reject(NDEFErrorTypeToDOMException(
         device::mojom::blink::NDEFErrorType::NOT_SUPPORTED,
-        "WebNFC feature is unavailable."));
+        "WebNFC feature is unavailable or permission denied."));
   }
   requests_.clear();
 }

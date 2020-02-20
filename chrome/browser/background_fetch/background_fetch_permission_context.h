@@ -6,19 +6,20 @@
 #define CHROME_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_PERMISSION_CONTEXT_H_
 
 #include "base/macros.h"
-#include "chrome/browser/permissions/permission_context_base.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/permissions/permission_context_base.h"
 
 class GURL;
-class Profile;
 
 // Manages user permissions for Background Fetch. Background Fetch permission
 // is currently dynamic and relies on either the download status from
 // DownloadRequestLimiter, or the Automatic Downloads content setting
 // This is why it isn't persisted.
-class BackgroundFetchPermissionContext : public PermissionContextBase {
+class BackgroundFetchPermissionContext
+    : public permissions::PermissionContextBase {
  public:
-  explicit BackgroundFetchPermissionContext(Profile* profile);
+  explicit BackgroundFetchPermissionContext(
+      content::BrowserContext* browser_context);
   ~BackgroundFetchPermissionContext() override = default;
 
  private:
@@ -28,16 +29,17 @@ class BackgroundFetchPermissionContext : public PermissionContextBase {
       content::RenderFrameHost* render_frame_host,
       const GURL& requesting_origin,
       const GURL& embedding_origin) const override;
-  void DecidePermission(content::WebContents* web_contents,
-                        const permissions::PermissionRequestID& id,
-                        const GURL& requesting_origin,
-                        const GURL& embedding_origin,
-                        bool user_gesture,
-                        BrowserPermissionCallback callback) override;
+  void DecidePermission(
+      content::WebContents* web_contents,
+      const permissions::PermissionRequestID& id,
+      const GURL& requesting_origin,
+      const GURL& embedding_origin,
+      bool user_gesture,
+      permissions::BrowserPermissionCallback callback) override;
   void NotifyPermissionSet(const permissions::PermissionRequestID& id,
                            const GURL& requesting_origin,
                            const GURL& embedding_origin,
-                           BrowserPermissionCallback callback,
+                           permissions::BrowserPermissionCallback callback,
                            bool persist,
                            ContentSetting content_setting) override;
 

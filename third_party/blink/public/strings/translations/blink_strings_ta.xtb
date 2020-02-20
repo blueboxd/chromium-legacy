@@ -31,7 +31,7 @@
 <translation id="1921819250265091946">dd</translation>
 <translation id="1930711995431081526">நிலை</translation>
 <translation id="1938124657309484470">மதிப்பு <ph name="MAXIMUM_DATE_OR_TIME" /> அல்லது அதற்கு முன்பு இருக்க வேண்டும்.</translation>
-<translation id="1946271899482435442">தேதித் தேர்ந்தெடுப்பானைக் காட்டும்</translation>
+<translation id="1946271899482435442">தேதித் தேர்வுக் கருவியைக் காட்டும்</translation>
 <translation id="1993104285338243655">பிரதிபலித்தலுக்கு மாற்றியது</translation>
 <translation id="2060505056492490888"><ph name="INVALIDDOMAIN" /> இல் தவறான இடத்தில் '<ph name="DOT" />' பயன்படுத்தபட்டுள்ளது.</translation>
 <translation id="2148716181193084225">இன்று</translation>
@@ -42,7 +42,7 @@
 <translation id="2277199496770840904">டிராக் <ph name="NUMBER" /></translation>
 <translation id="2291999235780842123">செக்பாக்ஸ்</translation>
 <translation id="2311842470354187719">பக்க முறிப்பு</translation>
-<translation id="2335594187091864976">தேதி மற்றும் நேரம் தேர்ந்தெடுப்பான்</translation>
+<translation id="2335594187091864976">தேதி மற்றும் நேரம் தேர்வுக் கருவி</translation>
 <translation id="245932805758469625">மீதமுள்ள வீடியோவின் வினாடிகள்</translation>
 <translation id="248395913932153421">நாள்</translation>
 <translation id="2507943997699731163">இந்தப் புலத்தை நிரப்புக.</translation>
@@ -73,7 +73,7 @@
 <translation id="3450233048674729344">மதிப்பானது கண்டிப்பாக <ph name="MAXIMUM" /> ஐ விடக்குறைவாக அல்லது அதற்குச் சமமாக இருக்க வேண்டும்.</translation>
 <translation id="3486220673238053218">விளக்கம்</translation>
 <translation id="3557673793733683882">தலைப்பு <ph name="HEADING_LEVEL" /></translation>
-<translation id="3670698553867754311">வாரத் தேர்வி</translation>
+<translation id="3670698553867754311">வாரத் தேர்வுக் கருவி</translation>
 <translation id="3685101356851116974">லேபிளிடப்படாத படம்</translation>
 <translation id="3706100364254443312">ஸ்விட்ச்</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -86,13 +86,13 @@
 <translation id="3920932319529768807">முடிவு</translation>
 <translation id="3924558731517983934">ஆப்ஸ்</translation>
 <translation id="3944740393230681990">முன்னுரை</translation>
-<translation id="3960700977367013758">உருட்டல் பட்டி</translation>
+<translation id="3960700977367013758">நகர்வுப் பட்டி</translation>
 <translation id="4103419683916926126">மில்லிவினாடிகள்</translation>
 <translation id="4151657705144244502">கிராஃபிக்</translation>
 <translation id="4160057747563657758">தொலைபேசி</translation>
 <translation id="4193965531860883258">அறிமுகம்</translation>
 <translation id="4201051445878709314">முந்தைய மாதத்தைக் காட்டு</translation>
-<translation id="421884353938374759">வண்ணத் தேர்வி</translation>
+<translation id="421884353938374759">வண்ணத் தேர்வுக் கருவி</translation>
 <translation id="4248100235867064564">மெனுப் பட்டி</translation>
 <translation id="4360991593054037559">சரியான மதிப்பை உள்ளிடவும். <ph name="VALID_VALUE_LOW" /> மற்றும் <ph name="VALID_VALUE_HIGHER" /> ஆகியவை மிக நெருக்கமான சரியான இரண்டு மதிப்புகளாகும்.</translation>
 <translation id="4384583879834880242">கேள்வி-பதில்</translation>
@@ -135,7 +135,7 @@
 <translation id="5453733299334684579">ட்ரீ உருப்படி</translation>
 <translation id="5466621249238537318">ஒன்று அல்லது அதற்குமேற்பட்ட கோப்புகளைத் தேர்ந்தெடுங்கள்.</translation>
 <translation id="5468998798572797635">முழுத்திரையிலிருந்து வெளியேறு</translation>
-<translation id="5516424706154626233">தேதி தேர்ந்தெடுப்பான்</translation>
+<translation id="5516424706154626233">தேதி தேர்வுக் கருவி</translation>
 <translation id="5537725057119320332">அலைபரப்பு</translation>
 <translation id="5546461542133609677">ஒலி இயக்கு</translation>
 <translation id="5608153257855394627">தனிப்படுத்தும்</translation>
@@ -166,7 +166,7 @@
 <translation id="6404546809543547843">ஆடியோ நேர ஸ்கிரப்பர்</translation>
 <translation id="6443871981718447451">விரிவான வசனங்கள் மெனுவைக் காட்டும்</translation>
 <translation id="6453774872122745852">அங்கீகாரங்கள்</translation>
-<translation id="648732519525291180">நேரம் தேர்ந்தெடுப்பான்</translation>
+<translation id="648732519525291180">நேரம் தேர்வுக் கருவி</translation>
 <translation id="6550675742724504774">விருப்பத்தேர்வுகள்</translation>
 <translation id="6572309429103589720">இலக்கணப்பிழை</translation>
 <translation id="658823671542763450">முழுத்திரைக்குச் செல்</translation>
@@ -228,7 +228,7 @@
 <translation id="811583516810654505">விளக்கத்தைப் பெறுகிறது...</translation>
 <translation id="8117451130807776954">இந்த வாரம்</translation>
 <translation id="8199524924445686405">yyyy</translation>
-<translation id="8208673686607688524">உள்ளூர் தேதி &amp; நேரத் தேர்வி</translation>
+<translation id="8208673686607688524">உள்ளூர் தேதி &amp; நேரத் தேர்வுக் கருவி</translation>
 <translation id="8261464734335370856">எழுத்துப்பிழை</translation>
 <translation id="8284326494547611709">வசனங்கள்</translation>
 <translation id="8346634859695247203">பிரிவு</translation>

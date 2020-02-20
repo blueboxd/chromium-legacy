@@ -14,7 +14,7 @@ enum class UrlLoadStrategy;
 
 @class ContextMenuCoordinator;
 @protocol TableViewFaviconDataSource;
-@protocol HistoryLocalCommands;
+@protocol HistoryUIDelegate;
 @protocol HistoryPresentationDelegate;
 
 // ChromeTableViewController for displaying history items.
@@ -29,7 +29,7 @@ enum class UrlLoadStrategy;
 // Opaque instructions on how to open urls.
 @property(nonatomic) UrlLoadStrategy loadStrategy;
 // Delegate for this HistoryTableView.
-@property(nonatomic, weak) id<HistoryLocalCommands> localDispatcher;
+@property(nonatomic, weak) id<HistoryUIDelegate> delegate;
 // Delegate used to make the Tab UI visible.
 @property(nonatomic, weak) id<HistoryPresentationDelegate> presentationDelegate;
 // Data source for favicon images.

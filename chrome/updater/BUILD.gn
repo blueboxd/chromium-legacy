@@ -73,8 +73,9 @@ if (is_win || is_mac) {
 
   source_set("update_service") {
     sources = [
-      "update_service.cc",
       "update_service.h",
+      "update_service_in_process.cc",
+      "update_service_in_process.h",
     ]
 
     deps = [

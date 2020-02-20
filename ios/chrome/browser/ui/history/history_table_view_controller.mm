@@ -22,8 +22,8 @@
 #include "ios/chrome/browser/ui/history/history_entry_inserter.h"
 #import "ios/chrome/browser/ui/history/history_entry_item.h"
 #import "ios/chrome/browser/ui/history/history_entry_item_delegate.h"
-#include "ios/chrome/browser/ui/history/history_local_commands.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
+#include "ios/chrome/browser/ui/history/history_ui_delegate.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
@@ -487,9 +487,9 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
-  // Call the localDispatcher dismissHistoryWithCompletion to clean up state and
+  // Call the delegate dismissHistoryWithCompletion to clean up state and
   // stop the Coordinator.
-  [self.localDispatcher dismissHistoryWithCompletion:nil];
+  [self.delegate dismissHistoryWithCompletion:nil];
 }
 
 #pragma mark - History Data Updates
@@ -1039,7 +1039,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   base::RecordAction(
       base::UserMetricsAction("MobileHistoryPage_EntryLinkOpenNewTab"));
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
-  [self.localDispatcher dismissHistoryWithCompletion:^{
+  [self.delegate dismissHistoryWithCompletion:^{
     UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
     [self.presentationDelegate showActiveRegularTabFromHistory];
   }];
@@ -1051,7 +1051,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
       "MobileHistoryPage_EntryLinkOpenNewIncognitoTab"));
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
   params.in_incognito = YES;
-  [self.localDispatcher dismissHistoryWithCompletion:^{
+  [self.delegate dismissHistoryWithCompletion:^{
     UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
     [self.presentationDelegate showActiveIncognitoTabFromHistory];
   }];
@@ -1067,7 +1067,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   UrlLoadParams params = UrlLoadParams::InCurrentTab(URL);
   params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   params.load_strategy = self.loadStrategy;
-  [self.localDispatcher dismissHistoryWithCompletion:^{
+  [self.delegate dismissHistoryWithCompletion:^{
     UrlLoadingServiceFactory::GetForBrowserState(_browserState)->Load(params);
     [self.presentationDelegate showActiveRegularTabFromHistory];
   }];
@@ -1075,19 +1075,19 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 // Dismisses this ViewController.
 - (void)dismissHistory {
-  [self.localDispatcher dismissHistoryWithCompletion:nil];
+  [self.delegate dismissHistoryWithCompletion:nil];
 }
 
 - (void)openPrivacySettings {
   base::RecordAction(
       base::UserMetricsAction("HistoryPage_InitClearBrowsingData"));
-  [self.localDispatcher displayPrivacySettings];
+  [self.delegate displayPrivacySettings];
 }
 
 #pragma mark - Accessibility
 
 - (BOOL)accessibilityPerformEscape {
-  [self.localDispatcher dismissHistoryWithCompletion:nil];
+  [self.delegate dismissHistoryWithCompletion:nil];
   return YES;
 }
 

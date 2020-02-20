@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/modules/mediasource/media_source_registry.h"
 
-#include "third_party/blink/renderer/modules/mediasource/media_source.h"
+#include "third_party/blink/renderer/modules/mediasource/media_source_impl.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
@@ -47,19 +47,19 @@ void MediaSourceRegistry::RegisterURL(SecurityOrigin*,
   DCHECK_EQ(&registrable->Registry(), this);
   DCHECK(IsMainThread());
 
-  MediaSource* source = static_cast<MediaSource*>(registrable);
+  MediaSourceImpl* source = static_cast<MediaSourceImpl*>(registrable);
   source->AddedToRegistry();
   media_sources_->Set(url.GetString(), source);
 }
 
 void MediaSourceRegistry::UnregisterURL(const KURL& url) {
   DCHECK(IsMainThread());
-  HeapHashMap<String, Member<MediaSource>>::iterator iter =
+  HeapHashMap<String, Member<MediaSourceImpl>>::iterator iter =
       media_sources_->find(url.GetString());
   if (iter == media_sources_->end())
     return;
 
-  MediaSource* source = iter->value;
+  MediaSourceImpl* source = iter->value;
   media_sources_->erase(iter);
   source->RemovedFromRegistry();
 }
@@ -70,9 +70,9 @@ URLRegistrable* MediaSourceRegistry::Lookup(const String& url) {
 }
 
 MediaSourceRegistry::MediaSourceRegistry()
-    : media_sources_(
-          MakeGarbageCollected<HeapHashMap<String, Member<MediaSource>>>()) {
-  HTMLMediaSource::SetRegistry(this);
+    : media_sources_(MakeGarbageCollected<
+                     HeapHashMap<String, Member<MediaSourceImpl>>>()) {
+  MediaSource::SetRegistry(this);
 }
 
 }  // namespace blink

@@ -1414,6 +1414,13 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
           OverrideIntrinsicContentLogicalWidth() + LayoutUnit(scrollbar_width);
       return;
     }
+    LayoutUnit default_inline_size = DefaultIntrinsicContentInlineSize();
+    if (default_inline_size != kIndefiniteSize) {
+      max_logical_width = min_logical_width = default_inline_size;
+      if (StyleRef().LogicalWidth().IsPercentOrCalc())
+        min_logical_width = LayoutUnit();
+      return;
+    }
     if (ShouldApplySizeContainment()) {
       max_logical_width = min_logical_width = LayoutUnit(scrollbar_width);
       return;

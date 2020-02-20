@@ -556,8 +556,15 @@ class CORE_EXPORT Document : public ContainerNode,
   bool IsViewSource() const { return is_view_source_; }
   void SetIsViewSource(bool);
 
-  bool IsImmersiveArOverlay() const { return is_immersive_ar_overlay_; }
-  void SetIsImmersiveArOverlay(bool);
+  // WebXR DOM Overlay support, cf https://immersive-web.github.io/dom-overlays/
+  // True if there's an ongoing "immersive-ar" WebXR session with a DOM Overlay
+  // element active. This is needed for applying the :xr-overlay pseudoclass
+  // and compositing/paint integration for this mode.
+  bool IsXrOverlay() const { return is_xr_overlay_; }
+  // Called from modules/xr's XRSystem when DOM Overlay mode starts and ends.
+  // This lazy-loads the UA stylesheet and updates the overlay element's
+  // pseudoclass.
+  void SetIsXrOverlay(bool enabled, Element* overlay_element);
 
   bool SawElementsInKnownNamespaces() const {
     return saw_elements_in_known_namespaces_;
@@ -2113,7 +2120,7 @@ class CORE_EXPORT Document : public ContainerNode,
   DocumentClassFlags document_classes_;
 
   bool is_view_source_;
-  bool is_immersive_ar_overlay_;
+  bool is_xr_overlay_;
   bool saw_elements_in_known_namespaces_;
   bool is_srcdoc_document_;
   bool is_mobile_document_;

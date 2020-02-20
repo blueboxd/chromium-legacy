@@ -169,14 +169,14 @@ void UiaAccessibilityEventWaiter::Thread::EventHandler::CleanUp() {
   root_.Reset();
 }
 
-STDMETHODIMP
+HRESULT
 UiaAccessibilityEventWaiter::Thread::EventHandler::HandleFocusChangedEvent(
     IUIAutomationElement* sender) {
   // Add focus changed event handling code here.
   return S_OK;
 }
 
-STDMETHODIMP
+HRESULT
 UiaAccessibilityEventWaiter::Thread::EventHandler::HandlePropertyChangedEvent(
     IUIAutomationElement* sender,
     PROPERTYID property_id,
@@ -190,7 +190,7 @@ UiaAccessibilityEventWaiter::Thread::EventHandler::HandlePropertyChangedEvent(
   return S_OK;
 }
 
-STDMETHODIMP
+HRESULT
 UiaAccessibilityEventWaiter::Thread::EventHandler::HandleStructureChangedEvent(
     IUIAutomationElement* sender,
     StructureChangeType change_type,
@@ -199,7 +199,7 @@ UiaAccessibilityEventWaiter::Thread::EventHandler::HandleStructureChangedEvent(
   return S_OK;
 }
 
-STDMETHODIMP
+HRESULT
 UiaAccessibilityEventWaiter::Thread::EventHandler::HandleAutomationEvent(
     IUIAutomationElement* sender,
     EVENTID event_id) {

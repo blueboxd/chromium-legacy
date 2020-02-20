@@ -550,9 +550,6 @@ IPC_MESSAGE_ROUTED0(FrameMsg_Stop)
 // Tells the renderer to reload the frame.
 IPC_MESSAGE_ROUTED0(FrameMsg_Reload)
 
-// Change the accessibility mode in the renderer process.
-IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode, ui::AXMode)
-
 // Update a proxy's window.name property.  Used when the frame's name is
 // changed in another process.
 IPC_MESSAGE_ROUTED2(FrameMsg_DidUpdateName,

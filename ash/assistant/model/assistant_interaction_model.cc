@@ -107,7 +107,7 @@ void AssistantInteractionModel::SetPendingResponse(
   pending_response_ = std::move(pending_response);
 }
 
-void AssistantInteractionModel::FinalizePendingResponse() {
+void AssistantInteractionModel::CommitPendingResponse() {
   DCHECK(pending_response_);
   response_ = std::move(pending_response_);
   NotifyResponseChanged();

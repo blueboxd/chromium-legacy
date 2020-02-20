@@ -305,6 +305,11 @@
 <translation id="8196755618196986400">ለተጨማሪ መረጃ እርስዎን እንድናነጋግር ለማስቻል የኢሜይል አድራሻዎ በሚያቀርቡት ማንኛውም ግብረመልስ ውስጥ ይካተታል።</translation>
 <translation id="8244400547700556338">እንዴት እንደሆነ ይወቁ።</translation>
 <translation id="8261506727792406068">ሰርዝ</translation>
+<translation id="8295077433896346116"><ph name="PRODUCT_NAME" />ን ለመጠቀም ከርቀት ማሽኑ የመጣ ግቤት ወደዚህ Mac እንዲገባ ለማድረግ የ«ተደራሽነት» ፈቃዱን መስጠት ይኖርብዎታል።
+
+ይህን ፈቃድ ለመስጠት ከታች የ«ተደራሽነት» መቃኑን የሚከፍተውን «<ph name="BUTTON_NAME" />»ን ጠቅ ያድርጉ፣ ከ«<ph name="SERVICE_SCRIPT_NAME" />» ቀጥሎ ያለውን ሳጥን ምልክት ያድርጉበት።
+
+«<ph name="SERVICE_SCRIPT_NAME" />» አስቀድሞ ምልክት የተደረገበት ከሆነ ምልክቱን ያንሱትና ዳግም ያድርጉበት።</translation>
 <translation id="8355326866731426344">ይህ የመዳረሻ ኮድ በ<ph name="TIMEOUT" /> ውስጥ ጊዜው ያበቃል</translation>
 <translation id="8355485110405946777">ችግርዎን እንድንቀርፍ ለማገዝ የመተግበሪያ ምዝግብ ማስታወሻዎችን ያካትቱ (የምዝግብ ማስታወሻዎች የግል መረጃን ሊያካትቱ ይችላሉ)።</translation>
 <translation id="837021510621780684">ከዚህ ኮምፒውተር</translation>

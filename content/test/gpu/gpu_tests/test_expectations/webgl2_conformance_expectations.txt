@@ -186,15 +186,6 @@ crbug.com/907544 [ vulkan win passthrough nvidia ] conformance/uniforms/uniform-
 # Win / NVIDIA Quadro P400 / D3D11 flaky failures
 crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/data/gles3/shaders/functions.html [ Failure ]
 crbug.com/921052 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/framebufferblit/depth_stencil.html [ Skip ]
-crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_lines.html [ Failure ]
-crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeedback/basic_types_interleaved_triangles.html [ Failure ]
-crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeedback/basic_types_separate_lines.html [ Failure ]
-crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeedback/basic_types_separate_triangles.html [ Failure ]
-crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeedback/random_interleaved_lines.html [ Failure ]
-crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeedback/random_interleaved_triangles.html [ Failure ]
-crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeedback/random_separate_lines.html [ Failure ]
-crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeedback/random_separate_triangles.html [ Failure ]
-crbug.com/680754 [ d3d11 win nvidia-0x1cb3 ] deqp/functional/gles3/transformfeedback/interpolation_flat.html [ Failure ]
 crbug.com/966143 [ d3d11 win7 nvidia-0x1cb3 ] conformance/attribs/gl-vertex-attrib-unconsumed-out-of-bounds.html [ RetryOnFailure ]
 crbug.com/966143 [ d3d11 win7 nvidia-0x1cb3 ] conformance/attribs/gl-vertex-attrib-zero-issues.html [ RetryOnFailure ]
 crbug.com/728670 [ d3d11 win nvidia-0x1cb3 ] conformance/extensions/oes-texture-half-float-with-video.html [ RetryOnFailure ]
@@ -202,7 +193,6 @@ crbug.com/728670 [ d3d11 win nvidia-0x1cb3 ] conformance/textures/image_bitmap_f
 crbug.com/728670 [ d3d11 win nvidia-0x1cb3 ] conformance/textures/image_bitmap_from_video/tex-2d-rgba-rgba-unsigned_short_4_4_4_4.html [ RetryOnFailure ]
 crbug.com/728670 [ d3d11 win nvidia-0x1cb3 ] conformance2/textures/video/* [ RetryOnFailure ]
 crbug.com/728670 [ d3d11 win nvidia-0x1cb3 ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
-crbug.com/782254 [ d3d11 win nvidia-0x1cb3 ] conformance2/rendering/attrib-type-match.html [ RetryOnFailure ]
 
 # Win / NVIDIA GeForce GTX 1660 / D3D11 flaky failures
 crbug.com/angleproject/4377 [ d3d11 win nvidia-0x2184 ] conformance/attribs/gl-vertex-attrib-unconsumed-out-of-bounds.html [ RetryOnFailure ]

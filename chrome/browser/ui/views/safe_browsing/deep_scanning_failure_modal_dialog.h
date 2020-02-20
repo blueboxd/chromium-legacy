@@ -42,8 +42,6 @@ class DeepScanningFailureModalDialog : public views::DialogDelegateView,
 
   // views::DialogDelegate implementation:
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
-  bool Cancel() override;
-  bool Accept() override;
   bool ShouldShowCloseButton() const override;
 
   // views::WidgetDelegate implementation:
@@ -59,8 +57,6 @@ class DeepScanningFailureModalDialog : public views::DialogDelegateView,
   views::Button* open_now_button_;
 
   // The callbacks to trigger on each way the dialog is resolved.
-  base::OnceClosure accept_callback_;
-  base::OnceClosure cancel_callback_;
   base::OnceClosure open_now_callback_;
 };
 

@@ -201,8 +201,10 @@ void HatsWebDialog::CreateWebDialog(Browser* browser) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   LocationBarView* location_bar = browser_view->GetLocationBarView();
   DCHECK(location_bar);
-  gfx::Rect bounds(location_bar->bounds());
-  views::View::ConvertRectToScreen(browser_view->toolbar(), &bounds);
+  gfx::Point origin(location_bar->origin());
+  views::View::ConvertPointToTarget(location_bar->parent(), browser_view,
+                                    &origin);
+  gfx::Rect bounds(origin, location_bar->size());
   bounds = gfx::Rect(
       bounds.x() +
           std::max(0, bounds.width() / 2 - kDefaultHatsDialogWidth / 2),

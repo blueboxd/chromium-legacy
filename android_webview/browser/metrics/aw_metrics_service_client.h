@@ -108,8 +108,8 @@ class AwMetricsServiceClient : public ::metrics::AndroidMetricsServiceClient,
   // metrics::AndroidMetricsServiceClient:
   void InitInternal() override;
   void OnMetricsStart() override;
-  double GetSampleRate() override;
-  double GetPackageNameLimitRate() override;
+  int GetSampleRatePerMille() override;
+  int GetPackageNameLimitRatePerMille() override;
   bool ShouldWakeMetricsService() override;
   void RegisterAdditionalMetricsProviders(
       metrics::MetricsService* service) override;

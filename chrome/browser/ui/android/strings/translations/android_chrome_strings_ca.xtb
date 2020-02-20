@@ -582,7 +582,6 @@ Per canviar aquesta opció, <ph name="BEGIN_LINK" />restableix la sincronitzaci�
 <translation id="5447765697759493033">Aquest lloc web no es traduirà</translation>
 <translation id="545042621069398927">S'està accelerant la baixada.</translation>
 <translation id="5456381639095306749">Baixa la pàgina</translation>
-<translation id="5475862044948910901">Vols iniciar la sessió de realitat augmentada?</translation>
 <translation id="548278423535722844">Obre en una aplicació de mapes</translation>
 <translation id="5487521232677179737">Esborra les dades</translation>
 <translation id="5494752089476963479">Bloqueja els anuncis als llocs web que mostren publicitat intrusiva o enganyosa</translation>
@@ -831,11 +830,6 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7352939065658542140">VÍDEO</translation>
 <translation id="7353894246028566792">{NUM_SELECTED,plural, =1{Comparteix 1 element seleccionat}other{Comparteix # elements seleccionats}}</translation>
 <translation id="7359002509206457351">Accedeix a les formes de pagament</translation>
-<translation id="7365126855094612066">Mentre duri aquesta sessió, el lloc web podrà fer el següent:
-• Crear un mapa en 3D del teu entorn.
-• Fer el seguiment del moviment de la càmera.
-
-El lloc web NO obté accés a la càmera. Només tu pots veure les imatges de la càmera.</translation>
 <translation id="7375125077091615385">Tipus:</translation>
 <translation id="7396940094317457632"><ph name="FILE_NAME" /></translation>
 <translation id="7400418766976504921">URL</translation>

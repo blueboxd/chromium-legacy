@@ -28,8 +28,6 @@ class VirtualCardSelectionDialogViewImpl
   // views::DialogDelegateView:
   gfx::Size CalculatePreferredSize() const override;
   void AddedToWidget() override;
-  bool Accept() override;
-  bool Cancel() override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
   ui::ModalType GetModalType() const override;
   View* GetContentsView() override;

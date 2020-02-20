@@ -17,9 +17,9 @@
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom.h"
 
 StorageAccessGrantPermissionContext::StorageAccessGrantPermissionContext(
-    Profile* profile)
+    content::BrowserContext* browser_context)
     : PermissionContextBase(
-          profile,
+          browser_context,
           ContentSettingsType::STORAGE_ACCESS,
           blink::mojom::FeaturePolicyFeature::kStorageAccessAPI),
       content_settings_type_(ContentSettingsType::STORAGE_ACCESS) {}
@@ -39,7 +39,7 @@ void StorageAccessGrantPermissionContext::DecidePermission(
     const GURL& requesting_origin,
     const GURL& embedding_origin,
     bool user_gesture,
-    BrowserPermissionCallback callback) {
+    permissions::BrowserPermissionCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!user_gesture ||
       !base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
@@ -73,7 +73,7 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSet(
     const permissions::PermissionRequestID& id,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    BrowserPermissionCallback callback,
+    permissions::BrowserPermissionCallback callback,
     bool persist,
     ContentSetting content_setting) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -99,7 +99,7 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSet(
   // the network service. Also persist setting to HostContentSettingsMapFactory
   // as either persistent or in-memory depending on the grant type.
   HostContentSettingsMap* settings_map =
-      HostContentSettingsMapFactory::GetForProfile(profile());
+      HostContentSettingsMapFactory::GetForProfile(browser_context());
   DCHECK(settings_map);
 
   ContentSettingsForOneType grants;
@@ -110,7 +110,7 @@ void StorageAccessGrantPermissionContext::NotifyPermissionSet(
   // partition has updated and ack'd the update. This prevents a race where
   // the renderer could initiate a network request based on the response to this
   // request before the access grants have updated in the network service.
-  content::BrowserContext::GetDefaultStoragePartition(profile())
+  content::BrowserContext::GetDefaultStoragePartition(browser_context())
       ->GetCookieManagerForBrowserProcess()
       ->SetStorageAccessGrantSettings(
           grants, base::BindOnce(std::move(callback), content_setting));

@@ -62,6 +62,7 @@ include_rules = [
   "+components/content_capture/browser",
   "+components/content_settings/core/browser",
   "+components/content_settings/core/test",
+  "+components/contextual_search/buildflags.h",
   "+components/contextual_search/content/browser",
   "+components/contextual_search/content/common",
   "+components/contextual_search/core/browser",

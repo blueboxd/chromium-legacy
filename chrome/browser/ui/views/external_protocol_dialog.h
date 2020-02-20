@@ -37,8 +37,6 @@ class ExternalProtocolDialog : public views::DialogDelegateView,
   gfx::Size CalculatePreferredSize() const override;
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
-  bool Cancel() override;
-  bool Accept() override;
   views::View* GetContentsView() override;
   ui::ModalType GetModalType() const override;
   views::Widget* GetWidget() override;
@@ -49,6 +47,7 @@ class ExternalProtocolDialog : public views::DialogDelegateView,
 
   void ShowRememberSelectionCheckbox();
   void SetRememberSelectionCheckboxCheckedForTesting(bool checked);
+  void OnDialogAccepted();
 
   const GURL url_;
   const base::string16 program_name_;

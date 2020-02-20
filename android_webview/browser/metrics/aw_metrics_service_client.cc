@@ -31,12 +31,12 @@ namespace {
 // Sample at 2%, based on storage concerns. We sample at a different rate than
 // Chrome because we have more metrics "clients" (each app on the device counts
 // as a separate client).
-const double kStableSampledInRate = 0.02;
+const int kStableSampledInRatePerMille = 20;
 
 // Sample non-stable channels at 99%, to boost volume for pre-stable
 // experiments. We choose 99% instead of 100% for consistency with Chrome and to
 // exercise the out-of-sample code path.
-const double kBetaDevCanarySampledInRate = 0.99;
+const int kBetaDevCanarySampledInRatePerMille = 990;
 
 // As a mitigation to preserve use privacy, the privacy team has asked that we
 // upload package name with no more than 10% of UMA clients. This is to mitigate
@@ -44,7 +44,7 @@ const double kBetaDevCanarySampledInRate = 0.99;
 // a small handful of users, there's a very good chance many of them won't be
 // uploading UMA records due to sampling). Do not change this constant without
 // consulting with the privacy team.
-const double kPackageNameLimitRate = 0.10;
+const int kPackageNameLimitRatePerMille = 100;
 
 // Normally kMetricsReportingEnabledTimestamp would be set by the
 // MetricsStateManager. However, it assumes kMetricsClientID and
@@ -116,15 +116,15 @@ int32_t AwMetricsServiceClient::GetProduct() {
   return metrics::ChromeUserMetricsExtension::ANDROID_WEBVIEW;
 }
 
-double AwMetricsServiceClient::GetSampleRate() {
+int AwMetricsServiceClient::GetSampleRatePerMille() {
   // Down-sample unknown channel as a precaution in case it ends up being
   // shipped to Stable users.
   version_info::Channel channel = version_info::android::GetChannel();
   if (channel == version_info::Channel::STABLE ||
       channel == version_info::Channel::UNKNOWN) {
-    return kStableSampledInRate;
+    return kStableSampledInRatePerMille;
   }
-  return kBetaDevCanarySampledInRate;
+  return kBetaDevCanarySampledInRatePerMille;
 }
 
 void AwMetricsServiceClient::InitInternal() {
@@ -136,8 +136,8 @@ void AwMetricsServiceClient::OnMetricsStart() {
   SetReportingEnabledDateIfNotSet(pref_service());
 }
 
-double AwMetricsServiceClient::GetPackageNameLimitRate() {
-  return kPackageNameLimitRate;
+int AwMetricsServiceClient::GetPackageNameLimitRatePerMille() {
+  return kPackageNameLimitRatePerMille;
 }
 
 bool AwMetricsServiceClient::ShouldWakeMetricsService() {

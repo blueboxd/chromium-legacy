@@ -7,6 +7,8 @@ source_set("permissions") {
     "features.cc",
     "features.h",
     "notification_permission_ui_selector.h",
+    "permission_context_base.cc",
+    "permission_context_base.h",
     "permission_decision_auto_blocker.cc",
     "permission_decision_auto_blocker.h",
     "permission_prompt.h",
@@ -66,6 +68,7 @@ source_set("test_support") {
     ":permissions",
     "//base",
     "//components/sync_preferences:test_support",
+    "//components/ukm/content",
     "//components/vector_icons",
     "//content/public/browser",
     "//testing/gtest",
@@ -77,6 +80,7 @@ source_set("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "permission_context_base_unittest.cc",
     "permission_decision_auto_blocker_unittest.cc",
     "permission_request_manager_unittest.cc",
     "permission_uma_util_unittest.cc",
@@ -89,6 +93,9 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/content_settings/core/browser",
     "//components/keyed_service/content",
+    "//components/ukm:test_support",
+    "//components/ukm/content",
+    "//components/variations",
     "//content/test:test_support",
     "//testing/gtest",
   ]

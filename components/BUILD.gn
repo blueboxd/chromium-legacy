@@ -322,6 +322,7 @@ test("components_unittests") {
       "//components/paint_preview/browser/android:java",
       "//components/paint_preview/browser/android:unit_tests",
       "//components/paint_preview/player/android:unit_tests",
+      "//components/permissions/android:java",
       "//components/policy/android:policy_java",
       "//components/signin/core/browser",
       "//components/signin/core/browser/android:java",

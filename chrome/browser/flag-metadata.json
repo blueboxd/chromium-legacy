@@ -1224,8 +1224,8 @@
   },
   {
     "name": "enable-custom-mac-paper-sizes",
-    "owners": [ "thestig" ],
-    "expiry_milestone": 82
+    "owners": [ "thestig", "dhoss" ],
+    "expiry_milestone": 85
   },
   {
     "name": "enable-data-reduction-proxy-server-experiment",
@@ -1587,8 +1587,8 @@
   },
   {
     "name": "enable-navigation-tracing",
-    "owners": [ "tracing" ],
-    "expiry_milestone": 80
+    "owners": [ "oysteine" ],
+    "expiry_milestone": 85
   },
   {
     "name": "enable-network-logging-to-file",
@@ -2250,7 +2250,7 @@
   {
     "name": "extensions-toolbar-menu",
     "owners": [ "//extensions/OWNERS", "pbos" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 84
   },
   {
     "name": "file-handling-api",
@@ -3121,6 +3121,11 @@
     "expiry_milestone": 85
   },
   {
+    "name": "printer-status",
+    "owners": [ "gavinwill", "cros-peripherals@google.com" ],
+    "expiry_milestone": 85
+  },
+  {
     "name": "privacy-settings-redesign",
     "owners": ["harrisonsean", "msramek",
       "chrome-privacy-core@google.com"],
@@ -3180,7 +3185,7 @@
   {
     "name": "reduced-referrer-granularity",
     "owners": [ "davidvc", "mkwst", "jochen" ],
-    "expiry_milestone": 81
+    "expiry_milestone": 83
   },
   {
     "name": "release-notes",
@@ -3206,11 +3211,6 @@
     "name": "rewrite-leveldb-on-deletion",
     "owners": [ "dullweber" ],
     "expiry_milestone": 75
-  },
-  {
-    "name": "safe-browsing-use-local-blacklists-v2",
-    "owners": [ "vakh" ],
-    "expiry_milestone": 76
   },
   {
     "name": "safety-tips",
@@ -3573,8 +3573,8 @@
   },
   {
     "name": "trace-upload-url",
-    "owners": [ "tracing" ],
-    "expiry_milestone": 80
+    "owners": [ "oysteine" ],
+    "expiry_milestone": 85
   },
   {
     "name": "translate-android-manual-trigger",

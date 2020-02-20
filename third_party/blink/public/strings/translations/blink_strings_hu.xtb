@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">menüelem</translation>
 <translation id="10623998915015855">átkapcsológomb</translation>
 <translation id="1088086359088493902">Másodperc</translation>
+<translation id="1142001580032786438">Hétválasztó megjelenítése</translation>
 <translation id="1171774979989969504">Kérjük, adjon meg egy e-mail címet.</translation>
 <translation id="1178581264944972037">Szünet</translation>
 <translation id="1188858454923323853">kiegészítő</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">search</translation>
 <translation id="4812940957355064477">Kérjük, adjon meg egy számot.</translation>
 <translation id="4912536737030637138">bibliográfiai bejegyzés</translation>
+<translation id="4915360478455618802">Időválasztó megjelenítése</translation>
 <translation id="492244087561876220">megjegyzés</translation>
+<translation id="4950364064308314478">Helyi dátum és idő választójának megjelenítése</translation>
 <translation id="4971739861736909480"><ph name="ACCNAME" /> kiválasztva</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> kiválasztva</translation>
 <translation id="4992066212339426712">Némítás feloldása</translation>
@@ -249,6 +252,7 @@
 <translation id="860475260694818407">tartalomjegyzék</translation>
 <translation id="8613126697340063924">távoli lejátszás kezelése</translation>
 <translation id="862370744433916922">felirat</translation>
+<translation id="8634971699417195529">Hónapválasztó megjelenítése</translation>
 <translation id="8711688047404765493">kimenet</translation>
 <translation id="8750798805984357768">Kérjük, válassza ki az egyik opciót.</translation>
 <translation id="8808573423886751634">fejezet</translation>

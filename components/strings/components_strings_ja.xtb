@@ -48,6 +48,7 @@
 <translation id="1178581264944972037">一時停止</translation>
 <translation id="1181037720776840403">削除</translation>
 <translation id="1186201132766001848">パスワードを確認</translation>
+<translation id="1195558154361252544">許可したサイトを除くすべてのサイトで通知を自動的にブロックします</translation>
 <translation id="1197088940767939838">オレンジ</translation>
 <translation id="1201402288615127009">次へ</translation>
 <translation id="1201895884277373915">このサイトからの他の履歴</translation>
@@ -81,6 +82,7 @@
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Cookie を消去してみてください<ph name="END_LINK" /></translation>
 <translation id="1301324364792935241">セキュア DNS の設定を確認してください</translation>
 <translation id="1307966114820526988">サポート終了の機能</translation>
+<translation id="131405271941274527"><ph name="URL" /> が、NFC 搭載のスマートフォンをタップして情報を送受信するよう求めています</translation>
 <translation id="1314509827145471431">製本（右綴じ）</translation>
 <translation id="1320233736580025032">Prc1（封筒）</translation>
 <translation id="132301787627749051">クリップボードにある画像を検索します</translation>
@@ -221,6 +223,7 @@
 <translation id="1875512691959384712">Google フォーム</translation>
 <translation id="187918866476621466">起動ページを開く</translation>
 <translation id="1883255238294161206">リストを折りたたむ</translation>
+<translation id="1884930769492918228">カメラの位置を追跡して室内をマッピングする</translation>
 <translation id="1898423065542865115">フィルタ</translation>
 <translation id="1901443836186977402">{1,plural, =1{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の期限が昨日で切れています。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。パソコンの時計は現在 <ph name="CURRENT_DATE" /> に設定されています。この時刻が正しくない場合は、システムの時計を修正して、このページを更新してください。}other{このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。セキュリティ証明書の期限が # 日前に切れています。原因として、設定が不適切であるか、悪意のあるユーザーが接続を妨害していることが考えられます。パソコンの時計は現在 <ph name="CURRENT_DATE" /> に設定されています。この時刻が正しくない場合は、システムの時計を修正して、このページを更新してください。}}</translation>
 <translation id="1914326953223720820">解凍サービス</translation>
@@ -462,6 +465,7 @@
 <translation id="3008447029300691911"><ph name="CREDIT_CARD" /> の CVC を入力します。確認を行うと、カードの詳細がこのサイトと共有されます。</translation>
 <translation id="3010559122411665027">リスト エントリ「<ph name="ENTRY_INDEX" />」: <ph name="ERROR" /></translation>
 <translation id="301521992641321250">自動ブロックされました</translation>
+<translation id="3016780570757425217">ユーザーの現在地の認識</translation>
 <translation id="3023071826883856138">洋4（封筒）</translation>
 <translation id="3024663005179499861">ポリシー タイプが間違っています</translation>
 <translation id="3037605927509011580">エラー</translation>
@@ -553,6 +557,7 @@
 <translation id="3452404311384756672">取得間隔:</translation>
 <translation id="3453962258458347894">再試行の回数</translation>
 <translation id="3456231139987291353">Number-11（封筒）</translation>
+<translation id="3461266716147554923"><ph name="URL" /> が、クリップボードにコピーされているテキストや画像にアクセスしようとしています</translation>
 <translation id="3461824795358126837">蛍光ペン</translation>
 <translation id="3462200631372590220">詳細情報を表示しない</translation>
 <translation id="3467763166455606212">カード名義人は必須です</translation>
@@ -568,6 +573,7 @@
 <translation id="3528485271872257980">暗い茶色</translation>
 <translation id="3530944546672790857">{COUNT,plural, =0{同期デバイスで 1 件以上のアイテム}=1{1 件のアイテム（同期デバイスではそれ以上のアイテム）}other{# 件のアイテム（同期デバイスではそれ以上のアイテム）}}</translation>
 <translation id="3531780078352352885">ジョブシート</translation>
+<translation id="3532844647053365774"><ph name="HOST" /> から、マイクの使用許可を求められています</translation>
 <translation id="3533328374079021623">用紙受け 5</translation>
 <translation id="3539171420378717834">このデバイスにこのカード情報のコピーを保存する</translation>
 <translation id="3558573058928565255">日中</translation>
@@ -656,6 +662,7 @@
 <translation id="3901925938762663762">カードの有効期限が切れています</translation>
 <translation id="3906600011954732550">B5-Extra</translation>
 <translation id="3906954721959377182">タブレット</translation>
+<translation id="3909477809443608991"><ph name="URL" /> が保護されたコンテンツの再生を要求しています。デバイスの認証情報が Google によって確認され、このサイトによる認証情報へのアクセスが許可されます。</translation>
 <translation id="3909695131102177774"><ph name="LABEL" /> <ph name="ERROR" /></translation>
 <translation id="3939773374150895049">CVC の代わりに WebAuthn を使用しますか？</translation>
 <translation id="3946209740501886391">このサイトでは常に確認</translation>
@@ -768,6 +775,7 @@
 <translation id="4346833872170306413">Roc-16K</translation>
 <translation id="4349531505348777662">偽のサイトでパスワードを入力しました。<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> のほか、このパスワードを使用しているサイトで、パスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="4356973930735388585">このサイトを利用すると、悪意のあるユーザーによって、危険なプログラム（写真、パスワード、メッセージ、クレジット カード番号などの情報を盗み取るか削除するプログラム）がお使いのパソコンにインストールされる可能性があります。</translation>
+<translation id="4357784477082216550"><ph name="URL" /> があなたのカメラの位置を追跡して室内をマッピングする許可を求めています</translation>
 <translation id="4358059973562876591">DnsOverHttpsMode ポリシーに問題があるため、指定したテンプレートを適用できない可能性があります。</translation>
 <translation id="4358461427845829800">お支払い方法を管理...</translation>
 <translation id="4359160567981085931">偽のサイトでパスワードを入力しました。Chrome を使って不正利用への対策ができます。パスワードを変更し、Google にアカウントの状況を通知するには、[アカウントを保護] をクリックしてください。</translation>
@@ -826,6 +834,7 @@
 <translation id="4658638640878098064">ステープル（左上）</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書にはエラーがあります。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
+<translation id="4677585247300749148"><ph name="URL" /> から、ユーザー補助機能のイベントに応答する許可を求められています</translation>
 <translation id="467809019005607715">Google スライド</translation>
 <translation id="4690462567478992370">無効な証明書の使用をやめる</translation>
 <translation id="4691835149146451662">Architecture-A（封筒）</translation>
@@ -837,6 +846,7 @@
 <translation id="4726672564094551039">ポリシーを再読み込み</translation>
 <translation id="4728558894243024398">プラットフォーム</translation>
 <translation id="4731967714531604179">Prc2（封筒）</translation>
+<translation id="4733082559415072992"><ph name="URL" /> から、デバイスの現在地情報の使用許可を求められています</translation>
 <translation id="4736825316280949806">Chromium を再起動する</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="4738601419177586157"><ph name="TEXT" /> の検索候補</translation>
@@ -845,6 +855,7 @@
 <translation id="4750917950439032686">お客様がこのサイトに送信した情報（パスワード、クレジット カード番号など）が第三者に見られることはありません。</translation>
 <translation id="4756388243121344051">履歴(&amp;H)</translation>
 <translation id="4758311279753947758">連絡先情報を追加</translation>
+<translation id="4761104368405085019">マイクを使用する</translation>
 <translation id="4764776831041365478"><ph name="URL" /> のウェブページは一時的に停止しているか、新しいウェブアドレスに移動した可能性があります。</translation>
 <translation id="4766713847338118463">2 か所のステープル（下）</translation>
 <translation id="4771973620359291008">不明なエラーが発生しました。</translation>
@@ -884,6 +895,7 @@
 <translation id="4943872375798546930">結果はありません</translation>
 <translation id="4950898438188848926">タブの切り替えボタンです。Enter キーを押すと開いているタブ「<ph name="TAB_SWITCH_FOCUSED_FRIENDLY_MATCH_TEXT" />」に切り替わります</translation>
 <translation id="495170559598752135">操作</translation>
+<translation id="4953689047182316270">ユーザー補助機能のイベントへの応答</translation>
 <translation id="4955242332710481440">A5-Extra</translation>
 <translation id="4958444002117714549">リストを展開する</translation>
 <translation id="4973922308112707173">2 穴パンチ（上）</translation>
@@ -932,6 +944,7 @@
 <translation id="5138227688689900538">一部を表示</translation>
 <translation id="5141240743006678641">Google の認証情報で同期パスワードを暗号化する</translation>
 <translation id="5145883236150621069">ポリシー応答内にエラー コードがあります</translation>
+<translation id="5146995429444047494"><ph name="ORIGIN" /> の通知をブロックしました</translation>
 <translation id="5148809049217731050">上向き</translation>
 <translation id="515292512908731282">C4（封筒）</translation>
 <translation id="5158275234811857234">表紙</translation>
@@ -999,6 +1012,7 @@
 <translation id="540969355065856584">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は現在有効ではありません。設定が不適切か、悪意のあるユーザーによって接続が妨害されている可能性があります。</translation>
 <translation id="541416427766103491">スタッカー 4</translation>
 <translation id="5421136146218899937">閲覧履歴データを削除...</translation>
+<translation id="5426179911063097041"><ph name="SITE" /> が通知を送信しようとしています。</translation>
 <translation id="5430298929874300616">ブックマークを削除</translation>
 <translation id="5431657950005405462">ファイルが見つかりませんでした</translation>
 <translation id="5439770059721715174">「<ph name="ERROR_PATH" />」でスキーマ確認エラー: <ph name="ERROR" /></translation>
@@ -1045,6 +1059,7 @@
 <translation id="5608165884683734521">偽のサイトまたは不正なサイトの可能性があります。このサイトから離れることをおすすめします。</translation>
 <translation id="5610142619324316209">接続を確認する</translation>
 <translation id="5610807607761827392">カードと住所は [<ph name="BEGIN_LINK" />設定<ph name="END_LINK" />] で管理できます。</translation>
+<translation id="5612720917913232150"><ph name="URL" /> から、パソコンの現在地情報の使用許可を求められています</translation>
 <translation id="5617949217645503996"><ph name="HOST_NAME" /> でリダイレクトが繰り返し行われました。</translation>
 <translation id="5629630648637658800">ポリシー設定を読み込めませんでした</translation>
 <translation id="5631439013527180824">無効なデバイス管理トークンです</translation>
@@ -1086,6 +1101,7 @@
 <translation id="5798683403665926540">Chrome の設定でホームページを変更します</translation>
 <translation id="5803412860119678065"><ph name="CARD_DETAIL" /> を入力しますか？</translation>
 <translation id="5804241973901381774">権限</translation>
+<translation id="5804427196348435412">NFC デバイスの使用</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" /> への接続は古い暗号スイートにより暗号化されています。</translation>
 <translation id="5813119285467412249">追加のやり直し（&amp;R）</translation>
 <translation id="5824687817967109979">{NUM_CARDS,plural, =1{お支払いの際はこのカードに請求が行われますが、カード番号はこのサイトと共有されません。追加のセキュリティとして、一時 CVC コードが生成されます。}other{お支払いの際は選択したカードに請求が行われますが、カード番号はこのサイトと共有されません。追加のセキュリティとして、一時 CVC コードが生成されます。}}</translation>
@@ -1158,6 +1174,7 @@
 <translation id="6104072995492677441">JIS B6</translation>
 <translation id="6106989379647458772">ウェブページ（<ph name="PAGE" />）は一時的に利用できなくなっているか、新しいウェブアドレスに移動した可能性があります。</translation>
 <translation id="610911394827799129">お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります</translation>
+<translation id="6116338172782435947">クリップボードにコピーしたテキストや画像へのアクセス</translation>
 <translation id="6120179357481664955">UPI ID を保存しますか？</translation>
 <translation id="6146055958333702838">ケーブルを確認し、使用しているネットワーク デバイス（ルーター、モデムなど）を
     再起動してください。</translation>
@@ -1316,6 +1333,7 @@
 <translation id="6891596781022320156">ポリシーレベルがサポートされていません。</translation>
 <translation id="6895330447102777224">カードを確認しました</translation>
 <translation id="6897140037006041989">ユーザー エージェント</translation>
+<translation id="6910240653697687763"><ph name="URL" /> から、MIDI デバイスをフル コントロールする許可を求められています</translation>
 <translation id="6915804003454593391">ユーザー:</translation>
 <translation id="6934672428414710184">Google アカウントで設定されている名前です</translation>
 <translation id="6944692733090228304"><ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> が管理していないサイトでパスワードを入力しました。アカウントを保護するには、他のアプリやサイトでパスワードを再使用しないでください。</translation>
@@ -1355,6 +1373,7 @@
 <translation id="7087282848513945231">郡</translation>
 <translation id="7090678807593890770"><ph name="LINK" /> を Google で検索してください</translation>
 <translation id="7108338896283013870">非表示</translation>
+<translation id="7108634116785509031"><ph name="HOST" /> から、カメラの使用許可を求められています</translation>
 <translation id="7108819624672055576">拡張機能によって許可</translation>
 <translation id="7111012039238467737">（有効）</translation>
 <translation id="7118618213916969306">クリップボードにある URL（<ph name="SHORT_URL" />）を検索します</translation>
@@ -1384,6 +1403,7 @@
 <translation id="721197778055552897">この問題の詳細については、<ph name="BEGIN_LINK" />こちら<ph name="END_LINK" />をご覧ください。</translation>
 <translation id="7219179957768738017">この接続には <ph name="SSL_VERSION" /> を使用しています。</translation>
 <translation id="7220786058474068424">処理しています</translation>
+<translation id="7221855153210829124">通知の表示</translation>
 <translation id="7233592378249864828">確認シートの印刷</translation>
 <translation id="7243010569062352439"><ph name="PASSWORDS" />、<ph name="SIGNIN_DATA" /></translation>
 <translation id="724691107663265825">アクセス先のサイトで不正なソフトウェアを検出しました</translation>
@@ -1432,6 +1452,7 @@
       &lt;li&gt;[&lt;strong&gt;適用&lt;/strong&gt;] をクリックし、[&lt;strong&gt;OK&lt;/strong&gt;] をクリックします。
       &lt;li&gt;このソフトウェアをパソコンから完全に削除する方法については、&lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome ヘルプセンター&lt;/a&gt;をご覧ください。
       &lt;/ol&gt;</translation>
+<translation id="7409836189476010449">Flash の実行</translation>
 <translation id="741007362987735528">Wide-Format</translation>
 <translation id="7416351320495623771">パスワードを管理…</translation>
 <translation id="7419106976560586862">プロフィール パス</translation>
@@ -1550,6 +1571,7 @@
 <translation id="7932579305932748336">コーティング</translation>
 <translation id="79338296614623784">有効な電話番号を入力してください</translation>
 <translation id="7934052535022478634">お支払いの完了</translation>
+<translation id="7934414805353235750"><ph name="URL" /> から、保護されたコンテンツの再生許可を求められています。デバイスの識別情報が Google により確認されます。</translation>
 <translation id="7935031712718413217">なりすましの可能性がある URL</translation>
 <translation id="7935318582918952113">DOM Distiller</translation>
 <translation id="7937554595067888181">有効期限は <ph name="EXPIRATION_DATE_ABBR" /> です</translation>
@@ -1635,6 +1657,7 @@
 <translation id="8269981117540303696">現在、シークレット モードで閲覧しています。あなたのアクティビティは、このデバイスを利用する他のユーザーには表示されません。ただし、ダウンロードしたファイルとブックマークは通常どおり保存されます。</translation>
 <translation id="8277900682056760511">支払いハンドラのシートが開いています</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
+<translation id="8282947398454257691">デバイス固有の ID の認識</translation>
 <translation id="8286036467436129157">ログイン</translation>
 <translation id="8288807391153049143">証明書を表示</translation>
 <translation id="8289355894181816810">確認方法がわからない場合は、ネットワーク管理者までお問い合わせください。</translation>
@@ -1695,6 +1718,7 @@
 </translation>
 <translation id="8589998999637048520">最高画質</translation>
 <translation id="860043288473659153">カード名義人</translation>
+<translation id="8606726445206553943">MIDI デバイスの使用</translation>
 <translation id="8616822740383114808">この設定は、「<ph name="SETTINGS_PAGE" />」の「<ph name="ENFORCING_SETTING" />」に基づくものです</translation>
 <translation id="861775596732816396">サイズ 4</translation>
 <translation id="8622948367223941507">Legal-Extra</translation>
@@ -1801,6 +1825,7 @@
 <translation id="9141013498910525015">住所を管理</translation>
 <translation id="9148088599418889305">配送方法を選択</translation>
 <translation id="9148507642005240123">編集の取り消し（&amp;U）</translation>
+<translation id="9150045010208374699">カメラを使用する</translation>
 <translation id="9154194610265714752">更新完了</translation>
 <translation id="9157595877708044936">セットアップ中...</translation>
 <translation id="9158625974267017556">C6（封筒）</translation>

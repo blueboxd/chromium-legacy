@@ -305,6 +305,11 @@ Si la case "<ph name="SERVICE_SCRIPT_NAME" />" est déjà cochée, décochez-la,
 <translation id="8196755618196986400">Afin que nous puissions vous contacter pour vous demander de nous fournir plus d'informations, votre adresse e-mail est incluse dans tous les commentaires que vous soumettez.</translation>
 <translation id="8244400547700556338">En savoir plus</translation>
 <translation id="8261506727792406068">Supprimer</translation>
+<translation id="8295077433896346116">Pour utiliser <ph name="PRODUCT_NAME" />, vous devez accorder l'autorisation "Accessibilité" afin que les données de l'appareil distant puissent être injectées sur ce Mac.
+
+Pour accorder cette autorisation, cliquez sur "<ph name="BUTTON_NAME" />" ci-dessous. Dans le volet des préférences "Accessibilité" qui s'ouvre, cochez la case "<ph name="SERVICE_SCRIPT_NAME" />".
+
+Si la case "<ph name="SERVICE_SCRIPT_NAME" />" est déjà cochée, décochez-la, puis cochez-la de nouveau.</translation>
 <translation id="8355326866731426344">Ce code d'accès expire dans <ph name="TIMEOUT" />.</translation>
 <translation id="8355485110405946777">Inclure les journaux des applications afin de nous aider à résoudre votre problème (les journaux peuvent inclure des informations confidentielles)</translation>
 <translation id="837021510621780684">À partir de cet ordinateur</translation>

@@ -38,8 +38,9 @@ class FlashTemporaryPermissionTracker::GrantObserver
 
 // static
 scoped_refptr<FlashTemporaryPermissionTracker>
-FlashTemporaryPermissionTracker::Get(Profile* profile) {
-  return FlashTemporaryPermissionTrackerFactory::GetForProfile(profile);
+FlashTemporaryPermissionTracker::Get(content::BrowserContext* browser_context) {
+  return FlashTemporaryPermissionTrackerFactory::GetForBrowserContext(
+      browser_context);
 }
 
 FlashTemporaryPermissionTracker::FlashTemporaryPermissionTracker(

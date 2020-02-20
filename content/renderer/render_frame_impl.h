@@ -37,6 +37,7 @@
 #include "content/common/frame_delete_intention.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/common/navigation_params.mojom.h"
+#include "content/common/render_accessibility.mojom.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/unique_name_helper.h"
 #include "content/common/widget.mojom.h"
@@ -159,8 +160,8 @@ class FrameRequestBlocker;
 class MediaPermissionDispatcher;
 class NavigationClient;
 class PepperPluginInstanceImpl;
-class RenderAccessibilityImpl;
 class RendererPpapiHost;
+class RenderAccessibilityManager;
 class RenderFrameObserver;
 class RenderViewImpl;
 class RenderWidget;
@@ -320,11 +321,15 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidStartLoading() override;
   void DidStopLoading() override;
 
-  ui::AXMode accessibility_mode() { return accessibility_mode_; }
-
-  RenderAccessibilityImpl* render_accessibility() {
-    return render_accessibility_;
+  // Returns the object implementing the RenderAccessibility mojo interface and
+  // serves as a bridge between RenderFrameImpl and RenderAccessibilityImpl.
+  RenderAccessibilityManager* GetRenderAccessibilityManager() {
+    return render_accessibility_manager_.get();
   }
+
+  // Called from RenderAccessibilityManager to let the RenderFrame know when the
+  // accessibility mode has changed, so that it can notify its observers.
+  void NotifyAccessibilityModeChange(ui::AXMode new_mode);
 
   // Whether or not the frame is currently swapped into the frame tree.  If
   // this is false, this is a provisional frame which has not committed yet,
@@ -333,9 +338,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(https://crbug.com/578349): Remove this once provisional frames are
   // gone, and clean up code that depends on it.
   bool in_frame_tree() { return in_frame_tree_; }
-
-  void HandleWebAccessibilityEvent(const blink::WebAXObject& obj,
-                                   ax::mojom::Event event);
 
   // The focused element changed to |element|. If focus was lost from this
   // frame, |element| will be null.
@@ -919,7 +921,6 @@ class CONTENT_EXPORT RenderFrameImpl
  private:
   friend class RenderFrameImplTest;
   friend class RenderFrameObserver;
-  friend class RenderAccessibilityImplTest;
   friend class TestRenderFrame;
 
   FRIEND_TEST_ALL_PREFIXES(ExternalPopupMenuDisplayNoneTest, SelectItem);
@@ -1017,6 +1018,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // events moves into RenderWidget.
   RenderWidget* GetMainFrameRenderWidget();
 
+  // Checks whether accessibility support for this frame is currently enabled.
+  bool IsAccessibilityEnabled() const;
+
   // IPC message handlers ------------------------------------------------------
   //
   // The documentation for these functions should be in
@@ -1037,7 +1041,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnVisualStateRequest(uint64_t key);
   // TODO(https://crbug.com/995428): Deprecated.
   void OnReload();
-  void OnSetAccessibilityMode(ui::AXMode new_mode);
   void OnSnapshotAccessibilityTree(int callback_id, ui::AXMode ax_mode);
   void OnUpdateOpener(int opener_routing_id);
   void OnSetFrameOwnerProperties(
@@ -1454,12 +1457,8 @@ class CONTENT_EXPORT RenderFrameImpl
 
   blink::BrowserInterfaceBrokerProxy browser_interface_broker_proxy_;
 
-  // The current accessibility mode.
-  ui::AXMode accessibility_mode_;
-
-  // Only valid if |accessibility_mode_| has |ui::AXMode::kWebContents|
-  // flag set.
-  RenderAccessibilityImpl* render_accessibility_;
+  // Valid during the entire life time of the RenderFrame.
+  std::unique_ptr<RenderAccessibilityManager> render_accessibility_manager_;
 
   // Whether or not this RenderFrame is currently pasting.
   bool is_pasting_;

@@ -665,8 +665,8 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
     auto* html_marquee_element = DynamicTo<HTMLMarqueeElement>(box_->GetNode());
     if (UNLIKELY(html_marquee_element && html_marquee_element->IsHorizontal()))
       maybe_sizes->min_size = LayoutUnit();
-    else if (UNLIKELY(IsListBox(box_) &&
-                      Style().LogicalWidth().IsPercentOrCalc()))
+    else if (UNLIKELY(IsA<HTMLSelectElement>(box_->GetNode())) &&
+             Style().LogicalWidth().IsPercentOrCalc())
       maybe_sizes->min_size = LayoutUnit();
     return *maybe_sizes;
   }

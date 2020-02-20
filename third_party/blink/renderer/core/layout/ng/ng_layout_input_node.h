@@ -199,6 +199,9 @@ class CORE_EXPORT NGLayoutInputNode {
     return kIndefiniteSize;
   }
 
+  LayoutUnit DefaultIntrinsicContentInlineSize() const {
+    return box_->DefaultIntrinsicContentInlineSize();
+  }
   LayoutUnit DefaultIntrinsicContentBlockSize() const {
     return box_->DefaultIntrinsicContentBlockSize();
   }

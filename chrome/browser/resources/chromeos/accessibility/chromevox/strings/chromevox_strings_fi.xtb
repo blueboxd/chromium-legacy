@@ -27,6 +27,7 @@
 <translation id="1157843803349774103"><ph name="VALUE" />, <ph name="NAME" />, yhdistelmäruutu</translation>
 <translation id="1161762950103988776">Siirtyminen</translation>
 <translation id="1167230103353892028"><ph name="NAME" />, valikkokohde, jossa alivalikko</translation>
+<translation id="1175914831232945926">Numerot</translation>
 <translation id="1177863135347784049">Muokattu</translation>
 <translation id="1188858454923323853">täydentävä</translation>
 <translation id="1195238899008218998">Jälkipuhe</translation>
@@ -145,6 +146,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="1969092762068865084">heinäkuu</translation>
 <translation id="1973886230221301399">ChromeVox</translation>
 <translation id="1982529757455190616">Ei edellisiä siirtymäkohtia</translation>
+<translation id="1988733631391393183">Näytä pistekirjoituskomennot ChromeVox-valikoissa</translation>
 <translation id="1990932729021763163">Rivin otsikko:</translation>
 <translation id="2002895034995108595">Nollaa nykyinen näppäinkartta</translation>
 <translation id="2007545860310005685">{COUNT,plural, =1{vasen hakasulje}other{# vasenta hakasuljetta}}</translation>
@@ -308,6 +310,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="3109724472072898302">Tiivistetty</translation>
 <translation id="3112457281078985179">Käynnistä tai sulje ChromeVox painamalla Control + Alt + Z.</translation>
 <translation id="3128896337293924532">Ei seuraavia lainauksia</translation>
+<translation id="3131002934070407451">Numeroiden lukemismuoto:</translation>
 <translation id="3134461040845705080">vain luku</translation>
 <translation id="3137663468179739624">Oliivinvihreä</translation>
 <translation id="3138767756593758860">Näytä maamerkkiluettelo</translation>
@@ -1001,6 +1004,7 @@ Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="7968340748835037139">Tummanvihreä</translation>
 <translation id="7972507042926081808">Suklaa</translation>
 <translation id="7974390230414479278">Valikkokohde</translation>
+<translation id="8004507136466386272">Sanat</translation>
 <translation id="8007540374018858731">h3</translation>
 <translation id="8009786657110126785">{COUNT,plural, =1{lainausmerkki}other{# lainausmerkkiä}}</translation>
 <translation id="8017588669690167134">Puhe pois käytöstä</translation>

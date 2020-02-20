@@ -416,6 +416,9 @@
       },
       'cros_browser_sanity_test': {},
       'disk_usage_tast_test': {
+        'merge': {
+          'script': '//tools/perf/process_perf_results.py',
+        },
         'swarming': {
           'idempotent': False,  # https://crbug.com/923426#c27
         },

@@ -21,7 +21,6 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.contextmenu.ChromeContextMenuItem.Item;
-import org.chromium.chrome.browser.contextmenu.ContextMenuParams.PerformanceClass;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -29,6 +28,8 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.metrics.UkmRecorder;
+import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver;
+import org.chromium.chrome.browser.performance_hints.PerformanceHintsObserver.PerformanceClass;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -37,6 +38,7 @@ import org.chromium.chrome.browser.share.LensUtils;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.components.embedder_support.contextmenu.ContextMenuParams;
 import org.chromium.components.feature_engagement.FeatureConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.search_engines.TemplateUrlService;
@@ -179,7 +181,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
          * @param params The ContextMenuParams describing the current context menu.
          * @param action The action that the user selected (e.g. ACTION_SAVE_IMAGE).
          */
-        static void record(ContextMenuParams params, @Action int action) {
+        static void record(WebContents webContents, ContextMenuParams params, @Action int action) {
             String histogramName;
             if (params.isVideo()) {
                 histogramName = "ContextMenu.SelectedOptionAndroid.Video";
@@ -192,7 +194,9 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             }
             RecordHistogram.recordEnumeratedHistogram(histogramName, action, Action.NUM_ENTRIES);
             if (params.isAnchor()
-                    && params.getPerformanceClass() == PerformanceClass.PERFORMANCE_FAST) {
+                    && PerformanceHintsObserver.getPerformanceClassForURL(
+                               webContents, params.getLinkUrl())
+                            == PerformanceClass.PERFORMANCE_FAST) {
                 RecordHistogram.recordEnumeratedHistogram(
                         histogramName + ".PerformanceClassFast", action, Action.NUM_ENTRIES);
             }
@@ -687,7 +691,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
      * Record a UMA ping and a UKM ping if enabled.
      */
     private void recordContextMenuSelection(ContextMenuParams params, int actionId) {
-        ContextMenuUma.record(params, actionId);
+        ContextMenuUma.record(mDelegate.getWebContents(), params, actionId);
         maybeRecordActionUkm("ContextMenuAndroid.Selected", actionId);
     }
 

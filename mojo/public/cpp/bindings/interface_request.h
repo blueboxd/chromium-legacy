@@ -23,6 +23,11 @@
 
 namespace mojo {
 
+// DEPRECATED: Do not introduce new uses of this type. Instead use the
+// PendingReceiver type defined in pending_receiver.h. Mojom files which pass
+// interface requests (i.e. "Interface&" syntax) should be updated to pass
+// a "pending_receiver<Interface>" instead.
+//
 // Represents a request from a remote client for an implementation of Interface
 // over a specified message pipe. The implementor of the interface should
 // remove the message pipe by calling PassMessagePipe() and bind it to the

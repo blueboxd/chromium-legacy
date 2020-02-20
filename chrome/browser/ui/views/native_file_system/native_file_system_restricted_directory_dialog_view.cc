@@ -48,20 +48,6 @@ bool NativeFileSystemRestrictedDirectoryDialogView::ShouldShowCloseButton()
   return false;
 }
 
-bool NativeFileSystemRestrictedDirectoryDialogView::Accept() {
-  // This dialog is only shown when chrome has already decided that the path is
-  // not allowed. The dialog gives no way for the user to override that
-  // decision. Acceptance of the dialog merely gives the user a chance to pick a
-  // different file or directory.
-  std::move(callback_).Run(SensitiveDirectoryResult::kTryAgain);
-  return true;
-}
-
-bool NativeFileSystemRestrictedDirectoryDialogView::Cancel() {
-  std::move(callback_).Run(SensitiveDirectoryResult::kAbort);
-  return true;
-}
-
 gfx::Size
 NativeFileSystemRestrictedDirectoryDialogView::CalculatePreferredSize() const {
   const int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -87,6 +73,16 @@ NativeFileSystemRestrictedDirectoryDialogView::
       l10n_util::GetStringUTF16(
           is_directory_ ? IDS_NATIVE_FILE_SYSTEM_RESTRICTED_DIRECTORY_BUTTON
                         : IDS_NATIVE_FILE_SYSTEM_RESTRICTED_FILE_BUTTON));
+
+  auto run_callback = [](NativeFileSystemRestrictedDirectoryDialogView* dialog,
+                         SensitiveDirectoryResult result) {
+    std::move(dialog->callback_).Run(result);
+  };
+  DialogDelegate::set_accept_callback(
+      base::BindOnce(run_callback, base::Unretained(this),
+                     SensitiveDirectoryResult::kTryAgain));
+  DialogDelegate::set_cancel_callback(base::BindOnce(
+      run_callback, base::Unretained(this), SensitiveDirectoryResult::kAbort));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
   set_margins(ChromeLayoutProvider::Get()->GetDialogInsetsForContentType(

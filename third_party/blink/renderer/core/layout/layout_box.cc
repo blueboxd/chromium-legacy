@@ -33,6 +33,7 @@
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom-blink.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -152,6 +153,32 @@ LayoutUnit ListBoxItemHeight(const HTMLSelectElement& select,
     max_height = std::max(max_height, item_height);
   }
   return max_height;
+}
+
+LayoutUnit MenuListIntrinsicInlineSize(const HTMLSelectElement& select,
+                                       const LayoutBox& box) {
+  const ComputedStyle& style = box.StyleRef();
+  float max_option_width = 0;
+  if (!box.ShouldApplySizeContainment()) {
+    for (auto* const option : select.GetOptionList()) {
+      String text = option->TextIndentedToRespectGroupLabel();
+      const ComputedStyle* item_style =
+          option->GetComputedStyle() ? option->GetComputedStyle() : &style;
+      item_style->ApplyTextTransform(&text);
+      // We apply SELECT's style, not OPTION's style because max_option_width is
+      // used to determine intrinsic width of the menulist box.
+      TextRun text_run = ConstructTextRun(style.GetFont(), text, style);
+      max_option_width =
+          std::max(max_option_width, style.GetFont().Width(text_run));
+    }
+  }
+
+  LayoutTheme& theme = LayoutTheme::GetTheme();
+  int paddings = theme.PopupInternalPaddingStart(style) +
+                 theme.PopupInternalPaddingEnd(box.GetFrame(), style);
+  return std::max(static_cast<int>(ceilf(max_option_width)),
+                  LayoutTheme::GetTheme().MinimumMenuListSize(style)) +
+         LayoutUnit(paddings);
 }
 
 LayoutUnit MenuListIntrinsicBlockSize(const HTMLSelectElement& select,
@@ -865,6 +892,18 @@ LayoutUnit LayoutBox::OverrideIntrinsicContentHeight() const {
   DCHECK(intrinsic_length.IsFixed());
   DCHECK_GE(intrinsic_length.Value(), 0.f);
   return LayoutUnit(intrinsic_length.Value());
+}
+
+LayoutUnit LayoutBox::DefaultIntrinsicContentInlineSize() const {
+  // If the intrinsic-inline-size is specified, then we shouldn't ever need to
+  // get here.
+  DCHECK(!HasOverrideIntrinsicContentLogicalWidth());
+
+  auto* select = DynamicTo<HTMLSelectElement>(GetNode());
+  if (UNLIKELY(select && select->UsesMenuList())) {
+    return MenuListIntrinsicInlineSize(*select, *this);
+  }
+  return kIndefiniteSize;
 }
 
 LayoutUnit LayoutBox::DefaultIntrinsicContentBlockSize() const {

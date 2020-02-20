@@ -272,6 +272,16 @@ std::pair<PlaneId, bool> ArCorePlaneManager::CreateOrGetPlaneId(
   return std::make_pair(PlaneId(current_id), true);
 }
 
+base::Optional<PlaneId> ArCorePlaneManager::GetPlaneId(
+    void* plane_address) const {
+  auto it = ar_plane_address_to_id_.find(plane_address);
+  if (it == ar_plane_address_to_id_.end()) {
+    return base::nullopt;
+  }
+
+  return it->second;
+}
+
 bool ArCorePlaneManager::PlaneExists(PlaneId id) const {
   return base::Contains(plane_id_to_plane_object_, id);
 }

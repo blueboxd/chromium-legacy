@@ -43,19 +43,19 @@ class UI_BASE_EXPORT UIATextProvider
   //
   // ITextProvider methods.
   //
-  STDMETHOD(GetSelection)(SAFEARRAY** ret) override;
+  IFACEMETHODIMP GetSelection(SAFEARRAY** ret) override;
 
-  STDMETHOD(GetVisibleRanges)(SAFEARRAY** ret) override;
+  IFACEMETHODIMP GetVisibleRanges(SAFEARRAY** ret) override;
 
-  STDMETHOD(RangeFromChild)(IRawElementProviderSimple* child,
-                            ITextRangeProvider** ret) override;
+  IFACEMETHODIMP RangeFromChild(IRawElementProviderSimple* child,
+                                ITextRangeProvider** ret) override;
 
-  STDMETHOD(RangeFromPoint)(struct UiaPoint point,
-                            ITextRangeProvider** ret) override;
+  IFACEMETHODIMP RangeFromPoint(struct UiaPoint point,
+                                ITextRangeProvider** ret) override;
 
-  STDMETHOD(get_DocumentRange)(ITextRangeProvider** ret) override;
+  IFACEMETHODIMP get_DocumentRange(ITextRangeProvider** ret) override;
 
-  STDMETHOD(get_SupportedTextSelection)(
+  IFACEMETHODIMP get_SupportedTextSelection(
       enum SupportedTextSelection* ret) override;
 
  private:

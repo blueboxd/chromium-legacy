@@ -31,6 +31,9 @@ using mojom::blink::PermissionStatus;
 
 namespace {
 
+constexpr char kNotSupportedOrPermissionDenied[] =
+    "WebNFC feature is unavailable or permission denied.";
+
 void OnScanRequestCompleted(ScriptPromiseResolver* resolver,
                             device::mojom::blink::NDEFErrorPtr error) {
   if (error) {
@@ -180,11 +183,11 @@ void NDEFReader::OnMojoConnectionError() {
   if (resolver_) {
     resolver_->Reject(NDEFErrorTypeToDOMException(
         device::mojom::blink::NDEFErrorType::NOT_SUPPORTED,
-        "WebNFC feature is unavailable."));
+        kNotSupportedOrPermissionDenied));
   }
 
   // Dispatches an error event.
-  OnError("WebNFC feature is unavailable.");
+  OnError(kNotSupportedOrPermissionDenied);
 }
 
 void NDEFReader::ContextDestroyed() {

@@ -241,18 +241,15 @@ template("generate_mini_installer") {
     ]
 
     # This target is special so we manually override most linker flags and
-    # specify our own to keep the size down. Also make sure that we don't use
-    # WPO as it's not supported by the mini installer.
+    # specify our own to keep the size down.
     configs -= [
       # Initialization may insert unexpected memset calls.
       "//build/config/compiler:default_init_stack_vars",
-      "//build/config/compiler:default_optimization",
       "//build/config:executable_config",
       "//build/config/win:console",
     ]
     configs += [
       ":mini_installer_compiler_flags",
-      "//build/config/compiler:optimize_no_wpo",
       "//build/config/sanitizers:link_executable",
       "//build/config/win:sdk_link",
       "//build/config/win:windowed",

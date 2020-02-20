@@ -4,6 +4,7 @@
 <translation id="1018939186200882850">menyelement</translation>
 <translation id="10623998915015855">av/på-knapp</translation>
 <translation id="1088086359088493902">Sekunder</translation>
+<translation id="1142001580032786438">Vis ukevelger</translation>
 <translation id="1171774979989969504">Skriv inn en e-postadresse.</translation>
 <translation id="1178581264944972037">Stans midlertidig</translation>
 <translation id="1188858454923323853">komplementær</translation>
@@ -114,7 +115,9 @@
 <translation id="479989351350248267">søk</translation>
 <translation id="4812940957355064477">Skriv inn et tall.</translation>
 <translation id="4912536737030637138">bibliografioppføring</translation>
+<translation id="4915360478455618802">Vis klokkeslettvelger</translation>
 <translation id="492244087561876220">kommentar</translation>
+<translation id="4950364064308314478">Vis lokal dato- og klokkeslettvelger</translation>
 <translation id="4971739861736909480"><ph name="ACCNAME" /> er valgt</translation>
 <translation id="4975562563186953947"><ph name="SELECTED_COUNT" /> er valgt</translation>
 <translation id="4992066212339426712">Slå på lyden</translation>
@@ -249,6 +252,7 @@
 <translation id="860475260694818407">innholdsfortegnelse</translation>
 <translation id="8613126697340063924">kontrollér ekstern avspilling</translation>
 <translation id="862370744433916922">undertittel</translation>
+<translation id="8634971699417195529">Vis månedsvelger</translation>
 <translation id="8711688047404765493">utdata</translation>
 <translation id="8750798805984357768">Velg ett av følgende alternativer.</translation>
 <translation id="8808573423886751634">kapittel</translation>

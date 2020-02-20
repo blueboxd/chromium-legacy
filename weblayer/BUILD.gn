@@ -117,6 +117,8 @@ jumbo_static_library("weblayer_lib") {
     "browser/i18n_util.cc",
     "browser/i18n_util.h",
     "browser/isolated_world_ids.h",
+    "browser/javascript_tab_modal_dialog_manager_delegate_android.cc",
+    "browser/javascript_tab_modal_dialog_manager_delegate_android.h",
     "browser/navigation_controller_impl.cc",
     "browser/navigation_controller_impl.h",
     "browser/navigation_impl.cc",

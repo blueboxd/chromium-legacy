@@ -647,8 +647,7 @@ a PaintLayer and whether we can use cached subsequence for a PaintLayer. See
 During painting, we walk the layout tree multiple times for multiple paint
 phases. Sometimes a layer contain nothing needing a certain paint phase and we
 can skip tree walk for such empty phases. Now we have optimized
-`PaintPhaseDescendantBlockBackgroundsOnly`, `PaintPhaseDescendantOutlinesOnly`
-and `PaintPhaseFloat` for empty paint phases.
+`PaintPhaseDescendantOutlinesOnly` and `PaintPhaseFloat` for empty paint phases.
 
 During paint invalidation, we set the containing self-painting layer's
 `NeedsPaintPhaseXXX` flag if the object has something needing to be painted in
@@ -662,10 +661,6 @@ subtree, we need to manually update the `NeedsPaintPhaseXXX` flags. For example,
 if an object changes style and creates a self-painting-layer, we copy the flags
 from its containing self-painting layer to this layer, assuming that this layer
 needs all paint phases that its container self-painting layer needs.
-
-We could update the `NeedsPaintPhaseXXX` flags in a separate tree walk, but that
-would regress performance of the first paint. For CompositeAfterPaint, we can
-update the flags during the pre-painting tree walk to simplify the logic.
 
 ### Hit test painting
 

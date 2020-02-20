@@ -32,7 +32,7 @@ class FrameConsumer {
       const webrtc::DesktopSize& size) = 0;
 
   virtual void DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame,
-                         const base::OnceClosure done) = 0;
+                         base::OnceClosure done) = 0;
 
   // Returns the preferred pixel encoding for the platform.
   virtual PixelFormat GetPixelFormat() = 0;

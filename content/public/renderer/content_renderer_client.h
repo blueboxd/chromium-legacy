@@ -392,7 +392,8 @@ class CONTENT_EXPORT ContentRendererClient {
 
   // Allows the embedder to return a (possibly null) URLLoaderThrottleProvider
   // for a frame or worker. For frames this is called on the main thread, and
-  // for workers it's called on the worker thread.
+  // for workers it's called on the main or worker threads depending on
+  // http://crbug.com/692909.
   virtual std::unique_ptr<URLLoaderThrottleProvider>
   CreateURLLoaderThrottleProvider(URLLoaderThrottleProviderType provider_type);
 

@@ -4,16 +4,27 @@
 
 #include "gpu/config/gpu_util.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+// Must be included after windows.h.
+#include <psapi.h>
+#endif  // OS_WIN
+
 #include <memory>
 #include <set>
 #include <string>
+#include <thread>
 #include <vector>
 
+#include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "build/build_config.h"
+#include "gpu/config/device_perf_info.h"
 #include "gpu/config/gpu_blocklist.h"
 #include "gpu/config/gpu_crash_keys.h"
 #include "gpu/config/gpu_driver_bug_list.h"
@@ -289,6 +300,55 @@ void AdjustGpuFeatureStatusToWorkarounds(GpuFeatureInfo* gpu_feature_info) {
         kGpuFeatureStatusBlacklisted;
   }
 }
+
+// Estimates roughly user total disk space by counting in the drives where
+// the exe is, where the temporary space is, where the user home is.
+// If total space and free space are of the same size, they are considered
+// the same drive. There could be corner cases this estimation is far from
+// the actual total disk space, but for histogram purpose, limited numbers
+// of outliers do not matter.
+uint32_t EstimateAmountOfTotalDiskSpaceMB() {
+  const base::BasePathKey kPathKeys[] = {base::DIR_EXE, base::DIR_TEMP,
+                                         base::DIR_HOME};
+  std::vector<uint32_t> total_space_vector, free_space_vector;
+  uint32_t sum = 0;
+  for (const auto& path_key : kPathKeys) {
+    base::FilePath path;
+    if (base::PathService::Get(path_key, &path)) {
+      uint32_t total_space = static_cast<uint32_t>(
+          base::SysInfo::AmountOfTotalDiskSpace(path) / 1024 / 1024);
+      uint32_t free_space = static_cast<uint32_t>(
+          base::SysInfo::AmountOfFreeDiskSpace(path) / 1024 / 1024);
+      bool duplicated = false;
+      for (size_t ii = 0; ii < total_space_vector.size(); ++ii) {
+        if (total_space == total_space_vector[ii] &&
+            free_space == free_space_vector[ii]) {
+          duplicated = true;
+          break;
+        }
+      }
+      if (!duplicated) {
+        total_space_vector.push_back(total_space);
+        free_space_vector.push_back(free_space);
+        sum += total_space;
+      }
+    }
+  }
+  return sum;
+}
+
+#if defined(OS_WIN)
+uint32_t GetSystemCommitLimitMb() {
+  PERFORMANCE_INFORMATION perf_info = {sizeof(perf_info)};
+  if (::GetPerformanceInfo(&perf_info, sizeof(perf_info))) {
+    uint64_t limit = perf_info.CommitLimit;
+    limit *= perf_info.PageSize;
+    limit /= 1024 * 1024;
+    return static_cast<uint32_t>(limit);
+  }
+  return 0u;
+}
+#endif  // OS_WIN
 
 GPUInfo* g_gpu_info_cache = nullptr;
 GpuFeatureInfo* g_gpu_feature_info_cache = nullptr;
@@ -778,6 +838,46 @@ std::string GetIntelGpuGeneration(uint32_t vendor_id, uint32_t device_id) {
     }
   }
   return "";
+}
+
+IntelGpuGeneration GetIntelGpuGeneration(const GPUInfo& gpu_info) {
+  const uint32_t kIntelVendorId = 0x8086;
+  IntelGpuGeneration latest = IntelGpuGeneration::kNonIntel;
+  std::vector<uint32_t> intel_device_ids;
+  if (gpu_info.gpu.vendor_id == kIntelVendorId)
+    intel_device_ids.push_back(gpu_info.gpu.device_id);
+  for (const auto& gpu : gpu_info.secondary_gpus) {
+    if (gpu.vendor_id == kIntelVendorId)
+      intel_device_ids.push_back(gpu.device_id);
+  }
+  if (intel_device_ids.empty())
+    return latest;
+  latest = IntelGpuGeneration::kUnknownIntel;
+  for (uint32_t device_id : intel_device_ids) {
+    std::string gen_str = gpu::GetIntelGpuGeneration(kIntelVendorId, device_id);
+    int gen_int = 0;
+    if (gen_str.empty() || !base::StringToInt(gen_str, &gen_int))
+      continue;
+    DCHECK_GE(gen_int, static_cast<int>(IntelGpuGeneration::kUnknownIntel));
+    DCHECK_LE(gen_int, static_cast<int>(IntelGpuGeneration::kMaxValue));
+    if (gen_int > static_cast<int>(latest))
+      latest = static_cast<IntelGpuGeneration>(gen_int);
+  }
+  return latest;
+}
+
+void CollectDevicePerfInfo(DevicePerfInfo* device_perf_info) {
+  DCHECK(device_perf_info);
+  device_perf_info->total_physical_memory_mb =
+      static_cast<uint32_t>(base::SysInfo::AmountOfPhysicalMemoryMB());
+  device_perf_info->total_disk_space_mb = EstimateAmountOfTotalDiskSpaceMB();
+  device_perf_info->hardware_concurrency =
+      static_cast<uint32_t>(std::thread::hardware_concurrency());
+
+#if defined(OS_WIN)
+  device_perf_info->system_commit_limit_mb = GetSystemCommitLimitMb();
+  // TODO(zmo): Collect |d3d11_feature_level| and |has_discrete_gpu|.
+#endif
 }
 
 #if defined(OS_WIN)

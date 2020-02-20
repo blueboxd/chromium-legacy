@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/process/process.h"
+#include "build/build_config.h"
 #include "components/services/storage/test_api/test_api.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/content_switches.h"
@@ -27,6 +28,10 @@
 #include "mojo/public/cpp/bindings/service_factory.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "services/test/echo/echo_service.h"
+
+#if defined(OS_LINUX)
+#include "services/service_manager/tests/sandbox_status_service.h"
+#endif
 
 namespace content {
 
@@ -77,7 +82,7 @@ class TestUtilityServiceImpl : public mojom::TestService {
   }
 
  private:
-  explicit TestUtilityServiceImpl() {}
+  TestUtilityServiceImpl() = default;
 
   DISALLOW_COPY_AND_ASSIGN(TestUtilityServiceImpl);
 };
@@ -95,11 +100,11 @@ ShellContentUtilityClient::ShellContentUtilityClient(bool is_browsertest) {
     network_service_test_helper_ = std::make_unique<NetworkServiceTestHelper>();
     audio_service_test_helper_ = std::make_unique<AudioServiceTestHelper>();
     storage::InjectTestApiImplementation();
+    register_sandbox_status_helper_ = true;
   }
 }
 
-ShellContentUtilityClient::~ShellContentUtilityClient() {
-}
+ShellContentUtilityClient::~ShellContentUtilityClient() = default;
 
 void ShellContentUtilityClient::ExposeInterfacesToBrowser(
     mojo::BinderMap* binders) {
@@ -108,6 +113,14 @@ void ShellContentUtilityClient::ExposeInterfacesToBrowser(
   binders->Add<mojom::PowerMonitorTest>(
       base::BindRepeating(&PowerMonitorTestImpl::MakeSelfOwnedReceiver),
       base::ThreadTaskRunnerHandle::Get());
+#if defined(OS_LINUX)
+  if (register_sandbox_status_helper_) {
+    binders->Add<service_manager::mojom::SandboxStatusService>(
+        base::BindRepeating(
+            &service_manager::SandboxStatusService::MakeSelfOwnedReceiver),
+        base::ThreadTaskRunnerHandle::Get());
+  }
+#endif
 }
 
 bool ShellContentUtilityClient::HandleServiceRequest(

@@ -679,76 +679,6 @@ TEST_P(PaintLayerPainterTest, PaintPhaseFloatUnderInlineLayer) {
       DisplayItem::kBoxDecorationBackground));
 }
 
-TEST_P(PaintLayerPainterTest, PaintPhaseBlockBackground) {
-  AtomicString style_without_background = "width: 50px; height: 50px";
-  AtomicString style_with_background =
-      "background: blue; " + style_without_background;
-  SetBodyInnerHTML(R"HTML(
-    <div id='self-painting-layer' style='position: absolute'>
-      <div id='non-self-painting-layer' style='overflow: hidden'>
-        <div>
-          <div id='background'></div>
-        </div>
-      </div>
-    </div>
-  )HTML");
-  LayoutObject& background_div =
-      *GetDocument().getElementById("background")->GetLayoutObject();
-  To<HTMLElement>(background_div.GetNode())
-      ->setAttribute(html_names::kStyleAttr, style_without_background);
-  UpdateAllLifecyclePhasesForTest();
-
-  LayoutBoxModelObject& self_painting_layer_object = *ToLayoutBoxModelObject(
-      GetDocument().getElementById("self-painting-layer")->GetLayoutObject());
-  PaintLayer& self_painting_layer = *self_painting_layer_object.Layer();
-  ASSERT_TRUE(self_painting_layer.IsSelfPaintingLayer());
-  PaintLayer& non_self_painting_layer =
-      *ToLayoutBoxModelObject(GetDocument()
-                                  .getElementById("non-self-painting-layer")
-                                  ->GetLayoutObject())
-           ->Layer();
-  ASSERT_FALSE(non_self_painting_layer.IsSelfPaintingLayer());
-  ASSERT_TRUE(&non_self_painting_layer == background_div.EnclosingLayer());
-
-  EXPECT_FALSE(self_painting_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
-  EXPECT_FALSE(
-      non_self_painting_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
-
-  // Background on the self-painting-layer node itself doesn't affect
-  // PaintPhaseDescendantBlockBackgrounds.
-  To<HTMLElement>(self_painting_layer_object.GetNode())
-      ->setAttribute(html_names::kStyleAttr,
-                     "position: absolute; background: green");
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_FALSE(self_painting_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
-  EXPECT_FALSE(
-      non_self_painting_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
-  EXPECT_TRUE(DisplayItemListContains(
-      RootPaintController().GetDisplayItemList(), self_painting_layer_object,
-      DisplayItem::kBoxDecorationBackground));
-
-  // needsPaintPhaseDescendantBlockBackgrounds should be set when any descendant
-  // on the same layer has Background.
-  To<HTMLElement>(background_div.GetNode())
-      ->setAttribute(html_names::kStyleAttr, style_with_background);
-  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint(
-      DocumentUpdateReason::kTest);
-  EXPECT_TRUE(self_painting_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
-  EXPECT_FALSE(
-      non_self_painting_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
-  Paint();
-  EXPECT_TRUE(DisplayItemListContains(
-      RootPaintController().GetDisplayItemList(), background_div,
-      DisplayItem::kBoxDecorationBackground));
-
-  // needsPaintPhaseDescendantBlockBackgrounds should be reset when no outline
-  // is actually painted.
-  To<HTMLElement>(background_div.GetNode())
-      ->setAttribute(html_names::kStyleAttr, style_without_background);
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_TRUE(self_painting_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
-}
-
 TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerAddition) {
   SetBodyInnerHTML(R"HTML(
     <div id='will-be-layer'>
@@ -770,7 +700,6 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerAddition) {
            ->Layer();
   EXPECT_TRUE(html_layer.NeedsPaintPhaseDescendantOutlines());
   EXPECT_TRUE(html_layer.NeedsPaintPhaseFloat());
-  EXPECT_TRUE(html_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
 
   To<HTMLElement>(layer_div.GetNode())
       ->setAttribute(html_names::kStyleAttr, "position: relative");
@@ -780,7 +709,6 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnLayerAddition) {
   ASSERT_TRUE(layer.IsSelfPaintingLayer());
   EXPECT_TRUE(layer.NeedsPaintPhaseDescendantOutlines());
   EXPECT_TRUE(layer.NeedsPaintPhaseFloat());
-  EXPECT_TRUE(layer.NeedsPaintPhaseDescendantBlockBackgrounds());
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingSelfPainting) {
@@ -805,7 +733,6 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingSelfPainting) {
            GetDocument().documentElement()->GetLayoutObject())
            ->Layer();
   EXPECT_TRUE(html_layer.NeedsPaintPhaseDescendantOutlines());
-  EXPECT_TRUE(html_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
 
   To<HTMLElement>(layer_div.GetNode())
       ->setAttribute(
@@ -815,7 +742,6 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingSelfPainting) {
   PaintLayer& layer = *layer_div.Layer();
   ASSERT_TRUE(layer.IsSelfPaintingLayer());
   EXPECT_TRUE(layer.NeedsPaintPhaseDescendantOutlines());
-  EXPECT_TRUE(layer.NeedsPaintPhaseDescendantBlockBackgrounds());
 }
 
 TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingNonSelfPainting) {
@@ -838,14 +764,12 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingNonSelfPainting) {
   PaintLayer& layer = *layer_div.Layer();
   EXPECT_TRUE(layer.IsSelfPaintingLayer());
   EXPECT_TRUE(layer.NeedsPaintPhaseDescendantOutlines());
-  EXPECT_TRUE(layer.NeedsPaintPhaseDescendantBlockBackgrounds());
 
   PaintLayer& html_layer =
       *ToLayoutBoxModelObject(
            GetDocument().documentElement()->GetLayoutObject())
            ->Layer();
   EXPECT_FALSE(html_layer.NeedsPaintPhaseDescendantOutlines());
-  EXPECT_FALSE(html_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
 
   To<HTMLElement>(layer_div.GetNode())
       ->setAttribute(html_names::kStyleAttr,
@@ -853,52 +777,6 @@ TEST_P(PaintLayerPainterTest, PaintPhasesUpdateOnBecomingNonSelfPainting) {
   UpdateAllLifecyclePhasesForTest();
   EXPECT_FALSE(layer.IsSelfPaintingLayer());
   EXPECT_TRUE(html_layer.NeedsPaintPhaseDescendantOutlines());
-  EXPECT_TRUE(html_layer.NeedsPaintPhaseDescendantBlockBackgrounds());
-}
-
-TEST_P(PaintLayerPainterTest,
-       TableCollapsedBorderNeedsPaintPhaseDescendantBlockBackgrounds) {
-  // "position: relative" makes the table and td self-painting layers.
-  // The table's layer should be marked needsPaintPhaseDescendantBlockBackground
-  // because it will paint collapsed borders in the phase.
-  SetBodyInnerHTML(R"HTML(
-    <table id='table' style='position: relative; border-collapse: collapse'>
-      <tr><td style='position: relative; border: 1px solid green'>
-        Cell
-      </td></tr>
-    </table>
-  )HTML");
-
-  LayoutBoxModelObject& table =
-      *ToLayoutBoxModelObject(GetLayoutObjectByElementId("table"));
-  ASSERT_TRUE(table.HasLayer());
-  PaintLayer& layer = *table.Layer();
-  EXPECT_TRUE(layer.IsSelfPaintingLayer());
-  EXPECT_TRUE(layer.NeedsPaintPhaseDescendantBlockBackgrounds());
-}
-
-TEST_P(PaintLayerPainterTest,
-       TableCollapsedBorderNeedsPaintPhaseDescendantBlockBackgroundsDynamic) {
-  SetBodyInnerHTML(R"HTML(
-    <table id='table' style='position: relative'>
-      <tr><td style='position: relative; border: 1px solid green'>
-        Cell
-      </td></tr>
-    </table>
-  )HTML");
-
-  LayoutBoxModelObject& table =
-      *ToLayoutBoxModelObject(GetLayoutObjectByElementId("table"));
-  ASSERT_TRUE(table.HasLayer());
-  PaintLayer& layer = *table.Layer();
-  EXPECT_TRUE(layer.IsSelfPaintingLayer());
-  EXPECT_FALSE(layer.NeedsPaintPhaseDescendantBlockBackgrounds());
-
-  To<HTMLElement>(table.GetNode())
-      ->setAttribute(html_names::kStyleAttr,
-                     "position: relative; border-collapse: collapse");
-  UpdateAllLifecyclePhasesForTest();
-  EXPECT_TRUE(layer.NeedsPaintPhaseDescendantBlockBackgrounds());
 }
 
 TEST_P(PaintLayerPainterTest, DontPaintWithTinyOpacity) {

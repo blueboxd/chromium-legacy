@@ -87,15 +87,17 @@ WebrtcVideoStream::WebrtcVideoStream(const SessionOptions& session_options)
   // Unretained(this) is safe because |encoder_selector_| is owned by this
   // object.
   encoder_selector_.RegisterEncoder(
-      base::Bind(&WebrtcVideoEncoderVpx::IsSupportedByVP8),
-      base::Bind(&WebrtcVideoStream::CreateVP8Encoder, base::Unretained(this)));
+      base::BindRepeating(&WebrtcVideoEncoderVpx::IsSupportedByVP8),
+      base::BindRepeating(&WebrtcVideoStream::CreateVP8Encoder,
+                          base::Unretained(this)));
   encoder_selector_.RegisterEncoder(
-      base::Bind(&WebrtcVideoEncoderVpx::IsSupportedByVP9),
-      base::Bind(&WebrtcVideoStream::CreateVP9Encoder, base::Unretained(this)));
+      base::BindRepeating(&WebrtcVideoEncoderVpx::IsSupportedByVP9),
+      base::BindRepeating(&WebrtcVideoStream::CreateVP9Encoder,
+                          base::Unretained(this)));
 #if defined(USE_H264_ENCODER)
   encoder_selector_.RegisterEncoder(
-      base::Bind(&WebrtcVideoEncoderGpu::IsSupportedByH264),
-      base::Bind(&WebrtcVideoEncoderGpu::CreateForH264));
+      base::BindRepeating(&WebrtcVideoEncoderGpu::IsSupportedByH264),
+      base::BindRepeating(&WebrtcVideoEncoderGpu::CreateForH264));
 #endif
 }
 

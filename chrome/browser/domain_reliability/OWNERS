@@ -1,5 +1,4 @@
-davidben@chromium.org
-mmenke@chromium.org
+file://components/domain_reliability/OWNERS
 
-# COMPONENT: Internals>Network
+# COMPONENT: Internals>Network>ReportingAndNEL
 # TEAM: net-dev@chromium.org

@@ -196,16 +196,4 @@ bool HasImportantProperty(AXNodeInfoData* node) {
   return false;
 }
 
-bool GetBooleanProperty(mojom::AccessibilityNodeInfoData* node,
-                        mojom::AccessibilityBooleanProperty prop) {
-  if (!node || !node->boolean_properties)
-    return false;
-
-  auto it = node->boolean_properties->find(prop);
-  if (it == node->boolean_properties->end())
-    return false;
-
-  return it->second;
-}
-
 }  // namespace arc

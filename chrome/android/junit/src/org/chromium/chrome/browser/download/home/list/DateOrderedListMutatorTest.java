@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.download.home.list;
 
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -21,17 +23,24 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.home.JustNowProvider;
 import org.chromium.chrome.browser.download.home.StableIds;
+import org.chromium.chrome.browser.download.home.filter.Filters;
 import org.chromium.chrome.browser.download.home.filter.OfflineItemFilterSource;
+import org.chromium.chrome.browser.download.home.filter.TypeOfflineItemFilter;
 import org.chromium.chrome.browser.download.home.list.ListItem.OfflineItemListItem;
 import org.chromium.chrome.browser.download.home.list.ListItem.SectionHeaderListItem;
 import org.chromium.chrome.browser.download.home.list.mutator.DateOrderedListMutator;
 import org.chromium.chrome.browser.download.home.list.mutator.ListMutationController;
+import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemState;
+import org.chromium.components.url_formatter.SchemeDisplay;
+import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.components.url_formatter.UrlFormatterJni;
 import org.chromium.ui.modelutil.ListObservable.ListObserver;
 
 import java.util.Calendar;
@@ -47,15 +56,25 @@ public class DateOrderedListMutatorTest {
 
     @Mock
     private ListObserver<Void> mObserver;
+    @Rule
+    public JniMocker mJniMocker = new JniMocker();
+    @Mock
+    private UrlFormatter.Natives mUrlFormatterJniMock;
 
     private ListItemModel mModel;
 
     @Rule
     public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
+    private ListMutationController mMutationController;
+
     @Before
     public void setUp() {
         mModel = new ListItemModel();
+        mJniMocker.mock(UrlFormatterJni.TEST_HOOKS, mUrlFormatterJniMock);
+        when(mUrlFormatterJniMock.formatStringUrlForSecurityDisplay(
+                     anyString(), eq(SchemeDisplay.OMIT_HTTP_AND_HTTPS)))
+                .then(inv -> inv.getArgument(0));
     }
 
     @After
@@ -891,6 +910,175 @@ public class DateOrderedListMutatorTest {
         assertOfflineItem(mModel.get(1), buildCalendar(2018, 1, 2, 6), newItem1);
     }
 
+    /**
+     * Action                                      List
+     * 1. Set(item1 @ 4:00 1/2/2018 Video,
+     *        item2 @ 4:00 1/2/2018 Video,
+     *        item3 @ 4:00 1/2/2018 Image,
+     *        item4 @ 4:00 1/2/2018 Image,
+     *        item5 @ 4:00 1/2/2018 Image)
+     * 2. Select Video
+     *                                              [Date - 1/2/2018, item1, item2 ]
+     * 2. Select Image
+     *                                              [Date - 1/2/2018, item3, item4, item5 ]
+     * 2. Select ALL
+     *                                              [Date - 1/2/2018, item1, item2,
+     *                                                        item3, item4, item5 ]
+     */
+    @Test
+    public void testSwitchChips() {
+        OfflineItem item1 = buildItem("1", buildCalendar(2018, 1, 2, 4), OfflineItemFilter.VIDEO);
+        OfflineItem item2 = buildItem("2", buildCalendar(2018, 1, 2, 4), OfflineItemFilter.VIDEO);
+        OfflineItem item3 = buildItem("3", buildCalendar(2018, 1, 2, 4), OfflineItemFilter.IMAGE);
+        OfflineItem item4 = buildItem("4", buildCalendar(2018, 1, 2, 4), OfflineItemFilter.IMAGE);
+        OfflineItem item5 = buildItem("5", buildCalendar(2018, 1, 2, 4), OfflineItemFilter.IMAGE);
+        when(mSource.getItems())
+                .thenReturn(CollectionUtil.newArrayList(item1, item2, item3, item4, item5));
+        TypeOfflineItemFilter typeOfflineItemFilter = new TypeOfflineItemFilter(mSource);
+        DateOrderedListMutator mutator = createMutatorWithSource(typeOfflineItemFilter);
+        Assert.assertEquals(6, mModel.size());
+
+        typeOfflineItemFilter.onFilterSelected(Filters.FilterType.VIDEOS);
+        mutator.reload();
+        Assert.assertEquals(3, mModel.size());
+
+        typeOfflineItemFilter.onFilterSelected(Filters.FilterType.IMAGES);
+        mutator.reload();
+        Assert.assertEquals(4, mModel.size());
+
+        typeOfflineItemFilter.onFilterSelected(Filters.FilterType.NONE);
+        mutator.reload();
+        Assert.assertEquals(6, mModel.size());
+    }
+
+    /**
+     * Action                                      List
+     * 1. Set(item1 @ 4:00 1/2/2018 Prefetch,
+     *        item2 @ 5:00 1/1/2018 Prefetch )
+     *                                              [item2     @ 4:00 1/2/2018,
+     *                                               item1     @ 5:00 1/1/2018 ]
+     */
+    @Test
+    public void testPrefetchTabBasic() {
+        OfflineItem item1 = buildPrefetchItem("1", buildCalendar(2018, 1, 2, 4));
+        OfflineItem item2 = buildPrefetchItem("2", buildCalendar(2018, 1, 1, 5));
+        when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item1, item2));
+        DateOrderedListMutator mutator = createMutatorWithoutJustNowProvider();
+        mMutationController.onFilterTypeSelected(Filters.FilterType.PREFETCHED);
+        mutator.reload();
+
+        Assert.assertEquals(2, mModel.size());
+        assertOfflineItem(mModel.get(0), buildCalendar(2018, 1, 2, 4), item1);
+        assertOfflineItem(mModel.get(1), buildCalendar(2018, 1, 1, 5), item2);
+    }
+
+    /**
+     * Action                                      List
+     * 1. Set(item1 @ 5:00 1/1/2018 Content indexing)
+     *                                               [item1     1/1/2018]
+     */
+    @Test
+    public void testContentIndexingStandaloneCards() {
+        OfflineItem item1 =
+                buildContentIndexedItem("1", buildCalendar(2018, 1, 1, 5), OfflineItemFilter.PAGE);
+        when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item1));
+        DateOrderedListMutator mutator = createMutatorWithoutJustNowProvider();
+        mMutationController.onFilterTypeSelected(Filters.FilterType.PREFETCHED);
+        mutator.reload();
+
+        Assert.assertEquals(1, mModel.size());
+        assertOfflineItem(mModel.get(0), buildCalendar(2018, 1, 1, 5), item1);
+    }
+
+    /**
+     * Action                                      List
+     * 1. Set(item1 @ 5:00 1/1/2018 Content indexing,
+     *        item2 @ 5:00 1/2/2018 Content indexing,
+     *        item3 @ 5:00 1/3/2018 Content indexing)
+     *                                              [item3     1/3/2018,
+     *                                               item2     1/2/2018,
+     *                                               item1     1/1/2018]
+     */
+    @Test
+    public void testContentIndexingDoesNotGroupItemsFromDifferentDays() {
+        OfflineItem item1 =
+                buildContentIndexedItem("1", buildCalendar(2018, 1, 1, 5), OfflineItemFilter.AUDIO);
+        OfflineItem item2 =
+                buildContentIndexedItem("2", buildCalendar(2018, 1, 3, 4), OfflineItemFilter.AUDIO);
+        OfflineItem item3 =
+                buildContentIndexedItem("3", buildCalendar(2018, 1, 3, 5), OfflineItemFilter.AUDIO);
+        when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item1, item2, item3));
+        DateOrderedListMutator mutator = createMutatorWithoutJustNowProvider();
+        mMutationController.onFilterTypeSelected(Filters.FilterType.PREFETCHED);
+        mutator.reload();
+
+        Assert.assertEquals(3, mModel.size());
+        assertOfflineItem(mModel.get(0), buildCalendar(2018, 1, 3, 5), item3);
+        assertOfflineItem(mModel.get(1), buildCalendar(2018, 1, 3, 4), item2);
+        assertOfflineItem(mModel.get(2), buildCalendar(2018, 1, 1, 5), item1);
+    }
+
+    /**
+     * Action                                       List
+     * 1. Set(item1 @ 1:00 1/4/2018 Content indexing Video,
+     *        item2 @ 2:00 1/4/2018 Content indexing Video,
+     *        item3 @ 3:00 1/4/2018 Content indexing Video,
+     *        item4 @ 4:00 1/4/2018 Content indexing Video)
+     *                                               [---rounded top divider -----
+     *                                               HEADER (with domain)
+     *                                               item4      1/4/2018,
+     *                                               -----divider------
+     *                                               item3      1/4/2018,
+     *                                               -----divider------
+     *                                               item2      1/4/2018
+     *                                               -----divider------
+     *                                               FOOTER (More button)
+     *                                               -----rounded footer divider ---]
+     */
+    @Test
+    public void testContentIndexingGroupCardWithAndWithoutFooterAndWithIsolatedCards() {
+        OfflineItem item1 =
+                buildContentIndexedItem("1", buildCalendar(2018, 1, 4, 1), OfflineItemFilter.VIDEO);
+        OfflineItem item2 =
+                buildContentIndexedItem("2", buildCalendar(2018, 1, 4, 2), OfflineItemFilter.VIDEO);
+        OfflineItem item3 =
+                buildContentIndexedItem("3", buildCalendar(2018, 1, 4, 3), OfflineItemFilter.VIDEO);
+        OfflineItem item4 =
+                buildContentIndexedItem("4", buildCalendar(2018, 1, 4, 4), OfflineItemFilter.VIDEO);
+        when(mSource.getItems())
+                .thenReturn(CollectionUtil.newArrayList(item1, item2, item3, item4));
+        DateOrderedListMutator mutator = createMutatorWithoutJustNowProvider();
+        mMutationController.onFilterTypeSelected(Filters.FilterType.PREFETCHED);
+        mutator.reload();
+
+        Assert.assertEquals(10, mModel.size());
+        assertDivider(mModel.get(0), ListItem.CardDividerListItem.Position.TOP);
+        assertCardHeader(mModel.get(1), buildCalendar(2018, 1, 4, 0), "http://example.com/xyz");
+        assertOfflineItem(mModel.get(2), buildCalendar(2018, 1, 4, 4), item4);
+        assertDivider(mModel.get(3), ListItem.CardDividerListItem.Position.MIDDLE);
+        assertOfflineItem(mModel.get(4), buildCalendar(2018, 1, 4, 3), item3);
+        assertDivider(mModel.get(5), ListItem.CardDividerListItem.Position.MIDDLE);
+        assertOfflineItem(mModel.get(6), buildCalendar(2018, 1, 4, 2), item2);
+        assertDivider(mModel.get(7), ListItem.CardDividerListItem.Position.MIDDLE);
+        assertCardFooter(mModel.get(8));
+        assertDivider(mModel.get(9), ListItem.CardDividerListItem.Position.BOTTOM);
+
+        // Remove one item. Now there should be only 3 items. The footer should be gone and get
+        // replaced by bottom curve.
+        when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item2, item3, item4));
+        mutator.onItemsRemoved(CollectionUtil.newArrayList(item1));
+
+        Assert.assertEquals(8, mModel.size());
+        assertOfflineItem(mModel.get(6), buildCalendar(2018, 1, 4, 2), item2);
+        assertDivider(mModel.get(7), ListItem.CardDividerListItem.Position.BOTTOM);
+
+        // Remove one more item. Now there should be only 2 items. Now they shouldn't be grouped at
+        // all.
+        when(mSource.getItems()).thenReturn(CollectionUtil.newArrayList(item3, item4));
+        mutator.onItemsRemoved(CollectionUtil.newArrayList(item2));
+        Assert.assertEquals(2, mModel.size());
+    }
+
     private static Calendar buildCalendar(int year, int month, int dayOfMonth, int hourOfDay) {
         Calendar calendar = CalendarFactory.get();
         calendar.set(year, month, dayOfMonth, hourOfDay, 0);
@@ -907,10 +1095,32 @@ public class DateOrderedListMutatorTest {
         return item;
     }
 
+    private static OfflineItem buildPrefetchItem(String id, Calendar calendar) {
+        OfflineItem item = new OfflineItem();
+        item.id.namespace = "test";
+        item.id.id = id;
+        item.creationTimeMs = calendar.getTimeInMillis();
+        item.filter = OfflineItemFilter.PAGE;
+        item.isSuggested = true;
+        return item;
+    }
+
+    private static OfflineItem buildContentIndexedItem(
+            String id, Calendar calendar, @OfflineItemFilter int filter) {
+        OfflineItem item = new OfflineItem();
+        item.id.namespace = LegacyHelpers.LEGACY_CONTENT_INDEX_NAMESPACE;
+        item.id.id = id;
+        item.isSuggested = true;
+        item.creationTimeMs = calendar.getTimeInMillis();
+        item.filter = filter;
+        item.pageUrl = "http://example.com/xyz";
+        return item;
+    }
+
     private DownloadManagerUiConfig createConfig() {
         return new DownloadManagerUiConfig.Builder()
                 .setUseNewDownloadPath(true)
-                .setSupportsGrouping(false)
+                .setSupportsGrouping(true)
                 .build();
     }
 
@@ -924,6 +1134,15 @@ public class DateOrderedListMutatorTest {
         return justNowProvider;
     }
 
+    private DateOrderedListMutator createMutatorWithSource(OfflineItemFilterSource source) {
+        DownloadManagerUiConfig config = createConfig();
+        JustNowProvider justNowProvider = new JustNowProvider(config);
+        DateOrderedListMutator mutator =
+                new DateOrderedListMutator(source, mModel, justNowProvider);
+        mMutationController = new ListMutationController(config, justNowProvider, mutator, mModel);
+        return mutator;
+    }
+
     private DateOrderedListMutator createMutatorWithoutJustNowProvider() {
         DownloadManagerUiConfig config = createConfig();
         JustNowProvider justNowProvider = new JustNowProvider(config) {
@@ -934,7 +1153,7 @@ public class DateOrderedListMutatorTest {
         };
         DateOrderedListMutator mutator =
                 new DateOrderedListMutator(mSource, mModel, justNowProvider);
-        new ListMutationController(config, justNowProvider, mutator, mModel);
+        mMutationController = new ListMutationController(config, justNowProvider, mutator, mModel);
         return mutator;
     }
 
@@ -947,7 +1166,8 @@ public class DateOrderedListMutatorTest {
             JustNowProvider justNowProvider) {
         DateOrderedListMutator mutator =
                 new DateOrderedListMutator(mSource, mModel, justNowProvider);
-        new ListMutationController(createConfig(), justNowProvider, mutator, mModel);
+        mMutationController =
+                new ListMutationController(createConfig(), justNowProvider, mutator, mModel);
         return mutator;
     }
 
@@ -980,5 +1200,22 @@ public class DateOrderedListMutatorTest {
         Assert.assertTrue(sectionHeader.isJustNow);
         Assert.assertEquals(false, sectionHeader.showTopDivider);
         Assert.assertEquals(StableIds.JUST_NOW_SECTION, item.stableId);
+    }
+
+    private static void assertCardHeader(ListItem item, Calendar calendar, String domain) {
+        Assert.assertTrue(item instanceof ListItem.CardHeaderListItem);
+        ListItem.CardHeaderListItem headerItem = (ListItem.CardHeaderListItem) item;
+        assertDatesAreEqual(headerItem.dateAndDomain.first, calendar);
+        Assert.assertEquals(headerItem.dateAndDomain.second, domain);
+    }
+
+    private static void assertCardFooter(ListItem item) {
+        Assert.assertTrue(item instanceof ListItem.CardFooterListItem);
+    }
+
+    private static void assertDivider(
+            ListItem item, ListItem.CardDividerListItem.Position position) {
+        Assert.assertTrue(item instanceof ListItem.CardDividerListItem);
+        Assert.assertEquals(((ListItem.CardDividerListItem) item).position, position);
     }
 }

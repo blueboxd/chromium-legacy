@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "chrome/common/renderer_configuration.mojom.h"
+#include "chrome/common/renderer_configuration.mojom-forward.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_member.h"

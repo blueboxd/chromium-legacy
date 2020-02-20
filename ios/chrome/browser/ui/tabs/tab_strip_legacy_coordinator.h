@@ -10,28 +10,24 @@
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/tabs/requirements/tab_strip_highlighting.h"
 
-@protocol ApplicationCommands;
-@protocol BrowserCommands;
-class ChromeBrowserState;
 @protocol PopupMenuLongPressDelegate;
-@class TabModel;
 @protocol TabStripPresentation;
 
 // A legacy coordinator that presents the public interface for the tablet tab
 // strip feature.
 @interface TabStripLegacyCoordinator : ChromeCoordinator<TabStripHighlighting>
 
-// BrowserState for this coordinator.
-@property(nonatomic, assign) ChromeBrowserState* browserState;
+// Use Browser based init. -initWithBaseViewController:browser:
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+    NS_UNAVAILABLE;
 
-// Dispatcher for sending commands.
-@property(nonatomic, weak) id dispatcher;
+// Use Browser based init. -initWithBaseViewController:browser:
+- (instancetype)initWithBaseViewController:(UIViewController*)viewController
+                              browserState:(ChromeBrowserState*)browserState
+    NS_UNAVAILABLE;
 
 // Delegate for the long press gesture recognizer triggering popup menu.
 @property(nonatomic, weak) id<PopupMenuLongPressDelegate> longPressDelegate;
-
-// Model layer for the tab strip.
-@property(nonatomic, weak) TabModel* tabModel;
 
 // Provides methods for presenting the tab strip and checking the visibility
 // of the tab strip in the containing object.

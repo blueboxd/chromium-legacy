@@ -21,8 +21,10 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/url_loader_interceptor.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -37,7 +39,6 @@
 
 namespace {
 
-constexpr int kEmbeddedServerPort = 12345;
 constexpr char kDeviceAddress[] = "00:00:00:00:00:00";
 constexpr char kHeartRateUUIDString[] = "0000180d-0000-1000-8000-00805f9b34fb";
 const device::BluetoothUUID kHeartRateUUID(kHeartRateUUIDString);
@@ -305,16 +306,29 @@ class WebBluetoothTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    // Navigate to a secure context.
-    embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
-    ASSERT_TRUE(embedded_test_server()->Start(kEmbeddedServerPort));
-    ui_test_utils::NavigateToURL(
-        browser(),
-        embedded_test_server()->GetURL("localhost", "/simple_page.html"));
+    // Web Bluetooth permissions are granted for an origin. The tests for Web
+    // Bluetooth permissions run code across a browser restart by splitting the
+    // tests into separate test cases where the test prefixed with PRE_ runs
+    // first. EmbeddedTestServer is not capable of maintaining a consistent
+    // origin across the separate tests, so URLLoaderInterceptor is used instead
+    // to intercept navigation requests and serve the test page. This enables
+    // the separate test cases to grant and check permissions for the same
+    // origin.
+    url_loader_interceptor_ =
+        std::make_unique<content::URLLoaderInterceptor>(base::BindRepeating(
+            [](content::URLLoaderInterceptor::RequestParams* params) {
+              if (params->url_request.url.host() == "example.com") {
+                content::URLLoaderInterceptor::WriteResponse(
+                    "content/test/data/simple_page.html", params->client.get());
+                return true;
+              }
+              return false;
+            }));
+    ui_test_utils::NavigateToURL(browser(), GURL("https://example.com"));
     web_contents_ = browser()->tab_strip_model()->GetActiveWebContents();
     EXPECT_THAT(
         web_contents_->GetMainFrame()->GetLastCommittedOrigin().Serialize(),
-        testing::StartsWith("http://localhost:"));
+        testing::StartsWith("https://example.com"));
 
     adapter_ = base::MakeRefCounted<FakeBluetoothAdapter>();
     global_values_ =
@@ -322,6 +336,8 @@ class WebBluetoothTest : public InProcessBrowserTest {
     global_values_->SetLESupported(true);
     device::BluetoothAdapterFactory::SetAdapterForTesting(adapter_);
   }
+
+  void TearDownOnMainThread() override { url_loader_interceptor_.reset(); }
 
   void AddFakeDevice(const std::string& device_address) {
     auto fake_device =
@@ -357,6 +373,7 @@ class WebBluetoothTest : public InProcessBrowserTest {
 
   content::WebContents* web_contents_ = nullptr;
   std::unique_ptr<TestWebContentsDelegate> test_delegate_;
+  std::unique_ptr<content::URLLoaderInterceptor> url_loader_interceptor_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebBluetoothTest, DISABLED_WebBluetoothAfterCrash) {

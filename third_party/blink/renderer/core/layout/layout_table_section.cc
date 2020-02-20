@@ -2108,13 +2108,4 @@ bool LayoutTableSection::MapToVisualRectInAncestorSpaceInternal(
       ancestor, transform_state, flags);
 }
 
-bool LayoutTableSection::PaintedOutputOfObjectHasNoEffectRegardlessOfSize()
-    const {
-  // LayoutTableSection paints background from columns.
-  if (Table()->HasColElements())
-    return false;
-  return LayoutTableBoxComponent::
-      PaintedOutputOfObjectHasNoEffectRegardlessOfSize();
-}
-
 }  // namespace blink

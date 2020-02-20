@@ -164,36 +164,9 @@ void PaintInvalidator::UpdatePaintingLayer(const LayoutObject& object,
        IsLayoutNGContainingBlock(object.ContainingBlock())))
     context.painting_layer->SetNeedsPaintPhaseFloat();
 
-  // Table collapsed borders are painted in PaintPhaseDescendantBlockBackgrounds
-  // on the table's layer.
-  if (object.IsTable() &&
-      ToInterface<LayoutNGTableInterface>(object).HasCollapsedBorders())
-    context.painting_layer->SetNeedsPaintPhaseDescendantBlockBackgrounds();
-
-  // The following flags are for descendants of the layer object only.
-  if (object == context.painting_layer->GetLayoutObject())
-    return;
-
-  if (object.IsTableSection()) {
-    const auto& section = ToInterface<LayoutNGTableSectionInterface>(object);
-    if (section.TableInterface()->HasColElements())
-      context.painting_layer->SetNeedsPaintPhaseDescendantBlockBackgrounds();
-  }
-
-  if (object.StyleRef().HasOutline())
+  if (object != context.painting_layer->GetLayoutObject() &&
+      object.StyleRef().HasOutline())
     context.painting_layer->SetNeedsPaintPhaseDescendantOutlines();
-
-  if (object.HasBoxDecorationBackground()
-      // We also paint non-overlay overflow controls in background phase.
-      || (object.HasOverflowClip() && ToLayoutBox(object)
-                                          .GetScrollableArea()
-                                          ->HasNonOverlayOverflowControls())) {
-    context.painting_layer->SetNeedsPaintPhaseDescendantBlockBackgrounds();
-  } else {
-    // Hit testing rects for touch action paint in the background phase.
-    if (object.HasEffectiveAllowedTouchAction())
-      context.painting_layer->SetNeedsPaintPhaseDescendantBlockBackgrounds();
-  }
 }
 
 void PaintInvalidator::UpdatePaintInvalidationContainer(
@@ -321,7 +294,7 @@ bool PaintInvalidator::InvalidatePaint(
                "PaintInvalidator::InvalidatePaint()", "object",
                object.DebugName().Ascii());
 
-  if (object.IsSVGHiddenContainer())
+  if (object.IsSVGHiddenContainer() || object.IsLayoutTableCol())
     context.subtree_flags |= PaintInvalidatorContext::kSubtreeNoInvalidation;
 
   if (context.subtree_flags & PaintInvalidatorContext::kSubtreeNoInvalidation)

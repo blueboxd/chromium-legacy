@@ -340,7 +340,6 @@ NotificationButtonMD::NotificationButtonMD(
   set_ink_drop_base_color(SK_ColorBLACK);
   set_ink_drop_visible_opacity(kActionButtonInkDropRippleVisibleOpacity);
   SetEnabledTextColors(kActionButtonTextColor);
-  SetElideBehavior(gfx::NO_ELIDE);
   SetBorder(views::CreateEmptyBorder(kActionButtonPadding));
   SetMinSize(kActionButtonMinSize);
   SetFocusForPlatform();

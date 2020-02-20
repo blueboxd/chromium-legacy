@@ -20,8 +20,8 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/mojom/url_loader.mojom.h"
-#include "services/network/public/mojom/url_response_head.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom-forward.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 namespace previews {
 

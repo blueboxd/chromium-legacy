@@ -46,12 +46,6 @@ namespace content {
 
 class PpapiBlinkPlatformImpl;
 
-#if defined(COMPILER_MSVC)
-// See explanation for other RenderViewHostImpl which is the same issue.
-#pragma warning(push)
-#pragma warning(disable: 4250)
-#endif
-
 class PpapiThread : public ChildThreadImpl,
                     public ppapi::proxy::PluginDispatcher::PluginDelegate,
                     public ppapi::proxy::PluginProxyDelegate {
@@ -186,10 +180,6 @@ class PpapiThread : public ChildThreadImpl,
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PpapiThread);
 };
-
-#if defined(COMPILER_MSVC)
-#pragma warning(pop)
-#endif
 
 }  // namespace content
 

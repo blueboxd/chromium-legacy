@@ -191,7 +191,7 @@ Polymer({
    * @param {*} b
    */
   equal_(a, b) {
-    return a == b;
+    return a === b;
   },
 
   /**

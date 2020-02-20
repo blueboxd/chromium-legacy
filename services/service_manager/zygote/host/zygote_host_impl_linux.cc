@@ -154,8 +154,11 @@ pid_t ZygoteHostImpl::LaunchZygote(
   options.fds_to_remap = std::move(additional_remapped_fds);
   options.fds_to_remap.emplace_back(fds[1], kZygoteSocketPairFd);
 
+  const bool is_sandboxed_zygote =
+      !cmd_line->HasSwitch(service_manager::switches::kNoZygoteSandbox);
+
   base::ScopedFD dummy_fd;
-  if (use_suid_sandbox_) {
+  if (is_sandboxed_zygote && use_suid_sandbox_) {
     std::unique_ptr<sandbox::SetuidSandboxHost> sandbox_host(
         sandbox::SetuidSandboxHost::Create());
     sandbox_host->PrependWrapper(cmd_line);
@@ -164,7 +167,7 @@ pid_t ZygoteHostImpl::LaunchZygote(
   }
 
   base::Process process =
-      use_namespace_sandbox_
+      (is_sandboxed_zygote && use_namespace_sandbox_)
           ? sandbox::NamespaceSandbox::LaunchProcess(*cmd_line, options)
           : base::LaunchProcess(*cmd_line, options);
   CHECK(process.IsValid()) << "Failed to launch zygote process";
@@ -175,7 +178,7 @@ pid_t ZygoteHostImpl::LaunchZygote(
 
   pid_t pid = process.Pid();
 
-  if (use_namespace_sandbox_ || use_suid_sandbox_) {
+  if (is_sandboxed_zygote && (use_namespace_sandbox_ || use_suid_sandbox_)) {
     // The namespace and SUID sandbox will execute the zygote in a new
     // PID namespace, and the main zygote process will then fork from
     // there. Watch now our elaborate dance to find and validate the

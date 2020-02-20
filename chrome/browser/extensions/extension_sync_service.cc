@@ -9,7 +9,6 @@
 
 #include "base/auto_reset.h"
 #include "base/bind_helpers.h"
-#include "base/feature_list.h"
 #include "base/one_shot_event.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -22,7 +21,6 @@
 #include "chrome/browser/web_applications/components/install_manager.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "chrome/common/buildflags.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "chrome/common/web_application_info.h"
@@ -507,12 +505,6 @@ void ExtensionSyncService::ApplyBookmarkAppSyncData(
     const ExtensionSyncData& extension_sync_data) {
   DCHECK(extension_sync_data.is_app());
 
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
-    // If new Web Applications system is enabled, any legacy sync-initiated
-    // installation requests are ignored.
-    return;
-  }
-
   // Process bookmark app sync if necessary.
   GURL bookmark_app_url(extension_sync_data.bookmark_app_url());
   if (!bookmark_app_url.is_valid() ||
@@ -543,10 +535,12 @@ void ExtensionSyncService::ApplyBookmarkAppSyncData(
   }
 
   auto* provider = web_app::WebAppProviderBase::GetProviderBase(profile_);
-  DCHECK(provider);
-
-  provider->install_manager().InstallWebAppFromSync(
-      extension_sync_data.id(), std::move(web_app_info), base::DoNothing());
+  // Legacy profiles containing server-side bookmark apps data must be excluded
+  // from sync if the web apps system is disabled for such a profile.
+  if (provider) {
+    provider->install_manager().InstallBookmarkAppFromSync(
+        extension_sync_data.id(), std::move(web_app_info), base::DoNothing());
+  }
 }
 
 void ExtensionSyncService::SetSyncStartFlareForTesting(

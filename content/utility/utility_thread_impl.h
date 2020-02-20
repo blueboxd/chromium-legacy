@@ -17,12 +17,6 @@
 namespace content {
 class UtilityServiceFactory;
 
-#if defined(COMPILER_MSVC)
-// See explanation for other RenderViewHostImpl which is the same issue.
-#pragma warning(push)
-#pragma warning(disable: 4250)
-#endif
-
 // This class represents the background thread where the utility task runs.
 class UtilityThreadImpl : public UtilityThread,
                           public ChildThreadImpl {
@@ -58,10 +52,6 @@ class UtilityThreadImpl : public UtilityThread,
 
   DISALLOW_COPY_AND_ASSIGN(UtilityThreadImpl);
 };
-
-#if defined(COMPILER_MSVC)
-#pragma warning(pop)
-#endif
 
 }  // namespace content
 

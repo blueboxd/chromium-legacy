@@ -22,6 +22,9 @@ suite('NewTabPageAppTest', () => {
     PolymerTest.clearBody();
 
     testProxy = createTestProxy();
+    testProxy.handler.setResultFor('getBackgroundCollections', Promise.resolve({
+      collections: [],
+    }));
     testProxy.handler.setResultFor('getChromeThemes', Promise.resolve({
       chromeThemes: [],
     }));

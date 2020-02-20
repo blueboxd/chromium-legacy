@@ -27,10 +27,25 @@ bool IsImportantInAndroid(mojom::AccessibilityNodeInfoData* node);
 
 bool HasImportantProperty(mojom::AccessibilityNodeInfoData* node);
 
-// TODO(hirokisato) clean up GetProperty methods in AccessibilityNodeInfoData
-// and AccessibilityWindowInfoData.
-bool GetBooleanProperty(mojom::AccessibilityNodeInfoData* node,
-                        mojom::AccessibilityBooleanProperty prop);
+template <class DataType, class PropType>
+bool GetBooleanProperty(DataType* node, PropType prop) {
+  if (!node->boolean_properties)
+    return false;
+
+  auto it = node->boolean_properties->find(prop);
+  if (it == node->boolean_properties->end())
+    return false;
+
+  return it->second;
+}
+
+template <class PropMTypeMap, class PropType>
+bool HasProperty(PropMTypeMap properties, PropType prop) {
+  if (!properties)
+    return false;
+
+  return properties->find(prop) != properties->end();
+}
 
 template <class PropMTypeMap, class PropType, class OutType>
 bool GetProperty(PropMTypeMap properties, PropType prop, OutType* out_value) {

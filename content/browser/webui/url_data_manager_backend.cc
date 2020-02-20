@@ -146,6 +146,12 @@ scoped_refptr<net::HttpResponseHeaders> URLDataManagerBackend::GetHeaders(
     base.append(source->GetContentSecurityPolicyStyleSrc());
     base.append(source->GetContentSecurityPolicyImgSrc());
     base.append(source->GetContentSecurityPolicyWorkerSrc());
+    // TODO(crbug.com/1051745): Both CSP frame ancestors and XFO headers may be
+    // added to the response but frame ancestors would take precedence. In the
+    // future, XFO will be removed so when that happens remove the check and
+    // always add frame ancestors.
+    if (source->ShouldDenyXFrameOptions())
+      base.append(source->GetContentSecurityPolicyFrameAncestors());
     headers->AddHeader(base);
   }
 

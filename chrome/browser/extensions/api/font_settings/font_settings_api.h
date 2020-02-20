@@ -12,13 +12,13 @@
 #include <string>
 
 #include "base/macros.h"
-#include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/font_pref_change_notifier.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_event_histogram_value.h"
+#include "extensions/browser/extension_function.h"
 
 class Profile;
 
@@ -139,7 +139,7 @@ class FontSettingsSetFontFunction : public ExtensionFunction {
 };
 
 // fontSettings.getFontList API function.
-class FontSettingsGetFontListFunction : public ChromeAsyncExtensionFunction {
+class FontSettingsGetFontListFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fontSettings.getFontList",
                              FONTSETTINGS_GETFONTLIST)
@@ -148,11 +148,11 @@ class FontSettingsGetFontListFunction : public ChromeAsyncExtensionFunction {
   ~FontSettingsGetFontListFunction() override {}
 
   // ExtensionFunction:
-  bool RunAsync() override;
+  ResponseAction Run() override;
 
  private:
   void FontListHasLoaded(std::unique_ptr<base::ListValue> list);
-  bool CopyFontsToResult(base::ListValue* fonts);
+  ResponseValue CopyFontsToResult(base::ListValue* fonts);
 };
 
 // Base class for extension API functions that clear a browser font pref.

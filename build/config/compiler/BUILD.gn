@@ -1893,32 +1893,14 @@ if (is_win) {
   common_optimize_on_ldflags = []
 
   # /OPT:ICF is not desirable in Debug builds, since code-folding can result in
-  # misleading symbols in stack traces. It is also incompatible with
-  # incremental linking, which we enable for both Debug and component builds.
+  # misleading symbols in stack traces.
   if (!is_debug && !is_component_build) {
     common_optimize_on_ldflags += [ "/OPT:ICF" ]  # Redundant COMDAT folding.
   }
 
   if (is_official_build) {
     common_optimize_on_ldflags += [ "/OPT:REF" ]  # Remove unreferenced data.
-
-    # TODO(thakis): Remove is_clang here, https://crbug.com/598772
-    if (!use_lld && !is_clang) {
-      common_optimize_on_ldflags += [ "/cgthreads:" + max_jobs_per_link ]
-      if (use_incremental_wpo) {
-        # Incremental Link-time code generation.
-        common_optimize_on_ldflags += [ "/LTCG:INCREMENTAL" ]
-      } else {
-        common_optimize_on_ldflags += [ "/LTCG" ]  # Link-time code generation.
-      }
-      if (full_wpo_on_official) {
-        if (use_incremental_wpo) {
-          arflags = [ "/LTCG:INCREMENTAL" ]
-        } else {
-          arflags = [ "/LTCG" ]
-        }
-      }
-    }
+    # TODO(thakis): Add LTO/PGO clang flags eventually, https://crbug.com/598772
   }
 } else {
   common_optimize_on_cflags = []
@@ -2001,15 +1983,13 @@ config("default_stack_frames") {
 # Default "optimization on" config.
 config("optimize") {
   if (is_win) {
-    # TODO(thakis): Remove is_clang here, https://crbug.com/598772
-    if (is_official_build && full_wpo_on_official && !is_clang) {
-      common_optimize_on_cflags += [ "/GL" ]  # Whole program optimization.
-    }
-
     # Favor size over speed, /O1 must be before the common flags. The GYP
     # build also specifies /Os and /GF but these are implied by /O1.
     cflags = [ "/O1" ] + common_optimize_on_cflags + [ "/Oi" ]
-  } else if (optimize_for_size && !is_nacl) {
+
+    # TODO(thakis): Use -flto in official builds here eventually,
+    # https://crbug.com/598772
+} else if (optimize_for_size && !is_nacl) {
     # Favor size over speed.
     # TODO(crbug.com/718650): Fix -Os in PNaCl compiler and remove the is_nacl
     # guard above.

@@ -128,8 +128,6 @@ class CORE_EXPORT LayoutTableRow final : public LayoutTableBoxComponent,
   bool BackgroundIsKnownToBeOpaqueInRect(const PhysicalRect&) const override {
     return false;
   }
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
-
   // LayoutNGTableRowInterface methods start.
 
   const LayoutNGTableRowInterface* ToLayoutNGTableRowInterface() const final {

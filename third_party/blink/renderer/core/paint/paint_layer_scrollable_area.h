@@ -764,7 +764,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
     IntRect VisualRect() const final;
     String DebugName() const final;
     DOMNodeId OwnerNodeId() const final;
-    bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final;
 
     Member<const PaintLayerScrollableArea> scrollable_area_;
   };

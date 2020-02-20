@@ -80,10 +80,6 @@ declare_args() {
   # can be used to convert a fastlink pdb to a normal one.
   is_win_fastlink = false
 
-  # Whether or not we should turn on incremental WPO. Only affects the VS
-  # Windows build.
-  use_incremental_wpo = false
-
   # Whether we're using a sample profile collected on an architecture different
   # than the one we're compiling for.
   #
@@ -181,16 +177,6 @@ assert(!can_unwind_with_frame_pointers || enable_frame_pointers)
 # requried only when frame pointers are not enabled.
 can_unwind_with_cfi_table = is_android && !is_component_build &&
                             !enable_frame_pointers && current_cpu == "arm"
-
-declare_args() {
-  # Whether or not the official builds should be built with full WPO. Enabled by
-  # default for the PGO and the x64 builds.
-  if (chrome_pgo_phase > 0) {
-    full_wpo_on_official = true
-  } else {
-    full_wpo_on_official = false
-  }
-}
 
 declare_args() {
   # Set to true to use lld, the LLVM linker.

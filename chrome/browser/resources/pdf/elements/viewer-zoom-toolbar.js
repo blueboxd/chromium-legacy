@@ -94,7 +94,7 @@ Polymer({
   /** Handle clicks of the fit-button. */
   fitToggle() {
     this.fireFitToChangedEvent_(
-        this.$['fit-button'].activeIndex == FIT_TO_WIDTH_BUTTON_STATE ?
+        this.$['fit-button'].activeIndex === FIT_TO_WIDTH_BUTTON_STATE ?
             FittingType.FIT_TO_WIDTH :
             FittingType.FIT_TO_PAGE,
         true);
@@ -107,7 +107,7 @@ Polymer({
     // Toggle the button state since there was no mouse click.
     const button = this.$['fit-button'];
     button.activeIndex =
-        (button.activeIndex == FIT_TO_WIDTH_BUTTON_STATE ?
+        (button.activeIndex === FIT_TO_WIDTH_BUTTON_STATE ?
              FIT_TO_PAGE_BUTTON_STATE :
              FIT_TO_WIDTH_BUTTON_STATE);
   },
@@ -121,8 +121,8 @@ Polymer({
 
     // Set the button state since there was no mouse click.
     const nextButtonState =
-        (fittingType == FittingType.FIT_TO_WIDTH ? FIT_TO_PAGE_BUTTON_STATE :
-                                                   FIT_TO_WIDTH_BUTTON_STATE);
+        (fittingType === FittingType.FIT_TO_WIDTH ? FIT_TO_PAGE_BUTTON_STATE :
+                                                    FIT_TO_WIDTH_BUTTON_STATE);
     this.$['fit-button'].activeIndex = nextButtonState;
   },
 

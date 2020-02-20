@@ -621,7 +621,7 @@ TEST_F(InstallManagerBookmarkAppTest, CreateWebAppFromInfo) {
                    .empty());
 }
 
-TEST_F(InstallManagerBookmarkAppTest, InstallWebAppFromSync) {
+TEST_F(InstallManagerBookmarkAppTest, InstallBookmarkAppFromSync) {
   CreateEmptyDataRetriever();
 
   EXPECT_EQ(0u, registry()->enabled_extensions().size());
@@ -647,7 +647,7 @@ TEST_F(InstallManagerBookmarkAppTest, InstallWebAppFromSync) {
   {
     base::RunLoop run_loop;
 
-    provider->install_manager().InstallWebAppFromSync(
+    provider->install_manager().InstallBookmarkAppFromSync(
         app_id, std::move(web_app_info),
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {
@@ -693,7 +693,7 @@ TEST_F(InstallManagerBookmarkAppTest, InstallWebAppFromSync) {
   {
     base::RunLoop run_loop;
 
-    provider->install_manager().InstallWebAppFromSync(
+    provider->install_manager().InstallBookmarkAppFromSync(
         app_id, std::move(web_app_info2),
         base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                        web_app::InstallResultCode code) {

@@ -35,7 +35,7 @@ const tests = [
     const url = parseUrl(viewer.originalUrl_);
     const redirectUrl = url.origin + '/server-redirect?' + viewer.originalUrl_;
     createPluginForUrl(redirectUrl, redirectUrl, '', function(progress) {
-      if (progress == -1) {
+      if (progress === -1) {
         chrome.test.succeed();
       } else {
         chrome.test.fail();
@@ -56,7 +56,7 @@ const tests = [
         'Content-Type: application/pdf\n';
     createPluginForUrl(
         viewer.originalUrl_, redirectUrl, headers, function(progress) {
-          if (progress == -1) {
+          if (progress === -1) {
             chrome.test.succeed();
           } else {
             chrome.test.fail();
@@ -69,7 +69,7 @@ const tests = [
   function noRedirectsSucceed() {
     createPluginForUrl(
         viewer.originalUrl_, viewer.originalUrl_, '', function(progress) {
-          if (progress == 100) {
+          if (progress === 100) {
             chrome.test.succeed();
           }
         });

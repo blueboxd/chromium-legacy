@@ -427,7 +427,6 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock,
 
   void EnsureIsReadyForPaintInvalidation() override;
   void InvalidatePaint(const PaintInvalidatorContext&) const override;
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
   void ColumnStructureChanged();
 
   // LayoutNGTableInterface methods start.

@@ -45,7 +45,7 @@ Polymer({
     // those platforms, though.
     assert(document.documentElement.dir);
     const endEdge = isRTL() ? 'left' : 'right';
-    if (window.innerWidth == document.scrollingElement.scrollWidth) {
+    if (window.innerWidth === document.scrollingElement.scrollWidth) {
       this.style[endEdge] = '16px';
     } else {
       this.style[endEdge] = '0px';

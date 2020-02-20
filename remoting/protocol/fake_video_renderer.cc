@@ -51,9 +51,9 @@ void FakeFrameConsumer::DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame,
                                   base::OnceClosure done) {
   CHECK(thread_checker_.CalledOnValidThread());
   received_frames_.push_back(std::move(frame));
-  if (!done.is_null())
+  if (done)
     std::move(done).Run();
-  if (!on_frame_callback_.is_null())
+  if (on_frame_callback_)
     on_frame_callback_.Run();
 }
 

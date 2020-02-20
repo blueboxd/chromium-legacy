@@ -20,6 +20,7 @@
 #include "content/grit/content_resources.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/url_constants.h"
 #include "ui/base/template_expressions.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
@@ -96,6 +97,15 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
     if (parent_->worker_src_set_)
       return parent_->worker_src_;
     return URLDataSource::GetContentSecurityPolicyWorkerSrc();
+  }
+  std::string GetContentSecurityPolicyFrameAncestors() override {
+    std::string frame_ancestors = "";
+    if (parent_->frame_ancestors_.size() == 0)
+      frame_ancestors += " 'none'";
+    for (const GURL& frame_ancestor : parent_->frame_ancestors_) {
+      frame_ancestors += " " + frame_ancestor.spec();
+    }
+    return "frame-ancestors" + frame_ancestors + ";";
   }
   bool ShouldDenyXFrameOptions() override {
     return parent_->deny_xframe_options_;
@@ -217,6 +227,14 @@ void WebUIDataSourceImpl::OverrideContentSecurityPolicyWorkerSrc(
     const std::string& data) {
   worker_src_set_ = true;
   worker_src_ = data;
+}
+
+void WebUIDataSourceImpl::AddFrameAncestor(const GURL& frame_ancestor) {
+  // Do not allow a wildcard to be a frame ancestor or it will allow any website
+  // to embed the WebUI.
+  CHECK(frame_ancestor.SchemeIs(kChromeUIScheme) ||
+        frame_ancestor.SchemeIs(kChromeUIUntrustedScheme));
+  frame_ancestors_.insert(frame_ancestor);
 }
 
 void WebUIDataSourceImpl::DisableDenyXFrameOptions() {

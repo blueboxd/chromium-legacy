@@ -822,6 +822,7 @@ gles2::Texture* SharedImageBackingAHB::GenGLTexture() {
     api->glDeleteTexturesFn(1, &service_id);
     return nullptr;
   }
+  egl_image->SetColorSpace(color_space());
 
   // Create a gles2 Texture.
   auto* texture = new gles2::Texture(service_id);

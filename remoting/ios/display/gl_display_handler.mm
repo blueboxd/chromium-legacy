@@ -97,10 +97,10 @@ Core::Core() : weak_factory_(this) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
 
   // Do not bind GlRenderer::OnFrameReceived. |renderer_| is not ready yet.
-  owned_frame_consumer_.reset(new remoting::DualBufferFrameConsumer(
+  owned_frame_consumer_ = std::make_unique<remoting::DualBufferFrameConsumer>(
       base::BindRepeating(&Core::OnFrameReceived, weak_ptr_),
       runtime_->display_task_runner(),
-      protocol::FrameConsumer::PixelFormat::FORMAT_RGBA));
+      protocol::FrameConsumer::PixelFormat::FORMAT_RGBA);
   frame_consumer_ = owned_frame_consumer_->GetWeakPtr();
 
   renderer_proxy_ =

@@ -34,6 +34,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/network/public/cpp/content_security_policy/content_security_policy.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "ui/base/template_expressions.h"
 
@@ -177,6 +178,9 @@ void StartURLLoader(
       URLDataManagerBackend::GetHeaders(source, path, origin_header);
 
   auto resource_response = network::mojom::URLResponseHead::New();
+  network::AddContentSecurityPolicyFromHeaders(
+      *headers, request.url, &(resource_response->content_security_policy));
+
   resource_response->headers = headers;
   resource_response->mime_type = source->source()->GetMimeType(path);
   // TODO: fill all the time related field i.e. request_time response_time

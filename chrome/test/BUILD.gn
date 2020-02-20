@@ -6037,6 +6037,10 @@ if (!is_android) {
       ]
     }
 
+    if (enable_downgrade_processing) {
+      sources += [ "../browser/downgrade/user_data_snapshot_browsertest.cc" ]
+    }
+
     if (use_x11) {
       configs += [ "//build/config/linux:xtst" ]
     }

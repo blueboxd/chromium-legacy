@@ -527,7 +527,6 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
                        const PhysicalOffset& additional_offset,
                        NGOutlineType) const override;
 
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
   void InvalidateDisplayItemClients(PaintInvalidationReason) const override;
 
   Node* NodeForHitTest() const final;

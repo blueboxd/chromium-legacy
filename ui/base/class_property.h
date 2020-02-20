@@ -140,9 +140,7 @@ class UI_BASE_EXPORT PropertyHandler {
 namespace {
 
 // No single new-style cast works for every conversion to/from int64_t, so we
-// need this helper class. A third specialization is needed for bool because
-// MSVC warning C4800 (forcing value to bool) is not suppressed by an explicit
-// cast (!).
+// need this helper class.
 template<typename T>
 class ClassPropertyCaster {
  public:
@@ -154,12 +152,6 @@ class ClassPropertyCaster<T*> {
  public:
   static int64_t ToInt64(T* x) { return reinterpret_cast<int64_t>(x); }
   static T* FromInt64(int64_t x) { return reinterpret_cast<T*>(x); }
-};
-template<>
-class ClassPropertyCaster<bool> {
- public:
-  static int64_t ToInt64(bool x) { return static_cast<int64_t>(x); }
-  static bool FromInt64(int64_t x) { return x != 0; }
 };
 template <>
 class ClassPropertyCaster<base::TimeDelta> {

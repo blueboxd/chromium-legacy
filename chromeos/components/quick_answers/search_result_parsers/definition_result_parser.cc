@@ -54,10 +54,15 @@ bool DefinitionResultParser::Parse(const Value* result,
     return false;
   }
 
+  std::string secondary_answer = base::StringPrintf(
+      kPhoneticsResultTemplate, query_term->c_str(), phonetics->c_str());
   quick_answer->result_type = ResultType::kDefinitionResult;
   quick_answer->primary_answer = *definition;
-  quick_answer->secondary_answer = base::StringPrintf(
-      kPhoneticsResultTemplate, query_term->c_str(), phonetics->c_str());
+  quick_answer->secondary_answer = secondary_answer;
+  quick_answer->title.push_back(
+      std::make_unique<QuickAnswerText>(secondary_answer));
+  quick_answer->first_answer_row.push_back(
+      std::make_unique<QuickAnswerText>(*definition));
   return true;
 }
 

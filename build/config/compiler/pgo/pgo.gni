@@ -8,8 +8,6 @@ declare_args() {
   #     0 : Means that PGO is turned off.
   #     1 : Used during the PGI (instrumentation) phase.
   #     2 : Used during the PGO (optimization) phase.
-  #
-  # TODO(sebmarchand): Add support for the PGU (update) phase.
   chrome_pgo_phase = 0
 
   # When using chrome_pgo_phase = 2, read profile data from this path.

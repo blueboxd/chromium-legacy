@@ -287,6 +287,7 @@ void InitializeZygoteSandboxForBrowserProcess(
 
   // Tickle the zygote host so it forks now.
   service_manager::ZygoteHostImpl::GetInstance()->Init(parsed_command_line);
+  service_manager::CreateUnsandboxedZygote(base::BindOnce(LaunchZygoteHelper));
   service_manager::ZygoteHandle generic_zygote =
       service_manager::CreateGenericZygote(base::BindOnce(LaunchZygoteHelper));
 

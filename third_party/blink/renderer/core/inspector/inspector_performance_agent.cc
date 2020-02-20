@@ -57,6 +57,7 @@ void InspectorPerformanceAgent::InnerEnable() {
   task_start_ticks_ = base::TimeTicks();
   script_start_ticks_ = base::TimeTicks();
   v8compile_start_ticks_ = base::TimeTicks();
+  capture_snapshot_start_ticks_ = base::TimeTicks();
   thread_time_origin_ = GetThreadTimeNow();
 }
 
@@ -153,6 +154,8 @@ Response InspectorPerformanceAgent::getMetrics(
   AppendMetric(result.get(), "LayoutDuration", layout_duration_.InSecondsF());
   AppendMetric(result.get(), "RecalcStyleDuration",
                recalc_style_duration_.InSecondsF());
+  AppendMetric(result.get(), "CaptureSnapshotDuration",
+               capture_snapshot_duration_.InSecondsF());
 
   base::TimeDelta script_duration = script_duration_;
   if (!script_start_ticks_.is_null())
@@ -173,7 +176,8 @@ Response InspectorPerformanceAgent::getMetrics(
   // Compute task time not accounted for by other metrics.
   base::TimeDelta other_tasks_duration =
       task_duration -
-      (script_duration + recalc_style_duration_ + layout_duration_);
+      (script_duration + v8compile_duration + recalc_style_duration_ +
+       layout_duration_ + capture_snapshot_duration_);
   AppendMetric(result.get(), "TaskOtherDuration",
                other_tasks_duration.InSecondsF());
 
@@ -307,6 +311,18 @@ void InspectorPerformanceAgent::DidProcessTask(base::TimeTicks start_time,
   if (!task_start_ticks_.is_null())
     task_duration_ += GetTimeTicksNow() - task_start_ticks_;
   task_start_ticks_ = base::TimeTicks();
+}
+
+void InspectorPerformanceAgent::WillCaptureSnapshot() {
+  capture_snapshot_start_ticks_ = GetTimeTicksNow();
+}
+
+void InspectorPerformanceAgent::DidCaptureSnapshot() {
+  if (!capture_snapshot_start_ticks_.is_null()) {
+    capture_snapshot_duration_ +=
+        GetTimeTicksNow() - capture_snapshot_start_ticks_;
+  }
+  capture_snapshot_start_ticks_ = base::TimeTicks();
 }
 
 void InspectorPerformanceAgent::Trace(Visitor* visitor) {

@@ -46,6 +46,8 @@ namespace downgrade {
 
 namespace {
 
+bool g_snapshots_enabled_for_testing = false;
+
 // Moves the contents of a User Data directory at |source| to |target|, with the
 // exception of files/directories that should be left behind for a full data
 // wipe. Returns no value if the target directory could not be created, or the
@@ -165,11 +167,13 @@ void DeleteMovedUserData(const base::FilePath& user_data_dir,
 }
 
 bool UserDataSnapshotEnabled() {
+  if (g_snapshots_enabled_for_testing)
+    return true;
   bool is_enterprise_managed =
-      policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().is_valid();
 #if defined(OS_WIN) || defined(OS_MACOSX)
-  is_enterprise_managed |= base::IsMachineExternallyManaged();
+      base::IsMachineExternallyManaged() ||
 #endif
+      policy::BrowserDMTokenStorage::Get()->RetrieveDMToken().is_valid();
   return is_enterprise_managed &&
          base::FeatureList::IsEnabled(features::kUserDataSnapshot);
 }
@@ -308,6 +312,11 @@ void DowngradeManager::ProcessDowngrade(const base::FilePath& user_data_dir) {
   // pathological failure.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kUserDataMigrated);
+}
+
+// static
+void DowngradeManager::EnableSnapshotsForTesting(bool enable) {
+  g_snapshots_enabled_for_testing = enable;
 }
 
 // static

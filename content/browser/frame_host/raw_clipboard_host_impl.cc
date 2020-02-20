@@ -11,6 +11,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_message.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/clipboard/raw_clipboard.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-shared.h"
 #include "ui/base/clipboard/clipboard.h"
@@ -27,8 +28,13 @@ void RawClipboardHostImpl::Create(
       PermissionControllerImpl::FromBrowserContext(
           render_frame_host->GetProcess()->GetBrowserContext());
 
-  // Permission should already be checked in the renderer process, but recheck
-  // in the browser process in case of a hijacked renderer.
+  // Feature flags and permission should already be checked in the renderer
+  // process, but recheck in the browser process in case of a hijacked renderer.
+  if (!base::FeatureList::IsEnabled(blink::features::kRawClipboard)) {
+    mojo::ReportBadMessage("Raw Clipboard is not enabled");
+    return;
+  }
+
   blink::mojom::PermissionStatus status =
       permission_controller->GetPermissionStatusForFrame(
           PermissionType::CLIPBOARD_READ_WRITE, render_frame_host,

@@ -97,7 +97,7 @@ export class BrowserApi {
    */
   setZoom(zoom) {
     assert(
-        this.zoomBehavior_ == BrowserApi.ZoomBehavior.MANAGE,
+        this.zoomBehavior_ === BrowserApi.ZoomBehavior.MANAGE,
         'Viewer does not manage browser zoom.');
     return new Promise((resolve, reject) => {
       chrome.tabs.setZoom(this.streamInfo_.tabId, zoom, resolve);
@@ -132,15 +132,15 @@ export class BrowserApi {
    *     factor.
    */
   addZoomEventListener(listener) {
-    if (!(this.zoomBehavior_ == BrowserApi.ZoomBehavior.MANAGE ||
-          this.zoomBehavior_ == BrowserApi.ZoomBehavior.PROPAGATE_PARENT)) {
+    if (!(this.zoomBehavior_ === BrowserApi.ZoomBehavior.MANAGE ||
+          this.zoomBehavior_ === BrowserApi.ZoomBehavior.PROPAGATE_PARENT)) {
       return;
     }
 
     chrome.tabs.onZoomChange.addListener(info => {
       const zoomChangeInfo =
           /** @type {{tabId: number, newZoomFactor: number}} */ (info);
-      if (zoomChangeInfo.tabId != this.streamInfo_.tabId) {
+      if (zoomChangeInfo.tabId !== this.streamInfo_.tabId) {
         return;
       }
       listener(zoomChangeInfo.newZoomFactor);
@@ -171,7 +171,7 @@ function createBrowserApiForMimeHandlerView() {
       .then(function(streamInfo) {
         const promises = [];
         let zoomBehavior = BrowserApi.ZoomBehavior.NONE;
-        if (streamInfo.tabId != -1) {
+        if (streamInfo.tabId !== -1) {
           zoomBehavior = streamInfo.embedded ?
               BrowserApi.ZoomBehavior.PROPAGATE_PARENT :
               BrowserApi.ZoomBehavior.MANAGE;
@@ -183,7 +183,7 @@ function createBrowserApiForMimeHandlerView() {
             }
           }));
         }
-        if (zoomBehavior == BrowserApi.ZoomBehavior.MANAGE) {
+        if (zoomBehavior === BrowserApi.ZoomBehavior.MANAGE) {
           promises.push(new Promise(function(resolve) {
             chrome.tabs.setZoomSettings(
                 streamInfo.tabId, {mode: 'manual', scope: 'per-tab'}, resolve);
@@ -207,7 +207,7 @@ function createBrowserApiForPrintPreview() {
     streamUrl: url,
     originalUrl: url,
     responseHeaders: {},
-    embedded: window.parent != window,
+    embedded: window.parent !== window,
     tabId: -1,
   };
   return new Promise(function(resolve, reject) {

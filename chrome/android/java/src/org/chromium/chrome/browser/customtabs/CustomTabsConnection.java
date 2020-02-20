@@ -819,7 +819,7 @@ public class CustomTabsConnection {
      */
     public void setClientDataHeaderForNewTab(
             CustomTabsSessionToken session, WebContents webContents) {
-        String header = mClientManager.getClientDataHeaderValue(session);
+        String header = getClientDataHeaderValueForSession(session);
         if (!TextUtils.isEmpty(header)) {
             CustomTabsConnectionJni.get().setClientDataHeader(webContents, header);
         }
@@ -1041,6 +1041,13 @@ public class CustomTabsConnection {
      */
     void setSendNavigationInfoForSession(CustomTabsSessionToken session, boolean send) {
         mClientManager.setSendNavigationInfoForSession(session, send);
+    }
+
+    /**
+     * See {@link ClientManager#setClientDataHeaderValue}.
+     */
+    String getClientDataHeaderValueForSession(CustomTabsSessionToken session) {
+        return mClientManager.getClientDataHeaderValue(session);
     }
 
     /**

@@ -29,6 +29,7 @@ class ShellContentUtilityClient : public ContentUtilityClient {
  private:
   std::unique_ptr<NetworkServiceTestHelper> network_service_test_helper_;
   std::unique_ptr<AudioServiceTestHelper> audio_service_test_helper_;
+  bool register_sandbox_status_helper_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ShellContentUtilityClient);
 };

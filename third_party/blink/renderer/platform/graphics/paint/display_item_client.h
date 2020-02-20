@@ -66,23 +66,6 @@ class PLATFORM_EXPORT DisplayItemClient {
   // Called by PaintController::FinishCycle() for all clients after painting.
   virtual void ClearPartialInvalidationVisualRect() const {}
 
-  // This is declared here instead of in LayoutObject for verifying the
-  // condition in DrawingRecorder.
-  // Returns true if the object itself will not generate any effective painted
-  // output no matter what size the object is. For example, this function can
-  // return false for an object whose size is currently 0x0 but would have
-  // effective painted output if it was set a non-empty size. It's used to skip
-  // unforced paint invalidation of LayoutObjects (which is when
-  // shouldDoFullPaintInvalidation is false, but mayNeedPaintInvalidation or
-  // childShouldCheckForPaintInvalidation is true) to avoid unnecessary paint
-  // invalidations of empty areas covered by such objects.
-  // TODO(crbug.com/1049440): This has been dead code since crrev.com/c/2031429.
-  // Either revert the CL if the performance gain of this optimization is big
-  // enough, or remove this optimization.
-  virtual bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
-    return false;
-  }
-
   // Indicates that the client will paint display items different from the ones
   // cached by PaintController. However, PaintController allows a client to
   // paint new display items that are not cached or to no longer paint some

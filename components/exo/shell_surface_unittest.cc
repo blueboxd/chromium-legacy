@@ -881,4 +881,81 @@ TEST_F(ShellSurfaceTest, Popup) {
   }
 }
 
+TEST_F(ShellSurfaceTest, Caption) {
+  gfx::Size buffer_size(256, 256);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+
+  surface->Attach(buffer.get());
+  shell_surface->OnSetFrame(SurfaceFrameType::NORMAL);
+  surface->Commit();
+  shell_surface->GetWidget()->SetBounds(gfx::Rect(0, 0, 256, 256));
+
+  shell_surface->GetWidget()->GetNativeWindow()->SetCapture();
+  EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
+            shell_surface->GetWidget()->GetNativeWindow());
+  {
+    // Move the mouse at the caption of the captured window.
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(5, 5), gfx::Point(5, 5),
+                         ui::EventTimeForNow(), 0, 0);
+    EXPECT_EQ(nullptr, GetTargetSurfaceForLocatedEvent(&event));
+  }
+
+  {
+    // Move the mouse at the center of the captured window.
+    gfx::Rect bounds = shell_surface->GetWidget()->GetWindowBoundsInScreen();
+    gfx::Point center = bounds.CenterPoint();
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, center - bounds.OffsetFromOrigin(),
+                         center, ui::EventTimeForNow(), 0, 0);
+    EXPECT_EQ(surface.get(), GetTargetSurfaceForLocatedEvent(&event));
+  }
+}
+
+TEST_F(ShellSurfaceTest, CaptionWithPopup) {
+  gfx::Size buffer_size(256, 256);
+  auto buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto surface = std::make_unique<Surface>();
+  auto shell_surface = std::make_unique<ShellSurface>(surface.get());
+
+  surface->Attach(buffer.get());
+  surface->Commit();
+  shell_surface->GetWidget()->SetBounds(gfx::Rect(0, 0, 256, 256));
+  shell_surface->OnSetFrame(SurfaceFrameType::NORMAL);
+
+  auto popup_buffer = std::make_unique<Buffer>(
+      exo_test_helper()->CreateGpuMemoryBuffer(buffer_size));
+  auto popup_surface = std::make_unique<Surface>();
+  popup_surface->Attach(popup_buffer.get());
+  std::unique_ptr<ShellSurface> popup_shell_surface(CreatePopupShellSurface(
+      popup_surface.get(), shell_surface.get(), gfx::Point(50, 50)));
+  popup_shell_surface->Grab();
+  popup_surface->Commit();
+
+  EXPECT_EQ(WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow(),
+            popup_shell_surface->GetWidget()->GetNativeWindow());
+  {
+    // Move the mouse at the popup window.
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(5, 5),
+                         gfx::Point(55, 55), ui::EventTimeForNow(), 0, 0);
+    EXPECT_EQ(popup_surface.get(), GetTargetSurfaceForLocatedEvent(&event));
+  }
+
+  {
+    // Move the mouse at the caption of the main window.
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-45, -45),
+                         gfx::Point(5, 5), ui::EventTimeForNow(), 0, 0);
+    EXPECT_EQ(nullptr, GetTargetSurfaceForLocatedEvent(&event));
+  }
+
+  {
+    // Move the mouse in the main window.
+    ui::MouseEvent event(ui::ET_MOUSE_MOVED, gfx::Point(-25, 0),
+                         gfx::Point(25, 50), ui::EventTimeForNow(), 0, 0);
+    EXPECT_EQ(surface.get(), GetTargetSurfaceForLocatedEvent(&event));
+  }
+}
+
 }  // namespace exo

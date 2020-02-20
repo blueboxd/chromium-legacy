@@ -60,8 +60,7 @@ class WebAppInstallManager final : public InstallManager,
                                const InstallParams& install_params,
                                WebappInstallSource install_source,
                                OnceInstallCallback callback) override;
-  // For the old ExtensionSyncService-based system only:
-  void InstallWebAppFromSync(
+  void InstallBookmarkAppFromSync(
       const AppId& app_id,
       std::unique_ptr<WebApplicationInfo> web_application_info,
       OnceInstallCallback callback) override;

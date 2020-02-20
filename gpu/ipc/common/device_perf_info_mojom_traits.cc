@@ -6,11 +6,91 @@
 
 namespace mojo {
 
+#if defined(OS_WIN)
+// static
+gpu::mojom::Direct3DFeatureLevel
+EnumTraits<gpu::mojom::Direct3DFeatureLevel, D3D_FEATURE_LEVEL>::ToMojom(
+    D3D_FEATURE_LEVEL d3d_feature_level) {
+  switch (d3d_feature_level) {
+    case D3D_FEATURE_LEVEL_1_0_CORE:
+      return gpu::mojom::Direct3DFeatureLevel::k1_0_Core;
+    case D3D_FEATURE_LEVEL_9_1:
+      return gpu::mojom::Direct3DFeatureLevel::k9_1;
+    case D3D_FEATURE_LEVEL_9_2:
+      return gpu::mojom::Direct3DFeatureLevel::k9_2;
+    case D3D_FEATURE_LEVEL_9_3:
+      return gpu::mojom::Direct3DFeatureLevel::k9_3;
+    case D3D_FEATURE_LEVEL_10_0:
+      return gpu::mojom::Direct3DFeatureLevel::k10_0;
+    case D3D_FEATURE_LEVEL_10_1:
+      return gpu::mojom::Direct3DFeatureLevel::k10_1;
+    case D3D_FEATURE_LEVEL_11_0:
+      return gpu::mojom::Direct3DFeatureLevel::k11_0;
+    case D3D_FEATURE_LEVEL_11_1:
+      return gpu::mojom::Direct3DFeatureLevel::k11_1;
+    case D3D_FEATURE_LEVEL_12_0:
+      return gpu::mojom::Direct3DFeatureLevel::k12_0;
+    case D3D_FEATURE_LEVEL_12_1:
+      return gpu::mojom::Direct3DFeatureLevel::k12_1;
+  }
+  NOTREACHED() << "Invalid D3D_FEATURE_LEVEL:" << d3d_feature_level;
+  return gpu::mojom::Direct3DFeatureLevel::k1_0_Core;
+}
+
+// static
+bool EnumTraits<gpu::mojom::Direct3DFeatureLevel, D3D_FEATURE_LEVEL>::FromMojom(
+    gpu::mojom::Direct3DFeatureLevel input,
+    D3D_FEATURE_LEVEL* out) {
+  switch (input) {
+    case gpu::mojom::Direct3DFeatureLevel::k1_0_Core:
+      *out = D3D_FEATURE_LEVEL_1_0_CORE;
+      return true;
+    case gpu::mojom::Direct3DFeatureLevel::k9_1:
+      *out = D3D_FEATURE_LEVEL_9_1;
+      return true;
+    case gpu::mojom::Direct3DFeatureLevel::k9_2:
+      *out = D3D_FEATURE_LEVEL_9_2;
+      return true;
+    case gpu::mojom::Direct3DFeatureLevel::k9_3:
+      *out = D3D_FEATURE_LEVEL_9_3;
+      return true;
+    case gpu::mojom::Direct3DFeatureLevel::k10_0:
+      *out = D3D_FEATURE_LEVEL_10_0;
+      return true;
+    case gpu::mojom::Direct3DFeatureLevel::k10_1:
+      *out = D3D_FEATURE_LEVEL_10_1;
+      return true;
+    case gpu::mojom::Direct3DFeatureLevel::k11_0:
+      *out = D3D_FEATURE_LEVEL_11_0;
+      return true;
+    case gpu::mojom::Direct3DFeatureLevel::k11_1:
+      *out = D3D_FEATURE_LEVEL_11_1;
+      return true;
+    case gpu::mojom::Direct3DFeatureLevel::k12_0:
+      *out = D3D_FEATURE_LEVEL_12_0;
+      return true;
+    case gpu::mojom::Direct3DFeatureLevel::k12_1:
+      *out = D3D_FEATURE_LEVEL_12_1;
+      return true;
+  }
+  NOTREACHED() << "Invalid D3D_FEATURE_LEVEL: " << input;
+  return false;
+}
+#endif  // OS_WIN
+
 // static
 bool StructTraits<gpu::mojom::DevicePerfInfoDataView, gpu::DevicePerfInfo>::
     Read(gpu::mojom::DevicePerfInfoDataView data, gpu::DevicePerfInfo* out) {
-  out->score = data.score();
-  return true;
+  out->total_physical_memory_mb = data.total_physical_memory_mb();
+  out->total_disk_space_mb = data.total_disk_space_mb();
+  out->hardware_concurrency = data.hardware_concurrency();
+  bool rt = true;
+#if defined(OS_WIN)
+  out->system_commit_limit_mb = data.system_commit_limit_mb();
+  rt &= data.ReadD3d11FeatureLevel(&out->d3d11_feature_level);
+  out->has_discrete_gpu = data.has_discrete_gpu();
+#endif  // OS_WIN
+  return rt;
 }
 
 }  // namespace mojo

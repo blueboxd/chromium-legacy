@@ -106,12 +106,6 @@ bool LayoutTableCol::CanHaveChildren() const {
   return IsTableColumnGroup();
 }
 
-bool LayoutTableCol::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
-  // LayoutTableCol paints nothing by itself. Its background is painted by
-  // LayoutTableSection.
-  return true;
-}
-
 void LayoutTableCol::ClearPreferredLogicalWidthsDirtyBits() {
   ClearPreferredLogicalWidthsDirty();
 

@@ -115,20 +115,6 @@ void LayoutNGBlockFlowMixin<Base>::AddOutlineRects(
   }
 }
 
-template <typename Base>
-bool LayoutNGBlockFlowMixin<
-    Base>::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
-  // LayoutNGBlockFlowMixin is in charge of paint invalidation of the first
-  // line and painting backplates.
-  if (PaintFragment() || Base::FragmentItems())
-    return false;
-
-  if (Base::StyleRef().HasColumnRule())
-    return false;
-
-  return Base::PaintedOutputOfObjectHasNoEffectRegardlessOfSize();
-}
-
 // Retrieve NGBaseline from the current fragment.
 template <typename Base>
 base::Optional<LayoutUnit> LayoutNGBlockFlowMixin<Base>::FragmentBaseline()

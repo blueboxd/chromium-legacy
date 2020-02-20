@@ -144,7 +144,7 @@ export class ToolbarManager {
    * @private
    */
   isHighVelocityMouseMove_(e) {
-    if (e.type == 'mousemove') {
+    if (e.type === 'mousemove') {
       if (this.lastMovementTimestamp == null) {
         this.lastMovementTimestamp = this.getCurrentTimestamp_();
       } else {
@@ -154,7 +154,7 @@ export class ToolbarManager {
         const interval = newTime - this.lastMovementTimestamp;
         this.lastMovementTimestamp = newTime;
 
-        if (interval != 0) {
+        if (interval !== 0) {
           return movement / interval > SHOW_VELOCITY;
         }
       }
@@ -219,8 +219,8 @@ export class ToolbarManager {
 
     // Remove focus to make any visible tooltips disappear -- otherwise they'll
     // still be visible on screen when the toolbar is off screen.
-    if ((this.toolbar_ && document.activeElement == this.toolbar_) ||
-        document.activeElement == this.zoomToolbar_) {
+    if ((this.toolbar_ && document.activeElement === this.toolbar_) ||
+        document.activeElement === this.zoomToolbar_) {
       document.activeElement.blur();
     }
 

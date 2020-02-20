@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+#include "third_party/blink/renderer/core/layout/layout_progress.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_border_painter.h"
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
@@ -950,6 +951,33 @@ void BoxPainterBase::PaintMaskImages(const PaintInfo& paint_info,
                                paint_rect, style_, style_.MaskBoxImage(),
                                include_logical_left_edge,
                                include_logical_right_edge);
+}
+
+bool BoxPainterBase::ShouldSkipPaintUnderInvalidationChecking(
+    const LayoutBox& box) {
+  DCHECK(RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled());
+
+  // Disable paint under-invalidation checking for cases that under-invalidation
+  // is intensional and/or harmless.
+
+  // A box having delayed-invalidation may change before it's actually
+  // invalidated. Note that we still report harmless under-invalidation of
+  // non-delayed-invalidation animated background, which should be ignored.
+  if (box.ShouldDelayFullPaintInvalidation())
+    return true;
+
+  // We always paint a MediaSliderPart using the latest data (buffered ranges,
+  // current time and duration) which may be different from the cached data.
+  if (box.StyleRef().EffectiveAppearance() == kMediaSliderPart)
+    return true;
+
+  // We paint an indeterminate progress based on the position calculated from
+  // the animation progress. Harmless under-invalidatoin may happen during a
+  // paint that is not scheduled for animation.
+  if (box.IsProgress() && !ToLayoutProgress(box).IsDeterminate())
+    return true;
+
+  return false;
 }
 
 }  // namespace blink

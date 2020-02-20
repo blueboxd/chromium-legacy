@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_window_info_data_wrapper.h"
 
+#include "chrome/browser/chromeos/arc/accessibility/arc_accessibility_util.h"
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
 #include "components/exo/wm_helper.h"
 #include "ui/accessibility/ax_enums.mojom.h"
@@ -128,62 +129,30 @@ void AccessibilityWindowInfoDataWrapper::GetChildren(
 
 bool AccessibilityWindowInfoDataWrapper::GetProperty(
     mojom::AccessibilityWindowBooleanProperty prop) const {
-  if (!window_ptr_->boolean_properties)
-    return false;
-
-  auto it = window_ptr_->boolean_properties->find(prop);
-  if (it == window_ptr_->boolean_properties->end())
-    return false;
-
-  return it->second;
+  return arc::GetBooleanProperty(window_ptr_, prop);
 }
 
 bool AccessibilityWindowInfoDataWrapper::GetProperty(
     mojom::AccessibilityWindowIntProperty prop,
     int32_t* out_value) const {
-  if (!window_ptr_->int_properties)
-    return false;
-
-  auto it = window_ptr_->int_properties->find(prop);
-  if (it == window_ptr_->int_properties->end())
-    return false;
-
-  *out_value = it->second;
-  return true;
+  return arc::GetProperty(window_ptr_->int_properties, prop, out_value);
 }
 
 bool AccessibilityWindowInfoDataWrapper::HasProperty(
     mojom::AccessibilityWindowStringProperty prop) const {
-  if (!window_ptr_->string_properties)
-    return false;
-
-  auto it = window_ptr_->string_properties->find(prop);
-  return it != window_ptr_->string_properties->end();
+  return arc::HasProperty(window_ptr_->string_properties, prop);
 }
 
 bool AccessibilityWindowInfoDataWrapper::GetProperty(
     mojom::AccessibilityWindowStringProperty prop,
     std::string* out_value) const {
-  if (!HasProperty(prop))
-    return false;
-
-  auto it = window_ptr_->string_properties->find(prop);
-  *out_value = it->second;
-  return true;
+  return arc::GetProperty(window_ptr_->string_properties, prop, out_value);
 }
 
 bool AccessibilityWindowInfoDataWrapper::GetProperty(
     mojom::AccessibilityWindowIntListProperty prop,
     std::vector<int32_t>* out_value) const {
-  if (!window_ptr_->int_list_properties)
-    return false;
-
-  auto it = window_ptr_->int_list_properties->find(prop);
-  if (it == window_ptr_->int_list_properties->end())
-    return false;
-
-  *out_value = it->second;
-  return true;
+  return arc::GetProperty(window_ptr_->int_list_properties, prop, out_value);
 }
 
 }  // namespace arc

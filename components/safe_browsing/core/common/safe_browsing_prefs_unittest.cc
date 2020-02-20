@@ -125,7 +125,7 @@ TEST_F(SafeBrowsingPrefsTest, EnhancedProtection) {
   // Confirm default state.
   EXPECT_FALSE(IsEnhancedProtectionEnabled(prefs_));
 
-  SetEnhancedPref(&prefs_, true);
+  SetEnhancedProtectionPref(&prefs_, true);
   EXPECT_TRUE(IsEnhancedProtectionEnabled(prefs_));
 }
 

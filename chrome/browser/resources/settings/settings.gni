@@ -6,6 +6,7 @@
 # targets in Settings.
 settings_namespace_rewrites = [
   "cr_slider.SliderTick|SliderTick",
+  "settings.AboutPageBrowserProxy|AboutPageBrowserProxy",
   "settings.AppearanceBrowserProxy|AppearanceBrowserProxy",
   "settings.DefaultBrowserBrowserProxy|DefaultBrowserBrowserProxy",
   "settings.DownloadsBrowserProxy|DownloadsBrowserProxy",

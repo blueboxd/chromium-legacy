@@ -265,11 +265,11 @@ export class Viewport {
 
     const rotation = this.rotations_ * 90;
     // Set origin for rotation.
-    if (rotation == 90) {
+    if (rotation === 90) {
       matrix.translateSelf(width, 0);
-    } else if (rotation == 180) {
+    } else if (rotation === 180) {
       matrix.translateSelf(width, height);
-    } else if (rotation == 270) {
+    } else if (rotation === 270) {
       matrix.translateSelf(0, height);
     }
     matrix.rotateSelf(0, 0, rotation);
@@ -413,13 +413,13 @@ export class Viewport {
    * @private
    */
   resize_() {
-    if (this.fittingType_ == FittingType.FIT_TO_PAGE) {
+    if (this.fittingType_ === FittingType.FIT_TO_PAGE) {
       this.fitToPageInternal_(false);
-    } else if (this.fittingType_ == FittingType.FIT_TO_WIDTH) {
+    } else if (this.fittingType_ === FittingType.FIT_TO_WIDTH) {
       this.fitToWidth();
-    } else if (this.fittingType_ == FittingType.FIT_TO_HEIGHT) {
+    } else if (this.fittingType_ === FittingType.FIT_TO_HEIGHT) {
       this.fitToHeightInternal_(false);
-    } else if (this.internalZoom_ == 0) {
+    } else if (this.internalZoom_ === 0) {
       this.fitToNone();
     } else {
       this.updateViewport_();
@@ -677,7 +677,7 @@ export class Viewport {
   getLastPageInViewport_(viewportRect) {
     const pageAtY = this.getPageAtY_(viewportRect.y + viewportRect.height);
 
-    if (!this.twoUpView_ || pageAtY % 2 == 1 ||
+    if (!this.twoUpView_ || pageAtY % 2 === 1 ||
         pageAtY + 1 >= this.pageDimensions_.length) {
       return pageAtY;
     }
@@ -994,7 +994,7 @@ export class Viewport {
    */
   pinchZoom(e) {
     this.mightZoom_(() => {
-      this.pinchPhase_ = e.direction == 'out' ?
+      this.pinchPhase_ = e.direction === 'out' ?
           Viewport.PinchPhase.PINCH_UPDATE_ZOOM_OUT :
           Viewport.PinchPhase.PINCH_UPDATE_ZOOM_IN;
 
@@ -1070,7 +1070,7 @@ export class Viewport {
    */
   goToNextPage() {
     const currentPage = this.getMostVisiblePage();
-    const nextPageOffset = (this.twoUpView_ && currentPage % 2 == 0) ? 2 : 1;
+    const nextPageOffset = (this.twoUpView_ && currentPage % 2 === 0) ? 2 : 1;
     this.goToPage(currentPage + nextPageOffset);
   }
 
@@ -1083,7 +1083,7 @@ export class Viewport {
     let previousPageOffset = -1;
 
     if (this.twoUpView_) {
-      previousPageOffset = (currentPage % 2 == 0) ? -2 : -3;
+      previousPageOffset = (currentPage % 2 === 0) ? -2 : -3;
     }
 
     this.goToPage(currentPage + previousPageOffset);
@@ -1212,8 +1212,8 @@ export class Viewport {
    */
   isPagedMode() {
     return (
-        this.fittingType_ == FittingType.FIT_TO_PAGE ||
-        this.fittingType_ == FittingType.FIT_TO_HEIGHT);
+        this.fittingType_ === FittingType.FIT_TO_PAGE ||
+        this.fittingType_ === FittingType.FIT_TO_HEIGHT);
   }
 
   /**
@@ -1222,11 +1222,11 @@ export class Viewport {
   scrollTo(point) {
     let changed = false;
     const newPosition = this.position;
-    if (point.x !== undefined && point.x != newPosition.x) {
+    if (point.x !== undefined && point.x !== newPosition.x) {
       newPosition.x = point.x;
       changed = true;
     }
-    if (point.y !== undefined && point.y != newPosition.y) {
+    if (point.y !== undefined && point.y !== newPosition.y) {
       newPosition.y = point.y;
       changed = true;
     }

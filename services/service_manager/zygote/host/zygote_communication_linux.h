@@ -31,7 +31,8 @@ namespace service_manager {
 // https://chromium.googlesource.com/chromium/src/+/master/docs/linux/sandbox_ipc.md
 class COMPONENT_EXPORT(SERVICE_MANAGER_ZYGOTE) ZygoteCommunication {
  public:
-  ZygoteCommunication();
+  enum class ZygoteType { kSandboxed, kUnsandboxed };
+  explicit ZygoteCommunication(ZygoteType type);
   ~ZygoteCommunication();
 
   void Init(
@@ -80,6 +81,9 @@ class COMPONENT_EXPORT(SERVICE_MANAGER_ZYGOTE) ZygoteCommunication {
 
   // Get the sandbox status from the zygote.
   ssize_t ReadSandboxStatus();
+
+  // Indicates whether the Zygote starts unsandboxed or not.
+  const ZygoteType type_;
 
   base::ScopedFD control_fd_;  // the socket to the zygote.
   // A lock protecting all communication with the zygote. This lock must be

@@ -25,12 +25,9 @@
 
 namespace service_manager {
 
-ZygoteCommunication::ZygoteCommunication()
-    : control_fd_(),
-      control_lock_(),
+ZygoteCommunication::ZygoteCommunication(ZygoteType type)
+    : type_(type),
       pid_(),
-      list_of_running_zygote_children_(),
-      child_tracking_lock_(),
       sandbox_status_(0),
       have_read_sandbox_status_word_(false),
       init_(false) {}
@@ -229,6 +226,9 @@ void ZygoteCommunication::Init(
 
   base::CommandLine cmd_line(chrome_path);
   cmd_line.AppendSwitchASCII(switches::kProcessType, switches::kZygoteProcess);
+
+  if (type_ == ZygoteType::kUnsandboxed)
+    cmd_line.AppendSwitch(switches::kNoZygoteSandbox);
 
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();

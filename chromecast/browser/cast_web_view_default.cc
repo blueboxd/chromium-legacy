@@ -19,6 +19,7 @@
 #include "chromecast/chromecast_buildflags.h"
 #include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/media_session.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -53,23 +54,27 @@ CastWebViewDefault::CastWebViewDefault(
     const CreateParams& params,
     CastWebService* web_service,
     content::BrowserContext* browser_context,
+    scoped_refptr<content::SiteInstance> site_instance,
     std::unique_ptr<CastContentWindow> cast_content_window)
-    : CastWebViewBase(params, web_service),
+    : CastWebView(params),
       web_service_(web_service),
       browser_context_(browser_context),
+      site_instance_(std::move(site_instance)),
       activity_id_(params.activity_id),
       session_id_(params.window_params.session_id),
       sdk_version_(params.sdk_version),
       allow_media_access_(params.allow_media_access),
       log_prefix_(params.log_prefix),
-      web_contents_(CreateWebContents(browser_context_, site_instance())),
+      web_contents_(CreateWebContents(browser_context_, site_instance_)),
       cast_web_contents_(web_contents_.get(), params.web_contents_params),
       window_(cast_content_window
                   ? std::move(cast_content_window)
-                  : web_service->CreateWindow(params.window_params)) {
+                  : web_service->CreateWindow(params.window_params)),
+      resize_window_when_navigation_starts_(true) {
   DCHECK(web_service_);
   DCHECK(browser_context_);
   DCHECK(window_);
+  content::WebContentsObserver::Observe(web_contents_.get());
 
   web_contents_->SetDelegate(this);
 #if defined(USE_AURA)
@@ -99,6 +104,15 @@ CastWebContents* CastWebViewDefault::cast_web_contents() {
   return &cast_web_contents_;
 }
 
+void CastWebViewDefault::LoadUrl(GURL url) {
+  cast_web_contents_.LoadUrl(url);
+}
+
+void CastWebViewDefault::ClosePage() {
+  content::WebContentsObserver::Observe(nullptr);
+  cast_web_contents_.ClosePage();
+}
+
 void CastWebViewDefault::CloseContents(content::WebContents* source) {
   DCHECK_EQ(source, web_contents_.get());
   window_.reset();  // Window destructor requires live web_contents on Android.
@@ -114,6 +128,19 @@ void CastWebViewDefault::InitializeWindow(mojom::ZOrder z_order,
   window_->CreateWindowForWebContents(&cast_web_contents_, z_order,
                                       initial_priority);
   web_contents_->Focus();
+}
+
+void CastWebViewDefault::GrantScreenAccess() {
+  if (!window_)
+    return;
+  window_->GrantScreenAccess();
+}
+
+void CastWebViewDefault::RevokeScreenAccess() {
+  resize_window_when_navigation_starts_ = false;
+  if (!window_)
+    return;
+  window_->RevokeScreenAccess();
 }
 
 content::WebContents* CastWebViewDefault::OpenURLFromTab(
@@ -252,6 +279,23 @@ bool CastWebViewDefault::ShouldAllowRunningInsecureContent(
       activity_id_, session_id_, sdk_version_,
       "Cast.Platform.AppRunningInsecureContent");
   return allowed_per_prefs;
+}
+
+void CastWebViewDefault::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (!resize_window_when_navigation_starts_) {
+    return;
+  }
+  resize_window_when_navigation_starts_ = false;
+
+#if defined(USE_AURA)
+  // Resize window
+  gfx::Size display_size =
+      display::Screen::GetScreen()->GetPrimaryDisplay().size();
+  aura::Window* content_window = web_contents()->GetNativeView();
+  content_window->SetBounds(
+      gfx::Rect(display_size.width(), display_size.height()));
+#endif
 }
 
 }  // namespace chromecast

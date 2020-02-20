@@ -4,7 +4,30 @@
 
 module gpu.mojom;
 
-// Corresponds to |gpu::DevicePerfInfo| in file gpu/config/device_perf_info.h
+// Corresponds to D3D_FEATURE_LEVEL in <d3dcommon.h>
+enum Direct3DFeatureLevel {
+  k1_0_Core,
+  k9_1,
+  k9_2,
+  k9_3,
+  k10_0,
+  k10_1,
+  k11_0,
+  k11_1,
+  k12_0,
+  k12_1,
+};
+
+// Corresponds to |gpu::DevicePerfInfo| in "gpu/config/device_perf_info.h"
 struct DevicePerfInfo {
-  uint32 score;
+  uint32 total_physical_memory_mb;
+  uint32 total_disk_space_mb;
+  uint32 hardware_concurrency;
+
+  [EnableIf=is_win]
+  uint32 system_commit_limit_mb;
+  [EnableIf=is_win]
+  Direct3DFeatureLevel d3d11_feature_level;
+  [EnableIf=is_win]
+  bool has_discrete_gpu;
 };

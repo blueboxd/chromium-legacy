@@ -3150,12 +3150,6 @@ PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::OwnerNodeId()
       ->OwnerNodeId();
 }
 
-bool PaintLayerScrollableArea::ScrollingBackgroundDisplayItemClient::
-    PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
-  return scrollable_area_->GetLayoutBox()
-      ->PaintedOutputOfObjectHasNoEffectRegardlessOfSize();
-}
-
 IntRect PaintLayerScrollableArea::ScrollCornerDisplayItemClient::VisualRect()
     const {
   return scrollable_area_->scroll_corner_and_resizer_visual_rect_;

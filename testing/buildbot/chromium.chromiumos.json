@@ -383,35 +383,6 @@
       },
       {
         "args": [
-          "--vpython-dir=../../vpython_dir_linux_amd64"
-        ],
-        "merge": {
-          "args": [],
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "infra/tools/luci/vpython/linux-amd64",
-              "location": "vpython_dir_linux_amd64",
-              "revision": "git_revision:9a931a5307c46b16b1c12e01e8239d4a73830b89"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-16.04",
-              "pool": "chromium.tests.cros.vm"
-            }
-          ],
-          "shards": 3
-        },
-        "test": "net_unittests",
-        "test_target": "//net:net_unittests"
-      },
-      {
-        "args": [
           "--stop-ui"
         ],
         "merge": {

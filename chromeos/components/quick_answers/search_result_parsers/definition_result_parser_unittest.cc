@@ -82,6 +82,14 @@ TEST_F(DefinitionResultParserTest, Success) {
   EXPECT_EQ("incapable of being fully explored or understood.",
             quick_answer.primary_answer);
   EXPECT_EQ("unfathomable · /ˌənˈfaT͟Həməb(ə)/", quick_answer.secondary_answer);
+  EXPECT_EQ(
+      "incapable of being fully explored or understood.",
+      static_cast<QuickAnswerText*>(quick_answer.first_answer_row[0].get())
+          ->text_);
+  EXPECT_EQ("unfathomable · /ˌənˈfaT͟Həməb(ə)/",
+            static_cast<QuickAnswerText*>(quick_answer.title[0].get())->text_);
+  EXPECT_TRUE(quick_answer.title.size() == 1);
+  EXPECT_TRUE(quick_answer.first_answer_row.size() == 1);
 }
 
 TEST_F(DefinitionResultParserTest, EmptyValue) {

@@ -20,9 +20,13 @@ namespace {
 std::vector<BrokerFilePermission> GetSodaFilePermissions(
     base::FilePath latest_version_dir) {
   std::vector<BrokerFilePermission> permissions{
-      BrokerFilePermission::ReadOnly("/dev/urandom"),
-      BrokerFilePermission::ReadOnlyRecursive(
-          latest_version_dir.AsEndingWithSeparator().value())};
+      BrokerFilePermission::ReadOnly("/dev/urandom")};
+
+  // This may happen if a user doesn't have a SODA installation.
+  if (!latest_version_dir.empty()) {
+    permissions.push_back(BrokerFilePermission::ReadOnlyRecursive(
+        latest_version_dir.AsEndingWithSeparator().value()));
+  }
 
   return permissions;
 }

@@ -177,8 +177,8 @@ void SoftwareVideoRenderer::RenderFrame(
 
   consumer_->DrawFrame(
       std::move(frame),
-      base::Bind(&SoftwareVideoRenderer::OnFrameRendered,
-                 weak_factory_.GetWeakPtr(), base::Passed(&stats), done));
+      base::BindOnce(&SoftwareVideoRenderer::OnFrameRendered,
+                     weak_factory_.GetWeakPtr(), base::Passed(&stats), done));
 }
 
 void SoftwareVideoRenderer::OnFrameRendered(

@@ -91,10 +91,11 @@ JniGlDisplayHandler::Core::Core(base::WeakPtr<JniGlDisplayHandler> shell)
                                 base::Unretained(this)));
 
   // Do not bind GlRenderer::OnFrameReceived. |renderer_| is not ready yet.
-  owned_frame_consumer_.reset(new DualBufferFrameConsumer(
-      base::Bind(&JniGlDisplayHandler::Core::OnFrameReceived, weak_ptr_),
+  owned_frame_consumer_ = std::make_unique<DualBufferFrameConsumer>(
+      base::BindRepeating(&JniGlDisplayHandler::Core::OnFrameReceived,
+                          weak_ptr_),
       runtime_->display_task_runner(),
-      protocol::FrameConsumer::PixelFormat::FORMAT_RGBA));
+      protocol::FrameConsumer::PixelFormat::FORMAT_RGBA);
   frame_consumer_ = owned_frame_consumer_->GetWeakPtr();
 }
 

@@ -12,6 +12,7 @@ option java_package = "org.chromium.components.metrics";
 package metrics;
 
 import "cast_logs.proto";
+import "cast_assistant_logs.proto";
 import "chrome_os_app_list_launch_event.proto";
 import "histogram_event.proto";
 import "memory_leak_report.proto";
@@ -98,6 +99,10 @@ message ChromeUserMetricsExtension {
 
   // Memory leak reports generated since the last UMA upload.
   repeated MemoryLeakReportProto memory_leak_report = 13;
+
+  // Additional data related with CastAssistant devices.
+  // Appears in gfstmp/cast_assistant logs only.
+  optional CastAssistantLogsProto cast_assistant_logs = 14;
 
   // The ReportingInfo message sent in the X-Chrome-UMA-ReportingInfo header.
   // Copied in by the receiving server.

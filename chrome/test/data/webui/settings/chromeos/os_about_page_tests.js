@@ -23,7 +23,7 @@ cr.define('settings_about_page', function() {
     suite('AboutPageTest', function() {
       let page = null;
 
-      /** @type {?settings.TestAboutPageBrowserProxy} */
+      /** @type {?settings.TestAboutPageBrowserProxyChromeOS} */
       let aboutBrowserProxy = null;
 
       /** @type {?settings.TestLifetimeBrowserProxy} */
@@ -35,7 +35,7 @@ cr.define('settings_about_page', function() {
         lifetimeBrowserProxy = new settings.TestLifetimeBrowserProxy();
         settings.LifetimeBrowserProxyImpl.instance_ = lifetimeBrowserProxy;
 
-        aboutBrowserProxy = new TestAboutPageBrowserProxy();
+        aboutBrowserProxy = new TestAboutPageBrowserProxyChromeOS();
         settings.AboutPageBrowserProxyImpl.instance_ = aboutBrowserProxy;
         return initNewPage();
       });
@@ -511,7 +511,7 @@ cr.define('settings_about_page', function() {
       let browserProxy = null;
 
       setup(function() {
-        browserProxy = new TestAboutPageBrowserProxy();
+        browserProxy = new TestAboutPageBrowserProxyChromeOS();
         settings.AboutPageBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();
       });
@@ -599,7 +599,7 @@ cr.define('settings_about_page', function() {
       const currentChannel = BrowserChannel.BETA;
 
       setup(function() {
-        browserProxy = new TestAboutPageBrowserProxy();
+        browserProxy = new TestAboutPageBrowserProxyChromeOS();
         browserProxy.setChannels(currentChannel, currentChannel);
         settings.AboutPageBrowserProxyImpl.instance_ = browserProxy;
         PolymerTest.clearBody();

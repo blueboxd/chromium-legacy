@@ -90,11 +90,6 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
 
   void Paint(const PaintInfo&) const override;
 
-  // Replaced objects often have contents to paint.
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override {
-    return false;
-  }
-
   // This function is public only so we can call it when computing
   // intrinsic size in LayoutNG.
   virtual void ComputeIntrinsicSizingInfo(IntrinsicSizingInfo&) const;

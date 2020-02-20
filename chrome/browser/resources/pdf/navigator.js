@@ -26,7 +26,7 @@ export class NavigatorDelegate {
   navigateInCurrentTab(url) {
     // When the PDFviewer is inside a browser tab, prefer the tabs API because
     // it can navigate from one file:// URL to another.
-    if (chrome.tabs && this.tabId_ != -1) {
+    if (chrome.tabs && this.tabId_ !== -1) {
       chrome.tabs.update(this.tabId_, {url: url});
     } else {
       window.location.href = url;
@@ -100,7 +100,7 @@ export class PdfNavigator {
    *     disposition when navigating to the new URL.
    */
   navigate(urlString, disposition) {
-    if (urlString.length == 0) {
+    if (urlString.length === 0) {
       return;
     }
 
@@ -169,7 +169,7 @@ export class PdfNavigator {
     }
 
     const pageNumber = viewportPosition.page;
-    if (pageNumber != undefined && this.originalUrl_ && newUrl &&
+    if (pageNumber !== undefined && this.originalUrl_ && newUrl &&
         this.originalUrl_.origin === newUrl.origin &&
         this.originalUrl_.pathname === newUrl.pathname) {
       this.viewport_.goToPage(pageNumber);
@@ -236,7 +236,7 @@ export class PdfNavigator {
     }
     if (!url.startsWith('.')) {
       const domainSeparatorIndex = url.indexOf('/');
-      const domainName = domainSeparatorIndex == -1 ?
+      const domainName = domainSeparatorIndex === -1 ?
           url :
           url.substr(0, domainSeparatorIndex);
       const domainDotCount = (domainName.match(/\./g) || []).length;

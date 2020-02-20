@@ -37081,6 +37081,7 @@ from previous Chrome versions.
   <int value="-1939003674" label="NetworkServiceInProcess:disabled"/>
   <int value="-1938263248" label="enable-extension-info-dialog"/>
   <int value="-1937077699" label="http-form-warning"/>
+  <int value="-1936630125" label="BluetoothKernelSuspendNotifier:enabled"/>
   <int value="-1936032607" label="enable-experimental-webassembly-features"/>
   <int value="-1934661084" label="ForceUnifiedConsentBump:disabled"/>
   <int value="-1933425042" label="OfflinePreviews:enabled"/>
@@ -37215,6 +37216,7 @@ from previous Chrome versions.
   <int value="-1797739460" label="brotli-encoding:disabled"/>
   <int value="-1791226955" label="BreakingNewsPush:enabled"/>
   <int value="-1790227231" label="show-autofill-signatures"/>
+  <int value="-1789139269" label="SmbFs:disabled"/>
   <int value="-1784788154" label="NewRemotePlaybackPipeline:disabled"/>
   <int value="-1780306716"
       label="OmniboxSpeculativeServiceWorkerStartOnQueryInput:enabled"/>
@@ -37451,6 +37453,7 @@ from previous Chrome versions.
   <int value="-1472825316" label="ContextualSearchLongpressResolve:enabled"/>
   <int value="-1471021059"
       label="OmniboxUIExperimentShowSuggestionFavicons:disabled"/>
+  <int value="-1470178735" label="BluetoothKernelSuspendNotifier:disabled"/>
   <int value="-1469536698" label="ChromeHomeDoodle:enabled"/>
   <int value="-1469228683" label="QuickUnlockPinSignin:disabled"/>
   <int value="-1468126425" label="ResourceLoadScheduler:disabled"/>
@@ -37788,6 +37791,7 @@ from previous Chrome versions.
   <int value="-1121931029" label="DownloadsForeground:enabled"/>
   <int value="-1119700637" label="ui-disable-partial-swap"/>
   <int value="-1118921985" label="ForceEnableSystemAec:enabled"/>
+  <int value="-1117104514" label="smbfs-file-shares"/>
   <int value="-1114080030" label="ResourceLoadingHints:enabled"/>
   <int value="-1112782121" label="AndroidSigninPromos:disabled"/>
   <int value="-1109826787" label="AccessibilityExposeDisplayNone:enabled"/>
@@ -38895,6 +38899,7 @@ from previous Chrome versions.
   <int value="268535107"
       label="ash-new-touch-support-for-screen-magnification"/>
   <int value="270267831" label="enable-scripts-require-action"/>
+  <int value="272108480" label="SmbFs:enabled"/>
   <int value="272631627" label="BookmarkAppsMac:enabled"/>
   <int value="273489120" label="CrostiniDiskResizing:disabled"/>
   <int value="274103741" label="enable-ntp-popular-sites"/>

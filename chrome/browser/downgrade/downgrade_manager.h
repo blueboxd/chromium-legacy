@@ -48,6 +48,8 @@ class DowngradeManager {
   // called late in shutdown while the process singleton is still held.
   void ProcessDowngrade(const base::FilePath& user_data_dir);
 
+  static void EnableSnapshotsForTesting(bool enable);
+
  private:
   enum class Type {
     kNone = 0,                // Same version or upgrade.

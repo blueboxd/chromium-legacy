@@ -268,6 +268,7 @@ Polymer({
       searchField.setValue(urlSearchQuery, true /* noEvent */);
     }
 
+    settings.recordSearch();
     this.$.main.searchContents(urlSearchQuery);
   },
 

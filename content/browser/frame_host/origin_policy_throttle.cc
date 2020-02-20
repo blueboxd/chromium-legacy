@@ -34,11 +34,7 @@ void OriginPolicyAddExceptionFor(BrowserContext* browser_context,
 // static
 bool OriginPolicyThrottle::ShouldRequestOriginPolicy(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  bool origin_policy_enabled =
-      base::FeatureList::IsEnabled(features::kOriginPolicy) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures);
-  if (!origin_policy_enabled)
+  if (!base::FeatureList::IsEnabled(features::kOriginPolicy))
     return false;
 
   if (!url.SchemeIs(url::kHttpsScheme))

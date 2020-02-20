@@ -156,12 +156,11 @@ void TtsExtensionEventHandler::OnTtsEvent(content::TtsUtterance* utterance,
     delete this;
 }
 
-bool TtsSpeakFunction::RunAsync() {
+ExtensionFunction::ResponseAction TtsSpeakFunction::Run() {
   std::string text;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &text));
   if (text.size() > 32768) {
-    error_ = constants::kErrorUtteranceTooLong;
-    return false;
+    return RespondNow(Error(constants::kErrorUtteranceTooLong));
   }
 
   std::unique_ptr<base::DictionaryValue> options(new base::DictionaryValue());
@@ -181,8 +180,7 @@ bool TtsSpeakFunction::RunAsync() {
   if (options->HasKey(constants::kLangKey))
     EXTENSION_FUNCTION_VALIDATE(options->GetString(constants::kLangKey, &lang));
   if (!lang.empty() && !l10n_util::IsValidLocaleSyntax(lang)) {
-    error_ = constants::kErrorInvalidLang;
-    return false;
+    return RespondNow(Error(constants::kErrorInvalidLang));
   }
 
   // TODO(katie): Remove this after M73. This is just used to track how the
@@ -199,8 +197,7 @@ bool TtsSpeakFunction::RunAsync() {
     EXTENSION_FUNCTION_VALIDATE(
         options->GetDouble(constants::kRateKey, &rate));
     if (rate < 0.1 || rate > 10.0) {
-      error_ = constants::kErrorInvalidRate;
-      return false;
+      return RespondNow(Error(constants::kErrorInvalidRate));
     }
   }
 
@@ -209,8 +206,7 @@ bool TtsSpeakFunction::RunAsync() {
     EXTENSION_FUNCTION_VALIDATE(
         options->GetDouble(constants::kPitchKey, &pitch));
     if (pitch < 0.0 || pitch > 2.0) {
-      error_ = constants::kErrorInvalidPitch;
-      return false;
+      return RespondNow(Error(constants::kErrorInvalidPitch));
     }
   }
 
@@ -219,8 +215,7 @@ bool TtsSpeakFunction::RunAsync() {
     EXTENSION_FUNCTION_VALIDATE(
         options->GetDouble(constants::kVolumeKey, &volume));
     if (volume < 0.0 || volume > 1.0) {
-      error_ = constants::kErrorInvalidVolume;
-      return false;
+      return RespondNow(Error(constants::kErrorInvalidVolume));
     }
   }
 
@@ -270,10 +265,10 @@ bool TtsSpeakFunction::RunAsync() {
   // send the success response to the callback now - this ensures that
   // the callback response always arrives before events, which makes
   // the behavior more predictable and easier to write unit tests for too.
-  SendResponse(true);
+  Respond(NoArguments());
 
   std::unique_ptr<content::TtsUtterance> utterance =
-      content::TtsUtterance::Create(GetProfile());
+      content::TtsUtterance::Create(browser_context());
   utterance->SetText(text);
   utterance->SetVoiceName(voice_name);
   utterance->SetSrcId(src_id);
@@ -289,7 +284,7 @@ bool TtsSpeakFunction::RunAsync() {
 
   content::TtsController* controller = content::TtsController::GetInstance();
   controller->SpeakOrEnqueue(std::move(utterance));
-  return true;
+  return AlreadyResponded();
 }
 
 ExtensionFunction::ResponseAction TtsStopSpeakingFunction::Run() {

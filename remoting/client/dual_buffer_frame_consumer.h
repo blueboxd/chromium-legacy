@@ -31,10 +31,10 @@ class DualBufferFrameConsumer : public protocol::FrameConsumer {
   // RenderCallback(decoded_frame, done)
   // |done| should be run after it is rendered. Can be called on any thread.
   using RenderCallback =
-      base::Callback<void(std::unique_ptr<webrtc::DesktopFrame>,
-                          base::OnceClosure)>;
+      base::RepeatingCallback<void(std::unique_ptr<webrtc::DesktopFrame>,
+                                   base::OnceClosure)>;
   DualBufferFrameConsumer(
-      const RenderCallback& callback,
+      RenderCallback callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       PixelFormat format);
   ~DualBufferFrameConsumer() override;

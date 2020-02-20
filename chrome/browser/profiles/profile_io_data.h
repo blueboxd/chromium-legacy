@@ -29,7 +29,7 @@
 #include "content/public/browser/resource_context.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
-#include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/network_service.mojom-forward.h"
 
 class HostContentSettingsMap;
 

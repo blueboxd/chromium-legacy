@@ -14,9 +14,9 @@ export class PDFMetrics {
    * @param {FittingType} fittingType the new FittingType.
    */
   static recordFitTo(fittingType) {
-    if (fittingType == FittingType.FIT_TO_PAGE) {
+    if (fittingType === FittingType.FIT_TO_PAGE) {
       PDFMetrics.record(PDFMetrics.UserAction.FIT_TO_PAGE);
-    } else if (fittingType == FittingType.FIT_TO_WIDTH) {
+    } else if (fittingType === FittingType.FIT_TO_WIDTH) {
       PDFMetrics.record(PDFMetrics.UserAction.FIT_TO_WIDTH);
     }
     // There is no user action to do a fit-to-height, this only happens with

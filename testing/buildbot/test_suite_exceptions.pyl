@@ -1037,6 +1037,7 @@
   },
   'net_unittests': {
     'remove_from': [
+      'chromeos-amd64-generic-rel',  # https://crbug.com/1053547
       'fuchsia-fyi-arm64-rel',  # https://crbug.com/877248
       'fuchsia-fyi-x64-dbg',  # https://crbug.com/844416
     ],

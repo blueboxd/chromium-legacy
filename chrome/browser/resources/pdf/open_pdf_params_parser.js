@@ -31,7 +31,7 @@ export class OpenPdfParamsParser {
    */
   parseZoomParam_(paramValue) {
     const paramValueSplit = paramValue.split(',');
-    if (paramValueSplit.length != 1 && paramValueSplit.length != 3) {
+    if (paramValueSplit.length !== 1 && paramValueSplit.length !== 3) {
       return {};
     }
 
@@ -42,7 +42,7 @@ export class OpenPdfParamsParser {
     }
 
     // Handle #zoom=scale.
-    if (paramValueSplit.length == 1) {
+    if (paramValueSplit.length === 1) {
       return {'zoom': zoomFactor};
     }
 
@@ -105,12 +105,12 @@ export class OpenPdfParamsParser {
     const params = {};
 
     const paramIndex = url.search('#');
-    if (paramIndex == -1) {
+    if (paramIndex === -1) {
       return params;
     }
 
     const paramTokens = url.substring(paramIndex + 1).split('&');
-    if ((paramTokens.length == 1) && (paramTokens[0].search('=') == -1)) {
+    if ((paramTokens.length === 1) && (paramTokens[0].search('=') === -1)) {
       // Handle the case of http://foo.com/bar#NAMEDDEST. This is not
       // explicitly mentioned except by example in the Adobe
       // "PDF Open Parameters" document.
@@ -120,7 +120,7 @@ export class OpenPdfParamsParser {
 
     for (const paramToken of paramTokens) {
       const keyValueSplit = paramToken.split('=');
-      if (keyValueSplit.length != 2) {
+      if (keyValueSplit.length !== 2) {
         continue;
       }
       params[keyValueSplit[0]] = keyValueSplit[1];
@@ -141,7 +141,7 @@ export class OpenPdfParamsParser {
     const params = this.parseUrlParams_(url);
     const uiParams = {toolbar: true};
 
-    if ('toolbar' in params && params['toolbar'] == 0) {
+    if ('toolbar' in params && params['toolbar'] === '0') {
       uiParams.toolbar = false;
     }
 
@@ -196,7 +196,7 @@ export class OpenPdfParamsParser {
    */
   onNamedDestinationReceived(pageNumber) {
     const outstandingRequest = this.outstandingRequests_.shift();
-    if (pageNumber != -1) {
+    if (pageNumber !== -1) {
       outstandingRequest.params.page = pageNumber;
     }
     outstandingRequest.callback(outstandingRequest.params);

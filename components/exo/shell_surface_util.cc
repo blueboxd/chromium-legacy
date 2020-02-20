@@ -16,6 +16,7 @@
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/events/event.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
@@ -39,6 +40,22 @@ DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kClientAccessibilityIdKey, -1)
 
 // Permission object allowing this window to activate itself.
 DEFINE_UI_CLASS_PROPERTY_KEY(exo::Permission*, kPermissionKey, nullptr)
+
+// Returns true if the component for a located event should be taken care of
+// by the window system.
+bool ShouldHTComponentBlocked(int component) {
+  switch (component) {
+    case HTCAPTION:
+    case HTCLOSE:
+    case HTMAXBUTTON:
+    case HTMINBUTTON:
+    case HTMENU:
+    case HTSYSMENU:
+      return true;
+    default:
+      return false;
+  }
+}
 
 }  // namespace
 
@@ -116,7 +133,7 @@ ShellSurfaceBase* GetShellSurfaceBaseForWindow(aura::Window* window) {
 Surface* GetTargetSurfaceForLocatedEvent(ui::LocatedEvent* event) {
   aura::Window* window =
       WMHelper::GetInstance()->GetCaptureClient()->GetCaptureWindow();
-  gfx::PointF location_in_target = event->location_f();
+  gfx::PointF location_in_target_f = event->location_f();
 
   if (!window)
     return Surface::AsSurface(static_cast<aura::Window*>(event->target()));
@@ -133,22 +150,28 @@ Surface* GetTargetSurfaceForLocatedEvent(ui::LocatedEvent* event) {
   }
 
   while (true) {
-    aura::Window* focused = window->GetEventHandlerForPoint(
-        gfx::ToFlooredPoint(location_in_target));
+    gfx::Point location_in_target = gfx::ToFlooredPoint(location_in_target_f);
+    aura::Window* focused = window->GetEventHandlerForPoint(location_in_target);
 
-    if (focused) {
-      aura::Window::ConvertPointToTarget(window, focused, &location_in_target);
+    if (focused)
       return Surface::AsSurface(focused);
+
+    // If the event falls into the place where the window system should care
+    // about (i.e. window caption), do not check the transient parent but just
+    // return nullptr. See b/149517682.
+    if (window->delegate() &&
+        ShouldHTComponentBlocked(
+            window->delegate()->GetNonClientComponent(location_in_target))) {
+      return nullptr;
     }
 
     aura::Window* parent_window = wm::GetTransientParent(window);
 
-    if (!parent_window) {
-      location_in_target = event->location_f();
+    if (!parent_window)
       return main_surface;
-    }
+
     aura::Window::ConvertPointToTarget(window, parent_window,
-                                       &location_in_target);
+                                       &location_in_target_f);
     window = parent_window;
   }
 }

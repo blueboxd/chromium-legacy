@@ -160,6 +160,8 @@ CheckClientDownloadRequestBase::CheckClientDownloadRequestBase(
         profile &&
         AdvancedProtectionStatusManagerFactory::GetForProfile(profile)
             ->IsUnderAdvancedProtection();
+    is_enhanced_protection_ =
+        profile && IsEnhancedProtectionEnabled(*profile->GetPrefs());
   }
 }
 
@@ -218,7 +220,8 @@ void CheckClientDownloadRequestBase::FinishRequest(
 bool CheckClientDownloadRequestBase::ShouldSampleWhitelistedDownload() {
   // We currently sample 1% whitelisted downloads from users who opted
   // in extended reporting and are not in incognito mode.
-  return service_ && is_extended_reporting_ && !is_incognito_ &&
+  return service_ && (is_extended_reporting_ || is_enhanced_protection_) &&
+         !is_incognito_ &&
          base::RandDouble() < service_->whitelist_sample_rate();
 }
 
@@ -229,7 +232,8 @@ bool CheckClientDownloadRequestBase::ShouldSampleUnsupportedFile(
   // we'll send a "light ping" with private info removed, and we won't
   // use the verdict.
   const FileTypePolicies* policies = FileTypePolicies::GetInstance();
-  return service_ && is_extended_reporting_ && !is_incognito_ &&
+  return service_ && (is_extended_reporting_ || is_enhanced_protection_) &&
+         !is_incognito_ &&
          base::RandDouble() < policies->SampledPingProbability() &&
          policies->PingSettingForFile(filename) ==
              DownloadFileType::SAMPLED_PING;
@@ -448,9 +452,11 @@ void CheckClientDownloadRequestBase::SendRequest() {
   }
 
   auto request = std::make_unique<ClientDownloadRequest>();
-  auto population = is_extended_reporting_
-                        ? ChromeUserPopulation::EXTENDED_REPORTING
-                        : ChromeUserPopulation::SAFE_BROWSING;
+  auto population = is_enhanced_protection_
+                        ? ChromeUserPopulation::ENHANCED_PROTECTION
+                        : is_extended_reporting_
+                              ? ChromeUserPopulation::EXTENDED_REPORTING
+                              : ChromeUserPopulation::SAFE_BROWSING;
   request->mutable_population()->set_user_population(population);
   request->mutable_population()->set_profile_management_status(
       GetProfileManagementStatus(

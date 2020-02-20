@@ -169,15 +169,23 @@ class UtilitySandboxedProcessLauncherDelegate
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
   service_manager::ZygoteHandle GetZygote() override {
-    if (service_manager::IsUnsandboxedSandboxType(sandbox_type_) ||
-        sandbox_type_ == service_manager::SandboxType::kNetwork ||
+    // If the sandbox has been disabled for a given type, don't use a zygote.
+    if (service_manager::IsUnsandboxedSandboxType(sandbox_type_))
+      return nullptr;
+
+    // Utility processes which need specialized sandboxes fork from the
+    // unsandboxed zygote and then apply their actual sandboxes in the forked
+    // process upon startup.
+    if (sandbox_type_ == service_manager::SandboxType::kNetwork ||
 #if defined(OS_CHROMEOS)
         sandbox_type_ == service_manager::SandboxType::kIme ||
 #endif  // OS_CHROMEOS
         sandbox_type_ == service_manager::SandboxType::kAudio ||
         sandbox_type_ == service_manager::SandboxType::kSoda) {
-      return nullptr;
+      return service_manager::GetUnsandboxedZygote();
     }
+
+    // All other types use the pre-sandboxed zygote.
     return service_manager::GetGenericZygote();
   }
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)

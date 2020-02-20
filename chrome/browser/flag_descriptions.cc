@@ -3016,10 +3016,6 @@ const char kArcApplicationZoomName[] = "Allow zooming of Android apps";
 const char kArcApplicationZoomDescription[] =
     "Allow Android apps to be zoomed in/out using ctrl+/-.";
 
-const char kArcBootCompleted[] = "Load Android apps automatically";
-const char kArcBootCompletedDescription[] =
-    "Allow Android apps to start automatically after signing in.";
-
 const char kArcCupsApiName[] = "ARC CUPS API";
 const char kArcCupsApiDescription[] =
     "Enables support of libcups APIs from ARC";
@@ -3092,6 +3088,12 @@ const char kBluetoothAggressiveAppearanceFilterName[] =
 const char kBluetoothAggressiveAppearanceFilterDescription[] =
     "Enables a more aggressive Bluetooth filter in the UI to hide devices that "
     "likely cannot be connected to.";
+
+const char kBluetoothKernelSuspendNotifierName[] =
+    "Bluetooth kernel suspend notifier handler";
+const char kBluetoothKernelSuspendNotifierDescription[] =
+    "Enables the Bluetooth kernel suspend notifier which will allow wake from "
+    "suspend using Bluetooth HID devices.";
 
 const char kCameraSystemWebAppName[] = "Camera System Web App";
 const char kCameraSystemWebAppDescription[] =
@@ -3534,6 +3536,10 @@ const char kSmartTextSelectionName[] = "Smart Text Selection";
 const char kSmartTextSelectionDescription[] =
     "Shows quick actions for text "
     "selections in the context menu.";
+
+const char kSmbfsFileSharesName[] = "Smbfs file shares";
+const char kSmbfsFileSharesDescription[] =
+    "Use smbfs for accessing network file shares.";
 
 const char kSplitSettingsSyncName[] = "Split OS and browser sync";
 const char kSplitSettingsSyncDescription[] =

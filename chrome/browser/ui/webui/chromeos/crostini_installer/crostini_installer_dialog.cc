@@ -65,6 +65,13 @@ bool CrostiniInstallerDialog::ShouldShowCloseButton() const {
   return false;
 }
 
+// TODO(crbug.com/1053376): We should add a browser test for the dialog to check
+// that <esc> or X button in overview mode cannot close the dialog immediately
+// without the web page noticing it.
+bool CrostiniInstallerDialog::ShouldCloseDialogOnEscape() const {
+  return false;
+}
+
 void CrostiniInstallerDialog::AdjustWidgetInitParams(
     views::Widget::InitParams* params) {
   params->z_order = ui::ZOrderLevel::kNormal;

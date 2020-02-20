@@ -45,9 +45,6 @@ class LayoutSVGHiddenContainer : public LayoutSVGContainer {
  private:
   // LayoutSVGHiddenContainer paints nothing.
   void Paint(const PaintInfo&) const final {}
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final {
-    return true;
-  }
   PhysicalRect VisualRectInDocument(VisualRectFlags) const final {
     return PhysicalRect();
   }

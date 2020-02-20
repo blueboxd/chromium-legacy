@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
+#include "url/gurl.h"
 
 namespace base {
 class DictionaryValue;
@@ -118,7 +119,9 @@ class WebUIDataSource {
       const std::string& data) = 0;
   virtual void OverrideContentSecurityPolicyWorkerSrc(
       const std::string& data) = 0;
+  // This method is deprecated and AddFrameAncestors should be used instead.
   virtual void DisableDenyXFrameOptions() = 0;
+  virtual void AddFrameAncestor(const GURL& frame_ancestor) = 0;
 
   // Replace i18n template strings in JS files. Needed for Web UIs that are
   // using Polymer 3.

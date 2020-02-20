@@ -78,7 +78,7 @@ class InkAPI {
       highlighter: 'SMART_HIGHLIGHTER_TOOL',
     }[tool.tool];
     this.brush_.setShape(shape);
-    if (tool.tool != 'eraser') {
+    if (tool.tool !== 'eraser') {
       this.brush_.setColor(/** @type {string} */ (tool.color));
     }
     this.brush_.setStrokeWidth(tool.size);

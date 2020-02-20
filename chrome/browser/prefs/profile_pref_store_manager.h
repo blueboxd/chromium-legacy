@@ -16,8 +16,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
-#include "services/preferences/public/mojom/preferences.mojom.h"
-#include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
+#include "services/preferences/public/mojom/preferences.mojom-forward.h"
+#include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom-forward.h"
 
 class PersistentPrefStore;
 class PrefService;

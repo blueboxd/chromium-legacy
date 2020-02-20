@@ -37,6 +37,9 @@ GetSwitchDependentFeatureOverrides(const base::CommandLine& command_line) {
       {switches::kEnableExperimentalWebPlatformFeatures,
        std::cref(features::kUserAgentClientHint),
        base::FeatureList::OVERRIDE_ENABLE_FEATURE},
+      {switches::kEnableExperimentalWebPlatformFeatures,
+       std::cref(features::kOriginPolicy),
+       base::FeatureList::OVERRIDE_ENABLE_FEATURE},
   };
 
   // TODO(chlily): There are currently a few places where, to check if some

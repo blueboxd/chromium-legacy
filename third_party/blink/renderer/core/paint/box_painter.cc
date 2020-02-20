@@ -142,17 +142,9 @@ void BoxPainter::PaintBoxDecorationBackgroundWithRect(
   const ComputedStyle& style = layout_box_.StyleRef();
 
   base::Optional<DisplayItemCacheSkipper> cache_skipper;
-  // Disable cache in under-invalidation checking mode for MediaSliderPart
-  // because we always paint using the latest data (buffered ranges, current
-  // time and duration) which may be different from the cached data, and for
-  // delayed-invalidation object because it may change before it's actually
-  // invalidated. Note that we still report harmless under-invalidation of
-  // non-delayed-invalidation animated background, which should be ignored.
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
-      (style.EffectiveAppearance() == kMediaSliderPart ||
-       layout_box_.ShouldDelayFullPaintInvalidation())) {
+      BoxPainterBase::ShouldSkipPaintUnderInvalidationChecking(layout_box_))
     cache_skipper.emplace(paint_info.context);
-  }
 
   BoxDecorationData box_decoration_data(paint_info, layout_box_);
   if (!box_decoration_data.ShouldPaint())

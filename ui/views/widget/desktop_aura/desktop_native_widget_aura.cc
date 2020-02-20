@@ -480,7 +480,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(Widget::InitParams params) {
     }
     host_.reset(desktop_window_tree_host_->AsWindowTreeHost());
   }
-  desktop_window_tree_host_->Init(std::move(params));
+  desktop_window_tree_host_->Init(params);
 
   host_->window()->AddChild(content_window_);
   host_->window()->SetProperty(kDesktopNativeWidgetAuraKey, this);

@@ -14,12 +14,21 @@
 
 namespace content {
 
+struct TestUntrustedDataSourceCSP {
+  TestUntrustedDataSourceCSP();
+  TestUntrustedDataSourceCSP(const TestUntrustedDataSourceCSP& other);
+  ~TestUntrustedDataSourceCSP();
+
+  base::Optional<std::string> child_src = base::nullopt;
+  bool no_xfo = false;
+  base::Optional<std::vector<std::string>> frame_ancestors = base::nullopt;
+};
+
 // Adds a DataSource for chrome-untrusted://|host| URLs.
-void AddUntrustedDataSource(
-    BrowserContext* browser_context,
-    const std::string& host,
-    base::Optional<std::string> child_src = base::nullopt,
-    bool no_xfo = false);
+void AddUntrustedDataSource(BrowserContext* browser_context,
+                            const std::string& host,
+                            base::Optional<TestUntrustedDataSourceCSP>
+                                content_security_policy = base::nullopt);
 
 // Returns chrome-untrusted://|host_and_path| as a GURL.
 GURL GetChromeUntrustedUIURL(const std::string& host_and_path);

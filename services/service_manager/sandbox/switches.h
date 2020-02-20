@@ -49,6 +49,9 @@ SERVICE_MANAGER_SANDBOX_EXPORT extern const char kEnableAudioServiceSandbox[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kGpuSandboxAllowSysVShm[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kGpuSandboxFailuresFatal[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNoSandbox[];
+#if defined(OS_LINUX)
+SERVICE_MANAGER_SANDBOX_EXPORT extern const char kNoZygoteSandbox[];
+#endif
 #if defined(OS_WIN)
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAllowThirdPartyModules[];
 SERVICE_MANAGER_SANDBOX_EXPORT extern const char kAddGpuAppContainerCaps[];

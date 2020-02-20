@@ -30,12 +30,22 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Preprocess', function() {
   assertEquals('a.', preprocess('a.'));
   assertEquals('.a', preprocess('.a'));
 
+  // Only summarize punctuation if there are three or more occurrences without
+  // a space in between.
   assertEquals('10 equal signs', preprocess('=========='));
+  assertEquals('bullet bullet bullet', preprocess('\u2022 \u2022\u2022'));
+  assertEquals('3 bullets', preprocess('\u2022\u2022\u2022'));
+  assertEquals('C plus plus', preprocess('C++'));
+  assertEquals('C 3 plus signs', preprocess('C+++'));
+  // There are some punctuation marks that we do not verbalize because they
+  // result in an overly verbose experience (periods, commas, dashes, etc.).
+  // This set of punctuation marks is defined in the |some_punctuation| regular
+  // expression in TtsBackground.
+  assertEquals('C--', preprocess('C--'));
+  assertEquals('Hello world.', preprocess('Hello world.'));
 
   assertEquals('new line', preprocess('\n'));
   assertEquals('return', preprocess('\r'));
-
-  assertEquals('bullet 2 bullets', preprocess('\u2022 \u2022\u2022'));
 });
 
 TEST_F('ChromeVoxTtsBackgroundTest', 'UpdateVoice', function() {

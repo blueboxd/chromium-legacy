@@ -42,6 +42,10 @@ const base::Feature kBluetoothAggressiveAppearanceFilter{
 const base::Feature kBluetoothPhoneFilter{"BluetoothPhoneFilter",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables or disables using the kernel suspend notifier instead of powerd.
+const base::Feature kBluetoothKernelSuspendNotifier{
+    "BluetoothKernelSuspendNotifier", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature containing param to block provided long term keys.
 const base::Feature kBlueZLongTermKeyBlocklist{
     "BlueZLongTermKeyBlocklist", base::FEATURE_DISABLED_BY_DEFAULT};

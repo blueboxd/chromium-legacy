@@ -68,11 +68,12 @@ void FakeSignalStrategy::ConnectTo(FakeSignalStrategy* peer) {
       base::BindRepeating(&FakeSignalStrategy::DeliverMessageOnThread,
                           main_thread_, weak_factory_.GetWeakPtr());
   if (peer->main_thread_->BelongsToCurrentThread()) {
-    peer->SetPeerCallback(peer_callback);
+    peer->SetPeerCallback(std::move(peer_callback));
   } else {
     peer->main_thread_->PostTask(
-        FROM_HERE, base::BindOnce(&FakeSignalStrategy::SetPeerCallback,
-                                  base::Unretained(peer), peer_callback));
+        FROM_HERE,
+        base::BindOnce(&FakeSignalStrategy::SetPeerCallback,
+                       base::Unretained(peer), std::move(peer_callback)));
   }
 }
 

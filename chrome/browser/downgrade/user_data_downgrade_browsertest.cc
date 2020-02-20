@@ -75,7 +75,7 @@ class UserDataDowngradeBrowserTestBase : public InProcessBrowserTest {
   // Returns the path to some generated file in User Data.
   const base::FilePath& other_file() const { return other_file_; }
 
-  // CrossBrowserRelaunchTest:
+  // InProcessBrowserTest:
   void SetUp() override {
     ASSERT_NO_FATAL_FAILURE(
         registry_override_manager_.OverrideRegistry(root_key_));

@@ -174,15 +174,15 @@ chrome.test.runTests([
       inkHost.dispatchEvent(new PointerEvent('pointermove', pen));
       inkHost.dispatchEvent(new PointerEvent('pointerup', pen));
 
-      await waitFor(() => undo.disabled == false);
+      await waitFor(() => undo.disabled === false);
       chrome.test.assertEq(redo.disabled, true);
 
       undo.click();
-      await waitFor(() => undo.disabled == true);
+      await waitFor(() => undo.disabled === true);
       chrome.test.assertEq(redo.disabled, false);
 
       redo.click();
-      await waitFor(() => undo.disabled == false);
+      await waitFor(() => undo.disabled === false);
       chrome.test.assertEq(redo.disabled, true);
     });
   },

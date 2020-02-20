@@ -237,7 +237,7 @@ void SetExtendedReportingPref(PrefService* prefs, bool value) {
   prefs->SetBoolean(prefs::kSafeBrowsingScoutReportingEnabled, value);
 }
 
-void SetEnhancedPref(PrefService* prefs, bool value) {
+void SetEnhancedProtectionPref(PrefService* prefs, bool value) {
   prefs->SetBoolean(prefs::kSafeBrowsingEnhanced, value);
 }
 

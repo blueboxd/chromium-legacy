@@ -224,6 +224,11 @@ cr.define('gpu', function() {
           this.setTable_('vulkan-info', []);
         }
 
+        if (gpuInfo.devicePerfInfo) {
+          this.setTable_('device-perf-info', gpuInfo.devicePerfInfo);
+        } else {
+          this.setTable_('device-perf-info', []);
+        }
       } else {
         this.setText_('basic-info', '... loading ...');
         diagnosticsDiv.hidden = true;

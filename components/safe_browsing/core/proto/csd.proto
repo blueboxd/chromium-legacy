@@ -30,8 +30,9 @@ package safe_browsing;
 message ChromeUserPopulation {
   enum UserPopulation {
     UNKNOWN_USER_POPULATION = 0;
-    SAFE_BROWSING = 1;
+    SAFE_BROWSING = 1;  // Equivalent to standard protection.
     EXTENDED_REPORTING = 2;
+    ENHANCED_PROTECTION = 3;
   }
   optional UserPopulation user_population = 1;
 

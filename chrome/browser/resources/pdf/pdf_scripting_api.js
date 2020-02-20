@@ -80,9 +80,9 @@ export class PDFScriptingAPI {
     this.plugin_;
 
     window.addEventListener('message', event => {
-      if (event.origin !=
+      if (event.origin !==
               'chrome-extension://mhjfbmdgcfjbbpaeojofohoefgiehjai' &&
-          event.origin != 'chrome://print') {
+          event.origin !== 'chrome://print') {
         console.error(
             'Received message that was not from the extension: ' + event);
         return;
@@ -109,7 +109,7 @@ export class PDFScriptingAPI {
           const data = /** @type {{load_state: LoadState}} */ (event.data);
           this.loadState_ = data.load_state;
           if (this.loadCallback_) {
-            this.loadCallback_(this.loadState_ == LoadState.SUCCESS);
+            this.loadCallback_(this.loadState_ === LoadState.SUCCESS);
           }
           break;
         }
@@ -183,8 +183,8 @@ export class PDFScriptingAPI {
    */
   setLoadCallback(callback) {
     this.loadCallback_ = callback;
-    if (this.loadState_ != LoadState.LOADING && this.loadCallback_) {
-      this.loadCallback_(this.loadState_ == LoadState.SUCCESS);
+    if (this.loadState_ !== LoadState.LOADING && this.loadCallback_) {
+      this.loadCallback_(this.loadState_ === LoadState.SUCCESS);
     }
   }
 

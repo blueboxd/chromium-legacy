@@ -1866,11 +1866,6 @@ void LayoutTable::UpdateCollapsedOuterBorders() const {
       max_border_end - collapsed_outer_border_end_;
 }
 
-bool LayoutTable::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
-  return LayoutBlock::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() &&
-         !should_paint_all_collapsed_borders_;
-}
-
 // LayoutNGTableCellInterface API
 bool LayoutTable::IsFirstCell(const LayoutNGTableCellInterface& cell) const {
   const LayoutTableCell& layout_cell = *cell.ToLayoutTableCell();

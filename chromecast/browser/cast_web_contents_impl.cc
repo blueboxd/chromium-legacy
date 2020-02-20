@@ -290,21 +290,6 @@ void CastWebContentsImpl::Stop(int error_code) {
   NotifyPageState();
 }
 
-void CastWebContentsImpl::SetWebVisibilityAndPaint(bool visible) {
-  if (!web_contents_)
-    return;
-  if (visible) {
-    web_contents_->WasShown();
-  } else {
-    web_contents_->WasHidden();
-  }
-  if (web_contents_->GetVisibility() != content::Visibility::VISIBLE) {
-    // Since we are managing the visibility, we need to ensure pages are
-    // unfrozen in the event this occurred while in the background.
-    web_contents_->SetPageFrozen(false);
-  }
-}
-
 void CastWebContentsImpl::BlockMediaLoading(bool blocked) {
   if (media_blocker_)
     media_blocker_->BlockMediaLoading(blocked);

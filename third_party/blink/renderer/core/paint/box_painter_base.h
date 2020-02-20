@@ -24,6 +24,7 @@ class FloatRoundedRect;
 class GraphicsContext;
 class ImageResourceObserver;
 class IntRect;
+class LayoutBox;
 struct PaintInfo;
 struct PhysicalOffset;
 struct PhysicalRect;
@@ -102,6 +103,8 @@ class BoxPainterBase {
   bool CalculateFillLayerOcclusionCulling(
       FillLayerOcclusionOutputList& reversed_paint_list,
       const FillLayer&);
+
+  static bool ShouldSkipPaintUnderInvalidationChecking(const LayoutBox&);
 
   struct FillLayerInfo {
     STACK_ALLOCATED();

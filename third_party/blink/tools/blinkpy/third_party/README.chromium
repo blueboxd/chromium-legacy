@@ -43,4 +43,6 @@ Description: This includes code for the manifest tool, lint tool, and wptserve.
     for more details on maintenance.
 Local Modifications:
 - Removed all files except for those listed in wpt/WPTWhiteList.
-- Added --ignore-glob option for ignoring an extra glob of files (used for ignoring *-expected.txt).
+- Removed a few unimported subcommands from tools/wpt/path.
+- Cherry-picked the server part of https://github.com/web-platform-tests/wpt/pull/21705
+  (we cannot yet directly roll to that revision because of MANIFEST v8 changes).

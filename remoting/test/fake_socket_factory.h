@@ -109,11 +109,11 @@ class FakePacketSocketFactory : public rtc::PacketSocketFactory,
     int data_size;
   };
 
-  typedef base::RepeatingCallback<void(const rtc::SocketAddress& from,
-                                       const rtc::SocketAddress& to,
-                                       const scoped_refptr<net::IOBuffer>& data,
-                                       int data_size)>
-      ReceiveCallback;
+  using ReceiveCallback =
+      base::RepeatingCallback<void(const rtc::SocketAddress& from,
+                                   const rtc::SocketAddress& to,
+                                   const scoped_refptr<net::IOBuffer>& data,
+                                   int data_size)>;
   typedef std::map<uint16_t, ReceiveCallback> UdpSocketsMap;
 
   void DoReceivePacket();

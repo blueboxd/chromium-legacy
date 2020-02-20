@@ -2,12 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-[
-    RuntimeEnabled=WebCodecs
-] interface VideoDecoder {
-    [CallWith=ScriptState, RaisesException] constructor();
-    [RaisesException] Promise<void> initialize(VideoDecoderInitParameters params);
+// https://github.com/WICG/web-codecs
 
-    readonly attribute WritableStream writable;  // of EncodedVideoChunk
-    readonly attribute ReadableStream readable;  // of VideoFrame
+[RuntimeEnabled=WebCodecs]
+interface VideoDecoder {
+  // TODO(sandersd): Configure properties of streams (type and high water mark).
+  [CallWith=ScriptState] constructor();
+
+  // Configure or reconfigure the decoder.
+  //
+  // |writable| and |readable| will be errored and set to null.
+  //
+  // If configuration is successful, |writable| and |readable| will be set to
+  // new streams.
+  [RaisesException] Promise<void> configure(EncodedVideoConfig config);
+
+  // Closing |writable| will flush the decoder, then close |readable|.
+  // Aborting |writable| will error |readable|.
+  readonly attribute WritableStream? writable;  // of EncodedVideoChunk
+
+  // Canceling |readable| will error |writable|.
+  readonly attribute ReadableStream? readable;  // of VideoFrame
 };

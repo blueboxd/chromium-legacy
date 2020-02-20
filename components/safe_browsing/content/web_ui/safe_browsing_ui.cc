@@ -984,6 +984,9 @@ base::Value SerializeChromeUserPopulation(
     case ChromeUserPopulation::EXTENDED_REPORTING:
       user_population = "EXTENDED_REPORTING";
       break;
+    case ChromeUserPopulation::ENHANCED_PROTECTION:
+      user_population = "ENHANCED_PROTECTION";
+      break;
   }
   population_dict.SetKey("user_population", base::Value(user_population));
 

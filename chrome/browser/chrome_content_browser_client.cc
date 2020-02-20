@@ -4269,12 +4269,14 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
 
 #if defined(OS_ANDROID)
   std::string client_data_header;
-  auto* web_contents = WebContents::FromFrameTreeNodeId(frame_tree_node_id);
-  auto* client_data_header_observer =
-      customtabs::ClientDataHeaderWebContentsObserver::FromWebContents(
-          web_contents);
-  if (client_data_header_observer)
-    client_data_header = client_data_header_observer->header();
+  if (frame_tree_node_id != content::RenderFrameHost::kNoFrameTreeNodeId) {
+    auto* web_contents = WebContents::FromFrameTreeNodeId(frame_tree_node_id);
+    auto* client_data_header_observer =
+        customtabs::ClientDataHeaderWebContentsObserver::FromWebContents(
+            web_contents);
+    if (client_data_header_observer)
+      client_data_header = client_data_header_observer->header();
+  }
 #endif
 
   chrome::mojom::DynamicParams dynamic_params = {

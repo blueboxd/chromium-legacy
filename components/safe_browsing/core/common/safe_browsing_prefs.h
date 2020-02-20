@@ -285,7 +285,7 @@ void SetExtendedReportingPref(PrefService* prefs, bool value);
 
 // Sets the currently active Safe Browsing Enhanced Protection to the specified
 // value.
-void SetEnhancedPref(PrefService* prefs, bool value);
+void SetEnhancedProtectionPref(PrefService* prefs, bool value);
 
 // Called when a security interstitial is closed by the user.
 // |on_show_pref_existed| indicates whether the pref existed when the

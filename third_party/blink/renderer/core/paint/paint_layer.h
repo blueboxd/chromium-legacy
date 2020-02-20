@@ -1040,18 +1040,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     needs_paint_phase_float_ = true;
   }
 
-  // TODO(crbug.com/1049440): This has been dead code since crrev.com/c/2031429.
-  // Either revert the CL if the performance gain of this optimization is big
-  // enough, or remove this optimization.
-  // Similar to above, but for PaintPhaseDescendantBlockBackgroundsOnly.
-  bool NeedsPaintPhaseDescendantBlockBackgrounds() const {
-    return needs_paint_phase_descendant_block_backgrounds_;
-  }
-  void SetNeedsPaintPhaseDescendantBlockBackgrounds() {
-    DCHECK(IsSelfPaintingLayer());
-    needs_paint_phase_descendant_block_backgrounds_ = true;
-  }
-
   bool DescendantHasDirectOrScrollingCompositingReason() const {
     return descendant_has_direct_or_scrolling_compositing_reason_;
   }
@@ -1267,8 +1255,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     needs_paint_phase_descendant_outlines_ |=
         layer.needs_paint_phase_descendant_outlines_;
     needs_paint_phase_float_ |= layer.needs_paint_phase_float_;
-    needs_paint_phase_descendant_block_backgrounds_ |=
-        layer.needs_paint_phase_descendant_block_backgrounds_;
   }
 
   void ExpandRectForStackingChildren(const PaintLayer& composited_layer,
@@ -1350,7 +1336,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   unsigned needs_paint_phase_descendant_outlines_ : 1;
   unsigned needs_paint_phase_float_ : 1;
-  unsigned needs_paint_phase_descendant_block_backgrounds_ : 1;
 
   // These bitfields are part of ancestor/descendant dependent compositing
   // inputs.

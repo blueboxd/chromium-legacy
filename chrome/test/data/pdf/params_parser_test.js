@@ -13,11 +13,11 @@ const tests = [
    */
   function testParamsParser() {
     const paramsParser = new OpenPdfParamsParser(function(destination) {
-      if (destination == 'RU') {
+      if (destination === 'RU') {
         paramsParser.onNamedDestinationReceived(26);
-      } else if (destination == 'US') {
+      } else if (destination === 'US') {
         paramsParser.onNamedDestinationReceived(0);
-      } else if (destination == 'UY') {
+      } else if (destination === 'UY') {
         paramsParser.onNamedDestinationReceived(22);
       } else {
         paramsParser.onNamedDestinationReceived(-1);

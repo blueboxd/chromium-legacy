@@ -1036,7 +1036,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // value of the previous in-flow sibling.
   bool NeedsForcedBreakBefore(EBreakBetween previous_break_after_value) const;
 
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
   bool MapToVisualRectInAncestorSpaceInternal(
       const LayoutBoxModelObject* ancestor,
       TransformState&,

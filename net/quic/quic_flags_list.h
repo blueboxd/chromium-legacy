@@ -261,9 +261,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_t099, true)
 // A testonly reloadable flag that will always default to false.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_testonly_default_false, false)
 
-// If true, frames will be hold in an optimized wrapper data structure.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_interval_deque, true)
-
 // If true, the QUIC dispatcher will drop INITIAL packets that are too small.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_drop_small_initial_packets,
@@ -280,13 +277,6 @@ QUIC_FLAG(bool,
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_bw_sampler_remove_packets_once_per_congestion_event2,
-    true)
-
-// If true, QuicCryptoServerStream creates its HandshakerDelegate in its
-// constructor instead of in OnSuccessfulVersionNegotiation.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_create_server_handshaker_in_constructor,
     true)
 
 // In BBR, slow pacing rate if it is likely causing overshoot.

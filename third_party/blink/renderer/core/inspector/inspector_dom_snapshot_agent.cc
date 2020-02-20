@@ -125,9 +125,11 @@ PhysicalRect InspectorDOMSnapshotAgent::TextFragmentRectInDocument(
 
 InspectorDOMSnapshotAgent::InspectorDOMSnapshotAgent(
     InspectedFrames* inspected_frames,
-    InspectorDOMDebuggerAgent* dom_debugger_agent)
+    InspectorDOMDebuggerAgent* dom_debugger_agent,
+    InspectorPerformanceAgent* performance_agent)
     : inspected_frames_(inspected_frames),
       dom_debugger_agent_(dom_debugger_agent),
+      performance_agent_(performance_agent),
       enabled_(&agent_state_, /*default_value=*/false) {}
 
 InspectorDOMSnapshotAgent::~InspectorDOMSnapshotAgent() = default;
@@ -226,6 +228,17 @@ protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
     std::unique_ptr<protocol::Array<protocol::DOMSnapshot::DocumentSnapshot>>*
         documents,
     std::unique_ptr<protocol::Array<String>>* strings) {
+  struct ScopedPerformanceReporter {
+    explicit ScopedPerformanceReporter(
+        InspectorPerformanceAgent* performance_agent)
+        : performance_agent(performance_agent) {
+      performance_agent->WillCaptureSnapshot();
+    }
+    ~ScopedPerformanceReporter() { performance_agent->DidCaptureSnapshot(); }
+    InspectorPerformanceAgent* performance_agent;
+    STACK_ALLOCATED();
+  } scoped_performance_reporter(performance_agent_);
+
   // This function may kick the layout, but external clients may call this
   // function outside of the layout phase.
   FontCachePurgePreventer fontCachePurgePreventer;
@@ -721,6 +734,7 @@ void InspectorDOMSnapshotAgent::VisitPaintLayer(
 void InspectorDOMSnapshotAgent::Trace(Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   visitor->Trace(dom_debugger_agent_);
+  visitor->Trace(performance_agent_);
   visitor->Trace(document_order_map_);
   InspectorBaseAgent::Trace(visitor);
 }

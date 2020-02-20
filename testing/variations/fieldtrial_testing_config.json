@@ -3148,7 +3148,7 @@
                 {
                     "name": "Enabled",
                     "enable_features": [
-                        "LegacyTLSWarnings"
+                        "LegacyTLSEnforced"
                     ]
                 }
             ]

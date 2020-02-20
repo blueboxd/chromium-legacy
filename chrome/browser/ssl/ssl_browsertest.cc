@@ -44,7 +44,6 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
-#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/interstitials/security_interstitial_idn_test.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
 #include "chrome/browser/net/profile_network_context_service.h"
@@ -66,6 +65,7 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -144,7 +144,6 @@
 #include "content/public/test/test_utils.h"
 #include "crypto/sha2.h"
 #include "extensions/browser/event_router.h"
-#include "extensions/common/extension.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
@@ -779,22 +778,19 @@ class SSLUITestBase : public InProcessBrowserTest,
                                  https_server_.GetURL(replacement_path));
   }
 
-  Browser* InstallAndOpenTestBookmarkApp(const GURL& app_url) {
-    WebApplicationInfo web_app_info;
-    web_app_info.app_url = app_url;
-    web_app_info.scope = app_url.GetWithoutFilename();
-    web_app_info.title = base::UTF8ToUTF16("Test app");
-    web_app_info.description = base::UTF8ToUTF16("Test description");
+  Browser* InstallAndOpenTestWebApp(const GURL& app_url) {
+    auto web_app_info = std::make_unique<WebApplicationInfo>();
+    web_app_info->app_url = app_url;
+    web_app_info->scope = app_url.GetWithoutFilename();
+    web_app_info->title = base::UTF8ToUTF16("Test app");
+    web_app_info->description = base::UTF8ToUTF16("Test description");
 
     Profile* profile = browser()->profile();
-    const extensions::Extension* bookmark_app =
-        extensions::browsertest_util::InstallBookmarkApp(profile, web_app_info);
 
-    ui_test_utils::UrlLoadObserver url_observer(
-        app_url, content::NotificationService::AllSources());
-    Browser* app_browser =
-        extensions::browsertest_util::LaunchAppBrowser(profile, bookmark_app);
-    url_observer.Wait();
+    web_app::AppId app_id =
+        web_app::InstallWebApp(profile, std::move(web_app_info));
+
+    Browser* app_browser = web_app::LaunchWebAppBrowserAndWait(profile, app_id);
     return app_browser;
   }
 
@@ -1384,7 +1380,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, InAppTestHTTPSExpiredCertAndProceed) {
   ASSERT_TRUE(https_server_expired_.Start());
 
   const GURL app_url = https_server_expired_.GetURL("/ssl/google.html");
-  Browser* app_browser = InstallAndOpenTestBookmarkApp(app_url);
+  Browser* app_browser = InstallAndOpenTestWebApp(app_url);
 
   WebContents* app_tab = app_browser->tab_strip_model()->GetActiveWebContents();
   WaitForInterstitial(app_tab);
@@ -1415,7 +1411,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest,
   ssl_test_util::CheckAuthenticationBrokenState(
       initial_tab, net::CERT_STATUS_DATE_INVALID, AuthState::NONE);
 
-  Browser* app_browser = InstallAndOpenTestBookmarkApp(app_url);
+  Browser* app_browser = InstallAndOpenTestWebApp(app_url);
 
   // Apps are not allowed to have SSL errors, so the interstitial should be
   // showing even though the user proceeded through it in a regular tab.

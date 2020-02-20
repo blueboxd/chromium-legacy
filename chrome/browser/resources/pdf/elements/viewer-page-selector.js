@@ -60,7 +60,7 @@ Polymer({
    * @return {boolean} True if the selector input field is currently focused.
    */
   isActive() {
-    return this.shadowRoot.activeElement == this.pageSelector;
+    return this.shadowRoot.activeElement === this.pageSelector;
   },
 
   /**

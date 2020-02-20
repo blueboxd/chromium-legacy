@@ -16,8 +16,7 @@
 namespace ash {
 namespace ml {
 
-static constexpr base::TimeDelta kBrightnessDelay =
-    base::TimeDelta::FromSeconds(1);
+static constexpr base::TimeDelta kSliderDelay = base::TimeDelta::FromSeconds(1);
 
 // This class handles logging for settings changes that are initiated by the
 // user from the quick settings tray. Exported for tests.
@@ -82,17 +81,21 @@ class ASH_EXPORT UserSettingsEventLogger
   // Sends the given event to UKM.
   void SendToUkm(const UserSettingsEvent& event);
 
+  void OnVolumeTimerEnded();
   void OnBrightnessTimerEnded();
   void OnPresentingTimerEnded();
   void OnFullscreenTimerEnded();
 
-  // When the user drags the brightness slider, the logger will be called
-  // multiple times at small time increments. This timer is used so that a
-  // brightness UKM event is only logged after there has been a pause.
+  // When the user drags the brightness or volume slider, the logger will be
+  // called multiple times at small time increments. These timers are used so
+  // that a UKM event is only logged after there has been a pause.
+  base::OneShotTimer volume_timer_;
   base::OneShotTimer brightness_timer_;
-  // Level of brightness before the timer was started.
+  // Levels before the corresponding timer was started.
+  int previous_volume_;
   int previous_brightness_;
-  // Level of brightness as of the most recent brightness event.
+  // Levels as of the most recent event.
+  int current_volume_;
   int current_brightness_;
 
   base::OneShotTimer presenting_timer_;

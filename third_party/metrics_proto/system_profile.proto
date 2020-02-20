@@ -661,11 +661,12 @@ message SystemProfileProto {
     // client session.
     //
 
-    // The number of times the program was launched.
-    // This will typically be equal to 1.  However, it is possible that Chrome
-    // was unable to upload stability metrics for previous launches (e.g. due to
-    // crashing early during startup), and hence this value might be greater
-    // than 1.
+    // The number of times the program was launched since the last time metrics
+    // was uploaded. For the initial metrics upload (right after startup), this
+    // will often be equal to 1.  However, it is possible that Chrome was unable
+    // to upload stability metrics for previous launches (e.g. due to crashing
+    // early during startup), making this value greater than 1.  For subsequent
+    // metrics uploads, this value will be 0.
     optional int32 launch_count = 15;
     // The number of times that it didn't exit cleanly (which we assume to be
     // mostly crashes). On Android M71+ this does not include times when the Gms

@@ -748,13 +748,6 @@ cc_test("cc_unittests") {
     sources += [ "paint/skottie_transfer_cache_entry_unittest.cc" ]
   }
 
-  if (is_win) {
-    # TODO(vmpstr): Some SoftwareImageDecodeCacheTests use virtual inheritance,
-    # which MSVC doesn't like. Suppress "Foo inherits Bar via dominance"
-    # warnings for now.
-    cflags = [ "/wd4250" ]
-  }
-
   deps = [
     ":cc",
     ":test_support",

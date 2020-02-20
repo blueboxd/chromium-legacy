@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <grit-part>
   <!-- Polymer 3.0 Elements -->
+  <include name="IDR_SETTINGS_ABOUT_PAGE_ABOUT_PAGE_BROWSER_PROXY_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/about_page/about_page_browser_proxy.m.js"
+           use_base_dir="false"
+           type="BINDATA"
+           preprocess="true" />
+  <include name="IDR_SETTINGS_ABOUT_PAGE_ABOUT_PAGE_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/about_page/about_page.m.js"
+           use_base_dir="false"
+           type="BINDATA"
+           preprocess="true" />
   <include name="IDR_SETTINGS_APPEARANCE_PAGE_APPEARANCE_BROWSER_PROXY_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/appearance_page/appearance_browser_proxy.m.js"
            use_base_dir="false"
@@ -226,6 +236,10 @@
            type="BINDATA" />
   <include name="IDR_SETTINGS_SETTINGS_ROUTES_M_JS"
            file="${root_gen_dir}/chrome/browser/resources/settings/settings_routes.m.js"
+           use_base_dir="false"
+           type="BINDATA" />
+  <include name="IDR_SETTINGS_SETTINGS_PAGE_CSS_M_JS"
+           file="${root_gen_dir}/chrome/browser/resources/settings/settings_page_css.m.js"
            use_base_dir="false"
            type="BINDATA" />
   <include name="IDR_SETTINGS_SETTINGS_SHARED_CSS_M_JS"

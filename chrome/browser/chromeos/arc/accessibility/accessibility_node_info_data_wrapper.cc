@@ -506,75 +506,35 @@ void AccessibilityNodeInfoDataWrapper::GetChildren(
 
 bool AccessibilityNodeInfoDataWrapper::GetProperty(
     AXBooleanProperty prop) const {
-  if (!node_ptr_->boolean_properties)
-    return false;
-
-  auto it = node_ptr_->boolean_properties->find(prop);
-  if (it == node_ptr_->boolean_properties->end())
-    return false;
-
-  return it->second;
+  return arc::GetBooleanProperty(node_ptr_, prop);
 }
 
 bool AccessibilityNodeInfoDataWrapper::GetProperty(AXIntProperty prop,
                                                    int32_t* out_value) const {
-  if (!node_ptr_->int_properties)
-    return false;
-
-  auto it = node_ptr_->int_properties->find(prop);
-  if (it == node_ptr_->int_properties->end())
-    return false;
-
-  *out_value = it->second;
-  return true;
+  return arc::GetProperty(node_ptr_->int_properties, prop, out_value);
 }
 
 bool AccessibilityNodeInfoDataWrapper::HasProperty(
     AXStringProperty prop) const {
-  if (!node_ptr_->string_properties)
-    return false;
-
-  auto it = node_ptr_->string_properties->find(prop);
-  return it != node_ptr_->string_properties->end();
+  return arc::HasProperty(node_ptr_->string_properties, prop);
 }
 
 bool AccessibilityNodeInfoDataWrapper::GetProperty(
     AXStringProperty prop,
     std::string* out_value) const {
-  if (!HasProperty(prop))
-    return false;
-
-  auto it = node_ptr_->string_properties->find(prop);
-  *out_value = it->second;
-  return true;
+  return arc::GetProperty(node_ptr_->string_properties, prop, out_value);
 }
 
 bool AccessibilityNodeInfoDataWrapper::GetProperty(
     AXIntListProperty prop,
     std::vector<int32_t>* out_value) const {
-  if (!node_ptr_->int_list_properties)
-    return false;
-
-  auto it = node_ptr_->int_list_properties->find(prop);
-  if (it == node_ptr_->int_list_properties->end())
-    return false;
-
-  *out_value = it->second;
-  return true;
+  return arc::GetProperty(node_ptr_->int_list_properties, prop, out_value);
 }
 
 bool AccessibilityNodeInfoDataWrapper::GetProperty(
     AXStringListProperty prop,
     std::vector<std::string>* out_value) const {
-  if (!node_ptr_->string_list_properties)
-    return false;
-
-  auto it = node_ptr_->string_list_properties->find(prop);
-  if (it == node_ptr_->string_list_properties->end())
-    return false;
-
-  *out_value = it->second;
-  return true;
+  return arc::GetProperty(node_ptr_->string_list_properties, prop, out_value);
 }
 
 bool AccessibilityNodeInfoDataWrapper::HasCoveringSpan(

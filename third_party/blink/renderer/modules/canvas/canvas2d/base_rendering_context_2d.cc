@@ -855,8 +855,6 @@ void BaseRenderingContext2D::clearRect(double x,
                                        double y,
                                        double width,
                                        double height) {
-  usage_counters_.num_clear_rect_calls++;
-
   if (!ValidateRectForCanvas(x, y, width, height))
     return;
 
@@ -1559,8 +1557,6 @@ ImageData* BaseRenderingContext2D::getImageData(
 
   base::TimeTicks start_time = base::TimeTicks::Now();
 
-  usage_counters_.num_get_image_data_calls++;
-  usage_counters_.area_get_image_data_calls += sw * sh;
   if (!OriginClean()) {
     exception_state.ThrowSecurityError(
         "The canvas has been tainted by cross-origin data.");
@@ -1722,8 +1718,6 @@ void BaseRenderingContext2D::putImageData(ImageData* data,
     return;
   }
   base::TimeTicks start_time = base::TimeTicks::Now();
-  usage_counters_.num_put_image_data_calls++;
-  usage_counters_.area_put_image_data_calls += dirty_width * dirty_height;
 
   if (data->BufferBase()->IsDetached()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
@@ -1996,11 +1990,6 @@ void BaseRenderingContext2D::setTextBaseline(const String& s) {
   if (GetState().GetTextBaseline() == baseline)
     return;
   ModifiableState().SetTextBaseline(baseline);
-}
-
-const BaseRenderingContext2D::UsageCounters&
-BaseRenderingContext2D::GetUsage() {
-  return usage_counters_;
 }
 
 void BaseRenderingContext2D::Trace(Visitor* visitor) {

@@ -88,7 +88,7 @@ TEST_F(DualBufferFrameConsumerTest, AllocateOneFrame) {
       consumer_->AllocateFrame(webrtc::DesktopSize(16, 16));
   ASSERT_TRUE(frame->size().equals(webrtc::DesktopSize(16, 16)));
   webrtc::DesktopFrame* raw_frame = frame.get();
-  consumer_->DrawFrame(std::move(frame), base::Closure());
+  consumer_->DrawFrame(std::move(frame), base::NullCallback());
   EXPECT_EQ(raw_frame, received_frame_.get());
 }
 
@@ -98,22 +98,22 @@ TEST_F(DualBufferFrameConsumerTest, BufferRotation) {
   std::unique_ptr<webrtc::DesktopFrame> frame =
       consumer_->AllocateFrame(size16x16);
   webrtc::DesktopFrame* underlying_frame_1 = GetUnderlyingFrame(frame);
-  consumer_->DrawFrame(std::move(frame), base::Closure());
+  consumer_->DrawFrame(std::move(frame), base::NullCallback());
 
   frame = consumer_->AllocateFrame(size16x16);
   webrtc::DesktopFrame* underlying_frame_2 = GetUnderlyingFrame(frame);
   EXPECT_NE(underlying_frame_1, underlying_frame_2);
-  consumer_->DrawFrame(std::move(frame), base::Closure());
+  consumer_->DrawFrame(std::move(frame), base::NullCallback());
 
   frame = consumer_->AllocateFrame(size16x16);
   webrtc::DesktopFrame* underlying_frame_3 = GetUnderlyingFrame(frame);
   EXPECT_EQ(underlying_frame_1, underlying_frame_3);
-  consumer_->DrawFrame(std::move(frame), base::Closure());
+  consumer_->DrawFrame(std::move(frame), base::NullCallback());
 
   frame = consumer_->AllocateFrame(size16x16);
   webrtc::DesktopFrame* underlying_frame_4 = GetUnderlyingFrame(frame);
   EXPECT_EQ(underlying_frame_2, underlying_frame_4);
-  consumer_->DrawFrame(std::move(frame), base::Closure());
+  consumer_->DrawFrame(std::move(frame), base::NullCallback());
 }
 
 TEST_F(DualBufferFrameConsumerTest, DrawAndMergeFrames) {
@@ -128,7 +128,7 @@ TEST_F(DualBufferFrameConsumerTest, DrawAndMergeFrames) {
       consumer_->AllocateFrame(size2x2);
   FillRGBARect(0xff, 0, 0, 0xff, webrtc::DesktopRect::MakeXYWH(0, 0, 2, 2),
                frame.get());
-  consumer_->DrawFrame(std::move(frame), base::Closure());
+  consumer_->DrawFrame(std::move(frame), base::NullCallback());
 
   // Frame 2:
   // GG
@@ -136,7 +136,7 @@ TEST_F(DualBufferFrameConsumerTest, DrawAndMergeFrames) {
   frame = consumer_->AllocateFrame(size2x2);
   FillRGBARect(0, 0xff, 0, 0xff, webrtc::DesktopRect::MakeXYWH(0, 0, 2, 1),
                frame.get());
-  consumer_->DrawFrame(std::move(frame), base::Closure());
+  consumer_->DrawFrame(std::move(frame), base::NullCallback());
 
   // Merged Frame:
   // GG
@@ -159,7 +159,7 @@ TEST_F(DualBufferFrameConsumerTest, DrawAndMergeFrames) {
   frame = consumer_->AllocateFrame(size2x2);
   FillRGBARect(0, 0, 0xff, 0xff, webrtc::DesktopRect::MakeXYWH(0, 0, 1, 2),
                frame.get());
-  consumer_->DrawFrame(std::move(frame), base::Closure());
+  consumer_->DrawFrame(std::move(frame), base::NullCallback());
 
   // Merged Frame:
   // BG
@@ -183,24 +183,24 @@ TEST_F(DualBufferFrameConsumerTest, ChangeScreenSizeAndReallocateBuffers) {
   std::unique_ptr<webrtc::DesktopFrame> frame =
       consumer_->AllocateFrame(size16x16);
   webrtc::DesktopFrame* underlying_frame_1 = GetUnderlyingFrame(frame);
-  consumer_->DrawFrame(std::move(frame), base::Closure());
+  consumer_->DrawFrame(std::move(frame), base::NullCallback());
 
   frame = consumer_->AllocateFrame(size16x16);
   webrtc::DesktopFrame* underlying_frame_2 = GetUnderlyingFrame(frame);
   EXPECT_NE(underlying_frame_1, underlying_frame_2);
-  consumer_->DrawFrame(std::move(frame), base::Closure());
+  consumer_->DrawFrame(std::move(frame), base::NullCallback());
 
   webrtc::DesktopSize size32x32(32, 32);
 
   frame = consumer_->AllocateFrame(size32x32);
   webrtc::DesktopFrame* underlying_frame_3 = GetUnderlyingFrame(frame);
   EXPECT_NE(underlying_frame_1, underlying_frame_3);
-  consumer_->DrawFrame(std::move(frame), base::Closure());
+  consumer_->DrawFrame(std::move(frame), base::NullCallback());
 
   frame = consumer_->AllocateFrame(size32x32);
   webrtc::DesktopFrame* underlying_frame_4 = GetUnderlyingFrame(frame);
   EXPECT_NE(underlying_frame_2, underlying_frame_4);
-  consumer_->DrawFrame(std::move(frame), base::Closure());
+  consumer_->DrawFrame(std::move(frame), base::NullCallback());
 }
 
 }  // namespace remoting

@@ -85,5 +85,27 @@ IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnUpVolume) {
                                    cras));
 }
 
+IN_PROC_BROWSER_TEST_F(AssistantBrowserTest, ShouldTurnDownVolume) {
+  tester()->StartAssistantAndWaitForReady();
+
+  ShowAssistantUi();
+
+  EXPECT_TRUE(tester()->IsVisible());
+
+  auto* cras = chromeos::CrasAudioHandler::Get();
+  constexpr int kStartVolumePercent = 50;
+  cras->SetOutputVolumePercent(kStartVolumePercent);
+  EXPECT_EQ(kStartVolumePercent, cras->GetOutputVolumePercent());
+
+  tester()->SendTextQuery("turn down volume");
+
+  tester()->ExpectResult(true, base::BindRepeating(
+                                   [](chromeos::CrasAudioHandler* cras) {
+                                     return cras->GetOutputVolumePercent() <
+                                            kStartVolumePercent;
+                                   },
+                                   cras));
+}
+
 }  // namespace assistant
 }  // namespace chromeos

@@ -194,8 +194,9 @@ void WebrtcVideoRendererAdapter::DrawFrame(
   stats->time_decoded = base::TimeTicks::Now();
   video_renderer_->GetFrameConsumer()->DrawFrame(
       std::move(frame),
-      base::Bind(&WebrtcVideoRendererAdapter::FrameRendered,
-                 weak_factory_.GetWeakPtr(), frame_id, base::Passed(&stats)));
+      base::BindOnce(&WebrtcVideoRendererAdapter::FrameRendered,
+                     weak_factory_.GetWeakPtr(), frame_id,
+                     base::Passed(&stats)));
 }
 
 void WebrtcVideoRendererAdapter::FrameRendered(

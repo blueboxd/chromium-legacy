@@ -16,6 +16,7 @@
 
 namespace content {
 class BrowserContext;
+class SiteInstance;
 }  // namespace content
 
 namespace chromecast {
@@ -30,6 +31,7 @@ class CastWebViewFactory : public CastWebView::Observer {
   virtual std::unique_ptr<CastWebView> CreateWebView(
       const CastWebView::CreateParams& params,
       CastWebService* web_service,
+      scoped_refptr<content::SiteInstance> site_instance,
       const GURL& initial_url);
 
   content::BrowserContext* browser_context() const { return browser_context_; }

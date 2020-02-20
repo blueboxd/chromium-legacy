@@ -2782,12 +2782,4 @@ void LayoutBlockFlow::SetShouldDoFullPaintInvalidationForFirstLine() {
     first_root_box->SetShouldDoFullPaintInvalidationForFirstLine();
 }
 
-bool LayoutBlockFlow::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
-  // LayoutBlockFlow is in charge of paint invalidation of the first line.
-  if (FirstLineBox())
-    return false;
-
-  return LayoutBlock::PaintedOutputOfObjectHasNoEffectRegardlessOfSize();
-}
-
 }  // namespace blink

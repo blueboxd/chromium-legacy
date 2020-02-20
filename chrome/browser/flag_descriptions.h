@@ -1737,9 +1737,6 @@ extern const char kAppServiceIntentHandlingDescription[];
 extern const char kArcApplicationZoomName[];
 extern const char kArcApplicationZoomDescription[];
 
-extern const char kArcBootCompleted[];
-extern const char kArcBootCompletedDescription[];
-
 extern const char kArcCupsApiName[];
 extern const char kArcCupsApiDescription[];
 
@@ -1781,6 +1778,9 @@ extern const char kAshSwipingFromLeftEdgeToGoBackDescription[];
 
 extern const char kBluetoothAggressiveAppearanceFilterName[];
 extern const char kBluetoothAggressiveAppearanceFilterDescription[];
+
+extern const char kBluetoothKernelSuspendNotifierName[];
+extern const char kBluetoothKernelSuspendNotifierDescription[];
 
 extern const char kCameraSystemWebAppName[];
 extern const char kCameraSystemWebAppDescription[];
@@ -2059,6 +2059,9 @@ extern const char kSmartDimModelV3Description[];
 
 extern const char kSmartTextSelectionName[];
 extern const char kSmartTextSelectionDescription[];
+
+extern const char kSmbfsFileSharesName[];
+extern const char kSmbfsFileSharesDescription[];
 
 extern const char kSplitSettingsSyncName[];
 extern const char kSplitSettingsSyncDescription[];

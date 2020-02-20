@@ -47,6 +47,10 @@ bool CrostiniUpgraderDialog::ShouldShowCloseButton() const {
   return false;
 }
 
+bool CrostiniUpgraderDialog::ShouldCloseDialogOnEscape() const {
+  return false;
+}
+
 void CrostiniUpgraderDialog::AdjustWidgetInitParams(
     views::Widget::InitParams* params) {
   params->z_order = ui::ZOrderLevel::kNormal;

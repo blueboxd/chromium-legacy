@@ -358,68 +358,89 @@ XcursorImage* SkBitmapToXcursorImage(const SkBitmap* cursor_image,
 }
 
 int CoalescePendingMotionEvents(const XEvent* xev, XEvent* last_event) {
-  XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
-  int num_coalesced = 0;
+  DCHECK(xev->type == MotionNotify || xev->type == GenericEvent);
   XDisplay* display = xev->xany.display;
-  int event_type = xev->xgeneric.evtype;
+  XEvent next_event;
+  bool is_motion = false;
+  int num_coalesced = 0;
 
-  DCHECK(event_type == XI_Motion || event_type == XI_TouchUpdate);
-
-  while (XPending(display)) {
-    XEvent next_event;
-    XPeekEvent(display, &next_event);
-
-    // If we can't get the cookie, abort the check.
-    if (!XGetEventData(next_event.xgeneric.display, &next_event.xcookie))
-      return num_coalesced;
-
-    // If this isn't from a valid device, throw the event away, as
-    // that's what the message pump would do. Device events come in pairs
-    // with one from the master and one from the slave so there will
-    // always be at least one pending.
-    if (!ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(&next_event)) {
-      XFreeEventData(display, &next_event.xcookie);
-      XNextEvent(display, &next_event);
-      continue;
-    }
-
-    if (next_event.type == GenericEvent &&
-        next_event.xgeneric.evtype == event_type &&
-        !ui::DeviceDataManagerX11::GetInstance()->IsCMTGestureEvent(
-            next_event) &&
-        ui::DeviceDataManagerX11::GetInstance()->GetScrollClassEventDetail(
-            next_event) == SCROLL_TYPE_NO_SCROLL) {
-      XIDeviceEvent* next_xievent =
-          static_cast<XIDeviceEvent*>(next_event.xcookie.data);
-      // Confirm that the motion event is targeted at the same window
-      // and that no buttons or modifiers have changed.
-      if (xievent->event == next_xievent->event &&
-          xievent->child == next_xievent->child &&
-          xievent->detail == next_xievent->detail &&
-          xievent->buttons.mask_len == next_xievent->buttons.mask_len &&
-          (memcmp(xievent->buttons.mask, next_xievent->buttons.mask,
-                  xievent->buttons.mask_len) == 0) &&
-          xievent->mods.base == next_xievent->mods.base &&
-          xievent->mods.latched == next_xievent->mods.latched &&
-          xievent->mods.locked == next_xievent->mods.locked &&
-          xievent->mods.effective == next_xievent->mods.effective) {
-        XFreeEventData(display, &next_event.xcookie);
-        // Free the previous cookie.
-        if (num_coalesced > 0)
-          XFreeEventData(display, &last_event->xcookie);
-        // Get the event and its cookie data.
-        XNextEvent(display, last_event);
-        XGetEventData(display, &last_event->xcookie);
-        ++num_coalesced;
-        continue;
+  if (xev->type == MotionNotify) {
+    is_motion = true;
+    while (XPending(display)) {
+      XPeekEvent(xev->xany.display, &next_event);
+      // Discard all but the most recent motion event that targets the same
+      // window with unchanged state.
+      if (next_event.type == MotionNotify &&
+          next_event.xmotion.window == xev->xmotion.window &&
+          next_event.xmotion.subwindow == xev->xmotion.subwindow &&
+          next_event.xmotion.state == xev->xmotion.state) {
+        XNextEvent(xev->xany.display, last_event);
+      } else {
+        break;
       }
     }
-    // This isn't an event we want so free its cookie data.
-    XFreeEventData(display, &next_event.xcookie);
-    break;
+  } else {
+    int event_type = xev->xgeneric.evtype;
+    XIDeviceEvent* xievent = static_cast<XIDeviceEvent*>(xev->xcookie.data);
+    DCHECK(event_type == XI_Motion || event_type == XI_TouchUpdate);
+    is_motion = event_type == XI_Motion;
+
+    while (XPending(display)) {
+      XPeekEvent(display, &next_event);
+
+      // If we can't get the cookie, abort the check.
+      if (!XGetEventData(next_event.xgeneric.display, &next_event.xcookie))
+        return num_coalesced;
+
+      // If this isn't from a valid device, throw the event away, as
+      // that's what the message pump would do. Device events come in pairs
+      // with one from the master and one from the slave so there will
+      // always be at least one pending.
+      if (!ui::TouchFactory::GetInstance()->ShouldProcessXI2Event(
+              &next_event)) {
+        XFreeEventData(display, &next_event.xcookie);
+        XNextEvent(display, &next_event);
+        continue;
+      }
+
+      if (next_event.type == GenericEvent &&
+          next_event.xgeneric.evtype == event_type &&
+          !ui::DeviceDataManagerX11::GetInstance()->IsCMTGestureEvent(
+              next_event) &&
+          ui::DeviceDataManagerX11::GetInstance()->GetScrollClassEventDetail(
+              next_event) == SCROLL_TYPE_NO_SCROLL) {
+        XIDeviceEvent* next_xievent =
+            static_cast<XIDeviceEvent*>(next_event.xcookie.data);
+        // Confirm that the motion event is targeted at the same window
+        // and that no buttons or modifiers have changed.
+        if (xievent->event == next_xievent->event &&
+            xievent->child == next_xievent->child &&
+            xievent->detail == next_xievent->detail &&
+            xievent->buttons.mask_len == next_xievent->buttons.mask_len &&
+            (memcmp(xievent->buttons.mask, next_xievent->buttons.mask,
+                    xievent->buttons.mask_len) == 0) &&
+            xievent->mods.base == next_xievent->mods.base &&
+            xievent->mods.latched == next_xievent->mods.latched &&
+            xievent->mods.locked == next_xievent->mods.locked &&
+            xievent->mods.effective == next_xievent->mods.effective) {
+          XFreeEventData(display, &next_event.xcookie);
+          // Free the previous cookie.
+          if (num_coalesced > 0)
+            XFreeEventData(display, &last_event->xcookie);
+          // Get the event and its cookie data.
+          XNextEvent(display, last_event);
+          XGetEventData(display, &last_event->xcookie);
+          ++num_coalesced;
+          continue;
+        }
+      }
+      // This isn't an event we want so free its cookie data.
+      XFreeEventData(display, &next_event.xcookie);
+      break;
+    }
   }
 
-  if (event_type == XI_Motion && num_coalesced > 0)
+  if (is_motion && num_coalesced > 0)
     UMA_HISTOGRAM_COUNTS_10000("Event.CoalescedCount.Mouse", num_coalesced);
   return num_coalesced;
 }

@@ -2021,11 +2021,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
         static_cast<id<LoadQueryCommands>>(self.commandDispatcher));
 
   if (IsIPadIdiom()) {
-    self.tabStripCoordinator =
-        [[TabStripLegacyCoordinator alloc] initWithBaseViewController:self];
-    self.tabStripCoordinator.browserState = self.browserState;
-    self.tabStripCoordinator.dispatcher = self.commandDispatcher;
-    self.tabStripCoordinator.tabModel = self.tabModel;
+    self.tabStripCoordinator = [[TabStripLegacyCoordinator alloc]
+        initWithBaseViewController:self
+                           browser:self.browser];
     self.tabStripCoordinator.presentationProvider = self;
     self.tabStripCoordinator.animationWaitDuration =
         kLegacyFullscreenControllerToolbarAnimationDuration;

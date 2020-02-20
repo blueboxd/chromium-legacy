@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <memory>
 #include <set>
 
 #include "base/feature_list.h"
@@ -19,10 +20,11 @@
 #include "chrome/browser/chromeos/login/test/user_policy_mixin.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/supervised_user/logged_in_user_mixin.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -33,7 +35,6 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/common/extension.h"
 #include "net/dns/mock_host_resolver.h"
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
@@ -180,30 +181,24 @@ WebTimeLimitEnforcerThrottleTest::GetWebTimeLimitEnforcer() {
 content::WebContents* WebTimeLimitEnforcerThrottleTest::InstallAndLaunchWebApp(
     const GURL& url,
     bool whitelisted_app) {
-  WebApplicationInfo info;
-  info.title = base::UTF8ToUTF16(url.host());
-  info.description = base::UTF8ToUTF16("Web app");
-  info.app_url = url;
-  info.scope = url;
-  info.open_as_window = true;
+  auto web_app_info = std::make_unique<WebApplicationInfo>();
+  web_app_info->title = base::UTF8ToUTF16(url.host());
+  web_app_info->description = base::UTF8ToUTF16("Web app");
+  web_app_info->app_url = url;
+  web_app_info->scope = url;
+  web_app_info->open_as_window = true;
+  web_app::AppId app_id =
+      web_app::InstallWebApp(browser()->profile(), std::move(web_app_info));
 
-  const extensions::Extension* extension =
-      extensions::browsertest_util::InstallBookmarkApp(browser()->profile(),
-                                                       info);
-  EXPECT_TRUE(extension != nullptr);
-
+  if (whitelisted_app)
+    WhitelistApp(chromeos::app_time::AppId(apps::mojom::AppType::kWeb, app_id));
   base::RunLoop().RunUntilIdle();
 
-  if (whitelisted_app) {
-    WhitelistApp(
-        chromeos::app_time::AppId(apps::mojom::AppType::kWeb, extension->id()));
-  }
-
-  base::RunLoop().RunUntilIdle();
-
-  auto* web_content = extensions::browsertest_util::AddTab(browser(), url);
-
-  return web_content;
+  // Add a tab to |browser()| and return the newly added WebContents.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  return browser()->tab_strip_model()->GetActiveWebContents();
 }
 
 void WebTimeLimitEnforcerThrottleTest::UpdatePolicy() {

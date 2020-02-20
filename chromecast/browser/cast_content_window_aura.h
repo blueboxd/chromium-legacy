@@ -9,8 +9,6 @@
 #include "chromecast/browser/cast_content_gesture_handler.h"
 #include "chromecast/browser/cast_content_window.h"
 #include "chromecast/ui/media_control_ui.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_observer.h"
 #include "ui/aura/window_observer.h"
 
 namespace aura {
@@ -23,7 +21,6 @@ class TouchBlocker;
 
 class CastContentWindowAura : public CastContentWindow,
                               public CastWebContents::Observer,
-                              private content::WebContentsObserver,
                               public aura::WindowObserver {
  public:
   CastContentWindowAura(const CastContentWindow::CreateParams& params,
@@ -53,11 +50,6 @@ class CastContentWindowAura : public CastContentWindow,
   void OnWindowDestroyed(aura::Window* window) override;
 
  private:
-  // WebContentsObserver implementation:
-  void DidStartNavigation(
-      content::NavigationHandle* navigation_handle) override;
-  void WebContentsDestroyed() override;
-
   CastWindowManager* const window_manager_;
 
   // Utility class for detecting and dispatching gestures to delegates.
@@ -71,7 +63,6 @@ class CastContentWindowAura : public CastContentWindow,
 
   aura::Window* window_;
   bool has_screen_access_;
-  bool resize_window_when_navigation_starts_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentWindowAura);
 };

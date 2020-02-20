@@ -31,10 +31,6 @@ namespace base {
 class CommandLine;
 }
 
-namespace gpu {
-struct GpuPreferences;
-}
-
 namespace content {
 
 class CONTENT_EXPORT GpuDataManagerImplPrivate {
@@ -66,8 +62,9 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
       const base::Optional<gpu::GPUInfo>& optional_gpu_info_for_hardware_gpu);
 #if defined(OS_WIN)
   void UpdateDxDiagNode(const gpu::DxDiagNode& dx_diagnostics);
-  void UpdateDx12VulkanInfo(
-      const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info);
+  void UpdateDx12VulkanDevicePerfInfo(
+      const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info,
+      const gpu::DevicePerfInfo& device_perf_info);
   void UpdateOverlayInfo(const gpu::OverlayInfo& overlay_info);
   void UpdateDx12VulkanRequestStatus(bool request_continues);
   void UpdateDxDiagNodeRequestStatus(bool request_continues);
@@ -81,6 +78,7 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   gpu::GpuFeatureInfo GetGpuFeatureInfo() const;
   gpu::GpuFeatureInfo GetGpuFeatureInfoForHardwareGpu() const;
   gpu::GpuExtraInfo GetGpuExtraInfo() const;
+  base::Optional<gpu::DevicePerfInfo> GetDevicePerfInfo() const;
 
   bool IsGpuCompositingDisabled() const;
 
@@ -217,6 +215,8 @@ class CONTENT_EXPORT GpuDataManagerImplPrivate {
   gpu::GPUInfo gpu_info_for_hardware_gpu_;
 
   gpu::GpuExtraInfo gpu_extra_info_;
+
+  base::Optional<gpu::DevicePerfInfo> device_perf_info_;
 
   const scoped_refptr<GpuDataManagerObserverList> observer_list_;
 

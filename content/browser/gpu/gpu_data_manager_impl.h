@@ -23,6 +23,7 @@
 #include "build/build_config.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/common/three_d_api_types.h"
+#include "gpu/config/device_perf_info.h"
 #include "gpu/config/gpu_control_list.h"
 #include "gpu/config/gpu_domain_guilt.h"
 #include "gpu/config/gpu_extra_info.h"
@@ -79,8 +80,9 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager,
       const base::Optional<gpu::GPUInfo>& gpu_info_for_hardware_gpu);
 #if defined(OS_WIN)
   void UpdateDxDiagNode(const gpu::DxDiagNode& dx_diagnostics);
-  void UpdateDx12VulkanInfo(
-      const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info);
+  void UpdateDx12VulkanDevicePerfInfo(
+      const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info,
+      const gpu::DevicePerfInfo& device_perf_info);
   void UpdateOverlayInfo(const gpu::OverlayInfo& overlay_info);
   void UpdateDxDiagNodeRequestStatus(bool request_continues);
   void UpdateDx12VulkanRequestStatus(bool request_continues);
@@ -99,6 +101,8 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager,
   gpu::GpuFeatureInfo GetGpuFeatureInfoForHardwareGpu() const;
 
   gpu::GpuExtraInfo GetGpuExtraInfo() const;
+
+  base::Optional<gpu::DevicePerfInfo> GetDevicePerfInfo() const;
 
   bool IsGpuCompositingDisabled() const;
 

@@ -22,6 +22,7 @@ title: test1
 	RecalcStyleCount
 	LayoutDuration
 	RecalcStyleDuration
+	CaptureSnapshotDuration
 	ScriptDuration
 	V8CompileDuration
 	TaskDuration
@@ -55,6 +56,7 @@ title: test1
 	RecalcStyleCount
 	LayoutDuration
 	RecalcStyleDuration
+	CaptureSnapshotDuration
 	ScriptDuration
 	V8CompileDuration
 	TaskDuration
@@ -88,6 +90,7 @@ title:
 	RecalcStyleCount
 	LayoutDuration
 	RecalcStyleDuration
+	CaptureSnapshotDuration
 	ScriptDuration
 	V8CompileDuration
 	TaskDuration

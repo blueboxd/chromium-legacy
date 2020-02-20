@@ -1,0 +1,49 @@
+<style>
+  #collections {
+    --ntp-grid-gap: 8px;
+    padding: 4px;
+  }
+
+  .tile {
+    cursor: pointer;
+    outline-width: 0;
+  }
+
+  :host-context(.focus-outline-visible) .tile:focus {
+    box-shadow: 0 0 0 2px var(--ntp-focus-shadow-color);
+  }
+
+  .image {
+    border: none;
+    border-radius: 4px;
+    display: block;
+    height: 176px;
+    width: 176px;
+  }
+
+  /* TODO(crbug.com/1032328): This rule makes the URL somewhat readable. Remove
+   * once we show the actual image. */
+  .image {
+    background-color: var(--ntp-active-background-color);
+    color: var(--ntp-primary-text-color);
+    word-break: break-all;
+  }
+
+  .label {
+    color: var(--ntp-primary-text-color);
+    margin-bottom: 4px;
+    margin-top: 3px;
+    min-height: 30px;
+  }
+</style>
+<ntp-grid id="collections" columns="3">
+  <dom-repeat items="[[collections_]]">
+    <template>
+      <div class="tile" tabindex="0" title="[[item.label]]" role="button">
+        <!-- TODO(crbug.com/1032328): Show image in an iframe. -->
+        <div class="image">[[item.previewImageUrl.url]]</div>
+        <div class="label">[[item.label]]</div>
+      </div>
+    </template>
+  </dom-repeat>
+</ntp-grid>

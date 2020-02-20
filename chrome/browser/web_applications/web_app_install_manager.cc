@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/web_applications/components/web_app_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_install_task.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/web_application_info.h"
 #include "content/public/browser/web_contents.h"
 
@@ -114,10 +116,19 @@ void WebAppInstallManager::InstallWebAppWithParams(
   tasks_.insert(std::move(task));
 }
 
-void WebAppInstallManager::InstallWebAppFromSync(
+void WebAppInstallManager::InstallBookmarkAppFromSync(
     const AppId& app_id,
     std::unique_ptr<WebApplicationInfo> web_application_info,
     OnceInstallCallback callback) {
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAsWithoutExtensions)) {
+    // If new Web Applications system is enabled, any legacy sync-initiated
+    // installation requests are ignored for now.
+    // TODO(crbug.com/1020037): If app_id is not installed, migrate bookmark app
+    // to new web app: Enqueue installation as if the user had requested to
+    // install it.
+    return;
+  }
+
   // Skip sync update if app exists.
   // All manifest fields will be set locally via update (see crbug.com/926083)
   // so we must not sync them in order to avoid a device-to-device sync war.

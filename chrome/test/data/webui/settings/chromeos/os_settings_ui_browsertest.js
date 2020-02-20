@@ -270,6 +270,16 @@ TEST_F('OSSettingsUIBrowserTest', 'AllJsTests', () => {
       ui.$$('#prefs').fire('user-action-setting-change');
       assertEquals(userActionRecorder.settingChangeCount, 1);
     });
+
+    test('userActionSearchEvent', function() {
+      const searchField =
+          /** @type {CrToolbarSearchFieldElement} */ (
+              ui.$$('os-toolbar').getSearchField());
+
+      assertEquals(userActionRecorder.searchCount, 0);
+      searchField.setValue('GOOGLE');
+      assertEquals(userActionRecorder.searchCount, 1);
+    });
   });
 
   mocha.run();

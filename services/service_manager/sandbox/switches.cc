@@ -78,6 +78,12 @@ const char kGpuSandboxFailuresFatal[] = "gpu-sandbox-failures-fatal";
 // Disables the sandbox for all process types that are normally sandboxed.
 const char kNoSandbox[] = "no-sandbox";
 
+#if defined(OS_LINUX)
+// Instructs the zygote to launch without a sandbox. Processes forked from this
+// type of zygote will apply their own custom sandboxes later.
+const char kNoZygoteSandbox[] = "no-zygote-sandbox";
+#endif
+
 #if defined(OS_WIN)
 // Allows third party modules to inject by disabling the BINARY_SIGNATURE
 // mitigation policy on Win10+. Also has other effects in ELF.

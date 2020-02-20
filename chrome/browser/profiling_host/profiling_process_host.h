@@ -13,7 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/profiling_host/background_profiling_triggers.h"
-#include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom.h"
+#include "components/services/heap_profiling/public/mojom/heap_profiling_client.mojom-forward.h"
 
 namespace base {
 class FilePath;

@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/printing/print_view_manager_base.h"
-#include "components/printing/common/print.mojom.h"
+#include "components/printing/common/print.mojom-forward.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "printing/buildflags/buildflags.h"

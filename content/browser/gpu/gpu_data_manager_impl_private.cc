@@ -438,6 +438,20 @@ enum class CompositingMode {
 NOINLINE void IntentionallyCrashBrowserForUnusableGpuProcess() {
   LOG(FATAL) << "GPU process isn't usable. Goodbye.";
 }
+
+#if defined(OS_WIN)
+void CollectExtraDevicePerfInfo(const gpu::GPUInfo& gpu_info,
+                                gpu::DevicePerfInfo* device_perf_info) {
+  device_perf_info->intel_gpu_generation = gpu::GetIntelGpuGeneration(gpu_info);
+  const gpu::GPUInfo::GPUDevice& device = gpu_info.active_gpu();
+  if (device.vendor_id == 0xffff /* internal flag for software rendering */ ||
+      device.vendor_id == 0x15ad /* VMware */ ||
+      device.vendor_id == 0x1414 /* Microsoft software renderer */ ||
+      gpu_info.software_rendering /* SwiftShader */) {
+    device_perf_info->software_rendering = true;
+  }
+}
+#endif  // OS_WIN
 }  // anonymous namespace
 
 GpuDataManagerImplPrivate::GpuDataManagerImplPrivate(GpuDataManagerImpl* owner)
@@ -560,6 +574,11 @@ gpu::GPUInfo GpuDataManagerImplPrivate::GetGPUInfoForHardwareGpu() const {
   return gpu_info_for_hardware_gpu_;
 }
 
+base::Optional<gpu::DevicePerfInfo>
+GpuDataManagerImplPrivate::GetDevicePerfInfo() const {
+  return device_perf_info_;
+}
+
 bool GpuDataManagerImplPrivate::GpuAccessAllowed(std::string* reason) const {
   switch (gpu_mode_) {
     case gpu::GpuMode::HARDWARE_GL:
@@ -675,11 +694,13 @@ void GpuDataManagerImplPrivate::RequestGpuSupportedRuntimeVersion(
 
         manager->UpdateDx12VulkanRequestStatus(true);
         host->gpu_service()->GetGpuSupportedRuntimeVersionAndDevicePerfInfo(
-            base::BindOnce([](const gpu::Dx12VulkanVersionInfo& info,
-                              const gpu::DevicePerfInfo& device_perf_info) {
-              GpuDataManagerImpl::GetInstance()->UpdateDx12VulkanInfo(info);
-              // TODO(zmo): Process collected DevicePerfInfo.
-            }));
+            base::BindOnce(
+                [](const gpu::Dx12VulkanVersionInfo& dx12_vulkan_info,
+                   const gpu::DevicePerfInfo& device_perf_info) {
+                  GpuDataManagerImpl::GetInstance()
+                      ->UpdateDx12VulkanDevicePerfInfo(dx12_vulkan_info,
+                                                       device_perf_info);
+                }));
       },
       delayed);
 
@@ -811,11 +832,13 @@ void GpuDataManagerImplPrivate::UpdateDxDiagNode(
   NotifyGpuInfoUpdate();
 }
 
-void GpuDataManagerImplPrivate::UpdateDx12VulkanInfo(
-    const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info) {
+void GpuDataManagerImplPrivate::UpdateDx12VulkanDevicePerfInfo(
+    const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info,
+    const gpu::DevicePerfInfo& device_perf_info) {
   gpu_info_.dx12_vulkan_version_info = dx12_vulkan_version_info;
   gpu_info_dx12_vulkan_valid_ = true;
-
+  device_perf_info_ = device_perf_info;
+  CollectExtraDevicePerfInfo(gpu_info_, &(device_perf_info_.value()));
   // No need to call GetContentClient()->SetGpuInfo().
   NotifyGpuInfoUpdate();
 }

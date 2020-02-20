@@ -17,25 +17,24 @@
 
 namespace blink {
 
-class ExceptionState;
-class ScriptState;
+class EncodedVideoConfig;
 class ReadableStream;
-class VideoDecoderInitParameters;
 class WritableStream;
-class Visitor;
 
 class MODULES_EXPORT VideoDecoder final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static VideoDecoder* Create(ScriptState*, ExceptionState&);
-  VideoDecoder(ScriptState*, ExceptionState&);
+  static VideoDecoder* Create(ScriptState*);
+
+  VideoDecoder(ScriptState*);
   ~VideoDecoder() override;
 
   // video_decoder.idl implementation.
+  ScriptPromise configure(const EncodedVideoConfig* config,
+                          ExceptionState& exception_state);
   ReadableStream* readable() const;
   WritableStream* writable() const;
-  ScriptPromise initialize(const VideoDecoderInitParameters*, ExceptionState&);
 
   // GarbageCollected override.
   void Trace(Visitor*) override;
@@ -43,9 +42,8 @@ class MODULES_EXPORT VideoDecoder final : public ScriptWrappable {
  private:
   SEQUENCE_CHECKER(sequence_checker_);
 
-  // Helper classes that manage the input and output streams.
-  class WritableSink;
-  class ReadableSource;
+  class UnderlyingSink;
+  class UnderlyingSource;
 
   // Creates a new |write_resolver_| and returns a promise from it.
   ScriptPromise CreateWritePromise();
@@ -61,30 +59,31 @@ class MODULES_EXPORT VideoDecoder final : public ScriptWrappable {
   void OnDecodeDone(media::DecodeStatus);
   void OnOutput(scoped_refptr<media::VideoFrame>);
 
-  // Called by WritableSink.
+  // Called by UnderlyingSink.
   ScriptPromise Start(ExceptionState&);
   ScriptPromise Write(ScriptValue chunk, ExceptionState&);
   ScriptPromise Close(ExceptionState&);
   ScriptPromise Abort(ExceptionState&);
 
-  // Called by ReadableSource.
+  // Called by UnderlyingSource.
   ScriptPromise Pull();
   ScriptPromise Cancel();
 
   Member<ScriptState> script_state_;
-  Member<WritableStream> writable_;
-  Member<ReadableStream> readable_;
-  Member<ReadableSource> readable_source_;
 
-  // Signals completion of initialize().
-  Member<ScriptPromiseResolver> initialize_resolver_;
+  Member<UnderlyingSink> underlying_sink_;
+  Member<WritableStream> writable_;
+  Member<UnderlyingSource> underlying_source_;
+  Member<ReadableStream> readable_;
+
+  // Signals completion of configure().
+  Member<ScriptPromiseResolver> configure_resolver_;
 
   // Signals ability to accept an input chunk.
   Member<ScriptPromiseResolver> write_resolver_;
 
   std::unique_ptr<media::VideoDecoder> decoder_;
   bool has_error_ = false;
-  bool initialized_ = false;
   int pending_decodes_ = 0;
 
   base::WeakPtr<VideoDecoder> weak_this_;

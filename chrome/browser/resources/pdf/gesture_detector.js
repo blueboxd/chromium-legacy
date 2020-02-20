@@ -73,7 +73,7 @@ export class GestureDetector {
    * @return {boolean} True if the last touch start was a two finger touch.
    */
   wasTwoFingerTouch() {
-    return this.lastTouchTouchesCount_ == 2;
+    return this.lastTouchTouchesCount_ === 2;
   }
 
   /**

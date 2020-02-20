@@ -25,6 +25,7 @@
 
   #menuContainer,
   #pagesContainer {
+    max-height: 391px;
     overflow: hidden;
   }
 
@@ -152,9 +153,8 @@
     <div id="pagesContainer">
       <div id="pages">
         <iron-pages selected="[[selectedPage_]]" attr-for-selected="page-name">
-          <!-- TODO(crbug.com/1032328): Add support for selecting background
-               image. -->
-          <div page-name="backgrounds">backgrounds</div>
+          <ntp-customize-backgrounds page-name="backgrounds">
+          </ntp-customize-backgrounds>
           <ntp-customize-shortcuts page-name="shortcuts">
           </ntp-customize-shortcuts>
           <ntp-customize-themes page-name="themes" theme="[[theme]]">

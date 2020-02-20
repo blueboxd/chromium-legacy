@@ -421,8 +421,6 @@ class CORE_EXPORT LayoutTableSection final
   // avoid any repeating headers in its table or ancestor tables.
   int OffsetForRepeatedHeader() const;
 
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
-
   bool HeaderGroupShouldRepeat() const {
     return Table()->Header() == this && GroupShouldRepeat();
   }

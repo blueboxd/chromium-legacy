@@ -366,8 +366,6 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   HeapVector<Member<CanvasRenderingContext2DState>> state_stack_;
   AntiAliasingMode clip_antialiasing_;
 
-  mutable UsageCounters usage_counters_;
-
   virtual void FinalizeFrame() {}
 
   float GetFontBaseline(const SimpleFontData&) const;

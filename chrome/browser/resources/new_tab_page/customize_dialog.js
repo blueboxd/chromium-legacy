@@ -6,6 +6,7 @@ import 'chrome://resources/cr_elements/cr_button/cr_button.m.js';
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/polymer/v3_0/iron-pages/iron-pages.js';
 import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
+import './customize_backgrounds.js';
 import './customize_shortcuts.js';
 import './customize_themes.js';
 

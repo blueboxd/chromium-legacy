@@ -11,20 +11,34 @@ namespace {
 
 // Intentionally leaked.
 ZygoteHandle g_generic_zygote = nullptr;
+ZygoteHandle g_unsandboxed_zygote = nullptr;
 
 }  // namespace
 
-ZygoteHandle CreateGenericZygote(
-    base::OnceCallback<pid_t(base::CommandLine*, base::ScopedFD*)> launcher) {
+ZygoteHandle CreateGenericZygote(ZygoteLaunchCallback launch_cb) {
   CHECK(!g_generic_zygote);
-  g_generic_zygote = new ZygoteCommunication();
-  g_generic_zygote->Init(std::move(launcher));
+  g_generic_zygote =
+      new ZygoteCommunication(ZygoteCommunication::ZygoteType::kSandboxed);
+  g_generic_zygote->Init(std::move(launch_cb));
   return g_generic_zygote;
 }
 
 ZygoteHandle GetGenericZygote() {
   CHECK(g_generic_zygote);
   return g_generic_zygote;
+}
+
+ZygoteHandle CreateUnsandboxedZygote(ZygoteLaunchCallback launch_cb) {
+  CHECK(!g_unsandboxed_zygote);
+  g_unsandboxed_zygote =
+      new ZygoteCommunication(ZygoteCommunication::ZygoteType::kUnsandboxed);
+  g_unsandboxed_zygote->Init(std::move(launch_cb));
+  return g_unsandboxed_zygote;
+}
+
+ZygoteHandle GetUnsandboxedZygote() {
+  CHECK(g_unsandboxed_zygote);
+  return g_unsandboxed_zygote;
 }
 
 }  // namespace service_manager

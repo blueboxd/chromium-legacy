@@ -114,10 +114,12 @@ void GpuDataManagerImpl::UpdateDxDiagNode(
   private_->UpdateDxDiagNode(dx_diagnostics);
 }
 
-void GpuDataManagerImpl::UpdateDx12VulkanInfo(
-    const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info) {
+void GpuDataManagerImpl::UpdateDx12VulkanDevicePerfInfo(
+    const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info,
+    const gpu::DevicePerfInfo& device_perf_info) {
   base::AutoLock auto_lock(lock_);
-  private_->UpdateDx12VulkanInfo(dx12_vulkan_version_info);
+  private_->UpdateDx12VulkanDevicePerfInfo(dx12_vulkan_version_info,
+                                           device_perf_info);
 }
 
 void GpuDataManagerImpl::UpdateOverlayInfo(
@@ -176,6 +178,12 @@ gpu::GpuFeatureInfo GpuDataManagerImpl::GetGpuFeatureInfoForHardwareGpu()
 gpu::GpuExtraInfo GpuDataManagerImpl::GetGpuExtraInfo() const {
   base::AutoLock auto_lock(lock_);
   return private_->GetGpuExtraInfo();
+}
+
+base::Optional<gpu::DevicePerfInfo> GpuDataManagerImpl::GetDevicePerfInfo()
+    const {
+  base::AutoLock auto_lock(lock_);
+  return private_->GetDevicePerfInfo();
 }
 
 bool GpuDataManagerImpl::IsGpuCompositingDisabled() const {

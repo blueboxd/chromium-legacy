@@ -268,7 +268,7 @@ export class PluginController extends ContentController {
   beforeZoom() {
     this.postMessage_({type: 'stopScrolling'});
 
-    if (this.viewport_.pinchPhase == Viewport.PinchPhase.PINCH_START) {
+    if (this.viewport_.pinchPhase === Viewport.PinchPhase.PINCH_START) {
       const position = this.viewport_.position;
       const zoom = this.viewport_.getZoom();
       const pinchPhase = this.viewport_.pinchPhase;
@@ -492,7 +492,7 @@ export class PluginController extends ContentController {
         `File too large to be saved: ${bufView.length} bytes.`);
     assert(bufView.length >= MIN_FILE_SIZE);
     assert(
-        String.fromCharCode(bufView[0], bufView[1], bufView[2], bufView[3]) ==
+        String.fromCharCode(bufView[0], bufView[1], bufView[2], bufView[3]) ===
         '%PDF');
 
     resolver.resolve(messageData);

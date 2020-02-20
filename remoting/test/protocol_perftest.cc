@@ -168,9 +168,9 @@ class ProtocolPerfTest
   void DrawFrame(std::unique_ptr<webrtc::DesktopFrame> frame,
                  base::OnceClosure done) override {
     last_video_frame_ = std::move(frame);
-    if (!on_frame_task_.is_null())
+    if (on_frame_task_)
       on_frame_task_.Run();
-    if (!done.is_null())
+    if (done)
       std::move(done).Run();
   }
 

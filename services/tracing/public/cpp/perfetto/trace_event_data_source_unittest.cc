@@ -1631,9 +1631,10 @@ TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnBeginAndEnd) {
 TEST_F(TraceEventDataSourceTest, TypedArgumentsTracingOnInstant) {
   CreateTraceEventDataSource();
 
-  TRACE_EVENT_INSTANT("browser", "bar", [&](perfetto::EventContext ctx) {
-    ctx.event()->set_log_message()->set_body_iid(42);
-  });
+  TRACE_EVENT_INSTANT("browser", "bar", TRACE_EVENT_SCOPE_THREAD,
+                      [&](perfetto::EventContext ctx) {
+                        ctx.event()->set_log_message()->set_body_iid(42);
+                      });
 
   EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 4u);
   ExpectStandardPreamble();  // 3 preamble packets.
@@ -1794,7 +1795,7 @@ TEST_F(TraceEventDataSourceTest, UserActionEvent) {
 
   base::RecordAction(base::UserMetricsAction("Test_Action"));
 
-  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 5u);
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 4u);
   ExpectStandardPreamble();  // 3 preamble packets.
 
   auto* e_packet = producer_client()->GetFinalizedPacket(3);

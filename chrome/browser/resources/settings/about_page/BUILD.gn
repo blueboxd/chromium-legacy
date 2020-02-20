@@ -3,6 +3,9 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/polymer/polymer.gni")
+import("//ui/webui/resources/tools/js_modulizer.gni")
+import("../settings.gni")
 
 js_type_check("closure_compile") {
   deps = [
@@ -28,35 +31,38 @@ js_library("about_page_browser_proxy") {
   externs_list = [ "$externs_path/chrome_send.js" ]
 }
 
-# TODO(crbug.com/1026426): Fix and enable.
-#js_type_check("closure_compile_module") {
-#  is_polymer3 = true
-#  deps = [
-#    ":about_page.m",
-#    ":about_page_browser_proxy.m",
-#  ]
-#}
+js_type_check("closure_compile_module") {
+  is_polymer3 = true
+  deps = [
+    ":about_page.m",
+    ":about_page_browser_proxy.m",
+  ]
+}
 
 js_library("about_page.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/about_page/about_page.m.js" ]
   deps = [
-    # TODO: Fill those in.
+    ":about_page_browser_proxy.m",
+    "..:lifetime_browser_proxy.m",
+    "..:router.m",
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
+    "//ui/webui/resources/js:assert.m",
+    "//ui/webui/resources/js:i18n_behavior.m",
+    "//ui/webui/resources/js:parse_html_subset.m",
+    "//ui/webui/resources/js:web_ui_listener_behavior.m",
   ]
   extra_deps = [ ":about_page_module" ]
 }
 
 js_library("about_page_browser_proxy.m") {
   sources = [ "$root_gen_dir/chrome/browser/resources/settings/about_page/about_page_browser_proxy.m.js" ]
-  deps = [
-    # TODO: Fill those in.
-  ]
+  deps = [ "//ui/webui/resources/js:cr.m" ]
+  externs_list = [ "$externs_path/chrome_send.js" ]
   extra_deps = [ ":modulize" ]
 }
 
-import("//tools/polymer/polymer.gni")
-
 group("polymer3_elements") {
-  deps = [
+  public_deps = [
     ":about_page_module",
     ":modulize",
   ]
@@ -66,10 +72,16 @@ polymer_modulizer("about_page") {
   js_file = "about_page.js"
   html_file = "about_page.html"
   html_type = "dom-module"
+  auto_imports = settings_auto_imports + [
+                   "ui/webui/resources/html/assert.html|assert",
+                   "chrome/browser/resources/settings/router.html|Router",
+                   "chrome/browser/resources/settings/lifetime_browser_proxy.html|LifetimeBrowserProxy, LifetimeBrowserProxyImpl",
+                   "chrome/browser/resources/settings/about_page/about_page_browser_proxy.html|AboutPageBrowserProxy, AboutPageBrowserProxyImpl, UpdateStatus, UpdateStatusChangedEvent, PromoteUpdaterStatus",
+                 ]
+  namespace_rewrites = settings_namespace_rewrites
 }
-
-import("//ui/webui/resources/tools/js_modulizer.gni")
 
 js_modulizer("modulize") {
   input_files = [ "about_page_browser_proxy.js" ]
+  namespace_rewrites = settings_namespace_rewrites
 }

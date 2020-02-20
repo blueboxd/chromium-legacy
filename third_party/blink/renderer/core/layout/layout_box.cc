@@ -2875,36 +2875,6 @@ bool LayoutBox::NeedsForcedBreakBefore(
   return IsForcedFragmentainerBreakValue(break_value);
 }
 
-bool LayoutBox::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
-  if (HasNonCompositedScrollbars() || IsSelected() ||
-      HasBoxDecorationBackground() || StyleRef().HasBoxDecorations() ||
-      StyleRef().HasVisualOverflowingEffect())
-    return false;
-
-  // The HTML element and the LayoutView have a complicated background
-  // painting relationship (see ViewPainter).
-  if (IsDocumentElement())
-    return false;
-
-  // Hit tests rects are painted and depend on the size.
-  if (HasEffectiveAllowedTouchAction())
-    return false;
-
-  // Both mask and clip-path generates drawing display items that depends on
-  // the size of the box.
-  if (HasMask() || HasClipPath())
-    return false;
-
-  // If the box paints into its own backing, we can assume that it's painting
-  // may have some effect. For example, honoring the border-radius clip on
-  // a composited child paints into a mask for an otherwise non-painting
-  // element, because children of that element will require the mask.
-  if (HasLayer() && Layer()->GetCompositingState() == kPaintsIntoOwnBacking)
-    return false;
-
-  return true;
-}
-
 PhysicalRect LayoutBox::LocalVisualRectIgnoringVisibility() const {
   return PhysicalSelfVisualOverflowRect();
 }

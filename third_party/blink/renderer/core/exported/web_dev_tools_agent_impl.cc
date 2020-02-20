@@ -252,16 +252,17 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
                                                       session->V8Session());
   session->Append(dom_debugger_agent);
 
+  InspectorPerformanceAgent* performance_agent =
+      MakeGarbageCollected<InspectorPerformanceAgent>(inspected_frames);
+  session->Append(performance_agent);
+
   session->Append(MakeGarbageCollected<InspectorDOMSnapshotAgent>(
-      inspected_frames, dom_debugger_agent));
+      inspected_frames, dom_debugger_agent, performance_agent));
 
   session->Append(MakeGarbageCollected<InspectorAnimationAgent>(
       inspected_frames, css_agent, session->V8Session()));
 
   session->Append(MakeGarbageCollected<InspectorMemoryAgent>(inspected_frames));
-
-  session->Append(
-      MakeGarbageCollected<InspectorPerformanceAgent>(inspected_frames));
 
   session->Append(
       MakeGarbageCollected<InspectorApplicationCacheAgent>(inspected_frames));

@@ -67,10 +67,12 @@ std::unique_ptr<webrtc::DesktopFrame> PaddedDesktopFrame::CopyOf(
 }  // namespace
 
 DualBufferFrameConsumer::DualBufferFrameConsumer(
-    const RenderCallback& callback,
+    RenderCallback callback,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     protocol::FrameConsumer::PixelFormat format)
-    : callback_(callback), task_runner_(task_runner), pixel_format_(format) {
+    : callback_(std::move(callback)),
+      task_runner_(task_runner),
+      pixel_format_(format) {
   weak_ptr_ = weak_factory_.GetWeakPtr();
   thread_checker_.DetachFromThread();
 }

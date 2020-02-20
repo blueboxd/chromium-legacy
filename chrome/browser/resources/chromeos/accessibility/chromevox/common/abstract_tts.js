@@ -519,4 +519,4 @@ AbstractTts.substitutionDictionaryRegexp_;
  * @private
  */
 AbstractTts.repetitionRegexp_ =
-    /([-\/\\|!@#$%^&*\(\)=_+\[\]\{\}.?;'":<>\u2022])\1{1,}/g;
+    /([-\/\\|!@#$%^&*\(\)=_+\[\]\{\}.?;'":<>\u2022])\1{2,}/g;

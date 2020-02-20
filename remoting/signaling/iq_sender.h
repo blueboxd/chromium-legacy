@@ -34,9 +34,9 @@ class IqSender : public SignalStrategy::Listener {
  public:
   // Callback that is called when an Iq response is received. Called
   // with the |response| set to nullptr in case of a timeout.
-  typedef base::OnceCallback<void(IqRequest* request,
-                                  const jingle_xmpp::XmlElement* response)>
-      ReplyCallback;
+  using ReplyCallback =
+      base::OnceCallback<void(IqRequest* request,
+                              const jingle_xmpp::XmlElement* response)>;
 
   explicit IqSender(SignalStrategy* signal_strategy);
   ~IqSender() override;

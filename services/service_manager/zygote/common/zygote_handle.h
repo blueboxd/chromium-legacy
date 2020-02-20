@@ -26,21 +26,23 @@ using ZygoteHandle = ZygoteCommunication*;
 #error "Can not use zygote handles on this platform"
 #endif  // defined(OS_POSIX)
 
+using ZygoteLaunchCallback =
+    base::OnceCallback<pid_t(base::CommandLine*, base::ScopedFD*)>;
+
 // Allocates and initializes the global generic zygote process, and returns the
-// ZygoteHandle used to communicate with it. |launcher| is a callback that
+// ZygoteHandle used to communicate with it. |launch_cb| is a callback that
 // should actually launch the process, after adding additional command line
 // switches to the ones composed by this function. It returns the pid created,
 // and provides a control fd for it.
-
 COMPONENT_EXPORT(SERVICE_MANAGER_ZYGOTE)
-ZygoteHandle CreateGenericZygote(
-    base::OnceCallback<pid_t(base::CommandLine*, base::ScopedFD*)> launcher);
-
-// Returns a handle to a global generic zygote object. This function allows the
-// browser to launch and use a single zygote process until the performance
-// issues around launching multiple zygotes are resolved.
-// http://crbug.com/569191
+ZygoteHandle CreateGenericZygote(ZygoteLaunchCallback launch_cb);
 COMPONENT_EXPORT(SERVICE_MANAGER_ZYGOTE) ZygoteHandle GetGenericZygote();
+
+// Similar to the above but for creating an unsandboxed zygote from which
+// processes which need non-generic sandboxes can be derived.
+COMPONENT_EXPORT(SERVICE_MANAGER_ZYGOTE)
+ZygoteHandle CreateUnsandboxedZygote(ZygoteLaunchCallback launch_cb);
+COMPONENT_EXPORT(SERVICE_MANAGER_ZYGOTE) ZygoteHandle GetUnsandboxedZygote();
 
 }  // namespace service_manager
 

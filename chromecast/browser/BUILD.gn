@@ -99,8 +99,6 @@ cast_source_set("browser") {
     "cast_web_contents_impl.h",
     "cast_web_service.cc",
     "cast_web_service.h",
-    "cast_web_view_base.cc",
-    "cast_web_view_base.h",
     "cast_web_view_default.cc",
     "cast_web_view_default.h",
     "cast_web_view_factory.cc",

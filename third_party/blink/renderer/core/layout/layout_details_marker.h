@@ -41,9 +41,6 @@ class LayoutDetailsMarker final : public LayoutBlockFlow {
            LayoutBlockFlow::IsOfType(type);
   }
   void Paint(const PaintInfo&) const override;
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const override {
-    return false;
-  }
 
   bool IsOpen() const;
 };

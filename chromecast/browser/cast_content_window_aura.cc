@@ -79,8 +79,7 @@ CastContentWindowAura::CastContentWindowAura(
       gesture_priority_(params.gesture_priority),
       is_touch_enabled_(params.enable_touch_input),
       window_(nullptr),
-      has_screen_access_(false),
-      resize_window_when_navigation_starts_(true) {}
+      has_screen_access_(false) {}
 
 CastContentWindowAura::~CastContentWindowAura() {
   CastWebContents::Observer::Observe(nullptr);
@@ -100,7 +99,6 @@ void CastContentWindowAura::CreateWindowForWebContents(
   DCHECK(window_manager_) << "A CastWindowManager must be provided before "
                           << "creating a window for WebContents.";
   CastWebContents::Observer::Observe(cast_web_contents);
-  content::WebContentsObserver::Observe(cast_web_contents->web_contents());
   window_ = cast_web_contents->web_contents()->GetNativeView();
   if (!window_->HasObserver(this)) {
     window_->AddObserver(this);
@@ -133,7 +131,6 @@ void CastContentWindowAura::GrantScreenAccess() {
 
 void CastContentWindowAura::RevokeScreenAccess() {
   has_screen_access_ = false;
-  resize_window_when_navigation_starts_ = false;
   if (window_) {
     window_->Hide();
     // Because rendering a larger window may require more system resources,
@@ -189,25 +186,6 @@ void CastContentWindowAura::OnWindowVisibilityChanged(aura::Window* window,
 
 void CastContentWindowAura::OnWindowDestroyed(aura::Window* window) {
   window_ = nullptr;
-}
-
-void CastContentWindowAura::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!resize_window_when_navigation_starts_) {
-    return;
-  }
-  resize_window_when_navigation_starts_ = false;
-
-  // Resize window
-  gfx::Size display_size =
-      display::Screen::GetScreen()->GetPrimaryDisplay().size();
-  aura::Window* content_window = web_contents()->GetNativeView();
-  content_window->SetBounds(
-      gfx::Rect(display_size.width(), display_size.height()));
-}
-
-void CastContentWindowAura::WebContentsDestroyed() {
-  content::WebContentsObserver::Observe(nullptr);
 }
 
 }  // namespace chromecast

@@ -20,6 +20,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
@@ -1537,6 +1538,10 @@ void QuotaManager::DidGetStorageCapacityForHistogram(int64_t usage,
   if (total_space > 0) {
     UMA_HISTOGRAM_PERCENTAGE("Quota.PercentUsedForTemporaryStorage2",
                              static_cast<int>((usage * 100) / total_space));
+    UMA_HISTOGRAM_MBYTES("Quota.AvailableDiskSpace2", available_space);
+    UMA_HISTOGRAM_PERCENTAGE(
+        "Quota.PercentDiskAvailable2",
+        std::min(100, static_cast<int>((available_space * 100 / total_space))));
   }
 
   GetGlobalUsage(

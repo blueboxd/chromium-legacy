@@ -113,12 +113,6 @@ class GpuWatchdogInit {
  private:
   gpu::GpuWatchdogThread* watchdog_ptr_ = nullptr;
 };
-
-DevicePerfInfo CollectDevicePerfInfo() {
-  // TODO(zmo): Collect perf info.
-  DevicePerfInfo info;
-  return info;
-}
 }  // namespace
 
 GpuInit::GpuInit() = default;
@@ -133,7 +127,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 
   if (gpu_preferences_.enable_perf_data_collection) {
     // This is only enabled on the info collection GPU process.
-    device_perf_info_ = CollectDevicePerfInfo();
+    DevicePerfInfo device_perf_info;
+    CollectDevicePerfInfo(&device_perf_info);
+    device_perf_info_ = device_perf_info;
   }
 
   // Blacklist decisions based on basic GPUInfo may not be final. It might
@@ -172,6 +168,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
         gpu_info_, gpu_preferences_, command_line, &needs_more_info);
   }
 #endif  // !OS_ANDROID && !BUILDFLAG(IS_CHROMECAST)
+
   gpu_info_.in_process_gpu = false;
   bool use_swiftshader = false;
 

@@ -8,6 +8,8 @@
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "services/network/public/cpp/features.h"');
 
+GEN('#include "build/branding_buildflags.h"');
+
 /** Test fixture for shared Polymer 3 elements. */
 // eslint-disable-next-line no-var
 var CrSettingsV3BrowserTest = class extends PolymerTest {
@@ -303,3 +305,21 @@ var CrSettingsPrefsV3Test = class extends CrSettingsV3BrowserTest {
 TEST_F('CrSettingsPrefsV3Test', 'All', function() {
   mocha.run();
 });
+
+// eslint-disable-next-line no-var
+var CrSettingsAboutPageV3Test = class extends CrSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://settings/test_loader.html?module=settings/about_page_tests.m.js';
+  }
+};
+
+TEST_F('CrSettingsAboutPageV3Test', 'AboutPage', function() {
+  mocha.grep('AboutPageTest_AllBuilds').run();
+});
+
+GEN('#if BUILDFLAG(GOOGLE_CHROME_BRANDING)');
+TEST_F('CrSettingsAboutPageV3Test', 'AboutPage_OfficialBuild', function() {
+  mocha.grep('AboutPageTest_OfficialBuilds').run();
+});
+GEN('#endif');

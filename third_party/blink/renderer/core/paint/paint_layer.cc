@@ -163,7 +163,6 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       previous_paint_result_(kFullyPainted),
       needs_paint_phase_descendant_outlines_(false),
       needs_paint_phase_float_(false),
-      needs_paint_phase_descendant_block_backgrounds_(false),
       has_descendant_with_clip_path_(false),
       has_non_isolated_descendant_with_blend_mode_(false),
       has_fixed_position_descendant_(false),

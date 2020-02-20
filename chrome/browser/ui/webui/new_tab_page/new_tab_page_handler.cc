@@ -8,6 +8,8 @@
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/background/ntp_background_service.h"
+#include "chrome/browser/search/background/ntp_background_service_factory.h"
 #include "chrome/browser/search/chrome_colors/chrome_colors_factory.h"
 #include "chrome/browser/search/chrome_colors/chrome_colors_service.h"
 #include "chrome/browser/search/instant_service.h"
@@ -65,14 +67,20 @@ NewTabPageHandler::NewTabPageHandler(
     : chrome_colors_service_(
           chrome_colors::ChromeColorsFactory::GetForProfile(profile)),
       instant_service_(InstantServiceFactory::GetForProfile(profile)),
+      ntp_background_service_(
+          NtpBackgroundServiceFactory::GetForProfile(profile)),
       page_{std::move(pending_page)},
       receiver_{this, std::move(pending_page_handler)} {
+  CHECK(instant_service_);
+  CHECK(ntp_background_service_);
   instant_service_->AddObserver(this);
+  ntp_background_service_->AddObserver(this);
   page_->SetTheme(MakeTheme(*instant_service_->GetInitializedNtpTheme()));
 }
 
 NewTabPageHandler::~NewTabPageHandler() {
   instant_service_->RemoveObserver(this);
+  ntp_background_service_->RemoveObserver(this);
 }
 
 void NewTabPageHandler::AddMostVisitedTile(
@@ -194,6 +202,17 @@ void NewTabPageHandler::UpdateMostVisitedTile(
   std::move(callback).Run(success);
 }
 
+void NewTabPageHandler::GetBackgroundCollections(
+    GetBackgroundCollectionsCallback callback) {
+  if (!ntp_background_service_) {
+    std::move(callback).Run(
+        std::vector<new_tab_page::mojom::BackgroundCollectionPtr>());
+    return;
+  }
+  background_collections_callback_ = std::move(callback);
+  ntp_background_service_->FetchCollectionInfo();
+}
+
 void NewTabPageHandler::NtpThemeChanged(const NtpTheme& ntp_theme) {
   page_->SetTheme(MakeTheme(ntp_theme));
 }
@@ -219,4 +238,28 @@ void NewTabPageHandler::MostVisitedInfoChanged(
   result->tiles = std::move(list);
   result->visible = info.is_visible;
   page_->SetMostVisitedInfo(std::move(result));
+}
+
+void NewTabPageHandler::OnCollectionInfoAvailable() {
+  if (!background_collections_callback_) {
+    return;
+  }
+
+  std::vector<new_tab_page::mojom::BackgroundCollectionPtr> collections;
+  for (const auto& info : ntp_background_service_->collection_info()) {
+    auto collection = new_tab_page::mojom::BackgroundCollection::New();
+    collection->label = info.collection_name;
+    collection->preview_image_url = GURL(info.preview_image_url);
+    collections.push_back(std::move(collection));
+  }
+  std::move(background_collections_callback_).Run(std::move(collections));
+}
+
+void NewTabPageHandler::OnCollectionImagesAvailable() {}
+
+void NewTabPageHandler::OnNextCollectionImageAvailable() {}
+
+void NewTabPageHandler::OnNtpBackgroundServiceShuttingDown() {
+  ntp_background_service_->RemoveObserver(this);
+  ntp_background_service_ = nullptr;
 }

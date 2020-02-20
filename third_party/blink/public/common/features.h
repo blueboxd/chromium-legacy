@@ -88,6 +88,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kLightweightNoStatePrefetch;
 BLINK_COMMON_EXPORT extern const base::Feature
     kLightweightNoStatePrefetch_FetchFonts;
 
+BLINK_COMMON_EXPORT extern const base::Feature kSaveDataImgSrcset;
+
 BLINK_COMMON_EXPORT extern const base::Feature kForceWebContentsDarkMode;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<ForceDarkInversionMethod>
     kForceDarkInversionMethodParam;

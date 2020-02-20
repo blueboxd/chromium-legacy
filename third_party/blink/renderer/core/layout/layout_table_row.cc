@@ -376,11 +376,4 @@ void LayoutTableRow::AddVisualOverflowFromCell(const LayoutTableCell* cell) {
   AddContentsVisualOverflow(cell_visual_overflow_rect);
 }
 
-bool LayoutTableRow::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
-  return LayoutTableBoxComponent::
-             PaintedOutputOfObjectHasNoEffectRegardlessOfSize() &&
-         // Row paints collapsed borders.
-         !Table()->HasCollapsedBorders();
-}
-
 }  // namespace blink

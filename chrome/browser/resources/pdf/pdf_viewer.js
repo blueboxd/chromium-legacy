@@ -130,8 +130,8 @@ export function shouldIgnoreKeyEvents(activeElement) {
 
   return (
       activeElement.isContentEditable ||
-      (activeElement.tagName == 'INPUT' && activeElement.type != 'radio') ||
-      activeElement.tagName == 'TEXTAREA');
+      (activeElement.tagName === 'INPUT' && activeElement.type !== 'radio') ||
+      activeElement.tagName === 'TEXTAREA');
 }
 
 /**
@@ -231,7 +231,7 @@ export class PDFViewer {
     this.errorScreen_ =
         /** @type {!ViewerErrorScreenElement} */ ($('error-screen'));
     // Can only reload if we are in a normal tab.
-    if (chrome.tabs && this.browserApi_.getStreamInfo().tabId != -1) {
+    if (chrome.tabs && this.browserApi_.getStreamInfo().tabId !== -1) {
       this.errorScreen_.reloadFn = () => {
         chrome.tabs.reload(this.browserApi_.getStreamInfo().tabId);
       };
@@ -243,7 +243,7 @@ export class PDFViewer {
     const topToolbarHeight =
         (toolbarEnabled) ? PDFViewer.MATERIAL_TOOLBAR_HEIGHT : 0;
     const defaultZoom =
-        this.browserApi_.getZoomBehavior() == BrowserApi.ZoomBehavior.MANAGE ?
+        this.browserApi_.getZoomBehavior() === BrowserApi.ZoomBehavior.MANAGE ?
         this.browserApi_.getDefaultZoom() :
         1.0;
 
@@ -374,9 +374,9 @@ export class PDFViewer {
 
     document.body.addEventListener('change-page', e => {
       this.viewport_.goToPage(e.detail.page);
-      if (e.detail.origin == 'bookmark') {
+      if (e.detail.origin === 'bookmark') {
         PDFMetrics.record(PDFMetrics.UserAction.FOLLOW_BOOKMARK);
-      } else if (e.detail.origin == 'pageselector') {
+      } else if (e.detail.origin === 'pageselector') {
         PDFMetrics.record(PDFMetrics.UserAction.PAGE_SELECTOR_NAVIGATE);
       }
     });
@@ -398,7 +398,7 @@ export class PDFViewer {
     });
 
     document.body.addEventListener('dropdown-opened', e => {
-      if (e.detail == 'bookmarks') {
+      if (e.detail === 'bookmarks') {
         PDFMetrics.record(PDFMetrics.UserAction.OPEN_BOOKMARKS_PANEL);
       }
     });
@@ -610,9 +610,9 @@ export class PDFViewer {
   }
 
   handleMouseEvent_(e) {
-    if (e.type == 'mousemove') {
+    if (e.type === 'mousemove') {
       this.toolbarManager_.handleMouseMove(e);
-    } else if (e.type == 'mouseout') {
+    } else if (e.type === 'mouseout') {
       this.toolbarManager_.hideToolbarsForMouseOut();
     }
   }
@@ -643,7 +643,7 @@ export class PDFViewer {
     const annotationMode = e.detail.value;
     if (annotationMode) {
       // Enter annotation mode.
-      assert(this.currentController_ == this.pluginController_);
+      assert(this.currentController_ === this.pluginController_);
       // TODO(dstockwell): set plugin read-only, begin transition
       this.updateProgress_(0);
       // TODO(dstockwell): handle save failure
@@ -674,7 +674,7 @@ export class PDFViewer {
     } else {
       // Exit annotation mode.
       PDFMetrics.record(PDFMetrics.UserAction.EXIT_ANNOTATION_MODE);
-      assert(this.currentController_ == this.inkController_);
+      assert(this.currentController_ === this.inkController_);
       // TODO(dstockwell): set ink read-only, begin transition
       this.updateProgress_(0);
       // This runs separately to allow other consumers of `loaded` to queue
@@ -711,12 +711,12 @@ export class PDFViewer {
    * @private
    */
   fitToChanged_(e) {
-    if (e.detail.fittingType == FittingType.FIT_TO_PAGE) {
+    if (e.detail.fittingType === FittingType.FIT_TO_PAGE) {
       this.viewport_.fitToPage();
       this.toolbarManager_.forceHideTopToolbar();
-    } else if (e.detail.fittingType == FittingType.FIT_TO_WIDTH) {
+    } else if (e.detail.fittingType === FittingType.FIT_TO_WIDTH) {
       this.viewport_.fitToWidth();
-    } else if (e.detail.fittingType == FittingType.FIT_TO_HEIGHT) {
+    } else if (e.detail.fittingType === FittingType.FIT_TO_HEIGHT) {
       this.viewport_.fitToHeight();
       this.toolbarManager_.forceHideTopToolbar();
     }
@@ -732,7 +732,7 @@ export class PDFViewer {
    * @private
    */
   sendDocumentLoadedMessage_() {
-    if (this.loadState_ == LoadState.LOADING) {
+    if (this.loadState_ === LoadState.LOADING) {
       return;
     }
     if (this.isPrintPreview_ && !this.isPrintPreviewLoadingFinished_) {
@@ -768,9 +768,9 @@ export class PDFViewer {
         const zoomedPositionShift =
             params.viewPosition * this.viewport_.getZoom();
         const currentViewportPosition = this.viewport_.position;
-        if (params.view == FittingType.FIT_TO_WIDTH) {
+        if (params.view === FittingType.FIT_TO_WIDTH) {
           currentViewportPosition.y += zoomedPositionShift;
-        } else if (params.view == FittingType.FIT_TO_HEIGHT) {
+        } else if (params.view === FittingType.FIT_TO_HEIGHT) {
           currentViewportPosition.x += zoomedPositionShift;
         }
         this.viewport_.position = currentViewportPosition;
@@ -790,7 +790,7 @@ export class PDFViewer {
    */
   goToPageAndXY_(origin, page, message) {
     this.viewport_.goToPageAndXY(page, message.x, message.y);
-    if (origin == 'bookmark') {
+    if (origin === 'bookmark') {
       PDFMetrics.record(PDFMetrics.UserAction.FOLLOW_BOOKMARK);
     }
   }
@@ -821,19 +821,20 @@ export class PDFViewer {
    * @private
    */
   setLoadState_(loadState) {
-    if (this.loadState_ == loadState) {
+    if (this.loadState_ === loadState) {
       return;
     }
     assert(
-        loadState == LoadState.LOADING || this.loadState_ == LoadState.LOADING);
+        loadState === LoadState.LOADING ||
+        this.loadState_ === LoadState.LOADING);
     this.loadState_ = loadState;
     if (!this.initialLoadComplete_) {
       this.initialLoadComplete_ = true;
       return;
     }
-    if (loadState == LoadState.SUCCESS) {
+    if (loadState === LoadState.SUCCESS) {
       this.loaded_.resolve();
-    } else if (loadState == LoadState.FAILED) {
+    } else if (loadState === LoadState.FAILED) {
       this.loaded_.reject();
     } else {
       this.loaded_ = new PromiseResolver();
@@ -851,7 +852,7 @@ export class PDFViewer {
       this.toolbar_.loadProgress = progress;
     }
 
-    if (progress == -1) {
+    if (progress === -1) {
       // Document load failed.
       this.errorScreen_.show();
       this.sizer_.style.display = 'none';
@@ -862,7 +863,7 @@ export class PDFViewer {
       this.setLoadState_(LoadState.FAILED);
       this.isPrintPreviewLoadingFinished_ = true;
       this.sendDocumentLoadedMessage_();
-    } else if (progress == 100) {
+    } else if (progress === 100) {
       // Document load complete.
       if (this.lastViewportPosition_) {
         this.viewport_.position = this.lastViewportPosition_;
@@ -940,7 +941,7 @@ export class PDFViewer {
    * @private
    */
   setUserInitiated_(userInitiated) {
-    assert(this.isUserInitiatedEvent_ != userInitiated);
+    assert(this.isUserInitiatedEvent_ !== userInitiated);
     this.isUserInitiatedEvent_ = userInitiated;
   }
 
@@ -1060,11 +1061,11 @@ export class PDFViewer {
    * @param {!MessageObject} message The message to handle.
    */
   handleScriptingMessage(message) {
-    if (this.parentWindow_ != message.source) {
+    if (this.parentWindow_ !== message.source) {
       this.parentWindow_ = message.source;
       this.parentOrigin_ = message.origin;
       // Ensure that we notify the embedder if the document is loaded.
-      if (this.loadState_ != LoadState.LOADING) {
+      if (this.loadState_ !== LoadState.LOADING) {
         this.sendDocumentLoadedMessage_();
       }
     }
@@ -1075,7 +1076,7 @@ export class PDFViewer {
 
     // Delay scripting messages from users of the scripting API until the
     // document is loaded. This simplifies use of the APIs.
-    if (this.loadState_ != LoadState.SUCCESS) {
+    if (this.loadState_ !== LoadState.SUCCESS) {
       this.delayedScriptingMessages_.push(message);
       return;
     }
@@ -1178,9 +1179,9 @@ export class PDFViewer {
       // unless we're sending it to ourselves (which could happen in the case
       // of tests). We also allow documentLoaded messages through as this won't
       // leak important information.
-      if (this.parentOrigin_ == window.location.origin) {
+      if (this.parentOrigin_ === window.location.origin) {
         targetOrigin = this.parentOrigin_;
-      } else if (message.type == 'documentLoaded') {
+      } else if (message.type === 'documentLoaded') {
         targetOrigin = '*';
       } else {
         targetOrigin = this.originalUrl_;
@@ -1397,7 +1398,7 @@ export class PDFViewer {
    * @private
    */
   async onSave_(streamUrl) {
-    if (streamUrl != this.browserApi_.getStreamInfo().streamUrl) {
+    if (streamUrl !== this.browserApi_.getStreamInfo().streamUrl) {
       return;
     }
 
@@ -1433,7 +1434,7 @@ export class PDFViewer {
     chrome.fileSystem.chooseEntry(
         {type: 'saveFile', suggestedName: fileName}, entry => {
           if (chrome.runtime.lastError) {
-            if (chrome.runtime.lastError.message != 'User cancelled') {
+            if (chrome.runtime.lastError.message !== 'User cancelled') {
               console.log(
                   'chrome.fileSystem.chooseEntry failed: ' +
                   chrome.runtime.lastError.message);
@@ -1470,7 +1471,7 @@ export class PDFViewer {
       return;
     }
     let annotationAvailable = true;
-    if (this.viewport_.getClockwiseRotations() != 0) {
+    if (this.viewport_.getClockwiseRotations() !== 0) {
       annotationAvailable = false;
     }
     if (this.hadPassword_) {

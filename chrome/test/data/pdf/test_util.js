@@ -11,10 +11,10 @@ export function MockWindow(width, height, sizer) {
   this.innerWidth = width;
   this.innerHeight = height;
   this.addEventListener = function(e, f) {
-    if (e == 'scroll') {
+    if (e === 'scroll') {
       this.scrollCallback = f;
     }
-    if (e == 'resize') {
+    if (e === 'resize') {
       this.resizeCallback = f;
     }
   };
@@ -99,7 +99,7 @@ export function MockDocumentDimensions(width, height, layoutOptions) {
   this.pageDimensions = [];
   this.addPage = function(w, h) {
     let y = 0;
-    if (this.pageDimensions.length != 0) {
+    if (this.pageDimensions.length !== 0) {
       y = this.pageDimensions[this.pageDimensions.length - 1].y +
           this.pageDimensions[this.pageDimensions.length - 1].height;
     }

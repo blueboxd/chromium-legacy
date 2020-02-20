@@ -171,13 +171,22 @@ void UserSettingsEventLogger::LogAccessibilityUkmEvent(
 
 void UserSettingsEventLogger::LogVolumeUkmEvent(const int previous_level,
                                                 const int current_level) {
+  if (!volume_timer_.IsRunning()) {
+    previous_volume_ = previous_level;
+  }
+  current_volume_ = current_level;
+  volume_timer_.Start(FROM_HERE, kSliderDelay, this,
+                      &UserSettingsEventLogger::OnVolumeTimerEnded);
+}
+
+void UserSettingsEventLogger::OnVolumeTimerEnded() {
   UserSettingsEvent settings_event;
   auto* const event = settings_event.mutable_event();
 
   event->set_setting_id(UserSettingsEvent::Event::VOLUME);
   event->set_setting_type(UserSettingsEvent::Event::QUICK_SETTINGS);
-  event->set_previous_value(previous_level);
-  event->set_current_value(current_level);
+  event->set_previous_value(previous_volume_);
+  event->set_current_value(current_volume_);
 
   settings_event.mutable_features()->set_is_playing_audio(is_playing_audio_);
 
@@ -191,7 +200,7 @@ void UserSettingsEventLogger::LogBrightnessUkmEvent(const int previous_level,
     previous_brightness_ = previous_level;
   }
   current_brightness_ = current_level;
-  brightness_timer_.Start(FROM_HERE, kBrightnessDelay, this,
+  brightness_timer_.Start(FROM_HERE, kSliderDelay, this,
                           &UserSettingsEventLogger::OnBrightnessTimerEnded);
 }
 

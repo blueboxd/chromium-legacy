@@ -36,6 +36,10 @@ class HttpsPreviews(IntegrationTest):
     t.AddChromeArg('--ignore-litepage-redirect-optimization-blacklist')
     t.SetExperiment('external_chrome_integration_test')
 
+    # Wait for the server probe to complete before starting the test, otherwise
+    # it will flake.
+    t.SleepUntilHistogramHasEntry('Availability.Prober.FinalState.Litepages')
+
   def _AssertShowingLitePage(self, t, expectedText, expectedImages):
     """Asserts that Chrome has loaded a Lite Page from the litepages server.
 

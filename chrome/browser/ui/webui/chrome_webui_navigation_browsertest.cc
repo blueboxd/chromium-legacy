@@ -94,9 +94,10 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_EQ("about:blank", child->GetLastCommittedURL());
 
   content::TestNavigationObserver observer(web_contents);
+  content::TestUntrustedDataSourceCSP csp;
+  csp.no_xfo = true;
   content::AddUntrustedDataSource(browser()->profile(), "test-iframe-host",
-                                  /*child_src=*/base::nullopt,
-                                  /*disable_xfo=*/true);
+                                  csp);
 
   GURL untrusted_url(
       content::GetChromeUntrustedUIURL("test-iframe-host/title1.html"));

@@ -112,12 +112,6 @@ class VariationsRenderThreadObserver;
 class StreamTextureFactory;
 #endif
 
-#if defined(COMPILER_MSVC)
-// See explanation for other RenderViewHostImpl which is the same issue.
-#pragma warning(push)
-#pragma warning(disable: 4250)
-#endif
-
 // The RenderThreadImpl class represents the main thread, where RenderView
 // instances live.  The RenderThread supports an API that is used by its
 // consumer to talk indirectly to the RenderViews and supporting objects.
@@ -686,10 +680,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   DISALLOW_COPY_AND_ASSIGN(RenderThreadImpl);
 };
-
-#if defined(COMPILER_MSVC)
-#pragma warning(pop)
-#endif
 
 }  // namespace content
 

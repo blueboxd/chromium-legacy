@@ -164,6 +164,7 @@ class PPAPIDownloadRequest {
   const base::FilePath supported_path_;
 
   bool is_extended_reporting_;
+  bool is_enhanced_protection_;
 
   base::WeakPtrFactory<PPAPIDownloadRequest> weakptr_factory_{this};
 

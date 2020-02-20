@@ -138,11 +138,6 @@
     "expiry_milestone": 76
   },
   {
-    "name": "arc-boot-completed-broadcast",
-    "owners": [ "//components/arc/mojom/ARC_SECURITY_OWNERS" ],
-    "expiry_milestone": 76
-  },
-  {
     "name": "arc-custom-tabs-experiment",
     "owners": [ "hashimoto" ],
     "expiry_milestone": 76
@@ -369,6 +364,11 @@
     "name": "bluetooth-aggressive-appearance-filter",
     "owners": [ "hansberry", "cros-system-services@google.com" ],
     "expiry_milestone": 85
+  },
+  {
+    "name": "bluetooth-kernel-suspend-notifier",
+    "owners": [ "abhishekpandit", "chromeos-bluetooth@google.com" ],
+    "expiry_milestone": 83
   },
   {
     "name": "BundledConnectionHelp",
@@ -640,17 +640,17 @@
   {
     "name": "cryptauth-v2-device-activity-status",
     "owners": [ "khorimoto", "nohle", "themaxli" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 86
   },
   {
     "name": "cryptauth-v2-devicesync",
     "owners": [ "khorimoto", "nohle" ],
-    "expiry_milestone": 85
+    "expiry_milestone": 86
   },
   {
     "name": "cryptauth-v2-enrollment",
     "owners": [ "khorimoto", "nohle" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 86
   },
   {
     "name": "d3d11-video-decoder",
@@ -2318,7 +2318,7 @@
   },
   {
     "name": "force-text-direction",
-    "owners": [ "krb", "pbos", "ellyjones" ],
+    "owners": [ "orinj", "pbos", "ellyjones" ],
     // This flag is used for developers who don't speak an RTL language to QA
     // RTL text regardless of UI layout direction. This for instance impacts the
     // Omnibox where arbitrary text directions may be entered.
@@ -2431,11 +2431,6 @@
     "name": "hardware-media-key-handling",
     "owners": [ "steimel", "media-dev" ],
     "expiry_milestone": 84
-  },
-  {
-    "name": "harfbuzz-pdf-subsetter",
-    "owners": ["dhoss", "thestig"],
-    "expiry_milestone": 80
   },
   {
     "name": "heavy-ad-privacy-mitigations-opt-out",
@@ -2830,8 +2825,8 @@
   },
   {
     "name": "omnibox-experimental-keyword-mode",
-    "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 82
+    "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 92
   },
   {
     "name": "omnibox-experimental-suggest-scoring",
@@ -2855,8 +2850,8 @@
   },
   {
     "name": "omnibox-loose-max-limit-on-dedicated-rows",
-    "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 83
+    "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 93
   },
   {
     "name": "omnibox-material-design-weather-icons",
@@ -2865,8 +2860,8 @@
   },
   {
     "name": "omnibox-max-url-matches",
-    "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 82
+    "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 92
   },
   {
     "name": "omnibox-on-device-head-suggestions",
@@ -2910,8 +2905,8 @@
   },
   {
     "name": "omnibox-short-bookmark-suggestions",
-    "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 82
+    "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 92
   },
   {
     "name": "omnibox-spare-renderer",
@@ -2930,13 +2925,13 @@
   },
   {
     "name": "omnibox-tab-switch-suggestions",
-    "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 82
+    "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 92
   },
   {
     "name": "omnibox-tab-switch-suggestions-dedicated-row",
-    "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 82
+    "owners": [ "orinj", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 92
   },
   {
     "name": "omnibox-ui-cues-for-search-history-matches",
@@ -3431,6 +3426,11 @@
     "expiry_milestone": 76
   },
   {
+    "name": "smbfs-file-shares",
+    "owners": [ "amistry", "dats" ],
+    "expiry_milestone": 86
+  },
+  {
     "name": "smooth-scrolling",
     "owners": [ "bokan", "input-dev" ],
     "expiry_milestone": 85
@@ -3528,12 +3528,12 @@
   {
     "name": "terminal-system-app",
     "owners": [ "joelhockey", "benwells", "//chrome/browser/chromeos/guest_os/OWNERS" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "terminal-system-app-splits",
     "owners": [ "joelhockey", "benwells", "//chrome/browser/chromeos/guest_os/OWNERS" ],
-    "expiry_milestone": 82
+    "expiry_milestone": 85
   },
   {
     "name": "tint-gl-composited-content",

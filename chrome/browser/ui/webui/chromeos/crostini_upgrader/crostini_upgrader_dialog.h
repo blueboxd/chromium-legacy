@@ -22,6 +22,7 @@ class CrostiniUpgraderDialog : public SystemWebDialogDelegate {
   // SystemWebDialogDelegate:
   void GetDialogSize(gfx::Size* size) const override;
   bool ShouldShowCloseButton() const override;
+  bool ShouldCloseDialogOnEscape() const override;
   void AdjustWidgetInitParams(views::Widget::InitParams* params) override;
   bool CanCloseDialog() const override;
   void OnDialogShown(content::WebUI* webui) override;

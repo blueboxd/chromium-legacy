@@ -42,36 +42,38 @@
 // detect what the provided FOO_EXPORT value was defined as and then
 // to dispatch to appropriate macro definitions.
 
-#define EXPORT_TEMPLATE_DECLARE(export) \
-  EXPORT_TEMPLATE_INVOKE(DECLARE, EXPORT_TEMPLATE_STYLE(export), export)
-#define EXPORT_TEMPLATE_DEFINE(export) \
-  EXPORT_TEMPLATE_INVOKE(DEFINE, EXPORT_TEMPLATE_STYLE(export), export)
+#define EXPORT_TEMPLATE_DECLARE(foo_export) \
+  EXPORT_TEMPLATE_INVOKE(DECLARE, EXPORT_TEMPLATE_STYLE(foo_export), foo_export)
+#define EXPORT_TEMPLATE_DEFINE(foo_export) \
+  EXPORT_TEMPLATE_INVOKE(DEFINE, EXPORT_TEMPLATE_STYLE(foo_export), foo_export)
 
 // INVOKE is an internal helper macro to perform parameter replacements
 // and token pasting to chain invoke another macro.  E.g.,
 //     EXPORT_TEMPLATE_INVOKE(DECLARE, DEFAULT, FOO_EXPORT)
-// will export to call
+// will expand to call
 //     EXPORT_TEMPLATE_DECLARE_DEFAULT(FOO_EXPORT)
 // (but with FOO_EXPORT expanded too).
-#define EXPORT_TEMPLATE_INVOKE(which, style, export) \
-  EXPORT_TEMPLATE_INVOKE_2(which, style, export)
-#define EXPORT_TEMPLATE_INVOKE_2(which, style, export) \
-  EXPORT_TEMPLATE_##which##_##style(export)
+#define EXPORT_TEMPLATE_INVOKE(which, style, foo_export) \
+  EXPORT_TEMPLATE_INVOKE_2(which, style, foo_export)
+#define EXPORT_TEMPLATE_INVOKE_2(which, style, foo_export) \
+  EXPORT_TEMPLATE_##which##_##style(foo_export)
 
 // Default style is to apply the FOO_EXPORT macro at declaration sites.
-#define EXPORT_TEMPLATE_DECLARE_DEFAULT(export) export
-#define EXPORT_TEMPLATE_DEFINE_DEFAULT(export)
+#define EXPORT_TEMPLATE_DECLARE_DEFAULT(foo_export) foo_export
+#define EXPORT_TEMPLATE_DEFINE_DEFAULT(foo_export)
 
-// The "MSVC hack" style is used when FOO_EXPORT is defined
+// The "declspec" style is used when FOO_EXPORT is defined
 // as __declspec(dllexport), which MSVC requires to be used at
 // definition sites instead.
-#define EXPORT_TEMPLATE_DECLARE_MSVC_HACK(export)
-#define EXPORT_TEMPLATE_DEFINE_MSVC_HACK(export) export
+#define EXPORT_TEMPLATE_DECLARE_EXPORT_DLLEXPORT(foo_export)
+#define EXPORT_TEMPLATE_DEFINE_EXPORT_DLLEXPORT(foo_export) foo_export
 
 // EXPORT_TEMPLATE_STYLE is an internal helper macro that identifies which
 // export style needs to be used for the provided FOO_EXPORT macro definition.
 // "", "__attribute__(...)", and "__declspec(dllimport)" are mapped
-// to "DEFAULT"; while "__declspec(dllexport)" is mapped to "MSVC_HACK".
+// to "DEFAULT"; while "__declspec(dllexport)" is mapped to "EXPORT_DLLEXPORT".
+// (NaCl headers define "DLLEXPORT" already, else we'd use that.
+// TODO(thakis): Rename once nacl is gone.)
 //
 // It's implemented with token pasting to transform the __attribute__ and
 // __declspec annotations into macro invocations.  E.g., if FOO_EXPORT is
@@ -82,9 +84,9 @@
 //     EXPORT_TEMPLATE_STYLE_MATCH__declspec(dllimport)
 //     EXPORT_TEMPLATE_STYLE_MATCH_DECLSPEC_dllimport
 //     DEFAULT
-#define EXPORT_TEMPLATE_STYLE(export) EXPORT_TEMPLATE_STYLE_2(export)
-#define EXPORT_TEMPLATE_STYLE_2(export) \
-  EXPORT_TEMPLATE_STYLE_MATCH_foj3FJo5StF0OvIzl7oMxA##export
+#define EXPORT_TEMPLATE_STYLE(foo_export) EXPORT_TEMPLATE_STYLE_2(foo_export)
+#define EXPORT_TEMPLATE_STYLE_2(foo_export) \
+  EXPORT_TEMPLATE_STYLE_MATCH_foj3FJo5StF0OvIzl7oMxA##foo_export
 
 // Internal helper macros for EXPORT_TEMPLATE_STYLE.
 //
@@ -100,7 +102,7 @@
   EXPORT_TEMPLATE_STYLE_MATCH_DECLSPEC_##arg
 
 // Internal helper macros for EXPORT_TEMPLATE_STYLE.
-#define EXPORT_TEMPLATE_STYLE_MATCH_DECLSPEC_dllexport MSVC_HACK
+#define EXPORT_TEMPLATE_STYLE_MATCH_DECLSPEC_dllexport EXPORT_DLLEXPORT
 #define EXPORT_TEMPLATE_STYLE_MATCH_DECLSPEC_dllimport DEFAULT
 
 // Sanity checks.
@@ -125,20 +127,21 @@
 //     static_assert(true, "__declspec(dllimport)");
 //
 // When they're not working correctly, a syntax error should occur instead.
-#define EXPORT_TEMPLATE_TEST(want, export)                                     \
-  static_assert(EXPORT_TEMPLATE_INVOKE(TEST_##want,                            \
-                                       EXPORT_TEMPLATE_STYLE(export), export), \
-                #export)
+#define EXPORT_TEMPLATE_TEST(want, foo_export)                               \
+  static_assert(                                                             \
+      EXPORT_TEMPLATE_INVOKE(TEST_##want, EXPORT_TEMPLATE_STYLE(foo_export), \
+                             foo_export),                                    \
+      #foo_export)
 #define EXPORT_TEMPLATE_TEST_DEFAULT_DEFAULT(...) true
-#define EXPORT_TEMPLATE_TEST_MSVC_HACK_MSVC_HACK(...) true
+#define EXPORT_TEMPLATE_TEST_EXPORT_DLLEXPORT_EXPORT_DLLEXPORT(...) true
 
 EXPORT_TEMPLATE_TEST(DEFAULT, );
 EXPORT_TEMPLATE_TEST(DEFAULT, __attribute__((visibility("default"))));
-EXPORT_TEMPLATE_TEST(MSVC_HACK, __declspec(dllexport));
+EXPORT_TEMPLATE_TEST(EXPORT_DLLEXPORT, __declspec(dllexport));
 EXPORT_TEMPLATE_TEST(DEFAULT, __declspec(dllimport));
 
 #undef EXPORT_TEMPLATE_TEST
 #undef EXPORT_TEMPLATE_TEST_DEFAULT_DEFAULT
-#undef EXPORT_TEMPLATE_TEST_MSVC_HACK_MSVC_HACK
+#undef EXPORT_TEMPLATE_TEST_EXPORT_DLLEXPORT_EXPORT_DLLEXPORT
 
 #endif  // BASE_EXPORT_TEMPLATE_H_

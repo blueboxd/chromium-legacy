@@ -365,8 +365,10 @@ class WebAppInstallManagerTest : public WebAppTest {
   TestFileUtils* file_utils_ = nullptr;
 };
 
+// TODO(crbug.com/1020037): Move this test out into
+// install_manager_bookmark_app_unittest.cc.
 TEST_F(WebAppInstallManagerTest,
-       InstallWebAppFromSync_TwoConcurrentInstallsAreRunInOrder) {
+       InstallBookmarkAppFromSync_TwoConcurrentInstallsAreRunInOrder) {
   InitEmptyRegistrar();
 
   const GURL url1{"https://example.com/path"};
@@ -435,7 +437,7 @@ TEST_F(WebAppInstallManagerTest,
   EXPECT_FALSE(install_manager().has_web_contents_for_testing());
 
   // Enqueue a request to install the 1st app.
-  install_manager().InstallWebAppFromSync(
+  install_manager().InstallBookmarkAppFromSync(
       app1_id, CreateWebAppInfo(url1),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -451,7 +453,7 @@ TEST_F(WebAppInstallManagerTest,
 
   // Immediately enqueue a request to install the 2nd app, WebContents is not
   // ready.
-  install_manager().InstallWebAppFromSync(
+  install_manager().InstallBookmarkAppFromSync(
       app2_id, CreateWebAppInfo(url2),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
@@ -486,8 +488,10 @@ TEST_F(WebAppInstallManagerTest,
   EXPECT_EQ(expected_event_order, event_order);
 }
 
+// TODO(crbug.com/1020037): Move this test out into
+// install_manager_bookmark_app_unittest.cc.
 TEST_F(WebAppInstallManagerTest,
-       InstallWebAppFromSync_InstallManagerDestroyed) {
+       InstallBookmarkAppFromSync_InstallManagerDestroyed) {
   InitEmptyRegistrar();
 
   const GURL app_url("https://example.com/path");
@@ -515,7 +519,7 @@ TEST_F(WebAppInstallManagerTest,
         return std::unique_ptr<WebAppDataRetriever>(std::move(data_retriever));
       }));
 
-  install_manager().InstallWebAppFromSync(
+  install_manager().InstallBookmarkAppFromSync(
       app_id, CreateWebAppInfo(app_url),
       base::BindLambdaForTesting(
           [](const AppId& installed_app_id, InstallResultCode code) {

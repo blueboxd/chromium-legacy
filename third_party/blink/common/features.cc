@@ -298,6 +298,11 @@ const base::Feature kLightweightNoStatePrefetch_FetchFonts{
 const base::Feature kForceWebContentsDarkMode{
     "WebContentsForceDark", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// A feature to enable using the smallest image specified within image srcset
+// for users with Save Data enabled.
+const base::Feature kSaveDataImgSrcset{"SaveDataImgSrcset",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Which algorithm should be used for color inversion?
 const base::FeatureParam<ForceDarkInversionMethod>::Option
     forcedark_inversion_method_options[] = {

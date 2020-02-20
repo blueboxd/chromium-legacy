@@ -121,7 +121,7 @@ Polymer({
   onEnter_(e) {
     // Don't allow events which have propagated up from the expand button to
     // trigger a click.
-    if (e.detail.keyboardEvent.target != this.$.expand) {
+    if (e.detail.keyboardEvent.target !== this.$.expand) {
       this.onClick_();
     }
   },

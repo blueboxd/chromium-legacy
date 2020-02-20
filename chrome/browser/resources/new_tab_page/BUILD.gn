@@ -51,11 +51,18 @@ js_library("most_visited") {
 
 js_library("customize_dialog") {
   deps = [
+    ":customize_backgrounds",
     ":customize_shortcuts",
     ":customize_themes",
     "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
     "//ui/webui/resources/cr_elements/cr_button:cr_button.m",
     "//ui/webui/resources/cr_elements/cr_dialog:cr_dialog.m",
+  ]
+}
+
+js_library("customize_backgrounds") {
+  deps = [
+    "//third_party/polymer/v3_0/components-chromium/polymer:polymer_bundled",
   ]
 }
 
@@ -132,6 +139,12 @@ polymer_modulizer("customize_shortcuts") {
   html_type = "v3-ready"
 }
 
+polymer_modulizer("customize_backgrounds") {
+  js_file = "customize_backgrounds.js"
+  html_file = "customize_backgrounds.html"
+  html_type = "v3-ready"
+}
+
 polymer_modulizer("customize_themes") {
   js_file = "customize_themes.js"
   html_file = "customize_themes.html"
@@ -159,6 +172,7 @@ polymer_modulizer("voice_search_overlay") {
 group("polymer3_elements") {
   deps = [
     ":app_module",
+    ":customize_backgrounds_module",
     ":customize_dialog_module",
     ":customize_shortcuts_module",
     ":customize_themes_module",

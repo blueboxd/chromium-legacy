@@ -86,7 +86,7 @@ class FakeDesktopEnvironment : public DesktopEnvironment {
   // by FakeDesktopEnvironment.
   void set_frame_generator(
       protocol::FakeDesktopCapturer::FrameGenerator frame_generator) {
-    frame_generator_ = frame_generator;
+    frame_generator_ = std::move(frame_generator);
   }
 
   const DesktopEnvironmentOptions& options() const;
@@ -138,7 +138,7 @@ class FakeDesktopEnvironmentFactory : public DesktopEnvironmentFactory {
   // by FakeDesktopEnvironment.
   void set_frame_generator(
       protocol::FakeDesktopCapturer::FrameGenerator frame_generator) {
-    frame_generator_ = frame_generator;
+    frame_generator_ = std::move(frame_generator);
   }
 
   // DesktopEnvironmentFactory implementation.

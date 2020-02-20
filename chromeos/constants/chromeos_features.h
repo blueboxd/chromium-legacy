@@ -28,6 +28,8 @@ extern const base::Feature kBluetoothAggressiveAppearanceFilter;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kBluetoothPhoneFilter;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
+extern const base::Feature kBluetoothKernelSuspendNotifier;
+COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kBlueZLongTermKeyBlocklist;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const char kBlueZLongTermKeyBlocklistParamName[];

@@ -57,8 +57,8 @@ std::unique_ptr<IqRequest> IqSender::SendIq(
   }
   DCHECK(requests_.find(id) == requests_.end());
   bool callback_exists = !callback.is_null();
-  std::unique_ptr<IqRequest> request(
-      new IqRequest(this, std::move(callback), addressee));
+  auto request =
+      std::make_unique<IqRequest>(this, std::move(callback), addressee);
   if (callback_exists)
     requests_[id] = request.get();
   return request;

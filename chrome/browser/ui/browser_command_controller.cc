@@ -1035,20 +1035,22 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_SITE_SETTINGS, is_web_app);
   command_updater_.UpdateCommandEnabled(IDC_WEB_APP_MENU_APP_INFO, is_web_app);
 
-  // Window management commands
-  command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB, normal_window);
-  command_updater_.UpdateCommandEnabled(IDC_SELECT_PREVIOUS_TAB, normal_window);
-  command_updater_.UpdateCommandEnabled(IDC_MOVE_TAB_NEXT, normal_window);
-  command_updater_.UpdateCommandEnabled(IDC_MOVE_TAB_PREVIOUS, normal_window);
-  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_0, normal_window);
-  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_1, normal_window);
-  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_2, normal_window);
-  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_3, normal_window);
-  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_4, normal_window);
-  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_5, normal_window);
-  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_6, normal_window);
-  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_7, normal_window);
-  command_updater_.UpdateCommandEnabled(IDC_SELECT_LAST_TAB, normal_window);
+  // Tab management commands
+  const bool supports_tabs =
+      browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_NEXT_TAB, supports_tabs);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_PREVIOUS_TAB, supports_tabs);
+  command_updater_.UpdateCommandEnabled(IDC_MOVE_TAB_NEXT, supports_tabs);
+  command_updater_.UpdateCommandEnabled(IDC_MOVE_TAB_PREVIOUS, supports_tabs);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_0, supports_tabs);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_1, supports_tabs);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_2, supports_tabs);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_3, supports_tabs);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_4, supports_tabs);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_5, supports_tabs);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_6, supports_tabs);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_TAB_7, supports_tabs);
+  command_updater_.UpdateCommandEnabled(IDC_SELECT_LAST_TAB, supports_tabs);
 
   // These are always enabled; the menu determines their menu item visibility.
   command_updater_.UpdateCommandEnabled(IDC_UPGRADE_DIALOG, true);

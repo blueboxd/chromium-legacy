@@ -11,6 +11,14 @@ modules_idl_files = [
 ]
 
 modules_dictionary_idl_files = [
-  "video_decoder_init_parameters.idl",
+  "encoded_video_config.idl",
   "video_track_writer_parameters.idl",
 ]
+
+# IDL files that either define partial interfaces or target (right side of)
+# `includes`.
+modules_dependency_idl_files = []
+
+# Similar to |modules_dependency_idl_files| but limited to things that are
+# exposed only for testing.
+modules_testing_dependency_idl_files = []

@@ -992,13 +992,14 @@ void TraceEventDataSource::OnMetricsSampleCallback(
 
 void TraceEventDataSource::OnUserActionSampleCallback(
     const std::string& action) {
-  TRACE_EVENT(TRACE_DISABLED_BY_DEFAULT("user_action_samples"), "UserAction",
-              [&](perfetto::EventContext ctx) {
-                perfetto::protos::pbzero::ChromeUserEvent* new_sample =
-                    ctx.event()->set_chrome_user_event();
-                // TODO(ssid): Set action string in non filtered mode.
-                new_sample->set_action_hash(base::HashMetricName(action));
-              });
+  TRACE_EVENT_INSTANT(
+      TRACE_DISABLED_BY_DEFAULT("user_action_samples"), "UserAction",
+      TRACE_EVENT_SCOPE_GLOBAL, [&](perfetto::EventContext ctx) {
+        perfetto::protos::pbzero::ChromeUserEvent* new_sample =
+            ctx.event()->set_chrome_user_event();
+        // TODO(ssid): Set action string in non filtered mode.
+        new_sample->set_action_hash(base::HashMetricName(action));
+      });
 }
 
 void TraceEventDataSource::ReturnTraceWriter(

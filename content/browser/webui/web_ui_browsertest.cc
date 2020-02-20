@@ -408,7 +408,7 @@ IN_PROC_BROWSER_TEST_F(WebUIRequestSchemesTest,
       base::StrCat({url::kFileSystemScheme, ":", kChromeDevToolsScheme})};
 
   const GURL chrome_ui_url = GetWebUIURL(base::StrCat(
-      {host_and_path, "?requestableSchemes=", kChromeUIUntrustedScheme, ",",
+      {host_and_path, "?requestableschemes=", kChromeUIUntrustedScheme, ",",
        url::kWsScheme}));
 
   ASSERT_TRUE(NavigateToURL(web_contents, chrome_ui_url));

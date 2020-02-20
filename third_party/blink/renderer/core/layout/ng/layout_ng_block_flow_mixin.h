@@ -71,8 +71,6 @@ class LayoutNGBlockFlowMixin : public LayoutNGMixin<Base> {
                        const PhysicalOffset& additional_offset,
                        NGOutlineType) const final;
 
-  bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final;
-
   base::Optional<LayoutUnit> FragmentBaseline() const;
 
   void DirtyLinesFromChangedChild(LayoutObject* child,

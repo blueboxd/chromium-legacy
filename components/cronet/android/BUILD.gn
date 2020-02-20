@@ -656,6 +656,7 @@ jar_src("jar_cronet_impl_util_java_source") {
 _jar_excluded_patterns = [
   # Excludes Android support libraries crbug.com/832770.
   "android/*",
+  "androidx/*",
   "*/library_loader/*.class",
   "*/multidex/*.class",
   "*/process_launcher/*.class",

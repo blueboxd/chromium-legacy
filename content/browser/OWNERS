@@ -30,6 +30,7 @@ per-file sandbox_mac_unittest.*=file://sandbox/mac/OWNERS
 # Linux sandboxing.
 per-file sandbox_host_linux.*=file://sandbox/linux/OWNERS
 per-file sandbox_ipc_linux.*=file://sandbox/linux/OWNERS
+per-file utility_process_sandbox_browsertest.cc=file://sandbox/linux/OWNERS
 
 # Service manifests provided by content require security review
 per-file builtin_service_manifests.*=set noparent

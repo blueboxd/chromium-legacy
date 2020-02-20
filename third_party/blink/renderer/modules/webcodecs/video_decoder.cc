@@ -16,8 +16,9 @@
 #include "third_party/blink/renderer/core/streams/underlying_source_base.h"
 #include "third_party/blink/renderer/core/streams/writable_stream.h"
 #include "third_party/blink/renderer/modules/webcodecs/encoded_video_chunk.h"
-#include "third_party/blink/renderer/modules/webcodecs/video_decoder_init_parameters.h"
+#include "third_party/blink/renderer/modules/webcodecs/encoded_video_config.h"
 #include "third_party/blink/renderer/modules/webcodecs/video_frame.h"
+#include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -29,11 +30,11 @@ namespace blink {
 namespace {
 
 // TODO(sandersd): Tune this number.
-// Desired number of chunks queued in |writable_sink_|.
+// Desired number of chunks queued in |underlying_sink_|.
 constexpr size_t kDesiredInputQueueSize = 4;
 
 // TODO(sandersd): Tune this number.
-// Desired number of pending decodes + chunks queued in |readable_source_|.
+// Desired number of pending decodes + chunks queued in |underlying_source_|.
 constexpr size_t kDesiredInternalQueueSize = 4;
 
 std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
@@ -43,9 +44,9 @@ std::unique_ptr<media::VideoDecoder> CreateVideoDecoder(
 
 }  // namespace
 
-class VideoDecoder::WritableSink final : public UnderlyingSinkBase {
+class VideoDecoder::UnderlyingSink final : public UnderlyingSinkBase {
  public:
-  explicit WritableSink(VideoDecoder* parent) : parent_(parent) {}
+  explicit UnderlyingSink(VideoDecoder* parent) : parent_(parent) {}
 
   // UnderlyingSinkBase overrides.
   ScriptPromise start(ScriptState*,
@@ -81,9 +82,9 @@ class VideoDecoder::WritableSink final : public UnderlyingSinkBase {
   Member<VideoDecoder> parent_;
 };
 
-class VideoDecoder::ReadableSource final : public UnderlyingSourceBase {
+class VideoDecoder::UnderlyingSource final : public UnderlyingSourceBase {
  public:
-  ReadableSource(ScriptState* script_state, VideoDecoder* parent)
+  UnderlyingSource(ScriptState* script_state, VideoDecoder* parent)
       : UnderlyingSourceBase(script_state), parent_(parent) {}
 
   // UnderlyingSourceBase overrides.
@@ -104,29 +105,21 @@ class VideoDecoder::ReadableSource final : public UnderlyingSourceBase {
 };
 
 // static
-VideoDecoder* VideoDecoder::Create(ScriptState* script_state,
-                                   ExceptionState& exception_state) {
-  return MakeGarbageCollected<VideoDecoder>(script_state, exception_state);
+VideoDecoder* VideoDecoder::Create(ScriptState* script_state) {
+  return MakeGarbageCollected<VideoDecoder>(script_state);
 }
 
-VideoDecoder::VideoDecoder(ScriptState* script_state,
-                           ExceptionState& exception_state)
+VideoDecoder::VideoDecoder(ScriptState* script_state)
     : script_state_(script_state), weak_factory_(this) {
   DVLOG(1) << __func__;
   weak_this_ = weak_factory_.GetWeakPtr();
-
-  WritableSink* writable_sink = MakeGarbageCollected<WritableSink>(this);
-  writable_ = WritableStream::CreateWithCountQueueingStrategy(
-      script_state, writable_sink, kDesiredInputQueueSize);
-
-  readable_source_ = MakeGarbageCollected<ReadableSource>(script_state_, this);
-  readable_ = ReadableStream::CreateWithCountQueueingStrategy(
-      script_state_, readable_source_, kDesiredInternalQueueSize);
 }
 
 VideoDecoder::~VideoDecoder() {
   DVLOG(1) << __func__;
-  // TODO(sandersd): Should we reject outstanding promises?
+  // TODO(sandersd): Assert no outstanding promises. We should have been kept
+  // alive.
+  // TODO(sandersd): GC tests.
 }
 
 ScriptPromise VideoDecoder::CreateWritePromise() {
@@ -147,9 +140,9 @@ void VideoDecoder::MaybeAcceptWrite() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!has_error_);
 
-  if (write_resolver_ && initialized_ &&
+  if (write_resolver_ && decoder_ && underlying_source_ &&
       pending_decodes_ < decoder_->GetMaxDecodeRequests() &&
-      pending_decodes_ < readable_source_->Controller()->DesiredSize()) {
+      pending_decodes_ < underlying_source_->Controller()->DesiredSize()) {
     write_resolver_.Release()->Resolve();
   }
 }
@@ -163,25 +156,14 @@ void VideoDecoder::HandleError() {
   // etc.
 }
 
-ReadableStream* VideoDecoder::readable() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return readable_;
-}
-
-WritableStream* VideoDecoder::writable() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return writable_;
-}
-
-ScriptPromise VideoDecoder::initialize(const VideoDecoderInitParameters* params,
-                                       ExceptionState& exception_state) {
+ScriptPromise VideoDecoder::configure(const EncodedVideoConfig* config,
+                                      ExceptionState& exception_state) {
   DVLOG(1) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (decoder_) {
-    // TODO(sandersd): Reinitialization.
+  if (configure_resolver_ || decoder_) {
     exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
-                                      "Not implemented yet.");
+                                      "Reconfiguration is not implemented.");
     return ScriptPromise();
   }
 
@@ -193,14 +175,13 @@ ScriptPromise VideoDecoder::initialize(const VideoDecoderInitParameters* params,
   }
 
   // VideoDecoder::Initialize() may call OnInitializeDone() reentrantly, in
-  // which case |initialize_resolver_| will be nullptr.
-  DCHECK(!initialize_resolver_);
-  ScriptPromiseResolver* initialize_resolver =
+  // which case |configure_resolver_| will be nullptr.
+  DCHECK(!configure_resolver_);
+  ScriptPromiseResolver* configure_resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state_);
-  initialize_resolver_ = initialize_resolver;
+  configure_resolver_ = configure_resolver;
 
-  // TODO(sandersd): Convert |params| to VideoDecoderConfig.
-  // TODO(sandersd): Support |waiting_cb|.
+  // TODO(sandersd): Convert |config| to VideoDecoderConfig.
   decoder_->Initialize(
       media::VideoDecoderConfig(
           media::kCodecH264, media::H264PROFILE_BASELINE,
@@ -212,7 +193,17 @@ ScriptPromise VideoDecoder::initialize(const VideoDecoderInitParameters* params,
       WTF::BindRepeating(&VideoDecoder::OnOutput, weak_this_),
       base::RepeatingCallback<void(media::WaitingReason)>());
 
-  return initialize_resolver->Promise();
+  return configure_resolver->Promise();
+}
+
+ReadableStream* VideoDecoder::readable() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return readable_;
+}
+
+WritableStream* VideoDecoder::writable() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return writable_;
 }
 
 void VideoDecoder::OnInitializeDone(bool success) {
@@ -220,14 +211,22 @@ void VideoDecoder::OnInitializeDone(bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!success) {
-    initialize_resolver_.Release()->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kNotSupportedError, "Initialization failed."));
+    configure_resolver_.Release()->Reject(MakeGarbageCollected<DOMException>(
+        DOMExceptionCode::kNotSupportedError, "Codec initialization failed."));
     HandleError();
     return;
   }
 
-  initialized_ = true;
-  initialize_resolver_.Release()->Resolve();
+  underlying_sink_ = MakeGarbageCollected<UnderlyingSink>(this);
+  writable_ = WritableStream::CreateWithCountQueueingStrategy(
+      script_state_, underlying_sink_, kDesiredInputQueueSize);
+
+  underlying_source_ =
+      MakeGarbageCollected<UnderlyingSource>(script_state_, this);
+  readable_ = ReadableStream::CreateWithCountQueueingStrategy(
+      script_state_, underlying_source_, kDesiredInternalQueueSize);
+
+  configure_resolver_.Release()->Resolve();
   MaybeAcceptWrite();
 }
 
@@ -249,7 +248,7 @@ void VideoDecoder::OnOutput(scoped_refptr<media::VideoFrame> frame) {
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  readable_source_->Controller()->Enqueue(ScriptValue::From(
+  underlying_source_->Controller()->Enqueue(ScriptValue::From(
       script_state_, MakeGarbageCollected<VideoFrame>(frame)));
 }
 
@@ -298,7 +297,8 @@ ScriptPromise VideoDecoder::Write(ScriptValue chunk,
 ScriptPromise VideoDecoder::Close(ExceptionState& exception_state) {
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(sandersd): Flush.
+
+  // TODO(sandersd): This probably should be an implicit flush.
   exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                     "Not implemented yet.");
   return ScriptPromise();
@@ -307,7 +307,8 @@ ScriptPromise VideoDecoder::Close(ExceptionState& exception_state) {
 ScriptPromise VideoDecoder::Abort(ExceptionState& exception_state) {
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(sandersd): Reset.
+
+  // TODO(sandersd): Should this result in a reset?
   exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
                                     "Not implemented yet.");
   return ScriptPromise();
@@ -317,7 +318,11 @@ ScriptPromise VideoDecoder::Pull() {
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  // TODO(sandersd): Only potentially possible if |underlying_source_| was
+  // previously full.
   MaybeAcceptWrite();
+
+  // TODO(sandersd): No implementation holds a pull promise. Should we?
   return ScriptPromise::CastUndefined(script_state_);
 }
 
@@ -333,10 +338,11 @@ ScriptPromise VideoDecoder::Cancel() {
 
 void VideoDecoder::Trace(Visitor* visitor) {
   visitor->Trace(script_state_);
-  visitor->Trace(readable_source_);
-  visitor->Trace(readable_);
+  visitor->Trace(underlying_sink_);
   visitor->Trace(writable_);
-  visitor->Trace(initialize_resolver_);
+  visitor->Trace(underlying_source_);
+  visitor->Trace(readable_);
+  visitor->Trace(configure_resolver_);
   visitor->Trace(write_resolver_);
   ScriptWrappable::Trace(visitor);
 }

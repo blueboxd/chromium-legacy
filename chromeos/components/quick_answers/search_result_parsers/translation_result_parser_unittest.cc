@@ -44,6 +44,13 @@ TEST_F(TranslationResultParserTest, Success) {
   EXPECT_EQ(ResultType::kTranslationResult, quick_answer.result_type);
   EXPECT_EQ("ox\\xC3\\xADgeno", quick_answer.primary_answer);
   EXPECT_EQ("oxygen · English", quick_answer.secondary_answer);
+  EXPECT_EQ("ox\\xC3\\xADgeno", static_cast<QuickAnswerText*>(
+                                    quick_answer.first_answer_row[0].get())
+                                    ->text_);
+  EXPECT_EQ("oxygen · English",
+            static_cast<QuickAnswerText*>(quick_answer.title[0].get())->text_);
+  EXPECT_TRUE(quick_answer.title.size() == 1);
+  EXPECT_TRUE(quick_answer.first_answer_row.size() == 1);
 }
 
 TEST_F(TranslationResultParserTest, MissingSourceText) {

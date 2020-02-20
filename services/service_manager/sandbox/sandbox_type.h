@@ -69,7 +69,9 @@ enum class SandboxType {
 #endif  // defined(OS_CHROMEOS)
 
   // The Speech On-Device API service process.
-  kSoda
+  kSoda,
+
+  kMaxValue = kSoda
 };
 
 SERVICE_MANAGER_SANDBOX_EXPORT bool IsUnsandboxedSandboxType(

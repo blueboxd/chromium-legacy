@@ -138,12 +138,6 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase,
 #endif
 };
 
-#if defined(COMPILER_MSVC)
-// See comment for same warning on RenderViewHostImpl.
-#pragma warning(push)
-#pragma warning(disable: 4250)
-#endif
-
 // TestRenderViewHost ----------------------------------------------------------
 
 // TODO(brettw) this should use a TestWebContents which should be generalized
@@ -263,10 +257,6 @@ class TestRenderViewHost
 
   DISALLOW_COPY_AND_ASSIGN(TestRenderViewHost);
 };
-
-#if defined(COMPILER_MSVC)
-#pragma warning(pop)
-#endif
 
 // Adds methods to get straight at the impl classes.
 class RenderViewHostImplTestHarness : public RenderViewHostTestHarness {

@@ -30,7 +30,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/push_messaging_service.h"
-#include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom.h"
+#include "third_party/blink/public/mojom/push_messaging/push_messaging.mojom-forward.h"
 
 class GURL;
 class Profile;

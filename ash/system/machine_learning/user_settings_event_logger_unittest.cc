@@ -109,10 +109,16 @@ class UserSettingsEventLoggerTest : public AshTestBase {
         ukm::builders::UserSettingsEvent::kEntryName);
   }
 
+  // Volume features are logged at the end of the timer delay.
+  void LogVolumeAndWait(const int previous_level, const int current_level) {
+    logger_->LogVolumeUkmEvent(previous_level, current_level);
+    task_environment_->FastForwardBy(kSliderDelay);
+  }
+
   // Brightness features are logged at the end of the timer delay.
-  void LogBrightnessAndWait(int previous_level, int current_level) {
+  void LogBrightnessAndWait(const int previous_level, const int current_level) {
     logger_->LogBrightnessUkmEvent(previous_level, current_level);
-    task_environment_->FastForwardBy(kBrightnessDelay);
+    task_environment_->FastForwardBy(kSliderDelay);
   }
 
   UserSettingsEventLogger* logger_;
@@ -305,12 +311,12 @@ TEST_F(UserSettingsEventLoggerTest, TestLogAccessibilityEvent) {
                                      UserSettingsEvent::Event::HIGH_CONTRAST);
 }
 
-TEST_F(UserSettingsEventLoggerTest, TestLogVolumeEvent) {
-  logger_->LogVolumeUkmEvent(23, 98);
+TEST_F(UserSettingsEventLoggerTest, TestLogVolumeFeatures) {
+  LogVolumeAndWait(23, 98);
   logger_->OnOutputStarted();
-  logger_->LogVolumeUkmEvent(0, 0);
+  LogVolumeAndWait(0, 0);
   logger_->OnOutputStopped();
-  logger_->LogVolumeUkmEvent(0, 0);
+  LogVolumeAndWait(0, 0);
 
   const auto& entries = GetUkmEntries();
   ASSERT_EQ(3ul, entries.size());
@@ -330,6 +336,29 @@ TEST_F(UserSettingsEventLoggerTest, TestLogVolumeEvent) {
   TestUkmRecorder::ExpectEntryMetric(entries[2], "IsPlayingAudio", false);
 }
 
+TEST_F(UserSettingsEventLoggerTest, TestVolumeDelay) {
+  // Only log an event if there is a pause of |kSliderDelay|.
+  logger_->LogVolumeUkmEvent(10, 11);
+  task_environment_->FastForwardBy(kSliderDelay / 2);
+  logger_->LogVolumeUkmEvent(11, 12);
+  logger_->LogVolumeUkmEvent(12, 13);
+  logger_->LogVolumeUkmEvent(13, 14);
+  task_environment_->FastForwardBy(kSliderDelay / 2);
+  logger_->LogVolumeUkmEvent(14, 15);
+  task_environment_->FastForwardBy(kSliderDelay);
+
+  const auto& entries = GetUkmEntries();
+  ASSERT_EQ(1ul, entries.size());
+
+  const auto* entry = entries[0];
+  TestUkmRecorder::ExpectEntryMetric(entry, "SettingId",
+                                     UserSettingsEvent::Event::VOLUME);
+  TestUkmRecorder::ExpectEntryMetric(entry, "SettingType",
+                                     UserSettingsEvent::Event::QUICK_SETTINGS);
+  TestUkmRecorder::ExpectEntryMetric(entry, "PreviousValue", 10);
+  TestUkmRecorder::ExpectEntryMetric(entry, "CurrentValue", 15);
+}
+
 TEST_F(UserSettingsEventLoggerTest, TestBrightnessFeatures) {
   LogBrightnessAndWait(12, 29);
 
@@ -340,7 +369,7 @@ TEST_F(UserSettingsEventLoggerTest, TestBrightnessFeatures) {
   // Exit fullscreen. |is_recently_fullscreen| should remain true for 5 minutes,
   // with 1 second given for leeway on either side.
   logger_->OnFullscreenStateChanged(false, nullptr);
-  FastForwardBySeconds(299 - kBrightnessDelay.InSeconds());
+  FastForwardBySeconds(299 - kSliderDelay.InSeconds());
   LogBrightnessAndWait(0, 0);
   FastForwardBySeconds(2);
   LogBrightnessAndWait(0, 0);
@@ -365,15 +394,15 @@ TEST_F(UserSettingsEventLoggerTest, TestBrightnessFeatures) {
 }
 
 TEST_F(UserSettingsEventLoggerTest, TestBrightnessDelay) {
-  // Only log an event if there is a pause of |kBrightnessDelay|.
+  // Only log an event if there is a pause of |kSliderDelay|.
   logger_->LogBrightnessUkmEvent(10, 11);
-  task_environment_->FastForwardBy(kBrightnessDelay / 2);
+  task_environment_->FastForwardBy(kSliderDelay / 2);
   logger_->LogBrightnessUkmEvent(11, 12);
   logger_->LogBrightnessUkmEvent(12, 13);
   logger_->LogBrightnessUkmEvent(13, 14);
-  task_environment_->FastForwardBy(kBrightnessDelay / 2);
+  task_environment_->FastForwardBy(kSliderDelay / 2);
   logger_->LogBrightnessUkmEvent(14, 15);
-  task_environment_->FastForwardBy(kBrightnessDelay);
+  task_environment_->FastForwardBy(kSliderDelay);
 
   const auto& entries = GetUkmEntries();
   ASSERT_EQ(1ul, entries.size());

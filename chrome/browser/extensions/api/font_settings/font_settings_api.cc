@@ -285,38 +285,38 @@ ExtensionFunction::ResponseAction FontSettingsSetFontFunction::Run() {
   return RespondNow(NoArguments());
 }
 
-bool FontSettingsGetFontListFunction::RunAsync() {
+ExtensionFunction::ResponseAction FontSettingsGetFontListFunction::Run() {
   content::GetFontListAsync(
       BindOnce(&FontSettingsGetFontListFunction::FontListHasLoaded, this));
-  return true;
+  return RespondLater();
 }
 
 void FontSettingsGetFontListFunction::FontListHasLoaded(
     std::unique_ptr<base::ListValue> list) {
-  bool success = CopyFontsToResult(list.get());
-  SendResponse(success);
+  ExtensionFunction::ResponseValue response = CopyFontsToResult(list.get());
+  Respond(std::move(response));
 }
 
-bool FontSettingsGetFontListFunction::CopyFontsToResult(
-    base::ListValue* fonts) {
+ExtensionFunction::ResponseValue
+FontSettingsGetFontListFunction::CopyFontsToResult(base::ListValue* fonts) {
   std::unique_ptr<base::ListValue> result(new base::ListValue());
   for (auto it = fonts->begin(); it != fonts->end(); ++it) {
     base::ListValue* font_list_value;
     if (!it->GetAsList(&font_list_value)) {
       NOTREACHED();
-      return false;
+      return Error("");
     }
 
     std::string name;
     if (!font_list_value->GetString(0, &name)) {
       NOTREACHED();
-      return false;
+      return Error("");
     }
 
     std::string localized_name;
     if (!font_list_value->GetString(1, &localized_name)) {
       NOTREACHED();
-      return false;
+      return Error("");
     }
 
     std::unique_ptr<base::DictionaryValue> font_name(
@@ -327,8 +327,7 @@ bool FontSettingsGetFontListFunction::CopyFontsToResult(
     result->Append(std::move(font_name));
   }
 
-  SetResult(std::move(result));
-  return true;
+  return OneArgument(std::move(result));
 }
 
 ExtensionFunction::ResponseAction ClearFontPrefExtensionFunction::Run() {

@@ -183,7 +183,9 @@ bool ZygoteMain(
   // Skip pre-initializing sandbox when sandbox is disabled for
   // https://crbug.com/444900.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          service_manager::switches::kNoSandbox)) {
+          service_manager::switches::kNoSandbox) &&
+      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+          service_manager::switches::kNoZygoteSandbox)) {
     // This will pre-initialize the various sandboxes that need it.
     linux_sandbox->PreinitializeSandbox();
   }

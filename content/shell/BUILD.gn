@@ -396,6 +396,7 @@ jumbo_static_library("content_shell_lib") {
 
   if (is_linux) {
     deps += [
+      "//services/service_manager/tests:sandbox_status_service",
       "//third_party/fontconfig",
       "//ui/gfx:test_support",
     ]

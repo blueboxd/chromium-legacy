@@ -240,7 +240,7 @@ Polymer({
    */
   annotationToolOptionChanged_(e) {
     const element = e.currentTarget.parentElement;
-    if (!this.annotationTool || element.id != this.annotationTool.tool) {
+    if (!this.annotationTool || element.id !== this.annotationTool.tool) {
       return;
     }
     this.updateAnnotationTool_(e.currentTarget.parentElement);
@@ -260,8 +260,8 @@ Polymer({
     attributeStyleMap.set('--pen-tip-fill', options.selectedColor);
     attributeStyleMap.set(
         '--pen-tip-border',
-        options.selectedColor == '#000000' ? 'currentcolor' :
-                                             options.selectedColor);
+        options.selectedColor === '#000000' ? 'currentcolor' :
+                                              options.selectedColor);
     this.annotationTool = {
       tool: tool,
       size: options.selectedSize,

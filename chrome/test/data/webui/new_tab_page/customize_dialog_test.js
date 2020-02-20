@@ -4,6 +4,8 @@
 
 import 'chrome://new-tab-page/customize_dialog.js';
 
+import {BrowserProxy} from 'chrome://new-tab-page/browser_proxy.js';
+import {createTestProxy} from 'chrome://test/new_tab_page/test_support.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://test/test_util.m.js';
 
 suite('NewTabPageCustomizeDialogTest', () => {
@@ -12,6 +14,15 @@ suite('NewTabPageCustomizeDialogTest', () => {
 
   setup(() => {
     PolymerTest.clearBody();
+
+    const testProxy = createTestProxy();
+    testProxy.handler.setResultFor('getBackgroundCollections', Promise.resolve({
+      collections: [],
+    }));
+    testProxy.handler.setResultFor('getChromeThemes', Promise.resolve({
+      chromeThemes: [],
+    }));
+    BrowserProxy.instance_ = testProxy;
 
     customizeDialog = document.createElement('ntp-customize-dialog');
     document.body.appendChild(customizeDialog);

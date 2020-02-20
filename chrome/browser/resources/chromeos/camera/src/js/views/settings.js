@@ -355,7 +355,8 @@ export class ResolutionSettings extends BaseSettings {
      * @param {!Resolution} r
      * @return {number}
      */
-    const toMegapixel = (r) => Math.round(r.area / 100000) / 10;
+    const toMegapixel = ({area}) =>
+        area >= 1e6 ? Math.round(area / 1e6) : Math.round(area / 1e5) / 10;
     const /** number */ d = gcd(r.width, r.height);
     if (resolutions.some(
             (findR) => !findR.equals(r) && r.aspectRatioEquals(findR) &&

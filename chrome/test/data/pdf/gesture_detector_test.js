@@ -267,7 +267,7 @@ chrome.test.runTests(function() {
       for (const l of stubElement.listeners.get('wheel')) {
         const options = l.options;
         chrome.test.assertTrue(
-            !!options && typeof (options.passive) == 'boolean');
+            !!options && typeof (options.passive) === 'boolean');
         chrome.test.assertFalse(options.passive);
       }
 

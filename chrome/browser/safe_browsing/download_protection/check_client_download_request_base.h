@@ -201,6 +201,7 @@ class CheckClientDownloadRequestBase {
   bool is_extended_reporting_ = false;
   bool is_incognito_ = false;
   bool is_under_advanced_protection_ = false;
+  bool is_enhanced_protection_ = false;
 
   int file_count_;
   int directory_count_;

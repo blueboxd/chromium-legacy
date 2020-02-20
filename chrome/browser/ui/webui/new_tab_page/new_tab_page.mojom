@@ -27,6 +27,14 @@ struct ThemeColors {
   skia.mojom.SkColor active_tab;
 };
 
+// A collection of background images.
+struct BackgroundCollection {
+  // Localized string of the collection name.
+  string label;
+  // URL to a preview image for the collection. Can point to untrusted content.
+  url.mojom.Url preview_image_url;
+};
+
 // A predefined theme provided by Chrome. Created from data embedded in the
 // Chrome binary.
 struct ChromeTheme {
@@ -117,6 +125,8 @@ interface PageHandler {
   ConfirmThemeChanges();
   // Reverts changes made to the theme.
   RevertThemeChanges();
+  // Returns the collections of background images.
+  GetBackgroundCollections() => (array<BackgroundCollection> collections);
 };
 
 // WebUI-side handler for requests from the browser.

@@ -15,9 +15,11 @@ class CommandLine;
 
 namespace gpu {
 
+struct DevicePerfInfo;
 struct GPUInfo;
 struct GpuPreferences;
 enum class GpuSeriesType;
+enum class IntelGpuGeneration;
 
 // Set GPU feature status if hardware acceleration is disabled.
 GPU_EXPORT GpuFeatureInfo
@@ -79,6 +81,11 @@ GPU_EXPORT GpuSeriesType GetGpuSeriesType(uint32_t vendor_id,
 
 GPU_EXPORT std::string GetIntelGpuGeneration(uint32_t vendor_id,
                                              uint32_t device_id);
+
+// If multiple Intel GPUs are detected, this returns the latest generation.
+GPU_EXPORT IntelGpuGeneration GetIntelGpuGeneration(const GPUInfo& gpu_info);
+
+GPU_EXPORT void CollectDevicePerfInfo(DevicePerfInfo* device_perf_info);
 
 #if defined(OS_WIN)
 GPU_EXPORT std::string D3DFeatureLevelToString(uint32_t d3d_feature_level);
